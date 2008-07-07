@@ -1,64 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbYGHHKu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755846AbYGHHLp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755341AbYGHHKu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 03:10:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbYGHHKk
+	id S1755846AbYGHHLp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 03:11:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbYGHHLg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 03:10:40 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49018 "EHLO
-	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751394AbYGHHKk (ORCPT
+	Tue, 8 Jul 2008 03:11:36 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:63912 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751900AbYGHHLf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 03:10:40 -0400
-Date: Tue, 8 Jul 2008 07:36:37 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: jeff@garzik.org, dwmw2@infradead.org, andi@firstfloor.org, tytso@mit.edu,
-       hugh@veritas.com, akpm@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-Message-ID: <20080708073637.32037c76@the-village.bc.nu>
-In-Reply-To: <20080707.145819.209342070.davem@davemloft.net>
-References: <20080707214218.055bcb35@the-village.bc.nu>
-	<20080707.144505.67398603.davem@davemloft.net>
-	<20080707221427.163c4a30@the-village.bc.nu>
-	<20080707.145819.209342070.davem@davemloft.net>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 8 Jul 2008 03:11:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:content-type:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=pJjdJfi0m7DwWAWOHCWQdJF9I0JlHIfJNInAmZLRGs9+6lc7hmcYtpHrfcm8r50fJI
+         IZkWS4vg00Q/9ViI5nVg+xMzXa6GiggO0IU6j6c9fQlEhDuJzXJVGc3sfPLPx6dN+3pD
+         AHfhOdKBwObyE7am7K0KQxM3mE64oh0WSwcbE=
+Subject: [PATCH] crypto/tcrypt.c fix resource leak
+From: "Darren Jenkins\\" <darrenrjenkins@gmail.com>
+To: kernel Janitors <kernel-janitors@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, herbert@gondor.apana.org.au,
+       davem@davemloft.net, linux-crypto@vger.kernel.org,
+       jmorris@intercode.com.au, jef@linuxbe.org
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 08 Jul 2008 05:24:14 +1000
+Message-Id: <1215458654.8316.16.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> That's pure bullox as far as I can see.  Why provide the means to
-> do something nobody has had a need for in 6+ years?  Who needs
-> to load different firmware for the tg3 driver?
+G'day people,
 
-Who needs modules, nobody needed it for years ... you are repeating
-historically failed arguments still.
+Coverity CID: 2306 & 2307 RESOURCE_LEAK
 
-> Who needs that capability? Distribution vendors?  What for?
-> In what case will they need to load different firmware from
-> what the driver maintainer tested as a unit?
+In the second for loop in test_cipher(), data is allocated space with
+kzalloc() and is only ever freed in an error case.
+Looking at this loop, data is written to this memory but nothing seems
+to read from it. 
+So here is a patch removing the allocation, I think this is the right
+fix.
 
-For some drivers yes. Maybe not tg3.
+Only compile tested.
 
-> And, btw, who has the right to enforce this new burdon upon driver
-> maintainers when they have had a working and maintainable system for
-> so long?
+﻿Signed-off-by: Darren Jenkins <darrenrjenkins@gmailcom>
 
-The module argument again - see my comment about the sound driver history.
+diff --git a/crypto/tcrypt.c b/crypto/tcrypt.c
+index 6beabc5..e47f6e0 100644
+--- a/crypto/tcrypt.c
++++ b/crypto/tcrypt.c
+@@ -586,12 +586,6 @@ static void test_cipher(char *algo, int enc,
+ 	j = 0;
+ 	for (i = 0; i < tcount; i++) {
+ 
+-		data = kzalloc(template[i].ilen, GFP_KERNEL);
+-		if (!data)
+-			continue;
+-
+-		memcpy(data, template[i].input, template[i].ilen);
+-
+ 		if (template[i].iv)
+ 			memcpy(iv, template[i].iv, MAX_IVLEN);
+ 		else
+@@ -613,10 +607,8 @@ static void test_cipher(char *algo, int enc,
+ 				printk("setkey() failed flags=%x\n",
+ 						crypto_ablkcipher_get_flags(tfm));
+ 
+-				if (!template[i].fail) {
+-					kfree(data);
++				if (!template[i].fail)
+ 					goto out;
+-				}
+ 			}
+ 
+ 			temp = 0;
 
-> I can only see it being about separation, pure and simple.
 
-Separation - of firmware that can be paged from code that cannot. Of
-stuff that doesn't change from stuff that does. That happens to be good
-engineering.
-
-Alan
