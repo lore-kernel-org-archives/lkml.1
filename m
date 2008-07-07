@@ -1,71 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755715AbYGGRVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753790AbYGGRXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755715AbYGGRVT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 13:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753871AbYGGRVK
+	id S1753790AbYGGRXX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 13:23:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbYGGRXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 13:21:10 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:55477 "EHLO
-	VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753734AbYGGRVJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 13:21:09 -0400
-X-BigFish: VPS-35(zz1432R98dR7efV1805Mzz10d3izzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K3NC6T-03-V8V-01
-Date: Mon, 7 Jul 2008 19:20:57 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: mingo@redhat.com, tglx@linutronix.de
-CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org
-Subject: Re: [PATCH] AMD IOMMU: initialize IOMMU when GART is detected
-Message-ID: <20080707172057.GZ14977@amd.com>
-References: <1215441770-10314-1-git-send-email-joerg.roedel@amd.com>
+	Mon, 7 Jul 2008 13:23:15 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:60953 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753871AbYGGRXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 13:23:14 -0400
+Message-ID: <48725101.40800@sgi.com>
+Date: Mon, 07 Jul 2008 10:23:13 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <1215441770-10314-1-git-send-email-joerg.roedel@amd.com>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 07 Jul 2008 17:20:57.0519 (UTC) FILETIME=[D1B4D3F0:01C8E055]
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       mm-commits@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1] x86: Add check for node passed to node_to_cpumask
+ V3
+References: <200806090918.m599Ib0G012837@imap1.linux-foundation.org>	 <19f34abd0806090420r4100241cgb4b828441de3b102@mail.gmail.com>	 <20080609113547.GA1534@elte.hu> <484D54F2.4070603@sgi.com>	 <20080626113229.GB29619@elte.hu> <4863C334.2090007@sgi.com>	 <486452CC.8050502@sgi.com> <48651EF5.5090808@sgi.com>	 <20080703084401.GB7873@elte.hu> <19f34abd0807030155x22b0033dj780830bad840216f@mail.gmail.com>
+In-Reply-To: <19f34abd0807030155x22b0033dj780830bad840216f@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 07, 2008 at 04:42:50PM +0200, Joerg Roedel wrote:
-> One of the last IOMMU updates covered a bug in the AMD IOMMU code. The early
-> detection code does not succeed if the GART is already detected. This patch
-> fixes this by removing the check for iommu_detected in the early detect code.
-> On AMD systems only the GART code sets this variable to one beside the AMD
-> IOMMU driver.
+Vegard Nossum wrote:
+> On Thu, Jul 3, 2008 at 10:44 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>> * Mike Travis <travis@sgi.com> wrote:
+>>
+>>> Subject: [PATCH 1/1] x86: Add check for node passed to node_to_cpumask V3
+>>>
+>>>   * When CONFIG_DEBUG_PER_CPU_MAPS is set, the node passed to
+>>>     node_to_cpumask and node_to_cpumask_ptr should be validated.
+>>>     If invalid, then a dump_stack is performed and a zero cpumask
+>>>     is returned.
+>>>
+>>> Based on "Fri Jun 27 10:06:06 PDT 2008" tip/master...  ;-)
+>>>
+>>> Signed-off-by: Mike Travis <travis@sgi.com>
+>>> ---
+>>> V2: Slightly different version to remove a compiler warning.
+>>> V3: Redone to reflect moving setup.c -> setup_percpu.c
+>> applied to tip/x86/unify-setup - thanks Mike.
+>>
+>> Vegard, can i add your Acked-by too?
 > 
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> ---
->  arch/x86/kernel/amd_iommu_init.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> To be honest, I'd prefer that the function returns a const pointer.
+> Mike and I have both reviewed all callers independently and concluded
+> that there is no problem in doing this, and that, in fact, this is the
+> correct way to deal with it.
 > 
-> diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
-> index 2a13e43..71e13af 100644
-> --- a/arch/x86/kernel/amd_iommu_init.c
-> +++ b/arch/x86/kernel/amd_iommu_init.c
-> @@ -828,7 +828,7 @@ static int __init early_amd_iommu_detect(struct acpi_table_header *table)
->  
->  void __init amd_iommu_detect(void)
->  {
-> -	if (swiotlb || no_iommu || iommu_detected)
-> +	if (swiotlb || no_iommu)
->  		return;
->  
->  	if (acpi_table_parse("IVRS", early_amd_iommu_detect) == 0) {
+> So if Mike submits a V4 with this const return type, or another patch
+> on top of this one, I'll ack it :-)
+> 
+> 
+> Vegard
+> 
 
-Argh. I posted the wrong version of the patch. Please ignore this one. I
-will send an updated one.
+Sure, I can do this...
 
-Joerg
-
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
-
+Thanks,
+Mike
