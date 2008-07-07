@@ -1,56 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753871AbYGGNiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbYGGNnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753871AbYGGNiW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 09:38:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751714AbYGGNiF
+	id S1753955AbYGGNnR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 09:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbYGGNnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 09:38:05 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:4408 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750804AbYGGNiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 09:38:04 -0400
-Date: Mon, 7 Jul 2008 09:15:02 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Tomas Winkler <tomasw@gmail.com>
-Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-next-2.6 2008-07-02
-Message-ID: <20080707131502.GD5457@tuxdriver.com>
-References: <20080630215651.GA666@tuxdriver.com> <20080702193710.GA4682@tuxdriver.com> <20080702202653.GA10719@tuxdriver.com> <20080705.214752.85024966.davem@davemloft.net> <1ba2fa240807060007i572d054va60aa16b41cadce3@mail.gmail.com>
-MIME-Version: 1.0
+	Mon, 7 Jul 2008 09:43:07 -0400
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:35637 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751857AbYGGNnG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 09:43:06 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvsEAAy2cUhMQWVt/2dsb2JhbACBXKx3
+Date: Mon, 7 Jul 2008 09:43:02 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [RFC patch 00/12] Tracepoints v2
+Message-ID: <20080707134302.GB14704@Krystal>
+References: <20080704235207.147809973@polymtl.ca> <20080706022711.199401fe@linux360.ro>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1ba2fa240807060007i572d054va60aa16b41cadce3@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20080706022711.199401fe@linux360.ro>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 09:34:04 up 32 days, 18:15,  6 users,  load average: 0.82, 0.91,
+	0.87
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 06, 2008 at 10:07:42AM +0300, Tomas Winkler wrote:
-> On Sun, Jul 6, 2008 at 7:47 AM, David Miller <davem@davemloft.net> wrote:
-> > From: "John W. Linville" <linville@tuxdriver.com>
-> > Date: Wed, 2 Jul 2008 16:26:53 -0400
-> >
-> >> Here is another slew of updates for 2.6.27.  The bulk of this batch is
-> >> for iwlwifi, with some mac80211 and other bits thrown-in.
-> >>
-> >> Let me know if there are problems!
-> >
-> > Pulled and pushed back out to net-next-2.6, thanks.
-> >
-> > Here are some warnings I noticed during an allmodconfig build
-> > on sparc64, please fix:
-> >
-> > drivers/net/wireless/hostap/hostap_hw.c:3422: warning: 'prism2_suspend' defined but not used
-> > drivers/net/wireless/iwlwifi/iwl-rfkill.c:114: warning: label 'freed_rfkill' defined but not used
+* Eduard - Gabriel Munteanu (eduard.munteanu@linux360.ro) wrote:
+> On Fri, 04 Jul 2008 19:52:07 -0400
+> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 > 
-> John what happened to to those patches?
-> http://marc.info/?l=linux-wireless&m=121489830307988&w=2
-> http://marc.info/?l=linux-wireless&m=121481826531792&w=2
+> > Hi,
+> > 
+> > Here is the second release of kernel tracepoints, including the
+> > architecture independent instrumentation taken from LTTng. I submit
+> > this for another round of comments.
+> 
+> Hi,
+> 
+> Not using format specifiers sounds pretty nice. Are there any other
+> advantages over markers? What about self-modifying code, does it employ
+> this technique to eliminate conditional branching (markers did this on
+> some arches, IIRC)?
+> 
 
-They were posted after this round of patches.  I still have them.
+The main advantage is to remove the format strings. It also permits to
+declare the tracepoints in a header file instead of only spreading them
+all over the kernel code. It aims at providing an internal kernel
+interface to kernel tracers, compared to markers which are eventually
+meant to export the trace information, along with the format specifiers,
+to userspace. The version I sent here does not use immediate values
+(self-modifying code), but the one I have in my patchset does.
 
-John
+> I'm considering using this for kmemtrace, so please keep me Cc-ed if
+> possible.
+> 
+
+Sure, I will,
+
+Mathieu
+
+> 
+> 	Cheers,
+> 	Eduard
+> 
+> P.S.: BTW, the To header is either broken or I screwed it (I'm reading
+> this via Gmane's NNTP):
+> "Steven Rostedt <ros"
+
+Ok, will fix in the next post. Thanks.
+
 -- 
-John W. Linville
-linville@tuxdriver.com
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
