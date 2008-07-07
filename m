@@ -1,71 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754698AbYGGHxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755185AbYGGH4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754698AbYGGHxo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 03:53:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750827AbYGGHxh
+	id S1755185AbYGGH4R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 03:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751813AbYGGH4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 03:53:37 -0400
-Received: from wavehammer.waldi.eu.org ([82.139.201.20]:53935 "EHLO
-	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750729AbYGGHxg (ORCPT
+	Mon, 7 Jul 2008 03:56:04 -0400
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:28753 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751272AbYGGH4D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 03:53:36 -0400
-Date: Mon, 7 Jul 2008 09:53:34 +0200
-From: Bastian Blank <bastian@waldi.eu.org>
-To: Michael Chan <mchan@broadcom.com>
-Cc: "'David Woodhouse'" <dwmw2@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] bnx2 - use request_firmware()
-Message-ID: <20080707075333.GA13723@wavehammer.waldi.eu.org>
-Mail-Followup-To: Bastian Blank <bastian@waldi.eu.org>,
-	Michael Chan <mchan@broadcom.com>,
-	'David Woodhouse' <dwmw2@infradead.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <1215251041.3189.69.camel@shinybook.infradead.org> <C27F8246C663564A84BB7AB34397724201E1494B50@IRVEXCHCCR01.corp.ad.broadcom.com>
+	Mon, 7 Jul 2008 03:56:03 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Message-Id;
+  b=cHjGinD1IaH5AcYeXdBBxigDRofEiUdZTz/wIsGYweGxOFzCesai8M3eY+kdjY4CQ/DCj9Pxt9UF1QYiGyzLVkta2CVeYty7PlHjfmefL8gmKnGUparq/OCvV4eyPaoszgX+5+gBiv7McRPCBxndRL4/eXs6+VphSs4PTqEqeDY=  ;
+X-YMail-OSG: qQMw5ocVM1kEkCy63rrpVc8YtWqeJlWAiHNcVFS5VW9fM.234ORI7p3qZcz3XLG3UPHkNhhYKCDer95S6VVAUVIO4pE.0M8fwcuaNQ4GH6kFNc2Qt.BFjaeAY1OLFAvaBh8-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Hugh Dickins <hugh@veritas.com>, benh@kernel.crashing.org
+Subject: Re: Lockless/Get_User_Pages_Fast causes Xorg 1.4.99.* to lock
+Date: Mon, 7 Jul 2008 17:55:39 +1000
+User-Agent: KMail/1.9.5
+Cc: Zan Lynx <zlynx@acm.org>, Ryan Hope <rmh3093@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <48f7fe350807032326l1d68c94l531e44c09693b989@mail.gmail.com> <486E4FD8.4010102@acm.org> <Pine.LNX.4.64.0807042112130.16912@blonde.site>
+In-Reply-To: <Pine.LNX.4.64.0807042112130.16912@blonde.site>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <C27F8246C663564A84BB7AB34397724201E1494B50@IRVEXCHCCR01.corp.ad.broadcom.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_8vccI6gu9KN13AU"
+Message-Id: <200807071755.40477.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 06, 2008 at 09:21:21PM -0700, Michael Chan wrote:
-> I cannot sign off on this until I understand more about the impact
-> of this change.
+--Boundary-00=_8vccI6gu9KN13AU
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-The change is targeted for the firmware tree. The firmware tree
-seperates the firmwares from the driver _within_ the kernel tree. Both
-parts are still shipped in the same tree. The driver themself is
-modified to use request_firmware. If the driver is builtin the kernel,
-the firmware is appended to vmlinux where request_firmware is able to
-find them. If it is built as a module the firmware is copied into
-/lib/firmware during installation where the famous hotplug handler can
-find it.
+On Saturday 05 July 2008 06:29, Hugh Dickins wrote:
 
-So the impact is that you need a hotplug handler in the module case.
-Most of the modern wireless cards drivers (e.g. b43, iwl*) needs them
-anyway.
+> Fix to 2.6.26-rc8-mm1 x86-implement-pte_special.patch
+> Perhaps something similar needed for powerpc?  Nick will know.
 
-My patch does not yet include the firmware move within the tree because
-it would make the patch really large. Will do that.
+Here is the required fix for powerpc-implement-pte_special.patch
 
->                  Unlike the tg3 firmware which hasn't changed for at
-> least 4 or 5 years, the bnx2 firmware is constantly changing and it
-> has to match the driver.  For example, we'll be adding multi-tx ring
-> to the driver soon and it will require the feature in the firmware.
 
-Thats why the firmware files got a "version" string included. You can
-change it for incompatible changes in the firmware. Your workflow will
-not change drastically. You still can modify the firmware and the source
-in one tree.
+--Boundary-00=_8vccI6gu9KN13AU
+Content-Type: text/x-diff;
+  charset="iso-8859-1";
+  name="powerpc-implement-pte_special-fix.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="powerpc-implement-pte_special-fix.patch"
 
-Also it is not that uncommon that you need to update firmwares for new
-kernel versions in other devices.
+Spotted by Hugh:
 
-Bastian
+Stop mprotect's pte_modify from wiping out the powerpc pte_special bit, which
+caused oops thereafter when vm_normal_page thought X's abnormal was normal.
 
--- 
-Fascinating, a totally parochial attitude.
-		-- Spock, "Metamorphosis", stardate 3219.8
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+---
+Index: linux-2.6/include/asm-powerpc/pgtable-4k.h
+===================================================================
+--- linux-2.6.orig/include/asm-powerpc/pgtable-4k.h
++++ linux-2.6/include/asm-powerpc/pgtable-4k.h
+@@ -60,7 +60,7 @@
+ /* It should be preserving the high 48 bits and then specifically */
+ /* preserving _PAGE_SECONDARY | _PAGE_GROUP_IX */
+ #define _PAGE_CHG_MASK	(PAGE_MASK | _PAGE_ACCESSED | _PAGE_DIRTY | \
+-                         _PAGE_HPTEFLAGS)
++                         _PAGE_SPECIAL | _PAGE_HPTEFLAGS)
+ 
+ /* Bits to mask out from a PMD to get to the PTE page */
+ #define PMD_MASKED_BITS		0
+
+--Boundary-00=_8vccI6gu9KN13AU--
