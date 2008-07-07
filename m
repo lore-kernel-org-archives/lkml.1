@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756735AbYGGWMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757008AbYGGWRy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756735AbYGGWMa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 18:12:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754956AbYGGWMU
+	id S1757008AbYGGWRy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 18:17:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754871AbYGGWRr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 18:12:20 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:26938 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754309AbYGGWMT (ORCPT
+	Mon, 7 Jul 2008 18:17:47 -0400
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:37969 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754605AbYGGWRq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 18:12:19 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [patch 5/5] x86 PCI: use dev_printk when possible
-Date: Mon, 7 Jul 2008 16:10:35 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Andrew Morton <akpm@linux-foundation.org>, lenb@kernel.org,
-       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20080613165209.507694130@ldl.fc.hp.com> <20080630165737.2f9735f0.akpm@linux-foundation.org> <200807011857.42384.jbarnes@virtuousgeek.org>
-In-Reply-To: <200807011857.42384.jbarnes@virtuousgeek.org>
+	Mon, 7 Jul 2008 18:17:46 -0400
+Date: Mon, 7 Jul 2008 17:17:33 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Roland McGrath <roland@redhat.com>, linuxppc-dev@ozlabs.org,
+       Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] elf loader support for auxvec base platform string
+Message-ID: <20080707221733.GJ9594@localdomain>
+References: <20080703234140.GC9594@localdomain>
+ <20080704021929.5E9EF1541F5@magilla.localdomain>
+ <1215409693.8970.79.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807071610.36528.bjorn.helgaas@hp.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+In-Reply-To: <1215409693.8970.79.camel@pasglop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Pobox-Relay-ID: 857C2392-4C72-11DD-9270-CE28B26B55AE-04752483!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 01 July 2008 07:57:41 pm Jesse Barnes wrote:
-> On Monday, June 30, 2008 4:57 pm Andrew Morton wrote:
-> > On Fri, 13 Jun 2008 10:52:14 -0600
-> >
-> > Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> > > I converted DBG() to dev_dbg().  This DBG() is from arch/x86/pci/pci.h
-> > > and requires source-code modification to enable, so dev_dbg() seems
-> > > roughly equivalent.
-> > >
-> > > The printks in arch/x86/pci/irq.c were a little hairy, with lines
-> > > printed in several pieces.  I straightened it out a little, but
-> > > another set of eyes would be good.
-> > >
-> > > Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-> > >
-> > > ---
-> > >  arch/x86/pci/fixup.c |    3 +
-> > >  arch/x86/pci/i386.c  |   26 ++++++--------
-> > >  arch/x86/pci/irq.c   |   91
-> > > ++++++++++++++++++++++----------------------------- arch/x86/pci/numa.c 
-> > > |    5 +-
-> >
-> > Got a bunch of rejects in arch/x86/pci/irq.c due to pending whitespace
-> > fixes.  I fixed a couple of them but then I got bored, so the
-> > conversion in there is only partial.
-> >
-> > Please prefer to raise patches against linux-next if poss, especially
-> > during late -rc's.
+Benjamin Herrenschmidt wrote:
+> On Thu, 2008-07-03 at 19:19 -0700, Roland McGrath wrote:
+> > Why not just use ELF_HWCAP for this?  It looks like powerpc only has 3 bits
+> > left there (keeping it to 32), but 3 is not 0.  If not that, why not use
+> > dsocaps?  That is, some magic in the vDSO, which glibc already supports on
+> > all machines where it uses the vDSO.  (For how it works, see the use in
+> > arch/x86/vdso/vdso32/note.S for CONFIG_XEN.)
 > 
-> Yeah, the x86 tree(s) move too fast for me to keep up with.  The change seems 
-> worthwhile though, maybe Ingo or one of the x86 team could just search & 
-> replace?
+> Well, we use strings to represent the platforms already (ie, the actual
+> CPU microarchitecture). Fitting those into bits would be annoying, it
+> makes sense to have AT_BASE_PLATFORM to be the "base" variant of
+> AT_PLATFORM.
+> 
+> _However_ there is a bug in that this patch adds an entry without
+> bumping the number of entries in the cached array (ie.
+> AT_VECTOR_SIZE_BASE needs to be updated).
 
-I'll fix it up.
-
-Bjorn
+Ugh, yes.  I was hoping to work this in such a way that AT_VECTOR_SIZE
+(and thus the size of mm_struct) increases only for architectures that
+implement AT_BASE_PLATFORM... would it be wrong to account for it in
+AT_VECTOR_SIZE_ARCH?
