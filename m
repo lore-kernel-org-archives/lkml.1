@@ -1,66 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756480AbYGGTQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756543AbYGGTSe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756480AbYGGTQu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 15:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754883AbYGGTQi
+	id S1756543AbYGGTSe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 15:18:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754873AbYGGTS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 15:16:38 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:45649 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754869AbYGGTQi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 15:16:38 -0400
-Message-ID: <48726B7F.5010402@garzik.org>
-Date: Mon, 07 Jul 2008 15:16:15 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 7 Jul 2008 15:18:26 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:58948 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754661AbYGGTSZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 15:18:25 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <48726BF6.8020308@s5r6.in-berlin.de>
+Date: Mon, 07 Jul 2008 21:18:14 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080614 SeaMonkey/1.1.9
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: David Woodhouse <dwmw2@infradead.org>, Andi Kleen <andi@firstfloor.org>,
-       David Miller <davem@davemloft.net>, tytso@mit.edu, hugh@veritas.com,
-       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
-       mchan@broadcom.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-References: <1215093175.10393.567.camel@pmac.infradead.org>	<20080703173040.GB30506@mit.edu>	<1215111362.10393.651.camel@pmac.infradead.org>	<20080703.162120.206258339.davem@davemloft.net>	<486D6DDB.4010205@infradead.org>	<87ej6armez.fsf@basil.nowhere.org>	<1215177044.10393.743.camel@pmac.infradead.org>	<486E2260.5050503@garzik.org>	<1215178035.10393.763.camel@pmac.infradead.org>	<486E2818.1060003@garzik.org>	<1215179161.10393.773.camel@pmac.infradead.org>	<486E2E9B.20200@garzik.org>	<20080704153822.4db2f325@lxorguk.ukuu.org.uk>	<48715807.8070605@garzik.org>	<20080707165333.6347f564@the-village.bc.nu>	<48725155.2040007@garzik.org>	<20080707191359.11f6297f@the-village.bc.nu>	<48726734.7080601@garzik.org> <20080707193008.17795d61@the-village.bc.nu>
-In-Reply-To: <20080707193008.17795d61@the-village.bc.nu>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: =?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>,
+       Oliver Neukum <oliver@neukum.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [RFC] MAINTAINERS service, was: Re: alphabetic ordering of MAINTAINERS
+References: <20080704063455.GA13999@digi.com>	<200807040852.27809.oliver@neukum.org>	<m3k5g1zv3u.fsf_-_@maximus.localdomain>	<20080704134426.GA32700@digi.com> <m37ic1zqqp.fsf@maximus.localdomain>	<487217E1.2040205@s5r6.in-berlin.de> <m3r6a5il2m.fsf@maximus.localdomain>
+In-Reply-To: <m3r6a5il2m.fsf@maximus.localdomain>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> On Mon, 07 Jul 2008 14:57:56 -0400
-> Jeff Garzik <jeff@garzik.org> wrote:
+Krzysztof Halasa wrote:
+> Stefan Richter <stefanr@s5r6.in-berlin.de> writes:
 > 
->> Alan Cox wrote:
->>>> When the firmware travels with the module, as it does today in tg3, bnx2 
->>>> and others, is the most reliable system available.  The simplest, the 
->>>> least amount of "parts", the easiest to upgrade, the best method to 
->>>> guarantee driver/firmware version matches.  It works wonderfully today.
->>>>
->>>> Is it difficult to see why someone might want to keep the same attributes?
->>> No I can see that, should be a simple matter of sending David patches.
->> Isn't it David's obligation not to remove a highly reliable, working system?
+>> We expect submissions to based on something more recent than 2.6.12.
 > 
-> I don't see why it should be David's job to add every conceivable feature
-> to the code. 
+> Unfortunately we can't enforce that. People are working with old
+> kernels (think of heavily-modified vendor trees), people send patches
+> against old kernels, and we accept such patches (if it makes sense,
+> of course).
 
-Just whose job is it, exactly, to avoid regressions?
+If I get such patches and can apply them without /very/ much work, I 
+gladly take them of course too.
 
-Why is it unfair to ask a patch author not to break stuff?
+But these are not the people anyway to which this maintainers lookup 
+service would be targeted to.  As I see it, the people who want such a 
+service are those who frequently send patches for various different 
+areas of the kernel.  And these people don't work with 2.6.12.
 
+(OTOH, occasional posters who don't even check if their patch would 
+apply to a newer kernel too before they post it will probably also have 
+less interest in figuring out the 100% optimum To: and Cc: list for 
+their submission.  A "tell me a list of mail addresses; whatever you 
+give me, I am not really interested in the particulars" service would 
+not be an appropriate tool for these people.)
 
-> And this is the pot calling the kettle black. You badly
-> broke Marvell PATA support by setting the Marvell SATA devices to AHCI. I
-> note you've still not fixed that after some months.
+>> Your patch service however...
+>> ...already exists.  Check the "L:" entries in MAINTAINERS.
+> 
+> Nice joke.
 
-Even if we accept that at face value, which I don't (it's more a driver 
-load order issue), that is no excuse for further regressions.
+Not at all.  These are the forums where patches can be discussed in more 
+detail because knowledgeable people are subscribed there.  You also have 
+archives which you can query for patch postings and their discussions.
 
-	Jeff
-
-
+What you don't get is of course a unified "look and feel".  Some list 
+archives are crap, some lists are subscriber-only, some kernel areas are 
+not covered by a special list.  But the latter problem won't really go 
+away with the proposed maintainers lookup service.
+-- 
+Stefan Richter
+-=====-==--- -=== --===
+http://arcgraph.de/sr/
