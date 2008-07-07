@@ -1,30 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755369AbYGGHRi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753557AbYGGHZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755369AbYGGHRi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 03:17:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbYGGHR3
+	id S1753557AbYGGHZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 03:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbYGGHZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 03:17:29 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44330 "EHLO mx3.mail.elte.hu"
+	Mon, 7 Jul 2008 03:25:15 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59323 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752573AbYGGHR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 03:17:28 -0400
-Date: Mon, 7 Jul 2008 09:17:06 +0200
+	id S1750729AbYGGHZO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 03:25:14 -0400
+Date: Mon, 7 Jul 2008 09:24:40 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>, Len Brown <lenb@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-next@vger.kernel.org,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 2/2] acpi: Disable IRQ 0 through I/O APIC for some HP
-	systems
-Message-ID: <20080707071706.GA3326@elte.hu>
-References: <Pine.LNX.4.55.0807010055070.30785@cliff.in.clinika.pl> <20080701202453.GD4896@elte.hu> <200807070102.38854.rjw@sisk.pl> <200807070319.29470.rjw@sisk.pl>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #10872] x86_64 boot hang when CONFIG_NUMA=n
+Message-ID: <20080707072438.GA8011@elte.hu>
+References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik> <uBi7uNfg81L.A.XLC.s0LcIB@albercik> <20080706111750.a6d77e81.randy.dunlap@oracle.com> <20080707064227.GA27622@elte.hu> <86802c440807070015qbfdbf08s62ce5c37092d0fb5@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200807070319.29470.rjw@sisk.pl>
+In-Reply-To: <86802c440807070015qbfdbf08s62ce5c37092d0fb5@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,24 +37,21 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-> Appended is a patch that actually works for me (it's missing the i386 
-> part, but I can't test that anyway).
+> On Sun, Jul 6, 2008 at 11:42 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> >
+> >> This still happens with 2.6.26-rc9.  Using CONFIG_NUMA=y boots OK.
+> >
+> > one thing i dont see you having followed up on is whether tip/master
+> > works fine:
+> >
+> >  http://lkml.org/lkml/2008/6/11/355
 > 
-> Please note two things:
-> (1) The whole acpi_dmi_table[] thing originally depended on __i386__, so it
->     wouldn't work on x86-64 no matter what.  I removed that dependecy, but
->     I have no idea why it was there and so I'm not sure if that's correct. 
+> in the response to me, he said tip/master has the same problem
 
-> (2) The clear_IO_APIC_pin(apic1, pin1) done if 
->     disable_irq0_through_ioapic is true is absolutely essential.  The 
->     symptoms are 100% reproducible without it.
-
-thanks, applied to tip/x86, to give this some more testing.
-
-the clear_IO_APIC_pin() is the most worrisome aspect of the change - but 
-since we are already in limited quirk mode, does it hurt? Maciej, any 
-preferences?
+ok, so an unfixed problem.
 
 	Ingo
