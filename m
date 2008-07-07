@@ -1,93 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757542AbYGGTzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756855AbYGGT7F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757542AbYGGTzS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 15:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755558AbYGGTyt
+	id S1756855AbYGGT7F (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 15:59:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755093AbYGGT6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 15:54:49 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34518 "EHLO ogre.sisk.pl"
+	Mon, 7 Jul 2008 15:58:54 -0400
+Received: from sirius.lasnet.de ([78.47.116.19]:51231 "EHLO sirius.lasnet.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755469AbYGGTys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 15:54:48 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@suse.cz>
-Subject: Re: mmc vs. suspend: WARNING: drivers/base/power/main.c:77 device_pm_add
-Date: Mon, 7 Jul 2008 21:56:22 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: kernel list <linux-kernel@vger.kernel.org>, drzeus-mmc@drzeus.cx
-References: <20080707185529.GA1687@elf.ucw.cz>
-In-Reply-To: <20080707185529.GA1687@elf.ucw.cz>
+	id S1754883AbYGGT6x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 15:58:53 -0400
+Date: Mon, 7 Jul 2008 22:02:51 +0200
+From: Stefan Schmidt <stefan@datenfreihafen.org>
+To: pHilipp Zabel <philipp.zabel@gmail.com>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, sameo@openedhand.com,
+       linux-kernel@vger.kernel.org, Daniel Ribeiro <wyrm@openezx.org>
+Message-ID: <20080707200251.GA3449@datenfreihafen.org>
+References: <20080707184000.411913919@datenfreihafen.org> <20080707184129.554483476@datenfreihafen.org> <74d0deb30807071221u4e216f76l479766925c903b5f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807072156.22576.rjw@sisk.pl>
+In-Reply-To: <74d0deb30807071221u4e216f76l479766925c903b5f@mail.gmail.com>
+X-Mailer: Mutt http://www.mutt.org/
+X-KeyID: 0xDDF51665
+X-Website: http://www.datenfreihafen.org/
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Subject: Re: [Patch 06/10] mfd: PCAP driver for the Motorola EZX GSM mobile
+	phones
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 7 of July 2008, Pavel Machek wrote:
-> Hi!
+Hello.
+
+On Mon, 2008-07-07 at 21:21, pHilipp Zabel wrote:
+> On Mon, Jul 7, 2008 at 8:40 PM,  <stefan@datenfreihafen.org> wrote:
+> > The PCAP Asic as present on EZX phones is a multi function device with voltage
+> > regulators, irq expander, touch screen controller and audio codec.
+> > It is connected to the processor via SPI, this driver provides read/write
+> > functions to its registers and a irq demultiplexer.
 > 
+> Are the EZX phones expected to be the only linux devices with PCAP?
+
+That is somewhat hard to predict as Motorola was not interested in helping us
+with the driver for mainline and we never got datasheets or technical support.
+>From what we have researched it seems that they use an antecessor of this chip
+in older feature phones. As far as we know none of them runs linux.
+
+> Otherwise I'd dislike the hardcoded IRQ numbers in the MFD driver.
+
+So far it seems to be no problem. If there is a strong feeling to change this we
+will of course work on that. Personally I would prefer to do this when new users
+of this driver appear.
+
+> The machine_is_xyz() calls inside ezx-pcap could be replaced with
+> configuration via platform_data (have pcap_platform_data->cs_inverted,
+> for example)
+
+We had this before and it turned out as messy as this solution. We have one
+machine file that supports up to 6 devices right now. So we would have to deal
+with the same machine_is_xyz macros in the machine file.
+
+We thought it would be better to let the driver handle this. Open for discussion
+of course.
+
+> > +#if 0
+> > +#define DEBUGP(x, args...) printk(x, ## args)
+> > +#else
+> > +#define DEBUGP(x, args...)
+> > +#endif
 > 
-> I got this while suspending with mmc card inserted. 2.6.26-rc8.
+> Could you remove the custom debug macros and use pr_debug (or even
+> better, dev_dbg) instead?
 
-Known issue, harmless warning.
+Will do.
 
-Thanks,
-Rafael
-
-
-> rt DPO or FUA
-> Jul  7 20:29:08 amd kernel: sd 0:0:0:0: [sda] 117210240 512-byte
-> hardware sectors (60012 MB)
-> Jul  7 20:29:08 amd kernel: sd 0:0:0:0: [sda] Write Protect is off
-> Jul  7 20:29:08 amd kernel: sd 0:0:0:0: [sda] Write cache: enabled,
-> read cache: enabled, doesn't support DPO or FUA
-> Jul  7 20:29:08 amd kernel: mmc0: new MMC card at address 0001
-> Jul  7 20:29:08 amd kernel: mmc mmc0:0001: parent mmc0 is sleeping
-> Jul  7 20:29:08 amd kernel: ------------[ cut here ]------------
-> Jul  7 20:29:08 amd kernel: WARNING: at
-> /data/l/linux/drivers/base/power/main.c:77 device_pm_add+0x60/0xd0()
-> Jul  7 20:29:08 amd kernel: Modules linked in:
-> Jul  7 20:29:08 amd kernel: Pid: 292, comm: kmmcd Not tainted
-> 2.6.26-rc8 #312
-> Jul  7 20:29:08 amd kernel:  [<c022910f>] warn_on_slowpath+0x5f/0x90
-> Jul  7 20:29:08 amd kernel:  [<c0730c4a>] _spin_lock_irqsave+0x3a/0x50
-> Jul  7 20:29:08 amd kernel:  [<c02405a1>] up+0x11/0x40
-> Jul  7 20:29:08 amd kernel:  [<c0229a7e>]
-> release_console_sem+0x19e/0x1d0
-> Jul  7 20:29:08 amd kernel:  [<c02bcff5>]
-> sysfs_addrm_finish+0x15/0x1e0
-> Jul  7 20:29:08 amd kernel:  [<c02bca20>] sysfs_ilookup_test+0x0/0x10
-> Jul  7 20:29:08 amd kernel:  [<c072f64d>]
-> mutex_lock_nested+0x13d/0x1f0
-> Jul  7 20:29:08 amd kernel:  [<c04262b3>] device_pm_add+0x13/0xd0
-> Jul  7 20:29:08 amd kernel:  [<c04262b3>] device_pm_add+0x13/0xd0
-> Jul  7 20:29:08 amd kernel:  [<c022a08b>] printk+0x1b/0x20
-> Jul  7 20:29:08 amd kernel:  [<c0426300>] device_pm_add+0x60/0xd0
-> Jul  7 20:29:08 amd kernel:  [<c0421528>] device_add+0x388/0x500
-> Jul  7 20:29:08 amd kernel:  [<c059a191>] mmc_add_card+0xa1/0x120
-> Jul  7 20:29:08 amd kernel:  [<c059aa3e>] mmc_attach_mmc+0x1ce/0x840
-> Jul  7 20:29:08 amd kernel:  [<c0599dd0>] mmc_rescan+0x0/0x180
-> Jul  7 20:29:08 amd kernel:  [<c0599f35>] mmc_rescan+0x165/0x180
-> Jul  7 20:29:08 amd kernel:  [<c02390d1>] run_workqueue+0x121/0x1d0
-> Jul  7 20:29:08 amd kernel:  [<c023907d>] run_workqueue+0xcd/0x1d0
-> Jul  7 20:29:08 amd kernel:  [<c0239a30>] worker_thread+0x0/0xf0
-> Jul  7 20:29:08 amd kernel:  [<c0239acc>] worker_thread+0x9c/0xf0
-> Jul  7 20:29:08 amd kernel:  [<c023c6f0>]
-> autoremove_wake_function+0x0/0x50
-> Jul  7 20:29:08 amd kernel:  [<c0239a30>] worker_thread+0x0/0xf0
-> Jul  7 20:29:08 amd kernel:  [<c023c3f2>] kthread+0x42/0x70
-> Jul  7 20:29:08 amd kernel:  [<c023c3b0>] kthread+0x0/0x70
-> Jul  7 20:29:08 amd kernel:  [<c02047ab>]
-> kernel_thread_helper+0x7/0x1c
-> Jul  7 20:29:08 amd kernel:  =======================
-> Jul  7 20:29:08 amd kernel: ---[ end trace 24bbd6dd8cd33b0a ]---
-> Jul  7 20:29:08 amd kernel: mmcblk0: mmc0:0001 MMC    1019392KiB
-> Jul  7 20:29:08 amd kernel:  mmcblk0: p1
+> > +static void __exit ezx_pcap_exit(void)
+> > +{
+> > +       return platform_driver_unregister(&ezxpcap_driver);
+> > +}
+> > +
+> > +module_init(ezx_pcap_init);
 > 
-> 									Pavel
+> Depending on what platform_devices depend on this, maybe use
+> subsys_initcall here.
 
+Ok, I'll need to look up on this to see if it is an option.
 
+> > +module_exit(ezx_pcap_exit);
+> 
+> Why bother with module_exit when the Kconfig option is bool?
+
+Well, matter of taste. :)
+
+Taking care about cleanup is good style. Still you are right that it is useles
+for the time being.
+
+> > +#define PCAP_IRQ_USB4V         (1 << 6)        /* USB above 4volt???
+> > +                                               called "USBDET_4V" in blob */
+> 
+> I assume that's for OTG operation. The VBUS voltage is valid from 4.4 V, and the
+> PXA27x UDC controller has "Vbus valid 4.0 V" and "Vbus valid 4.4 V" interrupts
+
+ok
+
+> > +       /*  set core voltage */
+> > +       ezx_pcap_set_sw(SW1, SW_VOLTAGE, SW_VOLTAGE_1250);
+> 
+> Btw, did you see the voltage regulator framework that is in linux-next?
+
+Heard of it, but not read the code yet. It's on my list. I just a bit hesitant
+to base on code that is not in mainline yet. But -next should be ok.
+
+> > -
+> > +       platform_device_register(&ezx_pcap_device);
+> >        platform_add_devices(devices, ARRAY_SIZE(devices));
+> 
+> You could put ezx_pcap_device into the beginning of devices[].
+
+Duh, will fix.
+
+I send out an updated patch tomorrow. Need some sleep now.
+
+Thanks for the feedback.
+
+regards
+Stefan Schmidt
