@@ -1,109 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbYGGIRe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753304AbYGGIeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754130AbYGGIRe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 04:17:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbYGGIR0
+	id S1753304AbYGGIeV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 04:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbYGGIeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 04:17:26 -0400
-Received: from sh.osrg.net ([192.16.179.4]:34624 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752301AbYGGIR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 04:17:26 -0400
-Date: Mon, 7 Jul 2008 17:17:11 +0900
-To: mingo@elte.hu
-Cc: mgross@linux.intel.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: move the descriptions of VT-d to
- Documentations/x86/x86_64/boot-options.txt
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 7 Jul 2008 04:34:05 -0400
+Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:59931 "EHLO
+	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752600AbYGGIeE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 04:34:04 -0400
+X-Greylist: delayed 1577 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 Jul 2008 04:34:04 EDT
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+From: Anton Altaparmakov <aia21@cam.ac.uk>
+To: Eric Sesterhenn <snakebyte@gmx.de>
+In-Reply-To: <20080706172147.GA19559@alice>
+Subject: Re: [Linux-NTFS-Dev] Oops with corrupted NTFS image
+References: <20080706172147.GA19559@alice>
+Message-Id: <F2EEF4B5-3E11-480A-93E7-9078BDC578EA@cam.ac.uk>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080707171707V.fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0 (Apple Message framework v926)
+Date: Mon, 7 Jul 2008 09:07:40 +0100
+Cc: linux-ntfs-dev@lists.sourceforge.net, linux-kernel@vger.kernel.org
+X-Mailer: Apple Mail (2.926)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Documentations/x86/x86_64/boot-options.txt is the more appropriate
-place for the descriptions of the VT-d IOMMU kernel parameters.
+Hi,
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- Documentation/kernel-parameters.txt       |   22 ----------------------
- Documentation/x86/x86_64/boot-options.txt |   21 +++++++++++++++++++++
- 2 files changed, 21 insertions(+), 22 deletions(-)
+Thanks for the report.  Would you be able to try the below change to  
+your kernel and repeat?
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index cd98762..a96f6f7 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -874,28 +874,6 @@ and is between 256 and 4096 characters. It is defined in the file
- 		forcesac
- 		soft
- 
--
--	intel_iommu=	[DMAR] Intel IOMMU driver (DMAR) option
--		off
--			Disable intel iommu driver.
--		igfx_off [Default Off]
--			By default, gfx is mapped as normal device. If a gfx
--			device has a dedicated DMAR unit, the DMAR unit is
--			bypassed by not enabling DMAR with this option. In
--			this case, gfx device will use physical address for
--			DMA.
--		forcedac [x86_64]
--			With this option iommu will not optimize to look
--			for io virtual address below 32 bit forcing dual
--			address cycle on pci bus for cards supporting greater
--			than 32 bit addressing. The default is to look
--			for translation below 32 bit and if not available
--			then look in the higher range.
--		strict [Default Off]
--			With this option on every unmap_single operation will
--			result in a hardware IOTLB flush operation as opposed
--			to batching them for performance.
--
- 	io_delay=	[X86-32,X86-64] I/O delay method
- 		0x80
- 			Standard port 0x80 based delay
-diff --git a/Documentation/x86/x86_64/boot-options.txt b/Documentation/x86/x86_64/boot-options.txt
-index b0c7b6c..46cef05 100644
---- a/Documentation/x86/x86_64/boot-options.txt
-+++ b/Documentation/x86/x86_64/boot-options.txt
-@@ -216,6 +216,10 @@ IOMMU (input/output memory management unit)
-       mapping with memory protection, etc.
-       Kernel boot message: "PCI-DMA: Using Calgary IOMMU"
- 
-+   5. <drivers/pci/intel-iommu.c> : Intel VT-d hardware IOMMU.
-+      Kernel boot message: "PCI-DMA: Intel(R) Virtualization Technology for
-+      Directed I/O\n"
-+
-  iommu=[<size>][,noagp][,off][,force][,noforce][,leak[=<nr_of_leak_pages>]
- 	[,memaper[=<order>]][,merge][,forcesac][,fullflush][,nomerge]
- 	[,noaperture][,calgary]
-@@ -287,6 +291,23 @@ IOMMU (input/output memory management unit)
-     space might stop working. Use this option if you have devices that
-     are accessed from userspace directly on some PCI host bridge.
- 
-+  iommu options only relevant to the Intel VT-d hardware IOMMU:
-+    off                Disable intel iommu driver.
-+    igfx_off           By default, gfx is mapped as normal device. If a gfx
-+                       device has a dedicated DMAR unit, the DMAR unit is
-+                       bypassed by not enabling DMAR with this option. In
-+                       this case, gfx device will use physical address for
-+                       DMA (Default Off).
-+    forcedac           With this option iommu will not optimize to look
-+                       for io virtual address below 32 bit forcing dual
-+                       address cycle on pci bus for cards supporting greater
-+                       than 32 bit addressing. The default is to look
-+                       for translation below 32 bit and if not available
-+                       then look in the higher range.
-+    strict             With this option on every unmap_single operation will
-+                       result in a hardware IOTLB flush operation as opposed
-+                       to batching them for performance (Default Off).
-+
- Debugging
- 
-   oops=panic	Always panic on oopses. Default is to just kill the process,
+On 6 Jul 2008, at 18:21, Eric Sesterhenn wrote:
+> 0xc030ad5c is in ntfs_read_locked_inode (fs/ntfs/time.h:95).
+> 90		u64 t = (u64)(sle64_to_cpu(time) - NTFS_TIME_OFFSET);
+> 91		/*
+> 92		 * Convert the time to 1-second intervals and the remainder to
+> 93		 * 1-nano-second intervals.
+> 94		 */
+> 95		ts.tv_nsec = do_div(t, 10000000) * 100;
+> 96		ts.tv_sec = t;
+> 97		return ts;
+> 98	}
+
+Please replace the ts.tv_nsec=... and ts.tv_sec=... with:
+
+		if (t) {
+			ts.tv_nsec = do_div(t, 10000000) * 100;
+			ts.tv_sec = t;
+		} else {
+			ts.tv_nsec = 0;
+			ts.tv_sec = 0;
+		}
+
+Thanks a lot in advance!
+
+Best regards,
+
+	Anton
 -- 
-1.5.5.GIT
+Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
+Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
+Linux NTFS maintainer, http://www.linux-ntfs.org/
 
