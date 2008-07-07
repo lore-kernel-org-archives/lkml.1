@@ -1,65 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757330AbYGGUso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757562AbYGGUuw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757330AbYGGUso (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 16:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756092AbYGGUsd
+	id S1757562AbYGGUuw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 16:50:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756034AbYGGUum
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 16:48:33 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42006
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755994AbYGGUsc (ORCPT
+	Mon, 7 Jul 2008 16:50:42 -0400
+Received: from stinky.trash.net ([213.144.137.162]:38142 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755827AbYGGUul (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 16:48:32 -0400
-Date: Mon, 07 Jul 2008 13:48:32 -0700 (PDT)
-Message-Id: <20080707.134832.189558582.davem@davemloft.net>
-To: alan@lxorguk.ukuu.org.uk
-Cc: jeff@garzik.org, dwmw2@infradead.org, andi@firstfloor.org, tytso@mit.edu,
-       hugh@veritas.com, akpm@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080707193008.17795d61@the-village.bc.nu>
-References: <20080707191359.11f6297f@the-village.bc.nu>
-	<48726734.7080601@garzik.org>
-	<20080707193008.17795d61@the-village.bc.nu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 7 Jul 2008 16:50:41 -0400
+Message-ID: <4872819E.3040604@trash.net>
+Date: Mon, 07 Jul 2008 22:50:38 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
+MIME-Version: 1.0
+To: Bill Nottingham <notting@redhat.com>
+CC: bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: [RFC PATCH 0/2] Allow full bridge configuration via sysfs
+References: <cover.1215460681.git.notting@redhat.com>
+In-Reply-To: <cover.1215460681.git.notting@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date: Mon, 7 Jul 2008 19:30:08 +0100
+Bill Nottingham wrote:
+> Right now, you can configure most bridge device parameters via sysfs.
+> However, you cannot either:
+> - add or remove bridge interfaces
+> - add or remove physical interfaces from a bridge
+> 
+> The attached patch set rectifies this. With this patch set, brctl
+> (theoretically) becomes completely optional, much like ifenslave is
+> now for bonding. (In fact, the idea for this patch, and the syntax
+> used herein, is inspired by the sysfs bonding configuration.)
 
-> I don't see why it should be David's job to add every conceivable feature
-> to the code.
-
-David's changes prevent something from working, which works today.
-
-Usually we refer to that as a regression.
-
-And usually, we rely on the patch author to fix regressions they add,
-and failing that we revert their work.
-
-Bringing up this SATA scarecrow and trying to make Jeff look
-inconsistent is not winning your arguments any extra points.
-Especially not with me.
-
-You also mentioned something about how similar arguments as ours
-were made when modules were proposed as a feature.  Well, I can
-say only two things about that:
-
-1) I could still build a static kernel image and use it as-is after
-   the changes to support modules were added to the kernel.  In fact I
-   still largely do not use modules at all during my own kernel work.
-
-   This is completely unlike what David is doing here, where the
-   previous status quo will cease working.
-
-2) You cannot deny the fine mess we have with proprietary modules and
-   such these days.  It has been quite the pandora's box over time.
+Both should use netlink instead of extending their sysfs interfaces.
+For bridging I have a patch for the bridge device itself, the API
+is so far missing support for adding ports though.
 
