@@ -1,95 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756603AbYGGRik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755846AbYGGRkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756603AbYGGRik (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 13:38:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753969AbYGGRib
+	id S1755846AbYGGRkk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 13:40:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753898AbYGGRkc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 13:38:31 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:56433 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1754213AbYGGRia (ORCPT
+	Mon, 7 Jul 2008 13:40:32 -0400
+Received: from qmta01.westchester.pa.mail.comcast.net ([76.96.62.16]:57787
+	"EHLO QMTA01.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753751AbYGGRkb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 13:38:30 -0400
-Date: Mon, 7 Jul 2008 13:36:56 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Cc: Benny Halevy <bhalevy@panasas.com>, Adrian Bunk <bunk@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>
-Subject: [PATCH] UML - fix gcc ICEs and unresolved externs
-Message-ID: <20080707173656.GB7747@c2.user-mode-linux.org>
+	Mon, 7 Jul 2008 13:40:31 -0400
+X-Authority-Analysis: v=1.0 c=1 a=fmkApugzUIIA:10 a=kpXAE35kjxYA:10
+ a=_IJnZSgf9f5JNVSi5xgA:9 a=slYTfeDnTvTaJRxpne8A:7
+ a=8mjJQg54jTdEpqmjD8f-b9wE5HgA:4 a=JTUSPwgBgNAA:10 a=oCUJXWGl-OwA:10
+To: Romano Giannetti <romano@dea.icai.upcomillas.es>
+Cc: linux-kernel@vger.kernel.org, linux-uvc-devel@berlios.de,
+       laurent.pinchart@skynet.be
+Subject: Re: Linux 2.6.26-rc9 circular lock with uvcvideo on resume from hibernation
+X-Message-Flag: Warning: May contain useful information
+X-Priority: 1
+X-MSMail-Priority: High
+References: <1215426867.5113.8.camel@pern>
+From: Roland Dreier <roland@digitalvampire.org>
+Date: Mon, 07 Jul 2008 10:40:28 -0700
+In-Reply-To: <1215426867.5113.8.camel@pern> (Romano Giannetti's message of "Mon, 07 Jul 2008 12:34:26 +0200")
+Message-ID: <878wwdbnjn.fsf@shaolin.home.digitalvampire.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ This patch needs to get into 2.6.26 ]
+ > [ 1132.942569] khubd/2264 is trying to acquire lock:
+ > [ 1132.942614]  (videodev_lock){--..}, at: [<f89e4595>] video_unregister_device+0x15/0x60 [videodev]
+ > [ 1132.942810] 
+ > [ 1132.942811] but task is already holding lock:
+ > [ 1132.942890]  (&uvc_driver.open_mutex){--..}, at: [<f8a35c09>] uvc_disconnect+0x29/0x50 [uvcvideo]
 
-There are various constraints on the use of unit-at-a-time:
-        i386 uses no-unit-at-a-time for pre-4.0 (not 4.3)
-        x86_64 uses unit-at-a-time always
+Thanks very much for the report (and for testing development kernels
+with lockdep enabled!).  I think the patch below should fix this.
 
-        Uli reported a crash on x86_64 with gcc 4.1.2 with
-unit-at-a-time, resulting in commit c0a18111e571138747a98af18b3a2124df56a0d1
-        Ingo reported a gcc internal error with gcc 4.3 with
-no-unit-at-a-timem, resulting in 22eecde2f9034764a3fd095eecfa3adfb8ec9a98
-         Benny Halevy <bhalevy@panasas.com> is seeing extern inlines
-not resolved with gcc 4.3 with no-unit-at-a-time
+Laurent -- if this patch looks good to you, please forward on for
+merging.
 
-This patch reintroduces unit-at-a-time for gcc >= 4.0, bringing back
-the possibility of Uli's crash.  If that happens, we'll debug it.
+Thanks,
+  Roland
 
-I started seeing both the internal compiler errors and unresolved
-inlines on Fedora 9.  This patch fixes both problems, without so far
-reintroducing the crash reported by Uli.
-	
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 ---
- arch/um/Makefile        |    1 -
- arch/um/Makefile-i386   |    7 +++++++
- arch/um/Makefile-x86_64 |    3 +++
- 3 files changed, 10 insertions(+), 1 deletion(-)
 
-Index: linux-2.6.22/arch/um/Makefile-i386
-===================================================================
---- linux-2.6.22.orig/arch/um/Makefile-i386	2008-05-29 11:21:25.000000000 -0400
-+++ linux-2.6.22/arch/um/Makefile-i386	2008-07-07 13:11:10.000000000 -0400
-@@ -32,4 +32,11 @@ cflags-y += $(call cc-option,-mpreferred
- # an unresolved reference.
- cflags-y += -ffreestanding
- 
-+# Disable unit-at-a-time mode on pre-gcc-4.0 compilers, it makes gcc use
-+# a lot more stack due to the lack of sharing of stacklots.  Also, gcc
-+# 4.3.0 needs -funit-at-a-time for extern inline functions.
-+KBUILD_CFLAGS += $(shell if [ $(call cc-version) -lt 0400 ] ; then \
-+			echo $(call cc-option,-fno-unit-at-a-time); \
-+			else echo $(call cc-option,-funit-at-a-time); fi ;)
+[PATCH] uvc: Fix possible AB-BA deadlock with videodev_lock and open_mutex
+
+The uvcvideo driver's uvc_v4l2_open() method is called from videodev's
+video_open() function, which means it is called with the videodev_lock
+mutex held.  uvc_v4l2_open() then takes uvc_driver.open_mutex to check
+dev->state and avoid racing against a device disconnect, which means
+that open_mutex must nest inside videodev_lock.
+
+However uvc_disconnect() takes the open_mutex around setting
+dev->state and also around putting its device reference.  However, if
+uvc_disconnect() ends up dropping the last reference, it will call
+uvc_delete(), which calls into the videodev code to unregister its
+device, and this will end up taking videodev_lock.  This opens a
+(unlikely in practice) window for an AB-BA deadlock and also causes a
+lockdep warning because of the lock misordering.
+
+Fortunately there is no apparent reason to hold open_mutex when doing
+kref_put() in uvc_disconnect(): if uvc_v4l2_open() runs before the
+state is set to UVC_DEV_DISCONNECTED, then it will take another
+reference to the device and kref_put() won't call uvc_delete; if
+uvc_v4l2_open() runs after the state is set, it will run before
+uvc_delete(), see the state, and return immediately -- uvc_delete()
+does uvc_unregister_video() (and hence video_unregister_device(),
+which is synchronized with videodev_lock) as its first thing, so there
+is no risk of use-after-free in uvc_v4l2_open().
+
+Bug diagnosed based on a lockdep warning reported by Romano Giannetti
+<romano@dea.icai.upcomillas.es>.
+
+Signed-off-by: Roland Dreier <roland@digitalvampire.org>
+---
+ drivers/media/video/uvc/uvc_driver.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/media/video/uvc/uvc_driver.c b/drivers/media/video/uvc/uvc_driver.c
+index 60ced58..5d60cb3 100644
+--- a/drivers/media/video/uvc/uvc_driver.c
++++ b/drivers/media/video/uvc/uvc_driver.c
+@@ -1634,11 +1634,10 @@ static void uvc_disconnect(struct usb_interface *intf)
+ 	 * chance to increase the reference count (kref_get).
+ 	 */
+ 	mutex_lock(&uvc_driver.open_mutex);
+-
+ 	dev->state |= UVC_DEV_DISCONNECTED;
+-	kref_put(&dev->kref, uvc_delete);
+-
+ 	mutex_unlock(&uvc_driver.open_mutex);
 +
- KBUILD_CFLAGS += $(cflags-y)
-Index: linux-2.6.22/arch/um/Makefile-x86_64
-===================================================================
---- linux-2.6.22.orig/arch/um/Makefile-x86_64	2008-05-29 11:21:25.000000000 -0400
-+++ linux-2.6.22/arch/um/Makefile-x86_64	2008-06-30 12:21:01.000000000 -0400
-@@ -21,3 +21,6 @@ HEADER_ARCH := x86
++	kref_put(&dev->kref, uvc_delete);
+ }
  
- LINK-$(CONFIG_LD_SCRIPT_DYN) += -Wl,-rpath,/lib64
- LINK-y += -m64
-+
-+# Do unit-at-a-time unconditionally on x86_64, following the host
-+KBUILD_CFLAGS += $(call cc-option,-funit-at-a-time)
-Index: linux-2.6.22/arch/um/Makefile
-===================================================================
---- linux-2.6.22.orig/arch/um/Makefile	2008-06-10 11:35:40.000000000 -0400
-+++ linux-2.6.22/arch/um/Makefile	2008-07-07 12:54:13.000000000 -0400
-@@ -77,7 +77,6 @@ include $(srctree)/$(ARCH_DIR)/Makefile-
- KERNEL_DEFINES = $(strip -Derrno=kernel_errno -Dsigprocmask=kernel_sigprocmask \
- 			 -Dmktime=kernel_mktime $(ARCH_KERNEL_DEFINES))
- KBUILD_CFLAGS += $(KERNEL_DEFINES)
--KBUILD_CFLAGS += $(call cc-option,-fno-unit-at-a-time,)
- 
- PHONY += linux
- 
+ static int uvc_suspend(struct usb_interface *intf, pm_message_t message)
+
