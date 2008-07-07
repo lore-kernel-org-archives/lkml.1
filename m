@@ -1,53 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756615AbYGGRwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbYGGR4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756615AbYGGRwf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 13:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbYGGRwY
+	id S1755958AbYGGR4c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 13:56:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754113AbYGGR4Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 13:52:24 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:46234 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753783AbYGGRwX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 13:52:23 -0400
-Message-ID: <487257D0.2030006@hp.com>
-Date: Mon, 07 Jul 2008 10:52:16 -0700
-From: Rick Jones <rick.jones2@hp.com>
-User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
-X-Accept-Language: en-us, en
+	Mon, 7 Jul 2008 13:56:24 -0400
+Received: from mail.gmx.net ([213.165.64.20]:45160 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753880AbYGGR4X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 13:56:23 -0400
+X-Authenticated: #310364
+X-Provags-ID: V01U2FsdGVkX1+81QVu3VO8MUWrsGstVgws9U7AzCODevnZ6Yi6uc
+	zFLFKReo05a0Ws
+Message-ID: <002901c8e05a$c3adb9c0$0201a8c0@zeug>
+From: "Sebastian Herbszt" <herbszt@gmx.de>
+To: "Christian Ehrhardt" <lk@c--e.de>, <linux-kernel@vger.kernel.org>
+References: <20080707172334.GH1009@lisa.in-ulm.de>
+Subject: Re: Boot failures on Qemu due to P6_NOPS
+Date: Mon, 7 Jul 2008 19:55:43 +0200
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: alan@lxorguk.ukuu.org.uk, jeff@garzik.org, dwmw2@infradead.org,
-       andi@firstfloor.org, tytso@mit.edu, hugh@veritas.com,
-       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
-       mchan@broadcom.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-References: <1215178035.10393.763.camel@pmac.infradead.org>	<486E2818.1060003@garzik.org>	<20080704142753.27848ff8@lxorguk.ukuu.org.uk> <20080704.134329.209642254.davem@davemloft.net>
-In-Reply-To: <20080704.134329.209642254.davem@davemloft.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.47
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> Date: Fri, 4 Jul 2008 14:27:53 +0100
-> 
-> 
->>There are good sound reasons for having a firmware tree, the fact tg3 is
->>a bit of dinosaur in this area doesn't make it wrong.
-> 
-> 
-> And bnx2, and bnx2x, and e100's ucode (hope David caught that one!).
-> 
-> It isn't just tg3.
+Christian Ehrhardt wrote:
 
-Ah bnx2 - it may be "fixed" now, but trying to install Debian Lenny on a 
-system with "core" bnx2 driven interfaces has been "fun" for a while now 
-thanks to the firmware being exiled.
+> Hi,
+> 
+> this might well be a bug in Qemu but even then, it would be nice if the
+> linux kernel could do a work around.
+> 
+> I tried to boot a current git kernel (around 2.6.26-rc8) on qemu and
+> got the an invalid opcode oops on boot (full oops data below).
+> 
+> The illegal instruction is 0x0f 0x1f 0x00 aka P6_NOP3.
+> 
+> I have verified that this opcode gets patched in because
+> apply_alternatives() or more precisely add_nops() uses P6 nops
+> on this CPU type while padding after patching in an fxsave
+> instruction. More precisely the code that oopses is:
+> 
+>   fxsave (%eax)
+>   btl    $0x7,0x2(%eax)
+>   jae    0x804833e <main+26>
+>   fnclex 
+>   nopl   (%eax)      <==== Faulting instruction
+> 
+> P6 nops are used when patching because init_intel() sets X86_FEATURE_P3 for
+> family 6 CPUs and X86_FEATURE_P3 in turn enables the P6 NOPS.
+> 
+> The Qemu CPU identifies itself as follows:
+> 
+> processor       : 0
+> vendor_id       : GenuineIntel
+> cpu family      : 6
+> model           : 3
+> model name      : Pentium II (Klamath)
+> stepping        : 3
+> cpu MHz         : 1862.133
+> 
+> I have no idea if this specific CPU type should support this specific
+> instruction. If it really should this is obviously a Qemu bug but it
+> might be reasonable to work around this in the linux kernel.
+> 
+> The kernel is configured with CONFIG_M586 but without CONFIG_X86_GENERIC
+> (full config upon request). Apparently setting CONFIG_X86_GENERIC works
+> around the problem.
+> 
+> ========== ooops data follows ===================================
+> invalid opcode: 0000 [#1] SMP
+> Modules linked in:
+> 
+> Pid: 0, comm: swapper Not tainted (2.6.26-rc9 #1)
+> EIP: 0060:[<c0102035>] EFLAGS: 00000202 CPU: 0
+> EIP is at prepare_to_copy+0x1d/0x43
+> EAX: c781de00 EBX: 00000000 ECX: c03f3f9c EDX: c03c23e0
+> ESI: fffffff4 EDI: c03c23e0 EBP: 00000000 ESP: c03f3f08
+> DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> Process swapper (pid: 0, ti=c03f2000 task=c03c23e0 task.ti=c03f2000)
+> Stack: c011c653 c03f3f9c 00000000 00800b00 00000286 00000000 00000000 00000000 
+>       00800b00 c03f3f9c 00000000 c011d671 00000000 00000000 00000000 00000000 
+>       c03c8cb0 00000246 c03c8a80 00000046 00000000 00000002 00000001 c014a30c 
+> Call Trace:
+> [<c011c653>] copy_process+0x70/0xf75
+> [<c011d671>] do_fork+0xab/0x19c
+> [<c014a30c>] free_pages_bulk+0x23/0x1d0
+> [<c0108b4a>] native_sched_clock+0x90/0xa4
+> [<c03f72fd>] kernel_init+0x0/0x25d
+> [<c01024b1>] kernel_thread+0x78/0x80
+> [<c03f72fd>] kernel_init+0x0/0x25d
+> [<c0104af0>] kernel_thread_helper+0x0/0x10
+> [<c02e0d39>] rest_init+0x11/0x4b
+> [<c03f7811>] start_kernel+0x2a0/0x2a3
+> =======================
+> Code: ff 05 0c 20 47 c0 c3 ff 0d 0c 20 47 c0 c3 89 c2 8b 40 04 f6 40 0c
+> 01 74 30 8b 82 6c 02 00 00 0f ae 00 0f ba 60 02 07 73 02 db e2 <0f> 1f
+> 00 90 8d b4 26 00 00 00 00 89 f6 8b 42 04 83 60 0c fe 0f 
+> EIP: [<c0102035>] prepare_to_copy+0x1d/0x43 SS:ESP 0068:c03f3f08
+> ---[ end trace 4eaa2a86a8e2da22 ]---
+> Kernel panic - not syncing: Attempted to kill the idle task!
+> 
 
-rick jones
+This is a problem in old qemu versions which don't support multi byte NOPs.
+Please check previous discussion about it at http://lkml.org/lkml/2008/5/3/60.
+
+- Sebastian
+
