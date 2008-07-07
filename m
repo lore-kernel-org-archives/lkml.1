@@ -1,52 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbYGGRAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757413AbYGGRAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756900AbYGGRAc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 13:00:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040AbYGGRAV
+	id S1757413AbYGGRAp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 13:00:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756260AbYGGRA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 13:00:21 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52042 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754632AbYGGRAU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 13:00:20 -0400
-Date: Mon, 7 Jul 2008 18:06:58 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: "Altobelli, David" <david.altobelli@hp.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "greg@kroah.com" <greg@kroah.com>
-Subject: Re: [PATCH][resubmit] HP iLO driver
-Message-ID: <20080707160658.GB1794@elf.ucw.cz>
-References: <20080623160052.GA7616@ldl.fc.hp.com> <20080627191458.GA10872@ucw.cz> <CF70AA892F109448AEA269483B3A983903BB8CE586@G1W1215.americas.hpqcorp.net>
+	Mon, 7 Jul 2008 13:00:26 -0400
+Received: from outbound-mail-23.bluehost.com ([69.89.21.18]:42593 "HELO
+	outbound-mail-23.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756080AbYGGRAY convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 13:00:24 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: tcamuso@redhat.com
+Subject: Re: bfsort whitelist patch apparently applied twice
+Date: Mon, 7 Jul 2008 09:59:51 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       "Schoeller, Patrick (Linux - Houston, TX)" <Patrick.Schoeller@hp.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+References: <48722996.4050601@redhat.com>
+In-Reply-To: <48722996.4050601@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Content-Disposition: inline
-In-Reply-To: <CF70AA892F109448AEA269483B3A983903BB8CE586@G1W1215.americas.hpqcorp.net>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200807070959.51789.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Monday, July 07, 2008 7:35 am Tony Camuso wrote:
+> In the most recent pull from Linus' tree, I see that the patch
+> I submitted on 14-May-2008 was merged twice in the git log.
+>
+>   commits: a16b4bcd31a73a81b6d2b8ffa6b5f6ed01cf6d64
+>       and: a1676072558854b95336c8f7db76b0504e909a0a
+>
+> The result is that now the DL360 and DL380 are whitelisted twice
+> and the DL385 G2 and DL585 G2 are not whitelisted at all!
+>
+> Can one of these redundant commits be backed out?
 
-> >> A driver for the HP iLO/iLO2 management processor, which allows
-> >> userspace programs to query the management processor.  Programs can
-> >> open a channel to the device (/dev/hpilo/dXccbN), and use this to
-> >> send/receive queries.
-> >
-> > What kind of queries? Is there documentation somewhere?
-> 
-> Generally, it can get data out of the management processor - things
-> like basic iLO configuration (users, nic, etc), handle SNMP traffic,
-> flashing iLO, and some others.
-> 
-> Unfortunately, there isn't yet any available documenation.
+Hm, seems like this should have created a conflict since there was some actual
+context (#ifdef __i386__) in the patch?  Ah I see, it looks like the one that
+came in through Ingo & Thomas, a1676072558854b95336c8f7db76b0504e909a0a,
+modified the end of the list, while the one that I sent upstream,
+8d64c781f0c5fbfdf8016bd1634506ff2ad1376a, modified the entry above #ifdef
+__i386__.  That's unfortunate.
 
-Ok, I guess we should have documentation "what does it do" and "what
-protocol does it speak" before we can think about merging.
+Here's what I've got, look ok?
 
-									Pavel
+Thanks,
+Jesse
+
+>From a86744c1d60b2bc2a575de48672f6f6c15c0411f Mon Sep 17 00:00:00 2001
+From: Jesse Barnes <jbarnes@hobbes.(none)>
+Date: Mon, 7 Jul 2008 09:55:26 -0700
+Subject: [PATCH] Revert "PCI: Correct last two HP entries in the bfsort whitelist"
+
+This reverts commit a1676072558854b95336c8f7db76b0504e909a0a.  It duplicates
+the change from 8d64c781f0c5fbfdf8016bd1634506ff2ad1376a and only one should be
+applied, otherwise some of the Dell quirks are lost.
+
+Thanks to Tony Camuso for catching this.
+
+Acked-by: Tony Camuso <tcamuso@redhat.com>
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+---
+ arch/x86/pci/common.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
+index 940185e..6e64aaf 100644
+--- a/arch/x86/pci/common.c
++++ b/arch/x86/pci/common.c
+@@ -328,18 +328,18 @@ static struct dmi_system_id __devinitdata pciprobe_dmi_table[] = {
+ #endif
+ 	{
+ 		.callback = set_bf_sort,
+-		.ident = "HP ProLiant DL360",
++		.ident = "HP ProLiant DL385 G2",
+ 		.matches = {
+ 			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
+-			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant DL360"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant DL385 G2"),
+ 		},
+ 	},
+ 	{
+ 		.callback = set_bf_sort,
+-		.ident = "HP ProLiant DL380",
++		.ident = "HP ProLiant DL585 G2",
+ 		.matches = {
+ 			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
+-			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant DL380"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant DL585 G2"),
+ 		},
+ 	},
+ 	{}
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.5.4.1
+
