@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbYGGKBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbYGGKDs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754019AbYGGKBZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 06:01:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbYGGKBR
+	id S1754209AbYGGKDs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 06:03:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbYGGKDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 06:01:17 -0400
-Received: from ns1.suse.de ([195.135.220.2]:38537 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750807AbYGGKBQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 06:01:16 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: Roland McGrath <roland@redhat.com>
-Cc: benh@kernel.crashing.org, Nathan Lynch <ntl@pobox.com>,
-       linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] elf loader support for auxvec base platform string
-References: <20080703234140.GC9594@localdomain>
-	<20080704021929.5E9EF1541F5@magilla.localdomain>
-	<1215409693.8970.79.camel@pasglop>
-	<20080707061811.19989154246@magilla.localdomain>
-	<1215411800.8970.91.camel@pasglop>
-	<20080707063522.5FE55154246@magilla.localdomain>
-	<je8wwet9p6.fsf@sykes.suse.de>
-	<20080707093151.8798A154246@magilla.localdomain>
-X-Yow: I think my CAREER is RUINED!!
-Date: Mon, 07 Jul 2008 12:01:14 +0200
-In-Reply-To: <20080707093151.8798A154246@magilla.localdomain> (Roland
-	McGrath's message of "Mon, 7 Jul 2008 02:31:51 -0700 (PDT)")
-Message-ID: <je63rirp1x.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.2 (gnu/linux)
+	Mon, 7 Jul 2008 06:03:40 -0400
+Received: from cluster-g.mailcontrol.com ([208.87.233.190]:36102 "EHLO
+	cluster-g.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750934AbYGGKDj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 06:03:39 -0400
+Message-ID: <4871E9F0.60608@csr.com>
+Date: Mon, 07 Jul 2008 11:03:28 +0100
+From: David Vrabel <david.vrabel@csr.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+To: Greg KH <greg@kroah.com>
+CC: Inaky Perez-Gonzalez <inaky.perez-gonzalez@intel.com>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Dropping WUSB/UWB from my patch queue
+References: <20080630180009.GA30833@kroah.com>
+In-Reply-To: <20080630180009.GA30833@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 07 Jul 2008 10:03:28.0764 (UTC) FILETIME=[B43AABC0:01C8E018]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland McGrath <roland@redhat.com> writes:
+Greg KH wrote:
+> Hi David,
+> 
+> In looking further at the WUSB/UWB code, it doesn't look like it is
+> going to make it for the 2.6.27 kernel tree due to the reliance on some
+> contriversial core USB changes as well as a total lack of documentation
+> for the sysfs apis.
 
-> There are 32 bits free now.  One can anticipate that reassigning a bit
-> would come up only after these are exhausted.  With prudent use, this
-> will take a very long time to happen.  Then the oldest CPU type string
-> might be retired to reuse its bit.  It seems unlikely that there will
-> be a single installation (root directory) that really needs to have
-> installed both a kernel optimized for the oldest CPU model known and a
-> kernel optimized for the newest CPU model known.
+I assume you are referring to the usb_dev_reset_delayed() change here.
+This is only required by the wire adapter code and should not prevent
+the majority of the UWB and WUSB stack from being merged.
 
-The kernel does not have to come from the same place as the root
-filesystem.  You may want to run a new kernel with an old filesystem, or
-vice-versa.
+You should postpone:
 
-Andreas.
+usb-add-usb_dev_reset_delayed.patch
+wusb-add-the-wire-adapter-core.patch
+wusb-add-hwa-hc-wireless-host-controller-driver.patch
+wusb-wa-abort-rpipe-request-type-fix.patch
 
+I will correct the lack of sysfs API documentation this week.  Please
+advise on where the documentation should go and its style and format.
+Be aware that some of the API is experimental and subject to change. I
+will ensure the documentation is clear on this and that the Kconfig
+entries depend on EXPERIMENTAL.
+
+Would this be sufficient to reinstate the majority of the UWB and WUSB
+stacks for 2.6.27?
+
+> Because of this, I've dropped all of the patches from my USB queue, so
+> they will no longer show up in the -next releases anymore.
+
+In future, it would be appreciated if any issues with UWB patches are
+discussed rather than summarily dropping them.
+
+David
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+David Vrabel, Senior Software Engineer, Drivers
+CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
+Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
