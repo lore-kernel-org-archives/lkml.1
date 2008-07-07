@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755844AbYGGRs3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbYGGRtt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755844AbYGGRs3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 13:48:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbYGGRsV
+	id S1756177AbYGGRtt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 13:49:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754177AbYGGRtk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 13:48:21 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:50695 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753975AbYGGRsU (ORCPT
+	Mon, 7 Jul 2008 13:49:40 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:51365 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754175AbYGGRtj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 13:48:20 -0400
-Date: Mon, 7 Jul 2008 11:48:03 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Grant Grundler <grundler@parisc-linux.org>
-Cc: linux-pci@vger.kernel.org, kaneshige.kenji@jp.fujitsu.com, mingo@elte.hu,
-       tglx@linutronix.de, davem@davemloft.net, dan.j.williams@intel.com,
-       Martine.Silbermann@hp.com, benh@kernel.crashing.org,
-       michael@ellerman.id.au, linux-kernel@vger.kernel.org,
-       Matthew Wilcox <willy@linux.intel.com>
-Subject: Re: [PATCH 3/4] AHCI: Request multiple MSIs
-Message-ID: <20080707174803.GD14894@parisc-linux.org>
-References: <20080705132728.GO14894@parisc-linux.org> <1215264855-4372-3-git-send-email-matthew@wil.cx> <20080707164534.GF7521@colo.lackof.org>
+	Mon, 7 Jul 2008 13:49:39 -0400
+Date: Mon, 7 Jul 2008 18:48:51 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: carsteno@de.ibm.com
+cc: Nick Piggin <nickpiggin@yahoo.com.au>, benh@kernel.crashing.org,
+       Zan Lynx <zlynx@acm.org>, Ryan Hope <rmh3093@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Lockless/Get_User_Pages_Fast causes Xorg 1.4.99.* to lock
+In-Reply-To: <487239BE.8070505@de.ibm.com>
+Message-ID: <Pine.LNX.4.64.0807071846400.32514@blonde.site>
+References: <48f7fe350807032326l1d68c94l531e44c09693b989@mail.gmail.com>
+ <486E4FD8.4010102@acm.org> <Pine.LNX.4.64.0807042112130.16912@blonde.site>
+ <200807071806.11630.nickpiggin@yahoo.com.au> <487239BE.8070505@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080707164534.GF7521@colo.lackof.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 07, 2008 at 10:45:34AM -0600, Grant Grundler wrote:
-> If the system is busy, the readl is the cost of coalescing the
-> interrupts.  I suspect it's cheaper to take one readl than
-> handle 16 individual interrupts.
+On Mon, 7 Jul 2008, Carsten Otte wrote:
+> Nick Piggin wrote:
+> > I think we need a similar fix for s390 too. If so, then it really should
+> > get into 2.6.26, but this late in the release, I hope an s390 maintainer
+> > might be able to test and verify the fix?
+> 
+> I've done my best to combine mprotect, mmap and munmap a MAP_PRIVATE mapping
+> on a xip file system. The system runs stable with and without this patch.
+> Could someone please enlighten me on how to reproduce the problem so that I
+> can verify the fix?
 
-16 would be a maximum imposed by the AHCI spec.  My ICH9 board has 6
-ports, but requests all 16 interrupts
+Though it would be more obvious to use a MAP_SHARED mapping, we had that
+earlier thread in which it emerged that you're not using shared writable
+xip mappings, IIRC.  So, sticking to MAP_PRIVATE, I'd expect the following
+sequence
 
-> I'm just pointing out the only upside of the existing code and not trying
-> to argue against this patch.
+ptr = mmap(NULL, PAGE_SIZE, PROT_READ, MAP_PRIVATE, xip_fd, 0);
+var = *ptr;
+mprotect(ptr, PAGE_SIZE, PROT_NONE);
+munmap(ptr, PAGE_SIZE);
 
-There may well be an upside to the existing code, but it's pretty slim.
-The oprofile shows clearly that ahci_interrupt is the largest consumer of
-time during an iozone run.  The only thing that routine does is read the
-HOST_IRQ_STAT register, acquire the spinlock and loop calling
-ahci_port_intr().
+to do a put_page on a non-existent struct page derived from the pfn:
+perhaps corrupting other memory without being noticed?  Or if
+you have CONFIG_DEBUG_VM=y (that would be a good move), to hit
+vm_normal_page's VM_BUG_ON(!pfn_valid(pte_pfn(pte))) before that.
 
-I don't have a profile for this new code yet.  Hopefully we'll have one
-by the end of the day.
+(I think you can just as well use PROT_READ|PROT_WRITE rather than
+PROT_NONE there, but in principle mprotect could optimize away that
+pte modification - though I think it goes ahead and does it anyway.)
 
-> BTW, one more downside of the regular IRQ is it's possibly shared.
-> Using MSI guaratees exclusive IRQ and avoids spurious readl's
-> when AHCI is not busy but the other device is. This would be worth
-> noting (or as a reminder) in the change log or as a comment in
-> the code.
-
-AHCI already allocates itself a new MSI if the machine supports MSI.
-This change merely extends AHCI to use multiple MSIs.
-
-Thanks.
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Hugh
