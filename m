@@ -1,96 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbYGGRMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754940AbYGGRRu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755205AbYGGRMW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 13:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753557AbYGGRML
+	id S1754940AbYGGRRu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 13:17:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbYGGRRm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 13:12:11 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:64167 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753493AbYGGRMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 13:12:09 -0400
-Date: Mon, 7 Jul 2008 18:10:48 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Ingo Molnar <mingo@elte.hu>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-next@vger.kernel.org, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 2/2] acpi: Disable IRQ 0 through I/O APIC for some HP
- systems
-In-Reply-To: <200807071428.53598.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.55.0807071743280.20615@cliff.in.clinika.pl>
-References: <Pine.LNX.4.55.0807010055070.30785@cliff.in.clinika.pl>
- <20080707071706.GA3326@elte.hu> <Pine.LNX.4.55.0807071224491.16767@cliff.in.clinika.pl>
- <200807071428.53598.rjw@sisk.pl>
+	Mon, 7 Jul 2008 13:17:42 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42255 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752927AbYGGRRl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 13:17:41 -0400
+Message-ID: <48724FB4.3090305@sgi.com>
+Date: Mon, 07 Jul 2008 10:17:40 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>
+Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
+ area
+References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<485BF8F5.6010802@goop.org> <485BFFC5.6020404@sgi.com>	<m1skv7onvh.fsf@frodo.ebiederm.org> <486912C4.8070705@sgi.com>	<48691556.2080208@zytor.com> <48691E8B.4040605@sgi.com>	<m14p7asl3x.fsf@frodo.ebiederm.org> <48694B3B.3010600@goop.org>	<m1skuuov4t.fsf@frodo.ebiederm.org> <486A61A7.1000902@zytor.com>	<486A68DD.80702@goop.org> <m1d4lxgwxj.fsf@frodo.ebiederm.org>	<486A9D4F.8010508@goop.org> <m1skutffn4.fsf@frodo.ebiederm.org>	<486AA72B.6010401@goop.org> <486AC9D9.9030506@zytor.com>	<486AD6BD.9080600@sgi.com> <486ADD67.1020809@sgi.com>	<486ADD9F.3000305@zytor.com> <486C062C.3090408@sgi.com> <m1wsk3r3g6.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1wsk3r3g6.fsf@frodo.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Jul 2008, Rafael J. Wysocki wrote:
-
-> BTW, did you even to look at the code _as_ _is_ in linux-next?
-
- Well, I hope it has not changed too much since my recent work in this 
-area...
-
-> In fact, it is _impossible_ that either apic1 or pin1 are equal to -1 at this
-> point, because of this part:
-
- With the workaround activated it is virtually certain.
-
-> 	/*
-> 	 * Some BIOS writers are clueless and report the ExtINTA
-> 	 * I/O APIC input from the cascaded 8259A as the timer
-> 	 * interrupt input.  So just in case, if only one pin
-> 	 * was found above, try it both directly and through the
-> 	 * 8259A.
-> 	 */
-> 	if (pin1 == -1) {
-> 		pin1 = pin2;
-> 		apic1 = apic2;
-> 		no_pin1 = 1;
-> 	} else if (pin2 == -1) {
-> 		pin2 = pin1;
-> 		apic2 = apic1;
-> 	}
+Eric W. Biederman wrote:
+> Mike Travis <travis@sgi.com> writes:
 > 
-> that originates from your patch.
+>> will only boot and run with gcc-4.2.0, and does the "failure at grub" screen
+>> with
+>> gcc-4.2.4 ...!
+> 
+> Do these tests have an early serial console enabled?  I want to confirm
+> that the failure is very early in boot before or just as we reach C code.
+> 
+> If you don't have an early console we could be failing late in the process just
+> not have visibility.
+> 
+>> Any other suggestions?
+> 
+> If you have a serial console to add a little bit of instrumentation super duper early.
+> Although looking at the generated objects might be just as interesting.
+> 
+> Eric
 
- And the conclusion is?  If we leave MP-table setups aside as irrelevant
-for this configuration, we can be almost certain apic2 and pin2 are both
-equal to -1 at this point.  This is because (unlike the MP table) ACPI has
-no provisions in its tables for ExtINTA APIC interrupt inputs.  Therefore
-the only case apic2 and pin2 may not be equal -1 here is when the firmware
-had set up one of the inputs as such in the hardware before initiating
-bootstrap which has been subsequently noted by a piece of code in
-enable_IO_APIC() which examines the I/O APIC for such a condition.
+Hi,
 
- I have taken these circumstances very much into account when preparing
-the workaround, based on the assumption that if the firmware has set up an
-I/O APIC line as an ExtINTA interrupt, then it means it considers it
-suitable to use in such a manner.  This furthermore implies the line
-should be safe to be used in any valid 8259A mode of operation, such as
-one we use to forward IRQ0 transparently through the 8259A (we
-double-check it just in case though, as workarounds for hardware bugs in
-the past made it not always true).  The workaround therefore applies to
-genuine IRQ0 routing as reported by ACPI only and not any possible legacy
-ExtINTA fallback that we may attempt to use.
+Sorry for the delay, been off the past 4 days.
 
- Of course, as determined previously, the ExtINTA line is not safe to be
-used on your box, but it has not been set up by the firmware as an ExtINTA
-interrupt either, so the assumption mentioned above remains valid and has
-no negative impact on your system.  At this point all of apic1, apic2,
-pin1 and pin2 should be equal -1, which means the reassignments you quoted
-make no changes to the variables.
+I'll see how closely I can narrow down where the fault is.  I have been inserting
+very early printk's to track how far into the startup it gets before bailing.
 
-> End even without this part apic1 and pin1 are _not_ equal to -1 on this box
-> (apic2 and pin2 are, but that's a different matter).
-
- Which means the workaround has not triggered and the rest of cosideration 
-is therefore irrelevant.  Please get us these DMI IDs, so that we can see 
-what's wrong with the quirk.
-
-  Maciej
+Thanks,
+Mike
