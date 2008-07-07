@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755669AbYGGOpc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755824AbYGGOqM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755669AbYGGOpc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 10:45:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753888AbYGGOpY
+	id S1755824AbYGGOqM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 10:46:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbYGGOp6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 10:45:24 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:37560 "EHLO
-	WA4EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753825AbYGGOpW (ORCPT
+	Mon, 7 Jul 2008 10:45:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38463 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753620AbYGGOp5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 10:45:22 -0400
-X-BigFish: VPS-21(zz1432R98dR62a3L7efV1805Mzz10d3izzz32i6bh87il63h)
-X-Spam-TCS-SCL: 2:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0K3N4Z8-01-8US-01
-Date: Mon, 7 Jul 2008 16:45:11 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Richard Purdie <rpurdie@openedhand.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>, Philippe Elie <phil.el@wanadoo.fr>,
-       John Levon <levon@movementarian.org>,
-       Maynard Johnson <maynardj@us.ibm.com>,
-       Daniel Hansel <daniel.hansel@linux.vnet.ibm.com>,
-       Jason Yeh <jason.yeh@amd.com>
-Subject: Re: [PATCH] OProfile kernel maintainership changes
-Message-ID: <20080707144511.GE24467@erda.amd.com>
-References: <1215197619-28982-1-git-send-email-robert.richter@amd.com> <20080704120942.ed671ce2.akpm@linux-foundation.org> <1215210995.8410.29.camel@dax.rpnet.com>
+	Mon, 7 Jul 2008 10:45:57 -0400
+Message-ID: <48722C05.6010808@linux-foundation.org>
+Date: Mon, 07 Jul 2008 09:45:25 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <1215210995.8410.29.camel@dax.rpnet.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 07 Jul 2008 14:45:11.0986 (UTC) FILETIME=[0F55A920:01C8E040]
+To: Christoph Hellwig <hch@infradead.org>
+CC: steiner@sgi.com, akpm@linuxfoundation.org, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, tglx@linutronix.de, holt@sgi.com, andrea@qumranet.com
+Subject: Re: [patch 12/13] GRU Driver V3 -  export is_uv_system(),	zap_page_range()
+ & follow_page()
+References: <20080703213348.489120321@attica.americas.sgi.com> <20080703213633.890647632@attica.americas.sgi.com> <20080704073926.GA1449@infradead.org>
+In-Reply-To: <20080704073926.GA1449@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04.07.08 23:36:34, Richard Purdie wrote:
-> On Fri, 2008-07-04 at 12:09 -0700, Andrew Morton wrote:
-
-> > Will you also have a role in oprofile userspace maintenance?
+Christoph Hellwig wrote:
+> On Thu, Jul 03, 2008 at 04:34:00PM -0500, steiner@sgi.com wrote:
+>> +EXPORT_SYMBOL_GPL(zap_page_range);
+>>  
+>>  /*
+>>   * Do a quick page-table lookup for a single page.
+>> @@ -1089,6 +1090,7 @@ no_page_table:
+>>  	}
+>>  	return page;
+>>  }
+>> +EXPORT_SYMBOL_GPL(follow_page);
 > 
-> OProfile maintainership is undergoing some transitions as announced by
-> John on the oprofile list earlier today. 
+> NACK.
 > 
-> In summary, Maynard is taking over the overall control of oprofile
-> userspace with Daniel advising on the JIT stuff and me taking on
-> responsibility for the arm kernel+userspace bits and the userspace GUI
-> bits. Robert has volunteered to take a role of looking after the kernel
-> side of things alongside or replacing Philippe depending on how he feels
-> about this - I'm not 100% clear on Philippe's position on things. John
-> will still be around to keep an eye on us all :).
+> These should never be called by a driver and suggest you need to rething
+> your VM integration in this driver.
 
-Right, I will maintain the kernel part only.
-
--Robert
-
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+Well here we cannot run get_user_pages() since the context is atomic. What other choice is there?
 
