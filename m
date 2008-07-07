@@ -1,237 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbYGGD54@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbYGGEMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755337AbYGGD54 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 23:57:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbYGGD5s
+	id S1752892AbYGGEMt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 00:12:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750720AbYGGEMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 23:57:48 -0400
-Received: from note.orchestra.cse.unsw.EDU.AU ([129.94.242.24]:35716 "EHLO
-	note.orchestra.cse.unsw.EDU.AU" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754021AbYGGD5s (ORCPT
+	Mon, 7 Jul 2008 00:12:40 -0400
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:21484 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750705AbYGGEMk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 23:57:48 -0400
-X-Greylist: delayed 387 seconds by postgrey-1.27 at vger.kernel.org; Sun, 06 Jul 2008 23:57:47 EDT
-From: Aaron Carroll <aaronc@cse.unsw.edu.au>
-To: ngupta@google.com
-Date: Mon, 07 Jul 2008 13:51:12 +1000
-Message-ID: <487192B0.8090201@cse.unsw.edu.au>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080618)
+	Mon, 7 Jul 2008 00:12:40 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=sUsXjeyM3bw6SFZJRZu0XkX9rKFnE+eheMjNxkFezjySRWhTXIZ8mWozgq05Hk2nNbp+kx14Q0rFKzu2y4AjbsYkX3j76nSu/0iknLXMjIitqKuSBeYl5eH6noLe5D52RE8YmZwLfGN4QOheYjWDGQe3bn0nwAYqC8OhYn5cDbQ=  ;
+X-YMail-OSG: 7nCgV3MVM1k4IOFlMIHFciMyCTuyrQ_WSBeuLcUY0fqCLfvThD88Kc4MEgVWXSaFXewO49P2Fqm5om_esU1FCLZyMD5j_bR_R7abd6_Ej4jrTp_YxN11j.e0GK3thiY.DwRlXCttHx3IqqNKd41BTUL2YbbzfInEP.ffMsl4hCMTvGmUuC0-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 2.6.26-rc4-git] PM: boot time suspend selftest
+Date: Sun, 6 Jul 2008 21:12:38 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       mingo@elte.hu, pavel@suse.cz
+References: <200805291333.42057.david-b@pacbell.net> <20080529162257.03426e48.akpm@linux-foundation.org>
+In-Reply-To: <20080529162257.03426e48.akpm@linux-foundation.org>
 MIME-Version: 1.0
-CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] Priorities in Anticipatory I/O scheduler
-References: <20080706220551.136430000@elf.corp.google.com> <20080706220612.217985000@elf.corp.google.com>
-In-Reply-To: <20080706220612.217985000@elf.corp.google.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807062112.38209.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Naveen,
+Address some of Andrew's comments on the patch now in
+MMOTM with name "pm-boot-time-suspend-selftest.patch".
 
-I have a few observations after a quick read through your patch.
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+ kernel/power/main.c |   21 +++++++++++++++------
+ 1 file changed, 15 insertions(+), 6 deletions(-)
 
-
-ngupta@google.com wrote:
-> Modifications to the Anticipatory I/O scheduler to add multiple priority
-> levels. It makes use of anticipation and batching in current
-> anticipatory scheduler to implement priorities.
-> 
-> - Minimizes the latency of highest priority level.
-> - Low priority requests wait for high priority requests.
-> - Higher priority request break any anticipating low priority request.
-> - If single priority level is used the scheduler behaves as an
->   anticipatory scheduler. So no change for existing users.
-> 
-> With this change, it is possible for a latency sensitive job to coexist
-> with background job.
-> 
-> Other possible use of this patch is in context of I/O subsystem controller.
-> It can add another dimension to the parameters controlling a particular cgroup.
-> While we can easily divide b/w among existing croups, setting a bound on
-> latency is not a feasible solution. Hence in context of storage devices
-> bandwidth and priority can be two parameters controlling I/O.
-> 
-> In this patch I have added a new class IOPRIO_CLASS_LATENCY to differentiate
-> notion of absolute priority over existing uses of various time-slice based
-> priority classes in cfq. Though internally within anticipatory scheduler all
-> of them map to best-effort levels. Hence, one can also use various best-effort
-> priority levels.
-
-I don't see the point of this new priority class; I think ``latency sensitive''
-is a reasonable definition of real-time.  Especially since you don't actually
-use it.
-
-> @@ -21,6 +21,14 @@ config IOSCHED_AS
->  	  deadline I/O scheduler, it can also be slower in some cases
->  	  especially some database loads.
->  
-> +config IOPRIO_AS_MAX
-> +	int "Number of valid i/o priority levels"
-> +	depends on IOSCHED_AS
-> +	default "4"
-> +	help
-> +	  This option controls number of priority levels in anticipatory
-> +	  I/O scheduler.
-
-Does this need to be configurable?  There are two ``natural'' choices for this
-value; the number of iopriorities (10), or the number of priority classes (3).
-Why is any intermediate value useful?
-
->  /*
->   * rb tree support functions
->   */
-> -#define RQ_RB_ROOT(ad, rq)	(&(ad)->sort_list[rq_is_sync((rq))])
-> +static inline struct rb_root *rq_rb_root(struct as_data *ad,
-> +						struct request *rq)
-> +{
-> +	return (&(ad)->prio_q[rq_prio_level(rq)].sort_list[rq_is_sync(rq)]);
-> +}
-
-This change (and the related ones below) is a separate patch which could
-also be applied to deadline.
-
-> @@ -996,6 +1074,31 @@ static void as_move_to_dispatch(struct a
->  	ad->nr_dispatched++;
->  }
->  
-> +static unsigned int select_priority_level(struct as_data *ad)
-> +{
-> +	unsigned int i, best_ioprio = 0, ioprio, found_alt = 0;
-> +
-> +	for (ioprio = 0; ioprio < IOPRIO_AS_MAX; ioprio++) {
-> +		if (!as_has_request_at_priority(ad, ioprio)) {
-> +			continue;
-> +		}
-
-Unnecessary braces.
-
-> @@ -1022,21 +1126,32 @@ static int as_dispatch_request(struct re
->  		ad->changed_batch = 0;
->  		ad->new_batch = 0;
->  
-> -		while (ad->next_rq[REQ_SYNC]) {
-> -			as_move_to_dispatch(ad, ad->next_rq[REQ_SYNC]);
-> -			dispatched++;
-> -		}
-> -		ad->last_check_fifo[REQ_SYNC] = jiffies;
-> -
-> -		while (ad->next_rq[REQ_ASYNC]) {
-> -			as_move_to_dispatch(ad, ad->next_rq[REQ_ASYNC]);
-> -			dispatched++;
-> +		for (ioprio = 0; ioprio < IOPRIO_AS_MAX; ioprio++) {
-> +			while (ad->prio_q[ioprio].next_rq[REQ_SYNC]) {
-> +				as_move_to_dispatch(ad,
-> +				    ad->prio_q[ioprio].next_rq[REQ_SYNC]);
-> +				dispatched++;
-> +			}
-> +			ad->last_check_fifo[REQ_SYNC] = jiffies;
-> +
-> +			while (ad->prio_q[ioprio].next_rq[REQ_ASYNC]) {
-> +				as_move_to_dispatch(ad,
-> +				    ad->prio_q[ioprio].next_rq[REQ_ASYNC]);
-> +				dispatched++;
-> +			}
-> +			ad->last_check_fifo[REQ_ASYNC] = jiffies;
->  		}
-> -		ad->last_check_fifo[REQ_ASYNC] = jiffies;
->  
->  		return dispatched;
->  	}
->  
-> +	ioprio = select_priority_level(ad);
-> +	if (ioprio >= IOPRIO_AS_MAX)
-> +		return 0;
-
-Why should this ever happen?
-
-> @@ -1049,14 +1164,16 @@ static int as_dispatch_request(struct re
->  		|| ad->changed_batch)
->  		return 0;
->  
-> +	changed_ioprio = (ad->batch_ioprio != ioprio)?1:0;
-
-Redundant conditional.
-
-> @@ -1216,9 +1341,39 @@ static void as_deactivate_request(struct
->  static int as_queue_empty(struct request_queue *q)
->  {
->  	struct as_data *ad = q->elevator->elevator_data;
-> +	unsigned short ioprio;
->  
-> -	return list_empty(&ad->fifo_list[REQ_ASYNC])
-> -		&& list_empty(&ad->fifo_list[REQ_SYNC]);
-> +	for (ioprio = 0; ioprio < IOPRIO_AS_MAX; ioprio++) {
-> +		if (as_has_request_at_priority(ad, ioprio))
-> +			return 0;
-> +	}
-> +	return 1;
-> +}
-> +
-> +static unsigned short as_mapped_priority(unsigned short ioprio)
-> +{
-> +	unsigned short class = IOPRIO_PRIO_CLASS(ioprio);
-> +	unsigned short data = IOPRIO_PRIO_DATA(ioprio);
-> +
-> +	if (class == IOPRIO_CLASS_BE)
-> +		return ((data < IOPRIO_AS_MAX)? ioprio:
-
-Doesn't this mean that requests in the BE class with prio level 0 will map to
-the same queues as RT requests?
-
-> +			IOPRIO_PRIO_VALUE(IOPRIO_CLASS_BE,
-> +						(IOPRIO_AS_MAX - 1)));
-> +	else if (class == IOPRIO_CLASS_LATENCY)
-> +		return ((data < IOPRIO_AS_MAX)?
-> +			IOPRIO_PRIO_VALUE(IOPRIO_CLASS_BE, data):
-
-Likewise.
-
-> +			IOPRIO_PRIO_VALUE(IOPRIO_CLASS_BE,
-> +						(IOPRIO_AS_MAX - 1)));
-> +	else if (class == IOPRIO_CLASS_RT)
-> +		return IOPRIO_PRIO_VALUE(IOPRIO_CLASS_BE, 0);
-> +	else if (class == IOPRIO_CLASS_IDLE)
-> +		return IOPRIO_PRIO_VALUE(IOPRIO_CLASS_BE, (IOPRIO_AS_MAX - 1));
-> +	else if (class == IOPRIO_CLASS_NONE) {
-> +		return IOPRIO_AS_DEFAULT;
-> +	} else {
-> +		WARN_ON(1);
-> +		return IOPRIO_AS_DEFAULT;
-> +	}
-
-It looks like you're mapping all ioprios to a prio level in the BE class, and using
-that internally.  It would be simpler to use integers in [0, IOPRIO_AS_MAX) internally,
-and convert back to ``real'' ioprios where necessary; you do a lot of conversions...
-This would also be better expressed as a switch statement.
-
-> @@ -1351,10 +1512,20 @@ static void *as_init_queue(struct reques
->  	init_timer(&ad->antic_timer);
->  	INIT_WORK(&ad->antic_work, as_work_handler);
->  
-> -	INIT_LIST_HEAD(&ad->fifo_list[REQ_SYNC]);
-> -	INIT_LIST_HEAD(&ad->fifo_list[REQ_ASYNC]);
-> -	ad->sort_list[REQ_SYNC] = RB_ROOT;
-> -	ad->sort_list[REQ_ASYNC] = RB_ROOT;
-> +	for (i = IOPRIO_AS_MAX - 1; i >= 0; i--) {
-> +		INIT_LIST_HEAD(&ad->prio_q[i].fifo_list[REQ_SYNC]);
-> +		INIT_LIST_HEAD(&ad->prio_q[i].fifo_list[REQ_ASYNC]);
-> +		ad->prio_q[i].sort_list[REQ_SYNC] = RB_ROOT;
-> +		ad->prio_q[i].sort_list[REQ_ASYNC] = RB_ROOT;
-> +		ad->prio_q[i].serviced = 0;
-> +		if (i == 0)
-> +			ad->prio_q[i].ioprio_wt = 100;
-> +		else if (i == 1)
-> +			ad->prio_q[i].ioprio_wt = 5;
-> +		else
-> +			ad->prio_q[i].ioprio_wt = 1;
-
-This seems a bit arbitrary, and means IOPRIO_AS_MAX > 3 is useless unless the weights are
-changed manually.
-
-
-
-Thanks,
-  -- Aaron
-
+--- a/kernel/power/main.c	2008-07-06 21:06:35.000000000 -0700
++++ b/kernel/power/main.c	2008-07-06 21:06:35.000000000 -0700
+@@ -160,10 +160,19 @@ static void suspend_test_finish(const ch
+ 	long nj = jiffies - suspend_test_start_time;
+ 	unsigned msec;
+ 
+-	msec = jiffies_to_msecs((nj >= 0) ? nj : -nj);
++	msec = jiffies_to_msecs(abs(nj));
+ 	pr_info("PM: %s took %d.%03d seconds\n", label,
+ 			msec / 1000, msec % 1000);
+-	WARN_ON_ONCE(msec > (TEST_SUSPEND_SECONDS * 1000));
++
++	/* Warning on suspend means the RTC alarm period needs to be
++	 * larger -- the system was sooo slooowwww to suspend that the
++	 * alarm (should have) fired before the system went to sleep!
++	 *
++	 * Warning on either suspend or resume also means the system
++	 * has some performance issues.  The stack dump of a WARN_ON
++	 * is more likely to get the right attention than a printk...
++	 */
++	WARN_ON(msec > (TEST_SUSPEND_SECONDS * 1000));
+ }
+ 
+ #else
+@@ -579,13 +588,13 @@ core_initcall(pm_init);
+ 
+ static void __init test_wakealarm(struct rtc_device *rtc, suspend_state_t state)
+ {
+-	static char		err_readtime [] __initdata =
++	static char err_readtime[] __initdata =
+ 		KERN_ERR "PM: can't read %s time, err %d\n";
+-	static char		err_wakealarm [] __initdata =
++	static char err_wakealarm [] __initdata =
+ 		KERN_ERR "PM: can't set %s wakealarm, err %d\n";
+-	static char		err_suspend [] __initdata =
++	static char err_suspend[] __initdata =
+ 		KERN_ERR "PM: suspend test failed, error %d\n";
+-	static char		info_test [] __initdata =
++	static char info_test[] __initdata =
+ 		KERN_INFO "PM: test RTC wakeup from '%s' suspend\n";
+ 
+ 	unsigned long		now;
