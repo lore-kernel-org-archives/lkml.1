@@ -1,82 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754896AbYGGKom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbYGGK5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754896AbYGGKom (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 06:44:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbYGGKod
+	id S1754206AbYGGK5b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 06:57:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbYGGK5X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 06:44:33 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:56820 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752663AbYGGKod (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 06:44:33 -0400
-Date: Mon, 7 Jul 2008 18:44:25 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: austin zhang <austin_zhang@linux.intel.com>
-Cc: davem@davemloft.net, chaapala@cisco.com, linux-crypto@vger.kernel.org,
-       linux-kernel@vger.kernel.org, arjan@linux.intel.com
-Subject: Re: [Fwd: [PATCH]Using Intel CRC32 instruction to implement hardware accelerated CRC32c algorithm.]
-Message-ID: <20080707104425.GA10924@gondor.apana.org.au>
-References: <1215422258.19059.26.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1215422258.19059.26.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 7 Jul 2008 06:57:23 -0400
+Received: from fogou.chygwyn.com ([195.171.2.24]:44957 "EHLO fogou.chygwyn.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752886AbYGGK5X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 06:57:23 -0400
+X-Greylist: delayed 1691 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 Jul 2008 06:57:22 EDT
+Subject: Re: [PATCH]remove_declaration
+From: Steven Whitehouse <steve@chygwyn.com>
+To: Li Xiaodong <lixd@cn.fujitsu.com>
+Cc: "'LKML'" <linux-kernel@vger.kernel.org>
+In-Reply-To: <AEFD1C75C2D6496EB4B19CE6B33656F2@fujitsulixd>
+References: <AEFD1C75C2D6496EB4B19CE6B33656F2@fujitsulixd>
+Content-Type: text/plain
+Organization: ChyGwyn Limited (Registered in England and Wales, No.
+	03887683) Registered Office: Digital Technium, Singleton Park, Swansea. SA2
+	8PP
+Date: Mon, 07 Jul 2008 11:21:31 +0100
+Message-Id: <1215426091.4011.118.camel@quoit>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 07, 2008 at 05:17:38AM -0400, austin zhang wrote:
->  From NHM processor onward, Intel processors can support hardware accelerated
->  CRC32c algorithm with the new CRC32 instruction in SSE 4.2 instruction set. 
->  The patch detects the availability of the feature, and chooses the most proper 
->  way to calculate CRC32c checksum.
->  Byte code instructions are used for compiler compatibility. No MMX / XMM 
->  registers is involved in the implementation.
->  
->  After basic testing with iSCSI and confirmed that the iSCSI head digest 
->  routines can be speeded up by 4x - 10x.
->  
->  This patch is created against mainline 2.6.26-rc8
+Hi,
+
+On Mon, 2008-07-07 at 18:04 +0800, Li Xiaodong wrote:
+> The implementation of gfs2_inode_attr_in is removed.
+> So remove its declaration.
 > 
->  Signed-off-by: Austin Zhang <austin_zhang@linux.intel.com>
->  Signed-off-by: Kent Liu <kent.liu@linux.intel.com>
+> Signed-off-by: Li Xiaodong <lixd@cn.fujitsu.com>
+> 
+> ---
+>  fs/gfs2/inode.h |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/gfs2/inode.h b/fs/gfs2/inode.h index 580da45..d2ddb84 100644
+> --- a/fs/gfs2/inode.h
+> +++ b/fs/gfs2/inode.h
+> @@ -72,7 +72,6 @@ static inline void gfs2_inum_out(const struct gfs2_inode
+> *ip,  }
+>  
+> 
+> -void gfs2_inode_attr_in(struct gfs2_inode *ip);  void gfs2_set_iop(struct
+> inode *inode);  struct inode *gfs2_inode_lookup(struct super_block *sb,
+> unsigned type, 
+>  				u64 no_addr, u64 no_formal_ino,
+> --
+> 1.5.5.1
 
-Thanks Austin! I love the idea :)
+This patch looks like its been munged by your mailer. Can you send me a
+corrected version?
 
-However, the way it's done in lib is a bit iffy.  For a start
-testing an x86-specific variable at run-time is not a goer. In
-any case, supporting hardware implementations transparently is
-what the crypto API is meant to do so why don't we just use that.
+Steve.
 
-I've done a grep on the users of crc32c.  I think what we should
-do is:
 
-1) Utilise the brand new crypto ahash interface (note that it's
-designed to support sync just as well as async despite the name)
-to rewrite the crypto/crc32c implementation such that one tfm can
-be used by multiple users.  All that has to be done is to move
-the state from the tfm into the request object.
-
-2) Convert all crc32c users to use the crypto interface and phase
-out lib/crc32c completely.
-
-3) Add the Intel-specific crc32c implementation through the crypto
-API.
-
-That way none of this iffy testing will be necessary.  Even better,
-most users can share one common tfm and therefore there will only
-be one test for the CPU flag at boot time rather than every time
-it's used.
-
-In fact, we could even skip 2) and reimplement lib/crc32c as a
-wrapper on the crypto crc32c interface with a shared tfm so you
-don't need to modify its existing users.
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
