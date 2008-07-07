@@ -1,84 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755862AbYGGQad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756079AbYGGQaq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755862AbYGGQad (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 12:30:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753439AbYGGQaW
+	id S1756079AbYGGQaq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 12:30:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754232AbYGGQah
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 12:30:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41663 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753975AbYGGQaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 12:30:21 -0400
-Message-ID: <48724413.8000302@redhat.com>
-Date: Mon, 07 Jul 2008 12:28:03 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 7 Jul 2008 12:30:37 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:44121 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753439AbYGGQag (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 12:30:36 -0400
+Date: Mon, 7 Jul 2008 17:29:54 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Jack Steiner <steiner@sgi.com>
+cc: Christoph Hellwig <hch@infradead.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, cl@linux-foundation.org,
+       akpm@osdl.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       tglx@linutronix.de, holt@sgi.com, andrea@qumranet.com,
+       linux-mm@kvack.org
+Subject: Re: [patch 12/13] GRU Driver V3 -  export is_uv_system(), zap_page_range()
+ & follow_page()
+In-Reply-To: <20080707143916.GA5209@sgi.com>
+Message-ID: <Pine.LNX.4.64.0807071657450.17825@blonde.site>
+References: <20080703213348.489120321@attica.americas.sgi.com>
+ <20080703213633.890647632@attica.americas.sgi.com> <20080704073926.GA1449@infradead.org>
+ <20080707143916.GA5209@sgi.com>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
-Subject: Re: [RFC patch 07/12] Traceprobes
-References: <20080704235207.147809973@polymtl.ca> <20080704235426.751868080@polymtl.ca>
-In-Reply-To: <20080704235426.751868080@polymtl.ca>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> Menu option to activate tracing probes.
+On Mon, 7 Jul 2008, Jack Steiner wrote:
+> > > +EXPORT_SYMBOL_GPL(follow_page);
+> > 
+> > NACK.
+> > 
+> > These should never be called by a driver and suggest you need to rething
+> > your VM integration in this driver.
 > 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> CC: Alexander Viro <viro@zeniv.linux.org.uk>
-> CC: 'Peter Zijlstra' <peterz@infradead.org>
-> CC: "Frank Ch. Eigler" <fche@redhat.com>
-> CC: 'Ingo Molnar' <mingo@elte.hu>
-> CC: 'Hideo AOKI' <haoki@redhat.com>
-> CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
-> CC: 'Steven Rostedt' <rostedt@goodmis.org>
-> CC: Masami Hiramatsu <mhiramat@redhat.com>
+> Can you provide some additional details on the type of kernel API
+> that could be exported to provide a pte lookup in atomic context?
 
-Thanks, this is good to me. Tested on x86-64.
-Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+I don't see EXPORT_SYMBOL_GPL(follow_page) as objectionable myself:
+it rather seems rather to complement EXPORT_SYMBOL(vm_insert_page)
+and EXPORT_SYMBOL(vmalloc_to_page); though I'd agree that it's
+sufficiently sensitive to need that _GPL on it.
 
-> ---
->  init/Kconfig |    9 +++++++++
->  1 file changed, 9 insertions(+)
-> 
-> Index: linux-2.6-lttng/init/Kconfig
-> ===================================================================
-> --- linux-2.6-lttng.orig/init/Kconfig	2008-07-04 09:32:52.000000000 -0400
-> +++ linux-2.6-lttng/init/Kconfig	2008-07-04 09:33:05.000000000 -0400
-> @@ -795,6 +795,15 @@ config MARKERS
->  	  Place an empty function call at each marker site. Can be
->  	  dynamically changed for a probe function.
->  
-> +config TRACEPROBES
-> +	tristate "Compile generic tracing probes"
-> +	depends on MARKERS
-> +	default y
-> +	help
-> +	  Compile generic tracing probes, which connect to the tracepoints when
-> +	  loaded and format the information collected by the tracepoints with
-> +	  the Markers.
-> +
->  source "arch/Kconfig"
->  
->  config PROC_PAGE_MONITOR
-> 
+...
 
--- 
-Masami Hiramatsu
+> Currently, the driver calls follow_page() in interrupt context.
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+However, that's a problem, isn't it, given the pte_offset_map_lock
+in follow_page?  To avoid the possibility of deadlock, wouldn't we
+have to change all the page table locking to irq-disabling variants?
+Which I think we'd have reason to prefer not to do.
 
-e-mail: mhiramat@redhat.com
+Maybe study the assumptions Nick is making in his arch/x86/mm/gup.c
+in mm, and do something similar in your GRU driver (falling back to
+the slow method when anything's not quite right).  It's not nice to
+have such code out in a driver, but GRU is going to be exceptional,
+and it may be better to have it out there than pretence of generality
+in the core mm exporting it.
 
+Note that even the unlocked pte_offset_map which gup_pte_range uses,
+is in general unsafe at interrupt time: because of using a KM_PTE0
+atomic kmap which might be in use at the time of the interrupt.  But
+I doubt your GRU driver is intended for use in HIGHMEM architectures,
+so that may be enough to excuse it.
+
+Hugh
