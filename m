@@ -1,63 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbYGGT3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758084AbYGGT3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757596AbYGGT3Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 15:29:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755081AbYGGT3Q
+	id S1758084AbYGGT3m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 15:29:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757902AbYGGT3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 15:29:16 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:34507 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754627AbYGGT3P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 15:29:15 -0400
-Date: Mon, 7 Jul 2008 15:25:48 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>,
-       lkml List <linux-kernel@vger.kernel.org>
-Subject: Re: Deputy maintainer for powerpc
-Message-ID: <20080707152548.5075845f@zod.rchland.ibm.com>
-In-Reply-To: <155B1079-39C4-4D15-B886-F904C424BC8C@kernel.crashing.org>
-References: <18541.48403.490671.815858@cargo.ozlabs.ibm.com>
-	<155B1079-39C4-4D15-B886-F904C424BC8C@kernel.crashing.org>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
+	Mon, 7 Jul 2008 15:29:32 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:54877 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755081AbYGGT3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 15:29:31 -0400
+Date: Mon, 7 Jul 2008 14:29:23 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Hugh Dickins <hugh@veritas.com>, Christoph Hellwig <hch@infradead.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, cl@linux-foundation.org,
+       akpm@osdl.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       tglx@linutronix.de, holt@sgi.com, andrea@qumranet.com,
+       linux-mm@kvack.org
+Subject: Re: [patch 12/13] GRU Driver V3 -  export is_uv_system(), zap_page_range() & follow_page()
+Message-ID: <20080707192923.GA32706@sgi.com>
+References: <20080703213348.489120321@attica.americas.sgi.com> <20080703213633.890647632@attica.americas.sgi.com> <20080704073926.GA1449@infradead.org> <20080707143916.GA5209@sgi.com> <Pine.LNX.4.64.0807071657450.17825@blonde.site> <20080707115844.5ee43343@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080707115844.5ee43343@infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Jul 2008 09:44:31 -0500
-Kumar Gala <galak@kernel.crashing.org> wrote:
-
+On Mon, Jul 07, 2008 at 11:58:44AM -0700, Arjan van de Ven wrote:
+> On Mon, 7 Jul 2008 17:29:54 +0100 (BST)
+> Hugh Dickins <hugh@veritas.com> wrote:
 > 
-> On Jul 4, 2008, at 1:02 AM, Paul Mackerras wrote:
+> > On Mon, 7 Jul 2008, Jack Steiner wrote:
+> > > > > +EXPORT_SYMBOL_GPL(follow_page);
+> > > > 
+> > > > NACK.
+> > > > 
+> > > > These should never be called by a driver and suggest you need to
+> > > > rething your VM integration in this driver.
+> > > 
+> > > Can you provide some additional details on the type of kernel API
+> > > that could be exported to provide a pte lookup in atomic context?
+> > 
+> > I don't see EXPORT_SYMBOL_GPL(follow_page) as objectionable myself:
+> > it rather seems rather to complement EXPORT_SYMBOL(vm_insert_page)
+> > and EXPORT_SYMBOL(vmalloc_to_page); though I'd agree that it's
+> > sufficiently sensitive to need that _GPL on it.
+> > 
+> > ...
+> > 
+> > > Currently, the driver calls follow_page() in interrupt context.
+> > 
+> > However, that's a problem, isn't it, given the pte_offset_map_lock
+> > in follow_page?  To avoid the possibility of deadlock, wouldn't we
+> > have to change all the page table locking to irq-disabling variants?
+> > Which I think we'd have reason to prefer not to do.
+> > 
+> > Maybe study the assumptions Nick is making in his arch/x86/mm/gup.c
+> > in mm, and do something similar in your GRU driver (falling back to
+> > the slow method when anything's not quite right).  It's not nice to
+> > have such code out in a driver, but GRU is going to be exceptional,
+> > and it may be better to have it out there than pretence of generality
+> > in the core mm exporting it.
+> > 
 > 
-> > I'm going to be on vacation for the next two weeks, and it looks
-> > highly likely that Linus will open the 2.6.27 merge window during that
-> > time, so I'm appointing Ben Herrenschmidt as my deputy maintainer.
-> > During the next two weeks, he'll be the person collecting together any
-> > further powerpc-related commits that need to go upstream, and sending
-> > pull requests to Linus as necessary.
-> >
-> > This is the start of a longer-term transition which will ultimately
-> > result in me handing over the powerpc architecture maintainership to
-> > Ben.  Because of various work commitments, this will be a gradual
-> > transition taking probably around 6 months.
-> >
-> > Paul.
-> 
-> Ben, Do you have a tree that you'll be using to collect things in?
+> I wonder if GRU even should be a module; it sounds rather like pretty
+> core functionality and if it's this invasive to the VM it probably
+> should be a real part of the VM instead
 
-I hope it's the same tree for this merge window.
+The GRU is not actually very invasive into the VM. It will use the
+new MMU-notifier callbacks. Aside from the need to translate
+virt->physical & zap ptes belonging to the GRU, it works fine as a module.
+No other core changes are needed.
 
-In the future, I hope the semantics of the various branches of the
-new tree either stays the same, or comes with a detailed description of
-what branch means what (assuming there is a new tree at some point).
+An additional advantage in keeping it as a module is that I expect it
+to under a number of changes as the hardware matures. It is easier to
+update the GRU if it is a module.
 
-josh
+--- jack
