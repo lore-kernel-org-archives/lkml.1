@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757873AbYGGQzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755348AbYGGQzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757873AbYGGQzA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 12:55:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbYGGQue
+	id S1755348AbYGGQzo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 12:55:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755574AbYGGQug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 12:50:34 -0400
+	Mon, 7 Jul 2008 12:50:36 -0400
 Received: from aa2005110791d2e6c28a.userreverse.dion.ne.jp ([210.230.194.138]:20574
 	"EHLO localhost.localdomain" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755494AbYGGQua (ORCPT
+	by vger.kernel.org with ESMTP id S1754113AbYGGQuc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 12:50:30 -0400
+	Mon, 7 Jul 2008 12:50:32 -0400
 X-Greylist: delayed 449 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 Jul 2008 12:49:54 EDT
 From: James Morris <jmorris@namei.org>
 To: linux-security-module@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 20/20] SELinux: allow fstype unknown to policy to use xattrs if present
-Date: Tue,  8 Jul 2008 01:42:22 +0900
-Message-Id: <1215448942-17581-21-git-send-email-jmorris@namei.org>
+Subject: [PATCH 03/20] SELinux: keep the code clean formating and syntax
+Date: Tue,  8 Jul 2008 01:42:05 +0900
+Message-Id: <1215448942-17581-4-git-send-email-jmorris@namei.org>
 X-Mailer: git-send-email 1.5.5.1
 In-Reply-To: <1215448942-17581-1-git-send-email-jmorris@namei.org>
 References: <1215448942-17581-1-git-send-email-jmorris@namei.org>
@@ -26,153 +26,298 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric Paris <eparis@redhat.com>
 
-Currently if a FS is mounted for which SELinux policy does not define an
-fs_use_* that FS will either be genfs labeled or not labeled at all.
-This decision is based on the existence of a genfscon rule in policy and
-is irrespective of the capabilities of the filesystem itself.  This
-patch allows the kernel to check if the filesystem supports security
-xattrs and if so will use those if there is no fs_use_* rule in policy.
-An fstype with a no fs_use_* rule but with a genfs rule will use xattrs
-if available and will follow the genfs rule.
+Formatting and syntax changes
 
-This can be particularly interesting for things like ecryptfs which
-actually overlays a real underlying FS.  If we define excryptfs in
-policy to use xattrs we will likely get this wrong at times, so with
-this path we just don't need to define it!
-
-Overlay ecryptfs on top of NFS with no xattr support:
-SELinux: initialized (dev ecryptfs, type ecryptfs), uses genfs_contexts
-Overlay ecryptfs on top of ext4 with xattr support:
-SELinux: initialized (dev ecryptfs, type ecryptfs), uses xattr
-
-It is also useful as the kernel adds new FS we don't need to add them in
-policy if they support xattrs and that is how we want to handle them.
+whitespace, tabs to spaces, trailing space
+put open { on same line as struct def
+remove unneeded {} after if statements
+change printk("Lu") to printk("llu")
+convert asm/uaccess.h to linux/uaacess.h includes
+remove unnecessary asm/bug.h includes
+convert all users of simple_strtol to strict_strtol
 
 Signed-off-by: Eric Paris <eparis@redhat.com>
-Acked-by: Stephen Smalley <sds@tycho.nsa.gov>
 Signed-off-by: James Morris <jmorris@namei.org>
 ---
- security/selinux/hooks.c            |   22 +++++++++++++++++-----
- security/selinux/include/security.h |    2 +-
- security/selinux/ss/services.c      |   27 +++++++++++++++++++--------
- 3 files changed, 37 insertions(+), 14 deletions(-)
+ security/selinux/hooks.c         |   18 +++++++++++-------
+ security/selinux/include/audit.h |    4 ++--
+ security/selinux/include/avc.h   |   15 +++++++--------
+ security/selinux/netnode.c       |    1 -
+ security/selinux/netport.c       |    3 +--
+ security/selinux/selinuxfs.c     |   10 +++++++---
+ security/selinux/ss/avtab.c      |    2 +-
+ security/selinux/ss/mls.c        |    8 ++++----
+ security/selinux/ss/services.c   |    4 ++--
+ 9 files changed, 35 insertions(+), 30 deletions(-)
 
 diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 4130d64..85f74f6 100644
+index 59c6e98..eca70f4 100644
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -556,13 +556,15 @@ static int selinux_set_mnt_opts(struct super_block *sb,
- 	struct task_security_struct *tsec = current->security;
- 	struct superblock_security_struct *sbsec = sb->s_security;
- 	const char *name = sb->s_type->name;
--	struct inode *inode = sbsec->sb->s_root->d_inode;
--	struct inode_security_struct *root_isec = inode->i_security;
-+	struct dentry *root = sb->s_root;
-+	struct inode *root_inode = root->d_inode;
-+	struct inode_security_struct *root_isec = root_inode->i_security;
- 	u32 fscontext_sid = 0, context_sid = 0, rootcontext_sid = 0;
- 	u32 defcontext_sid = 0;
- 	char **mount_options = opts->mnt_opts;
- 	int *flags = opts->mnt_opts_flags;
- 	int num_opts = opts->num_mnt_opts;
-+	bool can_xattr = false;
+@@ -53,7 +53,7 @@
+ #include <net/tcp.h>		/* struct or_callable used in sock_rcv_skb */
+ #include <net/net_namespace.h>
+ #include <net/netlabel.h>
+-#include <asm/uaccess.h>
++#include <linux/uaccess.h>
+ #include <asm/ioctls.h>
+ #include <asm/atomic.h>
+ #include <linux/bitops.h>
+@@ -104,7 +104,9 @@ int selinux_enforcing;
  
- 	mutex_lock(&sbsec->lock);
+ static int __init enforcing_setup(char *str)
+ {
+-	selinux_enforcing = simple_strtol(str, NULL, 0);
++	unsigned long enforcing;
++	if (!strict_strtoul(str, 0, &enforcing))
++		selinux_enforcing = enforcing ? 1 : 0;
+ 	return 1;
+ }
+ __setup("enforcing=", enforcing_setup);
+@@ -115,7 +117,9 @@ int selinux_enabled = CONFIG_SECURITY_SELINUX_BOOTPARAM_VALUE;
  
-@@ -666,14 +668,24 @@ static int selinux_set_mnt_opts(struct super_block *sb,
- 		goto out;
+ static int __init selinux_enabled_setup(char *str)
+ {
+-	selinux_enabled = simple_strtol(str, NULL, 0);
++	unsigned long enabled;
++	if (!strict_strtoul(str, 0, &enabled))
++		selinux_enabled = enabled ? 1 : 0;
+ 	return 1;
+ }
+ __setup("selinux=", selinux_enabled_setup);
+@@ -594,7 +598,7 @@ static int selinux_set_mnt_opts(struct super_block *sb,
+ 	 */
+ 	if (sbsec->initialized && (sb->s_type->fs_flags & FS_BINARY_MOUNTDATA)
+ 	    && (num_opts == 0))
+-	        goto out;
++		goto out;
+ 
+ 	/*
+ 	 * parse the mount options, check if they are valid sids.
+@@ -2695,7 +2699,7 @@ static int selinux_inode_setxattr(struct dentry *dentry, const char *name,
+ }
+ 
+ static void selinux_inode_post_setxattr(struct dentry *dentry, const char *name,
+-                                        const void *value, size_t size,
++					const void *value, size_t size,
+ 					int flags)
+ {
+ 	struct inode *inode = dentry->d_inode;
+@@ -5390,7 +5394,7 @@ static struct security_operations selinux_ops = {
+ 	.inode_listsecurity =		selinux_inode_listsecurity,
+ 	.inode_need_killpriv =		selinux_inode_need_killpriv,
+ 	.inode_killpriv =		selinux_inode_killpriv,
+-	.inode_getsecid =               selinux_inode_getsecid,
++	.inode_getsecid =		selinux_inode_getsecid,
+ 
+ 	.file_permission =		selinux_file_permission,
+ 	.file_alloc_security =		selinux_file_alloc_security,
+@@ -5431,7 +5435,7 @@ static struct security_operations selinux_ops = {
+ 	.task_to_inode =		selinux_task_to_inode,
+ 
+ 	.ipc_permission =		selinux_ipc_permission,
+-	.ipc_getsecid =                 selinux_ipc_getsecid,
++	.ipc_getsecid =			selinux_ipc_getsecid,
+ 
+ 	.msg_msg_alloc_security =	selinux_msg_msg_alloc_security,
+ 	.msg_msg_free_security =	selinux_msg_msg_free_security,
+diff --git a/security/selinux/include/audit.h b/security/selinux/include/audit.h
+index 6c8b9ef..1bdf973 100644
+--- a/security/selinux/include/audit.h
++++ b/security/selinux/include/audit.h
+@@ -1,7 +1,7 @@
+ /*
+  * SELinux support for the Audit LSM hooks
+  *
+- * Most of below header was moved from include/linux/selinux.h which 
++ * Most of below header was moved from include/linux/selinux.h which
+  * is released under below copyrights:
+  *
+  * Author: James Morris <jmorris@redhat.com>
+@@ -52,7 +52,7 @@ void selinux_audit_rule_free(void *rule);
+  *	-errno on failure.
+  */
+ int selinux_audit_rule_match(u32 sid, u32 field, u32 op, void *rule,
+-                             struct audit_context *actx);
++			     struct audit_context *actx);
+ 
+ /**
+  *	selinux_audit_rule_known - check to see if rule contains selinux fields.
+diff --git a/security/selinux/include/avc.h b/security/selinux/include/avc.h
+index 8e23d7a..7b9769f 100644
+--- a/security/selinux/include/avc.h
++++ b/security/selinux/include/avc.h
+@@ -75,13 +75,12 @@ struct avc_audit_data {
+ 
+ /* Initialize an AVC audit data structure. */
+ #define AVC_AUDIT_DATA_INIT(_d,_t) \
+-        { memset((_d), 0, sizeof(struct avc_audit_data)); (_d)->type = AVC_AUDIT_DATA_##_t; }
++	{ memset((_d), 0, sizeof(struct avc_audit_data)); (_d)->type = AVC_AUDIT_DATA_##_t; }
+ 
+ /*
+  * AVC statistics
+  */
+-struct avc_cache_stats
+-{
++struct avc_cache_stats {
+ 	unsigned int lookups;
+ 	unsigned int hits;
+ 	unsigned int misses;
+@@ -97,8 +96,8 @@ struct avc_cache_stats
+ void __init avc_init(void);
+ 
+ void avc_audit(u32 ssid, u32 tsid,
+-               u16 tclass, u32 requested,
+-               struct av_decision *avd, int result, struct avc_audit_data *auditdata);
++	       u16 tclass, u32 requested,
++	       struct av_decision *avd, int result, struct avc_audit_data *auditdata);
+ 
+ #define AVC_STRICT 1 /* Ignore permissive mode. */
+ int avc_has_perm_noaudit(u32 ssid, u32 tsid,
+@@ -107,8 +106,8 @@ int avc_has_perm_noaudit(u32 ssid, u32 tsid,
+ 			 struct av_decision *avd);
+ 
+ int avc_has_perm(u32 ssid, u32 tsid,
+-                 u16 tclass, u32 requested,
+-                 struct avc_audit_data *auditdata);
++		 u16 tclass, u32 requested,
++		 struct avc_audit_data *auditdata);
+ 
+ u32 avc_policy_seqno(void);
+ 
+@@ -122,7 +121,7 @@ u32 avc_policy_seqno(void);
+ #define AVC_CALLBACK_AUDITDENY_DISABLE	128
+ 
+ int avc_add_callback(int (*callback)(u32 event, u32 ssid, u32 tsid,
+-                                     u16 tclass, u32 perms,
++				     u16 tclass, u32 perms,
+ 				     u32 *out_retained),
+ 		     u32 events, u32 ssid, u32 tsid,
+ 		     u16 tclass, u32 perms);
+diff --git a/security/selinux/netnode.c b/security/selinux/netnode.c
+index b6ccd09..7100072 100644
+--- a/security/selinux/netnode.c
++++ b/security/selinux/netnode.c
+@@ -38,7 +38,6 @@
+ #include <linux/ipv6.h>
+ #include <net/ip.h>
+ #include <net/ipv6.h>
+-#include <asm/bug.h>
+ 
+ #include "netnode.h"
+ #include "objsec.h"
+diff --git a/security/selinux/netport.c b/security/selinux/netport.c
+index 90b4cff..fe7fba6 100644
+--- a/security/selinux/netport.c
++++ b/security/selinux/netport.c
+@@ -37,7 +37,6 @@
+ #include <linux/ipv6.h>
+ #include <net/ip.h>
+ #include <net/ipv6.h>
+-#include <asm/bug.h>
+ 
+ #include "netport.h"
+ #include "objsec.h"
+@@ -272,7 +271,7 @@ static __init int sel_netport_init(void)
  	}
  
--	if (strcmp(sb->s_type->name, "proc") == 0)
-+	if (strcmp(name, "proc") == 0)
- 		sbsec->proc = 1;
+ 	ret = avc_add_callback(sel_netport_avc_callback, AVC_CALLBACK_RESET,
+-	                       SECSID_NULL, SECSID_NULL, SECCLASS_NULL, 0);
++			       SECSID_NULL, SECSID_NULL, SECCLASS_NULL, 0);
+ 	if (ret != 0)
+ 		panic("avc_add_callback() failed, error %d\n", ret);
  
-+	/*
-+	 * test if the fs supports xattrs, fs_use might make use of this if the
-+	 * fs has no definition in policy.
-+	 */
-+	if (root_inode->i_op->getxattr) {
-+		rc = root_inode->i_op->getxattr(root, XATTR_NAME_SELINUX, NULL, 0);
-+		if (rc >= 0 || rc == -ENODATA)
-+			can_xattr = true;
-+	}
-+
- 	/* Determine the labeling behavior to use for this filesystem type. */
--	rc = security_fs_use(sb->s_type->name, &sbsec->behavior, &sbsec->sid);
-+	rc = security_fs_use(name, &sbsec->behavior, &sbsec->sid, can_xattr);
- 	if (rc) {
- 		printk(KERN_WARNING "%s: security_fs_use(%s) returned %d\n",
--		       __func__, sb->s_type->name, rc);
-+		       __func__, name, rc);
- 		goto out;
+diff --git a/security/selinux/selinuxfs.c b/security/selinux/selinuxfs.c
+index ac1ccc1..07a5db6 100644
+--- a/security/selinux/selinuxfs.c
++++ b/security/selinux/selinuxfs.c
+@@ -27,7 +27,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/percpu.h>
+ #include <linux/audit.h>
+-#include <asm/uaccess.h>
++#include <linux/uaccess.h>
+ 
+ /* selinuxfs pseudo filesystem for exporting the security policy API.
+    Based on the proc code and the fs/nfsd/nfsctl.c code. */
+@@ -57,14 +57,18 @@ int selinux_compat_net = SELINUX_COMPAT_NET_VALUE;
+ 
+ static int __init checkreqprot_setup(char *str)
+ {
+-	selinux_checkreqprot = simple_strtoul(str, NULL, 0) ? 1 : 0;
++	unsigned long checkreqprot;
++	if (!strict_strtoul(str, 0, &checkreqprot))
++		selinux_checkreqprot = checkreqprot ? 1 : 0;
+ 	return 1;
+ }
+ __setup("checkreqprot=", checkreqprot_setup);
+ 
+ static int __init selinux_compat_net_setup(char *str)
+ {
+-	selinux_compat_net = simple_strtoul(str, NULL, 0) ? 1 : 0;
++	unsigned long compat_net;
++	if (!strict_strtoul(str, 0, &compat_net))
++		selinux_compat_net = compat_net ? 1 : 0;
+ 	return 1;
+ }
+ __setup("selinux_compat_net=", selinux_compat_net_setup);
+diff --git a/security/selinux/ss/avtab.c b/security/selinux/ss/avtab.c
+index 9e66263..a1be97f 100644
+--- a/security/selinux/ss/avtab.c
++++ b/security/selinux/ss/avtab.c
+@@ -311,7 +311,7 @@ void avtab_hash_eval(struct avtab *h, char *tag)
  	}
  
-diff --git a/security/selinux/include/security.h b/security/selinux/include/security.h
-index 7c54300..44cba2e 100644
---- a/security/selinux/include/security.h
-+++ b/security/selinux/include/security.h
-@@ -136,7 +136,7 @@ int security_get_allow_unknown(void);
- #define SECURITY_FS_USE_MNTPOINT	6 /* use mountpoint labeling */
+ 	printk(KERN_DEBUG "SELinux: %s:  %d entries and %d/%d buckets used, "
+-	       "longest chain length %d sum of chain length^2 %Lu\n",
++	       "longest chain length %d sum of chain length^2 %llu\n",
+ 	       tag, h->nel, slots_used, h->nslot, max_chain_len,
+ 	       chain2_len_sum);
+ }
+diff --git a/security/selinux/ss/mls.c b/security/selinux/ss/mls.c
+index a6ca058..77d745d 100644
+--- a/security/selinux/ss/mls.c
++++ b/security/selinux/ss/mls.c
+@@ -437,13 +437,13 @@ int mls_setup_user_range(struct context *fromcon, struct user_datum *user,
+ 		struct mls_level *usercon_clr = &(usercon->range.level[1]);
  
- int security_fs_use(const char *fstype, unsigned int *behavior,
--	u32 *sid);
-+	u32 *sid, bool can_xattr);
+ 		/* Honor the user's default level if we can */
+-		if (mls_level_between(user_def, fromcon_sen, fromcon_clr)) {
++		if (mls_level_between(user_def, fromcon_sen, fromcon_clr))
+ 			*usercon_sen = *user_def;
+-		} else if (mls_level_between(fromcon_sen, user_def, user_clr)) {
++		else if (mls_level_between(fromcon_sen, user_def, user_clr))
+ 			*usercon_sen = *fromcon_sen;
+-		} else if (mls_level_between(fromcon_clr, user_low, user_def)) {
++		else if (mls_level_between(fromcon_clr, user_low, user_def))
+ 			*usercon_sen = *user_low;
+-		} else
++		else
+ 			return -EINVAL;
  
- int security_genfs_sid(const char *fstype, char *name, u16 sclass,
- 	u32 *sid);
+ 		/* Lower the clearance of available contexts
 diff --git a/security/selinux/ss/services.c b/security/selinux/ss/services.c
-index b52f923..8e42da1 100644
+index 2d5e5a3..0696aad 100644
 --- a/security/selinux/ss/services.c
 +++ b/security/selinux/ss/services.c
-@@ -1934,7 +1934,8 @@ out:
- int security_fs_use(
- 	const char *fstype,
- 	unsigned int *behavior,
--	u32 *sid)
-+	u32 *sid,
-+	bool can_xattr)
+@@ -2531,7 +2531,7 @@ int selinux_audit_rule_known(struct audit_krule *rule)
+ }
+ 
+ int selinux_audit_rule_match(u32 sid, u32 field, u32 op, void *vrule,
+-                             struct audit_context *actx)
++			     struct audit_context *actx)
  {
- 	int rc = 0;
- 	struct ocontext *c;
-@@ -1948,6 +1949,7 @@ int security_fs_use(
- 		c = c->next;
- 	}
+ 	struct context *ctxt;
+ 	struct mls_level *level;
+@@ -2645,7 +2645,7 @@ out:
+ static int (*aurule_callback)(void) = audit_update_lsm_rules;
  
-+	/* look for labeling behavior defined in policy */
- 	if (c) {
- 		*behavior = c->v.behavior;
- 		if (!c->sid[0]) {
-@@ -1958,14 +1960,23 @@ int security_fs_use(
- 				goto out;
- 		}
- 		*sid = c->sid[0];
-+		goto out;
-+	}
-+
-+	/* labeling behavior not in policy, use xattrs if possible */
-+	if (can_xattr) {
-+		*behavior = SECURITY_FS_USE_XATTR;
-+		*sid = SECINITSID_FS;
-+		goto out;
-+	}
-+
-+	/* no behavior in policy and can't use xattrs, try GENFS */
-+	rc = security_genfs_sid(fstype, "/", SECCLASS_DIR, sid);
-+	if (rc) {
-+		*behavior = SECURITY_FS_USE_NONE;
-+		rc = 0;
- 	} else {
--		rc = security_genfs_sid(fstype, "/", SECCLASS_DIR, sid);
--		if (rc) {
--			*behavior = SECURITY_FS_USE_NONE;
--			rc = 0;
--		} else {
--			*behavior = SECURITY_FS_USE_GENFS;
--		}
-+		*behavior = SECURITY_FS_USE_GENFS;
- 	}
+ static int aurule_avc_callback(u32 event, u32 ssid, u32 tsid,
+-                               u16 class, u32 perms, u32 *retained)
++			       u16 class, u32 perms, u32 *retained)
+ {
+ 	int err = 0;
  
- out:
 -- 
 1.5.5.1
 
