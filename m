@@ -1,83 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754089AbYGGP4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755735AbYGGP4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754089AbYGGP4Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 11:56:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753557AbYGGP4M
+	id S1755735AbYGGP4h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 11:56:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755304AbYGGP4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 11:56:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49142 "EHLO mx1.redhat.com"
+	Mon, 7 Jul 2008 11:56:23 -0400
+Received: from gw.goop.org ([64.81.55.164]:37690 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752677AbYGGP4K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 11:56:10 -0400
-Date: Mon, 7 Jul 2008 11:55:52 -0400
-From: "John W. Linville" <linville@redhat.com>
-To: Dave Jones <davej@redhat.com>, Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Cc: Stefan Becker <stefan.becker@nokia.com>
-Subject: Re: Oops/Warning report of the week of July 4th 2008
-Message-ID: <20080707155552.GF28109@redhat.com>
-References: <486EA0D6.2040504@linux.intel.com> <20080704222341.GB9792@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080704222341.GB9792@redhat.com>
-User-Agent: Mutt/1.4.1i
+	id S1755264AbYGGP4X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 11:56:23 -0400
+Message-ID: <48723C9D.8090504@goop.org>
+Date: Mon, 07 Jul 2008 08:56:13 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Lameter <clameter@sgi.com>, Petr Tesarik <ptesarik@suse.cz>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: Spinlocks: Factor our GENERIC_LOCKBREAK in order to avoid spin
+ with irqs disable
+References: <Pine.LNX.4.64.0805061220570.30604@schroedinger.engr.sgi.com> <48630420.1090102@goop.org> <200807072150.39571.nickpiggin@yahoo.com.au> <200807072152.59823.nickpiggin@yahoo.com.au>
+In-Reply-To: <200807072152.59823.nickpiggin@yahoo.com.au>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 04, 2008 at 06:23:41PM -0400, Dave Jones wrote:
-> On Fri, Jul 04, 2008 at 03:14:46PM -0700, Arjan van de Ven wrote:
->  
->  > The stats look very similar to last week; Fedora released a 2.6.25.9 based
->  > kernel upgrade, which led to a new sighting (at rank 12): the rt25xx wireless
->  > driver is calling flush_workqueue() with a NULL parameter in some cases.
->  > There has been a lot of thrash about the last report with regard to inclusion of wireless.git
->  > into the Fedora kernel rpms. As an observer I can say that it's both a blessing and a bog.
->  > It's a blessing in that this allows bugs to show up early before wireless.git hits mainline
->  > (as an example: this is the third or fourth fedora rpm upgrade in a row that showed new and exciting
->  > oopses/warnings due to rt25xx... as a result of very active development). It's a bog in that
->  > it may expose users to not-quite-ready code. So far it seems the Fedora kernel maintainers are happy
->  > enough with the overall balance that they continue the practice.
-> 
-> I actually think we need to scale things back a notch wrt pushing
-> wireless.git bits to users of released distros.  The recent disaster
-> in wireless caused a shitstorm in bugzilla that we never even saw
-> in rawhide.  A clear sign that we're pushing things too fast to users.
+Nick Piggin wrote:
+> Although, you wouldn't need to oversubscribe physical CPUs to hit
+> suboptimal behaviour.
+>
+> Basically, I just ask for performance improvement to be measured
+> with some "realistic" configuration, then it should be easier to
+> justify.
 
-Well I agree that we are pushing things too quickly to users.
-However I believe that improper use of Bodhi is at least as much to
-blame as I am.
+Overcommitting cpus system-wide is pretty common.  A use-case is 
+consolidating a pile of underused non-performance-critical servers into 
+one physical machine with a lot of VMs.  It doesn't take much load to 
+cause a dhcp request to the dhcp server to steal a cpu away from the 
+mysql server while it holds a lock...
 
-FWIW, I'd like to point out that a user (Stefan Becker) helped
-to sort-out my "human error" screw-up (i.e. not some buggy patch
-from upstream) that caused the latest flurry regarding busted TKIP
-for mac80211.  IMHO this is in the best traditions of open source,
-and a credit to our community.
- 
-> It's great that we're getting this stuff tested, but at the same time,
-> it doesn't give a great impression, and makes users reluctant to always
-> apply the latest updates if the last time around they have to deal with
-> this kind of fallout.
+I'll mail out my patches so we can have a more concrete discussion shortly.
 
-When patches went-in more slowly, we still hit nearly as many problems.
-Only then it took longer to solve them because we (i.e. Fedora) were
-so far behind what the upstream developers were doing that we couldn't
-get their attention.  As it stands, Fedora gets quick attention even
-from developers who use other distros.
-
-Still, maybe we are approaching a point where it is prudent to slow
-some things down for Fedora.  I sent a proposal along those lines
-to fedora-kernel-list.  I just don't think we should be too quick
-to drop the goodness we are getting by staying close to upstream on
-wireless.  And in either event, we may need to find another monkey,
-because I've been finding it hard enough to keep-up with dumping
-patches to Fedora as-is.
-
-John
--- 
-John W. Linville
-linville@redhat.com
+    J
