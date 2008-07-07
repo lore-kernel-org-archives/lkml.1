@@ -1,45 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758127AbYGGVh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758472AbYGGViR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758127AbYGGVh2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 17:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755851AbYGGVhT
+	id S1758472AbYGGViR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 17:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756495AbYGGViE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 17:37:19 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:39868 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754161AbYGGVhS (ORCPT
+	Mon, 7 Jul 2008 17:38:04 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54669
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755851AbYGGViE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 17:37:18 -0400
-Message-ID: <48728C81.7080708@kernel.org>
-Date: Mon, 07 Jul 2008 14:37:05 -0700
-From: "H. Peter Anvin" <hpa@kernel.org>
-Organization: Linux Kernel Organization, Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: masbock@linux.vnet.ibm.com, x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [0/9] Use 64bit x86 machine check code for 32bit too
-References: <200807041120.678642023@firstfloor.org> <48728A0E.7010802@kernel.org>
-In-Reply-To: <48728A0E.7010802@kernel.org>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+	Mon, 7 Jul 2008 17:38:04 -0400
+Date: Mon, 07 Jul 2008 14:38:03 -0700 (PDT)
+Message-Id: <20080707.143803.99767036.davem@davemloft.net>
+To: mchan@broadcom.com
+Cc: dwmw2@infradead.org, bastian@waldi.eu.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] bnx2 - use request_firmware()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1215456981.5532.20.camel@dell>
+References: <C27F8246C663564A84BB7AB34397724201E1494B50@IRVEXCHCCR01.corp.ad.broadcom.com>
+	<1215421413.3189.199.camel@shinybook.infradead.org>
+	<1215456981.5532.20.camel@dell>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Andi Kleen wrote:
->> This patchkit uses the 64bit machine check code which is better in many
->> ways on 32bit x86 too. This is also the basis for some future machine
->> check work.
-> 
-> Hi Andi,
-> 
-> I tried applying your patch kit to -tip, but I'm getting build failures 
-> on i386; gcc-4.1.1-51.fc5.x86_64 with attached configuration.
-> 
+From: "Michael Chan" <mchan@broadcom.com>
+Date: Mon, 07 Jul 2008 11:56:21 -0700
 
-FWIW, this is rooting the branch on top of current linus.  Applied on 
-top of tip/auto-x86-next or tip/master, the patch does not apply.
+> The driver is not guaranteed to be backward or forward compatible with
+> the firmware.  It may be forward compatible in most cases (new firmware
+> may work with older driver) but there is no guarantee because it is
+> simply not necessary in the current model.
+> 
+> We also only test 1 driver + 1 firmware and no other combinations.
+> Separating the 2 makes things more complicated and prone to random
+> failures.
 
-	-hpa
+Right.
+
+I want to know what the actual "use case" is of this new stuff.
+
+Who in the world is going to actually want request_firmware() to find
+a firmware image other than the one which has been properly tested
+together with the driver by the driver maintainer?
+
+What "use case" is there other than the desire to seperate out the
+firmware in order to skirt the legal issues?
+
+These drivers which include their own firmware and do not use
+request_firmware() are functioning perfectly fine, have done so for
+many many years, and gain zero by having request_firmware() support.
+
+I think it is, in fact, the driver maintainer's perogative of whether
+they want request_firmware() to be supported by their driver or not.
+It is they who have to deal with any possible fallout.
