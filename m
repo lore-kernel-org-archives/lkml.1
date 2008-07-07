@@ -1,46 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756220AbYGGQa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755741AbYGGQdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756220AbYGGQa7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 12:30:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754104AbYGGQai
+	id S1755741AbYGGQdf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 12:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbYGGQd1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 12:30:38 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:39301 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754287AbYGGQai (ORCPT
+	Mon, 7 Jul 2008 12:33:27 -0400
+Received: from [194.117.236.238] ([194.117.236.238]:39780 "EHLO
+	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1753358AbYGGQd0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 12:30:38 -0400
-Date: Mon, 7 Jul 2008 18:43:03 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] Introduce copy_user_handle_tail routine
-Message-ID: <20080707164303.GD20428@one.firstfloor.org>
-References: <m37icazgt0.fsf@gravicappa.englab.brq.redhat.com> <alpine.LFD.1.10.0806281108240.4371@hp.linux-foundation.org> <m3lk0ngdo5.fsf@gravicappa.englab.brq.redhat.com> <alpine.LFD.1.10.0806300835220.28533@hp.linux-foundation.org> <m3fxqsjt22.fsf_-_@gravicappa.englab.brq.redhat.com> <486B8B6C.2050109@firstfloor.org> <m37ic4jr2w.fsf@gravicappa.englab.brq.redhat.com> <alpine.LFD.1.10.0807021930470.18105@woody.linux-foundation.org> <m34p71yjyx.fsf@gravicappa.englab.brq.redhat.com> <m3zlotx587.fsf@gravicappa.englab.brq.redhat.com>
+	Mon, 7 Jul 2008 12:33:26 -0400
+Date: Mon, 7 Jul 2008 19:33:09 +0300
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Josh Boyer <jwboyer@gmail.com>
+Cc: Jinkai Gao <mickeygjk@gmail.com>, Jan Engelhardt <jengelh@medozas.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Suggestion: LKM should be able to add system call for itself
+Message-ID: <20080707193309.18180945@linux360.ro>
+In-Reply-To: <1215440211.20774.48.camel@weaponx>
+References: <fb82a8210807062209t6cfe3e46m50a11b577f0540e7@mail.gmail.com>
+	<alpine.LNX.1.10.0807071131010.8248@fbirervta.pbzchgretzou.qr>
+	<fb82a8210807070700u4f191bfaq57df57c293567e4c@mail.gmail.com>
+	<1215440211.20774.48.camel@weaponx>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m3zlotx587.fsf@gravicappa.englab.brq.redhat.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 07, 2008 at 02:12:56PM +0200, Vitaly Mayatskikh wrote:
-> Vitaly Mayatskikh <v.mayatskih@gmail.com> writes:
+On Mon, 07 Jul 2008 10:16:51 -0400
+Josh Boyer <jwboyer@gmail.com> wrote:
+
+> > You are right. So we can use ascii name instead of number to
+> > identify the system call. Kernel will match the function with the
+> > name.To have backward compatibility, number should still be
+> > supported. Yes, it is not as easy as I thought, but as long as it
+> > is valuable and doable, we should have a try, right?
 > 
-> >> one), by limiting the byte-for-byte one to be within a page, but that 
-> >> would be a "future enhancement" thing.
-> >
-> > Btw, how much does it cost to CPU to do a fault? Can it be compared with
-> > average time of find_vma()?
+> So you have to search a list of strings using strcmp to determine what
+> syscall is being called?  That would be horrible for performance.
 > 
-> Remark: this is for preventing fault in memset, not byte-to-byte copy.
+> josh
+> 
 
-memset never faults.
+Actually it isn't that bad if you do it like dlsym()/dlopen() do it in
+userspace. That is, have the system linker fill in dynamic syscalls,
+possibly in a separate ELF section. This way you could version syscalls.
 
-The current code doesn't handle it and it never happened.
+Furthermore, it may make sense to implement all syscalls through glibc,
+so that the burden of maintaining obsolete/modified syscalls does not
+fall onto the kernel. This already happens for most syscalls, but the
+rest (mostly those Linux-specific) still rely on syscall numbers
+defined as macros.
 
--Andi
+But that still will _not_ solve the problem, because:
+- there are users which will only use older libc versions
+- there are statically linked executables
+- the modified/new syscall might not provide the same behavior, even
+when used through a compatibility (glibc) wrapper
+
+IOW, this problem can be reduced to any other instance where protocols
+or APIs get changed. This usually isn't a problem, but the kernel can't
+afford bloat to maintain compatibility.
+
+I hope this makes the issue more clear.
+
+
+	Cheers,
+	Eduard
