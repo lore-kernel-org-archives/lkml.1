@@ -1,202 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759965AbYGGBST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760187AbYGGBWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759965AbYGGBST (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 21:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757490AbYGGBSG
+	id S1760187AbYGGBWT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 21:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757501AbYGGBWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 21:18:06 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56972 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757443AbYGGBSE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 21:18:04 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 2/2] acpi: Disable IRQ 0 through I/O APIC for some HP systems
-Date: Mon, 7 Jul 2008 03:19:28 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>, Len Brown <lenb@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-next@vger.kernel.org,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>
-References: <Pine.LNX.4.55.0807010055070.30785@cliff.in.clinika.pl> <20080701202453.GD4896@elte.hu> <200807070102.38854.rjw@sisk.pl>
-In-Reply-To: <200807070102.38854.rjw@sisk.pl>
+	Sun, 6 Jul 2008 21:22:09 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:36785 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757461AbYGGBWH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 21:22:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=oAmIw5egerQyJrt9nCJGIFIlXVuiUhzehZ69IFwIC6YigPoQIQCeHUajQduTrQVqYw
+         LIkO5XnqCTFUOphD7Y5O254jcAPiHPR9tPbA61z65PjIq1SEcc2LLG9z9gvpuH8Es1cS
+         9j+CNcRe1VmGObVVEOEGWqEhREVXv494yLq+c=
+Message-ID: <9871ee5f0807061822l2871765bhd92aa177c0d5d55b@mail.gmail.com>
+Date: Sun, 6 Jul 2008 21:22:07 -0400
+From: "Timothy Normand Miller" <theosib@gmail.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: HELP: Getting unexpected fakeraid behavior. Fix?
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <9871ee5f0807061424o535c6d7eg3071da6e31e0b58e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807070319.29470.rjw@sisk.pl>
+References: <9871ee5f0807061307ncc55104y477c57be3e91b75f@mail.gmail.com>
+	 <20080706131937.13065312@infradead.org>
+	 <9871ee5f0807061424o535c6d7eg3071da6e31e0b58e@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 7 of July 2008, Rafael J. Wysocki wrote:
-> On Tuesday, 1 of July 2008, Ingo Molnar wrote:
-> > 
-> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > 
-> > > On Tuesday, 1 of July 2008, Ingo Molnar wrote:
-> > > > 
-> > > > * Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> > > > 
-> > > > > Assuming it works for Rafael (still haven't had time to pull my nx6125 
-> > > > > out of storage):
-> > > > > 
-> > > > > Signed-off-by: mjg@redhat.com
-> > > > 
-> > > > Rafael, could you please try the latest tip/master that i've just pushed 
-> > > > out:
-> > > > 
-> > > >   http://people.redhat.com/mingo/tip.git/README
-> > > > 
-> > > > it has the final form of these changes integrated - it should in 
-> > > > theory work out of box on your system, with no boot parameters or 
-> > > > other explicit quirks needed anywhere.
-> > > 
-> > > I tested patches [1/2] (your version) and [2/2] on top of today's 
-> > > linux-next and they work just fine.
-> > 
-> > thanks Rafael!
-> 
-> Well, I'm afraid that my information wasn't correct.  The patches actually
-> don't work, but I had my own additional patch that fixed the problem applied,
-> which I've only just discovered.  Sorry for the confusion and the issue is
-> still unfixed.
+I have absolutely no idea what I'm doing, but the kernel source is
+well formatted.  Here's what I found.  I'm looking in
+"drivers/md/dm-raid1.c".
 
-Appended is a patch that actually works for me (it's missing the i386 part,
-but I can't test that anyway).
+There's this function that seems to be involved in initiating reads:
 
-Please note two things:
-(1) The whole acpi_dmi_table[] thing originally depended on __i386__, so it
-    wouldn't work on x86-64 no matter what.  I removed that dependecy, but
-    I have no idea why it was there and so I'm not sure if that's correct. 
-(2) The clear_IO_APIC_pin(apic1, pin1) done if disable_irq0_through_ioapic is
-    true is absolutely essential.  The symptoms are 100% reproducible without it.
+static void do_reads(struct mirror_set *ms, struct bio_list *reads)
+ 970{
+ 971        region_t region;
+ 972        struct bio *bio;
+ 973        struct mirror *m;
+ 974
+ 975        while ((bio = bio_list_pop(reads))) {
+ 976                region = bio_to_region(&ms->rh, bio);
+ 977                m = get_default_mirror(ms);
+ 978
+ 979                /*
+ 980                 * We can only read balance if the region is in sync.
+ 981                 */
+ 982                if (likely(rh_in_sync(&ms->rh, region, 1)))
+ 983                        m = choose_mirror(ms, bio->bi_sector);
+ 984                else if (m && atomic_read(&m->error_count))
+ 985                        m = NULL;
+ 986
+ 987                if (likely(m))
+ 988                        read_async_bio(m, bio);
+ 989                else
+ 990                        bio_endio(bio, -EIO);
+ 991        }
+ 992}
 
-Thanks,
-Rafael
+It calls this function:
 
+866static struct mirror *choose_mirror(struct mirror_set *ms, sector_t sector)
+ 867{
+ 868        struct mirror *m = get_default_mirror(ms);
+ 869
+ 870        do {
+ 871                if (likely(!atomic_read(&m->error_count)))
+ 872                        return m;
+ 873
+ 874                if (m-- == ms->mirror)
+ 875                        m += ms->nr_mirrors;
+ 876        } while (m != get_default_mirror(ms));
+ 877
+ 878        return NULL;
+ 879}
 
----
- arch/x86/kernel/acpi/boot.c  |   43 +++++++++++++++++++++++++++++++++++++------
- arch/x86/kernel/io_apic_64.c |   19 ++++++++++++++-----
- 2 files changed, 51 insertions(+), 11 deletions(-)
+which seems to always choose the default mirror unless there's an
+error on the default mirror.  I have absolutely no idea where to put
+it, but it seems to me that a solution would be to keep track of the
+last mirror and select the next one each time this function is called.
 
-Index: linux-next/arch/x86/kernel/acpi/boot.c
-===================================================================
---- linux-next.orig/arch/x86/kernel/acpi/boot.c
-+++ linux-next/arch/x86/kernel/acpi/boot.c
-@@ -1363,8 +1363,6 @@ static void __init acpi_process_madt(voi
- 	return;
- }
- 
--#ifdef __i386__
--
- static int __init disable_acpi_irq(const struct dmi_system_id *d)
- {
- 	if (!acpi_force) {
-@@ -1415,6 +1413,17 @@ static int __init force_acpi_ht(const st
- }
- 
- /*
-+ * Don't register any I/O APIC entries for the 8254 timer IRQ.
-+ */
-+static int __init
-+dmi_disable_irq0_through_ioapic(const struct dmi_system_id *d)
-+{
-+	pr_notice("%s detected: disabling IRQ 0 through I/O APIC\n", d->ident);
-+	force_disable_irq0_through_ioapic();
-+	return 0;
-+}
-+
-+/*
-  * If your system is blacklisted here, but you find that acpi=force
-  * works for you, please contact acpi-devel@sourceforge.net
-  */
-@@ -1581,11 +1590,35 @@ static struct dmi_system_id __initdata a
- 		     DMI_MATCH(DMI_PRODUCT_NAME, "TravelMate 360"),
- 		     },
- 	 },
-+	/*
-+	 * HP laptops which use a DSDT reporting as HP/SB400/10000,
-+	 * which includes some code which overrides all temperature
-+	 * trip points to 16C if the INTIN2 input of the I/O APIC
-+	 * is enabled.  This input is incorrectly designated the
-+	 * ISA IRQ 0 via an interrupt source override even though
-+	 * it is wired to the output of the master 8259A and INTIN0
-+	 * is not connected at all.  Abandon any attempts to route
-+	 * IRQ 0 through the I/O APIC therefore.
-+	 */
-+	{
-+	 .callback = dmi_disable_irq0_through_ioapic,
-+	 .ident = "HP NX6125 laptop",
-+	 .matches = {
-+		     DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
-+		     DMI_MATCH(DMI_PRODUCT_NAME, "HP Compaq nx6125"),
-+		     },
-+	 },
-+	{
-+	 .callback = dmi_disable_irq0_through_ioapic,
-+	 .ident = "HP NX6325 laptop",
-+	 .matches = {
-+		     DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
-+		     DMI_MATCH(DMI_PRODUCT_NAME, "HP Compaq nx6325"),
-+		     },
-+	 },
- 	{}
- };
- 
--#endif				/* __i386__ */
--
- /*
-  * acpi_boot_table_init() and acpi_boot_init()
-  *  called from setup_arch(), always.
-@@ -1613,9 +1646,7 @@ int __init acpi_boot_table_init(void)
- {
- 	int error;
- 
--#ifdef __i386__
- 	dmi_check_system(acpi_dmi_table);
--#endif
- 
- 	/*
- 	 * If acpi_disabled, bail out
-Index: linux-next/arch/x86/kernel/io_apic_64.c
-===================================================================
---- linux-next.orig/arch/x86/kernel/io_apic_64.c
-+++ linux-next/arch/x86/kernel/io_apic_64.c
-@@ -94,6 +94,13 @@ static int no_timer_check;
- 
- static int disable_timer_pin_1 __initdata;
- 
-+static bool disable_irq0_through_ioapic __initdata;
-+
-+void __init force_disable_irq0_through_ioapic(void)
-+{
-+	disable_irq0_through_ioapic = true;
-+}
-+
- int timer_through_8259 __initdata;
- 
- /* Where if anywhere is the i8259 connect in external int mode */
-@@ -1714,12 +1721,14 @@ static inline void __init check_timer(vo
- 		apic2 = apic1;
- 	}
- 
--	replace_pin_at_irq(0, 0, 0, apic1, pin1);
--	apic1 = 0;
--	pin1 = 0;
--	setup_timer_IRQ0_pin(apic1, pin1, cfg->vector);
-+	if (disable_irq0_through_ioapic) {
-+		clear_IO_APIC_pin(apic1, pin1);
-+	} else {
-+		replace_pin_at_irq(0, 0, 0, apic1, pin1);
-+		apic1 = 0;
-+		pin1 = 0;
-+		setup_timer_IRQ0_pin(apic1, pin1, cfg->vector);
- 
--	if (pin1 != -1) {
- 		/*
- 		 * Ok, does IRQ0 through the IOAPIC work?
- 		 */
+That would be a simple and blind round-robin, which isn't necessarily
+the smartest thing to do, so it would require testing.  It also occurs
+to me, given how long this code has been around (since 2003), that the
+idea of distributing the read load may have been considered and
+rejected.  Was it?  If not, this could be a valuable boost to Linux
+RAID performance.  (I chose RAID1 both for the redundancy AND the read
+performance boost, and so I was surprised to find that there was no
+read performance boost under Linux.)
+
+What is dm-round-robin.c for?  Is there a place where the kernel
+source is heavily annotated so that a newbie can navigate it and
+figure out what does what?
+
+Cheers.
+
+-- 
+Timothy Normand Miller
+http://www.cse.ohio-state.edu/~millerti
+Open Graphics Project
