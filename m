@@ -1,95 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756273AbYGGWiP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756408AbYGGWmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756273AbYGGWiP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 18:38:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbYGGWiA
+	id S1756408AbYGGWmU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 18:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbYGGWmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 18:38:00 -0400
-Received: from OSB1387.piap.pl ([195.187.100.11]:60639 "EHLO khc.piap.pl"
+	Mon, 7 Jul 2008 18:42:12 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:35352 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754040AbYGGWh7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 18:37:59 -0400
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Uwe =?iso-8859-2?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>,
-       Oliver Neukum <oliver@neukum.org>,
-       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [RFC] MAINTAINERS service, was: Re: alphabetic ordering of MAINTAINERS
-References: <20080704063455.GA13999@digi.com>
-	<200807040852.27809.oliver@neukum.org>
-	<m3k5g1zv3u.fsf_-_@maximus.localdomain>
-	<20080704134426.GA32700@digi.com> <m37ic1zqqp.fsf@maximus.localdomain>
-	<487217E1.2040205@s5r6.in-berlin.de>
-	<m3r6a5il2m.fsf@maximus.localdomain>
-	<48726BF6.8020308@s5r6.in-berlin.de>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 08 Jul 2008 00:37:55 +0200
-In-Reply-To: <48726BF6.8020308@s5r6.in-berlin.de> (Stefan Richter's message of "Mon\, 07 Jul 2008 21\:18\:14 +0200")
-Message-ID: <m37ibxl3r0.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1753980AbYGGWmL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 18:42:11 -0400
+Subject: Re: [patch 3/4] Container Freezer: Implement freezer cgroup
+	subsystem
+From: Matt Helsley <matthltc@us.ibm.com>
+To: Paul Menage <menage@google.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Cedric Le Goater <clg@fr.ibm.com>
+In-Reply-To: <6599ad830806241427n4e174994oce21e93a034b7051@mail.gmail.com>
+References: <20080624135823.417569216@us.ibm.com>
+	 <20080624135824.420875709@us.ibm.com>
+	 <6599ad830806241427n4e174994oce21e93a034b7051@mail.gmail.com>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Mon, 07 Jul 2008 15:42:08 -0700
+Message-Id: <1215470528.9023.6.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter <stefanr@s5r6.in-berlin.de> writes:
 
->> Unfortunately we can't enforce that. People are working with old
->> kernels (think of heavily-modified vendor trees), people send patches
->> against old kernels, and we accept such patches (if it makes sense,
->> of course).
->
-> If I get such patches and can apply them without /very/ much work, I
-> gladly take them of course too.
->
-> But these are not the people anyway to which this maintainers lookup
-> service would be targeted to.
+On Tue, 2008-06-24 at 14:27 -0700, Paul Menage wrote: 
+> On Tue, Jun 24, 2008 at 6:58 AM, Matt Helsley <matthltc@us.ibm.com> wrote:
+> > From: Cedric Le Goater <clg@fr.ibm.com>
+> > Subject: [patch 3/4] Container Freezer: Implement freezer cgroup subsystem
+> >
+> > This patch implements a new freezer subsystem for Paul Menage's
+> > control groups framework.
+> 
+> You can s/Paul Menage's// now that it's in mainline.
 
-They, too. Why not?
+OK. Incidentally sorry for the delayed reply. Got so caught up in making
+changes in response to your email that I neglected to reply sooner. I'll
+be posting the changes shortly but first I want to address your earlier
+mail.
 
-> As I see it, the people who want such a
-> service are those who frequently send patches for various different
-> areas of the kernel.
+> > +static const char *freezer_state_strs[] = {
+> > +       "RUNNING",
+> > +       "FREEZING",
+> > +       "FROZEN",
+> > +};
+> > +
+> > +/* Check and update whenever adding new freezer states. Currently is:
+> > +   strlen("FREEZING") */
+> > +#define STATE_MAX_STRLEN 8
+> > +
+> 
+> That's a bit nasty ...
+> 
+> But hopefully it could go away when the write_string() method is
+> available in cgroups? (See my patchset from earlier this week).
 
-Sure, they too.
+I've looked at this and I like it. I've changed the patches to use this
+interface.
 
-> (OTOH, occasional posters who don't even check if their patch would
-> apply to a newer kernel too before they post it will probably also
-> have less interest in figuring out the 100% optimum To: and Cc: list
-> for their submission.
+> > +
+> > +struct cgroup_subsys freezer_subsys;
+> > +
+> > +/* Locking and lock ordering:
+> > + *
+> > + * can_attach(), cgroup_frozen():
+> > + * rcu (task->cgroup, freezer->state)
+> > + *
+> > + * freezer_fork():
+> > + * rcu (task->cgroup, freezer->state)
+> > + *  freezer->lock
+> > + *   task_lock
+> > + *    sighand->siglock
+> > + *
+> > + * freezer_read():
+> > + * rcu (freezer->state)
+> > + *  freezer->lock (upgrade to write)
+> > + *   read_lock css_set_lock
+> > + *
+> > + * freezer_write()
+> > + * cgroup_lock
+> > + *  rcu
+> > + *   freezer->lock
+> > + *    read_lock css_set_lock
+> > + *     task_lock
+> > + *      sighand->siglock
+> > + *
+> > + * freezer_create(), freezer_destroy():
+> > + * cgroup_lock [ by cgroup core ]
+> > + */
+> 
+> 
+> > +static int freezer_can_attach(struct cgroup_subsys *ss,
+> > +                             struct cgroup *new_cgroup,
+> > +                             struct task_struct *task)
+> > +{
+> > +       struct freezer *freezer;
+> > +       int retval = 0;
+> > +
+> > +       /*
+> > +        * The call to cgroup_lock() in the freezer.state write method prevents
+> > +        * a write to that file racing against an attach, and hence the
+> > +        * can_attach() result will remain valid until the attach completes.
+> > +        */
+> > +       rcu_read_lock();
+> > +       freezer = cgroup_freezer(new_cgroup);
+> > +       if (freezer->state == STATE_FROZEN)
+> > +               retval = -EBUSY;
+> 
+> Is it meant to be OK to move a task into a cgroup that's currently in
+> the FREEZING state but not yet fully frozen?
 
-And less skills. Though they would manage a single patch submission
-address I guess.
+Yes.
 
->  A "tell me a list of mail addresses; whatever
-> you give me, I am not really interested in the particulars" service
-> would not be an appropriate tool for these people.)
+> > +       struct freezer *freezer;
+> > +
+> > +       rcu_read_lock(); /* needed to fetch task's cgroup
+> > +                           can't use task_lock() here because
+> > +                           freeze_task() grabs that */
+> 
+> I'm not sure that RCU is the right thing for this. All that the RCU
+> lock will guarantee is that the freezer structure you get a pointer to
+> doesn't go away. It doesn't guarantee that the task doesn't move
+> cgroup, or that the cgroup doesn't get a freeze request via a write.
+> But in this case, the fork callback is called before the task is added
+> to the task_list/pidhash, or to its cgroups' linked lists. So it
+> shouldn't be able to change groups. Racing against a concurrent write
+> to the cgroup's freeze file may be more of an issue.
 
-I think it would. Why not?
+I think you're right. The problem is it could change state between the
+test of the state and the call to freeze_task(). If we're changing from
+FROZEN to running that would leave us with a frozen task even though
+we're in the running state. Thanks for spotting this one.
 
-> Not at all.  These are the forums where patches can be discussed in
-> more detail because knowledgeable people are subscribed there.  You
-> also have archives which you can query for patch postings and their
-> discussions.
+> Can you add a __freeze_task() that has to be called with task_lock(p)
+> already held?
 
-Same here, except that it would be easier = "faster" and/or
-"possible". "Faster" for regular kernel contributors and "possible"
-for many occasional ones.
+task_lock() is no longer acquired in freeze_task(). So I've updated the
+patches to drop RCU in favor of acquiring the task_lock() here. It's
+still taken in thaw_process() however, so something like this is still
+needed.
 
-> What you don't get is of course a unified "look and feel".  Some list
-> archives are crap, some lists are subscriber-only, some kernel areas
-> are not covered by a special list.
+> > +       freezer = task_freezer(task);
+> 
+> Maybe BUG_ON(freezer->state == STATE_FROZEN) ?
 
-Not the most important points IMHO but yes, that too.
+Seems appropriate.
 
-> But the latter problem won't
-> really go away with the proposed maintainers lookup service.
+> > +
+> > +static ssize_t freezer_read(struct cgroup *cgroup,
+> > +                           struct cftype *cft,
+> > +                           struct file *file, char __user *buf,
+> > +                           size_t nbytes, loff_t *ppos)
+> > +{
+> > +       struct freezer *freezer;
+> > +       enum freezer_state state;
+> > +
+> > +       rcu_read_lock();
+> > +       freezer = cgroup_freezer(cgroup);
+> > +       state = freezer->state;
+> > +       if (state == STATE_FREEZING) {
+> > +               /* We change from FREEZING to FROZEN lazily if the cgroup was
+> > +                * only partially frozen when we exitted write. */
+> > +               spin_lock_irq(&freezer->lock);
+> > +               if (freezer_check_if_frozen(cgroup)) {
+> > +                       freezer->state = STATE_FROZEN;
+> > +                       state = STATE_FROZEN;
+> > +               }
+> > +               spin_unlock_irq(&freezer->lock);
+> > +       }
+> > +       rcu_read_unlock();
+> > +
+> > +       return simple_read_from_buffer(buf, nbytes, ppos,
+> > +                                      freezer_state_strs[state],
+> > +                                      strlen(freezer_state_strs[state]));
+> > +}
+> 
+> Technically this could return weird results if someone read it
+> byte-by-byte and the status changed between reads. If you used
+> read_seq_string rather than read you'd avoid that.
 
-Well, I think it should. Why not?
-I don't say we replace mailing lists, far from it.
-I expect mailing lists to be subscribed to the service.
+Good point. I've made that change as well. 
 
-Come on, the theory looks good but the thing needs to be created and
-_that_ may be the weak spot :-)
--- 
-Krzysztof Halasa
+> > +               return -EIO;
+> > +
+> > +       cgroup_lock();
+> 
+> If you're taking cgroup_lock() here in freezer_write(), there's no
+> need for the rcu_read_lock() in freezer_freeze()
+
+Yup. Fixed since I'll no longer be using RCU.
+
+Cheers,
+	-Matt Helsley
+
