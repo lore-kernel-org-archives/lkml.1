@@ -1,64 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbYGGQCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755266AbYGGQEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754684AbYGGQCk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 12:02:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbYGGQCc
+	id S1755266AbYGGQEV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 12:04:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753676AbYGGQEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 12:02:32 -0400
-Received: from colo.lackof.org ([198.49.126.79]:59196 "EHLO colo.lackof.org"
+	Mon, 7 Jul 2008 12:04:09 -0400
+Received: from lucidpixels.com ([75.144.35.66]:57299 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753358AbYGGQCb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 12:02:31 -0400
-Date: Mon, 7 Jul 2008 10:02:03 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Michael Ellerman <michael@ellerman.id.au>, linux-pci@vger.kernel.org,
-       kaneshige.kenji@jp.fujitsu.com, mingo@elte.hu, tglx@linutronix.de,
-       davem@davemloft.net, dan.j.williams@intel.com,
-       Martine.Silbermann@hp.com, benh@kernel.crashing.org,
-       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>
-Subject: Re: [PATCH 1/4] PCI MSI: Store the number of messages in the
-	msi_desc
-Message-ID: <20080707160203.GA7521@colo.lackof.org>
-References: <20080705132728.GO14894@parisc-linux.org> <1215264855-4372-1-git-send-email-matthew@wil.cx> <1215396324.19157.14.camel@localhost> <20080707024125.GU14894@parisc-linux.org> <1215402512.9862.16.camel@localhost> <20080707120418.GZ14894@parisc-linux.org>
+	id S1753411AbYGGQEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 12:04:08 -0400
+Date: Mon, 7 Jul 2008 12:04:06 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Gerhard Wiesinger <lists@wiesinger.com>
+cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: Lots of con-current I/O = resets SATA link? (2.6.25.10)
+In-Reply-To: <alpine.LFD.1.10.0807071705490.2997@bbs.intern>
+Message-ID: <alpine.DEB.1.10.0807071149530.32508@p34.internal.lan>
+References: <alpine.DEB.1.10.0807051252200.12562@p34.internal.lan> <alpine.LFD.1.10.0807071649340.1160@bbs.intern> <alpine.LFD.1.10.0807071705490.2997@bbs.intern>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080707120418.GZ14894@parisc-linux.org>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 07, 2008 at 06:04:18AM -0600, Matthew Wilcox wrote:
-> On Mon, Jul 07, 2008 at 01:48:32PM +1000, Michael Ellerman wrote:
-> > Yeah seriously :)  The _ is part of it, but MSI_ATTRIB is uglier than
-> > PCI_CAP_ID_MSI exactly because it's not PCI_CAP_ID_MSI, which exists and
-> > is well defined and is used in the rest of the code.
-> 
-> Here's an improvement over both the status quo and my patch -- simply
-> use a single bit called is_msix.
-
-I prefer the "is_msix" for readability though I'm not particularly fond
-of bit fields (in any form).
 
 
-...
-> @@ -589,12 +558,13 @@ void pci_msi_shutdown(struct pci_dev* dev)
->  		u32 mask = entry->msi_attrib.maskbits_mask;
->  		msi_set_mask_bits(dev->irq, mask, ~mask);
->  	}
-> -	if (!entry->dev || entry->msi_attrib.type != PCI_CAP_ID_MSI)
-> +	if (!entry->dev || entry->msi_attrib.is_msix)
->  		return;
+On Mon, 7 Jul 2008, Gerhard Wiesinger wrote:
 
-This is why I don't like bit fields.
-"uninitialized" (3rd state) doesn't exist.
-Is there something else in place to catch that state?
+> Hello!
+>
+> Missing logs attached ...
+>
+> Ciao,
+> Gerhard
 
-(It's clearly a bug if someone did that and maybe I'm
-being too paranoid.)
 
-hth,
-grant
+Hello!
+
+I'm having a similar problem with a brand new Hardware under Fedora 9 x64
+8GB RAM
+Motherboard: ASUS M3N-H/HDMI
+Chipset: NForce 8300/Nvidia 750a
+CPU: AMD AM2 5600+, 2.9GHz, Brisbane Dual Core
+Kernel: 2.6.25.9-76.fc9.x86_64
+Smartmontools: smartmontools-5.38-2.fc9.x86_64
+BIOS AHCI mode
+Power cables for ata3 and ata4 are on the same cable from an Enermax power
+supply.
+
+ata1.00: ATA-7: SAMSUNG HD103UJ, 1AA01109, max UDMA7
+ata2.00: ATA-7: SAMSUNG HD103UJ, 1AA01109, max UDMA7
+ata3.00: ATA-7: SAMSUNG HD103UJ, 1AA01109, max UDMA7
+ata4.00: ATA-7: SAMSUNG HD103UJ, 1AA01109, max UDMA7
+ata5.00: ATA-7: SAMSUNG HD103UJ, 1AA01109, max UDMA7
+ata6.00: ATA-7: SAMSUNG HD103UJ, 1AA01109, max UDMA7
+scsi 0:0:0:0: Direct-Access     ATA      SAMSUNG HD103UJ  1AA0 PQ: 0 ANSI: 5
+scsi 1:0:0:0: Direct-Access     ATA      SAMSUNG HD103UJ  1AA0 PQ: 0 ANSI: 5
+scsi 2:0:0:0: Direct-Access     ATA      SAMSUNG HD103UJ  1AA0 PQ: 0 ANSI: 5
+scsi 3:0:0:0: Direct-Access     ATA      SAMSUNG HD103UJ  1AA0 PQ: 0 ANSI: 5
+scsi 4:0:0:0: Direct-Access     ATA      SAMSUNG HD103UJ  1AA0 PQ: 0 ANSI: 5
+scsi 5:0:0:0: Direct-Access     ATA      SAMSUNG HD103UJ  1AA0 PQ: 0 ANSI: 5
+
+Problem occours only on ata3, I've changed the disk Port 3 the third time (new
+disks) and changed the SATA cable, too. Problem still exists.
+
+Sometimes a RAID rebuild doesn't work at all.
+
+To get the drive to live I've to power down the system.
+
+Logs are attached.
+
+Can it be a bug on concurrent access of smartctl/smartd?
+
+Any ideas?
+
+Ciao,
+Gerhard
+
+--
+
+Hi Gerhard,
+
+It /could/ be the port itself if you have changed the cable and disk..
+
+Have you tried loading the disk with dd and seeing if you can reproduce 
+the problem? You are getting the same error I get generally, I can 
+recommend turning OFF NCQ first and see if the problem goes away.
+
+# Define DISKS.
+cd /sys/block
+DISKS=$(/bin/ls -1d sd[a-z])
+
+# Disable NCQ on all disks.
+echo "Disabling NCQ on all disks..."
+for i in $DISKS
+do
+   echo "Disabling NCQ on $i"
+   echo 1 > /sys/block/"$i"/device/queue_depth
+done
+
+
+Justin.
+
