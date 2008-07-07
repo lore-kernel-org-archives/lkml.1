@@ -1,252 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbYGGSID@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbYGGSJ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755044AbYGGSID (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 14:08:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbYGGSHv
+	id S1756705AbYGGSJ4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 14:09:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbYGGSJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 14:07:51 -0400
-Received: from mail.atlantis.sk ([80.94.52.35]:45864 "EHLO mail.atlantis.sk"
+	Mon, 7 Jul 2008 14:09:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36347 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756746AbYGGSHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 14:07:50 -0400
-From: Ondrej Zary <linux@rainbow-software.org>
-To: Alan Cox <alan@redhat.com>
-Subject: Re: pata_it821x completely broken
-Date: Mon, 7 Jul 2008 20:07:38 +0200
-User-Agent: KMail/1.9.9
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-References: <200807042153.56644.linux@rainbow-software.org> <200807062350.35650.linux@rainbow-software.org> <20080706230118.GA25905@devserv.devel.redhat.com>
-In-Reply-To: <20080706230118.GA25905@devserv.devel.redhat.com>
+	id S1754421AbYGGSJs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 14:09:48 -0400
+Message-ID: <48725BEA.3090203@redhat.com>
+Date: Mon, 07 Jul 2008 14:09:46 -0400
+From: Tony Camuso <tcamuso@redhat.com>
+Reply-To: tcamuso@redhat.com
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       "Schoeller, Patrick (Linux - Houston, TX)" <Patrick.Schoeller@hp.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: bfsort whitelist patch apparently applied twice
+References: <48722996.4050601@redhat.com> <200807070959.51789.jbarnes@virtuousgeek.org>
+In-Reply-To: <200807070959.51789.jbarnes@virtuousgeek.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807072007.40818.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 07 July 2008 01:01:18 Alan Cox wrote:
-> On Sun, Jul 06, 2008 at 11:50:33PM +0200, Ondrej Zary wrote:
-> > Thanks, it does not complain about HPA anymore. However, there are some
-> > error messages left. I thought that they were connected with the HPA, but
-> > obviously they aren't:
->
-> FLUSH_CACHE .. I would hope the firmware supports that if advertised. If so
-> then adding it to the switch in it821x_smart_qc_issue might do the trick
-> (ATA_CMD_FLUSH and ATA_CMD_FLUSH_EXT). I'd be interested to know if your
-> firmware seems to support that or whether the entire thing goes castors up
-> if it gets through.
+Yes, that fixes it.
 
-It breaks - I get more errors and it takes ages to reboot. Looks like the 
-firmware does not like that command. I don't believe that it's so stupid - is 
-it even possible to safely turn off the machine when neither FLUSH nor STOP 
-command can be issued?
+Thanks, Jesse.
 
-sd 2:0:0:0: [sdb] Synchronizing SCSI cache
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3.00: status: { DRDY }
-ata3: port is slow to respond, please be patient (Status 0xd0)
-ata3: device not ready (errno=-16), forcing hardreset
-ata3: soft resetting link
-ata3.00: configured for DMA
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3.00: status: { DRDY }
-ata3: port is slow to respond, please be patient (Status 0xd0)
-ata3: device not ready (errno=-16), forcing hardreset
-ata3: soft resetting link
-ata3.00: configured for DMA
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3.00: status: { DRDY }
-ata3: port is slow to respond, please be patient (Status 0xd0)
-ata3: device not ready (errno=-16), forcing hardreset
-ata3: soft resetting link
-ata3.00: configured for DMA
-ata3: EH complete
-ata3.00: limiting speed to UDMA/133:PIO6
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3.00: status: { DRDY }
-ata3: port is slow to respond, please be patient (Status 0xd0)
-ata3: device not ready (errno=-16), forcing hardreset
-ata3: soft resetting link
-ata3.00: configured for DMA
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3.00: status: { DRDY }
-ata3: port is slow to respond, please be patient (Status 0xd0)
-ata3: device not ready (errno=-16), forcing hardreset
-ata3: soft resetting link
-ata3.00: configured for DMA
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3.00: status: { DRDY }
-ata3: port is slow to respond, please be patient (Status 0xd0)
-ata3: device not ready (errno=-16), forcing hardreset
-ata3: soft resetting link
-ata3.00: configured for DMA
-ata3: EH complete
-sd 2:0:0:0: [sdb] 781422768 512-byte hardware sectors (400088 MB)
-sd 2:0:0:0: [sdb] Write Protect is off
-sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support 
-DPO or FUA
-sd 2:0:0:0: [sdb] 781422768 512-byte hardware sectors (400088 MB)
-sd 2:0:0:0: [sdb] Write Protect is off
-sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support 
-DPO or FUA
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3.00: status: { DRDY }
-ata3: port is slow to respond, please be patient (Status 0xd0)
-ata3: device not ready (errno=-16), forcing hardreset
-ata3: soft resetting link
-ata3.00: configured for DMA
-ata3: EH complete
-ata3.00: limiting speed to UDMA/33:PIO6
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3.00: status: { DRDY }
-ata3: port is slow to respond, please be patient (Status 0xd0)
-ata3: device not ready (errno=-16), forcing hardreset
-ata3: soft resetting link
-ata3.00: configured for DMA
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3.00: status: { DRDY }
-ata3: port is slow to respond, please be patient (Status 0xd0)
-ata3: device not ready (errno=-16), forcing hardreset
-ata3: soft resetting link
-ata3.00: configured for DMA
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3.00: status: { DRDY }
-ata3: port is slow to respond, please be patient (Status 0xd0)
-ata3: device not ready (errno=-16), forcing hardreset
-ata3: soft resetting link
-ata3.00: configured for DMA
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3.00: status: { DRDY }
-ata3: port is slow to respond, please be patient (Status 0xd0)
-ata3: device not ready (errno=-16), forcing hardreset
-ata3: soft resetting link
-ata3.00: configured for DMA
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3.00: status: { DRDY }
-ata3: port is slow to respond, please be patient (Status 0xd0)
-ata3: device not ready (errno=-16), forcing hardreset
-ata3: soft resetting link
-ata3.00: configured for DMA
-ata3: EH complete
-sd 2:0:0:0: [sdb] 781422768 512-byte hardware sectors (400088 MB)
-sd 2:0:0:0: [sdb] Write Protect is off
-sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support 
-DPO or FUA
-sd 2:0:0:0: [sdb] 781422768 512-byte hardware sectors (400088 MB)
-sd 2:0:0:0: [sdb] Write Protect is off
-sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support 
-DPO or FUA
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3.00: status: { DRDY }
-ata3: port is slow to respond, please be patient (Status 0xd0)
-ata3: device not ready (errno=-16), forcing hardreset
-ata3: soft resetting link
-ata3.00: configured for DMA
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3.00: status: { DRDY }
-ata3: port is slow to respond, please be patient (Status 0xd0)
-ata3: device not ready (errno=-16), forcing hardreset
-ata3: soft resetting link
-ata3.00: configured for DMA
-ata3: EH complete
-ata3.00: limiting speed to PIO6
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3.00: status: { DRDY }
-ata3: port is slow to respond, please be patient (Status 0xd0)
-ata3: device not ready (errno=-16), forcing hardreset
-ata3: soft resetting link
-ata3.00: configured for DMA
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3.00: status: { DRDY }
-ata3: port is slow to respond, please be patient (Status 0xd0)
-ata3: device not ready (errno=-16), forcing hardreset
-ata3: soft resetting link
-ata3.00: configured for DMA
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3.00: status: { DRDY }
-ata3: port is slow to respond, please be patient (Status 0xd0)
-ata3: device not ready (errno=-16), forcing hardreset
-ata3: soft resetting link
-ata3.00: configured for DMA
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3.00: status: { DRDY }
-ata3: port is slow to respond, please be patient (Status 0xd0)
-ata3: device not ready (errno=-16), forcing hardreset
-ata3: soft resetting link
-ata3.00: configured for DMA
-ata3: EH complete
-sd 2:0:0:0: [sdb] 781422768 512-byte hardware sectors (400088 MB)
-sd 2:0:0:0: [sdb] Write Protect is off
-sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support 
-DPO or FUA
-sd 2:0:0:0: [sdb] 781422768 512-byte hardware sectors (400088 MB)
-sd 2:0:0:0: [sdb] Write Protect is off
-sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support 
-DPO or FUA
-sd 2:0:0:0: [sdb] Result: hostbyte=0x00 driverbyte=0x08
-sd 2:0:0:0: [sdb] Sense Key : 0xb [current] [descriptor]
-sd 2:0:0:0: [sdb] ASC=0x0 ASCQ=0x0
-Restarting system.
-machine restart
+Regards,
+Tony
 
+Jesse Barnes wrote:
+> On Monday, July 07, 2008 7:35 am Tony Camuso wrote:
+>> In the most recent pull from Linus' tree, I see that the patch
+>> I submitted on 14-May-2008 was merged twice in the git log.
+>>
+>>   commits: a16b4bcd31a73a81b6d2b8ffa6b5f6ed01cf6d64
+>>       and: a1676072558854b95336c8f7db76b0504e909a0a
+>>
+>> The result is that now the DL360 and DL380 are whitelisted twice
+>> and the DL385 G2 and DL585 G2 are not whitelisted at all!
+>>
+>> Can one of these redundant commits be backed out?
+> 
+> Hm, seems like this should have created a conflict since there was some actual
+> context (#ifdef __i386__) in the patch?  Ah I see, it looks like the one that
+> came in through Ingo & Thomas, a1676072558854b95336c8f7db76b0504e909a0a,
+> modified the end of the list, while the one that I sent upstream,
+> 8d64c781f0c5fbfdf8016bd1634506ff2ad1376a, modified the entry above #ifdef
+> __i386__.  That's unfortunate.
+> 
+> Here's what I've got, look ok?
+> 
+> Thanks,
+> Jesse
+> 
+> From a86744c1d60b2bc2a575de48672f6f6c15c0411f Mon Sep 17 00:00:00 2001
+> From: Jesse Barnes <jbarnes@hobbes.(none)>
+> Date: Mon, 7 Jul 2008 09:55:26 -0700
+> Subject: [PATCH] Revert "PCI: Correct last two HP entries in the bfsort whitelist"
+> 
+> This reverts commit a1676072558854b95336c8f7db76b0504e909a0a.  It duplicates
+> the change from 8d64c781f0c5fbfdf8016bd1634506ff2ad1376a and only one should be
+> applied, otherwise some of the Dell quirks are lost.
+> 
+> Thanks to Tony Camuso for catching this.
+> 
+> Acked-by: Tony Camuso <tcamuso@redhat.com>
+> Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+> ---
+>  arch/x86/pci/common.c |    8 ++++----
+>  1 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
+> index 940185e..6e64aaf 100644
+> --- a/arch/x86/pci/common.c
+> +++ b/arch/x86/pci/common.c
+> @@ -328,18 +328,18 @@ static struct dmi_system_id __devinitdata pciprobe_dmi_table[] = {
+>  #endif
+>  	{
+>  		.callback = set_bf_sort,
+> -		.ident = "HP ProLiant DL360",
+> +		.ident = "HP ProLiant DL385 G2",
+>  		.matches = {
+>  			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
+> -			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant DL360"),
+> +			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant DL385 G2"),
+>  		},
+>  	},
+>  	{
+>  		.callback = set_bf_sort,
+> -		.ident = "HP ProLiant DL380",
+> +		.ident = "HP ProLiant DL585 G2",
+>  		.matches = {
+>  			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
+> -			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant DL380"),
+> +			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant DL585 G2"),
+>  		},
+>  	},
+>  	{}
 
-
->
-> Alan
-
-
-
--- 
-Ondrej Zary
