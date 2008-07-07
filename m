@@ -1,157 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbYGGVIe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758127AbYGGVKY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757884AbYGGVIe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 17:08:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756518AbYGGVIX
+	id S1758127AbYGGVKY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 17:10:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756548AbYGGVKM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 17:08:23 -0400
-Received: from mail.gmx.net ([213.165.64.20]:54104 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756438AbYGGVIW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 17:08:22 -0400
-X-Authenticated: #429267
-X-Provags-ID: V01U2FsdGVkX1/sUsVxc6vsSrLpgl0vmsMh+ESVg5l6yoZlqXRn9f
-	pcAeaCD8ZQhI5g
-Subject: Re: [PATCH v2] rc80211_pid: Fix fast_start parameter handling
-From: Mattias Nissler <mattias.nissler@gmx.de>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Stefano Brivio <stefano.brivio@polimi.it>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       "David S. Miller" <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <19f34abd0807070427w5398c617uae0a4e8e40fd8f0e@mail.gmail.com>
-References: <19f34abd0807070427w5398c617uae0a4e8e40fd8f0e@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 07 Jul 2008 23:08:19 +0200
-Message-Id: <1215464899.4416.22.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 7 Jul 2008 17:10:12 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:53875 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756518AbYGGVKK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 17:10:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=RkFDWTJJEAnRsw9xL/pBozo7PWKzsW8utYYlv3Cdtpwp0j8iCD310Y/KsHUP9XtGtj
+         ZDJ83JfdCR76RB4PXwrqOyTGGlDM1RNrIg/NhWTW2Jo+KKRGXLiEUfzFA/aqk9x8Yuad
+         0rMrlMZnxrpfFNp70Xhs6OUutsWKcwa0fGjSM=
+Message-ID: <69e28c910807071410h17cd6815jd6577673f73dc092@mail.gmail.com>
+Date: Mon, 7 Jul 2008 23:10:08 +0200
+From: "=?ISO-8859-1?Q?Stefanik_G=E1bor?=" <netrolller.3d@gmail.com>
+To: "Ivo van Doorn" <ivdoorn@gmail.com>
+Subject: Re: [Rt2400-devel] rt2500pci: Failed to initialize hw. But works with ancient rt2500-1.1.0
+Cc: rt2400-devel@lists.sourceforge.net,
+       "Stefan Bauer" <stefan.bauer@cs.tu-chemnitz.de>,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200807072308.57529.IvDoorn@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.46
+Content-Disposition: inline
+References: <200807072253.46295.stefan.bauer@cs.tu-chemnitz.de>
+	 <200807072308.57529.IvDoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This removes the fast_start parameter from the rc_pid parameters information
-and instead uses the parameter macro when initializing the rc_pid state. Since
-the parameter is only used on initialization, there is no point of making
-exporting it via debugfs. This also fixes uninitialized memory references to
-the fast_start and norm_offset parameters detected by the kmemcheck utility.
-Thanks to Vegard Nossum for reporting the bug.
+On Mon, Jul 7, 2008 at 11:08 PM, Ivo van Doorn <ivdoorn@gmail.com> wrote:
+> Check if the arc4 and ecb modules are loaded before loading mac80211 & rt2500pci.
+>
+> Ivo
 
-Signed-off-by: Mattias Nissler <mattias.nissler@gmx.de>
----
+Shouldn't we make mac80211 depend on arc4 and ecb?
 
-Updated patch description. Any more comments? Stefano? John?
-
-Mattias
-
-
- net/mac80211/rc80211_pid.h      |    5 -----
- net/mac80211/rc80211_pid_algo.c |   31 +++++++++++++------------------
- 2 files changed, 13 insertions(+), 23 deletions(-)
-
-diff --git a/net/mac80211/rc80211_pid.h b/net/mac80211/rc80211_pid.h
-index 04afc13..4ea7b97 100644
---- a/net/mac80211/rc80211_pid.h
-+++ b/net/mac80211/rc80211_pid.h
-@@ -141,7 +141,6 @@ struct rc_pid_events_file_info {
-  *	rate behaviour values (lower means we should trust more what we learnt
-  *	about behaviour of rates, higher means we should trust more the natural
-  *	ordering of rates)
-- * @fast_start: if Y, push high rates right after initialization
-  */
- struct rc_pid_debugfs_entries {
- 	struct dentry *dir;
-@@ -154,7 +153,6 @@ struct rc_pid_debugfs_entries {
- 	struct dentry *sharpen_factor;
- 	struct dentry *sharpen_duration;
- 	struct dentry *norm_offset;
--	struct dentry *fast_start;
- };
- 
- void rate_control_pid_event_tx_status(struct rc_pid_event_buffer *buf,
-@@ -267,9 +265,6 @@ struct rc_pid_info {
- 	/* Normalization offset. */
- 	unsigned int norm_offset;
- 
--	/* Fast starst parameter. */
--	unsigned int fast_start;
--
- 	/* Rates information. */
- 	struct rc_pid_rateinfo *rinfo;
- 
-diff --git a/net/mac80211/rc80211_pid_algo.c b/net/mac80211/rc80211_pid_algo.c
-index a849b74..bcd27c1 100644
---- a/net/mac80211/rc80211_pid_algo.c
-+++ b/net/mac80211/rc80211_pid_algo.c
-@@ -398,13 +398,25 @@ static void *rate_control_pid_alloc(struct ieee80211_local *local)
- 		return NULL;
- 	}
- 
-+	pinfo->target = RC_PID_TARGET_PF;
-+	pinfo->sampling_period = RC_PID_INTERVAL;
-+	pinfo->coeff_p = RC_PID_COEFF_P;
-+	pinfo->coeff_i = RC_PID_COEFF_I;
-+	pinfo->coeff_d = RC_PID_COEFF_D;
-+	pinfo->smoothing_shift = RC_PID_SMOOTHING_SHIFT;
-+	pinfo->sharpen_factor = RC_PID_SHARPENING_FACTOR;
-+	pinfo->sharpen_duration = RC_PID_SHARPENING_DURATION;
-+	pinfo->norm_offset = RC_PID_NORM_OFFSET;
-+	pinfo->rinfo = rinfo;
-+	pinfo->oldrate = 0;
-+
- 	/* Sort the rates. This is optimized for the most common case (i.e.
- 	 * almost-sorted CCK+OFDM rates). Kind of bubble-sort with reversed
- 	 * mapping too. */
- 	for (i = 0; i < sband->n_bitrates; i++) {
- 		rinfo[i].index = i;
- 		rinfo[i].rev_index = i;
--		if (pinfo->fast_start)
-+		if (RC_PID_FAST_START)
- 			rinfo[i].diff = 0;
- 		else
- 			rinfo[i].diff = i * pinfo->norm_offset;
-@@ -425,19 +437,6 @@ static void *rate_control_pid_alloc(struct ieee80211_local *local)
- 			break;
- 	}
- 
--	pinfo->target = RC_PID_TARGET_PF;
--	pinfo->sampling_period = RC_PID_INTERVAL;
--	pinfo->coeff_p = RC_PID_COEFF_P;
--	pinfo->coeff_i = RC_PID_COEFF_I;
--	pinfo->coeff_d = RC_PID_COEFF_D;
--	pinfo->smoothing_shift = RC_PID_SMOOTHING_SHIFT;
--	pinfo->sharpen_factor = RC_PID_SHARPENING_FACTOR;
--	pinfo->sharpen_duration = RC_PID_SHARPENING_DURATION;
--	pinfo->norm_offset = RC_PID_NORM_OFFSET;
--	pinfo->fast_start = RC_PID_FAST_START;
--	pinfo->rinfo = rinfo;
--	pinfo->oldrate = 0;
--
- #ifdef CONFIG_MAC80211_DEBUGFS
- 	de = &pinfo->dentries;
- 	de->dir = debugfs_create_dir("rc80211_pid",
-@@ -465,9 +464,6 @@ static void *rate_control_pid_alloc(struct ieee80211_local *local)
- 	de->norm_offset = debugfs_create_u32("norm_offset",
- 					     S_IRUSR | S_IWUSR, de->dir,
- 					     &pinfo->norm_offset);
--	de->fast_start = debugfs_create_bool("fast_start",
--					     S_IRUSR | S_IWUSR, de->dir,
--					     &pinfo->fast_start);
- #endif
- 
- 	return pinfo;
-@@ -479,7 +475,6 @@ static void rate_control_pid_free(void *priv)
- #ifdef CONFIG_MAC80211_DEBUGFS
- 	struct rc_pid_debugfs_entries *de = &pinfo->dentries;
- 
--	debugfs_remove(de->fast_start);
- 	debugfs_remove(de->norm_offset);
- 	debugfs_remove(de->sharpen_duration);
- 	debugfs_remove(de->sharpen_factor);
 -- 
-1.5.6.1
-
+Vista: [V]iruses, [I]ntruders, [S]pyware, [T]rojans and [A]dware. :-)
