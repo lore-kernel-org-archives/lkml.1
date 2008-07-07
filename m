@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757928AbYGGVUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbYGGVW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757928AbYGGVUg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 17:20:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756067AbYGGVU2
+	id S1758030AbYGGVW5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 17:22:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756371AbYGGVWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 17:20:28 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55191 "EHLO
-	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753445AbYGGVU1 (ORCPT
+	Mon, 7 Jul 2008 17:22:50 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:39274 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756360AbYGGVWt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 17:20:27 -0400
-Date: Mon, 7 Jul 2008 21:45:37 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: Oliver Endriss <o.endriss@gmx.de>, linux-dvb@linuxtv.org,
-       Jaswinder Singh <jaswinder@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       kernelnewbies <kernelnewbies@nl.linux.org>,
-       kernel-janitors <kernel-janitors@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [linux-dvb] [PATCH] Remove fdump tool for av7110 firmware
-Message-ID: <20080707214537.49f69b51@the-village.bc.nu>
-In-Reply-To: <20080707180222.4b4a53a9@gaivota>
-References: <1214139259.2994.8.camel@jaswinder.satnam>
-	<200807060315.51736@orion.escape-edv.de>
-	<20080707180222.4b4a53a9@gaivota>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Mon, 7 Jul 2008 17:22:49 -0400
+Subject: Re: [PATCH 00/05] x86: Unify TSC code for 32bit and 64bit.
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Dan Hecht <dhecht@vmware.com>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1214937790.20191.29.camel@promb-2n-dhcp368.eng.vmware.com>
+References: <1214937790.20191.29.camel@promb-2n-dhcp368.eng.vmware.com>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Mon, 07 Jul 2008 14:22:48 -0700
+Message-Id: <1215465768.32752.8.camel@promb-2n-dhcp368.eng.vmware.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Having a binary firmware inside a GPL'd file seems to be (at least for some
-> people) a GPL violation, since the firmware source code should also be released
-> with GPL (please read [1] for a good article about this).
+On Tue, 2008-07-01 at 11:43 -0700, Alok Kataria wrote:
+> Hey Ingo,
+> 
+> Here is the patchset which merges the tsc code.
+> 
+> I have tried to divide the patchset in terms of merging a functionality
+> at a time. I have tried to make the individual patches as independent as
+> possible. From bisectability  point of view each patchset should compile
+> and run individually as well. 
+> 
+> These patches are based on the current tip/master tree. 
+> I have tested with around 10 randconfig for each i386 and x86_64.
+> 
+> Please have a look.
 
-The firmware is usually a separate program, running on a separate
-processor communicating by a standard API and is used by Linux, Windows
-and other OS's. Thats not quite the same as say the Nvidia driver.
+Hi Ingo, Thomas,
 
-If it happens to keep the GPL zealots happier then fine, but there are
-good sound technical reasons for doing it
+Please let me know if there are any comments on these patches.
+If they seem fine can we start a tip/x86/unify-tsc, for wider testing.
 
-- compiled in firmware isn't pageable
-- compiled in firmware can't be updated separately
-- it makes it really hard for end users told to "try the new firmware" -
-especially in the enterprise space.
+Thanks,
+Alok
+> 
+> Thanks,
+> Alok
+> 
 
-Clearly there are some cases that is less relevant - drivers where the
-firmware/OS pair must match such as aic7xxx where you don't really want
-firmware floating around loose.
-
-Alan
