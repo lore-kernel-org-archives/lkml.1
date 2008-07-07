@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757278AbYGGUA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757760AbYGGUBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757278AbYGGUA6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 16:00:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755470AbYGGUAs
+	id S1757760AbYGGUBV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 16:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755594AbYGGUAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 16:00:48 -0400
-Received: from rn-out-0910.google.com ([64.233.170.189]:36541 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755290AbYGGUAr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 16:00:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=qBxq83s8svZWpk9yxjAQviqmTPHOQHaYNiB7ugmAvskpCBpYSM/vzezL3U2ZJIMHmZ
-         SVfgRVRj8JdWWaDksxxGUQOK1oRCM3cYnBtvyZ5DQPSboX7Iu2bfEDDkbFN3SpGO+M7e
-         t1fKhhccS0Ipe0YZX1T3ZetsIwtwyJ6Fv+iYw=
-Message-ID: <19f34abd0807071300w73371348gf358c1dc3f6446fb@mail.gmail.com>
-Date: Mon, 7 Jul 2008 22:00:45 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] vsprintf: fix gcc warning
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.1.10.0807071247480.11076@woody.linux-foundation.org>
+	Mon, 7 Jul 2008 16:00:50 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:61913 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755441AbYGGUAt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 16:00:49 -0400
+Date: Mon, 7 Jul 2008 20:59:47 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <lenb@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-next@vger.kernel.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH 2/2] acpi: Disable IRQ 0 through I/O APIC for some HP
+ systems
+In-Reply-To: <200807070319.29470.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.55.0807072054310.20615@cliff.in.clinika.pl>
+References: <Pine.LNX.4.55.0807010055070.30785@cliff.in.clinika.pl>
+ <20080701202453.GD4896@elte.hu> <200807070102.38854.rjw@sisk.pl>
+ <200807070319.29470.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080707192429.GA17551@damson.getinternet.no>
-	 <alpine.LFD.1.10.0807071247480.11076@woody.linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 7, 2008 at 9:54 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
-> On Mon, 7 Jul 2008, Vegard Nossum wrote:
->>
->> Does this look correct? Please disregard this if it has already
->> been fixed. Thanks.
->
-> Looks fine. But the series I eventually committed avoided this issue, so
-> please double-check current -git.
+On Mon, 7 Jul 2008, Rafael J. Wysocki wrote:
 
-Oh, you're right. I was compiling/looking at tip/master which had your
-old version. Sorry for the noise!
+> @@ -1714,12 +1721,14 @@ static inline void __init check_timer(vo
+>  		apic2 = apic1;
+>  	}
+>  
+> -	replace_pin_at_irq(0, 0, 0, apic1, pin1);
+> -	apic1 = 0;
+> -	pin1 = 0;
+> -	setup_timer_IRQ0_pin(apic1, pin1, cfg->vector);
+> +	if (disable_irq0_through_ioapic) {
+> +		clear_IO_APIC_pin(apic1, pin1);
+> +	} else {
+> +		replace_pin_at_irq(0, 0, 0, apic1, pin1);
+> +		apic1 = 0;
+> +		pin1 = 0;
+> +		setup_timer_IRQ0_pin(apic1, pin1, cfg->vector);
+>  
+> -	if (pin1 != -1) {
+>  		/*
+>  		 * Ok, does IRQ0 through the IOAPIC work?
+>  		 */
 
+ This is completely broken -- you cannot blindly assume IRQ0 is wired to
+the pin #0 of the I/O APIC #0.  You have to respect routing information
+provided by the system.
 
-Vegard
+ Ingo, from the sequence above, I gather this code is currently in the 
+tree:
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+-	replace_pin_at_irq(0, 0, 0, apic1, pin1);
+-	apic1 = 0;
+-	pin1 = 0;
+
+Please revert the change which introduced it.  While I recall posting a
+patch which added code like this, I clearly stated it was solely for
+diagnostics of Rafael's system and not to apply to any tree.
+
+  Maciej
