@@ -1,51 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751961AbYGGGX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754980AbYGGGYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751961AbYGGGX5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 02:23:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbYGGGXn
+	id S1754980AbYGGGYt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 02:24:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbYGGGYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 02:23:43 -0400
-Received: from gate.crashing.org ([63.228.1.57]:49993 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754605AbYGGGXm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 02:23:42 -0400
-Subject: Re: [PATCH 1/2] elf loader support for auxvec base platform string
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Roland McGrath <roland@redhat.com>
-Cc: Nathan Lynch <ntl@pobox.com>, linuxppc-dev@ozlabs.org,
-       Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080707061811.19989154246@magilla.localdomain>
-References: <20080703234140.GC9594@localdomain>
-	 <20080704021929.5E9EF1541F5@magilla.localdomain>
-	 <1215409693.8970.79.camel@pasglop>
-	 <20080707061811.19989154246@magilla.localdomain>
-Content-Type: text/plain
-Date: Mon, 07 Jul 2008 16:23:20 +1000
-Message-Id: <1215411800.8970.91.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Mon, 7 Jul 2008 02:24:41 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55833 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751819AbYGGGYk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 02:24:40 -0400
+Date: Mon, 07 Jul 2008 15:22:24 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: gerald.schaefer@de.ibm.com
+Subject: Re: [PATCH] Make CONFIG_MIGRATION available for s390
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>
+In-Reply-To: <1215354957.9842.19.camel@localhost.localdomain>
+References: <1215354957.9842.19.camel@localhost.localdomain>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20080707150413.5A51.E1E9C6FF@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-07-06 at 23:18 -0700, Roland McGrath wrote:
+
+Looks good to me.
+
+Acked-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+
+Bye.
+
+
+> Subject: [PATCH] Make CONFIG_MIGRATION available for s390
 > 
-> Using dsocaps gives you the best of both worlds.  You can freely choose
-> new strings in the kernel without the ld.so code having to know about
-> them (which is not true of AT_PLATFORM, but may be true of how you are
-> thinking about "strings are nice").  You do have to map all the
-> possibilities that a single kernel build can produce into distinct bits.
-> But, there are 32 unallocated bits to start with.  Moreover, those bit
-> assignments are not part of any permanent ABI like bits in AT_* values.
-> They just have to match up between this kernel build and the ld.conf.d
-> file installed along with it--kernel hackers and kernel packagers have
-> to coordinate, not kernel hackers and userland hackers.
+> From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+> 
+> We'd like to support CONFIG_MEMORY_HOTREMOVE on s390, which depends on
+> CONFIG_MIGRATION. So far, CONFIG_MIGRATION is only available with NUMA
+> support.
+> 
+> This patch makes CONFIG_MIGRATION selectable for architectures that define
+> ARCH_ENABLE_MEMORY_HOTREMOVE. When MIGRATION is enabled w/o NUMA, the kernel
+> won't compile because of a missing migrate() function in vm_operations_struct
+> and a missing policy_zone reference in vma_migratable(). To avoid this,
+> "#ifdef CONFIG_NUMA" is added to vma_migratable() and the vm_ops migrate()
+> definition is moved from "#ifdef CONFIG_NUMA" to "#ifdef CONFIG_MIGRATION".
+> 
+> Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+> ---
+> 
+>  include/linux/migrate.h |    2 ++
+>  include/linux/mm.h      |    2 ++
+>  mm/Kconfig              |    2 +-
+>  3 files changed, 5 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/include/linux/migrate.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/migrate.h
+> +++ linux-2.6/include/linux/migrate.h
+> @@ -13,6 +13,7 @@ static inline int vma_migratable(struct 
+>  {
+>  	if (vma->vm_flags & (VM_IO|VM_HUGETLB|VM_PFNMAP|VM_RESERVED))
+>  		return 0;
+> +#ifdef CONFIG_NUMA
+>  	/*
+>  	 * Migration allocates pages in the highest zone. If we cannot
+>  	 * do so then migration (at least from node to node) is not
+> @@ -22,6 +23,7 @@ static inline int vma_migratable(struct 
+>  		gfp_zone(mapping_gfp_mask(vma->vm_file->f_mapping))
+>  								< policy_zone)
+>  			return 0;
+> +#endif
+>  	return 1;
+>  }
+>  
+> Index: linux-2.6/include/linux/mm.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/mm.h
+> +++ linux-2.6/include/linux/mm.h
+> @@ -193,6 +193,8 @@ struct vm_operations_struct {
+>  	 */
+>  	struct mempolicy *(*get_policy)(struct vm_area_struct *vma,
+>  					unsigned long addr);
+> +#endif
+> +#ifdef CONFIG_MIGRATION
+>  	int (*migrate)(struct vm_area_struct *vma, const nodemask_t *from,
+>  		const nodemask_t *to, unsigned long flags);
+>  #endif
+> Index: linux-2.6/mm/Kconfig
+> ===================================================================
+> --- linux-2.6.orig/mm/Kconfig
+> +++ linux-2.6/mm/Kconfig
+> @@ -174,7 +174,7 @@ config SPLIT_PTLOCK_CPUS
+>  config MIGRATION
+>  	bool "Page migration"
+>  	def_bool y
+> -	depends on NUMA
+> +	depends on NUMA || ARCH_ENABLE_MEMORY_HOTREMOVE
+>  	help
+>  	  Allows the migration of the physical location of pages of processes
+>  	  while the virtual addresses are not changed. This is useful for
+> 
 
-I'm not sure... if ld.conf.d isn't parse of the kernel source tree then
-it -will- end in tears...
-
-Ben.
+-- 
+Yasunori Goto 
 
 
