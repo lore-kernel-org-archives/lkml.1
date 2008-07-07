@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbYGGKkv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596AbYGGKnv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754786AbYGGKkv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 06:40:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbYGGKkl
+	id S1754596AbYGGKnv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 06:43:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbYGGKnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 06:40:41 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:50884 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752554AbYGGKkl (ORCPT
+	Mon, 7 Jul 2008 06:43:42 -0400
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:22805 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752353AbYGGKnl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 06:40:41 -0400
-Date: Mon, 7 Jul 2008 11:39:28 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: benh@kernel.crashing.org, cotte@de.ibm.com, Zan Lynx <zlynx@acm.org>,
-       Ryan Hope <rmh3093@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Lockless/Get_User_Pages_Fast causes Xorg 1.4.99.* to lock
-In-Reply-To: <200807071806.11630.nickpiggin@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0807071134090.21480@blonde.site>
-References: <48f7fe350807032326l1d68c94l531e44c09693b989@mail.gmail.com>
- <486E4FD8.4010102@acm.org> <Pine.LNX.4.64.0807042112130.16912@blonde.site>
- <200807071806.11630.nickpiggin@yahoo.com.au>
+	Mon, 7 Jul 2008 06:43:41 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=WiNJaL3oG844GqohE756id0RybWhmySHRhqsB8ckO+f7atqWdcDEv3ZxBlDo43HLAa0ou+rNn9PSUtx2FQKn79mvc84L6nVtGQeioTcKsPdpWEvMbmhDZ856IawHt6DZen5Ufc+GNaYOVwFfa8bDcbkd2FRa6+RY0ndevqWJKas=  ;
+X-YMail-OSG: o0c3WxoVM1lfexcQfYN945mv8fKznHXSnhCv_BGNQjQjn8kEBUMYqeACdcDPqnvr1_f0dhliDrLfEhOv7jaAL_8CyFNbVGgQvZkn_T_g.G7YBjI7Knf0CNs0WXOgw7SN430-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: [patch 1/2] mm: dont clear PG_uptodate in invalidate_complete_page2()
+Date: Mon, 7 Jul 2008 20:43:16 +1000
+User-Agent: KMail/1.9.5
+Cc: jamie@shareable.org, torvalds@linux-foundation.org, jens.axboe@oracle.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hugh@veritas.com
+References: <20080625124038.103406301@szeredi.hu> <200807071638.32955.nickpiggin@yahoo.com.au> <E1KFmuc-0001VS-RS@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1KFmuc-0001VS-RS@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807072043.16522.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Jul 2008, Nick Piggin wrote:
-> 
-> I think we need a similar fix for s390 too. If so, then it really should
-> get into 2.6.26, but this late in the release, I hope an s390 maintainer
-> might be able to test and verify the fix?
+On Monday 07 July 2008 19:21, Miklos Szeredi wrote:
+> On Mon, 7 Jul 2008, Nick Piggin wrote:
+> > I don't know what became of this thread, but I agree with everyone else
+> > you should not skip clearing PG_uptodate here. If nothing else, it
+> > weakens some important assertions in the VM. But I agree that splice
+> > should really try harder to work with it and we should be a little
+> > careful about just changing things like this.
+>
+> Sure, that's why I rfc'ed.
+>
+> But I'd still like to know, what *are* those assumptions in the VM
+> that would be weakened by this?
 
-Wow, yes, I hadn't realized s390 is ahead of the game there: glad you're
-back to spot that.  But yes, we'd prefer maintainer to confirm and push.
-
-
-[PATCH]] s390: protect _PAGE_SPECIAL bit against mprotect
-
-Stop mprotect's pte_modify from wiping out the s390 pte_special bit, which
-caused oops thereafter when vm_normal_page thought X's abnormal was normal.
-
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-Acked-by: Hugh Dickins <hugh@veritas.com>
----
-Index: linux-2.6/include/asm-s390/pgtable.h
-===================================================================
---- linux-2.6.orig/include/asm-s390/pgtable.h
-+++ linux-2.6/include/asm-s390/pgtable.h
-@@ -223,6 +223,9 @@ extern char empty_zero_page[PAGE_SIZE];
- #define _PAGE_SPECIAL	0x004		/* SW associated with special page */
- #define __HAVE_ARCH_PTE_SPECIAL
- 
-+/* Set of bits not changed in pte_modify */
-+#define _PAGE_CHG_MASK	(PAGE_MASK | _PAGE_SPECIAL)
-+
- /* Six different types of pages. */
- #define _PAGE_TYPE_EMPTY	0x400
- #define _PAGE_TYPE_NONE		0x401
-@@ -681,7 +684,7 @@ static inline void pte_clear(struct mm_s
-  */
- static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
- {
--	pte_val(pte) &= PAGE_MASK;
-+	pte_val(pte) &= _PAGE_CHG_MASK;
- 	pte_val(pte) |= pgprot_val(newprot);
- 	return pte;
- }
+Not assumptions (that I know of, but there could be some) but
+assertions. For example we assert that pages in page tables are
+always uptodate. We'd miss warning if we had an invalidated page
+in the pagetables after this change.
