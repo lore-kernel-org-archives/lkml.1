@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754345AbYGGMhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbYGGMlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754345AbYGGMhS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 08:37:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753220AbYGGMhE
+	id S1754036AbYGGMlR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 08:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753069AbYGGMlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 08:37:04 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:49519 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752824AbYGGMhC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 08:37:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=KdZE3SBBbYcySLPgyqUCyU9LUA2UJbAo55bzDt/uTnl6/yjeQtD9/RDnBlwhUY+8DT
-         hCaOLH7zFkjxSuhgb3HNBinNpem+Cw2/hWbIqGRVj4tz1ZJxDkFXtn06ekZ8ygkHFhon
-         Ik6kwYPB/80ZPHHhjAvGJfooHpY4BLxFjlfKM=
-Message-ID: <fb82a8210807070536o3e6a1ed8ld05505b0d80112f3@mail.gmail.com>
-Date: Mon, 7 Jul 2008 08:36:58 -0400
-From: "Jinkai Gao" <mickeygjk@gmail.com>
-To: "Bart Van Assche" <bart.vanassche@gmail.com>
-Subject: Re: Suggestion: LKM should be able to add system call for itself
-Cc: linux-kernel@vger.kernel.org, "Arjan van de Ven" <arjan@infradead.org>
-In-Reply-To: <e2e108260807070140l3f8eaf06w7ee7e8a4ae42f2c2@mail.gmail.com>
+	Mon, 7 Jul 2008 08:41:06 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60690 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752909AbYGGMlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 08:41:04 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Subject: Re: [PATCH 1/2] swsusp: simplify memory_bm_find_bit()
+Date: Mon, 7 Jul 2008 14:43:07 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@suse.cz>,
+       linux-pm@lists.linux-foundation.org
+References: <20080705110946.GA17071@localhost.localdomain>
+In-Reply-To: <20080705110946.GA17071@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-2022-jp"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <fb82a8210807062209t6cfe3e46m50a11b577f0540e7@mail.gmail.com>
-	 <e2e108260807070140l3f8eaf06w7ee7e8a4ae42f2c2@mail.gmail.com>
+Message-Id: <200807071443.08156.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 7, 2008 at 4:40 AM, Bart Van Assche
-<bart.vanassche@gmail.com> wrote:
-> On Mon, Jul 7, 2008 at 7:09 AM, Jinkai Gao <mickeygjk@gmail.com> wrote:
->> LKM(loadable kernel module) was first introduced for drivers. Users
->> rarely need to talk to the modules directly. If does, several methods
->> are available now, such as /proc file, interruption, etc. However,
->> these interfaces are predefined, which makes the communication between
->> user space and kernel space quite restricted.
->
-> Did you already have a look at e.g. http://lwn.net/Kernel/LDD3/ for
-> suggestions of alternatives for communication between userspace and
-> kernel modules ? Alternatives to system calls are e.g. ioctl's, memory
-> mapped I/O and sockets.
+On Saturday, 5 of July 2008, Akinobu Mita wrote:
+> The bit obtained by the function memory_bm_find_bit() is represented
+> by addr and bit_nr. The callers of memory_bm_find_bit() just use addr
+> and bit_nr as the arguments of set_bit/clear_bit/test_bit.
+> 
+> This patch simplifies the representation of the obtained bit without
+> using BM_BITS_PER_CHUNK.
+> 
+> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> Cc: Pavel Machek <pavel@suse.cz>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: linux-pm@lists.linux-foundation.org
+> ---
+>  kernel/power/snapshot.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: 2.6-git/kernel/power/snapshot.c
+> ===================================================================
+> --- 2.6-git.orig/kernel/power/snapshot.c
+> +++ 2.6-git/kernel/power/snapshot.c
+> @@ -478,8 +478,8 @@ static int memory_bm_find_bit(struct mem
+>  	}
+>  	zone_bm->cur_block = bb;
+>  	pfn -= bb->start_pfn;
+> -	*bit_nr = pfn % BM_BITS_PER_CHUNK;
+> -	*addr = bb->data + pfn / BM_BITS_PER_CHUNK;
+> +	*bit_nr = pfn;
+> +	*addr = bb->data;
+>  	return 0;
+>  }
 
-Yes, all kinds of alternatives exist. But they are alternatives
-anyway, which are tricky ways to do things when you can't find a
-reasonable ways. Actually,to communication between userspace and
-kernel modules, all I need is a interface with two parameters, all the
-system calls can be implemented out of that. So basically you can
-write every system call using something like ioctl. But ioctl is not
-designed for generic purpose after all.
+Hm, I think it's better to fold that into patch 2/2.
 
-Why the number of system calls is growing? because the kernel is
-growing. why we don't use the alternatives to implement the new need
-for system calls? Because it doesn't make any sense. We can't ignore
-the kernel modules' need for system calls just because they are
-loadable.
+Thanks,
+Rafael
