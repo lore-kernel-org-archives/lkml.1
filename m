@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757953AbYGGQ4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758031AbYGGQ4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757953AbYGGQ4A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 12:56:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754267AbYGGQuj
+	id S1758031AbYGGQ4Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 12:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbYGGQum
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 12:50:39 -0400
+	Mon, 7 Jul 2008 12:50:42 -0400
 Received: from aa2005110791d2e6c28a.userreverse.dion.ne.jp ([210.230.194.138]:20574
 	"EHLO localhost.localdomain" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753731AbYGGQug (ORCPT
+	by vger.kernel.org with ESMTP id S1755558AbYGGQui (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 12:50:36 -0400
+	Mon, 7 Jul 2008 12:50:38 -0400
 X-Greylist: delayed 449 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 Jul 2008 12:49:54 EDT
 From: James Morris <jmorris@namei.org>
 To: linux-security-module@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 10/20] SELinux: open code policy_rwlock
-Date: Tue,  8 Jul 2008 01:42:12 +0900
-Message-Id: <1215448942-17581-11-git-send-email-jmorris@namei.org>
+Subject: [PATCH 06/20] Security: split proc ptrace checking into read vs. attach
+Date: Tue,  8 Jul 2008 01:42:08 +0900
+Message-Id: <1215448942-17581-7-git-send-email-jmorris@namei.org>
 X-Mailer: git-send-email 1.5.5.1
 In-Reply-To: <1215448942-17581-1-git-send-email-jmorris@namei.org>
 References: <1215448942-17581-1-git-send-email-jmorris@namei.org>
@@ -24,482 +24,368 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Open code policy_rwlock, as suggested by Andrew Morton.
+From: Stephen Smalley <sds@tycho.nsa.gov>
 
+Enable security modules to distinguish reading of process state via
+proc from full ptrace access by renaming ptrace_may_attach to
+ptrace_may_access and adding a mode argument indicating whether only
+read access or full attach access is requested.  This allows security
+modules to permit access to reading process state without granting
+full ptrace access.  The base DAC/capability checking remains unchanged.
+
+Read access to /proc/pid/mem continues to apply a full ptrace attach
+check since check_mem_permission() already requires the current task
+to already be ptracing the target.  The other ptrace checks within
+proc for elements like environ, maps, and fds are changed to pass the
+read mode instead of attach.
+
+In the SELinux case, we model such reading of process state as a
+reading of a proc file labeled with the target process' label.  This
+enables SELinux policy to permit such reading of process state without
+permitting control or manipulation of the target process, as there are
+a number of cases where programs probe for such information via proc
+but do not need to be able to control the target (e.g. procps,
+lsof, PolicyKit, ConsoleKit).  At present we have to choose between
+allowing full ptrace in policy (more permissive than required/desired)
+or breaking functionality (or in some cases just silencing the denials
+via dontaudit rules but this can hide genuine attacks).
+
+This version of the patch incorporates comments from Casey Schaufler
+(change/replace existing ptrace_may_attach interface, pass access
+mode), and Chris Wright (provide greater consistency in the checking).
+
+Note that like their predecessors __ptrace_may_attach and
+ptrace_may_attach, the __ptrace_may_access and ptrace_may_access
+interfaces use different return value conventions from each other (0
+or -errno vs. 1 or 0).  I retained this difference to avoid any
+changes to the caller logic but made the difference clearer by
+changing the latter interface to return a bool rather than an int and
+by adding a comment about it to ptrace.h for any future callers.
+
+Signed-off-by:  Stephen Smalley <sds@tycho.nsa.gov>
+Acked-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: James Morris <jmorris@namei.org>
-Acked-by:  Stephen Smalley <sds@tycho.nsa.gov>
 ---
- security/selinux/ss/services.c |  108 +++++++++++++++++++---------------------
- 1 files changed, 52 insertions(+), 56 deletions(-)
+ fs/proc/base.c             |    9 +++++----
+ fs/proc/task_mmu.c         |    6 +++---
+ fs/proc/task_nommu.c       |    2 +-
+ include/linux/ptrace.h     |    8 ++++++--
+ include/linux/security.h   |   16 +++++++++++-----
+ kernel/ptrace.c            |   15 ++++++++-------
+ security/commoncap.c       |    3 ++-
+ security/dummy.c           |    3 ++-
+ security/security.c        |    5 +++--
+ security/selinux/hooks.c   |   13 +++++++++++--
+ security/smack/smack_lsm.c |    5 +++--
+ 11 files changed, 55 insertions(+), 30 deletions(-)
 
-diff --git a/security/selinux/ss/services.c b/security/selinux/ss/services.c
-index 0696aad..e8ec54d 100644
---- a/security/selinux/ss/services.c
-+++ b/security/selinux/ss/services.c
-@@ -71,10 +71,6 @@ int selinux_policycap_openperm;
- extern const struct selinux_class_perm selinux_class_perm;
- 
- static DEFINE_RWLOCK(policy_rwlock);
--#define POLICY_RDLOCK read_lock(&policy_rwlock)
--#define POLICY_WRLOCK write_lock_irq(&policy_rwlock)
--#define POLICY_RDUNLOCK read_unlock(&policy_rwlock)
--#define POLICY_WRUNLOCK write_unlock_irq(&policy_rwlock)
- 
- static DEFINE_MUTEX(load_mutex);
- #define LOAD_LOCK mutex_lock(&load_mutex)
-@@ -429,7 +425,7 @@ int security_permissive_sid(u32 sid)
- 	u32 type;
- 	int rc;
- 
--	POLICY_RDLOCK;
-+	read_lock(&policy_rwlock);
- 
- 	context = sidtab_search(&sidtab, sid);
- 	BUG_ON(!context);
-@@ -441,7 +437,7 @@ int security_permissive_sid(u32 sid)
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 3b45537..58c3e6a 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -233,7 +233,7 @@ static int check_mem_permission(struct task_struct *task)
  	 */
- 	rc = ebitmap_get_bit(&policydb.permissive_map, type);
- 
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
- 	return rc;
- }
- 
-@@ -486,7 +482,7 @@ int security_validate_transition(u32 oldsid, u32 newsid, u32 tasksid,
- 	if (!ss_initialized)
+ 	if (task->parent == current && (task->ptrace & PT_PTRACED) &&
+ 	    task_is_stopped_or_traced(task) &&
+-	    ptrace_may_attach(task))
++	    ptrace_may_access(task, PTRACE_MODE_ATTACH))
  		return 0;
- 
--	POLICY_RDLOCK;
-+	read_lock(&policy_rwlock);
  
  	/*
- 	 * Remap extended Netlink classes for old policy versions.
-@@ -543,7 +539,7 @@ int security_validate_transition(u32 oldsid, u32 newsid, u32 tasksid,
- 	}
- 
- out:
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
- 	return rc;
- }
- 
-@@ -578,7 +574,7 @@ int security_compute_av(u32 ssid,
- 		return 0;
- 	}
- 
--	POLICY_RDLOCK;
-+	read_lock(&policy_rwlock);
- 
- 	scontext = sidtab_search(&sidtab, ssid);
- 	if (!scontext) {
-@@ -598,7 +594,7 @@ int security_compute_av(u32 ssid,
- 	rc = context_struct_compute_av(scontext, tcontext, tclass,
- 				       requested, avd);
- out:
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
- 	return rc;
- }
- 
-@@ -691,7 +687,7 @@ static int security_sid_to_context_core(u32 sid, char **scontext,
- 		rc = -EINVAL;
+@@ -251,7 +251,8 @@ struct mm_struct *mm_for_maps(struct task_struct *task)
+ 	task_lock(task);
+ 	if (task->mm != mm)
  		goto out;
+-	if (task->mm != current->mm && __ptrace_may_attach(task) < 0)
++	if (task->mm != current->mm &&
++	    __ptrace_may_access(task, PTRACE_MODE_READ) < 0)
+ 		goto out;
+ 	task_unlock(task);
+ 	return mm;
+@@ -518,7 +519,7 @@ static int proc_fd_access_allowed(struct inode *inode)
+ 	 */
+ 	task = get_proc_task(inode);
+ 	if (task) {
+-		allowed = ptrace_may_attach(task);
++		allowed = ptrace_may_access(task, PTRACE_MODE_READ);
+ 		put_task_struct(task);
  	}
--	POLICY_RDLOCK;
-+	read_lock(&policy_rwlock);
- 	if (force)
- 		context = sidtab_search_force(&sidtab, sid);
- 	else
-@@ -704,7 +700,7 @@ static int security_sid_to_context_core(u32 sid, char **scontext,
- 	}
- 	rc = context_struct_to_string(context, scontext, scontext_len);
- out_unlock:
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
- out:
- 	return rc;
+ 	return allowed;
+@@ -904,7 +905,7 @@ static ssize_t environ_read(struct file *file, char __user *buf,
+ 	if (!task)
+ 		goto out_no_task;
  
-@@ -855,7 +851,7 @@ static int security_context_to_sid_core(const char *scontext, u32 scontext_len,
- 		}
- 	}
- 
--	POLICY_RDLOCK;
-+	read_lock(&policy_rwlock);
- 	rc = string_to_context_struct(&policydb, &sidtab,
- 				      scontext2, scontext_len,
- 				      &context, def_sid);
-@@ -869,7 +865,7 @@ static int security_context_to_sid_core(const char *scontext, u32 scontext_len,
- 	if (rc)
- 		context_destroy(&context);
- out:
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
- 	kfree(scontext2);
- 	kfree(str);
- 	return rc;
-@@ -981,7 +977,7 @@ static int security_compute_sid(u32 ssid,
- 
- 	context_init(&newcontext);
- 
--	POLICY_RDLOCK;
-+	read_lock(&policy_rwlock);
- 
- 	scontext = sidtab_search(&sidtab, ssid);
- 	if (!scontext) {
-@@ -1086,7 +1082,7 @@ static int security_compute_sid(u32 ssid,
- 	/* Obtain the sid for the context. */
- 	rc = sidtab_context_to_sid(&sidtab, &newcontext, out_sid);
- out_unlock:
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
- 	context_destroy(&newcontext);
- out:
- 	return rc;
-@@ -1549,13 +1545,13 @@ int security_load_policy(void *data, size_t len)
- 	sidtab_set(&oldsidtab, &sidtab);
- 
- 	/* Install the new policydb and SID table. */
--	POLICY_WRLOCK;
-+	write_lock_irq(&policy_rwlock);
- 	memcpy(&policydb, &newpolicydb, sizeof policydb);
- 	sidtab_set(&sidtab, &newsidtab);
- 	security_load_policycaps();
- 	seqno = ++latest_granting;
- 	policydb_loaded_version = policydb.policyvers;
--	POLICY_WRUNLOCK;
-+	write_unlock_irq(&policy_rwlock);
- 	LOAD_UNLOCK;
- 
- 	/* Free the old policydb and SID table. */
-@@ -1588,7 +1584,7 @@ int security_port_sid(u8 protocol, u16 port, u32 *out_sid)
- 	struct ocontext *c;
- 	int rc = 0;
- 
--	POLICY_RDLOCK;
-+	read_lock(&policy_rwlock);
- 
- 	c = policydb.ocontexts[OCON_PORT];
- 	while (c) {
-@@ -1613,7 +1609,7 @@ int security_port_sid(u8 protocol, u16 port, u32 *out_sid)
- 	}
- 
- out:
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
- 	return rc;
- }
- 
-@@ -1627,7 +1623,7 @@ int security_netif_sid(char *name, u32 *if_sid)
- 	int rc = 0;
- 	struct ocontext *c;
- 
--	POLICY_RDLOCK;
-+	read_lock(&policy_rwlock);
- 
- 	c = policydb.ocontexts[OCON_NETIF];
- 	while (c) {
-@@ -1654,7 +1650,7 @@ int security_netif_sid(char *name, u32 *if_sid)
- 		*if_sid = SECINITSID_NETIF;
- 
- out:
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
- 	return rc;
- }
- 
-@@ -1686,7 +1682,7 @@ int security_node_sid(u16 domain,
- 	int rc = 0;
- 	struct ocontext *c;
- 
--	POLICY_RDLOCK;
-+	read_lock(&policy_rwlock);
- 
- 	switch (domain) {
- 	case AF_INET: {
-@@ -1741,7 +1737,7 @@ int security_node_sid(u16 domain,
- 	}
- 
- out:
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
- 	return rc;
- }
- 
-@@ -1780,7 +1776,7 @@ int security_get_user_sids(u32 fromsid,
- 	if (!ss_initialized)
+-	if (!ptrace_may_attach(task))
++	if (!ptrace_may_access(task, PTRACE_MODE_READ))
  		goto out;
  
--	POLICY_RDLOCK;
-+	read_lock(&policy_rwlock);
- 
- 	context_init(&usercon);
- 
-@@ -1833,7 +1829,7 @@ int security_get_user_sids(u32 fromsid,
- 	}
- 
- out_unlock:
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
- 	if (rc || !mynel) {
- 		kfree(mysids);
- 		goto out;
-@@ -1886,7 +1882,7 @@ int security_genfs_sid(const char *fstype,
- 	while (path[0] == '/' && path[1] == '/')
- 		path++;
- 
--	POLICY_RDLOCK;
-+	read_lock(&policy_rwlock);
- 
- 	for (genfs = policydb.genfs; genfs; genfs = genfs->next) {
- 		cmp = strcmp(fstype, genfs->fstype);
-@@ -1923,7 +1919,7 @@ int security_genfs_sid(const char *fstype,
- 
- 	*sid = c->sid[0];
- out:
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
- 	return rc;
- }
- 
-@@ -1941,7 +1937,7 @@ int security_fs_use(
- 	int rc = 0;
- 	struct ocontext *c;
- 
--	POLICY_RDLOCK;
-+	read_lock(&policy_rwlock);
- 
- 	c = policydb.ocontexts[OCON_FSUSE];
- 	while (c) {
-@@ -1971,7 +1967,7 @@ int security_fs_use(
- 	}
- 
- out:
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
- 	return rc;
- }
- 
-@@ -1979,7 +1975,7 @@ int security_get_bools(int *len, char ***names, int **values)
- {
- 	int i, rc = -ENOMEM;
- 
--	POLICY_RDLOCK;
-+	read_lock(&policy_rwlock);
- 	*names = NULL;
- 	*values = NULL;
- 
-@@ -2009,7 +2005,7 @@ int security_get_bools(int *len, char ***names, int **values)
- 	}
- 	rc = 0;
- out:
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
- 	return rc;
- err:
- 	if (*names) {
-@@ -2027,7 +2023,7 @@ int security_set_bools(int len, int *values)
- 	int lenp, seqno = 0;
- 	struct cond_node *cur;
- 
--	POLICY_WRLOCK;
-+	write_lock_irq(&policy_rwlock);
- 
- 	lenp = policydb.p_bools.nprim;
- 	if (len != lenp) {
-@@ -2061,7 +2057,7 @@ int security_set_bools(int len, int *values)
- 	seqno = ++latest_granting;
- 
- out:
--	POLICY_WRUNLOCK;
-+	write_unlock_irq(&policy_rwlock);
- 	if (!rc) {
- 		avc_ss_reset(seqno);
- 		selnl_notify_policyload(seqno);
-@@ -2075,7 +2071,7 @@ int security_get_bool_value(int bool)
- 	int rc = 0;
+ 	ret = -ENOMEM;
+diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
+index c492449..164bd9f 100644
+--- a/fs/proc/task_mmu.c
++++ b/fs/proc/task_mmu.c
+@@ -210,7 +210,7 @@ static int show_map(struct seq_file *m, void *v)
+ 	dev_t dev = 0;
  	int len;
  
--	POLICY_RDLOCK;
-+	read_lock(&policy_rwlock);
+-	if (maps_protect && !ptrace_may_attach(task))
++	if (maps_protect && !ptrace_may_access(task, PTRACE_MODE_READ))
+ 		return -EACCES;
  
- 	len = policydb.p_bools.nprim;
- 	if (bool >= len) {
-@@ -2085,7 +2081,7 @@ int security_get_bool_value(int bool)
+ 	if (file) {
+@@ -646,7 +646,7 @@ static ssize_t pagemap_read(struct file *file, char __user *buf,
+ 		goto out;
  
- 	rc = policydb.bool_val_to_struct[bool]->state;
- out:
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
- 	return rc;
- }
+ 	ret = -EACCES;
+-	if (!ptrace_may_attach(task))
++	if (!ptrace_may_access(task, PTRACE_MODE_READ))
+ 		goto out_task;
  
-@@ -2140,7 +2136,7 @@ int security_sid_mls_copy(u32 sid, u32 mls_sid, u32 *new_sid)
+ 	ret = -EINVAL;
+@@ -747,7 +747,7 @@ static int show_numa_map_checked(struct seq_file *m, void *v)
+ 	struct proc_maps_private *priv = m->private;
+ 	struct task_struct *task = priv->task;
  
- 	context_init(&newcon);
+-	if (maps_protect && !ptrace_may_attach(task))
++	if (maps_protect && !ptrace_may_access(task, PTRACE_MODE_READ))
+ 		return -EACCES;
  
--	POLICY_RDLOCK;
-+	read_lock(&policy_rwlock);
- 	context1 = sidtab_search(&sidtab, sid);
- 	if (!context1) {
- 		printk(KERN_ERR "SELinux: %s:  unrecognized SID %d\n",
-@@ -2182,7 +2178,7 @@ bad:
- 	}
+ 	return show_numa_map(m, v);
+diff --git a/fs/proc/task_nommu.c b/fs/proc/task_nommu.c
+index 4b4f9cc..5d84e71 100644
+--- a/fs/proc/task_nommu.c
++++ b/fs/proc/task_nommu.c
+@@ -113,7 +113,7 @@ static int show_map(struct seq_file *m, void *_vml)
+ 	struct proc_maps_private *priv = m->private;
+ 	struct task_struct *task = priv->task;
  
- out_unlock:
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
- 	context_destroy(&newcon);
- out:
- 	return rc;
-@@ -2239,7 +2235,7 @@ int security_net_peersid_resolve(u32 nlbl_sid, u32 nlbl_type,
- 		return 0;
- 	}
+-	if (maps_protect && !ptrace_may_attach(task))
++	if (maps_protect && !ptrace_may_access(task, PTRACE_MODE_READ))
+ 		return -EACCES;
  
--	POLICY_RDLOCK;
-+	read_lock(&policy_rwlock);
+ 	return nommu_vma_show(m, vml->vma);
+diff --git a/include/linux/ptrace.h b/include/linux/ptrace.h
+index f98501b..c6f5f9d 100644
+--- a/include/linux/ptrace.h
++++ b/include/linux/ptrace.h
+@@ -95,8 +95,12 @@ extern void __ptrace_link(struct task_struct *child,
+ 			  struct task_struct *new_parent);
+ extern void __ptrace_unlink(struct task_struct *child);
+ extern void ptrace_untrace(struct task_struct *child);
+-extern int ptrace_may_attach(struct task_struct *task);
+-extern int __ptrace_may_attach(struct task_struct *task);
++#define PTRACE_MODE_READ   1
++#define PTRACE_MODE_ATTACH 2
++/* Returns 0 on success, -errno on denial. */
++extern int __ptrace_may_access(struct task_struct *task, unsigned int mode);
++/* Returns true on success, false on denial. */
++extern bool ptrace_may_access(struct task_struct *task, unsigned int mode);
  
- 	nlbl_ctx = sidtab_search(&sidtab, nlbl_sid);
- 	if (!nlbl_ctx) {
-@@ -2258,7 +2254,7 @@ int security_net_peersid_resolve(u32 nlbl_sid, u32 nlbl_type,
- 	rc = (mls_context_cmp(nlbl_ctx, xfrm_ctx) ? 0 : -EACCES);
- 
- out_slowpath:
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
- 	if (rc == 0)
- 		/* at present NetLabel SIDs/labels really only carry MLS
- 		 * information so if the MLS portion of the NetLabel SID
-@@ -2288,7 +2284,7 @@ int security_get_classes(char ***classes, int *nclasses)
+ static inline int ptrace_reparented(struct task_struct *child)
  {
- 	int rc = -ENOMEM;
+diff --git a/include/linux/security.h b/include/linux/security.h
+index 50737c7..62bd80c 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -46,7 +46,8 @@ struct audit_krule;
+  */
+ extern int cap_capable(struct task_struct *tsk, int cap);
+ extern int cap_settime(struct timespec *ts, struct timezone *tz);
+-extern int cap_ptrace(struct task_struct *parent, struct task_struct *child);
++extern int cap_ptrace(struct task_struct *parent, struct task_struct *child,
++		      unsigned int mode);
+ extern int cap_capget(struct task_struct *target, kernel_cap_t *effective, kernel_cap_t *inheritable, kernel_cap_t *permitted);
+ extern int cap_capset_check(struct task_struct *target, kernel_cap_t *effective, kernel_cap_t *inheritable, kernel_cap_t *permitted);
+ extern void cap_capset_set(struct task_struct *target, kernel_cap_t *effective, kernel_cap_t *inheritable, kernel_cap_t *permitted);
+@@ -1170,6 +1171,7 @@ static inline void security_free_mnt_opts(struct security_mnt_opts *opts)
+  *	attributes would be changed by the execve.
+  *	@parent contains the task_struct structure for parent process.
+  *	@child contains the task_struct structure for child process.
++ *	@mode contains the PTRACE_MODE flags indicating the form of access.
+  *	Return 0 if permission is granted.
+  * @capget:
+  *	Get the @effective, @inheritable, and @permitted capability sets for
+@@ -1295,7 +1297,8 @@ static inline void security_free_mnt_opts(struct security_mnt_opts *opts)
+ struct security_operations {
+ 	char name[SECURITY_NAME_MAX + 1];
  
--	POLICY_RDLOCK;
-+	read_lock(&policy_rwlock);
+-	int (*ptrace) (struct task_struct *parent, struct task_struct *child);
++	int (*ptrace) (struct task_struct *parent, struct task_struct *child,
++		       unsigned int mode);
+ 	int (*capget) (struct task_struct *target,
+ 		       kernel_cap_t *effective,
+ 		       kernel_cap_t *inheritable, kernel_cap_t *permitted);
+@@ -1573,7 +1576,8 @@ extern struct dentry *securityfs_create_dir(const char *name, struct dentry *par
+ extern void securityfs_remove(struct dentry *dentry);
  
- 	*nclasses = policydb.p_classes.nprim;
- 	*classes = kcalloc(*nclasses, sizeof(*classes), GFP_ATOMIC);
-@@ -2305,7 +2301,7 @@ int security_get_classes(char ***classes, int *nclasses)
- 	}
- 
- out:
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
- 	return rc;
+ /* Security operations */
+-int security_ptrace(struct task_struct *parent, struct task_struct *child);
++int security_ptrace(struct task_struct *parent, struct task_struct *child,
++		    unsigned int mode);
+ int security_capget(struct task_struct *target,
+ 		    kernel_cap_t *effective,
+ 		    kernel_cap_t *inheritable,
+@@ -1755,9 +1759,11 @@ static inline int security_init(void)
+ 	return 0;
  }
  
-@@ -2327,7 +2323,7 @@ int security_get_permissions(char *class, char ***perms, int *nperms)
- 	int rc = -ENOMEM, i;
- 	struct class_datum *match;
+-static inline int security_ptrace(struct task_struct *parent, struct task_struct *child)
++static inline int security_ptrace(struct task_struct *parent,
++				  struct task_struct *child,
++				  unsigned int mode)
+ {
+-	return cap_ptrace(parent, child);
++	return cap_ptrace(parent, child, mode);
+ }
  
--	POLICY_RDLOCK;
-+	read_lock(&policy_rwlock);
+ static inline int security_capget(struct task_struct *target,
+diff --git a/kernel/ptrace.c b/kernel/ptrace.c
+index 6c19e94..e337390 100644
+--- a/kernel/ptrace.c
++++ b/kernel/ptrace.c
+@@ -121,7 +121,7 @@ int ptrace_check_attach(struct task_struct *child, int kill)
+ 	return ret;
+ }
  
- 	match = hashtab_search(policydb.p_classes.table, class);
- 	if (!match) {
-@@ -2355,11 +2351,11 @@ int security_get_permissions(char *class, char ***perms, int *nperms)
- 		goto err;
+-int __ptrace_may_attach(struct task_struct *task)
++int __ptrace_may_access(struct task_struct *task, unsigned int mode)
+ {
+ 	/* May we inspect the given task?
+ 	 * This check is used both for attaching with ptrace
+@@ -148,16 +148,16 @@ int __ptrace_may_attach(struct task_struct *task)
+ 	if (!dumpable && !capable(CAP_SYS_PTRACE))
+ 		return -EPERM;
  
- out:
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
- 	return rc;
+-	return security_ptrace(current, task);
++	return security_ptrace(current, task, mode);
+ }
  
- err:
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
- 	for (i = 0; i < *nperms; i++)
- 		kfree((*perms)[i]);
- 	kfree(*perms);
-@@ -2390,9 +2386,9 @@ int security_policycap_supported(unsigned int req_cap)
+-int ptrace_may_attach(struct task_struct *task)
++bool ptrace_may_access(struct task_struct *task, unsigned int mode)
+ {
+ 	int err;
+ 	task_lock(task);
+-	err = __ptrace_may_attach(task);
++	err = __ptrace_may_access(task, mode);
+ 	task_unlock(task);
+-	return !err;
++	return (!err ? true : false);
+ }
+ 
+ int ptrace_attach(struct task_struct *task)
+@@ -195,7 +195,7 @@ repeat:
+ 	/* the same process cannot be attached many times */
+ 	if (task->ptrace & PT_PTRACED)
+ 		goto bad;
+-	retval = __ptrace_may_attach(task);
++	retval = __ptrace_may_access(task, PTRACE_MODE_ATTACH);
+ 	if (retval)
+ 		goto bad;
+ 
+@@ -494,7 +494,8 @@ int ptrace_traceme(void)
+ 	 */
+ 	task_lock(current);
+ 	if (!(current->ptrace & PT_PTRACED)) {
+-		ret = security_ptrace(current->parent, current);
++		ret = security_ptrace(current->parent, current,
++				      PTRACE_MODE_ATTACH);
+ 		/*
+ 		 * Set the ptrace bit in the process ptrace flags.
+ 		 */
+diff --git a/security/commoncap.c b/security/commoncap.c
+index 33d3433..0b6537a 100644
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -63,7 +63,8 @@ int cap_settime(struct timespec *ts, struct timezone *tz)
+ 	return 0;
+ }
+ 
+-int cap_ptrace (struct task_struct *parent, struct task_struct *child)
++int cap_ptrace (struct task_struct *parent, struct task_struct *child,
++		unsigned int mode)
+ {
+ 	/* Derived from arch/i386/kernel/ptrace.c:sys_ptrace. */
+ 	if (!cap_issubset(child->cap_permitted, parent->cap_permitted) &&
+diff --git a/security/dummy.c b/security/dummy.c
+index b891688..1db712d 100644
+--- a/security/dummy.c
++++ b/security/dummy.c
+@@ -30,7 +30,8 @@
+ #include <linux/prctl.h>
+ #include <linux/securebits.h>
+ 
+-static int dummy_ptrace (struct task_struct *parent, struct task_struct *child)
++static int dummy_ptrace (struct task_struct *parent, struct task_struct *child,
++			 unsigned int mode)
+ {
+ 	return 0;
+ }
+diff --git a/security/security.c b/security/security.c
+index 59838a9..c4507ce 100644
+--- a/security/security.c
++++ b/security/security.c
+@@ -161,9 +161,10 @@ int mod_reg_security(const char *name, struct security_operations *ops)
+ 
+ /* Security operations */
+ 
+-int security_ptrace(struct task_struct *parent, struct task_struct *child)
++int security_ptrace(struct task_struct *parent, struct task_struct *child,
++		    unsigned int mode)
+ {
+-	return security_ops->ptrace(parent, child);
++	return security_ops->ptrace(parent, child, mode);
+ }
+ 
+ int security_capget(struct task_struct *target,
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index eca70f4..4be1563 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -1686,14 +1686,23 @@ static inline u32 file_to_av(struct file *file)
+ 
+ /* Hook functions begin here. */
+ 
+-static int selinux_ptrace(struct task_struct *parent, struct task_struct *child)
++static int selinux_ptrace(struct task_struct *parent,
++			  struct task_struct *child,
++			  unsigned int mode)
  {
  	int rc;
  
--	POLICY_RDLOCK;
-+	read_lock(&policy_rwlock);
- 	rc = ebitmap_get_bit(&policydb.policycaps, req_cap);
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
+-	rc = secondary_ops->ptrace(parent, child);
++	rc = secondary_ops->ptrace(parent, child, mode);
+ 	if (rc)
+ 		return rc;
  
- 	return rc;
- }
-@@ -2456,7 +2452,7 @@ int selinux_audit_rule_init(u32 field, u32 op, char *rulestr, void **vrule)
- 
- 	context_init(&tmprule->au_ctxt);
- 
--	POLICY_RDLOCK;
-+	read_lock(&policy_rwlock);
- 
- 	tmprule->au_seqno = latest_granting;
- 
-@@ -2493,7 +2489,7 @@ int selinux_audit_rule_init(u32 field, u32 op, char *rulestr, void **vrule)
- 		break;
- 	}
- 
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
- 
- 	if (rc) {
- 		selinux_audit_rule_free(tmprule);
-@@ -2544,7 +2540,7 @@ int selinux_audit_rule_match(u32 sid, u32 field, u32 op, void *vrule,
- 		return -ENOENT;
- 	}
- 
--	POLICY_RDLOCK;
-+	read_lock(&policy_rwlock);
- 
- 	if (rule->au_seqno < latest_granting) {
- 		audit_log(actx, GFP_ATOMIC, AUDIT_SELINUX_ERR,
-@@ -2638,7 +2634,7 @@ int selinux_audit_rule_match(u32 sid, u32 field, u32 op, void *vrule,
- 	}
- 
- out:
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
- 	return match;
++	if (mode == PTRACE_MODE_READ) {
++		struct task_security_struct *tsec = parent->security;
++		struct task_security_struct *csec = child->security;
++		return avc_has_perm(tsec->sid, csec->sid,
++				    SECCLASS_FILE, FILE__READ, NULL);
++	}
++
+ 	return task_has_perm(parent, child, PROCESS__PTRACE);
  }
  
-@@ -2726,7 +2722,7 @@ int security_netlbl_secattr_to_sid(struct netlbl_lsm_secattr *secattr,
- 		return 0;
- 	}
+diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
+index 4a09293..3c7150b 100644
+--- a/security/smack/smack_lsm.c
++++ b/security/smack/smack_lsm.c
+@@ -95,11 +95,12 @@ struct inode_smack *new_inode_smack(char *smack)
+  *
+  * Do the capability checks, and require read and write.
+  */
+-static int smack_ptrace(struct task_struct *ptp, struct task_struct *ctp)
++static int smack_ptrace(struct task_struct *ptp, struct task_struct *ctp,
++			unsigned int mode)
+ {
+ 	int rc;
  
--	POLICY_RDLOCK;
-+	read_lock(&policy_rwlock);
- 
- 	if (secattr->flags & NETLBL_SECATTR_CACHE) {
- 		*sid = *(u32 *)secattr->cache->data;
-@@ -2771,7 +2767,7 @@ int security_netlbl_secattr_to_sid(struct netlbl_lsm_secattr *secattr,
- 	}
- 
- netlbl_secattr_to_sid_return:
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
- 	return rc;
- netlbl_secattr_to_sid_return_cleanup:
- 	ebitmap_destroy(&ctx_new.range.level[0].cat);
-@@ -2796,7 +2792,7 @@ int security_netlbl_sid_to_secattr(u32 sid, struct netlbl_lsm_secattr *secattr)
- 	if (!ss_initialized)
- 		return 0;
- 
--	POLICY_RDLOCK;
-+	read_lock(&policy_rwlock);
- 	ctx = sidtab_search(&sidtab, sid);
- 	if (ctx == NULL)
- 		goto netlbl_sid_to_secattr_failure;
-@@ -2807,12 +2803,12 @@ int security_netlbl_sid_to_secattr(u32 sid, struct netlbl_lsm_secattr *secattr)
- 	rc = mls_export_netlbl_cat(ctx, secattr);
+-	rc = cap_ptrace(ptp, ctp);
++	rc = cap_ptrace(ptp, ctp, mode);
  	if (rc != 0)
- 		goto netlbl_sid_to_secattr_failure;
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
+ 		return rc;
  
- 	return 0;
- 
- netlbl_sid_to_secattr_failure:
--	POLICY_RDUNLOCK;
-+	read_unlock(&policy_rwlock);
- 	return rc;
- }
- #endif /* CONFIG_NETLABEL */
 -- 
 1.5.5.1
 
