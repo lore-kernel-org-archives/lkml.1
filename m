@@ -1,62 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754940AbYGGRRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755441AbYGGRUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754940AbYGGRRu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 13:17:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbYGGRRm
+	id S1755441AbYGGRUY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 13:20:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbYGGRUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 13:17:42 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42255 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752927AbYGGRRl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 13:17:41 -0400
-Message-ID: <48724FB4.3090305@sgi.com>
-Date: Mon, 07 Jul 2008 10:17:40 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<485BF8F5.6010802@goop.org> <485BFFC5.6020404@sgi.com>	<m1skv7onvh.fsf@frodo.ebiederm.org> <486912C4.8070705@sgi.com>	<48691556.2080208@zytor.com> <48691E8B.4040605@sgi.com>	<m14p7asl3x.fsf@frodo.ebiederm.org> <48694B3B.3010600@goop.org>	<m1skuuov4t.fsf@frodo.ebiederm.org> <486A61A7.1000902@zytor.com>	<486A68DD.80702@goop.org> <m1d4lxgwxj.fsf@frodo.ebiederm.org>	<486A9D4F.8010508@goop.org> <m1skutffn4.fsf@frodo.ebiederm.org>	<486AA72B.6010401@goop.org> <486AC9D9.9030506@zytor.com>	<486AD6BD.9080600@sgi.com> <486ADD67.1020809@sgi.com>	<486ADD9F.3000305@zytor.com> <486C062C.3090408@sgi.com> <m1wsk3r3g6.fsf@frodo.ebiederm.org>
-In-Reply-To: <m1wsk3r3g6.fsf@frodo.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 7 Jul 2008 13:20:12 -0400
+Received: from mail-out2.uio.no ([129.240.10.58]:60418 "EHLO mail-out2.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753475AbYGGRUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 13:20:11 -0400
+Subject: RE: nfs client readdir caching issue?
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Andy Chittenden <andyc@bluearc.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <0F10A59FDFFDFD4E9BEBD7365DE6725501F64C4B@uk-email.terastack.bluearc.com>
+References: <0F10A59FDFFDFD4E9BEBD7365DE6725501EC3707@uk-email.terastack.bluearc.com>
+	 <1215020245.9783.10.camel@localhost>
+	 <0F10A59FDFFDFD4E9BEBD7365DE6725501F64C4B@uk-email.terastack.bluearc.com>
+Content-Type: text/plain
+Date: Mon, 07 Jul 2008 13:20:07 -0400
+Message-Id: <1215451207.19512.16.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: C77144C509735C4E80B6A227D370066BE9F090A6
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 99 total 9132083 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Mike Travis <travis@sgi.com> writes:
+On Thu, 2008-07-03 at 09:47 +0100, Andy Chittenden wrote:
+> > If so, then invalidate_inode_pages2_range() would have to be broken:
+> we
+> > always clear the readdir cache immediately after reading in the page
+> > with index 0 (i.e. the first readdir page).
 > 
->> will only boot and run with gcc-4.2.0, and does the "failure at grub" screen
->> with
->> gcc-4.2.4 ...!
+> I'm confused by the call to invalidate_inode_pages2_range:
 > 
-> Do these tests have an early serial console enabled?  I want to confirm
-> that the failure is very early in boot before or just as we reach C code.
+>         if (page->index == 0)
+>                 invalidate_inode_pages2_range(inode->i_mapping,
+> PAGE_CACHE_SIZE, -1);
 > 
-> If you don't have an early console we could be failing late in the process just
-> not have visibility.
+> That's passing in a pgoff_t of 4096 as the start page offset from which
+> to invalidate. And an enormous number for the end page to invalidate to.
+> So it looks like the nfs client is trying to invalidate from a *byte*
+> offset of 4096 (but if that's true, the first page could contain less
+> than 4096 bytes depending on the size of the readdir response it
+> received but I'll leave that to one side for the moment).
 > 
->> Any other suggestions?
+> What's confusing me is that when I look at the implementation of
+> invalidate_inode_pages2_range, I see this call to pagevec_lookup:
 > 
-> If you have a serial console to add a little bit of instrumentation super duper early.
-> Although looking at the generated objects might be just as interesting.
+>                 pagevec_lookup(&pvec, mapping, next,
+>                         min(end - next, (pgoff_t)PAGEVEC_SIZE - 1) + 1))
+> {
 > 
-> Eric
+> looking at the pagevec_lookup comments, it claims the fourth parameter
+> is the number of pages:
+> 
+> * @nr_pages:   The maximum number of pages
+> 
+> So how can (end - next) be a number of pages? (next will be 4096 in the
+> call from the nfs client). IE it looks like
+> invalidate_inode_pages2_range is expecting a page range (as the name
+> suggests). IE I'm wondering whether the call to
+> invalidate_inode_pages2_range should be:
+> 
+>         if (page->index == 0)
+>                 invalidate_inode_pages2_range(inode->i_mapping, 1, -1);
+> 
+> FWIW We've also seen this on larger directories so I'm wondering what
+> would happen if a readdir part way down the cookie chain returned more
+> data (or less) than it did last time. IE if the above is correct, then
+> replace the two lines with:
+> 
+> 	invalidate_inode_pages2_range(inode->i_mapping, page->index + 1,
+> -1);
+> 
+> IE purge the rest of the pages for the inode.
 
-Hi,
+Hi Andy,
 
-Sorry for the delay, been off the past 4 days.
+Apologies for the late response. I was travelling on Thursday, and got
+caught up with the long weekend due to the July 4th holiday in the US.
 
-I'll see how closely I can narrow down where the fault is.  I have been inserting
-very early printk's to track how far into the startup it gets before bailing.
 
-Thanks,
-Mike
+Yes, I agree with your comment above: the
+invalidate_inode_pages2_range() call is specifying a byte range instead
+of a page index range, and is therefore wrong.
+
+Another thought is that individual pages might perhaps get evicted by VM
+pressure, in which case we might perhaps want to re-read not only the
+evicted page, but all subsequent pages too (in case the server returns
+more/less data per page so that the alignment of the next entry
+changes).
+
+Cheers
+  Trond
+-------------------------------------------------------------------------
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+NFS: Fix readdir cache invalidation
+
+invalidate_inode_pages2_range() takes page offset arguments, not byte
+ranges.
+
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
+
+ fs/nfs/dir.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/fs/nfs/dir.c b/fs/nfs/dir.c
+index 58d43da..982a206 100644
+--- a/fs/nfs/dir.c
++++ b/fs/nfs/dir.c
+@@ -204,7 +204,7 @@ int nfs_readdir_filler(nfs_readdir_descriptor_t *desc, struct page *page)
+ 	 * Note: assumes we have exclusive access to this mapping either
+ 	 *	 through inode->i_mutex or some other mechanism.
+ 	 */
+-	if (page->index == 0 && invalidate_inode_pages2_range(inode->i_mapping, PAGE_CACHE_SIZE, -1) < 0) {
++	if (invalidate_inode_pages2_range(inode->i_mapping, page->index + 1, -1) < 0) {
+ 		/* Should never happen */
+ 		nfs_zap_mapping(inode, inode->i_mapping);
+ 	}
+
+
