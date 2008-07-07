@@ -1,68 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754481AbYGGPJM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754712AbYGGPMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754481AbYGGPJM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 11:09:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753403AbYGGPI5
+	id S1754712AbYGGPMQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 11:12:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509AbYGGPMB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 11:08:57 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:44978 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753298AbYGGPI4 (ORCPT
+	Mon, 7 Jul 2008 11:12:01 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53533 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753493AbYGGPMA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 11:08:56 -0400
-To: nickpiggin@yahoo.com.au
-CC: miklos@szeredi.hu, jamie@shareable.org, torvalds@linux-foundation.org,
-       jens.axboe@oracle.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       akpm@linux-foundation.org, hugh@veritas.com
-In-reply-to: <200807080028.00642.nickpiggin@yahoo.com.au> (message from Nick
-	Piggin on Tue, 8 Jul 2008 00:28:00 +1000)
-Subject: Re: [patch 1/2] mm: dont clear PG_uptodate in invalidate_complete_page2()
-References: <20080625124038.103406301@szeredi.hu> <200807072217.57509.nickpiggin@yahoo.com.au> <E1KFqD4-0001vq-3F@pomaz-ex.szeredi.hu> <200807080028.00642.nickpiggin@yahoo.com.au>
-Message-Id: <E1KFsKI-0002IN-ES@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 07 Jul 2008 17:08:26 +0200
+	Mon, 7 Jul 2008 11:12:00 -0400
+Message-ID: <4872319B.9040809@linux-foundation.org>
+Date: Mon, 07 Jul 2008 10:09:15 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: gerald.schaefer@de.ibm.com
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [PATCH] Make CONFIG_MIGRATION available for s390
+References: <1215354957.9842.19.camel@localhost.localdomain>
+In-Reply-To: <1215354957.9842.19.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Jul 2008, Nick Piggin wrote:
-> If dirty can't happen, the caller should just use the truncate.
-> The creation of this "invalidate 2" thing was just papering over
-> problems in the callers.
+Gerald Schaefer wrote:
 
-Dirty *can* happen.  The difference between truncate_inode_pages() and
-invalidate_inode_pages2() is that the former just throws away dirty
-pages, while the latter can do something about them through
-->launder_page().
+> Index: linux-2.6/include/linux/migrate.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/migrate.h
+> +++ linux-2.6/include/linux/migrate.h
+> @@ -13,6 +13,7 @@ static inline int vma_migratable(struct 
+>  {
+>  	if (vma->vm_flags & (VM_IO|VM_HUGETLB|VM_PFNMAP|VM_RESERVED))
+>  		return 0;
+> +#ifdef CONFIG_NUMA
+>  	/*
+>  	 * Migration allocates pages in the highest zone. If we cannot
+>  	 * do so then migration (at least from node to node) is not
+> @@ -22,6 +23,7 @@ static inline int vma_migratable(struct 
+>  		gfp_zone(mapping_gfp_mask(vma->vm_file->f_mapping))
+>  								< policy_zone)
+>  			return 0;
+> +#endif
+>  	return 1;
+>  }
 
-> But anyway your point is taken -- caller doesn't really handle failure.
+This will extend the number of pages that are migratable and lead to strange
+semantics in the NUMA case. There suddenly vma_is migratable will forbid hotplug
+to migrate certain pages. 
 
-Yes.
+I think we need two functions:
 
-> > Right.  I think leaving PG_uptodate on invalidation is actually a
-> > rather clean solution compared to the alternatives.
-> 
-> Note that files can be truncated in the middle too, so you can't
-> just fix one case that happens to hit you, you'd have to fix things
-> consistently.
+vma_migratable()	General migratability
 
-Hmm, OK.
+vma_policy_migratable()	Migratable under NUMA policies.
 
-> But...
-> 
-> 
-> > Well, other than my original proposal, which would just have reused
-> > the do_generic_file_read() infrastructure for splice.  I still don't
-> > see why we shouldn't use that, until the whole async splice-in thing
-> > is properly figured out.
-> 
-> Given the alternatives, perhaps this is for the best, at least for
-> now.
 
-Yeah.  I'm not at all opposed to improving splice to be able to do all
-sorts of fancy things like async splice-in, and stealing of pages.
-But it's unlikely that I will have the motivation to implement any of
-them just to fix this bug.
+> Index: linux-2.6/include/linux/mm.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/mm.h
+> +++ linux-2.6/include/linux/mm.h
+> @@ -193,6 +193,8 @@ struct vm_operations_struct {
+>  	 */
+>  	struct mempolicy *(*get_policy)(struct vm_area_struct *vma,
+>  					unsigned long addr);
+> +#endif
+> +#ifdef CONFIG_MIGRATION
+>  	int (*migrate)(struct vm_area_struct *vma, const nodemask_t *from,
+>  		const nodemask_t *to, unsigned long flags);
+>  #endif
 
-Miklos
+That wont work since the migrate function takes a nodemask! The point of
+the function is to move memory from node to node which is something that you
+*cannot* do in a non NUMA configuration. So leave this chunk out.
+
+
+> Index: linux-2.6/mm/Kconfig
+> ===================================================================
+> --- linux-2.6.orig/mm/Kconfig
+> +++ linux-2.6/mm/Kconfig
+> @@ -174,7 +174,7 @@ config SPLIT_PTLOCK_CPUS
+>  config MIGRATION
+>  	bool "Page migration"
+>  	def_bool y
+> -	depends on NUMA
+> +	depends on NUMA || ARCH_ENABLE_MEMORY_HOTREMOVE
+>  	help
+>  	  Allows the migration of the physical location of pages of processes
+>  	  while the virtual addresses are not changed. This is useful for
+
+Hmmm... Okay. I tried to make MIGRATION as independent of CONFIG_NUMA as possible so hopefully this will work.
+
+
+
