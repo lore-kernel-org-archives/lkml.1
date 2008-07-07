@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754879AbYGGO3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755022AbYGGOb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754879AbYGGO3w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 10:29:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbYGGO3p
+	id S1755022AbYGGOb3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 10:31:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbYGGObV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 10:29:45 -0400
-Received: from casper.infradead.org ([85.118.1.10]:58975 "EHLO
+	Mon, 7 Jul 2008 10:31:21 -0400
+Received: from casper.infradead.org ([85.118.1.10]:58982 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753300AbYGGO3o (ORCPT
+	with ESMTP id S1752886AbYGGObU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 10:29:44 -0400
-Date: Mon, 7 Jul 2008 07:29:45 -0700
+	Mon, 7 Jul 2008 10:31:20 -0400
+Date: Mon, 7 Jul 2008 07:31:10 -0700
 From: Arjan van de Ven <arjan@infradead.org>
-To: "Jinkai Gao" <mickeygjk@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Suggestion: LKM should be able to add system call for itself
-Message-ID: <20080707072945.189bbe76@infradead.org>
-In-Reply-To: <fb82a8210807070512o3a5f8814kba83df94b7c7e04a@mail.gmail.com>
-References: <fb82a8210807062209t6cfe3e46m50a11b577f0540e7@mail.gmail.com>
-	<20080707000128.1e93d8e4@infradead.org>
-	<fb82a8210807070512o3a5f8814kba83df94b7c7e04a@mail.gmail.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, mgross@linux.intel.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: move the descriptions of VT-d to
+ Documentations/x86/x86_64/boot-options.txt
+Message-ID: <20080707073110.617c538c@infradead.org>
+In-Reply-To: <20080707232337W.fujita.tomonori@lab.ntt.co.jp>
+References: <20080707171707V.fujita.tomonori@lab.ntt.co.jp>
+	<20080707065816.29833aca@infradead.org>
+	<20080707232337W.fujita.tomonori@lab.ntt.co.jp>
 Organization: Intel
 X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -31,41 +33,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Jul 2008 08:12:00 -0400
-"Jinkai Gao" <mickeygjk@gmail.com> wrote:
+On Mon, 7 Jul 2008 23:23:39 +0900
+FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 
-> On Mon, Jul 7, 2008 at 3:01 AM, Arjan van de Ven
-> <arjan@infradead.org> wrote:
-> > On Mon, 7 Jul 2008 01:09:30 -0400
-> > "Jinkai Gao" <mickeygjk@gmail.com> wrote:
-> >
-> >> Above is to demonstrate that LKM is extension to kernel, and the
-> >> system calls should be able to extend as long as the kernel is
-> >> extending. So The LKM should be able to define its own user
-> >> interface by adding new system call for itself.
-> >
-> > Since we promise a stable ABI to userspace, this is a bit of a
-> > problem.
-> >
-> > But... look today, we already have various system calls implemented
-> > by modules. (example: sys_nfsservctl)
-> > but to make it fully dynamic? Not a good idea... nobody would be
-> > able to program to it.
+> On Mon, 7 Jul 2008 06:58:16 -0700
+> Arjan van de Ven <arjan@infradead.org> wrote:
 > 
-> Why? Using the interface we provide to add and delete system call (the
-> module can only unregister the system calls registered by itself), all
-> the existing system calls will be the same. It is just you can have
-> more system calls then you need, That shouldn't be a problem.
+> > On Mon, 7 Jul 2008 17:17:11 +0900
+> > FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> > 
+> > > Documentations/x86/x86_64/boot-options.txt is the more appropriate
+> > > place for the descriptions of the VT-d IOMMU kernel parameters.
+> > > 
+> > > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > > ---
+> > >  Documentation/kernel-parameters.txt       |   22
+> > > ---------------------- Documentation/x86/x86_64/boot-options.txt |
+> > 
+> > 
+> > I disagree.
+> > Documentation/kernel-parameters.txt needs to contain ALL of them.
+> 
+> That's fine with me.
+> 
+> Now the descriptions of other x86_64 IOMMUs parameters are in
+> x86_64/boot-options.txt. That's confusing. I just want to clean up it.
+> 
+> 
+> > It already can deal with some of them being only for some
+> > architectures, but it really should be the one-stop-shop for kernel
+> > parameters.
+> 
+> Yeah, seems that only x86 and m64k have the own kernel parameters
+> file. I think that it would be better to merge them into
+> Documentation/kernel-parameters.txt.
 
-but when the kernel later adds new ones.. overlap.
-
-Really.. it's not hard to do this. Look at nfs etc. You CAN do this,
-just you need to reserve your system call number officially (and create
-a manpage for it describing what it does)... and then it doesn't really
-matter if it's module or vmlinux who provides it. Again.. nfs has
-solved this.
-
-
+I like this alternative; one stop shop is for this information is very
+valuable
 
 -- 
 If you want to reach me at my work email, use arjan@linux.intel.com
