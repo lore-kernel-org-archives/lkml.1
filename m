@@ -1,115 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754980AbYGGGYt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754771AbYGGG3H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754980AbYGGGYt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 02:24:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbYGGGYl
+	id S1754771AbYGGG3H (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 02:29:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbYGGG2v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 02:24:41 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55833 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751819AbYGGGYk (ORCPT
+	Mon, 7 Jul 2008 02:28:51 -0400
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:56828 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751457AbYGGG2v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 02:24:40 -0400
-Date: Mon, 07 Jul 2008 15:22:24 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: gerald.schaefer@de.ibm.com
-Subject: Re: [PATCH] Make CONFIG_MIGRATION available for s390
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Dave Hansen <haveblue@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>
-In-Reply-To: <1215354957.9842.19.camel@localhost.localdomain>
-References: <1215354957.9842.19.camel@localhost.localdomain>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20080707150413.5A51.E1E9C6FF@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
+	Mon, 7 Jul 2008 02:28:51 -0400
+From: Andi Kleen <andi@firstfloor.org>
+Message-Id: <20080707828.405203787@firstfloor.org>
+To: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: [PATCH] [0/9] Use 64bit x86 machine check code for 32bit too
+Date: Mon,  7 Jul 2008 08:28:32 +0200 (CEST)
+X-OriginalArrivalTime: 07 Jul 2008 06:21:09.0140 (UTC) FILETIME=[A5319540:01C8DFF9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Looks good to me.
+This patchkit uses the 64bit machine check code which is better in many
+ways on 32bit x86 too. This is also the basis for some future machine
+check work.
 
-Acked-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+The 64bit machine check code is in many ways much better than 
+the 32bit machine check code: it is more specification compliant,
+is cleaner, only has a single code base versus one per CPU, 
+has better infrastructure for recovery, has a cleaner way to communicate
+with user space etc. etc.
 
-Bye.
+It requires testing especially on older systems (on newer
+ones it should be already tested well in 64bit systems). 
 
+The patchkit contains several parts:
+- It ports over a few needed quirks (for older Intel and older
+AMD CPUs) to the 64bit kernel.
+- It changes the 64bit code to be 32bit clean in its data structures
+(mostly just unsigned long -> u64 where needed) 
+- It drops some unused functionality that cannot be easily implemented on 32bit
+and didn't seem worth ifdefing
 
-> Subject: [PATCH] Make CONFIG_MIGRATION available for s390
-> 
-> From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-> 
-> We'd like to support CONFIG_MEMORY_HOTREMOVE on s390, which depends on
-> CONFIG_MIGRATION. So far, CONFIG_MIGRATION is only available with NUMA
-> support.
-> 
-> This patch makes CONFIG_MIGRATION selectable for architectures that define
-> ARCH_ENABLE_MEMORY_HOTREMOVE. When MIGRATION is enabled w/o NUMA, the kernel
-> won't compile because of a missing migrate() function in vm_operations_struct
-> and a missing policy_zone reference in vma_migratable(). To avoid this,
-> "#ifdef CONFIG_NUMA" is added to vma_migratable() and the vm_ops migrate()
-> definition is moved from "#ifdef CONFIG_NUMA" to "#ifdef CONFIG_MIGRATION".
-> 
-> Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-> ---
-> 
->  include/linux/migrate.h |    2 ++
->  include/linux/mm.h      |    2 ++
->  mm/Kconfig              |    2 +-
->  3 files changed, 5 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/include/linux/migrate.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/migrate.h
-> +++ linux-2.6/include/linux/migrate.h
-> @@ -13,6 +13,7 @@ static inline int vma_migratable(struct 
->  {
->  	if (vma->vm_flags & (VM_IO|VM_HUGETLB|VM_PFNMAP|VM_RESERVED))
->  		return 0;
-> +#ifdef CONFIG_NUMA
->  	/*
->  	 * Migration allocates pages in the highest zone. If we cannot
->  	 * do so then migration (at least from node to node) is not
-> @@ -22,6 +23,7 @@ static inline int vma_migratable(struct 
->  		gfp_zone(mapping_gfp_mask(vma->vm_file->f_mapping))
->  								< policy_zone)
->  			return 0;
-> +#endif
->  	return 1;
->  }
->  
-> Index: linux-2.6/include/linux/mm.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/mm.h
-> +++ linux-2.6/include/linux/mm.h
-> @@ -193,6 +193,8 @@ struct vm_operations_struct {
->  	 */
->  	struct mempolicy *(*get_policy)(struct vm_area_struct *vma,
->  					unsigned long addr);
-> +#endif
-> +#ifdef CONFIG_MIGRATION
->  	int (*migrate)(struct vm_area_struct *vma, const nodemask_t *from,
->  		const nodemask_t *to, unsigned long flags);
->  #endif
-> Index: linux-2.6/mm/Kconfig
-> ===================================================================
-> --- linux-2.6.orig/mm/Kconfig
-> +++ linux-2.6/mm/Kconfig
-> @@ -174,7 +174,7 @@ config SPLIT_PTLOCK_CPUS
->  config MIGRATION
->  	bool "Page migration"
->  	def_bool y
-> -	depends on NUMA
-> +	depends on NUMA || ARCH_ENABLE_MEMORY_HOTREMOVE
->  	help
->  	  Allows the migration of the physical location of pages of processes
->  	  while the virtual addresses are not changed. This is useful for
-> 
+Tested by doing some software level error injection on a few
+different machines
 
--- 
-Yasunori Goto 
+I request this code is merged into the appropiate tree for linux-next
+for wider testing. It's not .27 ready, but hopefully .28, but it requires
+wider exposure now.
 
+Patches are also available for pulling from
+
+git://git.kernel.org/pub/scm/linux/kernel/git/ak/linux-mce-2.6.git mce
+
+-Andi 
 
