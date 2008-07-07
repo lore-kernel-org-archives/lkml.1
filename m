@@ -1,47 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbYGGSwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755194AbYGGSxb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756241AbYGGSwQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 14:52:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035AbYGGSwG
+	id S1755194AbYGGSxb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 14:53:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035AbYGGSxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 14:52:06 -0400
-Received: from khc.piap.pl ([195.187.100.11]:45918 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754910AbYGGSwF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 14:52:05 -0400
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Uwe =?iso-8859-2?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>,
-       Oliver Neukum <oliver@neukum.org>,
-       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [RFC] MAINTAINERS service, was: Re: alphabetic ordering of MAINTAINERS
-References: <20080704063455.GA13999@digi.com>
-	<200807040852.27809.oliver@neukum.org>
-	<m3k5g1zv3u.fsf_-_@maximus.localdomain>
-	<20080704134426.GA32700@digi.com> <m37ic1zqqp.fsf@maximus.localdomain>
-	<487217E1.2040205@s5r6.in-berlin.de>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Mon, 07 Jul 2008 20:52:01 +0200
-In-Reply-To: <487217E1.2040205@s5r6.in-berlin.de> (Stefan Richter's message of "Mon\, 07 Jul 2008 15\:19\:29 +0200")
-Message-ID: <m3r6a5il2m.fsf@maximus.localdomain>
+	Mon, 7 Jul 2008 14:53:23 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:42899 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754102AbYGGSxX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 14:53:23 -0400
+Date: Mon, 7 Jul 2008 13:53:22 -0500
+From: Dean Nelson <dcn@sgi.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [Patch 0/6] sgi-xp: add support for UV systems
+Message-ID: <20080707185322.GA657@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter <stefanr@s5r6.in-berlin.de> writes:
+This patchset adds most of the necessary code to support XPC/XPNET on a SGI UV
+system, and as such is still under development. It compiles cleanly as is on
+both x86_64 and IA64. And if brought up on anything but ia64-sn2 will return
+an -ENODEV.
 
-> We expect submissions to based on something more recent than 2.6.12.
+This patchset depends on the GRU driver which has recently been submitted.
+http://marc.info/?l=linux-kernel&m=121512107123657&w=2
 
-Unfortunately we can't enforce that. People are working with old
-kernels (think of heavily-modified vendor trees), people send patches
-against old kernels, and we accept such patches (if it makes sense,
-of course).
-
-> Your patch service however...
-> ...already exists.  Check the "L:" entries in MAINTAINERS.
-
-Nice joke.
--- 
-Krzysztof Halasa
