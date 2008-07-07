@@ -1,108 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756596AbYGGScR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbYGGSf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756596AbYGGScR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 14:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754316AbYGGScA
+	id S1756178AbYGGSf1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 14:35:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbYGGSfT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 14:32:00 -0400
-Received: from lucidpixels.com ([75.144.35.66]:36314 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754026AbYGGSb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 14:31:59 -0400
-Date: Mon, 7 Jul 2008 14:31:57 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
-Subject: 12 Veliciraptors again w/x4 card (~1gbyte/sec aggregate read)!
-Message-ID: <alpine.DEB.1.10.0807071424100.4694@p34.internal.lan>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 7 Jul 2008 14:35:19 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54371 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754351AbYGGSfS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 14:35:18 -0400
+Message-ID: <48726158.9010308@linux-foundation.org>
+Date: Mon, 07 Jul 2008 13:32:56 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [PATCH] Make CONFIG_MIGRATION available for s390
+References: <1215354957.9842.19.camel@localhost.localdomain>	 <4872319B.9040809@linux-foundation.org>	 <1215451689.8431.80.camel@localhost.localdomain>	 <48725480.1060808@linux-foundation.org> <1215455148.8431.108.camel@localhost.localdomain>
+In-Reply-To: <1215455148.8431.108.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Each PCI-e x1 card has 1 veliciraptor on it now.
-Got an x4 card wit 4 sata ports:
+Gerald Schaefer wrote:
+> On Mon, 2008-07-07 at 12:38 -0500, Christoph Lameter wrote:
+>> How does the compile break? It may be better to fix this where the function
+>> is used.
+> 
+> Good point, I did not look into this deep enough and tried to fix the
+> symptoms instead of the cause. There are two locations where the compile
+> breaks:
+> - mm/migrate.c: migrate_vmas() does not know vm_ops->migrate()
 
-Not quite the > 1 gbyte/sec I was hoping for in regards to the reads
-but pretty close!
+I think you just need to move the #endif from before migrate_vmas to the end (as you already suggested). Then migrate_vmas will no longer be compiled for the NUMA case. migrate_vmas() was added later and was not placed correctly it seems.
 
-(For my RAID5)
-Previously my write was limited to 400-420MiB/s now I see an additional
-120-125 MiB/s increase!
 
-jpiszcz@p34:/x/f$ dd if=/dev/zero of=bigfile bs=1M count=10240
-10240+0 records in
-10240+0 records out
-10737418240 bytes (11 GB) copied, 20.7054 s, 519 MB/s
-jpiszcz@p34:/x/f$ sync
-jpiszcz@p34:/x/f$ dd if=/dev/zero of=bigfile.1 bs=1M count=10240
-10240+0 records in
-10240+0 records out
-10737418240 bytes (11 GB) copied, 20.4973 s, 524 MB/s
-jpiszcz@p34:/x/f$ sync
-jpiszcz@p34:/x/f$ dd if=bigfile of=/dev/null bs=1M count=10240
-10240+0 records in
-10240+0 records out
-10737418240 bytes (11 GB) copied, 11.3529 s, 946 MB/s
-jpiszcz@p34:/x/f$ sync
-jpiszcz@p34:/x/f$ dd if=bigfile.1 of=/dev/null bs=1M count=10240
-10240+0 records in
-10240+0 records out
-10737418240 bytes (11 GB) copied, 11.2635 s, 953 MB/s
-jpiszcz@p34:/x/f$
+> - inlcude/linux/migrate.h: vma_migratable() does not know policy_zone
 
---
+Again here you would have to add a new function.
 
-For all disks:
+vma_policy_migratable() should only be available for CONFIG_NUMA.
 
-Something I noticed is the x1 PCI-e cards are doing around 68MiB/s each 
-for 3 of them where the x4 has no issue pumping out 100MiB/s+ without a 
-problem, however keep in mind the bus is probably already taxed from the 
-6 sata drives on the southbridge.
+vma_migratable (without policy_zone check!) should be available if CONFIG_MIGRATION is on.
+Not sure if we need such a test. If not then just make sure that vma_migratable() is
+not included for the !NUMA case.
 
-vmstat output:
 
-procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
 
-1 VR
-  0  1    160  45220 341772 6480468    0    0 122112     0  584 2082  1  7 73 20
-  0  1    160  46592 455436 6362088    0    0 113664     0  495 1968  0  4 74 21
-2 VR
-  1  1    160  45540 3027724 3720340    0    0 243216     0 1006 4030  0  9 74 17
-  0  2    160  44988 3262220 3480648    0    0 234480     0 1008 4134  0  8 73 19
-3 VR
-  1  2    160  44816 6600068  50476    0    0 330248    16 1342 4126  0 12 70 18
-  0  3    160  45440 6599812  50264    0    0 316032     8 1296 3878  0 12 72 17
-4 VR
-  0  4    160  44504 6602488  47644    0    0 495232     0 1992 6081  0 20 57 23
-  1  3    160  45500 6602796  45980    0    0 483968     0 1915 6207  0 20 54 26
-5 VR
-  1  5    160  43932 6602972  45304    0    0 606080     0 2375 6622  0 25 56 19
-  1  4    160  45412 6601852  45160    0    0 618756     0 2431 6791  0 25 53 21
-6 VR
-  0  6    160  45000 6602348  44512    0    0 683904     8 2746 7880  0 31 42 27
-  0  6    160  45248 6602028  44460    0    0 705792     0 2754 7564  0 31 45 24
-7 VR
-  2  6    160  46744 6599020  44688    0    0 748204    17 3042 9084  0 34 40 26
-  3  6    160  46592 6598824  44372    0    0 747520     8 2975 9047  1 33 31 36
-8 VR
-  2  7    160  46512 6598612  44580    0    0 761184    16 3089 9937  0 36 40 24
-  2  7    160  44528 6600392  44360    0    0 759720     8 2993 9522  0 36 36 28
-9 VR
-  2  8    160  47152 6596824  44572    0    0 767016     0 3075 9730  1 37 39 24
-  2  7    160  46576 6597728  44688    0    0 771200     0 3032 9568  0 37 40 23
-10 VR
-  0 10    160  45048 6598240  44428    0    0 889072     8 3599 11561  0 47 20 33
-  2 10    160  45232 6598116  44772    0    0 890112     0 3495 11547  0 46 23 31
-11 VR
-  4  8    160  45536 6594716  44600    0    0 996352     0 3947 12134  1 62 13 25
-  2  9    160  45348 6594912  44096    0    0 1009152     0 3949 11949  0 63 10 28
-12 VR
-  6  8    160  45092 6583136  47016    0    0 1063200     0 4187 12394  1 71  9 21
-  3 11    160  47080 6578492  47588    0    0 1058412     0 4224 12547  1 72  8 20
-
-Just about 1 gigabyte per second total aggregate read for all drives on a
-965 chipset!
-
-Justin.
