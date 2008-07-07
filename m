@@ -1,78 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754360AbYGGL2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754721AbYGGLbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754360AbYGGL2U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 07:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbYGGL2F
+	id S1754721AbYGGLbS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 07:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbYGGLbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 07:28:05 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:44925 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752653AbYGGL2E (ORCPT
+	Mon, 7 Jul 2008 07:31:07 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:42964 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752608AbYGGLbF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 07:28:04 -0400
+	Mon, 7 Jul 2008 07:31:05 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=GLire4vuQvvYBgZVE+kn7w0wY/Qd0+7xA7lQyqX1BwVHdJy1lLKZNhOw813LAsE9j6
-         xjBeafVUTetCyoGcdf8HIEeOSRE7w80fX/r5UNvWSu4M6OnFYKtoesrDsXOZjK6R2330
-         5uQc9Tuci5lXSGKEWnOpN3X28n8C0iiQkzEro=
-Message-ID: <19f34abd0807070427w5398c617uae0a4e8e40fd8f0e@mail.gmail.com>
-Date: Mon, 7 Jul 2008 13:27:58 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Mattias Nissler" <mattias.nissler@gmx.de>,
-       "Stefano Brivio" <stefano.brivio@polimi.it>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Use of uninitialized memory in rate_control_pid_alloc()
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=BoPw28mTpoSCdQ6y0lC8OnERCDatD+39DexDsRQpPNKw2QAkv2e7XjeSwy2bu6hEIM
+         E9XsH0zNwjuZedfgOjqZKkNQdvdH0r6hD1UMROkJb8uwS8fKmHekNA7rVsc+NjkOc0uy
+         JxnszTM8CsNnWq5tRmXsswqG4A2YZ8syzR4r8=
+Message-ID: <9871ee5f0807070431x167b3af3w8710b4df5b714e8d@mail.gmail.com>
+Date: Mon, 7 Jul 2008 07:31:01 -0400
+From: "Timothy Normand Miller" <theosib@gmail.com>
+To: "Timothy Normand Miller" <theosib@gmail.com>,
+       "Arjan van de Ven" <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: HELP: Getting unexpected fakeraid behavior. Fix?
+In-Reply-To: <20080707095747.GC1631@nineveh.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <9871ee5f0807061307ncc55104y477c57be3e91b75f@mail.gmail.com>
+	 <20080706131937.13065312@infradead.org>
+	 <9871ee5f0807061424o535c6d7eg3071da6e31e0b58e@mail.gmail.com>
+	 <9871ee5f0807061822l2871765bhd92aa177c0d5d55b@mail.gmail.com>
+	 <9871ee5f0807061826r101a1aboe266a3432af650a2@mail.gmail.com>
+	 <20080707095747.GC1631@nineveh.local>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, Jul 7, 2008 at 5:57 AM, Joseph Fannin <jfannin@gmail.com> wrote:
 
-kmemcheck found this in next-20080704:
+> I don't think dmraid and mdraid *are* functionally the same.  dmraid
+> was written as more or less a compatibilty hack, so people using
+> fakeRAID with its Windows-only software drivers could still
+> dual-boot.  That could have changed somewhat while I wasn't looking,
+> but it doesn't sound like it has changed much.
 
-This patch:
+It looks like I've been bitten by misinformation on the web.
 
-commit 1946b74ce03c4edecabde80d027da00a7eab56ca
-Author: Mattias Nissler <mattias.nissler@gmx.de>
-Date:   Thu Dec 20 13:27:26 2007 +0100
+> mdraid is still the only "real" Linux softRAID
+> implementation... though LVM also does some very RAID-like things.
 
-    rc80211-pid: export tuning parameters through debugfs
+I''m not sure how much you would save, but it might be more compact to
+combine them.  Complexity/size tradeoff, I guess.
 
-contained this hunk (net/mac80211/rc80211_pid_algo.c):
+> Anyway, the consensus for a long time seems to be that, unless you
+> need to dual-boot with a Windows system using fakeRAID drivers, you
+> should just put the drive controller in AHCI mode and use mdraid.
 
-@@ -363,10 +375,10 @@ static void *rate_control_pid_alloc(struct ieee80211_local
-        for (i = 0; i < mode->num_rates; i++) {
-                rinfo[i].index = i;
-                rinfo[i].rev_index = i;
--               if (RC_PID_FAST_START)
-+               if (pinfo->fast_start)
-                        rinfo[i].diff = 0;
-                else
--                       rinfo[i].diff = i * RC_PID_NORM_OFFSET;
-+                       rinfo[i].diff = i * pinfo->norm_offset;
-        }
-        for (i = 1; i < mode->num_rates; i++) {
-                s = 0;
+That may be so on LKML, but others don't seem to be so well-informed.
 
-which is obviously wrong, since "pinfo" is allocated just above and
-has never been initialized.
-
-It seems that this is present (unfixed) in mainline as well.
-
-
-Vegard
 
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Timothy Normand Miller
+http://www.cse.ohio-state.edu/~millerti
+Open Graphics Project
