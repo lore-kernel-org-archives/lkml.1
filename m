@@ -1,48 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755415AbYGGRom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbYGGRp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755415AbYGGRom (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 13:44:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753939AbYGGRoe
+	id S1756177AbYGGRp2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 13:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbYGGRpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 13:44:34 -0400
-Received: from aa2005110791d2e6c28a.userreverse.dion.ne.jp ([210.230.194.138]:22459
-	"EHLO localhost.localdomain" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753934AbYGGRod (ORCPT
+	Mon, 7 Jul 2008 13:45:19 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35720 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753939AbYGGRpS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 13:44:33 -0400
-From: James Morris <jmorris@namei.org>
-To: linux-security-module@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 05/20] SELinux: remove inherit field from inode_security_struct
-Date: Tue,  8 Jul 2008 01:42:07 +0900
-Message-Id: <1215448942-17581-6-git-send-email-jmorris@namei.org>
-X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1215448942-17581-1-git-send-email-jmorris@namei.org>
-References: <1215448942-17581-1-git-send-email-jmorris@namei.org>
+	Mon, 7 Jul 2008 13:45:18 -0400
+Message-ID: <48725480.1060808@linux-foundation.org>
+Date: Mon, 07 Jul 2008 12:38:08 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [PATCH] Make CONFIG_MIGRATION available for s390
+References: <1215354957.9842.19.camel@localhost.localdomain>	 <4872319B.9040809@linux-foundation.org> <1215451689.8431.80.camel@localhost.localdomain>
+In-Reply-To: <1215451689.8431.80.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove inherit field from inode_security_struct, per Stephen Smalley:
-"Let's just drop inherit altogether - dead field."
+Gerald Schaefer wrote:
+> On Mon, 2008-07-07 at 10:09 -0500, Christoph Lameter wrote:
+>> This will extend the number of pages that are migratable and lead to strange
+>> semantics in the NUMA case. There suddenly vma_is migratable will forbid hotplug
+>> to migrate certain pages. 
+>>
+>> I think we need two functions:
+>>
+>> vma_migratable()	General migratability
+>>
+>> vma_policy_migratable()	Migratable under NUMA policies.
+> 
+> Nothing will change here for the NUMA case, this is all about making it
+> compile w/o NUMA and with MIGRATION. What new strange semantics do you mean?
+> BTW, the latest patch in this thread will not touch vma_migratable() anymore,
+> I haven't read your mail before, sorry.
 
-Signed-off-by: James Morris <jmorris@namei.org>
----
- security/selinux/include/objsec.h |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+Ahh. Okay. However, we may still want a function that tells us if the pages in a vma
+are migratable in general (independent of policies). The current vma_migratable function
+tell you if the pages in a vma were placed according to a NUMA memory policy and should be migrated for NUMA locality optimizations.
 
-diff --git a/security/selinux/include/objsec.h b/security/selinux/include/objsec.h
-index 5f0be19..91070ab 100644
---- a/security/selinux/include/objsec.h
-+++ b/security/selinux/include/objsec.h
-@@ -43,7 +43,6 @@ struct inode_security_struct {
- 	u32 sid;		/* SID of this object */
- 	u16 sclass;		/* security class of this object */
- 	unsigned char initialized;	/* initialization flag */
--	unsigned char inherit;	/* inherit SID from parent entry */
- 	struct mutex lock;
- };
+>> That wont work since the migrate function takes a nodemask! The point of
+>> the function is to move memory from node to node which is something that you
+>> *cannot* do in a non NUMA configuration. So leave this chunk out.
+> 
+> Right, but I noticed that this function definition was needed to make it
+> compile with MIGRATION and w/o NUMA, although it would never be called in
+> non-NUMA config.
+
+How does the compile break? It may be better to fix this where the function
+is used.
+
+> A better solution would probably be to put migrate_vmas(), the only caller
+> of vm_ops->migrate(), inside '#ifdef CONFIG_NUMA', because it will only be
+> called from NUMA-only mm/mempolicy.c. Does that sound reasonable?
+
+That sounds right.
  
--- 
-1.5.5.1
+>> Hmmm... Okay. I tried to make MIGRATION as independent of CONFIG_NUMA as possible so hopefully this will work.
+> 
+> Umm, it doesn't compile with MIGRATION and w/o NUMA, which was the reason
+> for this patch, because of the policy_zone reference in vma_migratable()
+> and the missing vm_ops->migrate() function.
+
+Right. I did not have a use case for !NUMA when I wrote the code. So you now need to
+fix the minor bits that break.
 
