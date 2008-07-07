@@ -1,48 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbYGGSfl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755799AbYGGSho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756916AbYGGSfl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 14:35:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754691AbYGGSfU
+	id S1755799AbYGGSho (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 14:37:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbYGGShe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 14:35:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49850 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754395AbYGGSfS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 14:35:18 -0400
-Date: Mon, 7 Jul 2008 11:34:16 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Matt Mackall <mpm@selenic.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, torvalds@linuxfoundation.org,
-       akpm@linuxfoundation.org, linux-kernel@vger.kernel.org,
-       Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: *sigh* /proc/*/pagemap
-In-Reply-To: <1215454997.11311.165.camel@calx>
-Message-ID: <alpine.LFD.1.10.0807071130540.11076@woody.linux-foundation.org>
-References: <b6fcc0a0807041807p24cce461m419d7b54fce72d34@mail.gmail.com>  <20080704185312.052e7145.akpm@linux-foundation.org>  <alpine.LFD.1.10.0807051036000.2815@woody.linux-foundation.org> <1215454997.11311.165.camel@calx>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Mon, 7 Jul 2008 14:37:34 -0400
+Received: from lucidpixels.com ([75.144.35.66]:49230 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753413AbYGGShd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 14:37:33 -0400
+Date: Mon, 7 Jul 2008 14:37:31 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: 12 Veliciraptors again w/x4 card (~1gbyte/sec aggregate read)!
+In-Reply-To: <alpine.DEB.1.10.0807071424100.4694@p34.internal.lan>
+Message-ID: <alpine.DEB.1.10.0807071436080.5166@p34.internal.lan>
+References: <alpine.DEB.1.10.0807071424100.4694@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Mon, 7 Jul 2008, Matt Mackall wrote:
-> 
-> It exists to make the VM stop being a big black box. Before now the VM
-> exposed little beyond statistics, many of which are basically
-> meaningless (RSS?). With pagemap, you can actually see precisely where
-> things are getting allocated, how they're getting shared, etc. Think
-> NUMA, think cell phones.
+On Mon, 7 Jul 2008, Justin Piszcz wrote:
 
-Umm. How about setting it under CONFIG_DEBUG_VM or something like that 
-then?
+> Each PCI-e x1 card has 1 veliciraptor on it now.
+> Got an x4 card wit 4 sata ports:
+>
+> Not quite the > 1 gbyte/sec I was hoping for in regards to the reads
+> but pretty close!
 
-Right now it's not even _asked_ about, unless you're EMBEDDED, and 
-defaults to 'y'. Which means that it has all the downsides, an none of the 
-upsides, for 99.99% of all users.
+Going to remove one of the drives from the x1 card and put it on the x4
+card instead, then I will use all 4 SATA ports on the x4 and hopefully get
+better bw.
 
-			Linus
+If you look at 7,8,9 there is little improvement: (PCI-e x1)
+
+7 VR
+   2  6    160  46744 6599020  44688    0    0 748204    17 3042 9084  0 34 40 26
+   3  6    160  46592 6598824  44372    0    0 747520     8 2975 9047  1 33 31 36
+8 VR
+   2  7    160  46512 6598612  44580    0    0 761184    16 3089 9937  0 36 40 24
+   2  7    160  44528 6600392  44360    0    0 759720     8 2993 9522  0 36 36 28
+9 VR
+   2  8    160  47152 6596824  44572    0    0 767016     0 3075 9730  1 37 39 24
+   2  7    160  46576 6597728  44688    0    0 771200     0 3032 9568  0 37 40 23
+
+But once I hit the drives on the x4 card, vroom vroom!
+
+10 VR
+   0 10    160  45048 6598240  44428    0    0 889072     8 3599 11561  0 47 20 33
+   2 10    160  45232 6598116  44772    0    0 890112     0 3495 11547  0 46 23 31
+11 VR
+   4  8    160  45536 6594716  44600    0    0 996352     0 3947 12134  1 62 13 25
+   2  9    160  45348 6594912  44096    0    0 1009152     0 3949 11949  0 63 10 28
+12 VR
+   6  8    160  45092 6583136  47016    0    0 1063200     0 4187 12394  1 71  9 21
+   3 11    160  47080 6578492  47588    0    0 1058412     0 4224 12547  1 72  8 20
+
+
+Justin.
+
