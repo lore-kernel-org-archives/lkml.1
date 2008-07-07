@@ -1,78 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbYGGLIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754905AbYGGLJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754429AbYGGLIQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 07:08:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYGGLIE
+	id S1754905AbYGGLJS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 07:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbYGGLJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 07:08:04 -0400
-Received: from saeurebad.de ([85.214.36.134]:38521 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752503AbYGGLID (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 07:08:03 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Nageswara R Sastry <rnsastry@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, balbir@linux.vnet.ibm.com,
-       ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com,
-       davej@codemonkey.org.uk
-Subject: Re: [BUG] While changing the cpufreq governor, kernel hits a bug in workqueue.c
-References: <485F8028.1070302@linux.vnet.ibm.com>
-	<87y74w41fp.fsf@skyscraper.fehenstaub.lan>
-	<4860BB8E.2070505@linux.vnet.ibm.com>
-	<87tzfh2t5l.fsf@skyscraper.fehenstaub.lan>
-	<48638906.4090308@linux.vnet.ibm.com>
-	<87y74l4scd.fsf@skyscraper.fehenstaub.lan>
-	<87fxqp7nye.fsf@skyscraper.fehenstaub.lan>
-	<4871E657.3040403@linux.vnet.ibm.com>
-Date: Mon, 07 Jul 2008 13:07:55 +0200
-In-Reply-To: <4871E657.3040403@linux.vnet.ibm.com> (Nageswara R. Sastry's
-	message of "Mon, 07 Jul 2008 15:18:07 +0530")
-Message-ID: <87d4lqq7ec.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Mon, 7 Jul 2008 07:09:04 -0400
+Received: from an-out-0708.google.com ([209.85.132.250]:3086 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752648AbYGGLJD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 07:09:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=s3wBskvFJ0kPPGFBaTPfOblEFTVcCFCL31ekVucxQEyotocDrqgueMXS8fE6MvtJ/d
+         EvgkTKk31w3nI3TxPl/ctl5BUjzuM1cQf9obGVLF+wwaHNsvaXcKTdGCpFTUAVN22rxw
+         EuZef/i+xqIdb1B82VioBZtSNqc18nnx4lwAQ=
+Message-ID: <6e0cfd1d0807070408ybea080ewa75ed1f1a8f9326c@mail.gmail.com>
+Date: Mon, 7 Jul 2008 13:08:53 +0200
+From: "Martin Schwidefsky" <schwidefsky@googlemail.com>
+To: "Hugh Dickins" <hugh@veritas.com>
+Subject: Re: Lockless/Get_User_Pages_Fast causes Xorg 1.4.99.* to lock
+Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>, benh@kernel.crashing.org,
+       cotte@de.ibm.com, "Zan Lynx" <zlynx@acm.org>,
+       "Ryan Hope" <rmh3093@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0807071134090.21480@blonde.site>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48f7fe350807032326l1d68c94l531e44c09693b989@mail.gmail.com>
+	 <486E4FD8.4010102@acm.org>
+	 <Pine.LNX.4.64.0807042112130.16912@blonde.site>
+	 <200807071806.11630.nickpiggin@yahoo.com.au>
+	 <Pine.LNX.4.64.0807071134090.21480@blonde.site>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-Nageswara R Sastry <rnsastry@linux.vnet.ibm.com> writes:
-
-> Hi Johannes,
->>>> =======================================================
->>>> [ INFO: possible circular locking dependency detected ]
->>>> 2.6.25.7.cpufreq_patch #2
->>>> -------------------------------------------------------
-> [...]
->>> Okay, the problem is in cpufreq_conservative.c.  We
->>> cancel_delayed_work_sync() while holding the mutex, but the work itself
->>> tries to grab it and there it deadlocks; lockdep caught that right.
->>>
->>> The hunk for _ondemand is correct, but the one for _conservative is
->>> obviously wrong, sorry :/
->>>
->>> I will whip something up and get back to you.  Thanks a lot for
->>> testing!
+On Mon, Jul 7, 2008 at 12:39 PM, Hugh Dickins <hugh@veritas.com> wrote:
+> On Mon, 7 Jul 2008, Nick Piggin wrote:
 >>
->> Could you try the attached patch instead of the one above?
->>
->> Dave, I dropped the mutex-grabbing from the conservative worker function
->> as well as I don't see a reason for it, please correct me if I'm wrong.
->>
->> 	Hannes
->>
+>> I think we need a similar fix for s390 too. If so, then it really should
+>> get into 2.6.26, but this late in the release, I hope an s390 maintainer
+>> might be able to test and verify the fix?
 >
-> The script is running now for more than 6 hours successfully, I will
-> continue this and let you know if there are any failures.
+> Wow, yes, I hadn't realized s390 is ahead of the game there: glad you're
+> back to spot that.  But yes, we'd prefer maintainer to confirm and push.
 >
-> * I am seeing the circular locking dependency with the above patch
-> too.
+>
+> [PATCH]] s390: protect _PAGE_SPECIAL bit against mprotect
+>
+> Stop mprotect's pte_modify from wiping out the s390 pte_special bit, which
+> caused oops thereafter when vm_normal_page thought X's abnormal was normal.
+>
+> Signed-off-by: Nick Piggin <npiggin@suse.de>
+> Acked-by: Hugh Dickins <hugh@veritas.com>
 
-Uhm.  Failure or no failure?  A possible dead-lock report _is_ a
-failure.  So, do you get one or not?  And if so, could you send me the
-dmesg parts?
+s390 will definitely need this. Loosing the pte special bit is not
+good. I'll prepate
+a please pull right away. Thanks of pointing this out.
 
-Thanks a lot,
-
-	Hannes
+-- 
+blue skies,
+ Martin
