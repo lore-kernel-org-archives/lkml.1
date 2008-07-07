@@ -1,91 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754021AbYGGNEJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754396AbYGGNF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754021AbYGGNEJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 09:04:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752878AbYGGND4
+	id S1754396AbYGGNF2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 09:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbYGGNFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 09:03:56 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:19733 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752628AbYGGNDz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 09:03:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=R2AGuikWsrxdFoCY/QiAoyTgQa2ZteonT7URgZRR6HuuhplpgvlRnEt6AV/ur+Ud+e
-         5PV3HjA8DJw+70bBzGKXtFtlaPJsDHP9/WsZCosSJRdIS9h/VKQBx07XlaIY+V5MLrBw
-         2M9PpAkRVqR7lhXsyAlMWBUMPuiXY2OnZSMZU=
-Message-ID: <19f34abd0807070603p23b30372l5bee26b05b6fa9c7@mail.gmail.com>
-Date: Mon, 7 Jul 2008 15:03:53 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Eric Sesterhenn" <snakebyte@gmx.de>
-Subject: Re: [Linux-NTFS-Dev] Oops with corrupted NTFS image
-Cc: "Anton Altaparmakov" <aia21@cam.ac.uk>,
-       linux-ntfs-dev@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <20080707122450.GC19313@alice>
+	Mon, 7 Jul 2008 09:05:14 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:58832 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753271AbYGGNFN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 09:05:13 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080706172147.GA19559@alice>
-	 <F2EEF4B5-3E11-480A-93E7-9078BDC578EA@cam.ac.uk>
-	 <20080707122450.GC19313@alice>
+Message-ID: <18546.5247.797478.66373@harpo.it.uu.se>
+Date: Mon, 7 Jul 2008 15:05:03 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: David Miller <davem@davemloft.net>
+Cc: a.beregalov@gmail.com, kernel-testers@vger.kernel.org,
+       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.26-rc: SPARC: Sun Ultra 10 can not boot
+In-Reply-To: <20080707.040126.178187777.davem@davemloft.net>
+References: <20080620.162135.203810660.davem@davemloft.net>
+	<a4423d670806201636n4f3d107bk290ed831eb5eefb4@mail.gmail.com>
+	<a4423d670807070219s2dd43aaia29713f5076ecd0d@mail.gmail.com>
+	<20080707.040126.178187777.davem@davemloft.net>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 7, 2008 at 2:24 PM, Eric Sesterhenn <snakebyte@gmx.de> wrote:
-> (gdb) l *(ntfs_read_locked_inode+0x16c)
-> 0xc030adbc is in ntfs_read_locked_inode (fs/ntfs/time.h:90).
-> 85      static inline struct timespec ntfs2utc(const sle64 time)
-> 86      {
-> 87              struct timespec ts;
-> 88
-> 89              /* Subtract the NTFS time offset. */
-> 90              u64 t = (u64)(sle64_to_cpu(time) - NTFS_TIME_OFFSET);
-> 91              /*
-> 92               * Convert the time to 1-second intervals and the remainder to
-> 93               * 1-nano-second intervals.
-> 94               */
-> (gdb) quit
->
-> Not sure why this happens. I checked out a fresh git tree to
-> make sure my tree isnt broken or something. Might gcc be bogus
-> or the debug information and the bug happens in reality somewhere else?
+David Miller writes:
+ > From: "Alexander Beregalov" <a.beregalov@gmail.com>
+ > Date: Mon, 7 Jul 2008 13:19:05 +0400
+ > 
+ > > Hi David
+ > > 
+ > > Is it possible to add some debug code to understand what is going on?
+ > 
+ > What do you want me to add?  The thing hangs and we have no idea
+ > where since there are no messages on the console and the hang
+ > happens before we have any kind of console output.
+ > 
+ > Why do you think I haven't been able to fix this yet?
+ > 
+ > Besides I'm too busy with some networking stuff to work at
+ > all on this at the moment, so folks will just need to be
+ > patient or do the grunt work of debugging this themselves.
 
-Are you sure you didn't recompile/relink vmlinux after getting the
-error? If not, maybe it's gdb which gets confused (somehow) by the
-inlining.
+My Ultra 5 (same mainboard as the Ultra 10) boots 2.6.26-rc9
+just fine. So Alexander's problem is probably caused by .config
+settings or his toolchain.
 
-Your 'Code:' line decodes to these instructions:
+My working 2.6.26-rc9 .config and a boot log are available in
+<http://user.it.uu.se/~mikpe/linux/ultra5/> in case someone wants
+to use them as a starting point for debugging this problem.
 
-   0:   8b 58 08                mov    0x8(%eax),%ebx
-   3:   8b 70 0c                mov    0xc(%eax),%esi
+The toolchain I used has gcc-4.3.1 and binutils-2.17.50.0.3.
 
-And I find this in my own compiled vmlinux at:
-
-c025bcc1:       8b 58 08                mov    0x8(%eax),%ebx
-c025bcc4:       8b 70 0c                mov    0xc(%eax),%esi
-
-which is at...
-
-    $ addr2line -e vmlinux -i c025bcc1
-    fs/ntfs/inode.c:670
-
-which is...
-
-        vi->i_mtime = ntfs2utc(si->last_data_change_time);
-
-which is probably what is causing the NULL pointer dereference.
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+/Mikael
