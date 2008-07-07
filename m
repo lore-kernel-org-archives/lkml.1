@@ -1,60 +1,287 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759616AbYGGXM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759863AbYGGXNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759616AbYGGXM5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 19:12:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758138AbYGGXLO
+	id S1759863AbYGGXNh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 19:13:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758355AbYGGXLR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 19:11:14 -0400
+	Mon, 7 Jul 2008 19:11:17 -0400
 Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:2565 "EHLO
 	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758081AbYGGXLN (ORCPT
+	with ESMTP id S1758081AbYGGXLP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 19:11:13 -0400
+	Mon, 7 Jul 2008 19:11:15 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <20080708110.487722491@firstfloor.org>
 In-Reply-To: <20080708110.487722491@firstfloor.org>
 To: x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [8/10] MCE: Remove oops_begin() use in 64bit machine check
-Message-Id: <20080707231010.A4A811B4315@basil.firstfloor.org>
-Date: Tue,  8 Jul 2008 01:10:10 +0200 (CEST)
-X-OriginalArrivalTime: 07 Jul 2008 23:02:46.0698 (UTC) FILETIME=[922130A0:01C8E085]
+Subject: [PATCH] [10/10] MCE: Use 64bit machine check code on 32bit v2
+Message-Id: <20080707231012.ACAD51B4315@basil.firstfloor.org>
+Date: Tue,  8 Jul 2008 01:10:12 +0200 (CEST)
+X-OriginalArrivalTime: 07 Jul 2008 23:02:48.0573 (UTC) FILETIME=[933F4AD0:01C8E085]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-First 32bit doesn't have oops_begin, so it's a barrier of using
-this code on 32bit.
+The 64bit machine check code is in many ways much better than 
+the 32bit machine check code: it is more specification compliant,
+is cleaner, only has a single code base versus one per CPU, 
+has better infrastructure for recovery, has a cleaner way to communicate
+with user space etc. etc.
 
-On closer examination it turns out oops_begin is not 
-a good idea in a machine check panic anyways. All oops_begin
-does it so check for recursive/parallel oopses and implement the
-"wait on oops" heuristic. But there's actually no good reason
-to lock machine checks against oopses or prevent them
-from recursion. Also "wait on oops" does not really make
-sense for a machine check too.
+Use the 64bit code for 32bit too.
 
-So just remove it.
+This is the second attempt to do this. There was one a couple of years
+ago to unify this code for 32bit and 64bit.  Back then this ran into some 
+trouble with K7s and was reverted.
 
-Replace it with a manual bust_spinlocks/console_verbose.
+I believe this time the K7 problems (and some others) are addressed. 
+I went over the old handlers and was very careful to retain
+all quirks.
+
+But of course this needs a lot of testing on old systems. On newer 
+64bit capable systems I don't expect much problems because they have been
+already tested with the 64bit kernel.
+
+I made this a CONFIG for now that still allows to select the old
+machine check code. This is mostly to make testing easier,
+if someone runs into a problem we can ask them to try
+with the CONFIG switched.
+
+The new code is default y for more coverage.
+
+Once there is confidence the 64bit code works well on older hardware
+too the CONFIG_X86_OLD_MCE and the associated code can be easily
+removed.
+
+This causes a behaviour change for 32bit installations. They now
+have to install the mcelog package to be able to log 
+corrected machine checks.
+
+The 64bit machine check code only handles CPUs which support the 
+standard Intel machine check architecture described in the IA32 SDM.
+The 32bit code has special support for some older CPUs which
+have non standard machine check architectures, in particular 
+WinChip C3 and Intel P5.  I made those a separate CONFIG option
+and kept them for now. The WinChip variant could be probably
+removed without too much pain, it doesn't really do anything
+interesting. P5 is also disabled by default (like it 
+was before) because many motherboards have it miswired, but 
+according to Alan Cox a few embedded setups use that one.
+
+v2: Correct inverted recommendation in help text for ANCIENT_MCE
+(Bert Wesarg)
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- arch/x86/kernel/cpu/mcheck/mce_64.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/x86/Kconfig                     |   35 +++++++++++++++++++++++++++++++----
+ arch/x86/kernel/cpu/mcheck/Makefile  |    6 ++++--
+ arch/x86/kernel/cpu/mcheck/ancient.h |   12 ++++++++++++
+ arch/x86/kernel/cpu/mcheck/mce.h     |    2 --
+ arch/x86/kernel/cpu/mcheck/mce_32.c  |    1 +
+ arch/x86/kernel/cpu/mcheck/mce_64.c  |   16 ++++++++++++++++
+ include/asm-x86/mce.h                |    8 --------
+ 7 files changed, 64 insertions(+), 16 deletions(-)
 
+Index: linux/include/asm-x86/mce.h
+===================================================================
+--- linux.orig/include/asm-x86/mce.h
++++ linux/include/asm-x86/mce.h
+@@ -1,8 +1,6 @@
+ #ifndef _ASM_X86_MCE_H
+ #define _ASM_X86_MCE_H
+ 
+-#ifdef __x86_64__
+-
+ #include <asm/ioctls.h>
+ #include <asm/types.h>
+ 
+@@ -80,8 +78,6 @@ struct mce_log {
+ #define K8_MCE_THRESHOLD_BANK_5    (MCE_THRESHOLD_BASE + 5 * 9)
+ #define K8_MCE_THRESHOLD_DRAM_ECC  (MCE_THRESHOLD_BANK_4 + 0)
+ 
+-#endif /* __x86_64__ */
+-
+ #ifdef __KERNEL__
+ 
+ extern int mce_disabled;
+@@ -112,10 +108,6 @@ extern atomic_t mce_entry;
+ extern void do_machine_check(struct pt_regs *, long);
+ extern int mce_notify_user(void);
+ 
+-#endif /* !CONFIG_X86_32 */
+-
+-
+-
+ #ifdef CONFIG_X86_MCE
+ extern void mcheck_init(struct cpuinfo_x86 *c);
+ #else
+Index: linux/arch/x86/Kconfig
+===================================================================
+--- linux.orig/arch/x86/Kconfig
++++ linux/arch/x86/Kconfig
+@@ -650,10 +650,37 @@ config X86_MCE
+ 	  to disable it.  MCE support simply ignores non-MCE processors like
+ 	  the 386 and 486, so nearly everyone can say Y here.
+ 
++config X86_OLD_MCE
++	depends on X86_32
++	bool "Use legacy machine check code (will go away)"
++	default n
++	help
++	  Use the old i386 machine check code. This is merely intended for testing
++	  in a transition period. Try this if you run into any machine check
++	  related software problems.
++	  When in doubt say no.
++
++config X86_ANCIENT_MCE
++	depends on X86_32
++	bool "Support ancient machine check handler for very old CPUs"
++	default n
++	help
++	  Include support for family 5 (Intel Pentium 1 and Centaur Winchip)
++	  machine check code.  Machine check handles uncorrected CPU errors.
++	  Note that the P5 pentium support is disabled
++	  by default and can be only enabled on special hardware.
++	  The Winchip code doesn't do much.
++	  If you're still sure you want it, say y, otherwise n is safe
++	  for nearly everybody.
++
++config X86_NEW_MCE
++	bool
++	default y if (!X86_OLD_MCE && X86_32) || X86_64
++
+ config X86_MCE_INTEL
+ 	def_bool y
+ 	prompt "Intel MCE features"
+-	depends on X86_64 && X86_MCE && X86_LOCAL_APIC
++	depends on X86_NEW_MCE && X86_MCE && X86_LOCAL_APIC
+ 	help
+ 	   Additional support for intel specific MCE features such as
+ 	   the thermal monitor.
+@@ -661,14 +688,14 @@ config X86_MCE_INTEL
+ config X86_MCE_AMD
+ 	def_bool y
+ 	prompt "AMD MCE features"
+-	depends on X86_64 && X86_MCE && X86_LOCAL_APIC
++	depends on X86_NEW_MCE && X86_MCE && X86_LOCAL_APIC && X86_64
+ 	help
+ 	   Additional support for AMD specific MCE features such as
+ 	   the DRAM Error Threshold.
+ 
+ config X86_MCE_NONFATAL
+ 	tristate "Check for non-fatal errors on AMD Athlon/Duron / Intel Pentium 4"
+-	depends on X86_32 && X86_MCE
++	depends on !X86_NEW_MCE && X86_MCE
+ 	help
+ 	  Enabling this feature starts a timer that triggers every 5 seconds which
+ 	  will look at the machine check registers to see if anything happened.
+@@ -681,7 +708,7 @@ config X86_MCE_NONFATAL
+ 
+ config X86_MCE_P4THERMAL
+ 	bool "check for P4 thermal throttling interrupt."
+-	depends on X86_32 && X86_MCE && (X86_UP_APIC || SMP) && !X86_VISWS
++	depends on !X86_NEW_MCE && X86_MCE && (X86_UP_APIC || SMP) && !X86_VISWS
+ 	help
+ 	  Enabling this feature will cause a message to be printed when the P4
+ 	  enters thermal throttling.
+Index: linux/arch/x86/kernel/cpu/mcheck/Makefile
+===================================================================
+--- linux.orig/arch/x86/kernel/cpu/mcheck/Makefile
++++ linux/arch/x86/kernel/cpu/mcheck/Makefile
+@@ -1,6 +1,8 @@
+-obj-y				=  mce_$(BITS).o therm_throt.o
++obj-y				=  therm_throt.o
+ 
+-obj-$(CONFIG_X86_32)		+= k7.o p4.o p5.o p6.o winchip.o
++obj-$(CONFIG_X86_OLD_MCE)	+= mce_32.o k7.o p4.o p6.o
++obj-$(CONFIG_X86_NEW_MCE)	+= mce_64.o
++obj-$(CONFIG_X86_ANCIENT_MCE)	+= p5.o winchip.o
+ obj-$(CONFIG_X86_MCE_INTEL)	+= mce_intel_64.o
+ obj-$(CONFIG_X86_MCE_AMD)	+= mce_amd_64.o
+ obj-$(CONFIG_X86_MCE_NONFATAL)	+= non-fatal.o
 Index: linux/arch/x86/kernel/cpu/mcheck/mce_64.c
 ===================================================================
 --- linux.orig/arch/x86/kernel/cpu/mcheck/mce_64.c
 +++ linux/arch/x86/kernel/cpu/mcheck/mce_64.c
-@@ -133,7 +133,8 @@ static void mce_panic(char *msg, struct 
+@@ -29,6 +29,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/smp.h>
+ #include <asm/idle.h>
++#include "ancient.h"
+ 
+ #define MISC_MCELOG_MINOR 227
+ #define NR_BANKS 6
+@@ -491,6 +492,20 @@ static void __cpuinit mce_cpu_quirks(str
+ 
+ }
+ 
++static void __cpuinit mce_ancient_init(struct cpuinfo_x86 *c)
++{
++	if (c->x86 != 5)
++		return;
++	switch (c->x86_vendor) {
++	case X86_VENDOR_INTEL:
++		intel_p5_mcheck_init(c);
++		break;
++	case X86_VENDOR_CENTAUR:
++		winchip_mcheck_init(c);
++		break;
++	}
++}
++
+ static void __cpuinit mce_cpu_features(struct cpuinfo_x86 *c)
  {
- 	int i;
+ 	switch (c->x86_vendor) {
+@@ -513,6 +528,7 @@ void __cpuinit mcheck_init(struct cpuinf
+ {
+ 	static cpumask_t mce_cpus = CPU_MASK_NONE;
  
--	oops_begin();
-+	bust_spinlocks(1);
-+	console_verbose();
- 	for (i = 0; i < MCE_LOG_LEN; i++) {
- 		u64 tsc = mcelog.entry[i].tsc;
++	mce_ancient_init(c);
+ 	mce_cpu_quirks(c);
  
+ 	if (mce_disabled ||
+Index: linux/arch/x86/kernel/cpu/mcheck/ancient.h
+===================================================================
+--- /dev/null
++++ linux/arch/x86/kernel/cpu/mcheck/ancient.h
+@@ -0,0 +1,12 @@
++#ifdef CONFIG_X86_ANCIENT_MCE
++void intel_p5_mcheck_init(struct cpuinfo_x86 *);
++void winchip_mcheck_init(struct cpuinfo_x86 *);
++#else
++static inline void intel_p5_mcheck_init(struct cpuinfo_x86 *c)
++{
++}
++
++static inline void winchip_mcheck_init(struct cpuinfo_x86 *c)
++{
++}
++#endif
+Index: linux/arch/x86/kernel/cpu/mcheck/mce.h
+===================================================================
+--- linux.orig/arch/x86/kernel/cpu/mcheck/mce.h
++++ linux/arch/x86/kernel/cpu/mcheck/mce.h
+@@ -3,9 +3,7 @@
+ 
+ void amd_mcheck_init(struct cpuinfo_x86 *c);
+ void intel_p4_mcheck_init(struct cpuinfo_x86 *c);
+-void intel_p5_mcheck_init(struct cpuinfo_x86 *c);
+ void intel_p6_mcheck_init(struct cpuinfo_x86 *c);
+-void winchip_mcheck_init(struct cpuinfo_x86 *c);
+ 
+ /* Call the installed machine check handler for this CPU setup. */
+ extern void (*machine_check_vector)(struct pt_regs *, long error_code);
+Index: linux/arch/x86/kernel/cpu/mcheck/mce_32.c
+===================================================================
+--- linux.orig/arch/x86/kernel/cpu/mcheck/mce_32.c
++++ linux/arch/x86/kernel/cpu/mcheck/mce_32.c
+@@ -15,6 +15,7 @@
+ #include <asm/mce.h>
+ 
+ #include "mce.h"
++#include "ancient.h"
+ 
+ int mce_disabled;
+ int nr_mce_banks;
