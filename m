@@ -1,104 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757128AbYGGUZh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757229AbYGGUaQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757128AbYGGUZh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 16:25:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755660AbYGGUZ1
+	id S1757229AbYGGUaQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 16:30:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755901AbYGGU36
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 16:25:27 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:38331 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755520AbYGGUZ0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 16:25:26 -0400
-Subject: Re: [BUG]  linux-next: Tree for March 25 kernel oops, when loading
-	mpt fusion driver - regression
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: David Teigland <teigland@redhat.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       Eric.Moore@lsi.com, Andy Whitcroft <apw@shadowen.org>
-In-Reply-To: <487279C9.2010802@linux.vnet.ibm.com>
-References: <20080325175224.3ee62b09.sfr@canb.auug.org.au>
-	 <47E9F0B0.4060006@linux.vnet.ibm.com>  <20080626203857.GB3815@redhat.com>
-	 <1215372215.4197.28.camel@localhost.localdomain>
-	 <487279C9.2010802@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Mon, 07 Jul 2008 15:25:21 -0500
-Message-Id: <1215462321.3274.34.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+	Mon, 7 Jul 2008 16:29:58 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34665 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755604AbYGGU35 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 16:29:57 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [PATCH 2/2] acpi: Disable IRQ 0 through I/O APIC for some HP systems
+Date: Mon, 7 Jul 2008 22:31:56 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Ingo Molnar <mingo@elte.hu>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-next@vger.kernel.org, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>
+References: <Pine.LNX.4.55.0807010055070.30785@cliff.in.clinika.pl> <200807072003.48228.rjw@sisk.pl> <Pine.LNX.4.55.0807072101070.20615@cliff.in.clinika.pl>
+In-Reply-To: <Pine.LNX.4.55.0807072101070.20615@cliff.in.clinika.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807072231.57925.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-08 at 01:47 +0530, Kamalesh Babulal wrote:
-> James Bottomley wrote:
-> > On Thu, 2008-06-26 at 15:38 -0500, David Teigland wrote:
-> >> On Wed, Mar 26, 2008 at 12:14:00PM +0530, Kamalesh Babulal wrote:
-> >>> Hi Stephen,
-> >>>
-> >>> Kernel bug is hit while booting up the next-20080325 kernel with MPT
-> >>> Fusion driver built in.This was reported previously for the
-> >>> next-20080320 kernel
-> >>> http://marc.info/?l=linux-next&m=120601013920868&w=2
-> >> Hi, did you ever get this fixed?  I've been having the same problem,
-> >> http://marc.info/?l=linux-scsi&m=121061780821823&w=4
-> >> still exists on 2.6.26-rc8 for me,
-> >>
-> >> Loading scsi_transport_spi.ko module
-> >> Loading mptscsih.ko module
-> >> Loading mptspi.ko module
-> >> Fusion MPT SPI Host driver 3.04.06
-> >> ACPI: PCI Interrupt 0000:86:01.0[A] -> GSI 32 (level, low) -> IRQ 32
-> >> mptbase: ioc0: Initiating bringup
-> >> ioc0: LSI53C1030 B2: Capabilities={Initiator,Target}
-> >> mptbase: ioc0: PCI-MSI enabled
-> > 
-> > I speculate that this might be related to the problem.  The fusion
-> > driver was recently flipped to default to MSI enable (previously it had
-> > disabled them).  Could you boot it with the fusion module parameter
-> > 
-> > mpt_msi_enable=0
-> > 
-> > if it actually boots that will be a good confirmation that MSI is to
-> > blame.
-> > 
-> >> mptbase: ioc0: Initiating recovery
-> > 
-> > This I suspect is because of a lost interrupt.
-> > 
-> >> BUG: unable to handle kernel NULL pointer dereference at 0000000000000948
-> > 
-> > And this one looks to be a second bug:  The MSI fault path is actually
-> > causing this oops.
-> > 
-> > James
-> > 
-> Hi James,
+On Monday, 7 of July 2008, Maciej W. Rozycki wrote:
+> On Mon, 7 Jul 2008, Rafael J. Wysocki wrote:
 > 
-> Kernel Bug is still reproducible with 2.6.26-rc9-git1 kernel, I tried booting with mpt_msi_enable=0
-> as boot paramenter, but the call trace remains the same
+> > Sorry, the patch I posted was _instead_ of your previous patch with the quirk,
+> > because that patch didn't work.  I don't know why it didn't work, however, I
+> > can only say it didn't work after removing the __i386__ dependency of
+> > acpi_dmi_table[].
 > 
-> oading mptbase.ko module[    6.766853] Fusion MPT base driver 3.04.06
+>  I don't recall seeing a note that my patch was reverted.  I had a careful
+> look at yours now and it applies on top of some diagnostic code which
+> should never have been applied to the tree in the first place as it was
+> not meant to and would also break the majority of systems out there.  I am
+> fairly sure this piece of code is the reason my implementation of the
+> workaround did not work for you.
 > 
-> [    6.783482] Copyright (c) 1999-2007 LSI Corporation
-> Loading mptscsih.ko module
-> Loading mptspi.ko module
-> [    6.813157] Fusion MPT SPI Host driver 3.04.06
-> [    6.827369] ACPI: PCI Interrupt 0000:01:01.0[A] -> GSI 22 (level, low) -> IRQ 22
-> [    6.850624] mptbase: ioc0: Initiating bringup
-> [    6.985601] ioc0: LSI53C1030 B2: Capabilities={Initiator}
-> [    7.002711] mptbase: ioc0: PCI-MSI enabled
-                                ^^^^^^^^^^^^^^^
+> > My patch is on top of the linux-next tree that didn't contain your patch.
+> > So, my patch adds a quirk that sets disable_irq0_through_ioapic to 1 (this
+> > variable is defined differently in my patch) and uses it to skip the part of
+> > check_timer() that breaks my box.
+> > 
+> > I hope that makes things clear.
+> 
+>  It does, thanks.  However I insist on getting this issue dealt with the
+> way I proposed -- check_timer() is too complicated and too fragile to mess
+> with as our history has already shown.  If IRQ0 is not to be routed
+> through the I/O APIC, then it should never be registered as an I/O APIC
+> interrupt in the first place.
+> 
+>  I am fairly with the offending change removed my fix will work for you as
+> expected as I went through the effort of checking at the run time that
+> once activated it makes the kernel correctly avoid the sequence in
+> check_timer() that hits your system, so it is only the DMI ID matching
+> that could have gone wrong, but your change indicates this is actually not
+> the case.
 
-If you had successfully specified mpt_msi_enable=0 this line wouldn't
-appear.
+So I'm going to apply the appended combined patch on top of linux-next and
+retest.
 
-My best guess is that you incorrectly specified it as a kernel command
-line parameter rather than a module parameter.
+Thanks,
+Rafael
 
-James
+---
+ arch/x86/kernel/acpi/boot.c  |   53 ++++++++++++++++++++++++++++++++++++++-----
+ arch/x86/kernel/io_apic_64.c |    5 ----
+ 2 files changed, 47 insertions(+), 11 deletions(-)
 
-
+Index: linux-next/arch/x86/kernel/acpi/boot.c
+===================================================================
+--- linux-next.orig/arch/x86/kernel/acpi/boot.c
++++ linux-next/arch/x86/kernel/acpi/boot.c
+@@ -83,6 +83,8 @@ int acpi_lapic;
+ int acpi_ioapic;
+ int acpi_strict;
+ 
++static int disable_irq0_through_ioapic __initdata;
++
+ u8 acpi_sci_flags __initdata;
+ int acpi_sci_override_gsi __initdata;
+ int acpi_skip_timer_override __initdata;
+@@ -990,6 +992,10 @@ void __init mp_override_legacy_irq(u8 bu
+ 	int pin;
+ 	struct mp_config_intsrc mp_irq;
+ 
++	/* Skip the 8254 timer interrupt (IRQ 0) if requested.  */
++	if (bus_irq == 0 && disable_irq0_through_ioapic)
++		return;
++
+ 	/*
+ 	 * Convert 'gsi' to 'ioapic.pin'.
+ 	 */
+@@ -1056,6 +1062,10 @@ void __init mp_config_acpi_legacy_irqs(v
+ 	for (i = 0; i < 16; i++) {
+ 		int idx;
+ 
++		/* Skip the 8254 timer interrupt (IRQ 0) if requested.  */
++		if (i == 0 && disable_irq0_through_ioapic)
++			continue;
++
+ 		for (idx = 0; idx < mp_irq_entries; idx++) {
+ 			struct mp_config_intsrc *irq = mp_irqs + idx;
+ 
+@@ -1363,8 +1373,6 @@ static void __init acpi_process_madt(voi
+ 	return;
+ }
+ 
+-#ifdef __i386__
+-
+ static int __init disable_acpi_irq(const struct dmi_system_id *d)
+ {
+ 	if (!acpi_force) {
+@@ -1415,6 +1423,17 @@ static int __init force_acpi_ht(const st
+ }
+ 
+ /*
++ * Don't register any I/O APIC entries for the 8254 timer IRQ.
++ */
++static int __init
++dmi_disable_irq0_through_ioapic(const struct dmi_system_id *d)
++{
++	pr_notice("%s detected: disabling IRQ 0 through I/O APIC\n", d->ident);
++	disable_irq0_through_ioapic = 1;
++	return 0;
++}
++
++/*
+  * If your system is blacklisted here, but you find that acpi=force
+  * works for you, please contact acpi-devel@sourceforge.net
+  */
+@@ -1581,11 +1600,35 @@ static struct dmi_system_id __initdata a
+ 		     DMI_MATCH(DMI_PRODUCT_NAME, "TravelMate 360"),
+ 		     },
+ 	 },
++	/*
++	 * HP laptops which use a DSDT reporting as HP/SB400/10000,
++	 * which includes some code which overrides all temperature
++	 * trip points to 16C if the INTIN2 input of the I/O APIC
++	 * is enabled.  This input is incorrectly designated the
++	 * ISA IRQ 0 via an interrupt source override even though
++	 * it is wired to the output of the master 8259A and INTIN0
++	 * is not connected at all.  Abandon any attempts to route
++	 * IRQ 0 through the I/O APIC therefore.
++	 */
++	{
++	 .callback = dmi_disable_irq0_through_ioapic,
++	 .ident = "HP NX6125 laptop",
++	 .matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
++		     DMI_MATCH(DMI_PRODUCT_NAME, "HP Compaq nx6125"),
++		     },
++	 },
++	{
++	 .callback = dmi_disable_irq0_through_ioapic,
++	 .ident = "HP NX6325 laptop",
++	 .matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
++		     DMI_MATCH(DMI_PRODUCT_NAME, "HP Compaq nx6325"),
++		     },
++	 },
+ 	{}
+ };
+ 
+-#endif				/* __i386__ */
+-
+ /*
+  * acpi_boot_table_init() and acpi_boot_init()
+  *  called from setup_arch(), always.
+@@ -1613,9 +1656,7 @@ int __init acpi_boot_table_init(void)
+ {
+ 	int error;
+ 
+-#ifdef __i386__
+ 	dmi_check_system(acpi_dmi_table);
+-#endif
+ 
+ 	/*
+ 	 * If acpi_disabled, bail out
+Index: linux-next/arch/x86/kernel/io_apic_64.c
+===================================================================
+--- linux-next.orig/arch/x86/kernel/io_apic_64.c
++++ linux-next/arch/x86/kernel/io_apic_64.c
+@@ -1714,11 +1714,6 @@ static inline void __init check_timer(vo
+ 		apic2 = apic1;
+ 	}
+ 
+-	replace_pin_at_irq(0, 0, 0, apic1, pin1);
+-	apic1 = 0;
+-	pin1 = 0;
+-	setup_timer_IRQ0_pin(apic1, pin1, cfg->vector);
+-
+ 	if (pin1 != -1) {
+ 		/*
+ 		 * Ok, does IRQ0 through the IOAPIC work?
