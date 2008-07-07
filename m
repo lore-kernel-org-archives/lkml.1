@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759602AbYGGWCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759720AbYGGWDN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759602AbYGGWCv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 18:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758775AbYGGWBD
+	id S1759720AbYGGWDN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 18:03:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758225AbYGGWBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 18:01:03 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:9234 "EHLO
+	Mon, 7 Jul 2008 18:01:06 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:6551 "EHLO
 	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758630AbYGGWAy (ORCPT
+	with ESMTP id S1758718AbYGGWA4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 18:00:54 -0400
+	Mon, 7 Jul 2008 18:00:56 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:mime-version:content-type
          :content-transfer-encoding:content-disposition:message-id;
-        b=TI7OcAdyRGaqrc52VmGsWvIMiLPqNxpxkL9/IwWN7rYCG1tggXf0knoj3VSYZTm+kF
-         ANkOSZofyPiI+TBXxEAXNWGnxcEaeZnOBEUW8IBXI2tjKtsACjIvfld5SAIXmqYSu/Qi
-         Z6oXL2S+CbL6tYMZVjjGTXbOv0Adlw989B9vo=
+        b=xwBk+ma1/SwrJUGOKhCrRR1xZWX2vKYdCHqLHDqNBo60RuxvUcAKlaGy5acn9ydHYV
+         6kGiNO/xCroOCsP1lx8ybKBegCJLkfgtWTotktDR851UBm665ZqSY40RDBhVFZxE92aB
+         OzXTisAqAKa/nLFsyRtPUJZz0ogqOEmNyu/ok=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Subject: [PATCH 6/10] ide: define MAX_HWIFS in <linux/ide.h>
-Date: Mon, 7 Jul 2008 23:54:24 +0200
+Subject: [PATCH 9/10] ide-generic: remove ide_default_{io_base,irq}() inlines
+Date: Mon, 7 Jul 2008 23:57:24 +0200
 User-Agent: KMail/1.9.9
 Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
@@ -28,285 +28,300 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807072354.24598.bzolnier@gmail.com>
+Message-Id: <200807072357.24902.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Now that ide_hwif_t instances are allocated dynamically
-  the difference between MAX_HWIFS == 2 and MAX_HWIFS == 10
-  is ~100 bytes (x86-32) so use MAX_HWIFS == 10 on all archs
-  except these ones that use MAX_HWIFS == 1.
+Replace ide_default_{io_base,irq}() inlines by legacy_{bases,irqs}[].
 
-* Define MAX_HWIFS in <linux/ide.h> instead of <asm/ide.h>.
-
-[ Please note that avr32/cris/v850 have no <asm/ide.h>
-  and alpha/ia64/sh always define CONFIG_IDE_MAX_HWIFS. ]
+There should be no functional changes caused by this patch.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
-this patch depends on arch/ppc/ removal (already in linux-next)
+ drivers/ide/ide-generic.c           |   30 +++++++++++++++++++--
+ include/asm-alpha/ide.h             |   24 -----------------
+ include/asm-ia64/ide.h              |   29 --------------------
+ include/asm-m32r/ide.h              |   50 ------------------------------------
+ include/asm-mips/mach-generic/ide.h |   28 --------------------
+ include/asm-x86/ide.h               |   28 --------------------
+ 6 files changed, 27 insertions(+), 162 deletions(-)
 
- include/asm-arm/ide.h               |    4 ----
- include/asm-blackfin/ide.h          |    2 --
- include/asm-frv/ide.h               |    4 ----
- include/asm-h8300/ide.h             |    2 --
- include/asm-m32r/ide.h              |    8 --------
- include/asm-m68k/ide.h              |    4 ----
- include/asm-mips/mach-generic/ide.h |    8 --------
- include/asm-mn10300/ide.h           |    4 ----
- include/asm-parisc/ide.h            |    4 ----
- include/asm-powerpc/ide.h           |    8 --------
- include/asm-sparc/ide.h             |    3 ---
- include/asm-sparc64/ide.h           |    8 --------
- include/asm-x86/ide.h               |    9 ---------
- include/asm-xtensa/ide.h            |    5 -----
- include/linux/ide.h                 |    8 ++++++++
- 15 files changed, 8 insertions(+), 73 deletions(-)
-
-Index: b/include/asm-arm/ide.h
+Index: b/drivers/ide/ide-generic.c
 ===================================================================
---- a/include/asm-arm/ide.h
-+++ b/include/asm-arm/ide.h
-@@ -13,10 +13,6 @@
+--- a/drivers/ide/ide-generic.c
++++ b/drivers/ide/ide-generic.c
+@@ -20,6 +20,11 @@
+ #include <linux/module.h>
+ #include <linux/ide.h>
+ 
++/* FIXME: convert m32r to use ide_platform host driver */
++#ifdef CONFIG_M32R
++#include <asm/m32r.h>
++#endif
++
+ #define DRV_NAME	"ide_generic"
+ 
+ static int probe_mask = 0x03;
+@@ -80,6 +85,21 @@ static int __init ide_generic_sysfs_init
+ 	return 0;
+ }
+ 
++#if defined(CONFIG_PLAT_M32700UT) || defined(CONFIG_PLAT_MAPPI2) \
++	|| defined(CONFIG_PLAT_OPSPUT)
++static const u16 legacy_bases[] = { 0x1f0 };
++static const int legacy_irqs[]  = { PLD_IRQ_CFIREQ };
++#elif defined(CONFIG_PLAT_MAPPI3)
++static const u16 legacy_bases[] = { 0x1f0, 0x170 };
++static const int legacy_irqs[]  = { PLD_IRQ_CFIREQ, PLD_IRQ_IDEIREQ };
++#elif defined(CONFIG_ALPHA)
++static const u16 legacy_bases[] = { 0x1f0, 0x170, 0x1e8, 0x168 };
++static const int legacy_irqs[]  = { 14, 15, 11, 10 };
++#else
++static const u16 legacy_bases[] = { 0x1f0, 0x170, 0x1e8, 0x168, 0x1e0, 0x160 };
++static const int legacy_irqs[]  = { 14, 15, 11, 10, 8, 12 };
++#endif
++
+ static int __init ide_generic_init(void)
+ {
+ 	hw_regs_t hw[MAX_HWIFS], *hws[MAX_HWIFS];
+@@ -94,8 +114,8 @@ static int __init ide_generic_init(void)
+ 	printk(KERN_INFO DRV_NAME ": please use \"probe_mask=0x3f\" module "
+ 			 "parameter for probing all legacy ISA IDE ports\n");
+ 
+-	for (i = 0; i < MAX_HWIFS; i++) {
+-		io_addr = ide_default_io_base(i);
++	for (i = 0; i < ARRAY_SIZE(legacy_bases); i++) {
++		io_addr = legacy_bases[i];
+ 
+ 		hws[i] = NULL;
+ 
+@@ -117,7 +137,11 @@ static int __init ide_generic_init(void)
+ 
+ 			memset(&hw[i], 0, sizeof(hw[i]));
+ 			ide_std_init_ports(&hw[i], io_addr, io_addr + 0x206);
+-			hw[i].irq = ide_default_irq(io_addr);
++#ifdef CONFIG_IA64
++			hw[i].irq = isa_irq_to_vector(legacy_irqs[i]);
++#else
++			hw[i].irq = legacy_irqs[i];
++#endif
+ 			hw[i].chipset = ide_generic;
+ 
+ 			hws[i] = &hw[i];
+Index: b/include/asm-alpha/ide.h
+===================================================================
+--- a/include/asm-alpha/ide.h
++++ b/include/asm-alpha/ide.h
+@@ -13,30 +13,6 @@
  
  #ifdef __KERNEL__
  
--#ifndef MAX_HWIFS
--#define MAX_HWIFS	4
--#endif
+-static inline int ide_default_irq(unsigned long base)
+-{
+-	switch (base) {
+-		case 0x1f0: return 14;
+-		case 0x170: return 15;
+-		case 0x1e8: return 11;
+-		case 0x168: return 10;
+-		default:
+-			return 0;
+-	}
+-}
 -
- #define __ide_mm_insw(port,addr,len)	readsw(port,addr,len)
- #define __ide_mm_insl(port,addr,len)	readsl(port,addr,len)
- #define __ide_mm_outsw(port,addr,len)	writesw(port,addr,len)
-Index: b/include/asm-blackfin/ide.h
-===================================================================
---- a/include/asm-blackfin/ide.h
-+++ b/include/asm-blackfin/ide.h
-@@ -17,8 +17,6 @@
- #ifdef __KERNEL__
- /****************************************************************************/
- 
--#define MAX_HWIFS	1
+-static inline unsigned long ide_default_io_base(int index)
+-{
+-	switch (index) {
+-		case 0:	return 0x1f0;
+-		case 1:	return 0x170;
+-		case 2: return 0x1e8;
+-		case 3: return 0x168;
+-		default:
+-			return 0;
+-	}
+-}
 -
  #include <asm-generic/ide_iops.h>
  
- /****************************************************************************/
-Index: b/include/asm-frv/ide.h
+ #endif /* __KERNEL__ */
+Index: b/include/asm-ia64/ide.h
 ===================================================================
---- a/include/asm-frv/ide.h
-+++ b/include/asm-frv/ide.h
-@@ -18,10 +18,6 @@
- #include <asm/io.h>
- #include <asm/irq.h>
+--- a/include/asm-ia64/ide.h
++++ b/include/asm-ia64/ide.h
+@@ -13,37 +13,8 @@
  
--#ifndef MAX_HWIFS
--#define MAX_HWIFS 8
--#endif
--
- /****************************************************************************/
- /*
-  * some bits needed for parts of the IDE subsystem to compile
-Index: b/include/asm-h8300/ide.h
-===================================================================
---- a/include/asm-h8300/ide.h
-+++ b/include/asm-h8300/ide.h
-@@ -16,8 +16,6 @@
  #ifdef __KERNEL__
- /****************************************************************************/
  
--#define MAX_HWIFS	1
+-
+ #include <linux/irq.h>
+ 
+-static inline int ide_default_irq(unsigned long base)
+-{
+-	switch (base) {
+-	      case 0x1f0: return isa_irq_to_vector(14);
+-	      case 0x170: return isa_irq_to_vector(15);
+-	      case 0x1e8: return isa_irq_to_vector(11);
+-	      case 0x168: return isa_irq_to_vector(10);
+-	      case 0x1e0: return isa_irq_to_vector(8);
+-	      case 0x160: return isa_irq_to_vector(12);
+-	      default:
+-		return 0;
+-	}
+-}
+-
+-static inline unsigned long ide_default_io_base(int index)
+-{
+-	switch (index) {
+-	      case 0: return 0x1f0;
+-	      case 1: return 0x170;
+-	      case 2: return 0x1e8;
+-	      case 3: return 0x168;
+-	      case 4: return 0x1e0;
+-	      case 5: return 0x160;
+-	      default:
+-		return 0;
+-	}
+-}
 -
  #include <asm-generic/ide_iops.h>
  
- /****************************************************************************/
+ #endif /* __KERNEL__ */
 Index: b/include/asm-m32r/ide.h
 ===================================================================
 --- a/include/asm-m32r/ide.h
 +++ b/include/asm-m32r/ide.h
-@@ -15,14 +15,6 @@
+@@ -13,56 +13,6 @@
  
- #include <asm/m32r.h>
+ #ifdef __KERNEL__
  
--#ifndef MAX_HWIFS
--# ifdef CONFIG_BLK_DEV_IDEPCI
--#define MAX_HWIFS	10
--# else
--#define MAX_HWIFS	2
--# endif
--#endif
+-#include <asm/m32r.h>
 -
- static __inline__ int ide_default_irq(unsigned long base)
- {
- 	switch (base) {
-Index: b/include/asm-m68k/ide.h
-===================================================================
---- a/include/asm-m68k/ide.h
-+++ b/include/asm-m68k/ide.h
-@@ -45,10 +45,6 @@
- #include <asm/macints.h>
- #endif
- 
--#ifndef MAX_HWIFS
--#define MAX_HWIFS	4	/* same as the other archs */
+-static __inline__ int ide_default_irq(unsigned long base)
+-{
+-	switch (base) {
+-#if defined(CONFIG_PLAT_M32700UT) || defined(CONFIG_PLAT_MAPPI2) \
+-	|| defined(CONFIG_PLAT_OPSPUT)
+-		case 0x1f0: return PLD_IRQ_CFIREQ;
+-		default:
+-			return 0;
+-#elif defined(CONFIG_PLAT_MAPPI3)
+-		case 0x1f0: return PLD_IRQ_CFIREQ;
+-		case 0x170: return PLD_IRQ_IDEIREQ;
+-		default:
+-			return 0;
+-#else
+-		case 0x1f0: return 14;
+-		case 0x170: return 15;
+-		case 0x1e8: return 11;
+-		case 0x168: return 10;
+-		case 0x1e0: return 8;
+-		case 0x160: return 12;
+-		default:
+-			return 0;
 -#endif
+-	}
+-}
 -
- /*
-  * Get rid of defs from io.h - ide has its private and conflicting versions
-  * Since so far no single m68k platform uses ISA/PCI I/O space for IDE, we
+-static __inline__ unsigned long ide_default_io_base(int index)
+-{
+-	switch (index) {
+-#if defined(CONFIG_PLAT_M32700UT) || defined(CONFIG_PLAT_MAPPI2) \
+-	|| defined(CONFIG_PLAT_OPSPUT)
+-		case 0:	return 0x1f0;
+-#elif defined(CONFIG_PLAT_MAPPI3)
+-		case 0:	return 0x1f0;
+-		case 1:	return 0x170;
+-#else
+-		case 0:	return 0x1f0;
+-		case 1:	return 0x170;
+-		case 2: return 0x1e8;
+-		case 3: return 0x168;
+-		case 4: return 0x1e0;
+-		case 5: return 0x160;
+-#endif
+-		default:
+-			return 0;
+-	}
+-}
+-
+ #include <asm-generic/ide_iops.h>
+ 
+ #endif /* __KERNEL__ */
 Index: b/include/asm-mips/mach-generic/ide.h
 ===================================================================
 --- a/include/asm-mips/mach-generic/ide.h
 +++ b/include/asm-mips/mach-generic/ide.h
-@@ -19,14 +19,6 @@
- #include <linux/stddef.h>
- #include <asm/processor.h>
- 
--#ifndef MAX_HWIFS
--# ifdef CONFIG_BLK_DEV_IDEPCI
--#define MAX_HWIFS	10
--# else
--#define MAX_HWIFS	6
--# endif
--#endif
--
- static __inline__ int ide_probe_legacy(void)
- {
- #ifdef CONFIG_PCI
-Index: b/include/asm-mn10300/ide.h
-===================================================================
---- a/include/asm-mn10300/ide.h
-+++ b/include/asm-mn10300/ide.h
-@@ -23,10 +23,6 @@
- #undef SUPPORT_VLB_SYNC
- #define SUPPORT_VLB_SYNC 0
- 
--#ifndef MAX_HWIFS
--#define MAX_HWIFS 8
--#endif
--
- /*
-  * some bits needed for parts of the IDE subsystem to compile
-  */
-Index: b/include/asm-parisc/ide.h
-===================================================================
---- a/include/asm-parisc/ide.h
-+++ b/include/asm-parisc/ide.h
-@@ -13,10 +13,6 @@
- 
- #ifdef __KERNEL__
- 
--#ifndef MAX_HWIFS
--#define MAX_HWIFS	2
--#endif
--
- #define ide_request_irq(irq,hand,flg,dev,id)	request_irq((irq),(hand),(flg),(dev),(id))
- #define ide_free_irq(irq,dev_id)		free_irq((irq), (dev_id))
- #define ide_request_region(from,extent,name)	request_region((from), (extent), (name))
-Index: b/include/asm-powerpc/ide.h
-===================================================================
---- a/include/asm-powerpc/ide.h
-+++ b/include/asm-powerpc/ide.h
-@@ -14,14 +14,6 @@
+@@ -48,34 +48,6 @@ found:
  #endif
- #include <asm/io.h>
+ }
  
--#ifndef MAX_HWIFS
--#ifdef __powerpc64__
--#define MAX_HWIFS	10
--#else
--#define MAX_HWIFS	8
--#endif
--#endif
+-static __inline__ int ide_default_irq(unsigned long base)
+-{
+-	switch (base) {
+-		case 0x1f0: return 14;
+-		case 0x170: return 15;
+-		case 0x1e8: return 11;
+-		case 0x168: return 10;
+-		case 0x1e0: return 8;
+-		case 0x160: return 12;
+-		default:
+-			return 0;
+-	}
+-}
 -
- #define __ide_mm_insw(p, a, c)	readsw((void __iomem *)(p), (a), (c))
- #define __ide_mm_insl(p, a, c)	readsl((void __iomem *)(p), (a), (c))
- #define __ide_mm_outsw(p, a, c)	writesw((void __iomem *)(p), (a), (c))
-Index: b/include/asm-sparc/ide.h
-===================================================================
---- a/include/asm-sparc/ide.h
-+++ b/include/asm-sparc/ide.h
-@@ -14,9 +14,6 @@
- #include <asm/io.h>
- #include <asm/psr.h>
- 
--#undef  MAX_HWIFS
--#define MAX_HWIFS	2
+-static __inline__ unsigned long ide_default_io_base(int index)
+-{
+-	switch (index) {
+-	case 0: return 0x1f0;
+-	case 1: return 0x170;
+-	case 2: return 0x1e8;
+-	case 3: return 0x168;
+-	case 4: return 0x1e0;
+-	case 5: return 0x160;
+-	default:
+-		return 0;
+-	}
+-}
 -
- #define __ide_insl(data_reg, buffer, wcount) \
- 	__ide_insw(data_reg, buffer, (wcount)<<1)
- #define __ide_outsl(data_reg, buffer, wcount) \
-Index: b/include/asm-sparc64/ide.h
-===================================================================
---- a/include/asm-sparc64/ide.h
-+++ b/include/asm-sparc64/ide.h
-@@ -16,14 +16,6 @@
- #include <asm/cacheflush.h>
- #include <asm/page.h>
- 
--#ifndef MAX_HWIFS
--# ifdef CONFIG_BLK_DEV_IDEPCI
--#define MAX_HWIFS	10
--# else
--#define MAX_HWIFS	2
--# endif
--#endif
--
- #define __ide_insl(data_reg, buffer, wcount) \
- 	__ide_insw(data_reg, buffer, (wcount)<<1)
- #define __ide_outsl(data_reg, buffer, wcount) \
+ /* MIPS port and memory-mapped I/O string operations.  */
+ static inline void __ide_flush_prologue(void)
+ {
 Index: b/include/asm-x86/ide.h
 ===================================================================
 --- a/include/asm-x86/ide.h
 +++ b/include/asm-x86/ide.h
-@@ -11,15 +11,6 @@
+@@ -11,34 +11,6 @@
  
  #ifdef __KERNEL__
  
+-static __inline__ int ide_default_irq(unsigned long base)
+-{
+-	switch (base) {
+-		case 0x1f0: return 14;
+-		case 0x170: return 15;
+-		case 0x1e8: return 11;
+-		case 0x168: return 10;
+-		case 0x1e0: return 8;
+-		case 0x160: return 12;
+-		default:
+-			return 0;
+-	}
+-}
 -
--#ifndef MAX_HWIFS
--# ifdef CONFIG_BLK_DEV_IDEPCI
--#define MAX_HWIFS	10
--# else
--#define MAX_HWIFS	6
--# endif
--#endif
--
- static __inline__ int ide_default_irq(unsigned long base)
- {
- 	switch (base) {
-Index: b/include/asm-xtensa/ide.h
-===================================================================
---- a/include/asm-xtensa/ide.h
-+++ b/include/asm-xtensa/ide.h
-@@ -14,11 +14,6 @@
- 
- #ifdef __KERNEL__
- 
--
--#ifndef MAX_HWIFS
--# define MAX_HWIFS	1
--#endif
+-static __inline__ unsigned long ide_default_io_base(int index)
+-{
+-	switch (index) {
+-		case 0:	return 0x1f0;
+-		case 1:	return 0x170;
+-		case 2: return 0x1e8;
+-		case 3: return 0x168;
+-		case 4: return 0x1e0;
+-		case 5: return 0x160;
+-		default:
+-			return 0;
+-	}
+-}
 -
  #include <asm-generic/ide_iops.h>
  
- #endif	/* __KERNEL__ */
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -213,6 +213,14 @@ static inline int __ide_default_irq(unsi
- 
- #include <asm/ide.h>
- 
-+#ifndef MAX_HWIFS
-+#if defined(CONFIG_BLACKFIN) || defined(CONFIG_H8300) || defined(CONFIG_XTENSA)
-+# define MAX_HWIFS	1
-+#else
-+# define MAX_HWIFS	10
-+#endif
-+#endif
-+
- #if !defined(MAX_HWIFS) || defined(CONFIG_EMBEDDED)
- #undef MAX_HWIFS
- #define MAX_HWIFS	CONFIG_IDE_MAX_HWIFS
+ #endif /* __KERNEL__ */
