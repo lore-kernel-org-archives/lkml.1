@@ -1,66 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbYGGUMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757573AbYGGUN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757119AbYGGUMc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 16:12:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755685AbYGGUMV
+	id S1757573AbYGGUN2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 16:13:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755513AbYGGUNR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 16:12:21 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:62124 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755566AbYGGUMT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 16:12:19 -0400
-Date: Mon, 7 Jul 2008 21:10:56 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Ingo Molnar <mingo@elte.hu>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-next@vger.kernel.org, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 2/2] acpi: Disable IRQ 0 through I/O APIC for some HP
- systems
-In-Reply-To: <200807072003.48228.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.55.0807072101070.20615@cliff.in.clinika.pl>
-References: <Pine.LNX.4.55.0807010055070.30785@cliff.in.clinika.pl>
- <200807071423.48425.rjw@sisk.pl> <Pine.LNX.4.55.0807071435160.16767@cliff.in.clinika.pl>
- <200807072003.48228.rjw@sisk.pl>
+	Mon, 7 Jul 2008 16:13:17 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:51898 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755594AbYGGUNQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 16:13:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=E2Fmn39DLvJ9HhteFWHu+KDnIkc9zIknDywp35uF+QUQouPTH1GLCOFMAcwmCMOv+6
+         hMZBIe+sOxz2Qk4yqjHEzAukShcc5qGnh8ka35lE8PGSeSvFNOBVrja5JlSsSeF0cNwt
+         ODRnrBPVfsATmK6qMla8Jeit7J3BnwQg2QQQo=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Subject: [PATCH] ide: add __ide_default_irq() inline helper
+Date: Mon, 7 Jul 2008 22:09:44 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807072209.44933.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Jul 2008, Rafael J. Wysocki wrote:
+Add __ide_default_irq() inline helper and use it instead of
+ide_default_irq() in ide-probe.c and ns87415.c (all host drivers
+except IDE PCI ones always setup hwif->irq so it is enough to
+check only for I/O bases 0x1f0 and 0x170).
 
-> Sorry, the patch I posted was _instead_ of your previous patch with the quirk,
-> because that patch didn't work.  I don't know why it didn't work, however, I
-> can only say it didn't work after removing the __i386__ dependency of
-> acpi_dmi_table[].
+This fixes post-2.6.25 regression since ide_default_irq()
+define could shadow ide_default_irq() inline.
 
- I don't recall seeing a note that my patch was reverted.  I had a careful
-look at yours now and it applies on top of some diagnostic code which
-should never have been applied to the tree in the first place as it was
-not meant to and would also break the majority of systems out there.  I am
-fairly sure this piece of code is the reason my implementation of the
-workaround did not work for you.
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+for 2.6.26
 
-> My patch is on top of the linux-next tree that didn't contain your patch.
-> So, my patch adds a quirk that sets disable_irq0_through_ioapic to 1 (this
-> variable is defined differently in my patch) and uses it to skip the part of
-> check_timer() that breaks my box.
-> 
-> I hope that makes things clear.
+ drivers/ide/ide-probe.c   |    8 ++------
+ drivers/ide/pci/ns87415.c |    6 +-----
+ include/linux/ide.h       |   15 +++++++++++++++
+ 3 files changed, 18 insertions(+), 11 deletions(-)
 
- It does, thanks.  However I insist on getting this issue dealt with the
-way I proposed -- check_timer() is too complicated and too fragile to mess
-with as our history has already shown.  If IRQ0 is not to be routed
-through the I/O APIC, then it should never be registered as an I/O APIC
-interrupt in the first place.
-
- I am fairly with the offending change removed my fix will work for you as
-expected as I went through the effort of checking at the run time that
-once activated it makes the kernel correctly avoid the sequence in
-check_timer() that hits your system, so it is only the DMI ID matching
-that could have gone wrong, but your change indicates this is actually not
-the case.
-
-  Maciej
+Index: b/drivers/ide/ide-probe.c
+===================================================================
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -1280,16 +1280,12 @@ static void drive_release_dev (struct de
+ 	complete(&drive->gendev_rel_comp);
+ }
+ 
+-#ifndef ide_default_irq
+-#define ide_default_irq(irq) 0
+-#endif
+-
+ static int hwif_init(ide_hwif_t *hwif)
+ {
+ 	int old_irq;
+ 
+ 	if (!hwif->irq) {
+-		hwif->irq = ide_default_irq(hwif->io_ports.data_addr);
++		hwif->irq = __ide_default_irq(hwif->io_ports.data_addr);
+ 		if (!hwif->irq) {
+ 			printk("%s: DISABLED, NO IRQ\n", hwif->name);
+ 			return 0;
+@@ -1319,7 +1315,7 @@ static int hwif_init(ide_hwif_t *hwif)
+ 	 *	It failed to initialise. Find the default IRQ for 
+ 	 *	this port and try that.
+ 	 */
+-	hwif->irq = ide_default_irq(hwif->io_ports.data_addr);
++	hwif->irq = __ide_default_irq(hwif->io_ports.data_addr);
+ 	if (!hwif->irq) {
+ 		printk("%s: Disabled unable to get IRQ %d.\n",
+ 			hwif->name, old_irq);
+Index: b/drivers/ide/pci/ns87415.c
+===================================================================
+--- a/drivers/ide/pci/ns87415.c
++++ b/drivers/ide/pci/ns87415.c
+@@ -220,10 +220,6 @@ static int ns87415_dma_setup(ide_drive_t
+ 	return 1;
+ }
+ 
+-#ifndef ide_default_irq
+-#define ide_default_irq(irq) 0
+-#endif
+-
+ static void __devinit init_hwif_ns87415 (ide_hwif_t *hwif)
+ {
+ 	struct pci_dev *dev = to_pci_dev(hwif->dev);
+@@ -283,7 +279,7 @@ static void __devinit init_hwif_ns87415 
+ 	}
+ 
+ 	if (!using_inta)
+-		hwif->irq = ide_default_irq(hwif->io_ports.data_addr);
++		hwif->irq = __ide_default_irq(hwif->io_ports.data_addr);
+ 	else if (!hwif->irq && hwif->mate && hwif->mate->irq)
+ 		hwif->irq = hwif->mate->irq;	/* share IRQ with mate */
+ 
+Index: b/include/linux/ide.h
+===================================================================
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -196,6 +196,21 @@ static inline void ide_std_init_ports(hw
+ 	hw->io_ports.ctl_addr = ctl_addr;
+ }
+ 
++/* for IDE PCI controllers in legacy mode, temporary */
++static inline int __ide_default_irq(unsigned long base)
++{
++	switch (base) {
++#ifdef CONFIG_IA64
++	case 0x1f0: return isa_irq_to_vector(14);
++	case 0x170: return isa_irq_to_vector(15);
++#else
++	case 0x1f0: return 14;
++	case 0x170: return 15;
++#endif
++	}
++	return 0;
++}
++
+ #include <asm/ide.h>
+ 
+ #if !defined(MAX_HWIFS) || defined(CONFIG_EMBEDDED)
