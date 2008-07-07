@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbYGGUnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757330AbYGGUso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757409AbYGGUnZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 16:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756120AbYGGUnS
+	id S1757330AbYGGUso (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 16:48:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756092AbYGGUsd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 16:43:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42465 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756064AbYGGUnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 16:43:17 -0400
-To: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: "fb-defio: fix page list with concurrent processes"
-References: <4856E38E.1040203@goop.org>
-	<45a44e480806161811k423fecf2r2d79609a5c0d057@mail.gmail.com>
-	<m3mykyr7wf.fsf@crossbow.pond.sub.org>
-	<45a44e480807031644vb5dcc31sf9558bffd772c8b9@mail.gmail.com>
-From: Markus Armbruster <armbru@redhat.com>
-Date: Mon, 07 Jul 2008 16:43:10 -0400
-In-Reply-To: <45a44e480807031644vb5dcc31sf9558bffd772c8b9@mail.gmail.com> (Jaya Kumar's message of "Fri\, 4 Jul 2008 07\:44\:38 +0800")
-Message-ID: <m3bq19e881.fsf@crossbow.pond.sub.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 7 Jul 2008 16:48:33 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42006
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755994AbYGGUsc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 16:48:32 -0400
+Date: Mon, 07 Jul 2008 13:48:32 -0700 (PDT)
+Message-Id: <20080707.134832.189558582.davem@davemloft.net>
+To: alan@lxorguk.ukuu.org.uk
+Cc: jeff@garzik.org, dwmw2@infradead.org, andi@firstfloor.org, tytso@mit.edu,
+       hugh@veritas.com, akpm@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080707193008.17795d61@the-village.bc.nu>
+References: <20080707191359.11f6297f@the-village.bc.nu>
+	<48726734.7080601@garzik.org>
+	<20080707193008.17795d61@the-village.bc.nu>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Jaya Kumar" <jayakumar.lkml@gmail.com> writes:
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Date: Mon, 7 Jul 2008 19:30:08 +0100
 
-> On Fri, Jul 4, 2008 at 5:10 AM, Markus Armbruster <armbru@redhat.com> wrote:
->>
->> Jaya, any news?
->>
->
-> Hi Markus,
->
-> In the thread, as per your point:
->
->> better, somewhat slow code, or somewhat useless code?  I'd like to see
->> the fix merged as soon as possible.  You can always improve its
->> performance later.
->
-> I responded:
->
->> Yup, I've got no problem if the old patch is requeued and merged.
->
-> I'd assumed that you would requeue that patch.
->
-> Thanks,
-> jaya
+> I don't see why it should be David's job to add every conceivable feature
+> to the code.
 
-Unfortunately, I missed that assumption of yours %-}
+David's changes prevent something from working, which works today.
 
-Still want me to post it for you?
+Usually we refer to that as a regression.
+
+And usually, we rely on the patch author to fix regressions they add,
+and failing that we revert their work.
+
+Bringing up this SATA scarecrow and trying to make Jeff look
+inconsistent is not winning your arguments any extra points.
+Especially not with me.
+
+You also mentioned something about how similar arguments as ours
+were made when modules were proposed as a feature.  Well, I can
+say only two things about that:
+
+1) I could still build a static kernel image and use it as-is after
+   the changes to support modules were added to the kernel.  In fact I
+   still largely do not use modules at all during my own kernel work.
+
+   This is completely unlike what David is doing here, where the
+   previous status quo will cease working.
+
+2) You cannot deny the fine mess we have with proprietary modules and
+   such these days.  It has been quite the pandora's box over time.
+
