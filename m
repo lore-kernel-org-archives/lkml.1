@@ -1,138 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754416AbYGGNN7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754151AbYGGNT6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754416AbYGGNN7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 09:13:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbYGGNNu
+	id S1754151AbYGGNT6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 09:19:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbYGGNTu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 09:13:50 -0400
-Received: from dwdmx4.dwd.de ([141.38.3.230]:57300 "EHLO dwdmx4.dwd.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752775AbYGGNNt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 09:13:49 -0400
-Date: Mon, 7 Jul 2008 13:13:42 +0000 (GMT)
-From: Holger Kiehl <Holger.Kiehl@dwd.de>
-X-X-Sender: kiehl@diagnostix.dwd.de
-To: Theodore Tso <tytso@mit.edu>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Jan Kara <jack@suse.cz>, Solofo.Ramangalahy@bull.net,
-       Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Performance of ext4
-In-Reply-To: <20080619110947.GB11516@mit.edu>
-Message-ID: <Pine.LNX.4.64.0807071047430.17563@diagnostix.dwd.de>
-References: <Pine.LNX.4.64.0806121154090.27806@diagnostix.dwd.de>
- <20080612131928.GB18229@mit.edu> <Pine.LNX.4.64.0806121333480.27806@diagnostix.dwd.de>
- <20080612180605.GD22481@skywalker> <Pine.LNX.4.64.0806121940020.2974@diagnostix.dwd.de>
- <Pine.LNX.4.64.0806130753100.7097@diagnostix.dwd.de>
- <20080616175408.GF3279@atrey.karlin.mff.cuni.cz> <20080616181353.GA20686@skywalker>
- <Pine.LNX.4.64.0806171001200.6307@diagnostix.dwd.de>
- <Pine.LNX.4.64.0806180546370.20901@diagnostix.dwd.de> <20080619110947.GB11516@mit.edu>
+	Mon, 7 Jul 2008 09:19:50 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:34266 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752678AbYGGNTt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 09:19:49 -0400
+Message-ID: <487217E1.2040205@s5r6.in-berlin.de>
+Date: Mon, 07 Jul 2008 15:19:29 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-purgate: This mail is considered clean
-X-purgate: clean
-X-purgate-type: clean
-X-purgate-Ad: Checked for Spam by eleven - eXpurgate www.eXpurgate.net
-X-purgate-ID: 151879::080707131347-4C78D6B0-DC923FE9/0-0/0-15
-X-purgate-size: 4740/0
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: =?ISO-8859-2?Q?Uwe_Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>,
+       Oliver Neukum <oliver@neukum.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [RFC] MAINTAINERS service, was: Re: alphabetic ordering of MAINTAINERS
+References: <20080704063455.GA13999@digi.com>	<200807040852.27809.oliver@neukum.org>	<m3k5g1zv3u.fsf_-_@maximus.localdomain>	<20080704134426.GA32700@digi.com> <m37ic1zqqp.fsf@maximus.localdomain>
+In-Reply-To: <m37ic1zqqp.fsf@maximus.localdomain>
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jun 2008, Theodore Tso wrote:
-
-> On Wed, Jun 18, 2008 at 05:58:00AM +0000, Holger Kiehl wrote:
->> For afdbench: 5336.41 files per second 15.63 MiB/s
+Krzysztof Halasa wrote:
+> Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com> writes:
+> 
+>> Why not make that a script that parses MAINTAINERS and lives in scripts/
+>> and that can be used as --cc-cmd to git-send-email?  Then no service
+>> needs to be maintained, you don't get the observers functionality
+>> though.  (But that's what mailing lists are good for.)
 >>
->> So it seems that for afdbench the ext4-patch-queue is a slowdown.
->
-> Can you remind me where afdbench can be downloaded?  And if I remember
-> correctly, it creates and deletes large numbers of small files,
-> correct?
->
-> It would be interesting to see which new feature introduced by the
-> ext4 patch queue --- probably dellayed allocation or mballoc --- is
-> responsible for the slowdown.  One or the other (or both) can be
-> disabled by mounting the filesystem (using a kernel with the ext4
-> patch queue) with the mount options -O nomballoc or -O nodelalloc.
->
-> If it turns out that nomballoc restores the speed for afdbench, for
-> example, then it will tell us where we need to look more closely.
-> Ideally we would not want to have one mount option needed to optimize
-> filesystem operations for large amoutns of modifications to small
-> files, and another mode of operation when mostly writing to large
-> files.  So if you could do a round of tests using the ext4 patch queue
-> kernel, with -O nomballoc and -O nodelalloc (and if both seem to
-> improve things, try "-O nomballoc,nodelalloc" and see if you get back
-> to the pre-ext4 patch queue speed), it would be very much appreciated.
->
-Here the results:
-                                      +---------+------------+
-                                      | afdbench|   bonnie++ |
-                                      +---------+--------+---+
-                                      |file rate| block w|%CP|
--------------------------------------+---------+--------+---+
-ext3                                 | 5536.79 | 212350 | 92|
-ext4-patch-queue                     | 5054.86 | 244384 | 50|
-ext4-patch-queue-nodelalloc          | 4943.78 | 225819 | 92|
-ext4-patch-queue-nomballoc           | 3123.49 | 244535 | 52|
-ext4-patch-queue-nomballoc-nodelalloc| 4931.09 | 231332 | 91|
--------------------------------------+---------+--------+---+
+>> Of course MAINTAINERS needs to be modified to have the path specifiers.
+> 
+> Because then:
+> - the action is not effective immediately but sometimes after few
+>   months, not counting people still working with 2.6.12 or so.
 
-Test where done with 2.6.26-rc8 and
-ext4-patch-queue-52c8a02a8a7b7e5915b9301e9c171b4faf22b928.tar.gz,
-e2fsprogs is from git (27th April 2008). ext4 filesystem was created
-with 'mke2fs -m 0 -t ext4dev /dev/md7' and ext3 'mke2fs -m 0 -j /dev/md7'.
-Common mount options are: noatime,nodiratime,commit=15
+We expect submissions to based on something more recent than 2.6.12.
 
-Looking at the afdbench results I also notice that when I just take
-the FTP results the results look as follows:
+Your patch service however...
 
-ext3                                 : 3465.50
-ext4-patch-queue                     : 2785.58
-ext4-patch-queue-nodelalloc          : 2677.39
-ext4-patch-queue-nomballoc           :  219.12
-ext4-patch-queue-nomballoc-nodelalloc: 2566.24
+> - IMHO adding Cc: patch-service is a bit easier than using a script
+> - I think the "observers" thing is worth the effort. Now I only see
+>   changes to certain areas I'm interested in when they are accepted
+>   upstream.
+> - maintaining the script is probably more work than maintaining the
+>   database :-)
+> 
+> And with a service you can:
+> - maintain a patch archive
+> - be sure nobody tries to be "creative"
+> - perhaps other things I haven't thought about.
 
-Now one can see the drop with ext4-patch-queue much clearer. The testing
-of afdbench is done in two parts, one where we just link lots of small
-files locally and the same test is then repeated using a network protocol
-in this case FTP. So the difference is that for the filesystem lots
-of new files get created. Further testing showed that when I increase
-the number FTP process performance decreases in all cases but much more
-for ext4-patch-queue (nearly 50% drop against ext3) as the following results
-show:
-
-ext3                                 : 2352.89
-ext4-patch-queue                     : 1226.55
-ext4-patch-queue-nodelalloc          : 1340.80
-ext4-patch-queue-nomballoc-nodelalloc: 1181.12
-
-I did not do the ext4-patch-queue-nomballoc test since there is obviously
-something wrong here when you look at the numbers above (219.12 fps).
-During that test I notice that when you try to open an existing file
-with vi it can take several minutes before it opens this file. The strange
-thing is that vi was not in D-state but it could not be killed, even root
-could not kill it with -9.
-
-There is also some corruption in filesystem during the test with
-ext4-patch-queue and ext4-patch-queue-nomballoc. It happens when after
-the test I umount the test filesystem and then mount it again the
-following message appears:
-
-root@athena:~# umount /home
-root@athena:~# mount /home
-mount: wrong fs type, bad option, bad superblock on /dev/md7,
-        missing codepage or helper program, or other error
-        In some cases useful info is found in syslog - try
-        dmesg | tail  or so
-
-EXT4-fs: ext4_check_descriptors: Inode bitmap for group 256 not in group (block 117835012)!<3>EXT4-fs: group descriptors corrupted!
-
-Using fsck this problem could be corrected. Now that one does not think I
-did those test on a corrupted file system. The filesystem was newly created
-for each of the above five test runs.
-
-Regards,
-Holger
-
+...already exists.  Check the "L:" entries in MAINTAINERS.
+-- 
+Stefan Richter
+-=====-==--- -=== --===
+http://arcgraph.de/sr/
