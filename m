@@ -1,85 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbYGGPM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754726AbYGGPV3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755224AbYGGPM7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 11:12:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509AbYGGPMt
+	id S1754726AbYGGPV3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 11:21:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbYGGPVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 11:12:49 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:40619 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753556AbYGGPMs convert rfc822-to-8bit (ORCPT
+	Mon, 7 Jul 2008 11:21:15 -0400
+Received: from chello212186124096.11.vie.surfer.at ([212.186.124.96]:41492
+	"EHLO wiesinger.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752892AbYGGPVN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 11:12:48 -0400
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
-Date: Mon, 7 Jul 2008 15:12:19 +0000
-Subject: RE: [PATCH 1/1] cciss: read config to obtain max outstanding
- commands per controller
-Thread-Topic: [PATCH 1/1] cciss: read config to obtain max outstanding
- commands per controller
-Thread-Index: AcjbwL3zj2dbqNunQbeS7NSl3YWW+gEgTDeg
-Message-ID: <0F5B06BAB751E047AB5C87D1F77A778825963E5E81@GVW0547EXC.americas.hpqcorp.net>
-References: <20080701210247.GA5095@roadking.ldev.net>
- <20080701142308.4958bc5f.akpm@linux-foundation.org>
-In-Reply-To: <20080701142308.4958bc5f.akpm@linux-foundation.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 7 Jul 2008 11:21:13 -0400
+X-Greylist: delayed 928 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 Jul 2008 11:21:12 EDT
+Date: Mon, 7 Jul 2008 17:08:19 +0200 (CEST)
+From: Gerhard Wiesinger <lists@wiesinger.com>
+To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: Lots of con-current I/O = resets SATA link? (2.6.25.10)
+In-Reply-To: <alpine.LFD.1.10.0807071649340.1160@bbs.intern>
+Message-ID: <alpine.LFD.1.10.0807071705490.2997@bbs.intern>
+References: <alpine.DEB.1.10.0807051252200.12562@p34.internal.lan> <alpine.LFD.1.10.0807071649340.1160@bbs.intern>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463811584-533268350-1215443300=:3171"
+X-MailScanner-Information-wiesinger.com: Please contact the ISP for more information
+X-MailScanner-wiesinger.com: Found to be clean
+X-MailScanner-SpamCheck-wiesinger.com: not spam, SpamAssassin (score=-4.399,
+	required 4.5, autolearn=not spam, ALL_TRUSTED -1.80, BAYES_00 -2.60)
+X-MailScanner-From: lists@wiesinger.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---1463811584-533268350-1215443300=:3171
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+
+Hello!
+
+Missing logs attached ...
+
+Ciao,
+Gerhard
+
+--
+http://www.wiesinger.com/
 
 
-> -----Original Message-----
-> From: Andrew Morton [mailto:akpm@linux-foundation.org]
-> Sent: Tuesday, July 01, 2008 4:23 PM
-> To: Miller, Mike (OS Dev)
-> Cc: jens.axboe@oracle.com; linux-kernel@vger.kernel.org;
-> linux-scsi@vger.kernel.org
-> Subject: Re: [PATCH 1/1] cciss: read config to obtain max
-> outstanding commands per controller
->
-> On Tue, 1 Jul 2008 16:02:47 -0500
-> Mike Miller <mike.miller@hp.com> wrote:
->
-> > This patch changes the way we determine the maximum number of
-> > outstanding commands for each controller. Most Smart Array
-> controllers
-> > can support up to 1024 commands, the notable exceptions are
-> the E200 and E200i.
-> > The next generation of controllers which were just added support a
-> > mode of operation called Zero Memory Raid (ZMR).  In this mode they
-> > only support 64 outstanding commands. In Full Function Raid
-> (FFR) mode they support 1024.
-> > We have been setting the queue depth by arbitrarily assigning some
-> > value for each controller. We needed a better way to set the queue
-> > depth to avoid lots of annoying "fifo full" messages. So we
-> made the
-> > driver a little smarter. We now read the config table and
-> subtract 4
-> > from the returned value. The -4 is to allow some room for
-> ioctl calls
-> > which are not tracked the same way as io commands are tracked.
->
-> What would be the effect of _not_ having this patch upon
-> users of the new hardware?
->
-> If the answer is "bad" then we should get this change into
-> 2.6.26 and 2.6.25.x, because people will surely be running
-> those kernels on the new hardware.
+On Mon, 7 Jul 2008, Gerhard Wiesinger wrote:
 
-Sorry for my late reply, I've been out of the office. Not having this patch would be bad. The performance at a queue depth of 64 is not very good anyway. If we hit the "fifo full" condition we spew annoying messages and spin for a bit and try again. This leads to very poor performance.
+> Hello!
+>
+> I'm having a similar problem with a brand new Hardware under Fedora 9 x64
+> 8GB RAM
+> Motherboard: ASUS M3N-H/HDMI
+> Chipset: NForce 8300/Nvidia 750a
+> CPU: AMD AM2 5600+, 2.9GHz, Brisbane Dual Core
+> Kernel: 2.6.25.9-76.fc9.x86_64
+> Smartmontools: smartmontools-5.38-2.fc9.x86_64
+> BIOS AHCI mode
+> Power cables for ata3 and ata4 are on the same cable from an Enermax power 
+> supply.
+>
+> ata1.00: ATA-7: SAMSUNG HD103UJ, 1AA01109, max UDMA7
+> ata2.00: ATA-7: SAMSUNG HD103UJ, 1AA01109, max UDMA7
+> ata3.00: ATA-7: SAMSUNG HD103UJ, 1AA01109, max UDMA7
+> ata4.00: ATA-7: SAMSUNG HD103UJ, 1AA01109, max UDMA7
+> ata5.00: ATA-7: SAMSUNG HD103UJ, 1AA01109, max UDMA7
+> ata6.00: ATA-7: SAMSUNG HD103UJ, 1AA01109, max UDMA7
+> scsi 0:0:0:0: Direct-Access     ATA      SAMSUNG HD103UJ  1AA0 PQ: 0 ANSI: 5
+> scsi 1:0:0:0: Direct-Access     ATA      SAMSUNG HD103UJ  1AA0 PQ: 0 ANSI: 5
+> scsi 2:0:0:0: Direct-Access     ATA      SAMSUNG HD103UJ  1AA0 PQ: 0 ANSI: 5
+> scsi 3:0:0:0: Direct-Access     ATA      SAMSUNG HD103UJ  1AA0 PQ: 0 ANSI: 5
+> scsi 4:0:0:0: Direct-Access     ATA      SAMSUNG HD103UJ  1AA0 PQ: 0 ANSI: 5
+> scsi 5:0:0:0: Direct-Access     ATA      SAMSUNG HD103UJ  1AA0 PQ: 0 ANSI: 5
+>
+> Problem occours only on ata3, I've changed the disk Port 3 the third time 
+> (new disks) and changed the SATA cable, too. Problem still exists.
+>
+> Sometimes a RAID rebuild doesn't work at all.
+>
+> To get the drive to live I've to power down the system.
+>
+> Logs are attached.
+>
+> Can it be a bug on concurrent access of smartctl/smartd?
+>
+> Any ideas?
+>
+> Ciao,
+> Gerhard
+>
+> --
+> http://www.wiesinger.com/
+>
+>
+---1463811584-533268350-1215443300=:3171
+Content-Type: TEXT/plain; name=kernel.txt
+Content-Transfer-Encoding: BASE64
+Content-ID: <alpine.LFD.1.10.0807071708190.3171@bbs.intern>
+Content-Description: 
+Content-Disposition: attachment; filename=kernel.txt
 
-Thanks,
-mikem
+SnVsICA3IDE1OjU2OjIyIGJpZzgga2VybmVsOiBtZDogZGF0YS1jaGVjayBv
+ZiBSQUlEIGFycmF5IG1kMA0KSnVsICA3IDE1OjU2OjIyIGJpZzgga2VybmVs
+OiBtZDogbWluaW11bSBfZ3VhcmFudGVlZF8gIHNwZWVkOiAxMDAwIEtCL3Nl
+Yy9kaXNrLg0KSnVsICA3IDE1OjU2OjIyIGJpZzgga2VybmVsOiBtZDogdXNp
+bmcgbWF4aW11bSBhdmFpbGFibGUgaWRsZSBJTyBiYW5kd2lkdGggKGJ1dCBu
+b3QgbW9yZSB0aGFuIDgwMDAwIEtCL3NlYykgZm9yIGRhdGEtY2hlY2suDQpK
+dWwgIDcgMTU6NTY6MjIgYmlnOCBrZXJuZWw6IG1kOiB1c2luZyAxMjhrIHdp
+bmRvdywgb3ZlciBhIHRvdGFsIG9mIDk3Njc1OTgwOCBibG9ja3MuDQpKdWwg
+IDcgMTU6NTY6MjYgYmlnOCBrZXJuZWw6IG1kOiBkYXRhLWNoZWNrIG9mIFJB
+SUQgYXJyYXkgbWQxDQpKdWwgIDcgMTU6NTY6MjYgYmlnOCBrZXJuZWw6IG1k
+OiBtaW5pbXVtIF9ndWFyYW50ZWVkXyAgc3BlZWQ6IDEwMDAgS0Ivc2VjL2Rp
+c2suDQpKdWwgIDcgMTU6NTY6MjYgYmlnOCBrZXJuZWw6IG1kOiB1c2luZyBt
+YXhpbXVtIGF2YWlsYWJsZSBpZGxlIElPIGJhbmR3aWR0aCAoYnV0IG5vdCBt
+b3JlIHRoYW4gODAwMDAgS0Ivc2VjKSBmb3IgZGF0YS1jaGVjay4NCkp1bCAg
+NyAxNTo1NjoyNiBiaWc4IGtlcm5lbDogbWQ6IHVzaW5nIDEyOGsgd2luZG93
+LCBvdmVyIGEgdG90YWwgb2YgOTc2NzU5ODA4IGJsb2Nrcy4NCkp1bCAgNyAx
+NjowMDo1MyBiaWc4IGtlcm5lbDogYXRhMy4wMDogZXhjZXB0aW9uIEVtYXNr
+IDB4MCBTQWN0IDB4MCBTRXJyIDB4MCBhY3Rpb24gMHgyIGZyb3plbg0KSnVs
+ICA3IDE2OjAwOjUzIGJpZzgga2VybmVsOiBhdGEzLjAwOiBjbWQgZWEvMDA6
+MDA6MDA6MDA6MDAvMDA6MDA6MDA6MDA6MDAvYTAgdGFnIDANCkp1bCAgNyAx
+NjowMDo1MyBiaWc4IGtlcm5lbDogICAgICAgICAgcmVzIDQwLzAwOjAwOjAw
+OjAwOjAwLzAwOjAwOjAwOjAwOjAwL2EwIEVtYXNrIDB4NCAodGltZW91dCkN
+Ckp1bCAgNyAxNjowMDo1MyBiaWc4IGtlcm5lbDogYXRhMy4wMDogc3RhdHVz
+OiB7IERSRFkgfQ0KSnVsICA3IDE2OjAwOjUzIGJpZzgga2VybmVsOiBhdGEz
+OiBoYXJkIHJlc2V0dGluZyBsaW5rDQpKdWwgIDcgMTY6MDE6MDAgYmlnOCBr
+ZXJuZWw6IGF0YTM6IHBvcnQgaXMgc2xvdyB0byByZXNwb25kLCBwbGVhc2Ug
+YmUgcGF0aWVudCAoU3RhdHVzIDB4ODApDQpKdWwgIDcgMTY6MDE6MDMgYmln
+OCBrZXJuZWw6IGF0YTM6IHNvZnRyZXNldCBmYWlsZWQgKGRldmljZSBub3Qg
+cmVhZHkpDQpKdWwgIDcgMTY6MDE6MDMgYmlnOCBrZXJuZWw6IGF0YTM6IGhh
+cmQgcmVzZXR0aW5nIGxpbmsNCkp1bCAgNyAxNjowMToxMCBiaWc4IGtlcm5l
+bDogYXRhMzogcG9ydCBpcyBzbG93IHRvIHJlc3BvbmQsIHBsZWFzZSBiZSBw
+YXRpZW50IChTdGF0dXMgMHg4MCkNCkp1bCAgNyAxNjowMToxMyBiaWc4IGtl
+cm5lbDogYXRhMzogc29mdHJlc2V0IGZhaWxlZCAoZGV2aWNlIG5vdCByZWFk
+eSkNCkp1bCAgNyAxNjowMToxMyBiaWc4IGtlcm5lbDogYXRhMzogaGFyZCBy
+ZXNldHRpbmcgbGluaw0KSnVsICA3IDE2OjAxOjIwIGJpZzgga2VybmVsOiBh
+dGEzOiBwb3J0IGlzIHNsb3cgdG8gcmVzcG9uZCwgcGxlYXNlIGJlIHBhdGll
+bnQgKFN0YXR1cyAweDgwKQ0KSnVsICA3IDE2OjAxOjQ4IGJpZzgga2VybmVs
+OiBhdGEzOiBzb2Z0cmVzZXQgZmFpbGVkIChkZXZpY2Ugbm90IHJlYWR5KQ0K
+SnVsICA3IDE2OjAxOjQ4IGJpZzgga2VybmVsOiBhdGEzOiBsaW1pdGluZyBT
+QVRBIGxpbmsgc3BlZWQgdG8gMS41IEdicHMNCkp1bCAgNyAxNjowMTo0OCBi
+aWc4IGtlcm5lbDogYXRhMzogaGFyZCByZXNldHRpbmcgbGluaw0KSnVsICA3
+IDE2OjAxOjUzIGJpZzgga2VybmVsOiBhdGEzOiBzb2Z0cmVzZXQgZmFpbGVk
+IChkZXZpY2Ugbm90IHJlYWR5KQ0KSnVsICA3IDE2OjAxOjUzIGJpZzgga2Vy
+bmVsOiBhdGEzOiByZXNldCBmYWlsZWQsIGdpdmluZyB1cA0KSnVsICA3IDE2
+OjAxOjUzIGJpZzgga2VybmVsOiBhdGEzLjAwOiBkaXNhYmxlZA0KSnVsICA3
+IDE2OjAxOjUzIGJpZzgga2VybmVsOiBhdGEzOiBFSCBjb21wbGV0ZQ0KSnVs
+ICA3IDE2OjAxOjUzIGJpZzgga2VybmVsOiBzZCAyOjA6MDowOiBbc2RjXSBS
+ZXN1bHQ6IGhvc3RieXRlPURJRF9CQURfVEFSR0VUIGRyaXZlcmJ5dGU9RFJJ
+VkVSX09LLFNVR0dFU1RfT0sNCkp1bCAgNyAxNjowMTo1MyBiaWc4IGtlcm5l
+bDogZW5kX3JlcXVlc3Q6IEkvTyBlcnJvciwgZGV2IHNkYywgc2VjdG9yIDI5
+MTIzNjQ3DQpKdWwgIDcgMTY6MDE6NTMgYmlnOCBrZXJuZWw6IHNkIDI6MDow
+OjA6IFtzZGNdIFJlc3VsdDogaG9zdGJ5dGU9RElEX0JBRF9UQVJHRVQgZHJp
+dmVyYnl0ZT1EUklWRVJfT0ssU1VHR0VTVF9PSw0KSnVsICA3IDE2OjAxOjUz
+IGJpZzgga2VybmVsOiBlbmRfcmVxdWVzdDogSS9PIGVycm9yLCBkZXYgc2Rj
+LCBzZWN0b3IgMjkxMjQ5MjcNCkp1bCAgNyAxNjowMTo1MyBiaWc4IGtlcm5l
+bDogc2QgMjowOjA6MDogW3NkY10gUmVzdWx0OiBob3N0Ynl0ZT1ESURfQkFE
+X1RBUkdFVCBkcml2ZXJieXRlPURSSVZFUl9PSyxTVUdHRVNUX09LDQpKdWwg
+IDcgMTY6MDE6NTMgYmlnOCBrZXJuZWw6IGVuZF9yZXF1ZXN0OiBJL08gZXJy
+b3IsIGRldiBzZGMsIHNlY3RvciAyOTEyMzkwMw0KSnVsICA3IDE2OjAxOjUz
+IGJpZzgga2VybmVsOiBzZCAyOjA6MDowOiBbc2RjXSBSZXN1bHQ6IGhvc3Ri
+eXRlPURJRF9CQURfVEFSR0VUIGRyaXZlcmJ5dGU9RFJJVkVSX09LLFNVR0dF
+U1RfT0sNCkp1bCAgNyAxNjowMTo1MyBiaWc4IGtlcm5lbDogZW5kX3JlcXVl
+c3Q6IEkvTyBlcnJvciwgZGV2IHNkYywgc2VjdG9yIDExODI4OTQyMDcNCkp1
+bCAgNyAxNjowMTo1MyBiaWc4IGtlcm5lbDogc2QgMjowOjA6MDogW3NkY10g
+UmVzdWx0OiBob3N0Ynl0ZT1ESURfQkFEX1RBUkdFVCBkcml2ZXJieXRlPURS
+SVZFUl9PSyxTVUdHRVNUX09LDQpKdWwgIDcgMTY6MDE6NTMgYmlnOCBrZXJu
+ZWw6IGVuZF9yZXF1ZXN0OiBJL08gZXJyb3IsIGRldiBzZGMsIHNlY3RvciAx
+MTM5NjcxNjM5DQpKdWwgIDcgMTY6MDE6NTMgYmlnOCBrZXJuZWw6IHNkIDI6
+MDowOjA6IFtzZGNdIFJlc3VsdDogaG9zdGJ5dGU9RElEX0JBRF9UQVJHRVQg
+ZHJpdmVyYnl0ZT1EUklWRVJfT0ssU1VHR0VTVF9PSw0KSnVsICA3IDE2OjAx
+OjUzIGJpZzgga2VybmVsOiBlbmRfcmVxdWVzdDogSS9PIGVycm9yLCBkZXYg
+c2RjLCBzZWN0b3IgMTU1NzIyMjY4Nw0KSnVsICA3IDE2OjAxOjUzIGJpZzgg
+a2VybmVsOiBzZCAyOjA6MDowOiBbc2RjXSBSZXN1bHQ6IGhvc3RieXRlPURJ
+RF9CQURfVEFSR0VUIGRyaXZlcmJ5dGU9RFJJVkVSX09LLFNVR0dFU1RfT0sN
+Ckp1bCAgNyAxNjowMTo1MyBiaWc4IGtlcm5lbDogZW5kX3JlcXVlc3Q6IEkv
+TyBlcnJvciwgZGV2IHNkYywgc2VjdG9yIDI5MTIzNjQ3DQpKdWwgIDcgMTY6
+MDE6NTMgYmlnOCBrZXJuZWw6IHJhaWQ1OiBEaXNrIGZhaWx1cmUgb24gc2Rj
+MSwgZGlzYWJsaW5nIGRldmljZS4gT3BlcmF0aW9uIGNvbnRpbnVpbmcgb24g
+MiBkZXZpY2VzDQpKdWwgIDcgMTY6MDE6NTMgYmlnOCBrZXJuZWw6IHNkIDI6
+MDowOjA6IFtzZGNdIFJlc3VsdDogaG9zdGJ5dGU9RElEX0JBRF9UQVJHRVQg
+ZHJpdmVyYnl0ZT1EUklWRVJfT0ssU1VHR0VTVF9PSw0KSnVsICA3IDE2OjAx
+OjUzIGJpZzgga2VybmVsOiBlbmRfcmVxdWVzdDogSS9PIGVycm9yLCBkZXYg
+c2RjLCBzZWN0b3IgMjkxMjQ2NzENCkp1bCAgNyAxNjowMTo1MyBiaWc4IGtl
+cm5lbDogbWQ6IG1kMDogZGF0YS1jaGVjayBkb25lLg0KSnVsICA3IDE2OjAx
+OjUzIGJpZzgga2VybmVsOiBSQUlENSBjb25mIHByaW50b3V0Og0KSnVsICA3
+IDE2OjAxOjUzIGJpZzgga2VybmVsOiAgLS0tIHJkOjMgd2Q6Mg0KSnVsICA3
+IDE2OjAxOjUzIGJpZzgga2VybmVsOiAgZGlzayAwLCBvOjEsIGRldjpzZGEx
+DQpKdWwgIDcgMTY6MDE6NTMgYmlnOCBrZXJuZWw6ICBkaXNrIDEsIG86MSwg
+ZGV2OnNkYjENCkp1bCAgNyAxNjowMTo1MyBiaWc4IGtlcm5lbDogIGRpc2sg
+MiwgbzowLCBkZXY6c2RjMQ0KSnVsICA3IDE2OjAxOjUzIGJpZzgga2VybmVs
+OiBSQUlENSBjb25mIHByaW50b3V0Og0KSnVsICA3IDE2OjAxOjUzIGJpZzgg
+a2VybmVsOiAgLS0tIHJkOjMgd2Q6Mg0KSnVsICA3IDE2OjAxOjUzIGJpZzgg
+a2VybmVsOiAgZGlzayAwLCBvOjEsIGRldjpzZGExDQpKdWwgIDcgMTY6MDE6
+NTMgYmlnOCBrZXJuZWw6ICBkaXNrIDEsIG86MSwgZGV2OnNkYjENCkp1bCAg
+NyAxNjowMjo0NSBiaWc4IGtlcm5lbDogcHJvZ3JhbSBzbWFydGN0bCBpcyB1
+c2luZyBhIGRlcHJlY2F0ZWQgU0NTSSBpb2N0bCwgcGxlYXNlIGNvbnZlcnQg
+aXQgdG8gU0dfSU8NCg==
+
+---1463811584-533268350-1215443300=:3171--
