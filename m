@@ -1,72 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754568AbYGGL6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754605AbYGGMDQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754568AbYGGL6Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 07:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbYGGL6N
+	id S1754605AbYGGMDQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 08:03:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbYGGMDD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 07:58:13 -0400
-Received: from anchor-post-32.mail.demon.net ([194.217.242.90]:1565 "EHLO
-	anchor-post-32.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752383AbYGGL6N (ORCPT
+	Mon, 7 Jul 2008 08:03:03 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:56527 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753189AbYGGMDC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 07:58:13 -0400
-Subject: [PATCH]  net: remove padding from struct socket on 64bit &
-	increase objects/cache
-From: Richard Kennedy <richard@rsk.demon.co.uk>
-To: netdev@vger.kernel.org
-Cc: lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 07 Jul 2008 12:58:10 +0100
-Message-Id: <1215431890.3101.5.camel@castor.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Jul 2008 08:03:02 -0400
+Date: Mon, 7 Jul 2008 13:02:18 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Martin Schwidefsky <schwidefsky@googlemail.com>, benh@kernel.crashing.org,
+       cotte@de.ibm.com, Zan Lynx <zlynx@acm.org>,
+       Ryan Hope <rmh3093@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Lockless/Get_User_Pages_Fast causes Xorg 1.4.99.* to lock
+In-Reply-To: <200807072139.48462.nickpiggin@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0807071245220.28196@blonde.site>
+References: <48f7fe350807032326l1d68c94l531e44c09693b989@mail.gmail.com>
+ <200807071806.11630.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0807071134090.21480@blonde.site>
+ <200807072139.48462.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-remove padding from struct socket reducing its size by 8 bytes.
-    
-This allows more objects/cache in sock_inode_cache
-12 objects/cache when cacheline size is 128 (generic x86_64)
-    
-Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
-----
+On Mon, 7 Jul 2008, Nick Piggin wrote:
+> On Monday 07 July 2008 20:39, Hugh Dickins wrote:
+> > On Mon, 7 Jul 2008, Nick Piggin wrote:
+> > > I think we need a similar fix for s390 too. If so, then it really should
+> > > get into 2.6.26, but this late in the release, I hope an s390 maintainer
+> > > might be able to test and verify the fix?
+> >
+> > Wow, yes, I hadn't realized s390 is ahead of the game there: glad you're
+> > back to spot that.  But yes, we'd prefer maintainer to confirm and push.
+> >
+> >
+> > [PATCH]] s390: protect _PAGE_SPECIAL bit against mprotect
+> >
+> > Stop mprotect's pte_modify from wiping out the s390 pte_special bit, which
+> > caused oops thereafter when vm_normal_page thought X's abnormal was normal.
+> >
+> > Signed-off-by: Nick Piggin <npiggin@suse.de>
+> > Acked-by: Hugh Dickins <hugh@veritas.com>
+> 
+> Thanks, I feel silly to take the authorship of this before your x86
+> version gets in (and will likely not be credited if it is folded
+> before merging)
+> 
+> Martin, could you please credit Hugh for the debugging? :)
 
-compiled & booted on 2.6.26-rc8
+Oh, I'm more anxious for your fix to get to Linus than for credit
+to be fairly apportioned - we don't need an Oscar ceremony here!
 
-Richard
+But if Martin does choose to add credits, then it's Ryan's and
+Zan's x86 reports that should be credited - they did the hard work.
+I didn't mention them in the x86 patch because at that stage I was
+just making a wild guess that this might be the cause of their problems.
 
-
-diff --git a/include/linux/net.h b/include/linux/net.h
-index 71f7dd5..150a48c 100644
---- a/include/linux/net.h
-+++ b/include/linux/net.h
-@@ -106,23 +106,23 @@ enum sock_shutdown_cmd {
- /**
-  *  struct socket - general BSD socket
-  *  @state: socket state (%SS_CONNECTED, etc)
-+ *  @type: socket type (%SOCK_STREAM, etc)
-  *  @flags: socket flags (%SOCK_ASYNC_NOSPACE, etc)
-  *  @ops: protocol specific socket operations
-  *  @fasync_list: Asynchronous wake up list
-  *  @file: File back pointer for gc
-  *  @sk: internal networking protocol agnostic socket representation
-  *  @wait: wait queue for several uses
-- *  @type: socket type (%SOCK_STREAM, etc)
-  */
- struct socket {
- 	socket_state		state;
-+	short			type;
- 	unsigned long		flags;
- 	const struct proto_ops	*ops;
- 	struct fasync_struct	*fasync_list;
- 	struct file		*file;
- 	struct sock		*sk;
- 	wait_queue_head_t	wait;
--	short			type;
- };
- 
- struct vm_area_struct;
-
-
+Hugh
