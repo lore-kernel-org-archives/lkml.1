@@ -1,112 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756529AbYGGR7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756391AbYGGSB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756529AbYGGR7P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 13:59:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753910AbYGGR7A
+	id S1756391AbYGGSB5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 14:01:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbYGGSBs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 13:59:00 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43643 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754113AbYGGR67 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 13:58:59 -0400
-Date: Mon, 7 Jul 2008 12:58:58 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: Christoph Hellwig <hch@infradead.org>, cl@linux-foundation.org,
-       hugh@veritas.com
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       tglx@linutronix.de, holt@sgi.com, andrea@qumranet.com,
-       linux-mm@kvack.org
-Subject: Re: [patch 12/13] GRU Driver V3 -  export is_uv_system(), zap_page_range() & follow_page()
-Message-ID: <20080707175858.GA1927@sgi.com>
-References: <20080703213348.489120321@attica.americas.sgi.com> <20080703213633.890647632@attica.americas.sgi.com> <20080704073926.GA1449@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 7 Jul 2008 14:01:48 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34012 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753981AbYGGSBr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 14:01:47 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [PATCH 2/2] acpi: Disable IRQ 0 through I/O APIC for some HP systems
+Date: Mon, 7 Jul 2008 20:03:47 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Ingo Molnar <mingo@elte.hu>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-next@vger.kernel.org, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
+References: <Pine.LNX.4.55.0807010055070.30785@cliff.in.clinika.pl> <200807071423.48425.rjw@sisk.pl> <Pine.LNX.4.55.0807071435160.16767@cliff.in.clinika.pl>
+In-Reply-To: <Pine.LNX.4.55.0807071435160.16767@cliff.in.clinika.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080704073926.GA1449@infradead.org>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200807072003.48228.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 04, 2008 at 03:39:26AM -0400, Christoph Hellwig wrote:
-> On Thu, Jul 03, 2008 at 04:34:00PM -0500, steiner@sgi.com wrote:
-> > +EXPORT_SYMBOL_GPL(zap_page_range);
-> >  
+On Monday, 7 of July 2008, Maciej W. Rozycki wrote:
+> On Mon, 7 Jul 2008, Rafael J. Wysocki wrote:
 > 
-> NACK.
+> > >  It makes absolutely no sense and should be harmful to call
+> > > clear_IO_APIC_pin(apic1, pin1) here, because both apic1 and pin1 should be
+> > > equal to -1 here.  If it has to be called, then I suppose the DMI matching 
+> > > did not work and the workaround has not been enabled.
+> > 
+> > Do you realize that the clear_IO_APIC_pin(apic1, pin1) thing is _only_ called
+> > _IF_ the DMI matching did work?
 > 
+>  Well, it is the very intent of the DMI quirk to set apic1 and pin1 both
+> to -1, as a result of IRQ0 being absent from our I/O APIC interrupt
+> routing table.  Therefore if the quirk did indeed work, a call to
+> clear_IO_APIC_pin() is useless and likely harmful as its callees don't do
+> range checking (my understanding of code is it results in random poking at
+> the local APIC through the FIX_APIC_BASE fixmap).  There should be nothing
+> to clear too, as interrupt redirection entries for all the I/O APIC inputs
+> are cleared (the mask is set to 1 and the remaining fields zeroed) when
+> clear_IO_APIC() is called from enable_IO_APIC() upon initialization and
+> all the unused ones (not referred to from anywhere in the interrupt
+> routing table) are never touched afterwards.
 
-I agree that zap_pages_range() is more general than what is needed.
+Sorry, the patch I posted was _instead_ of your previous patch with the quirk,
+because that patch didn't work.  I don't know why it didn't work, however, I
+can only say it didn't work after removing the __i386__ dependency of
+acpi_dmi_table[].
 
-How about the following. This should prevent abuse of the API &
-provide what (I think) drivers need.
+My patch is on top of the linux-next tree that didn't contain your patch.
+So, my patch adds a quirk that sets disable_irq0_through_ioapic to 1 (this
+variable is defined differently in my patch) and uses it to skip the part of
+check_timer() that breaks my box.
 
-Verified with GRU & XPMEM.
+I hope that makes things clear.
 
-
---- jack
-
---------------------------------------------------------------------------------------------
-Add function to unmap driver ptes.
-
-zap_vma_ptes() is intended to be used by drivers to unmap
-ptes assigned to the driver private vmas. This interface is
-similar to zap_page_range() but is less general & less likely to
-be abused.
-
-
-Signed-off-by: Jack Steiner <steiner@sgi.com>
-
----
- include/linux/mm.h |    2 ++
- mm/memory.c        |   23 +++++++++++++++++++++++
- 2 files changed, 25 insertions(+)
-
-Index: linux/include/linux/mm.h
-===================================================================
---- linux.orig/include/linux/mm.h	2008-07-07 12:22:17.809892803 -0500
-+++ linux/include/linux/mm.h	2008-07-07 12:22:56.126695482 -0500
-@@ -742,6 +742,8 @@ struct zap_details {
- struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
- 		pte_t pte);
- 
-+int zap_vma_ptes(struct vm_area_struct *vma, unsigned long address,
-+		unsigned long size);
- unsigned long zap_page_range(struct vm_area_struct *vma, unsigned long address,
- 		unsigned long size, struct zap_details *);
- unsigned long unmap_vmas(struct mmu_gather **tlb,
-Index: linux/mm/memory.c
-===================================================================
---- linux.orig/mm/memory.c	2008-07-07 12:22:18.357961503 -0500
-+++ linux/mm/memory.c	2008-07-07 12:31:51.097688882 -0500
-@@ -978,6 +978,29 @@ unsigned long zap_page_range(struct vm_a
- }
- EXPORT_SYMBOL_GPL(zap_page_range);
- 
-+/**
-+ * zap_vma_ptes - remove ptes mapping the vma
-+ * @vma: vm_area_struct holding ptes to be zapped
-+ * @address: starting address of pages to zap
-+ * @size: number of bytes to zap
-+ *
-+ * This function only unmaps ptes assigned to VM_PFNMAP vmas.
-+ *
-+ * The entire address range must be fully contained within the vma.
-+ *
-+ * Returns 0 if successful.
-+ */
-+int zap_vma_ptes(struct vm_area_struct *vma, unsigned long address,
-+		unsigned long size)
-+{
-+	if (address < vma->vm_start || address + size > vma->vm_end ||
-+	    		!(vma->vm_flags & VM_PFNMAP))
-+		return -1;
-+	zap_page_range(vma, address, size, NULL);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(zap_vma_ptes);
-+
- /*
-  * Do a quick page-table lookup for a single page.
-  */
+Thanks,
+Rafael
