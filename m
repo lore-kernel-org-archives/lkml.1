@@ -1,61 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757473AbYGGXCD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758773AbYGGXCh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757473AbYGGXCD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 19:02:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754950AbYGGXBv
+	id S1758773AbYGGXCh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 19:02:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754950AbYGGXC2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 19:01:51 -0400
-Received: from gate.crashing.org ([63.228.1.57]:55418 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754789AbYGGXBu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 19:01:50 -0400
-Subject: Re: [PATCH 1/2] elf loader support for auxvec base platform string
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Nathan Lynch <ntl@pobox.com>
-Cc: Roland McGrath <roland@redhat.com>, linuxppc-dev@ozlabs.org,
-       Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080707221733.GJ9594@localdomain>
-References: <20080703234140.GC9594@localdomain>
-	 <20080704021929.5E9EF1541F5@magilla.localdomain>
-	 <1215409693.8970.79.camel@pasglop>  <20080707221733.GJ9594@localdomain>
+	Mon, 7 Jul 2008 19:02:28 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:47690 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754883AbYGGXC2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 19:02:28 -0400
+Subject: Re: [PATCH 0/4] Container Freezer: Reuse Suspend Freezer
+From: Matt Helsley <matthltc@us.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Paul Menage <menage@google.com>, Pavel Machek <pavel@ucw.cz>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org,
+       Linux Containers <containers@lists.linux-foundation.org>
+In-Reply-To: <20080707225823.502032693@us.ibm.com>
+References: <20080707225823.502032693@us.ibm.com>
 Content-Type: text/plain
-Date: Tue, 08 Jul 2008 09:00:38 +1000
-Message-Id: <1215471638.8970.162.camel@pasglop>
+Organization: IBM Linux Technology Center
+Date: Mon, 07 Jul 2008 16:02:24 -0700
+Message-Id: <1215471744.9023.14.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+X-Mailer: Evolution 2.12.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-07-07 at 17:17 -0500, Nathan Lynch wrote:
-> Benjamin Herrenschmidt wrote:
-> > On Thu, 2008-07-03 at 19:19 -0700, Roland McGrath wrote:
-> > > Why not just use ELF_HWCAP for this?  It looks like powerpc only has 3 bits
-> > > left there (keeping it to 32), but 3 is not 0.  If not that, why not use
-> > > dsocaps?  That is, some magic in the vDSO, which glibc already supports on
-> > > all machines where it uses the vDSO.  (For how it works, see the use in
-> > > arch/x86/vdso/vdso32/note.S for CONFIG_XEN.)
-> > 
-> > Well, we use strings to represent the platforms already (ie, the actual
-> > CPU microarchitecture). Fitting those into bits would be annoying, it
-> > makes sense to have AT_BASE_PLATFORM to be the "base" variant of
-> > AT_PLATFORM.
-> > 
-> > _However_ there is a bug in that this patch adds an entry without
-> > bumping the number of entries in the cached array (ie.
-> > AT_VECTOR_SIZE_BASE needs to be updated).
+
+On Mon, 2008-07-07 at 15:58 -0700, Matt Helsley wrote:
+> This patchset reuses the container infrastructure and the swsusp freezer to
+> freeze a group of tasks.
 > 
-> Ugh, yes.  I was hoping to work this in such a way that AT_VECTOR_SIZE
-> (and thus the size of mm_struct) increases only for architectures that
-> implement AT_BASE_PLATFORM... would it be wrong to account for it in
-> AT_VECTOR_SIZE_ARCH?
+> The freezer subsystem in the container filesystem defines a file named
+> freezer.state. Writing "FROZEN" to the state file will freeze all tasks in the
+> cgroup. Subsequently writing "RUNNING" will unfreeze the tasks in the cgroup. 
+> Reading will return the current state. 
+> 
+> * Examples of usage :
+> 
+>    # mkdir /containers/freezer
+>    # mount -t cgroup -ofreezer,signal freezer  /containers
+>    # mkdir /containers/0
+>    # echo $some_pid > /containers/0/tasks
+> 
+> to get status of the freezer subsystem :
+> 
+>    # cat /containers/0/freezer.state
+>    RUNNING
+> 
+> to freeze all tasks in the container :
+> 
+>    # echo FROZEN > /containers/0/freezer.state
+>    # cat /containers/0/freezer.state
+>    FREEZING
+>    # cat /containers/0/freezer.state
+>    FROZEN
+> 
+> to unfreeze all tasks in the container :
+> 
+>    # echo RUNNING > /containers/0/freezer.state
+>    # cat /containers/0/freezer.state
+>    RUNNING
+> 
+> to kill all tasks in the container :
+> 
+>    # echo 9 > /containers/0/signal.kill
+> 
+> I've reworked Cedric's patches to use task_lock() to protect access to the
+> task's cgroup.
+> 
+> Paul, Pavel asked me to send these to Rafael next. They are patches to make
+> the freezer useful for checkpoint/restart using cgroups so it would be nice
+> to get an explicit [N]Ack from you first.
+> 
+> Rafael, if Paul agrees, please consider applying these patches.
+> 
+> Changes since v3:
+> v4 (Almost all of these changes are confined to patch 3):
+> 	Reworked the series to use task_lock() instead of RCU.
+> 	Reworked the series to use write_string() and read_seq_string()
+> 		cgroup methods.
 
-Yes. The later is for things added from ARCH_DLINFO. Since the
-code for AT_BASE_PLATFORM is in the generic binfmt_elf, it would
-be asking for trouble to not account for it in the base AT_VECTOR_SIZE.
+	FYI - This means these patches need Paul's patches introducing
+write_string(). I can certainly restore the old code for .read
+and .write, but I was anticipating write_string() making it into various
+trees first. If that's not necessarily the case please let me know.
 
-Ben.
-
+Cheers,
+	-Matt
 
