@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755909AbYGGQus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753781AbYGGQvF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755909AbYGGQus (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 12:50:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbYGGQt5
+	id S1753781AbYGGQvF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 12:51:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbYGGQt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 12:49:57 -0400
+	Mon, 7 Jul 2008 12:49:59 -0400
 Received: from aa2005110791d2e6c28a.userreverse.dion.ne.jp ([210.230.194.138]:20574
 	"EHLO localhost.localdomain" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753411AbYGGQtz (ORCPT
+	by vger.kernel.org with ESMTP id S1753835AbYGGQt6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 12:49:55 -0400
+	Mon, 7 Jul 2008 12:49:58 -0400
 X-Greylist: delayed 449 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 Jul 2008 12:49:54 EDT
 From: James Morris <jmorris@namei.org>
 To: linux-security-module@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 04/20] SELinux: reorder inode_security_struct to increase objs/slab on 64bit
-Date: Tue,  8 Jul 2008 01:42:06 +0900
-Message-Id: <1215448942-17581-5-git-send-email-jmorris@namei.org>
+Subject: SELinux patches for 2.6.26
+Date: Tue,  8 Jul 2008 01:42:02 +0900
+Message-Id: <1215448942-17581-1-git-send-email-jmorris@namei.org>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1215448942-17581-1-git-send-email-jmorris@namei.org>
-References: <1215448942-17581-1-git-send-email-jmorris@namei.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Richard Kennedy <richard@rsk.demon.co.uk>
 
-reorder inode_security_struct to remove padding on 64 bit builds
+Please review these SELinux patches for the 2.6.26 kernel.
 
-size reduced from 72 to 64 bytes increasing objects per slab to 64.
+ fs/proc/base.c                      |    9 
+ fs/proc/task_mmu.c                  |    6 
+ fs/proc/task_nommu.c                |    2 
+ include/linux/ptrace.h              |    8 
+ include/linux/security.h            |   16 -
+ kernel/ptrace.c                     |   15 -
+ security/commoncap.c                |    3 
+ security/dummy.c                    |    3 
+ security/security.c                 |   11 
+ security/selinux/hooks.c            |  156 +++++++-----
+ security/selinux/include/audit.h    |    4 
+ security/selinux/include/avc.h      |   15 -
+ security/selinux/include/objsec.h   |    1 
+ security/selinux/include/security.h |    7 
+ security/selinux/netnode.c          |    1 
+ security/selinux/netport.c          |    3 
+ security/selinux/selinuxfs.c        |   15 -
+ security/selinux/ss/avtab.c         |    2 
+ security/selinux/ss/context.h       |   27 ++
+ security/selinux/ss/mls.c           |   19 -
+ security/selinux/ss/mls.h           |    3 
+ security/selinux/ss/policydb.c      |   15 -
+ security/selinux/ss/services.c      |  450 ++++++++++++++++++++++--------------
+ security/selinux/ss/sidtab.c        |   76 ++----
+ security/selinux/ss/sidtab.h        |    7 
+ security/smack/smack_lsm.c          |    5 
+ 26 files changed, 518 insertions(+), 361 deletions(-)
 
-Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
-Signed-off-by: James Morris <jmorris@namei.org>
----
- security/selinux/include/objsec.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/security/selinux/include/objsec.h b/security/selinux/include/objsec.h
-index 032c235..5f0be19 100644
---- a/security/selinux/include/objsec.h
-+++ b/security/selinux/include/objsec.h
-@@ -43,8 +43,8 @@ struct inode_security_struct {
- 	u32 sid;		/* SID of this object */
- 	u16 sclass;		/* security class of this object */
- 	unsigned char initialized;	/* initialization flag */
--	struct mutex lock;
- 	unsigned char inherit;	/* inherit SID from parent entry */
-+	struct mutex lock;
- };
- 
- struct file_security_struct {
--- 
-1.5.5.1
 
