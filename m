@@ -1,58 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757892AbYGGU7J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757559AbYGGVBP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757892AbYGGU7J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 16:59:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755682AbYGGU6y
+	id S1757559AbYGGVBP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 17:01:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756345AbYGGVBA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 16:58:54 -0400
-Received: from stinky.trash.net ([213.144.137.162]:38340 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756234AbYGGU6y (ORCPT
+	Mon, 7 Jul 2008 17:01:00 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:26995 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756245AbYGGVA7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 16:58:54 -0400
-Message-ID: <4872838B.1060603@trash.net>
-Date: Mon, 07 Jul 2008 22:58:51 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
+	Mon, 7 Jul 2008 17:00:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :message-id:from;
+        b=G2MjJljbTgpd0uKQQfIMLXgVKWncX+obrfFSZkdpoZ4D4BLJOayIYb3z27Fj+405u7
+         Mthuclime6eaFw5/dEnmoVBP93NKqObw2GW+O08XNVMoBaAokjS7NvamFeBgx1PEvLer
+         X7XTy/FLUqMoGq82Erbx4KRwKIPILt+aE5UT4=
+To: rt2400-devel@lists.sourceforge.net
+Subject: Re: [Rt2400-devel] rt2500pci: Failed to initialize hw. But works with ancient rt2500-1.1.0
+Date: Mon, 7 Jul 2008 23:08:57 +0200
+User-Agent: KMail/1.9.9
+Cc: Stefan Bauer <stefan.bauer@cs.tu-chemnitz.de>,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200807072253.46295.stefan.bauer@cs.tu-chemnitz.de>
+In-Reply-To: <200807072253.46295.stefan.bauer@cs.tu-chemnitz.de>
 MIME-Version: 1.0
-To: Patrick McHardy <kaber@trash.net>, bridge@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [RFC PATCH 0/2] Allow full bridge configuration via sysfs
-References: <cover.1215460681.git.notting@redhat.com> <4872819E.3040604@trash.net> <20080707205342.GA19710@nostromo.devel.redhat.com>
-In-Reply-To: <20080707205342.GA19710@nostromo.devel.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807072308.57529.IvDoorn@gmail.com>
+From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Nottingham wrote:
-> Patrick McHardy (kaber@trash.net) said: 
->> Bill Nottingham wrote:
->>> Right now, you can configure most bridge device parameters via sysfs.
->>> However, you cannot either:
->>> - add or remove bridge interfaces
->>> - add or remove physical interfaces from a bridge
->>>
->>> The attached patch set rectifies this. With this patch set, brctl
->>> (theoretically) becomes completely optional, much like ifenslave is
->>> now for bonding. (In fact, the idea for this patch, and the syntax
->>> used herein, is inspired by the sysfs bonding configuration.)
->> Both should use netlink instead of extending their sysfs interfaces.
->> For bridging I have a patch for the bridge device itself, the API
->> is so far missing support for adding ports though.
+On Monday 07 July 2008, Stefan Bauer wrote:
+> Hi,
 > 
-> How does that improve the situation for bridge devices? Are all
-> bridging parameters (forward_delay, stp, etc.) going to be configurable
-> via netlink, or would we still then have multiple tools/interfaces
-> to configuration?
+> 
+> I'm not able to load rt2500pci from 2.6.26-rc9 under Gentoo.
+> This card currently works under Debian Etch with 2.6.18 kernel and 
+> rt2500-source 1.1.0+cvs20060620-3.
+> 
+> lspci -vvvv
+> Network controller: RaLink RT2500 802.11g Cardbus/mini-PCI (rev 01)
+> Subsystem: RaLink Unknown device 2560
+> Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- 
+> SERR+ FastB2B-
+> Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=slow >TAbort- <TAbort- 
+> <MAbort- >SERR- <PERR-
+> Latency: 64, Cache Line Size: 64 bytes
+> Interrupt: pin A routed to IRQ 185
+> Region 0: Memory at fba00000 (32-bit, non-prefetchable) [size=8K]
+> Capabilities: [40] Power Management version 2
+> Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+> Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+> 
+> dmesg 2.6.18
+> PCI: Enabling device 0000:00:0c.0 (0110 -> 0112)
+> ACPI: PCI Interrupt 0000:00:0c.0[A] -> GSI 17 (level, low) -> IRQ 185
+> rt2500 1.1.0 CVS 2005/07/10 http://rt2x00.serialmonkey.com
+> 
+> dmesg 2.6.26-rc9
+> ACPI: PCI Interrupt 0000:00:0c.0[A] -> GSI 17 (level, low) -> IRQ 17
+> phy0: Selected rate control algorithm 'pid'
+> phy0: Failed to initialize wep
 
-Of course its all going to be configurable via netlink, otherwise
-it really wouldn't make sense.
+Check if the arc4 and ecb modules are loaded before loading mac80211 & rt2500pci.
 
-> Also, moving bonding configuration to netlink seems
-> like a step backwards.
+Ivo
 
-Please read up on what the standard interface for network
-configuration is, I'm tired of reiterating this once a week.
