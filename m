@@ -1,42 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756798AbYGGSCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756529AbYGGSFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756798AbYGGSCV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 14:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756539AbYGGSCJ
+	id S1756529AbYGGSFb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 14:05:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754342AbYGGSFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 14:02:09 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:34785 "EHLO
+	Mon, 7 Jul 2008 14:05:23 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:33094 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754044AbYGGSCG (ORCPT
+	with ESMTP id S1754247AbYGGSFW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 14:02:06 -0400
-Message-ID: <48725A16.6010307@zytor.com>
-Date: Mon, 07 Jul 2008 11:01:58 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
+	Mon, 7 Jul 2008 14:05:22 -0400
+Message-ID: <48725A7F.7040409@kernel.org>
+Date: Mon, 07 Jul 2008 11:03:43 -0700
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Christian Ehrhardt <lk@c--e.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Boot failures on Qemu due to P6_NOPS
-References: <20080707172334.GH1009@lisa.in-ulm.de>
-In-Reply-To: <20080707172334.GH1009@lisa.in-ulm.de>
+To: Jan Engelhardt <jengelh@medozas.de>
+CC: Nicolas Ferre <nicolas.ferre@atmel.com>, webmaster@kernel.org,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: git pull through http / git
+References: <48724130.5050501@atmel.com> <alpine.LNX.1.10.0807071840470.8248@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <alpine.LNX.1.10.0807071840470.8248@fbirervta.pbzchgretzou.qr>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christian Ehrhardt wrote:
-> Hi,
+Jan Engelhardt wrote:
 > 
-> this might well be a bug in Qemu but even then, it would be nice if the
-> linux kernel could do a work around.
+> I don't think many care about http downloading, just because it is 
+> available as such.
+> git:// and rsync:// are available though and should be usable even 
+> without the http info that needs to be constantly refreshed when one 
+> wants to use http....
 > 
 
-It is a Qemu bug.  Microsoft Virtual Server 2005 have it too.
+I thought rsync:// had the same problem (dumb transport) as http://.
 
-One *major* problems with virtualizers is that they uniformly use an 
-existing CPU identifier, even though they might have their own sets of 
-bugs.  This makes it much harder to work around bugs in them.
+I have made some sketches on a git-aware http protocol to deal with the 
+"idiot IT department-managed firewall" problem; however, I have not had 
+time to implement it.
 
 	-hpa
