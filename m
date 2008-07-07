@@ -1,95 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757070AbYGGS1O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756596AbYGGScR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757070AbYGGS1O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 14:27:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755078AbYGGS05
+	id S1756596AbYGGScR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 14:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754316AbYGGScA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 14:26:57 -0400
-Received: from daemonizer.de ([87.230.16.230]:39516 "EHLO daemonizer.de"
+	Mon, 7 Jul 2008 14:32:00 -0400
+Received: from lucidpixels.com ([75.144.35.66]:36314 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754306AbYGGS05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 14:26:57 -0400
-From: Maximilian Engelhardt <maxi@daemonizer.de>
-To: Pavel Machek <pavel@suse.cz>
-Subject: Re: 2.6.26-rc9: Reported regressions from 2.6.25
-Date: Mon, 7 Jul 2008 20:26:20 +0200
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>
-References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik> <alpine.LFD.1.10.0807060816070.3016@woody.linux-foundation.org> <20080707173708.GA3000@elf.ucw.cz>
-In-Reply-To: <20080707173708.GA3000@elf.ucw.cz>
+	id S1754026AbYGGSb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 14:31:59 -0400
+Date: Mon, 7 Jul 2008 14:31:57 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
+Subject: 12 Veliciraptors again w/x4 card (~1gbyte/sec aggregate read)!
+Message-ID: <alpine.DEB.1.10.0807071424100.4694@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2186059.qrZCnum4Zm";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200807072026.24727.maxi@daemonizer.de>
-X-Spam-Score: -4.1 (----)
-X-Spam-Report: No, hits=-4.1 required=5.0 tests=ALL_TRUSTED,AWL,BAYES_00 autolearn=ham version=3.2.3 
-	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	*  0.3 AWL AWL: From: address is in the auto white-list
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2186059.qrZCnum4Zm
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Each PCI-e x1 card has 1 veliciraptor on it now.
+Got an x4 card wit 4 sata ports:
 
-On Monday 07 July 2008, Pavel Machek wrote:
-> Hi!
->
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D10919
-> > > Subject		: [regression] display dimming is slow and laggy - Acer
-> > > Travelmate 661lci Submitter	: Maximilian Engelhardt
-> > > <maxi@daemonizer.de>
-> > > Date		: 2008-06-14 22:31 (23 days old)
-> > > References	: http://marc.info/?l=3Dlinux-kernel&m=3D121348428828320&w=
-=3D4
-> >
-> > I wonder if this one could be related. The 'nr_zones' overwriting bug
-> > would result in kswapd not reclaiming any memory asynchronously, so the
-> > kernel would basically be constantly under a low-memory situation, and
-> > processes would be forced to do synchronous reclaim.
-> >
-> > That, in turn, could easily explain laggy operation, especially if it is
-> > something bigger that needs to allocate new memory (not that I know if X
-> > dimming needs to, but I could imagine that it does some double buffering
-> > or whatever).
->
-> Hmm, but that would mean whole system is slow, right?
->
-> I'd bet this is ACPI EC problem...
+Not quite the > 1 gbyte/sec I was hoping for in regards to the reads
+but pretty close!
 
-I didn't notice anything that my system is slow. Also I think this patch go=
-t=20
-included in 2.6.26-rc9 but I still have this problem with it.
+(For my RAID5)
+Previously my write was limited to 400-420MiB/s now I see an additional
+120-125 MiB/s increase!
 
-Maxi
+jpiszcz@p34:/x/f$ dd if=/dev/zero of=bigfile bs=1M count=10240
+10240+0 records in
+10240+0 records out
+10737418240 bytes (11 GB) copied, 20.7054 s, 519 MB/s
+jpiszcz@p34:/x/f$ sync
+jpiszcz@p34:/x/f$ dd if=/dev/zero of=bigfile.1 bs=1M count=10240
+10240+0 records in
+10240+0 records out
+10737418240 bytes (11 GB) copied, 20.4973 s, 524 MB/s
+jpiszcz@p34:/x/f$ sync
+jpiszcz@p34:/x/f$ dd if=bigfile of=/dev/null bs=1M count=10240
+10240+0 records in
+10240+0 records out
+10737418240 bytes (11 GB) copied, 11.3529 s, 946 MB/s
+jpiszcz@p34:/x/f$ sync
+jpiszcz@p34:/x/f$ dd if=bigfile.1 of=/dev/null bs=1M count=10240
+10240+0 records in
+10240+0 records out
+10737418240 bytes (11 GB) copied, 11.2635 s, 953 MB/s
+jpiszcz@p34:/x/f$
 
---nextPart2186059.qrZCnum4Zm
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+--
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+For all disks:
 
-iEYEABECAAYFAkhyX80ACgkQOimwv528XGE/AQCg4PFguyy6ZGbfL/kOvJLbCGHb
-gJAAoNaDbrrmbbRVrocOY1HCXIasetwf
-=Ezmi
------END PGP SIGNATURE-----
+Something I noticed is the x1 PCI-e cards are doing around 68MiB/s each 
+for 3 of them where the x4 has no issue pumping out 100MiB/s+ without a 
+problem, however keep in mind the bus is probably already taxed from the 
+6 sata drives on the southbridge.
 
---nextPart2186059.qrZCnum4Zm--
+vmstat output:
+
+procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
+
+1 VR
+  0  1    160  45220 341772 6480468    0    0 122112     0  584 2082  1  7 73 20
+  0  1    160  46592 455436 6362088    0    0 113664     0  495 1968  0  4 74 21
+2 VR
+  1  1    160  45540 3027724 3720340    0    0 243216     0 1006 4030  0  9 74 17
+  0  2    160  44988 3262220 3480648    0    0 234480     0 1008 4134  0  8 73 19
+3 VR
+  1  2    160  44816 6600068  50476    0    0 330248    16 1342 4126  0 12 70 18
+  0  3    160  45440 6599812  50264    0    0 316032     8 1296 3878  0 12 72 17
+4 VR
+  0  4    160  44504 6602488  47644    0    0 495232     0 1992 6081  0 20 57 23
+  1  3    160  45500 6602796  45980    0    0 483968     0 1915 6207  0 20 54 26
+5 VR
+  1  5    160  43932 6602972  45304    0    0 606080     0 2375 6622  0 25 56 19
+  1  4    160  45412 6601852  45160    0    0 618756     0 2431 6791  0 25 53 21
+6 VR
+  0  6    160  45000 6602348  44512    0    0 683904     8 2746 7880  0 31 42 27
+  0  6    160  45248 6602028  44460    0    0 705792     0 2754 7564  0 31 45 24
+7 VR
+  2  6    160  46744 6599020  44688    0    0 748204    17 3042 9084  0 34 40 26
+  3  6    160  46592 6598824  44372    0    0 747520     8 2975 9047  1 33 31 36
+8 VR
+  2  7    160  46512 6598612  44580    0    0 761184    16 3089 9937  0 36 40 24
+  2  7    160  44528 6600392  44360    0    0 759720     8 2993 9522  0 36 36 28
+9 VR
+  2  8    160  47152 6596824  44572    0    0 767016     0 3075 9730  1 37 39 24
+  2  7    160  46576 6597728  44688    0    0 771200     0 3032 9568  0 37 40 23
+10 VR
+  0 10    160  45048 6598240  44428    0    0 889072     8 3599 11561  0 47 20 33
+  2 10    160  45232 6598116  44772    0    0 890112     0 3495 11547  0 46 23 31
+11 VR
+  4  8    160  45536 6594716  44600    0    0 996352     0 3947 12134  1 62 13 25
+  2  9    160  45348 6594912  44096    0    0 1009152     0 3949 11949  0 63 10 28
+12 VR
+  6  8    160  45092 6583136  47016    0    0 1063200     0 4187 12394  1 71  9 21
+  3 11    160  47080 6578492  47588    0    0 1058412     0 4224 12547  1 72  8 20
+
+Just about 1 gigabyte per second total aggregate read for all drives on a
+965 chipset!
+
+Justin.
