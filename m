@@ -1,77 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754369AbYGGOKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754224AbYGGOQc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754369AbYGGOKh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 10:10:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753403AbYGGOK3
+	id S1754224AbYGGOQc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 10:16:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753300AbYGGOQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 10:10:29 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:60142 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752911AbYGGOK2 (ORCPT
+	Mon, 7 Jul 2008 10:16:24 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:24432 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752979AbYGGOQX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 10:10:28 -0400
-Subject: Re: [Ksummit-2008-discuss] Delayed interrupt work, thread pools
-From: Chris Mason <chris.mason@oracle.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: benh@kernel.crashing.org, ksummit-2008-discuss@lists.linux-foundation.org,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Jeremy Kerr <jk@ozlabs.org>
-In-Reply-To: <1215007896.3330.6.camel@localhost.localdomain>
-References: <1214916335.20711.141.camel@pasglop>
-	 <486B0298.5030508@linux.intel.com> <1214977447.21182.33.camel@pasglop>
-	 <1215007896.3330.6.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 07 Jul 2008 10:09:16 -0400
-Message-Id: <1215439756.24425.21.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Mon, 7 Jul 2008 10:16:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=a7UUyUtrjmhlQFxSn7mRju4k7fct0QDNcocqb8D6RxGSapCNayqZGBHb2Yu0HWlhVD
+         5N6eDeTiPSZ5P+nFcf2QnSeukSEmMHT7zTOLgyIBmW8YEpj+Lmyz8aVVvtJKDjfoZjd5
+         7i/dAPqBqzR3GxADgAfi+NAJsibNFiY68wh2A=
+Message-ID: <e2e108260807070716k3a03bbbs120a249fc66ea90b@mail.gmail.com>
+Date: Mon, 7 Jul 2008 16:16:21 +0200
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "Jinkai Gao" <mickeygjk@gmail.com>
+Subject: Re: Suggestion: LKM should be able to add system call for itself
+Cc: linux-kernel@vger.kernel.org, "Arjan van de Ven" <arjan@infradead.org>,
+       "Jan Engelhardt" <jengelh@computergmbh.de>
+In-Reply-To: <fb82a8210807070536o3e6a1ed8ld05505b0d80112f3@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <fb82a8210807062209t6cfe3e46m50a11b577f0540e7@mail.gmail.com>
+	 <e2e108260807070140l3f8eaf06w7ee7e8a4ae42f2c2@mail.gmail.com>
+	 <fb82a8210807070536o3e6a1ed8ld05505b0d80112f3@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-02 at 09:11 -0500, James Bottomley wrote:
+On Mon, Jul 7, 2008 at 2:36 PM, Jinkai Gao <mickeygjk@gmail.com> wrote:
+> Why the number of system calls is growing? because the kernel is
+> growing. why we don't use the alternatives to implement the new need
+> for system calls? Because it doesn't make any sense. We can't ignore
+> the kernel modules' need for system calls just because they are
+> loadable.
 
-> If you really need the full scheduling capabilities of threads, then it
-> sounds like a threadpool is all you need (and we should just provide a
-> unified interface).
-> 
+Arjan and Jan have already explained in detail why adding system calls
+dynamically is troublesome.
 
-workqueues weren't quite right for btrfs either, where I need to be able
-to verify checksums after IO completes (among other things).  So I also
-ended up with a simple thread pool system that can add kthreads on
-demand.
-
-So, it sounds like we'd have a number of users for a unified interface.
-
-> Initially you were implying you'd prefer some type of non blockable
-> workqueue (i.e. a workqueue that shifts to the next work item when and
-> earlier item blocks).   I can see this construct being useful because it
-> would have easier to use semantics and be more lightweight than a full
-> thread spawn.  It strikes me we could use some of the syslets work to do
-> this ... all the queue needs is an "next activation head", which will be
-> the next job in the queue in the absence of blocking.  When a job
-> blocks, syslets informs the workqueue and it moves on to the work on the
-> "next activation head".  If a prior job unblocks, syslets informs the
-> queue and it moves the "next activation head" to the unblocked job.
-> What this is doing is implementing a really simple scheduler within a
-> single workqueue, which I'm unsure is actually a good idea since
-> schedulers are complex and tricky things, but it is probably worthy of
-> discussion.
-
-I have a few different users of the thread pools, and I ended up having
-to create a number of pools to avoid deadlocks between different types
-of operations on the same work list.  Ideas like the next activation
-head really sound cool, but the simplicity of just making dedicated
-pools to dedicated tasks is much much easier to debug.
-
-If the pools are able to resize themselves sanely, it should perform
-about the same as the fancy stuff ;)
-
--chris
-
-
+Bart.
