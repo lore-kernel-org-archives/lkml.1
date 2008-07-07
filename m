@@ -1,66 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754605AbYGGMDQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167AbYGGMD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754605AbYGGMDQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 08:03:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbYGGMDD
+	id S1755167AbYGGMD4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 08:03:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbYGGMDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 08:03:03 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:56527 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753189AbYGGMDC (ORCPT
+	Mon, 7 Jul 2008 08:03:46 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:38941 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752953AbYGGMDp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 08:03:02 -0400
-Date: Mon, 7 Jul 2008 13:02:18 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Martin Schwidefsky <schwidefsky@googlemail.com>, benh@kernel.crashing.org,
-       cotte@de.ibm.com, Zan Lynx <zlynx@acm.org>,
-       Ryan Hope <rmh3093@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Lockless/Get_User_Pages_Fast causes Xorg 1.4.99.* to lock
-In-Reply-To: <200807072139.48462.nickpiggin@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0807071245220.28196@blonde.site>
-References: <48f7fe350807032326l1d68c94l531e44c09693b989@mail.gmail.com>
- <200807071806.11630.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0807071134090.21480@blonde.site>
- <200807072139.48462.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 7 Jul 2008 08:03:45 -0400
+To: nickpiggin@yahoo.com.au
+CC: miklos@szeredi.hu, jamie@shareable.org, torvalds@linux-foundation.org,
+       jens.axboe@oracle.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, hugh@veritas.com
+In-reply-to: <200807072101.58963.nickpiggin@yahoo.com.au> (message from Nick
+	Piggin on Mon, 7 Jul 2008 21:01:58 +1000)
+Subject: Re: [patch 1/2] mm: dont clear PG_uptodate in invalidate_complete_page2()
+References: <20080625124038.103406301@szeredi.hu> <E1KFmuc-0001VS-RS@pomaz-ex.szeredi.hu> <E1KFniG-0001cS-Rb@pomaz-ex.szeredi.hu> <200807072101.58963.nickpiggin@yahoo.com.au>
+Message-Id: <E1KFpRL-0001pA-Aq@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 07 Jul 2008 14:03:31 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Mon, 7 Jul 2008, Nick Piggin wrote:
-> On Monday 07 July 2008 20:39, Hugh Dickins wrote:
-> > On Mon, 7 Jul 2008, Nick Piggin wrote:
-> > > I think we need a similar fix for s390 too. If so, then it really should
-> > > get into 2.6.26, but this late in the release, I hope an s390 maintainer
-> > > might be able to test and verify the fix?
-> >
-> > Wow, yes, I hadn't realized s390 is ahead of the game there: glad you're
-> > back to spot that.  But yes, we'd prefer maintainer to confirm and push.
-> >
-> >
-> > [PATCH]] s390: protect _PAGE_SPECIAL bit against mprotect
-> >
-> > Stop mprotect's pte_modify from wiping out the s390 pte_special bit, which
-> > caused oops thereafter when vm_normal_page thought X's abnormal was normal.
-> >
-> > Signed-off-by: Nick Piggin <npiggin@suse.de>
-> > Acked-by: Hugh Dickins <hugh@veritas.com>
-> 
-> Thanks, I feel silly to take the authorship of this before your x86
-> version gets in (and will likely not be credited if it is folded
-> before merging)
-> 
-> Martin, could you please credit Hugh for the debugging? :)
+> And it isn't just a fuse problem is it? Other places can invalidate
+> and truncate pages which might be spliced into a pipe, can't they?
 
-Oh, I'm more anxious for your fix to get to Linus than for credit
-to be fairly apportioned - we don't need an Oscar ceremony here!
+Yes.  There are several different problems here actually, and it's not
+completely clear how splice should handle them:
 
-But if Martin does choose to add credits, then it's Ryan's and
-Zan's x86 reports that should be credited - they did the hard work.
-I didn't mention them in the x86 patch because at that stage I was
-just making a wild guess that this might be the cause of their problems.
+Case 1: page is completely truncated while in the pipe
 
-Hugh
+  Currently splice() will detect this and return a short read count on
+  the splice-out.  Which sounds sane, and consistent with the fact
+  that a zero return value can happen on EOF.
+
+Case 2: page is partially truncated while in the pipe
+
+  Splice doesn't detect this, and returns the contents of the whole
+  page on splice-out, which will contain the zeroed-out part as well.
+  This is not so nice, but other than some elaborate COW schemes, I
+  don't see how this could be fixed.
+
+Case 3: page is invalidated while in the pipe
+
+  This can happen on pages in the middle of the file, and splice-out
+  can return a zero count.  This is *BAD*, callers of splice really
+  should be able to assume, that a zero return means EOF.
+
+Page invalidation (the invalidate_inode_pages2 kind) is done by only a
+few filesystems (FUSE, NFS, AFS, 9P), and by O_DIRECT hackery.  So
+case 3 only affects these, and only fuse can be re-exported by nfsd
+(and that's only in -mm yet), hence this is very unlikely to be hit
+for any of the others.
+
+But it's bad despite being rare, because once it hits it can cause
+data corruption (like with fuse/nfsd) and could be very hard to debug.
+OK, case 2 could also cause corruption if caller is not expecting it.
+
+Splice is a cool concept, but it isn't easy to get the implementation
+right...
+
+Miklos
