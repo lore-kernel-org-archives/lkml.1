@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755134AbYGGQTX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755839AbYGGQTg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755134AbYGGQTX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 12:19:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753562AbYGGQTN
+	id S1755839AbYGGQTg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 12:19:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754342AbYGGQTR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 12:19:13 -0400
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:44869 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753491AbYGGQTM (ORCPT
+	Mon, 7 Jul 2008 12:19:17 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:58856 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754096AbYGGQTQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 12:19:12 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=2GBpdmNlmeioRIydH2a4fC10tjAy0hmRnrwvshdZ11IDKYv3l+kKXn99nEXvMEc+/T2MM/YCVXu2kK0yerd0r6tjFOtTYsSCOaYKRH5iUnwk+HBud0SJFIu3o9hYx1U/BEkpQKMsMxxyeTd9Pc3FwAddoqRDwKq/Mbed9sBNNTc=  ;
-X-YMail-OSG: Mz19q0oVM1kbFUy8P5ejh_RCpRXnSV3ZM8PqRC3ZEw1BpuXlw6NcW5wFJB8OPQPwR.1YsvPH3j8kJKjWo3SkAlfv6Pajq5SDE6_gt8xTdYSJpK.Kx2TNS.nhVSd_xuWeNcA-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: [PATCH] fix build error of driver/mfd/tc6393xb.c
-Date: Mon, 7 Jul 2008 09:19:05 -0700
-User-Agent: KMail/1.9.9
-Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-References: <s5hiqvlc2ut.wl%tiwai@suse.de> <200807051013.10078.david-b@pacbell.net> <s5hr6a5vfpv.wl%tiwai@suse.de>
-In-Reply-To: <s5hr6a5vfpv.wl%tiwai@suse.de>
+	Mon, 7 Jul 2008 12:19:16 -0400
+Date: Mon, 7 Jul 2008 10:19:14 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Grant Grundler <grundler@parisc-linux.org>
+Cc: Michael Ellerman <michael@ellerman.id.au>, linux-pci@vger.kernel.org,
+       kaneshige.kenji@jp.fujitsu.com, mingo@elte.hu, tglx@linutronix.de,
+       davem@davemloft.net, dan.j.williams@intel.com,
+       Martine.Silbermann@hp.com, benh@kernel.crashing.org,
+       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>
+Subject: Re: [PATCH 1/4] PCI MSI: Store the number of messages in the msi_desc
+Message-ID: <20080707161914.GB14894@parisc-linux.org>
+References: <20080705132728.GO14894@parisc-linux.org> <1215264855-4372-1-git-send-email-matthew@wil.cx> <1215396324.19157.14.camel@localhost> <20080707024125.GU14894@parisc-linux.org> <1215402512.9862.16.camel@localhost> <20080707120418.GZ14894@parisc-linux.org> <20080707160203.GA7521@colo.lackof.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807070919.05305.david-b@pacbell.net>
+In-Reply-To: <20080707160203.GA7521@colo.lackof.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 07 July 2008, Takashi Iwai wrote:
+On Mon, Jul 07, 2008 at 10:02:03AM -0600, Grant Grundler wrote:
+> > -	if (!entry->dev || entry->msi_attrib.type != PCI_CAP_ID_MSI)
+> > +	if (!entry->dev || entry->msi_attrib.is_msix)
+> >  		return;
 > 
-> > The most natural fix is to have the Kconfig for PPC_MPC52xx
-> > select both GENERIC_GPIO and HAVE_GPIO_LIB.
+> This is why I don't like bit fields.
+> "uninitialized" (3rd state) doesn't exist.
+> Is there something else in place to catch that state?
 > 
-> Yes.  I, however, still feel uneasy by the fact that the combination
-> GENERIC_GPIO=n and HAVE_GPIO_LIB=y doesn't work.  We should either fix
-> it to work or disallow the combination.
+> (It's clearly a bug if someone did that and maybe I'm
+> being too paranoid.)
 
-As in, HAVE_GPIO_LIB depends on GENERIC_GPIO?  Fine with me;
-but I'm not sure that would work. Won't Kconfig gleefully let
-the "select" succeed but not select what it depends on?
+msi_descs are only allocated in two places, one of which sets is_msix
+and the other doesn't.  I wouldn't object to passing parameters to
+alloc_msi_entry() so there's only one place that fills in is_msix, but
+yes, I do think the current code is too paranoid.
 
-We already "disallow" that combination ... but we lack any
-automated way to enforce that.
-
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
