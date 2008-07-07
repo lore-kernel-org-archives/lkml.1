@@ -1,57 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754302AbYGGCpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754126AbYGGCxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754302AbYGGCpg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 22:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbYGGCp2
+	id S1754126AbYGGCxP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 22:53:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752310AbYGGCw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 22:45:28 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:41036 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752135AbYGGCp1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 22:45:27 -0400
-Date: Sun, 6 Jul 2008 20:45:26 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: linux-pci@vger.kernel.org, kaneshige.kenji@jp.fujitsu.com, mingo@elte.hu,
-       tglx@linutronix.de, davem@davemloft.net, dan.j.williams@intel.com,
-       Martine.Silbermann@hp.com, benh@kernel.crashing.org,
-       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>
-Subject: Re: [PATCH 2/4] PCI: Support multiple MSI
-Message-ID: <20080707024525.GV14894@parisc-linux.org>
-References: <20080705132728.GO14894@parisc-linux.org> <1215264855-4372-2-git-send-email-matthew@wil.cx> <1215396326.19157.15.camel@localhost>
+	Sun, 6 Jul 2008 22:52:58 -0400
+Received: from mail.gmx.net ([213.165.64.20]:45470 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752135AbYGGCw5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 22:52:57 -0400
+X-Authenticated: #476490
+X-Provags-ID: V01U2FsdGVkX1/l9Bh4HZ3lMHLz/MPS4t4bTIPrMcw6K6RxOZZRuA
+	rIo4f2xSJytDTv
+From: Oliver Endriss <o.endriss@gmx.de>
+Organization: ESCAPE GmbH EDV-Loesungen
+To: linux-dvb@linuxtv.org
+Subject: Re: [linux-dvb] [PATCH] Remove fdump tool for av7110 firmware
+Date: Mon, 7 Jul 2008 04:52:00 +0200
+User-Agent: KMail/1.9.6
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Klaus Schmidinger <Klaus.Schmidinger@cadsoft.de>,
+       kernelnewbies <kernelnewbies@nl.linux.org>,
+       kernel-janitors <kernel-janitors@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jaswinder Singh <jaswinder@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <1214139259.2994.8.camel@jaswinder.satnam> <48708BBF.9050400@cadsoft.de> <1215343022.10393.945.camel@pmac.infradead.org>
+In-Reply-To: <1215343022.10393.945.camel@pmac.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1215396326.19157.15.camel@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200807070452.02204@orion.escape-edv.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.57
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 07, 2008 at 12:05:25PM +1000, Michael Ellerman wrote:
-> On Sat, 2008-07-05 at 09:34 -0400, Matthew Wilcox wrote:
-> > Add the new API pci_enable_msi_block() to allow drivers to
-> > request multiple MSIs.  Reimplement pci_enable_msi in terms
-> > of pci_enable_msi_block.  Add a default implementation of
-> > arch_setup_msi_block() that only allows one MSI to be requested.
+David Woodhouse wrote:
+> On Sun, 2008-07-06 at 11:09 +0200, Klaus Schmidinger wrote:
+> > On 07/06/08 03:15, Oliver Endriss wrote:
+> > > Jaswinder Singh wrote:
+> > >> There's no point in this, since the user can use the BUILTIN_FIRMWARE
+> > >> option to include arbitrary firmware files directly in the kernel image.
+> > > 
+> > > NAK! This option allows to compile the firmware into the _driver_,
+> > > which is very useful if you want to test various driver/firmware
+> > > combinations. Having the firmware in the _kernel_ does not help!
+> > 
+> > I strongly support Oliver's request!
+> > Working with various driver versions is much easier with the
+> > firmware compiled into the driver!
 > 
-> I don't think you need arch_setup_msi_block() at all.
+> That's strange; I've found exactly the opposite to be the case. 
 > 
-> We already have an arch hook that takes a number of irqs, it's
-> arch_setup_msi_irqs(), plural. It also has the type passed to it (MSI or
-> MSI-X), so it can decide if it needs to allocate the irq numbers
-> contiguously.
+> If I want to test permutations of driver and firmware, as I've done for
+> the libertas driver a number of times, I find it _much_ better to
+> preserve the modularity. I can build each version of the driver and can
+> test that against various firmware versions without having to rebuild
+> it, and with much less chance of something going wrong so that I'm not
+> actually testing what I think I'm testing.
 > 
-> Or am I missing something?
+> Perhaps I'm missing something that would help me work better? Please
+> could you help me understand how you currently work, and I'll attempt to
+> make it easier for you. Can you talk me through an example of a session
+> where you had to do this testing of 'various driver/firmware
+> combinations'?
 
-I suppose I should audit the current implementors of arch_setup_msi_irqs
-(er, maybe that's just you?) to be sure that there's no assumption that
-MSI -> asked for one.  I'll look into doing it your way tomorrow (my
-timezone ;-)
+Note that the v4ldvb drivers can be configured and compiled outside the
+kernel tree. Basically I have several directory trees, for example
+- v4l-dvb_head
+- v4l-dvb_31dec2007_fw2622
+- v4l-dvb_31dec2007_fwf12623
+- ...
+
+Within these directories you can simply use "make menuconfig" to
+configure the driver. If you compile the firmware into the driver,
+you can easily freeze a 'known good' or 'known bad' configuration.
+
+Trying a different driver is as easy as changing directories.
+This simplifies testing.
+
+CU
+Oliver
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+----------------------------------------------------------------
+VDR Remote Plugin 0.4.0: http://www.escape-edv.de/endriss/vdr/
+----------------------------------------------------------------
