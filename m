@@ -1,79 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759085AbYGGWJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759428AbYGGWJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759085AbYGGWJY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 18:09:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030AbYGGWJH
+	id S1759428AbYGGWJi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 18:09:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755177AbYGGWJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 18:09:07 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:63300 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754502AbYGGWJG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 18:09:06 -0400
-Date: Mon, 7 Jul 2008 23:08:57 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Q] Is 64bit LVTT screwed
-In-Reply-To: <20080702184024.GC7003@cvg>
-Message-ID: <Pine.LNX.4.55.0807072243410.20615@cliff.in.clinika.pl>
-References: <20080702184024.GC7003@cvg>
+	Mon, 7 Jul 2008 18:09:10 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:43065 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755367AbYGGWJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 18:09:09 -0400
+Message-ID: <487293F8.30405@garzik.org>
+Date: Mon, 07 Jul 2008 18:08:56 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: David Miller <davem@davemloft.net>, mchan@broadcom.com,
+       dwmw2@infradead.org, bastian@waldi.eu.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] bnx2 - use request_firmware()
+References: <C27F8246C663564A84BB7AB34397724201E1494B50@IRVEXCHCCR01.corp.ad.broadcom.com>	<1215421413.3189.199.camel@shinybook.infradead.org>	<1215456981.5532.20.camel@dell>	<20080707.143803.99767036.davem@davemloft.net> <20080707221950.3dfba435@the-village.bc.nu>
+In-Reply-To: <20080707221950.3dfba435@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Jul 2008, Cyrill Gorcunov wrote:
-
-> while I'm in path of unification apic code I found a bit
-> strange code snippet
+Alan Cox wrote:
+>> Who in the world is going to actually want request_firmware() to find
+>> a firmware image other than the one which has been properly tested
+>> together with the driver by the driver maintainer?
 > 
-> apic_32.c
-> ---------
-> #define APIC_DIVISOR 16
-> static void __setup_APIC_LVTT(unsigned int clocks, int oneshot, int irqen)
-> {
-> 	...
-> 	if (!oneshot)
-> 		apic_write_around(APIC_TMICT, clocks / APIC_DIVISOR);
+> That misses the point, intentionally I am sure. In the majority of cases
+> the firmware doesn't change between releases so shipping a billion copies
+> of is a pain in the butt.
 > 
-> }
+>> What "use case" is there other than the desire to seperate out the
+>> firmware in order to skirt the legal issues?
 > 
-> apic_64.c
-> ---------
-> static void __setup_APIC_LVTT(unsigned int clocks, int oneshot, int irqen)
-> {
->         ...
-> 	if (!oneshot)
-> 		apic_write_around(APIC_TMICT, clocks);
-> }
+> Not shipping lots of copies
+> Not leaving crap locked in kernel memory when it isn't needed
+> Letting vendors issue firmware updates (which especially in enterprise
+> space is a big issue and right now gets messy with compiled in firmware)
+
+Do these benefits justify the removal of an actively used feature, one 
+more reliable than its replacement?
+
+
+>> I think it is, in fact, the driver maintainer's perogative of whether
+>> they want request_firmware() to be supported by their driver or not.
+>> It is they who have to deal with any possible fallout.
 > 
-> but in both cases we use "divide by 16" in divide register. The only
-> explanation I imagine - for 64bit mode we are required to 'stuck'
-> for a bit longer (by 16 times longer to be precise). Am I right?
-> Or there is another reason why we dont use APIC_DIVISOR here. Actually,
-> as I see it not fair to a caller. For 64bit mode APIC timer is requested
-> to count 250000000 ticks but in real it will count 250000000 * 16.
-> Not sure who is right there. I think the better would be to
-> use 4000000000 and APIC_DIVISOR in 64bit mode. How do you think?
+> And their users and the distributors for whom it can cause enormous pain.
 
- The APIC clock varies across systems so the timer setup includes
-calibration.  Which means both variations end up with the correct
-interrupt rate probably, except using different divisors.  We used to
-print the APIC clock rate and that would be off with one of the above, but
-I don't we do this anymore.  We had a similar problem with the 82489DX
-where the prescaler was bypassed altogether resulting in an incorrect 
-clock rate printed, but the rate of timer interrupt was correctly 
-calibrated regardless.
+Where is this enormous pain associated with tg3's compiled-in firmware? 
+  It's been quite convenient.
 
- This is of course merely an explanation why the code you quoted does not
-explode spectacularly.  It does not make it correct.  If the prescaler is
-indeed set to 16 for 64-bit systems, then APIC_DIVISOR should obviously be
-used in the calculation above too.  And if not, then I think the prescaler 
-should be set consistently across systems and then the setting reflected 
-in the calculations accordingly.  Please note that only values between 2 
-and 16 are supported in a uniform way across all the APIC models and using 
-low values risks an overflow as clock rates are in the GHz range these 
-days already.  The value of 16 seems a reasonable one.
+	Jeff
 
-  Maciej
+
+
