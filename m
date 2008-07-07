@@ -1,121 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756079AbYGGWgb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756273AbYGGWiP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756079AbYGGWgb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 18:36:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754034AbYGGWgY
+	id S1756273AbYGGWiP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 18:38:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbYGGWiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 18:36:24 -0400
-Received: from outbound-mail-26.bluehost.com ([69.89.17.191]:35949 "HELO
-	outbound-mail-26.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754030AbYGGWgY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 18:36:24 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: tcamuso@redhat.com
-Subject: Re: bfsort whitelist patch apparently applied twice
-Date: Mon, 7 Jul 2008 15:36:12 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       "Schoeller, Patrick (Linux - Houston, TX)" <Patrick.Schoeller@hp.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-References: <48722996.4050601@redhat.com> <200807070959.51789.jbarnes@virtuousgeek.org> <48725BEA.3090203@redhat.com>
-In-Reply-To: <48725BEA.3090203@redhat.com>
+	Mon, 7 Jul 2008 18:38:00 -0400
+Received: from OSB1387.piap.pl ([195.187.100.11]:60639 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754040AbYGGWh7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 18:37:59 -0400
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Uwe =?iso-8859-2?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>,
+       Oliver Neukum <oliver@neukum.org>,
+       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [RFC] MAINTAINERS service, was: Re: alphabetic ordering of MAINTAINERS
+References: <20080704063455.GA13999@digi.com>
+	<200807040852.27809.oliver@neukum.org>
+	<m3k5g1zv3u.fsf_-_@maximus.localdomain>
+	<20080704134426.GA32700@digi.com> <m37ic1zqqp.fsf@maximus.localdomain>
+	<487217E1.2040205@s5r6.in-berlin.de>
+	<m3r6a5il2m.fsf@maximus.localdomain>
+	<48726BF6.8020308@s5r6.in-berlin.de>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Tue, 08 Jul 2008 00:37:55 +0200
+In-Reply-To: <48726BF6.8020308@s5r6.in-berlin.de> (Stefan Richter's message of "Mon\, 07 Jul 2008 21\:18\:14 +0200")
+Message-ID: <m37ibxl3r0.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807071536.12651.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok, I sent off the pull request to Linus; we'll have to be careful about 
-having multiple versions of the same fix floating around in the future.
+Stefan Richter <stefanr@s5r6.in-berlin.de> writes:
 
-Thanks,
-Jesse
-
-On Monday, July 07, 2008 11:09 am Tony Camuso wrote:
-> Yes, that fixes it.
+>> Unfortunately we can't enforce that. People are working with old
+>> kernels (think of heavily-modified vendor trees), people send patches
+>> against old kernels, and we accept such patches (if it makes sense,
+>> of course).
 >
-> Thanks, Jesse.
+> If I get such patches and can apply them without /very/ much work, I
+> gladly take them of course too.
 >
-> Regards,
-> Tony
->
-> Jesse Barnes wrote:
-> > On Monday, July 07, 2008 7:35 am Tony Camuso wrote:
-> >> In the most recent pull from Linus' tree, I see that the patch
-> >> I submitted on 14-May-2008 was merged twice in the git log.
-> >>
-> >>   commits: a16b4bcd31a73a81b6d2b8ffa6b5f6ed01cf6d64
-> >>       and: a1676072558854b95336c8f7db76b0504e909a0a
-> >>
-> >> The result is that now the DL360 and DL380 are whitelisted twice
-> >> and the DL385 G2 and DL585 G2 are not whitelisted at all!
-> >>
-> >> Can one of these redundant commits be backed out?
-> >
-> > Hm, seems like this should have created a conflict since there was some
-> > actual context (#ifdef __i386__) in the patch?  Ah I see, it looks like
-> > the one that came in through Ingo & Thomas,
-> > a1676072558854b95336c8f7db76b0504e909a0a, modified the end of the list,
-> > while the one that I sent upstream,
-> > 8d64c781f0c5fbfdf8016bd1634506ff2ad1376a, modified the entry above #ifdef
-> > __i386__.  That's unfortunate.
-> >
-> > Here's what I've got, look ok?
-> >
-> > Thanks,
-> > Jesse
-> >
-> > From a86744c1d60b2bc2a575de48672f6f6c15c0411f Mon Sep 17 00:00:00 2001
-> > From: Jesse Barnes <jbarnes@hobbes.(none)>
-> > Date: Mon, 7 Jul 2008 09:55:26 -0700
-> > Subject: [PATCH] Revert "PCI: Correct last two HP entries in the bfsort
-> > whitelist"
-> >
-> > This reverts commit a1676072558854b95336c8f7db76b0504e909a0a.  It
-> > duplicates the change from 8d64c781f0c5fbfdf8016bd1634506ff2ad1376a and
-> > only one should be applied, otherwise some of the Dell quirks are lost.
-> >
-> > Thanks to Tony Camuso for catching this.
-> >
-> > Acked-by: Tony Camuso <tcamuso@redhat.com>
-> > Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-> > ---
-> >  arch/x86/pci/common.c |    8 ++++----
-> >  1 files changed, 4 insertions(+), 4 deletions(-)
-> >
-> > diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
-> > index 940185e..6e64aaf 100644
-> > --- a/arch/x86/pci/common.c
-> > +++ b/arch/x86/pci/common.c
-> > @@ -328,18 +328,18 @@ static struct dmi_system_id __devinitdata
-> > pciprobe_dmi_table[] = { #endif
-> >  	{
-> >  		.callback = set_bf_sort,
-> > -		.ident = "HP ProLiant DL360",
-> > +		.ident = "HP ProLiant DL385 G2",
-> >  		.matches = {
-> >  			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
-> > -			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant DL360"),
-> > +			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant DL385 G2"),
-> >  		},
-> >  	},
-> >  	{
-> >  		.callback = set_bf_sort,
-> > -		.ident = "HP ProLiant DL380",
-> > +		.ident = "HP ProLiant DL585 G2",
-> >  		.matches = {
-> >  			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
-> > -			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant DL380"),
-> > +			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant DL585 G2"),
-> >  		},
-> >  	},
-> >  	{}
+> But these are not the people anyway to which this maintainers lookup
+> service would be targeted to.
 
+They, too. Why not?
 
+> As I see it, the people who want such a
+> service are those who frequently send patches for various different
+> areas of the kernel.
+
+Sure, they too.
+
+> (OTOH, occasional posters who don't even check if their patch would
+> apply to a newer kernel too before they post it will probably also
+> have less interest in figuring out the 100% optimum To: and Cc: list
+> for their submission.
+
+And less skills. Though they would manage a single patch submission
+address I guess.
+
+>  A "tell me a list of mail addresses; whatever
+> you give me, I am not really interested in the particulars" service
+> would not be an appropriate tool for these people.)
+
+I think it would. Why not?
+
+> Not at all.  These are the forums where patches can be discussed in
+> more detail because knowledgeable people are subscribed there.  You
+> also have archives which you can query for patch postings and their
+> discussions.
+
+Same here, except that it would be easier = "faster" and/or
+"possible". "Faster" for regular kernel contributors and "possible"
+for many occasional ones.
+
+> What you don't get is of course a unified "look and feel".  Some list
+> archives are crap, some lists are subscriber-only, some kernel areas
+> are not covered by a special list.
+
+Not the most important points IMHO but yes, that too.
+
+> But the latter problem won't
+> really go away with the proposed maintainers lookup service.
+
+Well, I think it should. Why not?
+I don't say we replace mailing lists, far from it.
+I expect mailing lists to be subscribed to the service.
+
+Come on, the theory looks good but the thing needs to be created and
+_that_ may be the weak spot :-)
+-- 
+Krzysztof Halasa
