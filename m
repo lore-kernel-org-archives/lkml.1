@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755460AbYGGMNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755560AbYGGMN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755460AbYGGMNL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 08:13:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753344AbYGGMM6
+	id S1755560AbYGGMN7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 08:13:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753344AbYGGMNw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 08:12:58 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:63601 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753102AbYGGMM5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 08:12:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:references:date:in-reply-to:message-id
-         :user-agent:mime-version:content-type;
-        b=fzuzYknGHslUSCDRIZfHeDaY6URjB/66hB7Ht7OTmIwC0nVWG/HyvPXrsH1cTglwSd
-         64os7USTP8D9PFM5t+vgiwtQW75vGWuiWbVu7Q0P4SLjTQbcENNfXiV5CUMLEiBDX+XQ
-         uzHDf9Yc9woCxyZKBJeE/wZQ3zoKUM3BOL900=
-From: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] Introduce copy_user_handle_tail routine
-References: <m37icazgt0.fsf@gravicappa.englab.brq.redhat.com>
-	<alpine.LFD.1.10.0806281108240.4371@hp.linux-foundation.org>
-	<m3lk0ngdo5.fsf@gravicappa.englab.brq.redhat.com>
-	<alpine.LFD.1.10.0806300835220.28533@hp.linux-foundation.org>
-	<m3fxqsjt22.fsf_-_@gravicappa.englab.brq.redhat.com>
-	<486B8B6C.2050109@firstfloor.org>
-	<m37ic4jr2w.fsf@gravicappa.englab.brq.redhat.com>
-	<alpine.LFD.1.10.0807021930470.18105@woody.linux-foundation.org>
-	<m34p71yjyx.fsf@gravicappa.englab.brq.redhat.com>
-Date: Mon, 07 Jul 2008 14:12:56 +0200
-In-Reply-To: <m34p71yjyx.fsf@gravicappa.englab.brq.redhat.com> (Vitaly
-	Mayatskikh's message of "Mon, 07 Jul 2008 14:09:10 +0200")
-Message-ID: <m3zlotx587.fsf@gravicappa.englab.brq.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 7 Jul 2008 08:13:52 -0400
+Received: from nn7.de ([85.214.94.156]:49032 "EHLO nn7.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753133AbYGGMNv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 08:13:51 -0400
+Subject: 2.6.26-rc9: isight firmware loading not working...
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 07 Jul 2008 14:13:40 +0200
+Message-Id: <1215432820.5587.33.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vitaly Mayatskikh <v.mayatskih@gmail.com> writes:
+Hi,
 
->> one), by limiting the byte-for-byte one to be within a page, but that 
->> would be a "future enhancement" thing.
->
-> Btw, how much does it cost to CPU to do a fault? Can it be compared with
-> average time of find_vma()?
+when I boot up I see in dmesg
 
-Remark: this is for preventing fault in memset, not byte-to-byte copy.
+firmware: requesting isight.fw
+usbcore: registered new interface driver isight_firmware
 
--- 
-wbr, Vitaly
+But then also on lsusb -v | grep -i isight
+
+Bus 001 Device 003: ID 05ac:8300 Apple, Inc. Built-in iSight (no firmware loaded)
+  idProduct          0x8300 Built-in iSight (no firmware loaded)
+
+So how is this supposed to work?
+
+Is the firmware corrupt - I freshly extracted it as was written in the source?
+
+ll /lib/firmware/isight.fw 
+-rw-r--r-- 1 root root 11K 2008-06-21 12:30 /lib/firmware/isight.fw
+
+$ md5sum /lib/firmware/isight.fw
+6d4b6764538e85ab9e7e15ed21b7a60c  /lib/firmware/isight.fw
+
+
+Thanks,
+Soeren
