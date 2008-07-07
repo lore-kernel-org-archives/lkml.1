@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757550AbYGGXIP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756338AbYGGXKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757550AbYGGXIP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 19:08:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbYGGXIA
+	id S1756338AbYGGXKZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 19:10:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbYGGXKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 19:08:00 -0400
-Received: from gate.crashing.org ([63.228.1.57]:40865 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753980AbYGGXH7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 19:07:59 -0400
-Subject: Re: Multiple MSI
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Grant Grundler <grundler@parisc-linux.org>
-Cc: Matthew Wilcox <matthew@wil.cx>, linux-pci@vger.kernel.org,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       David Miller <davem@davemloft.net>,
-       Dan Williams <dan.j.williams@intel.com>, Martine.Silbermann@hp.com,
-       linux-kernel@vger.kernel.org, Michael Ellerman <michaele@au1.ibm.com>
-In-Reply-To: <20080707161703.GB7521@colo.lackof.org>
-References: <20080703024445.GA14894@parisc-linux.org>
-	 <1215055469.21182.70.camel@pasglop> <20080707161703.GB7521@colo.lackof.org>
-Content-Type: text/plain
-Date: Tue, 08 Jul 2008 09:06:34 +1000
-Message-Id: <1215471994.8970.168.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Jul 2008 19:10:08 -0400
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:20250 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754351AbYGGXKH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 19:10:07 -0400
+From: Andi Kleen <andi@firstfloor.org>
+Message-Id: <20080708110.487722491@firstfloor.org>
+To: x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [0/10] Use 64bit x86 machine check code for 32bit too v2
+Date: Tue,  8 Jul 2008 01:10:02 +0200 (CEST)
+X-OriginalArrivalTime: 07 Jul 2008 23:02:38.0807 (UTC) FILETIME=[8D6D1E70:01C8E085]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-07-07 at 10:17 -0600, Grant Grundler wrote:
-> The drivers have to deal with the limitations of the HW spec.
-> In this case it means they have to know they are getting power of 2
-> number of interrupts. I think exposing this in the API is a requirement
-> and not optional.
 
-Ugh ?
+This patchkit uses the 64bit machine check code which is better in many
+ways on 32bit x86 too. This is also the basis for some future machine
+check work.
 
-The number of interrupts isn't what I was talking about, but the
--alignment- was. ie, the driver should make no assumption that the
-irq numbers it will obtain will be aligned to a power-of-two.
+The 64bit machine check code is in many ways much better than 
+the 32bit machine check code: it is more specification compliant,
+is cleaner, only has a single code base versus one per CPU, 
+has better infrastructure for recovery, has a cleaner way to communicate
+with user space etc. etc.
 
-Cheers,
-Ben.
+It requires testing especially on older systems (on newer
+ones it should be already tested well in 64bit systems). 
 
+The patchkit contains several parts:
+- It ports over a few needed quirks (for older Intel and older
+AMD CPUs) to the 64bit kernel.
+- It changes the 64bit code to be 32bit clean in its data structures
+(mostly just unsigned long -> u64 where needed) 
+- It drops some unused functionality that cannot be easily implemented on 32bit
+and didn't seem worth ifdefing
+
+Tested by doing some software level error injection on a few
+different machines
+
+I request this code is merged into the appropiate tree for linux-next
+for wider testing. It's not .27 ready, but hopefully .28, but it requires
+wider exposure now.
+
+v2: Fix compilation problems noted by hpa in some configurations
+    Fix strict_strtoul() conversion
+
+-Andi 
 
