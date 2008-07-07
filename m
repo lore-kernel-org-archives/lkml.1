@@ -1,112 +1,252 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbYGGSHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbYGGSID@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756705AbYGGSHk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 14:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754479AbYGGSHb
+	id S1755044AbYGGSID (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 14:08:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbYGGSHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 14:07:31 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34046 "EHLO ogre.sisk.pl"
+	Mon, 7 Jul 2008 14:07:51 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:45864 "EHLO mail.atlantis.sk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754431AbYGGSH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 14:07:29 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH 2/2] acpi: Disable IRQ 0 through I/O APIC for some HP systems
-Date: Mon, 7 Jul 2008 20:09:32 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Ingo Molnar <mingo@elte.hu>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-next@vger.kernel.org, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
-References: <Pine.LNX.4.55.0807010055070.30785@cliff.in.clinika.pl> <200807071428.53598.rjw@sisk.pl> <Pine.LNX.4.55.0807071743280.20615@cliff.in.clinika.pl>
-In-Reply-To: <Pine.LNX.4.55.0807071743280.20615@cliff.in.clinika.pl>
+	id S1756746AbYGGSHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 14:07:50 -0400
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Alan Cox <alan@redhat.com>
+Subject: Re: pata_it821x completely broken
+Date: Mon, 7 Jul 2008 20:07:38 +0200
+User-Agent: KMail/1.9.9
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+References: <200807042153.56644.linux@rainbow-software.org> <200807062350.35650.linux@rainbow-software.org> <20080706230118.GA25905@devserv.devel.redhat.com>
+In-Reply-To: <20080706230118.GA25905@devserv.devel.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807072009.33513.rjw@sisk.pl>
+Message-Id: <200807072007.40818.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 7 of July 2008, Maciej W. Rozycki wrote:
-> On Mon, 7 Jul 2008, Rafael J. Wysocki wrote:
-> 
-> > BTW, did you even to look at the code _as_ _is_ in linux-next?
-> 
->  Well, I hope it has not changed too much since my recent work in this 
-> area...
+On Monday 07 July 2008 01:01:18 Alan Cox wrote:
+> On Sun, Jul 06, 2008 at 11:50:33PM +0200, Ondrej Zary wrote:
+> > Thanks, it does not complain about HPA anymore. However, there are some
+> > error messages left. I thought that they were connected with the HPA, but
+> > obviously they aren't:
+>
+> FLUSH_CACHE .. I would hope the firmware supports that if advertised. If so
+> then adding it to the switch in it821x_smart_qc_issue might do the trick
+> (ATA_CMD_FLUSH and ATA_CMD_FLUSH_EXT). I'd be interested to know if your
+> firmware seems to support that or whether the entire thing goes castors up
+> if it gets through.
 
-Please look at it.
+It breaks - I get more errors and it takes ages to reboot. Looks like the 
+firmware does not like that command. I don't believe that it's so stupid - is 
+it even possible to safely turn off the machine when neither FLUSH nor STOP 
+command can be issued?
 
-> > In fact, it is _impossible_ that either apic1 or pin1 are equal to -1 at this
-> > point, because of this part:
-> 
->  With the workaround activated it is virtually certain.
+sd 2:0:0:0: [sdb] Synchronizing SCSI cache
+ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata3.00: status: { DRDY }
+ata3: port is slow to respond, please be patient (Status 0xd0)
+ata3: device not ready (errno=-16), forcing hardreset
+ata3: soft resetting link
+ata3.00: configured for DMA
+ata3: EH complete
+ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata3.00: status: { DRDY }
+ata3: port is slow to respond, please be patient (Status 0xd0)
+ata3: device not ready (errno=-16), forcing hardreset
+ata3: soft resetting link
+ata3.00: configured for DMA
+ata3: EH complete
+ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata3.00: status: { DRDY }
+ata3: port is slow to respond, please be patient (Status 0xd0)
+ata3: device not ready (errno=-16), forcing hardreset
+ata3: soft resetting link
+ata3.00: configured for DMA
+ata3: EH complete
+ata3.00: limiting speed to UDMA/133:PIO6
+ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata3.00: status: { DRDY }
+ata3: port is slow to respond, please be patient (Status 0xd0)
+ata3: device not ready (errno=-16), forcing hardreset
+ata3: soft resetting link
+ata3.00: configured for DMA
+ata3: EH complete
+ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata3.00: status: { DRDY }
+ata3: port is slow to respond, please be patient (Status 0xd0)
+ata3: device not ready (errno=-16), forcing hardreset
+ata3: soft resetting link
+ata3.00: configured for DMA
+ata3: EH complete
+ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata3.00: status: { DRDY }
+ata3: port is slow to respond, please be patient (Status 0xd0)
+ata3: device not ready (errno=-16), forcing hardreset
+ata3: soft resetting link
+ata3.00: configured for DMA
+ata3: EH complete
+sd 2:0:0:0: [sdb] 781422768 512-byte hardware sectors (400088 MB)
+sd 2:0:0:0: [sdb] Write Protect is off
+sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support 
+DPO or FUA
+sd 2:0:0:0: [sdb] 781422768 512-byte hardware sectors (400088 MB)
+sd 2:0:0:0: [sdb] Write Protect is off
+sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support 
+DPO or FUA
+ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata3.00: status: { DRDY }
+ata3: port is slow to respond, please be patient (Status 0xd0)
+ata3: device not ready (errno=-16), forcing hardreset
+ata3: soft resetting link
+ata3.00: configured for DMA
+ata3: EH complete
+ata3.00: limiting speed to UDMA/33:PIO6
+ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata3.00: status: { DRDY }
+ata3: port is slow to respond, please be patient (Status 0xd0)
+ata3: device not ready (errno=-16), forcing hardreset
+ata3: soft resetting link
+ata3.00: configured for DMA
+ata3: EH complete
+ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata3.00: status: { DRDY }
+ata3: port is slow to respond, please be patient (Status 0xd0)
+ata3: device not ready (errno=-16), forcing hardreset
+ata3: soft resetting link
+ata3.00: configured for DMA
+ata3: EH complete
+ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata3.00: status: { DRDY }
+ata3: port is slow to respond, please be patient (Status 0xd0)
+ata3: device not ready (errno=-16), forcing hardreset
+ata3: soft resetting link
+ata3.00: configured for DMA
+ata3: EH complete
+ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata3.00: status: { DRDY }
+ata3: port is slow to respond, please be patient (Status 0xd0)
+ata3: device not ready (errno=-16), forcing hardreset
+ata3: soft resetting link
+ata3.00: configured for DMA
+ata3: EH complete
+ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata3.00: status: { DRDY }
+ata3: port is slow to respond, please be patient (Status 0xd0)
+ata3: device not ready (errno=-16), forcing hardreset
+ata3: soft resetting link
+ata3.00: configured for DMA
+ata3: EH complete
+sd 2:0:0:0: [sdb] 781422768 512-byte hardware sectors (400088 MB)
+sd 2:0:0:0: [sdb] Write Protect is off
+sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support 
+DPO or FUA
+sd 2:0:0:0: [sdb] 781422768 512-byte hardware sectors (400088 MB)
+sd 2:0:0:0: [sdb] Write Protect is off
+sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support 
+DPO or FUA
+ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata3.00: status: { DRDY }
+ata3: port is slow to respond, please be patient (Status 0xd0)
+ata3: device not ready (errno=-16), forcing hardreset
+ata3: soft resetting link
+ata3.00: configured for DMA
+ata3: EH complete
+ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata3.00: status: { DRDY }
+ata3: port is slow to respond, please be patient (Status 0xd0)
+ata3: device not ready (errno=-16), forcing hardreset
+ata3: soft resetting link
+ata3.00: configured for DMA
+ata3: EH complete
+ata3.00: limiting speed to PIO6
+ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata3.00: status: { DRDY }
+ata3: port is slow to respond, please be patient (Status 0xd0)
+ata3: device not ready (errno=-16), forcing hardreset
+ata3: soft resetting link
+ata3.00: configured for DMA
+ata3: EH complete
+ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata3.00: status: { DRDY }
+ata3: port is slow to respond, please be patient (Status 0xd0)
+ata3: device not ready (errno=-16), forcing hardreset
+ata3: soft resetting link
+ata3.00: configured for DMA
+ata3: EH complete
+ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata3.00: status: { DRDY }
+ata3: port is slow to respond, please be patient (Status 0xd0)
+ata3: device not ready (errno=-16), forcing hardreset
+ata3: soft resetting link
+ata3.00: configured for DMA
+ata3: EH complete
+ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata3.00: status: { DRDY }
+ata3: port is slow to respond, please be patient (Status 0xd0)
+ata3: device not ready (errno=-16), forcing hardreset
+ata3: soft resetting link
+ata3.00: configured for DMA
+ata3: EH complete
+sd 2:0:0:0: [sdb] 781422768 512-byte hardware sectors (400088 MB)
+sd 2:0:0:0: [sdb] Write Protect is off
+sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support 
+DPO or FUA
+sd 2:0:0:0: [sdb] 781422768 512-byte hardware sectors (400088 MB)
+sd 2:0:0:0: [sdb] Write Protect is off
+sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support 
+DPO or FUA
+sd 2:0:0:0: [sdb] Result: hostbyte=0x00 driverbyte=0x08
+sd 2:0:0:0: [sdb] Sense Key : 0xb [current] [descriptor]
+sd 2:0:0:0: [sdb] ASC=0x0 ASCQ=0x0
+Restarting system.
+machine restart
 
-Which workaround?
 
-There are no any workarounds related to this problem in the 20080704 linux-next
-and that's what my patch was against.
 
-> > 	/*
-> > 	 * Some BIOS writers are clueless and report the ExtINTA
-> > 	 * I/O APIC input from the cascaded 8259A as the timer
-> > 	 * interrupt input.  So just in case, if only one pin
-> > 	 * was found above, try it both directly and through the
-> > 	 * 8259A.
-> > 	 */
-> > 	if (pin1 == -1) {
-> > 		pin1 = pin2;
-> > 		apic1 = apic2;
-> > 		no_pin1 = 1;
-> > 	} else if (pin2 == -1) {
-> > 		pin2 = pin1;
-> > 		apic2 = apic1;
-> > 	}
-> > 
-> > that originates from your patch.
-> 
->  And the conclusion is?  If we leave MP-table setups aside as irrelevant
-> for this configuration, we can be almost certain apic2 and pin2 are both
-> equal to -1 at this point.  This is because (unlike the MP table) ACPI has
-> no provisions in its tables for ExtINTA APIC interrupt inputs.  Therefore
-> the only case apic2 and pin2 may not be equal -1 here is when the firmware
-> had set up one of the inputs as such in the hardware before initiating
-> bootstrap which has been subsequently noted by a piece of code in
-> enable_IO_APIC() which examines the I/O APIC for such a condition.
-> 
->  I have taken these circumstances very much into account when preparing
-> the workaround, based on the assumption that if the firmware has set up an
-> I/O APIC line as an ExtINTA interrupt, then it means it considers it
-> suitable to use in such a manner.  This furthermore implies the line
-> should be safe to be used in any valid 8259A mode of operation, such as
-> one we use to forward IRQ0 transparently through the 8259A (we
-> double-check it just in case though, as workarounds for hardware bugs in
-> the past made it not always true).  The workaround therefore applies to
-> genuine IRQ0 routing as reported by ACPI only and not any possible legacy
-> ExtINTA fallback that we may attempt to use.
-> 
->  Of course, as determined previously, the ExtINTA line is not safe to be
-> used on your box, but it has not been set up by the firmware as an ExtINTA
-> interrupt either, so the assumption mentioned above remains valid and has
-> no negative impact on your system.  At this point all of apic1, apic2,
-> pin1 and pin2 should be equal -1, which means the reassignments you quoted
-> make no changes to the variables.
-> 
-> > End even without this part apic1 and pin1 are _not_ equal to -1 on this box
-> > (apic2 and pin2 are, but that's a different matter).
-> 
->  Which means the workaround has not triggered and the rest of cosideration 
-> is therefore irrelevant.  Please get us these DMI IDs, so that we can see 
-> what's wrong with the quirk.
+>
+> Alan
 
-I used those DMI IDs and your quirk didn't work, even after removing the
-dependency of acpi_dmi_table[] from __i386__.  For this reason, I prepared an
-alternative patch that did work and posted it for your information.
 
-Now, you're saying that my patch couldn't work, while in fact it did.
 
-Thanks,
-Rafael
+-- 
+Ondrej Zary
