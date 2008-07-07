@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbYGGSf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbYGGSfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756178AbYGGSf1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 14:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbYGGSfT
+	id S1756916AbYGGSfl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 14:35:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754691AbYGGSfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 14:35:19 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54371 "EHLO
+	Mon, 7 Jul 2008 14:35:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49850 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754351AbYGGSfS (ORCPT
+	by vger.kernel.org with ESMTP id S1754395AbYGGSfS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 7 Jul 2008 14:35:18 -0400
-Message-ID: <48726158.9010308@linux-foundation.org>
-Date: Mon, 07 Jul 2008 13:32:56 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+Date: Mon, 7 Jul 2008 11:34:16 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Matt Mackall <mpm@selenic.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>, torvalds@linuxfoundation.org,
+       akpm@linuxfoundation.org, linux-kernel@vger.kernel.org,
+       Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: *sigh* /proc/*/pagemap
+In-Reply-To: <1215454997.11311.165.camel@calx>
+Message-ID: <alpine.LFD.1.10.0807071130540.11076@woody.linux-foundation.org>
+References: <b6fcc0a0807041807p24cce461m419d7b54fce72d34@mail.gmail.com>  <20080704185312.052e7145.akpm@linux-foundation.org>  <alpine.LFD.1.10.0807051036000.2815@woody.linux-foundation.org> <1215454997.11311.165.camel@calx>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Dave Hansen <haveblue@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH] Make CONFIG_MIGRATION available for s390
-References: <1215354957.9842.19.camel@localhost.localdomain>	 <4872319B.9040809@linux-foundation.org>	 <1215451689.8431.80.camel@localhost.localdomain>	 <48725480.1060808@linux-foundation.org> <1215455148.8431.108.camel@localhost.localdomain>
-In-Reply-To: <1215455148.8431.108.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gerald Schaefer wrote:
-> On Mon, 2008-07-07 at 12:38 -0500, Christoph Lameter wrote:
->> How does the compile break? It may be better to fix this where the function
->> is used.
+
+
+On Mon, 7 Jul 2008, Matt Mackall wrote:
 > 
-> Good point, I did not look into this deep enough and tried to fix the
-> symptoms instead of the cause. There are two locations where the compile
-> breaks:
-> - mm/migrate.c: migrate_vmas() does not know vm_ops->migrate()
+> It exists to make the VM stop being a big black box. Before now the VM
+> exposed little beyond statistics, many of which are basically
+> meaningless (RSS?). With pagemap, you can actually see precisely where
+> things are getting allocated, how they're getting shared, etc. Think
+> NUMA, think cell phones.
 
-I think you just need to move the #endif from before migrate_vmas to the end (as you already suggested). Then migrate_vmas will no longer be compiled for the NUMA case. migrate_vmas() was added later and was not placed correctly it seems.
+Umm. How about setting it under CONFIG_DEBUG_VM or something like that 
+then?
 
+Right now it's not even _asked_ about, unless you're EMBEDDED, and 
+defaults to 'y'. Which means that it has all the downsides, an none of the 
+upsides, for 99.99% of all users.
 
-> - inlcude/linux/migrate.h: vma_migratable() does not know policy_zone
-
-Again here you would have to add a new function.
-
-vma_policy_migratable() should only be available for CONFIG_NUMA.
-
-vma_migratable (without policy_zone check!) should be available if CONFIG_MIGRATION is on.
-Not sure if we need such a test. If not then just make sure that vma_migratable() is
-not included for the !NUMA case.
-
-
-
+			Linus
