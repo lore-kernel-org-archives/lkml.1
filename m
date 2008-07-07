@@ -1,74 +1,433 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbYGGUcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756915AbYGGUjP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758030AbYGGUcV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 16:32:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757705AbYGGUcB
+	id S1756915AbYGGUjP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 16:39:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755709AbYGGUjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 16:32:01 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:41096 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757703AbYGGUcA (ORCPT
+	Mon, 7 Jul 2008 16:39:00 -0400
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:63522 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755209AbYGGUi7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 16:32:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=vO6Gn7Wvfnj8AzOTH5InWq8J6ThhD80vOZxsMF5XqpWVNG+k4S6Q7nRhL9bdf64aa6
-         sYHqArob+vP2VSYqn8iEhzGaTrl3ZKSHu6GCzvDaZ2za8TtMVc7kUjyZnpz0W7HsRHP+
-         pfcVV7SfdbTw8CaVygxDYXI2Ft3iYTFRtq8Fs=
-Message-ID: <19f34abd0807071331s52dc994ao6ac70e787d88227d@mail.gmail.com>
-Date: Mon, 7 Jul 2008 22:31:58 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Mattias Nissler" <mattias.nissler@gmx.de>
-Subject: Re: [PATCH] rc80211_pid: Fix fast_start parameter handling
-Cc: "Stefano Brivio" <stefano.brivio@polimi.it>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       "David S. Miller" <davem@davemloft.net>, "Ingo Molnar" <mingo@elte.hu>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1215462228.4416.3.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Mon, 7 Jul 2008 16:38:59 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAMMbckhMQWVt/2dsb2JhbACBW69W
+Date: Mon, 7 Jul 2008 16:38:55 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-mm@kvack.org,
+       Dave Hansen <haveblue@us.ibm.com>, Hideo AOKI <haoki@redhat.com>,
+       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [RFC patch 05/12] LTTng instrumentation mm
+Message-ID: <20080707203855.GA29295@Krystal>
+References: <20080704235207.147809973@polymtl.ca> <20080704235425.792630712@polymtl.ca> <20080705173449.98DF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <19f34abd0807070427w5398c617uae0a4e8e40fd8f0e@mail.gmail.com>
-	 <1215462228.4416.3.camel@localhost>
+In-Reply-To: <20080705173449.98DF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 16:08:03 up 33 days, 49 min,  6 users,  load average: 0.66, 1.02,
+	1.14
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+* KOSAKI Motohiro (kosaki.motohiro@jp.fujitsu.com) wrote:
+> > Memory management core events.
+> > 
+> > Added tracepoints :
+> > 
+> > mm_filemap_wait_end
+> > mm_filemap_wait_start
+> > mm_handle_fault_entry
+> > mm_handle_fault_exit
+> > mm_huge_page_alloc
+> > mm_huge_page_free
+> > mm_page_alloc
+> > mm_page_free
+> > mm_swap_file_close
+> > mm_swap_file_open
+> > mm_swap_in
+> > mm_swap_out
+> 
 
-On Mon, Jul 7, 2008 at 10:23 PM, Mattias Nissler <mattias.nissler@gmx.de> wrote:
-> This removes the fast_start parameter from the rc_pid parameters information
-> and instead uses the parameter macro when initializing the rc_pid state. Since the
-> parameter is only used on initialization, there is no point of making exporting
-> it via debugfs. This also fixes uninitialized memory references to the
-> fast_start and norm_offset parameters.
->
-> Signed-off-by: Mattias Nissler <mattias.nissler@gmx.de>
-> ---
->
-> This should fix the problem. I think this should go into mainline ASAP.
+Hi Kosaki,
 
-Was this code actually causing some problem/regression? If so, can we
-please have a reference to bugzilla/prior conversations in the patch
-description?
+Thanks for this thorough review, please see comments below. Comments
+without response will be addressed in the next tracepoint release.
 
-Was the reason for the problem known before I posted the "use of
-uninitialized memory" e-mail earlier today? If no, can you please
-sneak in a little reference to kmemcheck there in the patch
-description? The acknowledgement is sorely needed :-)
+> Mathieu, this patch is too large and have multiple change.
+> memory subsystem have some feature and is developed by many people.
+> 
+> So, nobody can ack it.
+> Could you split to more small patch?
+> 
+> and, this patch description is very poor.
+> 
+> I guess
+> 
+> > mm_filemap_wait_end
+> > mm_filemap_wait_start
+> 	for latency statics by lock_page delay
+> 
+> 	if so, we should know who have locking.
+> 
+> 
+> > mm_handle_fault_entry
+> > mm_handle_fault_exit
+> 	??
+> 	please explain.
+> 
+> > mm_page_alloc
+> > mm_page_free
+> 	for memory leak track
+> 	for memory eater sort out
+> 	etc..
+> 
+> > mm_huge_page_alloc
+> > mm_huge_page_free
+> 	ditto
+> 	(but, huge page is developed by another person against normal page alloc
+> 	 so, patch separating is better)
+> 
+> > mm_swap_file_close
+> > mm_swap_file_open
+> 	??
+> 	What do you suppose usage?
+> 
+> > mm_swap_in
+> > mm_swap_out
+> 	for swap usage statics
+> 	for swap delay accounting
+> 
+> 
+> and, some tracepoint is putted on performance critical function.
+> So, you should write performance result in patch description.
+> 
 
-Thanks!
+Ok, I'll resend a new splitted version with better descriptions.
+
+> 
+> > Index: linux-2.6-lttng/mm/filemap.c
+> > ===================================================================
+> > --- linux-2.6-lttng.orig/mm/filemap.c	2008-07-04 18:26:02.000000000 -0400
+> > +++ linux-2.6-lttng/mm/filemap.c	2008-07-04 18:26:37.000000000 -0400
+> > @@ -33,6 +33,7 @@
+> >  #include <linux/cpuset.h>
+> >  #include <linux/hardirq.h> /* for BUG_ON(!in_atomic()) only */
+> >  #include <linux/memcontrol.h>
+> > +#include "mm-trace.h"
+> >  #include "internal.h"
+> >  
+> >  /*
+> > @@ -540,9 +541,11 @@ void wait_on_page_bit(struct page *page,
+> >  {
+> >  	DEFINE_WAIT_BIT(wait, &page->flags, bit_nr);
+> >  
+> > +	trace_mm_filemap_wait_start(page, bit_nr);
+> >  	if (test_bit(bit_nr, &page->flags))
+> >  		__wait_on_bit(page_waitqueue(page), &wait, sync_page,
+> >  							TASK_UNINTERRUPTIBLE);
+> > +	trace_mm_filemap_wait_end(page, bit_nr);
+> >  }
+> >  EXPORT_SYMBOL(wait_on_page_bit);
+> 
+> looks good to me.
+> 
+> 
+> >  
+> > Index: linux-2.6-lttng/mm/memory.c
+> > ===================================================================
+> > --- linux-2.6-lttng.orig/mm/memory.c	2008-07-04 18:26:02.000000000 -0400
+> > +++ linux-2.6-lttng/mm/memory.c	2008-07-04 18:26:37.000000000 -0400
+> > @@ -51,6 +51,7 @@
+> >  #include <linux/init.h>
+> >  #include <linux/writeback.h>
+> >  #include <linux/memcontrol.h>
+> > +#include "mm-trace.h"
+> >  
+> >  #include <asm/pgalloc.h>
+> >  #include <asm/uaccess.h>
+> > @@ -2201,6 +2202,7 @@ static int do_swap_page(struct mm_struct
+> >  		/* Had to read the page from swap area: Major fault */
+> >  		ret = VM_FAULT_MAJOR;
+> >  		count_vm_event(PGMAJFAULT);
+> > +		trace_mm_swap_in(page, entry);
+> >  	}
+> >  
+> >  	if (mem_cgroup_charge(page, mm, GFP_KERNEL)) {
+> 
+> somebody want get swapin delaying statics.
+> (see delayacct_set_flag() and delayacct_clear_flag())
+> 
+> if swap cache exist, swapin can end very faster.
+> otherwise, spend very long time.
+> 
+
+I am not sure what you are asking for here ? A supplementary parameter
+or another trace point ?
+
+> 
+> > +	trace_mm_handle_fault_entry(address, write_access);
+> > +
+> >  	__set_current_state(TASK_RUNNING);
+> >  
+> >  	count_vm_event(PGFAULT);
+> 
+> mm or vma passing is better?
+> otherwise, adress is ambiguity.
+> 
+
+Adding both mm and vma.
 
 
-Vegard
+> > -	if (unlikely(is_vm_hugetlb_page(vma)))
+> > -		return hugetlb_fault(mm, vma, address, write_access);
+> > +	if (unlikely(is_vm_hugetlb_page(vma))) {
+> > +		res = hugetlb_fault(mm, vma, address, write_access);
+> > +		goto end;
+> > +	}
+> >  
+> >  	pgd = pgd_offset(mm, address);
+> >  	pud = pud_alloc(mm, pgd, address);
+> > -	if (!pud)
+> > -		return VM_FAULT_OOM;
+> > +	if (!pud) {
+> > +		res = VM_FAULT_OOM;
+> > +		goto end;
+> > +	}
+> >  	pmd = pmd_alloc(mm, pud, address);
+> > -	if (!pmd)
+> > -		return VM_FAULT_OOM;
+> > +	if (!pmd) {
+> > +		res = VM_FAULT_OOM;
+> > +		goto end;
+> > +	}
+> >  	pte = pte_alloc_map(mm, pmd, address);
+> > -	if (!pte)
+> > -		return VM_FAULT_OOM;
+> > +	if (!pte) {
+> > +		res = VM_FAULT_OOM;
+> > +		goto end;
+> > +	}
+> >  
+> > -	return handle_pte_fault(mm, vma, address, pte, pmd, write_access);
+> > +	res = handle_pte_fault(mm, vma, address, pte, pmd, write_access);
+> > +end:
+> > +	trace_mm_handle_fault_exit();
+> > +	return res;
+> >  }
+> 
+> no argument?
+> if two page fault happend in parallel, how do you sort out this two fault?
+> 
+
+By using the current thread identifier in the probe. A PF entry on a given
+thread must be followed by a matching PF exit for that same thread.
+There may be other events interleaved between the two. Multiple nested
+page faults shouldn't but *could* happen. In this case, the outermost PF
+goes with the outermose PF end, and the innermost PF goes with the
+innermost PF end.
+
+> and, IMHO res variable is very important.
+> because it is OOM related.
+> many MM trouble shooting is worked for OOM related.
+> 
+
+Ok, I'll add "res".
+
+> 
+> >  #ifndef __PAGETABLE_PUD_FOLDED
+> > Index: linux-2.6-lttng/mm/page_alloc.c
+> > ===================================================================
+> > --- linux-2.6-lttng.orig/mm/page_alloc.c	2008-07-04 18:26:02.000000000 -0400
+> > +++ linux-2.6-lttng/mm/page_alloc.c	2008-07-04 18:26:37.000000000 -0400
+> > @@ -46,6 +46,7 @@
+> >  #include <linux/page-isolation.h>
+> >  #include <linux/memcontrol.h>
+> >  #include <linux/debugobjects.h>
+> > +#include "mm-trace.h"
+> >  
+> >  #include <asm/tlbflush.h>
+> >  #include <asm/div64.h>
+> > @@ -510,6 +511,8 @@ static void __free_pages_ok(struct page 
+> >  	int i;
+> >  	int reserved = 0;
+> >  
+> > +	trace_mm_page_free(page, order);
+> > +
+> >  	for (i = 0 ; i < (1 << order) ; ++i)
+> >  		reserved += free_pages_check(page + i);
+> >  	if (reserved)
+> > @@ -966,6 +969,8 @@ static void free_hot_cold_page(struct pa
+> >  	struct per_cpu_pages *pcp;
+> >  	unsigned long flags;
+> >  
+> > +	trace_mm_page_free(page, 0);
+> > +
+> >  	if (PageAnon(page))
+> >  		page->mapping = NULL;
+> >  	if (free_pages_check(page))
+> > @@ -1630,6 +1635,7 @@ nopage:
+> >  		show_mem();
+> >  	}
+> >  got_pg:
+> > +	trace_mm_page_alloc(page, order);
+> >  	return page;
+> >  }
+> >  
+> 
+> please pass current task.
+> I guess somebody need memory allocation tracking.
+> 
+
+Hrm.. "current" is available in the probe. Actually, it's available
+anywhere in the kernel, do we really want to pass it on the stack ?
+
+> 
+> 
+> > Index: linux-2.6-lttng/mm/page_io.c
+> > ===================================================================
+> > --- linux-2.6-lttng.orig/mm/page_io.c	2008-07-04 18:26:02.000000000 -0400
+> > +++ linux-2.6-lttng/mm/page_io.c	2008-07-04 18:26:37.000000000 -0400
+> > @@ -17,6 +17,7 @@
+> >  #include <linux/bio.h>
+> >  #include <linux/swapops.h>
+> >  #include <linux/writeback.h>
+> > +#include "mm-trace.h"
+> >  #include <asm/pgtable.h>
+> >  
+> >  static struct bio *get_swap_bio(gfp_t gfp_flags, pgoff_t index,
+> > @@ -114,6 +115,7 @@ int swap_writepage(struct page *page, st
+> >  		rw |= (1 << BIO_RW_SYNC);
+> >  	count_vm_event(PSWPOUT);
+> >  	set_page_writeback(page);
+> > +	trace_mm_swap_out(page);
+> >  	unlock_page(page);
+> >  	submit_bio(rw, bio);
+> >  out:
+> 
+> this tracepoint probe swapout starting, right.
+> So, Why you don't probe swapout end?
+> 
+
+Does submit_bio() block in this case or is it done asynchronously ? It's
+of no use to trace swap out "end" when in fact there would be no
+blocking involved.
+
+
+> 
+> 
+> > Index: linux-2.6-lttng/mm/hugetlb.c
+> > ===================================================================
+> > --- linux-2.6-lttng.orig/mm/hugetlb.c	2008-07-04 18:26:02.000000000 -0400
+> > +++ linux-2.6-lttng/mm/hugetlb.c	2008-07-04 18:26:37.000000000 -0400
+> > @@ -14,6 +14,7 @@
+> >  #include <linux/mempolicy.h>
+> >  #include <linux/cpuset.h>
+> >  #include <linux/mutex.h>
+> > +#include "mm-trace.h"
+> >  
+> >  #include <asm/page.h>
+> >  #include <asm/pgtable.h>
+> > @@ -141,6 +142,7 @@ static void free_huge_page(struct page *
+> >  	int nid = page_to_nid(page);
+> >  	struct address_space *mapping;
+> >  
+> > +	trace_mm_huge_page_free(page);
+> >  	mapping = (struct address_space *) page_private(page);
+> >  	set_page_private(page, 0);
+> >  	BUG_ON(page_count(page));
+> > @@ -509,6 +511,7 @@ static struct page *alloc_huge_page(stru
+> >  	if (!IS_ERR(page)) {
+> >  		set_page_refcounted(page);
+> >  		set_page_private(page, (unsigned long) mapping);
+> > +		trace_mm_huge_page_alloc(page);
+> >  	}
+> >  	return page;
+> >  }
+> 
+> this tracepoint probe to HugePages_Free change, right?
+> Why you don't probe HugePages_Total and HugePages_Rsvd change?
+> 
+
+Adding trace_hugetlb_page_reserve(inode, from, to);
+and
+trace_hugetlb_page_unreserve(inode, offset, freed);
+
+Do you recommend adding another tracing point to monitor the total
+hugepages pool changes ?
+
+> 
+> > Index: linux-2.6-lttng/mm/swapfile.c
+> > ===================================================================
+> > --- linux-2.6-lttng.orig/mm/swapfile.c	2008-07-04 18:26:02.000000000 -0400
+> > +++ linux-2.6-lttng/mm/swapfile.c	2008-07-04 18:26:37.000000000 -0400
+> > @@ -32,6 +32,7 @@
+> >  #include <asm/pgtable.h>
+> >  #include <asm/tlbflush.h>
+> >  #include <linux/swapops.h>
+> > +#include "mm-trace.h"
+> >  
+> >  DEFINE_SPINLOCK(swap_lock);
+> >  unsigned int nr_swapfiles;
+> 
+> > @@ -1310,6 +1311,7 @@ asmlinkage long sys_swapoff(const char _
+> >  	swap_map = p->swap_map;
+> >  	p->swap_map = NULL;
+> >  	p->flags = 0;
+> > +	trace_mm_swap_file_close(swap_file);
+> >  	spin_unlock(&swap_lock);
+> >  	mutex_unlock(&swapon_mutex);
+> >  	vfree(swap_map);
+> 
+> Why you choose this point?
+
+The idea is to monitor swap files so we can eventually know, from a
+trace, which tracefiles were used during the trace and where they were
+located. I also have a "swap file list" tracepoint which extracts all
+the tracefile mappings which I plan to submit later. I normally execute
+it at trace start.
+
+> and why you don't pass pathname? (you pass it in sys_swapon()) 
+> 
+
+Since this other tracepoint gives me the mapping between file
+descriptor and path name, the pathname becomes unnecessary.
+
+> IMHO try_to_unuse cause many memory activity and spend many time and 
+> often cause oom-killer.
+> 
+> I think this point log is needed by somebody.
+> 
+
+Should it be considered as part of swapoff ? If it is the case, then
+maybe should we just move the trace_swap_file_close(swap_file); a little
+be earlier so it is logged before the try_to_unuse() call ?
+
+Mathieu
+
+> 
+> > @@ -1695,6 +1697,7 @@ asmlinkage long sys_swapon(const char __
+> >  	} else {
+> >  		swap_info[prev].next = p - swap_info;
+> >  	}
+> > +	trace_mm_swap_file_open(swap_file, name);
+> >  	spin_unlock(&swap_lock);
+> >  	mutex_unlock(&swapon_mutex);
+> >  	error = 0;
+> 
+> 
+> 
 
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
