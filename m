@@ -1,79 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758420AbYGGS7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757461AbYGGTDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758420AbYGGS7z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 14:59:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758096AbYGGS67
+	id S1757461AbYGGTDV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 15:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754679AbYGGTDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 14:58:59 -0400
-Received: from casper.infradead.org ([85.118.1.10]:38618 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755761AbYGGS65 (ORCPT
+	Mon, 7 Jul 2008 15:03:12 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42826 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754394AbYGGTDL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 14:58:57 -0400
-Date: Mon, 7 Jul 2008 11:58:44 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Jack Steiner <steiner@sgi.com>, Christoph Hellwig <hch@infradead.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, cl@linux-foundation.org,
-       akpm@osdl.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       tglx@linutronix.de, holt@sgi.com, andrea@qumranet.com,
-       linux-mm@kvack.org
-Subject: Re: [patch 12/13] GRU Driver V3 -  export is_uv_system(),
- zap_page_range() & follow_page()
-Message-ID: <20080707115844.5ee43343@infradead.org>
-In-Reply-To: <Pine.LNX.4.64.0807071657450.17825@blonde.site>
-References: <20080703213348.489120321@attica.americas.sgi.com>
-	<20080703213633.890647632@attica.americas.sgi.com>
-	<20080704073926.GA1449@infradead.org>
-	<20080707143916.GA5209@sgi.com>
-	<Pine.LNX.4.64.0807071657450.17825@blonde.site>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 7 Jul 2008 15:03:11 -0400
+Date: Mon, 7 Jul 2008 20:55:29 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, drzeus-mmc@drzeus.cx
+Subject: mmc vs. suspend: WARNING: drivers/base/power/main.c:77
+	device_pm_add
+Message-ID: <20080707185529.GA1687@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Jul 2008 17:29:54 +0100 (BST)
-Hugh Dickins <hugh@veritas.com> wrote:
+Hi!
 
-> On Mon, 7 Jul 2008, Jack Steiner wrote:
-> > > > +EXPORT_SYMBOL_GPL(follow_page);
-> > > 
-> > > NACK.
-> > > 
-> > > These should never be called by a driver and suggest you need to
-> > > rething your VM integration in this driver.
-> > 
-> > Can you provide some additional details on the type of kernel API
-> > that could be exported to provide a pte lookup in atomic context?
-> 
-> I don't see EXPORT_SYMBOL_GPL(follow_page) as objectionable myself:
-> it rather seems rather to complement EXPORT_SYMBOL(vm_insert_page)
-> and EXPORT_SYMBOL(vmalloc_to_page); though I'd agree that it's
-> sufficiently sensitive to need that _GPL on it.
-> 
-> ...
-> 
-> > Currently, the driver calls follow_page() in interrupt context.
-> 
-> However, that's a problem, isn't it, given the pte_offset_map_lock
-> in follow_page?  To avoid the possibility of deadlock, wouldn't we
-> have to change all the page table locking to irq-disabling variants?
-> Which I think we'd have reason to prefer not to do.
-> 
-> Maybe study the assumptions Nick is making in his arch/x86/mm/gup.c
-> in mm, and do something similar in your GRU driver (falling back to
-> the slow method when anything's not quite right).  It's not nice to
-> have such code out in a driver, but GRU is going to be exceptional,
-> and it may be better to have it out there than pretence of generality
-> in the core mm exporting it.
-> 
 
-I wonder if GRU even should be a module; it sounds rather like pretty
-core functionality and if it's this invasive to the VM it probably
-should be a real part of the VM instead
+I got this while suspending with mmc card inserted. 2.6.26-rc8.
+
+rt DPO or FUA
+Jul  7 20:29:08 amd kernel: sd 0:0:0:0: [sda] 117210240 512-byte
+hardware sectors (60012 MB)
+Jul  7 20:29:08 amd kernel: sd 0:0:0:0: [sda] Write Protect is off
+Jul  7 20:29:08 amd kernel: sd 0:0:0:0: [sda] Write cache: enabled,
+read cache: enabled, doesn't support DPO or FUA
+Jul  7 20:29:08 amd kernel: mmc0: new MMC card at address 0001
+Jul  7 20:29:08 amd kernel: mmc mmc0:0001: parent mmc0 is sleeping
+Jul  7 20:29:08 amd kernel: ------------[ cut here ]------------
+Jul  7 20:29:08 amd kernel: WARNING: at
+/data/l/linux/drivers/base/power/main.c:77 device_pm_add+0x60/0xd0()
+Jul  7 20:29:08 amd kernel: Modules linked in:
+Jul  7 20:29:08 amd kernel: Pid: 292, comm: kmmcd Not tainted
+2.6.26-rc8 #312
+Jul  7 20:29:08 amd kernel:  [<c022910f>] warn_on_slowpath+0x5f/0x90
+Jul  7 20:29:08 amd kernel:  [<c0730c4a>] _spin_lock_irqsave+0x3a/0x50
+Jul  7 20:29:08 amd kernel:  [<c02405a1>] up+0x11/0x40
+Jul  7 20:29:08 amd kernel:  [<c0229a7e>]
+release_console_sem+0x19e/0x1d0
+Jul  7 20:29:08 amd kernel:  [<c02bcff5>]
+sysfs_addrm_finish+0x15/0x1e0
+Jul  7 20:29:08 amd kernel:  [<c02bca20>] sysfs_ilookup_test+0x0/0x10
+Jul  7 20:29:08 amd kernel:  [<c072f64d>]
+mutex_lock_nested+0x13d/0x1f0
+Jul  7 20:29:08 amd kernel:  [<c04262b3>] device_pm_add+0x13/0xd0
+Jul  7 20:29:08 amd kernel:  [<c04262b3>] device_pm_add+0x13/0xd0
+Jul  7 20:29:08 amd kernel:  [<c022a08b>] printk+0x1b/0x20
+Jul  7 20:29:08 amd kernel:  [<c0426300>] device_pm_add+0x60/0xd0
+Jul  7 20:29:08 amd kernel:  [<c0421528>] device_add+0x388/0x500
+Jul  7 20:29:08 amd kernel:  [<c059a191>] mmc_add_card+0xa1/0x120
+Jul  7 20:29:08 amd kernel:  [<c059aa3e>] mmc_attach_mmc+0x1ce/0x840
+Jul  7 20:29:08 amd kernel:  [<c0599dd0>] mmc_rescan+0x0/0x180
+Jul  7 20:29:08 amd kernel:  [<c0599f35>] mmc_rescan+0x165/0x180
+Jul  7 20:29:08 amd kernel:  [<c02390d1>] run_workqueue+0x121/0x1d0
+Jul  7 20:29:08 amd kernel:  [<c023907d>] run_workqueue+0xcd/0x1d0
+Jul  7 20:29:08 amd kernel:  [<c0239a30>] worker_thread+0x0/0xf0
+Jul  7 20:29:08 amd kernel:  [<c0239acc>] worker_thread+0x9c/0xf0
+Jul  7 20:29:08 amd kernel:  [<c023c6f0>]
+autoremove_wake_function+0x0/0x50
+Jul  7 20:29:08 amd kernel:  [<c0239a30>] worker_thread+0x0/0xf0
+Jul  7 20:29:08 amd kernel:  [<c023c3f2>] kthread+0x42/0x70
+Jul  7 20:29:08 amd kernel:  [<c023c3b0>] kthread+0x0/0x70
+Jul  7 20:29:08 amd kernel:  [<c02047ab>]
+kernel_thread_helper+0x7/0x1c
+Jul  7 20:29:08 amd kernel:  =======================
+Jul  7 20:29:08 amd kernel: ---[ end trace 24bbd6dd8cd33b0a ]---
+Jul  7 20:29:08 amd kernel: mmcblk0: mmc0:0001 MMC    1019392KiB
+Jul  7 20:29:08 amd kernel:  mmcblk0: p1
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
