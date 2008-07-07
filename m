@@ -1,59 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756392AbYGGW5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757296AbYGGW6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756392AbYGGW5R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 18:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbYGGW5G
+	id S1757296AbYGGW6g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 18:58:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754351AbYGGW61
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 18:57:06 -0400
-Received: from gate.crashing.org ([63.228.1.57]:48286 "EHLO gate.crashing.org"
+	Mon, 7 Jul 2008 18:58:27 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:49862 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754067AbYGGW5E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 18:57:04 -0400
-Subject: Re: [PATCH 1/2] elf loader support for auxvec base platform string
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Andreas Schwab <schwab@suse.de>
-Cc: Roland McGrath <roland@redhat.com>, Nathan Lynch <ntl@pobox.com>,
-       linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <je63rirp1x.fsf@sykes.suse.de>
-References: <20080703234140.GC9594@localdomain>
-	 <20080704021929.5E9EF1541F5@magilla.localdomain>
-	 <1215409693.8970.79.camel@pasglop>
-	 <20080707061811.19989154246@magilla.localdomain>
-	 <1215411800.8970.91.camel@pasglop>
-	 <20080707063522.5FE55154246@magilla.localdomain>
-	 <je8wwet9p6.fsf@sykes.suse.de>
-	 <20080707093151.8798A154246@magilla.localdomain>
-	 <je63rirp1x.fsf@sykes.suse.de>
-Content-Type: text/plain
-Date: Tue, 08 Jul 2008 08:56:33 +1000
-Message-Id: <1215471393.8970.157.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	id S1753509AbYGGW60 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 18:58:26 -0400
+Message-Id: <20080707225823.502032693@us.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Mon, 07 Jul 2008 15:58:23 -0700
+From: Matt Helsley <matthltc@us.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Paul Menage <menage@google.com>, Pavel Machek <pavel@ucw.cz>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: [PATCH 0/4] Container Freezer: Reuse Suspend Freezer
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-07-07 at 12:01 +0200, Andreas Schwab wrote:
-> Roland McGrath <roland@redhat.com> writes:
-> 
-> > There are 32 bits free now.  One can anticipate that reassigning a bit
-> > would come up only after these are exhausted.  With prudent use, this
-> > will take a very long time to happen.  Then the oldest CPU type string
-> > might be retired to reuse its bit.  It seems unlikely that there will
-> > be a single installation (root directory) that really needs to have
-> > installed both a kernel optimized for the oldest CPU model known and a
-> > kernel optimized for the newest CPU model known.
-> 
-> The kernel does not have to come from the same place as the root
-> filesystem.  You may want to run a new kernel with an old filesystem, or
-> vice-versa.
 
-I agree, I'm pretty dubious here...
+This patchset reuses the container infrastructure and the swsusp freezer to
+freeze a group of tasks.
+
+The freezer subsystem in the container filesystem defines a file named
+freezer.state. Writing "FROZEN" to the state file will freeze all tasks in the
+cgroup. Subsequently writing "RUNNING" will unfreeze the tasks in the cgroup. 
+Reading will return the current state. 
+
+* Examples of usage :
+
+   # mkdir /containers/freezer
+   # mount -t cgroup -ofreezer,signal freezer  /containers
+   # mkdir /containers/0
+   # echo $some_pid > /containers/0/tasks
+
+to get status of the freezer subsystem :
+
+   # cat /containers/0/freezer.state
+   RUNNING
+
+to freeze all tasks in the container :
+
+   # echo FROZEN > /containers/0/freezer.state
+   # cat /containers/0/freezer.state
+   FREEZING
+   # cat /containers/0/freezer.state
+   FROZEN
+
+to unfreeze all tasks in the container :
+
+   # echo RUNNING > /containers/0/freezer.state
+   # cat /containers/0/freezer.state
+   RUNNING
+
+to kill all tasks in the container :
+
+   # echo 9 > /containers/0/signal.kill
+
+I've reworked Cedric's patches to use task_lock() to protect access to the
+task's cgroup.
+
+Paul, Pavel asked me to send these to Rafael next. They are patches to make
+the freezer useful for checkpoint/restart using cgroups so it would be nice
+to get an explicit [N]Ack from you first.
+
+Rafael, if Paul agrees, please consider applying these patches.
+
+Changes since v3:
+v4 (Almost all of these changes are confined to patch 3):
+	Reworked the series to use task_lock() instead of RCU.
+	Reworked the series to use write_string() and read_seq_string()
+		cgroup methods.
+	Fixed the race Paul Menage identified.
+	Fixed up check_if_frozen() to do more than just test the FROZEN
+		flag. In some cases tasks could be stopped (T) and marked
+		FREEZING. When that happens we can safely assume that it
+		will be frozen immediately upon waking up in the kernel.
+		Waiting for it to get marked with PF_FROZEN in order to
+		transition to the FROZEN state would block unnecessarily.
+	Removed freezer_ prefix from static functions in cgroup_freezer.c.
+	Simplified STATE_ switch.
+	Updated the locking comments.
+v3:
+	Ported to 2.6.26-rc5-mm2 with Rafael's freezer patches
+	Tested on 24 combinations of 3 architectures (x86, x86_64, ppc64)
+		with 8 different kernel configs varying power management
+		and cgroup config variables. Each patch builds and boots
+		in these 24 combinations.
+	Passes functional testing.
+v2 (roughly patches 3 and 5):
+	Moved the "kill" file into a separate cgroup subsystem (signal) and
+		it's own patch.
+	Changed the name of the file from freezer.freeze to freezer.state.
+	Switched from taking 1 and 0 as input to the strings "FROZEN" and 
+		"RUNNING", respectively. This helps keep the interface
+		human-usable if/when we need to more states.
+	Checked that stopped or interrupted is "frozen enough"
+		Since try_to_freeze() is called upon wakeup of these tasks
+		this should be fine. This idea comes from recent changes to
+		the freezer.
+	Checked that if (task == current) whilst freezing cgroup we're ok
+	Fixed bug where -EBUSY would always be returned when freezing
+	Added code to handle userspace retries for any remaining -EBUSY
 
 Cheers,
-Ben.
+	-Matt Helsley
 
-
+-- 
