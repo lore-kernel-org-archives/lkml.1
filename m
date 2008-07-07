@@ -1,95 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbYGGPzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753939AbYGGPzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754904AbYGGPzX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 11:55:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbYGGPzJ
+	id S1753939AbYGGPzh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 11:55:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755033AbYGGPzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 11:55:09 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:57486 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752927AbYGGPzH (ORCPT
+	Mon, 7 Jul 2008 11:55:24 -0400
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:60579 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754911AbYGGPzX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 11:55:07 -0400
-Date: Mon, 7 Jul 2008 10:54:52 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Emelianov <xemul@openvz.org>
-Subject: Re: [PATCH] devcgroup: code cleanup
-Message-ID: <20080707155452.GG11250@us.ibm.com>
-References: <486F1509.4020509@cn.fujitsu.com>
+	Mon, 7 Jul 2008 11:55:23 -0400
+Date: Mon, 7 Jul 2008 10:55:10 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Paul Mackerras <paulus@samba.org>, Roland McGrath <roland@redhat.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/2] elf loader support for auxvec base platform string
+Message-ID: <20080707155510.GE9594@localdomain>
+References: <20080703234140.GC9594@localdomain>
+ <18541.35978.437115.957054@harpo.it.uu.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <486F1509.4020509@cn.fujitsu.com>
+In-Reply-To: <18541.35978.437115.957054@harpo.it.uu.se>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Pobox-Relay-ID: 1A318026-4C3D-11DD-B3D1-CE28B26B55AE-04752483!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Li Zefan (lizf@cn.fujitsu.com):
-> - remove a redundant memset()
-> - use simple_strtoul() to parse major/minor
+Mikael Pettersson wrote:
+> Nathan Lynch writes:
+>  > Some IBM POWER-based platforms have the ability to run in a
+>  > mode which mostly appears to the OS as a different processor from the
+>  > actual hardware.  For example, a Power6 system may appear to be a
+>  > Power5+, which makes the AT_PLATFORM value "power5+".
+>  > 
+>  > However, some applications (virtual machines, optimized libraries) can
+>  > benefit from knowledge of the underlying CPU model.  A new aux vector
+>  > entry, AT_BASE_PLATFORM, will denote the actual hardware.  For
+>  > example, on a Power6 system in Power5+ compatibility mode, AT_PLATFORM
+>  > will be "power5+" and AT_BASE_PLATFORM will be "power6".
 > 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-
-Thanks, all look good.
-
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-
-thanks
--serge
-
-> ---
->  security/device_cgroup.c |   15 +++------------
->  1 files changed, 3 insertions(+), 12 deletions(-)
+> Why on earth would you ever want AT_PLATFORM to differ from AT_BASE_PLATFORM?
+> In cases that matter you admit that AT_BASE_PLATFORM takes precedence,
+> so why involve a fake lame not-quite-the-platform in the first place?
 > 
-> diff --git a/security/device_cgroup.c b/security/device_cgroup.c
-> index ddd92ce..98826b0 100644
-> --- a/security/device_cgroup.c
-> +++ b/security/device_cgroup.c
-> @@ -188,7 +188,7 @@ static struct cgroup_subsys_state *devcgroup_create(struct cgroup_subsys *ss,
->  		}
->  		wh->minor = wh->major = ~0;
->  		wh->type = DEV_ALL;
-> -		wh->access = ACC_MKNOD | ACC_READ | ACC_WRITE;
-> +		wh->access = ACC_MASK;
->  		list_add(&wh->list, &dev_cgroup->whitelist);
->  	} else {
->  		parent_dev_cgroup = cgroup_to_devcgroup(parent_cgroup);
-> @@ -250,7 +250,6 @@ static char type_to_char(short type)
-> 
->  static void set_majmin(char *str, unsigned m)
->  {
-> -	memset(str, 0, MAJMINLEN);
->  	if (m == ~0)
->  		sprintf(str, "*");
->  	else
-> @@ -405,11 +404,7 @@ static ssize_t devcgroup_access_write(struct cgroup *cgroup, struct cftype *cft,
->  		wh.major = ~0;
->  		b++;
->  	} else if (isdigit(*b)) {
-> -		wh.major = 0;
-> -		while (isdigit(*b)) {
-> -			wh.major = wh.major*10+(*b-'0');
-> -			b++;
-> -		}
-> +		wh.major = simple_strtoul(b, &b, 0);
->  	} else {
->  		retval = -EINVAL;
->  		goto out2;
-> @@ -425,11 +420,7 @@ static ssize_t devcgroup_access_write(struct cgroup *cgroup, struct cftype *cft,
->  		wh.minor = ~0;
->  		b++;
->  	} else if (isdigit(*b)) {
-> -		wh.minor = 0;
-> -		while (isdigit(*b)) {
-> -			wh.minor = wh.minor*10+(*b-'0');
-> -			b++;
-> -		}
-> +		wh.minor = simple_strtoul(b, &b, 0);
->  	} else {
->  		retval = -EINVAL;
->  		goto out2;
-> -- 
-> 1.5.4.rc3
+> Workaround for buggy software?
+
+My apologies, I did not explain the motivation well.
+
+The idea is that while AT_PLATFORM indicates the instruction set
+supported, AT_BASE_PLATFORM indicates the underlying
+microarchitecture.  It's not a matter of buggy software, or of one
+value taking precedence over the other.
