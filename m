@@ -1,56 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757926AbYGGRBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757825AbYGGRA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757926AbYGGRBe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 13:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755188AbYGGRBW
+	id S1757825AbYGGRA7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 13:00:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756733AbYGGRAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 13:01:22 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:5310 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754345AbYGGRBV (ORCPT
+	Mon, 7 Jul 2008 13:00:30 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52035 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754359AbYGGRA3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 13:01:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=nUReowV+HibpSSHu1YCJsO8YQNWCNxFy8TaVxEWgGXQGtgygdVvMxk2SimZl4OdEjm
-         Iyl6aGTRTJPJlFXVcXlrEJlFMLIEQfO3CVk1rOqZzkwLhjTwQHNtWhkhCNHtUc/rJ3Ml
-         gWhLUMiQ8kMZgYDl/V/kX7y4cov+0bdVTjIBI=
-Message-ID: <48f7fe350807071001l36ab3ddfh10d35c3764215aff@mail.gmail.com>
-Date: Mon, 7 Jul 2008 13:01:18 -0400
-From: "Ryan Hope" <rmh3093@gmail.com>
-To: carsteno@de.ibm.com
-Subject: Re: Lockless/Get_User_Pages_Fast causes Xorg 1.4.99.* to lock
-Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>, "Hugh Dickins" <hugh@veritas.com>,
-       benh@kernel.crashing.org, "Zan Lynx" <zlynx@acm.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <48724676.6010704@de.ibm.com>
+	Mon, 7 Jul 2008 13:00:29 -0400
+Date: Mon, 7 Jul 2008 14:50:11 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Huang Ying <ying.huang@intel.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [PATCH -mm 1/2] kexec jump -v12: kexec jump
+Message-ID: <20080707125010.GA21254@elf.ucw.cz>
+References: <1215401122.4660.4.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <48f7fe350807032326l1d68c94l531e44c09693b989@mail.gmail.com>
-	 <486E4FD8.4010102@acm.org>
-	 <Pine.LNX.4.64.0807042112130.16912@blonde.site>
-	 <200807071806.11630.nickpiggin@yahoo.com.au>
-	 <487239BE.8070505@de.ibm.com>
-	 <48f7fe350807070916v4b8292aerb0a6fd0f360c5b9b@mail.gmail.com>
-	 <48724676.6010704@de.ibm.com>
+In-Reply-To: <1215401122.4660.4.camel@caritas-dev.intel.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well it was only the new xorg-server that caused the bug for me. I
-can't reproduce it else where....
+Hi!
 
-On Mon, Jul 7, 2008 at 12:38 PM, Carsten Otte <cotte@de.ibm.com> wrote:
-> Ryan Hope wrote:
->>
->> Have you tried running Xorg 1.4.99.905?
->
-> I guess you mean the xserver? See, we don't have PCI and thus don't have any
-> graphics hardware - it's a server platform ;-).
->
+The patch looks mostly ok to me. (Perhaps there's time to split it
+into smaller chunks?)
+
+You can add Acked-by: Pavel Machek <pavel@suse.cz> to it, I guess.
+
+
+> This patch provides an enhancement to kexec/kdump. It implements
+> the following features:
+> 
+> - Backup/restore memory used by the original kernel before/after
+>   kexec.
+> 
+> - Save/restore CPU state before/after kexec.
+> 
+> The features of this patch can be used as a general method to call
+> program in physical mode (paging turning off). This can be used to
+> call BIOS code under Linux.
+> 
+> 
+> kexec-tools needs to be patched to support kexec jump. The patches and
+> the precompiled kexec can be download from the following URL:
+> 
+>        source: http://khibernation.sourceforge.net/download/release_v10/kexec-tools/kexec-tools-src_git_kh10.tar.bz2
+>        patches: http://khibernation.sourceforge.net/download/release_v10/kexec-tools/kexec-tools-patches_git_kh10.tar.bz2
+>        binary: http://khibernation.sourceforge.net/download/release_v10/kexec-tools/kexec_git_kh10
+> 
+> 
+> Usage example of calling some physical mode code and return:
+
+> @@ -98,16 +101,24 @@ int machine_kexec_prepare(struct kimage 
+>   */
+>  void machine_kexec_cleanup(struct kimage *image)
+>  {
+> +	if (nx_enabled)
+> +		set_pages_nx(image->control_code_page, 1);
+>  }
+
+, 0 ? (setup and cleanup were same, which is strange).
+
+
+
+> @@ -1411,3 +1421,50 @@ static int __init crash_save_vmcoreinfo_
+>  }
+>  
+>  module_init(crash_save_vmcoreinfo_init)
+> +
+> +/**
+> + *	kernel_kexec - reboot the system
+
+Really?
+
+> + *	Move into place and start executing a preloaded standalone
+> + *	executable.  If nothing was preloaded return an error.
+> + */
+> +int kernel_kexec(void)
+> +{
+> +	int error = 0;
+> +
+> +	if (xchg(&kexec_lock, 1))
+> +		return -EBUSY;
+
+That's quite a strange way to provide a lock. mutex_trylock?
+
+
+> +	if (!kexec_image) {
+> +		error = -EINVAL;
+> +		goto Unlock;
+> +	}
+> +
+> +	if (kexec_image->preserve_context) {
+> +#ifdef CONFIG_KEXEC_JUMP
+> +		local_irq_disable();
+> +		save_processor_state();
+
+#else
+	BUG()
+
+...because otherwise you silently do nothing?
+
+> +#endif
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
