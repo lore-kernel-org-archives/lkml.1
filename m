@@ -1,108 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756680AbYGHTky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756977AbYGHTmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756680AbYGHTky (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 15:40:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbYGHTkq
+	id S1756977AbYGHTmx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 15:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754144AbYGHTmp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 15:40:46 -0400
-Received: from mail-relay-03.mailcluster.net ([77.221.130.215]:59116 "EHLO
-	mail-relay-01.mailcluster.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753934AbYGHTko (ORCPT
+	Tue, 8 Jul 2008 15:42:45 -0400
+Received: from mail-out.m-online.net ([212.18.0.9]:51262 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754098AbYGHTmo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 15:40:44 -0400
-Message-ID: <4873BCA5.10103@vlnb.net>
-Date: Tue, 08 Jul 2008 23:14:45 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 8 Jul 2008 15:42:44 -0400
+X-Auth-Info: 8uROT6kskmrUGyIiyNQmNV3aai+iakU2Yf8kn7CQJOg=
+X-Auth-Info: 8uROT6kskmrUGyIiyNQmNV3aai+iakU2Yf8kn7CQJOg=
+X-Auth-Info: 8uROT6kskmrUGyIiyNQmNV3aai+iakU2Yf8kn7CQJOg=
+X-Auth-Info: 8uROT6kskmrUGyIiyNQmNV3aai+iakU2Yf8kn7CQJOg=
+X-Auth-Info: 8uROT6kskmrUGyIiyNQmNV3aai+iakU2Yf8kn7CQJOg=
+X-Auth-Info: 8uROT6kskmrUGyIiyNQmNV3aai+iakU2Yf8kn7CQJOg=
+X-Auth-Info: 8uROT6kskmrUGyIiyNQmNV3aai+iakU2Yf8kn7CQJOg=
+X-Auth-Info: 8uROT6kskmrUGyIiyNQmNV3aai+iakU2Yf8kn7CQJOg=
+Message-ID: <4873C363.3070306@grandegger.com>
+Date: Tue, 08 Jul 2008 21:43:31 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-CC: scst-devel <scst-devel@lists.sourceforge.net>
-Subject: [ANNOUNCE]: Generic SCSI Target Mid-level For Linux (SCST), target
- drivers for iSCSI and QLogic Fibre Channel cards released
-Content-Type: text/plain; charset=KOI8-R; format=flowed
+To: Wolfgang Grandegger <wg@grandegger.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Luotao Fu <l.fu@pengutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.24-rc8-rt1: Strange latencies on mpc5200 powerpc - RCU	issue?
+References: <20080130102255.GA24890@linux.vnet.ibm.com> <47A0552D.20605@grandegger.com> <20080130105715.GE24890@linux.vnet.ibm.com> <20080130111559.GC20089@pengutronix.de> <486A3EBB.6030905@grandegger.com> <Pine.LNX.4.58.0807011036510.26650@gandalf.stny.rr.com> <486A573E.60107@grandegger.com> <486B607F.9040903@grandegger.com> <Pine.LNX.4.58.0807052041350.8466@gandalf.stny.rr.com> <48709348.6000101@grandegger.com> <20080708150826.GA30586@pengutronix.de>
+In-Reply-To: <20080708150826.GA30586@pengutronix.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm glad to announce that version 1.0.0 of Generic SCSI Target Middle 
-Level for Linux (SCST) was released and available for download from 
-http://scst.sourceforge.net/downloads.html
+Hi Fun,
 
-SCST is a subsystem of the Linux kernel that provides a standard 
-framework for SCSI target drivers development. It is designed to provide 
-unified, consistent interface between SCSI target drivers and Linux 
-kernel and simplify target drivers development as much as possible. It 
-has the following main features:
+Luotao Fu wrote:
+> Hi,
+> 
+> I found some time and played with my mpc5200B Board again on this issue
+> (2.6.25.8-rt7, same test environment)
+> 
+> On Sun, Jul 06, 2008 at 11:41:28AM +0200, Wolfgang Grandegger wrote:
+> ....
+>> Yep, in 2.6.25.8-rt7 trace_mark() is not used any more, maybe for that  
+>> reason. Nevertheless, this "bug" kept the latency on my MPC5200 box low.
+>> I will try with the old tracer to understand what the real cause of the  
+>> high latencies is (with CONFIG_RCU_TRACE disabled).
+>>
+> As you said, in 2.6.25.8-rt7 there're rcu_trace_boost_unboost_called() and
+> rcu_trace_boost_unboosted() are used instead of trace_mark. I still haven't had
+> time to take a closer look waht these routines exactly do. Seemed however to me,
+> that they possibly do the same thing. I played a little bit around with
+> the RCU_TRACE and RCU_BOOST Option. Also I tried to comment out the
+> rcu_trace_boost_unboost_called() and rcu_trace_boost_unboosted() calls. My Tests
+> last appr. 30 Minutes with non-rt Payload "while [ 1 ]; do ls /;done". None of
+> my test showed extraordinary results. My worstcase values stay at about 220 us
+> with all my test combinations. I will attache a config with RCU_BOOST and
+> RCU_TRACE turned off to this mail, which provide a worst case value at 223 us
+> after about 40 Minutes test run on my board.
 
-     *  Simple, easy to use interface with target drivers. Particularly, 
-SCST core performs required pre- and post- processing of incoming 
-requests as well as necessary error recovery.
+I think I understood why CONFIG_RCU_TRACEin 2.6.24-rt helped to keep 
+latencies low. See:
 
-     * Undertakes most problems, related to execution contexts, thus 
-practically eliminating one of the most complicated problem in the 
-kernel drivers development. For example, a target driver for QLogic 
-22xx/23xx cards, which has all necessary features, is only about 2000 
-lines of code long.
+   ttp://marc.info/?l=linux-rt-users&m=121499677026236&w=4
 
-     * Very low overhead, fine-grained locks and simplest commands 
-processing path, which allow to reach maximum possible performance and 
-scalability. Particularly, incoming requests can be processed in the 
-caller's context or in one of the internal SCST core's tasklets, 
-therefore no extra context switches required.
+But as Steven pointed out, the preempt_enable_noresched at that place 
+might be illegal, anyway. In 2.6.25-rt, trace_mark() is no longer used 
+and I do not see an improvement with CONFIG_RCU_TRAC any more. Latencies 
+go up to 600us. I also tried with CONFIG_RCU_BOOST disabled, but it did 
+not improve the latencies. Actually, I still measure significantly 
+different latencies with 2.6.24.4-rt4, 2.6.24.7-rt14 and 2.6.25.8-rt7, 
+which is quite frustrating. As you seem not be able to reproduce my high 
+latencies, I wonder if there are some toolchain or glibc related issues.
 
-     * Device handlers, i.e. plugins, architecture provides extra 
-flexibility by allowing various I/O modes in backstorage handling. For 
-example, pass-through device handlers allow to use real SCSI hardware 
-and vdisk device handler allows to use files as virtual disks.
+Using ftrace to localized the latency spot would be the next step. But 
+it's not yet available for PowerPC. Looking into that now.
 
-     * Provides advanced per-initiator devices visibility management 
-(LUN masking), which allows different initiators to see different set of 
-devices with different access permissions. For instance, initiator A 
-could see exported from target T devices X and Y read-writable, and 
-initiator B from the same target T could see devices Y read-only and Z 
-read-writable.
+> Are you using the FEC all a pci network card?
 
-     * Emulates necessary functionality of SCSI host adapter, because 
-from remote initiators point of view SCST acts as a SCSI host with its 
-own devices.
+I use only the FEC. There is no PCI device.
 
-The following I/O modes are supported by SCST:
+Wolfgang.
 
-	* Pass-through mode with one to many relationship, i.e. when multiple 
-initiators can connect to the exported pass-through devices, for 
-virtually all SCSI devices types: disks (type 0), tapes (type 1), 
-processors (type 3), CDROMs (type 5), MO disks (type 7), medium changers 
-(type 8) and RAID controllers (type 0xC)
 
-	* FILEIO mode, which allows to use files on file systems or block 
-devices as virtual remotely available SCSI disks or CDROMs with benefits 
-of the Linux page cache
-
-	* BLOCKIO mode, which performs direct block I/O with a block device, 
-bypassing page-cache for all operations. This mode works ideally with 
-high-end storage HBAs and for applications that either do not need 
-caching between application and disk or need the large block throughput.
-
-	* User space mode using scst_user device handler, which allows to 
-implement in the user space virtual SCSI devices in the SCST environment.
-
-Detail description of SCST, its drivers and utilities you can find on 
-SCST home page http://scst.sourceforge.net.
-
-Comparison with the mainstream target middle level STGT you can find on 
-the SCST vs STGT page http://scst.sourceforge.net/scstvsstgt.html. In 
-short, SCST has the following main advantages over STGT:
-
-  - Better performance (in many cases tens of %% and more) with 
-potential for further improvement, for example, by implementing 
-zero-copy cache I/O.
-
-  - Monolithic in-kernel architecture, which follows standard Linux 
-kernel paradigm to eliminate distributed processing. It is simpler, 
-hence more reliable and maintainable.
-
-SCST is being prepared in form of patch for review and inclusion to the 
-kernel.
-
-Vlad
