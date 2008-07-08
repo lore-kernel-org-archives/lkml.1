@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759075AbYGHMow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757964AbYGHMpM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759075AbYGHMow (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 08:44:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758315AbYGHMnr
+	id S1757964AbYGHMpM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 08:45:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628AbYGHMoH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 08:43:47 -0400
-Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27533 "EHLO
+	Tue, 8 Jul 2008 08:44:07 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27536 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758707AbYGHMnq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 08:43:46 -0400
+	id S1758862AbYGHMoF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 08:44:05 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
@@ -18,11 +18,11 @@ Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
        grant.likely@secretlab.ca, vapier.adi@gmail.com,
        alan@lxorguk.ukuu.org.uk, hpa@zytor.com, lethal@linux-sh.org,
        florian@openwrt.org, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 31/58] microblaze_v5: includes SHM*, msgbuf
-Date: Tue,  8 Jul 2008 13:59:31 +0200
-Message-Id: <689cff1b6d98f60d8f8abc4472193688b524284d.1215517976.git.monstr@monstr.eu>
+Subject: [PATCH 42/58] microblaze_v5: clinkage.h linkage.h sections.h kmap_types.h
+Date: Tue,  8 Jul 2008 13:59:42 +0200
+Message-Id: <5b2ed516b2e51d5117386c1b6eb814acc6e5a157.1215517976.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <6e5687d37386334cf122d1eafcca0c6649c955be.1215517976.git.monstr@monstr.eu>
+In-Reply-To: <bcb94400dca62fb349d0ab1e0a6209291fdcdfc5.1215517976.git.monstr@monstr.eu>
 References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
  <c03d29cbccaef8aed8a2911c2a259fbd79ad23d9.1215517976.git.monstr@monstr.eu>
@@ -54,6 +54,17 @@ References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <04b0b222b84ba9cfe2507a9081f4d715f2323733.1215517976.git.monstr@monstr.eu>
  <d4c1b3ecfec1bf37ca0ecea6909ad25bbc945630.1215517976.git.monstr@monstr.eu>
  <6e5687d37386334cf122d1eafcca0c6649c955be.1215517976.git.monstr@monstr.eu>
+ <689cff1b6d98f60d8f8abc4472193688b524284d.1215517976.git.monstr@monstr.eu>
+ <9664f18e7e86af4332018549b29bf0797d6afcd5.1215517976.git.monstr@monstr.eu>
+ <c7120d8a6379cb1a18af5330997e30ec974acc2f.1215517976.git.monstr@monstr.eu>
+ <d1d33c18956829ec9ac7daf8d0516b17e85ed190.1215517976.git.monstr@monstr.eu>
+ <7a16429cfc461420883dbaa80c16047e5a1a91c1.1215517976.git.monstr@monstr.eu>
+ <b6a0f3bceb0867c55613463fc43be5328fcedecd.1215517976.git.monstr@monstr.eu>
+ <fc26823d77c7180b62022e2d4bcca3c4fe6de574.1215517976.git.monstr@monstr.eu>
+ <64089967061955b7a29eb6d4e6269ff75b5442f2.1215517976.git.monstr@monstr.eu>
+ <92e3ab88c2174acf4e25c474c1f68ffd4db72ca6.1215517976.git.monstr@monstr.eu>
+ <5174afd0eaa5c6cb9344ea3217199e48899be313.1215517976.git.monstr@monstr.eu>
+ <bcb94400dca62fb349d0ab1e0a6209291fdcdfc5.1215517976.git.monstr@monstr.eu>
 In-Reply-To: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 References: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -65,20 +76,55 @@ From: Michal Simek <monstr@monstr.eu>
 Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/msgbuf.h   |   39 ++++++++++++++++++++++++++++
- include/asm-microblaze/shmbuf.h   |   50 +++++++++++++++++++++++++++++++++++++
- include/asm-microblaze/shmparam.h |   14 ++++++++++
- 3 files changed, 103 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/msgbuf.h
- create mode 100644 include/asm-microblaze/shmbuf.h
- create mode 100644 include/asm-microblaze/shmparam.h
+ include/asm-microblaze/clinkage.h   |   27 +++++++++++++++++++++++++++
+ include/asm-microblaze/kmap_types.h |   29 +++++++++++++++++++++++++++++
+ include/asm-microblaze/linkage.h    |   15 +++++++++++++++
+ include/asm-microblaze/sections.h   |   21 +++++++++++++++++++++
+ 4 files changed, 92 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/clinkage.h
+ create mode 100644 include/asm-microblaze/kmap_types.h
+ create mode 100644 include/asm-microblaze/linkage.h
+ create mode 100644 include/asm-microblaze/sections.h
 
-diff --git a/include/asm-microblaze/msgbuf.h b/include/asm-microblaze/msgbuf.h
+diff --git a/include/asm-microblaze/clinkage.h b/include/asm-microblaze/clinkage.h
 new file mode 100644
-index 0000000..8172bc9
+index 0000000..a2e09bd
 --- /dev/null
-+++ b/include/asm-microblaze/msgbuf.h
-@@ -0,0 +1,39 @@
++++ b/include/asm-microblaze/clinkage.h
+@@ -0,0 +1,27 @@
++/*
++ * Macros to reflect C symbol-naming conventions
++ *
++ * Copyright (C) 2003 John Williams <jwilliams@itee.uq.edu.au>
++ * Copyright (C) 2001,2002 NEC Corporatione
++ * Copyright (C) 2001,2002 Miles Bader <miles@gnu.org>
++ *
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License. See the file COPYING in the main directory of this
++ * archive for more details.
++ *
++ * Written by Miles Bader <miles@gnu.org>
++ * Microblaze port by John Williams
++ */
++
++#ifndef _ASM_MICROBLAZE_CLINKAGE_H
++#define _ASM_MICROBLAZE_CLINKAGE_H
++
++#define __ASSEMBLY__
++
++#include <linux/linkage.h>
++
++#define C_SYMBOL_NAME(name)	name
++#define C_ENTRY(name)		.globl name; .align 4; name
++#define C_END(name)
++
++#endif /* _ASM_MICROBLAZE_CLINKAGE_H */
+diff --git a/include/asm-microblaze/kmap_types.h b/include/asm-microblaze/kmap_types.h
+new file mode 100644
+index 0000000..4d7e222
+--- /dev/null
++++ b/include/asm-microblaze/kmap_types.h
+@@ -0,0 +1,29 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -87,43 +133,33 @@ index 0000000..8172bc9
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_MSGBUF_H
-+#define _ASM_MICROBLAZE_MSGBUF_H
++#ifndef _ASM_MICROBLAZE_KMAP_TYPES_H
++#define _ASM_MICROBLAZE_KMAP_TYPES_H
 +
-+/*
-+ * The msqid64_ds structure for microblaze architecture.
-+ * Note extra padding because this structure is passed back and forth
-+ * between kernel and user space.
-+ *
-+ * Pad space is left for:
-+ * - 64-bit time_t to solve y2038 problem
-+ * - 2 miscellaneous 32-bit values
-+ */
-+
-+struct msqid64_ds {
-+	struct ipc64_perm msg_perm;
-+	__kernel_time_t msg_stime; /* last msgsnd time */
-+	unsigned long __unused1;
-+	__kernel_time_t msg_rtime; /* last msgrcv time */
-+	unsigned long __unused2;
-+	__kernel_time_t msg_ctime; /* last change time */
-+	unsigned long __unused3;
-+	unsigned long msg_cbytes; /* current number of bytes on queue */
-+	unsigned long msg_qnum; /* number of messages in queue */
-+	unsigned long msg_qbytes; /* max number of bytes on queue */
-+	__kernel_pid_t msg_lspid; /* pid of last msgsnd */
-+	__kernel_pid_t msg_lrpid; /* last receive pid */
-+	unsigned long __unused4;
-+	unsigned long __unused5;
++enum km_type {
++	KM_BOUNCE_READ,
++	KM_SKB_SUNRPC_DATA,
++	KM_SKB_DATA_SOFTIRQ,
++	KM_USER0,
++	KM_USER1,
++	KM_BIO_SRC_IRQ,
++	KM_BIO_DST_IRQ,
++	KM_PTE0,
++	KM_PTE1,
++	KM_IRQ0,
++	KM_IRQ1,
++	KM_SOFTIRQ0,
++	KM_SOFTIRQ1,
++	KM_TYPE_NR,
 +};
 +
-+#endif /* _ASM_MICROBLAZE_MSGBUF_H */
-diff --git a/include/asm-microblaze/shmbuf.h b/include/asm-microblaze/shmbuf.h
++#endif /* _ASM_MICROBLAZE_KMAP_TYPES_H */
+diff --git a/include/asm-microblaze/linkage.h b/include/asm-microblaze/linkage.h
 new file mode 100644
-index 0000000..a460e36
+index 0000000..3a8e36d
 --- /dev/null
-+++ b/include/asm-microblaze/shmbuf.h
-@@ -0,0 +1,50 @@
++++ b/include/asm-microblaze/linkage.h
+@@ -0,0 +1,15 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -132,54 +168,19 @@ index 0000000..a460e36
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_SHMBUF_H
-+#define _ASM_MICROBLAZE_SHMBUF_H
++#ifndef _ASM_MICROBLAZE_LINKAGE_H
++#define _ASM_MICROBLAZE_LINKAGE_H
 +
-+/*
-+ * The shmid64_ds structure for microblaze architecture.
-+ * Note extra padding because this structure is passed back and forth
-+ * between kernel and user space.
-+ *
-+ * Pad space is left for:
-+ * - 64-bit time_t to solve y2038 problem
-+ * - 2 miscellaneous 32-bit values
-+ */
++#define __ALIGN		.align 4
++#define __ALIGN_STR	".align 4"
 +
-+struct shmid64_ds {
-+	struct ipc64_perm	shm_perm; /* operation perms */
-+	size_t			shm_segsz; /* size of segment (bytes) */
-+	__kernel_time_t		shm_atime; /* last attach time */
-+	unsigned long		__unused1;
-+	__kernel_time_t		shm_dtime; /* last detach time */
-+	unsigned long		__unused2;
-+	__kernel_time_t		shm_ctime; /* last change time */
-+	unsigned long		__unused3;
-+	__kernel_pid_t		shm_cpid; /* pid of creator */
-+	__kernel_pid_t		shm_lpid; /* pid of last operator */
-+	unsigned long		shm_nattch; /* no. of current attaches */
-+	unsigned long		__unused4;
-+	unsigned long		__unused5;
-+};
-+
-+struct shminfo64 {
-+	unsigned long	shmmax;
-+	unsigned long	shmmin;
-+	unsigned long	shmmni;
-+	unsigned long	shmseg;
-+	unsigned long	shmall;
-+	unsigned long	__unused1;
-+	unsigned long	__unused2;
-+	unsigned long	__unused3;
-+	unsigned long	__unused4;
-+};
-+
-+#endif /* _ASM_MICROBLAZE_SHMBUF_H */
-diff --git a/include/asm-microblaze/shmparam.h b/include/asm-microblaze/shmparam.h
++#endif /* _ASM_MICROBLAZE_LINKAGE_H */
+diff --git a/include/asm-microblaze/sections.h b/include/asm-microblaze/sections.h
 new file mode 100644
-index 0000000..719bbed
+index 0000000..d0c12fd
 --- /dev/null
-+++ b/include/asm-microblaze/shmparam.h
-@@ -0,0 +1,14 @@
++++ b/include/asm-microblaze/sections.h
+@@ -0,0 +1,21 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -188,12 +189,19 @@ index 0000000..719bbed
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_SHMPARAM_H
-+#define _ASM_MICROBLAZE_SHMPARAM_H
++#ifndef _ASM_MICROBLAZE_SECTIONS_H
++#define _ASM_MICROBLAZE_SECTIONS_H
 +
-+#define SHMLBA	PAGE_SIZE /* attach addr a multiple of this */
++#include <asm-generic/sections.h>
 +
-+#endif /* _ASM_MICROBLAZE_SHMPARAM_H */
++extern char _ssbss[], _esbss[];
++extern unsigned long __ivt_start[], __ivt_end[];
++
++#ifdef CONFIG_MTD_UCLINUX
++extern char *_ebss;
++#endif
++
++#endif /* _ASM_MICROBLAZE_SECTIONS_H */
 -- 
 1.5.4.GIT
 
