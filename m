@@ -1,72 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756745AbYGHLu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756520AbYGHMBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756745AbYGHLu3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 07:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbYGHLuU
+	id S1756520AbYGHMBh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 08:01:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbYGHMB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 07:50:20 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:46638 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752573AbYGHLuS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 07:50:18 -0400
-Subject: [PATCH] CONFIG_KMOD needs to be default y
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Tomas Winkler <tomasw@gmail.com>, rusty <rusty@rustcorp.com.au>
-Content-Type: text/plain
-Date: Tue, 08 Jul 2008 13:49:31 +0200
-Message-Id: <1215517771.9610.28.camel@johannes.berg>
+	Tue, 8 Jul 2008 08:01:29 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:45402 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750717AbYGHMB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 08:01:28 -0400
+Date: Tue, 8 Jul 2008 16:00:53 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: austin zhang <austin_zhang@linux.intel.com>
+Cc: herbert@gondor.apana.org.au, davem@davemloft.net, chaapala@cisco.com,
+       linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com
+Subject: Re: FW: [Fwd: [PATCH]Using Intel CRC32 instruction to implement hardware accelerated CRC32c algorithm.]
+Message-ID: <20080708120050.GA6410@2ka.mipt.ru>
+References: <000901c8e0d4$6f5cf230$7fb410ac@ccr.corp.intel.com> <1215512754.2906.23.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1215512754.2906.23.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Far too many people configure their kernel without CONFIG_KMOD
-and then complain that wireless breaks, thanks to Herbert Xu for
-pointing me to this.
+Hi.
 
-This patch makes CONFIG_KMOD default to "y" and adds a warning
-that people should not turn it off.
+On Tue, Jul 08, 2008 at 06:25:54AM -0400, austin zhang (austin_zhang@linux.intel.com) wrote:
+> > designed to support sync just as well as async despite the name)
+> ﻿Do you mean use async_xxx interface?
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
----
-Maybe it should even depend on EMBEDDED? Who needs this option off
-in the first place?
+No, async_xxx is very different hardware assist, although it can be
+converted to cryptoapi too.
 
- init/Kconfig |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+> > to rewrite the crypto/crc32c implementation such that one tfm can
+> > be used by multiple users.  All that has to be done is to move
+> > the state from the tfm into the request object.
+>  
+> > 2) Convert all crc32c users to use the crypto interface and phase
+> > out lib/crc32c completely.
+> > 
+> > 3) Add the Intel-specific crc32c implementation through the crypto
+> > API.
+> Agreed. And which module in crypto is the template for following the crypto API?
 
---- everything.orig/init/Kconfig	2008-07-08 13:42:10.000000000 +0200
-+++ everything/init/Kconfig	2008-07-08 13:43:41.000000000 +0200
-@@ -895,6 +895,7 @@ config MODULE_SRCVERSION_ALL
- config KMOD
- 	bool "Automatic kernel module loading"
- 	depends on MODULES
-+	default y
- 	help
- 	  Normally when you have selected some parts of the kernel to
- 	  be created as kernel modules, you must load them (using the
-@@ -902,7 +903,12 @@ config KMOD
- 	  here, some parts of the kernel will be able to load modules
- 	  automatically: when a part of the kernel needs a module, it
- 	  runs modprobe with the appropriate arguments, thereby
--	  loading the module if it is available.  If unsure, say Y.
-+	  loading the module if it is available.
-+
-+	  Do not say N unless you know you do not need it, and expect
-+	  wireless, crypto and other things to break in this case.
-+
-+	  Say Y.
- 
- config STOP_MACHINE
- 	bool
+This is some kind of how cbc(cipher) or ecb(cipher) templates are done:
+cbc(aes), cbc(aes-i686) for example.
+The same would be possible to do with crc32c but for checksumming (which
+is effectively a hash).
 
-
+-- 
+	Evgeniy Polyakov
