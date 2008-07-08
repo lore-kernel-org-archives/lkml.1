@@ -1,107 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756969AbYGHKz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756041AbYGHLYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756969AbYGHKz6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 06:55:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754442AbYGHKzs
+	id S1756041AbYGHLYc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 07:24:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbYGHLYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 06:55:48 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:56581 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754190AbYGHKzq (ORCPT
+	Tue, 8 Jul 2008 07:24:22 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:58495 "EHLO
+	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752968AbYGHLYV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 06:55:46 -0400
-Message-ID: <487345E9.8090505@linux.vnet.ibm.com>
-Date: Tue, 08 Jul 2008 16:18:09 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080505)
+	Tue, 8 Jul 2008 07:24:21 -0400
+X-BigFish: VPS-42(zz1432R98dR7efV1805M3117K655O4220kzz10d3izzz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0K3OQC3-02-40B-01
+Date: Tue, 8 Jul 2008 13:24:02 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+CC: Ingo Molnar <mingo@elte.hu>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-next@vger.kernel.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] acpi: Disable IRQ 0 through I/O APIC for some HP
+	systems
+Message-ID: <20080708112402.GA2301@alberich.amd.com>
+References: <Pine.LNX.4.55.0807010055070.30785@cliff.in.clinika.pl>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: David Teigland <teigland@redhat.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       Eric.Moore@lsi.com, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [BUG]  linux-next: Tree for March 25 kernel oops, when loading
- mpt fusion driver - regression
-References: <20080325175224.3ee62b09.sfr@canb.auug.org.au> <47E9F0B0.4060006@linux.vnet.ibm.com>  <20080626203857.GB3815@redhat.com> <1215372215.4197.28.camel@localhost.localdomain> <487279C9.2010802@linux.vnet.ibm.com> <1215462321.3274.34.camel@localhost.localdomain>
-In-Reply-To: <1215462321.3274.34.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.55.0807010055070.30785@cliff.in.clinika.pl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 08 Jul 2008 11:24:06.0593 (UTC) FILETIME=[22368B10:01C8E0ED]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Tue, 2008-07-08 at 01:47 +0530, Kamalesh Babulal wrote:
->> James Bottomley wrote:
->>> On Thu, 2008-06-26 at 15:38 -0500, David Teigland wrote:
->>>> On Wed, Mar 26, 2008 at 12:14:00PM +0530, Kamalesh Babulal wrote:
->>>>> Hi Stephen,
->>>>>
->>>>> Kernel bug is hit while booting up the next-20080325 kernel with MPT
->>>>> Fusion driver built in.This was reported previously for the
->>>>> next-20080320 kernel
->>>>> http://marc.info/?l=linux-next&m=120601013920868&w=2
->>>> Hi, did you ever get this fixed?  I've been having the same problem,
->>>> http://marc.info/?l=linux-scsi&m=121061780821823&w=4
->>>> still exists on 2.6.26-rc8 for me,
->>>>
->>>> Loading scsi_transport_spi.ko module
->>>> Loading mptscsih.ko module
->>>> Loading mptspi.ko module
->>>> Fusion MPT SPI Host driver 3.04.06
->>>> ACPI: PCI Interrupt 0000:86:01.0[A] -> GSI 32 (level, low) -> IRQ 32
->>>> mptbase: ioc0: Initiating bringup
->>>> ioc0: LSI53C1030 B2: Capabilities={Initiator,Target}
->>>> mptbase: ioc0: PCI-MSI enabled
->>> I speculate that this might be related to the problem.  The fusion
->>> driver was recently flipped to default to MSI enable (previously it had
->>> disabled them).  Could you boot it with the fusion module parameter
->>>
->>> mpt_msi_enable=0
->>>
->>> if it actually boots that will be a good confirmation that MSI is to
->>> blame.
->>>
->>>> mptbase: ioc0: Initiating recovery
->>> This I suspect is because of a lost interrupt.
->>>
->>>> BUG: unable to handle kernel NULL pointer dereference at 0000000000000948
->>> And this one looks to be a second bug:  The MSI fault path is actually
->>> causing this oops.
->>>
->>> James
->>>
->> Hi James,
->>
->> Kernel Bug is still reproducible with 2.6.26-rc9-git1 kernel, I tried booting with mpt_msi_enable=0
->> as boot paramenter, but the call trace remains the same
->>
->> oading mptbase.ko module[    6.766853] Fusion MPT base driver 3.04.06
->>
->> [    6.783482] Copyright (c) 1999-2007 LSI Corporation
->> Loading mptscsih.ko module
->> Loading mptspi.ko module
->> [    6.813157] Fusion MPT SPI Host driver 3.04.06
->> [    6.827369] ACPI: PCI Interrupt 0000:01:01.0[A] -> GSI 22 (level, low) -> IRQ 22
->> [    6.850624] mptbase: ioc0: Initiating bringup
->> [    6.985601] ioc0: LSI53C1030 B2: Capabilities={Initiator}
->> [    7.002711] mptbase: ioc0: PCI-MSI enabled
->                                 ^^^^^^^^^^^^^^^
+On Tue, Jul 01, 2008 at 01:12:06AM +0100, Maciej W. Rozycki wrote:
+> From: Matthew Garrett <mjg59@srcf.ucam.org>
 > 
-> If you had successfully specified mpt_msi_enable=0 this line wouldn't
-> appear.
-> 
-> My best guess is that you incorrectly specified it as a kernel command
-> line parameter rather than a module parameter.
-> 
-> James
-> 
-Hi James,
+>  Some HP laptops have a problem with their DSDT reporting as
+> HP/SB400/10000, which includes some code which overrides all temperature
+> trip points to 16C if the INTIN2 input of the I/O APIC is enabled.  This
+> input is incorrectly designated the ISA IRQ 0 via an interrupt source
+> override even though it is wired to the output of the master 8259A and
+> INTIN0 is not connected at all.  So far two models have been identified, 
+> namely nx6125 and nx6325.
 
-Sorry my fault :(, the kernel bug is not reproducible after disabling it.
+Out of sheer curiosity. What makes you think that IRQ0 is not
+connected to INT0 of IO APIC? The IRQ0 pin2 override?
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Why would we trust that BIOS information if the broken BIOS does
+weird things if INT2 of IO APIC is _not_ masked?
+
+IMHO on those HP systems we should skip the (bogus?) timer override,
+leave IRQ0 -> IOAPIC/INT0 and mask IOAPIC/INT2. Or at least we should
+test that configuration.
+
+I admit that I have lost track of who has provided which patches,
+which patch does exactly what ((IO|L)A)PIC configuration, and who has
+tested what combinations, and what the results were.
+
+So I've just done the following (based on x86/master as of yesterday):
+
+Booting an HP nx6325
+
+(1)  with "acpi_skip_timer_override" to avoid configuration
+     of IOAPIC/INT2 and to avoid masking of IOAPIC/INT0.
+
+  plus
+
+(2) adding (hardcoded in check_timer()) some code to explicitly mask
+    IOAPIC/INT2 to quiesce the fan (work around the DSDT issue).
+
+With that setup my test box boots w/o problems (no fan noise, no
+throttling, no stablity problems so far). Here the relevant dmesg
+parts:
+
+Command line: root=/dev/sda2 video=radeonfb:noaccel debug apic=debug acpi_skip_timer_override
+  ...
+IOAPIC[0]: apic_id 2, version 0, address 0xfec00000, GSI 
+  ...
+ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+ACPI: BIOS IRQ0 pin2 override ignored.
+  ...
+using C1E aware idle routine
+  ...
+init IO_APIC IRQs
+IOAPIC[0]: Set routing entry (2-0 -> 0x30 -> IRQ 0 Mode:0 Active:0)
+IOAPIC[0]: Set routing entry (2-1 -> 0x31 -> IRQ 1 Mode:0 Active:0)
+IOAPIC[0]: Set routing entry (2-2 -> 0x32 -> IRQ 2 Mode:0 Active:0)
+  ...
+IO-APIC (apicid-pin) 2-16, 2-17, 2-18, 2-19, 2-20 not connected.
+IOAPIC[0]: Set routing entry (2-21 -> 0x49 -> IRQ 21 Mode:1 Active:1)
+IO-APIC (apicid-pin) 2-22, 2-23 not connected.
+..TIMER: vector=0x30 apic1=0 pin1=0 apic2=-1 pin2=-1
+CPU0: AMD Turion(tm) 64 X2 Mobile Technology TL-60 stepping 02
+Using local APIC timer interrupts.
+  ...
+IO APIC #2......
+  ...
+NR Dst Mask Trig IRR Pol Stat Dmod Deli Vect:   
+00 003 0    0    0   0   0    1    1    30
+01 003 0    0    0   0   0    1    1    31
+02 003 1    0    0   0   0    1    1    32
+
+
+I think we have 3 alternatives to setup timer interrupt on those machines
+
+(A) Setup timer as Virtual Wire IRQ.
+    (that's the way the old code used to configure it, e.g. in 2.6.25)
+(B) The current approach to setup timer as ExtINT.
+(C) Use IOAPIC/INT0.
+
+Shouldn't be that hard to find the best solution here:
+
+(A) proved to work (and even "accidentially" masked IOAPIC/INT2 which
+    avoided the DSDT problem)
+
+(B) ??? who tested this, Rafael -- The stability issues, did they happen
+    with a kernel based on that solution?
+
+(C) ... is my preferred solution. I tested it and I've not seen problems
+    with it (so far) -- maybe it's naive but I think it's the most
+    obvious solution (*)
+
+
+Regards,
+
+Andreas
+
+(*) BTW, default for SB400 is to route IRQ0 to IOAPIC/INT0 and output
+    of PIC to IOAPIC/INT2. On my test box this wasn't configured
+    differently. Thus I don't understand why the BIOS provided an
+    IRQ0/INT2 override at all.
+
+
