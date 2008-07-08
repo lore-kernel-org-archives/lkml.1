@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756141AbYGHI3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756779AbYGHIaC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756141AbYGHI3d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 04:29:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbYGHI3Z
+	id S1756779AbYGHIaC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 04:30:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbYGHI3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 04:29:25 -0400
-Received: from mxsec.euro-web.fr ([81.93.243.199]:40968 "EHLO
-	mxsec.euro-web.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751276AbYGHI3Y convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 04:29:24 -0400
-From: David CHANIAL <david.ml@euro-web.fr>
-Organization: Euro Web
-To: linux-kernel@vger.kernel.org, Francois Romieu <romieu@fr.zoreil.com>
-Subject: Re: weird bug on r8169 with usb
-Date: Tue, 8 Jul 2008 10:29:21 +0200
-User-Agent: KMail/1.9.7
-Cc: Kasper Sandberg <lkml@metanurb.dk>
-References: <200806250018.37617.david.ml@euro-web.fr>
-In-Reply-To: <200806250018.37617.david.ml@euro-web.fr>
+	Tue, 8 Jul 2008 04:29:53 -0400
+Received: from saeurebad.de ([85.214.36.134]:50986 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750810AbYGHI3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 04:29:52 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Subject: [PATCH] lguest: fix switcher_page leak on unload
+CC: linux-kernel@vger.kernel.org
+Date: Tue, 08 Jul 2008 10:29:42 +0200
+Message-ID: <87r6a4n5hl.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200807081029.21727.david.ml@euro-web.fr>
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le Wednesday 25 June 2008 00:18:37 David CHANIAL, vous avez écrit :
-> If i boot my system/kernel with usb devices plugged, eth0 is detected but
-> unusable. I unplug the usb devices, kernel boot, and eth0 is usable.
-> The bug is reproducible as much as necessary.
+map_switcher allocates the array, unmap_switcher has to free it
+accordingly.
 
-Hi Francois,
+Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+---
 
-Since i have updated to 2.6.25.10 it seems to be solved.
-I will alert you if the "bug" reappear.
-
-I think one of the update between 2.6.25.5 and 2.6.25.10 solve the problem.
-
-$ uname -a
-Linux cigalons 2.6.25.10 #1 SMP PREEMPT Mon Jul 7 17:33:26 CEST 2008 i686 
-Intel(R) Core(TM)2 Quad CPU Q6600 @ 2.40GHz GenuineIntel GNU/Linux
-
-Best regards,
--- 
-David CHANIAL
+diff --git a/drivers/lguest/core.c b/drivers/lguest/core.c
+index 5eea435..90663e0 100644
+--- a/drivers/lguest/core.c
++++ b/drivers/lguest/core.c
+@@ -135,6 +135,7 @@ static void unmap_switcher(void)
+ 	/* Now we just need to free the pages we copied the switcher into */
+ 	for (i = 0; i < TOTAL_SWITCHER_PAGES; i++)
+ 		__free_pages(switcher_page[i], 0);
++	kfree(switcher_page);
+ }
+ 
+ /*H:032
