@@ -1,220 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754360AbYGHNXF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbYGHN3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754360AbYGHNXF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 09:23:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbYGHNWz
+	id S1754684AbYGHN3g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 09:29:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753489AbYGHN32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 09:22:55 -0400
-Received: from smarthost1.greenhost.nl ([85.17.153.87]:43559 "EHLO
-	smarthost1.samage.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753029AbYGHNWx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 09:22:53 -0400
-X-Greylist: delayed 1331 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Jul 2008 09:22:52 EDT
-Message-ID: <13988.84.245.32.19.1215522030.squirrel@secure.samage.net>
-In-Reply-To: <Pine.LNX.4.44L0.0806241032490.2160-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0806241032490.2160-100000@iolanthe.rowland.org>
-Date: Tue, 8 Jul 2008 15:00:30 +0200 (CEST)
-Subject: Re: 2.6.27-rc7-git1: usb-storage breakage with non-functional disk
-From: "Indan Zupancic" <indan@nul.nu>
-To: "Alan Stern" <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Matthew Dharm" <mdharm-usb@one-eyed-alien.net>,
-       "USB development list" <linux-usb@vger.kernel.org>,
-       "LKML" <linux-kernel@vger.kernel.org>, "Greg KH" <greg@kroah.com>,
-       "linux-scsi" <linux-scsi@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-User-Agent: SquirrelMail/1.4.8
+	Tue, 8 Jul 2008 09:29:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37173 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753355AbYGHN31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 09:29:27 -0400
+Date: Tue, 8 Jul 2008 09:28:55 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Bob Montgomery <bob.montgomery@hp.com>
+Cc: "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
+       Andi Kleen <ak@suse.de>, Dave Jones <rhkernel-list@redhat.com>,
+       airlied@linux.ie,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: AMD Family 10H machine check on vmcore read
+Message-ID: <20080708132855.GB7866@redhat.com>
+References: <1215472086.3361.297.camel@amd.troyhebe>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Spam-Score: 0.0
-X-Scan-Signature: a2a1964a1561ab7a63907465a561ffe8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1215472086.3361.297.camel@amd.troyhebe>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Mon, Jul 07, 2008 at 05:08:06PM -0600, Bob Montgomery wrote:
+> We maintain a 2.6.18 derived kernel.  
+> When testing kdump on a new AMD Family 10h (16) processor, once in the
+> kdump kernel, a read from either /proc/vmcore or /dev/oldmem that
+> corresponds to the area of memory identified in the original (crashing)
+> kernel by these boot messages:
+> 
+> Mapping aperture over 65536 KB of RAM @ 1c000000
+> ...
+> PCI-DMA: Disabling AGP.
+> PCI-DMA: aperture base @ 1c000000 size 65536 KB
+> PCI-DMA: using GART IOMMU.
+> 
+> causes a machine check.
+> 
+> On a Family 15 AMD64 processor running this kernel and kdump kernel, I
+> can read the areas identified as being in the aperture from the kdump
+> kernel and get values, but on the new processor, reads from the kdump
+> kernel that are within that address range result in the machine check:
+> 
+> HARDWARE ERROR
+> CPU 0: Machine Check Exception:                4 Bank 4: be0000010005001b
+> TSC 141bd974323de ADDR 1c000000 MISC e00c0ffe01000000
+> 
+> While up on the original kernel, attempts to read those locations
+> from /dev/mem result in EFAULTs on both the old and new processors.
+> It's just the reads from the kdump kernel's /proc/vmcore or /dev/oldmem
+> that work ok on the old processor and machine check on the new one.
+> 
+> The output of /proc/iomem does not specifically identify the area.  It's
+> just within the range of: 
+> 
+> 00100000-cfe4ffff : System RAM
+> 
+> I found code in arch/x86_64/kernel/mce.c:mce_cpu_quirks() that disables
+> GART TBL walk errors to prevent machine checks.  The code checked for
+> family 15 and so I added family 16 as well.  Here is a patch that fixes
+> my version of the kernel:
+> 
+> --- linux-source-2.6.18-kdump/arch/x86_64/kernel/mce.c.orig	2008-07-02 09:27:39.000000000 -0600
+> +++ linux-source-2.6.18-kdump/arch/x86_64/kernel/mce.c	2008-07-02 09:28:45.000000000 -0600
+> @@ -354,7 +354,8 @@ static void mce_init(void *dummy)
+>  static void __cpuinit mce_cpu_quirks(struct cpuinfo_x86 *c)
+>  { 
+>  	/* This should be disabled by the BIOS, but isn't always */
+> -	if (c->x86_vendor == X86_VENDOR_AMD && c->x86 == 15) {
+> +	if (c->x86_vendor == X86_VENDOR_AMD && 
+> +			((c->x86 == 15) || (c->x86 == 16))) {
+>  		/* disable GART TBL walk error reporting, which trips off 
+>  		   incorrectly with the IOMMU & 3ware & Cerberus. */
+>  		clear_bit(10, &bank[4]);
+> 
+> 
+Hi Bob,
 
-On Tue, June 24, 2008 16:41, Alan Stern wrote:
-> This is a nasty problem.  What happened is that the endpoint pointer
-> arrays ep_in and ep_out in struct usb_device get cleared before the
-> device drivers' disconnect methods are called.  Since usb-storage
-> dereferences one of the pointers in those arrays, you ended up with an
-> invalid memory access.
->
-> In principle the arrays should not be cleared until after the drivers
-> have been unbound.  However for now it is simpler to remove the
-> dereference in usb-storage.  Especially since the reason for adding it
-> in the first place turned out to be wrong.
->
-> Is this oops fairly reproducible?  If it is, then you should be able to
-> test whether this patch fixes it.
->
-> Alan Stern
->
->
->
-> Index: usb-2.6/drivers/usb/storage/scsiglue.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/usb/storage/scsiglue.c
-> +++ usb-2.6/drivers/usb/storage/scsiglue.c
-> @@ -71,7 +71,6 @@ static const char* host_info(struct Scsi
->  static int slave_alloc (struct scsi_device *sdev)
->  {
->  	struct us_data *us = host_to_us(sdev->host);
-> -	struct usb_host_endpoint *bulk_in_ep;
->
->  	/*
->  	 * Set the INQUIRY transfer length to 36.  We don't use any of
-> @@ -80,16 +79,22 @@ static int slave_alloc (struct scsi_devi
->  	 */
->  	sdev->inquiry_len = 36;
->
-> -	/* Scatter-gather buffers (all but the last) must have a length
-> -	 * divisible by the bulk maxpacket size.  Otherwise a data packet
-> -	 * would end up being short, causing a premature end to the data
-> -	 * transfer.  We'll use the maxpacket value of the bulk-IN pipe
-> -	 * to set the SCSI device queue's DMA alignment mask.
-> +	/* USB has unusual DMA-alignment requirements: Although the
-> +	 * starting address of each scatter-gather element doesn't matter,
-> +	 * the length of each element except the last must be divisible
-> +	 * by the Bulk maxpacket value.  There's currently no way to
-> +	 * express this by block-layer constraints, so we'll cop out
-> +	 * and simply require addresses to be aligned at 512-byte
-> +	 * boundaries.  This is okay since most block I/O involves
-> +	 * hardware sectors that are multiples of 512 bytes in length,
-> +	 * and since host controllers up through USB 2.0 have maxpacket
-> +	 * values no larger than 512.
-> +	 *
-> +	 * But it doesn't suffice for Wireless USB, where Bulk maxpacket
-> +	 * values can be as large as 2048.  To make that work properly
-> +	 * will require changes to the block layer.
->  	 */
-> -	bulk_in_ep = us->pusb_dev->ep_in[usb_pipeendpoint(us->recv_bulk_pipe)];
-> -	blk_queue_update_dma_alignment(sdev->request_queue,
-> -			le16_to_cpu(bulk_in_ep->desc.wMaxPacketSize) - 1);
-> -			/* wMaxPacketSize must be a power of 2 */
-> +	blk_queue_update_dma_alignment(sdev->request_queue, (512 - 1));
->
->  	/*
->  	 * The UFI spec treates the Peripheral Qualifier bits in an
->
+I am not sure what's happening here. Because in /proc/iomem, GART reserved
+area is reported as System RAM, kdump kernel will try to read this area
+and save it. Now I am not sure, what is so special about this area that
+mapping it and reading it in second kernel would cause a MCE.
 
-I hit almost the same BUG, so tried out this patch, and can confirm that
-it fixes the BUG. Other devices still work too. As it's 2.6.26-rc9 it might
-be time to send this patch upstream, before it's too late.
+CCing it to LKML, hoping people knowing GART will be able to provide some
+input.
 
-Any idea why my cardreader doesn't work in the first place though?
+> But I don't see this fix upstream in the kernel.  So I'm wondering if
+> some other patch protects other kdump kernels from this problem.  In
+> particular, a recent patch that informed the e820 map about the gart
+> aperture to prevent a normal kernel and a kexec kernel from putting it
+> at different addresses.  It didn't mention machine checks from kdump
+> kernels, but I wonder if it would have prevented access to that memory
+> area by having it be excluded from the /proc/vmcore list of areas??
 
-The error is basically:
+Can you provide a link to the patch above? If /proc/iomem, does not report
+GART area as system ram then it will be excluded from the dump. (IIUC,
+IOMMU tables are in GART area and ideally one should be capturing it to 
+find out how IOMMU tables looked like at the time of crash).
 
-usb 1-5: new high speed USB device using ehci_hcd and address 22
-usb 1-5: device not accepting address 22, error -71
-usb 1-5: new high speed USB device using ehci_hcd and address 23
-usb 1-5: configuration #1 chosen from 1 choice
-scsi17 : SCSI emulation for USB Mass Storage devices
-usb-storage: device found at 23
-usb-storage: waiting for device to settle before scanning
-usb 1-5: reset high speed USB device using ehci_hcd and address 23
-usb 1-5: reset high speed USB device using ehci_hcd and address 23
-usb 1-5: reset high speed USB device using ehci_hcd and address 23
-scsi 17:0:0:0: Direct-Access     Generic  USB SD Reader    1.00 PQ: 0 ANSI: 0
-usb 1-5: reset high speed USB device using ehci_hcd and address 23
-usb 1-5: device not accepting address 23, error -71
-usb 1-5: reset high speed USB device using ehci_hcd and address 23
-usb 1-5: reset high speed USB device using ehci_hcd and address 23
-usb 1-5: reset high speed USB device using ehci_hcd and address 23
-usb 1-5: reset high speed USB device using ehci_hcd and address 23
-usb 1-5: can't restore configuration #1 (error=-71)
-usb 1-5: USB disconnect, address 23
-sd 17:0:0:0: [sdb] READ CAPACITY failed
-sd 17:0:0:0: [sdb] Result: hostbyte=DID_ERROR driverbyte=DRIVER_OK,SUGGEST_OK
-sd 17:0:0:0: [sdb] Sense not available.
-sd 17:0:0:0: [sdb] Write Protect is off
-sd 17:0:0:0: [sdb] Mode Sense: 00 00 00 00
-sd 17:0:0:0: [sdb] Assuming drive cache: write through
-sd 17:0:0:0: [sdb] Attached SCSI removable disk
-sd 17:0:0:0: Attached scsi generic sg2 type 0
-usb-storage: device scan complete
-usb 1-5: new high speed USB device using ehci_hcd and address 24
-usb 1-5: string descriptor 0 read error: -71
-usb 1-5: configuration #1 chosen from 1 choice
-usb 1-5: can't set config #1, error -71
-
-It's a new Trust Mini Cardreader, model CR-1350p.
-
-$ lsusb -s 24 -v
-
-Bus 001 Device 024: ID 058f:6332 Alcor Micro Corp.
-Device Descriptor:
-  bLength                18
-  bDescriptorType         1
-  bcdUSB               2.00
-  bDeviceClass            0 (Defined at Interface level)
-  bDeviceSubClass         0
-  bDeviceProtocol         0
-  bMaxPacketSize0        64
-  idVendor           0x058f Alcor Micro Corp.
-  idProduct          0x6332
-  bcdDevice            1.02
-  iManufacturer           1
-  iProduct                2
-  iSerial                 3
-  bNumConfigurations      1
-  Configuration Descriptor:
-    bLength                 9
-    bDescriptorType         2
-    wTotalLength           32
-    bNumInterfaces          1
-    bConfigurationValue     1
-    iConfiguration          0
-    bmAttributes         0x80
-      (Bus Powered)
-    MaxPower              100mA
-    Interface Descriptor:
-      bLength                 9
-      bDescriptorType         4
-      bInterfaceNumber        0
-      bAlternateSetting       0
-      bNumEndpoints           2
-      bInterfaceClass         8 Mass Storage
-      bInterfaceSubClass      6 SCSI
-      bInterfaceProtocol     80 Bulk (Zip)
-      iInterface              0
-      Endpoint Descriptor:
-        bLength                 7
-        bDescriptorType         5
-        bEndpointAddress     0x01  EP 1 OUT
-        bmAttributes            2
-          Transfer Type            Bulk
-          Synch Type               None
-          Usage Type               Data
-        wMaxPacketSize     0x0200  1x 512 bytes
-        bInterval               0
-      Endpoint Descriptor:
-        bLength                 7
-        bDescriptorType         5
-        bEndpointAddress     0x82  EP 2 IN
-        bmAttributes            2
-          Transfer Type            Bulk
-          Synch Type               None
-          Usage Type               Data
-        wMaxPacketSize     0x0200  1x 512 bytes
-        bInterval               0
-
-It doesn't matter in which port I put the thing (front, back),
-and I've tried older kernels too (2.6.12), but I get the same
-error there. This is with an Intel 945G chipset.
-(I've no Windows to test if it works there.)
-
-Is it just a crappy device which I should bring back, or is
-there more going on?
-
-Greetings,
-
-Indan
-
-
+Thanks
+Vivek
