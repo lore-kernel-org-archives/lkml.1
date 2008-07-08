@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759148AbYGHMqi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759891AbYGHMq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759148AbYGHMqi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 08:46:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758798AbYGHMpO
+	id S1759891AbYGHMq4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 08:46:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759036AbYGHMpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 08:45:14 -0400
-Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27544 "EHLO
+	Tue, 8 Jul 2008 08:45:44 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27555 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759221AbYGHMpL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 08:45:11 -0400
+	id S1759314AbYGHMpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 08:45:42 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
@@ -18,12 +18,48 @@ Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
        grant.likely@secretlab.ca, vapier.adi@gmail.com,
        alan@lxorguk.ukuu.org.uk, hpa@zytor.com, lethal@linux-sh.org,
        florian@openwrt.org, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 01/58] microblaze_v5: Kconfig patches
-Date: Tue,  8 Jul 2008 13:59:01 +0200
-Message-Id: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
+Subject: [PATCH 35/58] microblaze_v5: io.h IO operations
+Date: Tue,  8 Jul 2008 13:59:35 +0200
+Message-Id: <7a16429cfc461420883dbaa80c16047e5a1a91c1.1215517976.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
+In-Reply-To: <d1d33c18956829ec9ac7daf8d0516b17e85ed190.1215517976.git.monstr@monstr.eu>
 References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
+ <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
+ <c03d29cbccaef8aed8a2911c2a259fbd79ad23d9.1215517976.git.monstr@monstr.eu>
+ <58f35f498bac29e7105c589c06567e86c5a42dd5.1215517976.git.monstr@monstr.eu>
+ <810775b1bb678003923039726a9153ee34fb67b4.1215517976.git.monstr@monstr.eu>
+ <2a24e5bc2cfbd349613ef10c716a28f04ce24a9f.1215517976.git.monstr@monstr.eu>
+ <3171c5cf21eefc79665165f4a14bc5b68dd03f95.1215517976.git.monstr@monstr.eu>
+ <9be4eff2f4d015023c453eaec3b3473a44380491.1215517976.git.monstr@monstr.eu>
+ <f8e331ed9432719f3c0555c840cbbb7bbc1a6322.1215517976.git.monstr@monstr.eu>
+ <4409daf2ac356e902a8f091bb5908eb8a90218bc.1215517976.git.monstr@monstr.eu>
+ <f7458acb0252f72b5620d19c76104408ecc2e451.1215517976.git.monstr@monstr.eu>
+ <dbd9df742cdd9eb3355d7bc8e39f9dfef6c545e4.1215517976.git.monstr@monstr.eu>
+ <1f9a1f345caa749cb630cf85f95f217366395069.1215517976.git.monstr@monstr.eu>
+ <fe3686f0f70d838b33642bcbcd7185fc2180b366.1215517976.git.monstr@monstr.eu>
+ <e61f5a8579570cf7cd18a22e4106b7f85518928e.1215517976.git.monstr@monstr.eu>
+ <59d7e0a5f38b8d38f01f357a071fc93eed36f3a8.1215517976.git.monstr@monstr.eu>
+ <143afcf84af583ab66da7e8acfc9eb03b7f3eaa0.1215517976.git.monstr@monstr.eu>
+ <a967ee4e5a60b410e2810ce0475e8fd04f99e3ae.1215517976.git.monstr@monstr.eu>
+ <c5f0730287365c845746467a9917dbc07d2fca3c.1215517976.git.monstr@monstr.eu>
+ <2aa1ac7891af57959237aae3addf4bbe607f55d7.1215517976.git.monstr@monstr.eu>
+ <875ba2708f6cd3c585e4d965142e2feb07c39a0e.1215517976.git.monstr@monstr.eu>
+ <eb0e741f891335df37c3cd19f1a3ce2f7ce8652a.1215517976.git.monstr@monstr.eu>
+ <b28df2ea2419cbda26f9089ed6edcc175c009688.1215517976.git.monstr@monstr.eu>
+ <5da1d8f069f18f14faee8c4bff736791179ef6f1.1215517976.git.monstr@monstr.eu>
+ <9a32168fe72b772f301216a7090670474af78e49.1215517976.git.monstr@monstr.eu>
+ <7ada4bceefc1806a2c8ef73676b7aabd8ac1cad6.1215517976.git.monstr@monstr.eu>
+ <701c1dac442ac09f5010cb5356cc1a12bb0abfe1.1215517976.git.monstr@monstr.eu>
+ <9b48e9d85b4a5a6dcffce8eef62b232b6bfac8e8.1215517976.git.monstr@monstr.eu>
+ <04b0b222b84ba9cfe2507a9081f4d715f2323733.1215517976.git.monstr@monstr.eu>
+ <d4c1b3ecfec1bf37ca0ecea6909ad25bbc945630.1215517976.git.monstr@monstr.eu>
+ <6e5687d37386334cf122d1eafcca0c6649c955be.1215517976.git.monstr@monstr.eu>
+ <689cff1b6d98f60d8f8abc4472193688b524284d.1215517976.git.monstr@monstr.eu>
+ <9664f18e7e86af4332018549b29bf0797d6afcd5.1215517976.git.monstr@monstr.eu>
+ <c7120d8a6379cb1a18af5330997e30ec974acc2f.1215517976.git.monstr@monstr.eu>
+ <d1d33c18956829ec9ac7daf8d0516b17e85ed190.1215517976.git.monstr@monstr.eu>
+In-Reply-To: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
+References: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,345 +69,224 @@ From: Michal Simek <monstr@monstr.eu>
 Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/Kconfig                       |  127 +++++++++++++++++++++++++
- arch/microblaze/Kconfig.debug                 |   39 ++++++++
- arch/microblaze/platform/Kconfig.platform     |   77 +++++++++++++++
- arch/microblaze/platform/generic/Kconfig.auto |   62 ++++++++++++
- 4 files changed, 305 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/Kconfig
- create mode 100644 arch/microblaze/Kconfig.debug
- create mode 100644 arch/microblaze/platform/Kconfig.platform
- create mode 100644 arch/microblaze/platform/generic/Kconfig.auto
+ include/asm-microblaze/io.h |  208 +++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 208 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/io.h
 
-diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
+diff --git a/include/asm-microblaze/io.h b/include/asm-microblaze/io.h
 new file mode 100644
-index 0000000..9774f71
+index 0000000..cb0a178
 --- /dev/null
-+++ b/arch/microblaze/Kconfig
-@@ -0,0 +1,127 @@
-+# For a description of the syntax of this configuration file,
-+# see Documentation/kbuild/kconfig-language.txt.
-+
-+mainmenu "Linux/Microblaze Kernel Configuration"
-+
-+config MICROBLAZE
-+	def_bool y
-+	select HAVE_LMB
-+
-+config MMU
-+	def_bool n
-+
-+config SWAP
-+	def_bool n
-+
-+config RWSEM_GENERIC_SPINLOCK
-+	def_bool y
-+
-+config RWSEM_XCHGADD_ALGORITHM
-+	bool
-+
-+config ARCH_HAS_ILOG2_U32
-+	def_bool n
-+
-+config ARCH_HAS_ILOG2_U64
-+	def_bool n
-+
-+config GENERIC_FIND_NEXT_BIT
-+	def_bool y
-+
-+config GENERIC_HWEIGHT
-+	def_bool y
-+
-+config GENERIC_HARDIRQS
-+	def_bool y
-+
-+config GENERIC_IRQ_PROBE
-+	def_bool y
-+
-+config GENERIC_CALIBRATE_DELAY
-+	def_bool y
-+
-+config GENERIC_TIME
-+	def_bool y
-+
-+config PCI
-+	def_bool n
-+
-+config NO_DMA
-+	def_bool y
-+
-+config GENERIC_CSUM
-+	def_bool y
-+
-+source "init/Kconfig"
-+
-+source "arch/microblaze/platform/Kconfig.platform"
-+
-+menu "Processor type and features"
-+
-+source "kernel/Kconfig.preempt"
-+
-+source "kernel/Kconfig.hz"
-+
-+comment "Boot options"
-+
-+config CMDLINE_BOOL
-+	bool "Default bootloader kernel arguments"
-+
-+config CMDLINE
-+	string "Default kernel command string"
-+	depends on CMDLINE_BOOL
-+	default "console=ttyUL0,115200"
-+	help
-+	  On some architectures there is currently no way for the boot loader
-+	  to pass arguments to the kernel. For these architectures, you should
-+	  supply some command-line options at build time by entering them
-+	  here.
-+
-+config CMDLINE_FORCE
-+	bool "Force default kernel command string"
-+	depends on CMDLINE_BOOL
-+	default n
-+	help
-+	  Set this to have arguments from the default kernel command string
-+	  override those passed by the boot loader.
-+
-+config OF
-+	def_bool y
-+
-+config OF_DEVICE
-+	def_bool y
-+
-+config PROC_DEVICETREE
-+	bool "Support for device tree in /proc"
-+	depends on PROC_FS
-+	help
-+	  This option adds a device-tree directory under /proc which contains
-+	  an image of the device tree that the kernel copies from Open
-+	  Firmware or other boot firmware. If unsure, say Y here.
-+
-+endmenu
-+
-+config APM_EMULATION
-+	bool
-+
-+source "mm/Kconfig"
-+
-+menu "Exectuable file formats"
-+
-+source "fs/Kconfig.binfmt"
-+
-+endmenu
-+
-+source "net/Kconfig"
-+
-+source "drivers/Kconfig"
-+
-+source "fs/Kconfig"
-+
-+source "arch/microblaze/Kconfig.debug"
-+
-+source "security/Kconfig"
-+
-+source "crypto/Kconfig"
-+
-+source "lib/Kconfig"
-diff --git a/arch/microblaze/Kconfig.debug b/arch/microblaze/Kconfig.debug
-new file mode 100644
-index 0000000..611ef00
---- /dev/null
-+++ b/arch/microblaze/Kconfig.debug
-@@ -0,0 +1,39 @@
-+# For a description of the syntax of this configuration file,
-+# see Documentation/kbuild/kconfig-language.txt.
-+
-+menu "Kernel hacking"
-+
-+source "lib/Kconfig.debug"
-+
-+config EARLY_PRINTK
-+	bool "Early printk function for kernel"
-+	default n
-+	help
-+	  This option turns on/off early printk messages to console.
-+
-+config EARLY_PRINTK_UARTLITE_ADDRESS
-+	hex "Physical address where UART Lite for early printk is mapped"
-+	depends on EARLY_PRINTK
-+	default "0x00000000"
-+	help
-+	  Please enter physical address where your uart lite is mapped.
-+
-+config HEART_BEAT
-+	bool "Heart beat function for kernel"
-+	default n
-+	help
-+	  This option turns on/off heart beat kernel functionality on selected
-+	  GPIO address.
-+
-+config HEART_BEAT_ADDRESS
-+	hex "Physical address for heart beat LED"
-+	depends on HEART_BEAT
-+	default "0x00000000"
-+	help
-+	  Please enter physical address GPIO LED.
-+
-+config DEBUG_BOOTMEM
-+	depends on DEBUG_KERNEL
-+	bool "Debug BOOTMEM initialization"
-+
-+endmenu
-diff --git a/arch/microblaze/platform/Kconfig.platform b/arch/microblaze/platform/Kconfig.platform
-new file mode 100644
-index 0000000..2789f92
---- /dev/null
-+++ b/arch/microblaze/platform/Kconfig.platform
-@@ -0,0 +1,77 @@
-+# For a description of the syntax of this configuration file,
-+# see Documentation/kbuild/kconfig-language.txt.
-+#
-+# Platform selection Kconfig menu for MicroBlaze targets
-+#
-+
-+menu "Platform options"
-+choice
-+	prompt "Platform"
-+	default PLATFORM_MICROBLAZE_AUTO
-+	help
-+	  Choose which hardware board/platform you are targeting.
-+
-+config PLATFORM_GENERIC
-+	bool "Generic"
-+	help
-+	  Choose this option for the Generic platform.
-+
-+endchoice
-+
-+config SELFMOD
-+	bool "Use self modified code for intc/timer"
-+	depends on EXPERIMENTAL
-+	default n
-+	help
-+	  This choice enables self-modified code for interrupt controller
-+	  and timer.
-+
-+config SELFMOD_INTC
-+	bool "Use self modified code for intc"
-+	depends on SELFMOD
-+	default y
-+	help
-+	  This choice enables self-modified code for interrupt controller.
-+
-+config SELFMOD_TIMER
-+	bool "Use self modified code for timer"
-+	depends on SELFMOD
-+	default y
-+	help
-+	  This choice enables self-modified code for timer.
-+
-+config OPT_LIB_FUNCTION
-+	bool "Optimalized lib function"
-+	default y
-+	help
-+	  Allows turn on optimalized library function (memcpy and memmove).
-+	  They are optimized by using word alignment. This will work
-+	  fine if both source and destination are aligned on the same
-+	  boundary. However, if they are aligned on different boundaries
-+	  shifts will be necessary. This might result in bad performance
-+	  on MicroBlaze systems without a barrel shifter.
-+
-+# This is still a bit broken - disabling for now JW 20070504
-+config ALLOW_EDIT_AUTO
-+	bool "Permit Display/edit of Kconfig.auto platform settings"
-+	default n
-+	help
-+	  Allows the editing of auto-generated platform settings from
-+	  the Kconfig.auto file. Obviously this does not change the
-+	  underlying hardware, so be very careful if you go editing
-+	  these settings.
-+
-+	  Also, if you enable this, and edit various Kconfig.auto
-+	  settings, YOUR CHANGES WILL BE LOST if you then disable it
-+	  again. You have been warned!
-+
-+	  If unsure, say no.
-+
-+comment "Automatic platform settings from Kconfig.auto"
-+	depends on ALLOW_EDIT_AUTO
-+
-+if PLATFORM_GENERIC=y
-+	source "arch/microblaze/platform/generic/Kconfig.auto"
-+endif
-+
-+endmenu
-diff --git a/arch/microblaze/platform/generic/Kconfig.auto b/arch/microblaze/platform/generic/Kconfig.auto
-new file mode 100644
-index 0000000..8f33468
---- /dev/null
-+++ b/arch/microblaze/platform/generic/Kconfig.auto
-@@ -0,0 +1,62 @@
-+#
-+# (C) Copyright 2007 Michal Simek
-+#
-+# Michal SIMEK <monstr@monstr.eu>
-+#
-+# This program is free software; you can redistribute it and/or
-+# modify it under the terms of the GNU General Public License as
-+# published by the Free Software Foundation; either version 2 of
-+# the License, or (at your option) any later version.
-+#
-+# This program is distributed in the hope that it will be useful,
-+# but WITHOUT ANY WARRANTY; without even the implied warranty of
-+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+# GNU General Public License for more details.
-+#
-+# You should have received a copy of the GNU General Public License
-+# along with this program; if not, write to the Free Software
-+# Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-+# MA 02111-1307 USA
-+#
-+# CAUTION: This file is automatically generated by libgen.
-+# Version: Xilinx EDK 9.2.02 EDK_Jm_SP2.3
-+# Generate by U-BOOT v4.00.c
-+#
-+
-+# Definitions for MICROBLAZE0
-+comment "Definitions for MICROBLAZE0"
-+      depends on ALLOW_EDIT_AUTO
-+
-+config KERNEL_BASE_ADDR
-+	hex "Physical address where Linux Kernel is"
-+	default "0x20000000"
-+	help
-+	  BASE Address for kernel
-+
-+config XILINX_MICROBLAZE0_FAMILY
-+       string "Targetted FPGA family" if ALLOW_EDIT_AUTO
-+       default spartan3e
-+
-+config XILINX_MICROBLAZE0_USE_MSR_INSTR
-+       int "USE_MSR_INSTR" if ALLOW_EDIT_AUTO
-+       default 1
-+
-+config XILINX_MICROBLAZE0_USE_BARREL
-+       int "USE_BARREL range (0:1)" if ALLOW_EDIT_AUTO
-+       default 1
-+
-+config XILINX_MICROBLAZE0_USE_DIV
-+       int "USE_DIV range (0:1)" if ALLOW_EDIT_AUTO
-+       default 1
-+
-+config XILINX_MICROBLAZE0_USE_HW_MULT
-+       int "USE_HW_MULT range (0:1)" if ALLOW_EDIT_AUTO
-+       default 2
-+
-+config XILINX_MICROBLAZE0_USE_FPU
-+       int "USE_FPU range (0:1)" if ALLOW_EDIT_AUTO
-+       default 2
-+
-+config XILINX_MICROBLAZE0_HW_VER
-+       string "Core version number" if ALLOW_EDIT_AUTO
-+       default 7.00.b
++++ b/include/asm-microblaze/io.h
+@@ -0,0 +1,208 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_IO_H
++#define _ASM_MICROBLAZE_IO_H
++
++#include <asm/byteorder.h>
++#include <asm/page.h>
++
++static inline unsigned char __raw_readb(const volatile void *addr)
++{
++	return *(volatile unsigned char __force *)addr;
++}
++static inline unsigned short __raw_readw(const volatile void *addr)
++{
++	return *(volatile unsigned short __force *)addr;
++}
++static inline unsigned int __raw_readl(const volatile void *addr)
++{
++	return *(volatile unsigned int __force *)addr;
++}
++static inline unsigned long __raw_readq(const volatile void *addr)
++{
++	return *(volatile unsigned long __force *)addr;
++}
++static inline void __raw_writeb(unsigned char v, volatile void *addr)
++{
++	*(volatile unsigned char __force *)addr = v;
++}
++static inline void __raw_writew(unsigned short v, volatile void *addr)
++{
++	*(volatile unsigned short __force *)addr = v;
++}
++static inline void __raw_writel(unsigned int v, volatile void *addr)
++{
++	*(volatile unsigned int __force *)addr = v;
++}
++static inline void __raw_writeq(unsigned long v, volatile void *addr)
++{
++	*(volatile unsigned long __force *)addr = v;
++}
++
++/*
++ * read (readb, readw, readl, readq) and write (writeb, writew,
++ * writel, writeq) accessors are for PCI and thus littel endian.
++ * Linux 2.4 for Microblaze had this wrong.
++ */
++static inline unsigned char readb(const volatile void *addr)
++{
++	return *(volatile unsigned char __force *)addr;
++}
++static inline unsigned short readw(const volatile void *addr)
++{
++	return le16_to_cpu(*(volatile unsigned short __force *)addr);
++}
++static inline unsigned int readl(const volatile void *addr)
++{
++	return le32_to_cpu(*(volatile unsigned int __force *)addr);
++}
++static inline void writeb(unsigned char v, volatile void *addr)
++{
++	*(volatile unsigned char __force *)addr = v;
++}
++static inline void writew(unsigned short v, volatile void *addr)
++{
++	*(volatile unsigned short __force *)addr = cpu_to_le16(v);
++}
++static inline void writel(unsigned int v, volatile void __iomem *addr)
++{
++	*(volatile unsigned int __force *)addr = cpu_to_le32(v);
++}
++
++/* ioread and iowrite variants. thease are for now same as __raw_
++ * variants of accessors. we might check for endianess in the feature
++ */
++#define ioread8(addr)		__raw_readb((u8 *)(addr))
++#define ioread16(addr)		__raw_readw((u16 *)(addr))
++#define ioread32(addr)		__raw_readl((u32 *)(addr))
++#define iowrite8(v, addr)	__raw_writeb((u8)(v), (u8 *)(addr))
++#define iowrite16(v, addr)	__raw_writew((u16)(v), (u16 *)(addr))
++#define iowrite32(v, addr)	__raw_writel((u32)(v), (u32 *)(addr))
++
++/* These are the definitions for the x86 IO instructions
++ * inb/inw/inl/outb/outw/outl, the "string" versions
++ * insb/insw/insl/outsb/outsw/outsl, and the "pausing" versions
++ * inb_p/inw_p/...
++ * The macros don't do byte-swapping.
++ */
++#define inb(port)		readb((u8 *)((port)))
++#define outb(val, port)		writeb((val), (u8 *)((unsigned long)(port)))
++#define inw(port)		readw((u16 *)((port)))
++#define outw(val, port)		writew((val), (u16 *)((unsigned long)(port)))
++#define inl(port)		readl((u32 *)((port)))
++#define outl(val, port)		writel((val), (u32 *)((unsigned long)(port)))
++
++#define inb_p(port)		inb((port))
++#define outb_p(val, port)	outb((val), (port))
++#define inw_p(port)		inw((port))
++#define outw_p(val, port)	outw((val), (port))
++#define inl_p(port)		inl((port))
++#define outl_p(val, port)	outl((val), (port))
++
++#define memset_io(a, b, c)	memset((void *)(a), (b), (c))
++#define memcpy_fromio(a, b, c)	memcpy((a), (void *)(b), (c))
++#define memcpy_toio(a, b, c)	memcpy((void *)(a), (b), (c))
++
++/**
++ *	virt_to_phys	-	map virtual addresses to physical
++ *	@address: address to remap
++ *
++ *	The returned physical address is the physical (CPU) mapping for
++ *	the memory address given. It is only valid to use this function on
++ *	addresses directly mapped or allocated via kmalloc.
++ *
++ *	This function does not give bus mappings for DMA transfers. In
++ *	almost all conceivable cases a device driver should not be using
++ *	this function
++ */
++static inline unsigned long __iomem virt_to_phys(volatile void *address)
++{
++	return __pa((unsigned long)address);
++}
++
++#define virt_to_bus virt_to_phys
++
++/**
++ *	phys_to_virt	-	map physical address to virtual
++ *	@address: address to remap
++ *
++ *	The returned virtual address is a current CPU mapping for
++ *	the memory address given. It is only valid to use this function on
++ *	addresses that have a kernel mapping
++ *
++ *	This function does not handle bus mappings for DMA transfers. In
++ *	almost all conceivable cases a device driver should not be using
++ *	this function
++ */
++static inline void *phys_to_virt(unsigned long address)
++{
++	return (void *)__va(address);
++}
++
++#define bus_to_virt(a) phys_to_virt(a)
++
++static inline void *__ioremap(unsigned long address, unsigned long size,
++			unsigned long flags)
++{
++	return (void *)address;
++}
++
++
++#define IO_SPACE_LIMIT ~(0UL)
++
++#define ioremap(physaddr, size)	((void *)(unsigned long)(physaddr))
++#define iounmap(addr)		((void)0)
++#define ioremap_nocache(physaddr, size)	ioremap(physaddr, size)
++
++/*
++ * Convert a physical pointer to a virtual kernel pointer for /dev/mem
++ * access
++ */
++#define xlate_dev_mem_ptr(p)	__va(p)
++
++/*
++ * Convert a virtual cached pointer to an uncached pointer
++ */
++#define xlate_dev_kmem_ptr(p)	p
++
++/*
++ * Big Endian
++ */
++#define out_be32(a, v) __raw_writel((v), (a))
++#define out_be16(a, v) __raw_writew((v), (a))
++
++#define in_be32(a) __raw_readl(a)
++#define in_be16(a) __raw_readw(a)
++
++/*
++ * Little endian
++ */
++
++#define out_le32(a, v) __raw_writel(__cpu_to_le32(v), (a));
++#define out_le16(a, v) __raw_writew(__cpu_to_le16(v), (a))
++
++#define in_le32(a) __le32_to_cpu(__raw_readl(a))
++#define in_le16(a) __le16_to_cpu(__raw_readw(a))
++
++/* Byte ops */
++#define out_8(a, v) __raw_writeb((v), (a))
++#define in_8(a) __raw_readb(a)
++
++/* FIXME */
++static inline void __iomem *ioport_map(unsigned long port, unsigned int len)
++{
++	return (void __iomem *) (port);
++}
++
++static inline void ioport_unmap(void __iomem *addr)
++{
++	/* Nothing to do */
++}
++
++#endif /* _ASM_MICROBLAZE_IO_H */
 -- 
 1.5.4.GIT
 
