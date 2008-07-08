@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755797AbYGHTxH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756726AbYGHTyI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755797AbYGHTxH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 15:53:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754074AbYGHTwz
+	id S1756726AbYGHTyI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 15:54:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbYGHTxz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 15:52:55 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:42598 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754024AbYGHTwy (ORCPT
+	Tue, 8 Jul 2008 15:53:55 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36905 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753588AbYGHTxy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 15:52:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=k/oUAHLwmlp4ZVLOgXphkPeFDB+nhWumLBcZHN8Ma9uboRgsyeh2LgVz0m+dPzaSgx
-         FjYtxXBOsrsetoNb2SqrkHRlVNZgzUw3bLt2J1lGf1p4wdYURAvROiCEx6Q3f/yn4/+6
-         jzkcfzcoN3GU+WzM6gi1VhFWwBssAJJcv9Q94=
-Message-ID: <38b2ab8a0807081252v1bd5a2e5xc7c384704c0ae9e6@mail.gmail.com>
-Date: Tue, 8 Jul 2008 21:52:53 +0200
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Trying to use splice from a driver
+	Tue, 8 Jul 2008 15:53:54 -0400
+Date: Tue, 8 Jul 2008 21:53:53 +0200
+From: Jan Kara <jack@suse.cz>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: "Theodore Ts'o" <tytso@mit.edu>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: New ext4 patchset 2.6.26-rc8-ext4-1
+Message-ID: <20080708195353.GB22477@atrey.karlin.mff.cuni.cz>
+References: <E1KFBPc-0006yI-Gx@closure.thunk.org> <20080705175047.GA11243@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080705175047.GA11243@infradead.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+> On Sat, Jul 05, 2008 at 01:19:04PM -0400, Theodore Ts'o wrote:
+> > Alex Tomas (2):
+> >     * vfs: add basic delayed allocation support
+> >     * ext4: Add basic delayed allocation support
+> 
+> Strong NACK.  For one thing the code added to mpage.c doesn't belong
+> there.  It's far inferior to the existing delalloc code we already have
+> and that could be made generic easily, or the next generation code
+> developed by Chris mason.  It's an ext4-specific hack and doesn't belong
+> into common code.  I'm pretty sure we agreed on not having it in
+> common code long ago.
+> 
+> Also the code still deals with the !buffer_mapped and no buffers on page
+> cases all over which isn't needed anymore with ->page_mkwrite implemented.
+  I'd just comment on this: We've experimentally found out that page
+without buffers *can* happen even with page_mkwrite() implementation.
+  One path I remember we identified as possible cause is do_wp_page()
+where buffers can be removed again from the page before it is marked
+dirty. So if filesystem wants to be sure that buffers are really
+attached to the page, I think it must mark the page (and through it buffers)
+dirty before unlocking it...
 
-I'm trying to implement splice ops in a driver, specially the
-splice_read method.
+> Similarly the !get_block case in mpage_da_writepages doesn't make any
+> sense - it's never used and if people would want to use
+> generic_writepages they could trivially just call it directly.
 
-Basically the driver receives data and splice them to a pipe in order to
-finally move the data to a file.
-
-Before receiving the data, the driver allocates a free page by calling
-alloc_page(). Then it fills it with the data received by the device and
-then stores the page ref in the splice_pipe_desc structure. Once the
-structure is initialised the driver calls splice_to_pipe.
-
-Now the question is what am I supposed to use for pipe_buf_operations in
-the splice_pipe_desc structure ?
-
-I'm tempted to use 'user_page_pipe_buf_ops' but I'm not sure.  Specially
-for the release method, which points to page_cache_pipe_buf_release(),
-since the allocated page (the os allocated by the driver) are not coming
-from the page cache.
-
-The same is actually true for vmsplice() where the pages are coming from
-the user mem space (not from the page cache), so I'm probably missing
-something...
-
-Could aynbody enlight me ?
-
-thanks,
+								Honza
 -- 
-Francis
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
