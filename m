@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758742AbYGHMPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759117AbYGHMPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758742AbYGHMPv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 08:15:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758976AbYGHMMt
+	id S1759117AbYGHMPa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 08:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758939AbYGHMMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 08:12:49 -0400
-Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27259 "EHLO
+	Tue, 8 Jul 2008 08:12:40 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27240 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758934AbYGHMMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 08:12:45 -0400
+	id S1758888AbYGHMMi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 08:12:38 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
@@ -18,11 +18,11 @@ Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
        grant.likely@secretlab.ca, vapier.adi@gmail.com,
        alan@lxorguk.ukuu.org.uk, hpa@zytor.com, lethal@linux-sh.org,
        florian@openwrt.org, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 51/58] microblaze_v5: setup.h string.h thread_info.h
-Date: Tue,  8 Jul 2008 13:59:51 +0200
-Message-Id: <1054e7643bd01351ba67273043203df322b49bea.1215517976.git.monstr@monstr.eu>
+Subject: [PATCH 54/58] microblaze_v5: IPC headers
+Date: Tue,  8 Jul 2008 13:59:54 +0200
+Message-Id: <5fbc8a35844b0f81291f7cf3ff5030baca819b67.1215517976.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <6c03dcf8dbfd910ebf6c2f95db61d0456aa943e1.1215517976.git.monstr@monstr.eu>
+In-Reply-To: <542a23f9748621b66e6f0ef8e0eb6248d542aa99.1215517976.git.monstr@monstr.eu>
 References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
  <c03d29cbccaef8aed8a2911c2a259fbd79ad23d9.1215517976.git.monstr@monstr.eu>
@@ -74,6 +74,9 @@ References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <2ac3915482a9a50f7a4531908305b326baa2008e.1215517976.git.monstr@monstr.eu>
  <3c5eac3dbdbf538c727a4a8fe336cdd55650bb37.1215517976.git.monstr@monstr.eu>
  <6c03dcf8dbfd910ebf6c2f95db61d0456aa943e1.1215517976.git.monstr@monstr.eu>
+ <1054e7643bd01351ba67273043203df322b49bea.1215517976.git.monstr@monstr.eu>
+ <2bc35758e609ee5b79afe0f58be17d11a01498dc.1215517976.git.monstr@monstr.eu>
+ <542a23f9748621b66e6f0ef8e0eb6248d542aa99.1215517976.git.monstr@monstr.eu>
 In-Reply-To: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 References: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -85,60 +88,25 @@ From: Michal Simek <monstr@monstr.eu>
 Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/setup.h       |   34 ++++++++
- include/asm-microblaze/string.h      |   20 +++++
- include/asm-microblaze/thread_info.h |  154 ++++++++++++++++++++++++++++++++++
- 3 files changed, 208 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/setup.h
- create mode 100644 include/asm-microblaze/string.h
- create mode 100644 include/asm-microblaze/thread_info.h
+ include/asm-microblaze/ipc.h    |    1 +
+ include/asm-microblaze/ipcbuf.h |   36 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 37 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/ipc.h
+ create mode 100644 include/asm-microblaze/ipcbuf.h
 
-diff --git a/include/asm-microblaze/setup.h b/include/asm-microblaze/setup.h
+diff --git a/include/asm-microblaze/ipc.h b/include/asm-microblaze/ipc.h
 new file mode 100644
-index 0000000..5705d36
+index 0000000..a46e3d9
 --- /dev/null
-+++ b/include/asm-microblaze/setup.h
-@@ -0,0 +1,34 @@
-+/*
-+ * Copyright (C) 2007-2008 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_SETUP_H
-+#define _ASM_MICROBLAZE_SETUP_H
-+
-+extern unsigned int boot_cpuid;
-+extern int have_of;
-+
-+#define COMMAND_LINE_SIZE	256
-+extern char cmd_line[COMMAND_LINE_SIZE];
-+
-+void early_printk(const char *fmt, ...);
-+
-+#ifdef CONFIG_HEART_BEAT
-+void heartbeat(void);
-+#endif
-+
-+void system_timer_init(void);
-+void time_init(void);
-+unsigned long long sched_clock(void);
-+
-+void machine_restart(char *cmd);
-+void machine_shutdown(void);
-+void machine_halt(void);
-+void machine_power_off(void);
-+
-+#endif /* _ASM_MICROBLAZE_SETUP_H */
-diff --git a/include/asm-microblaze/string.h b/include/asm-microblaze/string.h
++++ b/include/asm-microblaze/ipc.h
+@@ -0,0 +1 @@
++#include <asm-generic/ipc.h>
+diff --git a/include/asm-microblaze/ipcbuf.h b/include/asm-microblaze/ipcbuf.h
 new file mode 100644
-index 0000000..52a14a3
+index 0000000..b056fa4
 --- /dev/null
-+++ b/include/asm-microblaze/string.h
-@@ -0,0 +1,20 @@
++++ b/include/asm-microblaze/ipcbuf.h
+@@ -0,0 +1,36 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -147,178 +115,34 @@ index 0000000..52a14a3
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_STRING_H
-+#define _ASM_MICROBLAZE_STRING_H
++#ifndef _ASM_MICROBLAZE_IPCBUF_H
++#define _ASM_MICROBLAZE_IPCBUF_H
 +
-+#define __HAVE_ARCH_MEMSET
-+#define __HAVE_ARCH_MEMCPY
-+#define __HAVE_ARCH_MEMMOVE
-+
-+extern void *memset(void *, int, __kernel_size_t);
-+extern void *memcpy(void *, const void *, __kernel_size_t);
-+extern void *memmove(void *, const void *, __kernel_size_t);
-+
-+#endif /* _ASM_MICROBLAZE_STRING_H */
-diff --git a/include/asm-microblaze/thread_info.h b/include/asm-microblaze/thread_info.h
-new file mode 100644
-index 0000000..d04d195
---- /dev/null
-+++ b/include/asm-microblaze/thread_info.h
-@@ -0,0 +1,154 @@
 +/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
++ * The user_ipc_perm structure for microblaze architecture.
++ * Note extra padding because this structure is passed back and forth
++ * between kernel and user space.
 + *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
++ * Pad space is left for:
++ * - 32-bit mode_t and seq
++ * - 2 miscellaneous 32-bit values
 + */
 +
-+#ifndef _ASM_MICROBLAZE_THREAD_INFO_H
-+#define _ASM_MICROBLAZE_THREAD_INFO_H
-+
-+#ifdef __KERNEL__
-+
-+/* we have 8k stack */
-+#define THREAD_SHIFT		13
-+#define THREAD_SIZE		(1 << THREAD_SHIFT)
-+
-+#ifndef __ASSEMBLY__
-+# include <asm/processor.h>
-+# include <asm/segment.h>
-+
-+/*
-+ * low level task data that entry.S needs immediate access to
-+ * - this struct should fit entirely inside of one cache line
-+ * - this struct shares the supervisor stack pages
-+ * - if the contents of this structure are changed, the assembly constants
-+ *	 must also be changed
-+ */
-+
-+struct cpu_context {
-+	__u32	r1; /* stack pointer */
-+	__u32	r2;
-+	/* dedicated registers */
-+	__u32	r13;
-+	__u32	r14;
-+	__u32	r15;
-+	__u32	r16;
-+	__u32	r17;
-+	__u32	r18;
-+	/* non-volatile registers */
-+	__u32	r19;
-+	__u32	r20;
-+	__u32	r21;
-+	__u32	r22;
-+	__u32	r23;
-+	__u32	r24;
-+	__u32	r25;
-+	__u32	r26;
-+	__u32	r27;
-+	__u32	r28;
-+	__u32	r29;
-+	__u32	r30;
-+	/* r31 is used as current task pointer */
-+	/* special purpose registers */
-+	__u32	msr;
-+	__u32	ear;
-+	__u32	esr;
-+	__u32	fsr;
++struct ipc64_perm {
++	__kernel_key_t		key;
++	__kernel_uid32_t	uid;
++	__kernel_gid32_t	gid;
++	__kernel_uid32_t	cuid;
++	__kernel_gid32_t	cgid;
++	__kernel_mode_t		mode;
++	unsigned short		__pad1;
++	unsigned short		seq;
++	unsigned short		__pad2;
++	unsigned long		__unused1;
++	unsigned long		__unused2;
 +};
 +
-+struct thread_info {
-+	struct task_struct	*task; /* main task structure */
-+	struct exec_domain	*exec_domain; /* execution domain */
-+	unsigned long		flags; /* low level flags */
-+	unsigned long		status; /* thread-synchronous flags */
-+	__u32			cpu; /* current CPU */
-+	__s32			preempt_count; /* 0 => preemptable,< 0 => BUG*/
-+	mm_segment_t		addr_limit; /* thread address space */
-+	struct restart_block	restart_block;
-+
-+	struct cpu_context	cpu_context;
-+};
-+
-+/*
-+ * macros/functions for gaining access to the thread information structure
-+ *
-+ * preempt_count needs to be 1 initially, until the scheduler is functional.
-+ */
-+#define INIT_THREAD_INFO(tsk)			\
-+{						\
-+	.task		= &tsk,			\
-+	.exec_domain	= &default_exec_domain,	\
-+	.flags		= 0,			\
-+	.cpu		= 0,			\
-+	.preempt_count	= 1,			\
-+	.addr_limit	= KERNEL_DS,		\
-+	.restart_block = {			\
-+		.fn = do_no_restart_syscall,	\
-+	},					\
-+}
-+
-+#define init_thread_info	(init_thread_union.thread_info)
-+#define init_stack		(init_thread_union.stack)
-+
-+/* how to get the thread information struct from C */
-+static inline struct thread_info *current_thread_info(void)
-+{
-+	register unsigned long sp asm("r1");
-+
-+	return (struct thread_info *)(sp & ~(THREAD_SIZE-1));
-+}
-+
-+/* thread information allocation */
-+#define alloc_thread_info(tsk) \
-+		((struct thread_info *) __get_free_pages(GFP_KERNEL, 1))
-+#define free_thread_info(ti) free_pages((unsigned long) (ti), 1)
-+
-+#endif /* __ASSEMBLY__ */
-+
-+#define PREEMPT_ACTIVE		0x10000000
-+
-+/*
-+ * thread information flags
-+ * - these are process state flags that various assembly files may
-+ *   need to access
-+ * - pending work-to-be-done flags are in LSW
-+ * - other flags in MSW
-+ */
-+#define TIF_SYSCALL_TRACE	0 /* syscall trace active */
-+#define TIF_NOTIFY_RESUME	1 /* resumption notification requested */
-+#define TIF_SIGPENDING		2 /* signal pending */
-+#define TIF_NEED_RESCHED	3 /* rescheduling necessary */
-+/* restore singlestep on return to user mode */
-+#define TIF_SINGLESTEP		4
-+#define TIF_IRET		5 /* return with iret */
-+#define TIF_MEMDIE		6
-+/* true if poll_idle() is polling TIF_NEED_RESCHED */
-+#define TIF_POLLING_NRFLAG	16
-+
-+#define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
-+#define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
-+#define _TIF_SIGPENDING		(1<<TIF_SIGPENDING)
-+#define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
-+#define _TIF_SINGLESTEP		(1<<TIF_SINGLESTEP)
-+#define _TIF_IRET		(1<<TIF_IRET)
-+#define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
-+
-+/* work to do on interrupt/exception return */
-+#define _TIF_WORK_MASK		0x0000FFFE
-+/* work to do on any return to u-space */
-+#define _TIF_ALLWORK_MASK	0x0000FFFF
-+
-+/*
-+ * Thread-synchronous status.
-+ *
-+ * This is different from the flags in that nobody else
-+ * ever touches our thread-synchronous status, so we don't
-+ * have to worry about atomic accesses.
-+ */
-+/* FPU was used by this task this quantum (SMP) */
-+#define TS_USEDFPU		0x0001
-+
-+#endif /* __KERNEL__ */
-+#endif /* _ASM_MICROBLAZE_THREAD_INFO_H */
++#endif /* _ASM_MICROBLAZE_IPCBUF_H */
 -- 
 1.5.4.GIT
 
