@@ -1,371 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754724AbYGHGhz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754902AbYGHGtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754724AbYGHGhz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 02:37:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbYGHGhr
+	id S1754902AbYGHGtX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 02:49:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbYGHGtO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 02:37:47 -0400
-Received: from saeurebad.de ([85.214.36.134]:49736 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751324AbYGHGhq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 02:37:46 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Jens Axboe <axboe@kernel.dk>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <clameter@linux-foundation.org>,
-       Petr Tesarik <ptesarik@suse.cz>,
-       Virtualization <virtualization@lists.linux-foundation.org>,
-       Xen devel <xen-devel@lists.xensource.com>,
-       Thomas Friebel <thomas.friebel@amd.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: [PATCH RFC 4/4] xen: implement Xen-specific spinlocks
-References: <20080707190749.299430659@goop.org>
-	<20080707190838.710151521@goop.org>
-Date: Tue, 08 Jul 2008 08:37:33 +0200
-In-Reply-To: <20080707190838.710151521@goop.org> (Jeremy Fitzhardinge's
-	message of "Mon, 07 Jul 2008 12:07:53 -0700")
-Message-ID: <87tzf0q3te.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Tue, 8 Jul 2008 02:49:14 -0400
+Received: from ti-out-0910.google.com ([209.85.142.187]:20502 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751346AbYGHGtN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 02:49:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=HOByuuEkKYf2Hc6QVkXVwrqvxHIuWVtRvitLEhRV2xtf12UdAbZ4rTHUGCb5ZDS/mM
+         m6cqczzTAF2qIFbjp0dyjgJw4kZ3deoqp4dm+8kwiQYAWcTZ0fK36Go4lIuZJhK9HFM9
+         t8rDZgAAiFANUPOm6F10hRQ+KxTpBgi7DmZIE=
+Message-ID: <48730DE2.2050302@gmail.com>
+Date: Tue, 08 Jul 2008 14:49:06 +0800
+From: Eric Miao <eric.y.miao@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+To: Stefan Schmidt <stefan@datenfreihafen.org>
+CC: pHilipp Zabel <philipp.zabel@gmail.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk, sameo@openedhand.com,
+       linux-kernel@vger.kernel.org, Daniel Ribeiro <wyrm@openezx.org>
+Subject: Re: [Patch 06/10] mfd: PCAP driver for the Motorola EZX GSM mobile
+ phones
+References: <20080707184000.411913919@datenfreihafen.org> <20080707184129.554483476@datenfreihafen.org> <74d0deb30807071221u4e216f76l479766925c903b5f@mail.gmail.com> <20080707200251.GA3449@datenfreihafen.org>
+In-Reply-To: <20080707200251.GA3449@datenfreihafen.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Stefan Schmidt wrote:
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+>> Otherwise I'd dislike the hardcoded IRQ numbers in the MFD driver.
+> 
+> So far it seems to be no problem. If there is a strong feeling to change this we
+> will of course work on that. Personally I would prefer to do this when new users
+> of this driver appear.
 
-> The standard ticket spinlocks are very expensive in a virtual
-> environment, because their performance depends on Xen's scheduler
-> giving vcpus time in the order that they're supposed to take the
-> spinlock.
->
-> This implements a Xen-specific spinlock, which should be much more
-> efficient.
->
-> The fast-path is essentially the old Linux-x86 locks, using a single
-> lock byte.  The locker decrements the byte; if the result is 0, then
-> they have the lock.  If the lock is negative, then locker must spin
-> until the lock is positive again.
->
-> When there's contention, the locker spin for 2^16[*] iterations waiting
-> to get the lock.  If it fails to get the lock in that time, it adds
-> itself to the contention count in the lock and blocks on a per-cpu
-> event channel.
->
-> When unlocking the spinlock, the locker looks to see if there's anyone
-> blocked waiting for the lock by checking for a non-zero waiter count.
-> If there's a waiter, it traverses the per-cpu "lock_spinners"
-> variable, which contains which lock each CPU is waiting on.  It picks
-> one CPU waiting on the lock and sends it an event to wake it up.
->
-> This allows efficient fast-path spinlock operation, while allowing
-> spinning vcpus to give up their processor time while waiting for a
-> contended lock.
->
-> [*] 2^16 iterations is threshold at which 98% locks have been taken
-> according to Thomas Friebel's Xen Summit talk "Preventing Guests from
-> Spinning Around".  Therefore, we'd expect the lock and unlock slow
-> paths will only be entered 2% of the time.
->
-> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-> Cc: Thomas Friebel <thomas.friebel@amd.com>
-> ---
->  arch/x86/xen/smp.c           |  172 +++++++++++++++++++++++++++++++++++++++++-
->  drivers/xen/events.c         |   27 ++++++
->  include/asm-x86/xen/events.h |    1 
->  include/xen/events.h         |    7 +
->  4 files changed, 206 insertions(+), 1 deletion(-)
->
-> ===================================================================
-> --- a/arch/x86/xen/smp.c
-> +++ b/arch/x86/xen/smp.c
-> @@ -15,6 +15,7 @@
->   * This does not handle HOTPLUG_CPU yet.
->   */
->  #include <linux/sched.h>
-> +#include <linux/kernel_stat.h>
->  #include <linux/err.h>
->  #include <linux/smp.h>
->  
-> @@ -34,6 +35,8 @@
->  
->  #include "xen-ops.h"
->  #include "mmu.h"
-> +
-> +static void __cpuinit xen_init_lock_cpu(int cpu);
->  
->  cpumask_t xen_cpu_initialized_map;
->  
-> @@ -179,6 +182,8 @@
->  {
->  	unsigned cpu;
->  
-> +	xen_init_lock_cpu(0);
-> +
->  	smp_store_cpu_info(0);
->  	cpu_data(0).x86_max_cores = 1;
->  	set_cpu_sibling_map(0);
-> @@ -301,6 +306,7 @@
->  	clear_tsk_thread_flag(idle, TIF_FORK);
->  #endif
->  	xen_setup_timer(cpu);
-> +	xen_init_lock_cpu(cpu);
->  
->  	per_cpu(cpu_state, cpu) = CPU_UP_PREPARE;
->  
-> @@ -413,6 +419,170 @@
->  	return IRQ_HANDLED;
->  }
->  
-> +struct xen_spinlock {
-> +	unsigned char lock;		/* 0 -> free; 1 -> locked */
-> +	unsigned short spinners;	/* count of waiting cpus */
-> +};
-> +
-> +static int xen_spin_is_locked(struct raw_spinlock *lock)
-> +{
-> +	struct xen_spinlock *xl = (struct xen_spinlock *)lock;
-> +
-> +	return xl->lock != 0;
-> +}
-> +
-> +static int xen_spin_is_contended(struct raw_spinlock *lock)
-> +{
-> +	struct xen_spinlock *xl = (struct xen_spinlock *)lock;
-> +
-> +	/* Not strictly true; this is only the count of contended
-> +	   lock-takers entering the slow path. */
-> +	return xl->spinners != 0;
-> +}
-> +
-> +static int xen_spin_trylock(struct raw_spinlock *lock)
-> +{
-> +	struct xen_spinlock *xl = (struct xen_spinlock *)lock;
-> +	u8 old = 1;
-> +
-> +	asm("xchgb %b0,%1"
-> +	    : "+q" (old), "+m" (xl->lock) : : "memory");
-> +
-> +	return old == 0;
-> +}
-> +
-> +static DEFINE_PER_CPU(int, lock_kicker_irq) = -1;
-> +static DEFINE_PER_CPU(struct xen_spinlock *, lock_spinners);
+The irq2pcap[] array looks horrible to me. It's actually a sparse array.
+Isn't there a nice 1:1 mapping using a formular??
 
-The plural is a bit misleading, as this is a single pointer per CPU.
+Besides, the IRQ numbering scheme has now changed to a more generic way,
+I suggest to pull from Russell's latest git tree and rebase the IRQ
+part.
 
-> +static inline void spinning_lock(struct xen_spinlock *xl)
-> +{
-> +	__get_cpu_var(lock_spinners) = xl;
-> +	wmb();			/* set lock of interest before count */
-> +	asm(LOCK_PREFIX " incw %0"
-> +	    : "+m" (xl->spinners) : : "memory");
-> +}
-> +
-> +static inline void unspinning_lock(struct xen_spinlock *xl)
-> +{
-> +	asm(LOCK_PREFIX " decw %0"
-> +	    : "+m" (xl->spinners) : : "memory");
-> +	wmb();			/* decrement count before clearing lock */
-> +	__get_cpu_var(lock_spinners) = NULL;
-> +}
-> +
-> +static noinline int xen_spin_lock_slow(struct raw_spinlock *lock)
-> +{
-> +	struct xen_spinlock *xl = (struct xen_spinlock *)lock;
-> +	int irq = __get_cpu_var(lock_kicker_irq);
-> +	int ret;
-> +
-> +	/* If kicker interrupts not initialized yet, just spin */
-> +	if (irq == -1)
-> +		return 0;
-> +
-> +	/* announce we're spinning */
-> +	spinning_lock(xl);
-> +
-> +	/* clear pending */
-> +	xen_clear_irq_pending(irq);
-> +
-> +	/* check again make sure it didn't become free while
-> +	   we weren't looking  */
-> +	ret = xen_spin_trylock(lock);
-> +	if (ret)
-> +		goto out;
-> +
-> +	/* block until irq becomes pending */
-> +	xen_poll_irq(irq);
-> +	kstat_this_cpu.irqs[irq]++;
-> +
-> +out:
-> +	unspinning_lock(xl);
-> +	return ret;
-> +}
-> +
-> +static void xen_spin_lock(struct raw_spinlock *lock)
-> +{
-> +	struct xen_spinlock *xl = (struct xen_spinlock *)lock;
-> +	int timeout;
-> +	u8 oldval;
-> +
-> +	do {
-> +		timeout = 1 << 10;
-> +
-> +		asm("1: xchgb %1,%0\n"
-> +		    "   testb %1,%1\n"
-> +		    "   jz 3f\n"
-> +		    "2: rep;nop\n"
-> +		    "   cmpb $0,%0\n"
-> +		    "   je 1b\n"
-> +		    "   dec %2\n"
-> +		    "   jnz 2b\n"
-> +		    "3:\n"
-> +		    : "+m" (xl->lock), "=q" (oldval), "+r" (timeout)
-> +		    : "1" (1)
-> +		    : "memory");
-> +
-> +	} while (unlikely(oldval != 0 && !xen_spin_lock_slow(lock)));
-> +}
-> +
-> +static noinline void xen_spin_unlock_slow(struct xen_spinlock *xl)
-> +{
-> +	int cpu;
-> +
-> +	for_each_online_cpu(cpu) {
+> 
+>> The machine_is_xyz() calls inside ezx-pcap could be replaced with
+>> configuration via platform_data (have pcap_platform_data->cs_inverted,
+>> for example)
+> 
+> We had this before and it turned out as messy as this solution. We have one
+> machine file that supports up to 6 devices right now. So we would have to deal
+> with the same machine_is_xyz macros in the machine file.
+> 
+> We thought it would be better to let the driver handle this. Open for discussion
+> of course.
 
-Would it be feasible to have a bitmap for the spinning CPUs in order to
-do a for_each_spinning_cpu() here instead?  Or is setting a bit in
-spinning_lock() and unsetting it in unspinning_lock() more overhead than
-going over all CPUs here?
+The following block of code:
 
-> +		/* XXX should mix up next cpu selection */
-> +		if (per_cpu(lock_spinners, cpu) == xl) {
-> +			xen_send_IPI_one(cpu, XEN_SPIN_UNLOCK_VECTOR);
-> +			break;
-> +		}
-> +	}
-> +}
-> +
-> +static void xen_spin_unlock(struct raw_spinlock *lock)
-> +{
-> +	struct xen_spinlock *xl = (struct xen_spinlock *)lock;
-> +
-> +	smp_wmb();		/* make sure no writes get moved after unlock */
-> +	xl->lock = 0;		/* release lock */
-> +
-> +	/* make sure unlock happens before kick */
-> +	barrier();
-> +
-> +	if (unlikely(xl->spinners))
-> +		xen_spin_unlock_slow(xl);
-> +}
-> +
-> +static __cpuinit void xen_init_lock_cpu(int cpu)
-> +{
-> +	int irq;
-> +	const char *name;
-> +
-> +	name = kasprintf(GFP_KERNEL, "spinlock%d", cpu);
-> +	irq = bind_ipi_to_irqhandler(XEN_SPIN_UNLOCK_VECTOR,
-> +				     cpu,
-> +				     xen_reschedule_interrupt,
-> +				     IRQF_DISABLED|IRQF_PERCPU|IRQF_NOBALANCING,
-> +				     name,
-> +				     NULL);
-> +
-> +	if (irq >= 0) {
-> +		disable_irq(irq); /* make sure it's never delivered */
-> +		per_cpu(lock_kicker_irq, cpu) = irq;
-> +	}
-> +
-> +	printk("cpu %d spinlock event irq %d\n", cpu, irq);
-> +}
-> +
-> +static void __init xen_init_spinlocks(void)
-> +{
-> +	pv_lock_ops.spin_is_locked = xen_spin_is_locked;
-> +	pv_lock_ops.spin_is_contended = xen_spin_is_contended;
-> +	pv_lock_ops.spin_lock = xen_spin_lock;
-> +	pv_lock_ops.spin_trylock = xen_spin_trylock;
-> +	pv_lock_ops.spin_unlock = xen_spin_unlock;
-> +}
-> +
->  static const struct smp_ops xen_smp_ops __initdata = {
->  	.smp_prepare_boot_cpu = xen_smp_prepare_boot_cpu,
->  	.smp_prepare_cpus = xen_smp_prepare_cpus,
-> @@ -430,5 +600,5 @@
->  {
->  	smp_ops = xen_smp_ops;
->  	xen_fill_possible_map();
-> -	paravirt_use_bytelocks();
-> +	xen_init_spinlocks();
->  }
-> ===================================================================
-> --- a/drivers/xen/events.c
-> +++ b/drivers/xen/events.c
-> @@ -741,6 +741,33 @@
->  	}
->  }
->  
-> +/* Clear an irq's pending state, in preparation for polling on it */
-> +void xen_clear_irq_pending(int irq)
-> +{
-> +	int evtchn = evtchn_from_irq(irq);
-> +
-> +	if (VALID_EVTCHN(evtchn))
-> +		clear_evtchn(evtchn);
-> +}
-> +
-> +/* Poll waiting for an irq to become pending.  In the usual case, the
-> +   irq will be disabled so it won't deliver an interrupt. */
-> +void xen_poll_irq(int irq)
-> +{
-> +	evtchn_port_t evtchn = evtchn_from_irq(irq);
-> +
-> +	if (VALID_EVTCHN(evtchn)) {
-> +		struct sched_poll poll;
-> +
-> +		poll.nr_ports = 1;
-> +		poll.timeout = 0;
-> +		poll.ports = &evtchn;
-> +
-> +		if (HYPERVISOR_sched_op(SCHEDOP_poll, &poll) != 0)
-> +			BUG();
-> +	}
-> +}
-> +
->  void xen_irq_resume(void)
->  {
->  	unsigned int cpu, irq, evtchn;
-> ===================================================================
-> --- a/include/asm-x86/xen/events.h
-> +++ b/include/asm-x86/xen/events.h
-> @@ -5,6 +5,7 @@
->  	XEN_RESCHEDULE_VECTOR,
->  	XEN_CALL_FUNCTION_VECTOR,
->  	XEN_CALL_FUNCTION_SINGLE_VECTOR,
-> +	XEN_SPIN_UNLOCK_VECTOR,
->  
->  	XEN_NR_IPIS,
->  };
-> ===================================================================
-> --- a/include/xen/events.h
-> +++ b/include/xen/events.h
-> @@ -45,4 +45,11 @@
->  extern void xen_irq_resume(void);
->  extern void xen_evtchn_do_upcall(struct pt_regs *regs);
->  
-> +/* Clear an irq's pending state, in preparation for polling on it */
-> +void xen_clear_irq_pending(int irq);
-> +
-> +/* Poll waiting for an irq to become pending.  In the usual case, the
-> +   irq will be disabled so it won't deliver an interrupt. */
-> +void xen_poll_irq(int irq);
-> +
->  #endif	/* _XEN_EVENTS_H */
++	if (pcap_data->cs >= 0) {
++		if (machine_is_ezx_a780() || machine_is_ezx_e680())
++			gpio_direction_output(pcap_data->cs, 1);
++		else
++			gpio_direction_output(pcap_data->cs, 0);
++	}
 
-	Hannes
+has 3 occurrences in the driver (2 in ezx_ssp_pcap_putget, 1 in ezx_pcap_probe)
+which is good reason to fold this into the platform data.
+
+Well, if the above is done in platform data, I guess you won't mind another bit
+flag (e.g. PCAP_REDIRECT_IRQ or something alike) added in platform data, either
+
+> 
+>>> +#if 0
+>>> +#define DEBUGP(x, args...) printk(x, ## args)
+>>> +#else
+>>> +#define DEBUGP(x, args...)
+>>> +#endif
+>> Could you remove the custom debug macros and use pr_debug (or even
+>> better, dev_dbg) instead?
+> 
+> Will do.
+> 
+>>> +static void __exit ezx_pcap_exit(void)
+>>> +{
+>>> +       return platform_driver_unregister(&ezxpcap_driver);
+>>> +}
+>>> +
+>>> +module_init(ezx_pcap_init);
+>> Depending on what platform_devices depend on this, maybe use
+>> subsys_initcall here.
+> 
+> Ok, I'll need to look up on this to see if it is an option.
+> 
+>>> +module_exit(ezx_pcap_exit);
+>> Why bother with module_exit when the Kconfig option is bool?
+> 
+> Well, matter of taste. :)
+> 
+> Taking care about cleanup is good style. Still you are right that it is useles
+> for the time being.
+> 
+>>> +#define PCAP_IRQ_USB4V         (1 << 6)        /* USB above 4volt???
+>>> +                                               called "USBDET_4V" in blob */
+>> I assume that's for OTG operation. The VBUS voltage is valid from 4.4 V, and the
+>> PXA27x UDC controller has "Vbus valid 4.0 V" and "Vbus valid 4.4 V" interrupts
+> 
+> ok
+> 
+>>> +       /*  set core voltage */
+>>> +       ezx_pcap_set_sw(SW1, SW_VOLTAGE, SW_VOLTAGE_1250);
+>> Btw, did you see the voltage regulator framework that is in linux-next?
+> 
+> Heard of it, but not read the code yet. It's on my list. I just a bit hesitant
+> to base on code that is not in mainline yet. But -next should be ok.
+> 
+>>> -
+>>> +       platform_device_register(&ezx_pcap_device);
+>>>        platform_add_devices(devices, ARRAY_SIZE(devices));
+>> You could put ezx_pcap_device into the beginning of devices[].
+> 
+> Duh, will fix.
+> 
+> I send out an updated patch tomorrow. Need some sleep now.
+> 
+> Thanks for the feedback.
+> 
+> regards
+> Stefan Schmidt
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
