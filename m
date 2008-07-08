@@ -1,91 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754144AbYGHGZM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbYGHGay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754144AbYGHGZM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 02:25:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbYGHGYy
+	id S1754632AbYGHGay (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 02:30:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbYGHGap
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 02:24:54 -0400
-Received: from chello212186124096.11.vie.surfer.at ([212.186.124.96]:45085
-	"EHLO wiesinger.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751341AbYGHGYx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 02:24:53 -0400
-Date: Tue, 8 Jul 2008 08:24:07 +0200 (CEST)
-From: Gerhard Wiesinger <lists@wiesinger.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: Lots of con-current I/O = resets SATA link? (2.6.25.10)
-In-Reply-To: <alpine.DEB.1.10.0807071149530.32508@p34.internal.lan>
-Message-ID: <alpine.LFD.1.10.0807080811560.5439@bbs.intern>
-References: <alpine.DEB.1.10.0807051252200.12562@p34.internal.lan> <alpine.LFD.1.10.0807071649340.1160@bbs.intern> <alpine.LFD.1.10.0807071705490.2997@bbs.intern> <alpine.DEB.1.10.0807071149530.32508@p34.internal.lan>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 8 Jul 2008 02:30:45 -0400
+Received: from mxl.seznam.cz ([77.75.72.44]:52337 "EHLO mxl.seznam.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751418AbYGHGao (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 02:30:44 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=beta; d=seznam.cz;
+	h=Received:Message-ID:Date:From:Reply-To:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Smtpd:X-Seznam-User:X-QM-Mark;
+	b=HlyveDNGw9H8Ic4PPts/XR4ELrSsHyXFjc4tidMyiesrrhR3XJlKLDMZ9HUnuTsj6
+	5/eDxpC2CpDiqFC/Ui0+lqVimtlzKb9J6bAxbuMtPnebDrM1cmXUNPEliA98YF0fAw1
+	mv5LkYgM9ALJhxpUmI2LzQTjC1Ia41AEbRfMzbY=
+Message-ID: <48730695.5010004@seznam.cz>
+Date: Tue, 08 Jul 2008 08:17:57 +0200
+From: Michal Simek <monstr@seznam.cz>
+Reply-To: monstr@seznam.cz
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-MailScanner-Information-wiesinger.com: Please contact the ISP for more information
-X-MailScanner-wiesinger.com: Found to be clean
-X-MailScanner-SpamCheck-wiesinger.com: not spam, SpamAssassin (score=-4.399,
-	required 4.5, autolearn=not spam, ALL_TRUSTED -1.80, BAYES_00 -2.60)
-X-MailScanner-From: lists@wiesinger.com
+To: Arnd Bergmann <arnd@arndb.de>
+CC: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+       Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com, matthew@wil.cx,
+       microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
+       drepper@redhat.com, linuxppc-dev@ozlabs.org, will.newton@gmail.com,
+       hpa@zytor.com, John.Linn@xilinx.com, john.williams@petalogix.com
+Subject: Re: [PATCH 31/60] microblaze_v4: memory inicialization, MMU, TLB
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>	<1214483429-32360-31-git-send-email-monstr@seznam.cz>	<1214483429-32360-32-git-send-email-monstr@seznam.cz> <200806261714.12967.arnd@arndb.de>
+In-Reply-To: <200806261714.12967.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
+X-Smtpd: 1.1.1@13338
+X-Seznam-User: monstr@seznam.cz
+X-QM-Mark: email-qm1<180831653>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Jul 2008, Justin Piszcz wrote:
+Hi Arnd,
 
-> Hi Gerhard,
->
-> It /could/ be the port itself if you have changed the cable and disk..
->
+> On Thursday 26 June 2008, monstr@seznam.cz wrote:
+> 
+>> +#include <linux/autoconf.h>
+> 
+> You should never need to include linux/autoconf.h anywhere,
+> just remove this.
 
-Yes, but it is very unlikely. I have written TB of data there without any 
-problems. Anyway this is my 3rd exchanged SAMSUNG disk ...
+Remove from all files
+
+>> +#include <linux/init.h>
+>> +#include <linux/mm.h>
+>> +#include "../../../mm/internal.h"
+> 
+> Why do you need to include the internal.h file here?
+> If you have a good reason to do it, you should probably
+> add the symbol you need to a global header file.
+
+There was reason for doing it in older version. With current
+version work without internal.h.
+
+Thank for comment,
+Michal
 
 
-> Have you tried loading the disk with dd and seeing if you can reproduce the 
-> problem? You are getting the same error I get generally, I can recommend 
-> turning OFF NCQ first and see if the problem goes away.
->
-> # Define DISKS.
-> cd /sys/block
-> DISKS=$(/bin/ls -1d sd[a-z])
->
-> # Disable NCQ on all disks.
-> echo "Disabling NCQ on all disks..."
-> for i in $DISKS
-> do
->  echo "Disabling NCQ on $i"
->  echo 1 > /sys/block/"$i"/device/queue_depth
-> done
->
 
-I tried to disable NCQ on all disks and tried to rebuild the raid, but it 
-still failed to rebuild with the same error message.
-
-I also tried the nolapic kernel parameter without success.
-
-/dev/sda:  5 Reallocated_Sector_Ct   0x0033   100   100   010    Pre-fail  Always       -       0
-/dev/sdb:  5 Reallocated_Sector_Ct   0x0033   100   100   010    Pre-fail  Always       -       0
-/dev/sdc:  5 Reallocated_Sector_Ct   0x0033   091   091   010    Pre-fail  Always       -       413
-/dev/sdd:  5 Reallocated_Sector_Ct   0x0033   100   100   010    Pre-fail  Always       -       0
-/dev/sde:  5 Reallocated_Sector_Ct   0x0033   100   100   010    Pre-fail  Always       -       0
-/dev/sdf:  5 Reallocated_Sector_Ct   0x0033   100   100   010    Pre-fail  Always       -       0
-
-The only thing is that the Reallocated_Sector_Ct is still >0 on /dev/sdc 
-(keep in mind this is my 3rd new Samsung disk on /dev/sdc and I had up to 
-3000 Reallocated_Sector_Ct on previous disks in < 1 day !!!).
-
-Should I replace the disk a fourth time?
-
-When you search in google you find a lot of threads with the timeout 
-problem. Might this be a software issue?
-
-Any ideas?
-
-Thnx.
-
-Ciao,
-Gerhard
-
---
-http://www.wiesinger.com/
+> 	Arnd <><
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
+> 
+> ------------------------------------------------------------------------
+> 
+> 
+> No virus found in this incoming message.
+> Checked by AVG. 
+> Version: 8.0.101 / Virus Database: 270.4.1/1519 - Release Date: 25.6.2008 04:13
