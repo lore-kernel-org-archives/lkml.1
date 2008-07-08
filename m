@@ -1,136 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756041AbYGHLYc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756681AbYGHLi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756041AbYGHLYc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 07:24:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbYGHLYW
+	id S1756681AbYGHLi6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 07:38:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754596AbYGHLit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 07:24:22 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:58495 "EHLO
-	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752968AbYGHLYV (ORCPT
+	Tue, 8 Jul 2008 07:38:49 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:54235 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754527AbYGHLis (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 07:24:21 -0400
-X-BigFish: VPS-42(zz1432R98dR7efV1805M3117K655O4220kzz10d3izzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0K3OQC3-02-40B-01
-Date: Tue, 8 Jul 2008 13:24:02 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
+	Tue, 8 Jul 2008 07:38:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=s5t9M0SIadZNWeNHm+G9BRAFhSoeYH3k5K5nxCam5FQMOdXO6TucogVKHhUsGJHYCU
+         M2OJ3pXfnlVsv958ectAsdz090m38l8F0hutSxeVU/HDsohnCbQyvqfWfibWo7m9sqvM
+         yT9gz+fBZMLLTLk9h1Qs9N5Ab7k2qpNUYxTBs=
+Message-ID: <aa79d98a0807080438u19fc4915sd81c9fedf8b90260@mail.gmail.com>
+Date: Tue, 8 Jul 2008 15:38:45 +0400
+From: "Cyrill Gorcunov" <gorcunov@gmail.com>
 To: "Maciej W. Rozycki" <macro@linux-mips.org>
-CC: Ingo Molnar <mingo@elte.hu>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-next@vger.kernel.org,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] acpi: Disable IRQ 0 through I/O APIC for some HP
-	systems
-Message-ID: <20080708112402.GA2301@alberich.amd.com>
-References: <Pine.LNX.4.55.0807010055070.30785@cliff.in.clinika.pl>
+Subject: Re: [Q] Is 64bit LVTT screwed
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.55.0807072243410.20615@cliff.in.clinika.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.55.0807010055070.30785@cliff.in.clinika.pl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 08 Jul 2008 11:24:06.0593 (UTC) FILETIME=[22368B10:01C8E0ED]
+References: <20080702184024.GC7003@cvg>
+	 <Pine.LNX.4.55.0807072243410.20615@cliff.in.clinika.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 01, 2008 at 01:12:06AM +0100, Maciej W. Rozycki wrote:
-> From: Matthew Garrett <mjg59@srcf.ucam.org>
-> 
->  Some HP laptops have a problem with their DSDT reporting as
-> HP/SB400/10000, which includes some code which overrides all temperature
-> trip points to 16C if the INTIN2 input of the I/O APIC is enabled.  This
-> input is incorrectly designated the ISA IRQ 0 via an interrupt source
-> override even though it is wired to the output of the master 8259A and
-> INTIN0 is not connected at all.  So far two models have been identified, 
-> namely nx6125 and nx6325.
+On Tue, Jul 8, 2008 at 2:08 AM, Maciej W. Rozycki <macro@linux-mips.org> wrote:
+[...]
+>>
+>> but in both cases we use "divide by 16" in divide register. The only
+>> explanation I imagine - for 64bit mode we are required to 'stuck'
+>> for a bit longer (by 16 times longer to be precise). Am I right?
+>> Or there is another reason why we dont use APIC_DIVISOR here. Actually,
+>> as I see it not fair to a caller. For 64bit mode APIC timer is requested
+>> to count 250000000 ticks but in real it will count 250000000 * 16.
+>> Not sure who is right there. I think the better would be to
+>> use 4000000000 and APIC_DIVISOR in 64bit mode. How do you think?
+>
+>  The APIC clock varies across systems so the timer setup includes
+> calibration.  Which means both variations end up with the correct
+> interrupt rate probably, except using different divisors.  We used to
+> print the APIC clock rate and that would be off with one of the above, but
+> I don't we do this anymore.  We had a similar problem with the 82489DX
+> where the prescaler was bypassed altogether resulting in an incorrect
+> clock rate printed, but the rate of timer interrupt was correctly
+> calibrated regardless.
+>
+>  This is of course merely an explanation why the code you quoted does not
+> explode spectacularly.  It does not make it correct.  If the prescaler is
+> indeed set to 16 for 64-bit systems, then APIC_DIVISOR should obviously be
+> used in the calculation above too.  And if not, then I think the prescaler
+> should be set consistently across systems and then the setting reflected
+> in the calculations accordingly.  Please note that only values between 2
+> and 16 are supported in a uniform way across all the APIC models and using
+> low values risks an overflow as clock rates are in the GHz range these
+> days already.  The value of 16 seems a reasonable one.
+>
+>  Maciej
+>
 
-Out of sheer curiosity. What makes you think that IRQ0 is not
-connected to INT0 of IO APIC? The IRQ0 pin2 override?
+Thanks, Maciej, for explanation. Unfortunelly I'm quite busy now so
+I stopped merging/research on apic code, as only get spare time - will
+let you know my results.
 
-Why would we trust that BIOS information if the broken BIOS does
-weird things if INT2 of IO APIC is _not_ masked?
-
-IMHO on those HP systems we should skip the (bogus?) timer override,
-leave IRQ0 -> IOAPIC/INT0 and mask IOAPIC/INT2. Or at least we should
-test that configuration.
-
-I admit that I have lost track of who has provided which patches,
-which patch does exactly what ((IO|L)A)PIC configuration, and who has
-tested what combinations, and what the results were.
-
-So I've just done the following (based on x86/master as of yesterday):
-
-Booting an HP nx6325
-
-(1)  with "acpi_skip_timer_override" to avoid configuration
-     of IOAPIC/INT2 and to avoid masking of IOAPIC/INT0.
-
-  plus
-
-(2) adding (hardcoded in check_timer()) some code to explicitly mask
-    IOAPIC/INT2 to quiesce the fan (work around the DSDT issue).
-
-With that setup my test box boots w/o problems (no fan noise, no
-throttling, no stablity problems so far). Here the relevant dmesg
-parts:
-
-Command line: root=/dev/sda2 video=radeonfb:noaccel debug apic=debug acpi_skip_timer_override
-  ...
-IOAPIC[0]: apic_id 2, version 0, address 0xfec00000, GSI 
-  ...
-ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
-ACPI: BIOS IRQ0 pin2 override ignored.
-  ...
-using C1E aware idle routine
-  ...
-init IO_APIC IRQs
-IOAPIC[0]: Set routing entry (2-0 -> 0x30 -> IRQ 0 Mode:0 Active:0)
-IOAPIC[0]: Set routing entry (2-1 -> 0x31 -> IRQ 1 Mode:0 Active:0)
-IOAPIC[0]: Set routing entry (2-2 -> 0x32 -> IRQ 2 Mode:0 Active:0)
-  ...
-IO-APIC (apicid-pin) 2-16, 2-17, 2-18, 2-19, 2-20 not connected.
-IOAPIC[0]: Set routing entry (2-21 -> 0x49 -> IRQ 21 Mode:1 Active:1)
-IO-APIC (apicid-pin) 2-22, 2-23 not connected.
-..TIMER: vector=0x30 apic1=0 pin1=0 apic2=-1 pin2=-1
-CPU0: AMD Turion(tm) 64 X2 Mobile Technology TL-60 stepping 02
-Using local APIC timer interrupts.
-  ...
-IO APIC #2......
-  ...
-NR Dst Mask Trig IRR Pol Stat Dmod Deli Vect:   
-00 003 0    0    0   0   0    1    1    30
-01 003 0    0    0   0   0    1    1    31
-02 003 1    0    0   0   0    1    1    32
-
-
-I think we have 3 alternatives to setup timer interrupt on those machines
-
-(A) Setup timer as Virtual Wire IRQ.
-    (that's the way the old code used to configure it, e.g. in 2.6.25)
-(B) The current approach to setup timer as ExtINT.
-(C) Use IOAPIC/INT0.
-
-Shouldn't be that hard to find the best solution here:
-
-(A) proved to work (and even "accidentially" masked IOAPIC/INT2 which
-    avoided the DSDT problem)
-
-(B) ??? who tested this, Rafael -- The stability issues, did they happen
-    with a kernel based on that solution?
-
-(C) ... is my preferred solution. I tested it and I've not seen problems
-    with it (so far) -- maybe it's naive but I think it's the most
-    obvious solution (*)
-
-
-Regards,
-
-Andreas
-
-(*) BTW, default for SB400 is to route IRQ0 to IOAPIC/INT0 and output
-    of PIC to IOAPIC/INT2. On my test box this wasn't configured
-    differently. Thus I don't understand why the BIOS provided an
-    IRQ0/INT2 override at all.
-
-
+- Cyrill -
