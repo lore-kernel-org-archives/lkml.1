@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758737AbYGHMns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758314AbYGHMoH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758737AbYGHMns (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 08:43:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756677AbYGHMnQ
+	id S1758314AbYGHMoH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 08:44:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757792AbYGHMnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 08:43:16 -0400
+	Tue, 8 Jul 2008 08:43:22 -0400
 Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27528 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753105AbYGHMnN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 08:43:13 -0400
+	id S1757009AbYGHMnT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 08:43:19 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
@@ -18,11 +18,11 @@ Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
        grant.likely@secretlab.ca, vapier.adi@gmail.com,
        alan@lxorguk.ukuu.org.uk, hpa@zytor.com, lethal@linux-sh.org,
        florian@openwrt.org, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 50/58] microblaze_v5: generic files sockios.h ucontext.h
-Date: Tue,  8 Jul 2008 13:59:50 +0200
-Message-Id: <6c03dcf8dbfd910ebf6c2f95db61d0456aa943e1.1215517976.git.monstr@monstr.eu>
+Subject: [PATCH 34/58] microblaze_v5: ioctl support
+Date: Tue,  8 Jul 2008 13:59:34 +0200
+Message-Id: <d1d33c18956829ec9ac7daf8d0516b17e85ed190.1215517976.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <3c5eac3dbdbf538c727a4a8fe336cdd55650bb37.1215517976.git.monstr@monstr.eu>
+In-Reply-To: <c7120d8a6379cb1a18af5330997e30ec974acc2f.1215517976.git.monstr@monstr.eu>
 References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
  <c03d29cbccaef8aed8a2911c2a259fbd79ad23d9.1215517976.git.monstr@monstr.eu>
@@ -57,22 +57,6 @@ References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <689cff1b6d98f60d8f8abc4472193688b524284d.1215517976.git.monstr@monstr.eu>
  <9664f18e7e86af4332018549b29bf0797d6afcd5.1215517976.git.monstr@monstr.eu>
  <c7120d8a6379cb1a18af5330997e30ec974acc2f.1215517976.git.monstr@monstr.eu>
- <d1d33c18956829ec9ac7daf8d0516b17e85ed190.1215517976.git.monstr@monstr.eu>
- <7a16429cfc461420883dbaa80c16047e5a1a91c1.1215517976.git.monstr@monstr.eu>
- <b6a0f3bceb0867c55613463fc43be5328fcedecd.1215517976.git.monstr@monstr.eu>
- <fc26823d77c7180b62022e2d4bcca3c4fe6de574.1215517976.git.monstr@monstr.eu>
- <64089967061955b7a29eb6d4e6269ff75b5442f2.1215517976.git.monstr@monstr.eu>
- <92e3ab88c2174acf4e25c474c1f68ffd4db72ca6.1215517976.git.monstr@monstr.eu>
- <5174afd0eaa5c6cb9344ea3217199e48899be313.1215517976.git.monstr@monstr.eu>
- <bcb94400dca62fb349d0ab1e0a6209291fdcdfc5.1215517976.git.monstr@monstr.eu>
- <5b2ed516b2e51d5117386c1b6eb814acc6e5a157.1215517976.git.monstr@monstr.eu>
- <421f4b613d4dbd983df1545a9a163347e5bd1c56.1215517976.git.monstr@monstr.eu>
- <0d39e8f03c487c004efa226c5ee81a81a8856768.1215517976.git.monstr@monstr.eu>
- <c4f477d71dd4cd2ae884b9c47756c9334f8dac18.1215517976.git.monstr@monstr.eu>
- <a98df8525bf9287d7a8b6077ff20dd61a055a98e.1215517976.git.monstr@monstr.eu>
- <c6651b096ee8a0691f94f8c19574302dbfb61ee4.1215517976.git.monstr@monstr.eu>
- <2ac3915482a9a50f7a4531908305b326baa2008e.1215517976.git.monstr@monstr.eu>
- <3c5eac3dbdbf538c727a4a8fe336cdd55650bb37.1215517976.git.monstr@monstr.eu>
 In-Reply-To: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 References: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -84,71 +68,116 @@ From: Michal Simek <monstr@monstr.eu>
 Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-generic/sockios.h  |   23 +++++++++++++++++++++++
- include/asm-generic/ucontext.h |   24 ++++++++++++++++++++++++
- 2 files changed, 47 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-generic/sockios.h
- create mode 100644 include/asm-generic/ucontext.h
+ include/asm-microblaze/ioctl.h  |    1 +
+ include/asm-microblaze/ioctls.h |   91 +++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 92 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/ioctl.h
+ create mode 100644 include/asm-microblaze/ioctls.h
 
-diff --git a/include/asm-generic/sockios.h b/include/asm-generic/sockios.h
+diff --git a/include/asm-microblaze/ioctl.h b/include/asm-microblaze/ioctl.h
 new file mode 100644
-index 0000000..9dc86e6
+index 0000000..b279fe0
 --- /dev/null
-+++ b/include/asm-generic/sockios.h
-@@ -0,0 +1,23 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_GENERIC_SOCKIOS_H
-+#define _ASM_GENERIC_SOCKIOS_H
-+
++++ b/include/asm-microblaze/ioctl.h
+@@ -0,0 +1 @@
 +#include <asm-generic/ioctl.h>
-+
-+/* Socket-level I/O control calls. */
-+#define FIOSETOWN	0x8901
-+#define SIOCSPGRP	0x8902
-+#define FIOGETOWN	0x8903
-+#define SIOCGPGRP	0x8904
-+#define SIOCATMARK	0x8905
-+#define SIOCGSTAMP	0x8906		/* Get stamp (timeval) */
-+#define SIOCGSTAMPNS	0x8907		/* Get stamp (timespec) */
-+
-+#endif /* _ASM_GENERIC_SOCKIOS_H */
-diff --git a/include/asm-generic/ucontext.h b/include/asm-generic/ucontext.h
+diff --git a/include/asm-microblaze/ioctls.h b/include/asm-microblaze/ioctls.h
 new file mode 100644
-index 0000000..3e718c2
+index 0000000..76c963f
 --- /dev/null
-+++ b/include/asm-generic/ucontext.h
-@@ -0,0 +1,24 @@
++++ b/include/asm-microblaze/ioctls.h
+@@ -0,0 +1,91 @@
 +/*
-+ * include/asm-generic/ucontext.h
++ * Copyright (C) 2006 Atmark Techno, Inc.
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
 + * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
 + */
 +
-+#ifndef _ASM_GENERIC_UCONTEXT_H
-+#define _ASM_GENERIC_UCONTEXT_H
++#ifndef _ASM_MICROBLAZE_IOCTLS_H
++#define _ASM_MICROBLAZE_IOCTLS_H
 +
-+#include <asm/sigcontext.h>
++#include <asm/ioctl.h>
 +
-+struct ucontext {
-+	unsigned long		uc_flags;
-+	struct ucontext		*uc_link;
-+	stack_t			uc_stack;
-+	struct sigcontext	uc_mcontext;
-+	sigset_t		uc_sigmask; /* mask last for extensibility */
-+};
++/* 0x54 is just a magic number to make these relatively unique ('T') */
 +
-+#endif /* _ASM_GENERIC_UCONTEXT_H */
++#define TCGETS		0x5401
++#define TCSETS		0x5402
++#define TCSETSW		0x5403
++#define TCSETSF		0x5404
++#define TCGETA		0x5405
++#define TCSETA		0x5406
++#define TCSETAW		0x5407
++#define TCSETAF		0x5408
++#define TCSBRK		0x5409
++#define TCXONC		0x540A
++#define TCFLSH		0x540B
++#define TIOCEXCL	0x540C
++#define TIOCNXCL	0x540D
++#define TIOCSCTTY	0x540E
++#define TIOCGPGRP	0x540F
++#define TIOCSPGRP	0x5410
++#define TIOCOUTQ	0x5411
++#define TIOCSTI		0x5412
++#define TIOCGWINSZ	0x5413
++#define TIOCSWINSZ	0x5414
++#define TIOCMGET	0x5415
++#define TIOCMBIS	0x5416
++#define TIOCMBIC	0x5417
++#define TIOCMSET	0x5418
++#define TIOCGSOFTCAR	0x5419
++#define TIOCSSOFTCAR	0x541A
++#define FIONREAD	0x541B
++#define TIOCINQ		FIONREAD
++#define TIOCLINUX	0x541C
++#define TIOCCONS	0x541D
++#define TIOCGSERIAL	0x541E
++#define TIOCSSERIAL	0x541F
++#define TIOCPKT		0x5420
++#define FIONBIO		0x5421
++#define TIOCNOTTY	0x5422
++#define TIOCSETD	0x5423
++#define TIOCGETD	0x5424
++#define TCSBRKP		0x5425 /* Needed for POSIX tcsendbreak() */
++#define TIOCTTYGSTRUCT	0x5426 /* For debugging only */
++#define TIOCSBRK	0x5427 /* BSD compatibility */
++#define TIOCCBRK	0x5428 /* BSD compatibility */
++#define TIOCGSID	0x5429 /* Return the session ID of FD */
++/* Get Pty Number (of pty-mux device) */
++#define TIOCGPTN	_IOR('T', 0x30, unsigned int)
++#define TIOCSPTLCK	_IOW('T', 0x31, int) /* Lock/unlock Pty */
++
++#define FIONCLEX	0x5450 /* these numbers need to be adjusted. */
++#define FIOCLEX		0x5451
++#define FIOASYNC	0x5452
++#define TIOCSERCONFIG	0x5453
++#define TIOCSERGWILD	0x5454
++#define TIOCSERSWILD	0x5455
++#define TIOCGLCKTRMIOS	0x5456
++#define TIOCSLCKTRMIOS	0x5457
++#define TIOCSERGSTRUCT	0x5458 /* For debugging only */
++#define TIOCSERGETLSR	0x5459 /* Get line status register */
++#define TIOCSERGETMULTI 0x545A /* Get multiport config */
++#define TIOCSERSETMULTI 0x545B /* Set multiport config */
++
++#define TIOCMIWAIT	0x545C /* wait for a change on serial input line(s) */
++#define TIOCGICOUNT	0x545D /* read serial port inline interrupt counts */
++
++#define	FIOQSIZE	0x545E
++
++/* Used for packet mode */
++#define TIOCPKT_DATA		0
++#define TIOCPKT_FLUSHREAD	1
++#define TIOCPKT_FLUSHWRITE	2
++#define TIOCPKT_STOP		4
++#define TIOCPKT_START		8
++#define TIOCPKT_NOSTOP		16
++#define TIOCPKT_DOSTOP		32
++
++#define TIOCSER_TEMT	0x01 /* Transmitter physically empty */
++
++#endif /* _ASM_MICROBLAZE_IOCTLS_H */
 -- 
 1.5.4.GIT
 
