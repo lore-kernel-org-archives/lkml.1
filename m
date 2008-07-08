@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757778AbYGHBds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757154AbYGHBhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757778AbYGHBds (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 21:33:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757394AbYGHBd3
+	id S1757154AbYGHBhT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 21:37:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbYGHBhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 21:33:29 -0400
-Received: from namei.org ([69.55.235.186]:41045 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757377AbYGHBd2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 21:33:28 -0400
-Date: Tue, 8 Jul 2008 11:33:04 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       safford@watson.ibm.com, serue@linux.vnet.ibm.com, sailer@watson.ibm.com,
-       zohar@us.ibm.com, debora@linux.vnet.ibm.com, srajiv@linux.vnet.ibm.com
-Subject: Re: [PATCH 1/5] integrity: TPM cleanup
-In-Reply-To: <1215467789.27626.3.camel@localhost.localdomain>
-Message-ID: <Xine.LNX.4.64.0807081122390.10307@us.intercode.com.au>
-References: <20080707192529.489789904@linux.vnet.ibm.com>
- <1215467789.27626.3.camel@localhost.localdomain>
+	Mon, 7 Jul 2008 21:37:06 -0400
+Received: from homer.mvista.com ([63.81.120.158]:21841 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1754502AbYGHBhF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 21:37:05 -0400
+Message-ID: <4872C4C0.6040307@ct.jp.nec.com>
+Date: Mon, 07 Jul 2008 18:37:04 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] softlockup: fix invalid proc_handler for softlockup_panic
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Jul 2008, Mimi Zohar wrote:
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-> This patchset contains 5 patches.
-> 	Patch 1/5 integrity: TPM cleanup (scripts/Lindent and other)
-> 	Patch 2/5 integrity: TPM internal kernel interface
-> 	Patch 3/5 integrity: special fs magic
+The type of softlockup_panic is int, but the proc_handler is
+proc_doulongvec_minmax(). This handler is for unsigned long.
 
-I've previously reviewed and added "Reviewed-by:" lines for the above.
+This handler should be proc_dointvec_minmax().
 
-If the patches have not changed significantly, would you please ensure 
-that the Reviewed-by/Acked-by/Signed-off lines are captured with them for 
-subsequent postings ?
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ kernel/sysctl.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-If the patches have changed and you've dropped these lines, please note 
-what has changed.
-
-It's also a good idea to cc people who have reviewed previous versions or 
-postings of the patches when you repost them.
-
-
-- James
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 683986d..5b8b4c1 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -757,7 +757,7 @@ static struct ctl_table kern_table[] = {
+ 		.data		= &softlockup_panic,
+ 		.maxlen		= sizeof(int),
+ 		.mode		= 0644,
+-		.proc_handler	= &proc_doulongvec_minmax,
++		.proc_handler	= &proc_dointvec_minmax,
+ 		.strategy	= &sysctl_intvec,
+ 		.extra1		= &zero,
+ 		.extra2		= &one,
 -- 
-James Morris
-<jmorris@namei.org>
+1.5.4.1
+
