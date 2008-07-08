@@ -1,63 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755662AbYGHPof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754966AbYGHPqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755662AbYGHPof (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 11:44:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbYGHPoY
+	id S1754966AbYGHPqT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 11:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753684AbYGHPqK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 11:44:24 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36733 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751464AbYGHPoX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 11:44:23 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] Fix a const assignment in moxa_load_fw()
-To: jirislaby@gmail.com, akpm@linux-foundation.org
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
-Date: Tue, 08 Jul 2008 16:44:16 +0100
-Message-ID: <20080708154416.24850.30733.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Tue, 8 Jul 2008 11:46:10 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:33634 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752350AbYGHPqJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 11:46:09 -0400
+Date: Tue, 8 Jul 2008 08:39:02 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [Bug #10872] x86_64 boot hang when CONFIG_NUMA=n
+Message-Id: <20080708083902.e564face.randy.dunlap@oracle.com>
+In-Reply-To: <20080708051629.GA12595@elte.hu>
+References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik>
+	<uBi7uNfg81L.A.XLC.s0LcIB@albercik>
+	<20080706111750.a6d77e81.randy.dunlap@oracle.com>
+	<alpine.LFD.1.10.0807061133230.3016@woody.linux-foundation.org>
+	<20080707063218.GC23583@elte.hu>
+	<20080707113917.6fda3f7d.randy.dunlap@oracle.com>
+	<20080707154042.04bb492e.randy.dunlap@oracle.com>
+	<20080708051629.GA12595@elte.hu>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix an assignment of a const pointer to a non-const pointer in moxa_load_fw().
+On Tue, 8 Jul 2008 07:16:29 +0200 Ingo Molnar wrote:
 
-This was introduced by patch 037182346f0991683cc7320a257c3f6089432cee.
+> 
+> * Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> 
+> > > $ git bisect start
+> > > $ git bisect bad v2.6.26-rc1
+> > > $ git bisect good v2.6.25
+> > > 
+> > > That's only about 1.29M lines of changes.
+> > 
+> > git bisect and normal rebooting did not find a problem.
+> > 
+> > I'll repeat this using kexec to boot the new kernel and see if that 
+> > locates any issues... since I normally use kexec to load/test new 
+> > kernels and that was how the failure occurred (occurs).
+> 
+> ah, so the hang only occurs if you kexec a post-v2.6.25 kernel? (from 
+> any other kernel, or from a post-v2.6.25 kernel?)
 
-Signed-off-by: David Howells <dhowells@redhat.com>
+Host (first) kernel is 2.6.25 with NUMA=y.
+kexec of 2.6.25 with NUMA=n works, kexec of 2.6.26-rc[123456789] with
+NUMA=n fails/hangs.  kexec of 2.6.26-rc* with NUMA=y works.
+
+kernel configs will be in next email reply to YH.
+
 ---
-
- drivers/char/moxa.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-
-diff --git a/drivers/char/moxa.c b/drivers/char/moxa.c
-index d57d3a6..e21346d 100644
---- a/drivers/char/moxa.c
-+++ b/drivers/char/moxa.c
-@@ -721,7 +721,7 @@ static int moxa_load_code(struct moxa_board_conf *brd, const void *ptr,
- 
- static int moxa_load_fw(struct moxa_board_conf *brd, const struct firmware *fw)
- {
--	void *ptr = fw->data;
-+	const void *ptr = fw->data;
- 	char rsn[64];
- 	u16 lens[5];
- 	size_t len;
-@@ -734,7 +734,7 @@ static int moxa_load_fw(struct moxa_board_conf *brd, const struct firmware *fw)
- 		u8 model;	/* C218T=1, C320T=2, CP204=3 */
- 		u8 reserved2[8];
- 		__le16 len[5];
--	} *hdr = ptr;
-+	} const *hdr = ptr;
- 
- 	BUILD_BUG_ON(ARRAY_SIZE(hdr->len) != ARRAY_SIZE(lens));
- 
-
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
