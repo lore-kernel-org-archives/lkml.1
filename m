@@ -1,133 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755333AbYGHP0I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756079AbYGHP3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755333AbYGHP0I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 11:26:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753752AbYGHPZ6
+	id S1756079AbYGHP3p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 11:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753814AbYGHP3h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 11:25:58 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40317 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751580AbYGHPZ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 11:25:57 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Subject: Re: [PATCH 2/2] acpi: Disable IRQ 0 through I/O APIC for some HP systems
-Date: Tue, 8 Jul 2008 17:27:39 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <lenb@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-next@vger.kernel.org,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.55.0807010055070.30785@cliff.in.clinika.pl> <20080708112402.GA2301@alberich.amd.com>
-In-Reply-To: <20080708112402.GA2301@alberich.amd.com>
+	Tue, 8 Jul 2008 11:29:37 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:56886 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753283AbYGHP3g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 11:29:36 -0400
+Message-ID: <487387DE.90602@sgi.com>
+Date: Tue, 08 Jul 2008 08:29:34 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Johannes Weiner <hannes@saeurebad.de>
+CC: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       "H. Anvin" <hpa@zytor.com>, Christoph Lameter <cl@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: Dangerous code in cpumask_of_cpu?
+References: <200807081816.40623.rusty@rustcorp.com.au>	<87myksn587.fsf@saeurebad.de> <87iqvgn4c1.fsf@saeurebad.de> <87ej64n3xt.fsf@saeurebad.de>
+In-Reply-To: <87ej64n3xt.fsf@saeurebad.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807081727.40605.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 8 of July 2008, Andreas Herrmann wrote:
-> On Tue, Jul 01, 2008 at 01:12:06AM +0100, Maciej W. Rozycki wrote:
-> > From: Matthew Garrett <mjg59@srcf.ucam.org>
-> > 
-> >  Some HP laptops have a problem with their DSDT reporting as
-> > HP/SB400/10000, which includes some code which overrides all temperature
-> > trip points to 16C if the INTIN2 input of the I/O APIC is enabled.  This
-> > input is incorrectly designated the ISA IRQ 0 via an interrupt source
-> > override even though it is wired to the output of the master 8259A and
-> > INTIN0 is not connected at all.  So far two models have been identified, 
-> > namely nx6125 and nx6325.
+Johannes Weiner wrote:
+> Johannes Weiner <hannes@saeurebad.de> writes:
 > 
-> Out of sheer curiosity. What makes you think that IRQ0 is not
-> connected to INT0 of IO APIC? The IRQ0 pin2 override?
+>> Hi,
+>>
+>> Johannes Weiner <hannes@saeurebad.de> writes:
+>>
+>>> Hi,
+>>>
+>>> Rusty Russell <rusty@rustcorp.com.au> writes:
+>>>
+>>>> Hi Christoph/Mike,
+>>>>
+>>>>   Looked at cpumask_of_cpu as introduced in 
+>>>> 9f0e8d0400d925c3acd5f4e01dbeb736e4011882 (x86: convert cpumask_of_cpu macro 
+>>>> to allocated array), and I don't think it's safe:
+>>>>
+>>>>   #define cpumask_of_cpu(cpu)						\
+>>>>   (*({								\
+>>>> 	typeof(_unused_cpumask_arg_) m;					\
+>>>> 	if (sizeof(m) == sizeof(unsigned long)) {			\
+>>>> 		m.bits[0] = 1UL<<(cpu);					\
+>>>> 	} else {							\
+>>>> 		cpus_clear(m);						\
+>>>> 		cpu_set((cpu), m);					\
+>>>> 	}								\
+>>>> 	&m;								\
+>>>>   }))
+>>>>
+>>>> Referring to &m once out of scope is invalid, and I can't find any evidence 
+>>>> that it's legal here.  In particular, the change 
+>>>> b53e921ba1cff8453dc9a87a84052fa12d5b30bd (generic: reduce stack pressure in 
+>>>> sched_affinity) which passes &m to other functions seems highly risky.
+>>>>
+>>>> I'm surprised this hasn't already hit us, but perhaps gcc isn't as clever as 
+>>>> it could be?
+>>> You don't refer to &m outside scope.  Look at the character below the
+>>> first e of #define :)
+>> Oh, well you do access it outside scope, sorry.  Me sleepy.
+>>
+>> I guess because we dereference it immediately again, the location is not
+>> clobbered yet.  At least in my test case, gcc assembled it to code that
+>> puts the address in eax and derefences it immediately, before eax is
+>> reused:
 > 
-> Why would we trust that BIOS information if the broken BIOS does
-> weird things if INT2 of IO APIC is _not_ masked?
+> Gee, just ignore this bs.  The address is in eax, not the value.
 > 
-> IMHO on those HP systems we should skip the (bogus?) timer override,
-> leave IRQ0 -> IOAPIC/INT0 and mask IOAPIC/INT2. Or at least we should
-> test that configuration.
+>> static int *foo(void)
+>> {
+>>         int x = 42;
+>>         return &x;
+>> }
+>>
+>> int main(void)
+>> {
+>>         return *foo();
+>> }
 > 
-> I admit that I have lost track of who has provided which patches,
-> which patch does exactly what ((IO|L)A)PIC configuration, and who has
-> tested what combinations, and what the results were.
+> However, this code seems to produce valid assembly with -O2.  gcc just
+> warns and fixes it up.
 > 
-> So I've just done the following (based on x86/master as of yesterday):
-> 
-> Booting an HP nx6325
-> 
-> (1)  with "acpi_skip_timer_override" to avoid configuration
->      of IOAPIC/INT2 and to avoid masking of IOAPIC/INT0.
-> 
->   plus
-> 
-> (2) adding (hardcoded in check_timer()) some code to explicitly mask
->     IOAPIC/INT2 to quiesce the fan (work around the DSDT issue).
-> 
-> With that setup my test box boots w/o problems (no fan noise, no
-> throttling, no stablity problems so far). Here the relevant dmesg
-> parts:
-> 
-> Command line: root=/dev/sda2 video=radeonfb:noaccel debug apic=debug acpi_skip_timer_override
->   ...
-> IOAPIC[0]: apic_id 2, version 0, address 0xfec00000, GSI 
->   ...
-> ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
-> ACPI: BIOS IRQ0 pin2 override ignored.
->   ...
-> using C1E aware idle routine
->   ...
-> init IO_APIC IRQs
-> IOAPIC[0]: Set routing entry (2-0 -> 0x30 -> IRQ 0 Mode:0 Active:0)
-> IOAPIC[0]: Set routing entry (2-1 -> 0x31 -> IRQ 1 Mode:0 Active:0)
-> IOAPIC[0]: Set routing entry (2-2 -> 0x32 -> IRQ 2 Mode:0 Active:0)
->   ...
-> IO-APIC (apicid-pin) 2-16, 2-17, 2-18, 2-19, 2-20 not connected.
-> IOAPIC[0]: Set routing entry (2-21 -> 0x49 -> IRQ 21 Mode:1 Active:1)
-> IO-APIC (apicid-pin) 2-22, 2-23 not connected.
-> ..TIMER: vector=0x30 apic1=0 pin1=0 apic2=-1 pin2=-1
-> CPU0: AMD Turion(tm) 64 X2 Mobile Technology TL-60 stepping 02
-> Using local APIC timer interrupts.
->   ...
-> IO APIC #2......
->   ...
-> NR Dst Mask Trig IRR Pol Stat Dmod Deli Vect:   
-> 00 003 0    0    0   0   0    1    1    30
-> 01 003 0    0    0   0   0    1    1    31
-> 02 003 1    0    0   0   0    1    1    32
-> 
-> 
-> I think we have 3 alternatives to setup timer interrupt on those machines
-> 
-> (A) Setup timer as Virtual Wire IRQ.
->     (that's the way the old code used to configure it, e.g. in 2.6.25)
-> (B) The current approach to setup timer as ExtINT.
-> (C) Use IOAPIC/INT0.
-> 
-> Shouldn't be that hard to find the best solution here:
-> 
-> (A) proved to work (and even "accidentially" masked IOAPIC/INT2 which
->     avoided the DSDT problem)
-> 
-> (B) ??? who tested this, Rafael
+> 	Hannes
 
-Yes, I tested this.
+IIRC, the problem was I needed an lvalue and it seems that the *(&m) was
+the way I was able to coerce gcc into producing it.  That's not to say there
+may be a better way however... ;-)  [Btw, I picked up this technique in the
+(original) per_cpu() macro.]
 
-> -- The stability issues, did they happen with a kernel based on that solution?
-
-Yes, they did.
-
-> (C) ... is my preferred solution. I tested it and I've not seen problems
->     with it (so far) -- maybe it's naive but I think it's the most
->     obvious solution (*)
-
-FWIW, it's my preferred one too.  So far, I haven't seen any problems with this
-approach (ie. "acpi_skip_timer_override" plus masking IOAPIC/INT2 in
-check_timer()), even with the C1E aware idle routine.
+Note the lvalue isn't used for changing the cpumask value, but for sending it
+to functions like set_cpus_allowed_ptr() to avoid pushing the 512 bytes of a
+4096 cpus cpumask onto the stack.  So it becomes &(*(&m)))  ... ;-)  But I
+thought I checked the assembly for different config options and it looked ok.
 
 Thanks,
-Rafael
+Mike
