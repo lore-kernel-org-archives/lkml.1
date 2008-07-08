@@ -1,56 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757156AbYGHMEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757140AbYGHMGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757156AbYGHMEV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 08:04:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbYGHMEN
+	id S1757140AbYGHMGw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 08:06:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbYGHMGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 08:04:13 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:57071 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753422AbYGHMEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 08:04:12 -0400
-Subject: Re: [PATCH 4/5] integrity: Linux Integrity Module(LIM)
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: James Morris <jmorris@namei.org>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       safford@watson.ibm.com, serue@linux.vnet.ibm.com, sailer@watson.ibm.com,
-       zohar@us.ibm.com
-In-Reply-To: <Xine.LNX.4.64.0807081127550.10307@us.intercode.com.au>
-References: <20080707192529.489789904@linux.vnet.ibm.com>
-	 <1215467860.27626.6.camel@localhost.localdomain>
-	 <Xine.LNX.4.64.0807081127550.10307@us.intercode.com.au>
-Content-Type: text/plain
-Date: Tue, 08 Jul 2008 08:04:06 -0400
-Message-Id: <1215518646.5013.47.camel@new-host>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Jul 2008 08:06:41 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:24389 "EHLO
+	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753462AbYGHMGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 08:06:40 -0400
+X-Greylist: delayed 302 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Jul 2008 08:06:39 EDT
+From: monstr@monstr.eu
+To: linux-kernel@vger.kernel.org
+Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
+       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
+       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
+       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
+       grant.likely@secretlab.ca, vapier.adi@gmail.com,
+       alan@lxorguk.ukuu.org.uk, hpa@zytor.com, lethal@linux-sh.org,
+       florian@openwrt.org, Michal Simek <monstr@monstr.eu>
+Subject: [PATCH 53/58] microblaze_v5: pci headers
+Date: Tue,  8 Jul 2008 13:59:53 +0200
+Message-Id: <542a23f9748621b66e6f0ef8e0eb6248d542aa99.1215517976.git.monstr@monstr.eu>
+X-Mailer: git-send-email 1.5.4.GIT
+In-Reply-To: <2bc35758e609ee5b79afe0f58be17d11a01498dc.1215517976.git.monstr@monstr.eu>
+References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
+ <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
+ <c03d29cbccaef8aed8a2911c2a259fbd79ad23d9.1215517976.git.monstr@monstr.eu>
+ <58f35f498bac29e7105c589c06567e86c5a42dd5.1215517976.git.monstr@monstr.eu>
+ <810775b1bb678003923039726a9153ee34fb67b4.1215517976.git.monstr@monstr.eu>
+ <2a24e5bc2cfbd349613ef10c716a28f04ce24a9f.1215517976.git.monstr@monstr.eu>
+ <3171c5cf21eefc79665165f4a14bc5b68dd03f95.1215517976.git.monstr@monstr.eu>
+ <9be4eff2f4d015023c453eaec3b3473a44380491.1215517976.git.monstr@monstr.eu>
+ <f8e331ed9432719f3c0555c840cbbb7bbc1a6322.1215517976.git.monstr@monstr.eu>
+ <4409daf2ac356e902a8f091bb5908eb8a90218bc.1215517976.git.monstr@monstr.eu>
+ <f7458acb0252f72b5620d19c76104408ecc2e451.1215517976.git.monstr@monstr.eu>
+ <dbd9df742cdd9eb3355d7bc8e39f9dfef6c545e4.1215517976.git.monstr@monstr.eu>
+ <1f9a1f345caa749cb630cf85f95f217366395069.1215517976.git.monstr@monstr.eu>
+ <fe3686f0f70d838b33642bcbcd7185fc2180b366.1215517976.git.monstr@monstr.eu>
+ <e61f5a8579570cf7cd18a22e4106b7f85518928e.1215517976.git.monstr@monstr.eu>
+ <59d7e0a5f38b8d38f01f357a071fc93eed36f3a8.1215517976.git.monstr@monstr.eu>
+ <143afcf84af583ab66da7e8acfc9eb03b7f3eaa0.1215517976.git.monstr@monstr.eu>
+ <a967ee4e5a60b410e2810ce0475e8fd04f99e3ae.1215517976.git.monstr@monstr.eu>
+ <c5f0730287365c845746467a9917dbc07d2fca3c.1215517976.git.monstr@monstr.eu>
+ <2aa1ac7891af57959237aae3addf4bbe607f55d7.1215517976.git.monstr@monstr.eu>
+ <875ba2708f6cd3c585e4d965142e2feb07c39a0e.1215517976.git.monstr@monstr.eu>
+ <eb0e741f891335df37c3cd19f1a3ce2f7ce8652a.1215517976.git.monstr@monstr.eu>
+ <b28df2ea2419cbda26f9089ed6edcc175c009688.1215517976.git.monstr@monstr.eu>
+ <5da1d8f069f18f14faee8c4bff736791179ef6f1.1215517976.git.monstr@monstr.eu>
+ <9a32168fe72b772f301216a7090670474af78e49.1215517976.git.monstr@monstr.eu>
+ <7ada4bceefc1806a2c8ef73676b7aabd8ac1cad6.1215517976.git.monstr@monstr.eu>
+ <701c1dac442ac09f5010cb5356cc1a12bb0abfe1.1215517976.git.monstr@monstr.eu>
+ <9b48e9d85b4a5a6dcffce8eef62b232b6bfac8e8.1215517976.git.monstr@monstr.eu>
+ <04b0b222b84ba9cfe2507a9081f4d715f2323733.1215517976.git.monstr@monstr.eu>
+ <d4c1b3ecfec1bf37ca0ecea6909ad25bbc945630.1215517976.git.monstr@monstr.eu>
+ <6e5687d37386334cf122d1eafcca0c6649c955be.1215517976.git.monstr@monstr.eu>
+ <689cff1b6d98f60d8f8abc4472193688b524284d.1215517976.git.monstr@monstr.eu>
+ <9664f18e7e86af4332018549b29bf0797d6afcd5.1215517976.git.monstr@monstr.eu>
+ <c7120d8a6379cb1a18af5330997e30ec974acc2f.1215517976.git.monstr@monstr.eu>
+ <d1d33c18956829ec9ac7daf8d0516b17e85ed190.1215517976.git.monstr@monstr.eu>
+ <7a16429cfc461420883dbaa80c16047e5a1a91c1.1215517976.git.monstr@monstr.eu>
+ <b6a0f3bceb0867c55613463fc43be5328fcedecd.1215517976.git.monstr@monstr.eu>
+ <fc26823d77c7180b62022e2d4bcca3c4fe6de574.1215517976.git.monstr@monstr.eu>
+ <64089967061955b7a29eb6d4e6269ff75b5442f2.1215517976.git.monstr@monstr.eu>
+ <92e3ab88c2174acf4e25c474c1f68ffd4db72ca6.1215517976.git.monstr@monstr.eu>
+ <5174afd0eaa5c6cb9344ea3217199e48899be313.1215517976.git.monstr@monstr.eu>
+ <bcb94400dca62fb349d0ab1e0a6209291fdcdfc5.1215517976.git.monstr@monstr.eu>
+ <5b2ed516b2e51d5117386c1b6eb814acc6e5a157.1215517976.git.monstr@monstr.eu>
+ <421f4b613d4dbd983df1545a9a163347e5bd1c56.1215517976.git.monstr@monstr.eu>
+ <0d39e8f03c487c004efa226c5ee81a81a8856768.1215517976.git.monstr@monstr.eu>
+ <c4f477d71dd4cd2ae884b9c47756c9334f8dac18.1215517976.git.monstr@monstr.eu>
+ <a98df8525bf9287d7a8b6077ff20dd61a055a98e.1215517976.git.monstr@monstr.eu>
+ <c6651b096ee8a0691f94f8c19574302dbfb61ee4.1215517976.git.monstr@monstr.eu>
+ <2ac3915482a9a50f7a4531908305b326baa2008e.1215517976.git.monstr@monstr.eu>
+ <3c5eac3dbdbf538c727a4a8fe336cdd55650bb37.1215517976.git.monstr@monstr.eu>
+ <6c03dcf8dbfd910ebf6c2f95db61d0456aa943e1.1215517976.git.monstr@monstr.eu>
+ <1054e7643bd01351ba67273043203df322b49bea.1215517976.git.monstr@monstr.eu>
+ <2bc35758e609ee5b79afe0f58be17d11a01498dc.1215517976.git.monstr@monstr.eu>
+In-Reply-To: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
+References: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Michal Simek <monstr@monstr.eu>
 
-On Tue, 2008-07-08 at 11:31 +1000, James Morris wrote: 
-> On Mon, 7 Jul 2008, Mimi Zohar wrote:
-> 
-> > (Details on the calls and their exact arguments are in linux/integrity.h,
-> > included in the patch.)
-> > 
-> > Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
-> 
-> Please summarize what's changed in this patch since the last posting.  
-> 
-> 
-> 
-> - James
+Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+Signed-off-by: Michal Simek <monstr@monstr.eu>
+---
+ include/asm-microblaze/pci-bridge.h |    1 +
+ include/asm-microblaze/pci.h        |    1 +
+ 2 files changed, 2 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/pci-bridge.h
+ create mode 100644 include/asm-microblaze/pci.h
 
-Based on your suggestions, 
-- LIST_HEAD is used to initialize integrity_templates.
-- register_template simply rejects an attempt to register a new
-template, instead of truncating the name, when the template_name is
-too long.
-- integrity_find_template() now returns 0 on success and -EINVAL,
-instead of 1, on failure, simplifying the callers code.
-
-Mimi
+diff --git a/include/asm-microblaze/pci-bridge.h b/include/asm-microblaze/pci-bridge.h
+new file mode 100644
+index 0000000..7ad28f6
+--- /dev/null
++++ b/include/asm-microblaze/pci-bridge.h
+@@ -0,0 +1 @@
++#include <linux/pci.h>
+diff --git a/include/asm-microblaze/pci.h b/include/asm-microblaze/pci.h
+new file mode 100644
+index 0000000..469e80e
+--- /dev/null
++++ b/include/asm-microblaze/pci.h
+@@ -0,0 +1 @@
++#include <asm/io.h>
+-- 
+1.5.4.GIT
 
