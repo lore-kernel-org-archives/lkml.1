@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760157AbYGHXYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932164AbYGHX0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760157AbYGHXYp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 19:24:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757497AbYGHXPA
+	id S932164AbYGHX0h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 19:26:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757462AbYGHXPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 19:15:00 -0400
-Received: from gw.goop.org ([64.81.55.164]:51228 "EHLO mail.goop.org"
+	Tue, 8 Jul 2008 19:15:05 -0400
+Received: from gw.goop.org ([64.81.55.164]:51215 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757410AbYGHXOp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 19:14:45 -0400
+	id S1757415AbYGHXOq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 19:14:46 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 37 of 55] xen64: xen_write_idt_entry() and cvt_gate_to_trap()
-X-Mercurial-Node: 3eaa40381cdc251dbaab99c83f10bc90367989f4
-Message-Id: <3eaa40381cdc251dbaab.1215554819@localhost>
+Subject: [PATCH 40 of 55] xen64: register callbacks in arch-independent way
+X-Mercurial-Node: c11987394efc36450b9489d7f572f49d0f465890
+Message-Id: <c11987394efc36450b94.1215554822@localhost>
 In-Reply-To: <patchbomb.1215554782@localhost>
-Date: Tue, 08 Jul 2008 15:06:59 -0700
+Date: Tue, 08 Jul 2008 15:07:02 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
@@ -26,78 +26,93 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eduardo Habkost <ehabkost@Rawhide-64.localdomain>
+Use callback_op hypercall to register callbacks in a 32/64-bit
+independent way (64-bit doesn't need a code segment, but that detail
+is hidden in XEN_CALLBACK).
 
-Changed to use the (to-be-)unified descriptor structs.
-
-Signed-off-by: Eduardo Habkost <ehabkost@Rawhide-64.localdomain>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/enlighten.c |   26 ++++++++++----------------
- 1 file changed, 10 insertions(+), 16 deletions(-)
+ arch/x86/xen/setup.c            |   27 +++++++++++++++++----------
+ include/asm-x86/xen/hypercall.h |   12 ++++++++++++
+ 2 files changed, 29 insertions(+), 10 deletions(-)
 
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -401,23 +401,18 @@
- 	preempt_enable();
+diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
+--- a/arch/x86/xen/setup.c
++++ b/arch/x86/xen/setup.c
+@@ -91,19 +91,25 @@
+ 	*mask |= 1 << VDSO_NOTE_NONEGSEG_BIT;
  }
  
--static int cvt_gate_to_trap(int vector, u32 low, u32 high,
-+static int cvt_gate_to_trap(int vector, const gate_desc *val,
- 			    struct trap_info *info)
+-void xen_enable_sysenter(void)
++static __cpuinit int register_callback(unsigned type, const void *func)
++{
++	struct callback_register callback = {
++		.type = type,
++		.address = XEN_CALLBACK(__KERNEL_CS, func),
++		.flags = CALLBACKF_mask_events,
++	};
++
++	return HYPERVISOR_callback_op(CALLBACKOP_register, &callback);
++}
++
++void __cpuinit xen_enable_sysenter(void)
  {
--	u8 type, dpl;
--
--	type = (high >> 8) & 0x1f;
--	dpl = (high >> 13) & 3;
--
--	if (type != 0xf && type != 0xe)
-+	if (val->type != 0xf && val->type != 0xe)
- 		return 0;
+ 	int cpu = smp_processor_id();
+ 	extern void xen_sysenter_target(void);
+-	/* Mask events on entry, even though they get enabled immediately */
+-	static struct callback_register sysenter = {
+-		.type = CALLBACKTYPE_sysenter,
+-		.address = XEN_CALLBACK(__KERNEL_CS, xen_sysenter_target),
+-		.flags = CALLBACKF_mask_events,
+-	};
  
- 	info->vector = vector;
--	info->address = (high & 0xffff0000) | (low & 0x0000ffff);
--	info->cs = low >> 16;
--	info->flags = dpl;
-+	info->address = gate_offset(*val);
-+	info->cs = gate_segment(*val);
-+	info->flags = val->dpl;
- 	/* interrupt gates clear IF */
--	if (type == 0xe)
-+	if (val->type == 0xe)
- 		info->flags |= 4;
- 
- 	return 1;
-@@ -444,11 +439,10 @@
- 
- 	if (p >= start && (p + 8) <= end) {
- 		struct trap_info info[2];
--		u32 *desc = (u32 *)g;
- 
- 		info[1].address = 0;
- 
--		if (cvt_gate_to_trap(entrynum, desc[0], desc[1], &info[0]))
-+		if (cvt_gate_to_trap(entrynum, g, &info[0]))
- 			if (HYPERVISOR_set_trap_table(info))
- 				BUG();
+ 	if (!boot_cpu_has(X86_FEATURE_SEP) ||
+-	    HYPERVISOR_callback_op(CALLBACKOP_register, &sysenter) != 0) {
++	    register_callback(CALLBACKTYPE_sysenter,
++			      xen_sysenter_target) != 0) {
+ 		clear_cpu_cap(&cpu_data(cpu), X86_FEATURE_SEP);
+ 		clear_cpu_cap(&boot_cpu_data, X86_FEATURE_SEP);
  	}
-@@ -461,13 +455,13 @@
- {
- 	unsigned in, out, count;
+@@ -120,8 +126,9 @@
+ 	if (!xen_feature(XENFEAT_auto_translated_physmap))
+ 		HYPERVISOR_vm_assist(VMASST_CMD_enable, VMASST_TYPE_pae_extended_cr3);
  
--	count = (desc->size+1) / 8;
-+	count = (desc->size+1) / sizeof(gate_desc);
- 	BUG_ON(count > 256);
+-	HYPERVISOR_set_callbacks(__KERNEL_CS, (unsigned long)xen_hypervisor_callback,
+-				 __KERNEL_CS, (unsigned long)xen_failsafe_callback);
++	if (register_callback(CALLBACKTYPE_event, xen_hypervisor_callback) ||
++	    register_callback(CALLBACKTYPE_failsafe, xen_failsafe_callback))
++		BUG();
  
- 	for (in = out = 0; in < count; in++) {
--		const u32 *entry = (u32 *)(desc->address + in * 8);
-+		gate_desc *entry = (gate_desc*)(desc->address) + in;
+ 	xen_enable_sysenter();
  
--		if (cvt_gate_to_trap(in, entry[0], entry[1], &traps[out]))
-+		if (cvt_gate_to_trap(in, entry, &traps[out]))
- 			out++;
- 	}
- 	traps[out].address = 0;
+diff --git a/include/asm-x86/xen/hypercall.h b/include/asm-x86/xen/hypercall.h
+--- a/include/asm-x86/xen/hypercall.h
++++ b/include/asm-x86/xen/hypercall.h
+@@ -226,6 +226,7 @@
+ 	return _hypercall2(int, stack_switch, ss, esp);
+ }
+ 
++#ifdef CONFIG_X86_32
+ static inline int
+ HYPERVISOR_set_callbacks(unsigned long event_selector,
+ 			 unsigned long event_address,
+@@ -236,6 +237,17 @@
+ 			   event_selector, event_address,
+ 			   failsafe_selector, failsafe_address);
+ }
++#else  /* CONFIG_X86_64 */
++static inline int
++HYPERVISOR_set_callbacks(unsigned long event_address,
++			unsigned long failsafe_address,
++			unsigned long syscall_address)
++{
++	return _hypercall3(int, set_callbacks,
++			   event_address, failsafe_address,
++			   syscall_address);
++}
++#endif  /* CONFIG_X86_{32,64} */
+ 
+ static inline int
+ HYPERVISOR_callback_op(int cmd, void *arg)
 
 
