@@ -1,129 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757079AbYGHKvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756969AbYGHKz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757079AbYGHKvS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 06:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbYGHKvI
+	id S1756969AbYGHKz6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 06:55:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754442AbYGHKzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 06:51:08 -0400
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:59587 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751656AbYGHKvH (ORCPT
+	Tue, 8 Jul 2008 06:55:48 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:56581 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754190AbYGHKzq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 06:51:07 -0400
-Subject: [PATCH] Make CONFIG_MIGRATION available w/o NUMA
-From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-To: Christoph Lameter <cl@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Dave Hansen <haveblue@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>
-In-Reply-To: <48726158.9010308@linux-foundation.org>
-References: <1215354957.9842.19.camel@localhost.localdomain>
-	 <4872319B.9040809@linux-foundation.org>
-	 <1215451689.8431.80.camel@localhost.localdomain>
-	 <48725480.1060808@linux-foundation.org>
-	 <1215455148.8431.108.camel@localhost.localdomain>
-	 <48726158.9010308@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 08 Jul 2008 12:50:45 +0200
-Message-Id: <1215514245.4832.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+	Tue, 8 Jul 2008 06:55:46 -0400
+Message-ID: <487345E9.8090505@linux.vnet.ibm.com>
+Date: Tue, 08 Jul 2008 16:18:09 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080505)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: David Teigland <teigland@redhat.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       Eric.Moore@lsi.com, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [BUG]  linux-next: Tree for March 25 kernel oops, when loading
+ mpt fusion driver - regression
+References: <20080325175224.3ee62b09.sfr@canb.auug.org.au> <47E9F0B0.4060006@linux.vnet.ibm.com>  <20080626203857.GB3815@redhat.com> <1215372215.4197.28.camel@localhost.localdomain> <487279C9.2010802@linux.vnet.ibm.com> <1215462321.3274.34.camel@localhost.localdomain>
+In-Reply-To: <1215462321.3274.34.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-07-07 at 13:32 -0500, Christoph Lameter wrote:
-> I think you just need to move the #endif from before migrate_vmas to the
-> end (as you already suggested). Then migrate_vmas will no longer be compiled
-> for the NUMA case. migrate_vmas() was added later and was not placed correctly
-> it seems.
+James Bottomley wrote:
+> On Tue, 2008-07-08 at 01:47 +0530, Kamalesh Babulal wrote:
+>> James Bottomley wrote:
+>>> On Thu, 2008-06-26 at 15:38 -0500, David Teigland wrote:
+>>>> On Wed, Mar 26, 2008 at 12:14:00PM +0530, Kamalesh Babulal wrote:
+>>>>> Hi Stephen,
+>>>>>
+>>>>> Kernel bug is hit while booting up the next-20080325 kernel with MPT
+>>>>> Fusion driver built in.This was reported previously for the
+>>>>> next-20080320 kernel
+>>>>> http://marc.info/?l=linux-next&m=120601013920868&w=2
+>>>> Hi, did you ever get this fixed?  I've been having the same problem,
+>>>> http://marc.info/?l=linux-scsi&m=121061780821823&w=4
+>>>> still exists on 2.6.26-rc8 for me,
+>>>>
+>>>> Loading scsi_transport_spi.ko module
+>>>> Loading mptscsih.ko module
+>>>> Loading mptspi.ko module
+>>>> Fusion MPT SPI Host driver 3.04.06
+>>>> ACPI: PCI Interrupt 0000:86:01.0[A] -> GSI 32 (level, low) -> IRQ 32
+>>>> mptbase: ioc0: Initiating bringup
+>>>> ioc0: LSI53C1030 B2: Capabilities={Initiator,Target}
+>>>> mptbase: ioc0: PCI-MSI enabled
+>>> I speculate that this might be related to the problem.  The fusion
+>>> driver was recently flipped to default to MSI enable (previously it had
+>>> disabled them).  Could you boot it with the fusion module parameter
+>>>
+>>> mpt_msi_enable=0
+>>>
+>>> if it actually boots that will be a good confirmation that MSI is to
+>>> blame.
+>>>
+>>>> mptbase: ioc0: Initiating recovery
+>>> This I suspect is because of a lost interrupt.
+>>>
+>>>> BUG: unable to handle kernel NULL pointer dereference at 0000000000000948
+>>> And this one looks to be a second bug:  The MSI fault path is actually
+>>> causing this oops.
+>>>
+>>> James
+>>>
+>> Hi James,
+>>
+>> Kernel Bug is still reproducible with 2.6.26-rc9-git1 kernel, I tried booting with mpt_msi_enable=0
+>> as boot paramenter, but the call trace remains the same
+>>
+>> oading mptbase.ko module[    6.766853] Fusion MPT base driver 3.04.06
+>>
+>> [    6.783482] Copyright (c) 1999-2007 LSI Corporation
+>> Loading mptscsih.ko module
+>> Loading mptspi.ko module
+>> [    6.813157] Fusion MPT SPI Host driver 3.04.06
+>> [    6.827369] ACPI: PCI Interrupt 0000:01:01.0[A] -> GSI 22 (level, low) -> IRQ 22
+>> [    6.850624] mptbase: ioc0: Initiating bringup
+>> [    6.985601] ioc0: LSI53C1030 B2: Capabilities={Initiator}
+>> [    7.002711] mptbase: ioc0: PCI-MSI enabled
+>                                 ^^^^^^^^^^^^^^^
+> 
+> If you had successfully specified mpt_msi_enable=0 this line wouldn't
+> appear.
+> 
+> My best guess is that you incorrectly specified it as a kernel command
+> line parameter rather than a module parameter.
+> 
+> James
+> 
+Hi James,
 
-done
+Sorry my fault :(, the kernel bug is not reproducible after disabling it.
 
-> vma_migratable (without policy_zone check!) should be available if
-> CONFIG_MIGRATION is on. Not sure if we need such a test. If not then just
-> make sure that vma_migratable() is not included for the !NUMA case.
-
-vma_migratable is not needed w/o NUMA, so I just put an '#ifdef CONFIG_NUMA'
-around it.
-
-
-Subject: [PATCH] Make CONFIG_MIGRATION available w/o CONFIG_NUMA
-
-From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-
-We'd like to support CONFIG_MEMORY_HOTREMOVE on s390, which depends on
-CONFIG_MIGRATION. So far, CONFIG_MIGRATION is only available with NUMA
-support.
-
-This patch makes CONFIG_MIGRATION selectable for architectures that define
-ARCH_ENABLE_MEMORY_HOTREMOVE. When MIGRATION is enabled w/o NUMA, the kernel
-won't compile because migrate_vmas() does not know about vm_ops->migrate()
-and vma_migratable() does not know about policy_zone. To fix this, those
-two functions can be restricted to "#ifdef CONFIG_NUMA" because they are
-not being used w/o NUMA.
-
-Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
----
-
- include/linux/migrate.h |    2 ++
- mm/Kconfig              |    2 +-
- mm/migrate.c            |    2 +-
- 3 files changed, 4 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/mm/Kconfig
-===================================================================
---- linux-2.6.orig/mm/Kconfig
-+++ linux-2.6/mm/Kconfig
-@@ -174,7 +174,7 @@ config SPLIT_PTLOCK_CPUS
- config MIGRATION
- 	bool "Page migration"
- 	def_bool y
--	depends on NUMA
-+	depends on NUMA || ARCH_ENABLE_MEMORY_HOTREMOVE
- 	help
- 	  Allows the migration of the physical location of pages of processes
- 	  while the virtual addresses are not changed. This is useful for
-Index: linux-2.6/include/linux/migrate.h
-===================================================================
---- linux-2.6.orig/include/linux/migrate.h
-+++ linux-2.6/include/linux/migrate.h
-@@ -8,6 +8,7 @@
- typedef struct page *new_page_t(struct page *, unsigned long private, int **);
- 
- #ifdef CONFIG_MIGRATION
-+#ifdef CONFIG_NUMA
- /* Check if a vma is migratable */
- static inline int vma_migratable(struct vm_area_struct *vma)
- {
-@@ -24,6 +25,7 @@ static inline int vma_migratable(struct 
- 			return 0;
- 	return 1;
- }
-+#endif /* CONFIG_NUMA */
- 
- extern int isolate_lru_page(struct page *p, struct list_head *pagelist);
- extern int putback_lru_pages(struct list_head *l);
-Index: linux-2.6/mm/migrate.c
-===================================================================
---- linux-2.6.orig/mm/migrate.c
-+++ linux-2.6/mm/migrate.c
-@@ -1070,7 +1070,6 @@ out2:
- 	mmput(mm);
- 	return err;
- }
--#endif
- 
- /*
-  * Call migration functions in the vma_ops that may prepare
-@@ -1092,3 +1091,4 @@ int migrate_vmas(struct mm_struct *mm, c
-  	}
-  	return err;
- }
-+#endif
-
-
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
