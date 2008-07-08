@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755072AbYGHOhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755515AbYGHOjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755072AbYGHOhq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 10:37:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbYGHOhj
+	id S1755515AbYGHOjS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 10:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551AbYGHOjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 10:37:39 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:4436 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752078AbYGHOhi (ORCPT
+	Tue, 8 Jul 2008 10:39:00 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:57407 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753521AbYGHOjA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 10:37:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=d7MB4mo9MqzCXwB7OeNuSmued1f2AW0VhunGgZ90zH4rRQzXuCHuqnOhw46Id6jfDW
-         JZS17abd4YBYlVYc0b0T747h2voMHRK0O1H0l4lGX2GubPeSsgmRl5a3J6PXBoDD2IvO
-         wPREElYc+XngFsi6hr8ADGiCEI4Q0H3Ru47nU=
-Date: Tue, 8 Jul 2008 10:37:32 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Niels de Vos <niels.devos@wincor-nixdorf.com>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] serio.h: trivial documentation fix
-Message-ID: <20080708143731.GA8560@USFSHXP-002051>
-References: <48733119.5080502@wincor-nixdorf.com>
+	Tue, 8 Jul 2008 10:39:00 -0400
+Date: Tue, 8 Jul 2008 10:38:58 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Indan Zupancic <indan@nul.nu>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
+       USB development list <linux-usb@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.27-rc7-git1: usb-storage breakage with non-functional disk
+In-Reply-To: <14494.84.245.32.19.1215527306.squirrel@secure.samage.net>
+Message-ID: <Pine.LNX.4.44L0.0807081036560.2135-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48733119.5080502@wincor-nixdorf.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 08, 2008 at 11:19:21AM +0200, Niels de Vos wrote:
-> In include/linux/serio.h two different define-series are
-> documented as "Serio types". However the second series contains
-> defines for the different protocols.
->
+On Tue, 8 Jul 2008, Indan Zupancic wrote:
 
-Applied, thank you Niels.
+> It's not something silly like the device saying it only needs 100mA
+> while in reality it needs 200mA? Or are those numbers only used to
+> calculate how many devices may be connected?
 
-BTW, your e-mail client mangles whitespace which causes trouble
-when applying patches, you may want to look into it.
+If it's plugged directly into the computer then it should receive all 
+the power it needs.  Unless there's an option to give it more power 
+(like a second USB connector with only the power lines attached)?
 
--- 
-Dmitry
+> > It might work better at full speed than at high speed (although you
+> > probably don't want to use it in a degraded mode).
+> 
+> I have ehci built-in, how can I force full speed? Hm, in the BIOS maybe.
+
+	echo 5 >/sys/class/usb_host/usb_host1/companion
+
+Alan Stern
+
