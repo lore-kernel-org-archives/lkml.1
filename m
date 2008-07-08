@@ -1,66 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756625AbYGHXIO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757181AbYGHXIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756625AbYGHXIO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 19:08:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753523AbYGHXH7
+	id S1757181AbYGHXIs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 19:08:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbYGHXIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 19:07:59 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40010 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752908AbYGHXH7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 19:07:59 -0400
-Date: Wed, 9 Jul 2008 01:08:50 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: "Altobelli, David" <david.altobelli@hp.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "greg@kroah.com" <greg@kroah.com>
-Subject: Re: [PATCH][resubmit] HP iLO driver
-Message-ID: <20080708230850.GD18195@elf.ucw.cz>
-References: <20080623160052.GA7616@ldl.fc.hp.com> <20080627191458.GA10872@ucw.cz> <CF70AA892F109448AEA269483B3A983903BB8CE586@G1W1215.americas.hpqcorp.net> <20080707160658.GB1794@elf.ucw.cz> <CF70AA892F109448AEA269483B3A983903BB8CEA25@G1W1215.americas.hpqcorp.net> <20080708072152.GD1761@elf.ucw.cz> <20080708073818.GA14245@elf.ucw.cz> <CF70AA892F109448AEA269483B3A983903BB8CEFC4@G1W1215.americas.hpqcorp.net> <20080708215002.GA18195@elf.ucw.cz> <CF70AA892F109448AEA269483B3A983903BB8CF552@G1W1215.americas.hpqcorp.net>
-MIME-Version: 1.0
+	Tue, 8 Jul 2008 19:08:39 -0400
+Received: from mga02.intel.com ([134.134.136.20]:64581 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754290AbYGHXIj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 19:08:39 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.30,326,1212390000"; 
+   d="scan'208";a="406843894"
+Date: Tue, 8 Jul 2008 16:08:37 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org, yhlu.kernel@gmail.com
+Subject: [patch] tip/x86_64: fix e820 merge issue which broke max_pfn_mapped
+Message-ID: <20080708230837.GD1678@linux-os.sc.intel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CF70AA892F109448AEA269483B3A983903BB8CF552@G1W1215.americas.hpqcorp.net>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2008-07-08 22:19:18, Altobelli, David wrote:
-> Pavel Machek wrote:
-> > Could you provide the list of commands (at least) so we can be more
-> > concrete?
-> 
-> Unfortunately, I don't believe that I can.  We reviewed this internally,
-> and the question of documentation was raised.  The hardware teams
+With out this 64bit tip/master doesn't boot using ACPI on my system.
+---
+ 
+max_pfn_mapped should include all e820 entries.
+The direct mapping extends to max_pfn_mapped, so that we can directly access
+apertures, ACPI and other tables without having to play with fixmaps.
 
-You could at least provide list of high-level functionality.
+With this, my system with 1GB memory boots fine with ACPI enabled.
 
-> > (I assume management processors have pretty similar functionality
-> > accross vendors, right?)
-> 
-> I can't speak for other vendors.
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
 
-And neither can they speak, because you did not tell us what the iLO
-does.
-
-> >> It seems much cleaner to keep the kernel interface simple and opaque
-> >> (ie read/write), and handle the details of the commands in user
-> >> space. From my limited understanding, I thought that was a common
-> >> goal here: move what you can to userspace.
-> >
-> > We are not _that_ extreme. Yes, keep stuff in userspace is important,
-> > but "hide hardware differences" is more important goal.
-> 
-> That seems like a larger question/goal.  Giving users some consistent
-> interfaces to do stuff would be nice, but I'd really like to handle this
-> driver on its own.
-
-This driver can't be handled on its own, that would lead to a mess in
-future. Sorry. We need more info here.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Index: tree-x86/arch/x86/kernel/e820.c
+===================================================================
+--- tree-x86.orig/arch/x86/kernel/e820.c	2008-07-08 15:31:24.000000000 -0700
++++ tree-x86/arch/x86/kernel/e820.c	2008-07-08 15:55:09.000000000 -0700
+@@ -1040,6 +1040,10 @@
+ 
+ 	if (last_pfn > max_arch_pfn)
+ 		last_pfn = max_arch_pfn;
++#ifdef CONFIG_X86_64
++	if (last_pfn > max_pfn_mapped)
++		max_pfn_mapped = last_pfn;
++#endif
+ 	if (last_pfn > end_user_pfn)
+ 		last_pfn = end_user_pfn;
+ 
+@@ -1067,6 +1071,12 @@
+ 	if (*ei_startpfn >= *ei_endpfn)
+ 		return 0;
+ 
++#ifdef CONFIG_X86_64
++	/* Check if max_pfn_mapped should be updated */
++	if (ei->type != E820_RAM && *ei_endpfn > max_pfn_mapped)
++		max_pfn_mapped = *ei_endpfn;
++#endif
++
+ 	/* Skip if map is outside the node */
+ 	if (ei->type != E820_RAM || *ei_endpfn <= start_pfn ||
+ 				    *ei_startpfn >= last_pfn)
+Index: tree-x86/arch/x86/kernel/setup.c
+===================================================================
+--- tree-x86.orig/arch/x86/kernel/setup.c	2008-07-08 15:33:42.000000000 -0700
++++ tree-x86/arch/x86/kernel/setup.c	2008-07-08 15:33:49.000000000 -0700
+@@ -722,8 +722,12 @@
+ 	high_memory = (void *)__va(max_pfn * PAGE_SIZE - 1) + 1;
+ #endif
+ 
++#ifdef CONFIG_X86_32
+ 	/* max_pfn_mapped is updated here */
+ 	max_pfn_mapped = init_memory_mapping(0, (max_low_pfn << PAGE_SHIFT));
++#else
++	max_pfn_mapped = init_memory_mapping(0, (max_pfn_mapped << PAGE_SHIFT));
++#endif
+ 
+ 	/*
+ 	 * NOTE: On x86-32, only from this point on, fixmaps are ready for use.
