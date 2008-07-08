@@ -1,160 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760755AbYGHXfN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758046AbYGHXiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760755AbYGHXfN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 19:35:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760517AbYGHXao
+	id S1758046AbYGHXiy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 19:38:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754576AbYGHXin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 19:30:44 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:44399 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932568AbYGHXan (ORCPT
+	Tue, 8 Jul 2008 19:38:43 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:47474 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752983AbYGHXim (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 19:30:43 -0400
-Date: Tue, 8 Jul 2008 16:29:45 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Hellwig <hch@infradead.org>,
-       Michael Kerrisk <mtk.manpages@gmail.com>,
-       Randy Dunlap <rdunlap@xenotime.net>, linux-doc@vger.kernel.org
-Subject: Re: [RFC 10/11] remove mention of CONFIG_KMOD from documentation
-Message-Id: <20080708162945.4b94608f.randy.dunlap@oracle.com>
-In-Reply-To: <20080708170048.633321000@sipsolutions.net>
-References: <20080708170015.470877000@sipsolutions.net>
-	<20080708170048.633321000@sipsolutions.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Tue, 8 Jul 2008 19:38:42 -0400
+To: a.p.zijlstra@chello.nl
+Cc: kamezawa.hiroyu@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       nickpiggin@yahoo.com.au
+Subject: Re: [PATCH] fix task dirty balancing
+In-Reply-To: Your message of "Sat, 05 Jul 2008 11:30:02 +0200"
+	<1215250202.6320.10.camel@lappy.programming.kicks-ass.net>
+References: <1215250202.6320.10.camel@lappy.programming.kicks-ass.net>
+X-Mailer: Cue version 0.8 (080625-0732/takashi)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20080708233841.AAECF5A1C@siro.lan>
+Date: Wed,  9 Jul 2008 08:38:41 +0900 (JST)
+From: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 08 Jul 2008 19:00:25 +0200 Johannes Berg wrote:
+hi,
 
-> Also includes a few Kconfig files (xtensa, blackfin)
-> 
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> Cc: Michael Kerrisk <mtk.manpages@gmail.com>
-> Cc: Randy Dunlap <rdunlap@xenotime.net>
-> Cc: linux-doc@vger.kernel.org
+> Please beat me to cleaning up this stuff - otherwise I'll have to look
+> at it when I get back from holidays.
 
-Acked-by: Randy Dunlap <rdunlap@xenotime.net>
+how about the following?
+
+YAMAMOTO Takashi
 
 
-> ---
->  Documentation/filesystems/bfs.txt                     |   10 +++++-----
->  Documentation/sound/alsa/DocBook/alsa-driver-api.tmpl |    2 +-
->  Documentation/telephony/ixj.txt                       |   13 +++----------
->  Documentation/video4linux/w9968cf.txt                 |    3 ---
->  arch/blackfin/Kconfig                                 |    4 ++--
->  arch/xtensa/Kconfig                                   |    4 ++--
->  6 files changed, 13 insertions(+), 23 deletions(-)
-> 
-> --- everything.orig/Documentation/filesystems/bfs.txt	2008-07-08 18:54:03.000000000 +0200
-> +++ everything/Documentation/filesystems/bfs.txt	2008-07-08 18:59:25.000000000 +0200
-> @@ -26,11 +26,11 @@ You can simplify mounting by just typing
->  
->  this will allocate the first available loopback device (and load loop.o 
->  kernel module if necessary) automatically. If the loopback driver is not
-> -loaded automatically, make sure that your kernel is compiled with kmod 
-> -support (CONFIG_KMOD) enabled. Beware that umount will not
-> -deallocate /dev/loopN device if /etc/mtab file on your system is a
-> -symbolic link to /proc/mounts. You will need to do it manually using
-> -"-d" switch of losetup(8). Read losetup(8) manpage for more info.
-> +loaded automatically, make sure that you have compiled the module and
-> +that modprobe is functioning. Beware that umount will not deallocate
-> +/dev/loopN device if /etc/mtab file on your system is a symbolic link to
-> +/proc/mounts. You will need to do it manually using "-d" switch of
-> +losetup(8). Read losetup(8) manpage for more info.
->  
->  To create the BFS image under UnixWare you need to find out first which
->  slice contains it. The command prtvtoc(1M) is your friend:
-> --- everything.orig/Documentation/telephony/ixj.txt	2008-07-08 18:54:03.000000000 +0200
-> +++ everything/Documentation/telephony/ixj.txt	2008-07-08 18:59:25.000000000 +0200
-> @@ -305,21 +305,14 @@ driver, like this:
->  
->  which will result in the needed drivers getting loaded automatically.
->  
-> -   g.  if you are planning on using kerneld to automatically load the 
-> -module for you, then you need to edit /etc/conf.modules and add the 
-> +   g.  if you are planning on having the kernel automatically request
-> +the module for you, then you need to edit /etc/conf.modules and add the
->  following lines:
->  
->  	options ixj dspio=0x340 xio=0x330 ixjdebug=0
->  
->  If you do this, then when you execute an application that uses the
-> -module kerneld will load the module for you.  Note that to do this,
-> -you need to have your kernel set to support kerneld.  You can check
-> -for this by looking at /usr/src/linux/.config and you should see this:
-> -
-> -	# Loadable module support
-> -	#
-> -	<snip>
-> -	CONFIG_KMOD=y
-> +module the kernel will request that it is loaded.
->  
->    h.  if you want non-root users to be able to read and write to the 
->  ixj devices (this is a good idea!) you should do the following:
-> --- everything.orig/Documentation/video4linux/w9968cf.txt	2008-07-08 18:54:02.000000000 +0200
-> +++ everything/Documentation/video4linux/w9968cf.txt	2008-07-08 18:59:25.000000000 +0200
-> @@ -193,9 +193,6 @@ Description:     Automatic 'ovcamchip' m
->  		 loads that module automatically. This action is performed as
->  		 once soon as the 'w9968cf' module is loaded into memory.
->  Default:         1
-> -Note:            The kernel must be compiled with the CONFIG_KMOD option
-> -		 enabled for the 'ovcamchip' module to be loaded and for
-> -		 this parameter to be present.
->  -------------------------------------------------------------------------------
->  Name:           simcams
->  Type:           int
-> --- everything.orig/Documentation/sound/alsa/DocBook/alsa-driver-api.tmpl	2008-07-08 18:54:03.000000000 +0200
-> +++ everything/Documentation/sound/alsa/DocBook/alsa-driver-api.tmpl	2008-07-08 18:59:25.000000000 +0200
-> @@ -42,7 +42,7 @@
->       <sect1><title>Device Components</title>
->  !Esound/core/device.c
->       </sect1>
-> -     <sect1><title>KMOD and Device File Entries</title>
-> +     <sect1><title>Module requests and Device File Entries</title>
->  !Esound/core/sound.c
->       </sect1>
->       <sect1><title>Memory Management Helpers</title>
-> --- everything.orig/arch/blackfin/Kconfig	2008-07-08 18:54:02.000000000 +0200
-> +++ everything/arch/blackfin/Kconfig	2008-07-08 18:59:25.000000000 +0200
-> @@ -873,8 +873,8 @@ config HOTPLUG
->  	  plugged into slots found on all modern laptop computers.  Another
->  	  example, used on modern desktops as well as laptops, is USB.
->  
-> -	  Enable HOTPLUG and KMOD, and build a modular kernel.  Get agent
-> -	  software (at <http://linux-hotplug.sourceforge.net/>) and install it.
-> +	  Enable HOTPLUG and build a modular kernel.  Get agent software
-> +	  (from <http://linux-hotplug.sourceforge.net/>) and install it.
->  	  Then your kernel will automatically call out to a user mode "policy
->  	  agent" (/sbin/hotplug) to load modules and set up software needed
->  	  to use devices as you hotplug them.
-> --- everything.orig/arch/xtensa/Kconfig	2008-07-08 18:54:02.000000000 +0200
-> +++ everything/arch/xtensa/Kconfig	2008-07-08 18:59:25.000000000 +0200
-> @@ -194,8 +194,8 @@ config HOTPLUG
->  	plugged into slots found on all modern laptop computers.  Another
->  	example, used on modern desktops as well as laptops, is USB.
->  
-> -	Enable HOTPLUG and KMOD, and build a modular kernel.  Get agent
-> -	software (at <http://linux-hotplug.sourceforge.net/>) and install it.
-> +	Enable HOTPLUG and build a modular kernel.  Get agent software
-> +	(from <http://linux-hotplug.sourceforge.net/>) and install it.
->  	Then your kernel will automatically call out to a user mode "policy
->  	agent" (/sbin/hotplug) to load modules and set up software needed
->  	to use devices as you hotplug them.
-> 
-> -- 
-
+Signed-off-by: YAMAMOTO Takashi <yamamoto@valinux.co.jp>
 ---
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+
+diff --git a/fs/buffer.c b/fs/buffer.c
+index 4ffb5bb..1bc833d 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -699,41 +699,6 @@ void mark_buffer_dirty_inode(struct buffer_head *bh, struct inode *inode)
+ EXPORT_SYMBOL(mark_buffer_dirty_inode);
+ 
+ /*
+- * Mark the page dirty, and set it dirty in the radix tree, and mark the inode
+- * dirty.
+- *
+- * If warn is true, then emit a warning if the page is not uptodate and has
+- * not been truncated.
+- */
+-static int __set_page_dirty(struct page *page,
+-		struct address_space *mapping, int warn)
+-{
+-	if (unlikely(!mapping))
+-		return !TestSetPageDirty(page);
+-
+-	if (TestSetPageDirty(page))
+-		return 0;
+-
+-	spin_lock_irq(&mapping->tree_lock);
+-	if (page->mapping) {	/* Race with truncate? */
+-		WARN_ON_ONCE(warn && !PageUptodate(page));
+-
+-		if (mapping_cap_account_dirty(mapping)) {
+-			__inc_zone_page_state(page, NR_FILE_DIRTY);
+-			__inc_bdi_stat(mapping->backing_dev_info,
+-					BDI_RECLAIMABLE);
+-			task_io_account_write(PAGE_CACHE_SIZE);
+-		}
+-		radix_tree_tag_set(&mapping->page_tree,
+-				page_index(page), PAGECACHE_TAG_DIRTY);
+-	}
+-	spin_unlock_irq(&mapping->tree_lock);
+-	__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+-
+-	return 1;
+-}
+-
+-/*
+  * Add a page to the dirty page list.
+  *
+  * It is a sad fact of life that this function is called from several places
+@@ -762,22 +727,21 @@ int __set_page_dirty_buffers(struct page *page)
+ {
+ 	struct address_space *mapping = page_mapping(page);
+ 
+-	if (unlikely(!mapping))
+-		return !TestSetPageDirty(page);
+-
+-	spin_lock(&mapping->private_lock);
+-	if (page_has_buffers(page)) {
+-		struct buffer_head *head = page_buffers(page);
+-		struct buffer_head *bh = head;
++	if (likely(mapping)) {
++		spin_lock(&mapping->private_lock);
++		if (page_has_buffers(page)) {
++			struct buffer_head *head = page_buffers(page);
++			struct buffer_head *bh = head;
+ 
+-		do {
+-			set_buffer_dirty(bh);
+-			bh = bh->b_this_page;
+-		} while (bh != head);
++			do {
++				set_buffer_dirty(bh);
++				bh = bh->b_this_page;
++			} while (bh != head);
++		}
++		spin_unlock(&mapping->private_lock);
+ 	}
+-	spin_unlock(&mapping->private_lock);
+ 
+-	return __set_page_dirty(page, mapping, 1);
++	return __set_page_dirty_nobuffers(page);
+ }
+ EXPORT_SYMBOL(__set_page_dirty_buffers);
+ 
+@@ -1220,7 +1184,7 @@ void mark_buffer_dirty(struct buffer_head *bh)
+ 	}
+ 
+ 	if (!test_set_buffer_dirty(bh))
+-		__set_page_dirty(bh->b_page, page_mapping(bh->b_page), 0);
++		__set_page_dirty_nobuffers(bh->b_page);
+ }
+ 
+ /*
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 29b1d1e..e6fa69e 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -176,7 +176,7 @@ void bdi_writeout_inc(struct backing_dev_info *bdi)
+ }
+ EXPORT_SYMBOL_GPL(bdi_writeout_inc);
+ 
+-static inline void task_dirty_inc(struct task_struct *tsk)
++static void task_dirty_inc(struct task_struct *tsk)
+ {
+ 	prop_inc_single(&vm_dirties, &tsk->dirties);
+ }
+@@ -1074,12 +1074,14 @@ int __set_page_dirty_no_writeback(struct page *page)
+  */
+ int __set_page_dirty_nobuffers(struct page *page)
+ {
+-	if (!TestSetPageDirty(page)) {
+-		struct address_space *mapping = page_mapping(page);
+-		struct address_space *mapping2;
++	struct address_space *mapping;
+ 
+-		if (!mapping)
+-			return 1;
++	if (TestSetPageDirty(page))
++		return 0;
++
++	mapping = page_mapping(page);
++	if (likely(mapping)) {
++		struct address_space *mapping2;
+ 
+ 		spin_lock_irq(&mapping->tree_lock);
+ 		mapping2 = page_mapping(page);
+@@ -1100,9 +1102,11 @@ int __set_page_dirty_nobuffers(struct page *page)
+ 			/* !PageAnon && !swapper_space */
+ 			__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+ 		}
+-		return 1;
+ 	}
+-	return 0;
++
++	task_dirty_inc(current);
++
++	return 1;
+ }
+ EXPORT_SYMBOL(__set_page_dirty_nobuffers);
+ 
+@@ -1122,7 +1126,7 @@ EXPORT_SYMBOL(redirty_page_for_writepage);
+  * If the mapping doesn't provide a set_page_dirty a_op, then
+  * just fall through and assume that it wants buffer_heads.
+  */
+-static int __set_page_dirty(struct page *page)
++int set_page_dirty(struct page *page)
+ {
+ 	struct address_space *mapping = page_mapping(page);
+ 
+@@ -1140,14 +1144,6 @@ static int __set_page_dirty(struct page *page)
+ 	}
+ 	return 0;
+ }
+-
+-int set_page_dirty(struct page *page)
+-{
+-	int ret = __set_page_dirty(page);
+-	if (ret)
+-		task_dirty_inc(current);
+-	return ret;
+-}
+ EXPORT_SYMBOL(set_page_dirty);
+ 
+ /*
