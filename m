@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754731AbYGHNxH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572AbYGHNxy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754731AbYGHNxH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 09:53:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbYGHNw4
+	id S1755572AbYGHNxy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 09:53:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbYGHNxm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 09:52:56 -0400
-Received: from casper.infradead.org ([85.118.1.10]:33869 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751380AbYGHNwz (ORCPT
+	Tue, 8 Jul 2008 09:53:42 -0400
+Received: from smarthost1.greenhost.nl ([85.17.153.87]:43913 "EHLO
+	smarthost1.samage.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750717AbYGHNxk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 09:52:55 -0400
-Date: Tue, 8 Jul 2008 06:52:51 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: v2.6.26-rc7: Negative powertop values
-Message-ID: <20080708065251.1d7d681f@linux.intel.com>
-In-Reply-To: <20080706194845.GA5617@ucw.cz>
-References: <19f34abd0806211216y4695c532ndb4935082bd8ea1@mail.gmail.com>
-	<20080621141615.51f7100c@linux.intel.com>
-	<20080706194845.GA5617@ucw.cz>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Jul 2008 09:53:40 -0400
+Message-ID: <14162.84.245.32.19.1215525216.squirrel@secure.samage.net>
+In-Reply-To: <13988.84.245.32.19.1215522030.squirrel@secure.samage.net>
+References: <Pine.LNX.4.44L0.0806241032490.2160-100000@iolanthe.rowland.org>
+    <13988.84.245.32.19.1215522030.squirrel@secure.samage.net>
+Date: Tue, 8 Jul 2008 15:53:36 +0200 (CEST)
+Subject: Re: 2.6.27-rc7-git1: usb-storage breakage with non-functional disk
+From: "Indan Zupancic" <indan@nul.nu>
+To: "Indan Zupancic" <indan@nul.nu>
+Cc: "Alan Stern" <stern@rowland.harvard.edu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Matthew Dharm" <mdharm-usb@one-eyed-alien.net>,
+       "USB development list" <linux-usb@vger.kernel.org>,
+       "LKML" <linux-kernel@vger.kernel.org>, "Greg KH" <greg@kroah.com>,
+       "linux-scsi" <linux-scsi@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+User-Agent: SquirrelMail/1.4.8
+MIME-Version: 1.0
+Content-Type: text/plain;charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: -0.2
+X-Scan-Signature: 68e84d89c742f8c9e42c8c72d6372b71
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 6 Jul 2008 21:48:45 +0200
-Pavel Machek <pavel@suse.cz> wrote:
+On Tue, July 8, 2008 15:00, Indan Zupancic wrote:
+> Any idea why my cardreader doesn't work in the first place though?
 
-> > 
-> > [I assume you know that doing a software unplug you burn more power
-> > than by leaving the cpu idle]
-> 
-> We should really fix that one day...
+In case it's useful, an usbmon dump can be found at http://pastebin.org/49630
+This is the log of plugging in the thing and unplugging it again after it failed.
+Corresponding dmesg output with USB and usb-storage debugging enabled at
+http://pastebin.org/49631. This is on 2.6.26-rc9 with Alan's patch applied.
 
-yeah but it's incredibly hard to get right (in the light of the bios
-constantly changing what our allowed C-states are)... and the best case
-is equal to just being idle.
+Regards,
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Indan
+
+
