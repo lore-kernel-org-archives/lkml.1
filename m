@@ -1,88 +1,240 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbYGHIpe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757557AbYGHIqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757304AbYGHIpe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 04:45:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751362AbYGHIp1
+	id S1757557AbYGHIqL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 04:46:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753608AbYGHIp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 04:45:27 -0400
-Received: from mxsec.euro-web.fr ([81.93.243.199]:58733 "EHLO
-	mxsec.euro-web.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750973AbYGHIpZ (ORCPT
+	Tue, 8 Jul 2008 04:45:56 -0400
+Received: from wr-out-0506.google.com ([64.233.184.232]:9466 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753131AbYGHIpy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 04:45:25 -0400
-From: David CHANIAL <david.ml@euro-web.fr>
-Organization: Euro Web
-To: linux-kernel@vger.kernel.org
-Subject: BUG: unable to handle kernel NULL pointer dereference at 00000023
-Date: Tue, 8 Jul 2008 10:45:22 +0200
-User-Agent: KMail/1.9.7
+	Tue, 8 Jul 2008 04:45:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ElQgv4bUMYryPmG+lpt1GEzegZ1TVMtF+6ecgxnW8wvEN/c7aylfN1cHjaak8hhmEF
+         Y23p7lYnJvsb1FbDY2CYsgbyqbQLdqWpBbnNknepew3oq8cpu98gHt7p33zWuMbxlY73
+         GexihOZopEw9SF//tYKYsVQWXN8SQHCnzlev8=
+Message-ID: <cfd18e0f0807080145m27d1673as4064d8f0d725525f@mail.gmail.com>
+Date: Tue, 8 Jul 2008 10:45:53 +0200
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: getcpu(2) man page
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-man@vger.kernel.org,
+       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <cfd18e0f0807030533q714f4e17w640580a60c300cbd@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807081045.23158.david.ml@euro-web.fr>
+References: <486BD19B.7040302@gmail.com> <486BDDA0.4070306@firstfloor.org>
+	 <cfd18e0f0807030533q714f4e17w640580a60c300cbd@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Everyone,
+Hi Andi,
 
-There is a kernel bug on a server :
-kernel is 2.6.25.4 (the sdf99-ipv6-core2 are justs strings added to makefile to describez config).
-I will update to 2.6.25.10 soon on this box, but if this can help... 
+Ping!  Could you let me know whether the text below is okay?
 
-If you need informations about the box... just ask.
+Cheers,
 
-=================
-BUG: unable to handle kernel NULL pointer dereference at 00000023
-IP: [<c01489f5>] unmap_vmas+0x151/0x5c8
-*pdpt = 000000002491c001 *pde = 0000000000000000 
-Oops: 0000 [#1] SMP 
-
-Pid: 3766, comm: shtool Not tainted (2.6.25.4-sdf99-ipv6-core2 #2)
-EIP: 0060:[<c01489f5>] EFLAGS: 00210206 CPU: 2
-EIP is at unmap_vmas+0x151/0x5c8
-EAX: 40193000 EBX: c1a42880 ECX: 00000017 EDX: 0000001f
-ESI: 80000000 EDI: ed35f740 EBP: fff99c68 ESP: e7ce3ee8
- DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-Process shtool (pid: 3766, ti=e7ce2000 task=f7d4cdb0 task.ti=e7ce2000)
-Stack: 00000000 e7cfc5f4 e7ce3f64 00000000 00000000 00252e9b 4018d000 00000000 
-       00000001 40193000 0000001f ed35f740 c361e100 fffffffc 00000000 c35ecbac 
-       00000000 00000000 ca580000 4018d000 40193000 00000000 e7ce3f64 e8d2cddc 
-Call Trace:
- [<c014be79>] exit_mmap+0x61/0xca
- [<c0118a9e>] mmput+0x20/0x74
- [<c011d011>] do_exit+0x1cc/0x535
- [<c011d3db>] do_group_exit+0x61/0x78
- [<c0103aaa>] syscall_call+0x7/0xb
- [<c0480000>] schedule+0x54a/0x587
- =======================
-Code: 24 28 8b 74 24 18 8b 44 24 50 81 c6 00 00 00 40 81 e6 00 00 00 c0 48 89 f2 4a 39 c2 8b 44 24 50 8b 54 24 28 0f 42 c6 89 44 24 24 <8b> 5a 04 8b 0a 89 de 09 ce 74 1c 31 d2 89 c8 25 98 0f 00 00 89 
-EIP: [<c01489f5>] unmap_vmas+0x151/0x5c8 SS:ESP 0068:e7ce3ee8
----[ end trace 7a550b72a5db8908 ]---
-Fixing recursive fault but reboot is needed!
-=================
+Michael
 
 
-even if this will not help you, this is the output before the bug.
-the last line has never release, thaht why i have take a look to dmesg...
-=== BEFORE THE BUG ===
-[...]d/zend_operators.lo Zend/zend_ptr_stack.lo Zend/zend_stack.lo Zend/zend_variables.lo Zend/zend.lo Zend/zend_API.lo Zend/zend_extensions.lo Zend/zend_hash.lo Zend/zend_list.lo Zend/zend_indent.lo Zend/zend_builtin_functions.lo Zend/zend_sprintf.lo Zend/zend_ini.lo Zend/zend_qsort.lo Zend/zend_multibyte.lo Zend/zend_ts_hash.lo Zend/zend_stream.lo Zend/zend_iterators.lo Zend/zend_interfaces.lo Zend/zend_exceptions.lo Zend/zend_strtod.lo Zend/zend_objects.lo Zend/zend_object_handlers.lo Zend/zend_objects_API.lo Zend/zend_default_classes.lo Zend/zend_execute.lo sapi/cgi/fastcgi.lo sapi/cgi/cgi_main.lo sapi/cgi/getopt.lo main/internal_functions.lo -lcrypt -lcrypt -lhistory -lreadline -lncurses -lpanel -lncurses -lmysqlclient -lmcrypt -lltdl -lt1 -lfreetype -lpng -lz -ljpeg -ldb-4.3 -lgdbm -lcurl -lbz2 -lz -lresolv -lm -ldl -lnsl -lxml2 -lz -lm -lssl -lcrypto -ldl -lcurl -lxml2 -lz -lm -lcrypt -lxml2 -lz -lm -lcrypt  -o sapi/cgi/php-cgi
-
-Build complete.
-Don't forget to run 'make test'.
-
->>> Source compiled.
->>> Test phase [not enabled]: dev-lang/php-5.2.6-r2
-
->>> Install php-5.2.6-r2 into /var/tmp/portage/dev-lang/php-5.2.6-r2/image/ category dev-lang
-Installing build environment:     /var/tmp/portage/dev-lang/php-5.2.6-r2/image//usr/lib/php5/lib/php/build/
-Installing header files:          /var/tmp/portage/dev-lang/php-5.2.6-r2/image//usr/lib/php5/include/php/
-
-=================
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
+Date: Thu, Jul 3, 2008 at 2:33 PM
+Subject: Re: getcpu(2) man page
+To: Andi Kleen <andi@firstfloor.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-man@vger.kernel.org,
+Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 
 
-Best regards,
+[CC += tglx, mingo]
+
+Hi Andi
+
+On Wed, Jul 2, 2008 at 9:57 PM, Andi Kleen <andi@firstfloor.org> wrote:
+> Michael Kerrisk wrote:
+>
+>> .\" FIXME(ak) If the following formulation is correct, I think it would
+>> .\" be better to substitute it instead of the next sentence:
+>> .\"     The information placed in \fIcpu\fP is only guaranteed to be
+>> .\"     current at the time of the call: ...
+>
+> At least sched_setaffinity should be still mentioned.
+> Feel free to rephrase it if you think it's better in some other way.
+
+Okay -- I rewored the text there, and kept mention of sched_setaffinity().
+
+>> .\" FIXME(ak) In the following, what precisely do you mean by "advisory"?
+>> .\" It is not really clear to me whether you mean the information
+>> .\" may not be "true", or whether you are just reiterating the point that
+>> .\" the CPU/node might already have changed by the time the call returns.
+>
+> It's reiterating the point, but in general the caller has to consider
+> it advisory as a hint only because it cannot rely on it 100% (unless it set the affinity)
+
+Okay -- because it's just repeating the point, I removed that sentence.
+
+>> .\" FIXME(ak) what does the phrase "but might query the current state
+>> .\" only during a short implementation specific interval" mean?
+>> it will be faster, but might query the current state only during
+>> a short implementation specific interval.
+>
+> Originally the cache had a time stamp and then would only get the CPU
+> information once each jiffie. That works well because the CPU affinity
+> is typically hold long enough.
+>
+> Unfortunately someone who didn't understand the design and didn't think
+> it through took that out  so currently applications have to reimplement that
+> mechanism in a usually inferior and slower way (querying timers is much slower in
+> general user space) or do "endless caches" which are also bad
+
+Okay.  I see the change was in 2.6.24.  I've rewritten the test to
+clarify that this argument is no longer used, and I've trimmed the
+explanation of tcache and moved it to notes.  Could you please check
+the text below, to see if it suffices (Ingo, Thomas, perhaps you also
+have some input?).
+
+Cheers,
+
+Michael
+
+.\" This man page is Copyright (C) 2006 Andi Kleen <ak@muc.de>.
+.\" Permission is granted to distribute possibly modified copies
+.\" of this page provided the header is included verbatim,
+.\" and in case of nontrivial modification author and date
+.\" of the modification is added to the header.
+.\" 2008, mtk, various edits
+.TH getcpu 2 2008-06-03 "Linux" "Linux Programmer's Manual"
+.SH NAME
+getcpu \- determine CPU and NUMA node on which the calling thread is running
+.SH SYNOPSIS
+.nf
+.B #include <linux/getcpu.h>
+.sp
+.BI "int getcpu(unsigned *" cpu ", unsigned *" node \
+", struct getcpu_cache *" tcache );
+.fi
+.SH DESCRIPTION
+The
+.BR getcpu ()
+system call identifies the processor and node on which the calling
+thread or process is currently running and writes them into the
+integers pointed to by the
+.I cpu
+and
+.I node
+arguments.
+The processor is a unique small integer identifying a CPU.
+The node is a unique small identifier identifying a NUMA node.
+When either
+.I cpu
+or
+.I node
+is NULL nothing is written to the respective pointer.
+
+The third argument to this system call is nowadays unused.
+
+The information placed in
+.I cpu
+is only guaranteed to be current at the time of the call:
+unless the CPU affinity has been fixed using
+.BR sched_setaffinity (2),
+the kernel might change the CPU at any time.
+(Normally this does not happen
+because the scheduler tries to minimize movements between CPUs to
+keep caches hot, but it is possible.)
+The caller must be prepared to handle the situation when
+.I cpu
+and
+.I node
+are no longer the current CPU and node.
+.SH VERSIONS
+.BR getcpu ()
+was added in kernel 2.6.19 for x86_64 and i386.
+.SH CONFORMING TO
+.BR getcpu ()
+is Linux specific.
+.SH NOTES
+Linux makes a best effort to make this call as fast possible.
+The intention of
+.BR getcpu ()
+is to allow programs to make optimizations with per-CPU data
+or for NUMA optimization.
+
+Glibc does not provide a wrapper for this system call; call it using
+.BR syscall (2);
+or use
+.BR sched_getcpu (3)
+instead.
+
+The
+.I tcache
+argument is unused since Linux 2.6.24.
+.\" commit 4307d1e5ada595c87f9a4d16db16ba5edb70dcb1
+.\" Author: Ingo Molnar <mingo@elte.hu>
+.\" Date:   Wed Nov 7 18:37:48 2007 +0100
+.\" x86: ignore the sys_getcpu() tcache parameter
+In earlier kernels,
+if this argument was non-NULL,
+then it specified a pointer to a caller-allocated buffer in thread-local
+storage that was used to provide a caching mechanism for
+.BR getcpu ().
+Use of the cache could speed
+.BR getcpu ()
+calls, at the cost that there was a very small chance that
+the returned information would be out of date.
+The caching mechanism was considered to cause problems when
+migrating threads between CPUs, and so the argument is now ignored.
+.\"
+.\" ===== Before kernel 2.6.24: =====
+.\" .I tcache
+.\" is a pointer to a
+.\" .IR "struct getcpu_cache"
+.\" that is used as a cache by
+.\" .BR getcpu ().
+.\" The caller should put the cache into a thread-local variable
+.\" if the process is multithreaded,
+.\" because the cache cannot be shared between different threads.
+.\" .I tcache
+.\" can be NULL.
+.\" If it is not NULL
+.\" .BR getcpu ()
+.\" will use it to speed up operation.
+.\" The information inside the cache is private to the system call
+.\" and should not be accessed by the user program.
+.\" The information placed in the cache can change between kernel releases.
+.\"
+.\" When no cache is specified
+.\" .BR getcpu ()
+.\" will be slower,
+.\" but always retrieve the current CPU and node information.
+.\" With a cache
+.\" .BR getcpu ()
+.\" is faster.
+.\" However, the cached information is only updated once per jiffy (see
+.\" .BR time (7)).
+.\" This means that the information could theoretically be out of date,
+.\" although in practice the scheduler's attempt to maintain
+.\" soft CPU affinity means that the information is unlikely to change
+.\" over the course of the caching interval.
+.SH SEE ALSO
+.\" FIXME . add SEE ALSO entry in cpuset.7
+.BR mbind (2),
+.BR set_mempolicy (2),
+.BR sched_getcpu (3)
+.BR sched_setaffinity (2),
+.\" FIXME . cpuset (7)
+
+
+
 -- 
-David CHANIAL
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
