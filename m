@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759063AbYGHRCY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759265AbYGHRC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759063AbYGHRCY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 13:02:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757213AbYGHQ6O
+	id S1759265AbYGHRC5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 13:02:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756680AbYGHQ6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 12:58:14 -0400
-Received: from casper.infradead.org ([85.118.1.10]:37991 "EHLO
+	Tue, 8 Jul 2008 12:58:22 -0400
+Received: from casper.infradead.org ([85.118.1.10]:38002 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755091AbYGHQ6N (ORCPT
+	with ESMTP id S1755920AbYGHQ6U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 12:58:13 -0400
-Date: Tue, 8 Jul 2008 09:53:07 -0700
+	Tue, 8 Jul 2008 12:58:20 -0400
+Date: Tue, 8 Jul 2008 09:53:43 -0700
 From: Arjan van de Ven <arjan@infradead.org>
-To: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, mingo@elte.hu
-Subject: [patch 13/17] Use WARN() in drivers/base/
-Message-ID: <20080708095307.6423cb6f@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu
+Subject: [patch 14/17] Use WARN() in lib/
+Message-ID: <20080708095343.1a9a0123@infradead.org>
 In-Reply-To: <20080708093800.274504ba@infradead.org>
 References: <20080708093800.274504ba@infradead.org>
 Organization: Intel
@@ -31,87 +31,125 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: Use WARN instead of printk+WARN_ON in drivers/base 
+Subject: Use WARN instead of printk+WARN_ON in /lib 
 
 Use WARN() instead of a printk+WARN_ON() pair; this way the message
 becomes part of the warning section for better reporting/collection.
+In addition, one of the if() clauses collapes into the WARN() entirely
+now.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>Index: linux.trees.git/drivers/base/core.c
-===================================================================
----
- drivers/base/core.c   |    6 ++----
- drivers/base/memory.c |    3 +--
- drivers/base/sys.c    |   12 ++++--------
- 3 files changed, 7 insertions(+), 14 deletions(-)
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>---
+ lib/debugobjects.c   |   15 +++++----------
+ lib/iomap.c          |    3 +--
+ lib/kobject_uevent.c |    6 ++----
+ lib/plist.c          |   13 +++++++------
+ 4 files changed, 15 insertions(+), 22 deletions(-)
 
-Index: linux.trees.git/drivers/base/core.c
+Index: linux.trees.git/lib/debugobjects.c
 ===================================================================
---- linux.trees.git.orig/drivers/base/core.c
-+++ linux.trees.git/drivers/base/core.c
-@@ -116,12 +116,10 @@ static void device_release(struct kobjec
- 		dev->type->release(dev);
- 	else if (dev->class && dev->class->dev_release)
- 		dev->class->dev_release(dev);
--	else {
--		printk(KERN_ERR "Device '%s' does not have a release() "
-+	else
-+		WARN(1, KERN_ERR "Device '%s' does not have a release() "
- 			"function, it is broken and must be fixed.\n",
- 			dev->bus_id);
+--- linux.trees.git.orig/lib/debugobjects.c
++++ linux.trees.git/lib/debugobjects.c
+@@ -205,9 +205,8 @@ static void debug_print_object(struct de
+ 
+ 	if (limit < 5 && obj->descr != descr_test) {
+ 		limit++;
+-		printk(KERN_ERR "ODEBUG: %s %s object type: %s\n", msg,
++		WARN(1, KERN_ERR "ODEBUG: %s %s object type: %s\n", msg,
+ 		       obj_states[obj->state], obj->descr->name);
 -		WARN_ON(1);
--	}
+ 	}
+ 	debug_objects_warnings++;
+ }
+@@ -735,26 +734,22 @@ check_results(void *addr, enum debug_obj
+ 
+ 	obj = lookup_object(addr, db);
+ 	if (!obj && state != ODEBUG_STATE_NONE) {
+-		printk(KERN_ERR "ODEBUG: selftest object not found\n");
+-		WARN_ON(1);
++		WARN(1, KERN_ERR "ODEBUG: selftest object not found\n");
+ 		goto out;
+ 	}
+ 	if (obj && obj->state != state) {
+-		printk(KERN_ERR "ODEBUG: selftest wrong state: %d != %d\n",
++		WARN(1, KERN_ERR "ODEBUG: selftest wrong state: %d != %d\n",
+ 		       obj->state, state);
+-		WARN_ON(1);
+ 		goto out;
+ 	}
+ 	if (fixups != debug_objects_fixups) {
+-		printk(KERN_ERR "ODEBUG: selftest fixups failed %d != %d\n",
++		WARN(1, KERN_ERR "ODEBUG: selftest fixups failed %d != %d\n",
+ 		       fixups, debug_objects_fixups);
+-		WARN_ON(1);
+ 		goto out;
+ 	}
+ 	if (warnings != debug_objects_warnings) {
+-		printk(KERN_ERR "ODEBUG: selftest warnings failed %d != %d\n",
++		WARN(1, KERN_ERR "ODEBUG: selftest warnings failed %d != %d\n",
+ 		       warnings, debug_objects_warnings);
+-		WARN_ON(1);
+ 		goto out;
+ 	}
+ 	res = 0;
+Index: linux.trees.git/lib/iomap.c
+===================================================================
+--- linux.trees.git.orig/lib/iomap.c
++++ linux.trees.git/lib/iomap.c
+@@ -40,8 +40,7 @@ static void bad_io_access(unsigned long 
+ 	static int count = 10;
+ 	if (count) {
+ 		count--;
+-		printk(KERN_ERR "Bad IO access at port %#lx (%s)\n", port, access);
+-		WARN_ON(1);
++		WARN(1, KERN_ERR "Bad IO access at port %#lx (%s)\n", port, access);
+ 	}
  }
  
- static struct kobj_type device_ktype = {
-Index: linux.trees.git/drivers/base/sys.c
+Index: linux.trees.git/lib/kobject_uevent.c
 ===================================================================
---- linux.trees.git.orig/drivers/base/sys.c
-+++ linux.trees.git/drivers/base/sys.c
-@@ -168,19 +168,16 @@ int sysdev_driver_register(struct sysdev
- 	int err = 0;
+--- linux.trees.git.orig/lib/kobject_uevent.c
++++ linux.trees.git/lib/kobject_uevent.c
+@@ -285,8 +285,7 @@ int add_uevent_var(struct kobj_uevent_en
+ 	int len;
  
- 	if (!cls) {
--		printk(KERN_WARNING "sysdev: invalid class passed to "
-+		WARN(1, KERN_WARNING "sysdev: invalid class passed to "
- 			"sysdev_driver_register!\n");
+ 	if (env->envp_idx >= ARRAY_SIZE(env->envp)) {
+-		printk(KERN_ERR "add_uevent_var: too many keys\n");
 -		WARN_ON(1);
- 		return -EINVAL;
++		WARN(1, KERN_ERR "add_uevent_var: too many keys\n");
+ 		return -ENOMEM;
  	}
  
- 	/* Check whether this driver has already been added to a class. */
--	if (drv->entry.next && !list_empty(&drv->entry)) {
--		printk(KERN_WARNING "sysdev: class %s: driver (%p) has already"
-+	if (drv->entry.next && !list_empty(&drv->entry))
-+		WARN(1, KERN_WARNING "sysdev: class %s: driver (%p) has already"
- 			" been registered to a class, something is wrong, but "
- 			"will forge on!\n", cls->name, drv);
+@@ -297,8 +296,7 @@ int add_uevent_var(struct kobj_uevent_en
+ 	va_end(args);
+ 
+ 	if (len >= (sizeof(env->buf) - env->buflen)) {
+-		printk(KERN_ERR "add_uevent_var: buffer size too small\n");
+-		WARN_ON(1);
++		WARN(1, KERN_ERR "add_uevent_var: buffer size too small\n");
+ 		return -ENOMEM;
+ 	}
+ 
+Index: linux.trees.git/lib/plist.c
+===================================================================
+--- linux.trees.git.orig/lib/plist.c
++++ linux.trees.git/lib/plist.c
+@@ -31,12 +31,13 @@
+ static void plist_check_prev_next(struct list_head *t, struct list_head *p,
+ 				  struct list_head *n)
+ {
+-	if (n->prev != p || p->next != n) {
+-		printk("top: %p, n: %p, p: %p\n", t, t->next, t->prev);
+-		printk("prev: %p, n: %p, p: %p\n", p, p->next, p->prev);
+-		printk("next: %p, n: %p, p: %p\n", n, n->next, n->prev);
 -		WARN_ON(1);
 -	}
++	WARN(n->prev != p || p->next != n,
++			"top: %p, n: %p, p: %p\n"
++			"prev: %p, n: %p, p: %p\n"
++			"next: %p, n: %p, p: %p\n",
++			 t, t->next, t->prev,
++			p, p->next, p->prev,
++			n, n->next, n->prev);
+ }
  
- 	mutex_lock(&sysdev_drivers_lock);
- 	if (cls && kset_get(&cls->kset)) {
-@@ -194,8 +191,7 @@ int sysdev_driver_register(struct sysdev
- 		}
- 	} else {
- 		err = -EINVAL;
--		printk(KERN_ERR "%s: invalid device class\n", __func__);
--		WARN_ON(1);
-+		WARN(1, KERN_ERR "%s: invalid device class\n", __func__);
- 	}
- 	mutex_unlock(&sysdev_drivers_lock);
- 	return err;
-Index: linux.trees.git/drivers/base/memory.c
-===================================================================
---- linux.trees.git.orig/drivers/base/memory.c
-+++ linux.trees.git/drivers/base/memory.c
-@@ -189,9 +189,8 @@ memory_block_action(struct memory_block 
- 			}
- 			break;
- 		default:
--			printk(KERN_WARNING "%s(%p, %ld) unknown action: %ld\n",
-+			WARN(1, KERN_WARNING "%s(%p, %ld) unknown action: %ld\n",
- 					__func__, mem, action, action);
--			WARN_ON(1);
- 			ret = -EINVAL;
- 	}
- 
+ static void plist_check_list(struct list_head *top)
