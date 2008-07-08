@@ -1,107 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756145AbYGHT5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757012AbYGHT6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756145AbYGHT5q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 15:57:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753588AbYGHT5i
+	id S1757012AbYGHT6k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 15:58:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbYGHT6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 15:57:38 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:49536 "EHLO e5.ny.us.ibm.com"
+	Tue, 8 Jul 2008 15:58:33 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:41665 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751125AbYGHT5h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 15:57:37 -0400
-Subject: Re: [PATCH 0/4] Container Freezer: Reuse Suspend Freezer
-From: Matt Helsley <matthltc@us.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Cedric Le Goater <clg@fr.ibm.com>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       Paul Menage <menage@google.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
-In-Reply-To: <20080708123150.3034d83f.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080707225823.502032693@us.ibm.com>
-	 <20080708123150.3034d83f.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Tue, 08 Jul 2008 12:39:14 -0700
-Message-Id: <1215545954.9023.120.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 7bit
+	id S1751125AbYGHT6c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 15:58:32 -0400
+Date: Tue, 8 Jul 2008 22:57:36 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [RFC 06/11] remove CONFIG_KMOD from fs
+Message-ID: <20080708195736.GE11954@cs181140183.pp.htv.fi>
+References: <20080708170015.470877000@sipsolutions.net> <20080708170045.990097000@sipsolutions.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080708170045.990097000@sipsolutions.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jul 08, 2008 at 07:00:21PM +0200, Johannes Berg wrote:
+>...
+> --- everything.orig/fs/nls/nls_base.c	2008-07-08 18:32:40.000000000 +0200
+> +++ everything/fs/nls/nls_base.c	2008-07-08 18:34:44.000000000 +0200
+>...
+> @@ -216,15 +214,13 @@ static struct nls_table *find_nls(char *
+>  struct nls_table *load_nls(char *charset)
+>  {
+>  	struct nls_table *nls;
+> -#ifdef CONFIG_KMOD
+>  	int ret;
+> -#endif
 
-Cedric was accidentally not Cc'd on the introduction (PATCH 0). Adding
-him.
+That gives an "unused variable" gcc warning with CONFIG_MODULES=n.
 
-On Tue, 2008-07-08 at 12:31 +0900, KAMEZAWA Hiroyuki wrote:
-> Hi, could I make brief questions ?
+>  	nls = find_nls(charset);
+>  	if (nls)
+>  		return nls;
+>  
+> -#ifdef CONFIG_KMOD
+> +#ifdef CONFIG_MODULES
+>  	ret = request_module("nls_%s", charset);
+>  	if (ret != 0) {
+>  		printk("Unable to load NLS charset %s\n", charset);
 > 
-> On Mon, 07 Jul 2008 15:58:23 -0700
-> Matt Helsley <matthltc@us.ibm.com> wrote:
-> > to get status of the freezer subsystem :
-> > 
-> >    # cat /containers/0/freezer.state
-> >    RUNNING
-> > 
-> > to freeze all tasks in the container :
-> > 
-> >    # echo FROZEN > /containers/0/freezer.state
-> >    # cat /containers/0/freezer.state
-> >    FREEZING
-> >    # cat /containers/0/freezer.state
-> >    FROZEN
-> > 
-> I'm just curious.
-> 
-> 1. When we see FREEZING and have to retry ?
 
-One example is when some processes are in the a specific portion of
-vfork() you might see FREEZING and have to retry.
+cu
+Adrian
 
->    While there are some threads which wait for some event ?
+-- 
 
-Depending on which kind of "wait" they are performing, yes. If it's
-uninterruptible sleep and the PF_FROZEN flag is not set then you might
-see FREEZING.
-
-> 2. What happens when FROZEN threads are moved to other group ?
->    Can we move them ?
-
-If the destination cgroup is not FROZEN, yes.
-
-If the destination cgroup is FREEZING this works as expected.
-
-If the destination cgroup is RUNNING you'd have a problem unfreezing the
-task. This happends because the cgroup has a state inconsistent with the
-task's state. To unfreeze the task you'd have to try to freeze and then
-unfreeze the destination cgroup. 
-
-There are several ways I could change this.
-
-One is to try and disallow users from moving frozen tasks. That doesn't
-seem like a good approach since it would require a new cgroups interface
-"can_detach()". 
-
-However we can prevent attach so I could add checks that look at the
-attaching tasks's state and refuse the attach when the task's state
-(unfrozen, frozen) is inconsistent with the cgroup state (RUNNING,
-FREEZING, FROZEN). I'll send a fifth patch on top of this series showing
-this idea.
-
-Rather than refuse to allow attach we could change the destination
-cgroup's state during attach so that the two states are consistent.
-However, this introduces more ugly cases for userspace to be aware of.
-
->    Can we wake them up (if it can be moved) ?
-
-You can't wake them until you've unfrozen them.
-
->    What operations are allowed to frozen threads ?
-
-Any operation that doesn't require the threads to run.
-
-Cheers,
-	-Matt Helsley
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
