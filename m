@@ -1,63 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757046AbYGHD3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757478AbYGHDaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757046AbYGHD3T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 23:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756074AbYGHD3M
+	id S1757478AbYGHDaA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 23:30:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756125AbYGHD3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 23:29:12 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40451 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756055AbYGHD3L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 23:29:11 -0400
-Date: Tue, 8 Jul 2008 12:31:50 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Matt Helsley <matthltc@us.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       Paul Menage <menage@google.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
-Subject: Re: [PATCH 0/4] Container Freezer: Reuse Suspend Freezer
-Message-Id: <20080708123150.3034d83f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080707225823.502032693@us.ibm.com>
-References: <20080707225823.502032693@us.ibm.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Jul 2008 23:29:52 -0400
+Received: from mail.lang.hm ([64.81.33.126]:34938 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756083AbYGHD3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 23:29:51 -0400
+Date: Mon, 7 Jul 2008 20:30:44 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: David Miller <davem@davemloft.net>, mchan@broadcom.com,
+       dwmw2@infradead.org, bastian@waldi.eu.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] bnx2 - use request_firmware()
+In-Reply-To: <20080707221950.3dfba435@the-village.bc.nu>
+Message-ID: <alpine.DEB.1.10.0807072028590.12950@asgard.lang.hm>
+References: <C27F8246C663564A84BB7AB34397724201E1494B50@IRVEXCHCCR01.corp.ad.broadcom.com> <1215421413.3189.199.camel@shinybook.infradead.org> <1215456981.5532.20.camel@dell> <20080707.143803.99767036.davem@davemloft.net>
+ <20080707221950.3dfba435@the-village.bc.nu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, could I make brief questions ?
+On Mon, 7 Jul 2008, Alan Cox wrote:
 
-On Mon, 07 Jul 2008 15:58:23 -0700
-Matt Helsley <matthltc@us.ibm.com> wrote:
-> to get status of the freezer subsystem :
-> 
->    # cat /containers/0/freezer.state
->    RUNNING
-> 
-> to freeze all tasks in the container :
-> 
->    # echo FROZEN > /containers/0/freezer.state
->    # cat /containers/0/freezer.state
->    FREEZING
->    # cat /containers/0/freezer.state
->    FROZEN
-> 
-I'm just curious.
+>> Who in the world is going to actually want request_firmware() to find
+>> a firmware image other than the one which has been properly tested
+>> together with the driver by the driver maintainer?
+>
+> That misses the point, intentionally I am sure. In the majority of cases
+> the firmware doesn't change between releases so shipping a billion copies
+> of is a pain in the butt.
+>
+>> What "use case" is there other than the desire to seperate out the
+>> firmware in order to skirt the legal issues?
+>
+> Not shipping lots of copies
+> Not leaving crap locked in kernel memory when it isn't needed
+> Letting vendors issue firmware updates (which especially in enterprise
+> space is a big issue and right now gets messy with compiled in firmware)
+>
+>> I think it is, in fact, the driver maintainer's perogative of whether
+>> they want request_firmware() to be supported by their driver or not.
+>> It is they who have to deal with any possible fallout.
+>
+> And their users and the distributors for whom it can cause enormous pain.
+>
+> If the two are closely tied then it makes a lot of sense to keep them
+> tied, but that doesn't mean wasting a ton of kernel memory and bandwidth
+> and disk space in the process. Loading the firmware and insisting on a
+> specific version is quite civilised for a driver with such a tie.
 
-1. When we see FREEZING and have to retry ?
-   While there are some threads which wait for some event ?
+so make the firmware part of the module if the driver is compiled as a 
+module. this way if the driver (and firmware) end up not being used they 
+don't take up any space. this seems a lot simpler (as well as more 
+reliable) then adding a mandatory dependancy on a different userspace 
+tool.
 
-2. What happens when FROZEN threads are moved to other group ?
-   Can we move them ?
-   Can we wake them up (if it can be moved) ?
-   What operations are allowed to frozen threads ?
+David Lang
 
-Thanks,
--Kame
-
+> (of course we had this argument over ten years ago about modules when
+> various authors couldn't be bothered to modularise their driver which
+> caused endless pain to the distributions and end users. Remember the
+> sound driver situation in early Red Hat. Mind you it got me a job there
+> fixing it ;))
+>
+> Driver authors aren't God. There are other important considerations, but
+> for tg3 if that means 'wrong MD5sum, no load' then fine.
+>
+>
+> Alan
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
