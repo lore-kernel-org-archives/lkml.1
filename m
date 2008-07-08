@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758917AbYGHMob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759075AbYGHMow@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758917AbYGHMob (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 08:44:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758062AbYGHMnZ
+	id S1759075AbYGHMow (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 08:44:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758315AbYGHMnr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 08:43:25 -0400
-Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27528 "EHLO
+	Tue, 8 Jul 2008 08:43:47 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27533 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757782AbYGHMnW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 08:43:22 -0400
+	id S1758707AbYGHMnq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 08:43:46 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
@@ -18,13 +18,42 @@ Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
        grant.likely@secretlab.ca, vapier.adi@gmail.com,
        alan@lxorguk.ukuu.org.uk, hpa@zytor.com, lethal@linux-sh.org,
        florian@openwrt.org, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 02/58] microblaze_v5: Makefiles for Microblaze cpu
-Date: Tue,  8 Jul 2008 13:59:02 +0200
-Message-Id: <c03d29cbccaef8aed8a2911c2a259fbd79ad23d9.1215517976.git.monstr@monstr.eu>
+Subject: [PATCH 31/58] microblaze_v5: includes SHM*, msgbuf
+Date: Tue,  8 Jul 2008 13:59:31 +0200
+Message-Id: <689cff1b6d98f60d8f8abc4472193688b524284d.1215517976.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
+In-Reply-To: <6e5687d37386334cf122d1eafcca0c6649c955be.1215517976.git.monstr@monstr.eu>
 References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
+ <c03d29cbccaef8aed8a2911c2a259fbd79ad23d9.1215517976.git.monstr@monstr.eu>
+ <58f35f498bac29e7105c589c06567e86c5a42dd5.1215517976.git.monstr@monstr.eu>
+ <810775b1bb678003923039726a9153ee34fb67b4.1215517976.git.monstr@monstr.eu>
+ <2a24e5bc2cfbd349613ef10c716a28f04ce24a9f.1215517976.git.monstr@monstr.eu>
+ <3171c5cf21eefc79665165f4a14bc5b68dd03f95.1215517976.git.monstr@monstr.eu>
+ <9be4eff2f4d015023c453eaec3b3473a44380491.1215517976.git.monstr@monstr.eu>
+ <f8e331ed9432719f3c0555c840cbbb7bbc1a6322.1215517976.git.monstr@monstr.eu>
+ <4409daf2ac356e902a8f091bb5908eb8a90218bc.1215517976.git.monstr@monstr.eu>
+ <f7458acb0252f72b5620d19c76104408ecc2e451.1215517976.git.monstr@monstr.eu>
+ <dbd9df742cdd9eb3355d7bc8e39f9dfef6c545e4.1215517976.git.monstr@monstr.eu>
+ <1f9a1f345caa749cb630cf85f95f217366395069.1215517976.git.monstr@monstr.eu>
+ <fe3686f0f70d838b33642bcbcd7185fc2180b366.1215517976.git.monstr@monstr.eu>
+ <e61f5a8579570cf7cd18a22e4106b7f85518928e.1215517976.git.monstr@monstr.eu>
+ <59d7e0a5f38b8d38f01f357a071fc93eed36f3a8.1215517976.git.monstr@monstr.eu>
+ <143afcf84af583ab66da7e8acfc9eb03b7f3eaa0.1215517976.git.monstr@monstr.eu>
+ <a967ee4e5a60b410e2810ce0475e8fd04f99e3ae.1215517976.git.monstr@monstr.eu>
+ <c5f0730287365c845746467a9917dbc07d2fca3c.1215517976.git.monstr@monstr.eu>
+ <2aa1ac7891af57959237aae3addf4bbe607f55d7.1215517976.git.monstr@monstr.eu>
+ <875ba2708f6cd3c585e4d965142e2feb07c39a0e.1215517976.git.monstr@monstr.eu>
+ <eb0e741f891335df37c3cd19f1a3ce2f7ce8652a.1215517976.git.monstr@monstr.eu>
+ <b28df2ea2419cbda26f9089ed6edcc175c009688.1215517976.git.monstr@monstr.eu>
+ <5da1d8f069f18f14faee8c4bff736791179ef6f1.1215517976.git.monstr@monstr.eu>
+ <9a32168fe72b772f301216a7090670474af78e49.1215517976.git.monstr@monstr.eu>
+ <7ada4bceefc1806a2c8ef73676b7aabd8ac1cad6.1215517976.git.monstr@monstr.eu>
+ <701c1dac442ac09f5010cb5356cc1a12bb0abfe1.1215517976.git.monstr@monstr.eu>
+ <9b48e9d85b4a5a6dcffce8eef62b232b6bfac8e8.1215517976.git.monstr@monstr.eu>
+ <04b0b222b84ba9cfe2507a9081f4d715f2323733.1215517976.git.monstr@monstr.eu>
+ <d4c1b3ecfec1bf37ca0ecea6909ad25bbc945630.1215517976.git.monstr@monstr.eu>
+ <6e5687d37386334cf122d1eafcca0c6649c955be.1215517976.git.monstr@monstr.eu>
 In-Reply-To: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 References: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,196 +65,135 @@ From: Michal Simek <monstr@monstr.eu>
 Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/Makefile                  |   63 +++++++++++++++++++++++++++++
- arch/microblaze/boot/Makefile             |   17 ++++++++
- arch/microblaze/kernel/Makefile           |   17 ++++++++
- arch/microblaze/kernel/cpu/Makefile       |    8 ++++
- arch/microblaze/lib/Makefile              |    5 ++
- arch/microblaze/mm/Makefile               |    5 ++
- arch/microblaze/platform/Makefile         |    6 +++
- arch/microblaze/platform/generic/Makefile |    3 +
- 8 files changed, 124 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/Makefile
- create mode 100644 arch/microblaze/boot/Makefile
- create mode 100644 arch/microblaze/kernel/Makefile
- create mode 100644 arch/microblaze/kernel/cpu/Makefile
- create mode 100644 arch/microblaze/lib/Makefile
- create mode 100644 arch/microblaze/mm/Makefile
- create mode 100644 arch/microblaze/platform/Makefile
- create mode 100644 arch/microblaze/platform/generic/Makefile
+ include/asm-microblaze/msgbuf.h   |   39 ++++++++++++++++++++++++++++
+ include/asm-microblaze/shmbuf.h   |   50 +++++++++++++++++++++++++++++++++++++
+ include/asm-microblaze/shmparam.h |   14 ++++++++++
+ 3 files changed, 103 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/msgbuf.h
+ create mode 100644 include/asm-microblaze/shmbuf.h
+ create mode 100644 include/asm-microblaze/shmparam.h
 
-diff --git a/arch/microblaze/Makefile b/arch/microblaze/Makefile
+diff --git a/include/asm-microblaze/msgbuf.h b/include/asm-microblaze/msgbuf.h
 new file mode 100644
-index 0000000..7e9e1b4
+index 0000000..8172bc9
 --- /dev/null
-+++ b/arch/microblaze/Makefile
-@@ -0,0 +1,63 @@
-+UTS_SYSNAME = -DUTS_SYSNAME=\"uClinux\"
++++ b/include/asm-microblaze/msgbuf.h
+@@ -0,0 +1,39 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
 +
-+# What CPU vesion are we building for, and crack it open
-+# as major.minor.rev
-+CPU_VER=$(subst ",,$(CONFIG_XILINX_MICROBLAZE0_HW_VER) )
-+CPU_MAJOR=$(shell echo $(CPU_VER) | cut -d '.' -f 1)
-+CPU_MINOR=$(shell echo $(CPU_VER) | cut -d '.' -f 2)
-+CPU_REV=$(shell echo $(CPU_VER) | cut -d '.' -f 3)
++#ifndef _ASM_MICROBLAZE_MSGBUF_H
++#define _ASM_MICROBLAZE_MSGBUF_H
 +
-+export CPU_VER CPU_MAJOR CPU_MINOR CPU_REV
++/*
++ * The msqid64_ds structure for microblaze architecture.
++ * Note extra padding because this structure is passed back and forth
++ * between kernel and user space.
++ *
++ * Pad space is left for:
++ * - 64-bit time_t to solve y2038 problem
++ * - 2 miscellaneous 32-bit values
++ */
 +
-+# Use cpu-related CONFIG_ vars to set compile options.
++struct msqid64_ds {
++	struct ipc64_perm msg_perm;
++	__kernel_time_t msg_stime; /* last msgsnd time */
++	unsigned long __unused1;
++	__kernel_time_t msg_rtime; /* last msgrcv time */
++	unsigned long __unused2;
++	__kernel_time_t msg_ctime; /* last change time */
++	unsigned long __unused3;
++	unsigned long msg_cbytes; /* current number of bytes on queue */
++	unsigned long msg_qnum; /* number of messages in queue */
++	unsigned long msg_qbytes; /* max number of bytes on queue */
++	__kernel_pid_t msg_lspid; /* pid of last msgsnd */
++	__kernel_pid_t msg_lrpid; /* last receive pid */
++	unsigned long __unused4;
++	unsigned long __unused5;
++};
 +
-+# Work out HW multipler support.  This is icky.
-+# 1. Spartan2 has no HW multiplers.
-+# 2. MicroBlaze v3.x always uses them, except in Spartan 2
-+# 3. All other FPGa/CPU ver combos, we can trust the CONFIG_ settings
-+ifeq (,$(findstring spartan2,$(CONFIG_XILINX_MICROBLAZE0_FAMILY)))
-+  ifeq ($(CPU_MAJOR),3)
-+    CPUFLAGS-1 += -mno-xl-soft-mul
-+  else
-+    # USE_HW_MUL can be 0, 1, or 2, defining a heirarchy of HW Mul support.
-+    CPUFLAGS-$(subst 1,,$(CONFIG_XILINX_MICROBLAZE0_USE_HW_MUL)) += -mxl-multiply-high
-+    CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_HW_MUL) += -mno-xl-soft-mul
-+  endif
-+endif
-+CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_DIV) += -mno-xl-soft-div
-+CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_BARREL) += -mxl-barrel-shift
-+CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_PCMP) += -mxl-pattern-compare
-+
-+CPUFLAGS-1 += $(call cc-option,-mcpu=v$(CPU_VER))
-+
-+# The various CONFIG_XILINX cpu features options are integers 0/1/2...
-+# rather than bools y/n
-+CFLAGS += $(CPUFLAGS-1)
-+CFLAGS += $(CPUFLAGS-2)
-+
-+# r31 holds current when in kernel mode
-+CFLAGS += -ffixed-r31
-+
-+LDFLAGS_BLOB := --format binary --oformat elf32-microblaze
-+
-+LIBGCC := $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
-+
-+head-y		:= arch/microblaze/kernel/head.o
-+libs-y		+= arch/microblaze/lib/ $(LIBGCC)
-+core-y		+= arch/microblaze/kernel/ arch/microblaze/mm/ \
-+		   arch/microblaze/platform/
-+
-+boot := arch/$(ARCH)/boot
-+
-+all: linux.bin
-+
-+archclean:
-+	$(Q)$(MAKE) $(clean)=$(boot)
-+
-+linux.bin linux.bin.gz: vmlinux
-+	$(Q)$(MAKE) $(build)=$(boot) $(boot)/$@
-+
-+define archhelp
-+  echo  '* linux.bin    - Create raw binary'
-+  echo  '  linux.bin.gz - Create compressed raw binary'
-+endef
-diff --git a/arch/microblaze/boot/Makefile b/arch/microblaze/boot/Makefile
++#endif /* _ASM_MICROBLAZE_MSGBUF_H */
+diff --git a/include/asm-microblaze/shmbuf.h b/include/asm-microblaze/shmbuf.h
 new file mode 100644
-index 0000000..844edf4
+index 0000000..a460e36
 --- /dev/null
-+++ b/arch/microblaze/boot/Makefile
-@@ -0,0 +1,17 @@
-+#
-+# arch/microblaze/boot/Makefile
-+#
++++ b/include/asm-microblaze/shmbuf.h
+@@ -0,0 +1,50 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
 +
-+targets := linux.bin linux.bin.gz
++#ifndef _ASM_MICROBLAZE_SHMBUF_H
++#define _ASM_MICROBLAZE_SHMBUF_H
 +
-+OBJCOPYFLAGS_linux.bin  := -O binary
++/*
++ * The shmid64_ds structure for microblaze architecture.
++ * Note extra padding because this structure is passed back and forth
++ * between kernel and user space.
++ *
++ * Pad space is left for:
++ * - 64-bit time_t to solve y2038 problem
++ * - 2 miscellaneous 32-bit values
++ */
 +
-+$(obj)/linux.bin: vmlinux FORCE
-+	$(call if_changed,objcopy)
-+	@echo 'Kernel: $@ is ready' ' (#'`cat .version`')'
++struct shmid64_ds {
++	struct ipc64_perm	shm_perm; /* operation perms */
++	size_t			shm_segsz; /* size of segment (bytes) */
++	__kernel_time_t		shm_atime; /* last attach time */
++	unsigned long		__unused1;
++	__kernel_time_t		shm_dtime; /* last detach time */
++	unsigned long		__unused2;
++	__kernel_time_t		shm_ctime; /* last change time */
++	unsigned long		__unused3;
++	__kernel_pid_t		shm_cpid; /* pid of creator */
++	__kernel_pid_t		shm_lpid; /* pid of last operator */
++	unsigned long		shm_nattch; /* no. of current attaches */
++	unsigned long		__unused4;
++	unsigned long		__unused5;
++};
 +
-+$(obj)/linux.bin.gz: $(obj)/linux.bin FORCE
-+	$(call if_changed,gzip)
-+	@echo 'Kernel: $@ is ready' ' (#'`cat .version`')'
++struct shminfo64 {
++	unsigned long	shmmax;
++	unsigned long	shmmin;
++	unsigned long	shmmni;
++	unsigned long	shmseg;
++	unsigned long	shmall;
++	unsigned long	__unused1;
++	unsigned long	__unused2;
++	unsigned long	__unused3;
++	unsigned long	__unused4;
++};
 +
-+clean-kernel += linux.bin linux.bin.gz
-diff --git a/arch/microblaze/kernel/Makefile b/arch/microblaze/kernel/Makefile
++#endif /* _ASM_MICROBLAZE_SHMBUF_H */
+diff --git a/include/asm-microblaze/shmparam.h b/include/asm-microblaze/shmparam.h
 new file mode 100644
-index 0000000..f7a6bb8
+index 0000000..719bbed
 --- /dev/null
-+++ b/arch/microblaze/kernel/Makefile
-@@ -0,0 +1,17 @@
-+#
-+# Makefile
-+#
++++ b/include/asm-microblaze/shmparam.h
+@@ -0,0 +1,14 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
 +
-+extra-y := head.o vmlinux.lds
++#ifndef _ASM_MICROBLAZE_SHMPARAM_H
++#define _ASM_MICROBLAZE_SHMPARAM_H
 +
-+obj-y += entry.o exceptions.o \
-+	hw_exception_handler.o init_task.o intc.o irq.o of_device.o \
-+	process.o prom.o ptrace.o \
-+	setup.o signal.o sys_microblaze.o timer.o traps.o
++#define SHMLBA	PAGE_SIZE /* attach addr a multiple of this */
 +
-+obj-y += cpu/
-+
-+obj-$(CONFIG_EARLY_PRINTK)	+= early_printk.o
-+obj-$(CONFIG_SELFMOD)		+= selfmod.o
-+obj-$(CONFIG_HEART_BEAT)	+= heartbeat.o
-+obj-$(CONFIG_MODULES)		+= microblaze_ksyms.o module.o
-diff --git a/arch/microblaze/kernel/cpu/Makefile b/arch/microblaze/kernel/cpu/Makefile
-new file mode 100644
-index 0000000..20646e5
---- /dev/null
-+++ b/arch/microblaze/kernel/cpu/Makefile
-@@ -0,0 +1,8 @@
-+#
-+# Build the appropriate CPU version support
-+#
-+
-+EXTRA_CFLAGS += -DCPU_MAJOR=$(CPU_MAJOR) -DCPU_MINOR=$(CPU_MINOR) \
-+		-DCPU_REV=$(CPU_REV)
-+
-+obj-y += cache.o cpuinfo.o cpuinfo-pvr-full.o cpuinfo-static.o mb.o pvr.o
-diff --git a/arch/microblaze/lib/Makefile b/arch/microblaze/lib/Makefile
-new file mode 100644
-index 0000000..f0c36ff
---- /dev/null
-+++ b/arch/microblaze/lib/Makefile
-@@ -0,0 +1,5 @@
-+#
-+# Makefile
-+#
-+
-+lib-y := memcpy.o memmove.o memset.o uaccess.o
-diff --git a/arch/microblaze/mm/Makefile b/arch/microblaze/mm/Makefile
-new file mode 100644
-index 0000000..bf9e447
---- /dev/null
-+++ b/arch/microblaze/mm/Makefile
-@@ -0,0 +1,5 @@
-+#
-+# Makefile
-+#
-+
-+obj-y := init.o
-diff --git a/arch/microblaze/platform/Makefile b/arch/microblaze/platform/Makefile
-new file mode 100644
-index 0000000..ea1b75c
---- /dev/null
-+++ b/arch/microblaze/platform/Makefile
-@@ -0,0 +1,6 @@
-+#
-+# Makefile for arch/microblaze/platform directory
-+#
-+#obj-$(CONFIG_PLATFORM_GENERIC) += generic/
-+
-+obj-y	+= platform.o
-diff --git a/arch/microblaze/platform/generic/Makefile b/arch/microblaze/platform/generic/Makefile
-new file mode 100644
-index 0000000..9a8b1bd
---- /dev/null
-+++ b/arch/microblaze/platform/generic/Makefile
-@@ -0,0 +1,3 @@
-+#
-+# Empty Makefile to keep make clean happy
-+#
++#endif /* _ASM_MICROBLAZE_SHMPARAM_H */
 -- 
 1.5.4.GIT
 
