@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757069AbYGHXrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757365AbYGHXtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757069AbYGHXrk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 19:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbYGHXrc
+	id S1757365AbYGHXtk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 19:49:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753993AbYGHXtc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 19:47:32 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:31198 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753431AbYGHXrb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 19:47:31 -0400
-Message-ID: <1d3f23370807081647y446534dp6db16f560e4e0a2d@mail.gmail.com>
-Date: Wed, 9 Jul 2008 09:47:29 +1000
-From: "John Williams" <john.williams@petalogix.com>
-To: monstr@monstr.eu
-Subject: Re: [PATCH 19/58] microblaze_v5: early_printk support
-Cc: linux-kernel@vger.kernel.org, monstr@seznam.cz, arnd@arndb.de,
-       linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
-       John.Linn@xilinx.com, matthew@wil.cx, will.newton@gmail.com,
-       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
-       grant.likely@secretlab.ca, vapier.adi@gmail.com,
-       alan@lxorguk.ukuu.org.uk, hpa@zytor.com, lethal@linux-sh.org,
-       florian@openwrt.org
-In-Reply-To: <2aa1ac7891af57959237aae3addf4bbe607f55d7.1215517976.git.monstr@monstr.eu>
+	Tue, 8 Jul 2008 19:49:32 -0400
+Received: from gw.goop.org ([64.81.55.164]:50986 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753570AbYGHXtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 19:49:31 -0400
+Message-ID: <4873FD00.1060101@goop.org>
+Date: Tue, 08 Jul 2008 16:49:20 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Mike Travis <travis@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>
+Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
+ area
+References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<48691556.2080208@zytor.com> <48691E8B.4040605@sgi.com>	<m14p7asl3x.fsf@frodo.ebiederm.org> <48694B3B.3010600@goop.org>	<m1skuuov4t.fsf@frodo.ebiederm.org> <486A61A7.1000902@zytor.com>	<486A68DD.80702@goop.org> <m1d4lxgwxj.fsf@frodo.ebiederm.org>	<486A9D4F.8010508@goop.org> <m1skutffn4.fsf@frodo.ebiederm.org>	<486AA72B.6010401@goop.org> <486AC9D9.9030506@zytor.com>	<486AD6BD.9080600@sgi.com> <486ADD67.1020809@sgi.com>	<486ADD9F.3000305@zytor.com> <486C062C.3090408@sgi.com>	<m1wsk3r3g6.fsf@frodo.ebiederm.org> <48724FB4.3090305@sgi.com>	<m17ibxxytj.fsf@frodo.ebiederm.org> <4873B016.8010404@sgi.com> <m1r6a4c5im.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1r6a4c5im.fsf@frodo.ebiederm.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
-	 <2aa1ac7891af57959237aae3addf4bbe607f55d7.1215517976.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +++ b/arch/microblaze/kernel/early_printk.c
-> @@ -0,0 +1,130 @@
+Eric W. Biederman wrote:
+> Mike Travis <travis@sgi.com> writes:
+>
+>   
+>> Unfortunately it's back to the problem of faulting before x86_64_start_kernel()
+>> and grub just immediately reboots.  So I'm back at analyzing assembler and
+>> config differences.
+>>     
+>
+> Ok.  That is a narrow window of code.  So it shouldn't be too bad, nasty though.
+>
+> If you would like to trace through it I have attached my serial port
+> debugging routines that I use in that part of the code.
 
-> +#ifdef CONFIG_EARLY_PRINTK
-> +#define BASE_ADDR ((unsigned char *)CONFIG_EARLY_PRINTK_UARTLITE_ADDRESS)
+Last time it was doing this, it was a result of a triple-fault caused by 
+loading %ds with an all-zero gdt.  I modified Xen to dump the CPU state 
+on triple-faults, so it was easy to pinpoint.  I can do that again if it 
+helps.
 
-This is a problem - default value of EARLY_PRINTK_UARTLITE_ADDRESS is
-0x0, so by default the kernel will try to access a uartlite at 0x0
-which is the reset vector!  I know there is the test in the actual
-output routine but it's not good to rely on that in the default case.
-
-Can we either
-
-#if CONFIG_EARLY_PRINTK_UARTLITE_ADDRESS==0
-#warning EARLY_PRINTK address not set, disabling
-...
-#else
-..
-#endif
-
-or query the OF subsystem (is it up yet?), and default to using the
-first uartlite in the system for early printk?
-
-John
+    J
