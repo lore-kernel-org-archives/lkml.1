@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759891AbYGHMq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759358AbYGHMrp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759891AbYGHMq4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 08:46:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759036AbYGHMpo
+	id S1759358AbYGHMrp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 08:47:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757627AbYGHMp7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 08:45:44 -0400
-Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27555 "EHLO
+	Tue, 8 Jul 2008 08:45:59 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27558 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759314AbYGHMpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 08:45:42 -0400
+	id S1759429AbYGHMp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 08:45:56 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
@@ -18,11 +18,11 @@ Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
        grant.likely@secretlab.ca, vapier.adi@gmail.com,
        alan@lxorguk.ukuu.org.uk, hpa@zytor.com, lethal@linux-sh.org,
        florian@openwrt.org, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 35/58] microblaze_v5: io.h IO operations
-Date: Tue,  8 Jul 2008 13:59:35 +0200
-Message-Id: <7a16429cfc461420883dbaa80c16047e5a1a91c1.1215517976.git.monstr@monstr.eu>
+Subject: [PATCH 18/58] microblaze_v5: checksum support
+Date: Tue,  8 Jul 2008 13:59:18 +0200
+Message-Id: <c5f0730287365c845746467a9917dbc07d2fca3c.1215517976.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <d1d33c18956829ec9ac7daf8d0516b17e85ed190.1215517976.git.monstr@monstr.eu>
+In-Reply-To: <a967ee4e5a60b410e2810ce0475e8fd04f99e3ae.1215517976.git.monstr@monstr.eu>
 References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
  <c03d29cbccaef8aed8a2911c2a259fbd79ad23d9.1215517976.git.monstr@monstr.eu>
@@ -41,23 +41,6 @@ References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <59d7e0a5f38b8d38f01f357a071fc93eed36f3a8.1215517976.git.monstr@monstr.eu>
  <143afcf84af583ab66da7e8acfc9eb03b7f3eaa0.1215517976.git.monstr@monstr.eu>
  <a967ee4e5a60b410e2810ce0475e8fd04f99e3ae.1215517976.git.monstr@monstr.eu>
- <c5f0730287365c845746467a9917dbc07d2fca3c.1215517976.git.monstr@monstr.eu>
- <2aa1ac7891af57959237aae3addf4bbe607f55d7.1215517976.git.monstr@monstr.eu>
- <875ba2708f6cd3c585e4d965142e2feb07c39a0e.1215517976.git.monstr@monstr.eu>
- <eb0e741f891335df37c3cd19f1a3ce2f7ce8652a.1215517976.git.monstr@monstr.eu>
- <b28df2ea2419cbda26f9089ed6edcc175c009688.1215517976.git.monstr@monstr.eu>
- <5da1d8f069f18f14faee8c4bff736791179ef6f1.1215517976.git.monstr@monstr.eu>
- <9a32168fe72b772f301216a7090670474af78e49.1215517976.git.monstr@monstr.eu>
- <7ada4bceefc1806a2c8ef73676b7aabd8ac1cad6.1215517976.git.monstr@monstr.eu>
- <701c1dac442ac09f5010cb5356cc1a12bb0abfe1.1215517976.git.monstr@monstr.eu>
- <9b48e9d85b4a5a6dcffce8eef62b232b6bfac8e8.1215517976.git.monstr@monstr.eu>
- <04b0b222b84ba9cfe2507a9081f4d715f2323733.1215517976.git.monstr@monstr.eu>
- <d4c1b3ecfec1bf37ca0ecea6909ad25bbc945630.1215517976.git.monstr@monstr.eu>
- <6e5687d37386334cf122d1eafcca0c6649c955be.1215517976.git.monstr@monstr.eu>
- <689cff1b6d98f60d8f8abc4472193688b524284d.1215517976.git.monstr@monstr.eu>
- <9664f18e7e86af4332018549b29bf0797d6afcd5.1215517976.git.monstr@monstr.eu>
- <c7120d8a6379cb1a18af5330997e30ec974acc2f.1215517976.git.monstr@monstr.eu>
- <d1d33c18956829ec9ac7daf8d0516b17e85ed190.1215517976.git.monstr@monstr.eu>
 In-Reply-To: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 References: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -69,16 +52,21 @@ From: Michal Simek <monstr@monstr.eu>
 Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/io.h |  208 +++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 208 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/io.h
+ include/asm-generic/checksum.h    |   80 ++++++++++++++++++
+ include/asm-microblaze/checksum.h |   34 ++++++++
+ lib/Makefile                      |    2 +
+ lib/checksum.c                    |  166 +++++++++++++++++++++++++++++++++++++
+ 4 files changed, 282 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-generic/checksum.h
+ create mode 100644 include/asm-microblaze/checksum.h
+ create mode 100644 lib/checksum.c
 
-diff --git a/include/asm-microblaze/io.h b/include/asm-microblaze/io.h
+diff --git a/include/asm-generic/checksum.h b/include/asm-generic/checksum.h
 new file mode 100644
-index 0000000..cb0a178
+index 0000000..7dfb920
 --- /dev/null
-+++ b/include/asm-microblaze/io.h
-@@ -0,0 +1,208 @@
++++ b/include/asm-generic/checksum.h
+@@ -0,0 +1,80 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -87,206 +75,303 @@ index 0000000..cb0a178
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_IO_H
-+#define _ASM_MICROBLAZE_IO_H
++#ifndef _ASM_GENERIC_CHECKSUM_H
++#define _ASM_GENERIC_CHECKSUM_H
 +
-+#include <asm/byteorder.h>
-+#include <asm/page.h>
-+
-+static inline unsigned char __raw_readb(const volatile void *addr)
-+{
-+	return *(volatile unsigned char __force *)addr;
-+}
-+static inline unsigned short __raw_readw(const volatile void *addr)
-+{
-+	return *(volatile unsigned short __force *)addr;
-+}
-+static inline unsigned int __raw_readl(const volatile void *addr)
-+{
-+	return *(volatile unsigned int __force *)addr;
-+}
-+static inline unsigned long __raw_readq(const volatile void *addr)
-+{
-+	return *(volatile unsigned long __force *)addr;
-+}
-+static inline void __raw_writeb(unsigned char v, volatile void *addr)
-+{
-+	*(volatile unsigned char __force *)addr = v;
-+}
-+static inline void __raw_writew(unsigned short v, volatile void *addr)
-+{
-+	*(volatile unsigned short __force *)addr = v;
-+}
-+static inline void __raw_writel(unsigned int v, volatile void *addr)
-+{
-+	*(volatile unsigned int __force *)addr = v;
-+}
-+static inline void __raw_writeq(unsigned long v, volatile void *addr)
-+{
-+	*(volatile unsigned long __force *)addr = v;
-+}
++#include <linux/in6.h>
 +
 +/*
-+ * read (readb, readw, readl, readq) and write (writeb, writew,
-+ * writel, writeq) accessors are for PCI and thus littel endian.
-+ * Linux 2.4 for Microblaze had this wrong.
-+ */
-+static inline unsigned char readb(const volatile void *addr)
-+{
-+	return *(volatile unsigned char __force *)addr;
-+}
-+static inline unsigned short readw(const volatile void *addr)
-+{
-+	return le16_to_cpu(*(volatile unsigned short __force *)addr);
-+}
-+static inline unsigned int readl(const volatile void *addr)
-+{
-+	return le32_to_cpu(*(volatile unsigned int __force *)addr);
-+}
-+static inline void writeb(unsigned char v, volatile void *addr)
-+{
-+	*(volatile unsigned char __force *)addr = v;
-+}
-+static inline void writew(unsigned short v, volatile void *addr)
-+{
-+	*(volatile unsigned short __force *)addr = cpu_to_le16(v);
-+}
-+static inline void writel(unsigned int v, volatile void __iomem *addr)
-+{
-+	*(volatile unsigned int __force *)addr = cpu_to_le32(v);
-+}
-+
-+/* ioread and iowrite variants. thease are for now same as __raw_
-+ * variants of accessors. we might check for endianess in the feature
-+ */
-+#define ioread8(addr)		__raw_readb((u8 *)(addr))
-+#define ioread16(addr)		__raw_readw((u16 *)(addr))
-+#define ioread32(addr)		__raw_readl((u32 *)(addr))
-+#define iowrite8(v, addr)	__raw_writeb((u8)(v), (u8 *)(addr))
-+#define iowrite16(v, addr)	__raw_writew((u16)(v), (u16 *)(addr))
-+#define iowrite32(v, addr)	__raw_writel((u32)(v), (u32 *)(addr))
-+
-+/* These are the definitions for the x86 IO instructions
-+ * inb/inw/inl/outb/outw/outl, the "string" versions
-+ * insb/insw/insl/outsb/outsw/outsl, and the "pausing" versions
-+ * inb_p/inw_p/...
-+ * The macros don't do byte-swapping.
-+ */
-+#define inb(port)		readb((u8 *)((port)))
-+#define outb(val, port)		writeb((val), (u8 *)((unsigned long)(port)))
-+#define inw(port)		readw((u16 *)((port)))
-+#define outw(val, port)		writew((val), (u16 *)((unsigned long)(port)))
-+#define inl(port)		readl((u32 *)((port)))
-+#define outl(val, port)		writel((val), (u32 *)((unsigned long)(port)))
-+
-+#define inb_p(port)		inb((port))
-+#define outb_p(val, port)	outb((val), (port))
-+#define inw_p(port)		inw((port))
-+#define outw_p(val, port)	outw((val), (port))
-+#define inl_p(port)		inl((port))
-+#define outl_p(val, port)	outl((val), (port))
-+
-+#define memset_io(a, b, c)	memset((void *)(a), (b), (c))
-+#define memcpy_fromio(a, b, c)	memcpy((a), (void *)(b), (c))
-+#define memcpy_toio(a, b, c)	memcpy((void *)(a), (b), (c))
-+
-+/**
-+ *	virt_to_phys	-	map virtual addresses to physical
-+ *	@address: address to remap
++ * computes the checksum of a memory block at buff, length len,
++ * and adds in "sum" (32-bit)
 + *
-+ *	The returned physical address is the physical (CPU) mapping for
-+ *	the memory address given. It is only valid to use this function on
-+ *	addresses directly mapped or allocated via kmalloc.
++ * returns a 32-bit number suitable for feeding into itself
++ * or csum_tcpudp_magic
 + *
-+ *	This function does not give bus mappings for DMA transfers. In
-+ *	almost all conceivable cases a device driver should not be using
-+ *	this function
-+ */
-+static inline unsigned long __iomem virt_to_phys(volatile void *address)
-+{
-+	return __pa((unsigned long)address);
-+}
-+
-+#define virt_to_bus virt_to_phys
-+
-+/**
-+ *	phys_to_virt	-	map physical address to virtual
-+ *	@address: address to remap
++ * this function must be called with even lengths, except
++ * for the last fragment, which may be odd
 + *
-+ *	The returned virtual address is a current CPU mapping for
-+ *	the memory address given. It is only valid to use this function on
-+ *	addresses that have a kernel mapping
++ * it's best to have buff aligned on a 32-bit boundary
++ */
++unsigned int csum_partial(const unsigned char *buff, int len,
++						unsigned int sum);
++
++/*
++ * the same as csum_partial, but copies from src while it
++ * checksums
 + *
-+ *	This function does not handle bus mappings for DMA transfers. In
-+ *	almost all conceivable cases a device driver should not be using
-+ *	this function
++ * here even more important to align src and dst on a 32-bit (or even
++ * better 64-bit) boundary
 + */
-+static inline void *phys_to_virt(unsigned long address)
-+{
-+	return (void *)__va(address);
-+}
-+
-+#define bus_to_virt(a) phys_to_virt(a)
-+
-+static inline void *__ioremap(unsigned long address, unsigned long size,
-+			unsigned long flags)
-+{
-+	return (void *)address;
-+}
-+
-+
-+#define IO_SPACE_LIMIT ~(0UL)
-+
-+#define ioremap(physaddr, size)	((void *)(unsigned long)(physaddr))
-+#define iounmap(addr)		((void)0)
-+#define ioremap_nocache(physaddr, size)	ioremap(physaddr, size)
++unsigned int csum_partial_copy(const char *src, char *dst, int len, int sum);
 +
 +/*
-+ * Convert a physical pointer to a virtual kernel pointer for /dev/mem
-+ * access
++ * the same as csum_partial_copy, but copies from user space.
++ *
++ * here even more important to align src and dst on a 32-bit (or even
++ * better 64-bit) boundary
 + */
-+#define xlate_dev_mem_ptr(p)	__va(p)
++extern unsigned int csum_partial_copy_from_user(const char *src, char *dst,
++					int len, int sum, int *csum_err);
++
++#define csum_partial_copy_nocheck(src, dst, len, sum)	\
++	csum_partial_copy((src), (dst), (len), (sum))
 +
 +/*
-+ * Convert a virtual cached pointer to an uncached pointer
++ *	This is a version of ip_compute_csum() optimized for IP headers,
++ *	which always checksum on 4 octet boundaries.
++ *
 + */
-+#define xlate_dev_kmem_ptr(p)	p
++extern unsigned short ip_fast_csum(unsigned char *iph, unsigned int ihl);
 +
 +/*
-+ * Big Endian
++ *	Fold a partial checksum
 + */
-+#define out_be32(a, v) __raw_writel((v), (a))
-+#define out_be16(a, v) __raw_writew((v), (a))
-+
-+#define in_be32(a) __raw_readl(a)
-+#define in_be16(a) __raw_readw(a)
-+
-+/*
-+ * Little endian
-+ */
-+
-+#define out_le32(a, v) __raw_writel(__cpu_to_le32(v), (a));
-+#define out_le16(a, v) __raw_writew(__cpu_to_le16(v), (a))
-+
-+#define in_le32(a) __le32_to_cpu(__raw_readl(a))
-+#define in_le16(a) __le16_to_cpu(__raw_readw(a))
-+
-+/* Byte ops */
-+#define out_8(a, v) __raw_writeb((v), (a))
-+#define in_8(a) __raw_readb(a)
-+
-+/* FIXME */
-+static inline void __iomem *ioport_map(unsigned long port, unsigned int len)
++static inline unsigned int csum_fold(unsigned int sum)
 +{
-+	return (void __iomem *) (port);
++	sum = (sum & 0xffff) + (sum >> 16);
++	sum = (sum & 0xffff) + (sum >> 16);
++	return ~sum;
 +}
 +
-+static inline void ioport_unmap(void __iomem *addr)
++static inline unsigned short int
++csum_tcpudp_magic(unsigned long saddr, unsigned long daddr, unsigned short len,
++		unsigned short proto, unsigned int sum)
 +{
-+	/* Nothing to do */
++	return csum_fold(csum_tcpudp_nofold(saddr, daddr, len, proto, sum));
 +}
 +
-+#endif /* _ASM_MICROBLAZE_IO_H */
++/*
++ * this routine is used for miscellaneous IP-like checksums, mainly
++ * in icmp.c
++ */
++extern unsigned short ip_compute_csum(const unsigned char *buff, int len);
++
++#endif /* _ASM_GENERIC_CHECKSUM_H */
+diff --git a/include/asm-microblaze/checksum.h b/include/asm-microblaze/checksum.h
+new file mode 100644
+index 0000000..2da3744
+--- /dev/null
++++ b/include/asm-microblaze/checksum.h
+@@ -0,0 +1,34 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_CHECKSUM_H
++#define _ASM_MICROBLAZE_CHECKSUM_H
++
++/*
++ * computes the checksum of the TCP/UDP pseudo-header
++ * returns a 16-bit checksum, already complemented
++ */
++static inline unsigned int
++csum_tcpudp_nofold(unsigned long saddr, unsigned long daddr, unsigned short len,
++		unsigned short proto, unsigned int sum)
++{
++	__asm__("add %0, %4, %1\n\t"
++		"addc %0, %4, %2\n\t"
++		"addc %0, %4, %3\n\t"
++		"addc %0, %4, r0\n\t"
++		: "=d" (sum)
++		: "d" (saddr), "d" (daddr), "d" (len + proto),
++		"0"(sum));
++
++	return sum;
++}
++
++
++#include <asm-generic/checksum.h>
++
++#endif /* _ASM_MICROBLAZE_CHECKSUM_H */
+diff --git a/lib/Makefile b/lib/Makefile
+index 74b0cfb..6f48c04 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -72,6 +72,8 @@ lib-$(CONFIG_GENERIC_BUG) += bug.o
+ 
+ obj-$(CONFIG_HAVE_LMB) += lmb.o
+ 
++obj-$(CONFIG_GENERIC_CSUM) += checksum.o
++
+ hostprogs-y	:= gen_crc32table
+ clean-files	:= crc32table.h
+ 
+diff --git a/lib/checksum.c b/lib/checksum.c
+new file mode 100644
+index 0000000..0060873
+--- /dev/null
++++ b/lib/checksum.c
+@@ -0,0 +1,166 @@
++/*
++ * arch/microblaze/lib/checksum.c
++ *
++ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
++ *
++ * INET		An implementation of the TCP/IP protocol suite for the LINUX
++ *		operating system.  INET is implemented using the  BSD Socket
++ *		interface as the means of communication with the user level.
++ *
++ *		IP/TCP/UDP checksumming routines
++ *
++ * Authors:	Jorge Cwik, <jorge@laser.satlink.net>
++ *		Arnt Gulbrandsen, <agulbra@nvg.unit.no>
++ *		Tom May, <ftom@netcom.com>
++ *		Andreas Schwab, <schwab@issan.informatik.uni-dortmund.de>
++ *		Lots of code moved from tcp.c and ip.c; see those files
++ *		for more names.
++ *
++ * 03/02/96	Jes Sorensen, Andreas Schwab, Roman Hodek:
++ *		Fixed some nasty bugs, causing some horrible crashes.
++ *		A: At some points, the sum (%0) was used as
++ *		length-counter instead of the length counter
++ *		(%1). Thanks to Roman Hodek for pointing this out.
++ *		B: GCC seems to mess up if one uses too many
++ *		data-registers to hold input values and one tries to
++ *		specify d0 and d1 as scratch registers. Letting gcc choose these
++ *      registers itself solves the problem.
++ *
++ *		This program is free software; you can redistribute it and/or
++ *		modify it under the terms of the GNU General Public License
++ *		as published by the Free Software Foundation; either version
++ *		2 of the License, or (at your option) any later version.
++ */
++
++/* Revised by Kenneth Albanowski for m68knommu. Basic problem: unaligned access
++ kills, so most of the assembly has to go. */
++
++#include <net/checksum.h>
++#include <asm-generic/checksum.h>
++#include <linux/module.h>
++
++static inline unsigned short from32to16(unsigned long x)
++{
++	/* add up 16-bit and 16-bit for 16+c bit */
++	x = (x & 0xffff) + (x >> 16);
++	/* add up carry.. */
++	x = (x & 0xffff) + (x >> 16);
++	return x;
++}
++
++static unsigned long do_csum(const unsigned char *buff, int len)
++{
++	int odd, count;
++	unsigned long result = 0;
++
++	if (len <= 0)
++		goto out;
++	odd = 1 & (unsigned long) buff;
++	if (odd) {
++		result = *buff;
++		len--;
++		buff++;
++	}
++	count = len >> 1;		/* nr of 16-bit words.. */
++	if (count) {
++		if (2 & (unsigned long) buff) {
++			result += *(unsigned short *) buff;
++			count--;
++			len -= 2;
++			buff += 2;
++		}
++		count >>= 1;		/* nr of 32-bit words.. */
++		if (count) {
++			unsigned long carry = 0;
++			do {
++				unsigned long w = *(unsigned long *) buff;
++				count--;
++				buff += 4;
++				result += carry;
++				result += w;
++				carry = (w > result);
++			} while (count);
++			result += carry;
++			result = (result & 0xffff) + (result >> 16);
++		}
++		if (len & 2) {
++			result += *(unsigned short *) buff;
++			buff += 2;
++		}
++	}
++	if (len & 1)
++		result += (*buff << 8);
++	result = from32to16(result);
++	if (odd)
++		result = ((result >> 8) & 0xff) | ((result & 0xff) << 8);
++out:
++	return result;
++}
++
++/*
++ *	This is a version of ip_compute_csum() optimized for IP headers,
++ *	which always checksum on 4 octet boundaries.
++ */
++unsigned short ip_fast_csum(unsigned char *iph, unsigned int ihl)
++{
++	return ~do_csum(iph, ihl*4);
++}
++
++/*
++ * computes the checksum of a memory block at buff, length len,
++ * and adds in "sum" (32-bit)
++ *
++ * returns a 32-bit number suitable for feeding into itself
++ * or csum_tcpudp_magic
++ *
++ * this function must be called with even lengths, except
++ * for the last fragment, which may be odd
++ *
++ * it's best to have buff aligned on a 32-bit boundary
++ */
++unsigned int csum_partial(const unsigned char *buff, int len, unsigned int sum)
++{
++	unsigned int result = do_csum(buff, len);
++
++	/* add in old sum, and carry.. */
++	result += sum;
++	if (sum > result)
++		result += 1;
++	return result;
++}
++EXPORT_SYMBOL(csum_partial);
++
++/*
++ * this routine is used for miscellaneous IP-like checksums, mainly
++ * in icmp.c
++ */
++unsigned short ip_compute_csum(const unsigned char *buff, int len)
++{
++	return ~do_csum(buff, len);
++}
++EXPORT_SYMBOL(ip_compute_csum);
++
++/*
++ * copy from fs while checksumming, otherwise like csum_partial
++ */
++unsigned int
++csum_partial_copy_from_user(const char __user *src, char *dst, int len,
++						int sum, int *csum_err)
++{
++	if (csum_err)
++		*csum_err = 0;
++	memcpy(dst, src, len);
++	return csum_partial(dst, len, sum);
++}
++EXPORT_SYMBOL(csum_partial_copy_from_user);
++
++/*
++ * copy from ds while checksumming, otherwise like csum_partial
++ */
++unsigned int
++csum_partial_copy(const char *src, char *dst, int len, int sum)
++{
++	memcpy(dst, src, len);
++	return csum_partial(dst, len, sum);
++}
++EXPORT_SYMBOL(csum_partial_copy);
 -- 
 1.5.4.GIT
 
