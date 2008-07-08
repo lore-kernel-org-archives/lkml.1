@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758299AbYGHXWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759806AbYGHXVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758299AbYGHXWV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 19:22:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757732AbYGHXOx
+	id S1759806AbYGHXVy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 19:21:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757702AbYGHXOw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 19:14:53 -0400
-Received: from gw.goop.org ([64.81.55.164]:51209 "EHLO mail.goop.org"
+	Tue, 8 Jul 2008 19:14:52 -0400
+Received: from gw.goop.org ([64.81.55.164]:51206 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755967AbYGHXOo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756411AbYGHXOo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 8 Jul 2008 19:14:44 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 36 of 55] xen: use set_pte_vaddr
-X-Mercurial-Node: 31bd2d6c187ede8029d2e6f11e352f79fc1f3ee7
-Message-Id: <31bd2d6c187ede8029d2.1215554818@localhost>
+Subject: [PATCH 35 of 55] xen64: defer setting pagetable alloc/release ops
+X-Mercurial-Node: 6db4456f5ddb04a189f4fd8930560215733fb5a8
+Message-Id: <6db4456f5ddb04a189f4.1215554817@localhost>
 In-Reply-To: <patchbomb.1215554782@localhost>
-Date: Tue, 08 Jul 2008 15:06:58 -0700
+Date: Tue, 08 Jul 2008 15:06:57 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
@@ -26,54 +26,61 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make Xen's set_pte_mfn() use set_pte_vaddr rather than copying it.
+We need to wait until the page structure is available to use the
+proper pagetable page alloc/release operations, since they use struct
+page to determine if a pagetable is pinned.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Signed-off-by: Juan Quintela <quintela@redhat.com>
-Signed-off-by: Mark McLoughlin <markmc@redhat.com>
+This happened to work in 32bit because nobody allocated new pagetable
+pages in the interim between xen_pagetable_setup_done and
+xen_post_allocator_init, but the 64-bit kenrel needs to allocate more
+pagetable levels.
+
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/mmu.c |   30 +-----------------------------
- 1 file changed, 1 insertion(+), 29 deletions(-)
+ arch/x86/xen/enlighten.c |   25 ++++++++++++-------------
+ 1 file changed, 12 insertions(+), 13 deletions(-)
 
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -282,35 +282,7 @@
-  */
- void set_pte_mfn(unsigned long vaddr, unsigned long mfn, pgprot_t flags)
- {
--	pgd_t *pgd;
--	pud_t *pud;
--	pmd_t *pmd;
--	pte_t *pte;
--
--	pgd = swapper_pg_dir + pgd_index(vaddr);
--	if (pgd_none(*pgd)) {
--		BUG();
--		return;
--	}
--	pud = pud_offset(pgd, vaddr);
--	if (pud_none(*pud)) {
--		BUG();
--		return;
--	}
--	pmd = pmd_offset(pud, vaddr);
--	if (pmd_none(*pmd)) {
--		BUG();
--		return;
--	}
--	pte = pte_offset_kernel(pmd, vaddr);
--	/* <mfn,flags> stored as-is, to permit clearing entries */
--	xen_set_pte(pte, mfn_pte(mfn, flags));
--
--	/*
--	 * It's enough to flush this one mapping.
--	 * (PGE mappings get flushed as well)
--	 */
--	__flush_tlb_one(vaddr);
-+	set_pte_vaddr(vaddr, mfn_pte(mfn, flags));
- }
+diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -878,6 +878,18 @@
  
- void xen_set_pte_at(struct mm_struct *mm, unsigned long addr,
+ static __init void xen_pagetable_setup_done(pgd_t *base)
+ {
++	xen_setup_shared_info();
++}
++
++static __init void xen_post_allocator_init(void)
++{
++	pv_mmu_ops.set_pte = xen_set_pte;
++	pv_mmu_ops.set_pmd = xen_set_pmd;
++	pv_mmu_ops.set_pud = xen_set_pud;
++#if PAGETABLE_LEVELS == 4
++	pv_mmu_ops.set_pgd = xen_set_pgd;
++#endif
++
+ 	/* This will work as long as patching hasn't happened yet
+ 	   (which it hasn't) */
+ 	pv_mmu_ops.alloc_pte = xen_alloc_pte;
+@@ -887,19 +899,6 @@
+ #if PAGETABLE_LEVELS == 4
+ 	pv_mmu_ops.alloc_pud = xen_alloc_pud;
+ 	pv_mmu_ops.release_pud = xen_release_pud;
+-#endif
+-
+-	pv_mmu_ops.set_pte = xen_set_pte;
+-
+-	xen_setup_shared_info();
+-}
+-
+-static __init void xen_post_allocator_init(void)
+-{
+-	pv_mmu_ops.set_pmd = xen_set_pmd;
+-	pv_mmu_ops.set_pud = xen_set_pud;
+-#if PAGETABLE_LEVELS == 4
+-	pv_mmu_ops.set_pgd = xen_set_pgd;
+ #endif
+ 
+ 	xen_mark_init_mm_pinned();
 
 
