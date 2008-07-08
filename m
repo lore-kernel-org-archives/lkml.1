@@ -1,95 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756791AbYGHAbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbYGHAiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756791AbYGHAbi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 20:31:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbYGHAbb
+	id S1754808AbYGHAiU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 20:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754889AbYGHAiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 20:31:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44670 "EHLO mx1.redhat.com"
+	Mon, 7 Jul 2008 20:38:12 -0400
+Received: from gw.goop.org ([64.81.55.164]:35525 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754808AbYGHAba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 20:31:30 -0400
+	id S1754842AbYGHAiL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 20:38:11 -0400
+Message-ID: <4872B6E2.5080003@goop.org>
+Date: Mon, 07 Jul 2008 17:37:54 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: virtualization@lists.linux-foundation.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Jens Axboe <axboe@kernel.dk>,
+       Xen devel <xen-devel@lists.xensource.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Lameter <clameter@linux-foundation.org>,
+       Petr Tesarik <ptesarik@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Friebel <thomas.friebel@amd.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH RFC 0/4] Paravirtual spinlocks
+References: <20080707190749.299430659@goop.org> <200807081029.19242.rusty@rustcorp.com.au>
+In-Reply-To: <200807081029.19242.rusty@rustcorp.com.au>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: benh@kernel.crashing.org
-X-Fcc: ~/Mail/linus
-Cc: Andreas Schwab <schwab@suse.de>, Nathan Lynch <ntl@pobox.com>,
-       linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] elf loader support for auxvec base platform string
-In-Reply-To: Benjamin Herrenschmidt's message of  Tuesday, 8 July 2008 08:56:33 +1000 <1215471393.8970.157.camel@pasglop>
-References: <20080703234140.GC9594@localdomain>
-	<20080704021929.5E9EF1541F5@magilla.localdomain>
-	<1215409693.8970.79.camel@pasglop>
-	<20080707061811.19989154246@magilla.localdomain>
-	<1215411800.8970.91.camel@pasglop>
-	<20080707063522.5FE55154246@magilla.localdomain>
-	<je8wwet9p6.fsf@sykes.suse.de>
-	<20080707093151.8798A154246@magilla.localdomain>
-	<je63rirp1x.fsf@sykes.suse.de>
-	<1215471393.8970.157.camel@pasglop>
-X-Antipastobozoticataclysm: Bariumenemanilow
-Message-Id: <20080708003127.6D3B9154244@magilla.localdomain>
-Date: Mon,  7 Jul 2008 17:31:27 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > The kernel does not have to come from the same place as the root
-> > filesystem.  You may want to run a new kernel with an old filesystem, or
-> > vice-versa.
+Rusty Russell wrote:
+> On Tuesday 08 July 2008 05:07:49 Jeremy Fitzhardinge wrote:
+>   
+>> At the most recent Xen Summit, Thomas Friebel presented a paper
+>> ("Preventing Guests from Spinning Around",
+>> http://xen.org/files/xensummitboston08/LHP.pdf) investigating the
+>> interactions between spinlocks and virtual machines.  Specifically, he
+>> looked at what happens when a lock-holding VCPU gets involuntarily
+>> preempted.
+>>     
+>
+> I find it interesting that gang scheduling the guest was not suggested as an 
+> obvious solution.
+>   
 
-Well, it's not like these bits are really going to change in practice.  My
-point was just that this is a far "softer" ABI than the general kernel-user
-contract.  Sorry if my being precise about things gives you indigestion.
+It's an obvious answer, but not an obvious solution.  You trade off 
+wasting time spinning vs wasting time waiting for N vcpus to be free for 
+scheduling.  Or something; seems much more complex, particularly if you 
+can do a small guest tweak to solve the problem.
 
-> I agree, I'm pretty dubious here...
+> Anyway, concept looks fine; lguest's solution is more elegant of course :)
+>   
 
-Dubious about whether the dsocaps bit assignments are "part of the ABI"?
-Fine.  Let's talk again when you've used up 32 bits and want to figure out
-what to do next.
+You could remove all mutable state and call it "erlang".
 
-Dubious about whether dsocaps is the right thing to do?  I think you are
-overlooking what the actual kernel-user compatibility reality is here.
+> A little disappointing that you can't patch your version inline.
 
-Firstly, what is the "risk" in the "gone wrong" case?  The risk is that a
-DSO load via ld.so.cache will overlook a /lib/power99/foo.so match and get
-a /lib/foo.so match instead because ldconfig doesn't know about "power99".
-If foo.so wasn't in ld.so.cache at all, there is no problem.
-If you used LD_LIBRARY_PATH, there is no problem.
-If you used dlopen with an explicit file name (has /), there is no problem.
+Spinlock code isn't inlined currently, so I hadn't considered it.  The 
+fast path code for both lock and unlock is nearly small enough to 
+consider it, but it seems a bit fiddly.
 
-What happens if you boot a kernel that uses dsocaps with the new string
-"power99", but you are missing the ld.so.conf.d file to match your kernel?
-Then a DSO load via ld.so.cache will overlook "power99" matches.
+If the "spin_lock" and "spin_unlock" functions were inlined functions 
+which called the out of line __raw_spin_lock/unlock functions, then 
+after patching they would result in a direct call to the backend lock 
+functions, which would be exactly equivalent to what happens now (since 
+I hook __raw_spin_lock into calls via pv_lock_ops).
 
-How do you fix it?
-Install the right (tiny text) file, and run ldconfig.
+    J
 
-What happens now if you are using a new kernel that supplies a new string
-"power99" in AT_PLATFORM or another auxv element used the same way, but
-with an old root filesystem (say one including any glibc that exists today)?
-Then a DSO load via ld.so.cache will overlook "power99" matches.
-
-How do you fix it?
-You add a bit assignment in the glibc sources, recompile glibc,
-install a new whole glibc package.  (Conceivably if you are extremely
-careful you can manage to redo an otherwise completely identical
-build to the glibc on your old system and replace only ld{64,}.so.1
-and ldconfig.)  Then run the new ldconfig.
-
-In short, if you use a root filesystem from before kernels started using
-the new string, then you will degenerate to default-platform library
-matches from loads via ld.so.cache (i.e. /lib/foo.so, not /lib/somecpu/foo.so).
-If you want to do better than that for this case, it's intractable using
-AT_PLATFORM, and simple using dsocaps (probably simpler than booting a
-special kernel was).
-
-I haven't figured out what in this old-vs-new picture you think AT_PLATFORM
-or something else like it would ever buy you.
-
-
-Thanks,
-Roland
