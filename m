@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758598AbYGHXVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758299AbYGHXWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758598AbYGHXVU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 19:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757642AbYGHXOv
+	id S1758299AbYGHXWV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 19:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757732AbYGHXOx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 19:14:51 -0400
-Received: from gw.goop.org ([64.81.55.164]:51205 "EHLO mail.goop.org"
+	Tue, 8 Jul 2008 19:14:53 -0400
+Received: from gw.goop.org ([64.81.55.164]:51209 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756394AbYGHXOo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755967AbYGHXOo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 8 Jul 2008 19:14:44 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 33 of 55] xen64: use arbitrary_virt_to_machine for xen_set_pmd
-X-Mercurial-Node: 985907b145a455344299eaea078e359b538acd7c
-Message-Id: <985907b145a455344299.1215554815@localhost>
+Subject: [PATCH 36 of 55] xen: use set_pte_vaddr
+X-Mercurial-Node: 31bd2d6c187ede8029d2e6f11e352f79fc1f3ee7
+Message-Id: <31bd2d6c187ede8029d2.1215554818@localhost>
 In-Reply-To: <patchbomb.1215554782@localhost>
-Date: Tue, 08 Jul 2008 15:06:55 -0700
+Date: Tue, 08 Jul 2008 15:06:58 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
@@ -26,61 +26,54 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When building initial pagetables in 64-bit kernel the pud/pmd pointer may
-be in ioremap/fixmap space, so we need to walk the pagetable to look up the
-physical address.
+Make Xen's set_pte_mfn() use set_pte_vaddr rather than copying it.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Signed-off-by: Juan Quintela <quintela@redhat.com>
+Signed-off-by: Mark McLoughlin <markmc@redhat.com>
 ---
- arch/x86/xen/mmu.c         |    9 ++++++---
- include/asm-x86/xen/page.h |    2 +-
- 2 files changed, 7 insertions(+), 4 deletions(-)
+ arch/x86/xen/mmu.c |   30 +-----------------------------
+ 1 file changed, 1 insertion(+), 29 deletions(-)
 
 diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
 --- a/arch/x86/xen/mmu.c
 +++ b/arch/x86/xen/mmu.c
-@@ -178,8 +178,9 @@
- 	p2m_top[topidx][idx] = mfn;
+@@ -282,35 +282,7 @@
+  */
+ void set_pte_mfn(unsigned long vaddr, unsigned long mfn, pgprot_t flags)
+ {
+-	pgd_t *pgd;
+-	pud_t *pud;
+-	pmd_t *pmd;
+-	pte_t *pte;
+-
+-	pgd = swapper_pg_dir + pgd_index(vaddr);
+-	if (pgd_none(*pgd)) {
+-		BUG();
+-		return;
+-	}
+-	pud = pud_offset(pgd, vaddr);
+-	if (pud_none(*pud)) {
+-		BUG();
+-		return;
+-	}
+-	pmd = pmd_offset(pud, vaddr);
+-	if (pmd_none(*pmd)) {
+-		BUG();
+-		return;
+-	}
+-	pte = pte_offset_kernel(pmd, vaddr);
+-	/* <mfn,flags> stored as-is, to permit clearing entries */
+-	xen_set_pte(pte, mfn_pte(mfn, flags));
+-
+-	/*
+-	 * It's enough to flush this one mapping.
+-	 * (PGE mappings get flushed as well)
+-	 */
+-	__flush_tlb_one(vaddr);
++	set_pte_vaddr(vaddr, mfn_pte(mfn, flags));
  }
  
--xmaddr_t arbitrary_virt_to_machine(unsigned long address)
-+xmaddr_t arbitrary_virt_to_machine(void *vaddr)
- {
-+	unsigned long address = (unsigned long)vaddr;
- 	unsigned int level;
- 	pte_t *pte = lookup_address(address, &level);
- 	unsigned offset = address & ~PAGE_MASK;
-@@ -253,7 +254,8 @@
- 
- 	xen_mc_batch();
- 
--	u.ptr = virt_to_machine(ptr).maddr;
-+	/* ptr may be ioremapped for 64-bit pagetable setup */
-+	u.ptr = arbitrary_virt_to_machine(ptr).maddr;
- 	u.val = pmd_val_ma(val);
- 	extend_mmu_update(&u);
- 
-@@ -415,7 +417,8 @@
- 
- 	xen_mc_batch();
- 
--	u.ptr = virt_to_machine(ptr).maddr;
-+	/* ptr may be ioremapped for 64-bit pagetable setup */
-+	u.ptr = arbitrary_virt_to_machine(ptr).maddr;
- 	u.val = pud_val_ma(val);
- 	extend_mmu_update(&u);
- 
-diff --git a/include/asm-x86/xen/page.h b/include/asm-x86/xen/page.h
---- a/include/asm-x86/xen/page.h
-+++ b/include/asm-x86/xen/page.h
-@@ -158,7 +158,7 @@
- #define pgd_val_ma(x)	((x).pgd)
- 
- 
--xmaddr_t arbitrary_virt_to_machine(unsigned long address);
-+xmaddr_t arbitrary_virt_to_machine(void *address);
- void make_lowmem_page_readonly(void *vaddr);
- void make_lowmem_page_readwrite(void *vaddr);
- 
+ void xen_set_pte_at(struct mm_struct *mm, unsigned long addr,
 
 
