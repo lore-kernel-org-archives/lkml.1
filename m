@@ -1,86 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757079AbYGHSnG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755710AbYGHSvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757079AbYGHSnG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 14:43:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753716AbYGHSmw
+	id S1755710AbYGHSvR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 14:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753869AbYGHSvD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 14:42:52 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:45112 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751346AbYGHSmv (ORCPT
+	Tue, 8 Jul 2008 14:51:03 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:1788 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753804AbYGHSvC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 14:42:51 -0400
-Subject: Re: [RFC 08/11] remove CONFIG_KMOD from net
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Hellwig <hch@infradead.org>, netdev@vger.kernel.org
-In-Reply-To: <20080708184017.GD11954@cs181140183.pp.htv.fi>
-References: <20080708170015.470877000@sipsolutions.net>
-	 <20080708170047.433712000@sipsolutions.net>
-	 <20080708183035.GC11954@cs181140183.pp.htv.fi>
-	 <1215542220.3670.0.camel@johannes.berg>
-	 <20080708184017.GD11954@cs181140183.pp.htv.fi>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Y2eLXq1wAcsohgb78VOv"
-Date: Tue, 08 Jul 2008 20:42:03 +0200
-Message-Id: <1215542523.3670.4.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Tue, 8 Jul 2008 14:51:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=kiNH6ol3AdEKLs1+hBw1pfUxXJD+hVLicuBNHHTyqh6RnxqDFMyy1IVuIcGH/M/kpD
+         w8ELas1cHs21iPpjgcdtuhBRpUltKk4QTxE15f7Lkl0W3NgcuEW20mQXqP+30KI9gkXX
+         ekwuUgc6DWgWD3jV7dVOxFGnwvrVQNuQ+bPFU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [regression] Re: 2.6.26-rc6: pcmcia stopped working
+Date: Tue, 8 Jul 2008 20:06:37 +0200
+User-Agent: KMail/1.9.9
+Cc: kernel list <linux-kernel@vger.kernel.org>
+References: <20080622224022.GA2066@elf.ucw.cz> <200807051448.40466.bzolnier@gmail.com> <20080705224631.GA32546@elf.ucw.cz>
+In-Reply-To: <20080705224631.GA32546@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200807082006.37847.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday 06 July 2008, Pavel Machek wrote:
+> Hi!
+> 
+> > > > > Hmm, hitting sysrq-w produces no blocked task until I eject pcmcia
+> > > > > card. Backtrace there is:
+> > > > > 
+> > > > > Greg, I believe some traces lead to sysfs, can you help here?
+> > > > 
+> > > > ide_unregister() does not complete :-(.
+> > > > 
+> > > >         device_unregister(&hwif->gendev);
+> > > > +       printk("ide_unregister: waiting for rel_comp\n");
+> > > >         wait_for_completion(&hwif->gendev_rel_comp);
+> > > > 
+> > > > ...that wait_for_completion never returns.
+> > 
+> > [...]
+> > 
+> > Thanks for narrowing it down to wait_for_completion() call,
+> > it was an useful hint.
+> 
+> Thanks for a patch, I'll test it soon. Here are two really trivial
+> patches... maybe too trivial?
 
---=-Y2eLXq1wAcsohgb78VOv
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+there are no too trivial patches in the git era :)
 
+> ---
+> 
+> Small whitespace fixes for drivers/ide.
+> 
+> Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-> > Eh, no. Not unless I also always compile in dev_load, which as of now
-> > depends on CONFIG_MODULES. In fact, another hunk in this series makes i=
-t
-> > a static inline when CONFIG_MODULES=3Dn so that callers don't need to t=
-ake
-> > care of #ifdef'ing it.
->=20
-> Look at include/linux/module.h:
->=20
-> ...
-> #ifdef CONFIG_MODULES
-> ...
-> #define EXPORT_SYMBOL(sym)                                      \
->         __EXPORT_SYMBOL(sym, "")
-> ...
-> #else /* !CONFIG_MODULES... */
-> #define EXPORT_SYMBOL(sym)
-> ...
-
-Oh, right, I forgot I was dealing with CONFIG_MODULES and treated it
-just like another config option, thanks.
-
-johannes
-
---=-Y2eLXq1wAcsohgb78VOv
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJIc7T3AAoJEKVg1VMiehFYaC8P/RGyVxvAz+3vuAVfu6qUrFSc
-O1M3Y1L7SzsLfd9IhKZ3jjePEBd5U+cUj4osPnSwJQCO2cItTEB2wOyV9lZHheo8
-UubXeaYQP1+c5wQafUa0D+q1272m8Njp1hn3mww2N7YhAMC0Yhzfil1mKW4ru4+N
-3ogcyNfsnUzXbGqnSz3JC7LkD/KmVcRoduCzmpKZI/D1udO/JhONxsTYsfTOq40I
-MDq3zXZSDfqoq4rDTXnxBDpT+0FDbcGOJtOE8jBZk98JvAKmHkz5pyQp5TKzVYL9
-5vhvNQJtYfe8gyiQSP7zhNK2o/0KCVBm/Q/Djjsso+o55eW1tQpJ2kJzY7igpzvA
-lgox5ywmHJFKTEhRIhIjyw1Sy3Tib15KfLOL13j5DipkaHAjcf6CRjMvkOl0/uRx
-+lgwfQTnRnv5MiLw8Qqy+dyHe+Y8kc/8psOcLxWZwI6RYtdEUr4sRpnSrpeiAdsJ
-6kVTTsfiukV7VQUFW9/R5qczcbUkjd17ocio6GkXAdygifWHl+G9IbbclL3yVOEA
-DXVUyn6wYu9exJfnqel3IE4RjG2syVhBhH2l9L/qlyPAMvXPfMEqTJmwyRxCUJkp
-CcssSzUI5qnK4Atl8o48qNRBZdXhaBDGo5HBxUmFIuUCQrlvFdRzAH7fn/TbOG+j
-LaNaWfzhjxaCnDCoDvJb
-=Vg/y
------END PGP SIGNATURE-----
-
---=-Y2eLXq1wAcsohgb78VOv--
-
+applied
