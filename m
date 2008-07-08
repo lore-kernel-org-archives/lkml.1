@@ -1,98 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbYGHIOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756868AbYGHIRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755936AbYGHIOX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 04:14:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbYGHIOQ
+	id S1756868AbYGHIRW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 04:17:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755300AbYGHIRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 04:14:16 -0400
-Received: from smtprelay.restena.lu ([158.64.1.62]:4503 "EHLO
-	smtprelay.restena.lu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750717AbYGHIOO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 04:14:14 -0400
-X-Greylist: delayed 688 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Jul 2008 04:14:14 EDT
-Date: Tue, 8 Jul 2008 10:02:41 +0200
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bruno.premont@restena.lu>
-To: "Altobelli, David" <david.altobelli@hp.com>
-Cc: Pavel Machek <pavel@suse.cz>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "greg@kroah.com" <greg@kroah.com>
-Subject: Re: [PATCH][resubmit] HP iLO driver
-Message-ID: <20080708100241.36b89e20@pluto.restena.lu>
-In-Reply-To: <20080708072152.GD1761@elf.ucw.cz>
-References: <20080623160052.GA7616@ldl.fc.hp.com>
-	<20080627191458.GA10872@ucw.cz>
-	<CF70AA892F109448AEA269483B3A983903BB8CE586@G1W1215.americas.hpqcorp.net>
-	<20080707160658.GB1794@elf.ucw.cz>
-	<CF70AA892F109448AEA269483B3A983903BB8CEA25@G1W1215.americas.hpqcorp.net>
-	<20080708072152.GD1761@elf.ucw.cz>
-Organization: Fondation RESTENA
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 8 Jul 2008 04:17:12 -0400
+Received: from ozlabs.org ([203.10.76.45]:41821 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752015AbYGHIQ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 04:16:56 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Mike Travis <travis@sgi.com>
+Subject: Dangerous code in cpumask_of_cpu?
+Date: Tue, 8 Jul 2008 18:16:40 +1000
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, "H. Anvin" <hpa@zytor.com>,
+       Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807081816.40623.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Jul 2008 09:21:52 +0200 Pavel Machek <pavel@suse.cz> wrote:
-> On Mon 2008-07-07 17:37:18, Altobelli, David wrote:
-> > Pavel Machek wrote:
-> > > Hi!
-> > >
-> > >>>> A driver for the HP iLO/iLO2 management processor, which allows
-> > >>>> userspace programs to query the management processor. Programs
-> > >>>> can open a channel to the device (/dev/hpilo/dXccbN), and use
-> > >>>> this to send/receive queries.
-> > >>>
-> > >>> What kind of queries? Is there documentation somewhere?
-> > >>
-> > >> Generally, it can get data out of the management processor -
-> > >> things like basic iLO configuration (users, nic, etc), handle
-> > >> SNMP traffic, flashing iLO, and some others.
-> > >>
-> > >> Unfortunately, there isn't yet any available documenation.
-> > >
-> > > Ok, I guess we should have documentation "what does it do" and
-> > > "what protocol does it speak" before we can think about merging.
-> > 
-> > I really hope that isn't the case.
-> 
-> Telling us "what does it do" seems like good start.
-> 
-> > However, I do think there is value in merging the driver without
-> > docs. Having drivers in tree is often stated as a goal, because of
-> > the obvious security and API/ABI disadvantages to out of tree
-> > drivers.
-> 
-> You know, we'd prefer to have kernel<->user ABI documented. With this
-> driver... we don't.
-> 
-> What does /dev/hpilo/* do? Beep speakers? Control fans? Launch atomic
-> bombs? What will happen on cat /bin/bash > /dev/hpilo/dXccbN? Does
-> that depend on concrete machine? Is it acceptable for this
-> functionality not to be abstracted out? (Kernel should provide hw
-> abstraction, right?)
+Hi Christoph/Mike,
 
-If the driver allows access to hardware monitoring features available
-via iLO/iLO2 (fan, temperature, voltage) it would be really useful if
-this driver also registered the sensors with hwmon framework so the
-details are accessible via lm_sensors. (like is now done for ACPI
-thermal zone)
-Same applies for any information that could be properly mapped to
-other existing frameworks (e.g. power supply class)
+  Looked at cpumask_of_cpu as introduced in 
+9f0e8d0400d925c3acd5f4e01dbeb736e4011882 (x86: convert cpumask_of_cpu macro 
+to allocated array), and I don't think it's safe:
 
-> > If this can't be merged, then we continue to ship an out of tree
-> > driver, which no one (us, distros, customers) likes.  We pester our
-> > partners to support this driver, or include it, or what have you.
-> > We get slowly out of date, and bugs creep in, or our package breaks
-> > on upstream kernels. To me, it seems like merging the driver is the
-> > better path.
-> 
-> Docs for kernel<->user ABI does not seem like too much to ask.
-> 
-> If you wrote a driver, I don't think it is unreasonable for me to ask
-> "how to use that driver".
-> 									Pavel
+  #define cpumask_of_cpu(cpu)						\
+  (*({									\
+	typeof(_unused_cpumask_arg_) m;					\
+	if (sizeof(m) == sizeof(unsigned long)) {			\
+		m.bits[0] = 1UL<<(cpu);					\
+	} else {							\
+		cpus_clear(m);						\
+		cpu_set((cpu), m);					\
+	}								\
+	&m;								\
+  }))
 
-Bruno
+Referring to &m once out of scope is invalid, and I can't find any evidence 
+that it's legal here.  In particular, the change 
+b53e921ba1cff8453dc9a87a84052fa12d5b30bd (generic: reduce stack pressure in 
+sched_affinity) which passes &m to other functions seems highly risky.
+
+I'm surprised this hasn't already hit us, but perhaps gcc isn't as clever as 
+it could be?
+
+I don't know what the right answer is, but we might need to go to a pool of 
+cpumask_ts, a get_cpumask_of_cpu() which can sleep and a put_cpumask_of_cpu?
+
+Or maybe a gcc guru can refute this?
+Rusty.
