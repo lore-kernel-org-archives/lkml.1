@@ -1,89 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752145AbYGHUvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752428AbYGHVJb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752145AbYGHUvS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 16:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750822AbYGHUvK
+	id S1752428AbYGHVJb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 17:09:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750932AbYGHVJY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 16:51:10 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:40923 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750809AbYGHUvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 16:51:08 -0400
-Message-ID: <4873D33B.4040300@sgi.com>
-Date: Tue, 08 Jul 2008 13:51:07 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       mm-commits@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/1] x86: Change _node_to_cpumask_ptr to return const
- ptr
-References: <200806090918.m599Ib0G012837@imap1.linux-foundation.org>	 <4863C334.2090007@sgi.com> <486452CC.8050502@sgi.com>	 <48651EF5.5090808@sgi.com> <20080703084401.GB7873@elte.hu>	 <19f34abd0807030155x22b0033dj780830bad840216f@mail.gmail.com>	 <20080703090100.GA10872@elte.hu> <48739E87.2060604@sgi.com>	 <19f34abd0807081035k2c7a18eckc8aa749a6f015f65@mail.gmail.com>	 <4873AC5C.1040705@sgi.com> <19f34abd0807081122p20c73cd9p7129d297ac36a3ad@mail.gmail.com>
-In-Reply-To: <19f34abd0807081122p20c73cd9p7129d297ac36a3ad@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 8 Jul 2008 17:09:24 -0400
+Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:22974 "HELO
+	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750909AbYGHVJX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 17:09:23 -0400
+X-YMail-OSG: VzD1zbkVM1nhMwnwhQEwfJ1Yuq4nRKKO4xC1cEXp3xqatxxE8EOPoedZPkYL7m0GJK.ZKTeDEjlHBaD1pC_ATJ4f0nXvo_a.zo.SM01dblcresyS_Q2D4zhFz565hVc-
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: [ANNOUNCE]: Generic SCSI Target Mid-level For Linux (SCST),
+	target drivers for iSCSI and QLogic Fibre Channel cards released
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       scst-devel <scst-devel@lists.sourceforge.net>, nab@kernel.org
+In-Reply-To: <4873BCA5.10103@vlnb.net>
+References: <4873BCA5.10103@vlnb.net>
+Content-Type: text/plain
+Date: Tue, 08 Jul 2008 14:09:14 -0700
+Message-Id: <1215551354.3977.6.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vegard Nossum wrote:
-> On Tue, Jul 8, 2008 at 8:05 PM, Mike Travis <travis@sgi.com> wrote:
->>>> Note: I did not change node_to_cpumask_ptr() in include/asm-generic/topology.h
->>>>      as node_to_cpumask_ptr_next() does change the cpumask value.
->>> Hmmm. Does it really?
->>>
->>> #define node_to_cpumask_ptr_next(v, node)                               \
->>>                           _##v = node_to_cpumask(node)
->>>
->>> This doesn't seem to modify it?
->> Well I thought about it.  The pointer (*v) does not change
->> but the underlying cpumask variable is updated with the
->> cpumask for the (supposedly) new node number.  You can see
->> that in this code snippet from kernel/sched.c:
->>
->>        for (i = 1; i < SD_NODES_PER_DOMAIN; i++) {
->>                int next_node = find_next_best_node(node, &used_nodes);
->>
->>                node_to_cpumask_ptr_next(nodemask, next_node);
->>                cpus_or(*span, *span, *nodemask);
->>        }
->>
->> In the optimized (x86_64) case, the pointer is simply modified
->> to point to the new node_to_cpumask_map[node] entry.  It remains
->> a pointer to a const value.
->>
->> But the non-optimized version replaces the const cpumask value
->> with the new cpumask value.  Isn't this breaking the const
->> attribute?
-> 
-> No, I think the pointer really should be const. This doesn't guarantee
-> that the value doesn't change behind our backs, it only prevents us
-> from modifying it ourselves.
-> 
-> 
-> Vegard
+Hi Vlad,
+
+On Tue, 2008-07-08 at 23:14 +0400, Vladislav Bolkhovitin wrote:
+> I'm glad to announce that version 1.0.0 of Generic SCSI Target Middle 
+> Level for Linux (SCST) was released and available for download from 
+> http://scst.sourceforge.net/downloads.html
 > 
 
-Is this what you had in mind:
+Congratulations on reaching your v1.0.0 release!
 
- 
---- linux-2.6.tip.orig/include/asm-generic/topology.h
-+++ linux-2.6.tip/include/asm-generic/topology.h
-@@ -60,7 +60,7 @@
- #ifndef node_to_cpumask_ptr
- 
- #define	node_to_cpumask_ptr(v, node) 					\
--		cpumask_t _##v = node_to_cpumask(node), *v = &_##v
-+		const cpumask_t _##v = node_to_cpumask(node), *v = &_##v
- 
- #define node_to_cpumask_ptr_next(v, node)				\
- 			  _##v = node_to_cpumask(node)
+> SCST is a subsystem of the Linux kernel that provides a standard 
+> framework for SCSI target drivers development. It is designed to provide 
+> unified, consistent interface between SCSI target drivers and Linux 
+> kernel and simplify target drivers development as much as possible. It 
+> has the following main features:
+> 
+>      *  Simple, easy to use interface with target drivers. Particularly, 
+> SCST core performs required pre- and post- processing of incoming 
+> requests as well as necessary error recovery.
+> 
+>      * Undertakes most problems, related to execution contexts, thus 
+> practically eliminating one of the most complicated problem in the 
+> kernel drivers development. For example, a target driver for QLogic 
+> 22xx/23xx cards, which has all necessary features, is only about 2000 
+> lines of code long.
+> 
+>      * Very low overhead, fine-grained locks and simplest commands 
+> processing path, which allow to reach maximum possible performance and 
+> scalability. Particularly, incoming requests can be processed in the 
+> caller's context or in one of the internal SCST core's tasklets, 
+> therefore no extra context switches required.
+> 
+>      * Device handlers, i.e. plugins, architecture provides extra 
+> flexibility by allowing various I/O modes in backstorage handling. For 
+> example, pass-through device handlers allow to use real SCSI hardware 
+> and vdisk device handler allows to use files as virtual disks.
+> 
+>      * Provides advanced per-initiator devices visibility management 
+> (LUN masking), which allows different initiators to see different set of 
+> devices with different access permissions. For instance, initiator A 
+> could see exported from target T devices X and Y read-writable, and 
+> initiator B from the same target T could see devices Y read-only and Z 
+> read-writable.
+> 
+>      * Emulates necessary functionality of SCSI host adapter, because 
+> from remote initiators point of view SCST acts as a SCSI host with its 
+> own devices.
+> 
+> The following I/O modes are supported by SCST:
+> 
+> 	* Pass-through mode with one to many relationship, i.e. when multiple 
+> initiators can connect to the exported pass-through devices, for 
+> virtually all SCSI devices types: disks (type 0), tapes (type 1), 
+> processors (type 3), CDROMs (type 5), MO disks (type 7), medium changers 
+> (type 8) and RAID controllers (type 0xC)
+> 
+> 	* FILEIO mode, which allows to use files on file systems or block 
+> devices as virtual remotely available SCSI disks or CDROMs with benefits 
+> of the Linux page cache
+> 
+> 	* BLOCKIO mode, which performs direct block I/O with a block device, 
+> bypassing page-cache for all operations. This mode works ideally with 
+> high-end storage HBAs and for applications that either do not need 
+> caching between application and disk or need the large block throughput.
+> 
+> 	* User space mode using scst_user device handler, which allows to 
+> implement in the user space virtual SCSI devices in the SCST environment.
+> 
+> Detail description of SCST, its drivers and utilities you can find on 
+> SCST home page http://scst.sourceforge.net.
+> 
+> Comparison with the mainstream target middle level STGT you can find on 
+> the SCST vs STGT page http://scst.sourceforge.net/scstvsstgt.html. In 
+> short, SCST has the following main advantages over STGT:
+> 
 
+I noticed that you included a reference to my presentation at LSF 08' on
+your SCST vs. STGT page liked above, and took my description of your
+work (you are more than welcome to come and present your own case at LSF
+'09) very much out of context.
 
-(It's taking a while as now I need to do some cross-compile testing.)
+If you wish to reference my presentation, please at least make the
+comparision between LIO-Core+LIO-Target vs. SCST vs. STGT, and NOT JUST
+SCST vs. STGT so that the community are large can understand the
+differences and technical challenges.  The more in fighting between the
+leaders in our community, the less the community benefits.
 
-Thanks,
-Mike
+Many thanks for your most valuable of time,
+
+--nab
+
+>   - Better performance (in many cases tens of %% and more) with 
+> potential for further improvement, for example, by implementing 
+> zero-copy cache I/O.
+> 
+>   - Monolithic in-kernel architecture, which follows standard Linux 
+> kernel paradigm to eliminate distributed processing. It is simpler, 
+> hence more reliable and maintainable.
+> 
+> SCST is being prepared in form of patch for review and inclusion to the 
+> kernel.
+> 
+> Vlad
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
