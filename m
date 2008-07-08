@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758145AbYGHQ71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757599AbYGHQ7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758145AbYGHQ71 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 12:59:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756333AbYGHQ5k
+	id S1757599AbYGHQ7o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 12:59:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754844AbYGHQ5o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 12:57:40 -0400
-Received: from casper.infradead.org ([85.118.1.10]:55124 "EHLO
+	Tue, 8 Jul 2008 12:57:44 -0400
+Received: from casper.infradead.org ([85.118.1.10]:55131 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757401AbYGHQ5k (ORCPT
+	with ESMTP id S1754440AbYGHQ5n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 12:57:40 -0400
-Date: Tue, 8 Jul 2008 09:57:00 -0700
+	Tue, 8 Jul 2008 12:57:43 -0400
+Date: Tue, 8 Jul 2008 09:50:22 -0700
 From: Arjan van de Ven <arjan@infradead.org>
 To: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, mingo@elte.hu
-Subject: [patch 17/17] Use WARN() in fs/proc/
-Message-ID: <20080708095700.3d46bdfa@infradead.org>
+Subject: [patch 9/17] Use WARN() in arch/x86/mm/ioremap.c
+Message-ID: <20080708095022.69866840@infradead.org>
 In-Reply-To: <20080708093800.274504ba@infradead.org>
 References: <20080708093800.274504ba@infradead.org>
 Organization: Intel
@@ -31,33 +31,35 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: Use WARN() instead of printk+WARN_ON() in fs/procfs
+Subject: Use WARN instead of printk+WARN_ON in arch/x86/mm/ioremap.c
 
 Use WARN() instead of a printk+WARN_ON() pair; this way the message
 becomes part of the warning section for better reporting/collection.
-This way, the entire if() {} section can collapse into the WARN() as well.
 
-Signed-off-by: Arjan van de VenIndex: linux.trees.git/fs/proc/generic.c
-===================================================================
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+Acked-by: Ingo Molnar <mingo@elte.hu>
 ---
- fs/proc/generic.c |    5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ arch/x86/mm/ioremap.c |    8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-Index: linux.trees.git/fs/proc/generic.c
+Index: linux.trees.git/arch/x86/mm/ioremap.c
 ===================================================================
---- linux.trees.git.orig/fs/proc/generic.c
-+++ linux.trees.git/fs/proc/generic.c
-@@ -792,12 +792,9 @@ continue_removing:
- 	if (S_ISDIR(de->mode))
- 		parent->nlink--;
- 	de->nlink = 0;
--	if (de->subdir) {
--		printk(KERN_WARNING "%s: removing non-empty directory "
-+	WARN(de->subdir, KERN_WARNING "%s: removing non-empty directory "
- 			"'%s/%s', leaking at least '%s'\n", __func__,
- 			de->parent->name, de->name, de->subdir->name);
--		WARN_ON(1);
--	}
- 	if (atomic_dec_and_test(&de->count))
- 		free_proc_entry(de);
+--- linux.trees.git.orig/arch/x86/mm/ioremap.c
++++ linux.trees.git/arch/x86/mm/ioremap.c
+@@ -522,13 +522,11 @@ static int __init check_early_ioremap_le
+ {
+ 	if (!early_ioremap_nested)
+ 		return 0;
+-
+-	printk(KERN_WARNING
++	WARN(1, KERN_WARNING
+ 	       "Debug warning: early ioremap leak of %d areas detected.\n",
+-	       early_ioremap_nested);
++		early_ioremap_nested);
+ 	printk(KERN_WARNING
+-	       "please boot with early_ioremap_debug and report the dmesg.\n");
+-	WARN_ON(1);
++		"please boot with early_ioremap_debug and report the dmesg.\n");
+ 
+ 	return 1;
  }
