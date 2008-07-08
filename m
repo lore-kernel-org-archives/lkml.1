@@ -1,51 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755706AbYGHSVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756064AbYGHSXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755706AbYGHSVU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 14:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753953AbYGHSVM
+	id S1756064AbYGHSXP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 14:23:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949AbYGHSXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 14:21:12 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:33781 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751346AbYGHSVM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 14:21:12 -0400
-Message-ID: <4873B016.8010404@sgi.com>
-Date: Tue, 08 Jul 2008 11:21:10 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 8 Jul 2008 14:23:00 -0400
+Received: from rn-out-0910.google.com ([64.233.170.190]:56893 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753522AbYGHSW7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 14:22:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=eKMbidOcZ0+CoaeoOCQ/qWiRe/n42Q4e5SOb7TGHqiXFNwqrAiHdF3eiiCGZ79Lkc0
+         NvnUii1HjbwsCJYGnJnhNuMS4UbYD/796lpb5aXEqMENC1Phr/U8MLmFRXdtOrNHrYbh
+         ChctyBkIX9Qg4vGJTZvfXYPqGTKX6tgGxwLFQ=
+Message-ID: <19f34abd0807081122p20c73cd9p7129d297ac36a3ad@mail.gmail.com>
+Date: Tue, 8 Jul 2008 20:22:57 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Mike Travis" <travis@sgi.com>
+Subject: Re: [PATCH 1/1] x86: Change _node_to_cpumask_ptr to return const ptr
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       mm-commits@vger.kernel.org, "Yinghai Lu" <yhlu.kernel@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4873AC5C.1040705@sgi.com>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<m1skv7onvh.fsf@frodo.ebiederm.org> <486912C4.8070705@sgi.com>	<48691556.2080208@zytor.com> <48691E8B.4040605@sgi.com>	<m14p7asl3x.fsf@frodo.ebiederm.org> <48694B3B.3010600@goop.org>	<m1skuuov4t.fsf@frodo.ebiederm.org> <486A61A7.1000902@zytor.com>	<486A68DD.80702@goop.org> <m1d4lxgwxj.fsf@frodo.ebiederm.org>	<486A9D4F.8010508@goop.org> <m1skutffn4.fsf@frodo.ebiederm.org>	<486AA72B.6010401@goop.org> <486AC9D9.9030506@zytor.com>	<486AD6BD.9080600@sgi.com> <486ADD67.1020809@sgi.com>	<486ADD9F.3000305@zytor.com> <486C062C.3090408@sgi.com>	<m1wsk3r3g6.fsf@frodo.ebiederm.org> <48724FB4.3090305@sgi.com> <m17ibxxytj.fsf@frodo.ebiederm.org>
-In-Reply-To: <m17ibxxytj.fsf@frodo.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200806090918.m599Ib0G012837@imap1.linux-foundation.org>
+	 <4863C334.2090007@sgi.com> <486452CC.8050502@sgi.com>
+	 <48651EF5.5090808@sgi.com> <20080703084401.GB7873@elte.hu>
+	 <19f34abd0807030155x22b0033dj780830bad840216f@mail.gmail.com>
+	 <20080703090100.GA10872@elte.hu> <48739E87.2060604@sgi.com>
+	 <19f34abd0807081035k2c7a18eckc8aa749a6f015f65@mail.gmail.com>
+	 <4873AC5C.1040705@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Mike Travis <travis@sgi.com> writes:
->> Hi,
+On Tue, Jul 8, 2008 at 8:05 PM, Mike Travis <travis@sgi.com> wrote:
+>>> Note: I did not change node_to_cpumask_ptr() in include/asm-generic/topology.h
+>>>      as node_to_cpumask_ptr_next() does change the cpumask value.
 >>
->> Sorry for the delay, been off the past 4 days.
+>> Hmmm. Does it really?
 >>
->> I'll see how closely I can narrow down where the fault is.  I have been
->> inserting
->> very early printk's to track how far into the startup it gets before bailing.
-> 
-> Thanks.  That should help narrow down what is going on.
-> 
-> Eric
+>> #define node_to_cpumask_ptr_next(v, node)                               \
+>>                           _##v = node_to_cpumask(node)
+>>
+>> This doesn't seem to modify it?
+>
+> Well I thought about it.  The pointer (*v) does not change
+> but the underlying cpumask variable is updated with the
+> cpumask for the (supposedly) new node number.  You can see
+> that in this code snippet from kernel/sched.c:
+>
+>        for (i = 1; i < SD_NODES_PER_DOMAIN; i++) {
+>                int next_node = find_next_best_node(node, &used_nodes);
+>
+>                node_to_cpumask_ptr_next(nodemask, next_node);
+>                cpus_or(*span, *span, *nodemask);
+>        }
+>
+> In the optimized (x86_64) case, the pointer is simply modified
+> to point to the new node_to_cpumask_map[node] entry.  It remains
+> a pointer to a const value.
+>
+> But the non-optimized version replaces the const cpumask value
+> with the new cpumask value.  Isn't this breaking the const
+> attribute?
 
-Unfortunately it's back to the problem of faulting before x86_64_start_kernel()
-and grub just immediately reboots.  So I'm back at analyzing assembler and
-config differences.
+No, I think the pointer really should be const. This doesn't guarantee
+that the value doesn't change behind our backs, it only prevents us
+from modifying it ourselves.
 
-Mike
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
