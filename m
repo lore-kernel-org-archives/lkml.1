@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753855AbYGHFAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752927AbYGHFOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753855AbYGHFAu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 01:00:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbYGHFAm
+	id S1752927AbYGHFOa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 01:14:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750861AbYGHFOW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 01:00:42 -0400
-Received: from smtp116.mail.mud.yahoo.com ([209.191.84.165]:47404 "HELO
-	smtp116.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751233AbYGHFAl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 01:00:41 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Ht63ElEYQyQC9eYPJtbLBYrXknNR1Mn5N2icRMePFh/7pNIpZbkjg28YXnfB45aJac6dATTGApW5v5PNxszxlNWWiCi5r0qPUMDR+mA4df+MVrIXsWK6oMP9hxYf9XwjGuQFzoDQN4tTz3ZnEOV4t1Nd9fsfkS1cbFOuYeyoogY=  ;
-X-YMail-OSG: 8TwH7HYVM1nS7yY2ng8QUYshjS7lvq3jBEyUCVLOxVkfbM2tHBDKEKiV1GNeCaJPusVE.OFdgtsmInlYZEuzijW79XIautBMSMlaC_XYgACi0T2kz3xGsKT03tEhhjXGj9Q-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Gregory Haskins <ghaskins@novell.com>
-Subject: Re: [PATCH 2/3] sched: terminate newidle balancing once at least one task has moved over
-Date: Tue, 8 Jul 2008 15:00:17 +1000
-User-Agent: KMail/1.9.5
-Cc: mingo@elte.hu, peterz@infradead.org, npiggin@suse.de, rostedt@goodmis.org,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-References: <20080627202444.3829.21595.stgit@lsg.lsg.lab.novell.com> <20080627202955.3829.78937.stgit@lsg.lsg.lab.novell.com>
-In-Reply-To: <20080627202955.3829.78937.stgit@lsg.lsg.lab.novell.com>
+	Tue, 8 Jul 2008 01:14:22 -0400
+Received: from mail.lang.hm ([64.81.33.126]:51143 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750823AbYGHFOW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 01:14:22 -0400
+Date: Mon, 7 Jul 2008 22:15:21 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Arjan van de Ven <arjan@infradead.org>
+cc: "Altobelli, David" <david.altobelli@hp.com>, Pavel Machek <pavel@suse.cz>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "greg@kroah.com" <greg@kroah.com>
+Subject: Re: [PATCH][resubmit] HP iLO driver
+In-Reply-To: <20080707214905.157be089@infradead.org>
+Message-ID: <alpine.DEB.1.10.0807072212450.12950@asgard.lang.hm>
+References: <20080623160052.GA7616@ldl.fc.hp.com> <20080627191458.GA10872@ucw.cz> <CF70AA892F109448AEA269483B3A983903BB8CE586@G1W1215.americas.hpqcorp.net> <20080707160658.GB1794@elf.ucw.cz> <CF70AA892F109448AEA269483B3A983903BB8CEA25@G1W1215.americas.hpqcorp.net>
+ <alpine.DEB.1.10.0807072127390.12950@asgard.lang.hm> <20080707214905.157be089@infradead.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807081500.18245.nickpiggin@yahoo.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 28 June 2008 06:29, Gregory Haskins wrote:
-> Inspired by Peter Zijlstra.
->
-> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+On Mon, 7 Jul 2008, Arjan van de Ven wrote:
 
-What happened to the feedback I sent about this?
+> On Mon, 7 Jul 2008 21:41:41 -0700 (PDT)
+> david@lang.hm wrote:
+>> umm, by merging the code a you reveal a lot of what they are
+>> attempting to keep secret. what's to stop someone from reading the
+>> code and writing the documentation?
+>>
+>> that really should be someone at HP if you don't want to publish the
+>> exising documentation (since you are submitting the code)
+>>
+>
+> Hi,
+>
+> I think you're being quite unreasonable here.
+> In Linux we accept well written drivers even if there is no hardware
+> docs. Sure we prefer them to be available, but is has never been a
+> requirement, nor should it. I know that some other open source OSes do
+> demand this, but Linux is not one of them. We explicitly accept drivers
+> written with NDA docs, or drivers written by vendors.
+> It's the code that talks.
+> (and well written code is often worth more than the shoddy docs that we
+> sometimes get)
 
-It is still nack from me.
+sorry, I did not mean to imply that they code cannot be accepted, just to 
+point out that the 'secrets' that they are trying to protect are revealed 
+by the code anyway, and that someone will eventually need to do the work 
+to reverse-engineer some portion of the documentations, and that it's 
+best if it could come from the folks submitting it when they have the 
+origional documentation.
 
+a driver with no docs is better then a closed source driver, but is not 
+nearly as good as a driver with docs.
 
-> ---
->
->  kernel/sched.c |    4 ++++
->  1 files changed, 4 insertions(+), 0 deletions(-)
->
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 56722b1..0b9f90e 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -2863,6 +2863,10 @@ static int move_tasks(struct rq *this_rq, int
-> this_cpu, struct rq *busiest, max_load_move - total_load_moved,
->  				sd, idle, all_pinned, &this_best_prio);
->  		class = class->next;
-> +
-> +		if (idle == CPU_NEWLY_IDLE && this_rq->nr_running)
-> +			break;
-> +
->  	} while (class && max_load_move > total_load_moved);
->
->  	return total_load_moved > 0;
->
-> --
+David Lang
