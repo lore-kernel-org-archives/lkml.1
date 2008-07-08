@@ -1,118 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754187AbYGHF5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754144AbYGHGZM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754187AbYGHF5W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 01:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbYGHF5P
+	id S1754144AbYGHGZM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 02:25:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbYGHGYy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 01:57:15 -0400
-Received: from gw.goop.org ([64.81.55.164]:46990 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750914AbYGHF5O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 01:57:14 -0400
-Message-ID: <487301B0.8050801@goop.org>
-Date: Mon, 07 Jul 2008 22:57:04 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 8 Jul 2008 02:24:54 -0400
+Received: from chello212186124096.11.vie.surfer.at ([212.186.124.96]:45085
+	"EHLO wiesinger.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751341AbYGHGYx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 02:24:53 -0400
+Date: Tue, 8 Jul 2008 08:24:07 +0200 (CEST)
+From: Gerhard Wiesinger <lists@wiesinger.com>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: Lots of con-current I/O = resets SATA link? (2.6.25.10)
+In-Reply-To: <alpine.DEB.1.10.0807071149530.32508@p34.internal.lan>
+Message-ID: <alpine.LFD.1.10.0807080811560.5439@bbs.intern>
+References: <alpine.DEB.1.10.0807051252200.12562@p34.internal.lan> <alpine.LFD.1.10.0807071649340.1160@bbs.intern> <alpine.LFD.1.10.0807071705490.2997@bbs.intern> <alpine.DEB.1.10.0807071149530.32508@p34.internal.lan>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Rik van Riel <riel@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <clameter@sgi.com>, Petr Tesarik <ptesarik@suse.cz>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: Spinlocks: Factor our GENERIC_LOCKBREAK in order to avoid spin
- with irqs disable
-References: <Pine.LNX.4.64.0805061220570.30604@schroedinger.engr.sgi.com> <20080707154651.35d1004c@cuia.bos.redhat.com> <4872792F.9080609@goop.org> <200807081207.34453.nickpiggin@yahoo.com.au>
-In-Reply-To: <200807081207.34453.nickpiggin@yahoo.com.au>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-MailScanner-Information-wiesinger.com: Please contact the ISP for more information
+X-MailScanner-wiesinger.com: Found to be clean
+X-MailScanner-SpamCheck-wiesinger.com: not spam, SpamAssassin (score=-4.399,
+	required 4.5, autolearn=not spam, ALL_TRUSTED -1.80, BAYES_00 -2.60)
+X-MailScanner-From: lists@wiesinger.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> On Tuesday 08 July 2008 06:14, Jeremy Fitzhardinge wrote:
+On Mon, 7 Jul 2008, Justin Piszcz wrote:
+
+> Hi Gerhard,
 >
->   
->> The other point, of course, is that ticket locks are massive overkill
->> for the problem they're trying to solve.
->>     
+> It /could/ be the port itself if you have changed the cable and disk..
 >
-> No they aren't.
+
+Yes, but it is very unlikely. I have written TB of data there without any 
+problems. Anyway this is my 3rd exchanged SAMSUNG disk ...
+
+
+> Have you tried loading the disk with dd and seeing if you can reproduce the 
+> problem? You are getting the same error I get generally, I can recommend 
+> turning OFF NCQ first and see if the problem goes away.
 >
+> # Define DISKS.
+> cd /sys/block
+> DISKS=$(/bin/ls -1d sd[a-z])
 >
->   
->> It's one thing to introduce an 
->> element of fairness into spinlocks, its another to impose strict FIFO
->> ordering.  It would be enough to make the locks "polite" by preventing a
->> new lock-holder from taking the lock while its under contention.
->> Something like:
->>
->> 	union lock {
->> 		unsigned short word;
->> 		struct { unsigned char lock, count; };
->> 	};
->>
->> spin_lock:		# ebx - lock pointer
->> 	movw	$0x0001, %ax	# add 1 to lock, 0 to count
->> 	xaddw	%ax, (%ebx)	# attempt to take lock and test user count
->> 	testw	%ax,%ax
->> 	jnz	slow
->>
->> taken:	ret
->>
->> # slow path
->> slow:	lock incb 1(%ebx)	# inc count
->>
->> 1:	rep;nop
->> 	cmpb	$0,(%ebx)
->> 	jnz	1b		# wait for unlocked
->>
->> 	movb	$1,%al		# attempt to take lock (count already increased)
->> 	xchgb	%al,(%ebx)
->> 	testb	%al,%al
->> 	jnz	1b
->>
->> 	lock decb 1(%ebx)	# drop count
->> 	jmp	taken
->>
->> spin_unlock:
->> 	movb	$0,(%ebx)
->> 	ret
->>
->>
->> The uncontended fastpath is similar to the pre-ticket locks, but it
->> refuses to take the lock if there are other waiters, even if the lock is
->> not currently held.  This prevents the rapid lock-unlock cycle on one
->> CPU from starving another CPU, which I understand was the original
->> problem tickets locks were trying to solve.
->>     
+> # Disable NCQ on all disks.
+> echo "Disabling NCQ on all disks..."
+> for i in $DISKS
+> do
+>  echo "Disabling NCQ on $i"
+>  echo 1 > /sys/block/"$i"/device/queue_depth
+> done
 >
-> They prevent lots of unfairness and starvation problems. The most
-> prominent one (ie. actually observed in Linux) was a single CPU
-> being totally starved by N others (to the point where lockup timers
-> would kick in).
->   
 
-Yep.  My understanding was that the specific case was that cpu A was 
-repeatedly taking and releasing the lock, while other cpus spin waiting 
-for it, and that the cache coherence logic kept the cacheline owned by A 
-(presumably because it kept modifying it).  Ticket locks work well in 
-this case because, as you say, it enforces a fairness policy that the 
-hardware doesn't implement.  Are there other cases that ticket locks 
-help with?  Does the algorithm above solve the starvation issue?
+I tried to disable NCQ on all disks and tried to rebuild the raid, but it 
+still failed to rebuild with the same error message.
 
-> As an aside, these locks you propose are also a lot more costly in
-> the contended path. 4 vs 1 atomic operations on the lock cacheline
-> is not so great.
->   
+I also tried the nolapic kernel parameter without success.
 
-Yep, that's not great.  But it doesn't bounce cache lines around as much 
-either, so perhaps it doesn't make much difference.
+/dev/sda:  5 Reallocated_Sector_Ct   0x0033   100   100   010    Pre-fail  Always       -       0
+/dev/sdb:  5 Reallocated_Sector_Ct   0x0033   100   100   010    Pre-fail  Always       -       0
+/dev/sdc:  5 Reallocated_Sector_Ct   0x0033   091   091   010    Pre-fail  Always       -       413
+/dev/sdd:  5 Reallocated_Sector_Ct   0x0033   100   100   010    Pre-fail  Always       -       0
+/dev/sde:  5 Reallocated_Sector_Ct   0x0033   100   100   010    Pre-fail  Always       -       0
+/dev/sdf:  5 Reallocated_Sector_Ct   0x0033   100   100   010    Pre-fail  Always       -       0
 
-But really, I was being my own devil's advocate, to see if there's some 
-other lock algorithm which satisfies both the normal ticket-lock case 
-and the virtualization case.
+The only thing is that the Reallocated_Sector_Ct is still >0 on /dev/sdc 
+(keep in mind this is my 3rd new Samsung disk on /dev/sdc and I had up to 
+3000 Reallocated_Sector_Ct on previous disks in < 1 day !!!).
 
-I have no real objections to ticket locks, so long as I can turn them off ;)
+Should I replace the disk a fourth time?
 
-    J
+When you search in google you find a lot of threads with the timeout 
+problem. Might this be a software issue?
+
+Any ideas?
+
+Thnx.
+
+Ciao,
+Gerhard
+
+--
+http://www.wiesinger.com/
