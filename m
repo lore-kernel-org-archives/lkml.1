@@ -1,73 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755080AbYGHVtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754487AbYGHVwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755080AbYGHVtW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 17:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbYGHVtN
+	id S1754487AbYGHVwV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 17:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbYGHVwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 17:49:13 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:54149 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751352AbYGHVtM (ORCPT
+	Tue, 8 Jul 2008 17:52:13 -0400
+Received: from rn-out-0910.google.com ([64.233.170.185]:12175 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751277AbYGHVwM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 17:49:12 -0400
-Date: Tue, 8 Jul 2008 23:50:02 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: "Altobelli, David" <david.altobelli@hp.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "greg@kroah.com" <greg@kroah.com>
-Subject: Re: [PATCH][resubmit] HP iLO driver
-Message-ID: <20080708215002.GA18195@elf.ucw.cz>
-References: <20080623160052.GA7616@ldl.fc.hp.com> <20080627191458.GA10872@ucw.cz> <CF70AA892F109448AEA269483B3A983903BB8CE586@G1W1215.americas.hpqcorp.net> <20080707160658.GB1794@elf.ucw.cz> <CF70AA892F109448AEA269483B3A983903BB8CEA25@G1W1215.americas.hpqcorp.net> <20080708072152.GD1761@elf.ucw.cz> <20080708073818.GA14245@elf.ucw.cz> <CF70AA892F109448AEA269483B3A983903BB8CEFC4@G1W1215.americas.hpqcorp.net>
+	Tue, 8 Jul 2008 17:52:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=btbZnk+0QGB9Ho+eQPNjscTwh54eI/P3WnJHi2et9UyVtHBsgG2yR5pBveenJfXBrD
+         P77oSht/9ZKIpfsZjP3s+nBAMhsrlI4HU8KyL8ms2RGoyEnQaaCMY5NHkrayoOPDvd2M
+         SKibCsUtD1Pn5cVgEdcDGp7+Yi+ybuO9tC7oA=
+Message-ID: <19f34abd0807081452l587c8388g1cdb2d3c01e0e13a@mail.gmail.com>
+Date: Tue, 8 Jul 2008 23:52:10 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Mike Travis" <travis@sgi.com>
+Subject: Re: [PATCH 1/1] x86: Change _node_to_cpumask_ptr to return const ptr
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       mm-commits@vger.kernel.org, "Yinghai Lu" <yhlu.kernel@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4873DD99.7050001@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <CF70AA892F109448AEA269483B3A983903BB8CEFC4@G1W1215.americas.hpqcorp.net>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <200806090918.m599Ib0G012837@imap1.linux-foundation.org>
+	 <19f34abd0807030155x22b0033dj780830bad840216f@mail.gmail.com>
+	 <20080703090100.GA10872@elte.hu> <48739E87.2060604@sgi.com>
+	 <19f34abd0807081035k2c7a18eckc8aa749a6f015f65@mail.gmail.com>
+	 <4873AC5C.1040705@sgi.com>
+	 <19f34abd0807081122p20c73cd9p7129d297ac36a3ad@mail.gmail.com>
+	 <4873D33B.4040300@sgi.com>
+	 <19f34abd0807081421j67771dbclfae1fcfaa9ad4bcd@mail.gmail.com>
+	 <4873DD99.7050001@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2008-07-08 14:48:00, Altobelli, David wrote:
-> Pavel Machek wrote:
-> > It probably does configure passwords on the management processor, for
-> > example?
-> >
-> > And for that functionality, something like
-> >
-> > echo new_password > /sys/hpilo/admin/password
-> >
-> > would make sense, right? Except that your interface is more like "echo
-> > ^%TEWFSGFSDF^%EW&^Tadmin^*&S^F&*SDYF*&SDYF*&YE*Wnew_password(*
-> > &DF&S^DF*&DS^F*&S
-> >> /dev/hpilo/d0ccb0", right? (And except that you consider exact
-> > string to echo to change password "proprietary secret").
-> >
-> > We'd like to have the first interface, but unfortunately we do not
-> > know enough about hpilo to even ask for better interface.
-> 
-> Is the first interface really preferrable?  How does that extend
-> to commands that need to return data?  Do we want to manage 30 different
-> commands in the kernel?  New functionality would require kernel
-> updates.
+On Tue, Jul 8, 2008 at 11:35 PM, Mike Travis <travis@sgi.com> wrote:
+> Subject: [PATCH 1/1] x86: Change _node_to_cpumask_ptr to return const ptr
+>
+>  * Strengthen the return type for the _node_to_cpumask_ptr to be
+>    a const pointer.  This adds compiler checking to insure that
+>    node_to_cpumask_map[] is not changed inadvertently.
+>
+> Applies to tip/master with the following patch applied:
+>
+>        "[PATCH 1/1] x86: Add check for node passed to node_to_cpumask V3"
+>
+> Signed-off-by: Mike Travis <travis@sgi.com>
+> ---
 
-Could you provide the list of commands (at least) so we can be more
-concrete?
+I can successfully cross-compile the asm-generic changes with a NUMA=y
+config on ia64 without error or warning. So I guess, at long last, you
+may put, FWIW:
 
-Yes, I believe we do want to have 30 commands it kernel, because it
-will allow same userland to work on HP machines, AMD machines, etc...
+    Acked-by: Vegard Nossum <vegard.nossum@gmail.com>
 
-(I assume management processors have pretty similar functionality
-accross vendors, right?)
+Sorry for causing much trouble...
 
-> It seems much cleaner to keep the kernel interface simple and opaque
-> (ie read/write), and handle the details of the commands in user space.
-> From my limited understanding, I thought that was a common goal here:
-> move what you can to userspace.
 
-We are not _that_ extreme. Yes, keep stuff in userspace is important,
-but "hide hardware differences" is more important goal.
-									Pavel
+Vegard
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
