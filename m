@@ -1,106 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753629AbYGHV1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753724AbYGHV26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753629AbYGHV1d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 17:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbYGHV1Y
+	id S1753724AbYGHV26 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 17:28:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751064AbYGHV2u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 17:27:24 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:62539 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751052AbYGHV1X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 17:27:23 -0400
-Date: Tue, 8 Jul 2008 14:23:54 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: linux-next@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-Cc: jens.axboe@oracle.com, jejb <James.Bottomley@HansenPartnership.com>,
-       akpm <akpm@linux-foundation.org>
-Subject: [PATCH -next] compat_ioctl: handle BLOCK=n, SCSI=n
-Message-Id: <20080708142354.76106541.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 8 Jul 2008 17:28:50 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:55866 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750925AbYGHV2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 17:28:50 -0400
+Message-ID: <4873DC10.6030406@sgi.com>
+Date: Tue, 08 Jul 2008 14:28:48 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       mm-commits@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1] x86: Change _node_to_cpumask_ptr to return const
+ ptr
+References: <200806090918.m599Ib0G012837@imap1.linux-foundation.org>	 <48651EF5.5090808@sgi.com> <20080703084401.GB7873@elte.hu>	 <19f34abd0807030155x22b0033dj780830bad840216f@mail.gmail.com>	 <20080703090100.GA10872@elte.hu> <48739E87.2060604@sgi.com>	 <19f34abd0807081035k2c7a18eckc8aa749a6f015f65@mail.gmail.com>	 <4873AC5C.1040705@sgi.com>	 <19f34abd0807081122p20c73cd9p7129d297ac36a3ad@mail.gmail.com>	 <4873D33B.4040300@sgi.com> <19f34abd0807081421j67771dbclfae1fcfaa9ad4bcd@mail.gmail.com>
+In-Reply-To: <19f34abd0807081421j67771dbclfae1fcfaa9ad4bcd@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Vegard Nossum wrote:
+> On Tue, Jul 8, 2008 at 10:51 PM, Mike Travis <travis@sgi.com> wrote:
+>> Vegard Nossum wrote:
+>>> On Tue, Jul 8, 2008 at 8:05 PM, Mike Travis <travis@sgi.com> wrote:
+>>>>>> Note: I did not change node_to_cpumask_ptr() in include/asm-generic/topology.h
+>>>>>>      as node_to_cpumask_ptr_next() does change the cpumask value.
+>>>>> Hmmm. Does it really?
+>>>>>
+>>>>> #define node_to_cpumask_ptr_next(v, node)                               \
+>>>>>                           _##v = node_to_cpumask(node)
+>>>>>
+>>>>> This doesn't seem to modify it?
+>>>> Well I thought about it.  The pointer (*v) does not change
+>>>> but the underlying cpumask variable is updated with the
+>>>> cpumask for the (supposedly) new node number.  You can see
+>>>> that in this code snippet from kernel/sched.c:
+>>>>
+>>>>        for (i = 1; i < SD_NODES_PER_DOMAIN; i++) {
+>>>>                int next_node = find_next_best_node(node, &used_nodes);
+>>>>
+>>>>                node_to_cpumask_ptr_next(nodemask, next_node);
+>>>>                cpus_or(*span, *span, *nodemask);
+>>>>        }
+>>>>
+>>>> In the optimized (x86_64) case, the pointer is simply modified
+>>>> to point to the new node_to_cpumask_map[node] entry.  It remains
+>>>> a pointer to a const value.
+>>>>
+>>>> But the non-optimized version replaces the const cpumask value
+>>>> with the new cpumask value.  Isn't this breaking the const
+>>>> attribute?
+>>> No, I think the pointer really should be const. This doesn't guarantee
+>>> that the value doesn't change behind our backs, it only prevents us
+>>> from modifying it ourselves.
+>>>
+>>>
+>>> Vegard
+>>>
+>> Is this what you had in mind:
+>>
+>>
+>> --- linux-2.6.tip.orig/include/asm-generic/topology.h
+>> +++ linux-2.6.tip/include/asm-generic/topology.h
+>> @@ -60,7 +60,7 @@
+>>  #ifndef node_to_cpumask_ptr
+>>
+>>  #define        node_to_cpumask_ptr(v, node)                                    \
+>> -               cpumask_t _##v = node_to_cpumask(node), *v = &_##v
+>> +               const cpumask_t _##v = node_to_cpumask(node), *v = &_##v
+>>
+>>  #define node_to_cpumask_ptr_next(v, node)                              \
+>>                          _##v = node_to_cpumask(node)
+>>
+>>
+>> (It's taking a while as now I need to do some cross-compile testing.)
+> 
+> Actually, no.
+> 
+> We don't want the _##v to be const, do we? What do you think about
+> this? (Watch out for whitespace munges)
+> 
+> diff --git a/include/asm-generic/topology.h b/include/asm-generic/topology.h
+> index a6aea79..56957f2 100644
+> --- a/include/asm-generic/topology.h
+> +++ b/include/asm-generic/topology.h
+> @@ -60,7 +60,8 @@
+>  #ifndef node_to_cpumask_ptr
+> 
+>  #define        node_to_cpumask_ptr(v, node)
+> -               cpumask_t _##v = node_to_cpumask(node), *v = &_##v
+> +               cpumask_t _##v = node_to_cpumask(node);                 \
+> +               const cpumask_t *v = &_##v;
+> 
+>  #define node_to_cpumask_ptr_next(v, node)                              \
+>                           _##v = node_to_cpumask(node)
+> 
+> 
+> Vegard
+> 
 
-Fix fs/compat_ioctl.c to handle CONFIG_BLOCK=n, CONFIG_SCSI=n
-to avoid build errors:
+Thanks.  That was my alternative though I was hoping to confirm that
+the compiler detected the overwrite by node_to_cpumask_ptr_next().
+Unfortunately every non-x86 cross-compile that I have for a machine
+that has NUMA is failing in some other way.
 
-In file included from linux-next-20080708/include/scsi/scsi.h:12,
-                 from linux-next-20080708/fs/compat_ioctl.c:71:
-linux-next-20080708/include/scsi/scsi_cmnd.h:27:25: warning: "BLK_MAX_CDB" is not defined
-linux-next-20080708/include/scsi/scsi_cmnd.h:28:3: error: #error MAX_COMMAND_SIZE can not be bigger than BLK_MAX_CDB
-In file included from linux-next-20080708/include/scsi/scsi.h:12,
-                 from linux-next-20080708/fs/compat_ioctl.c:71:
-linux-next-20080708/include/scsi/scsi_cmnd.h: In function 'scsi_bidi_cmnd':
-linux-next-20080708/include/scsi/scsi_cmnd.h:182: error: implicit declaration of function 'blk_bidi_rq'
-linux-next-20080708/include/scsi/scsi_cmnd.h:183: error: dereferencing pointer to incomplete type
-linux-next-20080708/include/scsi/scsi_cmnd.h: In function 'scsi_in':
-linux-next-20080708/include/scsi/scsi_cmnd.h:189: error: dereferencing pointer to incomplete type
+I'll resubmit with that change.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- fs/compat_ioctl.c |    6 ++++++
- 1 file changed, 6 insertions(+)
-
---- linux-next-20080708.orig/fs/compat_ioctl.c
-+++ linux-next-20080708/fs/compat_ioctl.c
-@@ -68,9 +68,11 @@
- #include <linux/capi.h>
- #include <linux/gigaset_dev.h>
- 
-+#ifdef CONFIG_BLOCK
- #include <scsi/scsi.h>
- #include <scsi/scsi_ioctl.h>
- #include <scsi/sg.h>
-+#endif
- 
- #include <asm/uaccess.h>
- #include <linux/ethtool.h>
-@@ -1965,6 +1967,7 @@ COMPATIBLE_IOCTL(GIO_UNISCRNMAP)
- COMPATIBLE_IOCTL(PIO_UNISCRNMAP)
- COMPATIBLE_IOCTL(PIO_FONTRESET)
- COMPATIBLE_IOCTL(PIO_UNIMAPCLR)
-+#ifdef CONFIG_BLOCK
- /* Big S */
- COMPATIBLE_IOCTL(SCSI_IOCTL_GET_IDLUN)
- COMPATIBLE_IOCTL(SCSI_IOCTL_DOORLOCK)
-@@ -1974,6 +1977,7 @@ COMPATIBLE_IOCTL(SCSI_IOCTL_GET_BUS_NUMB
- COMPATIBLE_IOCTL(SCSI_IOCTL_SEND_COMMAND)
- COMPATIBLE_IOCTL(SCSI_IOCTL_PROBE_HOST)
- COMPATIBLE_IOCTL(SCSI_IOCTL_GET_PCI)
-+#endif
- /* Big T */
- COMPATIBLE_IOCTL(TUNSETNOCSUM)
- COMPATIBLE_IOCTL(TUNSETDEBUG)
-@@ -2044,6 +2048,7 @@ COMPATIBLE_IOCTL(SIOCGIFVLAN)
- COMPATIBLE_IOCTL(SIOCSIFVLAN)
- COMPATIBLE_IOCTL(SIOCBRADDBR)
- COMPATIBLE_IOCTL(SIOCBRDELBR)
-+#ifdef CONFIG_BLOCK
- /* SG stuff */
- COMPATIBLE_IOCTL(SG_SET_TIMEOUT)
- COMPATIBLE_IOCTL(SG_GET_TIMEOUT)
-@@ -2068,6 +2073,7 @@ COMPATIBLE_IOCTL(SG_SCSI_RESET)
- COMPATIBLE_IOCTL(SG_GET_REQUEST_TABLE)
- COMPATIBLE_IOCTL(SG_SET_KEEP_ORPHAN)
- COMPATIBLE_IOCTL(SG_GET_KEEP_ORPHAN)
-+#endif
- /* PPP stuff */
- COMPATIBLE_IOCTL(PPPIOCGFLAGS)
- COMPATIBLE_IOCTL(PPPIOCSFLAGS)
-
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+Mike
