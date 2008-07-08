@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbYGHRK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756367AbYGHRMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756758AbYGHRK6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 13:10:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753914AbYGHRKu
+	id S1756367AbYGHRMz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 13:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753418AbYGHRMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 13:10:50 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:60572 "EHLO
+	Tue, 8 Jul 2008 13:12:46 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:60640 "EHLO
 	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753210AbYGHRKt (ORCPT
+	with ESMTP id S1750889AbYGHRMp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 13:10:49 -0400
-Message-Id: <20080708170046.726427000@sipsolutions.net>
+	Tue, 8 Jul 2008 13:12:45 -0400
+Message-Id: <20080708170048.633321000@sipsolutions.net>
 References: <20080708170015.470877000@sipsolutions.net>
 User-Agent: quilt/0.46-1
-Date: Tue, 08 Jul 2008 19:00:22 +0200
+Date: Tue, 08 Jul 2008 19:00:25 +0200
 From: Johannes Berg <johannes@sipsolutions.net>
 To: linux-kernel@vger.kernel.org
 Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Hellwig <hch@infradead.org>, Takashi Iwai <tiwai@suse.de>
-Subject: [RFC 07/11] remove CONFIG_KMOD from sound
-Content-Disposition: inline; filename=config-kmod-remove-sound.patch
+       Christoph Hellwig <hch@infradead.org>,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       Randy Dunlap <rdunlap@xenotime.net>, linux-doc@vger.kernel.org
+Subject: [RFC 10/11] remove mention of CONFIG_KMOD from documentation
+Content-Disposition: inline; filename=config-kmod-remove-doc.patch
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
@@ -27,156 +29,116 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A bunch of things in alsa depend on CONFIG_KMOD,
-use CONFIG_MODULES instead where the dependency
-is needed at all.
+Also includes a few Kconfig files (xtensa, blackfin)
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Cc: Takashi Iwai <tiwai@suse.de>
+Cc: Michael Kerrisk <mtk.manpages@gmail.com>
+Cc: Randy Dunlap <rdunlap@xenotime.net>
+Cc: linux-doc@vger.kernel.org
 ---
- include/sound/seq_kernel.h     |    2 +-
- sound/core/seq/seq_clientmgr.c |    2 +-
- sound/core/seq/seq_device.c    |    6 +++---
- sound/core/sound.c             |    8 ++++----
- sound/core/timer.c             |    6 +++---
- sound/ppc/daca.c               |    2 --
- sound/ppc/tumbler.c            |    2 --
- 7 files changed, 12 insertions(+), 16 deletions(-)
+ Documentation/filesystems/bfs.txt                     |   10 +++++-----
+ Documentation/sound/alsa/DocBook/alsa-driver-api.tmpl |    2 +-
+ Documentation/telephony/ixj.txt                       |   13 +++----------
+ Documentation/video4linux/w9968cf.txt                 |    3 ---
+ arch/blackfin/Kconfig                                 |    4 ++--
+ arch/xtensa/Kconfig                                   |    4 ++--
+ 6 files changed, 13 insertions(+), 23 deletions(-)
 
---- everything.orig/include/sound/seq_kernel.h	2008-07-08 18:54:04.000000000 +0200
-+++ everything/include/sound/seq_kernel.h	2008-07-08 18:57:40.000000000 +0200
-@@ -105,7 +105,7 @@ int snd_seq_event_port_attach(int client
- 			      int cap, int type, int midi_channels, int midi_voices, char *portname);
- int snd_seq_event_port_detach(int client, int port);
+--- everything.orig/Documentation/filesystems/bfs.txt	2008-07-08 18:54:03.000000000 +0200
++++ everything/Documentation/filesystems/bfs.txt	2008-07-08 18:59:25.000000000 +0200
+@@ -26,11 +26,11 @@ You can simplify mounting by just typing
  
--#ifdef CONFIG_KMOD
-+#ifdef CONFIG_MODULES
- void snd_seq_autoload_lock(void);
- void snd_seq_autoload_unlock(void);
- #else
---- everything.orig/sound/core/seq/seq_clientmgr.c	2008-07-08 18:54:05.000000000 +0200
-+++ everything/sound/core/seq/seq_clientmgr.c	2008-07-08 18:57:40.000000000 +0200
-@@ -148,7 +148,7 @@ struct snd_seq_client *snd_seq_client_us
- 		return NULL;
- 	}
- 	spin_unlock_irqrestore(&clients_lock, flags);
--#ifdef CONFIG_KMOD
-+#ifdef CONFIG_MODULES
- 	if (!in_interrupt()) {
- 		static char client_requested[SNDRV_SEQ_GLOBAL_CLIENTS];
- 		static char card_requested[SNDRV_CARDS];
---- everything.orig/sound/core/seq/seq_device.c	2008-07-08 18:54:05.000000000 +0200
-+++ everything/sound/core/seq/seq_device.c	2008-07-08 18:57:40.000000000 +0200
-@@ -124,7 +124,7 @@ static void snd_seq_device_info(struct s
-  * load all registered drivers (called from seq_clientmgr.c)
-  */
+ this will allocate the first available loopback device (and load loop.o 
+ kernel module if necessary) automatically. If the loopback driver is not
+-loaded automatically, make sure that your kernel is compiled with kmod 
+-support (CONFIG_KMOD) enabled. Beware that umount will not
+-deallocate /dev/loopN device if /etc/mtab file on your system is a
+-symbolic link to /proc/mounts. You will need to do it manually using
+-"-d" switch of losetup(8). Read losetup(8) manpage for more info.
++loaded automatically, make sure that you have compiled the module and
++that modprobe is functioning. Beware that umount will not deallocate
++/dev/loopN device if /etc/mtab file on your system is a symbolic link to
++/proc/mounts. You will need to do it manually using "-d" switch of
++losetup(8). Read losetup(8) manpage for more info.
  
--#ifdef CONFIG_KMOD
-+#ifdef CONFIG_MODULES
- /* avoid auto-loading during module_init() */
- static int snd_seq_in_init;
- void snd_seq_autoload_lock(void)
-@@ -140,7 +140,7 @@ void snd_seq_autoload_unlock(void)
+ To create the BFS image under UnixWare you need to find out first which
+ slice contains it. The command prtvtoc(1M) is your friend:
+--- everything.orig/Documentation/telephony/ixj.txt	2008-07-08 18:54:03.000000000 +0200
++++ everything/Documentation/telephony/ixj.txt	2008-07-08 18:59:25.000000000 +0200
+@@ -305,21 +305,14 @@ driver, like this:
  
- void snd_seq_device_load_drivers(void)
- {
--#ifdef CONFIG_KMOD
-+#ifdef CONFIG_MODULES
- 	struct ops_list *ops;
+ which will result in the needed drivers getting loaded automatically.
  
- 	/* Calling request_module during module_init()
-@@ -566,7 +566,7 @@ EXPORT_SYMBOL(snd_seq_device_load_driver
- EXPORT_SYMBOL(snd_seq_device_new);
- EXPORT_SYMBOL(snd_seq_device_register_driver);
- EXPORT_SYMBOL(snd_seq_device_unregister_driver);
--#ifdef CONFIG_KMOD
-+#ifdef CONFIG_MODULES
- EXPORT_SYMBOL(snd_seq_autoload_lock);
- EXPORT_SYMBOL(snd_seq_autoload_unlock);
- #endif
---- everything.orig/sound/core/sound.c	2008-07-08 18:54:04.000000000 +0200
-+++ everything/sound/core/sound.c	2008-07-08 18:57:40.000000000 +0200
-@@ -60,14 +60,14 @@ EXPORT_SYMBOL(snd_ecards_limit);
- static struct snd_minor *snd_minors[SNDRV_OS_MINORS];
- static DEFINE_MUTEX(sound_mutex);
+-   g.  if you are planning on using kerneld to automatically load the 
+-module for you, then you need to edit /etc/conf.modules and add the 
++   g.  if you are planning on having the kernel automatically request
++the module for you, then you need to edit /etc/conf.modules and add the
+ following lines:
  
--#ifdef CONFIG_KMOD
-+#ifdef CONFIG_MODULES
+ 	options ixj dspio=0x340 xio=0x330 ixjdebug=0
  
- /**
-  * snd_request_card - try to load the card module
-  * @card: the card number
-  *
-  * Tries to load the module "snd-card-X" for the given card number
-- * via KMOD.  Returns immediately if already loaded.
-+ * via request_module.  Returns immediately if already loaded.
-  */
- void snd_request_card(int card)
- {
-@@ -92,7 +92,7 @@ static void snd_request_other(int minor)
- 	request_module(str);
- }
+ If you do this, then when you execute an application that uses the
+-module kerneld will load the module for you.  Note that to do this,
+-you need to have your kernel set to support kerneld.  You can check
+-for this by looking at /usr/src/linux/.config and you should see this:
+-
+-	# Loadable module support
+-	#
+-	<snip>
+-	CONFIG_KMOD=y
++module the kernel will request that it is loaded.
  
--#endif				/* request_module support */
-+#endif	/* modular kernel */
+   h.  if you want non-root users to be able to read and write to the 
+ ixj devices (this is a good idea!) you should do the following:
+--- everything.orig/Documentation/video4linux/w9968cf.txt	2008-07-08 18:54:02.000000000 +0200
++++ everything/Documentation/video4linux/w9968cf.txt	2008-07-08 18:59:25.000000000 +0200
+@@ -193,9 +193,6 @@ Description:     Automatic 'ovcamchip' m
+ 		 loads that module automatically. This action is performed as
+ 		 once soon as the 'w9968cf' module is loaded into memory.
+ Default:         1
+-Note:            The kernel must be compiled with the CONFIG_KMOD option
+-		 enabled for the 'ovcamchip' module to be loaded and for
+-		 this parameter to be present.
+ -------------------------------------------------------------------------------
+ Name:           simcams
+ Type:           int
+--- everything.orig/Documentation/sound/alsa/DocBook/alsa-driver-api.tmpl	2008-07-08 18:54:03.000000000 +0200
++++ everything/Documentation/sound/alsa/DocBook/alsa-driver-api.tmpl	2008-07-08 18:59:25.000000000 +0200
+@@ -42,7 +42,7 @@
+      <sect1><title>Device Components</title>
+ !Esound/core/device.c
+      </sect1>
+-     <sect1><title>KMOD and Device File Entries</title>
++     <sect1><title>Module requests and Device File Entries</title>
+ !Esound/core/sound.c
+      </sect1>
+      <sect1><title>Memory Management Helpers</title>
+--- everything.orig/arch/blackfin/Kconfig	2008-07-08 18:54:02.000000000 +0200
++++ everything/arch/blackfin/Kconfig	2008-07-08 18:59:25.000000000 +0200
+@@ -873,8 +873,8 @@ config HOTPLUG
+ 	  plugged into slots found on all modern laptop computers.  Another
+ 	  example, used on modern desktops as well as laptops, is USB.
  
- /**
-  * snd_lookup_minor_data - get user data of a registered device
-@@ -132,7 +132,7 @@ static int snd_open(struct inode *inode,
- 		return -ENODEV;
- 	mptr = snd_minors[minor];
- 	if (mptr == NULL) {
--#ifdef CONFIG_KMOD
-+#ifdef CONFIG_MODULES
- 		int dev = SNDRV_MINOR_DEVICE(minor);
- 		if (dev == SNDRV_MINOR_CONTROL) {
- 			/* /dev/aloadC? */
---- everything.orig/sound/core/timer.c	2008-07-08 18:54:04.000000000 +0200
-+++ everything/sound/core/timer.c	2008-07-08 18:57:40.000000000 +0200
-@@ -146,7 +146,7 @@ static struct snd_timer *snd_timer_find(
- 	return NULL;
- }
+-	  Enable HOTPLUG and KMOD, and build a modular kernel.  Get agent
+-	  software (at <http://linux-hotplug.sourceforge.net/>) and install it.
++	  Enable HOTPLUG and build a modular kernel.  Get agent software
++	  (from <http://linux-hotplug.sourceforge.net/>) and install it.
+ 	  Then your kernel will automatically call out to a user mode "policy
+ 	  agent" (/sbin/hotplug) to load modules and set up software needed
+ 	  to use devices as you hotplug them.
+--- everything.orig/arch/xtensa/Kconfig	2008-07-08 18:54:02.000000000 +0200
++++ everything/arch/xtensa/Kconfig	2008-07-08 18:59:25.000000000 +0200
+@@ -194,8 +194,8 @@ config HOTPLUG
+ 	plugged into slots found on all modern laptop computers.  Another
+ 	example, used on modern desktops as well as laptops, is USB.
  
--#ifdef CONFIG_KMOD
-+#ifdef CONFIG_MODULES
- 
- static void snd_timer_request(struct snd_timer_id *tid)
- {
-@@ -259,8 +259,8 @@ int snd_timer_open(struct snd_timer_inst
- 	/* open a master instance */
- 	mutex_lock(&register_mutex);
- 	timer = snd_timer_find(tid);
--#ifdef CONFIG_KMOD
--	if (timer == NULL) {
-+#ifdef CONFIG_MODULES
-+	if (!timer) {
- 		mutex_unlock(&register_mutex);
- 		snd_timer_request(tid);
- 		mutex_lock(&register_mutex);
---- everything.orig/sound/ppc/daca.c	2008-07-08 18:54:05.000000000 +0200
-+++ everything/sound/ppc/daca.c	2008-07-08 18:57:40.000000000 +0200
-@@ -249,9 +249,7 @@ int __init snd_pmac_daca_init(struct snd
- 	int i, err;
- 	struct pmac_daca *mix;
- 
--#ifdef CONFIG_KMOD
- 	request_module("i2c-powermac");
--#endif /* CONFIG_KMOD */
- 
- 	mix = kzalloc(sizeof(*mix), GFP_KERNEL);
- 	if (! mix)
---- everything.orig/sound/ppc/tumbler.c	2008-07-08 18:54:05.000000000 +0200
-+++ everything/sound/ppc/tumbler.c	2008-07-08 18:57:40.000000000 +0200
-@@ -1350,9 +1350,7 @@ int __init snd_pmac_tumbler_init(struct 
- 	struct device_node *tas_node, *np;
- 	char *chipname;
- 
--#ifdef CONFIG_KMOD
- 	request_module("i2c-powermac");
--#endif /* CONFIG_KMOD */
- 
- 	mix = kzalloc(sizeof(*mix), GFP_KERNEL);
- 	if (! mix)
+-	Enable HOTPLUG and KMOD, and build a modular kernel.  Get agent
+-	software (at <http://linux-hotplug.sourceforge.net/>) and install it.
++	Enable HOTPLUG and build a modular kernel.  Get agent software
++	(from <http://linux-hotplug.sourceforge.net/>) and install it.
+ 	Then your kernel will automatically call out to a user mode "policy
+ 	agent" (/sbin/hotplug) to load modules and set up software needed
+ 	to use devices as you hotplug them.
 
 -- 
 
