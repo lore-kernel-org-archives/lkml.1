@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758715AbYGHXRb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758004AbYGHXSL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758715AbYGHXRb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 19:17:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756348AbYGHXOn
+	id S1758004AbYGHXSL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 19:18:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756975AbYGHXOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 19:14:43 -0400
-Received: from gw.goop.org ([64.81.55.164]:51207 "EHLO mail.goop.org"
+	Tue, 8 Jul 2008 19:14:44 -0400
+Received: from gw.goop.org ([64.81.55.164]:51204 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755806AbYGHXOk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 19:14:40 -0400
+	id S1756004AbYGHXOl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 19:14:41 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 08 of 55] xen: print backtrace on multicall failure
-X-Mercurial-Node: f6fe1b241a8240cb88d782d70c7cb605d4bae18b
-Message-Id: <f6fe1b241a8240cb88d7.1215554790@localhost>
+Subject: [PATCH 14 of 55] xen: fix 64-bit hypercall variants
+X-Mercurial-Node: 944ec62b4e0ff7c3894ddcef4b80ab3e361e141a
+Message-Id: <944ec62b4e0ff7c3894d.1215554796@localhost>
 In-Reply-To: <patchbomb.1215554782@localhost>
-Date: Tue, 08 Jul 2008 15:06:30 -0700
+Date: Tue, 08 Jul 2008 15:06:36 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
@@ -26,23 +26,104 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Print a backtrace if a multicall fails, to help with debugging.
+64-bit guests can pass 64-bit quantities in a single argument,
+so fix up the hypercalls.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/multicalls.c |    1 +
- 1 file changed, 1 insertion(+)
+ include/asm-x86/xen/hypercall.h |   60 ++++++++++++++++++++-------------------
+ 1 file changed, 31 insertions(+), 29 deletions(-)
 
-diff --git a/arch/x86/xen/multicalls.c b/arch/x86/xen/multicalls.c
---- a/arch/x86/xen/multicalls.c
-+++ b/arch/x86/xen/multicalls.c
-@@ -76,6 +76,7 @@
- 		if (ret) {
- 			printk(KERN_ERR "%d multicall(s) failed: cpu %d\n",
- 			       ret, smp_processor_id());
-+			dump_stack();
- 			for (i = 0; i < b->mcidx; i++) {
- 				printk("  call %2d/%d: op=%lu arg=[%lx] result=%ld\n",
- 				       i+1, b->mcidx,
+diff --git a/include/asm-x86/xen/hypercall.h b/include/asm-x86/xen/hypercall.h
+--- a/include/asm-x86/xen/hypercall.h
++++ b/include/asm-x86/xen/hypercall.h
+@@ -223,12 +223,12 @@
+ HYPERVISOR_update_va_mapping(unsigned long va, pte_t new_val,
+ 			     unsigned long flags)
+ {
+-	unsigned long pte_hi = 0;
+-#ifdef CONFIG_X86_PAE
+-	pte_hi = new_val.pte_high;
+-#endif
+-	return _hypercall4(int, update_va_mapping, va,
+-			   new_val.pte_low, pte_hi, flags);
++	if (sizeof(new_val) == sizeof(long))
++		return _hypercall3(int, update_va_mapping, va,
++				   new_val.pte, flags);
++	else
++		return _hypercall4(int, update_va_mapping, va,
++				   new_val.pte, new_val.pte >> 32, flags);
+ }
+ 
+ static inline int
+@@ -281,12 +281,13 @@
+ HYPERVISOR_update_va_mapping_otherdomain(unsigned long va, pte_t new_val,
+ 					 unsigned long flags, domid_t domid)
+ {
+-	unsigned long pte_hi = 0;
+-#ifdef CONFIG_X86_PAE
+-	pte_hi = new_val.pte_high;
+-#endif
+-	return _hypercall5(int, update_va_mapping_otherdomain, va,
+-			   new_val.pte_low, pte_hi, flags, domid);
++	if (sizeof(new_val) == sizeof(long))
++		return _hypercall4(int, update_va_mapping_otherdomain, va,
++				   new_val.pte, flags, domid);
++	else
++		return _hypercall5(int, update_va_mapping_otherdomain, va,
++				   new_val.pte, new_val.pte >> 32,
++				   flags, domid);
+ }
+ 
+ static inline int
+@@ -327,14 +328,14 @@
+ {
+ 	mcl->op = __HYPERVISOR_update_va_mapping;
+ 	mcl->args[0] = va;
+-#ifdef CONFIG_X86_PAE
+-	mcl->args[1] = new_val.pte_low;
+-	mcl->args[2] = new_val.pte_high;
+-#else
+-	mcl->args[1] = new_val.pte_low;
+-	mcl->args[2] = 0;
+-#endif
+-	mcl->args[3] = flags;
++	if (sizeof(new_val) == sizeof(long)) {
++		mcl->args[1] = new_val.pte;
++		mcl->args[2] = flags;
++	} else {
++		mcl->args[1] = new_val.pte;
++		mcl->args[2] = new_val.pte >> 32;
++		mcl->args[3] = flags;
++	}
+ }
+ 
+ static inline void
+@@ -354,15 +355,16 @@
+ {
+ 	mcl->op = __HYPERVISOR_update_va_mapping_otherdomain;
+ 	mcl->args[0] = va;
+-#ifdef CONFIG_X86_PAE
+-	mcl->args[1] = new_val.pte_low;
+-	mcl->args[2] = new_val.pte_high;
+-#else
+-	mcl->args[1] = new_val.pte_low;
+-	mcl->args[2] = 0;
+-#endif
+-	mcl->args[3] = flags;
+-	mcl->args[4] = domid;
++	if (sizeof(new_val) == sizeof(long)) {
++		mcl->args[1] = new_val.pte;
++		mcl->args[2] = flags;
++		mcl->args[3] = domid;
++	} else {
++		mcl->args[1] = new_val.pte;
++		mcl->args[2] = new_val.pte >> 32;
++		mcl->args[3] = flags;
++		mcl->args[4] = domid;
++	}
+ }
+ 
+ static inline void
 
 
