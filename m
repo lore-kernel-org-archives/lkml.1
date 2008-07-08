@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757039AbYGHQ5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757503AbYGHQ5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757039AbYGHQ5V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 12:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbYGHQ5L
+	id S1757503AbYGHQ5u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 12:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756936AbYGHQ5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 12:57:11 -0400
-Received: from casper.infradead.org ([85.118.1.10]:55089 "EHLO
+	Tue, 8 Jul 2008 12:57:19 -0400
+Received: from casper.infradead.org ([85.118.1.10]:55097 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754062AbYGHQ5K (ORCPT
+	with ESMTP id S1756933AbYGHQ5S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 12:57:10 -0400
-Date: Tue, 8 Jul 2008 09:45:07 -0700
+	Tue, 8 Jul 2008 12:57:18 -0400
+Date: Tue, 8 Jul 2008 09:46:35 -0700
 From: Arjan van de Ven <arjan@infradead.org>
-To: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, mingo@elte.hu
-Subject: [patch 5/17] Use WARN() in kernel/panic.c
-Message-ID: <20080708094507.4ae10e5d@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu
+Subject: [patch 6/17] Use WARN() in mm/vmalloc.c
+Message-ID: <20080708094635.2b257e6e@infradead.org>
 In-Reply-To: <20080708093800.274504ba@infradead.org>
 References: <20080708093800.274504ba@infradead.org>
 Organization: Intel
@@ -31,31 +31,37 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: Use WARN instead of printk+WARN_ON in kernel/panic.c
+Subject: Use WARN instead of printk+WARN_ON in mm/vmalloc.c
 
 Use WARN() instead of a printk+WARN_ON() pair; this way the message
 becomes part of the warning section for better reporting/collection.
-This allowed the if() to be folded entirely into the WARN()
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- kernel/panic.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ mm/vmalloc.c            |    6 
+ 2 files changed, 2 insertions(+), 309 deletions(-)
 
-Index: linux.trees.git/kernel/panic.c
+Index: linux.trees.git/mm/vmalloc.c
 ===================================================================
---- linux.trees.git.orig/kernel/panic.c
-+++ linux.trees.git/kernel/panic.c
-@@ -392,10 +392,8 @@ static int __stack_chk_test(void)
- 	printk(KERN_INFO "Testing -fstack-protector-all feature\n");
- 	__stack_check_testing = (unsigned long)&__stack_chk_test_func;
- 	__stack_chk_test_func();
--	if (__stack_check_testing) {
--		printk(KERN_ERR "-fstack-protector-all test failed\n");
+--- linux.trees.git.orig/mm/vmalloc.c
++++ linux.trees.git/mm/vmalloc.c
+@@ -381,16 +381,14 @@ static void __vunmap(const void *addr, i
+ 		return;
+ 
+ 	if ((PAGE_SIZE-1) & (unsigned long)addr) {
+-		printk(KERN_ERR "Trying to vfree() bad address (%p)\n", addr);
 -		WARN_ON(1);
--	}
-+	WARN(__stack_check_testing,
-+			KERN_ERR "-fstack-protector-all test failed\n");
- 	return 0;
- }
- /*
++		WARN(1, KERN_ERR "Trying to vfree() bad address (%p)\n", addr);
+ 		return;
+ 	}
+ 
+ 	area = remove_vm_area(addr);
+ 	if (unlikely(!area)) {
+-		printk(KERN_ERR "Trying to vfree() nonexistent vm area (%p)\n",
++		WARN(1, KERN_ERR "Trying to vfree() nonexistent vm area (%p)\n",
+ 				addr);
+-		WARN_ON(1);
+ 		return;
+ 	}
+ 
+
