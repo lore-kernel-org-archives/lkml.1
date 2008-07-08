@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757964AbYGHMpM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759308AbYGHMpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757964AbYGHMpM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 08:45:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628AbYGHMoH
+	id S1759308AbYGHMpk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 08:45:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758303AbYGHMol
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 08:44:07 -0400
-Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27536 "EHLO
+	Tue, 8 Jul 2008 08:44:41 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27541 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758862AbYGHMoF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 08:44:05 -0400
+	id S1758608AbYGHMoj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 08:44:39 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
@@ -18,11 +18,11 @@ Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
        grant.likely@secretlab.ca, vapier.adi@gmail.com,
        alan@lxorguk.ukuu.org.uk, hpa@zytor.com, lethal@linux-sh.org,
        florian@openwrt.org, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 42/58] microblaze_v5: clinkage.h linkage.h sections.h kmap_types.h
-Date: Tue,  8 Jul 2008 13:59:42 +0200
-Message-Id: <5b2ed516b2e51d5117386c1b6eb814acc6e5a157.1215517976.git.monstr@monstr.eu>
+Subject: [PATCH 12/58] microblaze_v5: kernel modules support
+Date: Tue,  8 Jul 2008 13:59:12 +0200
+Message-Id: <1f9a1f345caa749cb630cf85f95f217366395069.1215517976.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <bcb94400dca62fb349d0ab1e0a6209291fdcdfc5.1215517976.git.monstr@monstr.eu>
+In-Reply-To: <dbd9df742cdd9eb3355d7bc8e39f9dfef6c545e4.1215517976.git.monstr@monstr.eu>
 References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
  <c03d29cbccaef8aed8a2911c2a259fbd79ad23d9.1215517976.git.monstr@monstr.eu>
@@ -35,36 +35,6 @@ References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <4409daf2ac356e902a8f091bb5908eb8a90218bc.1215517976.git.monstr@monstr.eu>
  <f7458acb0252f72b5620d19c76104408ecc2e451.1215517976.git.monstr@monstr.eu>
  <dbd9df742cdd9eb3355d7bc8e39f9dfef6c545e4.1215517976.git.monstr@monstr.eu>
- <1f9a1f345caa749cb630cf85f95f217366395069.1215517976.git.monstr@monstr.eu>
- <fe3686f0f70d838b33642bcbcd7185fc2180b366.1215517976.git.monstr@monstr.eu>
- <e61f5a8579570cf7cd18a22e4106b7f85518928e.1215517976.git.monstr@monstr.eu>
- <59d7e0a5f38b8d38f01f357a071fc93eed36f3a8.1215517976.git.monstr@monstr.eu>
- <143afcf84af583ab66da7e8acfc9eb03b7f3eaa0.1215517976.git.monstr@monstr.eu>
- <a967ee4e5a60b410e2810ce0475e8fd04f99e3ae.1215517976.git.monstr@monstr.eu>
- <c5f0730287365c845746467a9917dbc07d2fca3c.1215517976.git.monstr@monstr.eu>
- <2aa1ac7891af57959237aae3addf4bbe607f55d7.1215517976.git.monstr@monstr.eu>
- <875ba2708f6cd3c585e4d965142e2feb07c39a0e.1215517976.git.monstr@monstr.eu>
- <eb0e741f891335df37c3cd19f1a3ce2f7ce8652a.1215517976.git.monstr@monstr.eu>
- <b28df2ea2419cbda26f9089ed6edcc175c009688.1215517976.git.monstr@monstr.eu>
- <5da1d8f069f18f14faee8c4bff736791179ef6f1.1215517976.git.monstr@monstr.eu>
- <9a32168fe72b772f301216a7090670474af78e49.1215517976.git.monstr@monstr.eu>
- <7ada4bceefc1806a2c8ef73676b7aabd8ac1cad6.1215517976.git.monstr@monstr.eu>
- <701c1dac442ac09f5010cb5356cc1a12bb0abfe1.1215517976.git.monstr@monstr.eu>
- <9b48e9d85b4a5a6dcffce8eef62b232b6bfac8e8.1215517976.git.monstr@monstr.eu>
- <04b0b222b84ba9cfe2507a9081f4d715f2323733.1215517976.git.monstr@monstr.eu>
- <d4c1b3ecfec1bf37ca0ecea6909ad25bbc945630.1215517976.git.monstr@monstr.eu>
- <6e5687d37386334cf122d1eafcca0c6649c955be.1215517976.git.monstr@monstr.eu>
- <689cff1b6d98f60d8f8abc4472193688b524284d.1215517976.git.monstr@monstr.eu>
- <9664f18e7e86af4332018549b29bf0797d6afcd5.1215517976.git.monstr@monstr.eu>
- <c7120d8a6379cb1a18af5330997e30ec974acc2f.1215517976.git.monstr@monstr.eu>
- <d1d33c18956829ec9ac7daf8d0516b17e85ed190.1215517976.git.monstr@monstr.eu>
- <7a16429cfc461420883dbaa80c16047e5a1a91c1.1215517976.git.monstr@monstr.eu>
- <b6a0f3bceb0867c55613463fc43be5328fcedecd.1215517976.git.monstr@monstr.eu>
- <fc26823d77c7180b62022e2d4bcca3c4fe6de574.1215517976.git.monstr@monstr.eu>
- <64089967061955b7a29eb6d4e6269ff75b5442f2.1215517976.git.monstr@monstr.eu>
- <92e3ab88c2174acf4e25c474c1f68ffd4db72ca6.1215517976.git.monstr@monstr.eu>
- <5174afd0eaa5c6cb9344ea3217199e48899be313.1215517976.git.monstr@monstr.eu>
- <bcb94400dca62fb349d0ab1e0a6209291fdcdfc5.1215517976.git.monstr@monstr.eu>
 In-Reply-To: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 References: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -76,55 +46,219 @@ From: Michal Simek <monstr@monstr.eu>
 Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/clinkage.h   |   27 +++++++++++++++++++++++++++
- include/asm-microblaze/kmap_types.h |   29 +++++++++++++++++++++++++++++
- include/asm-microblaze/linkage.h    |   15 +++++++++++++++
- include/asm-microblaze/sections.h   |   21 +++++++++++++++++++++
- 4 files changed, 92 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/clinkage.h
- create mode 100644 include/asm-microblaze/kmap_types.h
- create mode 100644 include/asm-microblaze/linkage.h
- create mode 100644 include/asm-microblaze/sections.h
+ arch/microblaze/kernel/microblaze_ksyms.c |   47 ++++++++++
+ arch/microblaze/kernel/module.c           |  140 +++++++++++++++++++++++++++++
+ include/asm-microblaze/module.h           |   37 ++++++++
+ 3 files changed, 224 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/microblaze_ksyms.c
+ create mode 100644 arch/microblaze/kernel/module.c
+ create mode 100644 include/asm-microblaze/module.h
 
-diff --git a/include/asm-microblaze/clinkage.h b/include/asm-microblaze/clinkage.h
+diff --git a/arch/microblaze/kernel/microblaze_ksyms.c b/arch/microblaze/kernel/microblaze_ksyms.c
 new file mode 100644
-index 0000000..a2e09bd
+index 0000000..297cd68
 --- /dev/null
-+++ b/include/asm-microblaze/clinkage.h
-@@ -0,0 +1,27 @@
++++ b/arch/microblaze/kernel/microblaze_ksyms.c
+@@ -0,0 +1,47 @@
 +/*
-+ * Macros to reflect C symbol-naming conventions
++ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
 + *
-+ * Copyright (C) 2003 John Williams <jwilliams@itee.uq.edu.au>
-+ * Copyright (C) 2001,2002 NEC Corporatione
-+ * Copyright (C) 2001,2002 Miles Bader <miles@gnu.org>
-+ *
-+ * This file is subject to the terms and conditions of the GNU General
-+ * Public License. See the file COPYING in the main directory of this
-+ * archive for more details.
-+ *
-+ * Written by Miles Bader <miles@gnu.org>
-+ * Microblaze port by John Williams
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
 + */
++#include <linux/module.h>
++#include <linux/string.h>
++#include <linux/cryptohash.h>
++#include <linux/delay.h>
++#include <linux/in6.h>
++#include <linux/syscalls.h>
 +
-+#ifndef _ASM_MICROBLAZE_CLINKAGE_H
-+#define _ASM_MICROBLAZE_CLINKAGE_H
++#include <asm/checksum.h>
++#include <asm/io.h>
++#include <asm/page.h>
++#include <asm/system.h>
++#include <asm/uaccess.h>
 +
-+#define __ASSEMBLY__
-+
-+#include <linux/linkage.h>
-+
-+#define C_SYMBOL_NAME(name)	name
-+#define C_ENTRY(name)		.globl name; .align 4; name
-+#define C_END(name)
-+
-+#endif /* _ASM_MICROBLAZE_CLINKAGE_H */
-diff --git a/include/asm-microblaze/kmap_types.h b/include/asm-microblaze/kmap_types.h
++/*
++ * libgcc functions - functions that are used internally by the
++ * compiler... (prototypes are not correct though, but that
++ * doesn't really matter since they're not versioned).
++ */
++extern void __ashldi3(void);
++EXPORT_SYMBOL(__ashldi3);
++extern void __ashrdi3(void);
++EXPORT_SYMBOL(__ashrdi3);
++extern void __divsi3(void);
++EXPORT_SYMBOL(__divsi3);
++extern void __lshrdi3(void);
++EXPORT_SYMBOL(__lshrdi3);
++extern void __modsi3(void);
++EXPORT_SYMBOL(__modsi3);
++extern void __mulsi3(void);
++EXPORT_SYMBOL(__mulsi3);
++extern void __muldi3(void);
++EXPORT_SYMBOL(__muldi3);
++extern void __ucmpdi2(void);
++EXPORT_SYMBOL(__ucmpdi2);
++extern void __udivsi3(void);
++EXPORT_SYMBOL(__udivsi3);
++extern void __umodsi3(void);
++EXPORT_SYMBOL(__umodsi3);
++/*extern void fpundefinstr(void);
++extern void fp_enter(void);*/
+diff --git a/arch/microblaze/kernel/module.c b/arch/microblaze/kernel/module.c
 new file mode 100644
-index 0000000..4d7e222
+index 0000000..a59b2e5
 --- /dev/null
-+++ b/include/asm-microblaze/kmap_types.h
-@@ -0,0 +1,29 @@
++++ b/arch/microblaze/kernel/module.c
+@@ -0,0 +1,140 @@
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++#include <linux/module.h>
++#include <linux/moduleloader.h>
++#include <linux/kernel.h>
++#include <linux/elf.h>
++#include <linux/vmalloc.h>
++#include <linux/slab.h>
++#include <linux/fs.h>
++#include <linux/string.h>
++
++#include <asm/pgtable.h>
++
++#undef DEBUG
++
++void *module_alloc(unsigned long size)
++{
++	void *ret;
++	ret = (size == 0) ? NULL : vmalloc(size);
++	pr_debug("module_alloc (%08lx@%08lx)\n", size, (unsigned long int)ret);
++	return ret;
++}
++
++void module_free(struct module *module, void *region)
++{
++	pr_debug("module_free(%s,%08lx)\n", module->name,
++					(unsigned long)region);
++	vfree(region);
++}
++
++int module_frob_arch_sections(Elf_Ehdr *hdr,
++				Elf_Shdr *sechdrs,
++				char *secstrings,
++				struct module *mod)
++{
++	return 0;
++}
++
++int apply_relocate(Elf32_Shdr *sechdrs, const char *strtab,
++	unsigned int symindex, unsigned int relsec, struct module *module)
++{
++
++	printk(KERN_ERR "module %s: ADD RELOCATION unsupported\n",
++		module->name);
++	return -ENOEXEC;
++
++}
++
++int apply_relocate_add(Elf32_Shdr *sechdrs, const char *strtab,
++	unsigned int symindex, unsigned int relsec, struct module *module)
++{
++
++	unsigned int i;
++	Elf32_Rela *rela = (void *)sechdrs[relsec].sh_addr;
++	Elf32_Sym *sym;
++	unsigned long int *location;
++	unsigned long int locoffs;
++	unsigned long int value;
++	unsigned long int old_value;
++
++	pr_debug("Applying add relocation section %u to %u\n",
++		relsec, sechdrs[relsec].sh_info);
++
++	for (i = 0; i < sechdrs[relsec].sh_size / sizeof(*rela); i++) {
++
++		location = (void *)sechdrs[sechdrs[relsec].sh_info].sh_addr +
++				rela[i].r_offset;
++		sym = (Elf32_Sym *)sechdrs[symindex].sh_addr +
++			ELF32_R_SYM(rela[i].r_info);
++		value = sym->st_value + rela[i].r_addend;
++
++		switch (ELF32_R_TYPE(rela[i].r_info)) {
++
++		/*
++		 * Be careful! mb-gcc / mb-ld splits the relocs between the
++		 * text and the reloc table. In general this means we must
++		 * read the current contents of (*location), add any offset
++		 * then store the result back in
++		 */
++
++		case R_MICROBLAZE_32:
++			old_value = *location;
++			*location = value + old_value;
++			pr_debug("R_MICROBLAZE_32 (%08lx->%08lx)\n",
++				old_value, value);
++			break;
++
++		case R_MICROBLAZE_64:
++			old_value = ((location[0] & 0x0000FFFF) << 16) |
++				((location[1] & 0x0000FFFF));
++			value += old_value;
++			location[0] = (location[0] & 0xFFFF0000) |
++					(value >> 16);
++			location[1] = (location[1] & 0xFFFF0000) |
++					(value & 0xFFFF);
++			pr_debug("R_MICROBLAZE_64 (%08lx->%08lx)\n",
++				old_value, value);
++			break;
++
++		case R_MICROBLAZE_64_PCREL:
++			locoffs = (location[0] & 0xFFFF) << 16 |
++				(location[1] & 0xFFFF);
++			value -= (unsigned long int)(location) + 4 +
++				locoffs;
++			location[0] = (location[0] & 0xFFFF0000) |
++					(value >> 16);
++			location[1] = (location[1] & 0xFFFF0000) |
++					(value & 0xFFFF);
++			pr_debug("R_MICROBLAZE_64_PCREL (%08lx)\n",
++				value);
++			break;
++
++		case R_MICROBLAZE_NONE:
++			pr_debug("R_MICROBLAZE_NONE\n");
++			break;
++
++		default:
++			printk(KERN_ERR "module %s: "
++				"Unknown relocation: %u\n",
++				module->name,
++				ELF32_R_TYPE(rela->r_info));
++			return -ENOEXEC;
++		}
++	}
++	return 0;
++}
++
++int module_finalize(const Elf32_Ehdr *hdr, const Elf_Shdr *sechdrs,
++		struct module *module)
++{
++	return 0;
++}
++
++void module_arch_cleanup(struct module *mod)
++{
++}
+diff --git a/include/asm-microblaze/module.h b/include/asm-microblaze/module.h
+new file mode 100644
+index 0000000..914565a
+--- /dev/null
++++ b/include/asm-microblaze/module.h
+@@ -0,0 +1,37 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -133,75 +267,35 @@ index 0000000..4d7e222
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_KMAP_TYPES_H
-+#define _ASM_MICROBLAZE_KMAP_TYPES_H
++#ifndef _ASM_MICROBLAZE_MODULE_H
++#define _ASM_MICROBLAZE_MODULE_H
 +
-+enum km_type {
-+	KM_BOUNCE_READ,
-+	KM_SKB_SUNRPC_DATA,
-+	KM_SKB_DATA_SOFTIRQ,
-+	KM_USER0,
-+	KM_USER1,
-+	KM_BIO_SRC_IRQ,
-+	KM_BIO_DST_IRQ,
-+	KM_PTE0,
-+	KM_PTE1,
-+	KM_IRQ0,
-+	KM_IRQ1,
-+	KM_SOFTIRQ0,
-+	KM_SOFTIRQ1,
-+	KM_TYPE_NR,
++/* Microblaze Relocations */
++#define R_MICROBLAZE_NONE 0
++#define R_MICROBLAZE_32 1
++#define R_MICROBLAZE_32_PCREL 2
++#define R_MICROBLAZE_64_PCREL 3
++#define R_MICROBLAZE_32_PCREL_LO 4
++#define R_MICROBLAZE_64 5
++#define R_MICROBLAZE_32_LO 6
++#define R_MICROBLAZE_SRO32 7
++#define R_MICROBLAZE_SRW32 8
++#define R_MICROBLAZE_64_NONE 9
++#define R_MICROBLAZE_32_SYM_OP_SYM 10
++/* Keep this the last entry. */
++#define R_MICROBLAZE_NUM 11
++
++struct mod_arch_specific {
++	int foo;
 +};
 +
-+#endif /* _ASM_MICROBLAZE_KMAP_TYPES_H */
-diff --git a/include/asm-microblaze/linkage.h b/include/asm-microblaze/linkage.h
-new file mode 100644
-index 0000000..3a8e36d
---- /dev/null
-+++ b/include/asm-microblaze/linkage.h
-@@ -0,0 +1,15 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
++#define Elf_Shdr	Elf32_Shdr
++#define Elf_Sym		Elf32_Sym
++#define Elf_Ehdr	Elf32_Ehdr
 +
-+#ifndef _ASM_MICROBLAZE_LINKAGE_H
-+#define _ASM_MICROBLAZE_LINKAGE_H
++typedef struct { volatile int counter; } module_t;
 +
-+#define __ALIGN		.align 4
-+#define __ALIGN_STR	".align 4"
-+
-+#endif /* _ASM_MICROBLAZE_LINKAGE_H */
-diff --git a/include/asm-microblaze/sections.h b/include/asm-microblaze/sections.h
-new file mode 100644
-index 0000000..d0c12fd
---- /dev/null
-+++ b/include/asm-microblaze/sections.h
-@@ -0,0 +1,21 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_SECTIONS_H
-+#define _ASM_MICROBLAZE_SECTIONS_H
-+
-+#include <asm-generic/sections.h>
-+
-+extern char _ssbss[], _esbss[];
-+extern unsigned long __ivt_start[], __ivt_end[];
-+
-+#ifdef CONFIG_MTD_UCLINUX
-+extern char *_ebss;
-+#endif
-+
-+#endif /* _ASM_MICROBLAZE_SECTIONS_H */
++#endif /* _ASM_MICROBLAZE_MODULE_H */
 -- 
 1.5.4.GIT
 
