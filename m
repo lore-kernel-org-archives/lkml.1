@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756008AbYGHQVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbYGHQ0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756008AbYGHQVp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 12:21:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbYGHQVi
+	id S1755284AbYGHQ0q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 12:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753799AbYGHQ0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 12:21:38 -0400
-Received: from mtagate1.uk.ibm.com ([195.212.29.134]:54529 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753852AbYGHQVh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 12:21:37 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 0/3] stop_machine enhancements and simplifications
-Date: Tue, 8 Jul 2008 18:21:09 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Jason Baron <jbaron@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Max Krasnyansky <maxk@qualcomm.com>
-References: <200807081750.55536.rusty@rustcorp.com.au>
-In-Reply-To: <200807081750.55536.rusty@rustcorp.com.au>
+	Tue, 8 Jul 2008 12:26:37 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:63908 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753661AbYGHQ0g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 12:26:36 -0400
+Date: Tue, 8 Jul 2008 17:25:26 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Andreas Herrmann <andreas.herrmann3@amd.com>, Ingo Molnar <mingo@elte.hu>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <lenb@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-next@vger.kernel.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] acpi: Disable IRQ 0 through I/O APIC for some HP
+ systems
+In-Reply-To: <200807081727.40605.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.55.0807081646270.27931@cliff.in.clinika.pl>
+References: <Pine.LNX.4.55.0807010055070.30785@cliff.in.clinika.pl>
+ <20080708112402.GA2301@alberich.amd.com> <200807081727.40605.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807081821.09722.borntraeger@de.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 8. Juli 2008 schrieb Rusty Russell:
-> Hi all,
+On Tue, 8 Jul 2008, Rafael J. Wysocki wrote:
+
+> > (B) The current approach to setup timer as ExtINT.
+[...]
+> > (B) ??? who tested this, Rafael
 > 
->    Here are the three stop_machine patches I've queued for the next merge
-> window.  The first two are pretty well tested via linux-next, the last is
-> recent but fairly straightforward.
+> Yes, I tested this.
 
-Hmm, these patches dont fit on kvm.git so I tested the version from 
-linux-next.
+ There is some confusion here apparently -- you certainly have not tested
+the timer as an ExtINTA interrupt during the course of this discussion,
+because the "8259A Virtual Wire" through the local APIC has always worked
+for you.  ExtINTA would be the next, fourth and final attempt before a
+panic().
 
-When using linux-next in a kvm guest on a linux-next host this patch set 
-really improves the situation. On a guest with 64 cpus on a 1 cpu host 
-stop_machine_run seems to finish immediately. 
+ For a reference, here is the list of configurations of the 8254 timer
+interrupt in the order they are tried:
 
-I still have some strange problems with 25 guests * 64 cpus on one host cpu, 
-but this requires further analysis.
+1. Native I/O APIC interrupt.
 
-IMHO this patch set is really an improvement to the earlier version:
+2. "8259A Virtual Wire" through the I/O APIC.
 
-Acked-by: Christian Borntraeger <borntraeger@de.ibm.com>
+3. "8259A Virtual Wire" through the local APIC of the bootstrap processor.
 
+4. ExtINTA ("Virtual Wire") through the local APIC of the BSP.
+
+The configurations #1 and #2 are only tried if the firmware has supplied
+information about how the IRQ0 or 8259A have been wired.  The #4 is only
+reached in very rare cases where there is some special glue logic between
+the 8259A and the APIC (seen before as a workaround for broken hardware;  
+unlock_ExtINT_logic() is needed for that) or a given implementation of the
+8259A is not a full one (hypothetical).
+
+  Maciej
