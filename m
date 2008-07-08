@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759025AbYGHMO2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758950AbYGHMMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759025AbYGHMO2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 08:14:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758690AbYGHML4
+	id S1758950AbYGHMMm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 08:12:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758045AbYGHMKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 08:11:56 -0400
-Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27053 "EHLO
+	Tue, 8 Jul 2008 08:10:37 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:26011 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758586AbYGHMLy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 08:11:54 -0400
+	id S1758536AbYGHMKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 08:10:33 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
@@ -18,11 +18,11 @@ Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
        grant.likely@secretlab.ca, vapier.adi@gmail.com,
        alan@lxorguk.ukuu.org.uk, hpa@zytor.com, lethal@linux-sh.org,
        florian@openwrt.org, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 43/58] microblaze_v5: stats headers
-Date: Tue,  8 Jul 2008 13:59:43 +0200
-Message-Id: <421f4b613d4dbd983df1545a9a163347e5bd1c56.1215517976.git.monstr@monstr.eu>
+Subject: [PATCH 24/58] microblaze_v5: process and init task function
+Date: Tue,  8 Jul 2008 13:59:24 +0200
+Message-Id: <9a32168fe72b772f301216a7090670474af78e49.1215517976.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <5b2ed516b2e51d5117386c1b6eb814acc6e5a157.1215517976.git.monstr@monstr.eu>
+In-Reply-To: <5da1d8f069f18f14faee8c4bff736791179ef6f1.1215517976.git.monstr@monstr.eu>
 References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
  <c03d29cbccaef8aed8a2911c2a259fbd79ad23d9.1215517976.git.monstr@monstr.eu>
@@ -47,25 +47,6 @@ References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <eb0e741f891335df37c3cd19f1a3ce2f7ce8652a.1215517976.git.monstr@monstr.eu>
  <b28df2ea2419cbda26f9089ed6edcc175c009688.1215517976.git.monstr@monstr.eu>
  <5da1d8f069f18f14faee8c4bff736791179ef6f1.1215517976.git.monstr@monstr.eu>
- <9a32168fe72b772f301216a7090670474af78e49.1215517976.git.monstr@monstr.eu>
- <7ada4bceefc1806a2c8ef73676b7aabd8ac1cad6.1215517976.git.monstr@monstr.eu>
- <701c1dac442ac09f5010cb5356cc1a12bb0abfe1.1215517976.git.monstr@monstr.eu>
- <9b48e9d85b4a5a6dcffce8eef62b232b6bfac8e8.1215517976.git.monstr@monstr.eu>
- <04b0b222b84ba9cfe2507a9081f4d715f2323733.1215517976.git.monstr@monstr.eu>
- <d4c1b3ecfec1bf37ca0ecea6909ad25bbc945630.1215517976.git.monstr@monstr.eu>
- <6e5687d37386334cf122d1eafcca0c6649c955be.1215517976.git.monstr@monstr.eu>
- <689cff1b6d98f60d8f8abc4472193688b524284d.1215517976.git.monstr@monstr.eu>
- <9664f18e7e86af4332018549b29bf0797d6afcd5.1215517976.git.monstr@monstr.eu>
- <c7120d8a6379cb1a18af5330997e30ec974acc2f.1215517976.git.monstr@monstr.eu>
- <d1d33c18956829ec9ac7daf8d0516b17e85ed190.1215517976.git.monstr@monstr.eu>
- <7a16429cfc461420883dbaa80c16047e5a1a91c1.1215517976.git.monstr@monstr.eu>
- <b6a0f3bceb0867c55613463fc43be5328fcedecd.1215517976.git.monstr@monstr.eu>
- <fc26823d77c7180b62022e2d4bcca3c4fe6de574.1215517976.git.monstr@monstr.eu>
- <64089967061955b7a29eb6d4e6269ff75b5442f2.1215517976.git.monstr@monstr.eu>
- <92e3ab88c2174acf4e25c474c1f68ffd4db72ca6.1215517976.git.monstr@monstr.eu>
- <5174afd0eaa5c6cb9344ea3217199e48899be313.1215517976.git.monstr@monstr.eu>
- <bcb94400dca62fb349d0ab1e0a6209291fdcdfc5.1215517976.git.monstr@monstr.eu>
- <5b2ed516b2e51d5117386c1b6eb814acc6e5a157.1215517976.git.monstr@monstr.eu>
 In-Reply-To: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 References: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -77,98 +58,235 @@ From: Michal Simek <monstr@monstr.eu>
 Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/stat.h   |   73 +++++++++++++++++++++++++++++++++++++++
- include/asm-microblaze/statfs.h |    1 +
- 2 files changed, 74 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/stat.h
- create mode 100644 include/asm-microblaze/statfs.h
+ arch/microblaze/kernel/init_task.c |   28 ++++++
+ arch/microblaze/kernel/process.c   |  183 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 211 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/init_task.c
+ create mode 100644 arch/microblaze/kernel/process.c
 
-diff --git a/include/asm-microblaze/stat.h b/include/asm-microblaze/stat.h
+diff --git a/arch/microblaze/kernel/init_task.c b/arch/microblaze/kernel/init_task.c
 new file mode 100644
-index 0000000..9767b11
+index 0000000..c841b55
 --- /dev/null
-+++ b/include/asm-microblaze/stat.h
-@@ -0,0 +1,73 @@
++++ b/arch/microblaze/kernel/init_task.c
+@@ -0,0 +1,28 @@
 +/*
-+ * Microblaze stat structure
++ * Copyright (C) 2006 Atmark Techno, Inc.
 + *
-+ * Copyright (C) 2001,02,03 NEC Electronics Corporation
-+ * Copyright (C) 2001,02,03 Miles Bader <miles@gnu.org>
-+ *
-+ * This file is subject to the terms and conditions of the GNU General
-+ * Public License. See the file COPYING in the main directory of this
-+ * archive for more details.
-+ *
-+ * Written by Miles Bader <miles@gnu.org>
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_STAT_H
-+#define _ASM_MICROBLAZE_STAT_H
++#include <linux/module.h>
++#include <linux/sched.h>
++#include <linux/init_task.h>
++#include <linux/fs.h>
++#include <linux/mqueue.h>
 +
-+#include <asm/posix_types.h>
++#include <asm/pgtable.h>
 +
-+struct stat {
-+	unsigned int	st_dev;
-+	unsigned long	st_ino;
-+	unsigned int	st_mode;
-+	unsigned int	st_nlink;
-+	unsigned int	st_uid;
-+	unsigned int	st_gid;
-+	unsigned int	st_rdev;
-+	long		st_size;
-+	unsigned long	st_blksize;
-+	unsigned long	st_blocks;
-+	unsigned long	st_atime;
-+	unsigned long	__unused1;
-+	unsigned long	st_mtime;
-+	unsigned long	__unused2;
-+	unsigned long	st_ctime;
-+	unsigned long	__unused3;
-+	unsigned long	__unused4;
-+	unsigned long	__unused5;
-+};
++static struct fs_struct init_fs = INIT_FS;
++static struct signal_struct init_signals = INIT_SIGNALS(init_signals);
++static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
++struct mm_struct init_mm = INIT_MM(init_mm);
++EXPORT_SYMBOL(init_mm);
 +
-+struct stat64 {
-+	unsigned long long	st_dev;
-+	unsigned long	__unused1;
++union thread_union init_thread_union
++	__attribute__((__section__(".data.init_task"))) =
++{ INIT_THREAD_INFO(init_task) };
 +
-+	unsigned long long	st_ino;
-+
-+	unsigned int	st_mode;
-+	unsigned int	st_nlink;
-+
-+	unsigned int	st_uid;
-+	unsigned int	st_gid;
-+
-+	unsigned long long	st_rdev;
-+	unsigned long	__unused3;
-+
-+	long long	st_size;
-+	unsigned long	st_blksize;
-+
-+	unsigned long	st_blocks; /* No. of 512-byte blocks allocated */
-+	unsigned long	__unused4; /* future possible st_blocks high bits */
-+
-+	unsigned long	st_atime;
-+	unsigned long	st_atime_nsec;
-+
-+	unsigned long	st_mtime;
-+	unsigned long	st_mtime_nsec;
-+
-+	unsigned long	st_ctime;
-+	unsigned long	st_ctime_nsec;
-+
-+	unsigned long	__unused8;
-+};
-+
-+#endif /* _ASM_MICROBLAZE_STAT_H */
-diff --git a/include/asm-microblaze/statfs.h b/include/asm-microblaze/statfs.h
++struct task_struct init_task = INIT_TASK(init_task);
++EXPORT_SYMBOL(init_task);
+diff --git a/arch/microblaze/kernel/process.c b/arch/microblaze/kernel/process.c
 new file mode 100644
-index 0000000..0b91fe1
+index 0000000..312ab19
 --- /dev/null
-+++ b/include/asm-microblaze/statfs.h
-@@ -0,0 +1 @@
-+#include <asm-generic/statfs.h>
++++ b/arch/microblaze/kernel/process.c
+@@ -0,0 +1,183 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#include <linux/module.h>
++#include <linux/sched.h>
++#include <linux/pm.h>
++#include <linux/tick.h>
++
++#include <asm/bitops.h>
++#include <asm/system.h>
++#include <asm/pgalloc.h>
++
++static int hlt_counter = 1;
++
++/* FIXME */
++void show_regs(struct pt_regs *regs)
++{
++	unsigned long *p;
++	int i;
++	printk(KERN_INFO "pc:\t0x%08lx\tsp:\t0x%08lx\n", regs->pc, regs->r1);
++	printk(KERN_INFO
++		"flags:\t0x%08lx\tear:\t0x%08lx\tesr:\t"
++		"0x%08lx\tfsr:\t0x%08lx\n",
++		regs->msr, regs->ear, regs->esr, regs->fsr);
++	printk(KERN_INFO
++		"r0:\t0x%08lx\tr1:\t0x%08lx\tr2:\t0x%08lx\tr3\t0x%08lx\n",
++		0L, regs->r1, regs->r2, regs->r3);
++	for (i = 4, p = &(regs->r4); i < 32; i += 4, p += 4) {
++		printk(KERN_INFO "r%i:\t0x%08lx\tr%i:\t0x%08lx\tr%i:\t"
++			"0x%08lx\tr%i:\t0x%08lx\n",
++			i, *p, i+1, *(p+1), i+2, *(p+2), i+3, *(p+3));
++	}
++	printk(KERN_INFO "\n");
++}
++
++void (*pm_idle)(void);
++void (*pm_power_off)(void) = NULL;
++EXPORT_SYMBOL(pm_power_off);
++
++void disable_hlt(void)
++{
++	hlt_counter++;
++}
++EXPORT_SYMBOL(disable_hlt);
++
++void enable_hlt(void)
++{
++	hlt_counter--;
++}
++EXPORT_SYMBOL(enable_hlt);
++
++static int __init nohlt_setup(char *__unused)
++{
++	hlt_counter = 1;
++	return 1;
++}
++__setup("nohlt", nohlt_setup);
++
++static int __init hlt_setup(char *__unused)
++{
++	hlt_counter = 0;
++	return 1;
++}
++__setup("hlt", hlt_setup);
++
++void default_idle(void)
++{
++	if (!hlt_counter) {
++		clear_thread_flag(TIF_POLLING_NRFLAG);
++		smp_mb__after_clear_bit();
++		local_irq_disable();
++		while (!need_resched())
++			cpu_sleep();
++		local_irq_enable();
++		set_thread_flag(TIF_POLLING_NRFLAG);
++	} else
++		while (!need_resched())
++			cpu_relax();
++}
++
++void cpu_idle(void)
++{
++	set_thread_flag(TIF_POLLING_NRFLAG);
++
++	/* endless idle loop with no priority at all */
++	while (1) {
++		void (*idle)(void) = pm_idle;
++
++		if (!idle)
++			idle = default_idle;
++
++		tick_nohz_stop_sched_tick();
++		while (!need_resched())
++			idle();
++		tick_nohz_restart_sched_tick();
++
++		preempt_enable_no_resched();
++		schedule();
++		preempt_disable();
++		check_pgt_cache();
++	}
++}
++
++void flush_thread(void)
++{
++}
++
++int copy_thread(int nr, unsigned long clone_flags, unsigned long usp,
++		unsigned long unused,
++		struct task_struct *p, struct pt_regs *regs)
++{
++	struct pt_regs *childregs = task_pt_regs(p);
++	struct thread_info *ti = task_thread_info(p);
++
++	*childregs = *regs;
++
++	if (user_mode(regs))
++		childregs->r1 = usp;
++	else
++		childregs->r1 = ((unsigned long) ti) + THREAD_SIZE;
++
++	memset(&ti->cpu_context, 0, sizeof(struct cpu_context));
++	ti->cpu_context.r1 = (unsigned long)childregs;
++	ti->cpu_context.msr = (unsigned long)childregs->msr;
++	ti->cpu_context.r15 = (unsigned long)ret_from_fork - 8;
++
++	if (clone_flags & CLONE_SETTLS)
++		;/* FIXME: not sure what to do */
++
++	return 0;
++}
++
++/*
++ * Return saved PC of a blocked thread.
++ * FIXME this needs to be checked
++ */
++unsigned long thread_saved_pc(struct task_struct *tsk)
++{
++	struct cpu_context *ctx =
++		&(((struct thread_info *)(tsk->stack))->cpu_context);
++
++	/* Check whether the thread is blocked in resume() */
++	if (in_sched_functions(ctx->r15))
++		return ((unsigned long)ctx->r15);
++	else
++		return ctx->r14;
++}
++
++static void kernel_thread_helper(int (*fn)(void *), void *arg)
++{
++	fn(arg);
++	do_exit(-1);
++}
++
++int kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
++{
++	struct pt_regs regs;
++	int ret;
++
++	memset(&regs, 0, sizeof(regs));
++	/* store them in non-volatile registers */
++	regs.r5 = (unsigned long)fn;
++	regs.r6 = (unsigned long)arg;
++	local_save_flags(regs.msr);
++	regs.pc = (unsigned long)kernel_thread_helper;
++	regs.kernel_mode = 1;
++
++	ret = do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0,
++			&regs, 0, NULL, NULL);
++
++	return ret;
++}
++
++unsigned long get_wchan(struct task_struct *p)
++{
++/* TBD (used by procfs) */
++	return 0;
++}
 -- 
 1.5.4.GIT
 
