@@ -1,109 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757521AbYGHTKN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755115AbYGHTWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757521AbYGHTKN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 15:10:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbYGHTKA
+	id S1755115AbYGHTWx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 15:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752378AbYGHTWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 15:10:00 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:12593 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754689AbYGHTKA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 15:10:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=u75OnGwllr/1Y3sSyRvMFOEWaqY9BzM9mPLCs1W0AmGn9Cr63qu7bjEThQzEL1rL2i
-         oh2AQ/r4KQCUXLhV61uVwh/nPFGHjg1UVHEGI5wUfZ40tY1T5Dr4cWd+Ay6Gf9BlRW1F
-         MO4AIBfakcBMaJL/lsSWQaCADIDx/tBhmZVwg=
-Date: Tue, 8 Jul 2008 23:09:56 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Q] Is 64bit LVTT screwed
-Message-ID: <20080708190956.GC2775@asus>
-References: <20080702184024.GC7003@cvg> <Pine.LNX.4.55.0807072243410.20615@cliff.in.clinika.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.55.0807072243410.20615@cliff.in.clinika.pl>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 8 Jul 2008 15:22:45 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:40936 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750804AbYGHTWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 15:22:44 -0400
+Date: Tue, 8 Jul 2008 21:22:34 +0200
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Andres Salomon <dilinger@queued.net>
+Cc: drzeus-sdhci@drzeus.cx, sdhci-devel@list.drzeus.cx,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] mmc: have mmc_align_data_size use ALIGN() macro
+Message-ID: <20080708212234.62dc8c1b@mjolnir.drzeus.cx>
+In-Reply-To: <20080707172646.79cc214c@fred>
+References: <20080707172646.79cc214c@fred>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.4; i386-redhat-linux-gnu)
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
+X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-25402-1215544962-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Maciej W. Rozycki - Mon, Jul 07, 2008 at 11:08:57PM +0100]
-[...]
-| > 
-| > but in both cases we use "divide by 16" in divide register. The only
-| > explanation I imagine - for 64bit mode we are required to 'stuck'
-| > for a bit longer (by 16 times longer to be precise). Am I right?
-| > Or there is another reason why we dont use APIC_DIVISOR here. Actually,
-| > as I see it not fair to a caller. For 64bit mode APIC timer is requested
-| > to count 250000000 ticks but in real it will count 250000000 * 16.
-| > Not sure who is right there. I think the better would be to
-| > use 4000000000 and APIC_DIVISOR in 64bit mode. How do you think?
-| 
-|  The APIC clock varies across systems so the timer setup includes
-| calibration.  Which means both variations end up with the correct
-| interrupt rate probably, except using different divisors.  We used to
-| print the APIC clock rate and that would be off with one of the above, but
-| I don't we do this anymore.  We had a similar problem with the 82489DX
-| where the prescaler was bypassed altogether resulting in an incorrect 
-| clock rate printed, but the rate of timer interrupt was correctly 
-| calibrated regardless.
-| 
-|  This is of course merely an explanation why the code you quoted does not
-| explode spectacularly.  It does not make it correct.  If the prescaler is
-| indeed set to 16 for 64-bit systems, then APIC_DIVISOR should obviously be
-| used in the calculation above too.  And if not, then I think the prescaler 
-| should be set consistently across systems and then the setting reflected 
-| in the calculations accordingly.  Please note that only values between 2 
-| and 16 are supported in a uniform way across all the APIC models and using 
-| low values risks an overflow as clock rates are in the GHz range these 
-| days already.  The value of 16 seems a reasonable one.
-| 
-|   Maciej
-|
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Maciej, I think the right soulution is the next:
+--=_freyr.drzeus.cx-25402-1215544962-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Index: linux-2.6.git/arch/x86/kernel/apic_64.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/apic_64.c	2008-07-08 22:52:24.000000000 +0400
-+++ linux-2.6.git/arch/x86/kernel/apic_64.c	2008-07-08 23:00:24.000000000 +0400
-@@ -165,6 +165,9 @@ int lapic_get_maxlvt(void)
- 	return maxlvt;
- }
- 
-+/* Clock divisor is set to 16 */
-+#define APIC_DIVISOR 16
-+
- /*
-  * This function sets up the local APIC timer, with a timeout of
-  * 'clocks' APIC bus clock. During calibration we actually call
-@@ -197,7 +200,7 @@ static void __setup_APIC_LVTT(unsigned i
- 				| APIC_TDR_DIV_16);
- 
- 	if (!oneshot)
--		apic_write(APIC_TMICT, clocks);
-+		apic_write(APIC_TMICT, clocks/APIC_DIVISOR);
- }
- 
- /*
-@@ -329,7 +332,7 @@ static void __init calibrate_APIC_clock(
- 	 *
- 	 * No interrupt enable !
- 	 */
--	__setup_APIC_LVTT(250000000, 0, 0);
-+	__setup_APIC_LVTT(4000000000, 0, 0);
- 
- 	apic_start = apic_read(APIC_TMCCT);
- #ifdef CONFIG_X86_PM_TIMER
+On Mon, 7 Jul 2008 17:26:46 -0400
+Andres Salomon <dilinger@queued.net> wrote:
 
-So we remain behaviour the same (ie calibrating duration remains the same)
-but it has touched lapic_timer_setup. Will take a look into this more closer
-soon.
+>=20
+> No sense manually doing the alignment dance, there's a macro for that.
 
-		- Cyrill -
+There are so many macros in those headers, it's impossible to keep
+track of them all. :/
+
+> Once the optimal alignment stuff is added, this could
+> probably turn into something like this (in core.h):
+>=20
+
+I'm afraid you missed the main discussion, but the idea is to expand
+that function and make it depend on the particular bugs of the
+controller associated with the given card. I.e. it will not stay
+suitable for inlining very long.
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-25402-1215544962-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkhzvoEACgkQ7b8eESbyJLgXUgCcCXH6uMN/d/E/gGbXguUp7P7F
+AYgAn3Ug/td8zz4UNVIBcDD8YzOqW4m8
+=OXKN
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-25402-1215544962-0001-2--
