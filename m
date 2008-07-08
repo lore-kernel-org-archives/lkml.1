@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757484AbYGHMlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757882AbYGHMlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757484AbYGHMlg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 08:41:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbYGHMlY
+	id S1757882AbYGHMlv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 08:41:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757479AbYGHMlg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 08:41:24 -0400
-Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27500 "EHLO
+	Tue, 8 Jul 2008 08:41:36 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27512 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753422AbYGHMlW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 08:41:22 -0400
+	id S1756407AbYGHMlf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 08:41:35 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
@@ -18,32 +18,16 @@ Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
        grant.likely@secretlab.ca, vapier.adi@gmail.com,
        alan@lxorguk.ukuu.org.uk, hpa@zytor.com, lethal@linux-sh.org,
        florian@openwrt.org, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 21/58] microblaze_v5: heartbeat file
-Date: Tue,  8 Jul 2008 13:59:21 +0200
-Message-Id: <eb0e741f891335df37c3cd19f1a3ce2f7ce8652a.1215517976.git.monstr@monstr.eu>
+Subject: [PATCH 05/58] microblaze_v5: Open firmware files2
+Date: Tue,  8 Jul 2008 13:59:05 +0200
+Message-Id: <2a24e5bc2cfbd349613ef10c716a28f04ce24a9f.1215517976.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <875ba2708f6cd3c585e4d965142e2feb07c39a0e.1215517976.git.monstr@monstr.eu>
+In-Reply-To: <810775b1bb678003923039726a9153ee34fb67b4.1215517976.git.monstr@monstr.eu>
 References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
  <c03d29cbccaef8aed8a2911c2a259fbd79ad23d9.1215517976.git.monstr@monstr.eu>
  <58f35f498bac29e7105c589c06567e86c5a42dd5.1215517976.git.monstr@monstr.eu>
  <810775b1bb678003923039726a9153ee34fb67b4.1215517976.git.monstr@monstr.eu>
- <2a24e5bc2cfbd349613ef10c716a28f04ce24a9f.1215517976.git.monstr@monstr.eu>
- <3171c5cf21eefc79665165f4a14bc5b68dd03f95.1215517976.git.monstr@monstr.eu>
- <9be4eff2f4d015023c453eaec3b3473a44380491.1215517976.git.monstr@monstr.eu>
- <f8e331ed9432719f3c0555c840cbbb7bbc1a6322.1215517976.git.monstr@monstr.eu>
- <4409daf2ac356e902a8f091bb5908eb8a90218bc.1215517976.git.monstr@monstr.eu>
- <f7458acb0252f72b5620d19c76104408ecc2e451.1215517976.git.monstr@monstr.eu>
- <dbd9df742cdd9eb3355d7bc8e39f9dfef6c545e4.1215517976.git.monstr@monstr.eu>
- <1f9a1f345caa749cb630cf85f95f217366395069.1215517976.git.monstr@monstr.eu>
- <fe3686f0f70d838b33642bcbcd7185fc2180b366.1215517976.git.monstr@monstr.eu>
- <e61f5a8579570cf7cd18a22e4106b7f85518928e.1215517976.git.monstr@monstr.eu>
- <59d7e0a5f38b8d38f01f357a071fc93eed36f3a8.1215517976.git.monstr@monstr.eu>
- <143afcf84af583ab66da7e8acfc9eb03b7f3eaa0.1215517976.git.monstr@monstr.eu>
- <a967ee4e5a60b410e2810ce0475e8fd04f99e3ae.1215517976.git.monstr@monstr.eu>
- <c5f0730287365c845746467a9917dbc07d2fca3c.1215517976.git.monstr@monstr.eu>
- <2aa1ac7891af57959237aae3addf4bbe607f55d7.1215517976.git.monstr@monstr.eu>
- <875ba2708f6cd3c585e4d965142e2feb07c39a0e.1215517976.git.monstr@monstr.eu>
 In-Reply-To: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 References: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -55,51 +39,97 @@ From: Michal Simek <monstr@monstr.eu>
 Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/kernel/heartbeat.c |   35 +++++++++++++++++++++++++++++++++++
- 1 files changed, 35 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/kernel/heartbeat.c
+ arch/microblaze/kernel/of_device.c  |   42 +++++++++++++++++++++++++++++++++++
+ arch/microblaze/platform/platform.c |   31 +++++++++++++++++++++++++
+ 2 files changed, 73 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/of_device.c
+ create mode 100644 arch/microblaze/platform/platform.c
 
-diff --git a/arch/microblaze/kernel/heartbeat.c b/arch/microblaze/kernel/heartbeat.c
+diff --git a/arch/microblaze/kernel/of_device.c b/arch/microblaze/kernel/of_device.c
 new file mode 100644
-index 0000000..5a21c1d
+index 0000000..984d066
 --- /dev/null
-+++ b/arch/microblaze/kernel/heartbeat.c
-@@ -0,0 +1,35 @@
++++ b/arch/microblaze/kernel/of_device.c
+@@ -0,0 +1,42 @@
++#include <linux/string.h>
++#include <linux/kernel.h>
++#include <linux/of.h>
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/mod_devicetable.h>
++#include <linux/slab.h>
++#include <linux/of_device.h>
++
++#include <asm/errno.h>
++
++void of_device_make_bus_id(struct of_device *dev)
++{
++	static atomic_t bus_no_reg_magic;
++	struct device_node *node = dev->node;
++	char *name = dev->dev.bus_id;
++	const u32 *reg;
++	u64 addr;
++	int magic;
++
++	/*
++	 * For MMIO, get the physical address
++	 */
++	reg = of_get_property(node, "reg", NULL);
++	if (reg) {
++		addr = of_translate_address(node, reg);
++		if (addr != OF_BAD_ADDR) {
++			snprintf(name, BUS_ID_SIZE,
++				 "%llx.%s", (unsigned long long)addr,
++				 node->name);
++			return;
++		}
++	}
++
++	/*
++	 * No BusID, use the node name and add a globally incremented
++	 * counter (and pray...)
++	 */
++	magic = atomic_add_return(1, &bus_no_reg_magic);
++	snprintf(name, BUS_ID_SIZE, "%s.%d", node->name, magic - 1);
++}
++EXPORT_SYMBOL(of_device_make_bus_id);
+diff --git a/arch/microblaze/platform/platform.c b/arch/microblaze/platform/platform.c
+new file mode 100644
+index 0000000..fa0edaf
+--- /dev/null
++++ b/arch/microblaze/platform/platform.c
+@@ -0,0 +1,31 @@
 +/*
-+ * Copyright (C) 2007-2008 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2006 Atmark Techno, Inc.
++ * Copyright 2008 Michal Simek <monstr@monstr.eu>
 + *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
++ * based on virtex.c file
++ *
++ * Copyright 2007 Secret Lab Technologies Ltd.
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
 + */
 +
-+#include <linux/sched.h>
-+#include <asm/page.h>
-+#include <asm/io.h>
-+#include <asm/setup.h>
++#include <linux/init.h>
++#include <linux/of_platform.h>
++#include <asm/prom.h>
 +
-+void heartbeat(void)
++static struct of_device_id xilinx_of_bus_ids[] __initdata = {
++	{ .compatible = "simple-bus", },
++	{ .compatible = "xlnx,plb-v46-1.00.a", },
++	{ .compatible = "xlnx,opb-v20-1.10.c", },
++	{ .compatible = "xlnx,opb-v20-1.10.b", },
++	{ .compatible = "xlnx,compound", },
++	{}
++};
++
++int __init microblaze_device_probe(void)
 +{
-+	static unsigned int cnt, period, dist;
-+
-+	if (cnt == 0 || cnt == dist)
-+		iowrite32(1, CONFIG_HEART_BEAT_ADDRESS);
-+	else if (cnt == 7 || cnt == dist + 7)
-+		iowrite32(0, CONFIG_HEART_BEAT_ADDRESS);
-+
-+	if (++cnt > period) {
-+		cnt = 0;
-+		/*
-+		 * The hyperbolic function below modifies the heartbeat period
-+		 * length in dependency of the current (5min) load. It goes
-+		 * through the points f(0)=126, f(1)=86, f(5)=51, f(inf)->30.
-+		 */
-+		period = ((672 << FSHIFT) / (5 * avenrun[0] +
-+					(7 << FSHIFT))) + 30;
-+		dist = period / 4;
-+	}
++	of_platform_bus_probe(NULL, xilinx_of_bus_ids, NULL);
++	return 0;
 +}
++device_initcall(microblaze_device_probe);
 -- 
 1.5.4.GIT
 
