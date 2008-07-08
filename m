@@ -1,201 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755681AbYGHTap@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755854AbYGHTfL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755681AbYGHTap (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 15:30:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbYGHTah
+	id S1755854AbYGHTfL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 15:35:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbYGHTe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 15:30:37 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:22709 "EHLO mx2.netapp.com"
+	Tue, 8 Jul 2008 15:34:58 -0400
+Received: from mga01.intel.com ([192.55.52.88]:53018 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753716AbYGHTag (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 15:30:36 -0400
+	id S1752378AbYGHTe4 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 15:34:56 -0400
+X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.30,325,1212390000"; 
-   d="scan'208";a="7954271"
-Subject: Please pull NFS client fixes for kernel 2.6.26-pre9
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: NetApp
-Date: Tue, 08 Jul 2008 15:30:12 -0400
-Message-Id: <1215545412.17304.6.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-X-OriginalArrivalTime: 08 Jul 2008 19:30:32.0996 (UTC) FILETIME=[16AA3640:01C8E131]
+   d="scan'208";a="586734990"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Check for BIOS bugs - Original Subject: Re: [PATCH 23/70] ACPICA: Workaround for reversed _PRT entries from BIOS
+Date: Tue, 8 Jul 2008 12:34:55 -0700
+Message-ID: <960B77DF2E6D974DBE24FD066EAEE8DAD90886@azsmsx422.amr.corp.intel.com>
+In-Reply-To: <48738A65.9060905@linux.intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Check for BIOS bugs - Original Subject: Re: [PATCH 23/70] ACPICA: Workaround for reversed _PRT entries from BIOS
+Thread-Index: AcjhEO3E3ztaUQRQSGOuDRLxkT2F/QAGtitA
+References: <1213947852-10924-1-git-send-email-lenb@kernel.org> <deade3c973eb9c98d2a6cfed658bbb49e693894a.1213947350.git.len.brown@intel.com> <200807011033.27887.trenn@suse.de> <20080707111207.GH5643@ucw.cz> <48738A65.9060905@linux.intel.com>
+From: "Brown, Len" <len.brown@intel.com>
+To: "Arjan van de Ven" <arjan@linux.intel.com>, "Pavel Machek" <pavel@suse.cz>
+Cc: "Thomas Renninger" <trenn@suse.de>, "Len Brown" <lenb@kernel.org>,
+       <linux-acpi@vger.kernel.org>, "Moore, Robert" <robert.moore@intel.com>,
+       "Lin, Ming M" <ming.m.lin@intel.com>,
+       "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
+       "Huang Cheng" <cheng.huang@intel.com>,
+       <firmwarekit-discuss@bughost.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 08 Jul 2008 19:34:55.0820 (UTC) FILETIME=[B351F8C0:01C8E131]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
-
-Please pull from the "hotfixes" branch of the repository at
-
-   git pull git://git.linux-nfs.org/projects/trondmy/nfs-2.6.git hotfixes
-
-This will update the following files through the appended changesets.
-
-  Cheers,
-    Trond
-
-----
- fs/nfs/dir.c           |    2 +-
- net/sunrpc/rpcb_clnt.c |   23 +++++++++++------------
- 2 files changed, 12 insertions(+), 13 deletions(-)
-
-commit 803a9067e19714ea7b7da760fe92f0d53bfa6994
-Author: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date:   Tue Jul 1 15:20:55 2008 -0400
-
-    SUNRPC: Fix an rpcbind breakage for the case of IPv6 lookups
-    
-    Now that rpcb_next_version has been split into an IPv4 version and an IPv6
-    version, we Oops when rpcb_call_async attempts to look up the IPv6-specific
-    RPC procedure in rpcb_next_version.
-    
-    Fix the Oops simply by having rpcb_getport_async pass the correct RPC
-    procedure as an argument.
-    
-    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-
-commit 0d3a34b48c87a374b37d7a21a60d257d076484f3
-Author: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date:   Mon Jul 7 12:18:52 2008 -0400
-
-    SUNRPC: Fix a double-free in rpcbind
-    
-    It is wrong to be freeing up the rpcbind arguments if the call to
-    rpcb_call_async() fails, since they should already have been freed up by
-    rpcb_map_release().
-    
-    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-
-commit 2aac05a91971fbd1bf6cbed78b8731eb7454b9b7
-Author: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date:   Mon Jul 7 13:26:10 2008 -0400
-
-    NFS: Fix readdir cache invalidation
-    
-    invalidate_inode_pages2_range() takes page offset arguments, not byte
-    ranges.
-    
-    Another thought is that individual pages might perhaps get evicted by VM
-    pressure, in which case we might perhaps want to re-read not only the
-    evicted page, but all subsequent pages too (in case the server returns
-    more/less data per page so that the alignment of the next entry
-    changes). We should therefore remove the condition that we only do this on
-    page->index==0.
-    
-    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-
-diff --git a/fs/nfs/dir.c b/fs/nfs/dir.c
-index 58d43da..982a206 100644
---- a/fs/nfs/dir.c
-+++ b/fs/nfs/dir.c
-@@ -204,7 +204,7 @@ int nfs_readdir_filler(nfs_readdir_descriptor_t *desc, struct page *page)
- 	 * Note: assumes we have exclusive access to this mapping either
- 	 *	 through inode->i_mutex or some other mechanism.
- 	 */
--	if (page->index == 0 && invalidate_inode_pages2_range(inode->i_mapping, PAGE_CACHE_SIZE, -1) < 0) {
-+	if (invalidate_inode_pages2_range(inode->i_mapping, page->index + 1, -1) < 0) {
- 		/* Should never happen */
- 		nfs_zap_mapping(inode, inode->i_mapping);
- 	}
-diff --git a/net/sunrpc/rpcb_clnt.c b/net/sunrpc/rpcb_clnt.c
-index 0517967..e6fb21b 100644
---- a/net/sunrpc/rpcb_clnt.c
-+++ b/net/sunrpc/rpcb_clnt.c
-@@ -243,10 +243,10 @@ int rpcb_getport_sync(struct sockaddr_in *sin, u32 prog, u32 vers, int prot)
- }
- EXPORT_SYMBOL_GPL(rpcb_getport_sync);
  
--static struct rpc_task *rpcb_call_async(struct rpc_clnt *rpcb_clnt, struct rpcbind_args *map, int version)
-+static struct rpc_task *rpcb_call_async(struct rpc_clnt *rpcb_clnt, struct rpcbind_args *map, struct rpc_procinfo *proc)
- {
- 	struct rpc_message msg = {
--		.rpc_proc = rpcb_next_version[version].rpc_proc,
-+		.rpc_proc = proc,
- 		.rpc_argp = map,
- 		.rpc_resp = &map->r_port,
- 	};
-@@ -271,6 +271,7 @@ static struct rpc_task *rpcb_call_async(struct rpc_clnt *rpcb_clnt, struct rpcbi
- void rpcb_getport_async(struct rpc_task *task)
- {
- 	struct rpc_clnt *clnt = task->tk_client;
-+	struct rpc_procinfo *proc;
- 	u32 bind_version;
- 	struct rpc_xprt *xprt = task->tk_xprt;
- 	struct rpc_clnt	*rpcb_clnt;
-@@ -280,7 +281,6 @@ void rpcb_getport_async(struct rpc_task *task)
- 	struct sockaddr *sap = (struct sockaddr *)&addr;
- 	size_t salen;
- 	int status;
--	struct rpcb_info *info;
- 
- 	dprintk("RPC: %5u %s(%s, %u, %u, %d)\n",
- 		task->tk_pid, __func__,
-@@ -313,10 +313,12 @@ void rpcb_getport_async(struct rpc_task *task)
- 	/* Don't ever use rpcbind v2 for AF_INET6 requests */
- 	switch (sap->sa_family) {
- 	case AF_INET:
--		info = rpcb_next_version;
-+		proc = rpcb_next_version[xprt->bind_index].rpc_proc;
-+		bind_version = rpcb_next_version[xprt->bind_index].rpc_vers;
- 		break;
- 	case AF_INET6:
--		info = rpcb_next_version6;
-+		proc = rpcb_next_version6[xprt->bind_index].rpc_proc;
-+		bind_version = rpcb_next_version6[xprt->bind_index].rpc_vers;
- 		break;
- 	default:
- 		status = -EAFNOSUPPORT;
-@@ -324,14 +326,13 @@ void rpcb_getport_async(struct rpc_task *task)
- 				task->tk_pid, __func__);
- 		goto bailout_nofree;
- 	}
--	if (info[xprt->bind_index].rpc_proc == NULL) {
-+	if (proc == NULL) {
- 		xprt->bind_index = 0;
- 		status = -EPFNOSUPPORT;
- 		dprintk("RPC: %5u %s: no more getport versions available\n",
- 			task->tk_pid, __func__);
- 		goto bailout_nofree;
- 	}
--	bind_version = info[xprt->bind_index].rpc_vers;
- 
- 	dprintk("RPC: %5u %s: trying rpcbind version %u\n",
- 		task->tk_pid, __func__, bind_version);
-@@ -361,22 +362,20 @@ void rpcb_getport_async(struct rpc_task *task)
- 	map->r_addr = rpc_peeraddr2str(rpcb_clnt, RPC_DISPLAY_UNIVERSAL_ADDR);
- 	map->r_owner = RPCB_OWNER_STRING;	/* ignored for GETADDR */
- 
--	child = rpcb_call_async(rpcb_clnt, map, xprt->bind_index);
-+	child = rpcb_call_async(rpcb_clnt, map, proc);
- 	rpc_release_client(rpcb_clnt);
- 	if (IS_ERR(child)) {
- 		status = -EIO;
-+		/* rpcb_map_release() has freed the arguments */
- 		dprintk("RPC: %5u %s: rpc_run_task failed\n",
- 			task->tk_pid, __func__);
--		goto bailout;
-+		goto bailout_nofree;
- 	}
- 	rpc_put_task(child);
- 
- 	task->tk_xprt->stat.bind_count++;
- 	return;
- 
--bailout:
--	kfree(map);
--	xprt_put(xprt);
- bailout_nofree:
- 	rpcb_wake_rpcbind_waiters(xprt, status);
- bailout_nowake:
 
--- 
-Trond Myklebust
-Linux NFS client maintainer
+>>>> Some BIOSs erroneously reverse the _PRT SourceName and the
+>>>> SourceIndex.  Detect and repair this problem. MS ACPI also allows
+>>>> and repairs this problem, thus ACPICA must also.
+>>> It would be great to have an interface to report this as a 
+>BIOS defect.
+>>>
+>>> Something like:
+>>>
+>>> FIRMWARE_BUG_ON(FIRM_WARN, "erroneously reversed the _PRT 
+>source_name", ACPI_ 
+>>> Bug);
+>>>
+>>> FIRMWARE_BUG_ON(severity, description, component);
+>> 
+>> Yes, please.
 
-NetApp
-Trond.Myklebust@netapp.com
-www.netapp.com
+I'm not excited about maintaining
+maintaining linux-as-a-firmware-diagnostic --
+particularly when...
+
+1. it clutters the code for normail machines
+2. finding the bug is pointless, because even
+   if you fix one machine, you are guaranteed to
+   not fix all machines and thus must maintain
+   the workaround anyway.
+
+>> I'd also like HARDWARE_BUG_ON(), with similar usage.
+>> 
+>> With all the preload-linux-on-foo project, we have some 
+>> chance to make
+>> BIOS vendors fix their stuff if we can easily diagnose errors in
+>> there.
+
+These customers should be running 
+http://linuxfirmwarekit.org/
+
+We do maintain some degree of "high-road ACPI spec checking"
+with the "acpi=strict" boot option.  If we do more of this,
+I think it should stay under that option.
+
+thanks,
+-Len
