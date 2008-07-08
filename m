@@ -1,74 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754966AbYGHPqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754815AbYGHPul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754966AbYGHPqT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 11:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753684AbYGHPqK
+	id S1754815AbYGHPul (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 11:50:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753684AbYGHPud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 11:46:10 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:33634 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752350AbYGHPqJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 11:46:09 -0400
-Date: Tue, 8 Jul 2008 08:39:02 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [Bug #10872] x86_64 boot hang when CONFIG_NUMA=n
-Message-Id: <20080708083902.e564face.randy.dunlap@oracle.com>
-In-Reply-To: <20080708051629.GA12595@elte.hu>
-References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik>
-	<uBi7uNfg81L.A.XLC.s0LcIB@albercik>
-	<20080706111750.a6d77e81.randy.dunlap@oracle.com>
-	<alpine.LFD.1.10.0807061133230.3016@woody.linux-foundation.org>
-	<20080707063218.GC23583@elte.hu>
-	<20080707113917.6fda3f7d.randy.dunlap@oracle.com>
-	<20080707154042.04bb492e.randy.dunlap@oracle.com>
-	<20080708051629.GA12595@elte.hu>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Tue, 8 Jul 2008 11:50:33 -0400
+Received: from q7.q7.com ([207.173.201.42]:43766 "EHLO q7.q7.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751464AbYGHPud (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 11:50:33 -0400
+X-Greylist: delayed 1671 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Jul 2008 11:50:32 EDT
+Date: Tue, 8 Jul 2008 08:22:25 -0700
+From: Ian Romanick <ianr@q7.com>
+To: Mark Asselstine <asselsm@gmail.com>
+Cc: Alexander Beregalov <a.beregalov@gmail.com>, airlied@linux.ie,
+       dri-devel@lists.sourceforge.net, kernel-janitors@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] drm_memory.h: remove double inclusion of linux/vmalloc.h
+Message-ID: <20080708152225.GA9028@q7.q7.com>
+References: <a4423d670807060431w639f0b1ajcbad6471d50ef802@mail.gmail.com> <919fe2b30807080529j71ae1816sc035c90b5eee555c@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <919fe2b30807080529j71ae1816sc035c90b5eee555c@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Jul 2008 07:16:29 +0200 Ingo Molnar wrote:
-
+On Tue, Jul 08, 2008 at 08:29:57AM -0400, Mark Asselstine wrote:
+> On Sun, Jul 6, 2008 at 7:31 AM, Alexander Beregalov
+> <a.beregalov@gmail.com> wrote:
+> > From: Alexander Beregalov <a.beregalov@gmail.com>
+> >
+> >  #if __OS_HAS_AGP
+> >
+> > -#include <linux/vmalloc.h>
+> > -
 > 
-> * Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> 
-> > > $ git bisect start
-> > > $ git bisect bad v2.6.26-rc1
-> > > $ git bisect good v2.6.25
-> > > 
-> > > That's only about 1.29M lines of changes.
-> > 
-> > git bisect and normal rebooting did not find a problem.
-> > 
-> > I'll repeat this using kexec to boot the new kernel and see if that 
-> > locates any issues... since I normally use kexec to load/test new 
-> > kernels and that was how the failure occurred (occurs).
-> 
-> ah, so the hang only occurs if you kexec a post-v2.6.25 kernel? (from 
-> any other kernel, or from a post-v2.6.25 kernel?)
+> Why remove this one and not the one at the top of the file? As well
 
-Host (first) kernel is 2.6.25 with NUMA=y.
-kexec of 2.6.25 with NUMA=n works, kexec of 2.6.26-rc[123456789] with
-NUMA=n fails/hangs.  kexec of 2.6.26-rc* with NUMA=y works.
+I would assume this one is removed because it is inside additional
+ifdefs.
 
-kernel configs will be in next email reply to YH.
+> this file has #include of drmP.h, yet drmP.h is the only file I can
+> find that includes drm_memory.h. Based on this I would think there is
+> some additional cleanup that can go on here.
 
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
