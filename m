@@ -1,94 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbYGHUcO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758084AbYGHUc2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755384AbYGHUcO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 16:32:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755920AbYGHUbr
+	id S1758084AbYGHUc2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 16:32:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757606AbYGHUbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 16:31:47 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:33466 "EHLO
+	Tue, 8 Jul 2008 16:31:53 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:33477 "EHLO
 	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754712AbYGHUbq (ORCPT
+	with ESMTP id S1754692AbYGHUbw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 16:31:46 -0400
-Date: Tue, 8 Jul 2008 12:40:45 +0200
+	Tue, 8 Jul 2008 16:31:52 -0400
+Date: Tue, 8 Jul 2008 14:48:20 +0200
 From: Pavel Machek <pavel@suse.cz>
-To: Huang Ying <ying.huang@intel.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vivek Goyal <vgoyal@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATCH -mm 1/2] kexec jump -v12: kexec jump
-Message-ID: <20080708104044.GA15327@elf.ucw.cz>
-References: <1215401122.4660.4.camel@caritas-dev.intel.com> <20080707125010.GA21254@elf.ucw.cz> <1215508209.29894.8.camel@caritas-dev.intel.com>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
+Message-ID: <20080708124820.GB16313@elf.ucw.cz>
+References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <200806201353.59083.rjw@sisk.pl> <20080620115714.GC8637@srcf.ucam.org> <200806201422.12659.rjw@sisk.pl> <20080624091516.GA5642@ucw.cz> <Pine.LNX.4.55.0806270249490.31618@cliff.in.clinika.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1215508209.29894.8.camel@caritas-dev.intel.com>
+In-Reply-To: <Pine.LNX.4.55.0806270249490.31618@cliff.in.clinika.pl>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > > @@ -1411,3 +1421,50 @@ static int __init crash_save_vmcoreinfo_
-> > >  }
+On Fri 2008-06-27 02:53:09, Maciej W. Rozycki wrote:
+> On Tue, 24 Jun 2008, Pavel Machek wrote:
+> 
+> > > $ cat /proc/acpi/thermal_zone/TZ*/trip_points
 > > > 
-> > >  module_init(crash_save_vmcoreinfo_init)
-> > > +
-> > > +/**
-> > > + *   kernel_kexec - reboot the system
-> 
-> > Really?
-> 
-> I will change the comments to reflect the changes to kernel_kexec.
-> 
-> > > + *   Move into place and start executing a preloaded standalone
-> > > + *   executable.  If nothing was preloaded return an error.
-> > > + */
-> > > +int kernel_kexec(void)
-> > > +{
-> > > +     int error = 0;
-> > > +
-> > > +     if (xchg(&kexec_lock, 1))
-> > > +             return -EBUSY;
+> > > in the failing case:
+> > > 
+> > > critical (S5):           105 C
+> > > passive:                 16 C: tc1=1 tc2=2 tsp=100 devices=C000 C001 
+> > > active[0]:               16 C: devices=C34F 
+> > > active[1]:               16 C: devices=C350 
+> > > active[2]:               16 C: devices=C351 
+> > > active[3]:               16 C: devices=C352 
+> > > critical (S5):           100 C
+> > > passive:                 16 C: tc1=1 tc2=2 tsp=300 devices=C000 C001 
+> > > critical (S5):           100 C
+> > > passive:                 16 C: tc1=1 tc2=2 tsp=300 devices=C000 C001 
 > > 
-> > That's quite a strange way to provide a lock. mutex_trylock?
+> > Can we call the ACPI BIOS to be terminally broken at this point?
 > 
-> I think this is because kexec_lock is used by crash_kexec() too, which
-> may be called in some extreme environment, such as during panic().
-> 
-> > > +     if (!kexec_image) {
-> > > +             error = -EINVAL;
-> > > +             goto Unlock;
-> > > +     }
-> > > +
-> > > +     if (kexec_image->preserve_context) {
-> > > +#ifdef CONFIG_KEXEC_JUMP
-> > > +             local_irq_disable();
-> > > +             save_processor_state();
-> > 
-> > #else
-> >         BUG()
-> > 
-> > ...because otherwise you silently do nothing?
-> > 
-> > > +#endif
-> 
-> If CONFIG_KEXEC_JUMP is defined, kexec_image->preserve_context will
-> always be 0. So current code is safe. Here, #ifdef is used to resolve
-> the dependency issue. For example, save_processor_state() may be
-> undefined if CONFIG_KEXEC_JUMP is not defined.
+>  Do we have any point of contact at HP and/or ATI/AMD?  I suppose getting 
+> hands on a SB400 datasheet could be tricky, but someone may be able to 
+> answer questions about the interrupt routing between the 8254, the 8259A 
+> and the I/O APIC for this chip and/or fix the DSDT.
 
-Move the #ifdef outside the if (), then, so this is clear?
-
-Actually, if preserve_context is always zero in !KEXEC_JUMP case, it
-might make sense to remove whole variable...
-									Pavel
-
+Yes, we do have AMD contacts. Contact me privately if that's still
+relevant.
+								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
