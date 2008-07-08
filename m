@@ -1,143 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754902AbYGHGtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755026AbYGHHAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754902AbYGHGtX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 02:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbYGHGtO
+	id S1755026AbYGHHAm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 03:00:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbYGHHAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 02:49:14 -0400
-Received: from ti-out-0910.google.com ([209.85.142.187]:20502 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751346AbYGHGtN (ORCPT
+	Tue, 8 Jul 2008 03:00:35 -0400
+Received: from chello212186124096.11.vie.surfer.at ([212.186.124.96]:45164
+	"EHLO wiesinger.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751475AbYGHHAe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 02:49:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=HOByuuEkKYf2Hc6QVkXVwrqvxHIuWVtRvitLEhRV2xtf12UdAbZ4rTHUGCb5ZDS/mM
-         m6cqczzTAF2qIFbjp0dyjgJw4kZ3deoqp4dm+8kwiQYAWcTZ0fK36Go4lIuZJhK9HFM9
-         t8rDZgAAiFANUPOm6F10hRQ+KxTpBgi7DmZIE=
-Message-ID: <48730DE2.2050302@gmail.com>
-Date: Tue, 08 Jul 2008 14:49:06 +0800
-From: Eric Miao <eric.y.miao@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Tue, 8 Jul 2008 03:00:34 -0400
+Date: Tue, 8 Jul 2008 08:59:54 +0200 (CEST)
+From: Gerhard Wiesinger <lists@wiesinger.com>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: Lots of con-current I/O = resets SATA link? (2.6.25.10)
+In-Reply-To: <alpine.LFD.1.10.0807080811560.5439@bbs.intern>
+Message-ID: <alpine.LFD.1.10.0807080857460.10532@bbs.intern>
+References: <alpine.DEB.1.10.0807051252200.12562@p34.internal.lan> <alpine.LFD.1.10.0807071649340.1160@bbs.intern> <alpine.LFD.1.10.0807071705490.2997@bbs.intern> <alpine.DEB.1.10.0807071149530.32508@p34.internal.lan>
+ <alpine.LFD.1.10.0807080811560.5439@bbs.intern>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Stefan Schmidt <stefan@datenfreihafen.org>
-CC: pHilipp Zabel <philipp.zabel@gmail.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, sameo@openedhand.com,
-       linux-kernel@vger.kernel.org, Daniel Ribeiro <wyrm@openezx.org>
-Subject: Re: [Patch 06/10] mfd: PCAP driver for the Motorola EZX GSM mobile
- phones
-References: <20080707184000.411913919@datenfreihafen.org> <20080707184129.554483476@datenfreihafen.org> <74d0deb30807071221u4e216f76l479766925c903b5f@mail.gmail.com> <20080707200251.GA3449@datenfreihafen.org>
-In-Reply-To: <20080707200251.GA3449@datenfreihafen.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-MailScanner-Information-wiesinger.com: Please contact the ISP for more information
+X-MailScanner-wiesinger.com: Found to be clean
+X-MailScanner-SpamCheck-wiesinger.com: not spam, SpamAssassin (score=-4.399,
+	required 4.5, autolearn=not spam, ALL_TRUSTED -1.80, BAYES_00 -2.60)
+X-MailScanner-From: lists@wiesinger.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Schmidt wrote:
+Hello!
 
->> Otherwise I'd dislike the hardcoded IRQ numbers in the MFD driver.
-> 
-> So far it seems to be no problem. If there is a strong feeling to change this we
-> will of course work on that. Personally I would prefer to do this when new users
-> of this driver appear.
+BTW:
+The error in syslog also accoured when Reallocated_Sector_Ct didn't go up.
 
-The irq2pcap[] array looks horrible to me. It's actually a sparse array.
-Isn't there a nice 1:1 mapping using a formular??
+Ciao,
+Gerhard
 
-Besides, the IRQ numbering scheme has now changed to a more generic way,
-I suggest to pull from Russell's latest git tree and rebase the IRQ
-part.
+--
+http://www.wiesinger.com/
 
-> 
->> The machine_is_xyz() calls inside ezx-pcap could be replaced with
->> configuration via platform_data (have pcap_platform_data->cs_inverted,
->> for example)
-> 
-> We had this before and it turned out as messy as this solution. We have one
-> machine file that supports up to 6 devices right now. So we would have to deal
-> with the same machine_is_xyz macros in the machine file.
-> 
-> We thought it would be better to let the driver handle this. Open for discussion
-> of course.
 
-The following block of code:
+On Tue, 8 Jul 2008, Gerhard Wiesinger wrote:
 
-+	if (pcap_data->cs >= 0) {
-+		if (machine_is_ezx_a780() || machine_is_ezx_e680())
-+			gpio_direction_output(pcap_data->cs, 1);
-+		else
-+			gpio_direction_output(pcap_data->cs, 0);
-+	}
-
-has 3 occurrences in the driver (2 in ezx_ssp_pcap_putget, 1 in ezx_pcap_probe)
-which is good reason to fold this into the platform data.
-
-Well, if the above is done in platform data, I guess you won't mind another bit
-flag (e.g. PCAP_REDIRECT_IRQ or something alike) added in platform data, either
-
-> 
->>> +#if 0
->>> +#define DEBUGP(x, args...) printk(x, ## args)
->>> +#else
->>> +#define DEBUGP(x, args...)
->>> +#endif
->> Could you remove the custom debug macros and use pr_debug (or even
->> better, dev_dbg) instead?
-> 
-> Will do.
-> 
->>> +static void __exit ezx_pcap_exit(void)
->>> +{
->>> +       return platform_driver_unregister(&ezxpcap_driver);
->>> +}
->>> +
->>> +module_init(ezx_pcap_init);
->> Depending on what platform_devices depend on this, maybe use
->> subsys_initcall here.
-> 
-> Ok, I'll need to look up on this to see if it is an option.
-> 
->>> +module_exit(ezx_pcap_exit);
->> Why bother with module_exit when the Kconfig option is bool?
-> 
-> Well, matter of taste. :)
-> 
-> Taking care about cleanup is good style. Still you are right that it is useles
-> for the time being.
-> 
->>> +#define PCAP_IRQ_USB4V         (1 << 6)        /* USB above 4volt???
->>> +                                               called "USBDET_4V" in blob */
->> I assume that's for OTG operation. The VBUS voltage is valid from 4.4 V, and the
->> PXA27x UDC controller has "Vbus valid 4.0 V" and "Vbus valid 4.4 V" interrupts
-> 
-> ok
-> 
->>> +       /*  set core voltage */
->>> +       ezx_pcap_set_sw(SW1, SW_VOLTAGE, SW_VOLTAGE_1250);
->> Btw, did you see the voltage regulator framework that is in linux-next?
-> 
-> Heard of it, but not read the code yet. It's on my list. I just a bit hesitant
-> to base on code that is not in mainline yet. But -next should be ok.
-> 
->>> -
->>> +       platform_device_register(&ezx_pcap_device);
->>>        platform_add_devices(devices, ARRAY_SIZE(devices));
->> You could put ezx_pcap_device into the beginning of devices[].
-> 
-> Duh, will fix.
-> 
-> I send out an updated patch tomorrow. Need some sleep now.
-> 
-> Thanks for the feedback.
-> 
-> regards
-> Stefan Schmidt
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
+> On Mon, 7 Jul 2008, Justin Piszcz wrote:
+>
+>> Hi Gerhard,
+>> 
+>> It /could/ be the port itself if you have changed the cable and disk..
+>> 
+>
+> Yes, but it is very unlikely. I have written TB of data there without any 
+> problems. Anyway this is my 3rd exchanged SAMSUNG disk ...
+>
+>
+>> Have you tried loading the disk with dd and seeing if you can reproduce the 
+>> problem? You are getting the same error I get generally, I can recommend 
+>> turning OFF NCQ first and see if the problem goes away.
+>> 
+>> # Define DISKS.
+>> cd /sys/block
+>> DISKS=$(/bin/ls -1d sd[a-z])
+>> 
+>> # Disable NCQ on all disks.
+>> echo "Disabling NCQ on all disks..."
+>> for i in $DISKS
+>> do
+>>  echo "Disabling NCQ on $i"
+>>  echo 1 > /sys/block/"$i"/device/queue_depth
+>> done
+>> 
+>
+> I tried to disable NCQ on all disks and tried to rebuild the raid, but it 
+> still failed to rebuild with the same error message.
+>
+> I also tried the nolapic kernel parameter without success.
+>
+> /dev/sda:  5 Reallocated_Sector_Ct   0x0033   100   100   010    Pre-fail 
+> Always       -       0
+> /dev/sdb:  5 Reallocated_Sector_Ct   0x0033   100   100   010    Pre-fail 
+> Always       -       0
+> /dev/sdc:  5 Reallocated_Sector_Ct   0x0033   091   091   010    Pre-fail 
+> Always       -       413
+> /dev/sdd:  5 Reallocated_Sector_Ct   0x0033   100   100   010    Pre-fail 
+> Always       -       0
+> /dev/sde:  5 Reallocated_Sector_Ct   0x0033   100   100   010    Pre-fail 
+> Always       -       0
+> /dev/sdf:  5 Reallocated_Sector_Ct   0x0033   100   100   010    Pre-fail 
+> Always       -       0
+>
+> The only thing is that the Reallocated_Sector_Ct is still >0 on /dev/sdc 
+> (keep in mind this is my 3rd new Samsung disk on /dev/sdc and I had up to 
+> 3000 Reallocated_Sector_Ct on previous disks in < 1 day !!!).
+>
+> Should I replace the disk a fourth time?
+>
+> When you search in google you find a lot of threads with the timeout problem. 
+> Might this be a software issue?
+>
