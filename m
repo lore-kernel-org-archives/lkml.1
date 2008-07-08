@@ -1,141 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752428AbYGHVJb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638AbYGHVSx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752428AbYGHVJb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 17:09:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750932AbYGHVJY
+	id S1752638AbYGHVSx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 17:18:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751064AbYGHVSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 17:09:24 -0400
-Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:22974 "HELO
-	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750909AbYGHVJX (ORCPT
+	Tue, 8 Jul 2008 17:18:45 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:26184 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751046AbYGHVSp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 17:09:23 -0400
-X-YMail-OSG: VzD1zbkVM1nhMwnwhQEwfJ1Yuq4nRKKO4xC1cEXp3xqatxxE8EOPoedZPkYL7m0GJK.ZKTeDEjlHBaD1pC_ATJ4f0nXvo_a.zo.SM01dblcresyS_Q2D4zhFz565hVc-
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: [ANNOUNCE]: Generic SCSI Target Mid-level For Linux (SCST),
-	target drivers for iSCSI and QLogic Fibre Channel cards released
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       scst-devel <scst-devel@lists.sourceforge.net>, nab@kernel.org
-In-Reply-To: <4873BCA5.10103@vlnb.net>
-References: <4873BCA5.10103@vlnb.net>
-Content-Type: text/plain
-Date: Tue, 08 Jul 2008 14:09:14 -0700
-Message-Id: <1215551354.3977.6.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	Tue, 8 Jul 2008 17:18:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=cDl/sIBsPVDJYbuhl7G9Hn2Ja0hHYM0NzGMXED4YL5L+K6WC22BcJIIpwQRVODbUWN
+         fUNEuXkxQy/ri/ngSQWGROh4c5r4FmJAQgcmxSW7lPYUouT19QJgpHUed6BC9dNXXL7p
+         x5uh3ZliczQ7Y0xKu08JSyGdPcRMcl719+Dq8=
+Message-ID: <bc64b4640807081418ia871a24me96458bcf64ca9a0@mail.gmail.com>
+Date: Wed, 9 Jul 2008 01:18:44 +0400
+From: Dmitry <dbaryshkov@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 1/2] Generic per-device coherent dma allocator
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Ingo Molnar" <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <20080630105835.GA27466@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080629101846.GA23362@doriath.ww600.siemens.net>
+	 <20080630105835.GA27466@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vlad,
+2008/6/30 Ingo Molnar <mingo@elte.hu>:
+>
+> * Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
+>
+>> Currently x86_32, sh and cris-v32 provide per-device coherent dma
+>> memory allocator. However their implementation is nearly identical.
+>> Refactor out common code to be reused by them.
+>
+> looks good to me in principle.
+>
+> Andrew, Jesse: i've put this aside into the core/generic-dma-coherent
+> git tree which you can check at:
+>
+>   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core/generic-dma-coherent
+>
+> there's some interaction with other x86 bits so i guess it would be best
+> to carry this in -tip.
+>
+> Do the generic bits look good to you? (find the shortlog and diff below)
+> It's not yet propagated into linux-next, pending your ack/nak and
+> pending some test exposure.
+>
 
-On Tue, 2008-07-08 at 23:14 +0400, Vladislav Bolkhovitin wrote:
-> I'm glad to announce that version 1.0.0 of Generic SCSI Target Middle 
-> Level for Linux (SCST) was released and available for download from 
-> http://scst.sourceforge.net/downloads.html
-> 
-
-Congratulations on reaching your v1.0.0 release!
-
-> SCST is a subsystem of the Linux kernel that provides a standard 
-> framework for SCSI target drivers development. It is designed to provide 
-> unified, consistent interface between SCSI target drivers and Linux 
-> kernel and simplify target drivers development as much as possible. It 
-> has the following main features:
-> 
->      *  Simple, easy to use interface with target drivers. Particularly, 
-> SCST core performs required pre- and post- processing of incoming 
-> requests as well as necessary error recovery.
-> 
->      * Undertakes most problems, related to execution contexts, thus 
-> practically eliminating one of the most complicated problem in the 
-> kernel drivers development. For example, a target driver for QLogic 
-> 22xx/23xx cards, which has all necessary features, is only about 2000 
-> lines of code long.
-> 
->      * Very low overhead, fine-grained locks and simplest commands 
-> processing path, which allow to reach maximum possible performance and 
-> scalability. Particularly, incoming requests can be processed in the 
-> caller's context or in one of the internal SCST core's tasklets, 
-> therefore no extra context switches required.
-> 
->      * Device handlers, i.e. plugins, architecture provides extra 
-> flexibility by allowing various I/O modes in backstorage handling. For 
-> example, pass-through device handlers allow to use real SCSI hardware 
-> and vdisk device handler allows to use files as virtual disks.
-> 
->      * Provides advanced per-initiator devices visibility management 
-> (LUN masking), which allows different initiators to see different set of 
-> devices with different access permissions. For instance, initiator A 
-> could see exported from target T devices X and Y read-writable, and 
-> initiator B from the same target T could see devices Y read-only and Z 
-> read-writable.
-> 
->      * Emulates necessary functionality of SCSI host adapter, because 
-> from remote initiators point of view SCST acts as a SCSI host with its 
-> own devices.
-> 
-> The following I/O modes are supported by SCST:
-> 
-> 	* Pass-through mode with one to many relationship, i.e. when multiple 
-> initiators can connect to the exported pass-through devices, for 
-> virtually all SCSI devices types: disks (type 0), tapes (type 1), 
-> processors (type 3), CDROMs (type 5), MO disks (type 7), medium changers 
-> (type 8) and RAID controllers (type 0xC)
-> 
-> 	* FILEIO mode, which allows to use files on file systems or block 
-> devices as virtual remotely available SCSI disks or CDROMs with benefits 
-> of the Linux page cache
-> 
-> 	* BLOCKIO mode, which performs direct block I/O with a block device, 
-> bypassing page-cache for all operations. This mode works ideally with 
-> high-end storage HBAs and for applications that either do not need 
-> caching between application and disk or need the large block throughput.
-> 
-> 	* User space mode using scst_user device handler, which allows to 
-> implement in the user space virtual SCSI devices in the SCST environment.
-> 
-> Detail description of SCST, its drivers and utilities you can find on 
-> SCST home page http://scst.sourceforge.net.
-> 
-> Comparison with the mainstream target middle level STGT you can find on 
-> the SCST vs STGT page http://scst.sourceforge.net/scstvsstgt.html. In 
-> short, SCST has the following main advantages over STGT:
-> 
-
-I noticed that you included a reference to my presentation at LSF 08' on
-your SCST vs. STGT page liked above, and took my description of your
-work (you are more than welcome to come and present your own case at LSF
-'09) very much out of context.
-
-If you wish to reference my presentation, please at least make the
-comparision between LIO-Core+LIO-Target vs. SCST vs. STGT, and NOT JUST
-SCST vs. STGT so that the community are large can understand the
-differences and technical challenges.  The more in fighting between the
-leaders in our community, the less the community benefits.
-
-Many thanks for your most valuable of time,
-
---nab
-
->   - Better performance (in many cases tens of %% and more) with 
-> potential for further improvement, for example, by implementing 
-> zero-copy cache I/O.
-> 
->   - Monolithic in-kernel architecture, which follows standard Linux 
-> kernel paradigm to eliminate distributed processing. It is simpler, 
-> hence more reliable and maintainable.
-> 
-> SCST is being prepared in form of patch for review and inclusion to the 
-> kernel.
-> 
-> Vlad
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-
+I still don't see this in the linux-next. Is it simply a metter of
+time? Can I expect
+these two patches to be merged during 2.6.27 cycle?
+-- 
+With best wishes
+Dmitry
