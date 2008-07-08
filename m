@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757141AbYGHK0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756957AbYGHKcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757141AbYGHK0c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 06:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030AbYGHK0X
+	id S1756957AbYGHKcv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 06:32:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbYGHKck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 06:26:23 -0400
-Received: from mga07.intel.com ([143.182.124.22]:54537 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750717AbYGHK0W (ORCPT
+	Tue, 8 Jul 2008 06:32:40 -0400
+Received: from chello212186124096.11.vie.surfer.at ([212.186.124.96]:45754
+	"EHLO wiesinger.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752931AbYGHKci (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 06:26:22 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.30,322,1212390000"; 
-   d="scan'208";a="8481649"
-Subject: Re: FW: [Fwd: [PATCH]Using Intel CRC32 instruction to implement
-	hardware accelerated CRC32c algorithm.]
-From: austin zhang <austin_zhang@linux.intel.com>
-To: herbert@gondor.apana.org.au
-Cc: davem@davemloft.net, chaapala@cisco.com, linux-crypto@vger.kernel.org,
-       linux-kernel@vger.kernel.org, arjan@linux.intel.com
-In-Reply-To: <000901c8e0d4$6f5cf230$7fb410ac@ccr.corp.intel.com>
-References: <000901c8e0d4$6f5cf230$7fb410ac@ccr.corp.intel.com>
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 08 Jul 2008 06:25:54 -0400
-Message-Id: <1215512754.2906.23.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Tue, 8 Jul 2008 06:32:38 -0400
+Date: Tue, 8 Jul 2008 12:31:50 +0200 (CEST)
+From: Gerhard Wiesinger <lists@wiesinger.com>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: Lots of con-current I/O = resets SATA link? (2.6.25.10)
+In-Reply-To: <alpine.DEB.1.10.0807080434470.17980@p34.internal.lan>
+Message-ID: <alpine.LFD.1.10.0807081227460.32659@bbs.intern>
+References: <alpine.DEB.1.10.0807051252200.12562@p34.internal.lan> <alpine.LFD.1.10.0807071649340.1160@bbs.intern> <alpine.LFD.1.10.0807071705490.2997@bbs.intern> <alpine.DEB.1.10.0807071149530.32508@p34.internal.lan> <alpine.LFD.1.10.0807080811560.5439@bbs.intern>
+ <alpine.LFD.1.10.0807080857460.10532@bbs.intern> <alpine.DEB.1.10.0807080434470.17980@p34.internal.lan>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-MailScanner-Information-wiesinger.com: Please contact the ISP for more information
+X-MailScanner-wiesinger.com: Found to be clean
+X-MailScanner-SpamCheck-wiesinger.com: not spam, SpamAssassin (score=-4.399,
+	required 4.5, autolearn=not spam, ALL_TRUSTED -1.80, BAYES_00 -2.60)
+X-MailScanner-From: lists@wiesinger.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks, ﻿Herbert, see my reply as below.
-> 1) Utilise the brand new crypto ahash interface (note that it's
-﻿When you mentioned ahash, can you give a explanation on it? 
-The brand new crypto interface is different with crypto/api?
-> designed to support sync just as well as async despite the name)
-﻿Do you mean use async_xxx interface?
-> to rewrite the crypto/crc32c implementation such that one tfm can
-> be used by multiple users.  All that has to be done is to move
-> the state from the tfm into the request object.
- 
-> 2) Convert all crc32c users to use the crypto interface and phase
-> out lib/crc32c completely.
-> 
-> 3) Add the Intel-specific crc32c implementation through the crypto
-> API.
-Agreed. And which module in crypto is the template for following the crypto API?
+On Tue, 8 Jul 2008, Justin Piszcz wrote:
 
-> That way none of this iffy testing will be necessary.  Even better,
-> most users can share one common tfm and therefore there will only
-> be one test for the CPU flag at boot time rather than every time
-> it's used.
-> 
-> In fact, we could even skip 2) and reimplement lib/crc32c as a
-> wrapper on the crypto crc32c interface with a shared tfm so you
-> don't need to modify its existing users.
-Good idea.
-> Cheers,
+>> BTW:
+>> The error in syslog also accoured when Reallocated_Sector_Ct didn't go up.
+>> 
+>
+> Yes, I have seen the same thing on drives going bad as well.
+>
+> What type of PSU are you using (per the other thread) and how are you 
+> splitting the power connectors/etc?
+>
+
+I'm using an Enermax Power Supply (ATX 385 Watt, ENERMAX PRO82+) for 6 
+harddisks using a connector with 2 connectors, and I think also 2 more 
+with 2 connectors. But I'm currently not at the computer.
+
+Ciao,
+Gerhard
+
+--
+http://www.wiesinger.com/
 
