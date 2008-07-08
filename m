@@ -1,186 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbYGHTGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757395AbYGHTJN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754874AbYGHTGp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 15:06:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757316AbYGHTGW
+	id S1757395AbYGHTJN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 15:09:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbYGHTI6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 15:06:22 -0400
-Received: from liberdade.minaslivre.org ([72.232.18.203]:44651 "EHLO
-	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757291AbYGHTGV (ORCPT
+	Tue, 8 Jul 2008 15:08:58 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47250 "EHLO
+	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752378AbYGHTI5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 15:06:21 -0400
-Date: Tue, 8 Jul 2008 14:31:21 -0300
-From: Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: [PATCH] Wait for all codecs to be ready if doing a cold reset
-Message-ID: <20080708173121.GA2860@vespa.holoscopio.com>
-References: <20080706171548.GA9962@vespa.holoscopio.com> <s5hfxqlvec2.wl%tiwai@suse.de> <20080707173654.GA28388@vespa.holoscopio.com> <s5h1w24vfy4.wl%tiwai@suse.de> <20080708165931.GA2882@vespa.holoscopio.com> <s5hskujayfu.wl%tiwai@suse.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="8t9RHnE3ZwKMSgU+"
-Content-Disposition: inline
-In-Reply-To: <s5hskujayfu.wl%tiwai@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 8 Jul 2008 15:08:57 -0400
+Date: Tue, 8 Jul 2008 19:35:13 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, jgarzik@pobox.com
+Subject: Re: linux-next: Tree for July 8 (ns8390)
+Message-ID: <20080708193513.51000246@the-village.bc.nu>
+In-Reply-To: <20080708113529.9297e1ad.randy.dunlap@oracle.com>
+References: <20080708192251.3275d283.sfr@canb.auug.org.au>
+	<20080708113529.9297e1ad.randy.dunlap@oracle.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Diff between my tree 8390 bits and linux-next ones
 
---8t9RHnE3ZwKMSgU+
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+8390: diff between next and my driver
 
-On Wed, Jul 09, 2008 at 05:07:17PM +0200, Takashi Iwai wrote:
-> At Tue, 8 Jul 2008 13:59:32 -0300,
-> Thadeu Lima de Souza Cascardo wrote:
-> >=20
-> > On Tue, Jul 08, 2008 at 12:16:35PM +0200, Takashi Iwai wrote:
-> > > At Mon, 7 Jul 2008 14:36:55 -0300,
-> > > Thadeu Lima de Souza Cascardo wrote:
-> > > >=20
-> > > > On Mon, Jul 07, 2008 at 06:39:09PM +0200, Takashi Iwai wrote:
-> > > > > At Sun, 6 Jul 2008 14:15:56 -0300,
-> > > > > Thadeu Lima de Souza Cascardo wrote:
-> > > > > >=20
-> > > > > > If AC97_POWER_SAVE is enabled, intel8x0 does a cold reset when
-> > > > > > initializing the codecs. While resuming, it does not wait for a=
-ll codecs
-> > > > > > to be active. Sound card does not work after a resume without i=
-t,
-> > > > > > however. This patch fixes it.
-> > > > >=20
-> > > > > Thanks for the patch.
-> > > > >=20
-> > > > > But, I still don't figure out why this is needed.
-> > > > > In the else block (with the comment "resume phase"), you can find=
- the
-> > > > > loop to wait for the all *probed* codecs.  The difference with the
-> > > > > code you moved is that it checks only the bits corresponding to t=
-he
-> > > > > already probed codecs.  In other words, the other bits should be
-> > > > > irrelevant with the hardware.
-> > > > >=20
-> > > > > I guess it's not about the loop but the additional 1/4 sec delay =
-that
-> > > > > did fix the resume on your device.  Please check how is the status
-> > > > > bits and whether it passed the loop in the middle.
-> > > > >=20
-> > > > >=20
-> > > > > Takashi
-> > > > >=20
-> > > > >=20
-> > > >=20
-> > > > The 1/4 sec delay came in my mind as one of the possible reasons, a=
-nd
-> > > > that's why I've made some tests. status and nstatus are 0x200, while
-> > > > codec_isr_bits is 0x300. The loop waits for the status register giv=
-e us
-> > > > 0x300 as the active codecs, instead of the only one probed. Since t=
-he
-> > > > cold reset in the case of a power saving cleans up all codec regist=
-ers,
-> > > > it is needed that we wait for all codecs again (like in the probe c=
-ase).
-> > >=20
-> > > You loaded the modem driver as well?
-> > > If so, what happens if you unload modem driver?
-> > >=20
-> > >=20
-> > > thanks,
-> > >=20
-> > > Takashi
-> > >=20
-> >=20
-> > The modem driver has always been loaded. Unloading it with my patch
-> > works OK.
->=20
-> Well, I meant to unload the modem driver *without* your patch.
-> That is, does it the unmodified version work if you unload the modem
-> driver beforehand (e.g. adding it to blacklist)?
->=20
->=20
-> thanks,
->=20
-> Takashi
->=20
+From: Alan Cox <alan@redhat.com>
 
-I blacklisted snd_intel8x0m, rebooted, it was not loaded, sound worked.
-Suspended, resumed, sound didn't work, as usual.
+Please try this and if it sorts it fold it into the driver. This is a diff
+between my tree and the linux-next tree
+---
 
-> > > > If you need more information or that I ran any more tests, I'd be g=
-lad
-> > > > to do it. By the way, I've tested the patch against your audio and =
-modem
-> > > > merged version and it works OK.
-> > > >
-> > > > Best Regards,
-> > > > Thadeu Cascardo.
-> > > >=20
-> > > > > > ---
-> > > > > >  sound/pci/intel8x0.c |   24 ++++++++++++++----------
-> > > > > >  1 files changed, 14 insertions(+), 10 deletions(-)
-> > > > > >=20
-> > > > > > diff --git a/sound/pci/intel8x0.c b/sound/pci/intel8x0.c
-> > > > > > index 048d99e..7228a0a 100644
-> > > > > > --- a/sound/pci/intel8x0.c
-> > > > > > +++ b/sound/pci/intel8x0.c
-> > > > > > @@ -2335,16 +2335,6 @@ static int snd_intel8x0_ich_chip_init(st=
-ruct intel8x0 *chip, int probing)
-> > > > > >  				   igetdword(chip, ICHREG(GLOB_STA)));
-> > > > > >  			return -EIO;
-> > > > > >  		}
-> > > > > > -
-> > > > > > -		/* wait for other codecs ready status. */
-> > > > > > -		end_time =3D jiffies + HZ / 4;
-> > > > > > -		while (status !=3D chip->codec_isr_bits &&
-> > > > > > -		       time_after_eq(end_time, jiffies)) {
-> > > > > > -			schedule_timeout_uninterruptible(1);
-> > > > > > -			status |=3D igetdword(chip, ICHREG(GLOB_STA)) &
-> > > > > > -				chip->codec_isr_bits;
-> > > > > > -		}
-> > > > > > -
-> > > > > >  	} else {
-> > > > > >  		/* resume phase */
-> > > > > >  		int i;
-> > > > > > @@ -2363,6 +2353,20 @@ static int snd_intel8x0_ich_chip_init(st=
-ruct intel8x0 *chip, int probing)
-> > > > > >  		} while (time_after_eq(end_time, jiffies));
-> > > > > >  	}
-> > > > > > =20
-> > > > > > +#ifndef CONFIG_SND_AC97_POWER_SAVE
-> > > > > > +	if (probing)
-> > > > > > +#endif
-> > > > > > +	{
-> > > > > > +		/* wait for other codecs ready status. */
-> > > > > > +		end_time =3D jiffies + HZ / 4;
-> > > > > > +		while (status !=3D chip->codec_isr_bits &&
-> > > > > > +		       time_after_eq(end_time, jiffies)) {
-> > > > > > +			schedule_timeout_uninterruptible(1);
-> > > > > > +			status |=3D igetdword(chip, ICHREG(GLOB_STA)) &
-> > > > > > +				chip->codec_isr_bits;
-> > > > > > +		}
-> > > > > > +	}
-> > > > > > +
-> > > > > >  	if (chip->device_type =3D=3D DEVICE_SIS) {
-> > > > > >  		/* unmute the output on SIS7012 */
-> > > > > >  		iputword(chip, 0x4c, igetword(chip, 0x4c) | 1);
-> > > > > > --=20
-> > > > > > 1.5.6
-> > > > > >=20
+ drivers/net/hp-plus.c |    2 +-
+ drivers/net/hp.c      |    2 +-
+ drivers/net/ne.c      |    8 ++++----
+ drivers/net/wd.c      |    2 +-
+ 4 files changed, 7 insertions(+), 7 deletions(-)
 
---8t9RHnE3ZwKMSgU+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkhzpGkACgkQyTpryRcqtS3YpwCfU9/D+Zd4DLadBCM4xfm/3ylt
-eMQAn1AMwqQmgaE6gjthJov5K0XFM3sh
-=Cg6U
------END PGP SIGNATURE-----
-
---8t9RHnE3ZwKMSgU+--
+diff --git a/drivers/net/hp-plus.c b/drivers/net/hp-plus.c
+index c2c4f49..8239939 100644
+--- a/drivers/net/hp-plus.c
++++ b/drivers/net/hp-plus.c
+@@ -262,7 +262,7 @@ static int __init hpp_probe1(struct net_device *dev, int ioaddr)
+ 	}
+ 
+ 	outw(Perf_Page, ioaddr + HP_PAGING);
+-	NS8390_init(dev, 0);
++	NS8390p_init(dev, 0);
+ 	/* Leave the 8390 and HP chip reset. */
+ 	outw(inw(ioaddr + HPP_OPTION) & ~EnableIRQ, ioaddr + HPP_OPTION);
+ 
+diff --git a/drivers/net/hp.c b/drivers/net/hp.c
+index 8281209..0a8c649 100644
+--- a/drivers/net/hp.c
++++ b/drivers/net/hp.c
+@@ -389,7 +389,7 @@ static void __init
+ hp_init_card(struct net_device *dev)
+ {
+ 	int irq = dev->irq;
+-	NS8390_init(dev, 0);
++	NS8390p_init(dev, 0);
+ 	outb_p(irqmap[irq&0x0f] | HP_RUN,
+ 		   dev->base_addr - NIC_OFFSET + HP_CONFIGURE);
+ 	return;
+diff --git a/drivers/net/ne.c b/drivers/net/ne.c
+index 1412697..4a8a4b1 100644
+--- a/drivers/net/ne.c
++++ b/drivers/net/ne.c
+@@ -355,7 +355,7 @@ static int __init ne_probe1(struct net_device *dev, unsigned long ioaddr)
+ 	}
+ 
+ 	/* Read the 16 bytes of station address PROM.
+-	   We must first initialize registers, similar to NS8390_init(eifdev, 0).
++	   We must first initialize registers, similar to NS8390p_init(eifdev, 0).
+ 	   We can't reliably read the SAPROM address without this.
+ 	   (I learned the hard way!). */
+ 	{
+@@ -536,7 +536,7 @@ static int __init ne_probe1(struct net_device *dev, unsigned long ioaddr)
+ #ifdef CONFIG_NET_POLL_CONTROLLER
+ 	dev->poll_controller = eip_poll;
+ #endif
+-	NS8390_init(dev, 0);
++	NS8390p_init(dev, 0);
+ 
+ 	ret = register_netdev(dev);
+ 	if (ret)
+@@ -794,7 +794,7 @@ retry:
+ 		if (time_after(jiffies, dma_start + 2*HZ/100)) {		/* 20ms */
+ 			printk(KERN_WARNING "%s: timeout waiting for Tx RDC.\n", dev->name);
+ 			ne_reset_8390(dev);
+-			NS8390_init(dev,1);
++			NS8390p_init(dev,1);
+ 			break;
+ 		}
+ 
+@@ -855,7 +855,7 @@ static int ne_drv_resume(struct platform_device *pdev)
+ 
+ 	if (netif_running(dev)) {
+ 		ne_reset_8390(dev);
+-		NS8390_init(dev, 1);
++		NS8390p_init(dev, 1);
+ 		netif_device_attach(dev);
+ 	}
+ 	return 0;
+diff --git a/drivers/net/wd.c b/drivers/net/wd.c
+index fa14255..6f9aa16 100644
+--- a/drivers/net/wd.c
++++ b/drivers/net/wd.c
+@@ -337,7 +337,7 @@ static int __init wd_probe1(struct net_device *dev, int ioaddr)
+ #ifdef CONFIG_NET_POLL_CONTROLLER
+ 	dev->poll_controller = ei_poll;
+ #endif
+-	NS8390_init(dev, 0);
++	NS8390p_init(dev, 0);
+ 
+ #if 1
+ 	/* Enable interrupt generation on softconfig cards -- M.U */
