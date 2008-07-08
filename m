@@ -1,129 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757395AbYGHTJN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757521AbYGHTKN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757395AbYGHTJN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 15:09:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbYGHTI6
+	id S1757521AbYGHTKN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 15:10:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbYGHTKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 15:08:58 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47250 "EHLO
-	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752378AbYGHTI5 (ORCPT
+	Tue, 8 Jul 2008 15:10:00 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:12593 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754689AbYGHTKA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 15:08:57 -0400
-Date: Tue, 8 Jul 2008 19:35:13 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, jgarzik@pobox.com
-Subject: Re: linux-next: Tree for July 8 (ns8390)
-Message-ID: <20080708193513.51000246@the-village.bc.nu>
-In-Reply-To: <20080708113529.9297e1ad.randy.dunlap@oracle.com>
-References: <20080708192251.3275d283.sfr@canb.auug.org.au>
-	<20080708113529.9297e1ad.randy.dunlap@oracle.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Jul 2008 15:10:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=u75OnGwllr/1Y3sSyRvMFOEWaqY9BzM9mPLCs1W0AmGn9Cr63qu7bjEThQzEL1rL2i
+         oh2AQ/r4KQCUXLhV61uVwh/nPFGHjg1UVHEGI5wUfZ40tY1T5Dr4cWd+Ay6Gf9BlRW1F
+         MO4AIBfakcBMaJL/lsSWQaCADIDx/tBhmZVwg=
+Date: Tue, 8 Jul 2008 23:09:56 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [Q] Is 64bit LVTT screwed
+Message-ID: <20080708190956.GC2775@asus>
+References: <20080702184024.GC7003@cvg> <Pine.LNX.4.55.0807072243410.20615@cliff.in.clinika.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.55.0807072243410.20615@cliff.in.clinika.pl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Diff between my tree 8390 bits and linux-next ones
+[Maciej W. Rozycki - Mon, Jul 07, 2008 at 11:08:57PM +0100]
+[...]
+| > 
+| > but in both cases we use "divide by 16" in divide register. The only
+| > explanation I imagine - for 64bit mode we are required to 'stuck'
+| > for a bit longer (by 16 times longer to be precise). Am I right?
+| > Or there is another reason why we dont use APIC_DIVISOR here. Actually,
+| > as I see it not fair to a caller. For 64bit mode APIC timer is requested
+| > to count 250000000 ticks but in real it will count 250000000 * 16.
+| > Not sure who is right there. I think the better would be to
+| > use 4000000000 and APIC_DIVISOR in 64bit mode. How do you think?
+| 
+|  The APIC clock varies across systems so the timer setup includes
+| calibration.  Which means both variations end up with the correct
+| interrupt rate probably, except using different divisors.  We used to
+| print the APIC clock rate and that would be off with one of the above, but
+| I don't we do this anymore.  We had a similar problem with the 82489DX
+| where the prescaler was bypassed altogether resulting in an incorrect 
+| clock rate printed, but the rate of timer interrupt was correctly 
+| calibrated regardless.
+| 
+|  This is of course merely an explanation why the code you quoted does not
+| explode spectacularly.  It does not make it correct.  If the prescaler is
+| indeed set to 16 for 64-bit systems, then APIC_DIVISOR should obviously be
+| used in the calculation above too.  And if not, then I think the prescaler 
+| should be set consistently across systems and then the setting reflected 
+| in the calculations accordingly.  Please note that only values between 2 
+| and 16 are supported in a uniform way across all the APIC models and using 
+| low values risks an overflow as clock rates are in the GHz range these 
+| days already.  The value of 16 seems a reasonable one.
+| 
+|   Maciej
+|
 
-8390: diff between next and my driver
+Maciej, I think the right soulution is the next:
 
-From: Alan Cox <alan@redhat.com>
+Index: linux-2.6.git/arch/x86/kernel/apic_64.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/apic_64.c	2008-07-08 22:52:24.000000000 +0400
++++ linux-2.6.git/arch/x86/kernel/apic_64.c	2008-07-08 23:00:24.000000000 +0400
+@@ -165,6 +165,9 @@ int lapic_get_maxlvt(void)
+ 	return maxlvt;
+ }
+ 
++/* Clock divisor is set to 16 */
++#define APIC_DIVISOR 16
++
+ /*
+  * This function sets up the local APIC timer, with a timeout of
+  * 'clocks' APIC bus clock. During calibration we actually call
+@@ -197,7 +200,7 @@ static void __setup_APIC_LVTT(unsigned i
+ 				| APIC_TDR_DIV_16);
+ 
+ 	if (!oneshot)
+-		apic_write(APIC_TMICT, clocks);
++		apic_write(APIC_TMICT, clocks/APIC_DIVISOR);
+ }
+ 
+ /*
+@@ -329,7 +332,7 @@ static void __init calibrate_APIC_clock(
+ 	 *
+ 	 * No interrupt enable !
+ 	 */
+-	__setup_APIC_LVTT(250000000, 0, 0);
++	__setup_APIC_LVTT(4000000000, 0, 0);
+ 
+ 	apic_start = apic_read(APIC_TMCCT);
+ #ifdef CONFIG_X86_PM_TIMER
 
-Please try this and if it sorts it fold it into the driver. This is a diff
-between my tree and the linux-next tree
----
+So we remain behaviour the same (ie calibrating duration remains the same)
+but it has touched lapic_timer_setup. Will take a look into this more closer
+soon.
 
- drivers/net/hp-plus.c |    2 +-
- drivers/net/hp.c      |    2 +-
- drivers/net/ne.c      |    8 ++++----
- drivers/net/wd.c      |    2 +-
- 4 files changed, 7 insertions(+), 7 deletions(-)
-
-
-diff --git a/drivers/net/hp-plus.c b/drivers/net/hp-plus.c
-index c2c4f49..8239939 100644
---- a/drivers/net/hp-plus.c
-+++ b/drivers/net/hp-plus.c
-@@ -262,7 +262,7 @@ static int __init hpp_probe1(struct net_device *dev, int ioaddr)
- 	}
- 
- 	outw(Perf_Page, ioaddr + HP_PAGING);
--	NS8390_init(dev, 0);
-+	NS8390p_init(dev, 0);
- 	/* Leave the 8390 and HP chip reset. */
- 	outw(inw(ioaddr + HPP_OPTION) & ~EnableIRQ, ioaddr + HPP_OPTION);
- 
-diff --git a/drivers/net/hp.c b/drivers/net/hp.c
-index 8281209..0a8c649 100644
---- a/drivers/net/hp.c
-+++ b/drivers/net/hp.c
-@@ -389,7 +389,7 @@ static void __init
- hp_init_card(struct net_device *dev)
- {
- 	int irq = dev->irq;
--	NS8390_init(dev, 0);
-+	NS8390p_init(dev, 0);
- 	outb_p(irqmap[irq&0x0f] | HP_RUN,
- 		   dev->base_addr - NIC_OFFSET + HP_CONFIGURE);
- 	return;
-diff --git a/drivers/net/ne.c b/drivers/net/ne.c
-index 1412697..4a8a4b1 100644
---- a/drivers/net/ne.c
-+++ b/drivers/net/ne.c
-@@ -355,7 +355,7 @@ static int __init ne_probe1(struct net_device *dev, unsigned long ioaddr)
- 	}
- 
- 	/* Read the 16 bytes of station address PROM.
--	   We must first initialize registers, similar to NS8390_init(eifdev, 0).
-+	   We must first initialize registers, similar to NS8390p_init(eifdev, 0).
- 	   We can't reliably read the SAPROM address without this.
- 	   (I learned the hard way!). */
- 	{
-@@ -536,7 +536,7 @@ static int __init ne_probe1(struct net_device *dev, unsigned long ioaddr)
- #ifdef CONFIG_NET_POLL_CONTROLLER
- 	dev->poll_controller = eip_poll;
- #endif
--	NS8390_init(dev, 0);
-+	NS8390p_init(dev, 0);
- 
- 	ret = register_netdev(dev);
- 	if (ret)
-@@ -794,7 +794,7 @@ retry:
- 		if (time_after(jiffies, dma_start + 2*HZ/100)) {		/* 20ms */
- 			printk(KERN_WARNING "%s: timeout waiting for Tx RDC.\n", dev->name);
- 			ne_reset_8390(dev);
--			NS8390_init(dev,1);
-+			NS8390p_init(dev,1);
- 			break;
- 		}
- 
-@@ -855,7 +855,7 @@ static int ne_drv_resume(struct platform_device *pdev)
- 
- 	if (netif_running(dev)) {
- 		ne_reset_8390(dev);
--		NS8390_init(dev, 1);
-+		NS8390p_init(dev, 1);
- 		netif_device_attach(dev);
- 	}
- 	return 0;
-diff --git a/drivers/net/wd.c b/drivers/net/wd.c
-index fa14255..6f9aa16 100644
---- a/drivers/net/wd.c
-+++ b/drivers/net/wd.c
-@@ -337,7 +337,7 @@ static int __init wd_probe1(struct net_device *dev, int ioaddr)
- #ifdef CONFIG_NET_POLL_CONTROLLER
- 	dev->poll_controller = ei_poll;
- #endif
--	NS8390_init(dev, 0);
-+	NS8390p_init(dev, 0);
- 
- #if 1
- 	/* Enable interrupt generation on softconfig cards -- M.U */
+		- Cyrill -
