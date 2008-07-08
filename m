@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758806AbYGHXRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758889AbYGHXSe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758806AbYGHXRu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 19:17:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756740AbYGHXOo
+	id S1758889AbYGHXSe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 19:18:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757244AbYGHXOp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 19:14:44 -0400
-Received: from gw.goop.org ([64.81.55.164]:51209 "EHLO mail.goop.org"
+	Tue, 8 Jul 2008 19:14:45 -0400
+Received: from gw.goop.org ([64.81.55.164]:51200 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755838AbYGHXOk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 19:14:40 -0400
+	id S1755994AbYGHXOl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 19:14:41 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 10 of 55] xen: add xen_arch_resume()/xen_timer_resume hook for
-	ia64 support
-X-Mercurial-Node: 254bec52511004d2b948c3999b5eeb16cf4f80c6
-Message-Id: <254bec52511004d2b948.1215554792@localhost>
+Subject: [PATCH 13 of 55] xen: make ELF notes work for 32 and 64 bit
+X-Mercurial-Node: ead4e5c9daf9a2aedcefa669be45ef735d4ddef7
+Message-Id: <ead4e5c9daf9a2aedcef.1215554795@localhost>
 In-Reply-To: <patchbomb.1215554782@localhost>
-Date: Tue, 08 Jul 2008 15:06:32 -0700
+Date: Tue, 08 Jul 2008 15:06:35 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
@@ -27,91 +26,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Isaku Yamahata <yamahata@valinux.co.jp>
-
-add xen_timer_resume() hook.
-Timer resume should be done after event channel is resumed.
-add xen_arch_resume() hook when ipi becomes usable after resume.
-After resume, some cpu specific resource must be reinitialized
-on ia64 that can't be set by another cpu.
-However available hooks is run once on only one cpu so that ipi has
-to be used.
-During stop_machine_run() ipi can't be used because interrupt is masked.
-So add another hook after stop_machine_run().
-Another approach might be use resume hook which is run by
-device_resume(). However device_resume() may be executed on
-suspend error recovery path. So it is necessary to determine
-whether it is executed on real resume path or error recovery path.
-
-Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/suspend.c |    5 ++++-
- arch/x86/xen/xen-ops.h |    1 -
- drivers/xen/manage.c   |    6 ++++--
- include/xen/xen-ops.h  |    4 +++-
- 4 files changed, 11 insertions(+), 5 deletions(-)
+ arch/x86/xen/xen-head.S |   13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/arch/x86/xen/suspend.c b/arch/x86/xen/suspend.c
---- a/arch/x86/xen/suspend.c
-+++ b/arch/x86/xen/suspend.c
-@@ -38,8 +38,11 @@
- 		xen_cpu_initialized_map = cpu_online_map;
- #endif
- 		xen_vcpu_restore();
--		xen_timer_resume();
- 	}
+diff --git a/arch/x86/xen/xen-head.S b/arch/x86/xen/xen-head.S
+--- a/arch/x86/xen/xen-head.S
++++ b/arch/x86/xen/xen-head.S
+@@ -5,7 +5,10 @@
  
- }
- 
-+void xen_arch_resume(void)
-+{
-+	/* nothing */
-+}
-diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
---- a/arch/x86/xen/xen-ops.h
-+++ b/arch/x86/xen/xen-ops.h
-@@ -37,7 +37,6 @@
- unsigned long xen_get_wallclock(void);
- int xen_set_wallclock(unsigned long time);
- unsigned long long xen_sched_clock(void);
--void xen_timer_resume(void);
- 
- irqreturn_t xen_debug_interrupt(int irq, void *dev_id);
- 
-diff --git a/drivers/xen/manage.c b/drivers/xen/manage.c
---- a/drivers/xen/manage.c
-+++ b/drivers/xen/manage.c
-@@ -68,6 +68,7 @@
- 	if (!*cancelled) {
- 		xen_irq_resume();
- 		xen_console_resume();
-+		xen_timer_resume();
- 	}
- 
- 	return 0;
-@@ -107,9 +108,10 @@
- 		goto out;
- 	}
- 
--	if (!cancelled)
-+	if (!cancelled) {
-+		xen_arch_resume();
- 		xenbus_resume();
--	else
-+	} else
- 		xenbus_suspend_cancel();
- 
- 	device_resume();
-diff --git a/include/xen/xen-ops.h b/include/xen/xen-ops.h
---- a/include/xen/xen-ops.h
-+++ b/include/xen/xen-ops.h
-@@ -11,4 +11,7 @@
- void xen_mm_pin_all(void);
- void xen_mm_unpin_all(void);
- 
-+void xen_timer_resume(void);
-+void xen_arch_resume(void);
+ #include <linux/elfnote.h>
+ #include <linux/init.h>
 +
- #endif /* INCLUDE_XEN_OPS_H */
+ #include <asm/boot.h>
++#include <asm/asm.h>
++
+ #include <xen/interface/elfnote.h>
+ #include <asm/xen/interface.h>
+ 
+@@ -21,21 +24,21 @@
+ .pushsection .text
+ 	.align PAGE_SIZE_asm
+ ENTRY(hypercall_page)
+-	.skip 0x1000
++	.skip PAGE_SIZE_asm
+ .popsection
+ 
+ 	ELFNOTE(Xen, XEN_ELFNOTE_GUEST_OS,       .asciz "linux")
+ 	ELFNOTE(Xen, XEN_ELFNOTE_GUEST_VERSION,  .asciz "2.6")
+ 	ELFNOTE(Xen, XEN_ELFNOTE_XEN_VERSION,    .asciz "xen-3.0")
+-	ELFNOTE(Xen, XEN_ELFNOTE_VIRT_BASE,      .long  __PAGE_OFFSET)
+-	ELFNOTE(Xen, XEN_ELFNOTE_ENTRY,          .long  startup_xen)
+-	ELFNOTE(Xen, XEN_ELFNOTE_HYPERCALL_PAGE, .long  hypercall_page)
++	ELFNOTE(Xen, XEN_ELFNOTE_VIRT_BASE,      _ASM_PTR __PAGE_OFFSET)
++	ELFNOTE(Xen, XEN_ELFNOTE_ENTRY,          _ASM_PTR startup_xen)
++	ELFNOTE(Xen, XEN_ELFNOTE_HYPERCALL_PAGE, _ASM_PTR hypercall_page)
+ 	ELFNOTE(Xen, XEN_ELFNOTE_FEATURES,       .asciz "!writable_page_tables|pae_pgdir_above_4gb")
+ 	ELFNOTE(Xen, XEN_ELFNOTE_PAE_MODE,       .asciz "yes")
+ 	ELFNOTE(Xen, XEN_ELFNOTE_LOADER,         .asciz "generic")
+ 	ELFNOTE(Xen, XEN_ELFNOTE_L1_MFN_VALID,
+ 		.quad _PAGE_PRESENT; .quad _PAGE_PRESENT)
+ 	ELFNOTE(Xen, XEN_ELFNOTE_SUSPEND_CANCEL, .long 1)
+-	ELFNOTE(Xen, XEN_ELFNOTE_HV_START_LOW,   .long __HYPERVISOR_VIRT_START)
++	ELFNOTE(Xen, XEN_ELFNOTE_HV_START_LOW,   _ASM_PTR __HYPERVISOR_VIRT_START)
+ 
+ #endif /*CONFIG_XEN */
 
 
