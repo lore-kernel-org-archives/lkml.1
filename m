@@ -1,123 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756079AbYGHIy7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786AbYGHI5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756079AbYGHIy7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 04:54:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750823AbYGHIyu
+	id S1756786AbYGHI5T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 04:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752131AbYGHI5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 04:54:50 -0400
-Received: from saeurebad.de ([85.214.36.134]:51415 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750810AbYGHIyt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 04:54:49 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Mike Travis <travis@sgi.com>, linux-kernel@vger.kernel.org,
-       "H. Anvin" <hpa@zytor.com>, Christoph Lameter <clameter@sgi.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Dangerous code in cpumask_of_cpu?
-References: <200807081816.40623.rusty@rustcorp.com.au>
-	<87myksn587.fsf@saeurebad.de>
-Date: Tue, 08 Jul 2008 10:54:38 +0200
-In-Reply-To: <87myksn587.fsf@saeurebad.de> (Johannes Weiner's message of "Tue,
-	08 Jul 2008 10:35:20 +0200")
-Message-ID: <87iqvgn4c1.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	Tue, 8 Jul 2008 04:57:04 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39243
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751900AbYGHI5B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 04:57:01 -0400
+Date: Tue, 08 Jul 2008 01:57:01 -0700 (PDT)
+Message-Id: <20080708.015701.249196626.davem@davemloft.net>
+To: alan@lxorguk.ukuu.org.uk
+Cc: jeff@garzik.org, dwmw2@infradead.org, andi@firstfloor.org, tytso@mit.edu,
+       hugh@veritas.com, akpm@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080708073637.32037c76@the-village.bc.nu>
+References: <20080707221427.163c4a30@the-village.bc.nu>
+	<20080707.145819.209342070.davem@davemloft.net>
+	<20080708073637.32037c76@the-village.bc.nu>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Date: Tue, 8 Jul 2008 07:36:37 +0100
 
-Johannes Weiner <hannes@saeurebad.de> writes:
+> > I can only see it being about separation, pure and simple.
+> 
+> Separation - of firmware that can be paged from code that cannot.
 
-> Hi,
->
-> Rusty Russell <rusty@rustcorp.com.au> writes:
->
->> Hi Christoph/Mike,
->>
->>   Looked at cpumask_of_cpu as introduced in 
->> 9f0e8d0400d925c3acd5f4e01dbeb736e4011882 (x86: convert cpumask_of_cpu macro 
->> to allocated array), and I don't think it's safe:
->>
->>   #define cpumask_of_cpu(cpu)						\
->>   (*({								\
->> 	typeof(_unused_cpumask_arg_) m;					\
->> 	if (sizeof(m) == sizeof(unsigned long)) {			\
->> 		m.bits[0] = 1UL<<(cpu);					\
->> 	} else {							\
->> 		cpus_clear(m);						\
->> 		cpu_set((cpu), m);					\
->> 	}								\
->> 	&m;								\
->>   }))
->>
->> Referring to &m once out of scope is invalid, and I can't find any evidence 
->> that it's legal here.  In particular, the change 
->> b53e921ba1cff8453dc9a87a84052fa12d5b30bd (generic: reduce stack pressure in 
->> sched_affinity) which passes &m to other functions seems highly risky.
->>
->> I'm surprised this hasn't already hit us, but perhaps gcc isn't as clever as 
->> it could be?
+It can't be paged from the drivers we're talking about,
+no matter how hard you try.
 
-> You don't refer to &m outside scope.  Look at the character below the
-> first e of #define :)
+Every chip reset needs the firmware around so it can be
+reloaded into the card.
 
-Oh, well you do access it outside scope, sorry.  Me sleepy.
+This applies to tg3, bnx2, bnx2x, etc. etc. etc.
 
-I guess because we dereference it immediately again, the location is not
-clobbered yet.  At least in my test case, gcc assembled it to code that
-puts the address in eax and derefences it immediately, before eax is
-reused:
-
-static int *foo(void)
-{
-        int x = 42;
-        return &x;
-}
-
-int main(void)
-{
-        return *foo();
-}
-
-> But then, this code should probably just evaluate to m without this
-> obscure *(&m) construct.
-
-This, however is still possible, no?
-
----
-Subject: cpumask: don't dereference an invalidated pointer
-
-m is auto storage, don't use its address outside its scope.  Just return
-m directly instead of that *({type m; &m}) construct.
-
----
-
-diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-index c24875b..19802cb 100644
---- a/include/linux/cpumask.h
-+++ b/include/linux/cpumask.h
-@@ -232,7 +232,7 @@ extern cpumask_t *cpumask_of_cpu_map;
- 
- #else
- #define cpumask_of_cpu(cpu)						\
--(*({									\
-+({									\
- 	typeof(_unused_cpumask_arg_) m;					\
- 	if (sizeof(m) == sizeof(unsigned long)) {			\
- 		m.bits[0] = 1UL<<(cpu);					\
-@@ -240,8 +240,8 @@ extern cpumask_t *cpumask_of_cpu_map;
- 		cpus_clear(m);						\
- 		cpu_set((cpu), m);					\
- 	}								\
--	&m;								\
--}))
-+	m;								\
-+})
- #endif
- 
- #define CPU_MASK_LAST_WORD BITMAP_LAST_WORD_MASK(NR_CPUS)
