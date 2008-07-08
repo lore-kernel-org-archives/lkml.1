@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758248AbYGHXQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758415AbYGHXQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758248AbYGHXQU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 19:16:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755844AbYGHXOk
+	id S1758415AbYGHXQg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 19:16:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756044AbYGHXOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 19:14:40 -0400
-Received: from gw.goop.org ([64.81.55.164]:51204 "EHLO mail.goop.org"
+	Tue, 8 Jul 2008 19:14:41 -0400
+Received: from gw.goop.org ([64.81.55.164]:51200 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755358AbYGHXOj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 19:14:39 -0400
+	id S1755680AbYGHXOk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 19:14:40 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 04 of 55] x86: clean up formatting of __switch_to
-X-Mercurial-Node: 408aabebf5dc1a06edcbb4c12dd77657a2af2149
-Message-Id: <408aabebf5dc1a06edcb.1215554786@localhost>
+Subject: [PATCH 05 of 55] x86: use __page_aligned_data/bss
+X-Mercurial-Node: 5d7b5c2b6320cbbf5c34627061f8bd24a7706486
+Message-Id: <5d7b5c2b6320cbbf5c34.1215554787@localhost>
 In-Reply-To: <patchbomb.1215554782@localhost>
-Date: Tue, 08 Jul 2008 15:06:26 -0700
+Date: Tue, 08 Jul 2008 15:06:27 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
@@ -26,98 +26,94 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-process_64.c:__switch_to has some very old strange formatting, some of
-it dating back to pre-git.  Fix it up.
-
-No functional changes.
+Update arch/x86's use of page-aligned variables.  The change to
+arch/x86/xen/mmu.c fixes an actual bug, but the rest are cleanups
+and to set a precident.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Cc: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/process_64.c |   54 +++++++++++++++++++++---------------------
- 1 file changed, 27 insertions(+), 27 deletions(-)
+ arch/x86/kernel/cpu/common_64.c |    4 ++--
+ arch/x86/kernel/irq_32.c        |    7 ++-----
+ arch/x86/xen/mmu.c              |   15 ++++++---------
+ 3 files changed, 10 insertions(+), 16 deletions(-)
 
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -575,8 +575,8 @@
- struct task_struct *
- __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
+diff --git a/arch/x86/kernel/cpu/common_64.c b/arch/x86/kernel/cpu/common_64.c
+--- a/arch/x86/kernel/cpu/common_64.c
++++ b/arch/x86/kernel/cpu/common_64.c
+@@ -16,6 +16,7 @@
+ #include <asm/i387.h>
+ #include <asm/msr.h>
+ #include <asm/io.h>
++#include <asm/linkage.h>
+ #include <asm/mmu_context.h>
+ #include <asm/mtrr.h>
+ #include <asm/mce.h>
+@@ -512,8 +513,7 @@
+ }
+ 
+ char boot_exception_stacks[(N_EXCEPTION_STACKS - 1) * EXCEPTION_STKSZ +
+-			   DEBUG_STKSZ]
+-__attribute__((section(".bss.page_aligned")));
++			   DEBUG_STKSZ] __page_aligned_bss;
+ 
+ extern asmlinkage void ignore_sysret(void);
+ 
+diff --git a/arch/x86/kernel/irq_32.c b/arch/x86/kernel/irq_32.c
+--- a/arch/x86/kernel/irq_32.c
++++ b/arch/x86/kernel/irq_32.c
+@@ -83,11 +83,8 @@
+ static union irq_ctx *hardirq_ctx[NR_CPUS] __read_mostly;
+ static union irq_ctx *softirq_ctx[NR_CPUS] __read_mostly;
+ 
+-static char softirq_stack[NR_CPUS * THREAD_SIZE]
+-		__attribute__((__section__(".bss.page_aligned")));
+-
+-static char hardirq_stack[NR_CPUS * THREAD_SIZE]
+-		__attribute__((__section__(".bss.page_aligned")));
++static char softirq_stack[NR_CPUS * THREAD_SIZE] __page_aligned_bss;
++static char hardirq_stack[NR_CPUS * THREAD_SIZE] __page_aligned_bss;
+ 
+ static void call_on_stack(void *func, void *stack)
  {
--	struct thread_struct *prev = &prev_p->thread,
--				 *next = &next_p->thread;
-+	struct thread_struct *prev = &prev_p->thread;
-+	struct thread_struct *next = &next_p->thread;
- 	int cpu = smp_processor_id();
- 	struct tss_struct *tss = &per_cpu(init_tss, cpu);
- 	unsigned fsindex, gsindex;
-@@ -624,35 +624,34 @@
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -46,6 +46,7 @@
+ #include <asm/tlbflush.h>
+ #include <asm/mmu_context.h>
+ #include <asm/paravirt.h>
++#include <asm/linkage.h>
  
- 	/* 
- 	 * Switch FS and GS.
-+	 *
-+	 * Segment register != 0 always requires a reload.  Also
-+	 * reload when it has changed.  When prev process used 64bit
-+	 * base always reload to avoid an information leak.
- 	 */
--	{ 
--		/* segment register != 0 always requires a reload. 
--		   also reload when it has changed. 
--		   when prev process used 64bit base always reload
--		   to avoid an information leak. */
--		if (unlikely(fsindex | next->fsindex | prev->fs)) {
--			loadsegment(fs, next->fsindex);
--			/* check if the user used a selector != 0
--	                 * if yes clear 64bit base, since overloaded base
--                         * is always mapped to the Null selector
--                         */
--			if (fsindex)
-+	if (unlikely(fsindex | next->fsindex | prev->fs)) {
-+		loadsegment(fs, next->fsindex);
-+		/* 
-+		 * Check if the user used a selector != 0; if yes
-+		 *  clear 64bit base, since overloaded base is always
-+		 *  mapped to the Null selector
-+		 */
-+		if (fsindex)
- 			prev->fs = 0;				
--		}
--		/* when next process has a 64bit base use it */
--		if (next->fs) 
--			wrmsrl(MSR_FS_BASE, next->fs); 
--		prev->fsindex = fsindex;
-+	}
-+	/* when next process has a 64bit base use it */
-+	if (next->fs)
-+		wrmsrl(MSR_FS_BASE, next->fs);
-+	prev->fsindex = fsindex;
+ #include <asm/xen/hypercall.h>
+ #include <asm/xen/hypervisor.h>
+@@ -60,22 +61,18 @@
+ #define TOP_ENTRIES		(MAX_DOMAIN_PAGES / P2M_ENTRIES_PER_PAGE)
  
--		if (unlikely(gsindex | next->gsindex | prev->gs)) {
--			load_gs_index(next->gsindex);
--			if (gsindex)
-+	if (unlikely(gsindex | next->gsindex | prev->gs)) {
-+		load_gs_index(next->gsindex);
-+		if (gsindex)
- 			prev->gs = 0;				
--		}
--		if (next->gs)
--			wrmsrl(MSR_KERNEL_GS_BASE, next->gs); 
--		prev->gsindex = gsindex;
- 	}
-+	if (next->gs)
-+		wrmsrl(MSR_KERNEL_GS_BASE, next->gs);
-+	prev->gsindex = gsindex;
+ /* Placeholder for holes in the address space */
+-static unsigned long p2m_missing[P2M_ENTRIES_PER_PAGE]
+-	__attribute__((section(".data.page_aligned"))) =
++static unsigned long p2m_missing[P2M_ENTRIES_PER_PAGE] __page_aligned_data =
+ 		{ [ 0 ... P2M_ENTRIES_PER_PAGE-1 ] = ~0UL };
  
- 	/* Must be after DS reload */
- 	unlazy_fpu(prev_p);
-@@ -665,7 +664,8 @@
- 	write_pda(pcurrent, next_p); 
+  /* Array of pointers to pages containing p2m entries */
+-static unsigned long *p2m_top[TOP_ENTRIES]
+-	__attribute__((section(".data.page_aligned"))) =
++static unsigned long *p2m_top[TOP_ENTRIES] __page_aligned_data =
+ 		{ [ 0 ... TOP_ENTRIES - 1] = &p2m_missing[0] };
  
- 	write_pda(kernelstack,
--	(unsigned long)task_stack_page(next_p) + THREAD_SIZE - PDA_STACKOFFSET);
-+		  (unsigned long)task_stack_page(next_p) +
-+		  THREAD_SIZE - PDA_STACKOFFSET);
- #ifdef CONFIG_CC_STACKPROTECTOR
- 	/*
- 	 * Build time only check to make sure the stack_canary is at
+ /* Arrays of p2m arrays expressed in mfns used for save/restore */
+-static unsigned long p2m_top_mfn[TOP_ENTRIES]
+-	__attribute__((section(".bss.page_aligned")));
++static unsigned long p2m_top_mfn[TOP_ENTRIES] __page_aligned_bss;
+ 
+-static unsigned long p2m_top_mfn_list[
+-			PAGE_ALIGN(TOP_ENTRIES / P2M_ENTRIES_PER_PAGE)]
+-	__attribute__((section(".bss.page_aligned")));
++static unsigned long p2m_top_mfn_list[TOP_ENTRIES / P2M_ENTRIES_PER_PAGE]
++	__page_aligned_bss;
+ 
+ static inline unsigned p2m_top_index(unsigned long pfn)
+ {
 
 
