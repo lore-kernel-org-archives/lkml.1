@@ -1,142 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757186AbYGHUJK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757141AbYGHUKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757186AbYGHUJK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 16:09:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753588AbYGHUI5
+	id S1757141AbYGHUKj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 16:10:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754168AbYGHUKb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 16:08:57 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:36056 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752938AbYGHUI5 (ORCPT
+	Tue, 8 Jul 2008 16:10:31 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:37194 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753588AbYGHUKa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 16:08:57 -0400
-Date: Tue, 8 Jul 2008 21:08:42 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Tue, 8 Jul 2008 16:10:30 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:to:cc:subject:message-id:mime-version:
+	content-type:content-disposition:user-agent:from;
+	b=NblW82xkFaY5VqW9/dUI9nrissTwRzulFMH4RVwiu7l+zeyFI05lh/eyYvngv/8pT
+	Nvj/TYW6rzlJVKJ+MEHSg==
+Date: Tue, 8 Jul 2008 13:10:11 -0700
+To: drzeus-mmc@drzeus.cx
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ds1620: Push BKL down
-Message-ID: <20080708200841.GB31327@flint.arm.linux.org.uk>
-References: <20080522213529.1423c01f@core>
-Mime-Version: 1.0
+Subject: [PATCH 001/001] mmcblk: Fix deadlock when cleanup is called from resume
+Message-ID: <20080708201011.GB16849@google.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080522213529.1423c01f@core>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.11
+From: san@google.com (San Mehat)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 22, 2008 at 09:35:29PM +0100, Alan Cox wrote:
-> Push down the BKL and correct the ioctl return for unknown ioctls.
 
-In principle, no issues with the patch, and I'd ack it.  However, I've
-made some comments about whether the BKL is needed in all these places.
-Whether your intention is just to push the BKL down or to actually
-eliminate it will of course determine whether you want to delete those.
+  When CONFIG_UNSAFE_RESUME is used, we may need to cleanup
+  (and call kthread_stop) when threads are still frozen. To fix this
+  deadlock, push cleanup off to a work-queue.
 
-> Signed-off-by: Alan Cox <alan@redhat.com>
-> 
-> diff --git a/drivers/char/ds1620.c b/drivers/char/ds1620.c
-> index 334ad5b..6db699d 100644
-> --- a/drivers/char/ds1620.c
-> +++ b/drivers/char/ds1620.c
-> @@ -8,10 +8,11 @@
->  #include <linux/proc_fs.h>
->  #include <linux/capability.h>
->  #include <linux/init.h>
-> +#include <linux/smp_lock.h>
-> +#include <linux/uaccess.h>
->  
->  #include <asm/hardware.h>
->  #include <asm/mach-types.h>
-> -#include <asm/uaccess.h>
->  #include <asm/therm.h>
->  
->  #ifdef CONFIG_PROC_FS
-> @@ -225,8 +226,8 @@ ds1620_read(struct file *file, char __user *buf, size_t count, loff_t *ptr)
->  	return 1;
->  }
->  
-> -static int
-> -ds1620_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg)
-> +static long ds1620_ioctl(struct file *file, unsigned int cmd,
-> +							unsigned long arg)
->  {
->  	struct therm therm;
->  	union {
-> @@ -254,13 +255,16 @@ ds1620_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsigned
->  
->  		therm.lo <<= 1;
->  		therm.hi <<= 1;
-> -
-> +		lock_kernel();
->  		ds1620_write_state(&therm);
-> +		unlock_kernel();
->  		break;
->  
->  	case CMD_GET_THERMOSTATE:
->  	case CMD_GET_THERMOSTATE2:
-> +		lock_kernel();
->  		ds1620_read_state(&therm);
-> +		unlock_kernel();
+  Signed-off-by: San Mehat <san@android.com>
 
-These two should stay since there's no other protection against reading half
-the state in one thread while another writes the state (where state is
-the high/low trip points for the fan speed.)
+---
+ drivers/mmc/card/queue.c |   36 ++++++++++++++++++++++++++++++++++--
+ 1 files changed, 34 insertions(+), 2 deletions(-)
 
->  
->  		therm.lo >>= 1;
->  		therm.hi >>= 1;
-> @@ -276,20 +280,25 @@ ds1620_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsigned
->  
->  	case CMD_GET_TEMPERATURE:
->  	case CMD_GET_TEMPERATURE2:
-> +		lock_kernel();
->  		i = cvt_9_to_int(ds1620_in(THERM_READ_TEMP, 9));
->  
->  		if (cmd == CMD_GET_TEMPERATURE)
->  			i >>= 1;
-> -
-> +		unlock_kernel();
-
-ds1620_in() is protected by a spinlock internally, and cvt_9_to_int
-is just a conversion function, so not required.
-
->  		return put_user(i, uarg.i) ? -EFAULT : 0;
->  
->  	case CMD_GET_STATUS:
-> +		lock_kernel();
->  		i = ds1620_in(THERM_READ_CONFIG, 8) & 0xe3;
-> +		unlock_kernel();
-
-ds1620_in() is protected by a spinlock internally, so not required.
-
->  
->  		return put_user(i, uarg.i) ? -EFAULT : 0;
->  
->  	case CMD_GET_FAN:
-> +		lock_kernel();
->  		i = netwinder_get_fan();
-> +		unnlock_kernel();
-
-Not required - netwinder_get_fan() essentially just reads a pair of
-GPIO registers and reports the state of the GPIO.
-
->  
->  		return put_user(i, uarg.i) ? -EFAULT : 0;
->  
-> @@ -299,14 +308,14 @@ ds1620_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsigned
->  
->  		if (get_user(i, uarg.i))
->  			return -EFAULT;
-> -
-> +		lock_kernel();
->  		netwinder_set_fan(i);
-> +		unlock_kernel();
-
-Not needed - the internals of netwinder_set_fan() takes a spinlock.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+diff --git a/drivers/mmc/card/queue.c b/drivers/mmc/card/queue.c
+index 972738f..908e3cf 100644
+--- a/drivers/mmc/card/queue.c
++++ b/drivers/mmc/card/queue.c
+@@ -14,6 +14,7 @@
+ #include <linux/freezer.h>
+ #include <linux/kthread.h>
+ #include <linux/scatterlist.h>
++#include <linux/workqueue.h>
+ 
+ #include <linux/mmc/card.h>
+ #include <linux/mmc/host.h>
+@@ -23,6 +24,11 @@
+ 
+ #define MMC_QUEUE_SUSPENDED	(1 << 0)
+ 
++static void mq_cleanup_work(struct work_struct *work);
++static DECLARE_WORK(mq_cleanup_worker, mq_cleanup_work);
++static struct mmc_queue *cleanup_mq;
++static DEFINE_SPINLOCK(mq_cleanup_lock);
++
+ /*
+  * Prepare a MMC request. This just filters out odd stuff.
+  */
+@@ -217,9 +223,36 @@ int mmc_init_queue(struct mmc_queue *mq, struct mmc_card *card, spinlock_t *lock
+ 
+ void mmc_cleanup_queue(struct mmc_queue *mq)
+ {
+-	struct request_queue *q = mq->queue;
+ 	unsigned long flags;
+ 
++	BUG_ON(!mq);
++
++	/*
++	 * The actual cleanup is done from a work_queue because if you
++	 * thread_stop() while resuming, you'll deadlock.
++	 */
++	spin_lock_irqsave(&mq_cleanup_lock, flags);
++	cleanup_mq = mq;
++	schedule_work(&mq_cleanup_worker);
++	spin_unlock_irqrestore(&mq_cleanup_lock, flags);
++}
++EXPORT_SYMBOL(mmc_cleanup_queue);
++
++static void mq_cleanup_work(struct work_struct *work)
++{
++	struct mmc_queue *mq;
++	unsigned long flags;
++	struct request_queue *q;
++
++	spin_lock_irqsave(&mq_cleanup_lock, flags);
++	mq = cleanup_mq;
++	cleanup_mq = NULL;
++	spin_unlock_irqrestore(&mq_cleanup_lock, flags);
++
++	BUG_ON(!mq);
++
++	q = mq->queue;
++
+ 	/* Mark that we should start throwing out stragglers */
+ 	spin_lock_irqsave(q->queue_lock, flags);
+ 	q->queuedata = NULL;
+@@ -246,7 +279,6 @@ void mmc_cleanup_queue(struct mmc_queue *mq)
+ 
+ 	mq->card = NULL;
+ }
+-EXPORT_SYMBOL(mmc_cleanup_queue);
+ 
+ /**
+  * mmc_queue_suspend - suspend a MMC request queue
