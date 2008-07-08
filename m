@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759117AbYGHMPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758336AbYGHMQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759117AbYGHMPa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 08:15:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758939AbYGHMMk
+	id S1758336AbYGHMQR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 08:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758081AbYGHMMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 08:12:40 -0400
-Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27240 "EHLO
+	Tue, 8 Jul 2008 08:12:51 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27245 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758888AbYGHMMi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 08:12:38 -0400
+	id S1758669AbYGHMMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 08:12:45 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
@@ -18,11 +18,11 @@ Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
        grant.likely@secretlab.ca, vapier.adi@gmail.com,
        alan@lxorguk.ukuu.org.uk, hpa@zytor.com, lethal@linux-sh.org,
        florian@openwrt.org, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 54/58] microblaze_v5: IPC headers
-Date: Tue,  8 Jul 2008 13:59:54 +0200
-Message-Id: <5fbc8a35844b0f81291f7cf3ff5030baca819b67.1215517976.git.monstr@monstr.eu>
+Subject: [PATCH 47/58] microblaze_v5: headers files entry.h current.h mman.h registers.h sembuf.h
+Date: Tue,  8 Jul 2008 13:59:47 +0200
+Message-Id: <c6651b096ee8a0691f94f8c19574302dbfb61ee4.1215517976.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <542a23f9748621b66e6f0ef8e0eb6248d542aa99.1215517976.git.monstr@monstr.eu>
+In-Reply-To: <a98df8525bf9287d7a8b6077ff20dd61a055a98e.1215517976.git.monstr@monstr.eu>
 References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
  <c03d29cbccaef8aed8a2911c2a259fbd79ad23d9.1215517976.git.monstr@monstr.eu>
@@ -70,13 +70,6 @@ References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <0d39e8f03c487c004efa226c5ee81a81a8856768.1215517976.git.monstr@monstr.eu>
  <c4f477d71dd4cd2ae884b9c47756c9334f8dac18.1215517976.git.monstr@monstr.eu>
  <a98df8525bf9287d7a8b6077ff20dd61a055a98e.1215517976.git.monstr@monstr.eu>
- <c6651b096ee8a0691f94f8c19574302dbfb61ee4.1215517976.git.monstr@monstr.eu>
- <2ac3915482a9a50f7a4531908305b326baa2008e.1215517976.git.monstr@monstr.eu>
- <3c5eac3dbdbf538c727a4a8fe336cdd55650bb37.1215517976.git.monstr@monstr.eu>
- <6c03dcf8dbfd910ebf6c2f95db61d0456aa943e1.1215517976.git.monstr@monstr.eu>
- <1054e7643bd01351ba67273043203df322b49bea.1215517976.git.monstr@monstr.eu>
- <2bc35758e609ee5b79afe0f58be17d11a01498dc.1215517976.git.monstr@monstr.eu>
- <542a23f9748621b66e6f0ef8e0eb6248d542aa99.1215517976.git.monstr@monstr.eu>
 In-Reply-To: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 References: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -88,25 +81,24 @@ From: Michal Simek <monstr@monstr.eu>
 Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/ipc.h    |    1 +
- include/asm-microblaze/ipcbuf.h |   36 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 37 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/ipc.h
- create mode 100644 include/asm-microblaze/ipcbuf.h
+ include/asm-microblaze/current.h   |   23 +++++++++++++++++++++++
+ include/asm-microblaze/entry.h     |   28 ++++++++++++++++++++++++++++
+ include/asm-microblaze/mman.h      |   25 +++++++++++++++++++++++++
+ include/asm-microblaze/registers.h |   24 ++++++++++++++++++++++++
+ include/asm-microblaze/sembuf.h    |   34 ++++++++++++++++++++++++++++++++++
+ 5 files changed, 134 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/current.h
+ create mode 100644 include/asm-microblaze/entry.h
+ create mode 100644 include/asm-microblaze/mman.h
+ create mode 100644 include/asm-microblaze/registers.h
+ create mode 100644 include/asm-microblaze/sembuf.h
 
-diff --git a/include/asm-microblaze/ipc.h b/include/asm-microblaze/ipc.h
+diff --git a/include/asm-microblaze/current.h b/include/asm-microblaze/current.h
 new file mode 100644
-index 0000000..a46e3d9
+index 0000000..bc5ec59
 --- /dev/null
-+++ b/include/asm-microblaze/ipc.h
-@@ -0,0 +1 @@
-+#include <asm-generic/ipc.h>
-diff --git a/include/asm-microblaze/ipcbuf.h b/include/asm-microblaze/ipcbuf.h
-new file mode 100644
-index 0000000..b056fa4
---- /dev/null
-+++ b/include/asm-microblaze/ipcbuf.h
-@@ -0,0 +1,36 @@
++++ b/include/asm-microblaze/current.h
+@@ -0,0 +1,23 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -115,34 +107,156 @@ index 0000000..b056fa4
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_IPCBUF_H
-+#define _ASM_MICROBLAZE_IPCBUF_H
++#ifndef _ASM_MICROBLAZE_CURRENT_H
++#define _ASM_MICROBLAZE_CURRENT_H
++
++#ifndef __ASSEMBLY__
 +
 +/*
-+ * The user_ipc_perm structure for microblaze architecture.
++ * Dedicate r31 to keeping the current task pointer
++ */
++register struct task_struct *current asm("r31");
++
++#define get_current() current
++
++#endif
++
++#endif /* _ASM_MICROBLAZE_CURRENT_H */
+diff --git a/include/asm-microblaze/entry.h b/include/asm-microblaze/entry.h
+new file mode 100644
+index 0000000..e4b5079
+--- /dev/null
++++ b/include/asm-microblaze/entry.h
+@@ -0,0 +1,28 @@
++/*
++ * Definitions used by low-level trap handlers
++ *
++ * Copyright (C) 2007 PetaLogix
++ * Copyright (C) 2007 John Williams <john.williams@petalogix.com>
++ *
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License. See the file COPYING in the main directory of this
++ * archive for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_ENTRY_H
++#define _ASM_MICROBLAZE_ENTRY_H
++
++#include <asm/percpu.h>
++#include <asm/ptrace.h>
++
++/* These are per-cpu variables required in entry.S, among other
++ places */
++
++DECLARE_PER_CPU(unsigned int, KSP); /* Saved kernel stack pointer */
++DECLARE_PER_CPU(unsigned int, KM); /* Kernel/user mode */
++DECLARE_PER_CPU(unsigned int, ENTRY_SP); /* Saved SP on kernel entry */
++DECLARE_PER_CPU(unsigned int, R11_SAVE); /* Temp variable for entry */
++DECLARE_PER_CPU(unsigned int, CURRENT_SAVE); /* Saved current pointer */
++DECLARE_PER_CPU(unsigned int, SYSCALL_SAVE); /* Saved syscall number */
++
++#endif /* _ASM_MICROBLAZE_ENTRY_H */
+diff --git a/include/asm-microblaze/mman.h b/include/asm-microblaze/mman.h
+new file mode 100644
+index 0000000..4914b13
+--- /dev/null
++++ b/include/asm-microblaze/mman.h
+@@ -0,0 +1,25 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_MMAN_H
++#define _ASM_MICROBLAZE_MMAN_H
++
++#include <asm-generic/mman.h>
++
++#define MAP_GROWSDOWN	0x0100 /* stack-like segment */
++#define MAP_DENYWRITE	0x0800 /* ETXTBSY */
++#define MAP_EXECUTABLE	0x1000 /* mark it as an executable */
++#define MAP_LOCKED	0x2000 /* pages are locked */
++#define MAP_NORESERVE	0x4000 /* don't check for reservations */
++#define MAP_POPULATE	0x8000 /* populate (prefault) pagetables */
++#define MAP_NONBLOCK	0x10000 /* do not block on IO */
++
++#define MCL_CURRENT	1 /* lock all current mappings */
++#define MCL_FUTURE	2 /* lock all future mappings */
++
++#endif /* _ASM_MICROBLAZE_MMAN_H */
+diff --git a/include/asm-microblaze/registers.h b/include/asm-microblaze/registers.h
+new file mode 100644
+index 0000000..1a98ba0
+--- /dev/null
++++ b/include/asm-microblaze/registers.h
+@@ -0,0 +1,24 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_REGISTERS_H
++#define _ASM_MICROBLAZE_REGISTERS_H
++
++#define MSR_BE	(1<<0)
++#define MSR_IE	(1<<1)
++#define MSR_C	(1<<2)
++#define MSR_BIP	(1<<3)
++#define MSR_FSL	(1<<4)
++#define MSR_ICE	(1<<5)
++#define MSR_DZ	(1<<6)
++#define MSR_DCE	(1<<7)
++#define MSR_EE	(1<<8)
++#define MSR_EIP	(1<<9)
++#define MSR_CC	(1<<31)
++
++#endif /* _ASM_MICROBLAZE_REGISTERS_H */
+diff --git a/include/asm-microblaze/sembuf.h b/include/asm-microblaze/sembuf.h
+new file mode 100644
+index 0000000..b804ed7
+--- /dev/null
++++ b/include/asm-microblaze/sembuf.h
+@@ -0,0 +1,34 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_SEMBUF_H
++#define _ASM_MICROBLAZE_SEMBUF_H
++
++/*
++ * The semid64_ds structure for microblaze architecture.
 + * Note extra padding because this structure is passed back and forth
 + * between kernel and user space.
 + *
 + * Pad space is left for:
-+ * - 32-bit mode_t and seq
++ * - 64-bit time_t to solve y2038 problem
 + * - 2 miscellaneous 32-bit values
 + */
 +
-+struct ipc64_perm {
-+	__kernel_key_t		key;
-+	__kernel_uid32_t	uid;
-+	__kernel_gid32_t	gid;
-+	__kernel_uid32_t	cuid;
-+	__kernel_gid32_t	cgid;
-+	__kernel_mode_t		mode;
-+	unsigned short		__pad1;
-+	unsigned short		seq;
-+	unsigned short		__pad2;
-+	unsigned long		__unused1;
-+	unsigned long		__unused2;
++struct semid64_ds {
++	struct ipc64_perm sem_perm; /* permissions .. see ipc.h */
++	__kernel_time_t	sem_otime; /* last semop time */
++	unsigned long	__unused1;
++	__kernel_time_t	sem_ctime; /* last change time */
++	unsigned long	__unused2;
++	unsigned long	sem_nsems; /* no. of semaphores in array */
++	unsigned long	__unused3;
++	unsigned long	__unused4;
 +};
 +
-+#endif /* _ASM_MICROBLAZE_IPCBUF_H */
++
++#endif /* _ASM_MICROBLAZE_SEMBUF_H */
 -- 
 1.5.4.GIT
 
