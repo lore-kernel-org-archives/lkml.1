@@ -1,74 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756123AbYGHPNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbYGHPP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756123AbYGHPNz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 11:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753774AbYGHPNp
+	id S1756241AbYGHPP2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 11:15:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753752AbYGHPPT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 11:13:45 -0400
-Received: from smarthost1.greenhost.nl ([85.17.153.87]:51680 "EHLO
-	smarthost1.samage.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753551AbYGHPNo (ORCPT
+	Tue, 8 Jul 2008 11:15:19 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:34040 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753827AbYGHPPS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 11:13:44 -0400
-Message-ID: <14530.84.245.32.19.1215529916.squirrel@secure.samage.net>
-In-Reply-To: <Pine.LNX.4.44L0.0807081008230.2135-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0807081008230.2135-100000@iolanthe.rowland.org>
-Date: Tue, 8 Jul 2008 17:11:56 +0200 (CEST)
-Subject: Re: 2.6.27-rc7-git1: usb-storage breakage with non-functional disk
-From: "Indan Zupancic" <indan@nul.nu>
-To: "Alan Stern" <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Matthew Dharm" <mdharm-usb@one-eyed-alien.net>,
-       "USB development list" <linux-usb@vger.kernel.org>,
-       "LKML" <linux-kernel@vger.kernel.org>, "Greg KH" <greg@kroah.com>,
-       "linux-scsi" <linux-scsi@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-User-Agent: SquirrelMail/1.4.8
+	Tue, 8 Jul 2008 11:15:18 -0400
+Date: Tue, 8 Jul 2008 19:15:15 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix broken fix for fsl-diu-db
+Message-ID: <20080708151515.GA22707@polina.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <s5h8wwc72he.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Spam-Score: 0.0
-X-Scan-Signature: dfea3049d3b923820beb462d65569822
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <s5h8wwc72he.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, July 8, 2008 16:11, Alan Stern wrote:
-> On Tue, 8 Jul 2008, Indan Zupancic wrote:
->
->> On Tue, July 8, 2008 15:00, Indan Zupancic wrote:
->> > Any idea why my cardreader doesn't work in the first place though?
->>
->> In case it's useful, an usbmon dump can be found at
->> http://pastebin.org/49630
->> This is the log of plugging in the thing and unplugging it again after it
->> failed.
->> Corresponding dmesg output with USB and usb-storage debugging enabled at
->> http://pastebin.org/49631. This is on 2.6.26-rc9 with Alan's patch applied.
->
-> The logs reveal only that this doesn't seem to be a software- or
-> firmware-related problem.  And it probably isn't a problem in the cable
-> either, which leaves only the reader or its USB interface.
->
-> It might work better at full speed than at high speed (although you
-> probably don't want to use it in a degraded mode).
+On Tue, Jul 08, 2008 at 06:41:17PM +0200, Takashi Iwai wrote:
+> On 2.6.26-rc9, the commit 05946bce839b4fed5442dbfab77060fb75e051f3
+>     fsl_diu_fb: fix build with CONFIG_PM=y, plus fix some warnings
+> breaks its previous fix f969c5672b16b857e5231ad3c78f08d8ef3305aa
+>     fsl-diu-db: compile fix
 
-It works if I disable USB 2.0 support in the BIOS, does that tell us
-anything new? The thing is sold as a USB 2.0 device, does this just
-confirm that it's a cheap device which is just lousy quality, or can
-it be considered broken?
+Yeah, I sent the fix on Jun 06, it hanged around in the mailing list
+for month, meanwhile Linus directly applied Jeff Mahoney's fix on Jun
+12 (git says).
 
-...
+Quite funny they didn't conflict.
 
-I tried it with my neighbour's computer and there it didn't work either,
-so it's just broken hardware it seems.
+> This patch reverts the broken part.
+> 
+> Signed-off-by: Takashi Iwai <tiwai@suse.de>
 
-Oh well, tested one patch today, so it wasn't totally useless.
+So... ack, and it wasn't my fault, FWIW. :-P
 
-Thanks for the help,
+> ---
+> diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+> index 712dabc..09d7e22 100644
+> --- a/drivers/video/fsl-diu-fb.c
+> +++ b/drivers/video/fsl-diu-fb.c
+> @@ -1324,7 +1324,7 @@ static int fsl_diu_suspend(struct of_device *ofdev, pm_message_t state)
+>  {
+>  	struct fsl_diu_data *machine_data;
+>  
+> -	machine_data = dev_get_drvdata(&dev->dev);
+> +	machine_data = dev_get_drvdata(&ofdev->dev);
+>  	disable_lcdc(machine_data->fsl_diu_info[0]);
+>  
+>  	return 0;
+> @@ -1334,7 +1334,7 @@ static int fsl_diu_resume(struct of_device *ofdev)
+>  {
+>  	struct fsl_diu_data *machine_data;
+>  
+> -	machine_data = dev_get_drvdata(&dev->dev);
+> +	machine_data = dev_get_drvdata(&ofdev->dev);
+>  	enable_lcdc(machine_data->fsl_diu_info[0]);
+>  
+>  	return 0;
 
-Indan
-
-
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
