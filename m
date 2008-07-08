@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758310AbYGHMsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754980AbYGHMta@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758310AbYGHMsq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 08:48:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759031AbYGHMrF
+	id S1754980AbYGHMta (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 08:49:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759205AbYGHMrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 08:47:05 -0400
+	Tue, 8 Jul 2008 08:47:20 -0400
 Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27570 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759135AbYGHMrC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 08:47:02 -0400
+	id S1756956AbYGHMrQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 08:47:16 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
@@ -18,11 +18,11 @@ Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
        grant.likely@secretlab.ca, vapier.adi@gmail.com,
        alan@lxorguk.ukuu.org.uk, hpa@zytor.com, lethal@linux-sh.org,
        florian@openwrt.org, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 07/58] microblaze_v5: exception handling
-Date: Tue,  8 Jul 2008 13:59:07 +0200
-Message-Id: <9be4eff2f4d015023c453eaec3b3473a44380491.1215517976.git.monstr@monstr.eu>
+Subject: [PATCH 41/58] microblaze_v5: system.h pvr.h processor.h
+Date: Tue,  8 Jul 2008 13:59:41 +0200
+Message-Id: <bcb94400dca62fb349d0ab1e0a6209291fdcdfc5.1215517976.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <3171c5cf21eefc79665165f4a14bc5b68dd03f95.1215517976.git.monstr@monstr.eu>
+In-Reply-To: <5174afd0eaa5c6cb9344ea3217199e48899be313.1215517976.git.monstr@monstr.eu>
 References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
  <c03d29cbccaef8aed8a2911c2a259fbd79ad23d9.1215517976.git.monstr@monstr.eu>
@@ -30,6 +30,40 @@ References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <810775b1bb678003923039726a9153ee34fb67b4.1215517976.git.monstr@monstr.eu>
  <2a24e5bc2cfbd349613ef10c716a28f04ce24a9f.1215517976.git.monstr@monstr.eu>
  <3171c5cf21eefc79665165f4a14bc5b68dd03f95.1215517976.git.monstr@monstr.eu>
+ <9be4eff2f4d015023c453eaec3b3473a44380491.1215517976.git.monstr@monstr.eu>
+ <f8e331ed9432719f3c0555c840cbbb7bbc1a6322.1215517976.git.monstr@monstr.eu>
+ <4409daf2ac356e902a8f091bb5908eb8a90218bc.1215517976.git.monstr@monstr.eu>
+ <f7458acb0252f72b5620d19c76104408ecc2e451.1215517976.git.monstr@monstr.eu>
+ <dbd9df742cdd9eb3355d7bc8e39f9dfef6c545e4.1215517976.git.monstr@monstr.eu>
+ <1f9a1f345caa749cb630cf85f95f217366395069.1215517976.git.monstr@monstr.eu>
+ <fe3686f0f70d838b33642bcbcd7185fc2180b366.1215517976.git.monstr@monstr.eu>
+ <e61f5a8579570cf7cd18a22e4106b7f85518928e.1215517976.git.monstr@monstr.eu>
+ <59d7e0a5f38b8d38f01f357a071fc93eed36f3a8.1215517976.git.monstr@monstr.eu>
+ <143afcf84af583ab66da7e8acfc9eb03b7f3eaa0.1215517976.git.monstr@monstr.eu>
+ <a967ee4e5a60b410e2810ce0475e8fd04f99e3ae.1215517976.git.monstr@monstr.eu>
+ <c5f0730287365c845746467a9917dbc07d2fca3c.1215517976.git.monstr@monstr.eu>
+ <2aa1ac7891af57959237aae3addf4bbe607f55d7.1215517976.git.monstr@monstr.eu>
+ <875ba2708f6cd3c585e4d965142e2feb07c39a0e.1215517976.git.monstr@monstr.eu>
+ <eb0e741f891335df37c3cd19f1a3ce2f7ce8652a.1215517976.git.monstr@monstr.eu>
+ <b28df2ea2419cbda26f9089ed6edcc175c009688.1215517976.git.monstr@monstr.eu>
+ <5da1d8f069f18f14faee8c4bff736791179ef6f1.1215517976.git.monstr@monstr.eu>
+ <9a32168fe72b772f301216a7090670474af78e49.1215517976.git.monstr@monstr.eu>
+ <7ada4bceefc1806a2c8ef73676b7aabd8ac1cad6.1215517976.git.monstr@monstr.eu>
+ <701c1dac442ac09f5010cb5356cc1a12bb0abfe1.1215517976.git.monstr@monstr.eu>
+ <9b48e9d85b4a5a6dcffce8eef62b232b6bfac8e8.1215517976.git.monstr@monstr.eu>
+ <04b0b222b84ba9cfe2507a9081f4d715f2323733.1215517976.git.monstr@monstr.eu>
+ <d4c1b3ecfec1bf37ca0ecea6909ad25bbc945630.1215517976.git.monstr@monstr.eu>
+ <6e5687d37386334cf122d1eafcca0c6649c955be.1215517976.git.monstr@monstr.eu>
+ <689cff1b6d98f60d8f8abc4472193688b524284d.1215517976.git.monstr@monstr.eu>
+ <9664f18e7e86af4332018549b29bf0797d6afcd5.1215517976.git.monstr@monstr.eu>
+ <c7120d8a6379cb1a18af5330997e30ec974acc2f.1215517976.git.monstr@monstr.eu>
+ <d1d33c18956829ec9ac7daf8d0516b17e85ed190.1215517976.git.monstr@monstr.eu>
+ <7a16429cfc461420883dbaa80c16047e5a1a91c1.1215517976.git.monstr@monstr.eu>
+ <b6a0f3bceb0867c55613463fc43be5328fcedecd.1215517976.git.monstr@monstr.eu>
+ <fc26823d77c7180b62022e2d4bcca3c4fe6de574.1215517976.git.monstr@monstr.eu>
+ <64089967061955b7a29eb6d4e6269ff75b5442f2.1215517976.git.monstr@monstr.eu>
+ <92e3ab88c2174acf4e25c474c1f68ffd4db72ca6.1215517976.git.monstr@monstr.eu>
+ <5174afd0eaa5c6cb9344ea3217199e48899be313.1215517976.git.monstr@monstr.eu>
 In-Reply-To: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 References: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,561 +75,492 @@ From: Michal Simek <monstr@monstr.eu>
 Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/kernel/exceptions.c           |   77 +++++
- arch/microblaze/kernel/hw_exception_handler.S |  391 +++++++++++++++++++++++++
- include/asm-microblaze/exceptions.h           |   61 ++++
- 3 files changed, 529 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/kernel/exceptions.c
- create mode 100644 arch/microblaze/kernel/hw_exception_handler.S
- create mode 100644 include/asm-microblaze/exceptions.h
+ include/asm-microblaze/processor.h |   88 +++++++++++++++++
+ include/asm-microblaze/pvr.h       |  183 ++++++++++++++++++++++++++++++++++
+ include/asm-microblaze/system.h    |  189 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 460 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/processor.h
+ create mode 100644 include/asm-microblaze/pvr.h
+ create mode 100644 include/asm-microblaze/system.h
 
-diff --git a/arch/microblaze/kernel/exceptions.c b/arch/microblaze/kernel/exceptions.c
+diff --git a/include/asm-microblaze/processor.h b/include/asm-microblaze/processor.h
 new file mode 100644
-index 0000000..734038e
+index 0000000..2213d6f
 --- /dev/null
-+++ b/arch/microblaze/kernel/exceptions.c
-@@ -0,0 +1,77 @@
++++ b/include/asm-microblaze/processor.h
+@@ -0,0 +1,88 @@
 +/*
-+ * HW exception handling
++ * Copyright (C) 2006 Atmark Techno, Inc.
 + *
-+ * Copyright (C) 2007 Xilinx, Inc.
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_PROCESSOR_H
++#define _ASM_MICROBLAZE_PROCESSOR_H
++
++#include <asm/ptrace.h>
++#include <asm/setup.h>
++
++/*
++ * User space process size: memory size
++ *
++ * TASK_SIZE on MMU cpu is usually 1GB. However, on no-MMU arch, both
++ * user processes and the kernel is on the same memory region. They
++ * both share the memory space and that is limited by the amount of
++ * physical memory. thus, we set TASK_SIZE == amount of total memory.
++ */
++
++#define TASK_SIZE	(0x81000000 - 0x80000000)
++
++/*
++ * Default implementation of macro that returns current
++ * instruction pointer ("program counter").
++ */
++#define current_text_addr() ({ __label__ _l; _l: &&_l; })
++
++/*
++ * This decides where the kernel will search for a free chunk of vm
++ * space during mmap's. We won't be using it
++ */
++#define TASK_UNMAPPED_BASE	0
++
++struct task_struct;
++
++/* thread_struct is gone. use thread_info instead. */
++struct thread_struct { };
++#define INIT_THREAD	{ }
++
++/* Do necessary setup to start up a newly executed thread. */
++static inline void start_thread(struct pt_regs *regs,
++				unsigned long pc,
++				unsigned long usp)
++{
++	regs->pc = pc;
++	regs->r1 = usp;
++	regs->kernel_mode = 0;
++}
++
++/* Free all resources held by a thread. */
++static inline void release_thread(struct task_struct *dead_task)
++{
++}
++
++/* Free all resources held by a thread. */
++static inline void exit_thread(void)
++{
++}
++
++extern unsigned long thread_saved_pc(struct task_struct *t);
++
++extern unsigned long get_wchan(struct task_struct *p);
++
++/* FIXME */
++#define cpu_relax()		do {} while (0)
++#define cpu_sleep()		do {} while (0)
++#define prepare_to_copy(tsk)	do {} while (0)
++
++/*
++ * create a kernel thread without removing it from tasklists
++ */
++extern int kernel_thread(int (*fn)(void *), void *arg, unsigned long flags);
++
++/* #define task_thread_info(task) (task)->thread_info */
++/* #define task_stack_page(task) ((void*)((task)->thread_info)) */
++
++#define task_pt_regs(tsk) \
++		(((struct pt_regs *)(THREAD_SIZE + task_stack_page(tsk))) - 1)
++
++
++#define KSTK_EIP(tsk)	(0)
++#define KSTK_ESP(tsk)	(0)
++
++#endif /* _ASM_MICROBLAZE_PROCESSOR_H */
+diff --git a/include/asm-microblaze/pvr.h b/include/asm-microblaze/pvr.h
+new file mode 100644
+index 0000000..1c67731
+--- /dev/null
++++ b/include/asm-microblaze/pvr.h
+@@ -0,0 +1,183 @@
++/*
++ * Support for the MicroBlaze PVR (Processor Version Register)
++ *
++ * Copyright (C) 2007 John Williams <john.williams@petalogix.com>
++ * Copyright (C) 2007 PetaLogix
 + *
 + * This file is subject to the terms and conditions of the GNU General
 + * Public License. See the file COPYING in the main directory of this
 + * archive for more details.
++ *
 + */
++#ifndef _ASM_MICROBLAZE_PVR_H
++#define _ASM_MICROBLAZE_PVR_H
 +
-+#include <linux/kernel.h>
-+#include <linux/signal.h>
-+#include <linux/sched.h>
-+#include <asm/exceptions.h>
-+#include <asm/entry.h>		/* For KM CPU var */
++#define PVR_MSR_BIT 0x400
 +
-+/* Initialize_exception_handlers() - called from setup.c/trap_init() */
-+void initialize_exception_handlers(void)
-+{
-+}
++struct pvr_s {
++	unsigned pvr[16];
++};
 +
-+#define MICROBLAZE_ILL_OPCODE_EXCEPTION	0x02
-+#define MICROBLAZE_IOPB_BUS_EXCEPTION	0x03
-+#define MICROBLAZE_DOPB_BUS_EXCEPTION	0x04
-+#define MICROBLAZE_DIV_ZERO_EXCEPTION	0x05
-+#define MICROBLAZE_FPU_EXCEPTION	0x06
++/* The following taken from Xilinx's standalone BSP pvr.h */
 +
-+static void handle_unexpected_exception(unsigned int esr,
-+				unsigned int kernel_mode, unsigned int addr)
-+{
-+	printk(KERN_WARNING "Unexpected exception %02x in %s mode, PC=%08x\n",
-+		esr, kernel_mode ? "kernel" : "user", addr);
-+}
++/* Basic PVR mask */
++#define PVR0_PVR_FULL_MASK		0x80000000
++#define PVR0_USE_BARREL_MASK		0x40000000
++#define PVR0_USE_DIV_MASK		0x20000000
++#define PVR0_USE_HW_MUL_MASK		0x10000000
++#define PVR0_USE_FPU_MASK		0x08000000
++#define PVR0_USE_EXCEPTION_MASK		0x04000000
++#define PVR0_USE_ICACHE_MASK		0x02000000
++#define PVR0_USE_DCACHE_MASK		0x01000000
++#define PVR0_VERSION_MASK		0x0000FF00
++#define PVR0_USER1_MASK			0x000000FF
 +
-+static void handle_exception(const char *message, int signal,
-+				unsigned int kernel_mode, unsigned int addr)
-+{
-+	if (kernel_mode)
-+		panic("%s in the kernel mode, PC=%08x\n", message, addr);
-+	else
-+		force_sig(signal, current);
-+}
++/* User 2 PVR mask */
++#define PVR1_USER2_MASK			0xFFFFFFFF
 +
-+asmlinkage void other_exception_handler(unsigned int esr, unsigned int addr)
-+{
-+	unsigned int kernel_mode = per_cpu(KM, 0);
++/* Configuration PVR masks */
++#define PVR2_D_OPB_MASK			0x80000000
++#define PVR2_D_LMB_MASK			0x40000000
++#define PVR2_I_OPB_MASK			0x20000000
++#define PVR2_I_LMB_MASK			0x10000000
++#define PVR2_INTERRUPT_IS_EDGE_MASK	0x08000000
++#define PVR2_EDGE_IS_POSITIVE_MASK	0x04000000
++#define PVR2_USE_MSR_INSTR		0x00020000
++#define PVR2_USE_PCMP_INSTR		0x00010000
++#define PVR2_AREA_OPTIMISED		0x00008000
++#define PVR2_USE_BARREL_MASK		0x00004000
++#define PVR2_USE_DIV_MASK		0x00002000
++#define PVR2_USE_HW_MUL_MASK		0x00001000
++#define PVR2_USE_FPU_MASK		0x00000800
++#define PVR2_USE_MUL64_MASK		0x00000400
++#define PVR2_OPCODE_0x0_ILLEGAL_MASK	0x00000040
++#define PVR2_UNALIGNED_EXCEPTION_MASK	0x00000020
++#define PVR2_ILL_OPCODE_EXCEPTION_MASK	0x00000010
++#define PVR2_IOPB_BUS_EXCEPTION_MASK	0x00000008
++#define PVR2_DOPB_BUS_EXCEPTION_MASK	0x00000004
++#define PVR2_DIV_ZERO_EXCEPTION_MASK	0x00000002
++#define PVR2_FPU_EXCEPTION_MASK		0x00000001
 +
-+	switch (esr) {
++/* Debug and exception PVR masks */
++#define PVR3_DEBUG_ENABLED_MASK		0x80000000
++#define PVR3_NUMBER_OF_PC_BRK_MASK	0x1E000000
++#define PVR3_NUMBER_OF_RD_ADDR_BRK_MASK	0x00380000
++#define PVR3_NUMBER_OF_WR_ADDR_BRK_MASK	0x0000E000
++#define PVR3_FSL_LINKS_MASK		0x00000380
 +
-+	case MICROBLAZE_ILL_OPCODE_EXCEPTION:
-+		handle_exception("Illegal instruction", SIGILL,
-+						kernel_mode, addr);
-+		break;
++/* ICache config PVR masks */
++#define PVR4_USE_ICACHE_MASK		0x80000000
++#define PVR4_ICACHE_ADDR_TAG_BITS_MASK	0x7C000000
++#define PVR4_ICACHE_USE_FSL_MASK	0x02000000
++#define PVR4_ICACHE_ALLOW_WR_MASK	0x01000000
++#define PVR4_ICACHE_LINE_LEN_MASK	0x00E00000
++#define PVR4_ICACHE_BYTE_SIZE_MASK	0x001F0000
 +
-+	case MICROBLAZE_IOPB_BUS_EXCEPTION:
-+		handle_exception("Instruction bus error", SIGBUS,
-+						kernel_mode, addr);
-+		break;
++/* DCache config PVR masks */
++#define PVR5_USE_DCACHE_MASK		0x80000000
++#define PVR5_DCACHE_ADDR_TAG_BITS_MASK	0x7C000000
++#define PVR5_DCACHE_USE_FSL_MASK	0x02000000
++#define PVR5_DCACHE_ALLOW_WR_MASK	0x01000000
++#define PVR5_DCACHE_LINE_LEN_MASK	0x00E00000
++#define PVR5_DCACHE_BYTE_SIZE_MASK	0x001F0000
 +
-+	case MICROBLAZE_DOPB_BUS_EXCEPTION:
-+		handle_exception("Data bus error", SIGBUS, kernel_mode, addr);
-+		break;
++/* ICache base address PVR mask */
++#define PVR6_ICACHE_BASEADDR_MASK	0xFFFFFFFF
 +
-+	case MICROBLAZE_DIV_ZERO_EXCEPTION:
-+		handle_exception("Divide by zero", SIGILL, kernel_mode, addr);
-+		break;
++/* ICache high address PVR mask */
++#define PVR7_ICACHE_HIGHADDR_MASK	0xFFFFFFFF
 +
-+	case MICROBLAZE_FPU_EXCEPTION:
-+		handle_exception("FPU error", SIGFPE, kernel_mode, addr);
-+		break;
++/* DCache base address PVR mask */
++#define PVR8_DCACHE_BASEADDR_MASK	0xFFFFFFFF
 +
-+	default:
-+		handle_unexpected_exception(esr, kernel_mode, addr);
-+	}
++/* DCache high address PVR mask */
++#define PVR9_DCACHE_HIGHADDR_MASK	0xFFFFFFFF
 +
-+	return;
-+}
-diff --git a/arch/microblaze/kernel/hw_exception_handler.S b/arch/microblaze/kernel/hw_exception_handler.S
++/* Target family PVR mask */
++#define PVR10_TARGET_FAMILY_MASK	0xFF000000
++
++/* MSR Reset value PVR mask */
++#define PVR11_MSR_RESET_VALUE_MASK	0x000007FF
++
++
++/* PVR access macros */
++#define PVR_IS_FULL(pvr)		(pvr.pvr[0] & PVR0_PVR_FULL_MASK)
++#define PVR_USE_BARREL(pvr)		(pvr.pvr[0] & PVR0_USE_BARREL_MASK)
++#define PVR_USE_DIV(pvr)		(pvr.pvr[0] & PVR0_USE_DIV_MASK)
++#define PVR_USE_HW_MUL(pvr)		(pvr.pvr[0] & PVR0_USE_HW_MUL_MASK)
++#define PVR_USE_FPU(pvr)		(pvr.pvr[0] & PVR0_USE_FPU_MASK)
++#define PVR_USE_ICACHE(pvr)		(pvr.pvr[0] & PVR0_USE_ICACHE_MASK)
++#define PVR_USE_DCACHE(pvr)		(pvr.pvr[0] & PVR0_USE_DCACHE_MASK)
++#define PVR_VERSION(pvr)	((pvr.pvr[0] & PVR0_VERSION_MASK) >> 8)
++#define PVR_USER1(pvr)			(pvr.pvr[0] & PVR0_USER1_MASK)
++#define PVR_USER2(pvr)			(pvr.pvr[1] & PVR1_USER2_MASK)
++
++#define PVR_D_OPB(pvr)			(pvr.pvr[2] & PVR2_D_OPB_MASK)
++#define PVR_D_LMB(pvr)			(pvr.pvr[2] & PVR2_D_LMB_MASK)
++#define PVR_I_OPB(pvr)			(pvr.pvr[2] & PVR2_I_OPB_MASK)
++#define PVR_I_LMB(pvr)			(pvr.pvr[2] & PVR2_I_LMB_MASK)
++#define PVR_INTERRUPT_IS_EDGE(pvr) \
++			(pvr.pvr[2] & PVR2_INTERRUPT_IS_EDGE_MASK)
++#define PVR_EDGE_IS_POSITIVE(pvr) \
++			(pvr.pvr[2] & PVR2_EDGE_IS_POSITIVE_MASK)
++#define PVR_USE_MSR_INSTR(pvr)		(pvr.pvr[2] & PVR2_USE_MSR_INSTR)
++#define PVR_USE_PCMP_INSTR(pvr)		(pvr.pvr[2] & PVR2_USE_PCMP_INSTR)
++#define PVR_AREA_OPTIMISED(pvr)		(pvr.pvr[2] & PVR2_AREA_OPTIMISED)
++#define PVR_USE_MUL64(pvr)		(pvr.pvr[2] & PVR2_USE_MUL64_MASK)
++#define PVR_OPCODE_0x0_ILLEGAL(pvr) \
++			(pvr.pvr[2] & PVR2_OPCODE_0x0_ILLEGAL_MASK)
++#define PVR_UNALIGNED_EXCEPTION(pvr) \
++			(pvr.pvr[2] & PVR2_UNALIGNED_EXCEPTION_MASK)
++#define PVR_ILL_OPCODE_EXCEPTION(pvr) \
++			(pvr.pvr[2] & PVR2_ILL_OPCODE_EXCEPTION_MASK)
++#define PVR_IOPB_BUS_EXCEPTION(pvr) \
++			(pvr.pvr[2] & PVR2_IOPB_BUS_EXCEPTION_MASK)
++#define PVR_DOPB_BUS_EXCEPTION(pvr) \
++			(pvr.pvr[2] & PVR2_DOPB_BUS_EXCEPTION_MASK)
++#define PVR_DIV_ZERO_EXCEPTION(pvr) \
++			(pvr.pvr[2] & PVR2_DIV_ZERO_EXCEPTION_MASK)
++#define PVR_FPU_EXCEPTION(pvr)		(pvr.pvr[2] & PVR2_FPU_EXCEPTION_MASK)
++
++#define PVR_DEBUG_ENABLED(pvr)		(pvr.pvr[3] & PVR3_DEBUG_ENABLED_MASK)
++#define PVR_NUMBER_OF_PC_BRK(pvr) \
++			((pvr.pvr[3] & PVR3_NUMBER_OF_PC_BRK_MASK) >> 25)
++#define PVR_NUMBER_OF_RD_ADDR_BRK(pvr) \
++			((pvr.pvr[3] & PVR3_NUMBER_OF_RD_ADDR_BRK_MASK) >> 19)
++#define PVR_NUMBER_OF_WR_ADDR_BRK(pvr) \
++			((pvr.pvr[3] & PVR3_NUMBER_OF_WR_ADDR_BRK_MASK) >> 13)
++#define PVR_FSL_LINKS(pvr)	((pvr.pvr[3] & PVR3_FSL_LINKS_MASK) >> 7)
++
++#define PVR_ICACHE_ADDR_TAG_BITS(pvr) \
++			((pvr.pvr[4] & PVR4_ICACHE_ADDR_TAG_BITS_MASK) >> 26)
++#define PVR_ICACHE_USE_FSL(pvr)		(pvr.pvr[4] & PVR4_ICACHE_USE_FSL_MASK)
++#define PVR_ICACHE_ALLOW_WR(pvr)	(pvr.pvr[4] & PVR4_ICACHE_ALLOW_WR_MASK)
++#define PVR_ICACHE_LINE_LEN(pvr) \
++			(1 << ((pvr.pvr[4] & PVR4_ICACHE_LINE_LEN_MASK) >> 21))
++#define PVR_ICACHE_BYTE_SIZE(pvr) \
++			(1 << ((pvr.pvr[4] & PVR4_ICACHE_BYTE_SIZE_MASK) >> 16))
++
++#define PVR_DCACHE_ADDR_TAG_BITS(pvr) \
++			((pvr.pvr[5] & PVR5_DCACHE_ADDR_TAG_BITS_MASK) >> 26)
++#define PVR_DCACHE_USE_FSL(pvr)		(pvr.pvr[5] & PVR5_DCACHE_USE_FSL_MASK)
++#define PVR_DCACHE_ALLOW_WR(pvr)	(pvr.pvr[5] & PVR5_DCACHE_ALLOW_WR_MASK)
++#define PVR_DCACHE_LINE_LEN(pvr) \
++			(1 << ((pvr.pvr[5] & PVR5_DCACHE_LINE_LEN_MASK) >> 21))
++#define PVR_DCACHE_BYTE_SIZE(pvr) \
++			(1 << ((pvr.pvr[5] & PVR5_DCACHE_BYTE_SIZE_MASK) >> 16))
++
++
++#define PVR_ICACHE_BASEADDR(pvr)	(pvr.pvr[6] & PVR6_ICACHE_BASEADDR_MASK)
++#define PVR_ICACHE_HIGHADDR(pvr)	(pvr.pvr[7] & PVR7_ICACHE_HIGHADDR_MASK)
++
++#define PVR_DCACHE_BASEADDR(pvr)	(pvr.pvr[8] & PVR8_DCACHE_BASEADDR_MASK)
++#define PVR_DCACHE_HIGHADDR(pvr)	(pvr.pvr[9] & PVR9_DCACHE_HIGHADDR_MASK)
++
++#define PVR_TARGET_FAMILY(pvr)	((pvr.pvr[10] & PVR10_TARGET_FAMILY_MASK) >> 24)
++
++#define PVR_MSR_RESET_VALUE(pvr) \
++				(pvr.pvr[11] & PVR11_MSR_RESET_VALUE_MASK)
++
++int cpu_has_pvr(void);
++void get_pvr(struct pvr_s *pvr);
++
++#endif /* _ASM_MICROBLAZE_PVR_H */
+diff --git a/include/asm-microblaze/system.h b/include/asm-microblaze/system.h
 new file mode 100644
-index 0000000..c96edcf
+index 0000000..6ca1946
 --- /dev/null
-+++ b/arch/microblaze/kernel/hw_exception_handler.S
-@@ -0,0 +1,391 @@
++++ b/include/asm-microblaze/system.h
+@@ -0,0 +1,189 @@
 +/*
-+ * Unaligned exception handling for Microblaze
++ * Copyright (C) 2006 Atmark Techno, Inc.
 + *
-+ * cleanup code (C) 2007 Michal Simek <monstr@monstr.eu>
-+ * uClinux customisation (C) 2005 John Williams
-+ *
-+ * Original code
-+ * Copyright (C) 2004 Xilinx, Inc. All rights reserved.
-+ *
-+ * Xilinx, Inc.
-+ * XILINX IS PROVIDING THIS DESIGN, CODE, OR INFORMATION "AS IS" AS A
-+ * COURTESY TO YOU. BY PROVIDING THIS DESIGN, CODE, OR INFORMATION AS
-+ * ONE POSSIBLE IMPLEMENTATION OF THIS FEATURE, APPLICATION OR
-+ * STANDARD, XILINX IS MAKING NO REPRESENTATION THAT THIS IMPLEMENTATION
-+ * IS FREE FROM ANY CLAIMS OF INFRINGEMENT, AND YOU ARE RESPONSIBLE
-+ * FOR OBTAINING ANY RIGHTS YOU MAY REQUIRE FOR YOUR IMPLEMENTATION.
-+ * XILINX EXPRESSLY DISCLAIMS ANY WARRANTY WHATSOEVER WITH RESPECT TO
-+ * THE ADEQUACY OF THE IMPLEMENTATION, INCLUDING BUT NOT LIMITED TO
-+ * ANY WARRANTIES OR REPRESENTATIONS THAT THIS IMPLEMENTATION IS FREE
-+ * FROM CLAIMS OF INFRINGEMENT, IMPLIED WARRANTIES OF MERCHANTABILITY
-+ * AND FITNESS FOR A PARTICULAR PURPOSE.
-+ *
-+ * $Id: hw_exception_handler.S,v 1.1.2.1 2007/03/16 16:09:57 imanuilov Exp $
-+ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
 + */
 +
-+/*
-+ * Microblaze HW Exception Handler
-+ * - Non self-modifying exception handler for the following exception conditions
-+ * - Unalignment
-+ * - Instruction bus error
-+ * - Data bus error
-+ * - Illegal instruction opcode
-+ * - Divide-by-zero
-+ *
-+ * Note we disable interrupts during exception handling, otherwise we will
-+ * possibly get multiple re-entrancy if interrupt handles themselves cause
-+ * exceptions. JW
-+ */
++#ifndef _ASM_MICROBLAZE_SYSTEM_H
++#define _ASM_MICROBLAZE_SYSTEM_H
 +
-+#include <asm/exceptions.h>
-+#include <asm/unistd.h>
++#include <asm/registers.h>
++#include <asm/setup.h>
 +
-+/* Helpful Macros */
-+#define EX_HANDLER_STACK_SIZ	(4*19)
-+#define RMSR_OFFSET		0
-+#define REG_OFFSET(regnum)	(4*regnum)
-+#define NUM_TO_REG(num)		r ## num
++struct task_struct;
++struct thread_info;
 +
-+#define R3_TO_STACK(regnum)	swi	r3, r1, REG_OFFSET(regnum)
-+#define R3_FROM_STACK(regnum)	lwi	r3, r1, REG_OFFSET(regnum)
++extern struct task_struct *_switch_to(struct thread_info *prev,
++					struct thread_info *next);
 +
-+#define PUSH_REG(regnum)	swi NUM_TO_REG(regnum), r1, REG_OFFSET(regnum)
-+#define POP_REG(regnum)		lwi NUM_TO_REG(regnum), r1, REG_OFFSET(regnum)
-+
-+/* Uses r5 */
-+#define PUSH_MSR					\
-+	mfs	r5, rmsr;				\
-+	swi	r5, r1, RMSR_OFFSET;
-+
-+#define PUSH_MSR_AND_ENABLE_EXC				\
-+	mfs	r5, rmsr;				\
-+	swi	r5, r1, RMSR_OFFSET;			\
-+	ori	r5, r5, 0x100; /* Turn ON the EE bit */	\
-+	andi	r5, r5, ~2; /* Disable interrupts */	\
-+	mts	rmsr, r5;
-+
-+/* Uses r5 */
-+#define POP_MSR						\
-+	lwi	r5, r1, RMSR_OFFSET;			\
-+	mts	rmsr, r5;
-+
-+#define LWREG_NOP					\
-+	bri	ex_handler_unhandled;			\
-+	nop;
-+
-+#define SWREG_NOP					\
-+	bri	ex_handler_unhandled;			\
-+	nop;
-+
-+/* r3 is the source */
-+#define R3_TO_LWREG_V(regnum)				\
-+	R3_TO_STACK(regnum);				\
-+	bri	ex_handler_done;
-+
-+/* r3 is the source */
-+#define R3_TO_LWREG(regnum)				\
-+	or	NUM_TO_REG (regnum), r0, r3;		\
-+	bri	ex_handler_done;
-+
-+/* r3 is the target */
-+#define SWREG_TO_R3_V(regnum)				\
-+	R3_FROM_STACK (regnum);				\
-+	bri	ex_sw_tail;
-+
-+/* r3 is the target */
-+#define SWREG_TO_R3(regnum)				\
-+	or	r3, r0, NUM_TO_REG (regnum);		\
-+	bri	ex_sw_tail;
-+
-+.extern other_exception_handler /* Defined in exception.c */
-+
-+/*
-+ * hw_exception_handler - Handler for unaligned exceptions
-+ * Exception handler notes:
-+ * - Does not handle exceptions other than unaligned exceptions
-+ * - Does not handle exceptions during load into r17, r1, r0.
-+ * - Does not handle exceptions during store from r17 (cannot be done)
-+ *	and r1 (slows down common case)
-+ *
-+ * Relevant register structures
-+ *
-+ * EAR	- |----|----|----|----|----|----|----|----|
-+ *	- <  ##   32 bit faulting address     ##  >
-+ *
-+ * ESR	- |----|----|----|----|----| - | - |-----|-----|
-+ *	-			     W   S   REG   EXC
-+ *
-+ *
-+ * STACK FRAME STRUCTURE
-+ * ---------------------
-+ *
-+ *	+-------------+		+ 0
-+ *	|     MSR     |
-+ *	+-------------+		+ 4
-+ *	|     r1      |
-+ *	|      .      |
-+ *	|      .      |
-+ *	|      .      |
-+ *	|      .      |
-+ *	|     r18     |
-+ *	+-------------+		+ 76
-+ *	|      .      |
-+ *	|      .      |
-+ */
-+
-+.global _hw_exception_handler
-+.section .text
-+.align 4
-+.ent _hw_exception_handler
-+_hw_exception_handler:
-+	addik	r1, r1, -(EX_HANDLER_STACK_SIZ); /* Create stack frame */
-+	PUSH_REG(3);
-+	PUSH_REG(4);
-+	PUSH_REG(5);
-+	PUSH_REG(6);
-+	mfs	r3, resr;
-+
-+	andi	r5, r3, 0x1000;
-+	beqi	r5, not_in_delay_slot;
-+	mfs	r17, rbtr;
-+not_in_delay_slot:
-+
-+	PUSH_REG(17);
-+	/* Exceptions enabled here. This will allow nested exceptions */
-+	PUSH_MSR_AND_ENABLE_EXC;
-+
-+	andi	r5, r3, 0x1F; /* Extract ESR[EXC] */
-+
-+	xori	r6, r5, 1; /* 00001 = Unaligned Exception */
-+	/* Jump to unalignment exception handler */
-+	beqi	r6, handle_unaligned_ex;
-+
-+handle_other_ex: /* Handle Other exceptions here */
-+	/* Save other volatiles before we make procedure calls below */
-+	PUSH_REG(7);
-+	PUSH_REG(8);
-+	PUSH_REG(9);
-+	PUSH_REG(10);
-+	PUSH_REG(11);
-+	PUSH_REG(12);
-+	PUSH_REG(14);
-+	PUSH_REG(15);
-+	PUSH_REG(18);
-+
-+	andi	r5, r3, 0x1F; /* Load ESR[EC] */
-+	addk	r6, r17, r0; /* Load exception address */
-+	bralid	r15, other_exception_handler; /* Branch to the handler */
-+	nop;
-+
-+	/*
-+	* Trigger execution of the signal handler by enabling
-+	* interrupts and calling an invalid syscall.
-+	*/
-+	mfs	r5, rmsr;
-+	ori	r5, r5, 2;
-+	mts	rmsr, r5;
-+	addi	r12, r0, NR_syscalls;
-+	brki	r14, 0x08;
-+	mfs	r5, rmsr;
-+	andi	r5, r5, ~2;
-+	mts	rmsr, r5;
-+
-+	POP_REG(7); /* Restore other volatiles */
-+	POP_REG(8);
-+	POP_REG(9);
-+	POP_REG(10);
-+	POP_REG(11);
-+	POP_REG(12);
-+	POP_REG(14);
-+	POP_REG(15);
-+	POP_REG(18);
-+
-+	bri	ex_handler_done; /* Complete exception handling */
-+handle_unaligned_ex:
-+	andi	r6, r3, 0x3E0; /* Mask and extract the register operand */
-+	srl	r6, r6; /* r6 >> 5 */
-+	srl	r6, r6;
-+	srl	r6, r6;
-+	srl	r6, r6;
-+	srl	r6, r6;
-+	/* Store the register operand in a temporary location */
-+	sbi	r6, r0, ex_reg_op;
-+	mfs	r4, rear;
-+	andi	r6, r3, 0x400; /* Extract ESR[S] */
-+	bnei	r6, ex_sw;
-+ex_lw:
-+	andi	r6, r3, 0x800; /* Extract ESR[W] */
-+	beqi	r6, ex_lhw;
-+	lbui	r5, r4, 0; /* Exception address in r4 */
-+	/* Load a word, byte-by-byte from destination address
-+		and save it in tmp space */
-+	sbi	r5, r0, ex_tmp_data_loc_0;
-+	lbui	r5, r4, 1;
-+	sbi	r5, r0, ex_tmp_data_loc_1;
-+	lbui	r5, r4, 2;
-+	sbi	r5, r0, ex_tmp_data_loc_2;
-+	lbui	r5, r4, 3;
-+	sbi	r5, r0, ex_tmp_data_loc_3;
-+	/* Get the destination register value into r3 */
-+	lwi	r3, r0, ex_tmp_data_loc_0;
-+	bri	ex_lw_tail;
-+ex_lhw:
-+	lbui	r5, r4, 0; /* Exception address in r4 */
-+	/* Load a half-word, byte-by-byte from destination
-+		address and save it in tmp space */
-+	sbi	r5, r0, ex_tmp_data_loc_0;
-+	lbui	r5, r4, 1;
-+	sbi	r5, r0, ex_tmp_data_loc_1;
-+	/* Get the destination register value into r3 */
-+	lhui	r3, r0, ex_tmp_data_loc_0;
-+ex_lw_tail:
-+	/* Get the destination register number into r5 */
-+	lbui	r5, r0, ex_reg_op;
-+	/* Form load_word jump table offset (lw_table + (8 * regnum)) */
-+	la	r6, r0, lw_table;
-+	addk	r5, r5, r5;
-+	addk	r5, r5, r5;
-+	addk	r5, r5, r5;
-+	addk	r5, r5, r6;
-+	bra	r5;
-+ex_lw_end: /* Exception handling of load word, ends */
-+ex_sw:
-+	/* Get the destination register number into r5 */
-+	lbui	r5, r0, ex_reg_op;
-+	/* Form store_word jump table offset (sw_table + (8 * regnum)) */
-+	la	r6, r0, sw_table;
-+	add	r5, r5, r5;
-+	add	r5, r5, r5;
-+	add	r5, r5, r5;
-+	add	r5, r5, r6;
-+	bra	r5;
-+ex_sw_tail:
-+	mfs	r6, resr;
-+	andi	r6, r6, 0x800; /* Extract ESR[W] */
-+	beqi	r6, ex_shw;
-+	swi	r3, r0, ex_tmp_data_loc_0;
-+	/* Store the word, byte-by-byte into destination address */
-+	lbui	r3, r0, ex_tmp_data_loc_0;
-+	sbi	r3, r4, 0;
-+	lbui	r3, r0, ex_tmp_data_loc_1;
-+	sbi	r3, r4, 1;
-+	lbui	r3, r0, ex_tmp_data_loc_2;
-+	sbi	r3, r4, 2;
-+	lbui	r3, r0, ex_tmp_data_loc_3;
-+	sbi	r3, r4, 3;
-+	bri	ex_handler_done;
-+ex_shw:
-+	/* Store the lower half-word, byte-by-byte into destination address */
-+	swi	r3, r0, ex_tmp_data_loc_0;
-+	lbui	r3, r0, ex_tmp_data_loc_2;
-+	sbi	r3, r4, 0;
-+	lbui	r3, r0, ex_tmp_data_loc_3;
-+	sbi	r3, r4, 1;
-+ex_sw_end: /* Exception handling of store word, ends. */
-+
-+ex_handler_done:
-+	POP_MSR;
-+	POP_REG(3);
-+	POP_REG(4);
-+	POP_REG(5);
-+	POP_REG(6);
-+	POP_REG(17);
-+	rted	r17, 0
-+	addik	r1, r1, (EX_HANDLER_STACK_SIZ); /* Restore stack frame */
-+ex_handler_unhandled:
-+	bri 0 /* UNHANDLED. TRAP HERE */
-+.end _hw_exception_handler
-+
-+/*
-+* hw_exception_handler Jump Table
-+* - Contains code snippets for each register that caused the unaligned exception
-+* - Hence exception handler is NOT self-modifying
-+* - Separate table for load exceptions and store exceptions.
-+* - Each table is of size: (8 * 32) = 256 bytes
-+*/
-+
-+.section .text
-+.align 4
-+lw_table:
-+lw_r0:	R3_TO_LWREG	(0);
-+lw_r1:	LWREG_NOP;
-+lw_r2:	R3_TO_LWREG	(2);
-+lw_r3:	R3_TO_LWREG_V	(3);
-+lw_r4:	R3_TO_LWREG_V	(4);
-+lw_r5:	R3_TO_LWREG_V	(5);
-+lw_r6:	R3_TO_LWREG_V	(6);
-+lw_r7:	R3_TO_LWREG	(7);
-+lw_r8:	R3_TO_LWREG	(8);
-+lw_r9:	R3_TO_LWREG	(9);
-+lw_r10:	R3_TO_LWREG	(10);
-+lw_r11:	R3_TO_LWREG	(11);
-+lw_r12:	R3_TO_LWREG	(12);
-+lw_r13:	R3_TO_LWREG	(13);
-+lw_r14:	R3_TO_LWREG	(14);
-+lw_r15:	R3_TO_LWREG	(15);
-+lw_r16:	R3_TO_LWREG	(16);
-+lw_r17:	LWREG_NOP;
-+lw_r18:	R3_TO_LWREG	(18);
-+lw_r19:	R3_TO_LWREG	(19);
-+lw_r20:	R3_TO_LWREG	(20);
-+lw_r21:	R3_TO_LWREG	(21);
-+lw_r22:	R3_TO_LWREG	(22);
-+lw_r23:	R3_TO_LWREG	(23);
-+lw_r24:	R3_TO_LWREG	(24);
-+lw_r25:	R3_TO_LWREG	(25);
-+lw_r26:	R3_TO_LWREG	(26);
-+lw_r27:	R3_TO_LWREG	(27);
-+lw_r28:	R3_TO_LWREG	(28);
-+lw_r29:	R3_TO_LWREG	(29);
-+lw_r30:	R3_TO_LWREG	(30);
-+lw_r31:	R3_TO_LWREG	(31);
-+
-+sw_table:
-+sw_r0:	SWREG_TO_R3	(0);
-+sw_r1:	SWREG_NOP;
-+sw_r2:	SWREG_TO_R3	(2);
-+sw_r3:	SWREG_TO_R3_V	(3);
-+sw_r4:	SWREG_TO_R3_V	(4);
-+sw_r5:	SWREG_TO_R3_V	(5);
-+sw_r6:	SWREG_TO_R3_V	(6);
-+sw_r7:	SWREG_TO_R3	(7);
-+sw_r8:	SWREG_TO_R3	(8);
-+sw_r9:	SWREG_TO_R3	(9);
-+sw_r10:	SWREG_TO_R3	(10);
-+sw_r11:	SWREG_TO_R3	(11);
-+sw_r12:	SWREG_TO_R3	(12);
-+sw_r13:	SWREG_TO_R3	(13);
-+sw_r14:	SWREG_TO_R3	(14);
-+sw_r15:	SWREG_TO_R3	(15);
-+sw_r16:	SWREG_TO_R3	(16);
-+sw_r17:	SWREG_NOP;
-+sw_r18:	SWREG_TO_R3	(18);
-+sw_r19:	SWREG_TO_R3	(19);
-+sw_r20:	SWREG_TO_R3	(20);
-+sw_r21:	SWREG_TO_R3	(21);
-+sw_r22:	SWREG_TO_R3	(22);
-+sw_r23:	SWREG_TO_R3	(23);
-+sw_r24:	SWREG_TO_R3	(24);
-+sw_r25:	SWREG_TO_R3	(25);
-+sw_r26:	SWREG_TO_R3	(26);
-+sw_r27:	SWREG_TO_R3	(27);
-+sw_r28:	SWREG_TO_R3	(28);
-+sw_r29:	SWREG_TO_R3	(29);
-+sw_r30:	SWREG_TO_R3	(30);
-+sw_r31:	SWREG_TO_R3	(31);
-+
-+/* Temporary data structures used in the handler */
-+.section .data
-+.align 4
-+ex_tmp_data_loc_0:
-+	.byte 0
-+ex_tmp_data_loc_1:
-+	.byte 0
-+ex_tmp_data_loc_2:
-+	.byte 0
-+ex_tmp_data_loc_3:
-+	.byte 0
-+ex_reg_op:
-+	.byte 0
-+
-diff --git a/include/asm-microblaze/exceptions.h b/include/asm-microblaze/exceptions.h
-new file mode 100644
-index 0000000..33f19bc
---- /dev/null
-+++ b/include/asm-microblaze/exceptions.h
-@@ -0,0 +1,61 @@
-+/*
-+ * Preliminary support for HW exception handing for Microblaze
-+ *
-+ * Copyright (C) 2005 John Williams <jwilliams@itee.uq.edu.au>
-+ *
-+ * This file is subject to the terms and conditions of the GNU General
-+ * Public License. See the file COPYING in the main directory of this
-+ * archive for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_EXCEPTIONS_H
-+#define _ASM_MICROBLAZE_EXCEPTIONS_H
-+
-+#ifndef __ASSEMBLY__
-+
-+void initialize_exception_handlers(void);
-+asmlinkage void other_exception_handler(unsigned int esr, unsigned int addr);
-+
-+/* Macros to enable and disable HW exceptions in the MSR */
-+/* Define MSR enable bit for HW exceptions */
-+#define HWEX_MSR_BIT (1 << 8)
++#define switch_to(prev, next, last)					\
++	do {								\
++		(last) = _switch_to(task_thread_info(prev),		\
++					task_thread_info(next));	\
++	} while (0)
 +
 +#if CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR
-+#define __enable_hw_exceptions()					\
-+	__asm__ __volatile__ ("	msrset	r0, %0;				\
-+				nop; "					\
-+				:					\
-+				: "i" (HWEX_MSR_BIT)			\
-+				: "memory")
 +
-+#define __disable_hw_exceptions()					\
-+	__asm__ __volatile__ ("	msrclr r0, %0;				\
-+				nop; "					\
-+				:					\
-+				: "i" (HWEX_MSR_BIT)			\
-+				: "memory")
-+#else /* !CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR */
-+#define __enable_hw_exceptions()					\
-+	__asm__ __volatile__ ("						\
-+				mfs	r12, rmsr;			\
-+				ori	r12, r12, %0;			\
-+				mts	rmsr, r12;			\
-+				nop; "					\
-+				:					\
-+				: "i" (HWEX_MSR_BIT)			\
-+				: "memory", "r12")
++#define local_irq_save(flags)				\
++	do {						\
++		asm volatile ("# local_irq_save	\n\t"	\
++				"msrclr %0, %1	\n\t"	\
++				"nop	\n\t"		\
++				: "=r"(flags)		\
++				: "i"(MSR_IE)		\
++				: "memory");		\
++	} while (0)
 +
-+#define __disable_hw_exceptions()					\
-+	__asm__ __volatile__ ("						\
-+				mfs	r12, rmsr;			\
-+				andi	r12, r12, ~%0;			\
-+				mts	rmsr, r12;			\
-+				nop; "					\
-+				:					\
-+				: "i" (HWEX_MSR_BIT)			\
-+				: "memory", "r12")
++#define local_irq_disable()					\
++	do {							\
++		asm volatile ("# local_irq_disable \n\t"	\
++				"msrclr r0, %0 \n\t"		\
++				"nop	\n\t"			\
++				:				\
++				: "i"(MSR_IE)			\
++				: "memory");			\
++	} while (0)
++
++#define local_irq_enable()					\
++	do {							\
++		asm volatile ("# local_irq_enable \n\t"		\
++				"msrset	r0, %0 \n\t"		\
++				"nop	\n\t"			\
++				:				\
++				: "i"(MSR_IE)			\
++				: "memory");			\
++	} while (0)
++
++#else /* CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR == 0 */
++
++#define local_irq_save(flags)					\
++	do {							\
++		register unsigned tmp;				\
++		asm volatile ("# local_irq_save	\n\t"		\
++				"mfs	%0, rmsr \n\t"		\
++				"andi	%1, %0, %2 \n\t"	\
++				"mts	rmsr, %1 \n\t"		\
++				"nop \n\t"			\
++				: "=r"(flags), "=r" (tmp)	\
++				: "i"(~MSR_IE)			\
++				: "memory");			\
++	} while (0)
++
++#define local_irq_disable()					\
++	do {							\
++		register unsigned tmp;				\
++		asm volatile ("# local_irq_disable \n\t"	\
++				"mfs	%0, rmsr \n\t"		\
++				"andi	%0, %0, %1 \n\t"	\
++				"mts	rmsr, %0 \n\t"		\
++				"nop \n\t"			\
++				: "=r"(tmp)			\
++				: "i"(~MSR_IE)			\
++				: "memory");			\
++	} while (0)
++
++#define local_irq_enable()					\
++	do {							\
++		register unsigned tmp;				\
++		asm volatile ("# local_irq_enable \n\t"		\
++				"mfs	%0, rmsr \n\t"		\
++				"ori	%0, %0, %1 \n\t"	\
++				"mts	rmsr, %0 \n\t"		\
++				"nop \n\t"			\
++				: "=r"(tmp)			\
++				: "i"(MSR_IE)			\
++				: "memory");			\
++	} while (0)
++
 +#endif /* CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR */
 +
-+#endif /*__ASSEMBLY__ */
++#define local_save_flags(flags)					\
++	do {							\
++		asm volatile ("# local_save_flags \n\t"		\
++				"mfs	%0, rmsr \n\t"		\
++				"nop	\n\t"			\
++				: "=r"(flags)			\
++				:				\
++				: "memory");			\
++	} while (0)
 +
-+#endif /* _ASM_MICROBLAZE_EXCEPTIONS_H */
++#define local_irq_restore(flags)			\
++	do {						\
++		asm volatile ("# local_irq_restore \n\t"\
++				"mts	rmsr, %0 \n\t"	\
++				"nop	\n\t"		\
++				:			\
++				:"r"(flags)		\
++				: "memory");		\
++	} while (0)
++
++static inline int irqs_disabled(void)
++{
++	unsigned long flags;
++
++	local_save_flags(flags);
++	return ((flags & MSR_IE) == 0);
++}
++
++#define smp_read_barrier_depends()	do {} while (0)
++#define read_barrier_depends()		do {} while (0)
++
++#define nop()			asm volatile ("nop")
++#define mb()			barrier()
++#define rmb()			mb()
++#define wmb()			mb()
++#define set_mb(var, value)	do { var = value; mb(); } while (0)
++#define set_wmb(var, value)	do { var = value; wmb(); } while (0)
++
++#define smp_mb()		mb()
++#define smp_rmb()		rmb()
++#define smp_wmb()		wmb()
++
++void show_trace(struct task_struct *task, unsigned long *stack);
++void __bad_xchg(volatile void *ptr, int size);
++
++static inline unsigned long __xchg(unsigned long x, volatile void *ptr,
++								int size)
++{
++	unsigned long ret;
++	unsigned long flags;
++
++	switch (size) {
++	case 1:
++		local_irq_save(flags);
++		ret = *(volatile unsigned char *)ptr;
++		*(volatile unsigned char *)ptr = x;
++		local_irq_restore(flags);
++		break;
++
++	case 4:
++		local_irq_save(flags);
++		ret = *(volatile unsigned long *)ptr;
++		*(volatile unsigned long *)ptr = x;
++		local_irq_restore(flags);
++		break;
++	default:
++		__bad_xchg(ptr, size), ret = 0;
++		break;
++	}
++
++	return ret;
++}
++
++#define xchg(ptr,x) \
++	((__typeof__(*(ptr))) __xchg((unsigned long)(x), (ptr), sizeof(*(ptr))))
++
++extern void *cacheable_memcpy(void *, const void *, unsigned int);
++void free_init_pages(char *what, unsigned long begin, unsigned long end);
++void free_initmem(void);
++extern char *klimit;
++extern unsigned int memory_end;
++extern void ret_from_fork(void);
++
++#ifdef CONFIG_DEBUG_FS
++extern struct dentry *of_debugfs_root;
++#endif
++
++#endif /* _ASM_MICROBLAZE_SYSTEM_H */
 -- 
 1.5.4.GIT
 
