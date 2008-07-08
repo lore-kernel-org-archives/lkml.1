@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756405AbYGHQ6N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757856AbYGHQ6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756405AbYGHQ6N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 12:58:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756730AbYGHQ5W
+	id S1757856AbYGHQ6c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 12:58:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757236AbYGHQ5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 12:57:22 -0400
-Received: from casper.infradead.org ([85.118.1.10]:55103 "EHLO
+	Tue, 8 Jul 2008 12:57:30 -0400
+Received: from casper.infradead.org ([85.118.1.10]:55109 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757051AbYGHQ5V (ORCPT
+	with ESMTP id S1757233AbYGHQ53 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 12:57:21 -0400
-Date: Tue, 8 Jul 2008 09:55:50 -0700
+	Tue, 8 Jul 2008 12:57:29 -0400
+Date: Tue, 8 Jul 2008 09:47:26 -0700
 From: Arjan van de Ven <arjan@infradead.org>
 To: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, mingo@elte.hu
-Subject: [patch 15/17] Use WARN() in fs/
-Message-ID: <20080708095550.32c173c6@infradead.org>
+Subject: [patch 7/17] use WARN() in kernel/lockdep.c
+Message-ID: <20080708094726.4111959d@infradead.org>
 In-Reply-To: <20080708093800.274504ba@infradead.org>
 References: <20080708093800.274504ba@infradead.org>
 Organization: Intel
@@ -31,44 +31,43 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: Use WARN instead of printk+WARN_ON in fs/
+Subject: Use WARN instead of printk+WARN_ON in kernel/lockdep.c
 
 Use WARN() instead of a printk+WARN_ON() pair; this way the message
 becomes part of the warning section for better reporting/collection.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- fs/buffer.c    |    3 +--
- fs/namespace.c |    3 +--
- 2 files changed, 2 insertions(+), 4 deletions(-)
+ kernel/lockdep.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-Index: linux.trees.git/fs/buffer.c
+Index: linux.trees.git/kernel/lockdep.c
 ===================================================================
---- linux.trees.git.orig/fs/buffer.c
-+++ linux.trees.git/fs/buffer.c
-@@ -1214,8 +1214,7 @@ void __brelse(struct buffer_head * buf)
- 		put_bh(buf);
- 		return;
+--- linux.trees.git.orig/kernel/lockdep.c
++++ linux.trees.git/kernel/lockdep.c
+@@ -1643,11 +1643,10 @@ static void check_chain_key(struct task_
+ 		hlock = curr->held_locks + i;
+ 		if (chain_key != hlock->prev_chain_key) {
+ 			debug_locks_off();
+-			printk("hm#1, depth: %u [%u], %016Lx != %016Lx\n",
++			WARN(1, "hm#1, depth: %u [%u], %016Lx != %016Lx\n",
+ 				curr->lockdep_depth, i,
+ 				(unsigned long long)chain_key,
+ 				(unsigned long long)hlock->prev_chain_key);
+-			WARN_ON(1);
+ 			return;
+ 		}
+ 		id = hlock->class - lock_classes;
+@@ -1662,11 +1661,10 @@ static void check_chain_key(struct task_
  	}
--	printk(KERN_ERR "VFS: brelse: Trying to free free buffer\n");
--	WARN_ON(1);
-+	WARN(1, KERN_ERR "VFS: brelse: Trying to free free buffer\n");
- }
- 
- /*
-Index: linux.trees.git/fs/namespace.c
-===================================================================
---- linux.trees.git.orig/fs/namespace.c
-+++ linux.trees.git/fs/namespace.c
-@@ -309,10 +309,9 @@ static void handle_write_count_underflow
- 	 */
- 	if ((atomic_read(&mnt->__mnt_writers) < 0) &&
- 	    !(mnt->mnt_flags & MNT_IMBALANCED_WRITE_COUNT)) {
--		printk(KERN_DEBUG "leak detected on mount(%p) writers "
-+		WARN(1, KERN_DEBUG "leak detected on mount(%p) writers "
- 				"count: %d\n",
- 			mnt, atomic_read(&mnt->__mnt_writers));
+ 	if (chain_key != curr->curr_chain_key) {
+ 		debug_locks_off();
+-		printk("hm#2, depth: %u [%u], %016Lx != %016Lx\n",
++		WARN(1, "hm#2, depth: %u [%u], %016Lx != %016Lx\n",
+ 			curr->lockdep_depth, i,
+ 			(unsigned long long)chain_key,
+ 			(unsigned long long)curr->curr_chain_key);
 -		WARN_ON(1);
- 		/* use the flag to keep the dmesg spam down */
- 		mnt->mnt_flags |= MNT_IMBALANCED_WRITE_COUNT;
  	}
+ #endif
+ }
