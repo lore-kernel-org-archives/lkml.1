@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757503AbYGHQ5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757327AbYGHQ5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757503AbYGHQ5u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 12:57:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756936AbYGHQ5T
+	id S1757327AbYGHQ5f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 12:57:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756563AbYGHQ5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 12:57:19 -0400
-Received: from casper.infradead.org ([85.118.1.10]:55097 "EHLO
+	Tue, 8 Jul 2008 12:57:15 -0400
+Received: from casper.infradead.org ([85.118.1.10]:55093 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756933AbYGHQ5S (ORCPT
+	with ESMTP id S1755936AbYGHQ5O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 12:57:18 -0400
-Date: Tue, 8 Jul 2008 09:46:35 -0700
+	Tue, 8 Jul 2008 12:57:14 -0400
+Date: Tue, 8 Jul 2008 09:54:51 -0700
 From: Arjan van de Ven <arjan@infradead.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu
-Subject: [patch 6/17] Use WARN() in mm/vmalloc.c
-Message-ID: <20080708094635.2b257e6e@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, mingo@elte.hu
+Subject: [patch 15/17] Use WARN() in fs/
+Message-ID: <20080708095451.59113480@infradead.org>
 In-Reply-To: <20080708093800.274504ba@infradead.org>
 References: <20080708093800.274504ba@infradead.org>
 Organization: Intel
@@ -31,37 +31,44 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: Use WARN instead of printk+WARN_ON in mm/vmalloc.c
+Subject: Use WARN instead of printk+WARN_ON in fs/
 
 Use WARN() instead of a printk+WARN_ON() pair; this way the message
 becomes part of the warning section for better reporting/collection.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- mm/vmalloc.c            |    6 
- 2 files changed, 2 insertions(+), 309 deletions(-)
+ fs/buffer.c    |    3 +--
+ fs/namespace.c |    3 +--
+ 2 files changed, 2 insertions(+), 4 deletions(-)
 
-Index: linux.trees.git/mm/vmalloc.c
+Index: linux.trees.git/fs/buffer.c
 ===================================================================
---- linux.trees.git.orig/mm/vmalloc.c
-+++ linux.trees.git/mm/vmalloc.c
-@@ -381,16 +381,14 @@ static void __vunmap(const void *addr, i
- 		return;
- 
- 	if ((PAGE_SIZE-1) & (unsigned long)addr) {
--		printk(KERN_ERR "Trying to vfree() bad address (%p)\n", addr);
--		WARN_ON(1);
-+		WARN(1, KERN_ERR "Trying to vfree() bad address (%p)\n", addr);
+--- linux.trees.git.orig/fs/buffer.c
++++ linux.trees.git/fs/buffer.c
+@@ -1214,8 +1214,7 @@ void __brelse(struct buffer_head * buf)
+ 		put_bh(buf);
  		return;
  	}
+-	printk(KERN_ERR "VFS: brelse: Trying to free free buffer\n");
+-	WARN_ON(1);
++	WARN(1, KERN_ERR "VFS: brelse: Trying to free free buffer\n");
+ }
  
- 	area = remove_vm_area(addr);
- 	if (unlikely(!area)) {
--		printk(KERN_ERR "Trying to vfree() nonexistent vm area (%p)\n",
-+		WARN(1, KERN_ERR "Trying to vfree() nonexistent vm area (%p)\n",
- 				addr);
+ /*
+Index: linux.trees.git/fs/namespace.c
+===================================================================
+--- linux.trees.git.orig/fs/namespace.c
++++ linux.trees.git/fs/namespace.c
+@@ -309,10 +309,9 @@ static void handle_write_count_underflow
+ 	 */
+ 	if ((atomic_read(&mnt->__mnt_writers) < 0) &&
+ 	    !(mnt->mnt_flags & MNT_IMBALANCED_WRITE_COUNT)) {
+-		printk(KERN_DEBUG "leak detected on mount(%p) writers "
++		WARN(1, KERN_DEBUG "leak detected on mount(%p) writers "
+ 				"count: %d\n",
+ 			mnt, atomic_read(&mnt->__mnt_writers));
 -		WARN_ON(1);
- 		return;
+ 		/* use the flag to keep the dmesg spam down */
+ 		mnt->mnt_flags |= MNT_IMBALANCED_WRITE_COUNT;
  	}
- 
-
