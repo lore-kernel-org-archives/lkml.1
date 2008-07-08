@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753515AbYGHEtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbYGHEwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753515AbYGHEtW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 00:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbYGHEtO
+	id S1754832AbYGHEwS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 00:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbYGHEwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 00:49:14 -0400
-Received: from casper.infradead.org ([85.118.1.10]:38677 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751236AbYGHEtN (ORCPT
+	Tue, 8 Jul 2008 00:52:09 -0400
+Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:35081 "HELO
+	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751240AbYGHEwI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 00:49:13 -0400
-Date: Mon, 7 Jul 2008 21:49:05 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: david@lang.hm
-Cc: "Altobelli, David" <david.altobelli@hp.com>, Pavel Machek <pavel@suse.cz>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "greg@kroah.com" <greg@kroah.com>
-Subject: Re: [PATCH][resubmit] HP iLO driver
-Message-ID: <20080707214905.157be089@infradead.org>
-In-Reply-To: <alpine.DEB.1.10.0807072127390.12950@asgard.lang.hm>
-References: <20080623160052.GA7616@ldl.fc.hp.com>
-	<20080627191458.GA10872@ucw.cz>
-	<CF70AA892F109448AEA269483B3A983903BB8CE586@G1W1215.americas.hpqcorp.net>
-	<20080707160658.GB1794@elf.ucw.cz>
-	<CF70AA892F109448AEA269483B3A983903BB8CEA25@G1W1215.americas.hpqcorp.net>
-	<alpine.DEB.1.10.0807072127390.12950@asgard.lang.hm>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 8 Jul 2008 00:52:08 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=4bd3z3HoUodFbPZ8YVEV+K3ytmU1POZkDG6P8mmdrzl2K1Aw6rGDM5nzUfIxeAm0+zs1El++EPgEDZ+Y7JQX5fuo104wTXROcNopJqvMKDqT/kZc3vtOegybrFBiCSBTM/lSTATc1mTRSv8++WEGDs2WQxCzrjw43Weilk6n/J4=  ;
+X-YMail-OSG: C69LnCEVM1lQSybcJI.zex6KVLjY0i6R_ICjidfRYR8UOZnoB.tYnv6v7A3HiVhql4UxG.mms9mi3agnZYDKbW_u2AmkDmAI8ImAR4G0M9fjqV6bYbMPvQNOPgepcnUobzMKOSrrhRijVupkpDySis0F
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH RFC 0/4] Paravirtual spinlocks
+Date: Tue, 8 Jul 2008 14:51:42 +1000
+User-Agent: KMail/1.9.5
+Cc: virtualization@lists.linux-foundation.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Jens Axboe <axboe@kernel.dk>,
+       Xen devel <xen-devel@lists.xensource.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Lameter <clameter@linux-foundation.org>,
+       Petr Tesarik <ptesarik@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Friebel <thomas.friebel@amd.com>, Ingo Molnar <mingo@elte.hu>
+References: <20080707190749.299430659@goop.org> <200807081029.19242.rusty@rustcorp.com.au>
+In-Reply-To: <200807081029.19242.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200807081451.43433.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Jul 2008 21:41:41 -0700 (PDT)
-david@lang.hm wrote:
-> umm, by merging the code a you reveal a lot of what they are
-> attempting to keep secret. what's to stop someone from reading the
-> code and writing the documentation?
-> 
-> that really should be someone at HP if you don't want to publish the 
-> exising documentation (since you are submitting the code)
-> 
+On Tuesday 08 July 2008 10:29, Rusty Russell wrote:
+> On Tuesday 08 July 2008 05:07:49 Jeremy Fitzhardinge wrote:
+> > At the most recent Xen Summit, Thomas Friebel presented a paper
+> > ("Preventing Guests from Spinning Around",
+> > http://xen.org/files/xensummitboston08/LHP.pdf) investigating the
+> > interactions between spinlocks and virtual machines.  Specifically, he
+> > looked at what happens when a lock-holding VCPU gets involuntarily
+> > preempted.
+>
+> I find it interesting that gang scheduling the guest was not suggested as
+> an obvious solution.
+>
+> Anyway, concept looks fine; lguest's solution is more elegant of course :)
 
-Hi,
-
-I think you're being quite unreasonable here.
-In Linux we accept well written drivers even if there is no hardware
-docs. Sure we prefer them to be available, but is has never been a
-requirement, nor should it. I know that some other open source OSes do
-demand this, but Linux is not one of them. We explicitly accept drivers
-written with NDA docs, or drivers written by vendors. 
-It's the code that talks.
-(and well written code is often worth more than the shoddy docs that we
-sometimes get)
-
-Greetings,
-   Arjan van de Ven
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+What's lguest's solution?
