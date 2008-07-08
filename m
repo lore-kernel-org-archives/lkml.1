@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757979AbYGHMuy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755138AbYGHNFI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757979AbYGHMuy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 08:50:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756458AbYGHMsg
+	id S1755138AbYGHNFI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 09:05:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbYGHNEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 08:48:36 -0400
-Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27592 "EHLO
-	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757856AbYGHMs2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 08:48:28 -0400
-From: monstr@monstr.eu
-To: linux-kernel@vger.kernel.org
-Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
-       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
-       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
-       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
-       grant.likely@secretlab.ca, vapier.adi@gmail.com,
-       alan@lxorguk.ukuu.org.uk, hpa@zytor.com, lethal@linux-sh.org,
-       florian@openwrt.org
-Subject: microblaze_v5: Status message
-Date: Tue,  8 Jul 2008 13:59:00 +0200
-Message-Id: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
-X-Mailer: git-send-email 1.5.4.GIT
+	Tue, 8 Jul 2008 09:04:53 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:59767 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751393AbYGHNEx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 09:04:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:sender:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references:x-google-sender-auth;
+        b=Q02JgIOdqng5mvRYuWr2sFlAh8tDG0Hyjg88rSYmNQLAIqfLfbXiZpFj3OvQZwDpUo
+         OQII1s3/FguOKnTCJADFQSl9Qv5SQyYe6keP3nlB6dTTIIVZfsoQPi1N3UV+miEYEsXV
+         yyGef7GzRJByDcYvM4bvHEUFkIT87JGyLhSJ8=
+Message-ID: <919fe2b30807080604x68620b15ndf0bd81605df6834@mail.gmail.com>
+Date: Tue, 8 Jul 2008 09:04:51 -0400
+From: "Mark Asselstine" <mark.asselstine@windriver.com>
+Reply-To: mark.asselstine@windriver.com
+To: "Alexander Beregalov" <a.beregalov@gmail.com>
+Subject: Re: [PATCH] scsi_cmnd.h: remove double inclusion of linux/blkdev.h
+Cc: James.Bottomley@hansenpartnership.com, bharrosh@panasas.com,
+       linux-scsi@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <a4423d670807060601sa56948ak812c4569297fada6@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <a4423d670807060601sa56948ak812c4569297fada6@mail.gmail.com>
+X-Google-Sender-Auth: e889f87a34a246c9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+On Sun, Jul 6, 2008 at 9:01 AM, Alexander Beregalov
+<a.beregalov@gmail.com> wrote:
+> From: Alexander Beregalov <a.beregalov@gmail.com>
+>
+> Remove double inclusion of linux/blkdev.h
+>
+>  include/scsi/scsi_cmnd.h |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+>
+> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+> ---
+>
+> diff --git a/include/scsi/scsi_cmnd.h b/include/scsi/scsi_cmnd.h
+> index 3e46dfa..66c9448 100644
+> --- a/include/scsi/scsi_cmnd.h
+> +++ b/include/scsi/scsi_cmnd.h
+> @@ -7,7 +7,6 @@
+>  #include <linux/types.h>
+>  #include <linux/timer.h>
+>  #include <linux/scatterlist.h>
+> -#include <linux/blkdev.h>
+>
 
-here is microblaze_v5 set of patches with initial port
-for Microblaze CPU. I did some changes which was reported
-to me. Please check your reported changes if there are in the pack.
+Reviewed-by: Mark Asselstine <mark.asselstine@windriver.com>
 
-The patches are also available at git.monstr.eu. (linux-microblaze.git
- master branch).
-
-I got ACK from Steve Neuendorffer (xilinx guy) for this pack.
-
-Changes in v5 pack:
-      Add new dts v1 file
-      clean autoconf.h and remove a.out.h
-      remove internal.h library
-      fix headers - add one definition
-      remove dependency on asm/semaphore.h
-      Clean make headers_check dependency
-      Fix Kconfig issue
-      Remove macros DEFINE and BLANK from asm-offsets.c
-      Move asm code from asm-generic checksum.h
-      Clean process for enabling possibility to use smp with MB
-      Clean platform folder to generic dts
-      current config file
-      Clean ptrace for generic use
-      Clean cmdline handling
-      Fix traps.c
-
-Thanks for your comments and ACKs. I'll add them to patches.
-
-Best regards,
-Michal Simek
-www.monstr.eu
-
-
-
+>  struct Scsi_Host;
+>  struct scsi_device;
+> --
+> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
