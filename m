@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757915AbYGHMaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756545AbYGHMcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757915AbYGHMaj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 08:30:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753774AbYGHMaH
+	id S1756545AbYGHMcj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 08:32:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbYGHMca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 08:30:07 -0400
-Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27402 "EHLO
+	Tue, 8 Jul 2008 08:32:30 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27416 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753250AbYGHMaF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 08:30:05 -0400
+	id S1750888AbYGHMc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 08:32:29 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
@@ -18,11 +18,11 @@ Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
        grant.likely@secretlab.ca, vapier.adi@gmail.com,
        alan@lxorguk.ukuu.org.uk, hpa@zytor.com, lethal@linux-sh.org,
        florian@openwrt.org, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 26/58] microblaze_v5: virtualization
-Date: Tue,  8 Jul 2008 13:59:26 +0200
-Message-Id: <701c1dac442ac09f5010cb5356cc1a12bb0abfe1.1215517976.git.monstr@monstr.eu>
+Subject: [PATCH 38/58] microblaze_v5: headers for irq
+Date: Tue,  8 Jul 2008 13:59:38 +0200
+Message-Id: <64089967061955b7a29eb6d4e6269ff75b5442f2.1215517976.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <7ada4bceefc1806a2c8ef73676b7aabd8ac1cad6.1215517976.git.monstr@monstr.eu>
+In-Reply-To: <fc26823d77c7180b62022e2d4bcca3c4fe6de574.1215517976.git.monstr@monstr.eu>
 References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
  <c03d29cbccaef8aed8a2911c2a259fbd79ad23d9.1215517976.git.monstr@monstr.eu>
@@ -49,6 +49,18 @@ References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <5da1d8f069f18f14faee8c4bff736791179ef6f1.1215517976.git.monstr@monstr.eu>
  <9a32168fe72b772f301216a7090670474af78e49.1215517976.git.monstr@monstr.eu>
  <7ada4bceefc1806a2c8ef73676b7aabd8ac1cad6.1215517976.git.monstr@monstr.eu>
+ <701c1dac442ac09f5010cb5356cc1a12bb0abfe1.1215517976.git.monstr@monstr.eu>
+ <9b48e9d85b4a5a6dcffce8eef62b232b6bfac8e8.1215517976.git.monstr@monstr.eu>
+ <04b0b222b84ba9cfe2507a9081f4d715f2323733.1215517976.git.monstr@monstr.eu>
+ <d4c1b3ecfec1bf37ca0ecea6909ad25bbc945630.1215517976.git.monstr@monstr.eu>
+ <6e5687d37386334cf122d1eafcca0c6649c955be.1215517976.git.monstr@monstr.eu>
+ <689cff1b6d98f60d8f8abc4472193688b524284d.1215517976.git.monstr@monstr.eu>
+ <9664f18e7e86af4332018549b29bf0797d6afcd5.1215517976.git.monstr@monstr.eu>
+ <c7120d8a6379cb1a18af5330997e30ec974acc2f.1215517976.git.monstr@monstr.eu>
+ <d1d33c18956829ec9ac7daf8d0516b17e85ed190.1215517976.git.monstr@monstr.eu>
+ <7a16429cfc461420883dbaa80c16047e5a1a91c1.1215517976.git.monstr@monstr.eu>
+ <b6a0f3bceb0867c55613463fc43be5328fcedecd.1215517976.git.monstr@monstr.eu>
+ <fc26823d77c7180b62022e2d4bcca3c4fe6de574.1215517976.git.monstr@monstr.eu>
 In-Reply-To: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 References: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -60,12 +72,58 @@ From: Michal Simek <monstr@monstr.eu>
 Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- 0 files changed, 0 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/kvm.h
+ include/asm-microblaze/hardirq.h  |   29 +++++++++++++++++++++++++++++
+ include/asm-microblaze/irq_regs.h |    1 +
+ 2 files changed, 30 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/hardirq.h
+ create mode 100644 include/asm-microblaze/hw_irq.h
+ create mode 100644 include/asm-microblaze/irq_regs.h
 
-diff --git a/include/asm-microblaze/kvm.h b/include/asm-microblaze/kvm.h
+diff --git a/include/asm-microblaze/hardirq.h b/include/asm-microblaze/hardirq.h
+new file mode 100644
+index 0000000..2aca035
+--- /dev/null
++++ b/include/asm-microblaze/hardirq.h
+@@ -0,0 +1,29 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_HARDIRQ_H
++#define _ASM_MICROBLAZE_HARDIRQ_H
++
++#include <linux/cache.h>
++#include <linux/irq.h>
++#include <asm/irq.h>
++#include <asm/current.h>
++#include <asm/ptrace.h>
++
++/* should be defined in each interrupt controller driver */
++extern unsigned int get_irq(struct pt_regs *regs);
++
++typedef struct {
++	unsigned int __softirq_pending;
++} ____cacheline_aligned irq_cpustat_t;
++
++void ack_bad_irq(unsigned int irq);
++
++#include <linux/irq_cpustat.h> /* Standard mappings for irq_cpustat_t above */
++
++#endif /* _ASM_MICROBLAZE_HARDIRQ_H */
+diff --git a/include/asm-microblaze/hw_irq.h b/include/asm-microblaze/hw_irq.h
 new file mode 100644
 index 0000000..e69de29
+diff --git a/include/asm-microblaze/irq_regs.h b/include/asm-microblaze/irq_regs.h
+new file mode 100644
+index 0000000..3dd9c0b
+--- /dev/null
++++ b/include/asm-microblaze/irq_regs.h
+@@ -0,0 +1 @@
++#include <asm-generic/irq_regs.h>
 -- 
 1.5.4.GIT
 
