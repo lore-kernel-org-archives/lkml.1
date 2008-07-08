@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756170AbYGHOpk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755659AbYGHOs4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756170AbYGHOpk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 10:45:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751588AbYGHOpa
+	id S1755659AbYGHOs4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 10:48:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbYGHOst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 10:45:30 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:49314 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751460AbYGHOp3 convert rfc822-to-8bit (ORCPT
+	Tue, 8 Jul 2008 10:48:49 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:46819 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751460AbYGHOss convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 10:45:29 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Maxim Shchetynin <maxim@linux.vnet.ibm.com>
-Subject: Re: AZFS file system proposal
-Date: Tue, 8 Jul 2008 16:42:18 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       Gunnar von Boehn <VONBOEHN@de.ibm.com>, Mark Nelson <markn@au1.ibm.com>
-References: <20080618160629.6cd749a8@mercedes-benz.boeblingen.de.ibm.com> <200807011659.33413.arnd@arndb.de> <20080707173923.17dc6c05@mercedes-benz.boeblingen.de.ibm.com>
-In-Reply-To: <20080707173923.17dc6c05@mercedes-benz.boeblingen.de.ibm.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Tue, 8 Jul 2008 10:48:48 -0400
+From: "Altobelli, David" <david.altobelli@hp.com>
+To: Pavel Machek <pavel@suse.cz>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "greg@kroah.com" <greg@kroah.com>
+Date: Tue, 8 Jul 2008 14:48:00 +0000
+Subject: RE: [PATCH][resubmit] HP iLO driver
+Thread-Topic: [PATCH][resubmit] HP iLO driver
+Thread-Index: AcjgzYiI3XHCKmrHTF29vUSsDaYCKwAOBg8g
+Message-ID: <CF70AA892F109448AEA269483B3A983903BB8CEFC4@G1W1215.americas.hpqcorp.net>
+References: <20080623160052.GA7616@ldl.fc.hp.com>
+ <20080627191458.GA10872@ucw.cz>
+ <CF70AA892F109448AEA269483B3A983903BB8CE586@G1W1215.americas.hpqcorp.net>
+ <20080707160658.GB1794@elf.ucw.cz>
+ <CF70AA892F109448AEA269483B3A983903BB8CEA25@G1W1215.americas.hpqcorp.net>
+ <20080708072152.GD1761@elf.ucw.cz> <20080708073818.GA14245@elf.ucw.cz>
+In-Reply-To: <20080708073818.GA14245@elf.ucw.cz>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200807081642.19507.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18CrVst8tuEwQfUTCSiiFetZVTL2VuvwUpkddm
- 35Wt5Um6DU7jj6Nok4cdbFWaTWatPh7OGDriD9rIhtcQViuCVw
- Fspxyhmy0CqEEKYv7SMdw==
+MIME-Version: 1.0
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 07 July 2008, Maxim Shchetynin wrote:
-> > > +           if (copy_to_user(target, (void*) pin, size)) {
-> > > +                   rc = -EFAULT;
-> > > +                   goto out;
-> > > +           }
-> > 
-> > Question to the powerpc folks: is copy_to_user safe for an __iomem source?
-> > Should there be two copies (memcpy_fromio and copy_to_user) instead?
-> 
-> I leave this question open.
-> 
+Pavel Machek wrote:
+> It probably does configure passwords on the management processor, for
+> example?
+>
+> And for that functionality, something like
+>
+> echo new_password > /sys/hpilo/admin/password
+>
+> would make sense, right? Except that your interface is more like "echo
+> ^%TEWFSGFSDF^%EW&^Tadmin^*&S^F&*SDYF*&SDYF*&YE*Wnew_password(*
+> &DF&S^DF*&DS^F*&S
+>> /dev/hpilo/d0ccb0", right? (And except that you consider exact
+> string to echo to change password "proprietary secret").
+>
+> We'd like to have the first interface, but unfortunately we do not
+> know enough about hpilo to even ask for better interface.
 
-Cc:'ing some more people that might have more of a clue on this question.
-_memcpy_fromio does a "sync" at the start and an "eieio" at the end.
-IFAICT, neither are needed here because the source is always memory.
+Is the first interface really preferrable?  How does that extend
+to commands that need to return data?  Do we want to manage 30 different
+commands in the kernel?  New functionality would require kernel updates.
 
-It also handles unaligned memory accesses, which copy_to_user should
-also do correctly, so it *looks* like it should work with just a
-copy_to_user, but it still feels wrong to use an __iomem pointer
-as the source for a copy_to_user.
-
-Any ideas?
-
-	Arnd <><
+It seems much cleaner to keep the kernel interface simple and opaque
+(ie read/write), and handle the details of the commands in user space.
+>From my limited understanding, I thought that was a common goal here:
+move what you can to userspace.
