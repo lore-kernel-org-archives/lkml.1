@@ -1,160 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757473AbYGHIob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbYGHIpe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757473AbYGHIob (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 04:44:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbYGHIoI
+	id S1757304AbYGHIpe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 04:45:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751362AbYGHIp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 04:44:08 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:45439 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750973AbYGHIoG (ORCPT
+	Tue, 8 Jul 2008 04:45:27 -0400
+Received: from mxsec.euro-web.fr ([81.93.243.199]:58733 "EHLO
+	mxsec.euro-web.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750973AbYGHIpZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 04:44:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=gWT9HmH4KyPtPZTEYoytBhsR8U7HMRnIUgWijzdD4OXbULRSDMkpbBBM2b/etz18/2
-         MlooKq3TeFvVwRrlfKUBk2T2PpsjKxQatcKh01NtTsXfb0Bo7Pq6FUeqNUpMPrs2L11J
-         ZZeAjvSopNs61CCYPj0Ns0iESL9EPd4yJg8Gs=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86: not overmap than end in init_memory_mapping - 64bit
-Date: Tue, 8 Jul 2008 01:43:27 -0700
-User-Agent: KMail/1.9.9
-Cc: LKML <linux-kernel@vger.kernel.org>
-References: <200807080141.05436.yhlu.kernel@gmail.com>
-In-Reply-To: <200807080141.05436.yhlu.kernel@gmail.com>
+	Tue, 8 Jul 2008 04:45:25 -0400
+From: David CHANIAL <david.ml@euro-web.fr>
+Organization: Euro Web
+To: linux-kernel@vger.kernel.org
+Subject: BUG: unable to handle kernel NULL pointer dereference at 00000023
+Date: Tue, 8 Jul 2008 10:45:22 +0200
+User-Agent: KMail/1.9.7
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807080143.27997.yhlu.kernel@gmail.com>
+Message-Id: <200807081045.23158.david.ml@euro-web.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Everyone,
 
-handle head and tail that can not aligned to big pages.
+There is a kernel bug on a server :
+kernel is 2.6.25.4 (the sdf99-ipv6-core2 are justs strings added to makefile to describez config).
+I will update to 2.6.25.10 soon on this box, but if this can help... 
 
-with this patch, on system that support gbpages
-change
-last_map_addr: 1080000000 end: 1078000000
-to
-last_map_addr: 1078000000 end: 1078000000
+If you need informations about the box... just ask.
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+=================
+BUG: unable to handle kernel NULL pointer dereference at 00000023
+IP: [<c01489f5>] unmap_vmas+0x151/0x5c8
+*pdpt = 000000002491c001 *pde = 0000000000000000 
+Oops: 0000 [#1] SMP 
 
----
- arch/x86/mm/init_64.c |   77 ++++++++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 65 insertions(+), 12 deletions(-)
+Pid: 3766, comm: shtool Not tainted (2.6.25.4-sdf99-ipv6-core2 #2)
+EIP: 0060:[<c01489f5>] EFLAGS: 00210206 CPU: 2
+EIP is at unmap_vmas+0x151/0x5c8
+EAX: 40193000 EBX: c1a42880 ECX: 00000017 EDX: 0000001f
+ESI: 80000000 EDI: ed35f740 EBP: fff99c68 ESP: e7ce3ee8
+ DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+Process shtool (pid: 3766, ti=e7ce2000 task=f7d4cdb0 task.ti=e7ce2000)
+Stack: 00000000 e7cfc5f4 e7ce3f64 00000000 00000000 00252e9b 4018d000 00000000 
+       00000001 40193000 0000001f ed35f740 c361e100 fffffffc 00000000 c35ecbac 
+       00000000 00000000 ca580000 4018d000 40193000 00000000 e7ce3f64 e8d2cddc 
+Call Trace:
+ [<c014be79>] exit_mmap+0x61/0xca
+ [<c0118a9e>] mmput+0x20/0x74
+ [<c011d011>] do_exit+0x1cc/0x535
+ [<c011d3db>] do_group_exit+0x61/0x78
+ [<c0103aaa>] syscall_call+0x7/0xb
+ [<c0480000>] schedule+0x54a/0x587
+ =======================
+Code: 24 28 8b 74 24 18 8b 44 24 50 81 c6 00 00 00 40 81 e6 00 00 00 c0 48 89 f2 4a 39 c2 8b 44 24 50 8b 54 24 28 0f 42 c6 89 44 24 24 <8b> 5a 04 8b 0a 89 de 09 ce 74 1c 31 d2 89 c8 25 98 0f 00 00 89 
+EIP: [<c01489f5>] unmap_vmas+0x151/0x5c8 SS:ESP 0068:e7ce3ee8
+---[ end trace 7a550b72a5db8908 ]---
+Fixing recursive fault but reboot is needed!
+=================
 
-Index: linux-2.6/arch/x86/mm/init_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/init_64.c
-+++ linux-2.6/arch/x86/mm/init_64.c
-@@ -422,18 +422,25 @@ phys_pud_update(pgd_t *pgd, unsigned lon
- 
- static void __init find_early_table_space(unsigned long end)
- {
--	unsigned long puds, tables, start;
-+	unsigned long puds, pmds, ptes, tables, start;
- 
- 	puds = (end + PUD_SIZE - 1) >> PUD_SHIFT;
- 	tables = round_up(puds * sizeof(pud_t), PAGE_SIZE);
--	if (!direct_gbpages) {
--		unsigned long pmds = (end + PMD_SIZE - 1) >> PMD_SHIFT;
--		tables += round_up(pmds * sizeof(pmd_t), PAGE_SIZE);
--	}
--	if (!cpu_has_pse) {
--		unsigned long ptes = (end + PAGE_SIZE - 1) >> PAGE_SHIFT;
--		tables += round_up(ptes * sizeof(pte_t), PAGE_SIZE);
--	}
-+	if (direct_gbpages) {
-+		unsigned long extra;
-+		extra = end - ((end>>PUD_SHIFT) << PUD_SHIFT);
-+		pmds = (extra + PMD_SIZE - 1) >> PMD_SHIFT;
-+	} else
-+		pmds = (end + PMD_SIZE - 1) >> PMD_SHIFT;
-+	tables += round_up(pmds * sizeof(pmd_t), PAGE_SIZE);
-+
-+	if (cpu_has_pse) {
-+		unsigned long extra;
-+		extra = end - ((end>>PMD_SHIFT) << PMD_SHIFT);
-+		ptes = (extra + PAGE_SIZE - 1) >> PAGE_SHIFT;
-+	} else
-+		ptes = (end + PAGE_SIZE - 1) >> PAGE_SHIFT;
-+	tables += round_up(ptes * sizeof(pte_t), PAGE_SIZE);
- 
- 	/*
- 	 * RED-PEN putting page tables only on node 0 could
-@@ -634,8 +641,9 @@ static unsigned long __init kernel_physi
- unsigned long __init_refok init_memory_mapping(unsigned long start,
- 					       unsigned long end)
- {
--	unsigned long last_map_addr;
-+	unsigned long last_map_addr = end;
- 	unsigned long page_size_mask = 0;
-+	unsigned long start_pfn, end_pfn;
- 
- 	printk(KERN_INFO "init_memory_mapping\n");
- 
-@@ -656,8 +664,53 @@ unsigned long __init_refok init_memory_m
- 	if (cpu_has_pse)
- 		page_size_mask |= 1 << PG_LEVEL_2M;
- 
--	last_map_addr = kernel_physical_mapping_init(start, end,
--							 page_size_mask);
-+	/* head if not big page aligment ?*/
-+	start_pfn = start >> PAGE_SHIFT;
-+	end_pfn = ((start + (PMD_SIZE - 1)) >> PMD_SHIFT)
-+			<< (PMD_SHIFT - PAGE_SHIFT);
-+	if (start_pfn < end_pfn)
-+		last_map_addr = kernel_physical_mapping_init(
-+					start_pfn<<PAGE_SHIFT,
-+					end_pfn<<PAGE_SHIFT, 0);
-+
-+	/* big page (2M) range*/
-+	start_pfn = ((start + (PMD_SIZE - 1))>>PMD_SHIFT)
-+			 << (PMD_SHIFT - PAGE_SHIFT);
-+	end_pfn = ((start + (PUD_SIZE - 1))>>PUD_SHIFT)
-+			 << (PUD_SHIFT - PAGE_SHIFT);
-+	if (end_pfn > ((end>>PUD_SHIFT)<<(PUD_SHIFT - PAGE_SHIFT)))
-+		end_pfn = ((end>>PUD_SHIFT)<<(PUD_SHIFT - PAGE_SHIFT));
-+	if (start_pfn < end_pfn)
-+		last_map_addr = kernel_physical_mapping_init(
-+					     start_pfn<<PAGE_SHIFT,
-+					     end_pfn<<PAGE_SHIFT,
-+					     page_size_mask & (1<<PG_LEVEL_2M));
-+
-+	/* big page (1G) range */
-+	start_pfn = end_pfn;
-+	end_pfn = (end>>PUD_SHIFT) << (PUD_SHIFT - PAGE_SHIFT);
-+	if (start_pfn < end_pfn)
-+		last_map_addr = kernel_physical_mapping_init(
-+					     start_pfn<<PAGE_SHIFT,
-+					     end_pfn<<PAGE_SHIFT,
-+					     page_size_mask & ((1<<PG_LEVEL_2M)
-+							 | (1<<PG_LEVEL_1G)));
-+
-+	/* tail is not big page (1G) alignment */
-+	start_pfn = end_pfn;
-+	end_pfn = (end>>PMD_SHIFT) << (PMD_SHIFT - PAGE_SHIFT);
-+	if (start_pfn < end_pfn)
-+		last_map_addr = kernel_physical_mapping_init(
-+					     start_pfn<<PAGE_SHIFT,
-+					     end_pfn<<PAGE_SHIFT,
-+					     page_size_mask & (1<<PG_LEVEL_2M));
-+	/* tail is not big page (2M) alignment */
-+	start_pfn = end_pfn;
-+	end_pfn = end>>PAGE_SHIFT;
-+	if (start_pfn < end_pfn)
-+		last_map_addr = kernel_physical_mapping_init(
-+					     start_pfn<<PAGE_SHIFT,
-+					     end_pfn<<PAGE_SHIFT, 0);
- 
- 	if (!after_bootmem)
- 		mmu_cr4_features = read_cr4();
+
+even if this will not help you, this is the output before the bug.
+the last line has never release, thaht why i have take a look to dmesg...
+=== BEFORE THE BUG ===
+[...]d/zend_operators.lo Zend/zend_ptr_stack.lo Zend/zend_stack.lo Zend/zend_variables.lo Zend/zend.lo Zend/zend_API.lo Zend/zend_extensions.lo Zend/zend_hash.lo Zend/zend_list.lo Zend/zend_indent.lo Zend/zend_builtin_functions.lo Zend/zend_sprintf.lo Zend/zend_ini.lo Zend/zend_qsort.lo Zend/zend_multibyte.lo Zend/zend_ts_hash.lo Zend/zend_stream.lo Zend/zend_iterators.lo Zend/zend_interfaces.lo Zend/zend_exceptions.lo Zend/zend_strtod.lo Zend/zend_objects.lo Zend/zend_object_handlers.lo Zend/zend_objects_API.lo Zend/zend_default_classes.lo Zend/zend_execute.lo sapi/cgi/fastcgi.lo sapi/cgi/cgi_main.lo sapi/cgi/getopt.lo main/internal_functions.lo -lcrypt -lcrypt -lhistory -lreadline -lncurses -lpanel -lncurses -lmysqlclient -lmcrypt -lltdl -lt1 -lfreetype -lpng -lz -ljpeg -ldb-4.3 -lgdbm -lcurl -lbz2 -lz -lresolv -lm -ldl -lnsl -lxml2 -lz -lm -lssl -lcrypto -ldl -lcurl -lxml2 -lz -lm -lcrypt -lxml2 -lz -lm -lcrypt  -o sapi/cgi/php-cgi
+
+Build complete.
+Don't forget to run 'make test'.
+
+>>> Source compiled.
+>>> Test phase [not enabled]: dev-lang/php-5.2.6-r2
+
+>>> Install php-5.2.6-r2 into /var/tmp/portage/dev-lang/php-5.2.6-r2/image/ category dev-lang
+Installing build environment:     /var/tmp/portage/dev-lang/php-5.2.6-r2/image//usr/lib/php5/lib/php/build/
+Installing header files:          /var/tmp/portage/dev-lang/php-5.2.6-r2/image//usr/lib/php5/include/php/
+
+=================
+
+
+Best regards,
+-- 
+David CHANIAL
