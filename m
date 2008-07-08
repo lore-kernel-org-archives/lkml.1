@@ -1,80 +1,371 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbYGHGay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754724AbYGHGhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754632AbYGHGay (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 02:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbYGHGap
+	id S1754724AbYGHGhz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 02:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbYGHGhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 02:30:45 -0400
-Received: from mxl.seznam.cz ([77.75.72.44]:52337 "EHLO mxl.seznam.cz"
+	Tue, 8 Jul 2008 02:37:47 -0400
+Received: from saeurebad.de ([85.214.36.134]:49736 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751418AbYGHGao (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 02:30:44 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=beta; d=seznam.cz;
-	h=Received:Message-ID:Date:From:Reply-To:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Smtpd:X-Seznam-User:X-QM-Mark;
-	b=HlyveDNGw9H8Ic4PPts/XR4ELrSsHyXFjc4tidMyiesrrhR3XJlKLDMZ9HUnuTsj6
-	5/eDxpC2CpDiqFC/Ui0+lqVimtlzKb9J6bAxbuMtPnebDrM1cmXUNPEliA98YF0fAw1
-	mv5LkYgM9ALJhxpUmI2LzQTjC1Ia41AEbRfMzbY=
-Message-ID: <48730695.5010004@seznam.cz>
-Date: Tue, 08 Jul 2008 08:17:57 +0200
-From: Michal Simek <monstr@seznam.cz>
-Reply-To: monstr@seznam.cz
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	id S1751324AbYGHGhq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 02:37:46 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Jens Axboe <axboe@kernel.dk>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Lameter <clameter@linux-foundation.org>,
+       Petr Tesarik <ptesarik@suse.cz>,
+       Virtualization <virtualization@lists.linux-foundation.org>,
+       Xen devel <xen-devel@lists.xensource.com>,
+       Thomas Friebel <thomas.friebel@amd.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH RFC 4/4] xen: implement Xen-specific spinlocks
+References: <20080707190749.299430659@goop.org>
+	<20080707190838.710151521@goop.org>
+Date: Tue, 08 Jul 2008 08:37:33 +0200
+In-Reply-To: <20080707190838.710151521@goop.org> (Jeremy Fitzhardinge's
+	message of "Mon, 07 Jul 2008 12:07:53 -0700")
+Message-ID: <87tzf0q3te.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-       Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com, matthew@wil.cx,
-       microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
-       drepper@redhat.com, linuxppc-dev@ozlabs.org, will.newton@gmail.com,
-       hpa@zytor.com, John.Linn@xilinx.com, john.williams@petalogix.com
-Subject: Re: [PATCH 31/60] microblaze_v4: memory inicialization, MMU, TLB
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>	<1214483429-32360-31-git-send-email-monstr@seznam.cz>	<1214483429-32360-32-git-send-email-monstr@seznam.cz> <200806261714.12967.arnd@arndb.de>
-In-Reply-To: <200806261714.12967.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
-X-Smtpd: 1.1.1@13338
-X-Seznam-User: monstr@seznam.cz
-X-QM-Mark: email-qm1<180831653>
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Arnd,
+Hi,
 
-> On Thursday 26 June 2008, monstr@seznam.cz wrote:
-> 
->> +#include <linux/autoconf.h>
-> 
-> You should never need to include linux/autoconf.h anywhere,
-> just remove this.
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
-Remove from all files
+> The standard ticket spinlocks are very expensive in a virtual
+> environment, because their performance depends on Xen's scheduler
+> giving vcpus time in the order that they're supposed to take the
+> spinlock.
+>
+> This implements a Xen-specific spinlock, which should be much more
+> efficient.
+>
+> The fast-path is essentially the old Linux-x86 locks, using a single
+> lock byte.  The locker decrements the byte; if the result is 0, then
+> they have the lock.  If the lock is negative, then locker must spin
+> until the lock is positive again.
+>
+> When there's contention, the locker spin for 2^16[*] iterations waiting
+> to get the lock.  If it fails to get the lock in that time, it adds
+> itself to the contention count in the lock and blocks on a per-cpu
+> event channel.
+>
+> When unlocking the spinlock, the locker looks to see if there's anyone
+> blocked waiting for the lock by checking for a non-zero waiter count.
+> If there's a waiter, it traverses the per-cpu "lock_spinners"
+> variable, which contains which lock each CPU is waiting on.  It picks
+> one CPU waiting on the lock and sends it an event to wake it up.
+>
+> This allows efficient fast-path spinlock operation, while allowing
+> spinning vcpus to give up their processor time while waiting for a
+> contended lock.
+>
+> [*] 2^16 iterations is threshold at which 98% locks have been taken
+> according to Thomas Friebel's Xen Summit talk "Preventing Guests from
+> Spinning Around".  Therefore, we'd expect the lock and unlock slow
+> paths will only be entered 2% of the time.
+>
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> Cc: Thomas Friebel <thomas.friebel@amd.com>
+> ---
+>  arch/x86/xen/smp.c           |  172 +++++++++++++++++++++++++++++++++++++++++-
+>  drivers/xen/events.c         |   27 ++++++
+>  include/asm-x86/xen/events.h |    1 
+>  include/xen/events.h         |    7 +
+>  4 files changed, 206 insertions(+), 1 deletion(-)
+>
+> ===================================================================
+> --- a/arch/x86/xen/smp.c
+> +++ b/arch/x86/xen/smp.c
+> @@ -15,6 +15,7 @@
+>   * This does not handle HOTPLUG_CPU yet.
+>   */
+>  #include <linux/sched.h>
+> +#include <linux/kernel_stat.h>
+>  #include <linux/err.h>
+>  #include <linux/smp.h>
+>  
+> @@ -34,6 +35,8 @@
+>  
+>  #include "xen-ops.h"
+>  #include "mmu.h"
+> +
+> +static void __cpuinit xen_init_lock_cpu(int cpu);
+>  
+>  cpumask_t xen_cpu_initialized_map;
+>  
+> @@ -179,6 +182,8 @@
+>  {
+>  	unsigned cpu;
+>  
+> +	xen_init_lock_cpu(0);
+> +
+>  	smp_store_cpu_info(0);
+>  	cpu_data(0).x86_max_cores = 1;
+>  	set_cpu_sibling_map(0);
+> @@ -301,6 +306,7 @@
+>  	clear_tsk_thread_flag(idle, TIF_FORK);
+>  #endif
+>  	xen_setup_timer(cpu);
+> +	xen_init_lock_cpu(cpu);
+>  
+>  	per_cpu(cpu_state, cpu) = CPU_UP_PREPARE;
+>  
+> @@ -413,6 +419,170 @@
+>  	return IRQ_HANDLED;
+>  }
+>  
+> +struct xen_spinlock {
+> +	unsigned char lock;		/* 0 -> free; 1 -> locked */
+> +	unsigned short spinners;	/* count of waiting cpus */
+> +};
+> +
+> +static int xen_spin_is_locked(struct raw_spinlock *lock)
+> +{
+> +	struct xen_spinlock *xl = (struct xen_spinlock *)lock;
+> +
+> +	return xl->lock != 0;
+> +}
+> +
+> +static int xen_spin_is_contended(struct raw_spinlock *lock)
+> +{
+> +	struct xen_spinlock *xl = (struct xen_spinlock *)lock;
+> +
+> +	/* Not strictly true; this is only the count of contended
+> +	   lock-takers entering the slow path. */
+> +	return xl->spinners != 0;
+> +}
+> +
+> +static int xen_spin_trylock(struct raw_spinlock *lock)
+> +{
+> +	struct xen_spinlock *xl = (struct xen_spinlock *)lock;
+> +	u8 old = 1;
+> +
+> +	asm("xchgb %b0,%1"
+> +	    : "+q" (old), "+m" (xl->lock) : : "memory");
+> +
+> +	return old == 0;
+> +}
+> +
+> +static DEFINE_PER_CPU(int, lock_kicker_irq) = -1;
+> +static DEFINE_PER_CPU(struct xen_spinlock *, lock_spinners);
 
->> +#include <linux/init.h>
->> +#include <linux/mm.h>
->> +#include "../../../mm/internal.h"
-> 
-> Why do you need to include the internal.h file here?
-> If you have a good reason to do it, you should probably
-> add the symbol you need to a global header file.
+The plural is a bit misleading, as this is a single pointer per CPU.
 
-There was reason for doing it in older version. With current
-version work without internal.h.
+> +static inline void spinning_lock(struct xen_spinlock *xl)
+> +{
+> +	__get_cpu_var(lock_spinners) = xl;
+> +	wmb();			/* set lock of interest before count */
+> +	asm(LOCK_PREFIX " incw %0"
+> +	    : "+m" (xl->spinners) : : "memory");
+> +}
+> +
+> +static inline void unspinning_lock(struct xen_spinlock *xl)
+> +{
+> +	asm(LOCK_PREFIX " decw %0"
+> +	    : "+m" (xl->spinners) : : "memory");
+> +	wmb();			/* decrement count before clearing lock */
+> +	__get_cpu_var(lock_spinners) = NULL;
+> +}
+> +
+> +static noinline int xen_spin_lock_slow(struct raw_spinlock *lock)
+> +{
+> +	struct xen_spinlock *xl = (struct xen_spinlock *)lock;
+> +	int irq = __get_cpu_var(lock_kicker_irq);
+> +	int ret;
+> +
+> +	/* If kicker interrupts not initialized yet, just spin */
+> +	if (irq == -1)
+> +		return 0;
+> +
+> +	/* announce we're spinning */
+> +	spinning_lock(xl);
+> +
+> +	/* clear pending */
+> +	xen_clear_irq_pending(irq);
+> +
+> +	/* check again make sure it didn't become free while
+> +	   we weren't looking  */
+> +	ret = xen_spin_trylock(lock);
+> +	if (ret)
+> +		goto out;
+> +
+> +	/* block until irq becomes pending */
+> +	xen_poll_irq(irq);
+> +	kstat_this_cpu.irqs[irq]++;
+> +
+> +out:
+> +	unspinning_lock(xl);
+> +	return ret;
+> +}
+> +
+> +static void xen_spin_lock(struct raw_spinlock *lock)
+> +{
+> +	struct xen_spinlock *xl = (struct xen_spinlock *)lock;
+> +	int timeout;
+> +	u8 oldval;
+> +
+> +	do {
+> +		timeout = 1 << 10;
+> +
+> +		asm("1: xchgb %1,%0\n"
+> +		    "   testb %1,%1\n"
+> +		    "   jz 3f\n"
+> +		    "2: rep;nop\n"
+> +		    "   cmpb $0,%0\n"
+> +		    "   je 1b\n"
+> +		    "   dec %2\n"
+> +		    "   jnz 2b\n"
+> +		    "3:\n"
+> +		    : "+m" (xl->lock), "=q" (oldval), "+r" (timeout)
+> +		    : "1" (1)
+> +		    : "memory");
+> +
+> +	} while (unlikely(oldval != 0 && !xen_spin_lock_slow(lock)));
+> +}
+> +
+> +static noinline void xen_spin_unlock_slow(struct xen_spinlock *xl)
+> +{
+> +	int cpu;
+> +
+> +	for_each_online_cpu(cpu) {
 
-Thank for comment,
-Michal
+Would it be feasible to have a bitmap for the spinning CPUs in order to
+do a for_each_spinning_cpu() here instead?  Or is setting a bit in
+spinning_lock() and unsetting it in unspinning_lock() more overhead than
+going over all CPUs here?
 
+> +		/* XXX should mix up next cpu selection */
+> +		if (per_cpu(lock_spinners, cpu) == xl) {
+> +			xen_send_IPI_one(cpu, XEN_SPIN_UNLOCK_VECTOR);
+> +			break;
+> +		}
+> +	}
+> +}
+> +
+> +static void xen_spin_unlock(struct raw_spinlock *lock)
+> +{
+> +	struct xen_spinlock *xl = (struct xen_spinlock *)lock;
+> +
+> +	smp_wmb();		/* make sure no writes get moved after unlock */
+> +	xl->lock = 0;		/* release lock */
+> +
+> +	/* make sure unlock happens before kick */
+> +	barrier();
+> +
+> +	if (unlikely(xl->spinners))
+> +		xen_spin_unlock_slow(xl);
+> +}
+> +
+> +static __cpuinit void xen_init_lock_cpu(int cpu)
+> +{
+> +	int irq;
+> +	const char *name;
+> +
+> +	name = kasprintf(GFP_KERNEL, "spinlock%d", cpu);
+> +	irq = bind_ipi_to_irqhandler(XEN_SPIN_UNLOCK_VECTOR,
+> +				     cpu,
+> +				     xen_reschedule_interrupt,
+> +				     IRQF_DISABLED|IRQF_PERCPU|IRQF_NOBALANCING,
+> +				     name,
+> +				     NULL);
+> +
+> +	if (irq >= 0) {
+> +		disable_irq(irq); /* make sure it's never delivered */
+> +		per_cpu(lock_kicker_irq, cpu) = irq;
+> +	}
+> +
+> +	printk("cpu %d spinlock event irq %d\n", cpu, irq);
+> +}
+> +
+> +static void __init xen_init_spinlocks(void)
+> +{
+> +	pv_lock_ops.spin_is_locked = xen_spin_is_locked;
+> +	pv_lock_ops.spin_is_contended = xen_spin_is_contended;
+> +	pv_lock_ops.spin_lock = xen_spin_lock;
+> +	pv_lock_ops.spin_trylock = xen_spin_trylock;
+> +	pv_lock_ops.spin_unlock = xen_spin_unlock;
+> +}
+> +
+>  static const struct smp_ops xen_smp_ops __initdata = {
+>  	.smp_prepare_boot_cpu = xen_smp_prepare_boot_cpu,
+>  	.smp_prepare_cpus = xen_smp_prepare_cpus,
+> @@ -430,5 +600,5 @@
+>  {
+>  	smp_ops = xen_smp_ops;
+>  	xen_fill_possible_map();
+> -	paravirt_use_bytelocks();
+> +	xen_init_spinlocks();
+>  }
+> ===================================================================
+> --- a/drivers/xen/events.c
+> +++ b/drivers/xen/events.c
+> @@ -741,6 +741,33 @@
+>  	}
+>  }
+>  
+> +/* Clear an irq's pending state, in preparation for polling on it */
+> +void xen_clear_irq_pending(int irq)
+> +{
+> +	int evtchn = evtchn_from_irq(irq);
+> +
+> +	if (VALID_EVTCHN(evtchn))
+> +		clear_evtchn(evtchn);
+> +}
+> +
+> +/* Poll waiting for an irq to become pending.  In the usual case, the
+> +   irq will be disabled so it won't deliver an interrupt. */
+> +void xen_poll_irq(int irq)
+> +{
+> +	evtchn_port_t evtchn = evtchn_from_irq(irq);
+> +
+> +	if (VALID_EVTCHN(evtchn)) {
+> +		struct sched_poll poll;
+> +
+> +		poll.nr_ports = 1;
+> +		poll.timeout = 0;
+> +		poll.ports = &evtchn;
+> +
+> +		if (HYPERVISOR_sched_op(SCHEDOP_poll, &poll) != 0)
+> +			BUG();
+> +	}
+> +}
+> +
+>  void xen_irq_resume(void)
+>  {
+>  	unsigned int cpu, irq, evtchn;
+> ===================================================================
+> --- a/include/asm-x86/xen/events.h
+> +++ b/include/asm-x86/xen/events.h
+> @@ -5,6 +5,7 @@
+>  	XEN_RESCHEDULE_VECTOR,
+>  	XEN_CALL_FUNCTION_VECTOR,
+>  	XEN_CALL_FUNCTION_SINGLE_VECTOR,
+> +	XEN_SPIN_UNLOCK_VECTOR,
+>  
+>  	XEN_NR_IPIS,
+>  };
+> ===================================================================
+> --- a/include/xen/events.h
+> +++ b/include/xen/events.h
+> @@ -45,4 +45,11 @@
+>  extern void xen_irq_resume(void);
+>  extern void xen_evtchn_do_upcall(struct pt_regs *regs);
+>  
+> +/* Clear an irq's pending state, in preparation for polling on it */
+> +void xen_clear_irq_pending(int irq);
+> +
+> +/* Poll waiting for an irq to become pending.  In the usual case, the
+> +   irq will be disabled so it won't deliver an interrupt. */
+> +void xen_poll_irq(int irq);
+> +
+>  #endif	/* _XEN_EVENTS_H */
 
-
-> 	Arnd <><
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
-> 
-> ------------------------------------------------------------------------
-> 
-> 
-> No virus found in this incoming message.
-> Checked by AVG. 
-> Version: 8.0.101 / Virus Database: 270.4.1/1519 - Release Date: 25.6.2008 04:13
+	Hannes
