@@ -1,77 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755210AbYGHHaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751453AbYGHHe7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755210AbYGHHaZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 03:30:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbYGHHaL
+	id S1751453AbYGHHe7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 03:34:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbYGHHew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 03:30:11 -0400
-Received: from saeurebad.de ([85.214.36.134]:50308 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751453AbYGHHaK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 03:30:10 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Jens Axboe <axboe@kernel.dk>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <clameter@linux-foundation.org>,
-       Petr Tesarik <ptesarik@suse.cz>,
-       Virtualization <virtualization@lists.linux-foundation.org>,
-       Xen devel <xen-devel@lists.xensource.com>,
-       Thomas Friebel <thomas.friebel@amd.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: [PATCH RFC 4/4] xen: implement Xen-specific spinlocks
-References: <20080707190749.299430659@goop.org>
-	<20080707190838.710151521@goop.org> <87tzf0q3te.fsf@saeurebad.de>
-	<48731409.9070304@goop.org>
-Date: Tue, 08 Jul 2008 09:30:00 +0200
-In-Reply-To: <48731409.9070304@goop.org> (Jeremy Fitzhardinge's message of
-	"Tue, 08 Jul 2008 00:15:21 -0700")
-Message-ID: <87lk0cq1dz.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	Tue, 8 Jul 2008 03:34:52 -0400
+Received: from shards.monkeyblade.net ([198.137.202.13]:42499 "EHLO
+	shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751913AbYGHHev (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 03:34:51 -0400
+Subject: Re: git pull through http / git
+From: "J.H." <warthog19@eaglescrag.net>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: Jan Engelhardt <jengelh@medozas.de>, webmaster@kernel.org,
+       Linux Kernel list <linux-kernel@vger.kernel.org>, hpa@kernel.org
+In-Reply-To: <487315A3.40302@atmel.com>
+References: <48724130.5050501@atmel.com>
+	 <alpine.LNX.1.10.0807071840470.8248@fbirervta.pbzchgretzou.qr>
+	 <487315A3.40302@atmel.com>
+Content-Type: text/plain
+Date: Tue, 08 Jul 2008 00:34:32 -0700
+Message-Id: <1215502472.1998.25.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-2.1.12 (shards.monkeyblade.net [198.137.202.13]); Tue, 08 Jul 2008 00:34:40 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Keep in mind Kernel.org uses caching on gitweb and thus gitweb itself is
+not necessarily accurate / up to date.  git.kernel.org also round-robins
+across 4 machines which may be in various states of update, so your
+fundamentally looking at a number of different possible points that may
+be slightly out of sync with each other.
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+- John 'Warthog9' Hawley
+Chief Kernel.org Admin & Original Author of the Gitweb Caching code
 
-> Johannes Weiner wrote:
->>> +static DEFINE_PER_CPU(int, lock_kicker_irq) = -1;
->>> +static DEFINE_PER_CPU(struct xen_spinlock *, lock_spinners);
->>>     
->>
->> The plural is a bit misleading, as this is a single pointer per CPU.
->>   
->
-> Yeah.  And it's wrong because it's specifically *not* spinning, but
-> blocking.
+On Tue, 2008-07-08 at 09:22 +0200, Nicolas Ferre wrote:
+> Jan Engelhardt :
+> > On Monday 2008-07-07 18:15, Nicolas Ferre wrote:
+> > 
+> >> Hi,
+> >>
+> >> I see differences when I use git to a git.kernel.org between the one I fetch
+> >> using http protocol and the one shown through the gitweb interface.
+> >>
+> >> I cloned (or git remote add) the mmc tree and my config shows this url :
+> >> url = http://www.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git
+> >>
+> >> but I see updates in :
+> >> http://git.kernel.org/?p=linux/kernel/git/drzeus/mmc.git;a=summary
+> >> I cannot get.
+> > 
+> > I don't think many care about http downloading, just because it is 
+> > available as such.
+> > git:// and rsync:// are available though and should be usable even 
+> > without the http info that needs to be constantly refreshed when one 
+> > wants to use http....
+> 
+> If only I had the choice...
+> 
+> You certainly know why I am using http. This feature is very useful for 
+> me and I was wondering why it was out of sync with the web interface.
+> 
+> Regards,
 
-I thought of it as `virtually spinning', so had no problems with the
-naming itself :)
-
->>> +static noinline void xen_spin_unlock_slow(struct xen_spinlock *xl)
->>> +{
->>> +	int cpu;
->>> +
->>> +	for_each_online_cpu(cpu) {
->>>     
->>
->> Would it be feasible to have a bitmap for the spinning CPUs in order to
->> do a for_each_spinning_cpu() here instead?  Or is setting a bit in
->> spinning_lock() and unsetting it in unspinning_lock() more overhead than
->> going over all CPUs here?
->>   
->
-> Not worthwhile, I think.  This is a very rare path: it will only
-> happen if 1) there's lock contention, that 2) wasn't resolved within
-> the timeout.  In practice, this gets called a few thousand times per
-> cpu over a kernbench, which is nothing.
-
-Okay, I agree.
-
-	Hannes
