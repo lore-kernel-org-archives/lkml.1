@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755793AbYGHMlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757484AbYGHMlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755793AbYGHMlP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 08:41:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbYGHMk7
+	id S1757484AbYGHMlg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 08:41:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbYGHMlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 08:40:59 -0400
+	Tue, 8 Jul 2008 08:41:24 -0400
 Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27500 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752019AbYGHMk6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 08:40:58 -0400
+	id S1753422AbYGHMlW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 08:41:22 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
@@ -18,11 +18,11 @@ Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
        grant.likely@secretlab.ca, vapier.adi@gmail.com,
        alan@lxorguk.ukuu.org.uk, hpa@zytor.com, lethal@linux-sh.org,
        florian@openwrt.org, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 13/58] microblaze_v5: lmb support
-Date: Tue,  8 Jul 2008 13:59:13 +0200
-Message-Id: <fe3686f0f70d838b33642bcbcd7185fc2180b366.1215517976.git.monstr@monstr.eu>
+Subject: [PATCH 21/58] microblaze_v5: heartbeat file
+Date: Tue,  8 Jul 2008 13:59:21 +0200
+Message-Id: <eb0e741f891335df37c3cd19f1a3ce2f7ce8652a.1215517976.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <1f9a1f345caa749cb630cf85f95f217366395069.1215517976.git.monstr@monstr.eu>
+In-Reply-To: <875ba2708f6cd3c585e4d965142e2feb07c39a0e.1215517976.git.monstr@monstr.eu>
 References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
  <c03d29cbccaef8aed8a2911c2a259fbd79ad23d9.1215517976.git.monstr@monstr.eu>
@@ -36,6 +36,14 @@ References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <f7458acb0252f72b5620d19c76104408ecc2e451.1215517976.git.monstr@monstr.eu>
  <dbd9df742cdd9eb3355d7bc8e39f9dfef6c545e4.1215517976.git.monstr@monstr.eu>
  <1f9a1f345caa749cb630cf85f95f217366395069.1215517976.git.monstr@monstr.eu>
+ <fe3686f0f70d838b33642bcbcd7185fc2180b366.1215517976.git.monstr@monstr.eu>
+ <e61f5a8579570cf7cd18a22e4106b7f85518928e.1215517976.git.monstr@monstr.eu>
+ <59d7e0a5f38b8d38f01f357a071fc93eed36f3a8.1215517976.git.monstr@monstr.eu>
+ <143afcf84af583ab66da7e8acfc9eb03b7f3eaa0.1215517976.git.monstr@monstr.eu>
+ <a967ee4e5a60b410e2810ce0475e8fd04f99e3ae.1215517976.git.monstr@monstr.eu>
+ <c5f0730287365c845746467a9917dbc07d2fca3c.1215517976.git.monstr@monstr.eu>
+ <2aa1ac7891af57959237aae3addf4bbe607f55d7.1215517976.git.monstr@monstr.eu>
+ <875ba2708f6cd3c585e4d965142e2feb07c39a0e.1215517976.git.monstr@monstr.eu>
 In-Reply-To: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 References: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -47,33 +55,51 @@ From: Michal Simek <monstr@monstr.eu>
 Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/lmb.h |   17 +++++++++++++++++
- 1 files changed, 17 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/lmb.h
+ arch/microblaze/kernel/heartbeat.c |   35 +++++++++++++++++++++++++++++++++++
+ 1 files changed, 35 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/heartbeat.c
 
-diff --git a/include/asm-microblaze/lmb.h b/include/asm-microblaze/lmb.h
+diff --git a/arch/microblaze/kernel/heartbeat.c b/arch/microblaze/kernel/heartbeat.c
 new file mode 100644
-index 0000000..a0a0a92
+index 0000000..5a21c1d
 --- /dev/null
-+++ b/include/asm-microblaze/lmb.h
-@@ -0,0 +1,17 @@
++++ b/arch/microblaze/kernel/heartbeat.c
+@@ -0,0 +1,35 @@
 +/*
-+ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2007-2008 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2006 Atmark Techno, Inc.
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_LMB_H
-+#define _ASM_MICROBLAZE_LMB_H
++#include <linux/sched.h>
++#include <asm/page.h>
++#include <asm/io.h>
++#include <asm/setup.h>
 +
-+/* LMB limit is OFF */
-+#define LMB_REAL_LIMIT	0xFFFFFFFF
++void heartbeat(void)
++{
++	static unsigned int cnt, period, dist;
 +
-+#endif /* _ASM_MICROBLAZE_LMB_H */
++	if (cnt == 0 || cnt == dist)
++		iowrite32(1, CONFIG_HEART_BEAT_ADDRESS);
++	else if (cnt == 7 || cnt == dist + 7)
++		iowrite32(0, CONFIG_HEART_BEAT_ADDRESS);
 +
-+
++	if (++cnt > period) {
++		cnt = 0;
++		/*
++		 * The hyperbolic function below modifies the heartbeat period
++		 * length in dependency of the current (5min) load. It goes
++		 * through the points f(0)=126, f(1)=86, f(5)=51, f(inf)->30.
++		 */
++		period = ((672 << FSHIFT) / (5 * avenrun[0] +
++					(7 << FSHIFT))) + 30;
++		dist = period / 4;
++	}
++}
 -- 
 1.5.4.GIT
 
