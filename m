@@ -1,58 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755944AbYGHBxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757942AbYGHBxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755944AbYGHBxU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 21:53:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755566AbYGHBwv
+	id S1757942AbYGHBxd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 21:53:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755716AbYGHBwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 7 Jul 2008 21:52:51 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:53276 "EHLO song.cn.fujitsu.com"
+Received: from cn.fujitsu.com ([222.73.24.84]:61253 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755461AbYGHBwu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755470AbYGHBwu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 7 Jul 2008 21:52:50 -0400
-Message-ID: <4872C80D.8060701@cn.fujitsu.com>
-Date: Tue, 08 Jul 2008 09:51:09 +0800
+Message-ID: <4872C811.8060608@cn.fujitsu.com>
+Date: Tue, 08 Jul 2008 09:51:13 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
 To: Andrew Morton <akpm@linux-foundation.org>
 CC: LKML <linux-kernel@vger.kernel.org>, "Serge E. Hallyn" <serue@us.ibm.com>,
        Paul Menage <menage@google.com>, Pavel Emelianov <xemul@openvz.org>
-Subject: [PATCH 2/3] devcgroup: fix permission check when adding entry to
- child cgroup
+Subject: [PATCH 3/3] devcgroup: code cleanup
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- # cat devices.list
- c 1:3 r
- # echo 'c 1:3 w' > sub/devices.allow
- # cat sub/devices.list
- c 1:3 w
-
-As illustrated, the parent group has no write permission to /dev/null,
-so it's child should not be allowed to add this write permission.
+- clean up set_majmin()
+- use simple_strtoul() to parse major/minor
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 Acked-by: Serge Hallyn <serue@us.ibm.com>
 ---
- security/device_cgroup.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ security/device_cgroup.c |   19 +++++--------------
+ 1 files changed, 5 insertions(+), 14 deletions(-)
 
 diff --git a/security/device_cgroup.c b/security/device_cgroup.c
-index 1e2e28a..ddd92ce 100644
+index ddd92ce..34a10bf 100644
 --- a/security/device_cgroup.c
 +++ b/security/device_cgroup.c
-@@ -300,7 +300,7 @@ static int may_access_whitelist(struct dev_cgroup *c,
- 			continue;
- 		if (whitem->minor != ~0 && whitem->minor != refwh->minor)
- 			continue;
--		if (refwh->access & (~(whitem->access | ACC_MASK)))
-+		if (refwh->access & (~whitem->access))
- 			continue;
- 		return 1;
- 	}
+@@ -188,7 +188,7 @@ static struct cgroup_subsys_state *devcgroup_create(struct cgroup_subsys *ss,
+ 		}
+ 		wh->minor = wh->major = ~0;
+ 		wh->type = DEV_ALL;
+-		wh->access = ACC_MKNOD | ACC_READ | ACC_WRITE;
++		wh->access = ACC_MASK;
+ 		list_add(&wh->list, &dev_cgroup->whitelist);
+ 	} else {
+ 		parent_dev_cgroup = cgroup_to_devcgroup(parent_cgroup);
+@@ -250,11 +250,10 @@ static char type_to_char(short type)
+ 
+ static void set_majmin(char *str, unsigned m)
+ {
+-	memset(str, 0, MAJMINLEN);
+ 	if (m == ~0)
+-		sprintf(str, "*");
++		strcpy(str, "*");
+ 	else
+-		snprintf(str, MAJMINLEN, "%u", m);
++		sprintf(str, "%u", m);
+ }
+ 
+ static int devcgroup_seq_read(struct cgroup *cgroup, struct cftype *cft,
+@@ -405,11 +404,7 @@ static ssize_t devcgroup_access_write(struct cgroup *cgroup, struct cftype *cft,
+ 		wh.major = ~0;
+ 		b++;
+ 	} else if (isdigit(*b)) {
+-		wh.major = 0;
+-		while (isdigit(*b)) {
+-			wh.major = wh.major*10+(*b-'0');
+-			b++;
+-		}
++		wh.major = simple_strtoul(b, &b, 0);
+ 	} else {
+ 		retval = -EINVAL;
+ 		goto out2;
+@@ -425,11 +420,7 @@ static ssize_t devcgroup_access_write(struct cgroup *cgroup, struct cftype *cft,
+ 		wh.minor = ~0;
+ 		b++;
+ 	} else if (isdigit(*b)) {
+-		wh.minor = 0;
+-		while (isdigit(*b)) {
+-			wh.minor = wh.minor*10+(*b-'0');
+-			b++;
+-		}
++		wh.minor = simple_strtoul(b, &b, 0);
+ 	} else {
+ 		retval = -EINVAL;
+ 		goto out2;
 -- 
 1.5.4.rc3
-
