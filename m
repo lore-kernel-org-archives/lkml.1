@@ -1,70 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751453AbYGHHe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755560AbYGHHhe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751453AbYGHHe7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 03:34:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbYGHHew
+	id S1755560AbYGHHhe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 03:37:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbYGHHh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 03:34:52 -0400
-Received: from shards.monkeyblade.net ([198.137.202.13]:42499 "EHLO
-	shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751913AbYGHHev (ORCPT
+	Tue, 8 Jul 2008 03:37:26 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:39450 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751900AbYGHHhZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 03:34:51 -0400
-Subject: Re: git pull through http / git
-From: "J.H." <warthog19@eaglescrag.net>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: Jan Engelhardt <jengelh@medozas.de>, webmaster@kernel.org,
-       Linux Kernel list <linux-kernel@vger.kernel.org>, hpa@kernel.org
-In-Reply-To: <487315A3.40302@atmel.com>
-References: <48724130.5050501@atmel.com>
-	 <alpine.LNX.1.10.0807071840470.8248@fbirervta.pbzchgretzou.qr>
-	 <487315A3.40302@atmel.com>
-Content-Type: text/plain
-Date: Tue, 08 Jul 2008 00:34:32 -0700
-Message-Id: <1215502472.1998.25.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-2.1.12 (shards.monkeyblade.net [198.137.202.13]); Tue, 08 Jul 2008 00:34:40 -0700 (PDT)
+	Tue, 8 Jul 2008 03:37:25 -0400
+Date: Tue, 8 Jul 2008 09:38:18 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: "Altobelli, David" <david.altobelli@hp.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "greg@kroah.com" <greg@kroah.com>
+Subject: Re: [PATCH][resubmit] HP iLO driver
+Message-ID: <20080708073818.GA14245@elf.ucw.cz>
+References: <20080623160052.GA7616@ldl.fc.hp.com> <20080627191458.GA10872@ucw.cz> <CF70AA892F109448AEA269483B3A983903BB8CE586@G1W1215.americas.hpqcorp.net> <20080707160658.GB1794@elf.ucw.cz> <CF70AA892F109448AEA269483B3A983903BB8CEA25@G1W1215.americas.hpqcorp.net> <20080708072152.GD1761@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080708072152.GD1761@elf.ucw.cz>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Keep in mind Kernel.org uses caching on gitweb and thus gitweb itself is
-not necessarily accurate / up to date.  git.kernel.org also round-robins
-across 4 machines which may be in various states of update, so your
-fundamentally looking at a number of different possible points that may
-be slightly out of sync with each other.
-
-- John 'Warthog9' Hawley
-Chief Kernel.org Admin & Original Author of the Gitweb Caching code
-
-On Tue, 2008-07-08 at 09:22 +0200, Nicolas Ferre wrote:
-> Jan Engelhardt :
-> > On Monday 2008-07-07 18:15, Nicolas Ferre wrote:
+On Tue 2008-07-08 09:21:52, Pavel Machek wrote:
+> On Mon 2008-07-07 17:37:18, Altobelli, David wrote:
+> > Pavel Machek wrote:
+> > > Hi!
+> > >
+> > >>>> A driver for the HP iLO/iLO2 management processor, which allows
+> > >>>> userspace programs to query the management processor. Programs can
+> > >>>> open a channel to the device (/dev/hpilo/dXccbN), and use this to
+> > >>>> send/receive queries.
+> > >>>
+> > >>> What kind of queries? Is there documentation somewhere?
+> > >>
+> > >> Generally, it can get data out of the management processor - things
+> > >> like basic iLO configuration (users, nic, etc), handle SNMP traffic,
+> > >> flashing iLO, and some others.
+> > >>
+> > >> Unfortunately, there isn't yet any available documenation.
+> > >
+> > > Ok, I guess we should have documentation "what does it do" and "what
+> > > protocol does it speak" before we can think about merging.
 > > 
-> >> Hi,
-> >>
-> >> I see differences when I use git to a git.kernel.org between the one I fetch
-> >> using http protocol and the one shown through the gitweb interface.
-> >>
-> >> I cloned (or git remote add) the mmc tree and my config shows this url :
-> >> url = http://www.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git
-> >>
-> >> but I see updates in :
-> >> http://git.kernel.org/?p=linux/kernel/git/drzeus/mmc.git;a=summary
-> >> I cannot get.
-> > 
-> > I don't think many care about http downloading, just because it is 
-> > available as such.
-> > git:// and rsync:// are available though and should be usable even 
-> > without the http info that needs to be constantly refreshed when one 
-> > wants to use http....
+> > I really hope that isn't the case.
 > 
-> If only I had the choice...
+> Telling us "what does it do" seems like good start.
 > 
-> You certainly know why I am using http. This feature is very useful for 
-> me and I was wondering why it was out of sync with the web interface.
+> > However, I do think there is value in merging the driver without docs.
+> > Having drivers in tree is often stated as a goal, because of the obvious
+> > security and API/ABI disadvantages to out of tree drivers.
 > 
-> Regards,
+> You know, we'd prefer to have kernel<->user ABI documented. With this
+> driver... we don't.
+> 
+> What does /dev/hpilo/* do? Beep speakers? Control fans? Launch atomic
+> bombs? What will happen on cat /bin/bash > /dev/hpilo/dXccbN? Does
+> that depend on concrete machine? Is it acceptable for this
+> functionality not to be abstracted out? (Kernel should provide hw
+> abstraction, right?)
 
+It probably does configure passwords on the management processor, for
+example?
+
+And for that functionality, something like 
+
+echo new_password > /sys/hpilo/admin/password
+
+would make sense, right? Except that your interface is more like "echo
+^%TEWFSGFSDF^%EW&^Tadmin^*&S^F&*SDYF*&SDYF*&YE*Wnew_password(*&DF&S^DF*&DS^F*&S
+> /dev/hpilo/d0ccb0", right? (And except that you consider exact
+string to echo to change password "proprietary secret").
+
+We'd like to have the first interface, but unfortunately we do not
+know enough about hpilo to even ask for better interface.
+
+So we really need the docs here, and then I suspect we need better
+kernel<->user interface.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
