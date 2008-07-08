@@ -1,147 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757483AbYGHUkH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752145AbYGHUvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757483AbYGHUkH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 16:40:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754218AbYGHUj4
+	id S1752145AbYGHUvS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 16:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750822AbYGHUvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 16:39:56 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38329 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754074AbYGHUjz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 16:39:55 -0400
-Message-ID: <4873D019.4090504@redhat.com>
-Date: Tue, 08 Jul 2008 16:37:45 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 8 Jul 2008 16:51:10 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:40923 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750809AbYGHUvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 16:51:08 -0400
+Message-ID: <4873D33B.4040300@sgi.com>
+Date: Tue, 08 Jul 2008 13:51:07 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [RFC patch 01/12] Kernel Tracepoints
-References: <20080704235207.147809973@polymtl.ca> <20080704235423.789031024@polymtl.ca> <487243EC.1010704@redhat.com>
-In-Reply-To: <487243EC.1010704@redhat.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-2022-JP
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       mm-commits@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1] x86: Change _node_to_cpumask_ptr to return const
+ ptr
+References: <200806090918.m599Ib0G012837@imap1.linux-foundation.org>	 <4863C334.2090007@sgi.com> <486452CC.8050502@sgi.com>	 <48651EF5.5090808@sgi.com> <20080703084401.GB7873@elte.hu>	 <19f34abd0807030155x22b0033dj780830bad840216f@mail.gmail.com>	 <20080703090100.GA10872@elte.hu> <48739E87.2060604@sgi.com>	 <19f34abd0807081035k2c7a18eckc8aa749a6f015f65@mail.gmail.com>	 <4873AC5C.1040705@sgi.com> <19f34abd0807081122p20c73cd9p7129d297ac36a3ad@mail.gmail.com>
+In-Reply-To: <19f34abd0807081122p20c73cd9p7129d297ac36a3ad@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mathieu,
+Vegard Nossum wrote:
+> On Tue, Jul 8, 2008 at 8:05 PM, Mike Travis <travis@sgi.com> wrote:
+>>>> Note: I did not change node_to_cpumask_ptr() in include/asm-generic/topology.h
+>>>>      as node_to_cpumask_ptr_next() does change the cpumask value.
+>>> Hmmm. Does it really?
+>>>
+>>> #define node_to_cpumask_ptr_next(v, node)                               \
+>>>                           _##v = node_to_cpumask(node)
+>>>
+>>> This doesn't seem to modify it?
+>> Well I thought about it.  The pointer (*v) does not change
+>> but the underlying cpumask variable is updated with the
+>> cpumask for the (supposedly) new node number.  You can see
+>> that in this code snippet from kernel/sched.c:
+>>
+>>        for (i = 1; i < SD_NODES_PER_DOMAIN; i++) {
+>>                int next_node = find_next_best_node(node, &used_nodes);
+>>
+>>                node_to_cpumask_ptr_next(nodemask, next_node);
+>>                cpus_or(*span, *span, *nodemask);
+>>        }
+>>
+>> In the optimized (x86_64) case, the pointer is simply modified
+>> to point to the new node_to_cpumask_map[node] entry.  It remains
+>> a pointer to a const value.
+>>
+>> But the non-optimized version replaces the const cpumask value
+>> with the new cpumask value.  Isn't this breaking the const
+>> attribute?
+> 
+> No, I think the pointer really should be const. This doesn't guarantee
+> that the value doesn't change behind our backs, it only prevents us
+> from modifying it ourselves.
+> 
+> 
+> Vegard
+> 
 
-Masami Hiramatsu wrote:
-[...]
->> +int tracepoint_probe_register(const char *name, void *probe)
->> +{
->> +	struct tracepoint_entry *entry;
->> +	int ret = 0;
->> +	void *old;
->> +
->> +	mutex_lock(&tracepoints_mutex);
->> +	entry = get_tracepoint(name);
->> +	if (!entry) {
->> +		entry = add_tracepoint(name);
->> +		if (IS_ERR(entry)) {
->> +			ret = PTR_ERR(entry);
->> +			goto end;
->> +		}
->> +	}
->> +	/*
->> +	 * If we detect that a call_rcu is pending for this tracepoint,
->> +	 * make sure it's executed now.
->> +	 */
->> +	if (entry->rcu_pending)
->> +		rcu_barrier();
->> +	old = tracepoint_entry_add_probe(entry, probe);
->> +	if (IS_ERR(old)) {
->> +		ret = PTR_ERR(old);
->> +		goto end;
->> +	}
->> +	mutex_unlock(&tracepoints_mutex);
->> +	tracepoint_update_probes();		/* may update entry */
->> +	mutex_lock(&tracepoints_mutex);
->> +	entry = get_tracepoint(name);
->> +	WARN_ON(!entry);
+Is this what you had in mind:
 
-As I said in another patch, you might have to check
-old != NULL here, because tracepoint_entry_add_probe() will
-return NULL when you add a first probe to the entry.
+ 
+--- linux-2.6.tip.orig/include/asm-generic/topology.h
++++ linux-2.6.tip/include/asm-generic/topology.h
+@@ -60,7 +60,7 @@
+ #ifndef node_to_cpumask_ptr
+ 
+ #define	node_to_cpumask_ptr(v, node) 					\
+-		cpumask_t _##v = node_to_cpumask(node), *v = &_##v
++		const cpumask_t _##v = node_to_cpumask(node), *v = &_##v
+ 
+ #define node_to_cpumask_ptr_next(v, node)				\
+ 			  _##v = node_to_cpumask(node)
 
->> +	entry->oldptr = old;
->> +	entry->rcu_pending = 1;
->> +	/* write rcu_pending before calling the RCU callback */
->> +	smp_wmb();
->> +#ifdef CONFIG_PREEMPT_RCU
->> +	synchronize_sched();	/* Until we have the call_rcu_sched() */
->> +#endif
->> +	call_rcu(&entry->rcu, free_old_closure);
->> +end:
->> +	mutex_unlock(&tracepoints_mutex);
->> +	return ret;
->> +}
->> +EXPORT_SYMBOL_GPL(tracepoint_probe_register);
->> +
->> +/**
->> + * tracepoint_probe_unregister -  Disconnect a probe from a tracepoint
->> + * @name: tracepoint name
->> + * @probe: probe function pointer
->> + *
->> + * We do not need to call a synchronize_sched to make sure the probes have
->> + * finished running before doing a module unload, because the module unload
->> + * itself uses stop_machine(), which insures that every preempt disabled section
->> + * have finished.
->> + */
->> +int tracepoint_probe_unregister(const char *name, void *probe)
->> +{
->> +	struct tracepoint_entry *entry;
->> +	void *old;
->> +	int ret = -ENOENT;
->> +
->> +	mutex_lock(&tracepoints_mutex);
->> +	entry = get_tracepoint(name);
->> +	if (!entry)
->> +		goto end;
->> +	if (entry->rcu_pending)
->> +		rcu_barrier();
->> +	old = tracepoint_entry_remove_probe(entry, probe);
->> +	mutex_unlock(&tracepoints_mutex);
->> +	tracepoint_update_probes();		/* may update entry */
->> +	mutex_lock(&tracepoints_mutex);
->> +	entry = get_tracepoint(name);
->> +	if (!entry)
->> +		goto end;
->> +	entry->oldptr = old;
->> +	entry->rcu_pending = 1;
->> +	/* write rcu_pending before calling the RCU callback */
->> +	smp_wmb();
->> +#ifdef CONFIG_PREEMPT_RCU
->> +	synchronize_sched();	/* Until we have the call_rcu_sched() */
->> +#endif
->> +	call_rcu(&entry->rcu, free_old_closure);
->> +	remove_tracepoint(name);	/* Ignore busy error message */
->> +	ret = 0;
->> +end:
->> +	mutex_unlock(&tracepoints_mutex);
->> +	return ret;
->> +}
->> +EXPORT_SYMBOL_GPL(tracepoint_probe_unregister);
->> +
 
-On the other hand, tracepoint_entry_remove_probe() doesn't return NULL,
-however, I think it might be better to introduce tracepoint_entry_free_old()
-and simplify both of tracepoint_probe_register/unregister.
+(It's taking a while as now I need to do some cross-compile testing.)
 
-Thank you,
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Thanks,
+Mike
