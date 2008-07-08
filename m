@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755605AbYGHNoE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756407AbYGHNo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755605AbYGHNoE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 09:44:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbYGHNny
+	id S1756407AbYGHNo1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 09:44:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753489AbYGHNoR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 09:43:54 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:56003 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752992AbYGHNnw (ORCPT
+	Tue, 8 Jul 2008 09:44:17 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:42193 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752230AbYGHNoP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 09:43:52 -0400
+	Tue, 8 Jul 2008 09:44:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=F0BRUUMzCDeX8tRNmn49S5xY4HIz7AcUnRcroBQmePHsEgiBYCmTF/O+dm2ufQYwi4
-         wCA19z0eewz3ZNv9Fnms+UD/6E4SZnyhErSehfeVDnSSYtU+X9iJtd5nwwHtSp1y8cru
-         omZ0QRnauGQdOTd8PQ46ws/MbO6zrj/sEGfqc=
-Date: Tue, 8 Jul 2008 17:43:36 +0400
+        b=jOSSyQE4Z5sEnXw4hw9Hg35b4gRJAf0o7DEo1to8mTFiJeDCR8qyhf7vwPkoPiYPxQ
+         umJ6ciwyPgzJ2QfsESO/NlpSL8fexVhPGBzGkq7TrcGj9j1mItryGaEzOZXEu7otykcv
+         Q864VeVuPsNI8GcwETNbAptA/fAB4GmWSpY7M=
+Date: Tue, 8 Jul 2008 17:43:56 +0400
 From: Dmitry Baryshkov <dbaryshkov@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org,
@@ -27,8 +27,8 @@ Cc: akpm@linux-foundation.org,
        pHilipp Zabel <philipp.zabel@gmail.com>, Pavel Machek <pavel@ucw.cz>,
        tony@atomide.com, paul@pwsan.com, David Brownell <david-b@pacbell.net>,
        Mark Brown <broonie@opensource.wolfsonmicro.com>, ian <spyro@f2s.com>
-Subject: [PATCH 1/3] genclk: add generic framework for managing clocks.
-Message-ID: <20080708134336.GA6240@doriath.ww600.siemens.net>
+Subject: [PATCH 2/3] Refactor arm/pxa to use generic clocks support
+Message-ID: <20080708134356.GA6257@doriath.ww600.siemens.net>
 References: <20080708134242.GA6176@doriath.ww600.siemens.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -39,541 +39,872 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide a generic framework that platform may choose
-to support clocks api. In particular this provides
-platform-independant struct clk definition, a full
-implementation of clocks api and a set of functions
-for registering and unregistering clocks in a safe way.
-
-Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
 ---
- include/linux/generic_clk.h    |   72 +++++++++++
- init/Kconfig                   |    3 +
- kernel/Makefile                |    2 +
- kernel/genclk/Makefile         |    2 +
- kernel/genclk/genclk.c         |  264 ++++++++++++++++++++++++++++++++++++++++
- kernel/genclk/genclk.h         |   21 +++
- kernel/genclk/genclk_debugfs.c |   97 +++++++++++++++
- 7 files changed, 461 insertions(+), 0 deletions(-)
- create mode 100644 include/linux/generic_clk.h
- create mode 100644 kernel/genclk/Makefile
- create mode 100644 kernel/genclk/genclk.c
- create mode 100644 kernel/genclk/genclk.h
- create mode 100644 kernel/genclk/genclk_debugfs.c
+ arch/arm/Kconfig           |    1 +
+ arch/arm/mach-pxa/clock.c  |  163 ++++++++++++++++++--------------------------
+ arch/arm/mach-pxa/clock.h  |  120 ++++++++++++++++----------------
+ arch/arm/mach-pxa/pxa25x.c |   80 ++++++++++++---------
+ arch/arm/mach-pxa/pxa27x.c |   80 +++++++++++++--------
+ arch/arm/mach-pxa/pxa300.c |   10 ++-
+ arch/arm/mach-pxa/pxa320.c |    4 +-
+ arch/arm/mach-pxa/pxa3xx.c |  113 ++++++++++++++++++++----------
+ 8 files changed, 305 insertions(+), 266 deletions(-)
 
-diff --git a/include/linux/generic_clk.h b/include/linux/generic_clk.h
-new file mode 100644
-index 0000000..c211966
---- /dev/null
-+++ b/include/linux/generic_clk.h
-@@ -0,0 +1,72 @@
-+/*
-+ * Copyright (C) 2008 Dmitry Baryshkov
-+ *
-+ * This file is released under the GPL v2.
-+ */
-+
-+#ifndef GENERIC_CLK_H
-+#define GENERIC_CLK_H
-+
-+#include <linux/spinlock.h>
-+#include <linux/kref.h>
-+
-+struct clk;
-+struct device;
-+
-+/**
-+ * struct clk_ops - generic clock management operations
-+ * @can_get: checks whether passed device can get this clock
-+ * @set_parent: reconfigures the clock to use specified parent
-+ * @set_mode: enable or disable specified clock
-+ * @get_rate: obtain the current clock rate of a specified clock
-+ * @set_rate: set the clock rate for a specified clock
-+ * @round_rate: adjust a reate to the exact rate a clock can provide
-+ *
-+ * This structure specifies clock operations that are used to configure
-+ * specific clock.
-+ */
-+struct clk_ops {
-+	int (*can_get)(struct clk *clk, struct device *dev);
-+	int (*set_parent)(struct clk *clk, struct clk *parent);
-+	int (*enable)(struct clk *clk);
-+	void (*disable)(struct clk *clk);
-+	unsigned long (*get_rate)(struct clk *clk);
-+	long (*round_rate)(struct clk *clk, unsigned long hz, bool apply);
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index ba5d8df..bf0dd41 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -431,6 +431,7 @@ config ARCH_PXA
+ 	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select TICK_ONESHOT
++	select HAVE_GENERIC_CLOCKS
+ 	help
+ 	  Support for Intel/Marvell's PXA2xx/PXA3xx processor line.
+ 
+diff --git a/arch/arm/mach-pxa/clock.c b/arch/arm/mach-pxa/clock.c
+index b2e847a..9831c58 100644
+--- a/arch/arm/mach-pxa/clock.c
++++ b/arch/arm/mach-pxa/clock.c
+@@ -3,155 +3,124 @@
+  */
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+-#include <linux/list.h>
+-#include <linux/errno.h>
+-#include <linux/err.h>
+-#include <linux/string.h>
+ #include <linux/clk.h>
+-#include <linux/spinlock.h>
+-#include <linux/platform_device.h>
++#include <linux/generic_clk.h>
+ #include <linux/delay.h>
+ 
+ #include <asm/arch/pxa2xx-regs.h>
+ #include <asm/arch/pxa2xx-gpio.h>
+ #include <asm/hardware.h>
+ 
+-#include "devices.h"
+-#include "generic.h"
++//#include "devices.h"
++//#include "generic.h"
+ #include "clock.h"
+ 
+-static LIST_HEAD(clocks);
+-static DEFINE_MUTEX(clocks_mutex);
+-static DEFINE_SPINLOCK(clocks_lock);
+-
+-static struct clk *clk_lookup(struct device *dev, const char *id)
++static int clk_gpio11_enable(struct clk *clk)
+ {
+-	struct clk *p;
+-
+-	list_for_each_entry(p, &clocks, node)
+-		if (strcmp(id, p->name) == 0 && p->dev == dev)
+-			return p;
+-
+-	return NULL;
++	pxa_gpio_mode(GPIO11_3_6MHz_MD);
++	return 0;
+ }
+ 
+-struct clk *clk_get(struct device *dev, const char *id)
++static void clk_gpio11_disable(struct clk *clk)
+ {
+-	struct clk *p, *clk = ERR_PTR(-ENOENT);
+-
+-	mutex_lock(&clocks_mutex);
+-	p = clk_lookup(dev, id);
+-	if (!p)
+-		p = clk_lookup(NULL, id);
+-	if (p)
+-		clk = p;
+-	mutex_unlock(&clocks_mutex);
+-
+-	if (clk && clk->ops == NULL)
+-		clk = clk->other;
+-
+-	return clk;
++	/* do nothing */
+ }
+-EXPORT_SYMBOL(clk_get);
+ 
+-void clk_put(struct clk *clk)
++static unsigned long clk_gpio11_get_rate(struct clk *clk)
+ {
++	return 3686400;
+ }
+-EXPORT_SYMBOL(clk_put);
+ 
+-int clk_enable(struct clk *clk)
++static struct clk_ops clk_gpio11_ops = {
++	.enable =	clk_gpio11_enable,
++	.disable =	clk_gpio11_disable,
++	.get_rate =	clk_gpio11_get_rate,
 +};
 +
-+/*
-+ * This is a part of struct clk that is used by generic_clk core.
-+ * Don't ever touch it.
-+ */
-+struct clk_priv {
-+	struct list_head node;
-+#ifdef CONFIG_DEBUG_SPINLOCK
-+	struct lock_class_key lock_key;
-+#endif
-+	spinlock_t lock;
-+	struct kref ref;
-+	int usage;
-+#ifdef CONFIG_DEBUG_FS
-+	struct dentry *info;
-+#endif
++static struct clk clk_gpio11 = {
++	.name = "GPIO27_CLK",
++	.ops = &clk_gpio11_ops,
++	.release = clk_static_release,
 +};
 +
-+struct clk {
-+	const char *name;
-+	struct clk *parent;
-+	struct clk_ops *ops;
-+	void (*release)(struct clk *clk);
++int clk_cken_enable(struct clk *clk)
+ {
+-	unsigned long flags;
++	struct clk_cken *priv = container_of(clk, struct clk_cken, clk);
+ 
+-	spin_lock_irqsave(&clocks_lock, flags);
+-	if (clk->enabled++ == 0)
+-		clk->ops->enable(clk);
+-	spin_unlock_irqrestore(&clocks_lock, flags);
++	CKEN |= 1 << priv->cken;
+ 
+-	if (clk->delay)
+-		udelay(clk->delay);
++	if (priv->delay)
++		udelay(priv->delay);
+ 
+ 	return 0;
+ }
+-EXPORT_SYMBOL(clk_enable);
+ 
+-void clk_disable(struct clk *clk)
++void clk_cken_disable(struct clk *clk)
+ {
+-	unsigned long flags;
+-
+-	WARN_ON(clk->enabled == 0);
++	struct clk_cken *priv = container_of(clk, struct clk_cken, clk);
+ 
+-	spin_lock_irqsave(&clocks_lock, flags);
+-	if (--clk->enabled == 0)
+-		clk->ops->disable(clk);
+-	spin_unlock_irqrestore(&clocks_lock, flags);
++	CKEN &= ~(1 << priv->cken);
+ }
+-EXPORT_SYMBOL(clk_disable);
+ 
+-unsigned long clk_get_rate(struct clk *clk)
++unsigned long clk_cken_get_rate(struct clk *clk)
+ {
+-	unsigned long rate;
++	struct clk_cken *priv = container_of(clk, struct clk_cken, clk);
+ 
+-	rate = clk->rate;
+-	if (clk->ops->getrate)
+-		rate = clk->ops->getrate(clk);
++	return priv->rate;
+ 
+-	return rate;
+ }
+-EXPORT_SYMBOL(clk_get_rate);
+ 
++struct clk_ops clk_cken_ops = {
++	.enable		= clk_cken_enable,
++	.disable	= clk_cken_disable,
++	.get_rate	= clk_cken_get_rate,
++};
+ 
+-static void clk_gpio27_enable(struct clk *clk)
++static inline int clk_enable_parent(struct clk *clk)
+ {
+-	pxa_gpio_mode(GPIO11_3_6MHz_MD);
++	BUG_ON(!clk->parent);
++	return clk_enable(clk->parent);
+ }
+ 
+-static void clk_gpio27_disable(struct clk *clk)
++static inline void clk_disable_parent(struct clk *clk)
+ {
++	BUG_ON(!clk->parent);
++	clk_disable(clk->parent);
+ }
+ 
+-static const struct clkops clk_gpio27_ops = {
+-	.enable		= clk_gpio27_enable,
+-	.disable	= clk_gpio27_disable,
+-};
+-
+-
+-void clk_cken_enable(struct clk *clk)
++static inline unsigned long clk_get_rate_parent(struct clk *clk)
+ {
+-	CKEN |= 1 << clk->cken;
++	BUG_ON(!clk->parent);
++	return clk_get_rate(clk->parent);
+ }
+ 
+-void clk_cken_disable(struct clk *clk)
++static inline long clk_round_rate_parent(struct clk *clk, unsigned long hz, bool apply)
+ {
+-	CKEN &= ~(1 << clk->cken);
++	BUG_ON(!clk->parent);
++	return apply ? clk_set_rate(clk->parent, hz) :
++		clk_round_rate(clk->parent, hz);
+ }
+ 
+-const struct clkops clk_cken_ops = {
+-	.enable		= clk_cken_enable,
+-	.disable	= clk_cken_disable,
+-};
+-
+-static struct clk common_clks[] = {
+-	{
+-		.name		= "GPIO27_CLK",
+-		.ops		= &clk_gpio27_ops,
+-		.rate		= 3686400,
+-	},
+-};
+-
+-void clks_register(struct clk *clks, size_t num)
++static inline int clk_devck_can_get(struct clk *clk, struct device *dev)
+ {
+-	int i;
++	struct clk_devck *dc = container_of(clk, struct clk_devck, clk);
+ 
+-	mutex_lock(&clocks_mutex);
+-	for (i = 0; i < num; i++)
+-		list_add(&clks[i].node, &clocks);
+-	mutex_unlock(&clocks_mutex);
++	if (dc->dev == NULL)
++		return 1;
 +
-+#ifdef CONFIG_DEBUG_FS
-+	struct dentry *dir;
-+#endif
-+
-+	struct clk_priv priv;
++	return dc->dev == dev;
+ }
+ 
++struct clk_ops clk_devck_ops = {
++	.can_get = clk_devck_can_get,
++	.enable = clk_enable_parent,
++	.disable = clk_disable_parent,
++	.get_rate = clk_get_rate_parent,
++	.round_rate = clk_round_rate_parent,
 +};
 +
-+int clk_register(struct clk *clk);
-+void clk_unregister(struct clk *clk);
-+int clks_register(struct clk **clk, size_t num);
-+void clks_unregister(struct clk **clk, size_t num);
-+
-+#endif
-diff --git a/init/Kconfig b/init/Kconfig
-index 6199d11..2b016ce 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -800,6 +800,9 @@ config PROC_PAGE_MONITOR
- 	  /proc/kpagecount, and /proc/kpageflags. Disabling these
-           interfaces will reduce the size of the kernel by approximately 4kb.
- 
-+config HAVE_GENERIC_CLOCKS
-+	bool
-+
- endmenu		# General setup
- 
- config SLABINFO
-diff --git a/kernel/Makefile b/kernel/Makefile
-index 1c9938a..3d9aa05 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -70,6 +70,8 @@ obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
- obj-$(CONFIG_MARKERS) += marker.o
- obj-$(CONFIG_LATENCYTOP) += latencytop.o
- 
-+obj-$(CONFIG_HAVE_GENERIC_CLOCKS) += genclk/
-+
- ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
- # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
- # needed for x86 only.  Why this used to be enabled for all architectures is beyond
-diff --git a/kernel/genclk/Makefile b/kernel/genclk/Makefile
-new file mode 100644
-index 0000000..39df420
---- /dev/null
-+++ b/kernel/genclk/Makefile
-@@ -0,0 +1,2 @@
-+obj-y := genclk.o
-+obj-$(CONFIG_DEBUG_FS) += genclk_debugfs.o
-diff --git a/kernel/genclk/genclk.c b/kernel/genclk/genclk.c
-new file mode 100644
-index 0000000..c76ab49
---- /dev/null
-+++ b/kernel/genclk/genclk.c
-@@ -0,0 +1,264 @@
-+/*
-+ * Generic clocks API implementation
-+ *
-+ * Copyright (c) 2008 Dmitry Baryshkov
-+ *
-+ * This file is released under the GPL v2.
-+ */
-+#include <linux/kernel.h>
-+#include <linux/module.h>
+ static int __init clk_init(void)
+ {
+-	clks_register(common_clks, ARRAY_SIZE(common_clks));
+-	return 0;
++	return clk_register(&clk_gpio11);
+ }
+ arch_initcall(clk_init);
+diff --git a/arch/arm/mach-pxa/clock.h b/arch/arm/mach-pxa/clock.h
+index 7bd1bbb..7637903 100644
+--- a/arch/arm/mach-pxa/clock.h
++++ b/arch/arm/mach-pxa/clock.h
+@@ -1,79 +1,79 @@
+-struct clk;
 +#include <linux/clk.h>
 +#include <linux/generic_clk.h>
-+#include <linux/spinlock.h>
+ 
+-struct clkops {
+-	void			(*enable)(struct clk *);
+-	void			(*disable)(struct clk *);
+-	unsigned long		(*getrate)(struct clk *);
++struct clk_devck {
++	struct clk		clk;
++	struct device		*dev;
+ };
+ 
+-struct clk {
+-	struct list_head	node;
+-	const char		*name;
+-	struct device		*dev;
+-	const struct clkops	*ops;
++extern struct clk_ops clk_devck_ops;
 +
-+#include "genclk.h"
-+
-+LIST_HEAD(clocks);
-+DEFINE_SPINLOCK(clocks_lock);
-+
-+static int clk_can_get_def(struct clk *clk, struct device *dev)
++struct clk_cken {
++	struct clk		clk;
+ 	unsigned long		rate;
+ 	unsigned int		cken;
+ 	unsigned int		delay;
+-	unsigned int		enabled;
+-	struct clk		*other;
+ };
+ 
+-#define INIT_CKEN(_name, _cken, _rate, _delay, _dev)	\
+-	{						\
+-		.name	= _name,			\
+-		.dev	= _dev,				\
+-		.ops	= &clk_cken_ops,		\
+-		.rate	= _rate,			\
+-		.cken	= CKEN_##_cken,			\
+-		.delay	= _delay,			\
+-	}
++int clk_cken_enable(struct clk *clk);
++void clk_cken_disable(struct clk *clk);
++unsigned long clk_cken_get_rate(struct clk *clk);
+ 
+-#define INIT_CK(_name, _cken, _ops, _dev)		\
+-	{						\
+-		.name	= _name,			\
+-		.dev	= _dev,				\
+-		.ops	= _ops,				\
+-		.cken	= CKEN_##_cken,			\
+-	}
++extern struct clk_ops clk_cken_ops;
+ 
+-/*
+- * This is a placeholder to alias one clock device+name pair
+- * to another struct clk.
+- */
+-#define INIT_CKOTHER(_name, _other, _dev)		\
+-	{						\
+-		.name	= _name,			\
+-		.dev	= _dev,				\
+-		.other	= _other,			\
+-	}
++static inline void clk_static_release(struct clk *clk)
 +{
-+	return 1;
++	printk(KERN_ERR "Can't release static clock: %s!!!\n", clk->name);
++	BUG();
 +}
-+
-+static unsigned long clk_get_rate_def(struct clk *clk)
-+{
-+	return 0;
-+}
-+
-+static long clk_round_rate_def(struct clk *clk, unsigned long hz, bool apply)
-+{
-+	long rate = clk->ops->get_rate(clk);
-+
-+	if (apply && hz != rate)
-+		return -EINVAL;
-+
-+	return rate;
-+}
-+
-+static void clk_release(struct kref *ref)
-+{
-+	struct clk *clk = container_of(ref, struct clk, priv.ref);
-+
-+	BUG_ON(!clk->release);
-+
-+	if (clk->parent)
-+		kref_get(&clk->parent->priv.ref);
-+
-+	clk->release(clk);
-+}
-+EXPORT_SYMBOL(clk_round_rate);
-+
-+struct clk* clk_get_parent(struct clk *clk)
-+{
-+	struct clk *parent;
-+
-+	spin_lock(&clk->priv.lock);
-+
-+	parent = clk->parent;
-+	kref_get(&parent->priv.ref);
-+
-+	spin_unlock(&clk->priv.lock);
-+
-+	return parent;
-+}
-+EXPORT_SYMBOL(clk_get_parent);
-+
-+int clk_set_parent(struct clk *clk, struct clk *parent)
-+{
-+	int rc = -EINVAL;
-+	struct clk *old;
-+
-+	spin_lock(&clk->priv.lock);
-+
-+	if (!clk->ops->set_parent)
-+		goto out;
-+
-+	old = clk->parent;
-+
-+	rc = clk->ops->set_parent(clk, parent);
-+	if (rc)
-+		goto out;
-+
-+	kref_get(&parent->priv.ref);
-+	clk->parent = parent;
-+
-+	clk_debugfs_reparent(clk, old, parent);
-+
-+	kref_put(&old->priv.ref, clk_release);
-+
-+out:
-+	spin_unlock(&clk->priv.lock);
-+
-+	return rc;
-+}
-+EXPORT_SYMBOL(clk_set_parent);
-+
-+int clk_register(struct clk *clk)
-+{
-+	int rc;
-+
-+	BUG_ON(!clk->ops);
-+	BUG_ON(!clk->ops->enable || !clk->ops->disable);
-+
-+	if (!clk->ops->can_get)
-+		clk->ops->can_get = clk_can_get_def;
-+	if (!clk->ops->get_rate)
-+		clk->ops->get_rate = clk_get_rate_def;
-+	if (!clk->ops->round_rate)
-+		clk->ops->round_rate = clk_round_rate_def;
-+
-+	kref_init(&clk->priv.ref);
-+#ifdef CONFIG_DEBUG_SPINLOCK
-+	__spin_lock_init(&clk->priv.lock, "&clk->priv.lock", &clk->priv.lock_key);
-+#else
-+	spin_lock_init(&clk->priv.lock);
-+#endif
-+
-+	spin_lock(&clocks_lock);
-+	if (clk->parent)
-+		kref_get(&clk->parent->priv.ref);
-+	list_add_tail(&clk->priv.node, &clocks);
-+
-+	rc = clk_debugfs_init(clk);
-+	if (rc) {
-+		list_del(&clk->priv.node);
-+		kref_put(&clk->priv.ref, clk_release);
-+	}
-+
-+	spin_unlock(&clocks_lock);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(clk_register);
-+
-+void clk_unregister(struct clk *clk)
-+{
-+	spin_lock(&clocks_lock);
-+	clk_debugfs_clean(clk);
-+	list_del(&clk->priv.node);
-+	kref_put(&clk->priv.ref, clk_release);
-+	spin_unlock(&clocks_lock);
-+}
-+EXPORT_SYMBOL(clk_unregister);
-+
-+int clks_register(struct clk **clk, size_t num)
-+{
-+	int i;
-+	int rc;
-+	for (i = 0; i < num; i++) {
-+		rc = clk_register(clk[i]);
-+		if (rc)
-+			return rc;
-+	}
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(clks_register);
-+
-+void clks_unregister(struct clk **clk, size_t num)
-+{
-+	int i;
-+	for (i = 0; i < num; i++)
-+		clk_unregister(clk[i]);
-+}
-+EXPORT_SYMBOL(clks_unregister);
-+
-+struct clk *clk_get(struct device *dev, const char *id)
-+{
-+	struct clk *clk = NULL, *p;
-+
-+	spin_lock(&clocks_lock);
-+	list_for_each_entry(p, &clocks, priv.node)
-+		if (strcmp(id, p->name) == 0 && p->ops->can_get(p, dev)) {
-+			clk = p;
-+			kref_get(&clk->priv.ref);
-+			break;
-+		}
-+
-+	spin_unlock(&clocks_lock);
-+
-+	return clk;
-+}
-+EXPORT_SYMBOL(clk_get);
-+
-+void clk_put(struct clk *clk)
-+{
-+	kref_put(&clk->priv.ref, clk_release);
-+}
-+EXPORT_SYMBOL(clk_put);
-+
-+int clk_enable(struct clk *clk)
-+{
-+	int rc = 0;
-+
-+	spin_lock(&clk->priv.lock);
-+
-+	clk->priv.usage++;
-+	if (clk->priv.usage == 1)
-+		rc = clk->ops->enable(clk);
-+
-+	if (rc)
-+		clk->priv.usage--;
-+
-+	spin_unlock(&clk->priv.lock);
-+
-+	return rc;
-+}
-+EXPORT_SYMBOL(clk_enable);
-+
-+void clk_disable(struct clk *clk)
-+{
-+	spin_lock(&clk->priv.lock);
-+
-+	WARN_ON(clk->priv.usage <= 0);
-+
-+	clk->priv.usage--;
-+	if (clk->priv.usage == 0)
-+		clk->ops->disable(clk);
-+
-+	spin_unlock(&clk->priv.lock);
-+}
-+EXPORT_SYMBOL(clk_disable);
-+
-+unsigned long clk_get_rate(struct clk *clk)
-+{
-+	unsigned long hz;
-+
-+	spin_lock(&clk->priv.lock);
-+
-+	hz = clk->ops->get_rate(clk);
-+
-+	spin_unlock(&clk->priv.lock);
-+
-+	return hz;
-+}
-+EXPORT_SYMBOL(clk_get_rate);
-+
-+int clk_set_rate(struct clk *clk, unsigned long hz)
-+{
-+	long rc;
-+
-+	spin_lock(&clk->priv.lock);
-+
-+	rc = clk->ops->round_rate(clk, hz, 1);
-+
-+	spin_unlock(&clk->priv.lock);
-+
-+	return rc < 0 ? rc : 0;
-+}
-+EXPORT_SYMBOL(clk_set_rate);
-+
-+long clk_round_rate(struct clk *clk, unsigned long hz)
-+{
-+	long rc;
-+
-+	spin_lock(&clk->priv.lock);
-+
-+	rc = clk->ops->round_rate(clk, hz, 0);
-+
-+	spin_unlock(&clk->priv.lock);
-+
-+	return rc;
-+}
-+
-diff --git a/kernel/genclk/genclk.h b/kernel/genclk/genclk.h
-new file mode 100644
-index 0000000..5b8d12c
---- /dev/null
-+++ b/kernel/genclk/genclk.h
-@@ -0,0 +1,21 @@
-+#ifndef GENCLK_H
-+#define GENCLK_H
-+
-+#include <linux/list.h>
-+#include <linux/spinlock.h>
-+
-+extern struct list_head clocks;
-+extern spinlock_t clocks_lock;
-+
-+#ifdef CONFIG_DEBUG_FS
-+int clk_debugfs_init(struct clk *clk);
-+void clk_debugfs_clean(struct clk *clk);
-+void clk_debugfs_reparent(struct clk *clk, struct clk *old, struct clk *new);
-+#else
-+#define clk_debugfs_init(clk) ({0;})
-+#define clk_debugfs_clean(clk) do {} while (0);
-+#define clk_debugfs_reparent(clk, old, new) do {} while (0);
-+#endif
-+
-+
-+#endif
-diff --git a/kernel/genclk/genclk_debugfs.c b/kernel/genclk/genclk_debugfs.c
-new file mode 100644
-index 0000000..b8acd38
---- /dev/null
-+++ b/kernel/genclk/genclk_debugfs.c
-@@ -0,0 +1,97 @@
-+/*
-+ * Generic clocks API implementation
-+ *
-+ * Copyright (c) 2008 Dmitry Baryshkov
-+ *
-+ * This file is released under the GPL v2.
-+ */
-+#include <linux/debugfs.h>
-+#include <linux/seq_file.h>
-+#include <linux/clk.h>
-+#include <linux/generic_clk.h>
-+
-+#include "genclk.h"
-+
-+static struct dentry *clkdir;
-+
-+static int genclk_show(struct seq_file *s, void *data)
-+{
-+	struct clk *clk = s->private;
-+
-+	BUG_ON(!clk);
-+
-+	seq_printf(s, "set_parent=%savailable\nusage=%d/%d\nrate=%10lu Hz\n",
-+			clk->ops && clk->ops->set_parent ? "" : "not ",
-+			clk->priv.usage, atomic_read(&clk->priv.ref.refcount),
-+			clk_get_rate(clk));
-+
-+	return 0;
-+}
-+
-+static int genclk_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, genclk_show, inode->i_private);
-+}
-+
-+static struct file_operations genclk_operations = {
-+	.open		= genclk_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
+ 
+-extern const struct clkops clk_cken_ops;
++#define INIT_CKEN(_name, _cken, _rate, _delay)		\
++	&(struct clk_cken) {				\
++		.clk.name	= _name,		\
++		.clk.ops	= &clk_cken_ops,	\
++		.clk.release	= clk_static_release,	\
++		.cken		= CKEN_##_cken,		\
++		.rate		= _rate,		\
++		.delay		= _delay,		\
++	} .clk
+ 
+-void clk_cken_enable(struct clk *clk);
+-void clk_cken_disable(struct clk *clk);
++#define INIT_CK(_name, _cken, _ops)			\
++	&(struct clk_cken) {				\
++		.clk.name	= _name,		\
++		.clk.ops	= _ops,			\
++		.clk.release	= clk_static_release,	\
++		.cken		= CKEN_##_cken,		\
++	} .clk
++
++#define INIT_DEVCK(_name, _dev)		\
++	&(struct clk_devck) {				\
++		.clk.name	= _name,		\
++		.clk.ops	= &clk_devck_ops,	\
++		.clk.release	= clk_static_release,	\
++		.dev		= _dev,			\
++	} .clk
+ 
+ #ifdef CONFIG_PXA3xx
+-#define PXA3xx_CKEN(_name, _cken, _rate, _delay, _dev)	\
+-	{						\
+-		.name	= _name,			\
+-		.dev	= _dev,				\
+-		.ops	= &clk_pxa3xx_cken_ops,		\
+-		.rate	= _rate,			\
+-		.cken	= CKEN_##_cken,			\
+-		.delay	= _delay,			\
+-	}
++#define PXA3xx_CKEN(_name, _cken, _rate, _delay)	\
++	&(struct clk_cken) {				\
++		.clk.name	= _name,		\
++		.clk.ops	= &clk_pxa3xx_cken_ops,	\
++		.clk.release	= clk_static_release,	\
++		.cken		= CKEN_##_cken,		\
++		.rate		= _rate,		\
++		.delay		= _delay,		\
++	}.clk
+ 
+-#define PXA3xx_CK(_name, _cken, _ops, _dev)		\
+-	{						\
+-		.name	= _name,			\
+-		.dev	= _dev,				\
+-		.ops	= _ops,				\
+-		.cken	= CKEN_##_cken,			\
+-	}
++#define PXA3xx_CK(_name, _cken, _ops)			\
++	&(struct clk_cken) {				\
++		.clk.name	= _name,		\
++		.clk.ops	= _ops,			\
++		.clk.release	= clk_static_release,	\
++		.cken		= CKEN_##_cken,		\
++	}.clk
+ 
+-extern const struct clkops clk_pxa3xx_cken_ops;
+-extern void clk_pxa3xx_cken_enable(struct clk *);
++extern struct clk_ops clk_pxa3xx_cken_ops;
++extern int clk_pxa3xx_cken_enable(struct clk *);
+ extern void clk_pxa3xx_cken_disable(struct clk *);
+ #endif
+ 
+-void clks_register(struct clk *clks, size_t num);
+diff --git a/arch/arm/mach-pxa/pxa25x.c b/arch/arm/mach-pxa/pxa25x.c
+index 4cd50e3..da32264 100644
+--- a/arch/arm/mach-pxa/pxa25x.c
++++ b/arch/arm/mach-pxa/pxa25x.c
+@@ -103,10 +103,10 @@ static unsigned long clk_pxa25x_lcd_getrate(struct clk *clk)
+ 	return pxa25x_get_memclk_frequency_10khz() * 10000;
+ }
+ 
+-static const struct clkops clk_pxa25x_lcd_ops = {
++static struct clk_ops clk_pxa25x_lcd_ops = {
+ 	.enable		= clk_cken_enable,
+ 	.disable	= clk_cken_disable,
+-	.getrate	= clk_pxa25x_lcd_getrate,
++	.get_rate	= clk_pxa25x_lcd_getrate,
+ };
+ 
+ /*
+@@ -114,39 +114,47 @@ static const struct clkops clk_pxa25x_lcd_ops = {
+  * 95.842MHz -> MMC 19.169MHz, I2C 31.949MHz, FICP 47.923MHz, USB 47.923MHz
+  * 147.456MHz -> UART 14.7456MHz, AC97 12.288MHz, I2S 5.672MHz (allegedly)
+  */
+-static struct clk pxa25x_hwuart_clk =
+-	INIT_CKEN("UARTCLK", HWUART, 14745600, 1, &pxa_device_hwuart.dev)
+-;
++static struct clk *pxa25x_hwuart_clk[] = {
++	INIT_CKEN("HWUARTCLK", HWUART, 14745600, 1),
++	INIT_DEVCK("UARTCLK", &pxa_device_hwuart.dev),
++};
+ 
+-/*
+- * PXA 2xx clock declarations. Order is important (see aliases below)
+- * Please be careful not to disrupt the ordering.
+- */
+-static struct clk pxa25x_clks[] = {
+-	INIT_CK("LCDCLK", LCD, &clk_pxa25x_lcd_ops, &pxa_device_fb.dev),
+-	INIT_CKEN("UARTCLK", FFUART, 14745600, 1, &pxa_device_ffuart.dev),
+-	INIT_CKEN("UARTCLK", BTUART, 14745600, 1, &pxa_device_btuart.dev),
+-	INIT_CKEN("UARTCLK", STUART, 14745600, 1, NULL),
+-	INIT_CKEN("UDCCLK", USB, 47923000, 5, &pxa25x_device_udc.dev),
+-	INIT_CKEN("MMCCLK", MMC, 19169000, 0, &pxa_device_mci.dev),
+-	INIT_CKEN("I2CCLK", I2C, 31949000, 0, &pxa_device_i2c.dev),
+-
+-	INIT_CKEN("SSPCLK",  SSP, 3686400, 0, &pxa25x_device_ssp.dev),
+-	INIT_CKEN("SSPCLK", NSSP, 3686400, 0, &pxa25x_device_nssp.dev),
+-	INIT_CKEN("SSPCLK", ASSP, 3686400, 0, &pxa25x_device_assp.dev),
+-	INIT_CKEN("PWMCLK", PWM0, 3686400, 0, &pxa25x_device_pwm0.dev),
+-	INIT_CKEN("PWMCLK", PWM1, 3686400, 0, &pxa25x_device_pwm1.dev),
+-
+-	INIT_CKEN("AC97CLK",     AC97,     24576000, 0, NULL),
++	// FIXME: add GPIO7_CK eq. to USBCLK
++static struct clk *pxa25x_clks[] = {
++	INIT_CKEN("FFUARTCLK", FFUART, 14745600, 1),
++	INIT_DEVCK("UARTCLK", &pxa_device_ffuart.dev),
++	INIT_CKEN("BTUARTCLK", BTUART, 14745600, 1),
++	INIT_DEVCK("UARTCLK", &pxa_device_btuart.dev),
++	INIT_CKEN("STUARTCLK", STUART, 14745600, 1),
++	INIT_DEVCK("UARTCLK", &pxa_device_stuart.dev),
++
++	INIT_CKEN("UDCCLK", USB, 47923000, 5), /* &pxa25x_device_udc.dev */
++	INIT_DEVCK("GPIO7_CK", NULL),
++
++	INIT_CKEN("SSP_CLK",  SSP, 3686400, 0),
++	INIT_DEVCK("SSPCLK", &pxa25x_device_ssp.dev),
++	INIT_CKEN("NSSPCLK", NSSP, 3686400, 0),
++	INIT_DEVCK("SSPCLK", &pxa25x_device_nssp.dev),
++	INIT_CKEN("ASSPCLK", ASSP, 3686400, 0),
++	INIT_DEVCK("SSPCLK", &pxa25x_device_assp.dev),
++	INIT_CKEN("PWM0CLK",  PWM0, 3686400,  0),
++	INIT_DEVCK("PWMCLK", &pxa25x_device_pwm0.dev),
++	INIT_CKEN("PWM1CLK",  PWM1, 3686400,  0),
++	INIT_DEVCK("PWMCLK", &pxa25x_device_pwm1.dev),
 +};
 +
-+int clk_debugfs_init(struct clk *clk)
-+{
-+	struct dentry *dir;
-+	struct dentry *info;
-+
-+	/*
-+	 * We initialise it here, because this call can be executed from within arch code,
-+	 * so specifyint correct initialisation place is a bit tricky
-+	 */
-+	if (!clkdir)
-+		clkdir = debugfs_create_dir("clocks", NULL);
-+
-+	dir = debugfs_create_dir(clk->name,
-+			clk->parent ? clk->parent->dir : clkdir);
-+
-+	if (IS_ERR(dir))
-+		return PTR_ERR(dir);
-+
-+	info = debugfs_create_file("info", S_IFREG | S_IRUGO,
-+			dir, clk, &genclk_operations);
-+
-+	if (IS_ERR(info)) {
-+		debugfs_remove(dir);
-+		return PTR_ERR(info);
++static struct clk *pxa25x_clks_simple[] = {
++	INIT_CK("LCDCLK", LCD, &clk_pxa25x_lcd_ops), /* &pxa_device_fb.dev */
++	INIT_CKEN("MMCCLK", MMC, 19169000, 0), /* &pxa_device_mci.dev */
++	INIT_CKEN("I2CCLK", I2C, 31949000, 0), /* &pxa_device_i2c.dev */
++	INIT_CKEN("AC97CLK",     AC97,     24576000, 0),
+ 
+ 	/*
+-	INIT_CKEN("I2SCLK",  I2S,  14745600, 0, NULL),
++	INIT_CKEN("I2SCLK",  I2S,  14745600, 0),
+ 	*/
+-	INIT_CKEN("FICPCLK", FICP, 47923000, 0, NULL),
++	INIT_CKEN("FICPCLK", FICP, 47923000, 0),
+ };
+ 
+-static struct clk gpio7_clk = INIT_CKOTHER("GPIO7_CK", &pxa25x_clks[4], NULL);
+-
+ #ifdef CONFIG_PM
+ 
+ #define SAVE(x)		sleep_save[SLEEP_SAVE_##x] = x
+@@ -293,11 +301,17 @@ static int __init pxa25x_init(void)
+ 	int i, ret = 0;
+ 
+ 	/* Only add HWUART for PXA255/26x; PXA210/250/27x do not have it. */
+-	if (cpu_is_pxa25x())
+-		clks_register(&pxa25x_hwuart_clk, 1);
++	if (cpu_is_pxa25x()) {
++		pxa25x_hwuart_clk[1]->parent = pxa25x_hwuart_clk[0];
++		clks_register(ARRAY_AND_SIZE(pxa25x_hwuart_clk));
 +	}
+ 
+ 	if (cpu_is_pxa21x() || cpu_is_pxa25x()) {
+-		clks_register(pxa25x_clks, ARRAY_SIZE(pxa25x_clks));
++		for (i = 0; i < ARRAY_SIZE(pxa25x_clks) / 2; i++)
++			pxa25x_clks[2 * i + 1]->parent = pxa25x_clks[2 * i];
 +
-+	clk->dir = dir;
-+	clk->priv.info = info;
++		clks_register(ARRAY_AND_SIZE(pxa25x_clks));
++		clks_register(ARRAY_AND_SIZE(pxa25x_clks_simple));
+ 
+ 		if ((ret = pxa_init_dma(16)))
+ 			return ret;
+@@ -320,8 +334,6 @@ static int __init pxa25x_init(void)
+ 	if (cpu_is_pxa25x())
+ 		ret = platform_device_register(&pxa_device_hwuart);
+ 
+-	clks_register(&gpio7_clk, 1);
+-
+ 	return ret;
+ }
+ 
+diff --git a/arch/arm/mach-pxa/pxa27x.c b/arch/arm/mach-pxa/pxa27x.c
+index d5d14ea..783fdf7 100644
+--- a/arch/arm/mach-pxa/pxa27x.c
++++ b/arch/arm/mach-pxa/pxa27x.c
+@@ -45,7 +45,7 @@ unsigned int pxa27x_get_clk_frequency_khz(int info)
+ {
+ 	unsigned long ccsr, clkcfg;
+ 	unsigned int l, L, m, M, n2, N, S;
+-       	int cccr_a, t, ht, b;
++	int cccr_a, t, ht, b;
+ 
+ 	ccsr = CCSR;
+ 	cccr_a = CCCR & (1 << 25);
+@@ -88,7 +88,7 @@ unsigned int pxa27x_get_memclk_frequency_10khz(void)
+ {
+ 	unsigned long ccsr, clkcfg;
+ 	unsigned int l, L, m, M;
+-       	int cccr_a, b;
++	int cccr_a, b;
+ 
+ 	ccsr = CCSR;
+ 	cccr_a = CCCR & (1 << 25);
+@@ -130,45 +130,59 @@ static unsigned long clk_pxa27x_lcd_getrate(struct clk *clk)
+ 	return pxa27x_get_lcdclk_frequency_10khz() * 10000;
+ }
+ 
+-static const struct clkops clk_pxa27x_lcd_ops = {
++static struct clk_ops clk_pxa27x_lcd_ops = {
+ 	.enable		= clk_cken_enable,
+ 	.disable	= clk_cken_disable,
+-	.getrate	= clk_pxa27x_lcd_getrate,
++	.get_rate	= clk_pxa27x_lcd_getrate,
+ };
+ 
+-static struct clk pxa27x_clks[] = {
+-	INIT_CK("LCDCLK", LCD,    &clk_pxa27x_lcd_ops, &pxa_device_fb.dev),
+-	INIT_CK("CAMCLK", CAMERA, &clk_pxa27x_lcd_ops, NULL),
++static struct clk *pxa27x_clks[] = {
++	INIT_CKEN("FFUARTCLK", FFUART, 14857000, 1),
++	INIT_DEVCK("UARTCLK", &pxa_device_ffuart.dev),
++	INIT_CKEN("BTUARTCLK", BTUART, 14857000, 1),
++	INIT_DEVCK("UARTCLK", &pxa_device_btuart.dev),
++	INIT_CKEN("STUARTCLK", STUART, 14857000, 1),
++	INIT_DEVCK("UARTCLK", &pxa_device_stuart.dev),
++
++	INIT_CKEN("I2C_CLK",  I2C,  32842000, 0),
++	INIT_DEVCK("I2CCLK", &pxa_device_i2c.dev),
++	INIT_CKEN("PWRI2CCLK", PWRI2C, 13000000, 0),
++	INIT_DEVCK("I2CCLK", &pxa27x_device_i2c_power.dev),
++
++	INIT_CKEN("SSP1CLK", SSP1, 13000000, 0),
++	INIT_DEVCK("SSPCLK", &pxa27x_device_ssp1.dev),
++	INIT_CKEN("SSP2CLK", SSP2, 13000000, 0),
++	INIT_DEVCK("SSPCLK", &pxa27x_device_ssp2.dev),
++	INIT_CKEN("SSP3CLK", SSP3, 13000000, 0),
++	INIT_DEVCK("SSPCLK", &pxa27x_device_ssp3.dev),
++	INIT_CKEN("PWM0CLK", PWM0, 13000000, 0),
++	INIT_DEVCK("PWMCLK", &pxa27x_device_pwm0.dev),
++	INIT_CKEN("PWM1CLK", PWM1, 13000000, 0),
++	INIT_DEVCK("PWMCLK", &pxa27x_device_pwm1.dev),
+ 
+-	INIT_CKEN("UARTCLK", FFUART, 14857000, 1, &pxa_device_ffuart.dev),
+-	INIT_CKEN("UARTCLK", BTUART, 14857000, 1, &pxa_device_btuart.dev),
+-	INIT_CKEN("UARTCLK", STUART, 14857000, 1, NULL),
++};
+ 
+-	INIT_CKEN("I2SCLK",  I2S,  14682000, 0, &pxa_device_i2s.dev),
+-	INIT_CKEN("I2CCLK",  I2C,  32842000, 0, &pxa_device_i2c.dev),
+-	INIT_CKEN("UDCCLK",  USB,  48000000, 5, &pxa27x_device_udc.dev),
+-	INIT_CKEN("MMCCLK",  MMC,  19500000, 0, &pxa_device_mci.dev),
+-	INIT_CKEN("FICPCLK", FICP, 48000000, 0, &pxa_device_ficp.dev),
++static struct clk *pxa27x_clks_simple[] = {
++	INIT_CK("LCDCLK", LCD,    &clk_pxa27x_lcd_ops), /* &pxa_device_fb.dev */
++	INIT_CK("CAMCLK", CAMERA, &clk_pxa27x_lcd_ops),
++	INIT_CKEN("I2SCLK",  I2S,  14682000, 0), /* &pxa_device_i2s.dev */
+ 
+-	INIT_CKEN("USBCLK", USBHOST, 48000000, 0, &pxa27x_device_ohci.dev),
+-	INIT_CKEN("I2CCLK", PWRI2C, 13000000, 0, &pxa27x_device_i2c_power.dev),
+-	INIT_CKEN("KBDCLK", KEYPAD, 32768, 0, &pxa27x_device_keypad.dev),
++	INIT_CKEN("UDCCLK",  USB,  48000000, 5), /* &pxa27x_device_udc.dev */
++	INIT_CKEN("MMCCLK",  MMC,  19500000, 0), /* &pxa_device_mci.dev */
++	INIT_CKEN("FICPCLK", FICP, 48000000, 0), /* &pxa_device_ficp.dev */
+ 
+-	INIT_CKEN("SSPCLK", SSP1, 13000000, 0, &pxa27x_device_ssp1.dev),
+-	INIT_CKEN("SSPCLK", SSP2, 13000000, 0, &pxa27x_device_ssp2.dev),
+-	INIT_CKEN("SSPCLK", SSP3, 13000000, 0, &pxa27x_device_ssp3.dev),
+-	INIT_CKEN("PWMCLK", PWM0, 13000000, 0, &pxa27x_device_pwm0.dev),
+-	INIT_CKEN("PWMCLK", PWM1, 13000000, 0, &pxa27x_device_pwm1.dev),
++	INIT_CKEN("USBCLK", USBHOST, 48000000, 0), /* &pxa27x_device_ohci.dev */
++	INIT_CKEN("KBDCLK", KEYPAD, 32768, 0), /* &pxa27x_device_keypad.dev */
+ 
+-	INIT_CKEN("AC97CLK",     AC97,     24576000, 0, NULL),
+-	INIT_CKEN("AC97CONFCLK", AC97CONF, 24576000, 0, NULL),
++	INIT_CKEN("AC97CLK",     AC97,     24576000, 0),
++	INIT_CKEN("AC97CONFCLK", AC97CONF, 24576000, 0),
+ 
+ 	/*
+-	INIT_CKEN("MSLCLK",  MSL,  48000000, 0, NULL),
+-	INIT_CKEN("USIMCLK", USIM, 48000000, 0, NULL),
+-	INIT_CKEN("MSTKCLK", MEMSTK, 19500000, 0, NULL),
+-	INIT_CKEN("IMCLK",   IM,   0, 0, NULL),
+-	INIT_CKEN("MEMCLK",  MEMC, 0, 0, NULL),
++	INIT_CKEN("MSLCLK",  MSL,  48000000, 0),
++	INIT_CKEN("USIMCLK", USIM, 48000000, 0),
++	INIT_CKEN("MSTKCLK", MEMSTK, 19500000, 0),
++	INIT_CKEN("IMCLK",   IM,   0, 0),
++	INIT_CKEN("MEMCLK",  MEMC, 0, 0),
+ 	*/
+ };
+ 
+@@ -384,7 +398,11 @@ static int __init pxa27x_init(void)
+ 	int i, ret = 0;
+ 
+ 	if (cpu_is_pxa27x()) {
+-		clks_register(pxa27x_clks, ARRAY_SIZE(pxa27x_clks));
++		for (i = 0; i < ARRAY_SIZE(pxa27x_clks) / 2; i++)
++			pxa27x_clks[2 * i + 1]->parent = pxa27x_clks[2 * i];
++
++		clks_register(ARRAY_AND_SIZE(pxa27x_clks));
++		clks_register(ARRAY_AND_SIZE(pxa27x_clks_simple));
+ 
+ 		if ((ret = pxa_init_dma(32)))
+ 			return ret;
+diff --git a/arch/arm/mach-pxa/pxa300.c b/arch/arm/mach-pxa/pxa300.c
+index da92e97..7790733 100644
+--- a/arch/arm/mach-pxa/pxa300.c
++++ b/arch/arm/mach-pxa/pxa300.c
+@@ -85,12 +85,13 @@ static struct pxa3xx_mfp_addr_map pxa310_mfp_addr_map[] __initdata = {
+ 	MFP_ADDR_END,
+ };
+ 
+-static struct clk common_clks[] = {
+-	PXA3xx_CKEN("NANDCLK", NAND, 156000000, 0, &pxa3xx_device_nand.dev),
++static struct clk *common_clks[] = {
++	PXA3xx_CKEN("NANDCLK", NAND, 156000000, 0), /* &pxa3xx_device_nand.dev */
+ };
+ 
+-static struct clk pxa310_clks[] = {
+-	PXA3xx_CKEN("MMCCLK", MMC3, 19500000, 0, &pxa3xx_device_mci3.dev),
++static struct clk *pxa310_clks[] = {
++	PXA3xx_CKEN("MMC3CLK", MMC3, 19500000, 0),
++	INIT_DEVCK("MMCCLK", &pxa3xx_device_mci3.dev),
+ };
+ 
+ static int __init pxa300_init(void)
+@@ -103,6 +104,7 @@ static int __init pxa300_init(void)
+ 
+ 	if (cpu_is_pxa310()) {
+ 		pxa3xx_mfp_init_addr(pxa310_mfp_addr_map);
++		pxa310_clks[1]->parent = pxa310_clks[0];
+ 		clks_register(ARRAY_AND_SIZE(pxa310_clks));
+ 	}
+ 
+diff --git a/arch/arm/mach-pxa/pxa320.c b/arch/arm/mach-pxa/pxa320.c
+index c557c23..4da15e8 100644
+--- a/arch/arm/mach-pxa/pxa320.c
++++ b/arch/arm/mach-pxa/pxa320.c
+@@ -80,8 +80,8 @@ static struct pxa3xx_mfp_addr_map pxa320_mfp_addr_map[] __initdata = {
+ 	MFP_ADDR_END,
+ };
+ 
+-static struct clk pxa320_clks[] = {
+-	PXA3xx_CKEN("NANDCLK", NAND, 104000000, 0, &pxa3xx_device_nand.dev),
++static struct clk *pxa320_clks[] = {
++	PXA3xx_CKEN("NANDCLK", NAND, 104000000, 0), /* &pxa3xx_device_nand.dev */
+ };
+ 
+ static int __init pxa320_init(void)
+diff --git a/arch/arm/mach-pxa/pxa3xx.c b/arch/arm/mach-pxa/pxa3xx.c
+index f491025..9f38231 100644
+--- a/arch/arm/mach-pxa/pxa3xx.c
++++ b/arch/arm/mach-pxa/pxa3xx.c
+@@ -21,6 +21,7 @@
+ #include <linux/irq.h>
+ #include <linux/io.h>
+ #include <linux/sysdev.h>
++#include <linux/delay.h>
+ 
+ #include <asm/hardware.h>
+ #include <asm/arch/pxa3xx-regs.h>
+@@ -144,46 +145,58 @@ static unsigned long clk_pxa3xx_hsio_getrate(struct clk *clk)
+ 	return hsio_clk;
+ }
+ 
+-void clk_pxa3xx_cken_enable(struct clk *clk)
++int clk_pxa3xx_cken_enable(struct clk *clk)
+ {
+-	unsigned long mask = 1ul << (clk->cken & 0x1f);
++	struct clk_cken *priv = container_of(clk, struct clk_cken, clk);
++	unsigned long mask = 1ul << (priv->cken & 0x1f);
+ 
+-	if (clk->cken < 32)
++	if (priv->cken < 32)
+ 		CKENA |= mask;
+ 	else
+ 		CKENB |= mask;
++
++	if (priv->delay)
++		udelay(priv->delay);
 +
 +	return 0;
-+}
+ }
+ 
+ void clk_pxa3xx_cken_disable(struct clk *clk)
+ {
+-	unsigned long mask = 1ul << (clk->cken & 0x1f);
++	struct clk_cken *priv = container_of(clk, struct clk_cken, clk);
++	unsigned long mask = 1ul << (priv->cken & 0x1f);
+ 
+-	if (clk->cken < 32)
++	if (priv->cken < 32)
+ 		CKENA &= ~mask;
+ 	else
+ 		CKENB &= ~mask;
+ }
+ 
+-const struct clkops clk_pxa3xx_cken_ops = {
++struct clk_ops clk_pxa3xx_cken_ops = {
+ 	.enable		= clk_pxa3xx_cken_enable,
+ 	.disable	= clk_pxa3xx_cken_disable,
++	.get_rate	= clk_cken_get_rate,
+ };
+ 
+-static const struct clkops clk_pxa3xx_hsio_ops = {
++static struct clk_ops clk_pxa3xx_hsio_ops = {
+ 	.enable		= clk_pxa3xx_cken_enable,
+ 	.disable	= clk_pxa3xx_cken_disable,
+-	.getrate	= clk_pxa3xx_hsio_getrate,
++	.get_rate	= clk_pxa3xx_hsio_getrate,
+ };
+ 
+-static const struct clkops clk_pxa3xx_ac97_ops = {
++static struct clk_ops clk_pxa3xx_ac97_ops = {
+ 	.enable		= clk_pxa3xx_cken_enable,
+ 	.disable	= clk_pxa3xx_cken_disable,
+-	.getrate	= clk_pxa3xx_ac97_getrate,
++	.get_rate	= clk_pxa3xx_ac97_getrate,
+ };
+ 
+-static void clk_pout_enable(struct clk *clk)
++static int clk_pout_enable(struct clk *clk)
+ {
+-	OSCC |= OSCC_PEN;
++	OSCC &= ~OSCC_PEN;
 +
-+void clk_debugfs_clean(struct clk *clk)
++	udelay(70);
++
++	return 0;
+ }
+ 
+ static void clk_pout_disable(struct clk *clk)
+@@ -191,41 +204,61 @@ static void clk_pout_disable(struct clk *clk)
+ 	OSCC &= ~OSCC_PEN;
+ }
+ 
+-static const struct clkops clk_pout_ops = {
++static unsigned long clk_pout_get_rate(struct clk *clk)
 +{
-+	if (clk->priv.info)
-+		debugfs_remove(clk->priv.info);
-+	clk->priv.info = NULL;
-+
-+	if (clk->dir)
-+		debugfs_remove(clk->dir);
-+	clk->dir = NULL;
++	return 13000000;
 +}
 +
-+void clk_debugfs_reparent(struct clk *clk, struct clk *old, struct clk *new)
-+{
-+	struct dentry *oldd = old ? old->dir : clkdir;
-+	struct dentry *newd = new ? new->dir : clkdir;
-+	struct dentry *dir = debugfs_rename(oldd, clk->dir, newd, clk->name);
++static struct clk_ops clk_pout_ops = {
+ 	.enable		= clk_pout_enable,
+ 	.disable	= clk_pout_disable,
++	.get_rate	= clk_pout_get_rate,
+ };
+ 
+-static struct clk pxa3xx_clks[] = {
+-	{
 +
-+	if (IS_ERR(dir))
-+		WARN_ON(1);
-+	else
-+		clk->dir = dir;
-+}
++static struct clk *pxa3xx_clks[] = {
++	PXA3xx_CKEN("FFUARTCLK", FFUART, 14857000, 1),
++	INIT_DEVCK("UARTCLK", &pxa_device_ffuart.dev),
++	PXA3xx_CKEN("BTUARTCLK", BTUART, 14857000, 1),
++	INIT_DEVCK("UARTCLK", &pxa_device_btuart.dev),
++	PXA3xx_CKEN("STUARTCLK", STUART, 14857000, 1),
++	INIT_DEVCK("UARTCLK", &pxa_device_stuart.dev),
 +
++	PXA3xx_CKEN("SSP1CLK", SSP1, 13000000, 0),
++	INIT_DEVCK("SSPCLK", &pxa27x_device_ssp1.dev),
++	PXA3xx_CKEN("SSP2CLK", SSP2, 13000000, 0),
++	INIT_DEVCK("SSPCLK", &pxa27x_device_ssp2.dev),
++	PXA3xx_CKEN("SSP3CLK", SSP3, 13000000, 0),
++	INIT_DEVCK("SSPCLK", &pxa27x_device_ssp3.dev),
++	PXA3xx_CKEN("SSP4CLK", SSP4, 13000000, 0),
++	INIT_DEVCK("SSPCLK", &pxa3xx_device_ssp4.dev),
++	PXA3xx_CKEN("PWM0CLK", PWM0, 13000000, 0),
++	INIT_DEVCK("PWMCLK", &pxa27x_device_pwm0.dev),
++	PXA3xx_CKEN("PWM1CLK", PWM1, 13000000, 0),
++	INIT_DEVCK("PWMCLK", &pxa27x_device_pwm1.dev),
++
++	PXA3xx_CKEN("MMC1CLK", MMC1, 19500000, 0),
++	INIT_DEVCK("MMCCLK", &pxa_device_mci.dev),
++	PXA3xx_CKEN("MMC2CLK", MMC2, 19500000, 0),
++	INIT_DEVCK("MMCCLK", &pxa3xx_device_mci2.dev),
++};
++
++static struct clk *pxa3xx_clks_simple[] = {
++	&(struct clk) {
+ 		.name           = "CLK_POUT",
+ 		.ops            = &clk_pout_ops,
+-		.rate           = 13000000,
+-		.delay          = 70,
++		.release	= clk_static_release,
+ 	},
+ 
+-	PXA3xx_CK("LCDCLK",  LCD,    &clk_pxa3xx_hsio_ops, &pxa_device_fb.dev),
+-	PXA3xx_CK("CAMCLK",  CAMERA, &clk_pxa3xx_hsio_ops, NULL),
+-	PXA3xx_CK("AC97CLK", AC97,   &clk_pxa3xx_ac97_ops, NULL),
+-
+-	PXA3xx_CKEN("UARTCLK", FFUART, 14857000, 1, &pxa_device_ffuart.dev),
+-	PXA3xx_CKEN("UARTCLK", BTUART, 14857000, 1, &pxa_device_btuart.dev),
+-	PXA3xx_CKEN("UARTCLK", STUART, 14857000, 1, NULL),
++	PXA3xx_CK("LCDCLK",  LCD,    &clk_pxa3xx_hsio_ops), /* &pxa_device_fb.dev */
++	PXA3xx_CK("CAMCLK",  CAMERA, &clk_pxa3xx_hsio_ops),
++	PXA3xx_CK("AC97CLK", AC97,   &clk_pxa3xx_ac97_ops),
+ 
+-	PXA3xx_CKEN("I2CCLK", I2C,  32842000, 0, &pxa_device_i2c.dev),
+-	PXA3xx_CKEN("UDCCLK", UDC,  48000000, 5, &pxa27x_device_udc.dev),
+-	PXA3xx_CKEN("USBCLK", USBH, 48000000, 0, &pxa27x_device_ohci.dev),
+-	PXA3xx_CKEN("KBDCLK", KEYPAD,  32768, 0, &pxa27x_device_keypad.dev),
++	PXA3xx_CKEN("I2CCLK", I2C,  32842000, 0), /* &pxa_device_i2c.dev */
++	PXA3xx_CKEN("UDCCLK", UDC,  48000000, 5), /* &pxa27x_device_udc.dev */
++	PXA3xx_CKEN("USBCLK", USBH, 48000000, 0), /* &pxa27x_device_ohci.dev */
++	PXA3xx_CKEN("KBDCLK", KEYPAD,  32768, 0), /* &pxa27x_device_keypad.dev */
+ 
+-	PXA3xx_CKEN("SSPCLK", SSP1, 13000000, 0, &pxa27x_device_ssp1.dev),
+-	PXA3xx_CKEN("SSPCLK", SSP2, 13000000, 0, &pxa27x_device_ssp2.dev),
+-	PXA3xx_CKEN("SSPCLK", SSP3, 13000000, 0, &pxa27x_device_ssp3.dev),
+-	PXA3xx_CKEN("SSPCLK", SSP4, 13000000, 0, &pxa3xx_device_ssp4.dev),
+-	PXA3xx_CKEN("PWMCLK", PWM0, 13000000, 0, &pxa27x_device_pwm0.dev),
+-	PXA3xx_CKEN("PWMCLK", PWM1, 13000000, 0, &pxa27x_device_pwm1.dev),
+-
+-	PXA3xx_CKEN("MMCCLK", MMC1, 19500000, 0, &pxa_device_mci.dev),
+-	PXA3xx_CKEN("MMCCLK", MMC2, 19500000, 0, &pxa3xx_device_mci2.dev),
+ };
+ 
+ #ifdef CONFIG_PM
+@@ -540,7 +573,11 @@ static int __init pxa3xx_init(void)
+ 		 */
+ 		ASCR &= ~(ASCR_RDH | ASCR_D1S | ASCR_D2S | ASCR_D3S);
+ 
+-		clks_register(pxa3xx_clks, ARRAY_SIZE(pxa3xx_clks));
++		for (i = 0; i < ARRAY_SIZE(pxa3xx_clks) / 2; i++)
++			pxa3xx_clks[2 * i + 1]->parent = pxa3xx_clks[2 * i];
++
++		clks_register(ARRAY_AND_SIZE(pxa3xx_clks));
++		clks_register(ARRAY_AND_SIZE(pxa3xx_clks_simple));
+ 
+ 		if ((ret = pxa_init_dma(32)))
+ 			return ret;
 -- 
 1.5.6
 
