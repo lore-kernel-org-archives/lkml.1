@@ -1,86 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757577AbYGHUbw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbYGHUcO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757577AbYGHUbw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 16:31:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbYGHUbo
+	id S1755384AbYGHUcO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 16:32:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755920AbYGHUbr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 16:31:44 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:33465 "EHLO
+	Tue, 8 Jul 2008 16:31:47 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:33466 "EHLO
 	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754462AbYGHUbn (ORCPT
+	with ESMTP id S1754712AbYGHUbq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 16:31:43 -0400
-Date: Tue, 8 Jul 2008 12:37:32 +0200
+	Tue, 8 Jul 2008 16:31:46 -0400
+Date: Tue, 8 Jul 2008 12:40:45 +0200
 From: Pavel Machek <pavel@suse.cz>
-To: Bruno =?iso-8859-1?Q?Pr=E9mont?= <bruno.premont@restena.lu>
-Cc: "Altobelli, David" <david.altobelli@hp.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "greg@kroah.com" <greg@kroah.com>
-Subject: Re: [PATCH][resubmit] HP iLO driver
-Message-ID: <20080708103732.GA15317@elf.ucw.cz>
-References: <20080623160052.GA7616@ldl.fc.hp.com> <20080627191458.GA10872@ucw.cz> <CF70AA892F109448AEA269483B3A983903BB8CE586@G1W1215.americas.hpqcorp.net> <20080707160658.GB1794@elf.ucw.cz> <CF70AA892F109448AEA269483B3A983903BB8CEA25@G1W1215.americas.hpqcorp.net> <20080708072152.GD1761@elf.ucw.cz> <20080708100241.36b89e20@pluto.restena.lu>
+To: Huang Ying <ying.huang@intel.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [PATCH -mm 1/2] kexec jump -v12: kexec jump
+Message-ID: <20080708104044.GA15327@elf.ucw.cz>
+References: <1215401122.4660.4.camel@caritas-dev.intel.com> <20080707125010.GA21254@elf.ucw.cz> <1215508209.29894.8.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080708100241.36b89e20@pluto.restena.lu>
+In-Reply-To: <1215508209.29894.8.camel@caritas-dev.intel.com>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2008-07-08 10:02:41, Bruno Prémont wrote:
-> On Tue, 8 Jul 2008 09:21:52 +0200 Pavel Machek <pavel@suse.cz> wrote:
-> > On Mon 2008-07-07 17:37:18, Altobelli, David wrote:
-> > > Pavel Machek wrote:
-> > > > Hi!
-> > > >
-> > > >>>> A driver for the HP iLO/iLO2 management processor, which allows
-> > > >>>> userspace programs to query the management processor. Programs
-> > > >>>> can open a channel to the device (/dev/hpilo/dXccbN), and use
-> > > >>>> this to send/receive queries.
-> > > >>>
-> > > >>> What kind of queries? Is there documentation somewhere?
-> > > >>
-> > > >> Generally, it can get data out of the management processor -
-> > > >> things like basic iLO configuration (users, nic, etc), handle
-> > > >> SNMP traffic, flashing iLO, and some others.
-> > > >>
-> > > >> Unfortunately, there isn't yet any available documenation.
-> > > >
-> > > > Ok, I guess we should have documentation "what does it do" and
-> > > > "what protocol does it speak" before we can think about merging.
-> > > 
-> > > I really hope that isn't the case.
-> > 
-> > Telling us "what does it do" seems like good start.
-> > 
-> > > However, I do think there is value in merging the driver without
-> > > docs. Having drivers in tree is often stated as a goal, because of
-> > > the obvious security and API/ABI disadvantages to out of tree
-> > > drivers.
-> > 
-> > You know, we'd prefer to have kernel<->user ABI documented. With this
-> > driver... we don't.
-> > 
-> > What does /dev/hpilo/* do? Beep speakers? Control fans? Launch atomic
-> > bombs? What will happen on cat /bin/bash > /dev/hpilo/dXccbN? Does
-> > that depend on concrete machine? Is it acceptable for this
-> > functionality not to be abstracted out? (Kernel should provide hw
-> > abstraction, right?)
-> 
-> If the driver allows access to hardware monitoring features available
-> via iLO/iLO2 (fan, temperature, voltage) it would be really useful if
-> this driver also registered the sensors with hwmon framework so the
-> details are accessible via lm_sensors. (like is now done for ACPI
-> thermal zone)
-> Same applies for any information that could be properly mapped to
-> other existing frameworks (e.g. power supply class)
+Hi!
 
-Yes.. and other stuff it can do should be exported in "reasonable"
-form, like /sys interface where it makes sense.
+> > > @@ -1411,3 +1421,50 @@ static int __init crash_save_vmcoreinfo_
+> > >  }
+> > > 
+> > >  module_init(crash_save_vmcoreinfo_init)
+> > > +
+> > > +/**
+> > > + *   kernel_kexec - reboot the system
+> 
+> > Really?
+> 
+> I will change the comments to reflect the changes to kernel_kexec.
+> 
+> > > + *   Move into place and start executing a preloaded standalone
+> > > + *   executable.  If nothing was preloaded return an error.
+> > > + */
+> > > +int kernel_kexec(void)
+> > > +{
+> > > +     int error = 0;
+> > > +
+> > > +     if (xchg(&kexec_lock, 1))
+> > > +             return -EBUSY;
+> > 
+> > That's quite a strange way to provide a lock. mutex_trylock?
+> 
+> I think this is because kexec_lock is used by crash_kexec() too, which
+> may be called in some extreme environment, such as during panic().
+> 
+> > > +     if (!kexec_image) {
+> > > +             error = -EINVAL;
+> > > +             goto Unlock;
+> > > +     }
+> > > +
+> > > +     if (kexec_image->preserve_context) {
+> > > +#ifdef CONFIG_KEXEC_JUMP
+> > > +             local_irq_disable();
+> > > +             save_processor_state();
+> > 
+> > #else
+> >         BUG()
+> > 
+> > ...because otherwise you silently do nothing?
+> > 
+> > > +#endif
+> 
+> If CONFIG_KEXEC_JUMP is defined, kexec_image->preserve_context will
+> always be 0. So current code is safe. Here, #ifdef is used to resolve
+> the dependency issue. For example, save_processor_state() may be
+> undefined if CONFIG_KEXEC_JUMP is not defined.
+
+Move the #ifdef outside the if (), then, so this is clear?
+
+Actually, if preserve_context is always zero in !KEXEC_JUMP case, it
+might make sense to remove whole variable...
 									Pavel
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
