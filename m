@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbYGHMr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760149AbYGHMsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757596AbYGHMr3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 08:47:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758233AbYGHMpv
+	id S1760149AbYGHMsX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 08:48:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758057AbYGHMqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 08:45:51 -0400
-Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27555 "EHLO
+	Tue, 8 Jul 2008 08:46:43 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27565 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759343AbYGHMpq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 08:45:46 -0400
+	id S1759670AbYGHMqk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 08:46:40 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
@@ -18,57 +18,14 @@ Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
        grant.likely@secretlab.ca, vapier.adi@gmail.com,
        alan@lxorguk.ukuu.org.uk, hpa@zytor.com, lethal@linux-sh.org,
        florian@openwrt.org, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 46/58] microblaze_v5: headers simple files - empty or redirect to asm-generic
-Date: Tue,  8 Jul 2008 13:59:46 +0200
-Message-Id: <a98df8525bf9287d7a8b6077ff20dd61a055a98e.1215517976.git.monstr@monstr.eu>
+Subject: [PATCH 03/58] microblaze_v5: Cpuinfo handling
+Date: Tue,  8 Jul 2008 13:59:03 +0200
+Message-Id: <58f35f498bac29e7105c589c06567e86c5a42dd5.1215517976.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <c4f477d71dd4cd2ae884b9c47756c9334f8dac18.1215517976.git.monstr@monstr.eu>
+In-Reply-To: <c03d29cbccaef8aed8a2911c2a259fbd79ad23d9.1215517976.git.monstr@monstr.eu>
 References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
  <c03d29cbccaef8aed8a2911c2a259fbd79ad23d9.1215517976.git.monstr@monstr.eu>
- <58f35f498bac29e7105c589c06567e86c5a42dd5.1215517976.git.monstr@monstr.eu>
- <810775b1bb678003923039726a9153ee34fb67b4.1215517976.git.monstr@monstr.eu>
- <2a24e5bc2cfbd349613ef10c716a28f04ce24a9f.1215517976.git.monstr@monstr.eu>
- <3171c5cf21eefc79665165f4a14bc5b68dd03f95.1215517976.git.monstr@monstr.eu>
- <9be4eff2f4d015023c453eaec3b3473a44380491.1215517976.git.monstr@monstr.eu>
- <f8e331ed9432719f3c0555c840cbbb7bbc1a6322.1215517976.git.monstr@monstr.eu>
- <4409daf2ac356e902a8f091bb5908eb8a90218bc.1215517976.git.monstr@monstr.eu>
- <f7458acb0252f72b5620d19c76104408ecc2e451.1215517976.git.monstr@monstr.eu>
- <dbd9df742cdd9eb3355d7bc8e39f9dfef6c545e4.1215517976.git.monstr@monstr.eu>
- <1f9a1f345caa749cb630cf85f95f217366395069.1215517976.git.monstr@monstr.eu>
- <fe3686f0f70d838b33642bcbcd7185fc2180b366.1215517976.git.monstr@monstr.eu>
- <e61f5a8579570cf7cd18a22e4106b7f85518928e.1215517976.git.monstr@monstr.eu>
- <59d7e0a5f38b8d38f01f357a071fc93eed36f3a8.1215517976.git.monstr@monstr.eu>
- <143afcf84af583ab66da7e8acfc9eb03b7f3eaa0.1215517976.git.monstr@monstr.eu>
- <a967ee4e5a60b410e2810ce0475e8fd04f99e3ae.1215517976.git.monstr@monstr.eu>
- <c5f0730287365c845746467a9917dbc07d2fca3c.1215517976.git.monstr@monstr.eu>
- <2aa1ac7891af57959237aae3addf4bbe607f55d7.1215517976.git.monstr@monstr.eu>
- <875ba2708f6cd3c585e4d965142e2feb07c39a0e.1215517976.git.monstr@monstr.eu>
- <eb0e741f891335df37c3cd19f1a3ce2f7ce8652a.1215517976.git.monstr@monstr.eu>
- <b28df2ea2419cbda26f9089ed6edcc175c009688.1215517976.git.monstr@monstr.eu>
- <5da1d8f069f18f14faee8c4bff736791179ef6f1.1215517976.git.monstr@monstr.eu>
- <9a32168fe72b772f301216a7090670474af78e49.1215517976.git.monstr@monstr.eu>
- <7ada4bceefc1806a2c8ef73676b7aabd8ac1cad6.1215517976.git.monstr@monstr.eu>
- <701c1dac442ac09f5010cb5356cc1a12bb0abfe1.1215517976.git.monstr@monstr.eu>
- <9b48e9d85b4a5a6dcffce8eef62b232b6bfac8e8.1215517976.git.monstr@monstr.eu>
- <04b0b222b84ba9cfe2507a9081f4d715f2323733.1215517976.git.monstr@monstr.eu>
- <d4c1b3ecfec1bf37ca0ecea6909ad25bbc945630.1215517976.git.monstr@monstr.eu>
- <6e5687d37386334cf122d1eafcca0c6649c955be.1215517976.git.monstr@monstr.eu>
- <689cff1b6d98f60d8f8abc4472193688b524284d.1215517976.git.monstr@monstr.eu>
- <9664f18e7e86af4332018549b29bf0797d6afcd5.1215517976.git.monstr@monstr.eu>
- <c7120d8a6379cb1a18af5330997e30ec974acc2f.1215517976.git.monstr@monstr.eu>
- <d1d33c18956829ec9ac7daf8d0516b17e85ed190.1215517976.git.monstr@monstr.eu>
- <7a16429cfc461420883dbaa80c16047e5a1a91c1.1215517976.git.monstr@monstr.eu>
- <b6a0f3bceb0867c55613463fc43be5328fcedecd.1215517976.git.monstr@monstr.eu>
- <fc26823d77c7180b62022e2d4bcca3c4fe6de574.1215517976.git.monstr@monstr.eu>
- <64089967061955b7a29eb6d4e6269ff75b5442f2.1215517976.git.monstr@monstr.eu>
- <92e3ab88c2174acf4e25c474c1f68ffd4db72ca6.1215517976.git.monstr@monstr.eu>
- <5174afd0eaa5c6cb9344ea3217199e48899be313.1215517976.git.monstr@monstr.eu>
- <bcb94400dca62fb349d0ab1e0a6209291fdcdfc5.1215517976.git.monstr@monstr.eu>
- <5b2ed516b2e51d5117386c1b6eb814acc6e5a157.1215517976.git.monstr@monstr.eu>
- <421f4b613d4dbd983df1545a9a163347e5bd1c56.1215517976.git.monstr@monstr.eu>
- <0d39e8f03c487c004efa226c5ee81a81a8856768.1215517976.git.monstr@monstr.eu>
- <c4f477d71dd4cd2ae884b9c47756c9334f8dac18.1215517976.git.monstr@monstr.eu>
 In-Reply-To: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 References: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -80,177 +37,431 @@ From: Michal Simek <monstr@monstr.eu>
 Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/cputime.h           |    1 +
- include/asm-microblaze/div64.h             |    1 +
- include/asm-microblaze/emergency-restart.h |    1 +
- include/asm-microblaze/errno.h             |    1 +
- include/asm-microblaze/fcntl.h             |    1 +
- include/asm-microblaze/futex.h             |    1 +
- include/asm-microblaze/kdebug.h            |    1 +
- include/asm-microblaze/local.h             |    1 +
- include/asm-microblaze/mutex.h             |    1 +
- include/asm-microblaze/namei.h             |   14 ++++++++++++++
- include/asm-microblaze/percpu.h            |    1 +
- include/asm-microblaze/resource.h          |    1 +
- include/asm-microblaze/sockios.h           |   23 +++++++++++++++++++++++
- include/asm-microblaze/ucontext.h          |    1 +
- 14 files changed, 49 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/auxvec.h
- create mode 100644 include/asm-microblaze/cputime.h
- create mode 100644 include/asm-microblaze/div64.h
- create mode 100644 include/asm-microblaze/emergency-restart.h
- create mode 100644 include/asm-microblaze/errno.h
- create mode 100644 include/asm-microblaze/fcntl.h
- create mode 100644 include/asm-microblaze/futex.h
- create mode 100644 include/asm-microblaze/kdebug.h
- create mode 100644 include/asm-microblaze/local.h
- create mode 100644 include/asm-microblaze/mutex.h
- create mode 100644 include/asm-microblaze/namei.h
- create mode 100644 include/asm-microblaze/percpu.h
- create mode 100644 include/asm-microblaze/resource.h
- create mode 100644 include/asm-microblaze/sockios.h
- create mode 100644 include/asm-microblaze/ucontext.h
- create mode 100644 include/asm-microblaze/user.h
+ arch/microblaze/kernel/cpu/cpuinfo-pvr-full.c |   83 ++++++++++++++++++
+ arch/microblaze/kernel/cpu/cpuinfo-static.c   |  114 +++++++++++++++++++++++++
+ arch/microblaze/kernel/cpu/cpuinfo.c          |   84 ++++++++++++++++++
+ include/asm-microblaze/cpuinfo.h              |  110 ++++++++++++++++++++++++
+ 4 files changed, 391 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/cpu/cpuinfo-pvr-full.c
+ create mode 100644 arch/microblaze/kernel/cpu/cpuinfo-static.c
+ create mode 100644 arch/microblaze/kernel/cpu/cpuinfo.c
+ create mode 100644 include/asm-microblaze/cpuinfo.h
 
-diff --git a/include/asm-microblaze/auxvec.h b/include/asm-microblaze/auxvec.h
+diff --git a/arch/microblaze/kernel/cpu/cpuinfo-pvr-full.c b/arch/microblaze/kernel/cpu/cpuinfo-pvr-full.c
 new file mode 100644
-index 0000000..e69de29
-diff --git a/include/asm-microblaze/cputime.h b/include/asm-microblaze/cputime.h
-new file mode 100644
-index 0000000..6d68ad7
+index 0000000..b5ff5b1
 --- /dev/null
-+++ b/include/asm-microblaze/cputime.h
-@@ -0,0 +1 @@
-+#include <asm-generic/cputime.h>
-diff --git a/include/asm-microblaze/div64.h b/include/asm-microblaze/div64.h
-new file mode 100644
-index 0000000..6cd978c
---- /dev/null
-+++ b/include/asm-microblaze/div64.h
-@@ -0,0 +1 @@
-+#include <asm-generic/div64.h>
-diff --git a/include/asm-microblaze/emergency-restart.h b/include/asm-microblaze/emergency-restart.h
-new file mode 100644
-index 0000000..3711bd9
---- /dev/null
-+++ b/include/asm-microblaze/emergency-restart.h
-@@ -0,0 +1 @@
-+#include <asm-generic/emergency-restart.h>
-diff --git a/include/asm-microblaze/errno.h b/include/asm-microblaze/errno.h
-new file mode 100644
-index 0000000..4c82b50
---- /dev/null
-+++ b/include/asm-microblaze/errno.h
-@@ -0,0 +1 @@
-+#include <asm-generic/errno.h>
-diff --git a/include/asm-microblaze/fcntl.h b/include/asm-microblaze/fcntl.h
-new file mode 100644
-index 0000000..46ab12d
---- /dev/null
-+++ b/include/asm-microblaze/fcntl.h
-@@ -0,0 +1 @@
-+#include <asm-generic/fcntl.h>
-diff --git a/include/asm-microblaze/futex.h b/include/asm-microblaze/futex.h
-new file mode 100644
-index 0000000..0b74582
---- /dev/null
-+++ b/include/asm-microblaze/futex.h
-@@ -0,0 +1 @@
-+#include <asm-generic/futex.h>
-diff --git a/include/asm-microblaze/kdebug.h b/include/asm-microblaze/kdebug.h
-new file mode 100644
-index 0000000..6ece1b0
---- /dev/null
-+++ b/include/asm-microblaze/kdebug.h
-@@ -0,0 +1 @@
-+#include <asm-generic/kdebug.h>
-diff --git a/include/asm-microblaze/local.h b/include/asm-microblaze/local.h
-new file mode 100644
-index 0000000..c11c530
---- /dev/null
-+++ b/include/asm-microblaze/local.h
-@@ -0,0 +1 @@
-+#include <asm-generic/local.h>
-diff --git a/include/asm-microblaze/mutex.h b/include/asm-microblaze/mutex.h
-new file mode 100644
-index 0000000..ff6101a
---- /dev/null
-+++ b/include/asm-microblaze/mutex.h
-@@ -0,0 +1 @@
-+#include <asm-generic/mutex-dec.h>
-diff --git a/include/asm-microblaze/namei.h b/include/asm-microblaze/namei.h
-new file mode 100644
-index 0000000..743f0f3
---- /dev/null
-+++ b/include/asm-microblaze/namei.h
-@@ -0,0 +1,14 @@
-+#ifndef _ASM_MICROBLAZE_NAMEI_H
-+#define _ASM_MICROBLAZE_NAMEI_H
-+
-+#ifdef __KERNEL__
-+
-+/* This dummy routine maybe changed to something useful
-+ * for /usr/gnemul/ emulation stuff.
-+ * Look at asm-sparc/namei.h for details.
-+ */
-+#define __emul_prefix() NULL
-+
-+#endif /* __KERNEL__ */
-+
-+#endif /* _ASM_MICROBLAZE_NAMEI_H */
-diff --git a/include/asm-microblaze/percpu.h b/include/asm-microblaze/percpu.h
-new file mode 100644
-index 0000000..06a959d
---- /dev/null
-+++ b/include/asm-microblaze/percpu.h
-@@ -0,0 +1 @@
-+#include <asm-generic/percpu.h>
-diff --git a/include/asm-microblaze/resource.h b/include/asm-microblaze/resource.h
-new file mode 100644
-index 0000000..04bc4db
---- /dev/null
-+++ b/include/asm-microblaze/resource.h
-@@ -0,0 +1 @@
-+#include <asm-generic/resource.h>
-diff --git a/include/asm-microblaze/sockios.h b/include/asm-microblaze/sockios.h
-new file mode 100644
-index 0000000..41d1a0c
---- /dev/null
-+++ b/include/asm-microblaze/sockios.h
-@@ -0,0 +1,23 @@
++++ b/arch/microblaze/kernel/cpu/cpuinfo-pvr-full.c
+@@ -0,0 +1,83 @@
 +/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
++ * Support for MicroBlaze PVR (processor version register)
++ *
++ * Copyright (C) 2007 John Williams <john.williams@petalogix.com>
++ * Copyright (C) 2007 PetaLogix
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
 + * for more details.
++ *
 + */
 +
-+#ifndef _ASM_MICROBLAZE_SOCKIOS_H
-+#define _ASM_MICROBLAZE_SOCKIOS_H
++#include <linux/init.h>
++#include <linux/string.h>
++#include <asm/pvr.h>
++#include <asm/cpuinfo.h>
 +
-+#include <asm/ioctl.h>
++/*
++ * Helper macro to map between fields in our struct cpuinfo, and
++ * the PVR macros in pvr.h.
++ */
 +
-+/* Socket-level I/O control calls. */
-+#define FIOSETOWN	0x8901
-+#define SIOCSPGRP	0x8902
-+#define FIOGETOWN	0x8903
-+#define SIOCGPGRP	0x8904
-+#define SIOCATMARK	0x8905
-+#define SIOCGSTAMP	0x8906		/* Get stamp (timeval) */
-+#define SIOCGSTAMPNS	0x8907		/* Get stamp (timespec) */
++#define CI(c, p) ci->c = PVR_##p(pvr)
 +
-+#endif /* _ASM_MICROBLAZE_SOCKIOS_H */
-diff --git a/include/asm-microblaze/ucontext.h b/include/asm-microblaze/ucontext.h
++void set_cpuinfo_pvr_full(struct cpuinfo *ci, struct device_node *cpu)
++{
++	struct pvr_s pvr;
++	get_pvr(&pvr);
++
++	CI(use_barrel, USE_BARREL);
++	CI(use_divider, USE_DIV);
++	CI(use_mult, USE_HW_MUL);
++	CI(use_fpu, USE_FPU);
++
++	CI(use_mul_64, USE_MUL64);
++	CI(use_msr_instr, USE_MSR_INSTR);
++	CI(use_pcmp_instr, USE_PCMP_INSTR);
++	CI(ver_code, VERSION);
++
++	CI(use_icache, USE_ICACHE);
++	CI(icache_tagbits, ICACHE_ADDR_TAG_BITS);
++	CI(icache_write, ICACHE_ALLOW_WR);
++	CI(icache_line, ICACHE_LINE_LEN);
++	CI(icache_size, ICACHE_BYTE_SIZE);
++	CI(icache_base, ICACHE_BASEADDR);
++	CI(icache_high, ICACHE_HIGHADDR);
++
++	CI(use_dcache, USE_DCACHE);
++	CI(dcache_tagbits, DCACHE_ADDR_TAG_BITS);
++	CI(dcache_write, DCACHE_ALLOW_WR);
++	CI(dcache_line, DCACHE_LINE_LEN);
++	CI(dcache_size, DCACHE_BYTE_SIZE);
++	CI(dcache_base, DCACHE_BASEADDR);
++	CI(dcache_high, DCACHE_HIGHADDR);
++
++	CI(use_dopb, D_OPB);
++	CI(use_iopb, I_OPB);
++	CI(use_dlmb, D_LMB);
++	CI(use_ilmb, I_LMB);
++	CI(num_fsl, FSL_LINKS);
++
++	CI(irq_edge, INTERRUPT_IS_EDGE);
++	CI(irq_positive, EDGE_IS_POSITIVE);
++
++	CI(area_optimised, AREA_OPTIMISED);
++	CI(opcode_0_illegal, OPCODE_0x0_ILLEGAL);
++	CI(exc_unaligned, UNALIGNED_EXCEPTION);
++	CI(exc_ill_opcode, ILL_OPCODE_EXCEPTION);
++	CI(exc_iopb, IOPB_BUS_EXCEPTION);
++	CI(exc_dopb, DOPB_BUS_EXCEPTION);
++	CI(exc_div_zero, DIV_ZERO_EXCEPTION);
++	CI(exc_fpu, FPU_EXCEPTION);
++
++	CI(hw_debug, DEBUG_ENABLED);
++	CI(num_pc_brk, NUMBER_OF_PC_BRK);
++	CI(num_rd_brk, NUMBER_OF_RD_ADDR_BRK);
++	CI(num_wr_brk, NUMBER_OF_WR_ADDR_BRK);
++
++	CI(fpga_family_code, TARGET_FAMILY);
++
++	/* take timebase-frequency from DTS */
++	ci->cpu_clock_freq = fcpu(cpu, "timebase-frequency");
++}
+diff --git a/arch/microblaze/kernel/cpu/cpuinfo-static.c b/arch/microblaze/kernel/cpu/cpuinfo-static.c
 new file mode 100644
-index 0000000..9bc07b9
+index 0000000..a81bcd6
 --- /dev/null
-+++ b/include/asm-microblaze/ucontext.h
-@@ -0,0 +1 @@
-+#include <asm-generic/ucontext.h>
-diff --git a/include/asm-microblaze/user.h b/include/asm-microblaze/user.h
++++ b/arch/microblaze/kernel/cpu/cpuinfo-static.c
+@@ -0,0 +1,114 @@
++/*
++ * Copyright (C) 2007-2008 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2007 John Williams <john.williams@petalogix.com>
++ * Copyright (C) 2007 PetaLogix
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/string.h>
++#include <asm/cpuinfo.h>
++
++const static char family_string[] = CONFIG_XILINX_MICROBLAZE0_FAMILY;
++const static char cpu_ver_string[] = CONFIG_XILINX_MICROBLAZE0_HW_VER;
++
++void __init set_cpuinfo_static(struct cpuinfo *ci, struct device_node *cpu)
++{
++	int i;
++
++	ci->use_barrel = fcpu(cpu, "xlnx,use-barrel");
++	ci->use_divider = fcpu(cpu, "xlnx,use-div");
++	ci->use_mult = fcpu(cpu, "xlnx,use-hw-mul");
++	ci->use_fpu = fcpu(cpu, "xlnx,use-fpu");
++	ci->use_mul_64 = (ci->use_mult == 2 ? 1 : 0);
++	ci->use_msr_instr = fcpu(cpu, "xlnx,use-msr-instr");
++	ci->use_pcmp_instr = fcpu(cpu, "xlnx,use-pcmp-instr");
++
++	ci->use_exception = fcpu(cpu, "xlnx,unaligned-exceptions") ||
++			fcpu(cpu, "xlnx,ill-opcode-exception") ||
++			fcpu(cpu, "xlnx,iopb-bus-exception") ||
++			fcpu(cpu, "xlnx,dopb-bus-exception") ||
++			fcpu(cpu, "xlnx,div-zero-exception") ||
++			fcpu(cpu, "xlnx,fpu-exception");
++
++	ci->exc_unaligned = fcpu(cpu, "xlnx,unaligned-exceptions");
++	ci->exc_unaligned = fcpu(cpu, "xlnx,ill-opcode-exception");
++	ci->exc_iopb = fcpu(cpu, "xlnx,iopb-bus-exception");
++	ci->exc_dopb = fcpu(cpu, "xlnx,dopb-bus-exception");
++	ci->exc_fpu = fcpu(cpu, "xlnx,fpu-exception");
++	ci->exc_div_zero = fcpu(cpu, "xlnx,div-zero-exception");
++	ci->opcode_0_illegal = fcpu(cpu, "xlnx,opcode-0x0-illegal");
++
++	ci->use_icache = fcpu(cpu, "xlnx,use-icache");
++	ci->icache_tagbits = fcpu(cpu, "xlnx,addr-tag-bits");
++	ci->icache_write = fcpu(cpu, "xlnx,allow-icache-wr");
++	ci->icache_line = fcpu(cpu, "xlnx,icache-line-len") << 2;
++	if (!ci->icache_line) {
++		if (fcpu(cpu, "xlnx,icache-use-fsl"))
++			ci->icache_line = 4 << 2;
++		else
++			ci->icache_line = 1 << 2;
++	}
++	ci->icache_size = fcpu(cpu, "i-cache-size");
++	ci->icache_base = fcpu(cpu, "i-cache-baseaddr");
++	ci->icache_high = fcpu(cpu, "i-cache-highaddr");
++
++	ci->use_dcache = fcpu(cpu, "xlnx,use-dcache");
++	ci->dcache_tagbits = fcpu(cpu, "xlnx,dcache-addr-tag");
++	ci->dcache_write = fcpu(cpu, "xlnx,allow-dcache-wr");
++	ci->dcache_line = fcpu(cpu, "xlnx,dcache-line-len") << 2;
++	if (!ci->dcache_line) {
++		if (fcpu(cpu, "xlnx,dcache-use-fsl"))
++			ci->dcache_line = 4 << 2;
++		else
++			ci->dcache_line = 1 << 2;
++	}
++	ci->dcache_size = fcpu(cpu, "d-cache-size");
++	ci->dcache_base = fcpu(cpu, "d-cache-baseaddr");
++	ci->dcache_high = fcpu(cpu, "d-cache-highaddr");
++
++	ci->use_dopb = fcpu(cpu, "xlnx,d-opb");
++	ci->use_iopb = fcpu(cpu, "xlnx,i-opb");
++	ci->use_dlmb = fcpu(cpu, "xlnx,d-lmb");
++	ci->use_ilmb = fcpu(cpu, "xlnx,i-lmb");
++
++	ci->num_fsl = fcpu(cpu, "xlnx,fsl-links");
++	ci->irq_edge = fcpu(cpu, "xlnx,interrupt-is-edge");
++	ci->irq_positive = fcpu(cpu, "xlnx,edge-is-positive");
++	ci->area_optimised = 0;
++
++	ci->hw_debug = fcpu(cpu, "xlnx,debug-enabled");
++	ci->num_pc_brk = fcpu(cpu, "xlnx,number-of-pc-brk");
++	ci->num_rd_brk = fcpu(cpu, "xlnx,number-of-rd-addr-brk");
++	ci->num_wr_brk = fcpu(cpu, "xlnx,number-of-wr-addr-brk");
++
++	ci->cpu_clock_freq = fcpu(cpu, "timebase-frequency");
++
++	ci->ver_code = 0;
++	ci->fpga_family_code = 0;
++
++	/* Do various fixups based on CPU version and FPGA family strings */
++
++	/* Resolved the CPU version code */
++	for (i = 0; cpu_ver_lookup[i].s != NULL; i++) {
++		if (strcmp(cpu_ver_lookup[i].s, cpu_ver_string) == 0)
++			ci->ver_code = cpu_ver_lookup[i].k;
++	}
++
++	/* Resolved the fpga family code */
++	for (i = 0; family_string_lookup[i].s != NULL; i++) {
++		if (strcmp(family_string_lookup[i].s, family_string) == 0)
++			ci->fpga_family_code = family_string_lookup[i].k;
++	}
++
++	/* FIXME - mb3 and spartan2 do not exist in PVR */
++	/* This is mb3 and on a non Spartan2 */
++	if (ci->ver_code == 0x20 && ci->fpga_family_code != 0xf0)
++		/* Hardware Multiplier in use */
++		ci->use_mult = 1;
++}
+diff --git a/arch/microblaze/kernel/cpu/cpuinfo.c b/arch/microblaze/kernel/cpu/cpuinfo.c
 new file mode 100644
-index 0000000..e69de29
+index 0000000..7a3ace8
+--- /dev/null
++++ b/arch/microblaze/kernel/cpu/cpuinfo.c
+@@ -0,0 +1,84 @@
++/*
++ * Copyright (C) 2007-2008 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2007 John Williams <john.williams@petalogix.com>
++ * Copyright (C) 2007 PetaLogix
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ */
++
++#include <linux/init.h>
++#include <linux/slab.h>
++#include <asm/cpuinfo.h>
++#include <asm/pvr.h>
++
++const struct cpu_ver_key cpu_ver_lookup[] = {
++	/* These key value are as per MBV field in PVR0 */
++	{"5.00.a", 0x01},
++	{"5.00.b", 0x02},
++	{"5.00.c", 0x03},
++	{"6.00.a", 0x04},
++	{"6.00.b", 0x06},
++	{"7.00.a", 0x05},
++	{"7.00.b", 0x07},
++	{"7.10.a", 0x08},
++	{"7.10.b", 0x09},
++	/* FIXME There is no keycode defined in MBV for these versions */
++	{"2.10.a", 0x10},
++	{"3.00.a", 0x20},
++	{"4.00.a", 0x30},
++	{"4.00.b", 0x40},
++	{NULL, 0},
++};
++
++/*
++ * FIXME Not sure if the actual key is defined by Xilinx in the PVR
++ */
++const struct family_string_key family_string_lookup[] = {
++	{"virtex2", 0x4},
++	{"virtex2pro", 0x5},
++	{"spartan3", 0x6},
++	{"virtex4", 0x7},
++	{"virtex5", 0x8},
++	{"spartan3e", 0x9},
++	{"spartan3a", 0xa},
++	{"spartan3an", 0xb},
++	{"spartan3adsp", 0xc},
++	/* FIXME There is no key code defined for spartan2 */
++	{"spartan2", 0xf0},
++	{NULL, 0},
++};
++
++struct cpuinfo cpuinfo;
++
++void __init setup_cpuinfo(void)
++{
++	struct device_node *cpu = NULL;
++
++	cpu = (struct device_node *) of_find_node_by_type(NULL, "cpu");
++	if (!cpu)
++		printk(KERN_ERR "You don't have cpu!!!\n");
++
++	printk(KERN_INFO "%s: initialising\n", __func__);
++
++	switch (cpu_has_pvr()) {
++	case 0:
++		printk(KERN_WARNING
++			"%s: No PVR support. Using static CPU info from FDT\n",
++			__func__);
++		set_cpuinfo_static(&cpuinfo, cpu);
++		break;
++/* FIXME I found weird behavior with MB 7.00.a/b
++ * please do not use FULL PVR with MMU */
++	case 1:
++		printk(KERN_INFO "%s: Using full CPU PVR support\n",
++			__func__);
++		set_cpuinfo_pvr_full(&cpuinfo, cpu);
++		break;
++	default:
++		printk(KERN_WARNING "%s: Unsupported PVR setting\n", __func__);
++		set_cpuinfo_static(&cpuinfo, cpu);
++	}
++}
+diff --git a/include/asm-microblaze/cpuinfo.h b/include/asm-microblaze/cpuinfo.h
+new file mode 100644
+index 0000000..b9cd56d
+--- /dev/null
++++ b/include/asm-microblaze/cpuinfo.h
+@@ -0,0 +1,110 @@
++/*
++ * Generic support for queying CPU info
++ *
++ * Copyright (C) 2007-2008 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2007 John Williams <john.williams@petalogix.com>
++ * Copyright (C) 2007 PetaLogix
++ *
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License. See the file COPYING in the main directory of this
++ * archive for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_CPUINFO_H
++#define _ASM_MICROBLAZE_CPUINFO_H
++
++#include <asm/prom.h>
++
++/* CPU Version and FPGA Family code conversion table type */
++struct cpu_ver_key {
++	const char *s;
++	const unsigned k;
++};
++
++extern const struct cpu_ver_key cpu_ver_lookup[];
++
++struct family_string_key {
++	const char *s;
++	const unsigned k;
++};
++
++extern const struct family_string_key family_string_lookup[];
++
++struct cpuinfo {
++	/* Core CPU configuration */
++	int use_barrel;
++	int use_divider;
++	int use_mult;
++	int use_fpu;
++	int use_exception;
++	int use_mul_64;
++	int use_msr_instr;
++	int use_pcmp_instr;
++
++	int ver_code;
++
++	/* CPU caches */
++	int use_icache;
++	int icache_tagbits;
++	int icache_write;
++	int icache_line;
++	int icache_size;
++	unsigned long icache_base;
++	unsigned long icache_high;
++
++	int use_dcache;
++	int dcache_tagbits;
++	int dcache_write;
++	int dcache_line;
++	int dcache_size;
++	unsigned long dcache_base;
++	unsigned long dcache_high;
++
++	/* Bus connections */
++	int use_dopb;
++	int use_iopb;
++	int use_dlmb;
++	int use_ilmb;
++	int num_fsl;
++
++	/* CPU interrupt line info */
++	int irq_edge;
++	int irq_positive;
++
++	int area_optimised;
++
++	/* HW support for CPU exceptions */
++	int opcode_0_illegal;
++	int exc_unaligned;
++	int exc_ill_opcode;
++	int exc_iopb;
++	int exc_dopb;
++	int exc_div_zero;
++	int exc_fpu;
++
++	/* HW debug support */
++	int hw_debug;
++	int num_pc_brk;
++	int num_rd_brk;
++	int num_wr_brk;
++	int cpu_clock_freq;
++
++	/* FPGA family */
++	int fpga_family_code;
++};
++
++extern struct cpuinfo cpuinfo;
++
++/* fwd declarations of the various CPUinfo populators */
++void setup_cpuinfo(void);
++
++void set_cpuinfo_static(struct cpuinfo *ci, struct device_node *cpu);
++void set_cpuinfo_pvr_full(struct cpuinfo *ci, struct device_node *cpu);
++
++static inline unsigned int fcpu(struct device_node *cpu, char *n)
++{
++	int *val;
++	return ((val = (int *) of_get_property(cpu, n, NULL)) ? *val : 0);
++}
++
++#endif /* _ASM_MICROBLAZE_CPUINFO_H */
 -- 
 1.5.4.GIT
 
