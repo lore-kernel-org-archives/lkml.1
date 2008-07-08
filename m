@@ -1,42 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbYGHQnh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755296AbYGHQwp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755972AbYGHQnh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 12:43:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753492AbYGHQn3
+	id S1755296AbYGHQwp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 12:52:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753814AbYGHQwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 12:43:29 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34876 "EHLO
-	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753489AbYGHQn3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 12:43:29 -0400
-Date: Tue, 8 Jul 2008 17:10:29 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Howells <dhowells@redhat.com>
-Cc: jirislaby@gmail.com, akpm@linux-foundation.org, dhowells@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix a const assignment in moxa_load_fw()
-Message-ID: <20080708171029.08db0f4d@the-village.bc.nu>
-In-Reply-To: <20080708154416.24850.30733.stgit@warthog.procyon.org.uk>
-References: <20080708154416.24850.30733.stgit@warthog.procyon.org.uk>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 8 Jul 2008 12:52:35 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40725 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750889AbYGHQwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 12:52:34 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [PATCH 2/2] acpi: Disable IRQ 0 through I/O APIC for some HP systems
+Date: Tue, 8 Jul 2008 18:54:18 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Andreas Herrmann <andreas.herrmann3@amd.com>, Ingo Molnar <mingo@elte.hu>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <lenb@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-next@vger.kernel.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.55.0807010055070.30785@cliff.in.clinika.pl> <200807081727.40605.rjw@sisk.pl> <Pine.LNX.4.55.0807081646270.27931@cliff.in.clinika.pl>
+In-Reply-To: <Pine.LNX.4.55.0807081646270.27931@cliff.in.clinika.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807081854.19323.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 08 Jul 2008 16:44:16 +0100
-David Howells <dhowells@redhat.com> wrote:
-
-> Fix an assignment of a const pointer to a non-const pointer in moxa_load_fw().
+On Tuesday, 8 of July 2008, Maciej W. Rozycki wrote:
+> On Tue, 8 Jul 2008, Rafael J. Wysocki wrote:
 > 
-> This was introduced by patch 037182346f0991683cc7320a257c3f6089432cee.
+> > > (B) The current approach to setup timer as ExtINT.
+> [...]
+> > > (B) ??? who tested this, Rafael
+> > 
+> > Yes, I tested this.
 > 
-> Signed-off-by: David Howells <dhowells@redhat.com>
+>  There is some confusion here apparently -- you certainly have not tested
+> the timer as an ExtINTA interrupt during the course of this discussion,
+> because the "8259A Virtual Wire" through the local APIC has always worked
+> for you.  ExtINTA would be the next, fourth and final attempt before a
+> panic().
 
-Acked-by: Alan Cox <alan@redhat.com>
+Yes, you're right, sorry.
+
+So in fact I didn't test B.
+
+Thanks,
+Rafael
