@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758314AbYGHMoH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758563AbYGHMnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758314AbYGHMoH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 08:44:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757792AbYGHMnW
+	id S1758563AbYGHMnc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 08:43:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbYGHMnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 08:43:22 -0400
+	Tue, 8 Jul 2008 08:43:13 -0400
 Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:27528 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757009AbYGHMnT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 08:43:19 -0400
+	id S1753971AbYGHMnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 08:43:11 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
@@ -18,11 +18,11 @@ Cc: monstr@seznam.cz, arnd@arndb.de, linux-arch@vger.kernel.org,
        grant.likely@secretlab.ca, vapier.adi@gmail.com,
        alan@lxorguk.ukuu.org.uk, hpa@zytor.com, lethal@linux-sh.org,
        florian@openwrt.org, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 34/58] microblaze_v5: ioctl support
-Date: Tue,  8 Jul 2008 13:59:34 +0200
-Message-Id: <d1d33c18956829ec9ac7daf8d0516b17e85ed190.1215517976.git.monstr@monstr.eu>
+Subject: [PATCH 40/58] microblaze_v5: headers pgalloc.h pgtable.h
+Date: Tue,  8 Jul 2008 13:59:40 +0200
+Message-Id: <5174afd0eaa5c6cb9344ea3217199e48899be313.1215517976.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <c7120d8a6379cb1a18af5330997e30ec974acc2f.1215517976.git.monstr@monstr.eu>
+In-Reply-To: <92e3ab88c2174acf4e25c474c1f68ffd4db72ca6.1215517976.git.monstr@monstr.eu>
 References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
  <c03d29cbccaef8aed8a2911c2a259fbd79ad23d9.1215517976.git.monstr@monstr.eu>
@@ -57,6 +57,12 @@ References: <1215518398-5057-1-git-send-email-monstr@monstr.eu>
  <689cff1b6d98f60d8f8abc4472193688b524284d.1215517976.git.monstr@monstr.eu>
  <9664f18e7e86af4332018549b29bf0797d6afcd5.1215517976.git.monstr@monstr.eu>
  <c7120d8a6379cb1a18af5330997e30ec974acc2f.1215517976.git.monstr@monstr.eu>
+ <d1d33c18956829ec9ac7daf8d0516b17e85ed190.1215517976.git.monstr@monstr.eu>
+ <7a16429cfc461420883dbaa80c16047e5a1a91c1.1215517976.git.monstr@monstr.eu>
+ <b6a0f3bceb0867c55613463fc43be5328fcedecd.1215517976.git.monstr@monstr.eu>
+ <fc26823d77c7180b62022e2d4bcca3c4fe6de574.1215517976.git.monstr@monstr.eu>
+ <64089967061955b7a29eb6d4e6269ff75b5442f2.1215517976.git.monstr@monstr.eu>
+ <92e3ab88c2174acf4e25c474c1f68ffd4db72ca6.1215517976.git.monstr@monstr.eu>
 In-Reply-To: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 References: <80a2e46f2fb93812ab12bf79c703e8e2d6b0faa0.1215517976.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -68,25 +74,18 @@ From: Michal Simek <monstr@monstr.eu>
 Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/ioctl.h  |    1 +
- include/asm-microblaze/ioctls.h |   91 +++++++++++++++++++++++++++++++++++++++
- 2 files changed, 92 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/ioctl.h
- create mode 100644 include/asm-microblaze/ioctls.h
+ include/asm-microblaze/pgalloc.h |   14 +++++++++++
+ include/asm-microblaze/pgtable.h |   48 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 62 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/pgalloc.h
+ create mode 100644 include/asm-microblaze/pgtable.h
 
-diff --git a/include/asm-microblaze/ioctl.h b/include/asm-microblaze/ioctl.h
+diff --git a/include/asm-microblaze/pgalloc.h b/include/asm-microblaze/pgalloc.h
 new file mode 100644
-index 0000000..b279fe0
+index 0000000..2a4b354
 --- /dev/null
-+++ b/include/asm-microblaze/ioctl.h
-@@ -0,0 +1 @@
-+#include <asm-generic/ioctl.h>
-diff --git a/include/asm-microblaze/ioctls.h b/include/asm-microblaze/ioctls.h
-new file mode 100644
-index 0000000..76c963f
---- /dev/null
-+++ b/include/asm-microblaze/ioctls.h
-@@ -0,0 +1,91 @@
++++ b/include/asm-microblaze/pgalloc.h
+@@ -0,0 +1,14 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -95,89 +94,66 @@ index 0000000..76c963f
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_IOCTLS_H
-+#define _ASM_MICROBLAZE_IOCTLS_H
++#ifndef _ASM_MICROBLAZE_PGALLOC_H
++#define _ASM_MICROBLAZE_PGALLOC_H
 +
-+#include <asm/ioctl.h>
++#define check_pgt_cache()	do {} while (0)
 +
-+/* 0x54 is just a magic number to make these relatively unique ('T') */
++#endif /* _ASM_MICROBLAZE_PGALLOC_H */
+diff --git a/include/asm-microblaze/pgtable.h b/include/asm-microblaze/pgtable.h
+new file mode 100644
+index 0000000..0354908
+--- /dev/null
++++ b/include/asm-microblaze/pgtable.h
+@@ -0,0 +1,48 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
 +
-+#define TCGETS		0x5401
-+#define TCSETS		0x5402
-+#define TCSETSW		0x5403
-+#define TCSETSF		0x5404
-+#define TCGETA		0x5405
-+#define TCSETA		0x5406
-+#define TCSETAW		0x5407
-+#define TCSETAF		0x5408
-+#define TCSBRK		0x5409
-+#define TCXONC		0x540A
-+#define TCFLSH		0x540B
-+#define TIOCEXCL	0x540C
-+#define TIOCNXCL	0x540D
-+#define TIOCSCTTY	0x540E
-+#define TIOCGPGRP	0x540F
-+#define TIOCSPGRP	0x5410
-+#define TIOCOUTQ	0x5411
-+#define TIOCSTI		0x5412
-+#define TIOCGWINSZ	0x5413
-+#define TIOCSWINSZ	0x5414
-+#define TIOCMGET	0x5415
-+#define TIOCMBIS	0x5416
-+#define TIOCMBIC	0x5417
-+#define TIOCMSET	0x5418
-+#define TIOCGSOFTCAR	0x5419
-+#define TIOCSSOFTCAR	0x541A
-+#define FIONREAD	0x541B
-+#define TIOCINQ		FIONREAD
-+#define TIOCLINUX	0x541C
-+#define TIOCCONS	0x541D
-+#define TIOCGSERIAL	0x541E
-+#define TIOCSSERIAL	0x541F
-+#define TIOCPKT		0x5420
-+#define FIONBIO		0x5421
-+#define TIOCNOTTY	0x5422
-+#define TIOCSETD	0x5423
-+#define TIOCGETD	0x5424
-+#define TCSBRKP		0x5425 /* Needed for POSIX tcsendbreak() */
-+#define TIOCTTYGSTRUCT	0x5426 /* For debugging only */
-+#define TIOCSBRK	0x5427 /* BSD compatibility */
-+#define TIOCCBRK	0x5428 /* BSD compatibility */
-+#define TIOCGSID	0x5429 /* Return the session ID of FD */
-+/* Get Pty Number (of pty-mux device) */
-+#define TIOCGPTN	_IOR('T', 0x30, unsigned int)
-+#define TIOCSPTLCK	_IOW('T', 0x31, int) /* Lock/unlock Pty */
++#ifndef _ASM_MICROBLAZE_PGTABLE_H
++#define _ASM_MICROBLAZE_PGTABLE_H
 +
-+#define FIONCLEX	0x5450 /* these numbers need to be adjusted. */
-+#define FIOCLEX		0x5451
-+#define FIOASYNC	0x5452
-+#define TIOCSERCONFIG	0x5453
-+#define TIOCSERGWILD	0x5454
-+#define TIOCSERSWILD	0x5455
-+#define TIOCGLCKTRMIOS	0x5456
-+#define TIOCSLCKTRMIOS	0x5457
-+#define TIOCSERGSTRUCT	0x5458 /* For debugging only */
-+#define TIOCSERGETLSR	0x5459 /* Get line status register */
-+#define TIOCSERGETMULTI 0x545A /* Get multiport config */
-+#define TIOCSERSETMULTI 0x545B /* Set multiport config */
++#define pgd_present(pgd)	(1) /* pages are always present on NO_MM */
++#define pgd_none(pgd)		(0)
++#define pgd_bad(pgd)		(0)
++#define pgd_clear(pgdp)
++#define kern_addr_valid(addr)	(1)
++#define	pmd_offset(a, b)	((void *) 0)
 +
-+#define TIOCMIWAIT	0x545C /* wait for a change on serial input line(s) */
-+#define TIOCGICOUNT	0x545D /* read serial port inline interrupt counts */
++#define PAGE_NONE		__pgprot(0) /* these mean nothing to NO_MM */
++#define PAGE_SHARED		__pgprot(0) /* these mean nothing to NO_MM */
++#define PAGE_COPY		__pgprot(0) /* these mean nothing to NO_MM */
++#define PAGE_READONLY		__pgprot(0) /* these mean nothing to NO_MM */
++#define PAGE_KERNEL		__pgprot(0) /* these mean nothing to NO_MM */
 +
-+#define	FIOQSIZE	0x545E
++#define __swp_type(x)		(0)
++#define __swp_offset(x)		(0)
++#define __swp_entry(typ, off)	((swp_entry_t) { ((typ) | ((off) << 7)) })
++#define __pte_to_swp_entry(pte)	((swp_entry_t) { pte_val(pte) })
++#define __swp_entry_to_pte(x)	((pte_t) { (x).val })
 +
-+/* Used for packet mode */
-+#define TIOCPKT_DATA		0
-+#define TIOCPKT_FLUSHREAD	1
-+#define TIOCPKT_FLUSHWRITE	2
-+#define TIOCPKT_STOP		4
-+#define TIOCPKT_START		8
-+#define TIOCPKT_NOSTOP		16
-+#define TIOCPKT_DOSTOP		32
++#ifndef __ASSEMBLY__
++static inline int pte_file(pte_t pte) { return 0; }
++#endif
 +
-+#define TIOCSER_TEMT	0x01 /* Transmitter physically empty */
++#define ZERO_PAGE(vaddr)	({ BUG(); NULL; })
 +
-+#endif /* _ASM_MICROBLAZE_IOCTLS_H */
++#define swapper_pg_dir ((pgd_t *) NULL)
++
++#define pgtable_cache_init()	do {} while (0)
++
++#define io_remap_pfn_range(vma, vaddr, pfn, size, prot)		\
++		remap_pfn_range(vma, vaddr, pfn, size, prot)
++
++#define arch_enter_lazy_cpu_mode()	do {} while (0)
++
++void paging_init(void);
++
++#endif /* _ASM_MICROBLAZE_PGTABLE_H */
 -- 
 1.5.4.GIT
 
