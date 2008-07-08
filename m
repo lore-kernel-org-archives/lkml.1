@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757256AbYGHRPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757572AbYGHRQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757256AbYGHRPV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 13:15:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753418AbYGHRPF
+	id S1757572AbYGHRQO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 13:16:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754224AbYGHRP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 13:15:05 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:57812 "EHLO
+	Tue, 8 Jul 2008 13:15:58 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:57846 "EHLO
 	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753546AbYGHRPD (ORCPT
+	with ESMTP id S1753418AbYGHRP4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 13:15:03 -0400
-Message-Id: <20080708170047.433712000@sipsolutions.net>
+	Tue, 8 Jul 2008 13:15:56 -0400
+Message-Id: <20080708170044.262684000@sipsolutions.net>
 References: <20080708170015.470877000@sipsolutions.net>
 User-Agent: quilt/0.46-1
-Date: Tue, 08 Jul 2008 19:00:23 +0200
+Date: Tue, 08 Jul 2008 19:00:19 +0200
 From: Johannes Berg <johannes@sipsolutions.net>
 To: linux-kernel@vger.kernel.org
 Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Hellwig <hch@infradead.org>, netdev@vger.kernel.org
-Subject: [RFC 08/11] remove CONFIG_KMOD from net
-Content-Disposition: inline; filename=config-kmod-remove-net.patch
+       Christoph Hellwig <hch@infradead.org>, video4linux-list@redhat.com,
+       David Woodhouse <dwmw2@infradead.org>, linux-ppp@vger.kernel.org,
+       dm-devel@redhat.com
+Subject: [RFC 04/11] remove CONFIG_KMOD from drivers
+Content-Disposition: inline; filename=config-kmod-remove-drivers.patch
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
@@ -27,308 +29,276 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some code here depends on CONFIG_KMOD to not try to load
-protocol modules or similar, replace by CONFIG_MODULES
-where more than just request_module depends on CONFIG_KMOD
-and and also use try_then_request_module in ebtables.
+Straight forward conversions to CONFIG_MODULE; many drivers
+include <linux/kmod.h> conditionally and then don't have any
+other conditional code so remove it from those.
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Cc: netdev@vger.kernel.org
+Cc: video4linux-list@redhat.com
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-ppp@vger.kernel.org
+Cc: dm-devel@redhat.com
 ---
- include/linux/netdevice.h       |    5 ++++-
- net/bluetooth/af_bluetooth.c    |    8 +-------
- net/bridge/netfilter/ebtables.c |   15 +++------------
- net/can/af_can.c                |    4 ++--
- net/core/dev.c                  |    2 +-
- net/core/rtnetlink.c            |    4 ++--
- net/dccp/ccid.c                 |    2 +-
- net/decnet/dn_dev.c             |    2 --
- net/ipv4/devinet.c              |    2 --
- net/ipv4/inet_diag.c            |    2 --
- net/ipv4/tcp_cong.c             |    4 ++--
- net/netfilter/nfnetlink.c       |    2 +-
- net/netlink/af_netlink.c        |    2 +-
- net/sched/act_api.c             |    2 +-
- net/sched/cls_api.c             |    2 +-
- net/sched/ematch.c              |    2 +-
- net/sched/sch_api.c             |    2 +-
- net/socket.c                    |    2 +-
- net/sunrpc/auth.c               |    2 --
- 19 files changed, 23 insertions(+), 43 deletions(-)
+ drivers/md/md.c                                 |    7 +------
+ drivers/media/video/cpia.c                      |    4 ----
+ drivers/media/video/usbvision/usbvision-core.c  |    4 ----
+ drivers/media/video/usbvision/usbvision-video.c |    4 ----
+ drivers/media/video/v4l1-compat.c               |    4 ----
+ drivers/media/video/v4l2-common.c               |    4 ----
+ drivers/media/video/vino.c                      |    5 +----
+ drivers/media/video/w9968cf.c                   |    4 ++--
+ drivers/mtd/mtdpart.c                           |    2 --
+ drivers/net/irda/sir_dongle.c                   |    2 --
+ drivers/net/ppp_generic.c                       |   10 +++-------
+ drivers/net/pppox.c                             |    9 ++-------
+ drivers/video/fbmem.c                           |   17 ++---------------
+ 13 files changed, 11 insertions(+), 65 deletions(-)
 
---- everything.orig/net/bluetooth/af_bluetooth.c	2008-07-08 18:35:53.000000000 +0200
-+++ everything/net/bluetooth/af_bluetooth.c	2008-07-08 18:36:06.000000000 +0200
-@@ -36,10 +36,7 @@
- #include <linux/init.h>
- #include <linux/poll.h>
- #include <net/sock.h>
+--- everything.orig/drivers/md/md.c	2008-07-08 18:46:21.000000000 +0200
++++ everything/drivers/md/md.c	2008-07-08 18:49:10.000000000 +0200
+@@ -44,14 +44,9 @@
+ #include <linux/mutex.h>
+ #include <linux/ctype.h>
+ #include <linux/freezer.h>
 -
--#if defined(CONFIG_KMOD)
+ #include <linux/init.h>
+-
+ #include <linux/file.h>
+-
+-#ifdef CONFIG_KMOD
  #include <linux/kmod.h>
 -#endif
  
- #include <net/bluetooth/bluetooth.h>
+ #include <asm/unaligned.h>
  
-@@ -144,11 +141,8 @@ static int bt_sock_create(struct net *ne
- 	if (proto < 0 || proto >= BT_MAX_PROTO)
- 		return -EINVAL;
+@@ -3410,7 +3405,7 @@ static int do_md_run(mddev_t * mddev)
+ 		}
+ 	}
  
--#if defined(CONFIG_KMOD)
--	if (!bt_proto[proto]) {
-+	if (!bt_proto[proto])
- 		request_module("bt-proto-%d", proto);
--	}
+-#ifdef CONFIG_KMOD
++#ifdef CONFIG_MODULES
+ 	if (mddev->level != LEVEL_NONE)
+ 		request_module("md-level-%d", mddev->level);
+ 	else if (mddev->clevel[0])
+--- everything.orig/drivers/media/video/cpia.c	2008-07-08 18:46:21.000000000 +0200
++++ everything/drivers/media/video/cpia.c	2008-07-08 18:49:11.000000000 +0200
+@@ -39,10 +39,6 @@
+ #include <asm/io.h>
+ #include <linux/mutex.h>
+ 
+-#ifdef CONFIG_KMOD
+-#include <linux/kmod.h>
 -#endif
- 
- 	err = -EPROTONOSUPPORT;
- 
---- everything.orig/net/bridge/netfilter/ebtables.c	2008-07-08 18:35:54.000000000 +0200
-+++ everything/net/bridge/netfilter/ebtables.c	2008-07-08 18:36:06.000000000 +0200
-@@ -288,23 +288,14 @@ find_inlist_lock_noload(struct list_head
- 	return NULL;
- }
- 
--#ifndef CONFIG_KMOD
--#define find_inlist_lock(h,n,p,e,m) find_inlist_lock_noload((h),(n),(e),(m))
--#else
- static void *
- find_inlist_lock(struct list_head *head, const char *name, const char *prefix,
-    int *error, struct mutex *mutex)
- {
--	void *ret;
 -
--	ret = find_inlist_lock_noload(head, name, error, mutex);
--	if (!ret) {
--		request_module("%s%s", prefix, name);
--		ret = find_inlist_lock_noload(head, name, error, mutex);
+ #include "cpia.h"
+ 
+ static int video_nr = -1;
+--- everything.orig/drivers/media/video/usbvision/usbvision-core.c	2008-07-08 18:46:21.000000000 +0200
++++ everything/drivers/media/video/usbvision/usbvision-core.c	2008-07-08 18:49:11.000000000 +0200
+@@ -47,10 +47,6 @@
+ 
+ #include <linux/workqueue.h>
+ 
+-#ifdef CONFIG_KMOD
+-#include <linux/kmod.h>
+-#endif
+-
+ #include "usbvision.h"
+ 
+ static unsigned int core_debug;
+--- everything.orig/drivers/media/video/usbvision/usbvision-video.c	2008-07-08 18:46:21.000000000 +0200
++++ everything/drivers/media/video/usbvision/usbvision-video.c	2008-07-08 18:49:11.000000000 +0200
+@@ -70,10 +70,6 @@
+ 
+ #include <linux/workqueue.h>
+ 
+-#ifdef CONFIG_KMOD
+-#include <linux/kmod.h>
+-#endif
+-
+ #include "usbvision.h"
+ #include "usbvision-cards.h"
+ 
+--- everything.orig/drivers/media/video/v4l1-compat.c	2008-07-08 18:46:21.000000000 +0200
++++ everything/drivers/media/video/v4l1-compat.c	2008-07-08 18:49:11.000000000 +0200
+@@ -35,10 +35,6 @@
+ #include <asm/system.h>
+ #include <asm/pgtable.h>
+ 
+-#ifdef CONFIG_KMOD
+-#include <linux/kmod.h>
+-#endif
+-
+ static unsigned int debug;
+ module_param(debug, int, 0644);
+ MODULE_PARM_DESC(debug, "enable debug messages");
+--- everything.orig/drivers/media/video/v4l2-common.c	2008-07-08 18:46:21.000000000 +0200
++++ everything/drivers/media/video/v4l2-common.c	2008-07-08 18:49:11.000000000 +0200
+@@ -60,10 +60,6 @@
+ #include <media/v4l2-common.h>
+ #include <media/v4l2-chip-ident.h>
+ 
+-#ifdef CONFIG_KMOD
+-#include <linux/kmod.h>
+-#endif
+-
+ #include <linux/videodev.h>
+ 
+ MODULE_AUTHOR("Bill Dirks, Justin Schoeman, Gerd Knorr");
+--- everything.orig/drivers/media/video/vino.c	2008-07-08 18:46:21.000000000 +0200
++++ everything/drivers/media/video/vino.c	2008-07-08 18:49:11.000000000 +0200
+@@ -30,10 +30,7 @@
+ #include <linux/mm.h>
+ #include <linux/time.h>
+ #include <linux/version.h>
+-
+-#ifdef CONFIG_KMOD
+ #include <linux/kmod.h>
+-#endif
+ 
+ #include <linux/i2c.h>
+ #include <linux/i2c-algo-sgi.h>
+@@ -4641,7 +4638,7 @@ static int __init vino_module_init(void)
+ 	}
+ 	vino_init_stage++;
+ 
+-#if defined(CONFIG_KMOD) && defined(MODULE)
++#ifdef MODULE
+ 	request_module("saa7191");
+ 	request_module("indycam");
+ #endif
+--- everything.orig/drivers/media/video/w9968cf.c	2008-07-08 18:46:21.000000000 +0200
++++ everything/drivers/media/video/w9968cf.c	2008-07-08 18:49:11.000000000 +0200
+@@ -110,7 +110,7 @@ static int specific_debug = W9968CF_SPEC
+ 
+ static unsigned int param_nv[24]; /* number of values per parameter */
+ 
+-#ifdef CONFIG_KMOD
++#ifdef CONFIG_MODULES
+ module_param(ovmod_load, bool, 0644);
+ #endif
+ module_param(simcams, ushort, 0644);
+@@ -143,7 +143,7 @@ module_param(debug, ushort, 0644);
+ module_param(specific_debug, bool, 0644);
+ #endif
+ 
+-#ifdef CONFIG_KMOD
++#ifdef CONFIG_MODULES
+ MODULE_PARM_DESC(ovmod_load,
+ 		 "\n<0|1> Automatic 'ovcamchip' module loading."
+ 		 "\n0 disabled, 1 enabled."
+--- everything.orig/drivers/mtd/mtdpart.c	2008-07-08 18:46:21.000000000 +0200
++++ everything/drivers/mtd/mtdpart.c	2008-07-08 18:49:11.000000000 +0200
+@@ -555,10 +555,8 @@ int parse_mtd_partitions(struct mtd_info
+ 
+ 	for ( ; ret <= 0 && *types; types++) {
+ 		parser = get_partition_parser(*types);
+-#ifdef CONFIG_KMOD
+ 		if (!parser && !request_module("%s", *types))
+ 				parser = get_partition_parser(*types);
+-#endif
+ 		if (!parser) {
+ 			printk(KERN_NOTICE "%s partition parsing not available\n",
+ 			       *types);
+--- everything.orig/drivers/net/irda/sir_dongle.c	2008-07-08 18:46:21.000000000 +0200
++++ everything/drivers/net/irda/sir_dongle.c	2008-07-08 18:49:11.000000000 +0200
+@@ -67,9 +67,7 @@ int sirdev_get_dongle(struct sir_dev *de
+ 	const struct dongle_driver *drv = NULL;
+ 	int err = -EINVAL;
+ 
+-#ifdef CONFIG_KMOD
+ 	request_module("irda-dongle-%d", type);
+-#endif
+ 
+ 	if (dev->dongle_drv != NULL)
+ 		return -EBUSY;
+--- everything.orig/drivers/net/ppp_generic.c	2008-07-08 18:46:21.000000000 +0200
++++ everything/drivers/net/ppp_generic.c	2008-07-08 18:54:36.000000000 +0200
+@@ -2113,13 +2113,9 @@ ppp_set_compress(struct ppp *ppp, unsign
+ 	    || ccp_option[1] < 2 || ccp_option[1] > data.length)
+ 		goto out;
+ 
+-	cp = find_compressor(ccp_option[0]);
+-#ifdef CONFIG_KMOD
+-	if (!cp) {
+-		request_module("ppp-compress-%d", ccp_option[0]);
+-		cp = find_compressor(ccp_option[0]);
 -	}
--	return ret;
-+	return try_then_request_module(
-+			find_inlist_lock_noload(head, name, error, mutex),
-+			"%s%s", prefix, name);
+-#endif /* CONFIG_KMOD */
++	cp = try_then_request_module(
++		find_compressor(ccp_option[0]),
++		"ppp-compress-%d", ccp_option[0]);
+ 	if (!cp)
+ 		goto out;
+ 
+--- everything.orig/drivers/net/pppox.c	2008-07-08 18:46:21.000000000 +0200
++++ everything/drivers/net/pppox.c	2008-07-08 18:49:11.000000000 +0200
+@@ -115,13 +115,8 @@ static int pppox_create(struct net *net,
+ 		goto out;
+ 
+ 	rc = -EPROTONOSUPPORT;
+-#ifdef CONFIG_KMOD
+-	if (!pppox_protos[protocol]) {
+-		char buffer[32];
+-		sprintf(buffer, "pppox-proto-%d", protocol);
+-		request_module(buffer);
+-	}
+-#endif
++	if (!pppox_protos[protocol])
++		request_module("pppox-proto-%d", protocol);
+ 	if (!pppox_protos[protocol] ||
+ 	    !try_module_get(pppox_protos[protocol]->owner))
+ 		goto out;
+--- everything.orig/drivers/video/fbmem.c	2008-07-08 18:46:21.000000000 +0200
++++ everything/drivers/video/fbmem.c	2008-07-08 18:49:11.000000000 +0200
+@@ -28,9 +28,7 @@
+ #include <linux/proc_fs.h>
+ #include <linux/seq_file.h>
+ #include <linux/console.h>
+-#ifdef CONFIG_KMOD
+ #include <linux/kmod.h>
+-#endif
+ #include <linux/err.h>
+ #include <linux/device.h>
+ #include <linux/efi.h>
+@@ -837,13 +835,6 @@ fb_write(struct file *file, const char _
+ 	return (cnt) ? cnt : err;
  }
--#endif
- 
- static inline struct ebt_table *
- find_table_lock(const char *name, int *error, struct mutex *mutex)
---- everything.orig/net/can/af_can.c	2008-07-08 18:35:53.000000000 +0200
-+++ everything/net/can/af_can.c	2008-07-08 18:36:06.000000000 +0200
-@@ -128,8 +128,8 @@ static int can_create(struct net *net, s
- 	if (net != &init_net)
- 		return -EAFNOSUPPORT;
  
 -#ifdef CONFIG_KMOD
--	/* try to load protocol module, when CONFIG_KMOD is defined */
-+#ifdef CONFIG_MODULES
-+	/* try to load protocol module kernel is modular */
- 	if (!proto_tab[protocol]) {
- 		err = request_module("can-proto-%d", protocol);
- 
---- everything.orig/net/core/dev.c	2008-07-08 18:35:53.000000000 +0200
-+++ everything/net/core/dev.c	2008-07-08 18:36:06.000000000 +0200
-@@ -4639,7 +4639,7 @@ EXPORT_SYMBOL(br_fdb_get_hook);
- EXPORT_SYMBOL(br_fdb_put_hook);
- #endif
- 
--#ifdef CONFIG_KMOD
-+#ifdef CONFIG_MODULES
- EXPORT_SYMBOL(dev_load);
- #endif
- 
---- everything.orig/net/core/rtnetlink.c	2008-07-08 18:35:53.000000000 +0200
-+++ everything/net/core/rtnetlink.c	2008-07-08 18:36:06.000000000 +0200
-@@ -1029,7 +1029,7 @@ static int rtnl_newlink(struct sk_buff *
- 	struct nlattr *linkinfo[IFLA_INFO_MAX+1];
- 	int err;
- 
--#ifdef CONFIG_KMOD
-+#ifdef CONFIG_MODULES
- replay:
- #endif
- 	err = nlmsg_parse(nlh, sizeof(*ifm), tb, IFLA_MAX, ifla_policy);
-@@ -1118,7 +1118,7 @@ replay:
- 			return -EOPNOTSUPP;
- 
- 		if (!ops) {
--#ifdef CONFIG_KMOD
-+#ifdef CONFIG_MODULES
- 			if (kind[0]) {
- 				__rtnl_unlock();
- 				request_module("rtnl-link-%s", kind);
---- everything.orig/net/dccp/ccid.c	2008-07-08 18:35:53.000000000 +0200
-+++ everything/net/dccp/ccid.c	2008-07-08 18:36:06.000000000 +0200
-@@ -154,7 +154,7 @@ struct ccid *ccid_new(unsigned char id, 
- 	struct ccid *ccid = NULL;
- 
- 	ccids_read_lock();
--#ifdef CONFIG_KMOD
-+#ifdef CONFIG_MODULES
- 	if (ccids[id] == NULL) {
- 		/* We only try to load if in process context */
- 		ccids_read_unlock();
---- everything.orig/net/decnet/dn_dev.c	2008-07-08 18:35:53.000000000 +0200
-+++ everything/net/decnet/dn_dev.c	2008-07-08 18:36:06.000000000 +0200
-@@ -490,9 +490,7 @@ int dn_dev_ioctl(unsigned int cmd, void 
- 		return -EFAULT;
- 	ifr->ifr_name[IFNAMSIZ-1] = 0;
- 
--#ifdef CONFIG_KMOD
- 	dev_load(&init_net, ifr->ifr_name);
--#endif
- 
- 	switch(cmd) {
- 		case SIOCGIFADDR:
---- everything.orig/net/ipv4/devinet.c	2008-07-08 18:35:54.000000000 +0200
-+++ everything/net/ipv4/devinet.c	2008-07-08 18:36:06.000000000 +0200
-@@ -613,9 +613,7 @@ int devinet_ioctl(struct net *net, unsig
- 	if (colon)
- 		*colon = 0;
- 
--#ifdef CONFIG_KMOD
- 	dev_load(net, ifr.ifr_name);
--#endif
- 
- 	switch (cmd) {
- 	case SIOCGIFADDR:	/* Get interface address */
---- everything.orig/net/ipv4/inet_diag.c	2008-07-08 18:35:54.000000000 +0200
-+++ everything/net/ipv4/inet_diag.c	2008-07-08 18:36:06.000000000 +0200
-@@ -55,11 +55,9 @@ static DEFINE_MUTEX(inet_diag_table_mute
- 
- static const struct inet_diag_handler *inet_diag_lock_handler(int type)
+-static void try_to_load(int fb)
+-{
+-	request_module("fb%d", fb);
+-}
+-#endif /* CONFIG_KMOD */
+-
+ int
+ fb_pan_display(struct fb_info *info, struct fb_var_screeninfo *var)
  {
+@@ -1086,10 +1077,8 @@ fb_ioctl(struct inode *inode, struct fil
+ 		    return -EINVAL;
+ 		if (con2fb.framebuffer < 0 || con2fb.framebuffer >= FB_MAX)
+ 		    return -EINVAL;
 -#ifdef CONFIG_KMOD
- 	if (!inet_diag_table[type])
- 		request_module("net-pf-%d-proto-%d-type-%d", PF_NETLINK,
- 			       NETLINK_INET_DIAG, type);
--#endif
+ 		if (!registered_fb[con2fb.framebuffer])
+-		    try_to_load(con2fb.framebuffer);
+-#endif /* CONFIG_KMOD */
++		    request_module("fb%d", con2fb.framebuffer);
+ 		if (!registered_fb[con2fb.framebuffer])
+ 		    return -EINVAL;
+ 		event.info = info;
+@@ -1326,10 +1315,8 @@ fb_open(struct inode *inode, struct file
  
- 	mutex_lock(&inet_diag_table_mutex);
- 	if (!inet_diag_table[type])
---- everything.orig/net/ipv4/tcp_cong.c	2008-07-08 18:35:54.000000000 +0200
-+++ everything/net/ipv4/tcp_cong.c	2008-07-08 18:36:06.000000000 +0200
-@@ -115,7 +115,7 @@ int tcp_set_default_congestion_control(c
- 
- 	spin_lock(&tcp_cong_list_lock);
- 	ca = tcp_ca_find(name);
+ 	if (fbidx >= FB_MAX)
+ 		return -ENODEV;
 -#ifdef CONFIG_KMOD
-+#ifdef CONFIG_MODULES
- 	if (!ca && capable(CAP_SYS_MODULE)) {
- 		spin_unlock(&tcp_cong_list_lock);
- 
-@@ -244,7 +244,7 @@ int tcp_set_congestion_control(struct so
- 	if (ca == icsk->icsk_ca_ops)
- 		goto out;
- 
--#ifdef CONFIG_KMOD
-+#ifdef CONFIG_MODULES
- 	/* not found attempt to autoload module */
- 	if (!ca && capable(CAP_SYS_MODULE)) {
- 		rcu_read_unlock();
---- everything.orig/net/netfilter/nfnetlink.c	2008-07-08 18:35:53.000000000 +0200
-+++ everything/net/netfilter/nfnetlink.c	2008-07-08 18:36:06.000000000 +0200
-@@ -134,7 +134,7 @@ static int nfnetlink_rcv_msg(struct sk_b
- 	type = nlh->nlmsg_type;
- 	ss = nfnetlink_get_subsys(type);
- 	if (!ss) {
--#ifdef CONFIG_KMOD
-+#ifdef CONFIG_MODULES
- 		nfnl_unlock();
- 		request_module("nfnetlink-subsys-%d", NFNL_SUBSYS_ID(type));
- 		nfnl_lock();
---- everything.orig/net/netlink/af_netlink.c	2008-07-08 18:35:53.000000000 +0200
-+++ everything/net/netlink/af_netlink.c	2008-07-08 18:36:06.000000000 +0200
-@@ -434,7 +434,7 @@ static int netlink_create(struct net *ne
- 		return -EPROTONOSUPPORT;
- 
- 	netlink_lock_table();
--#ifdef CONFIG_KMOD
-+#ifdef CONFIG_MODULES
- 	if (!nl_table[protocol].registered) {
- 		netlink_unlock_table();
- 		request_module("net-pf-%d-proto-%d", PF_NETLINK, protocol);
---- everything.orig/net/sched/act_api.c	2008-07-08 18:35:54.000000000 +0200
-+++ everything/net/sched/act_api.c	2008-07-08 18:36:06.000000000 +0200
-@@ -495,7 +495,7 @@ struct tc_action *tcf_action_init_1(stru
- 
- 	a_o = tc_lookup_action_n(act_name);
- 	if (a_o == NULL) {
--#ifdef CONFIG_KMOD
-+#ifdef CONFIG_MODULES
- 		rtnl_unlock();
- 		request_module("act_%s", act_name);
- 		rtnl_lock();
---- everything.orig/net/sched/cls_api.c	2008-07-08 18:35:54.000000000 +0200
-+++ everything/net/sched/cls_api.c	2008-07-08 18:36:06.000000000 +0200
-@@ -223,7 +223,7 @@ replay:
- 		err = -ENOENT;
- 		tp_ops = tcf_proto_lookup_ops(tca[TCA_KIND]);
- 		if (tp_ops == NULL) {
--#ifdef CONFIG_KMOD
-+#ifdef CONFIG_MODULES
- 			struct nlattr *kind = tca[TCA_KIND];
- 			char name[IFNAMSIZ];
- 
---- everything.orig/net/sched/ematch.c	2008-07-08 18:35:54.000000000 +0200
-+++ everything/net/sched/ematch.c	2008-07-08 18:36:06.000000000 +0200
-@@ -224,7 +224,7 @@ static int tcf_em_validate(struct tcf_pr
- 
- 		if (em->ops == NULL) {
- 			err = -ENOENT;
--#ifdef CONFIG_KMOD
-+#ifdef CONFIG_MODULES
- 			__rtnl_unlock();
- 			request_module("ematch-kind-%u", em_hdr->kind);
- 			rtnl_lock();
---- everything.orig/net/sched/sch_api.c	2008-07-08 18:35:54.000000000 +0200
-+++ everything/net/sched/sch_api.c	2008-07-08 18:36:06.000000000 +0200
-@@ -457,7 +457,7 @@ qdisc_create(struct net_device *dev, u32
- 	struct Qdisc_ops *ops;
- 
- 	ops = qdisc_lookup_ops(kind);
--#ifdef CONFIG_KMOD
-+#ifdef CONFIG_MODULES
- 	if (ops == NULL && kind != NULL) {
- 		char name[IFNAMSIZ];
- 		if (nla_strlcpy(name, kind, IFNAMSIZ) < IFNAMSIZ) {
---- everything.orig/net/socket.c	2008-07-08 18:35:53.000000000 +0200
-+++ everything/net/socket.c	2008-07-08 18:36:06.000000000 +0200
-@@ -1140,7 +1140,7 @@ static int __sock_create(struct net *net
- 
- 	sock->type = type;
- 
--#if defined(CONFIG_KMOD)
-+#ifdef CONFIG_MODULES
- 	/* Attempt to load a protocol module if the find failed.
- 	 *
- 	 * 12/09/1996 Marcin: But! this makes REALLY only sense, if the user
---- everything.orig/net/sunrpc/auth.c	2008-07-08 18:35:53.000000000 +0200
-+++ everything/net/sunrpc/auth.c	2008-07-08 18:36:06.000000000 +0200
-@@ -83,10 +83,8 @@ rpcauth_create(rpc_authflavor_t pseudofl
- 	if (flavor >= RPC_AUTH_MAXFLAVOR)
- 		goto out;
- 
--#ifdef CONFIG_KMOD
- 	if ((ops = auth_flavors[flavor]) == NULL)
- 		request_module("rpc-auth-%u", flavor);
--#endif
- 	spin_lock(&rpc_authflavor_lock);
- 	ops = auth_flavors[flavor];
- 	if (ops == NULL || !try_module_get(ops->owner)) {
---- everything.orig/include/linux/netdevice.h	2008-07-08 18:35:53.000000000 +0200
-+++ everything/include/linux/netdevice.h	2008-07-08 18:36:06.000000000 +0200
-@@ -1484,8 +1484,11 @@ extern void		dev_set_promiscuity(struct 
- extern void		dev_set_allmulti(struct net_device *dev, int inc);
- extern void		netdev_state_change(struct net_device *dev);
- extern void		netdev_features_change(struct net_device *dev);
--/* Load a device via the kmod */
-+#ifdef CONFIG_MODULES
- extern void		dev_load(struct net *net, const char *name);
-+#else
-+static inline void	dev_load(struct net *net, const char *name) {};
-+#endif
- extern void		dev_mcast_init(void);
- extern int		netdev_max_backlog;
- extern int		weight_p;
+ 	if (!(info = registered_fb[fbidx]))
+-		try_to_load(fbidx);
+-#endif /* CONFIG_KMOD */
++		request_module("fb%d", fbidx);
+ 	if (!(info = registered_fb[fbidx]))
+ 		return -ENODEV;
+ 	if (!try_module_get(info->fbops->owner))
 
 -- 
 
