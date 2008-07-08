@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755296AbYGHQwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756611AbYGHQxK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755296AbYGHQwp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 12:52:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753814AbYGHQwf
+	id S1756611AbYGHQxK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 12:53:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753814AbYGHQwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 12:52:35 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40725 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750889AbYGHQwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 12:52:34 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH 2/2] acpi: Disable IRQ 0 through I/O APIC for some HP systems
-Date: Tue, 8 Jul 2008 18:54:18 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Andreas Herrmann <andreas.herrmann3@amd.com>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <lenb@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-next@vger.kernel.org,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.55.0807010055070.30785@cliff.in.clinika.pl> <200807081727.40605.rjw@sisk.pl> <Pine.LNX.4.55.0807081646270.27931@cliff.in.clinika.pl>
-In-Reply-To: <Pine.LNX.4.55.0807081646270.27931@cliff.in.clinika.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Jul 2008 12:52:55 -0400
+Received: from sinclair.provo.novell.com ([137.65.248.137]:52518 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753489AbYGHQwz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 12:52:55 -0400
+Message-Id: <4873617C.BA47.005A.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Tue, 08 Jul 2008 10:45:48 -0600
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: <rostedt@goodmis.org>, <peterz@infradead.org>, <npiggin@suse.de>,
+       <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>
+Subject: Re: [PATCH 0/3] sched: newidle and RT wake-buddy fixes
+References: <20080627202444.3829.21595.stgit@lsg.lsg.lab.novell.com>
+ <20080630131511.GA7506@elte.hu> <4868DCC7.BA47.005A.0@novell.com>
+ <20080703144124.GA653@elte.hu> <20080703151209.GA17059@elte.hu>
+In-Reply-To: <20080703151209.GA17059@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200807081854.19323.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 8 of July 2008, Maciej W. Rozycki wrote:
-> On Tue, 8 Jul 2008, Rafael J. Wysocki wrote:
+Hi Ingo,
+
+>>> On Thu, Jul 3, 2008 at 11:12 AM, in message <20080703151209.GA17059@elte.hu>,
+Ingo Molnar <mingo@elte.hu> wrote: 
+
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> > > (B) The current approach to setup timer as ExtINT.
-> [...]
-> > > (B) ??? who tested this, Rafael
-> > 
-> > Yes, I tested this.
+>> 
+>> * Gregory Haskins <ghaskins@novell.com> wrote:
+>> 
+>> > I may have found the issue: It looks like the hunk that initially 
+>> > disables interrupts in load_balance_newidle() was inadvertently 
+>> > applied to load_balance() instead during the merge to linux-tip.  If 
+>> > you fold the following patch into my original patch, it should set 
+>> > things right again.
+>> 
+>> ah, sorry - indeed! I've reactivated your patch and i'm testing it 
+>> now.
 > 
->  There is some confusion here apparently -- you certainly have not tested
-> the timer as an ExtINTA interrupt during the course of this discussion,
-> because the "8259A Virtual Wire" through the local APIC has always worked
-> for you.  ExtINTA would be the next, fourth and final attempt before a
-> panic().
+> -tip testing found that it still hangs at:
 
-Yes, you're right, sorry.
+I was not able to reproduce the hang by taking sched/devel/HEAD, my patch, and your
+config (or any config for that matter).  We will have to back-burner this patch for now
+until I can think of a way to figure out what is wrong here.  Sorry for the troubles.
 
-So in fact I didn't test B.
+-Greg
 
-Thanks,
-Rafael
+
+
