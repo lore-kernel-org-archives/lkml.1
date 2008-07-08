@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757966AbYGHQ6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbYGHQ7E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757966AbYGHQ6r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 12:58:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756758AbYGHQ5e
+	id S1757142AbYGHQ7E (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 12:59:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757360AbYGHQ5h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 12:57:34 -0400
-Received: from casper.infradead.org ([85.118.1.10]:55112 "EHLO
+	Tue, 8 Jul 2008 12:57:37 -0400
+Received: from casper.infradead.org ([85.118.1.10]:55118 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757288AbYGHQ5d (ORCPT
+	with ESMTP id S1757350AbYGHQ5g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 12:57:33 -0400
-Date: Tue, 8 Jul 2008 09:56:25 -0700
+	Tue, 8 Jul 2008 12:57:36 -0400
+Date: Tue, 8 Jul 2008 09:48:05 -0700
 From: Arjan van de Ven <arjan@infradead.org>
-To: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, mingo@elte.hu
-Subject: [patch 16/17] Usr WARN() in fs/sysfs
-Message-ID: <20080708095625.0c0015d3@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu
+Subject: [patch 8/17] use WARN() in kernel/irq/chip.c
+Message-ID: <20080708094805.2d1696a4@infradead.org>
 In-Reply-To: <20080708093800.274504ba@infradead.org>
 References: <20080708093800.274504ba@infradead.org>
 Organization: Intel
@@ -31,65 +31,58 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: Use WARN() instead of printk+WARN_ON in fs/sysfs
+Subject: Use WARN instead of printk+WARN_ON in kernel/irq
 
 Use WARN() instead of a printk+WARN_ON() pair; this way the message
 becomes part of the warning section for better reporting/collection.
-Also, with this, one fo the if() sections collapses entirely into
-the WARN().
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- fs/sysfs/dir.c   |    5 +----
- fs/sysfs/file.c  |    3 +--
- fs/sysfs/group.c |    3 +--
- 3 files changed, 3 insertions(+), 8 deletions(-)
+ kernel/irq/chip.c |   12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
 
-Index: linux.trees.git/fs/sysfs/dir.c
+Index: linux.trees.git/kernel/irq/chip.c
 ===================================================================
---- linux.trees.git.orig/fs/sysfs/dir.c
-+++ linux.trees.git/fs/sysfs/dir.c
-@@ -459,11 +459,8 @@ int sysfs_add_one(struct sysfs_addrm_cxt
- 	int ret;
+--- linux.trees.git.orig/kernel/irq/chip.c
++++ linux.trees.git/kernel/irq/chip.c
+@@ -28,8 +28,7 @@ void dynamic_irq_init(unsigned int irq)
+ 	unsigned long flags;
  
- 	ret = __sysfs_add_one(acxt, sd);
--	if (ret == -EEXIST) {
--		printk(KERN_WARNING "sysfs: duplicate filename '%s' "
-+	WARN(ret == -EEXIST, KERN_WARNING "sysfs: duplicate filename '%s' "
- 		       "can not be created\n", sd->s_name);
+ 	if (irq >= NR_IRQS) {
+-		printk(KERN_ERR "Trying to initialize invalid IRQ%d\n", irq);
 -		WARN_ON(1);
--	}
- 	return ret;
- }
- 
-Index: linux.trees.git/fs/sysfs/file.c
-===================================================================
---- linux.trees.git.orig/fs/sysfs/file.c
-+++ linux.trees.git/fs/sysfs/file.c
-@@ -350,9 +350,8 @@ static int sysfs_open_file(struct inode 
- 	if (kobj->ktype && kobj->ktype->sysfs_ops)
- 		ops = kobj->ktype->sysfs_ops;
- 	else {
--		printk(KERN_ERR "missing sysfs attribute operations for "
-+		WARN(1, KERN_ERR "missing sysfs attribute operations for "
- 		       "kobject: %s\n", kobject_name(kobj));
--		WARN_ON(1);
- 		goto err_out;
++		WARN(1, KERN_ERR "Trying to initialize invalid IRQ%d\n", irq);
+ 		return;
  	}
  
-Index: linux.trees.git/fs/sysfs/group.c
-===================================================================
---- linux.trees.git.orig/fs/sysfs/group.c
-+++ linux.trees.git/fs/sysfs/group.c
-@@ -134,9 +134,8 @@ void sysfs_remove_group(struct kobject *
- 	if (grp->name) {
- 		sd = sysfs_get_dirent(dir_sd, grp->name);
- 		if (!sd) {
--			printk(KERN_WARNING "sysfs group %p not found for "
-+			WARN(!sd, KERN_WARNING "sysfs group %p not found for "
- 				"kobject '%s'\n", grp, kobject_name(kobj));
--			WARN_ON(!sd);
- 			return;
- 		}
- 	} else
-
+@@ -62,8 +61,7 @@ void dynamic_irq_cleanup(unsigned int ir
+ 	unsigned long flags;
+ 
+ 	if (irq >= NR_IRQS) {
+-		printk(KERN_ERR "Trying to cleanup invalid IRQ%d\n", irq);
+-		WARN_ON(1);
++		WARN(1, KERN_ERR "Trying to cleanup invalid IRQ%d\n", irq);
+ 		return;
+ 	}
+ 
+@@ -71,9 +69,8 @@ void dynamic_irq_cleanup(unsigned int ir
+ 	spin_lock_irqsave(&desc->lock, flags);
+ 	if (desc->action) {
+ 		spin_unlock_irqrestore(&desc->lock, flags);
+-		printk(KERN_ERR "Destroying IRQ%d without calling free_irq\n",
++		WARN(1, KERN_ERR "Destroying IRQ%d without calling free_irq\n",
+ 			irq);
+-		WARN_ON(1);
+ 		return;
+ 	}
+ 	desc->msi_desc = NULL;
+@@ -96,8 +93,7 @@ int set_irq_chip(unsigned int irq, struc
+ 	unsigned long flags;
+ 
+ 	if (irq >= NR_IRQS) {
+-		printk(KERN_ERR "Trying to install chip for IRQ%d\n", irq);
+-		WARN_ON(1);
++		WARN(1, KERN_ERR "Trying to install chip for IRQ%d\n", irq);
+ 		return -EINVAL;
+ 	}
+ 
