@@ -1,76 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757384AbYGHWNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756346AbYGHWNw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757384AbYGHWNX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 18:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753777AbYGHWNM
+	id S1756346AbYGHWNw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 18:13:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753777AbYGHWNk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 18:13:12 -0400
-Received: from mga09.intel.com ([134.134.136.24]:9724 "EHLO mga09.intel.com"
+	Tue, 8 Jul 2008 18:13:40 -0400
+Received: from mga11.intel.com ([192.55.52.93]:1933 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751750AbYGHWNK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 18:13:10 -0400
+	id S1751765AbYGHWNj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 18:13:39 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.30,326,1212390000"; 
-   d="scan'208";a="304322566"
+   d="scan'208";a="586800092"
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: [RESEND NET-NEXT PATCH 17/20] net: add netif_napi_del function to
-	allow for removal of napistructs
+Subject: [RESEND NET-NEXT PATCH 18/20] igb: update suspend resume
 To: jeff@garzik.org, davem@davemloft.net
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org,
        Alexander Duyck <alexander.h.duyck@intel.com>,
        Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 08 Jul 2008 15:13:05 -0700
-Message-ID: <20080708221219.1518.92921.stgit@localhost.localdomain>
+Date: Tue, 08 Jul 2008 15:13:38 -0700
+Message-ID: <20080708221310.1518.10339.stgit@localhost.localdomain>
 In-Reply-To: <20080708220046.1518.88457.stgit@localhost.localdomain>
 References: <20080708220046.1518.88457.stgit@localhost.localdomain>
 User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 08 Jul 2008 22:13:05.0948 (UTC) FILETIME=[CBE095C0:01C8E147]
+X-OriginalArrivalTime: 08 Jul 2008 22:13:38.0336 (UTC) FILETIME=[DF2E9A00:01C8E147]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-Adds netif_napi_del function which is used to remove the napi struct from
-the netdev napi_list in cases where CONFIG_NETPOLL was enabled.
-The motivation for adding this is to handle the case in which the number of
-queues on a device changes due to a configuration change.  Previously the
-napi structs for each queue would be left in the list until the netdev was
-freed.
+Updates the suspend and resume to better handle the possibility of MSIX
+vector changes.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 ---
 
- include/linux/netdevice.h |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
+ drivers/net/igb/igb_main.c |   46 ++++++++++++++++++++++++++++----------------
+ 1 files changed, 29 insertions(+), 17 deletions(-)
 
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index e009c6f..60cf72e 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -832,6 +832,19 @@ static inline void netif_napi_add(struct net_device *dev,
- 	set_bit(NAPI_STATE_SCHED, &napi->state);
+diff --git a/drivers/net/igb/igb_main.c b/drivers/net/igb/igb_main.c
+index 89416eb..00e2e8d 100644
+--- a/drivers/net/igb/igb_main.c
++++ b/drivers/net/igb/igb_main.c
+@@ -272,6 +272,17 @@ static int igb_alloc_queues(struct igb_adapter *adapter)
+ 	return 0;
  }
  
-+/**
-+ *  netif_napi_del - remove a napi context
-+ *  @napi: napi context
-+ *
-+ *  netif_napi_del() removes a napi context from the network device napi list
-+ */
-+static inline void netif_napi_del(struct napi_struct *napi)
++static void igb_free_queues(struct igb_adapter *adapter)
 +{
-+#ifdef CONFIG_NETPOLL
-+	list_del(&napi->dev_list);
-+#endif
++	int i;
++
++	for (i = 0; i < adapter->num_rx_queues; i++)
++		netif_napi_del(&adapter->rx_ring[i].napi);
++
++	kfree(adapter->tx_ring);
++	kfree(adapter->rx_ring);
 +}
 +
- struct packet_type {
- 	__be16			type;	/* This is really htons(ether_type). */
- 	struct net_device	*dev;	/* NULL is wildcarded here	     */
+ #define IGB_N0_QUEUE -1
+ static void igb_assign_vector(struct igb_adapter *adapter, int rx_queue,
+ 			      int tx_queue, int msix_vector)
+@@ -1322,8 +1333,7 @@ err_eeprom:
+ 		iounmap(hw->flash_address);
+ 
+ 	igb_remove_device(hw);
+-	kfree(adapter->tx_ring);
+-	kfree(adapter->rx_ring);
++	igb_free_queues(adapter);
+ err_sw_init:
+ err_hw_init:
+ 	iounmap(hw->hw_addr);
+@@ -1381,8 +1391,7 @@ static void __devexit igb_remove(struct pci_dev *pdev)
+ 	igb_remove_device(&adapter->hw);
+ 	igb_reset_interrupt_capability(adapter);
+ 
+-	kfree(adapter->tx_ring);
+-	kfree(adapter->rx_ring);
++	igb_free_queues(adapter);
+ 
+ 	iounmap(adapter->hw.hw_addr);
+ 	if (adapter->hw.flash_address)
+@@ -4324,11 +4333,12 @@ static int igb_suspend(struct pci_dev *pdev, pm_message_t state)
+ 
+ 	netif_device_detach(netdev);
+ 
+-	if (netif_running(netdev)) {
+-		WARN_ON(test_bit(__IGB_RESETTING, &adapter->state));
+-		igb_down(adapter);
+-		igb_free_irq(adapter);
+-	}
++	if (netif_running(netdev))
++		igb_close(netdev);
++
++	igb_reset_interrupt_capability(adapter);
++
++	igb_free_queues(adapter);
+ 
+ #ifdef CONFIG_PM
+ 	retval = pci_save_state(pdev);
+@@ -4415,10 +4425,11 @@ static int igb_resume(struct pci_dev *pdev)
+ 	pci_enable_wake(pdev, PCI_D3hot, 0);
+ 	pci_enable_wake(pdev, PCI_D3cold, 0);
+ 
+-	if (netif_running(netdev)) {
+-		err = igb_request_irq(adapter);
+-		if (err)
+-			return err;
++	igb_set_interrupt_capability(adapter);
++
++	if (igb_alloc_queues(adapter)) {
++		dev_err(&pdev->dev, "Unable to allocate memory for queues\n");
++		return -ENOMEM;
+ 	}
+ 
+ 	/* e1000_power_up_phy(adapter); */
+@@ -4426,10 +4437,11 @@ static int igb_resume(struct pci_dev *pdev)
+ 	igb_reset(adapter);
+ 	wr32(E1000_WUS, ~0);
+ 
+-	igb_init_manageability(adapter);
+-
+-	if (netif_running(netdev))
+-		igb_up(adapter);
++	if (netif_running(netdev)) {
++		err = igb_open(netdev);
++		if (err)
++			return err;
++	}
+ 
+ 	netif_device_attach(netdev);
+ 
 
