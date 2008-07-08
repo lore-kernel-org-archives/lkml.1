@@ -1,43 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756779AbYGHIaC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757209AbYGHIaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756779AbYGHIaC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 04:30:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbYGHI3x
+	id S1757209AbYGHIaT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 04:30:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756731AbYGHIaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 04:29:53 -0400
-Received: from saeurebad.de ([85.214.36.134]:50986 "EHLO saeurebad.de"
+	Tue, 8 Jul 2008 04:30:00 -0400
+Received: from lucidpixels.com ([75.144.35.66]:41117 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750810AbYGHI3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 04:29:52 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Subject: [PATCH] lguest: fix switcher_page leak on unload
-CC: linux-kernel@vger.kernel.org
-Date: Tue, 08 Jul 2008 10:29:42 +0200
-Message-ID: <87r6a4n5hl.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	id S1756659AbYGHI37 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 04:29:59 -0400
+Date: Tue, 8 Jul 2008 04:29:57 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: David Greaves <david@dgreaves.com>
+cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: 12 Veliciraptors again w/x4 card (~1gbyte/sec aggregate read)!
+In-Reply-To: <4872A2F4.2010604@dgreaves.com>
+Message-ID: <alpine.DEB.1.10.0807080429440.17980@p34.internal.lan>
+References: <alpine.DEB.1.10.0807071424100.4694@p34.internal.lan> <4872A2F4.2010604@dgreaves.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-map_switcher allocates the array, unmap_switcher has to free it
-accordingly.
 
-Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
----
 
-diff --git a/drivers/lguest/core.c b/drivers/lguest/core.c
-index 5eea435..90663e0 100644
---- a/drivers/lguest/core.c
-+++ b/drivers/lguest/core.c
-@@ -135,6 +135,7 @@ static void unmap_switcher(void)
- 	/* Now we just need to free the pages we copied the switcher into */
- 	for (i = 0; i < TOTAL_SWITCHER_PAGES; i++)
- 		__free_pages(switcher_page[i], 0);
-+	kfree(switcher_page);
- }
- 
- /*H:032
+On Tue, 8 Jul 2008, David Greaves wrote:
+
+> Justin Piszcz wrote:
+>> Each PCI-e x1 card has 1 veliciraptor on it now.
+>> Got an x4 card wit 4 sata ports:
+>
+> Useful - which card?
+>
+> David
+>
+>
+
+StarTech 4 Port PCI Express x4 SATA II Card Model PEXSATA24E
+
+Justin.
+
+
