@@ -1,218 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbYGISF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754047AbYGISJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754808AbYGISF5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 14:05:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbYGISFs
+	id S1754047AbYGISJp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 14:09:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbYGISJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 14:05:48 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:1216 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752478AbYGISFr (ORCPT
+	Wed, 9 Jul 2008 14:09:37 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60527 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752116AbYGISJg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 14:05:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:references;
-        b=TsvFW2r2Bt80SMZIHUbZI2ZZRAFqauNQ3a5JrVlpPz9iyRJxDtEcMD4RcfZ/2Tg3gm
-         Q4dU4DW6/r2QWO+ZXhq3OlQCM+wD6z2/af7JCC2v5TFL30M/1kPVUlKr89BZjFbkV1a0
-         a4KUNLWylWqZmCEEIG7d9IWKGxY+jBRgoxxdM=
-Message-ID: <86802c440807091105g1dd8f8a0sa8220a1bfc65a79@mail.gmail.com>
-Date: Wed, 9 Jul 2008 11:05:46 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Suresh Siddha" <suresh.b.siddha@intel.com>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>
-Subject: Re: [patch] tip/x86_64: fix e820 merge issue which broke max_pfn_mapped
-Cc: "mingo@elte.hu" <mingo@elte.hu>, "hpa@zytor.com" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080709175621.GG1678@linux-os.sc.intel.com>
+	Wed, 9 Jul 2008 14:09:36 -0400
+Message-ID: <4874FEDF.90404@sgi.com>
+Date: Wed, 09 Jul 2008 11:09:35 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_4040_12776043.1215626746311"
-References: <20080708230837.GD1678@linux-os.sc.intel.com>
-	 <86802c440807081759i3baafa9bj7e8ff544a1a78fb9@mail.gmail.com>
-	 <86802c440807081856y17eb1f1cs5647b2c2a765f429@mail.gmail.com>
-	 <20080709175621.GG1678@linux-os.sc.intel.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <4874F30C.8020800@zytor.com> <4874F909.7060503@goop.org>
+In-Reply-To: <4874F909.7060503@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_4040_12776043.1215626746311
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Jeremy Fitzhardinge wrote:
+> H. Peter Anvin wrote:
+>> Did the suspected linker bug issue ever get resolved?
+> 
+> I don't believe so.  I think Mike is getting very early crashes
+> depending on some combination of gcc, linker and kernel config.  Or
+> something.
 
-On Wed, Jul 9, 2008 at 10:56 AM, Suresh Siddha
-<suresh.b.siddha@intel.com> wrote:
-> On Tue, Jul 08, 2008 at 06:56:38PM -0700, Yinghai Lu wrote:
->> On Tue, Jul 8, 2008 at 5:59 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->> > On Tue, Jul 8, 2008 at 4:08 PM, Suresh Siddha <suresh.b.siddha@intel.com> wrote:
->> >> With out this 64bit tip/master doesn't boot using ACPI on my system.
->> >> ---
->> >>
->> >> max_pfn_mapped should include all e820 entries.
->> >> The direct mapping extends to max_pfn_mapped, so that we can directly access
->> >> apertures, ACPI and other tables without having to play with fixmaps.
->> >>
->> >> With this, my system with 1GB memory boots fine with ACPI enabled.
->> >
->> > so without this patch, your system doesn't boot?
->>
->> how about attached patch?
->>
->> [PATCH] x86: make max_pfn cover acpi table below 4g
->>
->> when system have 4g less ram installed, and acpi table sit
->> near end of ram. make max_pfn cover them too.
->> so 64bit kernel don't need to mess up fixmap
->
-> Now the latest 64bit x86 tip/master (latest commit d1f7cb8) doesn't boot
-> on any of my test systems :( It gets a very early exception..
+Yes and unfortunately since SGI does not do it's own compilers any
+more (they were MIPS compilers), there's no one here that really
+understands the internals of the compile tools.
 
-fix one panic on Ingo's machine
+> 
+> This fragility makes me very nervous.  It seems hard enough to get this
+> stuff working with current tools; making it work over the whole range of
+> supported tools looks like its going to be hard.
 
->
-> I can't even revert your max_pfn patch, to see if this early exception is
-> caused by this patch.. There seems to be more changes on top of it
-> already overnight...
->
-> BTW, please explain the need for your patch which has more changes, instead
-> of my simple patch which was test booted on 3 different systems with both
-> 32bit and 64bit kernels...
+(me too ;-)
 
-try to reduce #ifdef CONFIG_X86_64/32, and make 32/64 at the same page.
+Once I get a solid version working with (at least) gcc-4.2.4, then
+regression testing with older tools will be easier, or at least a
+table of results can be produced.
 
-could be some regression from early_io_remap unifying from jeremy
+Thanks,
+Mike
 
-please check attached revert patch.
-
-YH
-
-
-YH
-
-------=_Part_4040_12776043.1215626746311
-Content-Type: text/x-patch; name=revert_unify_early_ioremap.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fig8pbmd0
-Content-Disposition: attachment; filename=revert_unify_early_ioremap.patch
-
-cmV2ZXJ0IHVuaWZ5aW5nIGVhcmx5X2lvX3JlbWFwCgphbHNvIHJlbW92ZSB0aGUgY292ZXIgc28g
-bWFrZSBlODIwX2VuZCB0byByZXR1cm4gbWF4IHJhbSB0eXBlIGZvciA2NGJpdC4KCgpkaWZmIC0t
-Z2l0IGEvYXJjaC94ODYva2VybmVsL2U4MjAuYyBiL2FyY2gveDg2L2tlcm5lbC9lODIwLmMKaW5k
-ZXggNjZmZDViZC4uOTgzNmEwNyAxMDA2NDQKLS0tIGEvYXJjaC94ODYva2VybmVsL2U4MjAuYwor
-KysgYi9hcmNoL3g4Ni9rZXJuZWwvZTgyMC5jCkBAIC0xMDY2LDEwICsxMDY2LDggQEAgdW5zaWdu
-ZWQgbG9uZyBfX2luaXQgZTgyMF9lbmQodm9pZCkKIAkJc3RydWN0IGU4MjBlbnRyeSAqZWkgPSAm
-ZTgyMC5tYXBbaV07CiAJCXVuc2lnbmVkIGxvbmcgZW5kX3BmbjsKIAotI2lmZGVmIENPTkZJR19Y
-ODZfMzIKIAkJaWYgKGVpLT50eXBlICE9IEU4MjBfUkFNKQogCQkJY29udGludWU7Ci0jZW5kaWYK
-IAogCQllbmRfcGZuID0gKGVpLT5hZGRyICsgZWktPnNpemUpID4+IFBBR0VfU0hJRlQ7CiAJCWlm
-IChlbmRfcGZuID4gbGFzdF9wZm4pCmRpZmYgLS1naXQgYS9hcmNoL3g4Ni9rZXJuZWwvaGVhZF82
-NC5TIGIvYXJjaC94ODYva2VybmVsL2hlYWRfNjQuUwppbmRleCAyMjQwZjgyLi5kYjMyODBhIDEw
-MDY0NAotLS0gYS9hcmNoL3g4Ni9rZXJuZWwvaGVhZF82NC5TCisrKyBiL2FyY2gveDg2L2tlcm5l
-bC9oZWFkXzY0LlMKQEAgLTM2Miw2ICszNjIsMTIgQEAgTkVYVF9QQUdFKGxldmVsM19rZXJuZWxf
-cGd0KQogCS5xdWFkCWxldmVsMl9maXhtYXBfcGd0IC0gX19TVEFSVF9LRVJORUxfbWFwICsgX1BB
-R0VfVEFCTEUKIAogTkVYVF9QQUdFKGxldmVsMl9maXhtYXBfcGd0KQorCS5maWxsCTUwNiw4LDAK
-KwkucXVhZAlsZXZlbDFfZml4bWFwX3BndCAtIF9fU1RBUlRfS0VSTkVMX21hcCArIF9QQUdFX1RB
-QkxFCisJLyogOE1CIHJlc2VydmVkIGZvciB2c3lzY2FsbHMgKyBhIDJNQiBob2xlID0gNCArIDEg
-ZW50cmllcyAqLworCS5maWxsCTUsOCwwCisKK05FWFRfUEFHRShsZXZlbDFfZml4bWFwX3BndCkK
-IAkuZmlsbAk1MTIsOCwwCiAKIE5FWFRfUEFHRShsZXZlbDJfaWRlbnRfcGd0KQpkaWZmIC0tZ2l0
-IGEvYXJjaC94ODYva2VybmVsL3NldHVwLmMgYi9hcmNoL3g4Ni9rZXJuZWwvc2V0dXAuYwppbmRl
-eCBkNDE4Nzk0Li4xNDlmZjlhIDEwMDY0NAotLS0gYS9hcmNoL3g4Ni9rZXJuZWwvc2V0dXAuYwor
-KysgYi9hcmNoL3g4Ni9rZXJuZWwvc2V0dXAuYwpAQCAtNTk4LDEyICs1OTgsMTEgQEAgdm9pZCBf
-X2luaXQgc2V0dXBfYXJjaChjaGFyICoqY21kbGluZV9wKQogCW1lbWNweSgmYm9vdF9jcHVfZGF0
-YSwgJm5ld19jcHVfZGF0YSwgc2l6ZW9mKG5ld19jcHVfZGF0YSkpOwogCXByZV9zZXR1cF9hcmNo
-X2hvb2soKTsKIAllYXJseV9jcHVfaW5pdCgpOworCWVhcmx5X2lvcmVtYXBfaW5pdCgpOwogI2Vs
-c2UKIAlwcmludGsoS0VSTl9JTkZPICJDb21tYW5kIGxpbmU6ICVzXG4iLCBib290X2NvbW1hbmRf
-bGluZSk7CiAjZW5kaWYKIAotCWVhcmx5X2lvcmVtYXBfaW5pdCgpOwotCiAJUk9PVF9ERVYgPSBv
-bGRfZGVjb2RlX2Rldihib290X3BhcmFtcy5oZHIucm9vdF9kZXYpOwogCXNjcmVlbl9pbmZvID0g
-Ym9vdF9wYXJhbXMuc2NyZWVuX2luZm87CiAJZWRpZF9pbmZvID0gYm9vdF9wYXJhbXMuZWRpZF9p
-bmZvOwpkaWZmIC0tZ2l0IGEvYXJjaC94ODYvbW0vaW5pdF82NC5jIGIvYXJjaC94ODYvbW0vaW5p
-dF82NC5jCmluZGV4IDI0NmEyYjIuLjcwMTg3ZmEgMTAwNjQ0Ci0tLSBhL2FyY2gveDg2L21tL2lu
-aXRfNjQuYworKysgYi9hcmNoL3g4Ni9tbS9pbml0XzY0LmMKQEAgLTMzOSw2ICszMzksNTggQEAg
-cGh5c19wdGVfdXBkYXRlKHBtZF90ICpwbWQsIHVuc2lnbmVkIGxvbmcgYWRkcmVzcywgdW5zaWdu
-ZWQgbG9uZyBlbmQpCiAJcGh5c19wdGVfaW5pdChwdGUsIGFkZHJlc3MsIGVuZCk7CiB9CiAKKy8q
-IE11c3QgcnVuIGJlZm9yZSB6YXBfbG93X21hcHBpbmdzICovCitfX21lbWluaXQgdm9pZCAqZWFy
-bHlfaW9yZW1hcCh1bnNpZ25lZCBsb25nIGFkZHIsIHVuc2lnbmVkIGxvbmcgc2l6ZSkKK3sKKwlw
-bWRfdCAqcG1kLCAqbGFzdF9wbWQ7CisJdW5zaWduZWQgbG9uZyB2YWRkcjsKKwlpbnQgaSwgcG1k
-czsKKworCXBtZHMgPSAoKGFkZHIgJiB+UE1EX01BU0spICsgc2l6ZSArIH5QTURfTUFTSykgLyBQ
-TURfU0laRTsKKwl2YWRkciA9IF9fU1RBUlRfS0VSTkVMX21hcDsKKwlwbWQgPSBsZXZlbDJfa2Vy
-bmVsX3BndDsKKwlsYXN0X3BtZCA9IGxldmVsMl9rZXJuZWxfcGd0ICsgUFRSU19QRVJfUE1EIC0g
-MTsKKworCWZvciAoOyBwbWQgPD0gbGFzdF9wbWQ7IHBtZCsrLCB2YWRkciArPSBQTURfU0laRSkg
-eworCQlmb3IgKGkgPSAwOyBpIDwgcG1kczsgaSsrKSB7CisJCQlpZiAocG1kX3ByZXNlbnQocG1k
-W2ldKSkKKwkJCQlnb3RvIGNvbnRpbnVlX291dGVyX2xvb3A7CisJCX0KKwkJdmFkZHIgKz0gYWRk
-ciAmIH5QTURfTUFTSzsKKwkJYWRkciAmPSBQTURfTUFTSzsKKworCQlmb3IgKGkgPSAwOyBpIDwg
-cG1kczsgaSsrLCBhZGRyICs9IFBNRF9TSVpFKQorCQkJc2V0X3BtZChwbWQraSwgX19wbWQoYWRk
-ciB8IF9fUEFHRV9LRVJORUxfTEFSR0VfRVhFQykpOworCQlfX2ZsdXNoX3RsYl9hbGwoKTsKKwor
-CQlyZXR1cm4gKHZvaWQgKil2YWRkcjsKK2NvbnRpbnVlX291dGVyX2xvb3A6CisJCTsKKwl9CisJ
-cHJpbnRrKEtFUk5fRVJSICJlYXJseV9pb3JlbWFwKDB4JWx4LCAlbHUpIGZhaWxlZFxuIiwgYWRk
-ciwgc2l6ZSk7CisKKwlyZXR1cm4gTlVMTDsKK30KKworLyoKKyAqIFRvIGF2b2lkIHZpcnR1YWwg
-YWxpYXNlcyBsYXRlcjoKKyAqLworX19tZW1pbml0IHZvaWQgZWFybHlfaW91bm1hcCh2b2lkICph
-ZGRyLCB1bnNpZ25lZCBsb25nIHNpemUpCit7CisJdW5zaWduZWQgbG9uZyB2YWRkcjsKKwlwbWRf
-dCAqcG1kOworCWludCBpLCBwbWRzOworCisJdmFkZHIgPSAodW5zaWduZWQgbG9uZylhZGRyOwor
-CXBtZHMgPSAoKHZhZGRyICYgflBNRF9NQVNLKSArIHNpemUgKyB+UE1EX01BU0spIC8gUE1EX1NJ
-WkU7CisJcG1kID0gbGV2ZWwyX2tlcm5lbF9wZ3QgKyBwbWRfaW5kZXgodmFkZHIpOworCisJZm9y
-IChpID0gMDsgaSA8IHBtZHM7IGkrKykKKwkJcG1kX2NsZWFyKHBtZCArIGkpOworCisJX19mbHVz
-aF90bGJfYWxsKCk7Cit9CisKIHN0YXRpYyB1bnNpZ25lZCBsb25nIF9fbWVtaW5pdAogcGh5c19w
-bWRfaW5pdChwbWRfdCAqcG1kX3BhZ2UsIHVuc2lnbmVkIGxvbmcgYWRkcmVzcywgdW5zaWduZWQg
-bG9uZyBlbmQsCiAJCQkgdW5zaWduZWQgbG9uZyBwYWdlX3NpemVfbWFzaykKZGlmZiAtLWdpdCBh
-L2FyY2gveDg2L21tL2lvcmVtYXAuYyBiL2FyY2gveDg2L21tL2lvcmVtYXAuYwppbmRleCA2YTA1
-YTMzLi40NzcxOWVjIDEwMDY0NAotLS0gYS9hcmNoL3g4Ni9tbS9pb3JlbWFwLmMKKysrIGIvYXJj
-aC94ODYvbW0vaW9yZW1hcC5jCkBAIC00MDksNiArNDA5LDggQEAgdm9pZCB1bnhsYXRlX2Rldl9t
-ZW1fcHRyKHVuc2lnbmVkIGxvbmcgcGh5cywgdm9pZCAqYWRkcikKIAlyZXR1cm47CiB9CiAKKyNp
-ZmRlZiBDT05GSUdfWDg2XzMyCisKIGludCBfX2luaXRkYXRhIGVhcmx5X2lvcmVtYXBfZGVidWc7
-CiAKIHN0YXRpYyBpbnQgX19pbml0IGVhcmx5X2lvcmVtYXBfZGVidWdfc2V0dXAoY2hhciAqc3Ry
-KQpAQCAtNTA5LDcgKzUxMSw2IEBAIHN0YXRpYyB2b2lkIF9faW5pdCBfX2Vhcmx5X3NldF9maXht
-YXAoZW51bSBmaXhlZF9hZGRyZXNzZXMgaWR4LAogCQlyZXR1cm47CiAJfQogCXB0ZSA9IGVhcmx5
-X2lvcmVtYXBfcHRlKGFkZHIpOwotCiAJaWYgKHBncHJvdF92YWwoZmxhZ3MpKQogCQlzZXRfcHRl
-KHB0ZSwgcGZuX3B0ZShwaHlzID4+IFBBR0VfU0hJRlQsIGZsYWdzKSk7CiAJZWxzZQpAQCAtNjQ5
-LDMgKzY1MCw1IEBAIHZvaWQgX190aGlzX2ZpeG1hcF9kb2VzX25vdF9leGlzdCh2b2lkKQogewog
-CVdBUk5fT04oMSk7CiB9CisKKyNlbmRpZiAvKiBDT05GSUdfWDg2XzMyICovCmRpZmYgLS1naXQg
-YS9pbmNsdWRlL2FzbS14ODYvZml4bWFwXzY0LmggYi9pbmNsdWRlL2FzbS14ODYvZml4bWFwXzY0
-LmgKaW5kZXggMWEwYjYxZS4uNzU5NDM0NiAxMDA2NDQKLS0tIGEvaW5jbHVkZS9hc20teDg2L2Zp
-eG1hcF82NC5oCisrKyBiL2luY2x1ZGUvYXNtLXg4Ni9maXhtYXBfNjQuaApAQCAtNTIsMTkgKzUy
-LDYgQEAgZW51bSBmaXhlZF9hZGRyZXNzZXMgewogI2lmZGVmIENPTkZJR19QUk9WSURFX09IQ0kx
-Mzk0X0RNQV9JTklUCiAJRklYX09IQ0kxMzk0X0JBU0UsCiAjZW5kaWYKLQlfX2VuZF9vZl9wZXJt
-YW5lbnRfZml4ZWRfYWRkcmVzc2VzLAotCS8qCi0JICogMjU2IHRlbXBvcmFyeSBib290LXRpbWUg
-bWFwcGluZ3MsIHVzZWQgYnkgZWFybHlfaW9yZW1hcCgpLAotCSAqIGJlZm9yZSBpb3JlbWFwKCkg
-aXMgZnVuY3Rpb25hbC4KLQkgKgotCSAqIFdlIHJvdW5kIGl0IHVwIHRvIHRoZSBuZXh0IDUxMiBw
-YWdlcyBib3VuZGFyeSBzbyB0aGF0IHdlCi0JICogY2FuIGhhdmUgYSBzaW5nbGUgcGdkIGVudHJ5
-IGFuZCBhIHNpbmdsZSBwdGUgdGFibGU6Ci0JICovCi0jZGVmaW5lIE5SX0ZJWF9CVE1BUFMJCTY0
-Ci0jZGVmaW5lIEZJWF9CVE1BUFNfTkVTVElORwk0Ci0JRklYX0JUTUFQX0VORCA9IF9fZW5kX29m
-X3Blcm1hbmVudF9maXhlZF9hZGRyZXNzZXMgKyA1MTIgLQotCQkJKF9fZW5kX29mX3Blcm1hbmVu
-dF9maXhlZF9hZGRyZXNzZXMgJiA1MTEpLAotCUZJWF9CVE1BUF9CRUdJTiA9IEZJWF9CVE1BUF9F
-TkQgKyBOUl9GSVhfQlRNQVBTKkZJWF9CVE1BUFNfTkVTVElORyAtIDEsCiAJX19lbmRfb2ZfZml4
-ZWRfYWRkcmVzc2VzCiB9OwogCmRpZmYgLS1naXQgYS9pbmNsdWRlL2FzbS14ODYvaW8uaCBiL2lu
-Y2x1ZGUvYXNtLXg4Ni9pby5oCmluZGV4IGJmNWQ2MjkuLjAwZTVmMWUgMTAwNjQ0Ci0tLSBhL2lu
-Y2x1ZGUvYXNtLXg4Ni9pby5oCisrKyBiL2luY2x1ZGUvYXNtLXg4Ni9pby5oCkBAIC04NiwxNyAr
-ODYsNCBAQCBleHRlcm4gaW50IGlvcmVtYXBfY2hhbmdlX2F0dHIodW5zaWduZWQgbG9uZyB2YWRk
-ciwgdW5zaWduZWQgbG9uZyBzaXplLAogCQkJCXVuc2lnbmVkIGxvbmcgcHJvdF92YWwpOwogZXh0
-ZXJuIHZvaWQgX19pb21lbSAqaW9yZW1hcF93Yyh1bnNpZ25lZCBsb25nIG9mZnNldCwgdW5zaWdu
-ZWQgbG9uZyBzaXplKTsKIAotLyoKLSAqIGVhcmx5X2lvcmVtYXAoKSBhbmQgZWFybHlfaW91bm1h
-cCgpIGFyZSBmb3IgdGVtcG9yYXJ5IGVhcmx5IGJvb3QtdGltZQotICogbWFwcGluZ3MsIGJlZm9y
-ZSB0aGUgcmVhbCBpb3JlbWFwKCkgaXMgZnVuY3Rpb25hbC4KLSAqIEEgYm9vdC10aW1lIG1hcHBp
-bmcgaXMgY3VycmVudGx5IGxpbWl0ZWQgdG8gYXQgbW9zdCAxNiBwYWdlcy4KLSAqLwotZXh0ZXJu
-IHZvaWQgZWFybHlfaW9yZW1hcF9pbml0KHZvaWQpOwotZXh0ZXJuIHZvaWQgZWFybHlfaW9yZW1h
-cF9jbGVhcih2b2lkKTsKLWV4dGVybiB2b2lkIGVhcmx5X2lvcmVtYXBfcmVzZXQodm9pZCk7Ci1l
-eHRlcm4gdm9pZCAqZWFybHlfaW9yZW1hcCh1bnNpZ25lZCBsb25nIG9mZnNldCwgdW5zaWduZWQg
-bG9uZyBzaXplKTsKLWV4dGVybiB2b2lkIGVhcmx5X2lvdW5tYXAodm9pZCAqYWRkciwgdW5zaWdu
-ZWQgbG9uZyBzaXplKTsKLWV4dGVybiB2b2lkIF9faW9tZW0gKmZpeF9pb3JlbWFwKHVuc2lnbmVk
-IGlkeCwgdW5zaWduZWQgbG9uZyBwaHlzKTsKLQotCiAjZW5kaWYgLyogX0FTTV9YODZfSU9fSCAq
-LwpkaWZmIC0tZ2l0IGEvaW5jbHVkZS9hc20teDg2L2lvXzMyLmggYi9pbmNsdWRlL2FzbS14ODYv
-aW9fMzIuaAppbmRleCA0ZGY0NGVkLi5kNzFiZThkIDEwMDY0NAotLS0gYS9pbmNsdWRlL2FzbS14
-ODYvaW9fMzIuaAorKysgYi9pbmNsdWRlL2FzbS14ODYvaW9fMzIuaApAQCAtMTIyLDYgKzEyMiwx
-OCBAQCBzdGF0aWMgaW5saW5lIHZvaWQgX19pb21lbSAqaW9yZW1hcChyZXNvdXJjZV9zaXplX3Qg
-b2Zmc2V0LCB1bnNpZ25lZCBsb25nIHNpemUpCiBleHRlcm4gdm9pZCBpb3VubWFwKHZvbGF0aWxl
-IHZvaWQgX19pb21lbSAqYWRkcik7CiAKIC8qCisgKiBlYXJseV9pb3JlbWFwKCkgYW5kIGVhcmx5
-X2lvdW5tYXAoKSBhcmUgZm9yIHRlbXBvcmFyeSBlYXJseSBib290LXRpbWUKKyAqIG1hcHBpbmdz
-LCBiZWZvcmUgdGhlIHJlYWwgaW9yZW1hcCgpIGlzIGZ1bmN0aW9uYWwuCisgKiBBIGJvb3QtdGlt
-ZSBtYXBwaW5nIGlzIGN1cnJlbnRseSBsaW1pdGVkIHRvIGF0IG1vc3QgMTYgcGFnZXMuCisgKi8K
-K2V4dGVybiB2b2lkIGVhcmx5X2lvcmVtYXBfaW5pdCh2b2lkKTsKK2V4dGVybiB2b2lkIGVhcmx5
-X2lvcmVtYXBfY2xlYXIodm9pZCk7CitleHRlcm4gdm9pZCBlYXJseV9pb3JlbWFwX3Jlc2V0KHZv
-aWQpOworZXh0ZXJuIHZvaWQgKmVhcmx5X2lvcmVtYXAodW5zaWduZWQgbG9uZyBvZmZzZXQsIHVu
-c2lnbmVkIGxvbmcgc2l6ZSk7CitleHRlcm4gdm9pZCBlYXJseV9pb3VubWFwKHZvaWQgKmFkZHIs
-IHVuc2lnbmVkIGxvbmcgc2l6ZSk7CitleHRlcm4gdm9pZCBfX2lvbWVtICpmaXhfaW9yZW1hcCh1
-bnNpZ25lZCBpZHgsIHVuc2lnbmVkIGxvbmcgcGh5cyk7CisKKy8qCiAgKiBJU0EgSS9PIGJ1cyBt
-ZW1vcnkgYWRkcmVzc2VzIGFyZSAxOjEgd2l0aCB0aGUgcGh5c2ljYWwgYWRkcmVzcy4KICAqLwog
-I2RlZmluZSBpc2FfdmlydF90b19idXMgdmlydF90b19waHlzCg==
-------=_Part_4040_12776043.1215626746311--
