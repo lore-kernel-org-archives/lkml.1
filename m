@@ -1,79 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755618AbYGIUB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbYGIUCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755618AbYGIUB1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 16:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbYGIUBS
+	id S1755972AbYGIUCQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 16:02:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbYGIUCB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 16:01:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52956 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751186AbYGIUBR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 16:01:17 -0400
-Date: Wed, 9 Jul 2008 22:00:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Mike Travis <travis@sgi.com>,
+	Wed, 9 Jul 2008 16:02:01 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:42294 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750933AbYGIUCA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 16:02:00 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Mike Travis <travis@sgi.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-Message-ID: <20080709200057.GA14009@elte.hu>
-References: <4874FFC4.7050505@linux-foundation.org> <487502BD.2020206@goop.org> <487504A8.5040000@linux-foundation.org> <487507E7.6010102@goop.org> <48750945.8000201@linux-foundation.org> <48750C6C.5090606@goop.org> <48750D96.7030407@linux-foundation.org> <4875123F.1070504@goop.org> <20080709194136.GD4804@elte.hu> <4875170C.4090500@linux-foundation.org>
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com>
+Date: Wed, 09 Jul 2008 13:00:19 -0700
+In-Reply-To: <20080709165129.292635000@polaris-admin.engr.sgi.com> (Mike
+	Travis's message of "Wed, 09 Jul 2008 09:51:29 -0700")
+Message-ID: <m1abgqzv3g.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4875170C.4090500@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Mike Travis <travis@sgi.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.2 BAYES_40 BODY: Bayesian spam probability is 20 to 40%
+	*      [score: 0.2320]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Christoph Lameter <cl@linux-foundation.org> wrote:
+I just took a quick look at how stack_protector works on x86_64.  Unless there is
+some deep kernel magic that changes the segment register to %gs from the ABI specified
+%fs CC_STACKPROTECTOR is totally broken on x86_64.  We access our pda through %gs.
 
-> Ingo Molnar wrote:
-> 
-> > that makes sense. Does everyone agree on #1-#2-#3 and then gradual 
-> > elimination of most pda members (without going through an 
-> > intermediate renaming of pda members) being the way to go?
-> 
-> I think we all agree on 1-2-3.
-> 
-> The rest is TBD. Hope Jeremy can add his wisdom there to get the pda.X 
-> replaced by the proper percpu names for 32 bit.
-> 
-> With Jeremy's approach we would be doing two steps at once (getting 
-> rid of pda ops plus unifying the variable names between 32 and 64 
-> bit). Maybe more difficult to verify correctness. The removal of the 
-> pda ops is a pretty straighforward conversion.
+Further -fstack-protector-all only seems to detect against buffer overflows and
+thus corruption of the stack.  Not stack overflows.  So it doesn't appear especially
+useful.
 
-Yes, but there's nothing magic about pda variables versus percpu 
-variables. We should be able to do the pda -> unified step just as much 
-as we can do a percpu -> unified step. We can think of pda as a funky, 
-pre-percpu-era relic.
+So we don't we kill the broken CONFIG_CC_STACKPROTECTOR.  Stop trying to figure out
+how to use a zero based percpu area.
 
-The only thing that percpu really offers over pda is its familarity. 
-read_pda() has the per-cpu-ness embedded in it, which is nasty with 
-regard to tracking preemption properties, etc.
+That should allow us to make the current pda a per cpu variable, and use %gs with
+a large offset to access the per cpu area.  And since it is only the per cpu accesses
+and the pda accesses that will change we should not need to fight toolchain issues
+and other weirdness.  The linked binary can remain the same.
 
-So converting to percpu would bring us CONFIG_PREEMPT_DEBUG=y checking 
-to those ex-pda variables. Today if a read_pda() (or anything but 
-pcurrent) is done in a non-preempt region that's likely a bug - but 
-nothing warns about it.
+Eric
 
-So in that light 4-15 might make some sense in standardizing all these 
-accesses and making sure it all fits into an existing, familar API 
-world, with no register level assumptions and assembly (and ABI) ties, 
-which is instrumented as well, with explicit smp_processor_id() 
-dependencies, etc.
-
-	Ingo
