@@ -1,58 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756063AbYGINw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755822AbYGINyi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756063AbYGINw1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 09:52:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbYGINwS
+	id S1755822AbYGINyi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 09:54:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbYGINy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 09:52:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43183 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753693AbYGINwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 09:52:17 -0400
-Date: Wed, 9 Jul 2008 15:52:01 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] Introduce copy_user_handle_tail routine
-Message-ID: <20080709135201.GA15866@elte.hu>
-References: <m3lk0ngdo5.fsf@gravicappa.englab.brq.redhat.com> <alpine.LFD.1.10.0806300835220.28533@hp.linux-foundation.org> <m3fxqsjt22.fsf_-_@gravicappa.englab.brq.redhat.com> <486B8B6C.2050109@firstfloor.org> <m37ic4jr2w.fsf@gravicappa.englab.brq.redhat.com> <alpine.LFD.1.10.0807021930470.18105@woody.linux-foundation.org> <m34p71yjyx.fsf@gravicappa.englab.brq.redhat.com> <alpine.LFD.1.10.0807070901490.11076@woody.linux-foundation.org> <20080709130305.GB20768@elte.hu> <m3od57nqow.fsf@gravicappa.englab.brq.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m3od57nqow.fsf@gravicappa.englab.brq.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 9 Jul 2008 09:54:29 -0400
+Received: from casper.infradead.org ([85.118.1.10]:59850 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751801AbYGINy2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 09:54:28 -0400
+Date: Wed, 9 Jul 2008 06:53:36 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Dave Chinner <david@fromorbit.com>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, hch@infradead.org, tytso@mit.edu,
+       pavel@suse.cz, t-sato@yk.jp.nec.com, akpm@linux-foundation.org,
+       viro@ZenIV.linux.org.uk, linux-ext4@vger.kernel.org, xfs@oss.sgi.com,
+       dm-devel@redhat.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, axboe@kernel.dk,
+       mtk.manpages@googlemail.com
+Subject: Re: [PATCH 3/3] Add timeout feature
+Message-ID: <20080709065336.1e5e4d74@infradead.org>
+In-Reply-To: <20080709071346.GS11558@disturbed>
+References: <20080708231026.GP11558@disturbed>
+	<20080708232031.GE18195@elf.ucw.cz>
+	<20080709005254.GQ11558@disturbed>
+	<20080709010922.GE9957@mit.edu>
+	<E1KGSvZ-0006dB-53@pomaz-ex.szeredi.hu>
+	<20080709061621.GA5260@infradead.org>
+	<E1KGT4q-0006fD-Jb@pomaz-ex.szeredi.hu>
+	<20080708234120.5072111f@infradead.org>
+	<E1KGTTm-0006ke-Jh@pomaz-ex.szeredi.hu>
+	<20080708235502.1c52a586@infradead.org>
+	<20080709071346.GS11558@disturbed>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.10; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 9 Jul 2008 17:13:46 +1000
+Dave Chinner <david@fromorbit.com> wrote:
 
-* Vitaly Mayatskikh <v.mayatskih@gmail.com> wrote:
-
-> Ingo Molnar <mingo@elte.hu> writes:
+> > one can argue about the need of doing the first 3 steps via a
+> > userland loop; it sure sounds like one needs to be really careful
+> > to not do any writes to the fs from the app that does snapshots
+> > (and that includes doing any syscalls in the kernel that allocate
+> > memory.. just because that already could cause unrelated data to be
+> > written from inside the app. Not fun.)
 > 
-> >> Obviously, I'd be even happier if it also went through the normal x86 
-> >> review cycles (ie Ingo &co), but the current series is largely ack'ed 
-> >> by me.
-> >
-> > applied them to tip/x86/core, for v2.6.27 merging, thanks everyone.
-> >
-> > I've added Linus's Acked-by. Vitaly, could you please send your 
-> > Signed-off-by line, it was missing from the patches. 
+> Bloody hell! Doesn't *anyone* understand that a frozen filesystem is
+> *clean*? That the process of freezing it ensures all dirty data and
+> metadata is written out before the freeze completes? And that once
+> frozen, it can't be dirtied until unfrozen?
 > 
-> It was wrongly set at the very end of post.
-> 
-> Signed-off-by: Vitaly Mayatskikh <v.mayatskih@gmail.com>
+> That's 3 (or is it 4 - maybe 5 now that I think about it) different
+> ppl in 24 hours that have made this same broken argument about
+> being unable to write back dirty data on a frozen filesystem......
 
-ok, pushed it out with your signoffs added.
+unless you also freeze the system as a whole (in a 'refrigerator
+suspend' way).. the "clean" part is just about a nanosecond long. After
+that stuff gets dirty again (you're doing that sendfile to receive more
+packets from the FTP upload etc etc).
+Sure you can pause those. But there's a real risk that you end up
+pausing the app that you want to unfreeze the fs (via the memory
+allocation->direct reclaim path). And no, mlock doesn't help.
+Especially with delayed allocation, where data writes will cause
+metadata activity, this is not just theory.
 
-	Ingo
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
