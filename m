@@ -1,39 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758851AbYGIPDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbYGIPFN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758851AbYGIPDf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 11:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758301AbYGIPCj
+	id S1756861AbYGIPFN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 11:05:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758615AbYGIPDD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 11:02:39 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:36481 "EHLO smtp.polymtl.ca"
+	Wed, 9 Jul 2008 11:03:03 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:41180 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758286AbYGIPCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 11:02:36 -0400
-Message-Id: <20080709150047.057096638@polymtl.ca>
+	id S1758597AbYGIPDB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 11:03:01 -0400
+Message-Id: <20080709150047.427761376@polymtl.ca>
 References: <20080709145929.352201601@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 09 Jul 2008 10:59:40 -0400
+Date: Wed, 09 Jul 2008 10:59:41 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Martin Bligh <mbligh@google.com>,
+       William Lee Irwin III <wli@holomorphy.com>,
        Masami Hiramatsu <mhiramat@redhat.com>,
        Peter Zijlstra <peterz@infradead.org>,
        "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
        Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: [patch 11/15] LTTng instrumentation - page
-Content-Disposition: inline; filename=lttng-instrumentation-page.patch
+Subject: [patch 12/15] LTTng instrumentation - hugetlb
+Content-Disposition: inline; filename=lttng-instrumentation-hugetlb.patch
 X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed,  9 Jul 2008 15:00:47 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paging activity instrumentation. Instruments page allocation/free to keep track
-of page allocation. This does not cover hugetlb activity, which is covered by a
-separate patch.
+Instrumentation of hugetlb activity (alloc/free/reserve).
 
 Those tracepoints are used by LTTng.
 
@@ -44,7 +42,7 @@ scheduler instrumentation (about 5 events in code scheduler code) was added.
 See the "Tracepoints" patch header for performance result detail.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Martin Bligh <mbligh@google.com>
+CC: William Lee Irwin III <wli@holomorphy.com>
 CC: Masami Hiramatsu <mhiramat@redhat.com>
 CC: 'Peter Zijlstra' <peterz@infradead.org>
 CC: "Frank Ch. Eigler" <fche@redhat.com>
@@ -54,67 +52,78 @@ CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
 CC: 'Steven Rostedt' <rostedt@goodmis.org>
 CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 ---
- mm/page-trace.h |   16 ++++++++++++++++
- mm/page_alloc.c |    6 ++++++
- 2 files changed, 22 insertions(+)
+ mm/hugetlb-trace.h |   19 +++++++++++++++++++
+ mm/hugetlb.c       |    8 +++++++-
+ 2 files changed, 26 insertions(+), 1 deletion(-)
 
-Index: linux-2.6-lttng/mm/page_alloc.c
+Index: linux-2.6-lttng/mm/hugetlb.c
 ===================================================================
---- linux-2.6-lttng.orig/mm/page_alloc.c	2008-07-07 15:56:53.000000000 -0400
-+++ linux-2.6-lttng/mm/page_alloc.c	2008-07-07 15:57:46.000000000 -0400
-@@ -46,6 +46,7 @@
- #include <linux/page-isolation.h>
- #include <linux/memcontrol.h>
- #include <linux/debugobjects.h>
-+#include "page-trace.h"
+--- linux-2.6-lttng.orig/mm/hugetlb.c	2008-07-07 16:31:44.000000000 -0400
++++ linux-2.6-lttng/mm/hugetlb.c	2008-07-08 10:51:17.000000000 -0400
+@@ -14,6 +14,7 @@
+ #include <linux/mempolicy.h>
+ #include <linux/cpuset.h>
+ #include <linux/mutex.h>
++#include "hugetlb-trace.h"
  
- #include <asm/tlbflush.h>
- #include <asm/div64.h>
-@@ -510,6 +511,8 @@ static void __free_pages_ok(struct page 
- 	int i;
- 	int reserved = 0;
+ #include <asm/page.h>
+ #include <asm/pgtable.h>
+@@ -141,6 +142,7 @@ static void free_huge_page(struct page *
+ 	int nid = page_to_nid(page);
+ 	struct address_space *mapping;
  
-+	trace_page_free(page, order);
-+
- 	for (i = 0 ; i < (1 << order) ; ++i)
- 		reserved += free_pages_check(page + i);
- 	if (reserved)
-@@ -966,6 +969,8 @@ static void free_hot_cold_page(struct pa
- 	struct per_cpu_pages *pcp;
- 	unsigned long flags;
- 
-+	trace_page_free(page, 0);
-+
- 	if (PageAnon(page))
- 		page->mapping = NULL;
- 	if (free_pages_check(page))
-@@ -1630,6 +1635,7 @@ nopage:
- 		show_mem();
++	trace_hugetlb_page_free(page);
+ 	mapping = (struct address_space *) page_private(page);
+ 	set_page_private(page, 0);
+ 	BUG_ON(page_count(page));
+@@ -509,6 +511,7 @@ static struct page *alloc_huge_page(stru
+ 	if (!IS_ERR(page)) {
+ 		set_page_refcounted(page);
+ 		set_page_private(page, (unsigned long) mapping);
++		trace_hugetlb_page_alloc(page);
  	}
- got_pg:
-+	trace_page_alloc(page, order);
  	return page;
  }
+@@ -1306,13 +1309,16 @@ int hugetlb_reserve_pages(struct inode *
+ 		return ret;
+ 	}
+ 	region_add(&inode->i_mapping->private_list, from, to);
++	trace_hugetlb_pages_reserve(inode, from, to);
+ 	return 0;
+ }
  
-Index: linux-2.6-lttng/mm/page-trace.h
+ void hugetlb_unreserve_pages(struct inode *inode, long offset, long freed)
+ {
+-	long chg = region_truncate(&inode->i_mapping->private_list, offset);
++	long chg;
+ 
++	trace_hugetlb_pages_unreserve(inode, offset, freed);
++	chg = region_truncate(&inode->i_mapping->private_list, offset);
+ 	spin_lock(&inode->i_lock);
+ 	inode->i_blocks -= BLOCKS_PER_HUGEPAGE * freed;
+ 	spin_unlock(&inode->i_lock);
+Index: linux-2.6-lttng/mm/hugetlb-trace.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/mm/page-trace.h	2008-07-07 15:58:11.000000000 -0400
-@@ -0,0 +1,16 @@
-+#ifndef _PAGE_TRACE_H
-+#define _PAGE_TRACE_H
++++ linux-2.6-lttng/mm/hugetlb-trace.h	2008-07-08 10:45:15.000000000 -0400
+@@ -0,0 +1,19 @@
++#ifndef _HUGETLB_TRACE_H
++#define _HUGETLB_TRACE_H
 +
 +#include <linux/tracepoint.h>
 +
-+/*
-+ * mm_page_alloc : page can be NULL.
-+ */
-+DEFINE_TRACE(page_alloc,
-+	TPPROTO(struct page *page, unsigned int order),
-+	TPARGS(page, order));
-+DEFINE_TRACE(page_free,
-+	TPPROTO(struct page *page, unsigned int order),
-+	TPARGS(page, order));
++DEFINE_TRACE(hugetlb_page_alloc,
++	TPPROTO(struct page *page),
++	TPARGS(page));
++DEFINE_TRACE(hugetlb_page_free,
++	TPPROTO(struct page *page),
++	TPARGS(page));
++DEFINE_TRACE(hugetlb_pages_reserve,
++	TPPROTO(struct inode *inode, long from, long to),
++	TPARGS(inode, from, to));
++DEFINE_TRACE(hugetlb_pages_unreserve,
++	TPPROTO(struct inode *inode, long offset, long freed),
++	TPARGS(inode, offset, freed));
 +
 +#endif
 
