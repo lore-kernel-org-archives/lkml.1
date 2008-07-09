@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbYGIScJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754997AbYGISen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754838AbYGIScJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 14:32:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbYGISb5
+	id S1754997AbYGISen (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 14:34:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbYGISeg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 14:31:57 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:32994 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752648AbYGISb5 (ORCPT
+	Wed, 9 Jul 2008 14:34:36 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:39548 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752482AbYGISef (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 14:31:57 -0400
-Message-ID: <4875041C.60206@sgi.com>
-Date: Wed, 09 Jul 2008 11:31:56 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 9 Jul 2008 14:34:35 -0400
+Message-ID: <487503C0.3010000@zytor.com>
+Date: Wed, 09 Jul 2008 14:30:24 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Christoph Lameter <cl@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+To: Mike Travis <travis@sgi.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel@vger.kernel.org
+       Christoph Lameter <cl@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
 Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <4874F4F2.9010603@goop.org> <4874F7D9.5060607@linux-foundation.org> <4874FAB2.5080401@goop.org> <4875000A.3060004@sgi.com> <48750202.3060603@goop.org>
-In-Reply-To: <48750202.3060603@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <4874F30C.8020800@zytor.com> <4874F909.7060503@goop.org> <4874FEDF.90404@sgi.com>
+In-Reply-To: <4874FEDF.90404@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-...
-> The trouble with reusing the space is that it's going to be things like
-> "current" which are the best candidates for going there - but if you do
-> that you lose i386 unification (unless you play some tricks where you
-> arrange to make the percpu variables land there while still appearing to
-> be normal percpu vars).
+Mike Travis wrote:
+> Jeremy Fitzhardinge wrote:
+>> H. Peter Anvin wrote:
+>>> Did the suspected linker bug issue ever get resolved?
+>> I don't believe so.  I think Mike is getting very early crashes
+>> depending on some combination of gcc, linker and kernel config.  Or
+>> something.
 > 
->    J
+> Yes and unfortunately since SGI does not do it's own compilers any
+> more (they were MIPS compilers), there's no one here that really
+> understands the internals of the compile tools.
+> 
 
+A bummer, too, since that compiler lives on as the Pathscale compiler...
 
-One more approach... ;-)  Once the pda and percpu vars are in the same
-area, then could the pda be used for both 32 and 64...?
+	-hpa
+
