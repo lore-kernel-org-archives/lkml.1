@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755908AbYGITxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755192AbYGITzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755908AbYGITxq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 15:53:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755074AbYGITxa
+	id S1755192AbYGITzp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 15:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbYGITzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 15:53:30 -0400
-Received: from qmta09.emeryville.ca.mail.comcast.net ([76.96.30.96]:47577 "EHLO
-	QMTA09.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754762AbYGITx3 (ORCPT
+	Wed, 9 Jul 2008 15:55:37 -0400
+Received: from wr-out-0506.google.com ([64.233.184.239]:19741 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750955AbYGITzg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 15:53:29 -0400
-X-Authority-Analysis: v=1.0 c=1 a=fmkApugzUIIA:10 a=kpXAE35kjxYA:10
- a=GJPMjpJTlsuecQNlq0UA:9 a=H4b-8a9W12fmFzzUvBZkI9m4DmwA:4 a=JTUSPwgBgNAA:10
- a=oCUJXWGl-OwA:10
-To: Laurent Pinchart <laurent.pinchart@skynet.be>
-Cc: Romano Giannetti <romano@dea.icai.upcomillas.es>,
-       linux-kernel@vger.kernel.org, linux-uvc-devel@berlios.de
-Subject: Re: Linux 2.6.26-rc9 circular lock with uvcvideo on resume from hibernation
-X-Message-Flag: Warning: May contain useful information
-X-Priority: 1
-X-MSMail-Priority: High
-References: <1215426867.5113.8.camel@pern>
-	<878wwdbnjn.fsf@shaolin.home.digitalvampire.org>
-	<200807092129.03679.laurent.pinchart@skynet.be>
-From: Roland Dreier <roland@digitalvampire.org>
-Date: Wed, 09 Jul 2008 12:53:26 -0700
-In-Reply-To: <200807092129.03679.laurent.pinchart@skynet.be> (Laurent Pinchart's message of "Wed, 9 Jul 2008 21:29:03 +0200")
-Message-ID: <87mykq96mh.fsf@shaolin.home.digitalvampire.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+	Wed, 9 Jul 2008 15:55:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=lY7hmkZ3CeZY/mfb/xTQ/VbTbt2dpjp0O1h1BeTljvsnezEPLZv2hVXzSS/L5n+9Ix
+         cZAHm0W6+pxOoRXlNjNu1Vc9dCNKvmB+QE7LUC1DVYptryDADx3Hy0OuRc33zW5HL1j8
+         V54E2Azr8b5HQmLBknsi+1UU+IP+B599WZuyQ=
+Message-ID: <1f1b08da0807091255s77033943t2b686ddb537ceaae@mail.gmail.com>
+Date: Wed, 9 Jul 2008 12:55:35 -0700
+From: "john stultz" <johnstul@us.ibm.com>
+To: "Philippe Troin" <phil@fifi.org>
+Subject: Re: 2.6.25.9: system clocks works normally then speeds up 4x...
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <87d4lm2792.fsf@old-tantale.fifi.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <87d4lm2792.fsf@old-tantale.fifi.org>
+X-Google-Sender-Auth: e4f4521223d82847
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > uvc_disconnect()                      | uvc_v4l2_open()
- > ...                                   |
- > mutex_lock(&uvc_driver.open_mutex);   |
- > dev->state |= UVC_DEV_DISCONNECTED;   |
- > mutex_unlock(&uvc_driver.open_mutex); |
- >                                       |
- >                                       | mutex_lock(&uvc_driver.open_mutex);
- >                                       | vdev = video_devdata(file);
- >                                       | video = video_get_drvdata(vdev);
- >                                       |
- > kref_put(&dev->kref, uvc_delete);     |
- >                                       |
- >                                       | if (video->dev->state...) 
- > 
- > kref_put() in uvc_disconnect() will call uvc_delete(), which will in turn free 
- > the video structure. uvc_v4l2_open() will then dereference freed memory when 
- > testing the device state.
+On Wed, Jul 9, 2008 at 12:21 PM, Philippe Troin <phil@fifi.org> wrote:
+> System info:
+>
+>  Dual Pentium-III
+>  Tyan Tiger 133 motherboard
+>  Running 2.6.25.9-40 (Fedora 8 kernel + IMQ + Layer7 patches)
+>  Also tried with vanilla 2.6.25.9 - problem still shows up.
+>
+> Symptoms:
+>
+>  The system boots fine. Clock seems to run normally.
+>
+>  Then after a random amount of time (on the current boot, 3 days),
+>  clock starts to be running 2-4x faster (on the current boot, 4x).
+>
+>  I have tried booting with "nohz=off highres=off" but it does not
+>  help.
 
-I don't believe this is correct.  I tried to explain it in my
-changelog by saying "uvc_delete() does uvc_unregister_video() (and
-hence video_unregister_device(), which is synchronized with
-videodev_lock) as its first thing, so there is no risk of
-use-after-free in uvc_v4l2_open()."
+Could you provide the output from the following:
+   sudo cat /sys/devices/system/clocksource/clocksource0/*
 
-In other words, the first thing uvc_delete() does is call
-uvc_unregister_video(), which will video_unregister_device().  Since
-this needs to take videodev_lock, it will wait until uvc_v4l2_open()
-returns (which it will do, since state is now UVC_DEV_DISCONNECTED).
-So the video struct will not be freed until after uvc_v4l2_open()
-returns.
+Did this issue occur with 2.6.24 or earlier kernels?
 
-As far as I can see there is no use-after-free.
-
- - R.
--- 
-Roland Dreier  <roland@digitalvampire.org>  GPG Key: 1024D/E0EEFAC0
-Fingerprint:     A89F B5E9 C185 F34D BD50  4009 37E2 25CC E0EE FAC0
-
- Sending >500KB attachments is forbidden by the Geneva Convention.
-        Your country may be at risk if you fail to comply.
+thanks
+-john
