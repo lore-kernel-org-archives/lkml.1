@@ -1,87 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757606AbYGIMOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757796AbYGIMPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757606AbYGIMOS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 08:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbYGIMOK
+	id S1757796AbYGIMPu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 08:15:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbYGIMPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 08:14:10 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34384 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751834AbYGIMOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 08:14:09 -0400
-Date: Wed, 9 Jul 2008 14:13:54 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/17] Series to introduce WARN()... a WARN_ON() variant
-	that takes printk arguments
-Message-ID: <20080709121353.GC19060@elte.hu>
-References: <20080708093800.274504ba@infradead.org> <20080709101348.GA30005@elte.hu> <20080709041956.0c52b2d9.akpm@linux-foundation.org> <20080709113703.GA11191@elte.hu> <20080709044613.2546034d.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080709044613.2546034d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 9 Jul 2008 08:15:42 -0400
+Received: from mk-outboundfilter-3.mail.uk.tiscali.com ([212.74.114.23]:33566
+	"EHLO mk-outboundfilter-3.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751589AbYGIMPm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 08:15:42 -0400
+X-Trace: 142697252/mk-outboundfilter-1.mail.uk.tiscali.com/F2S/$F2S-ACCEPTED/f2s-freedom2Surf-customers/195.137.94.162
+X-SBRS: None
+X-RemoteIP: 195.137.94.162
+X-IP-MAIL-FROM: spyro@f2s.com
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhEBAEBvV0jDiV6i/2dsb2JhbAAIrnw
+X-IronPort-AV: E=Sophos;i="4.30,331,1212361200"; 
+   d="scan'208";a="142697252"
+X-IP-Direction: IN
+Subject: Re: [patch 4/4] MFD: Change mfd platform device usage to wrapper
+	platform_device
+From: ian <spyro@f2s.com>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: Dmitry <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+In-Reply-To: <20080709115045.GK8517@trinity.fluff.org>
+References: <20080709104916.200210922@fluff.org>
+	 <20080709104933.101610936@fluff.org>
+	 <bc64b4640807090415w781507fetfe332271ad158112@mail.gmail.com>
+	 <20080709112426.GN8489@trinity.fluff.org>
+	 <bc64b4640807090431g5b1960edua2508337973615da@mail.gmail.com>
+	 <20080709115045.GK8517@trinity.fluff.org>
+Content-Type: text/plain
+Date: Wed, 09 Jul 2008 13:13:59 +0100
+Message-Id: <1215605639.3295.79.camel@wirenth>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> > Note that this situation is special: this is a patchset that has 
-> > virtually no functionality side-effects, and hence can be done 100% 
-> > correctly, i thought the atomic step was the right approach.
-> > 
-> > For anything semantically meaningful i too would do the spread-out 
-> > gradual approach (and i'm presently doing that for a number of 
-> > topics).
-> > 
-> > But if you'd like to do this the spread-out way then sure, and i 
-> > will drop this tree. ( if you do that then please import the commits 
-> > from tip/core/warn-API, i fixed a couple of of typos in the commit 
-> > messages and did some merging and extensions as well. The tree also 
-> > passed a fair amount of testing meanwhile as well. )
-> > 
-> > Anyway, your call.
+On Wed, 2008-07-09 at 12:50 +0100, Ben Dooks wrote:
 > 
-> Well I haven't got onto processing these patches in detail yet.  An 
-> open questions is why the damn thing was resubmitted from scratch when 
-> I've already merged it and fixed various rejects and had to fix 
-> several bugs in it.  Do those rejects need to be re-fixed?  Were my 
-> bugfixes folded back? I haven't looked yet.  I'll need to generate the 
-> incremental diff and see what was done.
-> 
-> But if what you've merged was against mainline then it isn't terribly 
-> useful.
+> So, the enable/disable calls might be useful, however is there any
+> reason this could not be handled by the clock framework? The
+> suspend/resume entries where not used, and I belive should not be in
+> here.
 
-i cross-ported it from the linux-next base to -git base and the conflict 
-fallout was minimal, well below 5% or so. I.e. the patches change 
-long-existent warnings that have not changed in linux-next either.
+Hi Ben,
 
-About 30% of the changes in this patchset affect subsystems that i 
-co-maintain, still tip/core/warn-API did a pure, conflict-free git-merge 
-when it was applied ontop of all these subsystem trees:
+I agree with you on wrapping the platform device, however the enable /
+disable methods must stay.
 
- commit 99eb83efbe2e3c12d26be22a032495ccddb36a2c
- Merge: de67579... c2e0195...
- Author: Ingo Molnar <mingo@elte.hu>
- Date:   Wed Jul 9 12:14:48 2008 +0200
+Other cores need them, and they arent only there for clock support.
 
-     Merge branch 'core/warn-API'
+I've just looked at the TMIO MMC driver to refersh my memory and the
+suspend / resume hooks must stay also. TMIO MMC needs to be handled
+differently when suspending and when being disabled (loss of state when
+disabled).
 
-Hence my suggestion that this should be maintained and forward ported to 
-the end of the merge window, in a separate, standalone tree that is -git 
-based.
+As yet, only tc6393 is 'in tree' but Im waiting for the core to settle
+down before I convert my other TMIO based code (again again) to the new
+core.
 
-Anyway, no strong feelings, it's your call.
+So, in summary -
 
-	Ingo
+ACK to your changes to wrap the device as an 'mfd_device'
+NAK to deleting the mfd_cell power management.
+
