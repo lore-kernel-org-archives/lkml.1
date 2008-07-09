@@ -1,31 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbYGIM3q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757136AbYGIMbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753335AbYGIM3q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 08:29:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755916AbYGIM3f
+	id S1757136AbYGIMbT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 08:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbYGIMbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 08:29:35 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:64800 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756261AbYGIM3e (ORCPT
+	Wed, 9 Jul 2008 08:31:07 -0400
+Received: from rn-out-0910.google.com ([64.233.170.191]:30774 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751961AbYGIMbF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 08:29:34 -0400
+	Wed, 9 Jul 2008 08:31:05 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=a4nAA1jwHbNFhN/APKIyyT7eglOt2MeVRYooeq7UucoweKloDmf7SKtiq+g7DlpJfu
-         cbAOk+0YeQVndAKB+xDvkjTPVcsD0hnge9tK7Jm+lnu98s0M4HRiqBCVC+A+a4EdaECH
-         UviH2z92wdXKkF2oTsuGRdb+iZfHsnWE+MVx8=
-Message-ID: <74d0deb30807090529q7e32a5c3lb2c33391ffd7e847@mail.gmail.com>
-Date: Wed, 9 Jul 2008 14:29:32 +0200
-From: "pHilipp Zabel" <philipp.zabel@gmail.com>
-To: ian <spyro@f2s.com>
+        b=A0AxGl4tByOGTMFBoZEDA90A/ZxwdWDKzESkY4HWN2iNSdogFLYqG9JZVyiLcRt0Am
+         gAZGnU0qu/Zx4+6MemfjwN9WuoAfKY8t0q7qws68ain75bUVc+3xGkTmoinse18OqjG/
+         Arajc+q8mECkeY3Gt8579DfkL4GzTeVWTIVas=
+Message-ID: <bc64b4640807090531l6bd2bd69l5dd352dcd82ce8e6@mail.gmail.com>
+Date: Wed, 9 Jul 2008 16:31:01 +0400
+From: Dmitry <dbaryshkov@gmail.com>
+To: "Ben Dooks" <ben-linux@fluff.org>
 Subject: Re: [patch 4/4] MFD: Change mfd platform device usage to wrapper platform_device
-Cc: "Ben Dooks" <ben-linux@fluff.org>, Dmitry <dbaryshkov@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
-In-Reply-To: <1215605639.3295.79.camel@wirenth>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
+In-Reply-To: <20080709120720.GL8517@trinity.fluff.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -36,50 +35,174 @@ References: <20080709104916.200210922@fluff.org>
 	 <20080709112426.GN8489@trinity.fluff.org>
 	 <bc64b4640807090431g5b1960edua2508337973615da@mail.gmail.com>
 	 <20080709115045.GK8517@trinity.fluff.org>
-	 <1215605639.3295.79.camel@wirenth>
+	 <bc64b4640807090456u15d12378qe25375ce4a6cd100@mail.gmail.com>
+	 <20080709120720.GL8517@trinity.fluff.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 9, 2008 at 2:13 PM, ian <spyro@f2s.com> wrote:
-> On Wed, 2008-07-09 at 12:50 +0100, Ben Dooks wrote:
+2008/7/9 Ben Dooks <ben-linux@fluff.org>:
+> On Wed, Jul 09, 2008 at 03:56:54PM +0400, Dmitry wrote:
+>> 2008/7/9 Ben Dooks <ben-linux@fluff.org>:
+>> > On Wed, Jul 09, 2008 at 03:31:04PM +0400, Dmitry wrote:
+>> >> 2008/7/9 Ben Dooks <ben-linux@fluff.org>:
+>> >> > On Wed, Jul 09, 2008 at 03:15:47PM +0400, Dmitry wrote:
+>> >> >> 2008/7/9 Ben Dooks <ben-linux@fluff.org>:
+>> >> >> > This patch changes the mfd core behaviour to wrapper the platform_device
+>> >> >> > it creates in an struct mfd_device which contains the information
+>> >> >> > about the cell that was created.
+>> >> >> >
+>> >> >> > 1) The creation of the resource list and then passing it to the
+>> >> >> >   platform_device_add_resources() causes the allocation of a
+>> >> >> >   large array on the stack as well as copying the source data
+>> >> >> >   twice (it is copied from the mfd_cell to the temporary array
+>> >> >> >   and then copied into the newly allocated array)
+>> >> >> >
+>> >> >> > 2) We can wrapper the platform_device into an mfd_device and use
+>> >> >> >   that to do the platform_device and resource allocation in one
+>> >> >> >   go to reduce the failiure.
+>> >> >> >
+>> >> >> > Note, is there actually any reason to pass the sub devices any
+>> >> >> > information about the cell they are created from? The mfd core
+>> >> >> > already makes the appropriate resource adjustments and anything
+>> >> >> > else like clocks should be exported by the clock drivers?
+>> >> >> >
+>> >> >> > Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+>> >> >>
+>> >> >>
+>> >> >> NAK.
+>> >> >> 0) It was discussed yesterday on the list and the decision was to go
+>> >> >> in a different way.
+>> >> >>   I've provided a bit cleaner patch with the same idea, but then we
+>> >> >> decided to go in a bit different way.
+>> >> >> 1) I prefer patch by Mike Rapoport which is more clear and goes in a
+>> >> >> more correct way.
+>> >> >
+>> >> > How "more correct", whilst the patch by Mike makes the platform data
+>> >> > be passed from the cell, there is no longer any way to get from the
+>> >> > platform device to the mfd_cell...
+>> >>
+>> >> Basically we have two choises for the subdevice driver:
+>> >> 1) it doesn't know about cells at all (e.g. generic-bl, IIRC). Then we are safe
+>> >>    to loose that "cell" information
+>> >> 2) If it does use cell information (to get access to hooks), we pass it
+>> >>     via platform_data pointer in the mfd_cell and we are ok with it.
+>> >
+>> > Erm, that is complete non-answer. The driver model and various other
+>> > parts of the kernel are littered with examples of embedding one
+>> > structure within another to gain an C++ like object inheritance.
+>> >
+>> > I've supplied an reasonable example of doing this to create an mfd_cell
+>> > device from an platform_device without creating an large amount of code
+>> > and improving the efficiency and code-lineage in the process. I do not
+>> > see how this isn't "correct" or in any way breaing the current linux
+>> > model of doing things.
 >>
->> So, the enable/disable calls might be useful, however is there any
->> reason this could not be handled by the clock framework? The
->> suspend/resume entries where not used, and I belive should not be in
->> here.
+>> It isn't breaking it. OK. I'm leaving the decision to the MFD or ARM
+>> maintainers.
+>> And BTW, nearly the same patch was sent yesterday by me[1]. Is it an independant
+>> work, or did you miss my sign-off?
+>>
+>> [1]: http://permalink.gmane.org/gmane.linux.ports.arm.kernel/44142
 >
-> Hi Ben,
+> Hmm, thanks, completely missed because it has a completely un-related
+> looking title.
 >
-> I agree with you on wrapping the platform device, however the enable /
-> disable methods must stay.
+>> >
+>> >>
+>> >> > The current driver is being inefficent in the way it creates resources
+>> >> > on the stack and then calls a routine that does an kalloc/memcpy on
+>> >> > the resources.
+>> >>
+>> >> I don't see any inefficiency ATM.
+>> >>
+>> >> >> 2) Please examine the tmio-nand driver (was here on the list and on
+>> >> >> linux-mtd). It uses the mfd_cell
+>> >> >>    to call hooks from the "host" driver (tc6393xb, more to be added soon).
+>> >> >
+>> >> > The one posted in [1] does not call these hooks at-all, can ou please
+>> >> > explain why these hooks are needed in addition to the ones already
+>> >> > available in the platform device driver?
+>> >> >
+>> >> > [1] http://lists.infradead.org/pipermail/linux-mtd/2008-June/022137.html
+>> >>
+>> >> +
+>> >> +static int tmio_hw_init(struct platform_device *dev, struct tmio_nand *tmio)
+>> >> +{
+>> >> +     struct mfd_cell *cell = mfd_get_cell(dev);
+>> >> +     const struct resource *nfcr = NULL;
+>> >> +     unsigned long base;
+>> >> +     int i;
+>> >> +
+>> >> +     for (i = 0; i < cell->num_resources; i++)
+>> >> +             if (!strcmp((cell->resources+i)->name, TMIO_NAND_CONTROL))
+>> >> +                     nfcr = &cell->resources[i];
+>> >> +
+>> >> +     if (nfcr == NULL)
+>> >> +             return -ENOMEM;
+>> >> +
+>> >> +     if (cell->enable) {
+>> >> +             int rc = cell->enable(dev);
+>> >> +             if (rc)
+>> >> +                     return rc;
+>> >> +     }
+>> >>
+>> >> That cell->enable() is necessary to set up the host (in the tc6393xb
+>> >> case to enable buffers)
+>> >> to enable access to the nand.
+>> >
+>> > So, the enable/disable calls might be useful, however is there any
+>> > reason this could not be handled by the clock framework? The suspend/resume
+>> > entries where not used, and I belive should not be in here.
+>>
+>> They should be here for exactly the same reason. They are used by the drivers
+>> that will be submitted later. E.g. OHCI driver needs such
+>> suspend/resume handling.
+>
+> No, you don't understand. I'll make a rather explicit point about the
+> very clever way the device tree works since the devices are registered
+> with their parent device set.
+>
+> In the suspend, all sub devices are suspended via their
+> platform_driver.suspend method before the parent device's suspend method
+> is called. When resuming, the parent is resumed before calling the
+> children's platform_driver.resume methods.
 
-Ack on that. Also look also at the ds1wm driver. Right now it provides
-its own enable/disable methods in platform data because it predates
-the MFD core. It should be changed into an MFD cell driver, so
-enable/disable methods in mfd_cell would be most useful for it.
+Suspending of sub-devices is handled in two places:
+1) suspend the state of subdevice (e.g. ohci stores some info) and then
+2)  sub-device host suspends/disables the cell (e.g. clocks, power, etc).
+  These steps depend completely on the MFD-device, not only on the sub-device.
 
-> Other cores need them, and they arent only there for clock support.
->
-> I've just looked at the TMIO MMC driver to refersh my memory and the
-> suspend / resume hooks must stay also. TMIO MMC needs to be handled
-> differently when suspending and when being disabled (loss of state when
-> disabled).
->
-> As yet, only tc6393 is 'in tree' but Im waiting for the core to settle
-> down before I convert my other TMIO based code (again again) to the new
-> core.
->
-> So, in summary -
->
-> ACK to your changes to wrap the device as an 'mfd_device'
-> NAK to deleting the mfd_cell power management.
+These two-stage power management is represented by the suspend/resume hooks
+in the mfd_cell. However, I think we will be able to drop the
+suspend/resume when/if
+generic clocks and voltage regulators frameworks get merged.
+
+>> > As noted before, mfd_get_cell() got dropped by [2]
+>> >
+>> > [2] http://lists.arm.linux.org.uk/lurker/message/20080708.153450.bb33046d.en.html
+>>
+>> Yes, and as I said before it will need some small modifications.
+>>
+>> --
+>> With best wishes
+>> Dmitry
+>>
+>> -------------------------------------------------------------------
+>> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+>> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+>> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
 >
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Ben
+>
+> Q:      What's a light-year?
+> A:      One-third less calories than a regular year.
+>
+>
 
-regards
-Philipp
+
+
+-- 
+With best wishes
+Dmitry
