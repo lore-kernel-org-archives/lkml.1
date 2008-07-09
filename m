@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756195AbYGIQz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755989AbYGIQyj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756195AbYGIQz0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 12:55:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927AbYGIQvj
+	id S1755989AbYGIQyj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 12:54:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbYGIQvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 12:51:39 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:42828 "EHLO relay.sgi.com"
+	Wed, 9 Jul 2008 12:51:38 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:53202 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751676AbYGIQvb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751954AbYGIQvb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 9 Jul 2008 12:51:31 -0400
-Message-Id: <20080709165130.950486000@polaris-admin.engr.sgi.com>
+Message-Id: <20080709165130.684829000@polaris-admin.engr.sgi.com>
 References: <20080709165129.292635000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 09 Jul 2008 09:51:41 -0700
+Date: Wed, 09 Jul 2008 09:51:39 -0700
 From: Mike Travis <travis@sgi.com>
 To: Jeremy Fitzhardinge <jeremy@goop.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -20,8 +20,8 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        "H. Peter Anvin" <hpa@zytor.com>,
        Christoph Lameter <cl@linux-foundation.org>,
        Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
-Subject: [RFC 12/15] x86_64: Replace xxx_pda() operations in include_asm-x86_thread_info_h
-Content-Disposition: inline; filename=incl_pda_ops_include_asm-x86_thread_info_h
+Subject: [RFC 10/15] x86_64: Replace xxx_pda() operations in include_asm-x86_smp_h
+Content-Disposition: inline; filename=incl_pda_ops_include_asm-x86_smp_h
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -41,20 +41,19 @@ Based on linux-2.6.tip/master
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- include/asm-x86/thread_info.h |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ include/asm-x86/smp.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-2.6.tip.orig/include/asm-x86/thread_info.h	2008-07-01 10:41:33.000000000 -0700
-+++ linux-2.6.tip/include/asm-x86/thread_info.h	2008-07-01 10:49:15.172370813 -0700
-@@ -200,7 +200,8 @@ static inline struct thread_info *curren
- static inline struct thread_info *current_thread_info(void)
- {
- 	struct thread_info *ti;
--	ti = (void *)(read_pda(kernelstack) + PDA_STACKOFFSET - THREAD_SIZE);
-+	ti = (void *)(x86_read_percpu(pda.kernelstack) +
-+						PDA_STACKOFFSET - THREAD_SIZE);
- 	return ti;
- }
+--- linux-2.6.tip.orig/include/asm-x86/smp.h	2008-07-01 10:41:33.000000000 -0700
++++ linux-2.6.tip/include/asm-x86/smp.h	2008-07-01 10:49:14.676340634 -0700
+@@ -134,7 +134,7 @@ DECLARE_PER_CPU(int, cpu_number);
+ extern int safe_smp_processor_id(void);
  
+ #elif defined(CONFIG_X86_64_SMP)
+-#define raw_smp_processor_id()	read_pda(cpunumber)
++#define raw_smp_processor_id()	x86_read_percpu(pda.cpunumber)
+ 
+ #define stack_smp_processor_id()					\
+ ({								\
 
 -- 
