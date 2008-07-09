@@ -1,522 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754397AbYGITKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754928AbYGITL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754397AbYGITKR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 15:10:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbYGITKF
+	id S1754928AbYGITL7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 15:11:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbYGITLu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 15:10:05 -0400
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:41275 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750824AbYGITKD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 15:10:03 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAH+odEhMQWVt/2dsb2JhbACBW69w
-Date: Wed, 9 Jul 2008 15:09:57 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: [PATCH] ftrace port to tracepoints (linux-next)
-Message-ID: <20080709190957.GA16779@Krystal>
-References: <20080709145929.352201601@polymtl.ca> <20080709150045.025136754@polymtl.ca> <20080709153434.GA9186@Krystal> <20080709162158.GB10601@Krystal>
+	Wed, 9 Jul 2008 15:11:50 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:55068 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750834AbYGITLu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 15:11:50 -0400
+Date: Wed, 9 Jul 2008 14:11:46 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Hugh Dickins <hugh@veritas.com>, Christoph Hellwig <hch@infradead.org>,
+       cl@linux-foundation.org, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, tglx@linutronix.de, holt@sgi.com, andrea@qumranet.com,
+       linux-mm@kvack.org
+Subject: Re: [patch 12/13] GRU Driver V3 -  export is_uv_system(), zap_page_range() & follow_page()
+Message-ID: <20080709191146.GA6251@sgi.com>
+References: <20080703213348.489120321@attica.americas.sgi.com> <Pine.LNX.4.64.0807071657450.17825@blonde.site> <20080707165358.GA16420@sgi.com> <200807081216.22029.nickpiggin@yahoo.com.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080709162158.GB10601@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 15:06:53 up 34 days, 23:47,  4 users,  load average: 1.32, 1.97,
-	2.06
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <200807081216.22029.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Porting the trace_mark() used by ftrace to tracepoints. (cleanup)
+On Tue, Jul 08, 2008 at 12:16:21PM +1000, Nick Piggin wrote:
+> On Tuesday 08 July 2008 02:53, Jack Steiner wrote:
+> > On Mon, Jul 07, 2008 at 05:29:54PM +0100, Hugh Dickins wrote:
+> 
+> > > Maybe study the assumptions Nick is making in his arch/x86/mm/gup.c
+> > > in mm, and do something similar in your GRU driver (falling back to
+> > > the slow method when anything's not quite right).  It's not nice to
+> > > have such code out in a driver, but GRU is going to be exceptional,
+> > > and it may be better to have it out there than pretence of generality
+> > > in the core mm exporting it.
+> >
+> > Ok, I'll take this approach. Open code a pagetable walker into the GRU
+> > driver using the ideas of fast_gup(). This has the added benefit of being
+> > able to optimize for exactly what is needed for the GRU. For example,
+> > nr_pages is always 1 (at least in the current design).
+> 
+> Well... err, it's pretty tied to the arch and mm design. I'd rather
+> if you could just make another entry point to gup.c (perhaps, one
+> which doesn't automatically fall back to the get_user_pages slowpath
+> for you) rather than code it again in your driver.
 
-This patch applies after the "Tracepoints v3" patchset for linux-next.
+Long term, that is probably a good idea. However, for the short term & while
+the GRU is stabilizing, I would prefer to keep the code in the driver itself.
+I can address the issue of moving it to gup.c later.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Masami Hiramatsu <mhiramat@redhat.com>
-CC: 'Peter Zijlstra' <peterz@infradead.org>
-CC: "Frank Ch. Eigler" <fche@redhat.com>
-CC: 'Ingo Molnar' <mingo@elte.hu>
-CC: 'Hideo AOKI' <haoki@redhat.com>
-CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
-CC: 'Steven Rostedt' <rostedt@goodmis.org>
-CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
----
- kernel/trace/trace_sched_switch.c |  114 ++++++---------------------------
- kernel/trace/trace_sched_wakeup.c |  129 +++++++++-----------------------------
- 2 files changed, 52 insertions(+), 191 deletions(-)
+I'll post the new GRU patch in a few minutes.
 
-Index: linux-2.6-lttng/kernel/trace/trace_sched_switch.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/trace/trace_sched_switch.c	2008-07-09 14:33:28.000000000 -0400
-+++ linux-2.6-lttng/kernel/trace/trace_sched_switch.c	2008-07-09 15:03:07.000000000 -0400
-@@ -9,9 +9,9 @@
- #include <linux/debugfs.h>
- #include <linux/kallsyms.h>
- #include <linux/uaccess.h>
--#include <linux/marker.h>
- #include <linux/ftrace.h>
- 
-+#include "../sched-trace.h"
- #include "trace.h"
- 
- static struct trace_array	*ctx_trace;
-@@ -19,16 +19,17 @@ static int __read_mostly	tracer_enabled;
- static atomic_t			sched_ref;
- 
- static void
--sched_switch_func(void *private, void *__rq, struct task_struct *prev,
-+probe_sched_switch(struct rq *__rq, struct task_struct *prev,
- 			struct task_struct *next)
- {
--	struct trace_array **ptr = private;
--	struct trace_array *tr = *ptr;
- 	struct trace_array_cpu *data;
- 	unsigned long flags;
- 	long disabled;
- 	int cpu;
- 
-+	if (!atomic_read(&sched_ref))
-+		return;
-+
- 	tracing_record_cmdline(prev);
- 	tracing_record_cmdline(next);
- 
-@@ -37,95 +38,42 @@ sched_switch_func(void *private, void *_
- 
- 	local_irq_save(flags);
- 	cpu = raw_smp_processor_id();
--	data = tr->data[cpu];
-+	data = ctx_trace->data[cpu];
- 	disabled = atomic_inc_return(&data->disabled);
- 
- 	if (likely(disabled == 1))
--		tracing_sched_switch_trace(tr, data, prev, next, flags);
-+		tracing_sched_switch_trace(ctx_trace, data, prev, next, flags);
- 
- 	atomic_dec(&data->disabled);
- 	local_irq_restore(flags);
- }
- 
--static notrace void
--sched_switch_callback(void *probe_data, void *call_data,
--		      const char *format, va_list *args)
--{
--	struct task_struct *prev;
--	struct task_struct *next;
--	struct rq *__rq;
--
--	if (!atomic_read(&sched_ref))
--		return;
--
--	/* skip prev_pid %d next_pid %d prev_state %ld */
--	(void)va_arg(*args, int);
--	(void)va_arg(*args, int);
--	(void)va_arg(*args, long);
--	__rq = va_arg(*args, typeof(__rq));
--	prev = va_arg(*args, typeof(prev));
--	next = va_arg(*args, typeof(next));
--
--	/*
--	 * If tracer_switch_func only points to the local
--	 * switch func, it still needs the ptr passed to it.
--	 */
--	sched_switch_func(probe_data, __rq, prev, next);
--}
--
- static void
--wakeup_func(void *private, void *__rq, struct task_struct *wakee, struct
--			task_struct *curr)
-+probe_sched_wakeup(struct rq *__rq, struct task_struct *wakee)
- {
--	struct trace_array **ptr = private;
--	struct trace_array *tr = *ptr;
- 	struct trace_array_cpu *data;
- 	unsigned long flags;
- 	long disabled;
- 	int cpu;
- 
--	if (!tracer_enabled)
-+	if (!likely(tracer_enabled))
- 		return;
- 
--	tracing_record_cmdline(curr);
-+	tracing_record_cmdline(current);
- 
- 	local_irq_save(flags);
- 	cpu = raw_smp_processor_id();
--	data = tr->data[cpu];
-+	data = ctx_trace->data[cpu];
- 	disabled = atomic_inc_return(&data->disabled);
- 
- 	if (likely(disabled == 1))
--		tracing_sched_wakeup_trace(tr, data, wakee, curr, flags);
-+		tracing_sched_wakeup_trace(ctx_trace, data, wakee, current,
-+			flags);
- 
- 	atomic_dec(&data->disabled);
- 	local_irq_restore(flags);
- }
- 
--static notrace void
--wake_up_callback(void *probe_data, void *call_data,
--		 const char *format, va_list *args)
--{
--	struct task_struct *curr;
--	struct task_struct *task;
--	struct rq *__rq;
--
--	if (likely(!tracer_enabled))
--		return;
--
--	/* Skip pid %d state %ld */
--	(void)va_arg(*args, int);
--	(void)va_arg(*args, long);
--	/* now get the meat: "rq %p task %p rq->curr %p" */
--	__rq = va_arg(*args, typeof(__rq));
--	task = va_arg(*args, typeof(task));
--	curr = va_arg(*args, typeof(curr));
--
--	tracing_record_cmdline(task);
--	tracing_record_cmdline(curr);
--
--	wakeup_func(probe_data, __rq, task, curr);
--}
--
- static void sched_switch_reset(struct trace_array *tr)
- {
- 	int cpu;
-@@ -140,31 +88,21 @@ static int tracing_sched_register(void)
- {
- 	int ret;
- 
--	ret = marker_probe_register("kernel_sched_wakeup",
--			"pid %d state %ld ## rq %p task %p rq->curr %p",
--			wake_up_callback,
--			&ctx_trace);
-+	ret = register_trace_sched_wakeup(probe_sched_wakeup);
- 	if (ret) {
- 		pr_info("wakeup trace: Couldn't add marker"
- 			" probe to kernel_sched_wakeup\n");
- 		return ret;
- 	}
- 
--	ret = marker_probe_register("kernel_sched_wakeup_new",
--			"pid %d state %ld ## rq %p task %p rq->curr %p",
--			wake_up_callback,
--			&ctx_trace);
-+	ret = register_trace_sched_wakeup_new(probe_sched_wakeup);
- 	if (ret) {
- 		pr_info("wakeup trace: Couldn't add marker"
- 			" probe to kernel_sched_wakeup_new\n");
- 		goto fail_deprobe;
- 	}
- 
--	ret = marker_probe_register("kernel_sched_schedule",
--		"prev_pid %d next_pid %d prev_state %ld "
--		"## rq %p prev %p next %p",
--		sched_switch_callback,
--		&ctx_trace);
-+	ret = register_trace_sched_switch(probe_sched_switch);
- 	if (ret) {
- 		pr_info("sched trace: Couldn't add marker"
- 			" probe to kernel_sched_schedule\n");
-@@ -173,27 +111,17 @@ static int tracing_sched_register(void)
- 
- 	return ret;
- fail_deprobe_wake_new:
--	marker_probe_unregister("kernel_sched_wakeup_new",
--				wake_up_callback,
--				&ctx_trace);
-+	unregister_trace_sched_wakeup_new(probe_sched_wakeup);
- fail_deprobe:
--	marker_probe_unregister("kernel_sched_wakeup",
--				wake_up_callback,
--				&ctx_trace);
-+	unregister_trace_sched_wakeup(probe_sched_wakeup);
- 	return ret;
- }
- 
- static void tracing_sched_unregister(void)
- {
--	marker_probe_unregister("kernel_sched_schedule",
--				sched_switch_callback,
--				&ctx_trace);
--	marker_probe_unregister("kernel_sched_wakeup_new",
--				wake_up_callback,
--				&ctx_trace);
--	marker_probe_unregister("kernel_sched_wakeup",
--				wake_up_callback,
--				&ctx_trace);
-+	unregister_trace_sched_switch(probe_sched_switch);
-+	unregister_trace_sched_wakeup_new(probe_sched_wakeup);
-+	unregister_trace_sched_wakeup(probe_sched_wakeup);
- }
- 
- static void tracing_start_sched_switch(void)
-Index: linux-2.6-lttng/kernel/trace/trace_sched_wakeup.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/trace/trace_sched_wakeup.c	2008-07-09 14:33:34.000000000 -0400
-+++ linux-2.6-lttng/kernel/trace/trace_sched_wakeup.c	2008-07-09 15:05:23.000000000 -0400
-@@ -15,8 +15,8 @@
- #include <linux/kallsyms.h>
- #include <linux/uaccess.h>
- #include <linux/ftrace.h>
--#include <linux/marker.h>
- 
-+#include "../sched-trace.h"
- #include "trace.h"
- 
- static struct trace_array	*wakeup_trace;
-@@ -109,18 +109,18 @@ static int report_latency(cycle_t delta)
- }
- 
- static void notrace
--wakeup_sched_switch(void *private, void *rq, struct task_struct *prev,
-+probe_wakeup_sched_switch(struct rq *rq, struct task_struct *prev,
- 	struct task_struct *next)
- {
- 	unsigned long latency = 0, t0 = 0, t1 = 0;
--	struct trace_array **ptr = private;
--	struct trace_array *tr = *ptr;
- 	struct trace_array_cpu *data;
- 	cycle_t T0, T1, delta;
- 	unsigned long flags;
- 	long disabled;
- 	int cpu;
- 
-+	tracing_record_cmdline(prev);
-+
- 	if (unlikely(!tracer_enabled))
- 		return;
- 
-@@ -137,11 +137,11 @@ wakeup_sched_switch(void *private, void 
- 		return;
- 
- 	/* The task we are waiting for is waking up */
--	data = tr->data[wakeup_cpu];
-+	data = wakeup_trace->data[wakeup_cpu];
- 
- 	/* disable local data, not wakeup_cpu data */
- 	cpu = raw_smp_processor_id();
--	disabled = atomic_inc_return(&tr->data[cpu]->disabled);
-+	disabled = atomic_inc_return(&wakeup_trace->data[cpu]->disabled);
- 	if (likely(disabled != 1))
- 		goto out;
- 
-@@ -151,7 +151,7 @@ wakeup_sched_switch(void *private, void 
- 	if (unlikely(!tracer_enabled || next != wakeup_task))
- 		goto out_unlock;
- 
--	trace_function(tr, data, CALLER_ADDR1, CALLER_ADDR2, flags);
-+	trace_function(wakeup_trace, data, CALLER_ADDR1, CALLER_ADDR2, flags);
- 
- 	/*
- 	 * usecs conversion is slow so we try to delay the conversion
-@@ -170,38 +170,13 @@ wakeup_sched_switch(void *private, void 
- 	t0 = nsecs_to_usecs(T0);
- 	t1 = nsecs_to_usecs(T1);
- 
--	update_max_tr(tr, wakeup_task, wakeup_cpu);
-+	update_max_tr(wakeup_trace, wakeup_task, wakeup_cpu);
- 
- out_unlock:
--	__wakeup_reset(tr);
-+	__wakeup_reset(wakeup_trace);
- 	spin_unlock_irqrestore(&wakeup_lock, flags);
- out:
--	atomic_dec(&tr->data[cpu]->disabled);
--}
--
--static notrace void
--sched_switch_callback(void *probe_data, void *call_data,
--		      const char *format, va_list *args)
--{
--	struct task_struct *prev;
--	struct task_struct *next;
--	struct rq *__rq;
--
--	/* skip prev_pid %d next_pid %d prev_state %ld */
--	(void)va_arg(*args, int);
--	(void)va_arg(*args, int);
--	(void)va_arg(*args, long);
--	__rq = va_arg(*args, typeof(__rq));
--	prev = va_arg(*args, typeof(prev));
--	next = va_arg(*args, typeof(next));
--
--	tracing_record_cmdline(prev);
--
--	/*
--	 * If tracer_switch_func only points to the local
--	 * switch func, it still needs the ptr passed to it.
--	 */
--	wakeup_sched_switch(probe_data, __rq, prev, next);
-+	atomic_dec(&wakeup_trace->data[cpu]->disabled);
- }
- 
- static void __wakeup_reset(struct trace_array *tr)
-@@ -235,19 +210,24 @@ static void wakeup_reset(struct trace_ar
- }
- 
- static void
--wakeup_check_start(struct trace_array *tr, struct task_struct *p,
--		   struct task_struct *curr)
-+probe_wakeup(struct rq *rq, struct task_struct *p)
- {
- 	int cpu = smp_processor_id();
- 	unsigned long flags;
- 	long disabled;
- 
-+	if (likely(!tracer_enabled))
-+		return;
-+
-+	tracing_record_cmdline(p);
-+	tracing_record_cmdline(current);
-+
- 	if (likely(!rt_task(p)) ||
- 			p->prio >= wakeup_prio ||
--			p->prio >= curr->prio)
-+			p->prio >= current->prio)
- 		return;
- 
--	disabled = atomic_inc_return(&tr->data[cpu]->disabled);
-+	disabled = atomic_inc_return(&wakeup_trace->data[cpu]->disabled);
- 	if (unlikely(disabled != 1))
- 		goto out;
- 
-@@ -259,7 +239,7 @@ wakeup_check_start(struct trace_array *t
- 		goto out_locked;
- 
- 	/* reset the trace */
--	__wakeup_reset(tr);
-+	__wakeup_reset(wakeup_trace);
- 
- 	wakeup_cpu = task_cpu(p);
- 	wakeup_prio = p->prio;
-@@ -269,72 +249,35 @@ wakeup_check_start(struct trace_array *t
- 
- 	local_save_flags(flags);
- 
--	tr->data[wakeup_cpu]->preempt_timestamp = ftrace_now(cpu);
--	trace_function(tr, tr->data[wakeup_cpu],
-+	wakeup_trace->data[wakeup_cpu]->preempt_timestamp = ftrace_now(cpu);
-+	trace_function(wakeup_trace, wakeup_trace->data[wakeup_cpu],
- 		       CALLER_ADDR1, CALLER_ADDR2, flags);
- 
- out_locked:
- 	spin_unlock(&wakeup_lock);
- out:
--	atomic_dec(&tr->data[cpu]->disabled);
--}
--
--static notrace void
--wake_up_callback(void *probe_data, void *call_data,
--		 const char *format, va_list *args)
--{
--	struct trace_array **ptr = probe_data;
--	struct trace_array *tr = *ptr;
--	struct task_struct *curr;
--	struct task_struct *task;
--	struct rq *__rq;
--
--	if (likely(!tracer_enabled))
--		return;
--
--	/* Skip pid %d state %ld */
--	(void)va_arg(*args, int);
--	(void)va_arg(*args, long);
--	/* now get the meat: "rq %p task %p rq->curr %p" */
--	__rq = va_arg(*args, typeof(__rq));
--	task = va_arg(*args, typeof(task));
--	curr = va_arg(*args, typeof(curr));
--
--	tracing_record_cmdline(task);
--	tracing_record_cmdline(curr);
--
--	wakeup_check_start(tr, task, curr);
-+	atomic_dec(&wakeup_trace->data[cpu]->disabled);
- }
- 
- static void start_wakeup_tracer(struct trace_array *tr)
- {
- 	int ret;
- 
--	ret = marker_probe_register("kernel_sched_wakeup",
--			"pid %d state %ld ## rq %p task %p rq->curr %p",
--			wake_up_callback,
--			&wakeup_trace);
-+	ret = register_trace_sched_wakeup(probe_wakeup);
- 	if (ret) {
- 		pr_info("wakeup trace: Couldn't add marker"
- 			" probe to kernel_sched_wakeup\n");
- 		return;
- 	}
- 
--	ret = marker_probe_register("kernel_sched_wakeup_new",
--			"pid %d state %ld ## rq %p task %p rq->curr %p",
--			wake_up_callback,
--			&wakeup_trace);
-+	ret = register_trace_sched_wakeup_new(probe_wakeup);
- 	if (ret) {
- 		pr_info("wakeup trace: Couldn't add marker"
- 			" probe to kernel_sched_wakeup_new\n");
- 		goto fail_deprobe;
- 	}
- 
--	ret = marker_probe_register("kernel_sched_schedule",
--		"prev_pid %d next_pid %d prev_state %ld "
--		"## rq %p prev %p next %p",
--		sched_switch_callback,
--		&wakeup_trace);
-+	ret = register_trace_sched_switch(probe_wakeup_sched_switch);
- 	if (ret) {
- 		pr_info("sched trace: Couldn't add marker"
- 			" probe to kernel_sched_schedule\n");
-@@ -357,28 +300,18 @@ static void start_wakeup_tracer(struct t
- 
- 	return;
- fail_deprobe_wake_new:
--	marker_probe_unregister("kernel_sched_wakeup_new",
--				wake_up_callback,
--				&wakeup_trace);
-+	unregister_trace_sched_wakeup_new(probe_wakeup);
- fail_deprobe:
--	marker_probe_unregister("kernel_sched_wakeup",
--				wake_up_callback,
--				&wakeup_trace);
-+	unregister_trace_sched_wakeup(probe_wakeup);
- }
- 
- static void stop_wakeup_tracer(struct trace_array *tr)
- {
- 	tracer_enabled = 0;
- 	unregister_ftrace_function(&trace_ops);
--	marker_probe_unregister("kernel_sched_schedule",
--				sched_switch_callback,
--				&wakeup_trace);
--	marker_probe_unregister("kernel_sched_wakeup_new",
--				wake_up_callback,
--				&wakeup_trace);
--	marker_probe_unregister("kernel_sched_wakeup",
--				wake_up_callback,
--				&wakeup_trace);
-+	unregister_trace_sched_switch(probe_wakeup_sched_switch);
-+	unregister_trace_sched_wakeup_new(probe_wakeup);
-+	unregister_trace_sched_wakeup(probe_wakeup);
- }
- 
- static void wakeup_tracer_init(struct trace_array *tr)
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+--- jack
