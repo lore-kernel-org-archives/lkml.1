@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327AbYGINhk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbYGINuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755327AbYGINhk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 09:37:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbYGINhb
+	id S1754782AbYGINuq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 09:50:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbYGINue
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 09:37:31 -0400
-Received: from mk-outboundfilter-4.mail.uk.tiscali.com ([212.74.114.32]:9908
-	"EHLO mk-outboundfilter-4.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752015AbYGINhb (ORCPT
+	Wed, 9 Jul 2008 09:50:34 -0400
+Received: from smtp-vbr8.xs4all.nl ([194.109.24.28]:4689 "EHLO
+	smtp-vbr8.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751801AbYGINue (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 09:37:31 -0400
-X-Trace: 109001008/mk-outboundfilter-2.mail.uk.tiscali.com/F2S/$F2S-ACCEPTED/f2s-freedom2Surf-customers/195.137.94.162
-X-SBRS: None
-X-RemoteIP: 195.137.94.162
-X-IP-MAIL-FROM: spyro@f2s.com
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApAAABdcdEjDiV6i/2dsb2JhbAAIsDE
-X-IronPort-AV: E=Sophos;i="4.30,331,1212361200"; 
-   d="scan'208";a="109001008"
-X-IP-Direction: IN
-Subject: Re: [patch 4/4] MFD: Change mfd platform device usage to wrapper
-	platform_device
-From: ian <spyro@f2s.com>
-To: pHilipp Zabel <philipp.zabel@gmail.com>
-Cc: Ben Dooks <ben-linux@fluff.org>, Dmitry <dbaryshkov@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
-In-Reply-To: <74d0deb30807090634h6feb1f2eu53f8b13d810b8b3d@mail.gmail.com>
-References: <20080709104916.200210922@fluff.org>
-	 <20080709104933.101610936@fluff.org>
-	 <bc64b4640807090415w781507fetfe332271ad158112@mail.gmail.com>
-	 <20080709112426.GN8489@trinity.fluff.org>
-	 <bc64b4640807090431g5b1960edua2508337973615da@mail.gmail.com>
-	 <20080709115045.GK8517@trinity.fluff.org>
-	 <bc64b4640807090456u15d12378qe25375ce4a6cd100@mail.gmail.com>
-	 <20080709120720.GL8517@trinity.fluff.org>
-	 <1215610118.3295.92.camel@wirenth>
-	 <74d0deb30807090634h6feb1f2eu53f8b13d810b8b3d@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 09 Jul 2008 14:37:28 +0100
-Message-Id: <1215610648.3295.99.camel@wirenth>
+	Wed, 9 Jul 2008 09:50:34 -0400
+From: "Miquel van Smoorenburg" <miquels@cistron.nl>
+To: akpm@linux-foundation.org
+Subject: Re: [PATCH] Mark i2o config broken on 64-bit platforms.
+In-Reply-To: <20080709044743.0dd15a3f.akpm@linux-foundation.org>
+References: <20080709113547.19235.15424.stgit@warthog.procyon.org.uk>
+Organization: 
+Cc: alan@redhat.com, Markus.Lidel@shadowconnect.com, vvs@sw.ru,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       David Howells <dhowells@redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-Id: <E1KGa1W-0004nG-Cw@n2o.xs4all.nl>
+Date: Wed, 09 Jul 2008 15:47:58 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-09 at 15:34 +0200, pHilipp Zabel wrote:
-> On Wed, Jul 9, 2008 at 3:28 PM, ian <spyro@f2s.com> wrote:
-> > On Wed, 2008-07-09 at 13:07 +0100, Ben Dooks wrote:
+In article <xs4all.20080709044743.0dd15a3f.akpm@linux-foundation.org> you write:
+>On Wed, 09 Jul 2008 12:35:47 +0100 David Howells <dhowells@redhat.com> wrote:
+>
+>> Mark i2o config broken on 64-bit platforms as it generates these:
+>> 
+>> In file included from drivers/message/i2o/config-osm.c:39:
+>> drivers/message/i2o/i2o_config.c: In function 'i2o_cfg_passthru':
+>> drivers/message/i2o/i2o_config.c:889: warning: cast to pointer from
+>integer of different size
+>> drivers/message/i2o/i2o_config.c:945: warning: cast to pointer from
+>integer of different size
+>> 
+>> which are apparently non-trivial to fix (eg: inserting a cast through unsigned
+>> long is not correct according to Linus).  This would be due to struct
+>> sg_simple_element only having a 32-bit addr_bus value.
+>> 
+>Sigh.  I've been staring at that warning for so long.
+>Is it actually known to be broken on 64-bit, or does it happen to work?
 
-> I agree "power" and "etc." are issues. Clocks should be handled by the
-> clock API just fine.
+The i2o driver works on 64 bit, though my experiences are less
+than stellar (which is why I submitted the dpt_i2o 64 bit update
+for 2.6.26).
 
-When its merged.
+However this warning doesn't have much to do with the functioning
+of the driver. It is the Adaptec DPT API for the management interface,
+and that API is currently 32 bits. The i2o layer and the dpt_i2o driver
+have have the same issues here.
 
-> > they cant just do it themselves because the subdevices may be used on
-> > more than one core that does this hanling in different ways (eg. T7L and
-> > TC6393XB handle the 32KHz clock completely differently.
-> 
-> That shouln't matter with generic clocks. If they
-> clk_get(&mfd_cell->pdev.dev, "my_clk_input"), that should be
-> dispatched to the correct MFD clock regardless of the actual chip.
+The adaptec management application ("raidutils") is also not 64-bit clean
+(read the code .. it puts pointers into ints etc etc), and fixing
+that is not trivial, _but_ the 32 bit version works on a 64 bit kernel.
 
-I agree but its not merged yet.
+Marking the whole i2o layer broken because the adaptec management API
+hasn't been updated to 64 bits (but does work in 32 bit compatibility
+mode) is going a bit to far I think.
 
-Until it is, we should stick with the enable / disable methods.
+First, if you want to mark something broken, it would be
+CONFIG_I2O_EXT_ADAPTEC .. second, compiling it gives warnings,
+but it works, and I bet people are using it.
 
-Also, suspend / resume for TC* need careful sequencing of the GPIOs
-attached to #PCLR and #SUSPEND (get it wrong and you reset the chip
-instead of sleep it)
-
-:-)
-
+Mike.
