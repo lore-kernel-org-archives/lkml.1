@@ -1,83 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751548AbYGIUAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755618AbYGIUB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751548AbYGIUAk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 16:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbYGIUAT
+	id S1755618AbYGIUB1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 16:01:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbYGIUBS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 16:00:19 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47951 "EHLO ogre.sisk.pl"
+	Wed, 9 Jul 2008 16:01:18 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52956 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753898AbYGIUAS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 16:00:18 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] power, xen64: fix PM_SLEEP build dependencies (was: Re: [PATCH 00 of 55] xen64: implement 64-bit Xen support)
-Date: Wed, 9 Jul 2008 22:02:26 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>,
-       x86@kernel.org, Stephen Tweedie <sct@redhat.com>,
-       Eduardo Habkost <ehabkost@redhat.com>,
-       Mark McLoughlin <markmc@redhat.com>
-References: <patchbomb.1215554782@localhost> <20080709195218.GA9608@elte.hu> <200807092159.35288.rjw@sisk.pl>
-In-Reply-To: <200807092159.35288.rjw@sisk.pl>
+	id S1751186AbYGIUBR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 16:01:17 -0400
+Date: Wed, 9 Jul 2008 22:00:57 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Mike Travis <travis@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+Message-ID: <20080709200057.GA14009@elte.hu>
+References: <4874FFC4.7050505@linux-foundation.org> <487502BD.2020206@goop.org> <487504A8.5040000@linux-foundation.org> <487507E7.6010102@goop.org> <48750945.8000201@linux-foundation.org> <48750C6C.5090606@goop.org> <48750D96.7030407@linux-foundation.org> <4875123F.1070504@goop.org> <20080709194136.GD4804@elte.hu> <4875170C.4090500@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807092202.27013.rjw@sisk.pl>
+In-Reply-To: <4875170C.4090500@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 9 of July 2008, Rafael J. Wysocki wrote:
-> On Wednesday, 9 of July 2008, Ingo Molnar wrote:
-> > 
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > -tip testing found another PM/PM_SLEEP victim:
-> > > 
-> > >  arch/x86/kernel/built-in.o: In function `suspend':
-> > >  apm_32.c:(.text+0xedb5): undefined reference to `save_processor_state'
-> > >  apm_32.c:(.text+0xedd0): undefined reference to `restore_processor_state'
-> > 
-> > ah, found it - the arch-level power/ directory had a CONFIG_PM-only 
-> > build dependency as well. Fixed via the commit below.
-> > 
-> > 	Ingo
-> > 
-> > ------------->
-> > commit 6666fa5ebb7c78afcab540bf183c7f070c890930
-> > Author: Ingo Molnar <mingo@elte.hu>
-> > Date:   Wed Jul 9 21:45:54 2008 +0200
-> > 
-> >     power, xen64: fix PM_SLEEP build dependencies, #2
-> >     
-> >     -tip testing found another PM/PM_SLEEP victim:
-> >     
-> >      arch/x86/kernel/built-in.o: In function `suspend':
-> >      apm_32.c:(.text+0xedb5): undefined reference to `save_processor_state'
-> >      apm_32.c:(.text+0xedd0): undefined reference to `restore_processor_state'
-> >     
-> >     with this config:
-> >     
-> >      http://redhat.com/~mingo/misc/config-Wed_Jul__9_18_53_45_CEST_2008.bad
-> >     
-> >     the core scenario is this combination (and only this combination) of
-> >     config values:
-> >     
-> >       # CONFIG_PM is not set
-> >       CONFIG_PM_SLEEP=y
-> >       CONFIG_APM=y
-> >       CONFIG_PARAVIRT=y
-> >       CONFIG_XEN=y
-> 
-> This combination actually doesn't make sense whatsoever.
-> 
-> PM_SLEEP depends (indirectly) on PM and the fact that it's possible to use
-> a .config violating this dependency is a build system problem, really.
 
-Your patch is correct, though. :-)
+* Christoph Lameter <cl@linux-foundation.org> wrote:
 
-Thanks,
-Rafael
+> Ingo Molnar wrote:
+> 
+> > that makes sense. Does everyone agree on #1-#2-#3 and then gradual 
+> > elimination of most pda members (without going through an 
+> > intermediate renaming of pda members) being the way to go?
+> 
+> I think we all agree on 1-2-3.
+> 
+> The rest is TBD. Hope Jeremy can add his wisdom there to get the pda.X 
+> replaced by the proper percpu names for 32 bit.
+> 
+> With Jeremy's approach we would be doing two steps at once (getting 
+> rid of pda ops plus unifying the variable names between 32 and 64 
+> bit). Maybe more difficult to verify correctness. The removal of the 
+> pda ops is a pretty straighforward conversion.
+
+Yes, but there's nothing magic about pda variables versus percpu 
+variables. We should be able to do the pda -> unified step just as much 
+as we can do a percpu -> unified step. We can think of pda as a funky, 
+pre-percpu-era relic.
+
+The only thing that percpu really offers over pda is its familarity. 
+read_pda() has the per-cpu-ness embedded in it, which is nasty with 
+regard to tracking preemption properties, etc.
+
+So converting to percpu would bring us CONFIG_PREEMPT_DEBUG=y checking 
+to those ex-pda variables. Today if a read_pda() (or anything but 
+pcurrent) is done in a non-preempt region that's likely a bug - but 
+nothing warns about it.
+
+So in that light 4-15 might make some sense in standardizing all these 
+accesses and making sure it all fits into an existing, familar API 
+world, with no register level assumptions and assembly (and ABI) ties, 
+which is instrumented as well, with explicit smp_processor_id() 
+dependencies, etc.
+
+	Ingo
