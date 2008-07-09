@@ -1,57 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755473AbYGIAh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755735AbYGIAsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755473AbYGIAh5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 20:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbYGIAht
+	id S1755735AbYGIAsN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 20:48:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbYGIAr6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 20:37:49 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:38175 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752131AbYGIAhs (ORCPT
+	Tue, 8 Jul 2008 20:47:58 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:5052 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751801AbYGIAr6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 20:37:48 -0400
-Date: Wed, 9 Jul 2008 08:37:41 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Re: Crypto Fixes for 2.6.26
-Message-ID: <20080709003741.GA32340@gondor.apana.org.au>
-References: <20080501102812.GA7151@gondor.apana.org.au> <20080509132343.GA12979@gondor.apana.org.au> <20080602080512.GA22059@gondor.apana.org.au>
+	Tue, 8 Jul 2008 20:47:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=o62lgkMOot1o6N/DnkUtLxK8OqngrumRibqKu3DgMNdTcj7QxpnrTlR6IRSYoh/Rp6
+         sEiixPUpKTrAFWDl6hyYu/11awy8XnBW8i9udxzHNt1R/2HFux7QhuUZQiKNJsC+XBbH
+         5Kfzi1pmS9R2g5EP0tVvvgckQFufvsCa439vE=
+Message-ID: <86802c440807081747i6000d9a5kf3153d319cd85fda@mail.gmail.com>
+Date: Tue, 8 Jul 2008 17:47:56 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Suresh Siddha" <suresh.b.siddha@intel.com>
+Subject: Re: [patch] tip/x86_64: fix e820 merge issue which broke max_pfn_mapped
+Cc: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080708230837.GD1678@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080602080512.GA22059@gondor.apana.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20080708230837.GD1678@linux-os.sc.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus:
+On Tue, Jul 8, 2008 at 4:08 PM, Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+> With out this 64bit tip/master doesn't boot using ACPI on my system.
+> ---
+>
+> max_pfn_mapped should include all e820 entries.
+> The direct mapping extends to max_pfn_mapped, so that we can directly access
+> apertures, ACPI and other tables without having to play with fixmaps.
+>
+> With this, my system with 1GB memory boots fine with ACPI enabled.
+>
+> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> ---
 
-This push fixes a memory leak in the crypto testing module.  Since
-this module is designed to be used repeatedly, the leak could add
-up quickly.
+please check
 
-Please pull from
+[PATCH] x86: introduce page_size_mask for 64bit
+http://lkml.org/lkml/2008/7/8/49
+[PATCH] x86: not overmap than end in init_memory_mapping - 64bit
+http://lkml.org/lkml/2008/7/8/50
 
-git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
+with this patch, on system that support gbpages
+change
+last_map_addr: 1080000000 end: 1078000000
+to
+last_map_addr: 1078000000 end: 1078000000
 
-or
+/sys/kernel/debug/kernel_page_tables
+0xffff881040000000-0xffff881074400000         836M     RW         PSE GLB NX pmd
+0xffff881074400000-0xffff8810744b0000         704K     RW             GLB NX pte
+0xffff8810744b0000-0xffff8810744c0000          64K     RW     PCD     GLB NX pte
+0xffff8810744c0000-0xffff881074600000        1280K     RW             GLB NX pte
+0xffff881074600000-0xffff881080000000         186M     RW         PSE
+GLB NX pmd ---> wrong
+0xffff881080000000-0xffff888000000000         446G                           pud
+0xffff888000000000-0xffffc20000000000       58880G                           pgd
+===>
+0xffff881040000000-0xffff881074400000         836M     RW         PSE GLB NX pmd
+0xffff881074400000-0xffff8810744a0000         640K     RW             GLB NX pte
+0xffff8810744a0000-0xffff8810744b0000          64K     RW     PCD     GLB NX pte
+0xffff8810744b0000-0xffff881074600000        1344K     RW             GLB NX pte
+0xffff881074600000-0xffff881078000000          58M     RW         PSE GLB NX pmd
+0xffff881078000000-0xffff881080000000         128M                           pmd
+0xffff881080000000-0xffff888000000000         446G                           pud
+0xffff888000000000-0xffffc20000000000       58880G                           pgd
 
-master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
-
-
-Darren Jenkins (1):
-      crypto: tcrypt - Fix memory leak in test_cipher
-
- crypto/tcrypt.c |   10 +---------
- 1 file changed, 1 insertion(+), 9 deletions(-)
-
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+YH
