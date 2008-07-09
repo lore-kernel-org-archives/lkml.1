@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756236AbYGIUnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756277AbYGIUnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756236AbYGIUnS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 16:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYGIUnG
+	id S1756277AbYGIUnb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 16:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756052AbYGIUnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 16:43:06 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34674 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752479AbYGIUnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 16:43:05 -0400
-Date: Wed, 9 Jul 2008 22:42:38 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       x86@kernel.org, Stephen Tweedie <sct@redhat.com>,
-       Eduardo Habkost <ehabkost@redhat.com>,
-       Mark McLoughlin <markmc@redhat.com>
-Subject: Re: [patch] power, xen64: fix PM_SLEEP build dependencies
-Message-ID: <20080709204238.GA4298@elte.hu>
-References: <patchbomb.1215554782@localhost> <200807092217.53222.rjw@sisk.pl> <48751E34.3060100@goop.org> <200807092233.08930.rjw@sisk.pl> <487521F7.6070708@goop.org>
+	Wed, 9 Jul 2008 16:43:15 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:38348 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755658AbYGIUnN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 16:43:13 -0400
+Message-ID: <48752121.3050208@zytor.com>
+Date: Wed, 09 Jul 2008 16:35:45 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <487521F7.6070708@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu> <48751B57.8030605@goop.org> <48751CF9.4020901@linux-foundation.org>
+In-Reply-To: <48751CF9.4020901@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Christoph Lameter wrote:
+> 
+> Another reason to use a zero based per cpu area is to limit the offset range. Limiting the offset range allows in turn to limit the size of the generated instructions because it is part of the instruction. It also is easier to handle since __per_cpu_start does not figure
+> in the calculation of the offsets.
+> 
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+No, that makes no difference.  There is no short-offset form that 
+doesn't involve a register (ignoring the 16-bit 67h form on 32 bits.)
 
-> Rafael J. Wysocki wrote:
->> It does.  And it depends on PM, because HIBERNATION and SUSPEND both depend
->> on PM.
->>   
->
-> OK, so can we change PM_SLEEP to depend on PM && (HIBERNATE || SUSPEND
-> || XEN)?
->
-> Or I could add a separate XEN_SAVE_RESTORE config which depends on PM, 
-> and then we make PM_SLEEP depend on XEN_SAVE_RESTORE.
+For 64 bits, you want to keep the offsets within %rip±2 GB, or you will 
+have relocation overflows for %rip-based forms; for absolute forms you 
+have to be in the range 0-4 GB.  The %rip-based forms are shorter, and 
+I'm pretty sure they're the ones we currently generate.  Since we base 
+the kernel at 0xffffffff80000000 (-2 GB) this means a zero-based offset 
+is actively wrong, and only work by accident (since the first 
+CONFIG_PHYSICAL_START of that space is unused.)
 
-another way would be to select PM_SLEEP if PM is enabled, from within 
-XEN. (this is one of the rare cases where select is valid - as PM_SLEEP 
-is not an interactive option)
-
-	Ingo
+	-hpa
