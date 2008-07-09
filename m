@@ -1,100 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756019AbYGIAxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756225AbYGIAyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756019AbYGIAxS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 20:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbYGIAxA
+	id S1756225AbYGIAyk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 20:54:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbYGIAyc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 20:53:00 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:59145 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752783AbYGIAw7 (ORCPT
+	Tue, 8 Jul 2008 20:54:32 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:55413 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751125AbYGIAyc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 20:52:59 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEABioc0h5LFxA/2dsb2JhbACxKQ
-X-IronPort-AV: E=Sophos;i="4.30,327,1212330600"; 
-   d="scan'208";a="144800286"
-Date: Wed, 9 Jul 2008 10:52:54 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Christoph Hellwig <hch@infradead.org>, Takashi Sato <t-sato@yk.jp.nec.com>,
-       akpm@linux-foundation.org, viro@ZenIV.linux.org.uk,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
-       "dm-devel@redhat.com" <dm-devel@redhat.com>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       axboe@kernel.dk, mtk.manpages@googlemail.com
-Subject: Re: [PATCH 3/3] Add timeout feature
-Message-ID: <20080709005254.GQ11558@disturbed>
-Mail-Followup-To: Pavel Machek <pavel@suse.cz>,
-	Christoph Hellwig <hch@infradead.org>,
-	Takashi Sato <t-sato@yk.jp.nec.com>, akpm@linux-foundation.org,
-	viro@ZenIV.linux.org.uk,
-	"linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-	"xfs@oss.sgi.com" <xfs@oss.sgi.com>,
-	"dm-devel@redhat.com" <dm-devel@redhat.com>,
-	"linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	axboe@kernel.dk, mtk.manpages@googlemail.com
-References: <20080630212450t-sato@mail.jp.nec.com> <20080701081026.GB16691@infradead.org> <20080707110730.GG5643@ucw.cz> <20080708231026.GP11558@disturbed> <20080708232031.GE18195@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080708232031.GE18195@elf.ucw.cz>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 8 Jul 2008 20:54:32 -0400
+Subject: Re: [PATCH] kernel/printk.c: Made printk_recursion_bug_msg static.
+From: Josh Triplett <josht@linux.vnet.ibm.com>
+To: Daniel Guilak <guilak@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       daniel@danielguilak.com
+In-Reply-To: <1215554526.10304.10.camel@dguilak-desk>
+References: <1215554526.10304.10.camel@dguilak-desk>
+Content-Type: text/plain
+Date: Tue, 08 Jul 2008 17:54:31 -0700
+Message-Id: <1215564871.3071.36.camel@josh-work.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 09, 2008 at 01:20:31AM +0200, Pavel Machek wrote:
-> On Wed 2008-07-09 09:10:27, Dave Chinner wrote:
-> > On Mon, Jul 07, 2008 at 01:07:31PM +0200, Pavel Machek wrote:
-> > > Hi!
-> > > 
-> > > > I still disagree with this whole patch.  There is not reason to let
-> > > > the freeze request timeout - an auto-unfreezing will only confuse the
-> > > > hell out of the caller.  The only reason where the current XFS freeze
-> > > > call can hang and this would be theoretically useful is when the
-> > > 
-> > > What happens when someone dirties so much data that vm swaps out
-> > > whatever process that frozen the filesystem?
-> > 
-> > a) you can't dirty a frozen filesystem - by definition a frozen
-> >    filesystem is a *clean filesystem* and *cannot be dirtied*.
+On Tue, 2008-07-08 at 15:02 -0700, Daniel Guilak wrote:
+> Signed-off-by: Daniel Guilak <daniel@danielguilak.com>
+
+Acked-by: Josh Triplett <josh@kernel.org>
+
+> ---
+>  kernel/printk.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> Can you stop me?
+> diff --git a/kernel/printk.c b/kernel/printk.c
+> index 8fb01c3..e2129e8 100644
+> --- a/kernel/printk.c
+> +++ b/kernel/printk.c
+> @@ -666,7 +666,7 @@ static int acquire_console_semaphore_for_printk(unsigned int cpu)
+>  	return retval;
+>  }
 > 
-> mmap("/some/huge_file", MAP_SHARED);
+> -const char printk_recursion_bug_msg [] =
+> +static const char printk_recursion_bug_msg [] =
+>  			KERN_CRIT "BUG: recent printk recursion!\n";
+>  static int printk_recursion_bug;
 > 
-> then write to memory mapping?
 
-Sure - we can put a hook in ->page_mkwrite() to prevent it.  We
-don't right now because nobody in the real world really cares if one
-half of a concurrent user data change is in the old snapshot or the
-new one......
-
-> > b) Swap doesn't write through the filesystem
-> > c) you can still read from a frozen filesystem to page your
-> >    executable?? in.
-> 
-> atime modification should mean dirty data, right?
-
-Metadata, not data. If that's really a problem (and it never has
-been for XFS because we always allow in memory changes to atime)
-then touch_atime could be easily changed to avoid this...
-
-> And dirty data mean
-> memory pressure, right? 
-
-If you walk enough inodes while the filesystem is frozen, it
-theoretically could happen.  Typically a filesystem is only for a
-few seconds at a time so in the real world this has never, ever been
-a problem.
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
