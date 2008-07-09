@@ -1,97 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067AbYGIXl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755815AbYGIXmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754067AbYGIXl6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 19:41:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751851AbYGIXlt
+	id S1755815AbYGIXmT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 19:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754457AbYGIXmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 19:41:49 -0400
-Received: from mga03.intel.com ([143.182.124.21]:10917 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751841AbYGIXlt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 19:41:49 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.30,333,1212390000"; 
-   d="scan'208";a="9411916"
-From: Tomas Winkler <tomas.winkler@intel.com>
-To: drzeus-list@drzeus.cx
-Cc: linux-kernel@vger.kernel.org, Benzi Zbit <benzi.zbit@intel.com>
-Subject: [PATCH 1/1 V3] MMC: core - fix the use of hard coded timeout value.
-Date: Thu, 10 Jul 2008 02:41:43 +0300
-Message-Id: <1215646903-810-1-git-send-email-tomas.winkler@intel.com>
-X-Mailer: git-send-email 1.5.4.1
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"
+	Wed, 9 Jul 2008 19:42:00 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:51284 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754165AbYGIXl7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 19:41:59 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com>
+	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>
+	<48751B57.8030605@goop.org> <48751CF9.4020901@linux-foundation.org>
+	<4875209D.8010603@goop.org> <48752CCD.30507@linux-foundation.org>
+	<m1wsjupuiz.fsf@frodo.ebiederm.org> <48753C99.5050408@goop.org>
+Date: Wed, 09 Jul 2008 16:36:24 -0700
+In-Reply-To: <48753C99.5050408@goop.org> (Jeremy Fitzhardinge's message of
+	"Wed, 09 Jul 2008 15:32:57 -0700")
+Message-ID: <m1ej62iq9z.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Jeremy Fitzhardinge <jeremy@goop.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
+	*      [score: 0.0581]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Benzi Zbit <benzi.zbit@intel.com>
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
-This adds reading and using of enable_timeout from the CIS
+>> Which means that my idea of using the technique we use on x86_32 will not
+> work.
+>
+> No, the compiler memory model we use guarantees that everything will be within
+> 2G of each other.  The linker will spew loudly if that's not the case.
 
-Signed-off-by: Benzi Zbit <benzi.zbit@intel.com>
-Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
----
- drivers/mmc/core/sdio_cis.c   |    6 ++++++
- drivers/mmc/core/sdio_io.c    |    6 +-----
- include/linux/mmc/sdio_func.h |    2 ++
- 3 files changed, 9 insertions(+), 5 deletions(-)
+The per cpu area is at least theoretically dynamically allocated.  And we
+really want to put it in cpu local memory.    Which means on any reasonable
+NUMA machine the per cpu areas should be all over the box.
 
-diff --git a/drivers/mmc/core/sdio_cis.c b/drivers/mmc/core/sdio_cis.c
-index d5e51b1..956bd76 100644
---- a/drivers/mmc/core/sdio_cis.c
-+++ b/drivers/mmc/core/sdio_cis.c
-@@ -129,6 +129,12 @@ static int cistpl_funce_func(struct sdio_func *func,
- 	/* TPLFE_MAX_BLK_SIZE */
- 	func->max_blksize = buf[12] | (buf[13] << 8);
- 
-+	/* TPLFE_ENABLE_TIMEOUT_VAL, present in ver 1.1 and above */
-+	if (vsn > SDIO_SDIO_REV_1_00)
-+		func->enable_timeout = (buf[28] | (buf[29] << 8)) * 10;
-+	else
-+		func->enable_timeout = jiffies_to_msecs(HZ);
-+
- 	return 0;
- }
- 
-diff --git a/drivers/mmc/core/sdio_io.c b/drivers/mmc/core/sdio_io.c
-index 3ccf691..0888df6 100755
---- a/drivers/mmc/core/sdio_io.c
-+++ b/drivers/mmc/core/sdio_io.c
-@@ -76,11 +76,7 @@ int sdio_enable_func(struct sdio_func *func)
- 	if (ret)
- 		goto err;
- 
--	/*
--	 * FIXME: This should timeout based on information in the CIS,
--	 * but we don't have card to parse that yet.
--	 */
--	timeout = jiffies + HZ;
-+	timeout = jiffies + msecs_to_jiffies(func->enable_timeout);
- 
- 	while (1) {
- 		ret = mmc_io_rw_direct(func->card, 0, 0, SDIO_CCCR_IORx, 0, &reg);
-diff --git a/include/linux/mmc/sdio_func.h b/include/linux/mmc/sdio_func.h
-index 28fb0a3..07bee4a 100755
---- a/include/linux/mmc/sdio_func.h
-+++ b/include/linux/mmc/sdio_func.h
-@@ -46,6 +46,8 @@ struct sdio_func {
- 	unsigned		max_blksize;	/* maximum block size */
- 	unsigned		cur_blksize;	/* current block size */
- 
-+	unsigned		enable_timeout;	/* max enable timeout in msec */
-+
- 	unsigned int		state;		/* function state */
- #define SDIO_STATE_PRESENT	(1<<0)		/* present in sysfs */
- 
--- 
-1.5.4.1
+So there is no guarantee that with an arbitrary 64bit address in %gs of anything.
 
----------------------------------------------------------------------
-Intel Israel (74) Limited
+Grr.  Except you are correct.  We have to guarantee that the offsets we have
+chosen at compile time still work.  And we know all of the compile time offsets
+will be in the -2G range.  So they are all 32bit numbers.  Negative 32bit
+numbers to be sure.  That trivially leaves us with everything working except
+the nasty hard coded decimal 40.
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+Eric
