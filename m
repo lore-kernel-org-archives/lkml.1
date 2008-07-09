@@ -1,100 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755212AbYGIT37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbYGITcm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755212AbYGIT37 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 15:29:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbYGIT3v
+	id S1754084AbYGITcm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 15:32:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbYGITce
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 15:29:51 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:3315 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751272AbYGIT3u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 15:29:50 -0400
-Date: Wed, 9 Jul 2008 23:29:43 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-serial@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: [PATCH v2] serial: 8250: fix shared interrupts issues with SMP
-	and RT kernels
-Message-ID: <20080709192943.GA12278@polina.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080623232957.GA5111@polina.dev.rtsoft.ru> <20080624001221.GA20685@elte.hu> <20080701134343.GA1865@polina.dev.rtsoft.ru> <20080701144353.7285805d@lxorguk.ukuu.org.uk> <20080701150254.GA13390@polina.dev.rtsoft.ru>
+	Wed, 9 Jul 2008 15:32:34 -0400
+Received: from gw.goop.org ([64.81.55.164]:41750 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750992AbYGITcd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 15:32:33 -0400
+Message-ID: <4875123F.1070504@goop.org>
+Date: Wed, 09 Jul 2008 12:32:15 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20080701150254.GA13390@polina.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <4874F4F2.9010603@goop.org> <4874F7D9.5060607@linux-foundation.org> <4874FD52.8070000@sgi.com> <4874FFC4.7050505@linux-foundation.org> <487502BD.2020206@goop.org> <487504A8.5040000@linux-foundation.org> <487507E7.6010102@goop.org> <48750945.8000201@linux-foundation.org> <48750C6C.5090606@goop.org> <48750D96.7030407@linux-foundation.org>
+In-Reply-To: <48750D96.7030407@linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 01, 2008 at 07:02:54PM +0400, Anton Vorontsov wrote:
-[...]
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> 
-> On Tue, Jul 01, 2008 at 02:43:53PM +0100, Alan Cox wrote:
-[...]
-> > It looks correct to me except that you cannot use spin_lock/disable_irq
-> > in that way safely. You must always disable_irq before taking the lock,
-> > or prove it is safe and use disable_irq_nosync
-> > 
-> > The reason:
-> > 		CPU#0 spin_lock_... [taken]
-> > 		CPU#1 IRQ
-> > 		CPU#1 spin_lock [waits]
-> > 		CPU#0 disable_irq (deadlock)
-> 
-> This deadlock possibility is interesting by itself, thanks for
-> mentioning it.
-> 
-> But this can't happen here. IRQ will not grab the up->port.lock,
-> because port isn't registered in the 8250 IRQ handling chain (yet).
+Christoph Lameter wrote:
+> Well they help in the sense that the patches get rid of the special X_pda(Y) operations. 
+> x86_X_percpu will then exist under 32 bit and 64 bit.
+>
+> What is remaining is the task to rename 
+>
+> 	pda.Y -> Z
+>
+> in order to make variable references the same under both arches. Presumably the Z is the corresponding 32 bit variable. There are likely a number of cases where the transformation
+> is trivial if we just identify the corresponding 32 bit equivalent.
+>   
 
-Alan, are there any issues with the proof or the patch itself?
+Yes, I understand that, but it's still pointless churn.  The 
+intermediate step is no improvement over what was there before, and 
+isn't any closer to the desired final result.
 
-Thanks,
+Once you've made the pda a percpu variable, and redefined all the X_pda 
+macros in terms of x86_X_percpu, then there's no need to touch all the 
+usage sites until you're *actually* going to unify something.  Touching 
+them all just because you find "X_pda" unsightly doesn't help anyone.  
+Ideally every site you touch will remove a #ifdef CONFIG_X86_64, or make 
+two as-yet unified pieces of code closer to unification.
 
-> As for _nosync, probably this is good idea indeed, and should be safe
-> AFAICS.
-> 
->  drivers/serial/8250.c |    8 ++++++--
->  1 files changed, 6 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-> index 76ccef7..cad0c2d 100644
-> --- a/drivers/serial/8250.c
-> +++ b/drivers/serial/8250.c
-> @@ -1831,7 +1831,9 @@ static int serial8250_startup(struct uart_port *port)
->  		 * the interrupt is enabled.  Delays are necessary to
->  		 * allow register changes to become visible.
->  		 */
-> -		spin_lock_irqsave(&up->port.lock, flags);
-> +		spin_lock(&up->port.lock);
-> +		if (up->port.flags & UPF_SHARE_IRQ)
-> +			disable_irq_nosync(up->port.irq);
->  
->  		wait_for_xmitr(up, UART_LSR_THRE);
->  		serial_out_sync(up, UART_IER, UART_IER_THRI);
-> @@ -1843,7 +1845,9 @@ static int serial8250_startup(struct uart_port *port)
->  		iir = serial_in(up, UART_IIR);
->  		serial_out(up, UART_IER, 0);
->  
-> -		spin_unlock_irqrestore(&up->port.lock, flags);
-> +		if (up->port.flags & UPF_SHARE_IRQ)
-> +			enable_irq(up->port.irq);
-> +		spin_unlock(&up->port.lock);
->  
->  		/*
->  		 * If the interrupt is not reasserted, setup a timer to
-> -- 
-> 1.5.5.4
-> 
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+    J
