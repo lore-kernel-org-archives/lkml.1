@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbYGIVof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755479AbYGIVqi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756032AbYGIVof (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 17:44:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbYGIVo0
+	id S1755479AbYGIVqi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 17:46:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbYGIVqa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 17:44:26 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:14312 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751967AbYGIVoZ convert rfc822-to-8bit (ORCPT
+	Wed, 9 Jul 2008 17:46:30 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:36798 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750885AbYGIVqa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 17:44:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=pjv0WuHzpcTuHRWiws5dHzY4sWm4V4HczScWSYB+Wh90CSBSZZtDhVCyV5xNo6mFPk
-         m3jaunYvm9/vquyyLFGimB4fdFf/Psb+QxlPN0f6/+MSLCOkY4GMQ+pc02IkNt1RDhJy
-         RquIDVxxJF5KuQoe+tjycZM7jbDCQMmDCd3Zg=
-Date: Wed, 9 Jul 2008 23:44:19 +0200
-From: Cezary Jackiewicz <cezary.jackiewicz@gmail.com>
-To: Ivo van Doorn <ivdoorn@gmail.com>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ak@linux.intel.com, Len Brown <lenb@kernel.org>,
-       Richard Purdie <rpurdie@rpsys.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: [RESEND] [PATCH -next 2/2] acpi,rfkill,backlight: comapl-laptop
- update - use rfkill switch subsystem
-Message-ID: <20080709234419.12d6eabc@debian>
-In-Reply-To: <200807092333.01355.IvDoorn@gmail.com>
-References: <20080709231059.778d16f4@debian>
-	<200807092333.01355.IvDoorn@gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8BIT
+	Wed, 9 Jul 2008 17:46:30 -0400
+Message-ID: <4875320D.2070306@keyaccess.nl>
+Date: Wed, 09 Jul 2008 23:47:57 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Russ Anderson <rja@sgi.com>
+CC: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       Jack Steiner <steiner@sgi.com>
+Subject: Re: [patch] x86 BIOS interface for RTC on SGI UV
+References: <20080709202719.GB22744@sgi.com> <4875266B.4020504@keyaccess.nl> <20080709213622.GC22744@sgi.com>
+In-Reply-To: <20080709213622.GC22744@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: 1.0 (+)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dnia 2008-07-09, o godz. 23:33:01
-Ivo van Doorn <ivdoorn@gmail.com> napisa³(a):
+On 09-07-08 23:36, Russ Anderson wrote:
 
-> On Wednesday 09 July 2008, Cezary Jackiewicz wrote:
-> > From: Cezary Jackiewicz <cezary.jackiewicz@gmail.com>
-> > 
-> > Remove unnecessary attributes, use rfkill switch subsystem.
+>> ... and wouldn't uv_bios_strerror/uv_bios_freq_base be better names?
 > 
-> I'm missing a call to rfkill_force_state() to inform the rfkill subsystem that
-> the key has been toggled. This function should be called when the hardware
-> has raised the interrupt about the pressed event, or when the function
-> which polls the register notices the state change.
-> 
-> As the patch works now, it means that the driver will only listen to
-> events coming from rfkill and it doen't provide any updates itself.
-> 
-> Ivo
+> The plan is for both x86 and ia64 versions of uv, with this being
+> the x86 version.  The ia64 version has ia64_sal_strerror()
+> and ia64_sal_freq_base().  Hence the x86_bios_* naming convention.
+> I'm not strongly tied to that convention, it just seemed logical.
 
-Does calling rfkill_force_state () is mandatory? This driver implement 
-get_state() hook, @state is always up-to-date.
+Ah, I see. Not much of an opinion then. x86_bios sounds a bit generic, 
+but whatever...
 
--- 
- Cezary
+> Here is the updated patch.
 
+[ ... ]
 
+> +enum {
+> +	BIOS_STATUS_SUCCESS		=  0,
+> +	BIOS_STATUS_UNIMPLEMENTED	= -1,
+> +	BIOS_STATUS_EINVAL		= -2,
+> +	BIOS_STATUS_ERROR		= -3
+> +};
+
+[ .. ]
+
+> +extern long
+> +x86_bios_freq_base(unsigned long which, unsigned long *ticks_per_second,
+> +		   unsigned long *drift_info);
+
+> +static __init void uv_rtc_init(void)
+> +{
+> +	unsigned long status, ticks_per_sec, drift;
+
+*status* should remain a long :-)
+
+Rene.
