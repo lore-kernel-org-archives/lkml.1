@@ -1,76 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754920AbYGIHeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755725AbYGIHim@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754920AbYGIHeV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 03:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752510AbYGIHeH
+	id S1755725AbYGIHim (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 03:38:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbYGIHif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 03:34:07 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:15591 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752153AbYGIHeE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 03:34:04 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAAUHdEh5LFxA/2dsb2JhbACwcg
-X-IronPort-AV: E=Sophos;i="4.30,330,1212330600"; 
-   d="scan'208";a="145083240"
-Date: Wed, 9 Jul 2008 17:33:58 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: arjan@infradead.org, hch@infradead.org, tytso@mit.edu, pavel@suse.cz,
-       t-sato@yk.jp.nec.com, akpm@linux-foundation.org,
-       viro@ZenIV.linux.org.uk, linux-ext4@vger.kernel.org, xfs@oss.sgi.com,
-       dm-devel@redhat.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, axboe@kernel.dk,
-       mtk.manpages@googlemail.com
-Subject: Re: [PATCH 3/3] Add timeout feature
-Message-ID: <20080709073358.GT11558@disturbed>
-Mail-Followup-To: Miklos Szeredi <miklos@szeredi.hu>, arjan@infradead.org,
-	hch@infradead.org, tytso@mit.edu, pavel@suse.cz,
-	t-sato@yk.jp.nec.com, akpm@linux-foundation.org,
-	viro@ZenIV.linux.org.uk, linux-ext4@vger.kernel.org,
-	xfs@oss.sgi.com, dm-devel@redhat.com, linux-fsdevel@vger.kernel.org,
-	linux-kernel@vger.kernel.org, axboe@kernel.dk,
-	mtk.manpages@googlemail.com
-References: <20080708231026.GP11558@disturbed> <20080708232031.GE18195@elf.ucw.cz> <20080709005254.GQ11558@disturbed> <20080709010922.GE9957@mit.edu> <E1KGSvZ-0006dB-53@pomaz-ex.szeredi.hu> <20080709061621.GA5260@infradead.org> <E1KGT4q-0006fD-Jb@pomaz-ex.szeredi.hu> <20080708234120.5072111f@infradead.org> <20080709065950.GR11558@disturbed> <E1KGTrq-0006qj-1u@pomaz-ex.szeredi.hu>
+	Wed, 9 Jul 2008 03:38:35 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41519 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752153AbYGIHie (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 03:38:34 -0400
+Date: Wed, 9 Jul 2008 09:38:19 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: introduce page_size_mask for 64bit
+Message-ID: <20080709073819.GA30428@elte.hu>
+References: <200807080141.05436.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <E1KGTrq-0006qj-1u@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <200807080141.05436.yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 09, 2008 at 09:13:34AM +0200, Miklos Szeredi wrote:
-> On Wed, 9 Jul 2008, Dave Chinner wrote:
-> > The argument against Miklos' version is that there may be multiple
-> > commands to execute while the fs is frozen.
+
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+
+> prepare for overmapped patch
 > 
-> Which is what a shell is for ;)
+> also printout last_map_addr together with end
 
-Yeah, weĺl, with your method I ca't tell a user to:
+applied, thanks Yinghai.
 
-	# xfs_freeze -f /mntpt
-	# xfs_db -r -c 'sb 0' -c 'p rootino' /dev/foo
-	128
-	# xfs_db -r -c 'ino 128' -c 'p core.format' /dev/foo
-	core.format = 2 (extents)
-	# xfs_db .....
-	.....
-	# xfs_freeze -u /mntpt
-
-i.e. using the freeze to force all metadata to disk and
-prevent it from changing while doing interactive debugging
-of some problem.
-
-Yes, a one-shot freeze/unfreeze mechanism works for some
-use cases. The point is that it does not work for them all.....
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+	Ingo
