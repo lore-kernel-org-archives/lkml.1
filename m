@@ -1,77 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757895AbYGILyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754955AbYGILyg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757895AbYGILyV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 07:54:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbYGILyJ
+	id S1754955AbYGILyg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 07:54:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756304AbYGILyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 07:54:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34880 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754179AbYGILyI (ORCPT
+	Wed, 9 Jul 2008 07:54:16 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:38546 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755714AbYGILyP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 07:54:08 -0400
-Date: Wed, 9 Jul 2008 04:47:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Howells <dhowells@redhat.com>
-Cc: alan@redhat.com, Markus.Lidel@shadowconnect.com, vvs@sw.ru,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] Mark i2o config broken on 64-bit platforms.
-Message-Id: <20080709044743.0dd15a3f.akpm@linux-foundation.org>
-In-Reply-To: <20080709113547.19235.15424.stgit@warthog.procyon.org.uk>
-References: <20080709113547.19235.15424.stgit@warthog.procyon.org.uk>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Jul 2008 07:54:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=JGJwbgaCA4o64YfqbW+iJTfsIldfzHZjXdO2C2+fsk0crF6Pp+UpQyaUPiZFzd4O0d
+         9hS3ldzDJmBA0eLNZ5PeRYLq/Id44F0XsOcnIi2+TNzxNVGhcp+yglowmbTkIZSeIMfX
+         M5N8L1DH1Eoh8c2P1V9q8SiS3IUBqkiK++7gs=
+From: Magnus Damm <magnus.damm@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Magnus Damm <magnus.damm@gmail.com>, gregkh@suse.de,
+       akpm@linux-foundation.org
+Date: Wed, 09 Jul 2008 20:54:28 +0900
+Message-Id: <20080709115428.14144.7121.sendpatchset@rx1.opensource.se>
+Subject: [PATCH 00/04] resource: type and size patches
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 09 Jul 2008 12:35:47 +0100 David Howells <dhowells@redhat.com> wrote:
+Hi everyone,
 
-> Mark i2o config broken on 64-bit platforms as it generates these:
-> 
-> In file included from drivers/message/i2o/config-osm.c:39:
-> drivers/message/i2o/i2o_config.c: In function 'i2o_cfg_passthru':
-> drivers/message/i2o/i2o_config.c:889: warning: cast to pointer from integer of different size
-> drivers/message/i2o/i2o_config.c:945: warning: cast to pointer from integer of different size
-> 
-> which are apparently non-trivial to fix (eg: inserting a cast through unsigned
-> long is not correct according to Linus).  This would be due to struct
-> sg_simple_element only having a 32-bit addr_bus value.
-> 
-> There are also a number of "TODO 64bit fix" comments.
-> 
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> ---
-> 
->  drivers/message/i2o/Kconfig |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
-> 
-> 
-> diff --git a/drivers/message/i2o/Kconfig b/drivers/message/i2o/Kconfig
-> index 5afa0e3..c102225 100644
-> --- a/drivers/message/i2o/Kconfig
-> +++ b/drivers/message/i2o/Kconfig
-> @@ -54,7 +54,7 @@ config I2O_EXT_ADAPTEC_DMA64
->  
->  config I2O_CONFIG
->  	tristate "I2O Configuration support"
-> -	depends on VIRT_TO_BUS
-> +	depends on VIRT_TO_BUS && (BROKEN || !64BIT)
->  	---help---
->  	  Say Y for support of the configuration interface for the I2O adapters.
->  	  If you have a RAID controller from Adaptec and you want to use the
-> @@ -66,6 +66,8 @@ config I2O_CONFIG
->  	  Note: If you want to use the new API you have to download the
->  	  i2o_config patch from http://i2o.shadowconnect.com/
->  
-> +	  Note: This is broken on 64-bit architectures.
-> +
->  config I2O_CONFIG_OLD_IOCTL
->  	bool "Enable ioctls (OBSOLETE)"
->  	depends on I2O_CONFIG
+Here comes a few struct resource changes. I propose the following:
 
-Sigh.  I've been staring at that warning for so long.
+1. add a resource_size() function to avoid one-off calculation errors.
+2. make space for more resource types and add resource_type().
+3. add IORESOURCE_CLK so we can pass clocks to platform drivers.
 
-Is it actually known to be broken on 64-bit, or does it happen to work?
+[PATCH 01/04] resource: add resource_size()
+[PATCH 02/04] resource: add resource_type() and IORESOURCE_TYPE_BITS
+[PATCH 03/04] resource: use new resource type changes
+[PATCH 04/04] resource: add new IORESOURCE_CLK type
+
+This is not tested, so I'm surprised if this even builds. I have time
+to fix this up if people agree with this change.
+
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
+---
+
+ Applies on current linux-2.6, so this will need up-porting.
+ [PATCH 03/04] needs to be extended and split up as well.
+
+ arch/alpha/kernel/pci.c                    |   21 ++++++------
+ arch/arm/kernel/bios32.c                   |   16 ++++-----
+ arch/arm/mach-iop13xx/pci.c                |    6 +--
+ arch/arm/mm/iomap.c                        |    5 +-
+ arch/arm/plat-s3c24xx/pm.c                 |    2 -
+ arch/cris/arch-v32/drivers/pci/bios.c      |    6 +--
+ arch/frv/mb93090-mb00/pci-frv.c            |   10 ++---
+ arch/frv/mb93090-mb00/pci-iomap.c          |    3 +
+ arch/ia64/pci/pci.c                        |    7 ++--
+ arch/ia64/sn/kernel/io_init.c              |    2 -
+ arch/m68k/kernel/bios32.c                  |    6 +--
+ arch/mips/basler/excite/excite_device.c    |   12 +------
+ arch/mips/lib/iomap-pci.c                  |    5 +-
+ arch/mips/pci/pci.c                        |   24 +++++++-------
+ arch/mips/pmc-sierra/yosemite/ht.c         |    6 +--
+ arch/mn10300/unit-asb2305/pci-asb2305.c    |    8 ++--
+ arch/mn10300/unit-asb2305/pci-iomap.c      |    3 +
+ arch/parisc/kernel/pci.c                   |   15 ++++----
+ arch/parisc/lib/iomap.c                    |    5 +-
+ arch/powerpc/kernel/iomap.c                |    5 +-
+ arch/powerpc/kernel/legacy_serial.c        |    2 -
+ arch/powerpc/kernel/pci-common.c           |   31 ++++++++----------
+ arch/powerpc/kernel/pci_64.c               |    2 -
+ arch/powerpc/kernel/prom_parse.c           |    4 +-
+ arch/powerpc/platforms/fsl_uli1575.c       |    2 -
+ arch/powerpc/platforms/maple/setup.c       |    2 -
+ arch/powerpc/platforms/maple/time.c        |    2 -
+ arch/powerpc/platforms/pseries/eeh_cache.c |    5 +-
+ arch/powerpc/platforms/pseries/pci.c       |    4 +-
+ arch/powerpc/sysdev/fsl_pci.c              |    4 +-
+ arch/powerpc/sysdev/ppc4xx_pci.c           |    8 ++--
+ arch/ppc/kernel/pci.c                      |   48 +++++++++++++---------------
+ arch/ppc/syslib/ppc405_pci.c               |    2 -
+ arch/ppc/syslib/ppc_sys.c                  |    2 -
+ arch/sh/drivers/pci/pci.c                  |   11 +++---
+ arch/sh/kernel/io_trapped.c                |   10 ++++-
+ arch/sparc/kernel/of_device.c              |    1 
+ arch/sparc/kernel/pcic.c                   |   12 +++----
+ arch/sparc/lib/iomap.c                     |    5 +-
+ arch/sparc64/kernel/of_device.c            |    5 +-
+ arch/sparc64/kernel/pci.c                  |   21 ++++++------
+ arch/sparc64/lib/iomap.c                   |    5 +-
+ arch/v850/kernel/rte_mb_a_pci.c            |    8 ++--
+ arch/x86/kernel/pci-calgary_64.c           |    2 -
+ arch/x86/pci/i386.c                        |    4 +-
+ arch/x86/pci/k8-bus_64.c                   |    5 +-
+ arch/xtensa/kernel/pci.c                   |   12 +++----
+ drivers/base/platform.c                    |   31 +++++++++---------
+ drivers/pnp/manager.c                      |    5 --
+ include/linux/ioport.h                     |   16 +++++++--
+ kernel/resource.c                          |    2 -
+ 51 files changed, 232 insertions(+), 208 deletions(-)
