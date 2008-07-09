@@ -1,84 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755944AbYGINU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbYGIN2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755944AbYGINU0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 09:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551AbYGINUR
+	id S1754904AbYGIN2t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 09:28:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbYGIN2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 09:20:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43641 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753118AbYGINUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 09:20:16 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] Fix the epca driver to permit epca_setup() to be invoked from
-	the kernel cmdline
-To: alan@redhat.com, akpm@linux-foundation.org
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
-Date: Wed, 09 Jul 2008 14:19:28 +0100
-Message-ID: <20080709131927.639.72528.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Wed, 9 Jul 2008 09:28:41 -0400
+Received: from mk-outboundfilter-4.mail.uk.tiscali.com ([212.74.114.32]:4338
+	"EHLO mk-outboundfilter-4.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752586AbYGIN2l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 09:28:41 -0400
+X-Trace: 108994929/mk-outboundfilter-2.mail.uk.tiscali.com/F2S/$F2S-ACCEPTED/f2s-freedom2Surf-customers/195.137.94.162
+X-SBRS: None
+X-RemoteIP: 195.137.94.162
+X-IP-MAIL-FROM: spyro@f2s.com
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApAAAPtZdEjDiV6i/2dsb2JhbAAIsDA
+X-IronPort-AV: E=Sophos;i="4.30,331,1212361200"; 
+   d="scan'208";a="108994929"
+X-IP-Direction: IN
+Subject: Re: [patch 4/4] MFD: Change mfd platform device usage to wrapper
+	platform_device
+From: ian <spyro@f2s.com>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: Dmitry <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+In-Reply-To: <20080709120720.GL8517@trinity.fluff.org>
+References: <20080709104916.200210922@fluff.org>
+	 <20080709104933.101610936@fluff.org>
+	 <bc64b4640807090415w781507fetfe332271ad158112@mail.gmail.com>
+	 <20080709112426.GN8489@trinity.fluff.org>
+	 <bc64b4640807090431g5b1960edua2508337973615da@mail.gmail.com>
+	 <20080709115045.GK8517@trinity.fluff.org>
+	 <bc64b4640807090456u15d12378qe25375ce4a6cd100@mail.gmail.com>
+	 <20080709120720.GL8517@trinity.fluff.org>
+Content-Type: text/plain
+Date: Wed, 09 Jul 2008 14:28:38 +0100
+Message-Id: <1215610118.3295.92.camel@wirenth>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the epca driver to call epca_setup() if digiepca=xxx is included on the
-command line and the epca driver is built in.
+On Wed, 2008-07-09 at 13:07 +0100, Ben Dooks wrote:
+> > They should be here for exactly the same reason. They are used by
+> the drivers
+> > that will be submitted later. E.g. OHCI driver needs such
+> > suspend/resume handling.
+> 
+> No, you don't understand. I'll make a rather explicit point about the
+> very clever way the device tree works since the devices are registered
+> with their parent device set.
 
-epca_setup() used to be called from init/main.c in 2.2 kernels, but somewhere
-along the way that call was removed but not replaced.
+Actually I misthought here too.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+The problem comes when the subdevices arent *quite* truely independant
+of their core, and thus need to ask the core to turn off power /
+clokcs / etc. for them
 
- drivers/char/epca.c |   15 +++++++++++++--
- 1 files changed, 13 insertions(+), 2 deletions(-)
+they cant just do it themselves because the subdevices may be used on
+more than one core that does this hanling in different ways (eg. T7L and
+TC6393XB handle the 32KHz clock completely differently. on tc6393xb,
+theres a clock gate on the MFD core chip and on t7l66xb the clock has to
+be handled right back at the platform layer, in board specific code
+because the core has no gate, and the clock is fed to it from an
+external pin.
 
-
-diff --git a/drivers/char/epca.c b/drivers/char/epca.c
-index 60a4df7..96a4b6b 100644
---- a/drivers/char/epca.c
-+++ b/drivers/char/epca.c
-@@ -186,7 +186,6 @@ static void pc_throttle(struct tty_struct *tty);
- static void pc_unthrottle(struct tty_struct *tty);
- static void digi_send_break(struct channel *ch, int msec);
- static void setup_empty_event(struct tty_struct *tty, struct channel *ch);
--static void epca_setup(char *, int *);
- 
- static int pc_write(struct tty_struct *, const unsigned char *, int);
- static int pc_init(void);
-@@ -2538,7 +2537,8 @@ static void setup_empty_event(struct tty_struct *tty, struct channel *ch)
- 	memoff(ch);
- }
- 
--static void epca_setup(char *str, int *ints)
-+#ifndef MODULE
-+static void __init epca_setup(char *str, int *ints)
- {
- 	struct board_info board;
- 	int               index, loop, last;
-@@ -2792,6 +2792,17 @@ static void epca_setup(char *str, int *ints)
- 	num_cards++;
- }
- 
-+static int __init epca_real_setup(char *str)
-+{
-+	int ints[11];
-+
-+	epca_setup(get_options(str, 11, ints), ints);
-+	return 1;
-+}
-+
-+__setup("digiepca", epca_real_setup);
-+#endif
-+
- enum epic_board_types {
- 	brd_xr = 0,
- 	brd_xem,
+Thats one example - there are others, not all clocks.
 
