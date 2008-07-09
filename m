@@ -1,45 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbYGIFvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbYGIFvn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754694AbYGIFvY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 01:51:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751269AbYGIFvR
+	id S1755898AbYGIFvn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 01:51:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbYGIFvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 01:51:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60462 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751205AbYGIFvQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 01:51:16 -0400
-Date: Wed, 9 Jul 2008 07:51:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Bernhard Walle <bwalle@suse.de>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: let early_reserve_e820 update e820_saved too
-Message-ID: <20080709055102.GB9760@elte.hu>
-References: <200807031135.37465.yhlu.kernel@gmail.com> <200807031139.00349.yhlu.kernel@gmail.com>
-MIME-Version: 1.0
+	Wed, 9 Jul 2008 01:51:31 -0400
+Received: from [76.245.85.235] ([76.245.85.235]:59050 "EHLO cynthia.pants.nu"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754985AbYGIFva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 01:51:30 -0400
+Date: Tue, 8 Jul 2008 21:21:47 -0700
+From: Brad Boyer <flar@allandria.com>
+To: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@suse.cz>,
+       Christoph Hellwig <hch@infradead.org>,
+       Takashi Sato <t-sato@yk.jp.nec.com>, akpm@linux-foundation.org,
+       viro@ZenIV.linux.org.uk,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
+       "dm-devel@redhat.com" <dm-devel@redhat.com>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       axboe@kernel.dk, mtk.manpages@googlemail.com
+Subject: Re: [PATCH 3/3] Add timeout feature
+Message-ID: <20080709042147.GB20695@cynthia.pants.nu>
+References: <20080630212450t-sato@mail.jp.nec.com> <20080701081026.GB16691@infradead.org> <20080707110730.GG5643@ucw.cz> <20080708231026.GP11558@disturbed> <20080708232031.GE18195@elf.ucw.cz> <20080709005254.GQ11558@disturbed> <20080709010922.GE9957@mit.edu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200807031139.00349.yhlu.kernel@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080709010922.GE9957@mit.edu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jul 08, 2008 at 09:09:22PM -0400, Theodore Tso wrote:
+> I had argued for the timeout (and so it's mostly my fault that
+> Takashi-San included it as a feature) mainly because I was (and still
+> amm) deeply paranoid about the competence of the application
+> programers who might use this feature.  I could see them screwing up
+> leaving it locked forever --- perhaps when their program core dumps or
+> when the user types ^C and they forgot to install a signal handler,
+> leaving the filesystem frozen forever.
+> 
+> In the meantime, user applications that try to create files on that
+> filesystem, or write to files already opened when the filesystem are
+> frozen will accumulate dirty pages in the page cache, until the system
+> finally falls over.
+> 
+> Think about some of the evil perpetrated by hal and the userspace
+> suspend-resume scripts (and how much complexity with random XML
+> fragments getting parsed by various dbus plugins), and tell me with a
+> straight face that you would trust these modern-day desktop
+> application writers with this interface.  Because they *will* find
+> some interesting way to (ab)use it.....
+> 
+> Also, I didn't think the extra code complexity to implements timeouts
+> was *that* bad --- it seemed fairly small for the functionality.
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+Just as an extra point of reference, VxFS supports a freeze/thaw by
+ioctl very similar to this including a timeout in seconds. This
+means someone else thought it was a useful feature.
 
-> so when it is called after early_param, e820_saved get updated too. 
-> esp for mpc update.
+http://sfdoccentral.symantec.com/sf/5.0/linux/manpages/vxfs/vxfsio_7.html
 
-applied to tip/x86/core, thanks Yinghai.
+	Brad Boyer
+	flar@allandria.com
 
-	Ingo
