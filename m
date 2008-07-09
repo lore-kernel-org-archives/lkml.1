@@ -1,76 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755807AbYGINQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755944AbYGINU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755807AbYGINQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 09:16:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753951AbYGINQR
+	id S1755944AbYGINU0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 09:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551AbYGINUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 09:16:17 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:25881 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752428AbYGINQP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 09:16:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:references:date:in-reply-to:message-id
-         :user-agent:mime-version:content-type;
-        b=PlMPiasjFk9B5bokQU9u7qC6N0lDe4FAWTTxorL28AF83F+Ch3lnVfgcIPYhh39f+b
-         JwpP0SSdDghdPJgum40hb+WxZchswXjqbyTUgewBSXxT0BMQOdTxuJtjCVV54B7owaV/
-         LD62C6WFyyn3PG8VC+1QHaA1DhH0uajc2ue1I=
-From: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Vitaly Mayatskikh <v.mayatskih@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] Introduce copy_user_handle_tail routine
-References: <m37icazgt0.fsf@gravicappa.englab.brq.redhat.com>
-	<alpine.LFD.1.10.0806281108240.4371@hp.linux-foundation.org>
-	<m3lk0ngdo5.fsf@gravicappa.englab.brq.redhat.com>
-	<alpine.LFD.1.10.0806300835220.28533@hp.linux-foundation.org>
-	<m3fxqsjt22.fsf_-_@gravicappa.englab.brq.redhat.com>
-	<486B8B6C.2050109@firstfloor.org>
-	<m37ic4jr2w.fsf@gravicappa.englab.brq.redhat.com>
-	<alpine.LFD.1.10.0807021930470.18105@woody.linux-foundation.org>
-	<m34p71yjyx.fsf@gravicappa.englab.brq.redhat.com>
-	<alpine.LFD.1.10.0807070901490.11076@woody.linux-foundation.org>
-	<20080709130305.GB20768@elte.hu>
-Date: Wed, 09 Jul 2008 15:16:15 +0200
-In-Reply-To: <20080709130305.GB20768@elte.hu> (Ingo Molnar's message of "Wed,
-	9 Jul 2008 15:03:05 +0200")
-Message-ID: <m3od57nqow.fsf@gravicappa.englab.brq.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Wed, 9 Jul 2008 09:20:17 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43641 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753118AbYGINUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 09:20:16 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] Fix the epca driver to permit epca_setup() to be invoked from
+	the kernel cmdline
+To: alan@redhat.com, akpm@linux-foundation.org
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
+Date: Wed, 09 Jul 2008 14:19:28 +0100
+Message-ID: <20080709131927.639.72528.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+Fix the epca driver to call epca_setup() if digiepca=xxx is included on the
+command line and the epca driver is built in.
 
->> Obviously, I'd be even happier if it also went through the normal x86 
->> review cycles (ie Ingo &co), but the current series is largely ack'ed 
->> by me.
->
-> applied them to tip/x86/core, for v2.6.27 merging, thanks everyone.
->
-> I've added Linus's Acked-by. Vitaly, could you please send your 
-> Signed-off-by line, it was missing from the patches. 
+epca_setup() used to be called from init/main.c in 2.2 kernels, but somewhere
+along the way that call was removed but not replaced.
 
-It was wrongly set at the very end of post.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-Signed-off-by: Vitaly Mayatskikh <v.mayatskih@gmail.com>
+ drivers/char/epca.c |   15 +++++++++++++--
+ 1 files changed, 13 insertions(+), 2 deletions(-)
 
-> You can check the 
-> current form of the commits via:
->
->  git-pull git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86/core
->
-> (the patches changed slightly, there was some merge fallout due to other 
-> changes in this area.)
 
-I'll run it through test case and will let you know if something goes
-wrong. Thanks.
+diff --git a/drivers/char/epca.c b/drivers/char/epca.c
+index 60a4df7..96a4b6b 100644
+--- a/drivers/char/epca.c
++++ b/drivers/char/epca.c
+@@ -186,7 +186,6 @@ static void pc_throttle(struct tty_struct *tty);
+ static void pc_unthrottle(struct tty_struct *tty);
+ static void digi_send_break(struct channel *ch, int msec);
+ static void setup_empty_event(struct tty_struct *tty, struct channel *ch);
+-static void epca_setup(char *, int *);
+ 
+ static int pc_write(struct tty_struct *, const unsigned char *, int);
+ static int pc_init(void);
+@@ -2538,7 +2537,8 @@ static void setup_empty_event(struct tty_struct *tty, struct channel *ch)
+ 	memoff(ch);
+ }
+ 
+-static void epca_setup(char *str, int *ints)
++#ifndef MODULE
++static void __init epca_setup(char *str, int *ints)
+ {
+ 	struct board_info board;
+ 	int               index, loop, last;
+@@ -2792,6 +2792,17 @@ static void epca_setup(char *str, int *ints)
+ 	num_cards++;
+ }
+ 
++static int __init epca_real_setup(char *str)
++{
++	int ints[11];
++
++	epca_setup(get_options(str, 11, ints), ints);
++	return 1;
++}
++
++__setup("digiepca", epca_real_setup);
++#endif
++
+ enum epic_board_types {
+ 	brd_xr = 0,
+ 	brd_xem,
 
--- 
-wbr, Vitaly
