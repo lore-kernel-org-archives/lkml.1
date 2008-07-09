@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751158AbYGIQID@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752131AbYGIQJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751158AbYGIQID (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 12:08:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750792AbYGIQHx
+	id S1752131AbYGIQJv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 12:09:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750792AbYGIQJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 12:07:53 -0400
-Received: from gw.goop.org ([64.81.55.164]:57531 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750985AbYGIQHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 12:07:52 -0400
-Message-ID: <4874E24E.1060700@goop.org>
-Date: Wed, 09 Jul 2008 09:07:42 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       Stephen Tweedie <sct@redhat.com>, Eduardo Habkost <ehabkost@redhat.com>,
-       Mark McLoughlin <markmc@redhat.com>
-Subject: Re: [patch] xen64: fix build error on 32-bit + !HIGHMEM 
-References: <patchbomb.1215554782@localhost> <20080709111219.GA24874@elte.hu> <20080709114730.GA15238@elte.hu>
-In-Reply-To: <20080709114730.GA15238@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 9 Jul 2008 12:09:44 -0400
+Received: from [194.117.236.238] ([194.117.236.238]:41788 "EHLO
+	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1750790AbYGIQJn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 12:09:43 -0400
+Date: Wed, 9 Jul 2008 19:07:12 +0300
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
+       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re:
+Message-ID: <20080709190712.107a6707@linux360.ro>
+In-Reply-To: <20080709154753.GA9899@Krystal>
+References: <20080709154753.GA9899@Krystal>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> another small build fixlet, on 32-bit.
->
-> 	Ingo
->
-> ---------------->
-> commit c3d03b62eb73cb66415b7bb3031981c6a0cb90c3
-> Author: Ingo Molnar <mingo@elte.hu>
-> Date:   Wed Jul 9 13:45:33 2008 +0200
->
->     xen64: fix build error on 32-bit + !HIGHMEM
->     
->     fix:
->     
->     arch/x86/xen/enlighten.c: In function 'xen_set_fixmap':
->     arch/x86/xen/enlighten.c:1127: error: 'FIX_KMAP_BEGIN' undeclared (first use in this function)
->     arch/x86/xen/enlighten.c:1127: error: (Each undeclared identifier is reported only once
->     arch/x86/xen/enlighten.c:1127: error: for each function it appears in.)
->     arch/x86/xen/enlighten.c:1127: error: 'FIX_KMAP_END' undeclared (first use in this function)
->     make[1]: *** [arch/x86/xen/enlighten.o] Error 1
->     make: *** [arch/x86/xen/enlighten.o] Error 2
->     
->     FIX_KMAP_BEGIN is only available on HIGHMEM.
->     
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
->   
+On Wed, 9 Jul 2008 11:47:53 -0400
+Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
 
-Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> Bcc: 
+> Subject: Re: [patch 05/15] LTTng instrumentation - scheduler (repost)
+> Reply-To: 
+> In-Reply-To: <20080709153434.GA9186@Krystal>
+> X-Editor: vi
+> X-Info: http://krystal.dyndns.org:8080
+> X-Operating-System: Linux/2.6.21.3-grsec (i686)
+> X-Uptime: 11:46:04 up 34 days, 20:27,  4 users,  load average: 2.95,
+> 2.43, 2.46
+> 
 
-    J
+Perhaps you should resend this correctly.
