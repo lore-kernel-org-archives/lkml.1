@@ -1,87 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757392AbYGIU5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbYGIU6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757392AbYGIU5m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 16:57:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755595AbYGIU4R
+	id S1754077AbYGIU6Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 16:58:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756971AbYGIU4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 16:56:17 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1556 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751982AbYGIU4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 16:56:15 -0400
-Date: Wed, 9 Jul 2008 22:44:13 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Christoph Hellwig <hch@infradead.org>, Takashi Sato <t-sato@yk.jp.nec.com>,
-       akpm@linux-foundation.org, viro@ZenIV.linux.org.uk,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
-       "dm-devel@redhat.com" <dm-devel@redhat.com>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       axboe@kernel.dk, mtk.manpages@googlemail.com
-Subject: Re: [PATCH 3/3] Add timeout feature
-Message-ID: <20080709204412.GG11006@ucw.cz>
-References: <20080630212450t-sato@mail.jp.nec.com> <20080701081026.GB16691@infradead.org> <20080707110730.GG5643@ucw.cz> <20080708231026.GP11558@disturbed> <20080708232031.GE18195@elf.ucw.cz> <20080709005254.GQ11558@disturbed>
-Mime-Version: 1.0
+	Wed, 9 Jul 2008 16:56:46 -0400
+Received: from old-tantale.fifi.org ([64.81.30.200]:38184 "EHLO
+	old-tantale.fifi.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756947AbYGIU4p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 16:56:45 -0400
+To: john stultz <johnstul@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, macro@linux-mips.org
+Subject: Re: 2.6.25.9: system clocks works normally then speeds up 4x...
+References: <87d4lm2792.fsf@old-tantale.fifi.org>
+	<1f1b08da0807091255s77033943t2b686ddb537ceaae@mail.gmail.com>
+	<874p6y25es.fsf@old-tantale.fifi.org>
+	<1215634125.6149.8.camel@localhost.localdomain>
+Mail-Copies-To: nobody
+From: Philippe Troin <phil@fifi.org>
+Date: 09 Jul 2008 13:53:32 -0700
+In-Reply-To: <1215634125.6149.8.camel@localhost.localdomain>
+Message-ID: <87wsjuzsmr.fsf@old-tantale.fifi.org>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.2
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080709005254.GQ11558@disturbed>
-User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+john stultz <johnstul@us.ibm.com> writes:
 
-> > > > > I still disagree with this whole patch.  There is not reason to let
-> > > > > the freeze request timeout - an auto-unfreezing will only confuse the
-> > > > > hell out of the caller.  The only reason where the current XFS freeze
-> > > > > call can hang and this would be theoretically useful is when the
-> > > > 
-> > > > What happens when someone dirties so much data that vm swaps out
-> > > > whatever process that frozen the filesystem?
+> On Wed, 2008-07-09 at 13:01 -0700, Philippe Troin wrote:
+> > "john stultz" <johnstul@us.ibm.com> writes:
+> > 
+> > > On Wed, Jul 9, 2008 at 12:21 PM, Philippe Troin <phil@fifi.org> wrote:
+> > > >
+> > > > Symptoms:
+> > > >
+> > > >  The system boots fine. Clock seems to run normally.
+> > > >
+> > > >  Then after a random amount of time (on the current boot, 3 days),
+> > > >  clock starts to be running 2-4x faster (on the current boot, 4x).
+> > > >
+> > > >  I have tried booting with "nohz=off highres=off" but it does not
+> > > >  help.
 > > > 
-> > > a) you can't dirty a frozen filesystem - by definition a frozen
-> > >    filesystem is a *clean filesystem* and *cannot be dirtied*.
+> > > Could you provide the output from the following:
+> > >    sudo cat /sys/devices/system/clocksource/clocksource0/*
 > > 
-> > Can you stop me?
+> > Sure.
 > > 
-> > mmap("/some/huge_file", MAP_SHARED);
+> > It is:
+> > available: jiffies tsc 
+> > current:   jiffies
 > > 
-> > then write to memory mapping?
-> 
-> Sure - we can put a hook in ->page_mkwrite() to prevent it.  We
-> don't right now because nobody in the real world really cares if one
-> half of a concurrent user data change is in the old snapshot or the
-> new one......
-> 
-> > > b) Swap doesn't write through the filesystem
-> > > c) you can still read from a frozen filesystem to page your
-> > >    executable?? in.
+> > > Did this issue occur with 2.6.24 or earlier kernels?
 > > 
-> > atime modification should mean dirty data, right?
+> > No.  It started with 2.6.25.
+> > 
+> > Interestingly:
+> > 
+> >   I've just modified the current clocksource to tsc and the clock went
+> >   back to its normal speed.
+> > 
+> >   Then I reset the current clocksource to jiffies, and the clock went
+> >   back to its (wrong) 4x speed.
+> > 
+> > So it looks like the kernel is counting jiffies 4x too fast.
 > 
-> Metadata, not data. If that's really a problem (and it never has
-> been for XFS because we always allow in memory changes to atime)
-> then touch_atime could be easily changed to avoid this...
+> When you're seeing the issue, can you do the following:
+>   cat /proc/interrupts > interrupts
 > 
-> > And dirty data mean
-> > memory pressure, right? 
+>   <wait 10 seconds by your wristwatch> 
 > 
-> If you walk enough inodes while the filesystem is frozen, it
-> theoretically could happen.  Typically a filesystem is only for a
-> few seconds at a time so in the real world this has never, ever been
-> a problem.
+>   cat /proc/interrupts >> interrupts
+> 
+> And send the results?
 
-So we have freezing interface that does not really freeze, and
-that can break the system when filesystem is frozen for too long...
-:-(.
+There you are:
 
-Maybe you could use process freezer -- cgroup people are adding
-userspace interface to that -- to solve those... but that would mean
-stopping everyone but thread doing freezing...
+           CPU0       CPU1
+  0:        353          0   IO-APIC-edge      timer
+  1:          0          8   IO-APIC-edge      i8042
+  2:          0          0    XT-PIC-XT        cascade
+  3:          0          2   IO-APIC-edge
+  4:      32796         68   IO-APIC-edge      serial
+  8:          1          0   IO-APIC-edge      rtc
+ 14:     665397      37592   IO-APIC-edge      pata_via
+ 15:          0          0   IO-APIC-edge      pata_via
+ 16:   11417314     784937   IO-APIC-fasteoi   ohci_hcd:usb2, aic7xxx,
+  firewire_ohci
+ 17:   11695442    1165240   IO-APIC-fasteoi   ohci_hcd:usb3, eth1
+ 18:   14967468    1533627   IO-APIC-fasteoi   ehci_hcd:usb1, eth0
+ 19:    1526542     363432   IO-APIC-fasteoi   uhci_hcd:usb4, eth2
+NMI:          0          0   Non-maskable interrupts
+LOC:  546305845   33155722   Local timer interrupts
+RES:    4502087    5460357   Rescheduling interrupts
+CAL:     816244    3856944   function call interrupts
+TLB:     604097    1266758   TLB shootdowns
+TRM:          0          0   Thermal event interrupts
+SPU:          0          0   Spurious interrupts
+ERR:          0
+MIS:          0
 
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Roughly 10 seconds later:
+
+           CPU0       CPU1
+  0:        353          0   IO-APIC-edge      timer
+  1:          0          8   IO-APIC-edge      i8042
+  2:          0          0    XT-PIC-XT        cascade
+  3:          0          2   IO-APIC-edge
+  4:      32796         68   IO-APIC-edge      serial
+  8:          1          0   IO-APIC-edge      rtc
+ 14:     665481      37592   IO-APIC-edge      pata_via
+ 15:          0          0   IO-APIC-edge      pata_via
+ 16:   11417335     784937   IO-APIC-fasteoi   ohci_hcd:usb2, aic7xxx,
+  firewire_ohci
+ 17:   11695614    1165240   IO-APIC-fasteoi   ohci_hcd:usb3, eth1
+ 18:   14967672    1533627   IO-APIC-fasteoi   ehci_hcd:usb1, eth0
+ 19:    1526542     363432   IO-APIC-fasteoi   uhci_hcd:usb4, eth2
+NMI:          0          0   Non-maskable interrupts
+LOC:  546361653   33156517   Local timer interrupts
+RES:    4502100    5460379   Rescheduling interrupts
+CAL:     816244    3856944   function call interrupts
+TLB:     604097    1266758   TLB shootdowns
+TRM:          0          0   Thermal event interrupts
+SPU:          0          0   Spurious interrupts
+ERR:          0
+MIS:          0
+ 
+> Could you also try booting with noapic to see if that changes anything?
+
+Sure.  This will mean I will lose the "wedged" system.  Is there
+anything else that needs to be checked on it before I lose the broken
+state?
+Also keep in mind that the symptoms take a while to manifest
+themselves (a few days typically).
+
+Phil.
