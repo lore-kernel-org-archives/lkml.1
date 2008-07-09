@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbYGIU4H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756613AbYGIU4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754729AbYGIU4H (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 16:56:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755415AbYGIUzg
+	id S1756613AbYGIU4c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 16:56:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755581AbYGIUzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 16:55:36 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1523 "EHLO spitz.ucw.cz"
+	Wed, 9 Jul 2008 16:55:38 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1525 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755364AbYGIUzf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 16:55:35 -0400
-Date: Wed, 9 Jul 2008 22:25:47 +0200
+	id S1754914AbYGIUzh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 16:55:37 -0400
+Date: Wed, 9 Jul 2008 22:32:17 +0200
 From: Pavel Machek <pavel@suse.cz>
-To: David Miller <davem@davemloft.net>
-Cc: alan@lxorguk.ukuu.org.uk, mchan@broadcom.com, dwmw2@infradead.org,
-       bastian@waldi.eu.org, linux-kernel@vger.kernel.org
-Subject: request_firmware vs. resume (was Re: [PATCH] bnx2 - use request_firmware())
-Message-ID: <20080709202547.GD11006@ucw.cz>
-References: <20080707221950.3dfba435@the-village.bc.nu> <20080707.150549.242704515.davem@davemloft.net> <20080708073922.6c2470c1@the-village.bc.nu> <20080708.015838.245133409.davem@davemloft.net>
+To: Felipe Balbi <felipebalbi@users.sourceforge.net>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: Re: Battery life difference
+Message-ID: <20080709203216.GF11006@ucw.cz>
+References: <31e679430807050617u3fc706fasee9bb43a151c501f@mail.gmail.com> <20080705082352.4b6be669@infradead.org> <31e679430807050844r30ff74fby7e15641573b42d82@mail.gmail.com> <20080705085432.2f9b2964@infradead.org> <31e679430807051041w6dd9b917xc51f31f66fbd65d3@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080708.015838.245133409.davem@davemloft.net>
+In-Reply-To: <31e679430807051041w6dd9b917xc51f31f66fbd65d3@mail.gmail.com>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > > The firmware needs to be reloaded every time the chip resets.
-> > > You're not saving anything/
-> > 
-> > > See above, you aren't saving anything.  The firmware needs to stay
-> > > around so it can be reloaded into the card during exceptions.
-> > > 
-> > > That is, unless you want a more failure prone system.
-> > 
-> > Ok so if tg3 always needs the same firmware and always needs it in memory
-> > then maybe it isn't a significant candidate for request_firmware beyond
-> > the neatness of distribution. I note the firmware hasn't changed in years
-> > so it can easily be shipped separately and the one package would have
-> > done for all this time.
+On Sat 2008-07-05 20:41:07, Felipe Balbi wrote:
+> Hi,
 > 
-> It isn't just tg3.  All the broadcom gigabit chips need this
-> kind of handling.
+> On Sat, Jul 5, 2008 at 6:54 PM, Arjan van de Ven <arjan@infradead.org> wrote:
+> > you may also need to toggle your bios to enable AHCI btw
+> >
+> >>
+> >> > Also take a look at
+> >> > http://kerneltrap.org/mailarchive/linux-kernel/2008/5/8/1771024
+> >> > because these patches save like 0.75W in our lab.
+> >>
+> >> cool, is it merged upstream ?
+> >> I'll build current git kernel and reply again with new linux results.
+> >> It could be that ubuntu 2.6.24 is broken somehow...
+> >>
+> >> > To be honest, I'm surprised at your results; in our testing (with a
+> >> > different distro though) we don't see such a difference and Linux is
+> >> > doing rather well.
+> >>
+> >> can you get powertop results in a 2.6.24 distro kernel and current git
+> >> kernel ?
+> >
+> > most of my measurement machines are in the office ;(
+> >
+> > Anyway, also make sure you use the 0.11 version of powertop; we added
+> > some newer stuff into that version...
 > 
-> Basically all of the drivers we are pushing back on.
+> Cool, now I'm using current linux 2.6.26-rc8 from git
+> b8a0b6ccf2ba2519ace65d782b41ee91bf3c3778
 > 
-> I bet there are other similar examples.
+> Now I'm reaching 9.8w consumption :-)
 
-Be careful about request_firmware. Doing it right w.r.t.
-suspend/resume is quite tricky: you have to load it from userspace
-before kernel starts, so that you can use it during resume...
-
-							Pavel
+Cool... how low can Windows go?
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
