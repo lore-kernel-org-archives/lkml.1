@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbYGIObR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755635AbYGIOde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756051AbYGIObR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 10:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbYGIObE
+	id S1755635AbYGIOde (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 10:33:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbYGIOdZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 10:31:04 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:1542 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751648AbYGIObB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 10:31:01 -0400
-Date: Wed, 9 Jul 2008 16:30:28 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for July 9
-Message-ID: <20080709143028.GA24152@osiris.boeblingen.de.ibm.com>
-References: <20080709183047.0eb1eb72.sfr@canb.auug.org.au>
+	Wed, 9 Jul 2008 10:33:25 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:46132 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752015AbYGIOdZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 10:33:25 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: 2.6.26-rc9-git4: Reported regressions from 2.6.25
+Date: Wed, 9 Jul 2008 16:35:21 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <4yrA-dRoNlD.A.jcB.ny-cIB@albercik> <20080708214903.b783ba84.randy.dunlap@oracle.com>
+In-Reply-To: <20080708214903.b783ba84.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080709183047.0eb1eb72.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200807091635.22511.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 09, 2008 at 06:30:47PM +1000, Stephen Rothwell wrote:
-> Hi all,
+On Wednesday, 9 of July 2008, Randy Dunlap wrote:
+> On Tue,  8 Jul 2008 23:37:43 +0200 (CEST) Rafael J. Wysocki wrote:
 > 
-> Changes since next-20080708:
+> > Unresolved regressions
+> > ----------------------
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10872
+> > Subject		: x86_64 boot hang when CONFIG_NUMA=n
+> > Submitter	: Randy Dunlap <randy.dunlap@oracle.com>
+> > Date		: 2008-06-05 21:50 (34 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=121270308607116&w=4
+> > 		  http://lkml.org/lkml/2008/6/11/355
+> > 		  http://lkml.org/lkml/2008/6/15/117
+> > 		  http://marc.info/?l=linux-kernel&m=121287638527452&w=2
+> > Handled-By	: Yinghai Lu <yhlu.kernel@gmail.com>
 > 
-> Temporarily dropped tree: ttydev (since it would not import on top of any
-> tree I have)
-> 
-> The x86 tree lost a conflict against the ftrace tree.
-> 
-> The ide tree gained 2 conflicts against Linus' tree.
-> 
-> The nfs tree gained a conflict against Linus' tree.
-> 
-> The acpi tree lost 5 conflicts against various trees but gained another
-> against the x86 tree.
-> 
-> The net tree lost 2 conflicts against the x86 wireless-current trees.
-> 
-> I have also applied the following patches for known problems (I assume
-> that these will be merged into their appropriate trees shortly):
-> 
-> 	linux-next: zero based percpu build error on s390
+> I've spent quite some time trying to bisect this problem, but to no avail.
+> I don't expect to spend more time on it, so I suppose you can just mark it as dead.
 
-Ingo, will you merge/pick this patch up? The original patch which causes
-the problems came in via one of your git trees. Patch in question is
+OK, I'll close it, then.
 
-"Zero based percpu: infrastructure to rebase the per cpu area to zero"
-
-Thanks.
+Thanks,
+Rafael
