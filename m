@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755642AbYGINDd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756243AbYGINGJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755642AbYGINDd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 09:03:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbYGINDY
+	id S1756243AbYGINGJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 09:06:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbYGINF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 09:03:24 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37729 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751889AbYGINDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 09:03:24 -0400
-Date: Wed, 9 Jul 2008 15:03:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Vitaly Mayatskikh <v.mayatskih@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] Introduce copy_user_handle_tail routine
-Message-ID: <20080709130305.GB20768@elte.hu>
-References: <m37icazgt0.fsf@gravicappa.englab.brq.redhat.com> <alpine.LFD.1.10.0806281108240.4371@hp.linux-foundation.org> <m3lk0ngdo5.fsf@gravicappa.englab.brq.redhat.com> <alpine.LFD.1.10.0806300835220.28533@hp.linux-foundation.org> <m3fxqsjt22.fsf_-_@gravicappa.englab.brq.redhat.com> <486B8B6C.2050109@firstfloor.org> <m37ic4jr2w.fsf@gravicappa.englab.brq.redhat.com> <alpine.LFD.1.10.0807021930470.18105@woody.linux-foundation.org> <m34p71yjyx.fsf@gravicappa.englab.brq.redhat.com> <alpine.LFD.1.10.0807070901490.11076@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807070901490.11076@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 9 Jul 2008 09:05:56 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:34350 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752295AbYGINFz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 09:05:55 -0400
+Subject: Re: [PATCH] dsp56k: use request_firmware
+From: David Woodhouse <dwmw2@infradead.org>
+To: Fredrik Noring <noring@nocrew.org>
+Cc: Jaswinder Singh <jaswinder@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       kernelnewbies <kernelnewbies@nl.linux.org>,
+       kernel-janitors <kernel-janitors@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Lars Brinkhoff <lars@nocrew.org>,
+       Tomas =?ISO-8859-1?Q?Sk=E4re?= <tomas@nocrew.org>
+In-Reply-To: <35647D7D-85D1-4308-B3A1-63CDCC3F14F7@nocrew.org>
+References: <1215253496.7816.7.camel@jaswinder.satnam>
+	 <A3D470E0-953E-40D6-BF5A-D06B76451154@nocrew.org>
+	 <1215357224.2817.2.camel@jaswinder.satnam>
+	 <43A34816-3B93-4D05-AE0A-65C0FBF35589@nocrew.org>
+	 <1215358732.2817.11.camel@jaswinder.satnam>
+	 <1215363247.3189.113.camel@shinybook.infradead.org>
+	 <35647D7D-85D1-4308-B3A1-63CDCC3F14F7@nocrew.org>
+Content-Type: text/plain
+Date: Wed, 09 Jul 2008 14:05:50 +0100
+Message-Id: <1215608750.11567.177.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 2008-07-06 at 20:29 +0200, Fredrik Noring wrote:
+> That's right. Sorry I was unclear. However, after some digging on  
+> floppy backups from the past, I've found a DSP56k loader routine  
+> that's probably close if not identical to the assembled version  
+> included with the kernel. Please see below. A disassembly would verify
+> this, but at least it gives you an idea of the inner workings.
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+It is in fact identical. Disassembly with the tools found on sourceforge
+was fun, since they have endianness bugs, don't recognise the 'JMP'
+which was the first instruction, and need each 3-byte instruction in the
+binary to be prefixed with a zero byte to make it 4 bytes. But after
+sorting that out and going through it instruction by instruction, it
+really does seem to match. Thanks very much for digging it out.
 
-> On Mon, 7 Jul 2008, Vitaly Mayatskikh wrote:
-> 
-> > Linus Torvalds <torvalds@linux-foundation.org> writes:
-> > 
-> > > Now, the stuff that comes *before* that point is the "try to fix up one 
-> > > byte at a time" thing, which I'd like to be simple and dumb. At least to 
-> > > start with.
-> > 
-> > Just to be clear: do these patches are good enough now (to start 
-> > with)? Or, may be, it needs to be further improved?
-> 
-> I think they are getting there. I'm obviously not merging them in 
-> 2.6.26, but I'd be happy to do so for .27.
-> 
-> Obviously, I'd be even happier if it also went through the normal x86 
-> review cycles (ie Ingo &co), but the current series is largely ack'ed 
-> by me.
+When you say 'GPL like the driver it came from', actually the driver
+doesn't specify any version of the GPL but does refer to the top-level
+COPYING file. So we'll take that to mean 'GPLv2 and not later', like the
+majority of the kernel. OK?
 
-applied them to tip/x86/core, for v2.6.27 merging, thanks everyone.
+-- 
+dwmw2
 
-I've added Linus's Acked-by. Vitaly, could you please send your 
-Signed-off-by line, it was missing from the patches. You can check the 
-current form of the commits via:
-
- git-pull git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86/core
-
-(the patches changed slightly, there was some merge fallout due to other 
-changes in this area.)
-
-	Ingo
