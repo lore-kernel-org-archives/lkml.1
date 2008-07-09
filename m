@@ -1,176 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbYGIX20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754475AbYGIXa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753846AbYGIX20 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 19:28:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbYGIX2S
+	id S1754475AbYGIXa2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 19:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbYGIXaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 19:28:18 -0400
-Received: from sh.osrg.net ([192.16.179.4]:35055 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751354AbYGIX2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 19:28:17 -0400
-Date: Thu, 10 Jul 2008 08:27:49 +0900
-To: mingo@elte.hu
-Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
-       x86@kernel.org
-Subject: Re: [PATCH] replace CONFIG_IOMMU with CONFIG_GART_IOMMU in iommu.h
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080709085230.GA6267@elte.hu>
-References: <20080709162913H.tomof@acm.org>
-	<20080709085230.GA6267@elte.hu>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 9 Jul 2008 19:30:18 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:59514 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751851AbYGIXaR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 19:30:17 -0400
+Message-ID: <48754A08.1060302@sgi.com>
+Date: Wed, 09 Jul 2008 16:30:16 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>
+Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
+ area
+References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<m14p7asl3x.fsf@frodo.ebiederm.org> <48694B3B.3010600@goop.org>	<m1skuuov4t.fsf@frodo.ebiederm.org> <486A61A7.1000902@zytor.com>	<486A68DD.80702@goop.org> <m1d4lxgwxj.fsf@frodo.ebiederm.org>	<486A9D4F.8010508@goop.org> <m1skutffn4.fsf@frodo.ebiederm.org>	<486AA72B.6010401@goop.org> <486AC9D9.9030506@zytor.com>	<486AD6BD.9080600@sgi.com> <486ADD67.1020809@sgi.com>	<486ADD9F.3000305@zytor.com> <486C062C.3090408@sgi.com>	<m1wsk3r3g6.fsf@frodo.ebiederm.org> <48724FB4.3090305@sgi.com>	<m17ibxxytj.fsf@frodo.ebiederm.org> <4873B016.8010404@sgi.com>	<m1r6a4c5im.fsf@frodo.ebiederm.org> <4874CD22.20502@sgi.com> <m1k5fuof7p.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1k5fuof7p.fsf@frodo.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080710082753T.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Jul 2008 10:52:30 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+Eric W. Biederman wrote:
+> Mike Travis <travis@sgi.com> writes:
+> 
+...  (I have been using the trick
+>> to replace printk with early_printk so messages come out immediately instead
+>> of from the log buf.)
+> 
+> Just passing early_printk=xxx on the command line should have that effect.
+> Although I do admit you have to be a little bit into the boot before early_printk
+> is setup.
+
+What I meant was using early_printk in place of printk, which seems to stuff the
+messages into the log buf until the serial console is setup fairly late in start_kernel.
+I did this by removing printk() and renaming early_printk() to be printk (and a couple
+other things like #define early_printk printk ...
 
 > 
-> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+>> I've been able to make some more progress.  I've gotten to a point where it
+>> panics from stack overflow.  I've verified this by bumping THREAD_ORDER and
+>> it boots fine.  Now tracking down stack usages.  (I have found a couple of new
+>> functions using set_cpus_allowed(..., CPU_MASK_ALL) instead of
+>> set_cpus_allowed_ptr(... , CPU_MASK_ALL_PTR).  But these are not in the calling
+>> sequence so subsequently are not the cause.
 > 
-> > Should be CONFIG_GART_IOMMU instead of CONFIG_IOMMU here?
-> > 
-> > Hmm, looks like it would be nice to have more cleanups of iommu.h and 
-> > gart.h.
-> > 
-> > This is against tip/master.
+> Is stack overflow the only problem you are seeing or are there still other mysteries?
+
+I'm not entirely sure it's a stack overflow, the fault has a NULL dereference and
+then the stack overflow message.
+
 > 
-> applied to tip/x86/core, thanks!
+>> One weird thing is early_idt_handler seems to have been called and that's one
+>> thing our simulator does not mimic for standard Intel FSB systems - early
+>> pending
+>> interrupts.  (It's designed after all to mimic our h/w, and of course it's been
+>> booting fine under that environment.) 
 > 
-> agreed about the cleanups. We are willing to test RFC patches :-)
+> That usually indicates you are taking an exception during boot not that you
+> have received an external interrupt.  Something like a page fault or a
+> division by 0 error.
 
-Ok, how about this?
+I was thinking maybe an RTC interrupt?  But a fault does sound more likely.
 
-If you are fine with the intention of this, then I'll send the
-follow-up cleanups.
+> 
+>> Only a few of these though I would think might get called early in
+>> the boot, that might also be contributing to the stack overflow.
+> 
+> Still the call chain depth shouldn't really be changing.  So why should it
+> matter?  Ah.  The high cpu count is growing cpumask_t so when you put
+> it on the stack.  That makes sense.  So what stars out as a 4 byte
+> variable on the stack in a normal setup winds up being a 1k variable
+> with 4k cpus.
 
-Note that iommu.h includes some gart things that everyone needs. If
-you like, I'll rename gart.h gart_priv.h (or something) and move the
-gart stuff in iommu.h to gart.h.
+Yes, it's definitely the three related:
 
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] x86: remove duplications in iommu.h and gart.h
+NR_CPUS Patch_Applied THREAD_ORDER Results
+  256        NO           1        works (obviously ;-)
+  256        YES          1        works
+ 4096        NO           1        works
+ 4096        YES          1        panics
+ 4096        YES          3        works (just happened to pick 3,
+					  2 probably will work as well.)
 
-This remove lots of duplications in iommu.h and gart.h.
+> Reasonable.  The practical problem is you are mixing a lot of changes
+> simultaneously and it confuses things.  Compiling with NR_CPUS=4096
+> and working out the bugs from a growing cpumask_t, putting the per cpu
+> area in a zero based segment, and putting putting the pda into the
+> per cpu area all at the same time.
 
-The end result of this patch is:
+I've been testing NR_CPUS=4096 for quite a while and it's been very
+reliable.  It's just weird that this config fails with this new patch
+applied.  (default configs and some fairly normal distro configs also
+work fine.)  And with the zillion config straws we now have, spotting
+the arbitrary needle is proving difficult. ;-) 
 
-- iommu.h is a header file for everyone related with IOMMUs.
+> Who knows maybe the only difference between 4.2.0 and 4.2.4 is that
+> 4.2.4 optimizes it's stack usage a little better and you don't see
+> a stack overflow.
 
-- gart.h is the private header file. Only pci-gart_64.c and its
-friends include it.
+I haven't tried the THREAD_ORDER=3 (or 2) under 4.2.0, but that would
+seem to indicate this may be true.
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- include/asm-x86/gart.h  |   34 ++++------------------------------
- include/asm-x86/iommu.h |   29 +++++++++++++++++------------
- 2 files changed, 21 insertions(+), 42 deletions(-)
+> It would be very very good if we could separate out these issues
+> especially the segment for the per cpu variables.  We need something
+> like that.
 
-diff --git a/include/asm-x86/gart.h b/include/asm-x86/gart.h
-index 417f76e..33b9aee 100644
---- a/include/asm-x86/gart.h
-+++ b/include/asm-x86/gart.h
-@@ -1,40 +1,14 @@
--#ifndef _ASM_X8664_IOMMU_H
--#define _ASM_X8664_IOMMU_H 1
-+#ifndef _ASM_X8664_GART_H
-+#define _ASM_X8664_GART_H 1
- 
- #include <asm/e820.h>
-+#include <asm/iommu.h>
- 
--extern void pci_iommu_shutdown(void);
--extern void no_iommu_init(void);
--extern int force_iommu, no_iommu;
--extern int iommu_detected;
--extern int agp_amd64_init(void);
--#ifdef CONFIG_GART_IOMMU
--extern void gart_iommu_init(void);
--extern void gart_iommu_shutdown(void);
--extern void __init gart_parse_options(char *);
--extern void early_gart_iommu_check(void);
--extern void gart_iommu_hole_init(void);
- extern void set_up_gart_resume(u32, u32);
-+
- extern int fallback_aper_order;
- extern int fallback_aper_force;
--extern int gart_iommu_aperture;
--extern int gart_iommu_aperture_allowed;
--extern int gart_iommu_aperture_disabled;
- extern int fix_aperture;
--#else
--#define gart_iommu_aperture		0
--#define gart_iommu_aperture_allowed	0
--#define gart_iommu_aperture_disabled	1
--
--static inline void early_gart_iommu_check(void)
--{
--}
--
--static inline void gart_iommu_shutdown(void)
--{
--}
--
--#endif
- 
- /* PTE bits. */
- #define GPTE_VALID	1
-diff --git a/include/asm-x86/iommu.h b/include/asm-x86/iommu.h
-index cb7e989..068c9a4 100644
---- a/include/asm-x86/iommu.h
-+++ b/include/asm-x86/iommu.h
-@@ -1,29 +1,34 @@
--#ifndef _ASM_X8664_GART_H
--#define _ASM_X8664_GART_H 1
-+#ifndef _ASM_X8664_IOMMU_H
-+#define _ASM_X8664_IOMMU_H 1
- 
- extern void pci_iommu_shutdown(void);
- extern void no_iommu_init(void);
- extern int force_iommu, no_iommu;
- extern int iommu_detected;
-+
- #ifdef CONFIG_GART_IOMMU
-+extern int gart_iommu_aperture;
-+extern int gart_iommu_aperture_allowed;
-+extern int gart_iommu_aperture_disabled;
-+
-+extern void early_gart_iommu_check(void);
- extern void gart_iommu_init(void);
- extern void gart_iommu_shutdown(void);
- extern void __init gart_parse_options(char *);
--extern void iommu_hole_init(void);
--extern int fallback_aper_order;
--extern int fallback_aper_force;
--extern int iommu_aperture;
--extern int iommu_aperture_allowed;
--extern int iommu_aperture_disabled;
--extern int fix_aperture;
-+extern void gart_iommu_hole_init(void);
-+
- #else
--#define iommu_aperture 0
--#define iommu_aperture_allowed 0
-+#define gart_iommu_aperture            0
-+#define gart_iommu_aperture_allowed    0
-+#define gart_iommu_aperture_disabled   1
- 
--static inline void gart_iommu_shutdown(void)
-+static inline void early_gart_iommu_check(void)
- {
- }
- 
-+static inline void gart_iommu_shutdown(void)
-+{
-+}
- #endif
- 
- #endif
--- 
-1.5.5.GIT
+One reason I've been sticking with 4.2.4.
 
+Thanks again for your help.
+
+Mike
