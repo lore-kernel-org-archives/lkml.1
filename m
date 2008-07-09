@@ -1,122 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754475AbYGIXa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067AbYGIXl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754475AbYGIXa2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 19:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbYGIXaS
+	id S1754067AbYGIXl6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 19:41:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751851AbYGIXlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 19:30:18 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:59514 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751851AbYGIXaR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 19:30:17 -0400
-Message-ID: <48754A08.1060302@sgi.com>
-Date: Wed, 09 Jul 2008 16:30:16 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<m14p7asl3x.fsf@frodo.ebiederm.org> <48694B3B.3010600@goop.org>	<m1skuuov4t.fsf@frodo.ebiederm.org> <486A61A7.1000902@zytor.com>	<486A68DD.80702@goop.org> <m1d4lxgwxj.fsf@frodo.ebiederm.org>	<486A9D4F.8010508@goop.org> <m1skutffn4.fsf@frodo.ebiederm.org>	<486AA72B.6010401@goop.org> <486AC9D9.9030506@zytor.com>	<486AD6BD.9080600@sgi.com> <486ADD67.1020809@sgi.com>	<486ADD9F.3000305@zytor.com> <486C062C.3090408@sgi.com>	<m1wsk3r3g6.fsf@frodo.ebiederm.org> <48724FB4.3090305@sgi.com>	<m17ibxxytj.fsf@frodo.ebiederm.org> <4873B016.8010404@sgi.com>	<m1r6a4c5im.fsf@frodo.ebiederm.org> <4874CD22.20502@sgi.com> <m1k5fuof7p.fsf@frodo.ebiederm.org>
-In-Reply-To: <m1k5fuof7p.fsf@frodo.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 9 Jul 2008 19:41:49 -0400
+Received: from mga03.intel.com ([143.182.124.21]:10917 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751841AbYGIXlt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 19:41:49 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.30,333,1212390000"; 
+   d="scan'208";a="9411916"
+From: Tomas Winkler <tomas.winkler@intel.com>
+To: drzeus-list@drzeus.cx
+Cc: linux-kernel@vger.kernel.org, Benzi Zbit <benzi.zbit@intel.com>
+Subject: [PATCH 1/1 V3] MMC: core - fix the use of hard coded timeout value.
+Date: Thu, 10 Jul 2008 02:41:43 +0300
+Message-Id: <1215646903-810-1-git-send-email-tomas.winkler@intel.com>
+X-Mailer: git-send-email 1.5.4.1
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Mike Travis <travis@sgi.com> writes:
-> 
-...  (I have been using the trick
->> to replace printk with early_printk so messages come out immediately instead
->> of from the log buf.)
-> 
-> Just passing early_printk=xxx on the command line should have that effect.
-> Although I do admit you have to be a little bit into the boot before early_printk
-> is setup.
+From: Benzi Zbit <benzi.zbit@intel.com>
 
-What I meant was using early_printk in place of printk, which seems to stuff the
-messages into the log buf until the serial console is setup fairly late in start_kernel.
-I did this by removing printk() and renaming early_printk() to be printk (and a couple
-other things like #define early_printk printk ...
+This adds reading and using of enable_timeout from the CIS
 
-> 
->> I've been able to make some more progress.  I've gotten to a point where it
->> panics from stack overflow.  I've verified this by bumping THREAD_ORDER and
->> it boots fine.  Now tracking down stack usages.  (I have found a couple of new
->> functions using set_cpus_allowed(..., CPU_MASK_ALL) instead of
->> set_cpus_allowed_ptr(... , CPU_MASK_ALL_PTR).  But these are not in the calling
->> sequence so subsequently are not the cause.
-> 
-> Is stack overflow the only problem you are seeing or are there still other mysteries?
+Signed-off-by: Benzi Zbit <benzi.zbit@intel.com>
+Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
+---
+ drivers/mmc/core/sdio_cis.c   |    6 ++++++
+ drivers/mmc/core/sdio_io.c    |    6 +-----
+ include/linux/mmc/sdio_func.h |    2 ++
+ 3 files changed, 9 insertions(+), 5 deletions(-)
 
-I'm not entirely sure it's a stack overflow, the fault has a NULL dereference and
-then the stack overflow message.
+diff --git a/drivers/mmc/core/sdio_cis.c b/drivers/mmc/core/sdio_cis.c
+index d5e51b1..956bd76 100644
+--- a/drivers/mmc/core/sdio_cis.c
++++ b/drivers/mmc/core/sdio_cis.c
+@@ -129,6 +129,12 @@ static int cistpl_funce_func(struct sdio_func *func,
+ 	/* TPLFE_MAX_BLK_SIZE */
+ 	func->max_blksize = buf[12] | (buf[13] << 8);
+ 
++	/* TPLFE_ENABLE_TIMEOUT_VAL, present in ver 1.1 and above */
++	if (vsn > SDIO_SDIO_REV_1_00)
++		func->enable_timeout = (buf[28] | (buf[29] << 8)) * 10;
++	else
++		func->enable_timeout = jiffies_to_msecs(HZ);
++
+ 	return 0;
+ }
+ 
+diff --git a/drivers/mmc/core/sdio_io.c b/drivers/mmc/core/sdio_io.c
+index 3ccf691..0888df6 100755
+--- a/drivers/mmc/core/sdio_io.c
++++ b/drivers/mmc/core/sdio_io.c
+@@ -76,11 +76,7 @@ int sdio_enable_func(struct sdio_func *func)
+ 	if (ret)
+ 		goto err;
+ 
+-	/*
+-	 * FIXME: This should timeout based on information in the CIS,
+-	 * but we don't have card to parse that yet.
+-	 */
+-	timeout = jiffies + HZ;
++	timeout = jiffies + msecs_to_jiffies(func->enable_timeout);
+ 
+ 	while (1) {
+ 		ret = mmc_io_rw_direct(func->card, 0, 0, SDIO_CCCR_IORx, 0, &reg);
+diff --git a/include/linux/mmc/sdio_func.h b/include/linux/mmc/sdio_func.h
+index 28fb0a3..07bee4a 100755
+--- a/include/linux/mmc/sdio_func.h
++++ b/include/linux/mmc/sdio_func.h
+@@ -46,6 +46,8 @@ struct sdio_func {
+ 	unsigned		max_blksize;	/* maximum block size */
+ 	unsigned		cur_blksize;	/* current block size */
+ 
++	unsigned		enable_timeout;	/* max enable timeout in msec */
++
+ 	unsigned int		state;		/* function state */
+ #define SDIO_STATE_PRESENT	(1<<0)		/* present in sysfs */
+ 
+-- 
+1.5.4.1
 
-> 
->> One weird thing is early_idt_handler seems to have been called and that's one
->> thing our simulator does not mimic for standard Intel FSB systems - early
->> pending
->> interrupts.  (It's designed after all to mimic our h/w, and of course it's been
->> booting fine under that environment.) 
-> 
-> That usually indicates you are taking an exception during boot not that you
-> have received an external interrupt.  Something like a page fault or a
-> division by 0 error.
+---------------------------------------------------------------------
+Intel Israel (74) Limited
 
-I was thinking maybe an RTC interrupt?  But a fault does sound more likely.
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
-> 
->> Only a few of these though I would think might get called early in
->> the boot, that might also be contributing to the stack overflow.
-> 
-> Still the call chain depth shouldn't really be changing.  So why should it
-> matter?  Ah.  The high cpu count is growing cpumask_t so when you put
-> it on the stack.  That makes sense.  So what stars out as a 4 byte
-> variable on the stack in a normal setup winds up being a 1k variable
-> with 4k cpus.
-
-Yes, it's definitely the three related:
-
-NR_CPUS Patch_Applied THREAD_ORDER Results
-  256        NO           1        works (obviously ;-)
-  256        YES          1        works
- 4096        NO           1        works
- 4096        YES          1        panics
- 4096        YES          3        works (just happened to pick 3,
-					  2 probably will work as well.)
-
-> Reasonable.  The practical problem is you are mixing a lot of changes
-> simultaneously and it confuses things.  Compiling with NR_CPUS=4096
-> and working out the bugs from a growing cpumask_t, putting the per cpu
-> area in a zero based segment, and putting putting the pda into the
-> per cpu area all at the same time.
-
-I've been testing NR_CPUS=4096 for quite a while and it's been very
-reliable.  It's just weird that this config fails with this new patch
-applied.  (default configs and some fairly normal distro configs also
-work fine.)  And with the zillion config straws we now have, spotting
-the arbitrary needle is proving difficult. ;-) 
-
-> Who knows maybe the only difference between 4.2.0 and 4.2.4 is that
-> 4.2.4 optimizes it's stack usage a little better and you don't see
-> a stack overflow.
-
-I haven't tried the THREAD_ORDER=3 (or 2) under 4.2.0, but that would
-seem to indicate this may be true.
-
-> It would be very very good if we could separate out these issues
-> especially the segment for the per cpu variables.  We need something
-> like that.
-
-One reason I've been sticking with 4.2.4.
-
-Thanks again for your help.
-
-Mike
