@@ -1,144 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751354AbYGILu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757913AbYGILwE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751354AbYGILu5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 07:50:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649AbYGILus
+	id S1757913AbYGILwE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 07:52:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753813AbYGILvy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 07:50:48 -0400
-Received: from trinity.fluff.org ([89.145.97.151]:60115 "EHLO
-	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753813AbYGILus (ORCPT
+	Wed, 9 Jul 2008 07:51:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34115 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753649AbYGILvx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 07:50:48 -0400
-Date: Wed, 9 Jul 2008 12:50:45 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Dmitry <dbaryshkov@gmail.com>
-Cc: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [patch 4/4] MFD: Change mfd platform device usage to wrapper platform_device
-Message-ID: <20080709115045.GK8517@trinity.fluff.org>
-References: <20080709104916.200210922@fluff.org> <20080709104933.101610936@fluff.org> <bc64b4640807090415w781507fetfe332271ad158112@mail.gmail.com> <20080709112426.GN8489@trinity.fluff.org> <bc64b4640807090431g5b1960edua2508337973615da@mail.gmail.com>
+	Wed, 9 Jul 2008 07:51:53 -0400
+Date: Wed, 9 Jul 2008 04:46:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/17] Series to introduce WARN()... a WARN_ON() variant
+ that takes printk arguments
+Message-Id: <20080709044613.2546034d.akpm@linux-foundation.org>
+In-Reply-To: <20080709113703.GA11191@elte.hu>
+References: <20080708093800.274504ba@infradead.org>
+	<20080709101348.GA30005@elte.hu>
+	<20080709041956.0c52b2d9.akpm@linux-foundation.org>
+	<20080709113703.GA11191@elte.hu>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <bc64b4640807090431g5b1960edua2508337973615da@mail.gmail.com>
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.9i
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@trinity.fluff.org
-X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 09, 2008 at 03:31:04PM +0400, Dmitry wrote:
-> 2008/7/9 Ben Dooks <ben-linux@fluff.org>:
-> > On Wed, Jul 09, 2008 at 03:15:47PM +0400, Dmitry wrote:
-> >> 2008/7/9 Ben Dooks <ben-linux@fluff.org>:
-> >> > This patch changes the mfd core behaviour to wrapper the platform_device
-> >> > it creates in an struct mfd_device which contains the information
-> >> > about the cell that was created.
-> >> >
-> >> > 1) The creation of the resource list and then passing it to the
-> >> >   platform_device_add_resources() causes the allocation of a
-> >> >   large array on the stack as well as copying the source data
-> >> >   twice (it is copied from the mfd_cell to the temporary array
-> >> >   and then copied into the newly allocated array)
-> >> >
-> >> > 2) We can wrapper the platform_device into an mfd_device and use
-> >> >   that to do the platform_device and resource allocation in one
-> >> >   go to reduce the failiure.
-> >> >
-> >> > Note, is there actually any reason to pass the sub devices any
-> >> > information about the cell they are created from? The mfd core
-> >> > already makes the appropriate resource adjustments and anything
-> >> > else like clocks should be exported by the clock drivers?
-> >> >
-> >> > Signed-off-by: Ben Dooks <ben-linux@fluff.org>
-> >>
-> >>
-> >> NAK.
-> >> 0) It was discussed yesterday on the list and the decision was to go
-> >> in a different way.
-> >>   I've provided a bit cleaner patch with the same idea, but then we
-> >> decided to go in a bit different way.
-> >> 1) I prefer patch by Mike Rapoport which is more clear and goes in a
-> >> more correct way.
-> >
-> > How "more correct", whilst the patch by Mike makes the platform data
-> > be passed from the cell, there is no longer any way to get from the
-> > platform device to the mfd_cell...
+On Wed, 9 Jul 2008 13:37:03 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+
 > 
-> Basically we have two choises for the subdevice driver:
-> 1) it doesn't know about cells at all (e.g. generic-bl, IIRC). Then we are safe
->    to loose that "cell" information
-> 2) If it does use cell information (to get access to hooks), we pass it
->     via platform_data pointer in the mfd_cell and we are ok with it.
-
-Erm, that is complete non-answer. The driver model and various other
-parts of the kernel are littered with examples of embedding one
-structure within another to gain an C++ like object inheritance.
-
-I've supplied an reasonable example of doing this to create an mfd_cell
-device from an platform_device without creating an large amount of code
-and improving the efficiency and code-lineage in the process. I do not
-see how this isn't "correct" or in any way breaing the current linux
-model of doing things.
- 
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> > The current driver is being inefficent in the way it creates resources
-> > on the stack and then calls a routine that does an kalloc/memcpy on
-> > the resources.
+> > > > The first few patches have been in -mm for a long time; the later 
+> > > > ones are newer and introduce more users of WARN().
+> > > 
+> > > i've created a new -git based topic branch in tip/core/warn-API and 
+> > > picked up your patches:
+> > 
+> > um, why?
+> > 
+> > If you merge this into linux-next then it will trash already-merged 
+> > patches in -mm and, more particularly, it will trash other trees which 
+> > you aren't looking at, causing Stephen problems.
 > 
-> I don't see any inefficiency ATM.
+> no, i didnt plan to push this towards linux-next - given the broad 
+> consensus and given the wide spread of the changes.
+
+Well, there was no way for me (or, I believe, Arjan or anyone else) to have
+worked this out from your reply.
+
+> I wanted to wait with this until the end of the merge window and keep it 
+> tested and merged up nicely. I.e. zero maintenance overhead to 
+> subsystems.
+
+That's an option.  That's why I will cc the relevant subsystem maintainers
+on the commits, and will collect and maintain the acked-by's.
+
+> > The way to merge this code is to get the base patches into mainline 
+> > and then trickle the dependent patches into subsystem trees, or direct 
+> > into mainline after the subsystem trees have merged, and with suitable 
+> > acks.
+> > 
+> > You aren't set up to do that?
 > 
-> >> 2) Please examine the tmio-nand driver (was here on the list and on
-> >> linux-mtd). It uses the mfd_cell
-> >>    to call hooks from the "host" driver (tc6393xb, more to be added soon).
-> >
-> > The one posted in [1] does not call these hooks at-all, can ou please
-> > explain why these hooks are needed in addition to the ones already
-> > available in the platform device driver?
-> >
-> > [1] http://lists.infradead.org/pipermail/linux-mtd/2008-June/022137.html
+> i think it's better to just go through the merge window i believe, and 
+> then do this atomically in one correct and tested step, when all 
+> subsystem trees are at their minimum size and there's virtually no 
+> collisions.
+
+Probably.
+
+> Note that this situation is special: this is a patchset that has 
+> virtually no functionality side-effects, and hence can be done 100% 
+> correctly, i thought the atomic step was the right approach.
 > 
-> +
-> +static int tmio_hw_init(struct platform_device *dev, struct tmio_nand *tmio)
-> +{
-> +	struct mfd_cell *cell = mfd_get_cell(dev);
-> +	const struct resource *nfcr = NULL;
-> +	unsigned long base;
-> +	int i;
-> +
-> +	for (i = 0; i < cell->num_resources; i++)
-> +		if (!strcmp((cell->resources+i)->name, TMIO_NAND_CONTROL))
-> +			nfcr = &cell->resources[i];
-> +
-> +	if (nfcr == NULL)
-> +		return -ENOMEM;
-> +
-> +	if (cell->enable) {
-> +		int rc = cell->enable(dev);
-> +		if (rc)
-> +			return rc;
-> +	}
+> For anything semantically meaningful i too would do the spread-out 
+> gradual approach (and i'm presently doing that for a number of topics).
 > 
-> That cell->enable() is necessary to set up the host (in the tc6393xb
-> case to enable buffers)
-> to enable access to the nand.
+> But if you'd like to do this the spread-out way then sure, and i will 
+> drop this tree. ( if you do that then please import the commits from 
+> tip/core/warn-API, i fixed a couple of of typos in the commit messages 
+> and did some merging and extensions as well. The tree also passed a fair 
+> amount of testing meanwhile as well. )
+> 
+> Anyway, your call.
 
-So, the enable/disable calls might be useful, however is there any
-reason this could not be handled by the clock framework? The suspend/resume
-entries where not used, and I belive should not be in here.
+Well I haven't got onto processing these patches in detail yet.  An open
+questions is why the damn thing was resubmitted from scratch when I've
+already merged it and fixed various rejects and had to fix several bugs in
+it.  Do those rejects need to be re-fixed?  Were my bugfixes folded back? 
+I haven't looked yet.  I'll need to generate the incremental diff and see
+what was done.
 
-As noted before, mfd_get_cell() got dropped by [2]
+But if what you've merged was against mainline then it isn't terribly
+useful.
 
-[2] http://lists.arm.linux.org.uk/lurker/message/20080708.153450.bb33046d.en.html
-
--- 
-Ben
-
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
+Hopefully this sort of thing won't happen as much once I get -mm into
+linx-next.  Soon...
 
