@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755119AbYGITWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754044AbYGIT1O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755119AbYGITWy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 15:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750940AbYGITWp
+	id S1754044AbYGIT1O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 15:27:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750940AbYGIT07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 15:22:45 -0400
-Received: from smtp-vbr13.xs4all.nl ([194.109.24.33]:4793 "EHLO
-	smtp-vbr13.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750818AbYGITWo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 15:22:44 -0400
-Subject: Re: [PATCH] Mark i2o config broken on 64-bit platforms.
-From: Miquel van Smoorenburg <miquels@cistron.nl>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, David Howells <dhowells@redhat.com>,
-       akpm@linux-foundation.org, alan@redhat.com,
-       Markus.Lidel@shadowconnect.com, vvs@sw.ru, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <1215630817.3444.16.camel@localhost.localdomain>
-References: <E1KGa1W-0004nG-Cw@n2o.xs4all.nl>
-	 <20080709113547.19235.15424.stgit@warthog.procyon.org.uk>
-	 <4561.1215612914@redhat.com>  <20080709164929.799e4e05@the-village.bc.nu>
-	 <1215630402.18506.10.camel@localhost.localdomain>
-	 <1215630817.3444.16.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 09 Jul 2008 21:22:16 +0200
-Message-Id: <1215631336.18506.15.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Jul 2008 15:26:59 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44158 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751162AbYGIT06 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 15:26:58 -0400
+Date: Wed, 9 Jul 2008 21:26:30 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, LKML <linux-kernel@vger.kernel.org>,
+       Jens Axboe <axboe@kernel.dk>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Lameter <clameter@linux-foundation.org>,
+       Petr Tesarik <ptesarik@suse.cz>,
+       Virtualization <virtualization@lists.linux-foundation.org>,
+       Xen devel <xen-devel@lists.xensource.com>,
+       Thomas Friebel <thomas.friebel@amd.com>, Avi Kivity <avi@qumranet.com>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [patch] x86, paravirt-spinlocks: fix boot hang
+Message-ID: <20080709192630.GA4804@elte.hu>
+References: <20080707190749.299430659@goop.org> <20080709122852.GA30579@elte.hu> <20080709133358.GA7005@elte.hu> <20080709134944.GA15190@elte.hu> <4874DF7F.4080204@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4874DF7F.4080204@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-09 at 14:13 -0500, James Bottomley wrote:
-> On Wed, 2008-07-09 at 21:06 +0200, Miquel van Smoorenburg wrote:
-> > On Wed, 2008-07-09 at 16:49 +0100, Alan Cox wrote:
-> > > On Wed, 09 Jul 2008 15:15:14 +0100
-> > > David Howells <dhowells@redhat.com> wrote:
-> > > 
-> > > > Miquel van Smoorenburg <miquels@cistron.nl> wrote:
-> > > > Maybe, but have you looked at i2o_cfg_passthru()?  Take this, for example:
-> > > > 
-> > > > 			/* Allocate memory for the transfer */
-> > > > 			p = kmalloc(sg_size, GFP_KERNEL);
-> > > > 			...
-> > > > 			//TODO 64bit fix
-> > > > 			sg[i].addr_bus = virt_to_bus(p);
-> > > > 
-> > > > That looks distinctly dodgy.  virt_to_bus() returns a 64-bit address, and as
-> > > 
-> > > Agreed - stick | GFP_DMA32 on the end then ;)
-> > 
-> > GFP_DMA32 doesn't work with kmalloc(), you need dma_alloc_coherent() or
-> > pci_alloc_consistent() [here, i2o_dma_alloc() ]
-> 
-> Yes it does ... it was specifically designed for it.  GFP_DMA32 was
-> introduced to allow this type of thing to happen (in the old days most
-> drivers were allowed to assume kmalloc would return memory whose
-> physical address was < 4GB; GFP_DMA32 allows that to continue while
-> allowing kmalloc to stray beyond 4GB physical).
 
-If you use alloc_pages(), yes. But not for kmalloc(). There are no
-general GFP_DMA32 slabs.
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-Mike.
+>> should never
+>>     be built with -pg (which ftrace does). Marking paravirt.o as 
+>>     non-pg and marking all spinlock ops as always-inline solve the 
+>>     hang.
+>>    
+>
+> Thanks Ingo, that would have taken me a while to work out.
 
+yeah, i figured i'd be the better candidate to debug ftrace related 
+problems ;-)
+
+> Presumably that means that xen/smp.o should also be built without -pg.  
+> In fact, should I move the spinlock code into its own file, so that 
+> ftrace can cover as much as it can?
+
+hm, yeah. Anything that can be called via the lowest level spinlock 
+functions should be either notrace, or, better, in a -pg-excluded .o 
+file. Putting it all into a separate file would cover it nicely i think.
+
+	Ingo
