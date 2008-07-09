@@ -1,219 +1,265 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756681AbYGIHmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757163AbYGIHmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756681AbYGIHmV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 03:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755606AbYGIHl6
+	id S1757163AbYGIHmd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 03:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756145AbYGIHmE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 03:41:58 -0400
-Received: from smtp111.mail.mud.yahoo.com ([209.191.84.64]:22880 "HELO
-	smtp111.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755569AbYGIHl5 (ORCPT
+	Wed, 9 Jul 2008 03:42:04 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:33586 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756084AbYGIHmB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 03:41:57 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=V0yZI86Am/YN5Lkj1eGt/6Ze/b5m9oSwjqthUfhbr1zI9eof8HzXVYGYRpd0KWW6N24lm9496qkGRgGQJVXKHT0fVOfhrxaaKdIy7Nmci+y88FyTyYHY94wkGUFlql9hMTYr23xOn7Lu3R3T8S5QzK8PmtAj41ysAdPM+G6xIFk=  ;
-X-YMail-OSG: nSQxn3UVM1kkAZTrCCge6jxU23_gUeZVrK9dnK9iSlt80P_c4vNILE.vGkRD1sDCzGF4jTnzUuN6HrQaJjMT78JYD8Db7UIBLGIKFGB63Fm92x4riZmsw4z2AG04Sml4TlE-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: YAMAMOTO Takashi <yamamoto@valinux.co.jp>
-Subject: Re: [PATCH] fix task dirty balancing
-Date: Wed, 9 Jul 2008 17:41:24 +1000
-User-Agent: KMail/1.9.5
-Cc: a.p.zijlstra@chello.nl, kamezawa.hiroyu@jp.fujitsu.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org
-References: <1215250202.6320.10.camel@lappy.programming.kicks-ass.net> <20080708233841.AAECF5A1C@siro.lan>
-In-Reply-To: <20080708233841.AAECF5A1C@siro.lan>
+	Wed, 9 Jul 2008 03:42:01 -0400
+Date: Wed, 9 Jul 2008 15:41:53 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: austin zhang <austin_zhang@linux.intel.com>
+Cc: davem@davemloft.net, chaapala@cisco.com, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com
+Subject: Re: FW: [Fwd: [PATCH]Using Intel CRC32 instruction to implement hardware accelerated CRC32c algorithm.]
+Message-ID: <20080709074153.GA11927@gondor.apana.org.au>
+References: <000901c8e0d4$6f5cf230$7fb410ac@ccr.corp.intel.com> <1215512754.2906.23.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807091741.25447.nickpiggin@yahoo.com.au>
+In-Reply-To: <1215512754.2906.23.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 09 July 2008 09:38, YAMAMOTO Takashi wrote:
-> hi,
+On Tue, Jul 08, 2008 at 06:25:54AM -0400, austin zhang wrote:
 >
-> > Please beat me to cleaning up this stuff - otherwise I'll have to look
-> > at it when I get back from holidays.
->
-> how about the following?
+> Agreed. And which module in crypto is the template for following the crypto API?
 
-Quite good, however I would like to keep the buffers warning if it isn't
-too difficult (it has already caught one or two real bugs). Also, we should
-split out the bugfix from the cleanup. But yes overall I think the result
-looks quite nice.
+I've just converted the crc32c module over to the new interface.
+You can use this as an example.
 
+> > In fact, we could even skip 2) and reimplement lib/crc32c as a
+> > wrapper on the crypto crc32c interface with a shared tfm so you
+> > don't need to modify its existing users.
+> Good idea.
 
-> YAMAMOTO Takashi
->
->
-> Signed-off-by: YAMAMOTO Takashi <yamamoto@valinux.co.jp>
-> ---
->
-> diff --git a/fs/buffer.c b/fs/buffer.c
-> index 4ffb5bb..1bc833d 100644
-> --- a/fs/buffer.c
-> +++ b/fs/buffer.c
-> @@ -699,41 +699,6 @@ void mark_buffer_dirty_inode(struct buffer_head *bh,
-> struct inode *inode) EXPORT_SYMBOL(mark_buffer_dirty_inode);
->
->  /*
-> - * Mark the page dirty, and set it dirty in the radix tree, and mark the
-> inode - * dirty.
-> - *
-> - * If warn is true, then emit a warning if the page is not uptodate and
-> has - * not been truncated.
-> - */
-> -static int __set_page_dirty(struct page *page,
-> -		struct address_space *mapping, int warn)
-> -{
-> -	if (unlikely(!mapping))
-> -		return !TestSetPageDirty(page);
-> -
-> -	if (TestSetPageDirty(page))
-> -		return 0;
-> -
-> -	spin_lock_irq(&mapping->tree_lock);
-> -	if (page->mapping) {	/* Race with truncate? */
-> -		WARN_ON_ONCE(warn && !PageUptodate(page));
-> -
-> -		if (mapping_cap_account_dirty(mapping)) {
-> -			__inc_zone_page_state(page, NR_FILE_DIRTY);
-> -			__inc_bdi_stat(mapping->backing_dev_info,
-> -					BDI_RECLAIMABLE);
-> -			task_io_account_write(PAGE_CACHE_SIZE);
-> -		}
-> -		radix_tree_tag_set(&mapping->page_tree,
-> -				page_index(page), PAGECACHE_TAG_DIRTY);
-> -	}
-> -	spin_unlock_irq(&mapping->tree_lock);
-> -	__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
-> -
-> -	return 1;
-> -}
-> -
-> -/*
->   * Add a page to the dirty page list.
->   *
->   * It is a sad fact of life that this function is called from several
-> places @@ -762,22 +727,21 @@ int __set_page_dirty_buffers(struct page
-> *page) {
->  	struct address_space *mapping = page_mapping(page);
->
-> -	if (unlikely(!mapping))
-> -		return !TestSetPageDirty(page);
-> -
-> -	spin_lock(&mapping->private_lock);
-> -	if (page_has_buffers(page)) {
-> -		struct buffer_head *head = page_buffers(page);
-> -		struct buffer_head *bh = head;
-> +	if (likely(mapping)) {
-> +		spin_lock(&mapping->private_lock);
-> +		if (page_has_buffers(page)) {
-> +			struct buffer_head *head = page_buffers(page);
-> +			struct buffer_head *bh = head;
->
-> -		do {
-> -			set_buffer_dirty(bh);
-> -			bh = bh->b_this_page;
-> -		} while (bh != head);
-> +			do {
-> +				set_buffer_dirty(bh);
-> +				bh = bh->b_this_page;
-> +			} while (bh != head);
-> +		}
-> +		spin_unlock(&mapping->private_lock);
->  	}
-> -	spin_unlock(&mapping->private_lock);
->
-> -	return __set_page_dirty(page, mapping, 1);
-> +	return __set_page_dirty_nobuffers(page);
->  }
->  EXPORT_SYMBOL(__set_page_dirty_buffers);
->
-> @@ -1220,7 +1184,7 @@ void mark_buffer_dirty(struct buffer_head *bh)
->  	}
->
->  	if (!test_set_buffer_dirty(bh))
-> -		__set_page_dirty(bh->b_page, page_mapping(bh->b_page), 0);
-> +		__set_page_dirty_nobuffers(bh->b_page);
->  }
->
->  /*
-> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> index 29b1d1e..e6fa69e 100644
-> --- a/mm/page-writeback.c
-> +++ b/mm/page-writeback.c
-> @@ -176,7 +176,7 @@ void bdi_writeout_inc(struct backing_dev_info *bdi)
->  }
->  EXPORT_SYMBOL_GPL(bdi_writeout_inc);
->
-> -static inline void task_dirty_inc(struct task_struct *tsk)
-> +static void task_dirty_inc(struct task_struct *tsk)
->  {
->  	prop_inc_single(&vm_dirties, &tsk->dirties);
->  }
-> @@ -1074,12 +1074,14 @@ int __set_page_dirty_no_writeback(struct page
-> *page) */
->  int __set_page_dirty_nobuffers(struct page *page)
->  {
-> -	if (!TestSetPageDirty(page)) {
-> -		struct address_space *mapping = page_mapping(page);
-> -		struct address_space *mapping2;
-> +	struct address_space *mapping;
->
-> -		if (!mapping)
-> -			return 1;
-> +	if (TestSetPageDirty(page))
-> +		return 0;
-> +
-> +	mapping = page_mapping(page);
-> +	if (likely(mapping)) {
-> +		struct address_space *mapping2;
->
->  		spin_lock_irq(&mapping->tree_lock);
->  		mapping2 = page_mapping(page);
-> @@ -1100,9 +1102,11 @@ int __set_page_dirty_nobuffers(struct page *page)
->  			/* !PageAnon && !swapper_space */
->  			__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
->  		}
-> -		return 1;
->  	}
-> -	return 0;
-> +
-> +	task_dirty_inc(current);
-> +
-> +	return 1;
->  }
->  EXPORT_SYMBOL(__set_page_dirty_nobuffers);
->
-> @@ -1122,7 +1126,7 @@ EXPORT_SYMBOL(redirty_page_for_writepage);
->   * If the mapping doesn't provide a set_page_dirty a_op, then
->   * just fall through and assume that it wants buffer_heads.
->   */
-> -static int __set_page_dirty(struct page *page)
-> +int set_page_dirty(struct page *page)
->  {
->  	struct address_space *mapping = page_mapping(page);
->
-> @@ -1140,14 +1144,6 @@ static int __set_page_dirty(struct page *page)
->  	}
->  	return 0;
->  }
-> -
-> -int set_page_dirty(struct page *page)
-> -{
-> -	int ret = __set_page_dirty(page);
-> -	if (ret)
-> -		task_dirty_inc(current);
-> -	return ret;
-> -}
->  EXPORT_SYMBOL(set_page_dirty);
->
->  /*
+Unfortunately this leads to nasty hacks because the existing
+interface does chaining in a way that isn't easily mapped over
+to the crypto API.  However this is no great loss since there
+is a grand total of two users in the tree :)
+
+So my plan is to convert them and then remove the libcrc32c
+interface completely.
+
+commit d55f7a6c8efa17bcbc3b5d240cc72ed8a71196c2
+Author: Herbert Xu <herbert@gondor.apana.org.au>
+Date:   Tue Jul 8 20:54:28 2008 +0800
+
+    crypto: crc32c - Add ahash implementation
+    
+    This patch reimplements crc32c using the ahash interface.  This
+    allows one tfm to be used by an unlimited number of users provided
+    that they all use the same key (which all current crc32c users do).
+    
+    Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+
+diff --git a/crypto/Kconfig b/crypto/Kconfig
+index 43b7473..ea50357 100644
+--- a/crypto/Kconfig
++++ b/crypto/Kconfig
+@@ -213,7 +213,7 @@ comment "Digest"
+ 
+ config CRYPTO_CRC32C
+ 	tristate "CRC32c CRC algorithm"
+-	select CRYPTO_ALGAPI
++	select CRYPTO_HASH
+ 	select LIBCRC32C
+ 	help
+ 	  Castagnoli, et al Cyclic Redundancy-Check Algorithm.  Used
+diff --git a/crypto/crc32c.c b/crypto/crc32c.c
+index 0dcf64a..7049a98 100644
+--- a/crypto/crc32c.c
++++ b/crypto/crc32c.c
+@@ -5,20 +5,23 @@
+  *
+  * This module file is a wrapper to invoke the lib/crc32c routines.
+  *
++ * Copyright (c) 2008 Herbert Xu <herbert@gondor.apana.org.au>
++ *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms of the GNU General Public License as published by the Free
+  * Software Foundation; either version 2 of the License, or (at your option) 
+  * any later version.
+  *
+  */
++
++#include <crypto/hash.h>
+ #include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/string.h>
+-#include <linux/crypto.h>
+ #include <linux/crc32c.h>
+ #include <linux/kernel.h>
+ 
+-#define CHKSUM_BLOCK_SIZE	32
++#define CHKSUM_BLOCK_SIZE	1
+ #define CHKSUM_DIGEST_SIZE	4
+ 
+ struct chksum_ctx {
+@@ -71,7 +74,7 @@ static void chksum_final(struct crypto_tfm *tfm, u8 *out)
+ 	*(__le32 *)out = ~cpu_to_le32(mctx->crc);
+ }
+ 
+-static int crc32c_cra_init(struct crypto_tfm *tfm)
++static int crc32c_cra_init_old(struct crypto_tfm *tfm)
+ {
+ 	struct chksum_ctx *mctx = crypto_tfm_ctx(tfm);
+ 
+@@ -79,14 +82,14 @@ static int crc32c_cra_init(struct crypto_tfm *tfm)
+ 	return 0;
+ }
+ 
+-static struct crypto_alg alg = {
++static struct crypto_alg old_alg = {
+ 	.cra_name	=	"crc32c",
+ 	.cra_flags	=	CRYPTO_ALG_TYPE_DIGEST,
+ 	.cra_blocksize	=	CHKSUM_BLOCK_SIZE,
+ 	.cra_ctxsize	=	sizeof(struct chksum_ctx),
+ 	.cra_module	=	THIS_MODULE,
+-	.cra_list	=	LIST_HEAD_INIT(alg.cra_list),
+-	.cra_init	=	crc32c_cra_init,
++	.cra_list	=	LIST_HEAD_INIT(old_alg.cra_list),
++	.cra_init	=	crc32c_cra_init_old,
+ 	.cra_u		=	{
+ 		.digest = {
+ 			 .dia_digestsize=	CHKSUM_DIGEST_SIZE,
+@@ -98,14 +101,125 @@ static struct crypto_alg alg = {
+ 	}
+ };
+ 
++/*
++ * Setting the seed allows arbitrary accumulators and flexible XOR policy
++ * If your algorithm starts with ~0, then XOR with ~0 before you set
++ * the seed.
++ */
++static int crc32c_setkey(struct crypto_ahash *hash, const u8 *key,
++			 unsigned int keylen)
++{
++	u32 *mctx = crypto_ahash_ctx(hash);
++
++	if (keylen != sizeof(u32)) {
++		crypto_ahash_set_flags(hash, CRYPTO_TFM_RES_BAD_KEY_LEN);
++		return -EINVAL;
++	}
++	*mctx = le32_to_cpup((__le32 *)key);
++	return 0;
++}
++
++static int crc32c_init(struct ahash_request *req)
++{
++	u32 *mctx = crypto_ahash_ctx(crypto_ahash_reqtfm(req));
++	u32 *crcp = ahash_request_ctx(req);
++
++	*crcp = *mctx;
++	return 0;
++}
++
++static int crc32c_update(struct ahash_request *req)
++{
++	struct crypto_hash_walk walk;
++	u32 *crcp = ahash_request_ctx(req);
++	u32 crc = *crcp;
++	int nbytes;
++
++	for (nbytes = crypto_hash_walk_first(req, &walk); nbytes;
++	     nbytes = crypto_hash_walk_done(&walk, 0))
++		crc = crc32c(crc, walk.data, nbytes);
++
++	*crcp = crc;
++	return 0;
++}
++
++static int crc32c_final(struct ahash_request *req)
++{
++	u32 *crcp = ahash_request_ctx(req);
++	
++	*(__le32 *)req->result = ~cpu_to_le32p(crcp);
++	return 0;
++}
++
++static int crc32c_digest(struct ahash_request *req)
++{
++	struct crypto_hash_walk walk;
++	u32 *mctx = crypto_ahash_ctx(crypto_ahash_reqtfm(req));
++	u32 crc = *mctx;
++	int nbytes;
++
++	for (nbytes = crypto_hash_walk_first(req, &walk); nbytes;
++	     nbytes = crypto_hash_walk_done(&walk, 0))
++		crc = crc32c(crc, walk.data, nbytes);
++
++	*(__le32 *)req->result = ~cpu_to_le32(crc);
++	return 0;
++}
++
++static int crc32c_cra_init(struct crypto_tfm *tfm)
++{
++	u32 *key = crypto_tfm_ctx(tfm);
++
++	*key = ~0;
++
++	tfm->crt_ahash.reqsize = sizeof(u32);
++
++	return 0;
++}
++
++static struct crypto_alg alg = {
++	.cra_name		=	"crc32c",
++	.cra_driver_name	=	"crc32c-generic",
++	.cra_priority		=	100,
++	.cra_flags		=	CRYPTO_ALG_TYPE_AHASH,
++	.cra_blocksize		=	CHKSUM_BLOCK_SIZE,
++	.cra_alignmask		=	3,
++	.cra_ctxsize		=	sizeof(u32),
++	.cra_module		=	THIS_MODULE,
++	.cra_list		=	LIST_HEAD_INIT(alg.cra_list),
++	.cra_init		=	crc32c_cra_init,
++	.cra_type		=	&crypto_ahash_type,
++	.cra_u			=	{
++		.ahash = {
++			 .digestsize	=	CHKSUM_DIGEST_SIZE,
++			 .setkey	=	crc32c_setkey,
++			 .init   	= 	crc32c_init,
++			 .update 	=	crc32c_update,
++			 .final  	=	crc32c_final,
++			 .digest  	=	crc32c_digest,
++		 }
++	}
++};
++
+ static int __init crc32c_mod_init(void)
+ {
+-	return crypto_register_alg(&alg);
++	int err;
++
++	err = crypto_register_alg(&old_alg);
++	if (err)
++		return err;
++
++	err = crypto_register_alg(&alg);
++	if (err)
++		crypto_unregister_alg(&old_alg);
++
++	return err;
+ }
+ 
+ static void __exit crc32c_mod_fini(void)
+ {
+ 	crypto_unregister_alg(&alg);
++	crypto_unregister_alg(&old_alg);
+ }
+ 
+ module_init(crc32c_mod_init);
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
