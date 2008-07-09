@@ -1,55 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbYGIEvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757078AbYGIEvV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755027AbYGIEvA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 00:51:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755781AbYGIEug
+	id S1757078AbYGIEvV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 00:51:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755828AbYGIEuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 00:50:36 -0400
-Received: from ozlabs.org ([203.10.76.45]:47358 "EHLO ozlabs.org"
+	Wed, 9 Jul 2008 00:50:37 -0400
+Received: from ozlabs.org ([203.10.76.45]:47359 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755575AbYGIEud (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755591AbYGIEud (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 9 Jul 2008 00:50:33 -0400
 From: Rusty Russell <rusty@rustcorp.com.au>
-To: "Akinobu Mita" <akinobu.mita@gmail.com>
-Subject: Re: [PATCH 2/3] stop_machine: simplify
-Date: Wed, 9 Jul 2008 12:18:56 +1000
+To: Mike Travis <travis@sgi.com>
+Subject: Re: Dangerous code in cpumask_of_cpu?
+Date: Wed, 9 Jul 2008 12:22:44 +1000
 User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, "Jason Baron" <jbaron@redhat.com>,
-       "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>,
-       "Max Krasnyansky" <maxk@qualcomm.com>,
-       "Hidetoshi Seto" <seto.hidetoshi@jp.fujitsu.com>
-References: <200807081750.55536.rusty@rustcorp.com.au> <200807082311.35793.rusty@rustcorp.com.au> <961aa3350807080802w7e6acef9g4e931e26b3061d7e@mail.gmail.com>
-In-Reply-To: <961aa3350807080802w7e6acef9g4e931e26b3061d7e@mail.gmail.com>
+Cc: Johannes Weiner <hannes@saeurebad.de>, linux-kernel@vger.kernel.org,
+       "H. Anvin" <hpa@zytor.com>, Christoph Lameter <cl@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+References: <200807081816.40623.rusty@rustcorp.com.au> <87ej64n3xt.fsf@saeurebad.de> <487387DE.90602@sgi.com>
+In-Reply-To: <487387DE.90602@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807091218.57205.rusty@rustcorp.com.au>
+Message-Id: <200807091222.45537.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 09 July 2008 01:02:02 Akinobu Mita wrote:
-> 2008/7/8 Rusty Russell <rusty@rustcorp.com.au>:
-> > On Tuesday 08 July 2008 21:44:40 Akinobu Mita wrote:
-> >> I found a small possible cleanup in this patch.
+On Wednesday 09 July 2008 01:29:34 Mike Travis wrote:
+> Johannes Weiner wrote:
+> > Johannes Weiner <hannes@saeurebad.de> writes:
+> >> Hi,
+> >>
+> >> Johannes Weiner <hannes@saeurebad.de> writes:
+> >>> Hi,
+> >>>
+> >>> Rusty Russell <rusty@rustcorp.com.au> writes:
+> >>>> Hi Christoph/Mike,
+> >>>>
+> >>>>   Looked at cpumask_of_cpu as introduced in
+> >>>> 9f0e8d0400d925c3acd5f4e01dbeb736e4011882 (x86: convert cpumask_of_cpu
+> >>>> macro to allocated array), and I don't think it's safe:
+> >>>>
+> >>>>   #define cpumask_of_cpu(cpu)						\
+> >>>>   (*({								\
+> >>>> 	typeof(_unused_cpumask_arg_) m;					\
+> >>>> 	if (sizeof(m) == sizeof(unsigned long)) {			\
+> >>>> 		m.bits[0] = 1UL<<(cpu);					\
+> >>>> 	} else {							\
+> >>>> 		cpus_clear(m);						\
+> >>>> 		cpu_set((cpu), m);					\
+> >>>> 	}								\
+> >>>> 	&m;								\
+> >>>>   }))
+> >>>>
+> >>>> Referring to &m once out of scope is invalid, and I can't find any
+> >>>> evidence that it's legal here.  In particular, the change
+> >>>> b53e921ba1cff8453dc9a87a84052fa12d5b30bd (generic: reduce stack
+> >>>> pressure in sched_affinity) which passes &m to other functions seems
+> >>>> highly risky.
+> >>>>
+> >>>> I'm surprised this hasn't already hit us, but perhaps gcc isn't as
+> >>>> clever as it could be?
+> >>>
+> >>> You don't refer to &m outside scope.  Look at the character below the
+> >>> first e of #define :)
+> >>
+> >> Oh, well you do access it outside scope, sorry.  Me sleepy.
+> >>
+> >> I guess because we dereference it immediately again, the location is not
+> >> clobbered yet.  At least in my test case, gcc assembled it to code that
+> >> puts the address in eax and derefences it immediately, before eax is
+> >> reused:
 > >
-> > Well spotted!  I think this cleanup is actually orthogonal to my patch,
-> > so best served as a separate patch, how's this?
+> > Gee, just ignore this bs.  The address is in eax, not the value.
+> >
+> >> static int *foo(void)
+> >> {
+> >>         int x = 42;
+> >>         return &x;
+> >> }
+> >>
+> >> int main(void)
+> >> {
+> >>         return *foo();
+> >> }
+> >
+> > However, this code seems to produce valid assembly with -O2.  gcc just
+> > warns and fixes it up.
+> >
+> > 	Hannes
 >
-> Actually the cpu_online() check was necessary before appling this
-> stop_machine: simplify patch.
->
-> With old __stop_machine_run(), __stop_machine_run() could succeed
-> (return !IS_ERR(p) value) even if take_cpu_down() returned non-zero value.
-> The return value of take_cpu_down() was obtained through kthread_stop().
+> IIRC, the problem was I needed an lvalue and it seems that the *(&m) was
+> the way I was able to coerce gcc into producing it.  That's not to say
+> there may be a better way however... ;-)  [Btw, I picked up this technique
+> in the (original) per_cpu() macro.]
 
-Ah, thanks for the analysis!
+Yes, but I could do that because it wasn't referring to a temporary variable.
 
-It's a little non-obvious, so I've left it as a separate patch (it doesn't 
-hurt to have the check there), but included your excellent explanation within 
-it.
+> Note the lvalue isn't used for changing the cpumask value, but for sending
+> it to functions like set_cpus_allowed_ptr() to avoid pushing the 512 bytes
+> of a 4096 cpus cpumask onto the stack.  So it becomes &(*(&m)))  ... ;-) 
+> But I thought I checked the assembly for different config options and it
+> looked ok.
 
-Thanks!
+Yeah, the problem is that a future gcc will cause horrible and subtle 
+breakage.
+
+I think we are going to want a get_cpumask()/put_cpumask() pattern for this.
+
 Rusty.
