@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbYGICad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbYGICbm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754019AbYGICad (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 22:30:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbYGICaY
+	id S1754669AbYGICbm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 22:31:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbYGICbe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 22:30:24 -0400
-Received: from ns.suse.de ([195.135.220.2]:50875 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752078AbYGICaY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 22:30:24 -0400
-Date: Mon, 7 Jul 2008 21:12:39 -0700
-From: Greg KH <gregkh@suse.de>
-To: Bart Van Assche <bart.vanassche@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.25.10
-Message-ID: <20080708041239.GB4099@suse.de>
-References: <20080703035807.GA8190@kroah.com> <e2e108260807031008r3de9aad7v8222d41fd750b9da@mail.gmail.com> <20080703172914.GA11123@suse.de> <e2e108260807050054v44323b97s6bfbd0371beef51e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e2e108260807050054v44323b97s6bfbd0371beef51e@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 8 Jul 2008 22:31:34 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37850 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752132AbYGICbe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 22:31:34 -0400
+Date: Tue, 8 Jul 2008 21:31:31 -0500
+From: Paul Jackson <pj@sgi.com>
+To: linux-kernel@vger.kernel.org, Matt Mackall <mpm@selenic.com>
+Cc: "Bryan O'Sullivan" <bos@serpentine.com>
+Subject: LKML mercurial repository borked
+Message-Id: <20080708213131.1afb7314.pj@sgi.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 05, 2008 at 09:54:22AM +0200, Bart Van Assche wrote:
-> On Thu, Jul 3, 2008 at 7:29 PM, Greg KH <gregkh@suse.de> wrote:
-> > The release notes are there in the shortlog in the email announcement
-> > and full Changelog on the kernel.org site for exactly what specifically
-> > was fixed:
-> >        http://www.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.25.10
-> >
-> > If you have any specific questions about any of the individual changes,
-> > please let us, and the developers who made those fixes know.
-> 
-> Sometimes I have to backport bugfixes to older kernels. In that case
-> it's important to know in which kernel version the bug was introduced.
-> This info is included for some of the bugfix patches in the changelog,
-> but not for all.
+The lkml mercurial (hg) repository at:
 
-That's because sometimes no one digs through the code to find this out.
-I would recommend using 'git blame' to determine this if it is something
-that you need to have.
+  http://www.kernel.org/hg/linux-2.6
 
-But for the most part, -stable doesn't really care about older kernel
-versions, we have to draw the line somewhere, sorry.
+is borked.
 
-thanks,
+Trying to "hg pull" from it fails quickly, with:
 
-greg k-h
+  pulling from http://www.kernel.org/hg/linux-2.6
+  abort: 'http://www.kernel.org/hg/linux-2.6' does not appear to be an hg repository!
+
+Going to 'http://www.kernel.org/hg/linux-2.6' with a web browser fills
+ones browser screen with a RevlogError from some Python script.
+
+The backdoor http://master.kernel.org/hg/linux-2.6 still works,
+so my local configuration and installation of python and mercurial
+is apparently not messed up.  However we are not supposed to use
+that backdoor normally, as it has much less bandwidth (to quote
+a two year old message I have from Bryan, the last time something
+like this happened.)
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
