@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756436AbYGIWc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756573AbYGIWdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756436AbYGIWc4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 18:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbYGIWcs
+	id S1756573AbYGIWdW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 18:33:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbYGIWdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 18:32:48 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:55874 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751801AbYGIWcr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 18:32:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=FqZlA9UPYoh5LoqoSq/hYYlYSIZGShZogTn9cXy5xm2wGQSNc8poMqx0Hi0KGJQEFa
-         YzfshGX91MbxWlxQlPK0wdJhDtZWFjw/5ixKo6q8oQ6ynRWLk+NOk5tkNmLlVk1njs8x
-         agGxw9R7XT2Np7RkO0p2xyp72S1UXkKGo2gTQ=
-Subject: Re: [BUG] CFS vs cpu hotplug
-From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: miaox@cn.fujitsu.com, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@qumranet.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 10 Jul 2008 00:32:40 +0200
-Message-Id: <1215642760.5310.12.camel@earth>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 9 Jul 2008 18:33:11 -0400
+Received: from gw.goop.org ([64.81.55.164]:35341 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751801AbYGIWdK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 18:33:10 -0400
+Message-ID: <48753C99.5050408@goop.org>
+Date: Wed, 09 Jul 2008 15:32:57 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Christoph Lameter <cl@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <48751CF9.4020901@linux-foundation.org>	<4875209D.8010603@goop.org> <48752CCD.30507@linux-foundation.org> <m1wsjupuiz.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1wsjupuiz.fsf@frodo.ebiederm.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Eric W. Biederman wrote:
+> Christoph Lameter <cl@linux-foundation.org> writes:
+>
+>   
+>> Note also that the 32 bit offset size limits the offset that can be added to the
+>> segment register. You either need to place the per cpu area either in the last
+>> 2G of the address space or in the first 2G. The zero based approach removes that
+>> limitation.
+>>     
+>
+> Good point.  Which means that fundamentally we need to come up with a special
+> linker segment or some other way to guarantee that the offsets we use for per
+> cpu variables is within 2G of the segment register.
+>
+> Which means that my idea of using the technique we use on x86_32 will not work.
 
-hm, while looking at this code again...
+No, the compiler memory model we use guarantees that everything will be 
+within 2G of each other.  The linker will spew loudly if that's not the 
+case.
 
-
-Ingo,
-
-I think we may have a race between try_to_wake_up() and migrate_live_tasks() -> move_task_off_dead_cpu()
-when the later one may end up looping endlessly.
-
-
-Subject: sched: prevent a potentially endless loop in move_task_off_dead_cpu()
-
-Interrupts are enabled on other CPUs when migration_call(CPU_DEAD, ...) is called so we may get a race
-between try_to_wake_up() and migrate_live_tasks() -> move_task_off_dead_cpu(). The former one may push
-a task out of a dead CPU causing the later one to loop endlessly.
-
-
-Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-
----
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 94ead43..9397b87 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -5621,8 +5621,10 @@ static int __migrate_task(struct task_struct *p, int src_cpu, int dest_cpu)
- 
- 	double_rq_lock(rq_src, rq_dest);
- 	/* Already moved. */
--	if (task_cpu(p) != src_cpu)
-+	if (task_cpu(p) != src_cpu) {
-+		ret = 1;
- 		goto out;
-+	}
- 	/* Affinity changed (again). */
- 	if (!cpu_isset(dest_cpu, p->cpus_allowed))
- 		goto out;
-
----
+    J
 
