@@ -1,96 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757670AbYGILuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751354AbYGILu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757670AbYGILuV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 07:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753813AbYGILuG
+	id S1751354AbYGILu5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 07:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649AbYGILus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 07:50:06 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:61019 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751354AbYGILuE (ORCPT
+	Wed, 9 Jul 2008 07:50:48 -0400
+Received: from trinity.fluff.org ([89.145.97.151]:60115 "EHLO
+	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753813AbYGILus (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 07:50:04 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAMdCdEh5LFxA/2dsb2JhbACwCw
-X-IronPort-AV: E=Sophos;i="4.30,331,1212330600"; 
-   d="scan'208";a="145222754"
-Date: Wed, 9 Jul 2008 21:49:58 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>,
-       Miklos Szeredi <miklos@szeredi.hu>, hch@infradead.org, pavel@suse.cz,
-       t-sato@yk.jp.nec.com, akpm@linux-foundation.org,
-       viro@ZenIV.linux.org.uk, linux-ext4@vger.kernel.org, xfs@oss.sgi.com,
-       dm-devel@redhat.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, axboe@kernel.dk,
-       mtk.manpages@googlemail.com
-Subject: Re: [PATCH 3/3] Add timeout feature
-Message-ID: <20080709114958.GV11558@disturbed>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Miklos Szeredi <miklos@szeredi.hu>, hch@infradead.org,
-	pavel@suse.cz, t-sato@yk.jp.nec.com, akpm@linux-foundation.org,
-	viro@ZenIV.linux.org.uk, linux-ext4@vger.kernel.org,
-	xfs@oss.sgi.com, dm-devel@redhat.com, linux-fsdevel@vger.kernel.org,
-	linux-kernel@vger.kernel.org, axboe@kernel.dk,
-	mtk.manpages@googlemail.com
-References: <20080709005254.GQ11558@disturbed> <20080709010922.GE9957@mit.edu> <E1KGSvZ-0006dB-53@pomaz-ex.szeredi.hu> <20080709061621.GA5260@infradead.org> <E1KGT4q-0006fD-Jb@pomaz-ex.szeredi.hu> <20080708234120.5072111f@infradead.org> <E1KGTTm-0006ke-Jh@pomaz-ex.szeredi.hu> <20080708235502.1c52a586@infradead.org> <20080709071346.GS11558@disturbed> <20080709110900.GI9957@mit.edu>
-MIME-Version: 1.0
+	Wed, 9 Jul 2008 07:50:48 -0400
+Date: Wed, 9 Jul 2008 12:50:45 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Dmitry <dbaryshkov@gmail.com>
+Cc: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [patch 4/4] MFD: Change mfd platform device usage to wrapper platform_device
+Message-ID: <20080709115045.GK8517@trinity.fluff.org>
+References: <20080709104916.200210922@fluff.org> <20080709104933.101610936@fluff.org> <bc64b4640807090415w781507fetfe332271ad158112@mail.gmail.com> <20080709112426.GN8489@trinity.fluff.org> <bc64b4640807090431g5b1960edua2508337973615da@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080709110900.GI9957@mit.edu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <bc64b4640807090431g5b1960edua2508337973615da@mail.gmail.com>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.9i
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 09, 2008 at 07:09:00AM -0400, Theodore Tso wrote:
-> > 
-> > Bloody hell! Doesn't *anyone* understand that a frozen filesystem is
-> > *clean*? That the process of freezing it ensures all dirty data and
-> > metadata is written out before the freeze completes? And that once
-> > frozen, it can't be dirtied until unfrozen?
+On Wed, Jul 09, 2008 at 03:31:04PM +0400, Dmitry wrote:
+> 2008/7/9 Ben Dooks <ben-linux@fluff.org>:
+> > On Wed, Jul 09, 2008 at 03:15:47PM +0400, Dmitry wrote:
+> >> 2008/7/9 Ben Dooks <ben-linux@fluff.org>:
+> >> > This patch changes the mfd core behaviour to wrapper the platform_device
+> >> > it creates in an struct mfd_device which contains the information
+> >> > about the cell that was created.
+> >> >
+> >> > 1) The creation of the resource list and then passing it to the
+> >> >   platform_device_add_resources() causes the allocation of a
+> >> >   large array on the stack as well as copying the source data
+> >> >   twice (it is copied from the mfd_cell to the temporary array
+> >> >   and then copied into the newly allocated array)
+> >> >
+> >> > 2) We can wrapper the platform_device into an mfd_device and use
+> >> >   that to do the platform_device and resource allocation in one
+> >> >   go to reduce the failiure.
+> >> >
+> >> > Note, is there actually any reason to pass the sub devices any
+> >> > information about the cell they are created from? The mfd core
+> >> > already makes the appropriate resource adjustments and anything
+> >> > else like clocks should be exported by the clock drivers?
+> >> >
+> >> > Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+> >>
+> >>
+> >> NAK.
+> >> 0) It was discussed yesterday on the list and the decision was to go
+> >> in a different way.
+> >>   I've provided a bit cleaner patch with the same idea, but then we
+> >> decided to go in a bit different way.
+> >> 1) I prefer patch by Mike Rapoport which is more clear and goes in a
+> >> more correct way.
+> >
+> > How "more correct", whilst the patch by Mike makes the platform data
+> > be passed from the cell, there is no longer any way to get from the
+> > platform device to the mfd_cell...
 > 
-> What do you mean by "it can't be diritied until unfrozen".  What
-> happens if I have a kernel compilation happening on a filesystem which
-> I am trying to freeze?   Does
+> Basically we have two choises for the subdevice driver:
+> 1) it doesn't know about cells at all (e.g. generic-bl, IIRC). Then we are safe
+>    to loose that "cell" information
+> 2) If it does use cell information (to get access to hooks), we pass it
+>     via platform_data pointer in the mfd_cell and we are ok with it.
 
-> (a) the freeze fail (because the checks equivalent to what happens
-> when you remount a filesystem read-only happen)?
+Erm, that is complete non-answer. The driver model and various other
+parts of the kernel are littered with examples of embedding one
+structure within another to gain an C++ like object inheritance.
+
+I've supplied an reasonable example of doing this to create an mfd_cell
+device from an platform_device without creating an large amount of code
+and improving the efficiency and code-lineage in the process. I do not
+see how this isn't "correct" or in any way breaing the current linux
+model of doing things.
+ 
 > 
-> (b) The process gets a kill -9 when it tries to write a file on the
-> frozen filesystem?
+> > The current driver is being inefficent in the way it creates resources
+> > on the stack and then calls a routine that does an kalloc/memcpy on
+> > the resources.
 > 
-> (c) The process gets a kill -STOP when it tries to write
-> to a file on the frozen filesystem?  
+> I don't see any inefficiency ATM.
 > 
-> (d) The process won't fail, but just continue to run, filling the page
-> cache with dirty pages that can't be written out because the
-> filesystem is frozen?
+> >> 2) Please examine the tmio-nand driver (was here on the list and on
+> >> linux-mtd). It uses the mfd_cell
+> >>    to call hooks from the "host" driver (tc6393xb, more to be added soon).
+> >
+> > The one posted in [1] does not call these hooks at-all, can ou please
+> > explain why these hooks are needed in addition to the ones already
+> > available in the platform device driver?
+> >
+> > [1] http://lists.infradead.org/pipermail/linux-mtd/2008-June/022137.html
+> 
+> +
+> +static int tmio_hw_init(struct platform_device *dev, struct tmio_nand *tmio)
+> +{
+> +	struct mfd_cell *cell = mfd_get_cell(dev);
+> +	const struct resource *nfcr = NULL;
+> +	unsigned long base;
+> +	int i;
+> +
+> +	for (i = 0; i < cell->num_resources; i++)
+> +		if (!strcmp((cell->resources+i)->name, TMIO_NAND_CONTROL))
+> +			nfcr = &cell->resources[i];
+> +
+> +	if (nfcr == NULL)
+> +		return -ENOMEM;
+> +
+> +	if (cell->enable) {
+> +		int rc = cell->enable(dev);
+> +		if (rc)
+> +			return rc;
+> +	}
+> 
+> That cell->enable() is necessary to set up the host (in the tc6393xb
+> case to enable buffers)
+> to enable access to the nand.
 
-(e) none of the above.  The kernel compilation will appear to pause
-until the filesystem is unfrozen. No other visible effect should
-occur. It will get blocked in a write or filesystem transaction
-because the fs is frozen.
+So, the enable/disable calls might be useful, however is there any
+reason this could not be handled by the clock framework? The suspend/resume
+entries where not used, and I belive should not be in here.
 
-Look at vfs_check_frozen() - any call to that will block if the
-filesystem is frozen or being frozen. The generic hook is in
-__generic_file_aio_write_nolock() and various other filesystems have
-calls in their specific write paths (fuse, ntfs, ocfs2, xfs, xip) to
-do this.
+As noted before, mfd_get_cell() got dropped by [2]
 
-For all other modifications, filesystem specific methods of
-blocking transactions are used. XFS uses vfs_check_frozen() in
-xfs_trans_alloc(), ext3 (and probably ocfs2) do it via
-their ->write_super_lockfs method calling journal_lock_updates(),
-ext4 via jbd2_lock_updates() and so on....
+[2] http://lists.arm.linux.org.uk/lurker/message/20080708.153450.bb33046d.en.html
 
-When the filesystem is unfrozen the journal is unlocked and
-anything sleeping on the vfs_check_frozen() waitqueue is
-woken.....
-
-Cheers,
-
-Dave.
 -- 
-Dave Chinner
-david@fromorbit.com
+Ben
+
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
+
