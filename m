@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756556AbYGINaQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757038AbYGINbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756556AbYGINaQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 09:30:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbYGINaA
+	id S1757038AbYGINbq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 09:31:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbYGINbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 09:30:00 -0400
-Received: from orchid.cbk.poznan.pl ([150.254.183.30]:4031 "EHLO
-	orchid.cbk.poznan.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753330AbYGIN36 (ORCPT
+	Wed, 9 Jul 2008 09:31:37 -0400
+Received: from casper.infradead.org ([85.118.1.10]:39636 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751930AbYGINbh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 09:29:58 -0400
-X-Greylist: delayed 1769 seconds by postgrey-1.27 at vger.kernel.org; Wed, 09 Jul 2008 09:29:58 EDT
-Subject: Re: [PATCH 3/3] Add timeout feature
-From: Olaf =?iso-8859-2?Q?Fr=B1czyk?= <olaf@cbk.poznan.pl>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Arjan van de Ven <arjan@infradead.org>, Miklos Szeredi <miklos@szeredi.hu>,
-       hch@infradead.org, pavel@suse.cz, t-sato@yk.jp.nec.com,
-       akpm@linux-foundation.org, viro@ZenIV.linux.org.uk,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, dm-devel@redhat.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       axboe@kernel.dk, mtk.manpages@googlemail.com
-In-Reply-To: <20080709122401.GK9957@mit.edu>
-References: <20080709010922.GE9957@mit.edu>
-	 <E1KGSvZ-0006dB-53@pomaz-ex.szeredi.hu>
-	 <20080709061621.GA5260@infradead.org>
-	 <E1KGT4q-0006fD-Jb@pomaz-ex.szeredi.hu>
-	 <20080708234120.5072111f@infradead.org>
-	 <E1KGTTm-0006ke-Jh@pomaz-ex.szeredi.hu>
-	 <20080708235502.1c52a586@infradead.org> <20080709071346.GS11558@disturbed>
-	 <20080709110900.GI9957@mit.edu> <20080709114958.GV11558@disturbed>
-	 <20080709122401.GK9957@mit.edu>
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 09 Jul 2008 14:59:20 +0200
-Message-Id: <1215608360.20914.14.camel@venus.local.navi.pl>
+	Wed, 9 Jul 2008 09:31:37 -0400
+Date: Wed, 9 Jul 2008 06:31:28 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/17] Series to introduce WARN()... a WARN_ON() variant
+ that takes printk arguments
+Message-ID: <20080709063128.26b8d6f2@infradead.org>
+In-Reply-To: <20080709044613.2546034d.akpm@linux-foundation.org>
+References: <20080708093800.274504ba@infradead.org>
+	<20080709101348.GA30005@elte.hu>
+	<20080709041956.0c52b2d9.akpm@linux-foundation.org>
+	<20080709113703.GA11191@elte.hu>
+	<20080709044613.2546034d.akpm@linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.10; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-3) 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-09 at 08:24 -0400, Theodore Tso wrote:
-> On Wed, Jul 09, 2008 at 09:49:58PM +1000, Dave Chinner wrote:
-> > (e) none of the above.  The kernel compilation will appear to pause
-> > until the filesystem is unfrozen. No other visible effect should
-> > occur. It will get blocked in a write or filesystem transaction
-> > because the fs is frozen.
-> 
-> So if the process which froze the filesystem accidentally tries
-> writing to a log file (or database file containing the backup
-> information, or whatever) that happens to be on the filesystem that is
-> frozen, that process will get blocked and you end up in a deadlock;
-> did I get that right?
-Where do you see the deadlock?
-The process doesn't have a lock on filesystem or something. You can
-always unfreeze from another process.
+On Wed, 9 Jul 2008 04:46:13 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+> Well I haven't got onto processing these patches in detail yet.  An
+> open questions is why the damn thing was resubmitted from scratch
+> when I've already merged it and fixed various rejects and had to fix
+> several bugs in it.  Do those rejects need to be re-fixed?  Were my
+> bugfixes folded back? I haven't looked yet.  I'll need to generate
+> the incremental diff and see what was done.
 
-Regards,
+I started with the version in -mm (and had to do one reject fix against
+-next) with folding the 2 -fix's into it.
 
-Olaf
 -- 
-Olaf Frączyk <olaf@cbk.poznan.pl>
-
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
