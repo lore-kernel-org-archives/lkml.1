@@ -1,47 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754697AbYGISMD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754607AbYGISOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754697AbYGISMD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 14:12:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbYGISLx
+	id S1754607AbYGISOc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 14:14:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbYGISOZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 14:11:53 -0400
-Received: from gw.goop.org ([64.81.55.164]:48228 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752482AbYGISLw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 14:11:52 -0400
-Message-ID: <4874FF58.5030800@goop.org>
-Date: Wed, 09 Jul 2008 11:11:36 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 9 Jul 2008 14:14:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37704 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751351AbYGISOY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 14:14:24 -0400
+Message-ID: <4874FFC4.7050505@linux-foundation.org>
+Date: Wed, 09 Jul 2008 13:13:24 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Suresh Siddha <suresh.b.siddha@intel.com>, "mingo@elte.hu" <mingo@elte.hu>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] tip/x86_64: fix e820 merge issue which broke max_pfn_mapped
-References: <20080708230837.GD1678@linux-os.sc.intel.com>	 <86802c440807081759i3baafa9bj7e8ff544a1a78fb9@mail.gmail.com>	 <86802c440807081856y17eb1f1cs5647b2c2a765f429@mail.gmail.com>	 <20080709175621.GG1678@linux-os.sc.intel.com> <86802c440807091105g1dd8f8a0sa8220a1bfc65a79@mail.gmail.com>
-In-Reply-To: <86802c440807091105g1dd8f8a0sa8220a1bfc65a79@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Mike Travis <travis@sgi.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <4874F4F2.9010603@goop.org> <4874F7D9.5060607@linux-foundation.org> <4874FD52.8070000@sgi.com>
+In-Reply-To: <4874FD52.8070000@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> try to reduce #ifdef CONFIG_X86_64/32, and make 32/64 at the same page.
->
-> could be some regression from early_io_remap unifying from jeremy
->
-> please check attached revert patch.
+Mike Travis wrote:
 
-Could my patch "x86_64: there's no need to preallocate 
-level1_fixmap_pgt" be a problem in itself?  It seems sound to me, but 
-none of my other code has any functional dependency on it; it's really 
-just cosmetic.
+> I think Jeremy's point is that by removing the pda struct entirely, the
+> references to the fields can be the same for both x86_32 and x86_64.
 
-The unified early_ioremap patch has been kicking around in tip.git for a 
-week or more now, and doesn't seem to have caused any problems.
+That is going to be difficult. The GS register is tied up for the pda area
+as long as you have it. And you cannot get rid of the pda because of the library
+compatibility issues. We would break binary compatibility if we would get rid of the pda.
 
-    J
+If one attempts to remove one field after another then the converted accesses will not be able to use GS relative accesses anymore. This can lead to all sorts of complications.
+
+It will be possible to shrink the pda (as long as we maintain the fields that glibc needs) after this patchset because the pda and the per cpu area can both be reached with the GS register. So (apart from undiscovered surprises) the generated code is the same.
