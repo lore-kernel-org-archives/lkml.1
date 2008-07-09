@@ -1,66 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752782AbYGITNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755466AbYGITOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752782AbYGITNy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 15:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbYGITNo
+	id S1755466AbYGITOs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 15:14:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750933AbYGITOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 15:13:44 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:59894 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755321AbYGITNm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 15:13:42 -0400
-Subject: Re: [PATCH] Mark i2o config broken on 64-bit platforms.
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Miquel van Smoorenburg <miquels@cistron.nl>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, David Howells <dhowells@redhat.com>,
-       akpm@linux-foundation.org, alan@redhat.com,
-       Markus.Lidel@shadowconnect.com, vvs@sw.ru, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <1215630402.18506.10.camel@localhost.localdomain>
-References: <E1KGa1W-0004nG-Cw@n2o.xs4all.nl>
-	 <20080709113547.19235.15424.stgit@warthog.procyon.org.uk>
-	 <4561.1215612914@redhat.com>  <20080709164929.799e4e05@the-village.bc.nu>
-	 <1215630402.18506.10.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 09 Jul 2008 14:13:37 -0500
-Message-Id: <1215630817.3444.16.camel@localhost.localdomain>
+	Wed, 9 Jul 2008 15:14:40 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:55228 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750824AbYGITOk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 15:14:40 -0400
+Date: Wed, 9 Jul 2008 14:14:39 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: akpm@osdl.org, linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org
+Subject: [PATCH] - GRU virtual -> physical translation
+Message-ID: <20080709191439.GA7307@sgi.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-09 at 21:06 +0200, Miquel van Smoorenburg wrote:
-> On Wed, 2008-07-09 at 16:49 +0100, Alan Cox wrote:
-> > On Wed, 09 Jul 2008 15:15:14 +0100
-> > David Howells <dhowells@redhat.com> wrote:
-> > 
-> > > Miquel van Smoorenburg <miquels@cistron.nl> wrote:
-> > > Maybe, but have you looked at i2o_cfg_passthru()?  Take this, for example:
-> > > 
-> > > 			/* Allocate memory for the transfer */
-> > > 			p = kmalloc(sg_size, GFP_KERNEL);
-> > > 			...
-> > > 			//TODO 64bit fix
-> > > 			sg[i].addr_bus = virt_to_bus(p);
-> > > 
-> > > That looks distinctly dodgy.  virt_to_bus() returns a 64-bit address, and as
-> > 
-> > Agreed - stick | GFP_DMA32 on the end then ;)
-> 
-> GFP_DMA32 doesn't work with kmalloc(), you need dma_alloc_coherent() or
-> pci_alloc_consistent() [here, i2o_dma_alloc() ]
+Open code the equivalent to follow_page(). This eliminates the
+requirement for an EXPORT of follow_page(). In addition, the code
+is optimized for the specific case that is needed by the GRU and only
+supports architectures supported by the GRU (ia64 & x86_64).
 
-Yes it does ... it was specifically designed for it.  GFP_DMA32 was
-introduced to allow this type of thing to happen (in the old days most
-drivers were allowed to assume kmalloc would return memory whose
-physical address was < 4GB; GFP_DMA32 allows that to continue while
-allowing kmalloc to stray beyond 4GB physical).
+Signed-off-by: Jack Steiner <steiner@sgi.com>
 
-> GFP_DMA would work though, as a quick bandaid.
+---
 
-James
+Andrew - do you want incremental patches or should I repost a V4 of
+the original GRU driver.
+
+After the GRU code is stabilized, I'll look into moving the open codes
+PT lookup code into the kernel.
 
 
+ drivers/misc/sgi-gru/grufault.c |   54 +++++++++++++++++++++++++++++++++-------
+ 1 file changed, 45 insertions(+), 9 deletions(-)
+
+Index: linux/drivers/misc/sgi-gru/grufault.c
+===================================================================
+--- linux.orig/drivers/misc/sgi-gru/grufault.c	2008-07-09 13:54:16.786142769 -0500
++++ linux/drivers/misc/sgi-gru/grufault.c	2008-07-09 13:56:58.762219264 -0500
+@@ -213,20 +213,56 @@ static int non_atomic_pte_lookup(struct 
+ 	return 0;
+ }
+ 
++/*
++ *
++ * atomic_pte_lookup
++ *
++ * Convert a user virtual address to a physical address
++ * Only supports Intel large pages (2MB only) on x86_64.
++ *	ZZZ - hugepage support is incomplete
++ */
+ static int atomic_pte_lookup(struct vm_area_struct *vma, unsigned long vaddr,
+-			     int write, unsigned long *paddr, int *pageshift)
++	int write, unsigned long *paddr, int *pageshift)
+ {
+-	struct page *page;
++	pgd_t *pgdp;
++	pmd_t *pmdp;
++	pud_t *pudp;
++	pte_t pte;
++
++	WARN_ON(irqs_disabled());		/* ZZZ debug */
++
++	local_irq_disable();
++	pgdp = pgd_offset(vma->vm_mm, vaddr);
++	if (unlikely(pgd_none(*pgdp)))
++		goto err;
++
++	pudp = pud_offset(pgdp, vaddr);
++	if (unlikely(pud_none(*pudp)))
++		goto err;
++
++	pmdp = pmd_offset(pudp, vaddr);
++	if (unlikely(pmd_none(*pmdp)))
++		goto err;
++#ifdef CONFIG_X86_64
++	if (unlikely(pmd_large(*pmdp)))
++		pte = *(pte_t *) pmdp;
++	else
++#endif
++		pte = *pte_offset_kernel(pmdp, vaddr);
+ 
+-	/* ZZZ Need to handle HUGE pages */
+-	if (is_vm_hugetlb_page(vma))
+-		return -EFAULT;
+-	*pageshift = PAGE_SHIFT;
+-	page = follow_page(vma, vaddr, (write ? FOLL_WRITE : 0));
+-	if (!page)
++	local_irq_enable();
++
++	if (unlikely(!pte_present(pte) ||
++		     (write && (!pte_write(pte) || !pte_dirty(pte)))))
+ 		return 1;
+-	*paddr = page_to_phys(page);
++
++	*paddr = pte_pfn(pte) << PAGE_SHIFT;
++	*pageshift = is_vm_hugetlb_page(vma) ? HPAGE_SHIFT : PAGE_SHIFT;
+ 	return 0;
++
++err:
++	local_irq_enable();
++	return 1;
+ }
+ 
+ /*
