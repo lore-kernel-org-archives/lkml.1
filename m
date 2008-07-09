@@ -1,99 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758512AbYGIPPY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753492AbYGIPVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758512AbYGIPPY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 11:15:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbYGIPPM
+	id S1753492AbYGIPVe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 11:21:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753490AbYGIPVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 11:15:12 -0400
-Received: from web32604.mail.mud.yahoo.com ([68.142.207.231]:48489 "HELO
-	web32604.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753492AbYGIPPL (ORCPT
+	Wed, 9 Jul 2008 11:21:22 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41107 "EHLO
+	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752195AbYGIPVV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 11:15:11 -0400
-X-Mailer: YahooMailRC/1042.33 YahooMailWebService/0.7.199
-Date: Wed, 9 Jul 2008 08:15:09 -0700 (PDT)
-From: Martin Knoblauch <knobi@knobisoft.de>
-Subject: Re: [PATCH][resubmit] HP iLO driver
-To: "Altobelli, David" <david.altobelli@hp.com>, Pavel Machek <pavel@suse.cz>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "greg@kroah.com" <greg@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <19533.95591.qm@web32604.mail.mud.yahoo.com>
+	Wed, 9 Jul 2008 11:21:21 -0400
+Date: Wed, 9 Jul 2008 15:46:49 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Howells <dhowells@redhat.com>, alan@redhat.com,
+       Markus.Lidel@shadowconnect.com, vvs@sw.ru, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] Mark i2o config broken on 64-bit platforms.
+Message-ID: <20080709154649.57f66bb9@the-village.bc.nu>
+In-Reply-To: <20080709044743.0dd15a3f.akpm@linux-foundation.org>
+References: <20080709113547.19235.15424.stgit@warthog.procyon.org.uk>
+	<20080709044743.0dd15a3f.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message ----
-
-> From: "Altobelli, David" <david.altobelli@hp.com>
-> To: Martin Knoblauch <knobi@knobisoft.de>; Pavel Machek <pavel@suse.cz>
-> Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>; "greg@kroah.com" <greg@kroah.com>
-> Sent: Wednesday, July 9, 2008 4:47:14 PM
-> Subject: RE: [PATCH][resubmit] HP iLO driver
+> Sigh.  I've been staring at that warning for so long.
 > 
-> Martin Knoblauch wrote:
-> > Somehow I feel the need to step in, as I believe that this
-> > thread is really going in the wrong direction.
-> >
-> > It is true that David (or HP) definitely could have done a
-> > better job in describing why this driver is needed and what
-> > HP-Utilities are depending on it. This might have lead some
-> > people to misinterpret what ILO is about.
-> 
-> I'm sorry about that.  This driver is needed for tools like:
-> hponcfg, hpdiags, hp-snmp-agents, and iLO flash utilities.
-> 
+> Is it actually known to be broken on 64-bit, or does it happen to work?
 
- hponcfg - configuration
- hpdiags - ???
- hp-snmp-agents - ??? Do they provide sensor information?
- iLO Flash - Firmware upgrade
- 
-> > ILO (Q: does HP still sell RILOE boards and are they
-> > supporten by the driver?) is a command processor that allows
-> 
-> RILOE cards are not sold any more, and are not supported by this driver.
-> 
+64bit kernel 32bit user space should be fine, aside of any DMA allocation
+bugs. Actually 'fixing' it would mean adding a new 64bit clean ioctl but
+given you only need the config tool very occassionally and I2O is almost
+extinct but not quite dead yet nobody has bothered too much.
 
- OK, so this is really Proliant and likely Blades only? No chance that this will show up elsewhere?
-
-> >
-> > ILO can be configured either offline (server OS shut down),
-> > or via the external interfaces, or from a running OS via some
-> > HP provided utilities. For this a driver is needed, and that
-> > is what we are talking about. From my experience as an
-> > administrator of HP Proliant systems the only local uses for
-> > the *internal* ILO interface is to set-up the thing, and to
-> > do firmware upgrades.
-> 
-> Yeah, those are most common.  This driver will also surface data
-> through HPSMH or HPSIM, if the proper packages are installed.
-> 
-
- Hmm. I am a bit out of touch. What are they doing?
-
-> > To obtain sensor data locally there are other ways, which do
-> > not need the ILO kernel driver (hplog together with hpasmd,
-> > which unfortunately are closed source). So , unless the
-> > HP-ILO driver is just a replacement of the old "cpqci"
-> > driver, there is no need to pester David on functionality.
-> > If, of course the HP-ILO driver is needed to get to the
-> > hpasm/hplog functionality (no driver was needed so far) the
-> > story might be different. But then HP should provide the
-> > specs for the Proliant sensor interface anyway and work
-> > together with the lm_sensors project. But that is a different story.
-> 
-> This is a replacement for cpqci, which was released in the
-> "hprsm" package, and later replaced by the "hp-ilo" package.
-> The former package was not GPL, the latter is.
-> I rewrote the driver to make it (hopefully) more palatable,
-> in terms of both style and functionality.
-
- I really believe that if the HP-ILO driver is only needed for configuration and FW upgrades, it is OK in the current state. I do not think that anybody really wants to write another hponcfg or iLO-flash.
-
- But if it is also needed to obtain sensor information, your colleagues should really think about supporting the lm_sensors framework.
-
-Cheers
-Martin
-
+Alan
