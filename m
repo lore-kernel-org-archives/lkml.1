@@ -1,40 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755206AbYGITI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556AbYGITIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755206AbYGITI3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 15:08:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751074AbYGITIU
+	id S1755556AbYGITIm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 15:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbYGITI2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 15:08:20 -0400
-Received: from gw.goop.org ([64.81.55.164]:60128 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751862AbYGITIT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 15:08:19 -0400
-Message-ID: <48750C94.70903@goop.org>
-Date: Wed, 09 Jul 2008 12:08:04 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Mike Travis <travis@sgi.com>
-CC: Christoph Lameter <cl@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <4874F4F2.9010603@goop.org> <4874F7D9.5060607@linux-foundation.org> <4874FAB2.5080401@goop.org> <4875000A.3060004@sgi.com> <48750202.3060603@goop.org> <4875041C.60206@sgi.com>
-In-Reply-To: <4875041C.60206@sgi.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 9 Jul 2008 15:08:28 -0400
+Received: from smtp-vbr13.xs4all.nl ([194.109.24.33]:2628 "EHLO
+	smtp-vbr13.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755159AbYGITI1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 15:08:27 -0400
+Subject: Re: [PATCH] Mark i2o config broken on 64-bit platforms.
+From: Miquel van Smoorenburg <miquels@cistron.nl>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: David Howells <dhowells@redhat.com>, akpm@linux-foundation.org,
+       alan@redhat.com, Markus.Lidel@shadowconnect.com, vvs@sw.ru,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <20080709164929.799e4e05@the-village.bc.nu>
+References: <E1KGa1W-0004nG-Cw@n2o.xs4all.nl>
+	 <20080709113547.19235.15424.stgit@warthog.procyon.org.uk>
+	 <4561.1215612914@redhat.com>  <20080709164929.799e4e05@the-village.bc.nu>
+Content-Type: text/plain
+Date: Wed, 09 Jul 2008 21:06:42 +0200
+Message-Id: <1215630402.18506.10.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-> One more approach... ;-)  Once the pda and percpu vars are in the same
-> area, then could the pda be used for both 32 and 64...?
->   
+On Wed, 2008-07-09 at 16:49 +0100, Alan Cox wrote:
+> On Wed, 09 Jul 2008 15:15:14 +0100
+> David Howells <dhowells@redhat.com> wrote:
+> 
+> > Miquel van Smoorenburg <miquels@cistron.nl> wrote:
+> > Maybe, but have you looked at i2o_cfg_passthru()?  Take this, for example:
+> > 
+> > 			/* Allocate memory for the transfer */
+> > 			p = kmalloc(sg_size, GFP_KERNEL);
+> > 			...
+> > 			//TODO 64bit fix
+> > 			sg[i].addr_bus = virt_to_bus(p);
+> > 
+> > That looks distinctly dodgy.  virt_to_bus() returns a 64-bit address, and as
+> 
+> Agreed - stick | GFP_DMA32 on the end then ;)
 
-The i386 code works quite reliably thanks ;)
+GFP_DMA32 doesn't work with kmalloc(), you need dma_alloc_coherent() or
+pci_alloc_consistent() [here, i2o_dma_alloc() ]
 
-    J
+GFP_DMA would work though, as a quick bandaid.
+
+Mike.
+
