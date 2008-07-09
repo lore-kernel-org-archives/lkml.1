@@ -1,114 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757078AbYGIEvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755084AbYGIE63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757078AbYGIEvV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 00:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755828AbYGIEuh
+	id S1755084AbYGIE63 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 00:58:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbYGIE6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 00:50:37 -0400
-Received: from ozlabs.org ([203.10.76.45]:47359 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755591AbYGIEud (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 00:50:33 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Mike Travis <travis@sgi.com>
-Subject: Re: Dangerous code in cpumask_of_cpu?
-Date: Wed, 9 Jul 2008 12:22:44 +1000
-User-Agent: KMail/1.9.9
-Cc: Johannes Weiner <hannes@saeurebad.de>, linux-kernel@vger.kernel.org,
-       "H. Anvin" <hpa@zytor.com>, Christoph Lameter <cl@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-References: <200807081816.40623.rusty@rustcorp.com.au> <87ej64n3xt.fsf@saeurebad.de> <487387DE.90602@sgi.com>
-In-Reply-To: <487387DE.90602@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 9 Jul 2008 00:58:21 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:37758 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751354AbYGIE6V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 00:58:21 -0400
+Date: Wed, 9 Jul 2008 06:58:17 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: san@google.com (San Mehat)
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 001/001] mmcblk: Fix deadlock when cleanup is called
+ from resume
+Message-ID: <20080709065817.10fc8736@mjolnir.drzeus.cx>
+In-Reply-To: <20080708201011.GB16849@google.com>
+References: <20080708201011.GB16849@google.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807091222.45537.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 09 July 2008 01:29:34 Mike Travis wrote:
-> Johannes Weiner wrote:
-> > Johannes Weiner <hannes@saeurebad.de> writes:
-> >> Hi,
-> >>
-> >> Johannes Weiner <hannes@saeurebad.de> writes:
-> >>> Hi,
-> >>>
-> >>> Rusty Russell <rusty@rustcorp.com.au> writes:
-> >>>> Hi Christoph/Mike,
-> >>>>
-> >>>>   Looked at cpumask_of_cpu as introduced in
-> >>>> 9f0e8d0400d925c3acd5f4e01dbeb736e4011882 (x86: convert cpumask_of_cpu
-> >>>> macro to allocated array), and I don't think it's safe:
-> >>>>
-> >>>>   #define cpumask_of_cpu(cpu)						\
-> >>>>   (*({								\
-> >>>> 	typeof(_unused_cpumask_arg_) m;					\
-> >>>> 	if (sizeof(m) == sizeof(unsigned long)) {			\
-> >>>> 		m.bits[0] = 1UL<<(cpu);					\
-> >>>> 	} else {							\
-> >>>> 		cpus_clear(m);						\
-> >>>> 		cpu_set((cpu), m);					\
-> >>>> 	}								\
-> >>>> 	&m;								\
-> >>>>   }))
-> >>>>
-> >>>> Referring to &m once out of scope is invalid, and I can't find any
-> >>>> evidence that it's legal here.  In particular, the change
-> >>>> b53e921ba1cff8453dc9a87a84052fa12d5b30bd (generic: reduce stack
-> >>>> pressure in sched_affinity) which passes &m to other functions seems
-> >>>> highly risky.
-> >>>>
-> >>>> I'm surprised this hasn't already hit us, but perhaps gcc isn't as
-> >>>> clever as it could be?
-> >>>
-> >>> You don't refer to &m outside scope.  Look at the character below the
-> >>> first e of #define :)
-> >>
-> >> Oh, well you do access it outside scope, sorry.  Me sleepy.
-> >>
-> >> I guess because we dereference it immediately again, the location is not
-> >> clobbered yet.  At least in my test case, gcc assembled it to code that
-> >> puts the address in eax and derefences it immediately, before eax is
-> >> reused:
-> >
-> > Gee, just ignore this bs.  The address is in eax, not the value.
-> >
-> >> static int *foo(void)
-> >> {
-> >>         int x = 42;
-> >>         return &x;
-> >> }
-> >>
-> >> int main(void)
-> >> {
-> >>         return *foo();
-> >> }
-> >
-> > However, this code seems to produce valid assembly with -O2.  gcc just
-> > warns and fixes it up.
-> >
-> > 	Hannes
->
-> IIRC, the problem was I needed an lvalue and it seems that the *(&m) was
-> the way I was able to coerce gcc into producing it.  That's not to say
-> there may be a better way however... ;-)  [Btw, I picked up this technique
-> in the (original) per_cpu() macro.]
+On Tue, 8 Jul 2008 13:10:11 -0700
+san@google.com (San Mehat) wrote:
 
-Yes, but I could do that because it wasn't referring to a temporary variable.
+> 
+>   When CONFIG_UNSAFE_RESUME is used, we may need to cleanup
+>   (and call kthread_stop) when threads are still frozen. To fix this
+>   deadlock, push cleanup off to a work-queue.
+> 
+>   Signed-off-by: San Mehat <san@android.com>
+> 
 
-> Note the lvalue isn't used for changing the cpumask value, but for sending
-> it to functions like set_cpus_allowed_ptr() to avoid pushing the 512 bytes
-> of a 4096 cpus cpumask onto the stack.  So it becomes &(*(&m)))  ... ;-) 
-> But I thought I checked the assembly for different config options and it
-> looked ok.
+I appreciate patches, but sending me something based on 2.6.21 is
+hardly helpful. This particular problem was solved over a year ago in
+mainline.
 
-Yeah, the problem is that a future gcc will cause horrible and subtle 
-breakage.
+Rgds
+-- 
+     -- Pierre Ossman
 
-I think we are going to want a get_cpumask()/put_cpumask() pattern for this.
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
 
-Rusty.
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
