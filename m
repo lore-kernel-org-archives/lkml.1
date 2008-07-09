@@ -1,46 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756278AbYGIWxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754454AbYGIW6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756278AbYGIWxj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 18:53:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbYGIWxb
+	id S1754454AbYGIW6T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 18:58:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbYGIW6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 18:53:31 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:34011 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751049AbYGIWxb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 18:53:31 -0400
-Message-ID: <487541C0.70702@keyaccess.nl>
-Date: Thu, 10 Jul 2008 00:54:56 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Wed, 9 Jul 2008 18:58:08 -0400
+Received: from www.tglx.de ([62.245.132.106]:34171 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751851AbYGIW6G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 18:58:06 -0400
+Date: Thu, 10 Jul 2008 00:57:57 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>
+Cc: =?utf-8?B?SGFucy1Kw4PFknJnZW4=?= Koch <hjk@linutronix.de>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH] uio_pdrv: fix memory leak and license specification.
+Message-ID: <20080709225757.GB3232@local>
+References: <DOR-SMS-MAIL1KqnjYT00000466@dor-sms-mail1.digi.com>
 MIME-Version: 1.0
-To: Russ Anderson <rja@sgi.com>
-CC: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       Jack Steiner <steiner@sgi.com>
-Subject: Re: [patch] x86 BIOS interface for RTC on SGI UV
-References: <20080709202719.GB22744@sgi.com> <4875266B.4020504@keyaccess.nl> <20080709213622.GC22744@sgi.com> <4875320D.2070306@keyaccess.nl> <20080709220944.GA18690@sgi.com>
-In-Reply-To: <20080709220944.GA18690@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <DOR-SMS-MAIL1KqnjYT00000466@dor-sms-mail1.digi.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10-07-08 00:09, Russ Anderson wrote:
+On Wed, Jul 09, 2008 at 08:13:23AM +0200, Uwe Kleine-König wrote:
+> Thanks to Magnus Damm for pointing that out.
 
-> Ouch.  Thanks.
+Yep, good catch.
 
-Yep, should do. Pestering you about the include guard maybe missing a 
-_UV in there would be going overboard...
+Thanks,
+Hans
 
-> Index: linux/include/asm-x86/uv/bios.h
-> ===================================================================
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ linux/include/asm-x86/uv/bios.h	2008-07-09 17:01:42.000000000 -0500
-> @@ -0,0 +1,68 @@
-> +#ifndef _ASM_X86_BIOS_H
-> +#define _ASM_X86_BIOS_H
+> 
+> Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
 
-Rene.
+Acked-by: Hans J. Koch <hjk@linutronix.de>
+
+> ---
+> Hi,
+> 
+> Greg, this bases on uio-add-generic-uio-platform-driver.patch that is
+> already in your queue.
+> 
+> IMHO the best is to squash these two patches together.  Can you do that?
+> 
+> Best regards
+> Uwe
+> 
+>  drivers/uio/uio_pdrv.c |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/uio/uio_pdrv.c b/drivers/uio/uio_pdrv.c
+> index 5d0d2e8..0b4ef39 100644
+> --- a/drivers/uio/uio_pdrv.c
+> +++ b/drivers/uio/uio_pdrv.c
+> @@ -88,6 +88,8 @@ static int uio_pdrv_remove(struct platform_device *pdev)
+>  
+>  	uio_unregister_device(pdata->uioinfo);
+>  
+> +	kfree(pdata);
+> +
+>  	return 0;
+>  }
+>  
+> @@ -114,5 +116,5 @@ module_exit(uio_pdrv_exit);
+>  
+>  MODULE_AUTHOR("Uwe Kleine-Koenig");
+>  MODULE_DESCRIPTION("Userspace I/O platform driver");
+> -MODULE_LICENSE("GPL");
+> +MODULE_LICENSE("GPL v2");
+>  MODULE_ALIAS("platform:" DRIVER_NAME);
+> -- 
+> 1.5.6
