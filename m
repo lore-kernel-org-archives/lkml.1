@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755693AbYGIHzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755971AbYGIH7f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755693AbYGIHzs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 03:55:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbYGIHzk
+	id S1755971AbYGIH7f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 03:59:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbYGIH71
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 03:55:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52222 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752219AbYGIHzj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 03:55:39 -0400
-Subject: Re: [PATCH 16 of 55] xen64: add extra pv_mmu_ops
-From: Mark McLoughlin <markmc@redhat.com>
-Reply-To: Mark McLoughlin <markmc@redhat.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       x86@kernel.org, Stephen Tweedie <sct@redhat.com>,
-       Eduardo Habkost <ehabkost@redhat.com>
-In-Reply-To: <76d0856d664470b81640.1215554798@localhost>
-References: <76d0856d664470b81640.1215554798@localhost>
-Content-Type: text/plain
-Date: Wed, 09 Jul 2008 08:55:10 +0100
-Message-Id: <1215590110.16579.7.camel@muff>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Jul 2008 03:59:27 -0400
+Received: from styx.suse.cz ([82.119.242.94]:46915 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751013AbYGIH70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 03:59:26 -0400
+Date: Wed, 9 Jul 2008 09:59:24 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Randy Dunlap <randy.dunlap@oracle.com>, Jiri Slaby <jslaby@suse.cz>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Pascal Terjan <pterjan@mandriva.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for July 8 (HID)
+In-Reply-To: <20080708111649.e61b19bc.randy.dunlap@oracle.com>
+Message-ID: <alpine.LNX.1.10.0807090954480.25171@jikos.suse.cz>
+References: <20080708192251.3275d283.sfr@canb.auug.org.au> <20080708111649.e61b19bc.randy.dunlap@oracle.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey Jeremy,
+On Tue, 8 Jul 2008, Randy Dunlap wrote:
 
-On Tue, 2008-07-08 at 15:06 -0700, Jeremy Fitzhardinge wrote:
-> We need extra pv_mmu_ops for 64-bit, to deal with the extra level of
-> pagetable.
-> 
-> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-> ---
->  arch/x86/xen/enlighten.c   |   33 +++++++++++++++++++++++++++-
->  arch/x86/xen/mmu.c         |   51 +++++++++++++++++++++++++++++++++++++++++++-
->  arch/x86/xen/mmu.h         |   15 +++++++++++-
->  include/asm-x86/xen/page.h |    4 +++
->  4 files changed, 99 insertions(+), 4 deletions(-)
-...
-> diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-> --- a/arch/x86/xen/mmu.c
-> +++ b/arch/x86/xen/mmu.c
-> @@ -438,14 +438,19 @@
->  
->  void xen_set_pte(pte_t *ptep, pte_t pte)
->  {
-> +#ifdef CONFIG_X86_PAE
->  	ptep->pte_high = pte.pte_high;
->  	smp_wmb();
->  	ptep->pte_low = pte.pte_low;
-> +#else
-> +	*ptep = pte;
-> +#endif
->  }
+> drivers/built-in.o: In function `usb_kbd_probe':
+> usbkbd.c:(.text+0x1457c9): undefined reference to `usbhid_lookup_quirk'
+> drivers/built-in.o: In function `usb_mouse_probe':
+> usbmouse.c:(.text+0x14603c): undefined reference to `usbhid_lookup_quirk'
+> make[1]: *** [.tmp_vmlinux1] Error 1
 
-You've dropped non-PAE support already, right? Any reason to use the
-X86_PAE macro instead of X86_32?
+This got introduced by Jiri's
 
-Cheers,
-Mark.
+ 	HID: fix quirk handling in usbmouse/kbd
 
+Added to CC (and added also Pascal).
+
+The dependency of usbkbd/usbmouse on usbhid is strange anyway. I'd 
+probably remove the whole quirk lookup thing from usbkbd/usbmouse drivers. 
+They introduce this ugly dependency, which is not worth it I guess. Also 
+usbkbd/usbmouse drivers are not needed in the vast majority of cases 
+anyway, and they shouldn't be loaded in standard configurations at all.
+
+-- 
+Jiri Kosina
+SUSE Labs
