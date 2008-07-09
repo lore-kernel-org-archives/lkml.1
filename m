@@ -1,173 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818AbYGIET0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754186AbYGIEZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756818AbYGIET0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 00:19:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbYGIES3
+	id S1754186AbYGIEZU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 00:25:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750860AbYGIEZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 00:18:29 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:48234 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751063AbYGIES1 (ORCPT
+	Wed, 9 Jul 2008 00:25:08 -0400
+Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:41976 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750834AbYGIEZG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 00:18:27 -0400
-Message-Id: <20080709041825.507356058@goodmis.org>
-References: <20080709041530.668120406@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Wed, 09 Jul 2008 00:15:33 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       john stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org
-Cc: Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 3/3] sched_clock: and multiplier for TSC to gtod drift
-Content-Disposition: inline; filename=sched-clock-drift-clock.patch
+	Wed, 9 Jul 2008 00:25:06 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEABfVc0hMQWVt/2dsb2JhbACBXK8l
+Date: Wed, 9 Jul 2008 00:25:02 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Hideo AOKI <haoki@redhat.com>,
+       Takahiro Yasui <tyasui@redhat.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH -mm] markers: avoid call_rcu_sched if old is NULL
+Message-ID: <20080709042502.GA7062@Krystal>
+References: <4873CE05.2030001@redhat.com> <20080709030200.GA4378@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080709030200.GA4378@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 00:09:42 up 34 days,  8:50,  3 users,  load average: 1.49, 1.33,
+	1.25
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The sched_clock code currently tries to keep all CPU clocks of all CPUS
-somewhat in sync. At every clock tick it records the gtod clock and
-uses that and jiffies and the TSC to calculate a CPU clock that tries to
-stay in sync with all the other CPUs.
+* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
+> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
+> > Introduce marker_entry_free_old() and check old pointer is NULL before
+> > setting call_rcu_sched(), because marker_entry_remove/add_probe() can
+> > return NULL.
+> > 
+> 
+> Hi Masami,
+> 
+> I doubt this is a bug per se, because kfree accepts NULL pointers (and
+> kfree is the only action done on the oldptr by free_old_closure).
+> 
+> This cleans up the code, so I think it's good to merge your patch, but I
+> would definitely not classify this as a bugfix.
+> 
+> Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> 
 
-ftrace depends heavily on this timer and it detects when this timer
-"jumps".  One problem is that the TSC and the gtod also drift.
-When the TSC is 0.1% faster or slower than the gtod it is very noticeable
-in ftrace. To help compensate for this, I've added a multiplier that
-tries to keep the CPU clock updating at the same rate as the gtod.
+Hrm, nope, finally there is a problem with your fix. Nack. Here is why :
 
-I've tried various ways to get it to be in sync and this ended up being
-the most reliable. At every scheduler tick we calculate the new multiplier:
+Lets say we have two probes to connect on the marker, each with its own
+private_data.
 
-  multi = delta_gtod / delta_TSC
+If we pass from 1 connected probe (probe A) to 2 (Probes A and B), and
+then back to one (probe B), we want to make sure that readers
+(instrumentation sites) will see coherent probes (matching callback and
+private data). I remind you that 0 or 1 probes connected does not use an
+array with the markers. Only if 2 to N probes are connected do we use an
+array to store the callback and private data pairs. Therefore, special
+care must be taken of the callback and private data update in the 1
+probe connected case (when there are 0 probes connected, the private
+data is not used and therefore we leave it as is at its old value).
 
-This means we perform a 64 bit divide at the tick (once a HZ). A shift
-is used to handle the accuracy.
+However, because your cleanup actually removes the rcu_barrier() done
+before the operation following the 2nd probe addition (the barrier is
+only done if there are rcu calls pending), we can end up doing :
 
-Other methods that failed due to dynamic HZ are:
+Probes
+A
+{A, B}
+B
 
-(not used)  multi += (gtod - tsc) / delta_gtod
-(not used)  multi += (gtod - (last_tsc + delta_tsc)) / delta_gtod
+within a single RCU period, which means that a reader can see :
 
-as well as other variants.
+A
+B
 
-This code still allows for a slight drift between TSC and gtod, but
-it keeps the damage down to a minimum.
+Those are "single probes" which involves updates of two pointers : the
+callback and the private data. They must never be mixed within a single
+rcu period : valid transitions go from 0 to 1, 1 to 2, 2 N and from N to
+2, 2 to 1, 1 to 0. The modification you are doing here adds transitions
+1 to 1 (as my example show) which should never happen.
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/sched_clock.c |   40 +++++++++++++++++++++++++++++++++++++---
- 1 file changed, 37 insertions(+), 3 deletions(-)
+Final reminder : this "special case" of 0 and 1 probes connected is done
+to remove a pointer dereference and to minimize memory allocation in the
+"common case" where only 1 probe is connected to a marker. It's not used
+in the new tracepoint infrastructure because we have to iterate on the
+callbacks in the instrumentation sites. The markers can do this in a
+wrapper function, so we don't suffer from added instructions to every
+call sites. So your cleanup makes sense for the tracepoint
+infrastructure, but not for the markers.
 
-Index: linux-tip.git/kernel/sched_clock.c
-===================================================================
---- linux-tip.git.orig/kernel/sched_clock.c	2008-07-08 22:14:36.000000000 -0400
-+++ linux-tip.git/kernel/sched_clock.c	2008-07-08 22:49:48.000000000 -0400
-@@ -3,6 +3,9 @@
-  *
-  *  Copyright (C) 2008 Red Hat, Inc., Peter Zijlstra <pzijlstr@redhat.com>
-  *
-+ *  Updates and enhancements:
-+ *    Copyright (C) 2008 Red Hat, Inc. Steven Rostedt <srostedt@redhat.com>
-+ *
-  * Based on code by:
-  *   Ingo Molnar <mingo@redhat.com>
-  *   Guillaume Chazarain <guichaz@gmail.com>
-@@ -32,6 +35,11 @@
- 
- #ifdef CONFIG_HAVE_UNSTABLE_SCHED_CLOCK
- 
-+#define MULTI_SHIFT 15
-+/* Max is double, Min is 1/2 */
-+#define MAX_MULTI (2LL << MULTI_SHIFT)
-+#define MIN_MULTI (1LL << (MULTI_SHIFT-1))
-+
- struct sched_clock_data {
- 	/*
- 	 * Raw spinlock - this is a special case: this might be called
-@@ -45,6 +53,7 @@ struct sched_clock_data {
- 	u64			tick_raw;
- 	u64			tick_gtod;
- 	u64			clock;
-+	s64			multi;
- #ifdef CONFIG_NO_HZ
- 	int			check_max;
- #endif
-@@ -79,6 +88,7 @@ void sched_clock_init(void)
- 		scd->tick_raw = 0;
- 		scd->tick_gtod = ktime_now;
- 		scd->clock = ktime_now;
-+		scd->multi = 1 << MULTI_SHIFT;
- #ifdef CONFIG_NO_HZ
- 		scd->check_max = 1;
- #endif
-@@ -134,8 +144,13 @@ static void __update_sched_clock(struct 
- 
- 	WARN_ON_ONCE(!irqs_disabled());
- 
--	min_clock = scd->tick_gtod +
--		(delta_jiffies ? delta_jiffies - 1 : 0) * TICK_NSEC;
-+	/*
-+	 * At schedule tick the clock can be just under the gtod. We don't
-+	 * want to push it too prematurely.
-+	 */
-+	min_clock = scd->tick_gtod + (delta_jiffies * TICK_NSEC);
-+	if (min_clock > TICK_NSEC)
-+		min_clock -= TICK_NSEC / 2;
- 
- 	if (unlikely(delta < 0)) {
- 		clock++;
-@@ -149,6 +164,9 @@ static void __update_sched_clock(struct 
- 	 */
- 	max_clock = scd->tick_gtod + (2 + delta_jiffies) * TICK_NSEC;
- 
-+	delta *= scd->multi;
-+	delta >>= MULTI_SHIFT;
-+
- 	if (unlikely(clock + delta > max_clock) && check_max(scd)) {
- 		if (clock < max_clock)
- 			clock = max_clock;
-@@ -230,6 +248,7 @@ void sched_clock_tick(void)
- {
- 	struct sched_clock_data *scd = this_scd();
- 	unsigned long now_jiffies = jiffies;
-+	s64 mult, delta_gtod, delta_raw;
- 	u64 now, now_gtod;
- 
- 	if (unlikely(!sched_clock_running))
-@@ -247,9 +266,23 @@ void sched_clock_tick(void)
- 	 * already observe 1 new jiffy; adding a new tick_gtod to that would
- 	 * increase the clock 2 jiffies.
- 	 */
--	scd->tick_jiffies = now_jiffies;
-+	delta_gtod = now_gtod - scd->tick_gtod;
-+	delta_raw = now - scd->tick_raw;
-+
-+	if ((long)delta_raw > 0) {
-+		mult = delta_gtod << MULTI_SHIFT;
-+		do_div(mult, delta_raw);
-+		scd->multi = mult;
-+		if (scd->multi > MAX_MULTI)
-+			scd->multi = MAX_MULTI;
-+		else if (scd->multi < MIN_MULTI)
-+			scd->multi = MIN_MULTI;
-+	} else
-+		scd->multi = 1 << MULTI_SHIFT;
-+
- 	scd->tick_raw = now;
- 	scd->tick_gtod = now_gtod;
-+	scd->tick_jiffies = now_jiffies;
- 	__raw_spin_unlock(&scd->lock);
- }
- 
-@@ -279,6 +312,7 @@ void sched_clock_idle_wakeup_event(u64 d
- 	__raw_spin_lock(&scd->lock);
- 	scd->prev_raw = now;
- 	scd->clock += delta_ns;
-+	scd->multi = 1 << MULTI_SHIFT;
- 	__raw_spin_unlock(&scd->lock);
- 
- 	touch_softlockup_watchdog();
+Mathieu
+
+
+> Mathieu
+> 
+> > Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> > ---
+> >  kernel/marker.c |   29 ++++++++++++++---------------
+> >  1 file changed, 14 insertions(+), 15 deletions(-)
+> > 
+> > Mathieu, I think this might be a bug. Tracepoint also has
+> > same bug...
+> > 
+> > Index: 2.6.26-rc8-mm1/kernel/marker.c
+> > ===================================================================
+> > --- 2.6.26-rc8-mm1.orig/kernel/marker.c	2008-07-07 11:42:04.000000000 -0400
+> > +++ 2.6.26-rc8-mm1/kernel/marker.c	2008-07-07 11:42:04.000000000 -0400
+> > @@ -201,6 +201,17 @@ static void free_old_closure(struct rcu_
+> >  	entry->rcu_pending = 0;
+> >  }
+> > 
+> > +static void marker_entry_free_old(struct marker_entry *entry, void *old)
+> > +{
+> > +	if (!old)
+> > +		return;
+> > +	entry->oldptr = old;
+> > +	entry->rcu_pending = 1;
+> > +	/* write rcu_pending before calling the RCU callback */
+> > +	smp_wmb();
+> > +	call_rcu_sched(&entry->rcu, free_old_closure);
+> > +}
+> > +
+> >  static void debug_print_probes(struct marker_entry *entry)
+> >  {
+> >  	int i;
+> > @@ -666,11 +677,7 @@ int marker_probe_register(const char *na
+> >  	mutex_lock(&markers_mutex);
+> >  	entry = get_marker(name);
+> >  	WARN_ON(!entry);
+> > -	entry->oldptr = old;
+> > -	entry->rcu_pending = 1;
+> > -	/* write rcu_pending before calling the RCU callback */
+> > -	smp_wmb();
+> > -	call_rcu_sched(&entry->rcu, free_old_closure);
+> > +	marker_entry_free_old(entry, old);
+> >  end:
+> >  	mutex_unlock(&markers_mutex);
+> >  	return ret;
+> > @@ -709,11 +716,7 @@ int marker_probe_unregister(const char *
+> >  	entry = get_marker(name);
+> >  	if (!entry)
+> >  		goto end;
+> > -	entry->oldptr = old;
+> > -	entry->rcu_pending = 1;
+> > -	/* write rcu_pending before calling the RCU callback */
+> > -	smp_wmb();
+> > -	call_rcu_sched(&entry->rcu, free_old_closure);
+> > +	marker_entry_free_old(entry, old);
+> >  	remove_marker(name);	/* Ignore busy error message */
+> >  	ret = 0;
+> >  end:
+> > @@ -787,11 +790,7 @@ int marker_probe_unregister_private_data
+> >  	mutex_lock(&markers_mutex);
+> >  	entry = get_marker_from_private_data(probe, probe_private);
+> >  	WARN_ON(!entry);
+> > -	entry->oldptr = old;
+> > -	entry->rcu_pending = 1;
+> > -	/* write rcu_pending before calling the RCU callback */
+> > -	smp_wmb();
+> > -	call_rcu_sched(&entry->rcu, free_old_closure);
+> > +	marker_entry_free_old(entry, old);
+> >  	remove_marker(entry->name);	/* Ignore busy error message */
+> >  end:
+> >  	mutex_unlock(&markers_mutex);
+> > -- 
+> > Masami Hiramatsu
+> > 
+> > Software Engineer
+> > Hitachi Computer Products (America) Inc.
+> > Software Solutions Division
+> > 
+> > e-mail: mhiramat@redhat.com
+> > 
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
 
 -- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
