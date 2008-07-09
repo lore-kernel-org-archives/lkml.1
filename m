@@ -1,90 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbYGIV6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755853AbYGIV7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754865AbYGIV6r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 17:58:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbYGIV6k
+	id S1755853AbYGIV7U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 17:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbYGIV7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 17:58:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44268 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750955AbYGIV6i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 17:58:38 -0400
-Date: Wed, 9 Jul 2008 14:52:53 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH v2] handle failure of irqchip->set_type in setup_irq
-Message-Id: <20080709145253.f658db37.akpm@linux-foundation.org>
-In-Reply-To: <20080709131353.GA12009@digi.com>
-References: <20080625131101.GA6205@digi.com>
-	<20080704104634.GA31634@digi.com>
-	<20080704101717.28f6a771.akpm@linux-foundation.org>
-	<20080704184307.GA8076@digi.com>
-	<20080704120837.573adc9c.akpm@linux-foundation.org>
-	<20080709131353.GA12009@digi.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+	Wed, 9 Jul 2008 17:59:11 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:56280 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751125AbYGIV7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 17:59:09 -0400
+Subject: Re: [PATCH 0/4] Container Freezer: Reuse Suspend Freezer
+From: Matt Helsley <matthltc@us.ibm.com>
+To: Paul Menage <menage@google.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Cedric Le Goater <clg@fr.ibm.com>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
+In-Reply-To: <6599ad830807081307j811689aldf0f6cb38579c450@mail.gmail.com>
+References: <20080707225823.502032693@us.ibm.com>
+	 <20080708123150.3034d83f.kamezawa.hiroyu@jp.fujitsu.com>
+	 <1215545954.9023.120.camel@localhost.localdomain>
+	 <6599ad830807081306l61622eadk215a25d02ee94b00@mail.gmail.com>
+	 <6599ad830807081307j811689aldf0f6cb38579c450@mail.gmail.com>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Wed, 09 Jul 2008 14:58:43 -0700
+Message-Id: <1215640723.7149.35.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Jul 2008 15:13:53 +0200 Uwe Kleine-K__nig <Uwe.Kleine-Koenig@digi.com> wrote:
 
-> Andrew Morton wrote:
-> > On Fri, 4 Jul 2008 20:43:07 +0200 Uwe Kleine-K__nig <Uwe.Kleine-Koenig@digi.com> wrote:
-> > 
-> > > >                                            I wonder if we can do better.
-> > > > Let me think about that.
-> > > I was about to suggest something like:
-> > >
-> > >       /* WARNING: this returns a static pointer, so you cannot use the
-> > >        * returned value after another call to creative_function_name
-> > >        */
-> > >       char *creative_function_name(void *addr)
-> > >       {
-> > >               static char buf[SOME_LENGTH];
-> > >
-> > >               ... format symbol name into buf ...
-> > >
-> > >               return buf;
-> > >       }
-> > >
-> > > Then I could have used
-> > >
-> > >       pr_err("setting flow type for irq %u failed (%s)\n",
-> > >                       irq, creative_function_name(chip->set_type));
-> > >
-> > > which looks definitely nicer.
-> > 
-> > Better would be
-> > 
-> >         char buf[ENOUGH /* rofl */];
-> > 
-> >         pr_err("setting flow type for irq %u failed (%s)\n",
-> >                         irq, render_function_name(buf, chip->set_type));
-> > 
-> > However I'm presently brewing up a plot to do this:
-> > 
-> >         printk("function name is %Ss\n", (unsigned long *)chip->set_type);
-> > 
-> > which I think will work.  We can also do
-> > 
-> >         printk("IP address is %Si\n", (unsigned long *)ip_address_buffer);
-> > 
-> > to replace NIPQUAD.  And similar printk extensions.
-> > 
-> > Am still thinking about it though.
-> I assume the result is 0fe1ef24f7bd0020f29ffe287dfdb9ead33ca0b2?
+On Tue, 2008-07-08 at 13:07 -0700, Paul Menage wrote:
+> On Tue, Jul 8, 2008 at 1:06 PM, Paul Menage <menage@google.com> wrote:
+> > On Tue, Jul 8, 2008 at 12:39 PM, Matt Helsley <matthltc@us.ibm.com> wrote:
+> >>
+> >> One is to try and disallow users from moving frozen tasks. That doesn't
+> >> seem like a good approach since it would require a new cgroups interface
+> >> "can_detach()".
+> >
+> > Detaching from the old cgroup happens at the same time as attaching to
+> > the new cgroup, so can_attach() would work here.
 
-yup.
+Update: I've made a patch implementing this. However it might be better
+to just modify attach() to thaw the moving task rather than disallow
+moving the frozen task. Serge, Cedric, Kame-san, do you have any
+thoughts on which is more useful and/or intuitive?
 
-> Should I send a new version using %pF or is it easier if you fix up the
-> patch?
+> And the whole can_attach()/attach() protocol needs reworking anyway,
+> see my email (hopefully) later today.
+> 
+> Paul
 
-A new version would be nice, thanks.  Or an incremental diff, but I can and
-will turn new versions into an incremental in the twinkle of an eye, so
-either is OK.
+Interesting. I look forward to seeing this.
+
+Cheers,
+	-Matt
+
