@@ -1,143 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758953AbYGIMy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755642AbYGINDd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758953AbYGIMy2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 08:54:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758283AbYGIMyP
+	id S1755642AbYGINDd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 09:03:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbYGINDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 08:54:15 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:42152 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753614AbYGIMyN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 08:54:13 -0400
-Message-Id: <20080709082904.339544000@sipsolutions.net>
-References: <20080709082834.942992000@sipsolutions.net>
-User-Agent: quilt/0.46-1
-Date: Wed, 09 Jul 2008 10:28:44 +0200
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Kerrisk <mtk.manpages@gmail.com>, linux-doc@vger.kernel.org
-Subject: [PATCH -next 10/11] remove mention of CONFIG_KMOD from
-	documentation
-Content-Disposition: inline; filename=012-config-kmod-remove-doc.patch
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Jul 2008 09:03:24 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37729 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751889AbYGINDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 09:03:24 -0400
+Date: Wed, 9 Jul 2008 15:03:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Vitaly Mayatskikh <v.mayatskih@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/2] Introduce copy_user_handle_tail routine
+Message-ID: <20080709130305.GB20768@elte.hu>
+References: <m37icazgt0.fsf@gravicappa.englab.brq.redhat.com> <alpine.LFD.1.10.0806281108240.4371@hp.linux-foundation.org> <m3lk0ngdo5.fsf@gravicappa.englab.brq.redhat.com> <alpine.LFD.1.10.0806300835220.28533@hp.linux-foundation.org> <m3fxqsjt22.fsf_-_@gravicappa.englab.brq.redhat.com> <486B8B6C.2050109@firstfloor.org> <m37ic4jr2w.fsf@gravicappa.englab.brq.redhat.com> <alpine.LFD.1.10.0807021930470.18105@woody.linux-foundation.org> <m34p71yjyx.fsf@gravicappa.englab.brq.redhat.com> <alpine.LFD.1.10.0807070901490.11076@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0807070901490.11076@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Also includes a few Kconfig files (xtensa, blackfin)
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Acked-by: Randy Dunlap <rdunlap@xenotime.net>
-Cc: Michael Kerrisk <mtk.manpages@gmail.com>
-Cc: linux-doc@vger.kernel.org
----
- Documentation/filesystems/bfs.txt                     |   10 +++++-----
- Documentation/sound/alsa/DocBook/alsa-driver-api.tmpl |    2 +-
- Documentation/telephony/ixj.txt                       |   13 +++----------
- Documentation/video4linux/w9968cf.txt                 |    3 ---
- arch/blackfin/Kconfig                                 |    4 ++--
- arch/xtensa/Kconfig                                   |    4 ++--
- 6 files changed, 13 insertions(+), 23 deletions(-)
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
---- linux-next.orig/Documentation/filesystems/bfs.txt	2008-07-08 23:47:02.000000000 +0200
-+++ linux-next/Documentation/filesystems/bfs.txt	2008-07-08 23:55:38.000000000 +0200
-@@ -26,11 +26,11 @@ You can simplify mounting by just typing
- 
- this will allocate the first available loopback device (and load loop.o 
- kernel module if necessary) automatically. If the loopback driver is not
--loaded automatically, make sure that your kernel is compiled with kmod 
--support (CONFIG_KMOD) enabled. Beware that umount will not
--deallocate /dev/loopN device if /etc/mtab file on your system is a
--symbolic link to /proc/mounts. You will need to do it manually using
--"-d" switch of losetup(8). Read losetup(8) manpage for more info.
-+loaded automatically, make sure that you have compiled the module and
-+that modprobe is functioning. Beware that umount will not deallocate
-+/dev/loopN device if /etc/mtab file on your system is a symbolic link to
-+/proc/mounts. You will need to do it manually using "-d" switch of
-+losetup(8). Read losetup(8) manpage for more info.
- 
- To create the BFS image under UnixWare you need to find out first which
- slice contains it. The command prtvtoc(1M) is your friend:
---- linux-next.orig/Documentation/telephony/ixj.txt	2008-07-08 23:47:03.000000000 +0200
-+++ linux-next/Documentation/telephony/ixj.txt	2008-07-08 23:55:38.000000000 +0200
-@@ -305,21 +305,14 @@ driver, like this:
- 
- which will result in the needed drivers getting loaded automatically.
- 
--   g.  if you are planning on using kerneld to automatically load the 
--module for you, then you need to edit /etc/conf.modules and add the 
-+   g.  if you are planning on having the kernel automatically request
-+the module for you, then you need to edit /etc/conf.modules and add the
- following lines:
- 
- 	options ixj dspio=0x340 xio=0x330 ixjdebug=0
- 
- If you do this, then when you execute an application that uses the
--module kerneld will load the module for you.  Note that to do this,
--you need to have your kernel set to support kerneld.  You can check
--for this by looking at /usr/src/linux/.config and you should see this:
--
--	# Loadable module support
--	#
--	<snip>
--	CONFIG_KMOD=y
-+module the kernel will request that it is loaded.
- 
-   h.  if you want non-root users to be able to read and write to the 
- ixj devices (this is a good idea!) you should do the following:
---- linux-next.orig/Documentation/video4linux/w9968cf.txt	2008-07-08 23:47:03.000000000 +0200
-+++ linux-next/Documentation/video4linux/w9968cf.txt	2008-07-08 23:55:38.000000000 +0200
-@@ -193,9 +193,6 @@ Description:     Automatic 'ovcamchip' m
- 		 loads that module automatically. This action is performed as
- 		 once soon as the 'w9968cf' module is loaded into memory.
- Default:         1
--Note:            The kernel must be compiled with the CONFIG_KMOD option
--		 enabled for the 'ovcamchip' module to be loaded and for
--		 this parameter to be present.
- -------------------------------------------------------------------------------
- Name:           simcams
- Type:           int
---- linux-next.orig/Documentation/sound/alsa/DocBook/alsa-driver-api.tmpl	2008-07-08 23:47:03.000000000 +0200
-+++ linux-next/Documentation/sound/alsa/DocBook/alsa-driver-api.tmpl	2008-07-08 23:55:38.000000000 +0200
-@@ -42,7 +42,7 @@
-      <sect1><title>Device Components</title>
- !Esound/core/device.c
-      </sect1>
--     <sect1><title>KMOD and Device File Entries</title>
-+     <sect1><title>Module requests and Device File Entries</title>
- !Esound/core/sound.c
-      </sect1>
-      <sect1><title>Memory Management Helpers</title>
---- linux-next.orig/arch/blackfin/Kconfig	2008-07-08 23:47:04.000000000 +0200
-+++ linux-next/arch/blackfin/Kconfig	2008-07-08 23:55:38.000000000 +0200
-@@ -873,8 +873,8 @@ config HOTPLUG
- 	  plugged into slots found on all modern laptop computers.  Another
- 	  example, used on modern desktops as well as laptops, is USB.
- 
--	  Enable HOTPLUG and KMOD, and build a modular kernel.  Get agent
--	  software (at <http://linux-hotplug.sourceforge.net/>) and install it.
-+	  Enable HOTPLUG and build a modular kernel.  Get agent software
-+	  (from <http://linux-hotplug.sourceforge.net/>) and install it.
- 	  Then your kernel will automatically call out to a user mode "policy
- 	  agent" (/sbin/hotplug) to load modules and set up software needed
- 	  to use devices as you hotplug them.
---- linux-next.orig/arch/xtensa/Kconfig	2008-07-08 23:47:15.000000000 +0200
-+++ linux-next/arch/xtensa/Kconfig	2008-07-08 23:55:38.000000000 +0200
-@@ -194,8 +194,8 @@ config HOTPLUG
- 	plugged into slots found on all modern laptop computers.  Another
- 	example, used on modern desktops as well as laptops, is USB.
- 
--	Enable HOTPLUG and KMOD, and build a modular kernel.  Get agent
--	software (at <http://linux-hotplug.sourceforge.net/>) and install it.
-+	Enable HOTPLUG and build a modular kernel.  Get agent software
-+	(from <http://linux-hotplug.sourceforge.net/>) and install it.
- 	Then your kernel will automatically call out to a user mode "policy
- 	agent" (/sbin/hotplug) to load modules and set up software needed
- 	to use devices as you hotplug them.
+> On Mon, 7 Jul 2008, Vitaly Mayatskikh wrote:
+> 
+> > Linus Torvalds <torvalds@linux-foundation.org> writes:
+> > 
+> > > Now, the stuff that comes *before* that point is the "try to fix up one 
+> > > byte at a time" thing, which I'd like to be simple and dumb. At least to 
+> > > start with.
+> > 
+> > Just to be clear: do these patches are good enough now (to start 
+> > with)? Or, may be, it needs to be further improved?
+> 
+> I think they are getting there. I'm obviously not merging them in 
+> 2.6.26, but I'd be happy to do so for .27.
+> 
+> Obviously, I'd be even happier if it also went through the normal x86 
+> review cycles (ie Ingo &co), but the current series is largely ack'ed 
+> by me.
 
--- 
+applied them to tip/x86/core, for v2.6.27 merging, thanks everyone.
+
+I've added Linus's Acked-by. Vitaly, could you please send your 
+Signed-off-by line, it was missing from the patches. You can check the 
+current form of the commits via:
+
+ git-pull git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86/core
+
+(the patches changed slightly, there was some merge fallout due to other 
+changes in this area.)
+
+	Ingo
