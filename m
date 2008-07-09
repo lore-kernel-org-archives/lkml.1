@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754698AbYGIVTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755386AbYGIVU5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754698AbYGIVTg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 17:19:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbYGIVTY
+	id S1755386AbYGIVU5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 17:20:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbYGIVUt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 17:19:24 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:49419 "EHLO
+	Wed, 9 Jul 2008 17:20:49 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:49436 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751442AbYGIVTX (ORCPT
+	with ESMTP id S1751967AbYGIVUt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 17:19:23 -0400
-Message-ID: <487529AE.3060505@zytor.com>
-Date: Wed, 09 Jul 2008 17:12:14 -0400
+	Wed, 9 Jul 2008 17:20:49 -0400
+Message-ID: <48752AC2.7080700@zytor.com>
+Date: Wed, 09 Jul 2008 17:16:50 -0400
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Mike Travis <travis@sgi.com>,
        Christoph Lameter <cl@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
 Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org>	<20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <20080709133958.612635f0@infradead.org> <4875231F.1020506@zytor.com> <487524A0.6020304@goop.org>
-In-Reply-To: <487524A0.6020304@goop.org>
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<4874F4F2.9010603@goop.org> <4874F7D9.5060607@linux-foundation.org>	<4874FD52.8070000@sgi.com> <4874FFC4.7050505@linux-foundation.org>	<487502FB.3090106@sgi.com> <487507A1.2020100@goop.org>	<m1r6a2yfip.fsf@frodo.ebiederm.org> <4875212E.6090404@goop.org> <m18wwavkxz.fsf@frodo.ebiederm.org>
+In-Reply-To: <m18wwavkxz.fsf@frodo.ebiederm.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> H. Peter Anvin wrote:
->> 1. it means pda references are invalid if their offsets are ever more 
->> than CONFIG_PHYSICAL_BASE (which I do not think is likely, but still...)
+Eric W. Biederman wrote:
+> Jeremy Fitzhardinge <jeremy@goop.org> writes:
 > 
-> Why?
+>>> Or we could do something completely evil.  And use the other segment
+>>> register for the stack canary.
+>>>
+>> That would still require gcc changes, so it doesn't help much.
 > 
-> As an aside, could we solve the problems by making CONFIG_PHYSICAL_BASE 
-> 0 - putting the percpu variables as the first thing in the kernel - and 
-> relocating on load?  That would avoid having to make a special PT_LOAD 
-> segment at 0.  Hm, would that result in the pda and the boot params 
-> getting mushed together?
-> 
+> We could use %fs for the per cpu variables.  Then we could set %gs to whatever
+> we wanted to sync up with gcc
 
-CONFIG_PHYSICAL_START rather.  And no, it can't be zero!  Realistically 
-we should make it 16 MB by default (currently 2 MB), to keep the DMA 
-zone clear.
-
-Either way, I really suspect that the right thing to do is to use 
-negative offsets, with the possible exception of a handful of things (40 
-bytes or less, perhaps like current) which can get small positive 
-offsets and end up in the "super hot" cacheline.
-
-The sucky part is that I don't believe GNU ld has native support for a 
-"hanging down" section (one which has a fixed endpoint rather than a 
-starting point), so it requires extra magic around the link (or finding 
-some way to do it with linker script functions.)  Let me see if I can 
-cook up something in linker script that would actually work.
+No swapfs instruction, and extra performance penalty because %fs is used 
+  in userspace.
 
 	-hpa
-
