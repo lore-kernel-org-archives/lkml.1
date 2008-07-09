@@ -1,76 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757073AbYGIVYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbYGIV0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757073AbYGIVYm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 17:24:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754103AbYGIVYU
+	id S1755469AbYGIV0e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 17:26:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbYGIV0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 17:24:20 -0400
-Received: from gw.goop.org ([64.81.55.164]:46796 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753598AbYGIVYT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 17:24:19 -0400
-Message-ID: <48752C6E.2020709@goop.org>
-Date: Wed, 09 Jul 2008 14:23:58 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 9 Jul 2008 17:26:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39607 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750955AbYGIV0Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 17:26:25 -0400
+Message-ID: <48752CCD.30507@linux-foundation.org>
+Date: Wed, 09 Jul 2008 16:25:33 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Mike Travis <travis@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
 Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <4874F30C.8020800@zytor.com> <4874F909.7060503@goop.org> <4874FEDF.90404@sgi.com> <20080709193404.GC4804@elte.hu>
-In-Reply-To: <20080709193404.GC4804@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu> <48751B57.8030605@goop.org> <48751CF9.4020901@linux-foundation.org> <4875209D.8010603@goop.org>
+In-Reply-To: <4875209D.8010603@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mike Travis <travis@sgi.com> wrote:
->
->   
->>> This fragility makes me very nervous.  It seems hard enough to get 
->>> this stuff working with current tools; making it work over the whole 
->>> range of supported tools looks like its going to be hard.
->>>       
->> (me too ;-)
->>
->> Once I get a solid version working with (at least) gcc-4.2.4, then 
->> regression testing with older tools will be easier, or at least a 
->> table of results can be produced.
->>     
->
-> the problem is, we cannot just put it even into tip/master if there's no 
-> short-term hope of fixing a problem it triggers. gcc-4.2.3 is solid for 
-> me otherwise, for series of thousands of randomly built kernels.
->
-> can we just leave out the zero-based percpu stuff safely and could i 
-> test the rest of your series - or are there dependencies? I think 
-> zero-based percpu, while nice in theory, is probably just a very small 
-> positive effect so it's not a life or death issue. (or is there any 
-> deeper, semantic reason why we'd want it?)
->   
+Jeremy Fitzhardinge wrote:
 
-I'm looking forward to using it, because I can make the Xen vcpu 
-structure a percpu variable shared with the hypervisor.  This means 
-something like a disable interrupt becomes a simple "movb  
-$1,%gs:per_cpu__xen_vcpu_event_mask".  If access to percpu variables is 
-indirect (ie, two instructions) I need to disable preemption which makes 
-the whole thing much more complex, and too big to inline.  There are 
-other cases where preemption-safe access to percpu variables is useful 
-as well.
+> No, it makes no difference.  %gs:X always has a 32-bit offset in the
+> instruction, regardless of how big X is:
+> 
+>     mov %eax, %gs:0
+>     mov %eax, %gs:0x1234567
+> ->
+>   0:    65 89 04 25 00 00 00 00    mov    %eax,%gs:0x0
+>   8:    65 89 04 25 67 45 23 01    mov    %eax,%gs:0x1234567
 
-My view, which is admittedly very one-sided, is that all this brokenness 
-is forced on us by gcc's stack-protector brokenness.  My preferred 
-approach would be to fix -fstack-protector by eliminating the 
-requirement for small offsets from %gs.  With that in place we could 
-support it without needing a pda.  In the meantime, we could either 
-support stack-protector or direct access to percpu variables.  Either 
-way, we don't need to worry about making zero-based percpu work.
+The processor itself supports smaller offsets.
 
-    J
+Note also that the 32 bit offset size limits the offset that can be added to the segment register. You either need to place the per cpu area either in the last 2G of the address space or in the first 2G. The zero based approach removes that limitation.
+
+
+>>  It also is easier to handle since __per_cpu_start does not figure
+>> in the calculation of the offsets.
+>>   
+> 
+> No, you do it the same as i386.  You set the segment base to be
+> percpu_area-__per_cpu_start, and then just refer to %gs:per_cpu__foo
+> directly.  You can use rip-relative addressing to make it a smaller
+> addressing mode too:
+> 
+>   0:    65 89 05 00 00 00 00     mov    %eax,%gs:0(%rip)        # 0x7
+
+RIP relative also implies a 32 bit offset meaning that the code cannot be more than 2G away from the per cpu area.
