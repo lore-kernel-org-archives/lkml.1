@@ -1,83 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755735AbYGIAsN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756019AbYGIAxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755735AbYGIAsN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 20:48:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbYGIAr6
+	id S1756019AbYGIAxS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 20:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbYGIAxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 20:47:58 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:5052 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751801AbYGIAr6 (ORCPT
+	Tue, 8 Jul 2008 20:53:00 -0400
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:59145 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752783AbYGIAw7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 20:47:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=o62lgkMOot1o6N/DnkUtLxK8OqngrumRibqKu3DgMNdTcj7QxpnrTlR6IRSYoh/Rp6
-         sEiixPUpKTrAFWDl6hyYu/11awy8XnBW8i9udxzHNt1R/2HFux7QhuUZQiKNJsC+XBbH
-         5Kfzi1pmS9R2g5EP0tVvvgckQFufvsCa439vE=
-Message-ID: <86802c440807081747i6000d9a5kf3153d319cd85fda@mail.gmail.com>
-Date: Tue, 8 Jul 2008 17:47:56 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Suresh Siddha" <suresh.b.siddha@intel.com>
-Subject: Re: [patch] tip/x86_64: fix e820 merge issue which broke max_pfn_mapped
-Cc: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080708230837.GD1678@linux-os.sc.intel.com>
+	Tue, 8 Jul 2008 20:52:59 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEABioc0h5LFxA/2dsb2JhbACxKQ
+X-IronPort-AV: E=Sophos;i="4.30,327,1212330600"; 
+   d="scan'208";a="144800286"
+Date: Wed, 9 Jul 2008 10:52:54 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Christoph Hellwig <hch@infradead.org>, Takashi Sato <t-sato@yk.jp.nec.com>,
+       akpm@linux-foundation.org, viro@ZenIV.linux.org.uk,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
+       "dm-devel@redhat.com" <dm-devel@redhat.com>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       axboe@kernel.dk, mtk.manpages@googlemail.com
+Subject: Re: [PATCH 3/3] Add timeout feature
+Message-ID: <20080709005254.GQ11558@disturbed>
+Mail-Followup-To: Pavel Machek <pavel@suse.cz>,
+	Christoph Hellwig <hch@infradead.org>,
+	Takashi Sato <t-sato@yk.jp.nec.com>, akpm@linux-foundation.org,
+	viro@ZenIV.linux.org.uk,
+	"linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+	"xfs@oss.sgi.com" <xfs@oss.sgi.com>,
+	"dm-devel@redhat.com" <dm-devel@redhat.com>,
+	"linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	axboe@kernel.dk, mtk.manpages@googlemail.com
+References: <20080630212450t-sato@mail.jp.nec.com> <20080701081026.GB16691@infradead.org> <20080707110730.GG5643@ucw.cz> <20080708231026.GP11558@disturbed> <20080708232031.GE18195@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080708230837.GD1678@linux-os.sc.intel.com>
+In-Reply-To: <20080708232031.GE18195@elf.ucw.cz>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 8, 2008 at 4:08 PM, Suresh Siddha <suresh.b.siddha@intel.com> wrote:
-> With out this 64bit tip/master doesn't boot using ACPI on my system.
-> ---
->
-> max_pfn_mapped should include all e820 entries.
-> The direct mapping extends to max_pfn_mapped, so that we can directly access
-> apertures, ACPI and other tables without having to play with fixmaps.
->
-> With this, my system with 1GB memory boots fine with ACPI enabled.
->
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> ---
+On Wed, Jul 09, 2008 at 01:20:31AM +0200, Pavel Machek wrote:
+> On Wed 2008-07-09 09:10:27, Dave Chinner wrote:
+> > On Mon, Jul 07, 2008 at 01:07:31PM +0200, Pavel Machek wrote:
+> > > Hi!
+> > > 
+> > > > I still disagree with this whole patch.  There is not reason to let
+> > > > the freeze request timeout - an auto-unfreezing will only confuse the
+> > > > hell out of the caller.  The only reason where the current XFS freeze
+> > > > call can hang and this would be theoretically useful is when the
+> > > 
+> > > What happens when someone dirties so much data that vm swaps out
+> > > whatever process that frozen the filesystem?
+> > 
+> > a) you can't dirty a frozen filesystem - by definition a frozen
+> >    filesystem is a *clean filesystem* and *cannot be dirtied*.
+> 
+> Can you stop me?
+> 
+> mmap("/some/huge_file", MAP_SHARED);
+> 
+> then write to memory mapping?
 
-please check
+Sure - we can put a hook in ->page_mkwrite() to prevent it.  We
+don't right now because nobody in the real world really cares if one
+half of a concurrent user data change is in the old snapshot or the
+new one......
 
-[PATCH] x86: introduce page_size_mask for 64bit
-http://lkml.org/lkml/2008/7/8/49
-[PATCH] x86: not overmap than end in init_memory_mapping - 64bit
-http://lkml.org/lkml/2008/7/8/50
+> > b) Swap doesn't write through the filesystem
+> > c) you can still read from a frozen filesystem to page your
+> >    executable?? in.
+> 
+> atime modification should mean dirty data, right?
 
-with this patch, on system that support gbpages
-change
-last_map_addr: 1080000000 end: 1078000000
-to
-last_map_addr: 1078000000 end: 1078000000
+Metadata, not data. If that's really a problem (and it never has
+been for XFS because we always allow in memory changes to atime)
+then touch_atime could be easily changed to avoid this...
 
-/sys/kernel/debug/kernel_page_tables
-0xffff881040000000-0xffff881074400000         836M     RW         PSE GLB NX pmd
-0xffff881074400000-0xffff8810744b0000         704K     RW             GLB NX pte
-0xffff8810744b0000-0xffff8810744c0000          64K     RW     PCD     GLB NX pte
-0xffff8810744c0000-0xffff881074600000        1280K     RW             GLB NX pte
-0xffff881074600000-0xffff881080000000         186M     RW         PSE
-GLB NX pmd ---> wrong
-0xffff881080000000-0xffff888000000000         446G                           pud
-0xffff888000000000-0xffffc20000000000       58880G                           pgd
-===>
-0xffff881040000000-0xffff881074400000         836M     RW         PSE GLB NX pmd
-0xffff881074400000-0xffff8810744a0000         640K     RW             GLB NX pte
-0xffff8810744a0000-0xffff8810744b0000          64K     RW     PCD     GLB NX pte
-0xffff8810744b0000-0xffff881074600000        1344K     RW             GLB NX pte
-0xffff881074600000-0xffff881078000000          58M     RW         PSE GLB NX pmd
-0xffff881078000000-0xffff881080000000         128M                           pmd
-0xffff881080000000-0xffff888000000000         446G                           pud
-0xffff888000000000-0xffffc20000000000       58880G                           pgd
+> And dirty data mean
+> memory pressure, right? 
 
-YH
+If you walk enough inodes while the filesystem is frozen, it
+theoretically could happen.  Typically a filesystem is only for a
+few seconds at a time so in the real world this has never, ever been
+a problem.
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
