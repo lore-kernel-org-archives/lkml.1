@@ -1,61 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757922AbYGIPu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758274AbYGIPve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757922AbYGIPu3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 11:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753724AbYGIPuV
+	id S1758274AbYGIPve (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 11:51:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754840AbYGIPv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 11:50:21 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42515 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754282AbYGIPuV (ORCPT
+	Wed, 9 Jul 2008 11:51:27 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51229 "EHLO
+	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754323AbYGIPv0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 11:50:21 -0400
-Date: Wed, 9 Jul 2008 08:50:18 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Bruno Santos <bsantos@av.it.pt>
-Cc: linux-kernel@vger.kernel.org, Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: semaphore: lockless fastpath using atomic_{inc,dec}_return
-Message-ID: <20080709085018.3a76d1e0@infradead.org>
-In-Reply-To: <4874DBBF.1000907@av.it.pt>
-References: <4874DBBF.1000907@av.it.pt>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.10; i386-redhat-linux-gnu)
+	Wed, 9 Jul 2008 11:51:26 -0400
+Date: Wed, 9 Jul 2008 16:18:43 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Altobelli, David" <david.altobelli@hp.com>
+Cc: Martin Knoblauch <knobi@knobisoft.de>, Pavel Machek <pavel@suse.cz>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "greg@kroah.com" <greg@kroah.com>
+Subject: Re: [PATCH][resubmit] HP iLO driver
+Message-ID: <20080709161843.149f9055@the-village.bc.nu>
+In-Reply-To: <CF70AA892F109448AEA269483B3A983903BBB04814@G1W1215.americas.hpqcorp.net>
+References: <19533.95591.qm@web32604.mail.mud.yahoo.com>
+	<CF70AA892F109448AEA269483B3A983903BBB04814@G1W1215.americas.hpqcorp.net>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 09 Jul 2008 16:39:43 +0100
-Bruno Santos <bsantos@av.it.pt> wrote:
+> hpdiags and hp-snmp-agents both use this driver to gather basic
+> management processor info, stuff like MP NIC config and stats,
+> serial number, etc (but no sensors).
 
-> Hi,
-> 
->  >hi,
->  >
->  >not to ruin the party but... how is this lockless? An atomic
->  >variable is every bit a "lock" as a spinlock is... and very much
->  >equally expensive as well for most cases ;-(
-> 
-> Perhaps not the best the choice of words, I should have omitted the
-> word lockless. But it seems my understanding of lockless and yours is
-> different. And indeed, it's very expensive as a spinlock, but
-> comparatively, is only one operation, that if successful doesn't have
-> to lock and then unlock (that's why I called it lockless ...).
+That all sounds like stuff which should be in sys or proc. That would
+also give the simple read/write interfaces people want and make it
+scriptable without random HP tools that may cease to be available some
+day in the future.
 
-ok I only come from an Intel/x86 background, where unlock is basically
-free, and the "lock" is exactly the same cost as an atomic op.
-(in fact, an atomic op and a lock are the exact same code.. you're just
-open coding it)
+As to supporting old software, well HP decided not to submit the original
+driver so HP committed to a non upstream API. Thats a hole HP dug and
+despite the fact people are always warned about it have now fallen down.
 
-> The mutex takes the same approach, however it uses it's own flavour
-> of atomic ops. What I'm really interested is if this brings any
-> benefit in terms of performance.
-
-on x86... I would highly doubt it since you have the same number of
-atomic operations. (it's not the lock that is expensive. ever. it's
-always the fact that a lock implies an atomic operation that makes it
-expensive)
+Alan
