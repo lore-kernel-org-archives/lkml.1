@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754259AbYGISDP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754513AbYGISFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754259AbYGISDP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 14:03:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbYGISDA
+	id S1754513AbYGISFY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 14:05:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbYGISFN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 14:03:00 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60239 "EHLO
+	Wed, 9 Jul 2008 14:05:13 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60310 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752386AbYGISC7 (ORCPT
+	with ESMTP id S1751851AbYGISFM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 14:02:59 -0400
-Message-ID: <4874FD52.8070000@sgi.com>
-Date: Wed, 09 Jul 2008 11:02:58 -0700
+	Wed, 9 Jul 2008 14:05:12 -0400
+Message-ID: <4874FDD6.8060402@sgi.com>
+Date: Wed, 09 Jul 2008 11:05:10 -0700
 From: Mike Travis <travis@sgi.com>
 User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
 CC: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel@vger.kernel.org
+       Christoph Lameter <cl@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
 Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <4874F4F2.9010603@goop.org> <4874F7D9.5060607@linux-foundation.org>
-In-Reply-To: <4874F7D9.5060607@linux-foundation.org>
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <4874F30C.8020800@zytor.com> <4874F7F2.6050108@sgi.com> <4874F890.5060008@zytor.com>
+In-Reply-To: <4874F890.5060008@zytor.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> Jeremy Fitzhardinge wrote:
+H. Peter Anvin wrote:
+> Mike Travis wrote:
+>> H. Peter Anvin wrote:
+>>> Hi Mike,
+>>>
+>>> Did the suspected linker bug issue ever get resolved?
+>>>
+>>>     -hpa
+>>
+>> Hi Peter,
+>>
+>> I was not able to figure out how the two versions of the same
+>> kernel compiled by gcc-4.2.0 and gcc-4.2.4 differed.   Currently,
+>> I'm sticking with gcc-4.2.4 as it boots much farther.
+>>
+>> There still is a problem where if I bump THREAD_ORDER, the
+>> problem goes away and everything so far that I've tested boots
+>> up fine.
+>>
+>> We tried to install a later gcc (4.3.1) that might have the
+>> "GCC_HAS_SP" flag but our sys admin reported:
+>>
+>>     The 4.3.1 version gives me errors on the make.  I had to
+>>     pre-install gmp and mpfr, but, I still get errors on the make.
+>>
+>> I think that was the latest he found on the GNU/GCC site.
+>>
 > 
->> The bulk of this series is pda_X to x86_X_percpu conversion.  This seems
->> like pointless churn to me; there's nothing inherently wrong with the
->> pda_X interfaces, and doing this transformation doesn't get us any
->> closer to unifying 32 and 64 bit.
+> We have seen miscompilations with gcc 4.3.0 at least; not sure about 4.3.1.
 > 
-> What is the point of the pda_X interface? It does not exist on 32 bit.
-> The pda wastes the GS segment register on a small memory area. This patchset
-> makes the GS segment usable to reach all of the per cpu area by placing
-> the pda into the per cpu area. Thus the pda_X interface becomes obsolete
-> and the 32 bit per cpu stuff becomes usable under 64 bit unifying both
-> architectures.
-> 
-> 
->> I think we should start devolving things out of the pda in the other
->> direction: make a series where each patch takes a member of struct
->> x8664_pda, converts it to a per-cpu variable (where possible, the same
->> one that 32-bit uses), and updates all the references accordingly.  When
->> the pda is as empty as it can be, we can look at removing the
->> pda-specific interfaces.
-> 
-> This patchset places the whole x8664_pda structure into the per cpu area and makes the pda macros operate on the x8664_pda structure in the per cpu area. Not sure why you want to go through the churn of doing it for each object separately.
+>     -hpa
 
-I think Jeremy's point is that by removing the pda struct entirely, the
-references to the fields can be the same for both x86_32 and x86_64.
+Hmm, I wonder how the CONFIG_CC_STACKPROTECTOR was tested?  Could it
+be a config option for building GCC itself?
 
 Thanks,
 Mike
