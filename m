@@ -1,63 +1,378 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756243AbYGINGJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755826AbYGINIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756243AbYGINGJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 09:06:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbYGINF4
+	id S1755826AbYGINIX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 09:08:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbYGINIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 09:05:56 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:34350 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752295AbYGINFz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 09:05:55 -0400
-Subject: Re: [PATCH] dsp56k: use request_firmware
-From: David Woodhouse <dwmw2@infradead.org>
-To: Fredrik Noring <noring@nocrew.org>
-Cc: Jaswinder Singh <jaswinder@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       kernelnewbies <kernelnewbies@nl.linux.org>,
-       kernel-janitors <kernel-janitors@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Lars Brinkhoff <lars@nocrew.org>,
-       Tomas =?ISO-8859-1?Q?Sk=E4re?= <tomas@nocrew.org>
-In-Reply-To: <35647D7D-85D1-4308-B3A1-63CDCC3F14F7@nocrew.org>
-References: <1215253496.7816.7.camel@jaswinder.satnam>
-	 <A3D470E0-953E-40D6-BF5A-D06B76451154@nocrew.org>
-	 <1215357224.2817.2.camel@jaswinder.satnam>
-	 <43A34816-3B93-4D05-AE0A-65C0FBF35589@nocrew.org>
-	 <1215358732.2817.11.camel@jaswinder.satnam>
-	 <1215363247.3189.113.camel@shinybook.infradead.org>
-	 <35647D7D-85D1-4308-B3A1-63CDCC3F14F7@nocrew.org>
-Content-Type: text/plain
-Date: Wed, 09 Jul 2008 14:05:50 +0100
-Message-Id: <1215608750.11567.177.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 9 Jul 2008 09:08:14 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:56003 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753295AbYGININ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 09:08:13 -0400
+From: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
+To: linux-kernel@vger.kernel.org
+Cc: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
+Subject: [PATCH 1/1] LCD backlight driver using Atmel PWM driver
+Date: Wed,  9 Jul 2008 15:08:06 +0200
+Message-Id: <1215608886-26792-1-git-send-email-hans-christian.egtvedt@atmel.com>
+X-Mailer: git-send-email 1.5.4.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-07-06 at 20:29 +0200, Fredrik Noring wrote:
-> That's right. Sorry I was unclear. However, after some digging on  
-> floppy backups from the past, I've found a DSP56k loader routine  
-> that's probably close if not identical to the assembled version  
-> included with the kernel. Please see below. A disassembly would verify
-> this, but at least it gives you an idea of the inner workings.
+This patch adds a platform driver using the ATMEL PWM driver to control a
+backlight which requires a PWM signal and optional GPIO signal for discrete
+on/off signal. It has been tested on Favr-32 board from EarthLCD.
 
-It is in fact identical. Disassembly with the tools found on sourceforge
-was fun, since they have endianness bugs, don't recognise the 'JMP'
-which was the first instruction, and need each 3-byte instruction in the
-binary to be prefixed with a zero byte to make it 4 bytes. But after
-sorting that out and going through it instruction by instruction, it
-really does seem to match. Thanks very much for digging it out.
+The driver is configurable by supplying a struct with the platform data. See
+the include/linux/atmel-pwm-bl.h for details.
 
-When you say 'GPL like the driver it came from', actually the driver
-doesn't specify any version of the GPL but does refer to the top-level
-COPYING file. So we'll take that to mean 'GPLv2 and not later', like the
-majority of the kernel. OK?
+Signed-off-by: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
+---
+The board code for Favr-32 will be submitted to the AVR32 kernel list.
 
+ drivers/video/backlight/Kconfig        |   12 ++
+ drivers/video/backlight/Makefile       |    1 +
+ drivers/video/backlight/atmel-pwm-bl.c |  244 ++++++++++++++++++++++++++++++++
+ include/linux/atmel-pwm-bl.h           |   43 ++++++
+ 4 files changed, 300 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/video/backlight/atmel-pwm-bl.c
+ create mode 100644 include/linux/atmel-pwm-bl.h
+
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index dcd8073..7557caa 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -63,6 +63,18 @@ config BACKLIGHT_ATMEL_LCDC
+ 	  If in doubt, it's safe to enable this option; it doesn't kick
+ 	  in unless the board's description says it's wired that way.
+ 
++config BACKLIGHT_ATMEL_PWM
++	tristate "Atmel PWM backlight control"
++	depends on BACKLIGHT_CLASS_DEVICE && ATMEL_PWM
++	default n
++	help
++	  Say Y here if you want to use the PWM peripheral in Atmel AT91 and
++	  AVR32 devices. This driver will need additional platform data to know
++	  which PWM instance to use and how to configure it.
++
++	  To compile this driver as a module, choose M here: the module will be
++	  called atmel-pwm-bl.
++
+ config BACKLIGHT_CORGI
+ 	tristate "Generic (aka Sharp Corgi) Backlight Driver"
+ 	depends on BACKLIGHT_CLASS_DEVICE
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index 33f6c7c..62d022a 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -4,6 +4,7 @@ obj-$(CONFIG_LCD_CLASS_DEVICE)     += lcd.o
+ obj-$(CONFIG_LCD_LTV350QV)	+= ltv350qv.o
+ 
+ obj-$(CONFIG_BACKLIGHT_CLASS_DEVICE) += backlight.o
++obj-$(CONFIG_BACKLIGHT_ATMEL_PWM)    += atmel-pwm-bl.o
+ obj-$(CONFIG_BACKLIGHT_CORGI)	+= corgi_bl.o
+ obj-$(CONFIG_BACKLIGHT_HP680)	+= hp680_bl.o
+ obj-$(CONFIG_BACKLIGHT_LOCOMO)	+= locomolcd.o
+diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
+new file mode 100644
+index 0000000..505c082
+--- /dev/null
++++ b/drivers/video/backlight/atmel-pwm-bl.c
+@@ -0,0 +1,244 @@
++/*
++ * Copyright (C) 2008 Atmel Corporation
++ *
++ * Backlight driver using Atmel PWM peripheral.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ */
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/fb.h>
++#include <linux/clk.h>
++#include <linux/gpio.h>
++#include <linux/backlight.h>
++#include <linux/atmel_pwm.h>
++#include <linux/atmel-pwm-bl.h>
++
++struct atmel_pwm_bl {
++	const struct atmel_pwm_bl_platform_data	*pdata;
++	struct backlight_device			*bldev;
++	struct platform_device			*pdev;
++	struct pwm_channel			pwmc;
++	int					gpio_on;
++};
++
++static int atmel_pwm_bl_set_intensity(struct backlight_device *bd)
++{
++	struct atmel_pwm_bl *pwmbl = bl_get_data(bd);
++	int intensity = bd->props.brightness;
++	int pwm_duty;
++
++	if (bd->props.power != FB_BLANK_UNBLANK)
++		intensity = 0;
++	if (bd->props.fb_blank != FB_BLANK_UNBLANK)
++		intensity = 0;
++
++	if (pwmbl->pdata->pwm_active_low)
++		pwm_duty = pwmbl->pdata->pwm_duty_min + intensity;
++	else
++		pwm_duty = pwmbl->pdata->pwm_duty_max - intensity;
++
++	if (pwm_duty > pwmbl->pdata->pwm_duty_max)
++		pwm_duty = pwmbl->pdata->pwm_duty_max;
++	if (pwm_duty < pwmbl->pdata->pwm_duty_min)
++		pwm_duty = pwmbl->pdata->pwm_duty_min;
++
++	if (!intensity) {
++		if (pwmbl->gpio_on != -1) {
++			gpio_set_value(pwmbl->gpio_on,
++					0 ^ pwmbl->pdata->on_active_low);
++		}
++		pwm_channel_writel(&pwmbl->pwmc, PWM_CUPD, pwm_duty);
++		pwm_channel_disable(&pwmbl->pwmc);
++	} else {
++		pwm_channel_enable(&pwmbl->pwmc);
++		pwm_channel_writel(&pwmbl->pwmc, PWM_CUPD, pwm_duty);
++		if (pwmbl->gpio_on != -1) {
++			gpio_set_value(pwmbl->gpio_on,
++					1 ^ pwmbl->pdata->on_active_low);
++		}
++	}
++
++	return 0;
++}
++
++static int atmel_pwm_bl_get_intensity(struct backlight_device *bd)
++{
++	struct atmel_pwm_bl *pwmbl = bl_get_data(bd);
++	u8 intensity;
++
++	if (pwmbl->pdata->pwm_active_low) {
++		intensity = pwm_channel_readl(&pwmbl->pwmc, PWM_CDTY) -
++			pwmbl->pdata->pwm_duty_min;
++	} else {
++		intensity = pwmbl->pdata->pwm_duty_max -
++			pwm_channel_readl(&pwmbl->pwmc, PWM_CDTY);
++	}
++
++	return intensity;
++}
++
++static int atmel_pwm_bl_init_pwm(struct atmel_pwm_bl *pwmbl)
++{
++	unsigned long pwm_rate = pwmbl->pwmc.mck;
++	unsigned long prescale = DIV_ROUND_UP(pwm_rate,
++			(pwmbl->pdata->pwm_frequency *
++			 pwmbl->pdata->pwm_compare_max)) - 1;
++
++	/*
++	 * Prescale must be power of two and maximum 0xf in size because of
++	 * hardware limit. PWM speed will be:
++	 *	PWM module clock speed / (2 ^ prescale).
++	 */
++	prescale = fls(prescale);
++	if (prescale > 0xf)
++		prescale = 0xf;
++
++	pwm_channel_writel(&pwmbl->pwmc, PWM_CMR, prescale);
++	pwm_channel_writel(&pwmbl->pwmc, PWM_CDTY,
++			pwmbl->pdata->pwm_duty_min +
++			pwmbl->bldev->props.brightness);
++	pwm_channel_writel(&pwmbl->pwmc, PWM_CPRD,
++			pwmbl->pdata->pwm_compare_max);
++
++	dev_info(&pwmbl->pdev->dev, "Atmel PWM backlight driver "
++			"(%lu Hz)\n", pwmbl->pwmc.mck /
++			pwmbl->pdata->pwm_compare_max /
++			(1 << prescale));
++
++	return pwm_channel_enable(&pwmbl->pwmc);
++}
++
++static struct backlight_ops atmel_pwm_bl_ops = {
++	.get_brightness = atmel_pwm_bl_get_intensity,
++	.update_status  = atmel_pwm_bl_set_intensity,
++};
++
++static int atmel_pwm_bl_probe(struct platform_device *pdev)
++{
++	const struct atmel_pwm_bl_platform_data *pdata;
++	struct backlight_device *bldev;
++	struct atmel_pwm_bl *pwmbl;
++	int retval;
++
++	pwmbl = kzalloc(sizeof(struct atmel_pwm_bl), GFP_KERNEL);
++	if (!pwmbl)
++		return -ENOMEM;
++
++	pwmbl->pdev = pdev;
++
++	pdata = pdev->dev.platform_data;
++	if (!pdata) {
++		retval = -ENODEV;
++		goto err_free_mem;
++	}
++
++	if (pdata->pwm_compare_max < pdata->pwm_duty_max ||
++			pdata->pwm_duty_min > pdata->pwm_duty_max ||
++			pdata->pwm_frequency == 0) {
++		retval = -EINVAL;
++		goto err_free_mem;
++	}
++
++	pwmbl->pdata = pdata;
++	pwmbl->gpio_on = pdata->gpio_on;
++
++	retval = pwm_channel_alloc(pdata->pwm_channel, &pwmbl->pwmc);
++	if (retval)
++		goto err_free_mem;
++
++	if (pwmbl->gpio_on != -1) {
++		retval = gpio_request(pwmbl->gpio_on, "gpio_atmel_pwm_bl");
++		if (retval) {
++			pwmbl->gpio_on = -1;
++			goto err_free_pwm;
++		}
++
++		/* Turn display off by defatult. */
++		retval = gpio_direction_output(pwmbl->gpio_on,
++				0 ^ pdata->on_active_low);
++		if (retval)
++			goto err_free_gpio;
++	}
++
++	bldev = backlight_device_register("atmel-pwm-bl",
++			&pdev->dev, pwmbl, &atmel_pwm_bl_ops);
++	if (IS_ERR(bldev)) {
++		retval = PTR_ERR(bldev);
++		goto err_free_gpio;
++	}
++
++	pwmbl->bldev = bldev;
++
++	platform_set_drvdata(pdev, pwmbl);
++
++	/* Power up the backlight by default at middle intesity. */
++	bldev->props.power = FB_BLANK_UNBLANK;
++	bldev->props.max_brightness = pdata->pwm_duty_max - pdata->pwm_duty_min;
++	bldev->props.brightness = bldev->props.max_brightness / 2;
++
++	retval = atmel_pwm_bl_init_pwm(pwmbl);
++	if (retval)
++		goto err_free_bl_dev;
++
++	atmel_pwm_bl_set_intensity(bldev);
++
++	return 0;
++
++err_free_bl_dev:
++	platform_set_drvdata(pdev, NULL);
++	backlight_device_unregister(bldev);
++err_free_gpio:
++	if (pwmbl->gpio_on != -1)
++		gpio_free(pwmbl->gpio_on);
++err_free_pwm:
++	pwm_channel_free(&pwmbl->pwmc);
++err_free_mem:
++	kfree(pwmbl);
++	return retval;
++}
++
++static int __exit atmel_pwm_bl_remove(struct platform_device *pdev)
++{
++	struct atmel_pwm_bl *pwmbl = platform_get_drvdata(pdev);
++
++	if (pwmbl->gpio_on != -1) {
++		gpio_set_value(pwmbl->gpio_on, 0);
++		gpio_free(pwmbl->gpio_on);
++	}
++	pwm_channel_disable(&pwmbl->pwmc);
++	pwm_channel_free(&pwmbl->pwmc);
++	backlight_device_unregister(pwmbl->bldev);
++	platform_set_drvdata(pdev, NULL);
++	kfree(pwmbl);
++
++	return 0;
++}
++
++static struct platform_driver atmel_pwm_bl_driver = {
++	.driver = {
++		.name = "atmel-pwm-bl",
++	},
++	/* REVISIT add suspend() and resume() */
++	.remove = __exit_p(atmel_pwm_bl_remove),
++};
++
++static int __init atmel_pwm_bl_init(void)
++{
++	return platform_driver_probe(&atmel_pwm_bl_driver, atmel_pwm_bl_probe);
++}
++module_init(atmel_pwm_bl_init);
++
++static void __exit atmel_pwm_bl_exit(void)
++{
++	platform_driver_unregister(&atmel_pwm_bl_driver);
++}
++module_exit(atmel_pwm_bl_exit);
++
++MODULE_AUTHOR("Hans-Christian egtvedt <hans-christian.egtvedt@atmel.com>");
++MODULE_DESCRIPTION("Atmel PWM backlight driver");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/atmel-pwm-bl.h b/include/linux/atmel-pwm-bl.h
+new file mode 100644
+index 0000000..0153a47
+--- /dev/null
++++ b/include/linux/atmel-pwm-bl.h
+@@ -0,0 +1,43 @@
++/*
++ * Copyright (C) 2007 Atmel Corporation
++ *
++ * Driver for the AT32AP700X PS/2 controller (PSIF).
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
++
++#ifndef __INCLUDE_ATMEL_PWM_BL_H
++#define __INCLUDE_ATMEL_PWM_BL_H
++
++/**
++ * struct atmel_pwm_bl_platform_data
++ * @pwm_channel: which PWM channel in the PWM module to use.
++ * @pwm_frequency: PWM frequency to generate, the driver will try to be as
++ *	close as the prescaler allows.
++ * @pwm_compare_max: value to use in the PWM channel compare register.
++ * @pwm_duty_max: maximum duty cycle value, must be less than or equal to
++ *	pwm_compare_max.
++ * @pwm_duty_min: minimum duty cycle value, must be less than pwm_duty_max.
++ * @pwm_active_low: set to one if the low part of the PWM signal increases the
++ *	brightness of the backlight.
++ * @gpio_on: GPIO line to control the backlight on/off, set to -1 if not used.
++ * @on_active_low: set to one if the on/off signal is on when GPIO is low.
++ *
++ * This struct must be added to the platform device in the board code. It is
++ * used by the atmel-pwm-bl driver to setup the GPIO to control on/off and the
++ * PWM device.
++ */
++struct atmel_pwm_bl_platform_data {
++	unsigned int pwm_channel;
++	unsigned int pwm_frequency;
++	unsigned int pwm_compare_max;
++	unsigned int pwm_duty_max;
++	unsigned int pwm_duty_min;
++	unsigned int pwm_active_low;
++	int gpio_on;
++	unsigned int on_active_low;
++};
++
++#endif /* __INCLUDE_ATMEL_PWM_BL_H */
 -- 
-dwmw2
+1.5.4.3
 
