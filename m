@@ -1,51 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755971AbYGIH7f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756077AbYGIIC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755971AbYGIH7f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 03:59:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbYGIH71
+	id S1756077AbYGIIC7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 04:02:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbYGIICq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 03:59:27 -0400
-Received: from styx.suse.cz ([82.119.242.94]:46915 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751013AbYGIH70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 03:59:26 -0400
-Date: Wed, 9 Jul 2008 09:59:24 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Randy Dunlap <randy.dunlap@oracle.com>, Jiri Slaby <jslaby@suse.cz>
-cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Pascal Terjan <pterjan@mandriva.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for July 8 (HID)
-In-Reply-To: <20080708111649.e61b19bc.randy.dunlap@oracle.com>
-Message-ID: <alpine.LNX.1.10.0807090954480.25171@jikos.suse.cz>
-References: <20080708192251.3275d283.sfr@canb.auug.org.au> <20080708111649.e61b19bc.randy.dunlap@oracle.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Wed, 9 Jul 2008 04:02:46 -0400
+Received: from gw.goop.org ([64.81.55.164]:54914 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752192AbYGIICp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 04:02:45 -0400
+Message-ID: <4874709A.1080801@goop.org>
+Date: Wed, 09 Jul 2008 01:02:34 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Mark McLoughlin <markmc@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       x86@kernel.org, Stephen Tweedie <sct@redhat.com>,
+       Eduardo Habkost <ehabkost@redhat.com>
+Subject: Re: [PATCH 16 of 55] xen64: add extra pv_mmu_ops
+References: <76d0856d664470b81640.1215554798@localhost> <1215590110.16579.7.camel@muff>
+In-Reply-To: <1215590110.16579.7.camel@muff>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Jul 2008, Randy Dunlap wrote:
+Mark McLoughlin wrote:
+> Hey Jeremy,
+>
+> On Tue, 2008-07-08 at 15:06 -0700, Jeremy Fitzhardinge wrote:
+>   
+>> We need extra pv_mmu_ops for 64-bit, to deal with the extra level of
+>> pagetable.
+>>
+>> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+>> ---
+>>  arch/x86/xen/enlighten.c   |   33 +++++++++++++++++++++++++++-
+>>  arch/x86/xen/mmu.c         |   51 +++++++++++++++++++++++++++++++++++++++++++-
+>>  arch/x86/xen/mmu.h         |   15 +++++++++++-
+>>  include/asm-x86/xen/page.h |    4 +++
+>>  4 files changed, 99 insertions(+), 4 deletions(-)
+>>     
+> ...
+>   
+>> diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+>> --- a/arch/x86/xen/mmu.c
+>> +++ b/arch/x86/xen/mmu.c
+>> @@ -438,14 +438,19 @@
+>>  
+>>  void xen_set_pte(pte_t *ptep, pte_t pte)
+>>  {
+>> +#ifdef CONFIG_X86_PAE
+>>  	ptep->pte_high = pte.pte_high;
+>>  	smp_wmb();
+>>  	ptep->pte_low = pte.pte_low;
+>> +#else
+>> +	*ptep = pte;
+>> +#endif
+>>  }
+>>     
+>
+> You've dropped non-PAE support already, right? Any reason to use the
+> X86_PAE macro instead of X86_32?
+>   
 
-> drivers/built-in.o: In function `usb_kbd_probe':
-> usbkbd.c:(.text+0x1457c9): undefined reference to `usbhid_lookup_quirk'
-> drivers/built-in.o: In function `usb_mouse_probe':
-> usbmouse.c:(.text+0x14603c): undefined reference to `usbhid_lookup_quirk'
-> make[1]: *** [.tmp_vmlinux1] Error 1
+It's a fine difference, but the specific thing I'm testing for is 
+actually PAE vs 64-bit (or even more specifically "can I update a whole 
+pte atomically?").  Testing for X86_32 is equivalent in the absence of 
+non-PAE 32-bit, but not quite as correct.  The other way I could do it 
+is as I have elsewhere:
 
-This got introduced by Jiri's
+	if (sizeof(pte_t) > sizeof(long)) {
+		ptep->pte_high = pte.pte_high;
+		smp_wmb();
+		ptep->pte_low = pte.pte_low;
+	} else
+		*ptep = pte;
 
- 	HID: fix quirk handling in usbmouse/kbd
+But there are other places where it tests for this using PAE (and even 
+whole pvops which are only defined in the PAE case).
 
-Added to CC (and added also Pascal).
+You'll notice other places where I test for PAGETABLE_LEVELS == 3 where 
+the code  is generally handling 3-level pagetables, and others where I 
+test for PAE where it's something specific to PAE.
 
-The dependency of usbkbd/usbmouse on usbhid is strange anyway. I'd 
-probably remove the whole quirk lookup thing from usbkbd/usbmouse drivers. 
-They introduce this ugly dependency, which is not worth it I guess. Also 
-usbkbd/usbmouse drivers are not needed in the vast majority of cases 
-anyway, and they shouldn't be loaded in standard configurations at all.
-
--- 
-Jiri Kosina
-SUSE Labs
+    J
