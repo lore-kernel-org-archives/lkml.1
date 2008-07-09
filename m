@@ -1,244 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbYGIU13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753370AbYGIU1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754806AbYGIU13 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 16:27:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbYGIU1V
+	id S1753370AbYGIU1q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 16:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbYGIU1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 16:27:21 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36959 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751548AbYGIU1U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 16:27:20 -0400
-Date: Wed, 9 Jul 2008 15:27:19 -0500
-From: Russ Anderson <rja@sgi.com>
-To: mingo@elte.hu, tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org, Jack Steiner <steiner@sgi.com>,
-       Russ Anderson <rja@sgi.com>
-Subject: [patch] x86 BIOS interface for RTC on SGI UV
-Message-ID: <20080709202719.GB22744@sgi.com>
-Reply-To: Russ Anderson <rja@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 9 Jul 2008 16:27:36 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:46563 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751526AbYGIU1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 16:27:35 -0400
+Date: Wed, 9 Jul 2008 23:26:33 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+Message-ID: <20080709202633.GC14386@cs181140183.pp.htv.fi>
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <4874F30C.8020800@zytor.com> <4874F909.7060503@goop.org> <4874FEDF.90404@sgi.com> <20080709193404.GC4804@elte.hu> <48751533.7030602@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <48751533.7030602@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[patch] x86 BIOS interface for RTC on SGI UV
+On Wed, Jul 09, 2008 at 03:44:51PM -0400, H. Peter Anvin wrote:
+> Ingo Molnar wrote:
+>>
+>> the problem is, we cannot just put it even into tip/master if there's 
+>> no short-term hope of fixing a problem it triggers. gcc-4.2.3 is solid 
+>> for me otherwise, for series of thousands of randomly built kernels.
+>>
+>
+> 4.2.3 is fine; he was using 4.2.0 before, and as far as I know, 4.2.0  
+> and 4.2.1 are known broken for the kernel.
 
-Real-time code needs to know the number of cycles per second
-on SGI UV.  The information is provided via a run time BIOS
-call.  This patch provides the linux side of that interface.
-This is the first of several run time BIOS calls to be defined
-in uv/bios.h and bios_uv.c.
+Not sure where your knowledge comes from, but the ones I try to get 
+blacklisted due to known gcc bugs are 4.1.0 and 4.1.1.
 
-Note that BIOS_CALL() is just a stub for now.  The bios 
-side is being worked on.
+On a larger picture, we officially support gcc >= 3.2, and if any kernel 
+change triggers a bug with e.g. gcc 3.2.3 that's technically a 
+regression in the kernel...
 
-Signed-off-by: Russ Anderson <rja@sgi.com>
+> 	-hpa
 
----
- arch/x86/kernel/Makefile         |    1 
- arch/x86/kernel/bios_uv.c        |   48 +++++++++++++++++++++++++++
- arch/x86/kernel/genx2apic_uv_x.c |   23 +++++++++++++
- include/asm-x86/uv/bios.h        |   68 +++++++++++++++++++++++++++++++++++++++
- 4 files changed, 140 insertions(+)
+cu
+Adrian
 
-Index: linux/include/asm-x86/uv/bios.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux/include/asm-x86/uv/bios.h	2008-07-09 14:30:38.000000000 -0500
-@@ -0,0 +1,68 @@
-+#ifndef _ASM_X86_BIOS_H
-+#define _ASM_X86_BIOS_H
-+
-+/*
-+ * BIOS layer definitions.
-+ *
-+ *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ */
-+
-+#include <linux/rtc.h>
-+
-+#define BIOS_FREQ_BASE			0x01000001
-+
-+enum {
-+	BIOS_FREQ_BASE_PLATFORM = 0,
-+	BIOS_FREQ_BASE_INTERVAL_TIMER = 1,
-+	BIOS_FREQ_BASE_REALTIME_CLOCK = 2
-+};
-+
-+# define BIOS_CALL(result, a0, a1, a2, a3, a4, a5, a6, a7)		\
-+	do {								\
-+		/* XXX - the real call goes here */			\
-+		result.status = BIOS_STATUS_UNIMPLEMENTED;		\
-+		isrv.v0 = 0;						\
-+		isrv.v1 = 0;						\
-+	} while (0)
-+
-+enum {
-+	BIOS_STATUS_SUCCESS		=  0,
-+	BIOS_STATUS_UNIMPLEMENTED	= -1,
-+	BIOS_STATUS_EINVAL		= -2,
-+	BIOS_STATUS_ERROR		= -3
-+};
-+
-+struct uv_bios_retval {
-+	/*
-+	 * A zero status value indicates call completed without error.
-+	 * A negative status value indicates reason of call failure.
-+	 * A positive status value indicates success but an
-+	 * informational value should be printed (e.g., "reboot for
-+	 * change to take effect").
-+	 */
-+	s64 status;
-+	u64 v0;
-+	u64 v1;
-+	u64 v2;
-+};
-+
-+extern long
-+x86_bios_freq_base(unsigned long which, unsigned long *ticks_per_second,
-+		   unsigned long *drift_info);
-+extern const char *x86_bios_strerror(long status);
-+
-+#endif /* _ASM_X86_BIOS_H */
-Index: linux/arch/x86/kernel/genx2apic_uv_x.c
-===================================================================
---- linux.orig/arch/x86/kernel/genx2apic_uv_x.c	2008-07-09 14:30:15.000000000 -0500
-+++ linux/arch/x86/kernel/genx2apic_uv_x.c	2008-07-09 14:30:38.000000000 -0500
-@@ -22,6 +22,7 @@
- #include <asm/genapic.h>
- #include <asm/uv/uv_mmrs.h>
- #include <asm/uv/uv_hub.h>
-+#include <asm/uv/bios.h>
- 
- DEFINE_PER_CPU(struct uv_hub_info_s, __uv_hub_info);
- EXPORT_PER_CPU_SYMBOL_GPL(__uv_hub_info);
-@@ -38,6 +39,9 @@ EXPORT_SYMBOL_GPL(uv_cpu_to_blade);
- short uv_possible_blades;
- EXPORT_SYMBOL_GPL(uv_possible_blades);
- 
-+unsigned long sn_rtc_cycles_per_second;
-+EXPORT_SYMBOL(sn_rtc_cycles_per_second);
-+
- /* Start with all IRQs pointing to boot CPU.  IRQ balancing will shift them. */
- 
- static cpumask_t uv_target_cpus(void)
-@@ -208,6 +212,23 @@ static __init void get_lowmem_redirect(u
- 	BUG();
- }
- 
-+static __init void uv_rtc_init(void)
-+{
-+	long status, ticks_per_sec, drift;
-+
-+	status =
-+	    x86_bios_freq_base(BIOS_FREQ_BASE_REALTIME_CLOCK, &ticks_per_sec,
-+					&drift);
-+	if (status != 0 || ticks_per_sec < 100000) {
-+		printk(KERN_WARNING
-+			"unable to determine platform RTC clock frequency, "
-+			"guessing.\n");
-+		/* BIOS gives wrong value for clock freq. so guess */
-+		sn_rtc_cycles_per_second = 1000000000000UL / 30000UL;
-+	} else
-+		sn_rtc_cycles_per_second = ticks_per_sec;
-+}
-+
- static __init void uv_system_init(void)
- {
- 	union uvh_si_addr_map_config_u m_n_config;
-@@ -258,6 +279,8 @@ static __init void uv_system_init(void)
- 	node_id.v = uv_read_local_mmr(UVH_NODE_ID);
- 	gnode_upper = (((unsigned long)node_id.s.node_id) &
- 		       ~((1 << n_val) - 1)) << m_val;
-+
-+	uv_rtc_init();
- 
- 	for_each_present_cpu(cpu) {
- 		nid = cpu_to_node(cpu);
-Index: linux/arch/x86/kernel/bios_uv.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux/arch/x86/kernel/bios_uv.c	2008-07-09 14:30:38.000000000 -0500
-@@ -0,0 +1,48 @@
-+/*
-+ * BIOS run time interface routines.
-+ *
-+ *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ */
-+
-+#include <asm/uv/bios.h>
-+
-+const char *
-+x86_bios_strerror(long status)
-+{
-+	const char *str;
-+	switch (status) {
-+	case  0: str = "Call completed without error"; break;
-+	case -1: str = "Not implemented"; break;
-+	case -2: str = "Invalid argument"; break;
-+	case -3: str = "Call completed with error"; break;
-+	default: str = "Unknown BIOS status code"; break;
-+	}
-+	return str;
-+}
-+
-+long
-+x86_bios_freq_base(unsigned long which, unsigned long *ticks_per_second,
-+		   unsigned long *drift_info)
-+{
-+	struct uv_bios_retval isrv;
-+
-+	BIOS_CALL(isrv, BIOS_FREQ_BASE, which, 0, 0, 0, 0, 0, 0);
-+	*ticks_per_second = isrv.v0;
-+	*drift_info = isrv.v1;
-+	return isrv.status;
-+}
-+EXPORT_SYMBOL_GPL(x86_bios_freq_base);
-Index: linux/arch/x86/kernel/Makefile
-===================================================================
---- linux.orig/arch/x86/kernel/Makefile	2008-07-09 14:30:14.000000000 -0500
-+++ linux/arch/x86/kernel/Makefile	2008-07-09 14:30:38.000000000 -0500
-@@ -103,6 +103,7 @@ obj-$(CONFIG_OLPC)		+= olpc.o
- # 64 bit specific files
- ifeq ($(CONFIG_X86_64),y)
-         obj-y				+= genapic_64.o genapic_flat_64.o genx2apic_uv_x.o tlb_uv.o
-+	obj-y				+= bios_uv.o
-         obj-$(CONFIG_X86_PM_TIMER)	+= pmtimer_64.o
-         obj-$(CONFIG_AUDIT)		+= audit_64.o
- 
 -- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
