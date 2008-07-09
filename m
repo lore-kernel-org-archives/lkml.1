@@ -1,48 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755648AbYGISsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755846AbYGISsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755648AbYGISsW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 14:48:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753595AbYGISsO
+	id S1755846AbYGISsk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 14:48:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbYGISsa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 14:48:14 -0400
-Received: from mga03.intel.com ([143.182.124.21]:26322 "EHLO mga03.intel.com"
+	Wed, 9 Jul 2008 14:48:30 -0400
+Received: from gw.goop.org ([64.81.55.164]:33758 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753175AbYGISsN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 14:48:13 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.30,332,1212390000"; 
-   d="scan'208";a="9284397"
-Date: Wed, 9 Jul 2008 11:48:08 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, "mingo@elte.hu" <mingo@elte.hu>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] tip/x86_64: fix e820 merge issue which broke max_pfn_mapped
-Message-ID: <20080709184808.GI1678@linux-os.sc.intel.com>
-References: <20080708230837.GD1678@linux-os.sc.intel.com> <86802c440807081759i3baafa9bj7e8ff544a1a78fb9@mail.gmail.com> <86802c440807081856y17eb1f1cs5647b2c2a765f429@mail.gmail.com> <20080709175621.GG1678@linux-os.sc.intel.com> <86802c440807091105g1dd8f8a0sa8220a1bfc65a79@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440807091105g1dd8f8a0sa8220a1bfc65a79@mail.gmail.com>
-User-Agent: Mutt/1.4.1i
+	id S1753595AbYGISs3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 14:48:29 -0400
+Message-ID: <487507E7.6010102@goop.org>
+Date: Wed, 09 Jul 2008 11:48:07 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <4874F4F2.9010603@goop.org> <4874F7D9.5060607@linux-foundation.org> <4874FD52.8070000@sgi.com> <4874FFC4.7050505@linux-foundation.org> <487502BD.2020206@goop.org> <487504A8.5040000@linux-foundation.org>
+In-Reply-To: <487504A8.5040000@linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 09, 2008 at 11:05:46AM -0700, Yinghai Lu wrote:
-> > BTW, please explain the need for your patch which has more changes, instead
-> > of my simple patch which was test booted on 3 different systems with both
-> > 32bit and 64bit kernels...
-> 
-> try to reduce #ifdef CONFIG_X86_64/32, and make 32/64 at the same page.
+Christoph Lameter wrote:
+> Maybe I misunderstood but it seems that you proposed to convert individual members of the pda structure (which uses GS) to per cpu variables (which without this patchset cannot use GS).
+>   
 
-But it seem to have too many changes included in one patch.
+I have no objections to parts 1-3 of the patchset.  It's just 4-15, 
+which does the mechanical conversion.
 
-like calls to e820_register_active_regions(), remove_all_active_ranges() 
-disappeared all together in this patch.. ??
+    J
 
-thanks,
-suresh
