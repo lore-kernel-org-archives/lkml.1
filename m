@@ -1,38 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752711AbYGIQfV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753621AbYGIQft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752711AbYGIQfV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 12:35:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751231AbYGIQfK
+	id S1753621AbYGIQft (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 12:35:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751231AbYGIQfj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 12:35:10 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:50190 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751227AbYGIQfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 12:35:08 -0400
-Date: Wed, 9 Jul 2008 18:35:57 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       x86@kernel.org
-Subject: Re: scripts/gcc-x86_64-has-stack-protector.sh missing ?
-Message-ID: <20080709163557.GA1277@uranus.ravnborg.org>
-References: <20080709155844.GB29961@redhat.com>
+	Wed, 9 Jul 2008 12:35:39 -0400
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:62086 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750828AbYGIQfj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 12:35:39 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAD2DdEhMQWVt/2dsb2JhbACBW68j
+Date: Wed, 9 Jul 2008 12:35:32 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
+       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re:
+Message-ID: <20080709163532.GA12193@Krystal>
+References: <20080709154753.GA9899@Krystal> <20080709190712.107a6707@linux360.ro>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080709155844.GB29961@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080709190712.107a6707@linux360.ro>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:33:01 up 34 days, 21:13,  5 users,  load average: 2.42, 2.12,
+	2.03
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 09, 2008 at 11:58:44AM -0400, Dave Jones wrote:
-> I just did a 'make tags' on a fresh checkout of Linus' tree, and got this..
+* Eduard - Gabriel Munteanu (eduard.munteanu@linux360.ro) wrote:
+> On Wed, 9 Jul 2008 11:47:53 -0400
+> Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
 > 
-> /bin/sh: /mnt/data/src/git-trees/kernel/linux-2.6/scripts/gcc-x86_64-has-stack-protector.sh: No such file or directory
+> > Bcc: 
+> > Subject: Re: [patch 05/15] LTTng instrumentation - scheduler (repost)
+> > Reply-To: 
+> > In-Reply-To: <20080709153434.GA9186@Krystal>
+> > X-Editor: vi
+> > X-Info: http://krystal.dyndns.org:8080
+> > X-Operating-System: Linux/2.6.21.3-grsec (i686)
+> > X-Uptime: 11:46:04 up 34 days, 20:27,  4 users,  load average: 2.95,
+> > 2.43, 2.46
+> > 
 > 
-> arch/x86/Makefile references this, but it seems to not be in the tree.
+> Perhaps you should resend this correctly.
+> 
 
-Added by:
-4f7fd4d7a79193ceda4ce77f75e22917d33fa154
+This email is superseded by "Re: [patch 05/15] LTTng instrumentation -
+scheduler (merge ftrace markers)". I'll have to work on my
+vim-header-editing skills. I've done too much C code and too few SMTP
+header edit lately. ;) Thanks for pointing this out.
 
-	Sam
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
