@@ -1,63 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbYGIK66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756639AbYGILBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756133AbYGIK66 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 06:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbYGIK6t
+	id S1756639AbYGILBT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 07:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbYGILBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 06:58:49 -0400
-Received: from mtagate1.uk.ibm.com ([195.212.29.134]:16881 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751383AbYGIK6s convert rfc822-to-8bit (ORCPT
+	Wed, 9 Jul 2008 07:01:06 -0400
+Received: from sinclair.provo.novell.com ([137.65.248.137]:19294 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752116AbYGILBF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 06:58:48 -0400
-Date: Wed, 9 Jul 2008 12:58:48 +0200
-From: Maxim Shchetynin <maxim@linux.vnet.ibm.com>
-To: linux-fsdevel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Cc: benh@kernel.crashing.org, Arnd Bergmann <arnd@arndb.de>
-Subject: Re: AZFS file system proposal
-Message-ID: <20080709125848.643008a3@mercedes-benz.boeblingen.de.ibm.com>
-In-Reply-To: <1215595414.8970.366.camel@pasglop>
-References: <20080618160629.6cd749a8@mercedes-benz.boeblingen.de.ibm.com>
-	<200807011659.33413.arnd@arndb.de>
-	<1215593918.8970.363.camel@pasglop>
-	<20080709111402.5af92580@mercedes-benz.boeblingen.de.ibm.com>
-	<1215595414.8970.366.camel@pasglop>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
+	Wed, 9 Jul 2008 07:01:05 -0400
+Message-Id: <48746084.BA47.005A.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Wed, 09 Jul 2008 04:53:56 -0600
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: "Nick Piggin" <nickpiggin@yahoo.com.au>
+Cc: <mingo@elte.hu>, <rostedt@goodmis.org>, <peterz@infradead.org>,
+       <npiggin@suse.de>, <linux-kernel@vger.kernel.org>,
+       <linux-rt-users@vger.kernel.org>
+Subject: Re: [PATCH 2/3] sched: terminate newidle balancing once at
+	least one task has moved over
+References: <20080627202444.3829.21595.stgit@lsg.lsg.lab.novell.com>
+ <200807081500.18245.nickpiggin@yahoo.com.au>
+ <48732751.BA47.005A.0@novell.com>
+ <200807091809.52293.nickpiggin@yahoo.com.au>
+In-Reply-To: <200807091809.52293.nickpiggin@yahoo.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'd rather do
+>>> On Wed, Jul 9, 2008 at  4:09 AM, in message
+<200807091809.52293.nickpiggin@yahoo.com.au>, Nick Piggin
+<nickpiggin@yahoo.com.au> wrote: 
+> On Tuesday 08 July 2008 22:37, Gregory Haskins wrote:
+>> >>> On Tue, Jul 8, 2008 at  1:00 AM, in message
+>>
+>> <200807081500.18245.nickpiggin@yahoo.com.au>, Nick Piggin
+>>
+>> <nickpiggin@yahoo.com.au> wrote:
+>> > On Saturday 28 June 2008 06:29, Gregory Haskins wrote:
+>> >> Inspired by Peter Zijlstra.
+>> >>
+>> >> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+>> >
+>> > What happened to the feedback I sent about this?
+>> >
+>> > It is still nack from me.
+>>
+>> Ah yes.  Slipped through the cracks...sorry about that.
+>>
+>> What if we did "if (idle == CPU_NEWLY_IDLE && need_resched())" instead?
 > 
-> 	pgprot_t  prot;
-> 
-> #ifdef CONFIG_PPC
-> 	prot = <whatever>
-> #else
-> 	prot = pgprot_noncached(...)
-> #endif
-> 	vma->vm_page_prot = prot;
+> Isn't that exactly the same thing
 
-I have changed my patch accordinly. Thank you.
+Not quite.  The former version would break on *any* succesful enqueue (as a result of a
+local move_task as well as a remote wake-up/migration).  The latter version will only
+break on the the remote variety.  You were concerned about stopping a move_task
+operation early because it would reduce efficiency, and I do not entirely disagree.
+However, this really only concerns the local type (which have now been removed).
 
--- 
-Mit freundlichen Grüßen / met vriendelijke groeten / avec regards
+Remote preemptions should (IMO) always break immediately because it would have been likely
+to invalidate the f_b_g() calculation anyway, and low-latency requirements dictate
+its the right thing to do.
 
-    Maxim V. Shchetynin
-    Linux Kernel Entwicklung
-    IBM Deutschland Research & Development GmbH
-    Linux für Cell, Abteilung 3250
-    Schönaicher Straße 220
-    71032 Böblingen
+> because any task will preempt the idle thread?
 
-Vorsitzender des Aufsichtsrats: Martin Jetter
-Geschäftsführung: Herbert Kircher
-Sitz der Gesellschaft: Böblingen
-Registriergericht: Amtsgericht Stuttgart, HRB 243294
+During NEWIDLE this is a preempt-disabled section because we are still in the middle
+of a schedule(). Therefore there will be no involuntary preemption and that is why we
+are concerned with making sure we check for voluntary preemption.  The move_tasks()
+will run to completion without this patch.  With this patch it will break the operation if
+someone tries to preempt us.
 
-Fahr nur so schnell wie dein Schutzengel fliegen kann!
+I'll keep an open mind but I am pretty sure this is something we should be doing. As far
+as I can tell, there should be no downside with this second version.  As a compromise
+we could put an #ifdef CONFIG_PREEMPT around this new logic, but I don't think it
+is strictly necessary.
+
+Regards,
+-Greg
