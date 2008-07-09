@@ -1,80 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756717AbYGIBMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754229AbYGIB4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756717AbYGIBMX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 21:12:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbYGIBMN
+	id S1754229AbYGIB4s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 21:56:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbYGIB4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 21:12:13 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33409 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752677AbYGIBMM (ORCPT
+	Tue, 8 Jul 2008 21:56:40 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:21138 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751381AbYGIB4k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 21:12:12 -0400
-Date: Tue, 8 Jul 2008 21:09:22 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Pavel Machek <pavel@suse.cz>, Christoph Hellwig <hch@infradead.org>,
-       Takashi Sato <t-sato@yk.jp.nec.com>, akpm@linux-foundation.org,
-       viro@ZenIV.linux.org.uk,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
-       "dm-devel@redhat.com" <dm-devel@redhat.com>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       axboe@kernel.dk, mtk.manpages@googlemail.com
-Subject: Re: [PATCH 3/3] Add timeout feature
-Message-ID: <20080709010922.GE9957@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Pavel Machek <pavel@suse.cz>, Christoph Hellwig <hch@infradead.org>,
-	Takashi Sato <t-sato@yk.jp.nec.com>, akpm@linux-foundation.org,
-	viro@ZenIV.linux.org.uk,
-	"linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-	"xfs@oss.sgi.com" <xfs@oss.sgi.com>,
-	"dm-devel@redhat.com" <dm-devel@redhat.com>,
-	"linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	axboe@kernel.dk, mtk.manpages@googlemail.com
-References: <20080630212450t-sato@mail.jp.nec.com> <20080701081026.GB16691@infradead.org> <20080707110730.GG5643@ucw.cz> <20080708231026.GP11558@disturbed> <20080708232031.GE18195@elf.ucw.cz> <20080709005254.GQ11558@disturbed>
+	Tue, 8 Jul 2008 21:56:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:references;
+        b=KRZ7sOSHoJcb3mVpAGWDwWq6s/Ifodp2hDFoQfbfPxyFgfRRD926nlnysTgOAc/qvu
+         A0tMB5cVj59kf0vdeYGHhrNElPiHa4OWU/QSqaxMMnyWIvoHv02lXHgkpTYiLHjKKSWs
+         /QbOjoQEzyX39AoNOmU3wg/k1av5M2F5tqJFw=
+Message-ID: <86802c440807081856y17eb1f1cs5647b2c2a765f429@mail.gmail.com>
+Date: Tue, 8 Jul 2008 18:56:38 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Suresh Siddha" <suresh.b.siddha@intel.com>
+Subject: Re: [patch] tip/x86_64: fix e820 merge issue which broke max_pfn_mapped
+Cc: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <86802c440807081759i3baafa9bj7e8ff544a1a78fb9@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080709005254.GQ11558@disturbed>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_38466_8413854.1215568598703"
+References: <20080708230837.GD1678@linux-os.sc.intel.com>
+	 <86802c440807081759i3baafa9bj7e8ff544a1a78fb9@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 09, 2008 at 10:52:54AM +1000, Dave Chinner wrote:
-> If you walk enough inodes while the filesystem is frozen, it
-> theoretically could happen.  Typically a filesystem is only for a
-> few seconds at a time so in the real world this has never, ever been
-> a problem.
+------=_Part_38466_8413854.1215568598703
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I had argued for the timeout (and so it's mostly my fault that
-Takashi-San included it as a feature) mainly because I was (and still
-amm) deeply paranoid about the competence of the application
-programers who might use this feature.  I could see them screwing up
-leaving it locked forever --- perhaps when their program core dumps or
-when the user types ^C and they forgot to install a signal handler,
-leaving the filesystem frozen forever.
+On Tue, Jul 8, 2008 at 5:59 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> On Tue, Jul 8, 2008 at 4:08 PM, Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+>> With out this 64bit tip/master doesn't boot using ACPI on my system.
+>> ---
+>>
+>> max_pfn_mapped should include all e820 entries.
+>> The direct mapping extends to max_pfn_mapped, so that we can directly access
+>> apertures, ACPI and other tables without having to play with fixmaps.
+>>
+>> With this, my system with 1GB memory boots fine with ACPI enabled.
+>
+> so without this patch, your system doesn't boot?
 
-In the meantime, user applications that try to create files on that
-filesystem, or write to files already opened when the filesystem are
-frozen will accumulate dirty pages in the page cache, until the system
-finally falls over.
+how about attached patch?
 
-Think about some of the evil perpetrated by hal and the userspace
-suspend-resume scripts (and how much complexity with random XML
-fragments getting parsed by various dbus plugins), and tell me with a
-straight face that you would trust these modern-day desktop
-application writers with this interface.  Because they *will* find
-some interesting way to (ab)use it.....
+[PATCH] x86: make max_pfn cover acpi table below 4g
 
-Also, I didn't think the extra code complexity to implements timeouts
-was *that* bad --- it seemed fairly small for the functionality.
+when system have 4g less ram installed, and acpi table sit
+near end of ram. make max_pfn cover them too.
+so 64bit kernel don't need to mess up fixmap
 
-Best regards,
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-						- Ted
+YH
+
+------=_Part_38466_8413854.1215568598703
+Content-Type: text/x-patch; name=e820_end.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fifa2y1n0
+Content-Disposition: attachment; filename=e820_end.patch
+
+W1BBVENIXSB4ODY6IG1ha2UgbWF4X3BmbiBjb3ZlciBhY3BpIHRhYmxlIGJlbG93IDRnCgp3aGVu
+IHN5c3RlbSBoYXZlIDRnIGxlc3MgcmFtIGluc3RhbGxlZCwgYW5kIGFjcGkgdGFibGUgc2l0Cm5l
+YXIgZW5kIG9mIHJhbS4gbWFrZSBtYXhfcGZuIGNvdmVyIHRoZW0gdG9vLgpzbyA2NGJpdCBrZXJu
+ZWwgZG9uJ3QgbmVlZCB0byBtZXNzIHVwIGZpeG1hcC4KClNpZ25lZC1vZmYtYnk6IFlpbmdoYWkg
+THUgPHlobHUua2VybmVsQGdtYWlsLmNvbT4KCi0tLQogYXJjaC94ODYva2VybmVsL2U4MjAuYyAg
+fCAgIDE4ICsrKysrKysrKysrKy0tLS0tLQogYXJjaC94ODYva2VybmVsL3NldHVwLmMgfCAgIDEz
+ICsrKy0tLS0tLS0tLS0KIGluY2x1ZGUvYXNtLXg4Ni9lODIwLmggIHwgICAgMiArLQogMyBmaWxl
+cyBjaGFuZ2VkLCAxNiBpbnNlcnRpb25zKCspLCAxNyBkZWxldGlvbnMoLSkKCkluZGV4OiBsaW51
+eC0yLjYvYXJjaC94ODYva2VybmVsL2U4MjAuYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYub3Jp
+Zy9hcmNoL3g4Ni9rZXJuZWwvZTgyMC5jCisrKyBsaW51eC0yLjYvYXJjaC94ODYva2VybmVsL2U4
+MjAuYwpAQCAtMTA1NiwxMiArMTA1NiwyMCBAQCB1bnNpZ25lZCBsb25nIF9faW5pdGRhdGEgZW5k
+X3VzZXJfcGZuID0KIC8qCiAgKiBGaW5kIHRoZSBoaWdoZXN0IHBhZ2UgZnJhbWUgbnVtYmVyIHdl
+IGhhdmUgYXZhaWxhYmxlCiAgKi8KLXVuc2lnbmVkIGxvbmcgX19pbml0IGU4MjBfZW5kX29mX3Jh
+bSh2b2lkKQordW5zaWduZWQgbG9uZyBfX2luaXQgZTgyMF9lbmQodm9pZCkKIHsKLQl1bnNpZ25l
+ZCBsb25nIGxhc3RfcGZuOworCWludCBpOworCXVuc2lnbmVkIGxvbmcgbGFzdF9wZm4gPSAwOwog
+CXVuc2lnbmVkIGxvbmcgbWF4X2FyY2hfcGZuID0gTUFYX0FSQ0hfUEZOOwogCi0JbGFzdF9wZm4g
+PSBmaW5kX21heF9wZm5fd2l0aF9hY3RpdmVfcmVnaW9ucygpOworCWZvciAoaSA9IDA7IGkgPCBl
+ODIwLm5yX21hcDsgaSsrKSB7CisJCXN0cnVjdCBlODIwZW50cnkgKmVpID0gJmU4MjAubWFwW2ld
+OworCQl1bnNpZ25lZCBsb25nIGVuZF9wZm47CisKKwkJZW5kX3BmbiA9IChlaS0+YWRkciArIGVp
+LT5zaXplKSA+PiBQQUdFX1NISUZUOworCQlpZiAoZW5kX3BmbiA+IGxhc3RfcGZuKQorCQkJbGFz
+dF9wZm4gPSBlbmRfcGZuOworCX0KIAogCWlmIChsYXN0X3BmbiA+IG1heF9hcmNoX3BmbikKIAkJ
+bGFzdF9wZm4gPSBtYXhfYXJjaF9wZm47CkBAIC0xMTkyLDkgKzEyMDAsNyBAQCBzdGF0aWMgaW50
+IF9faW5pdCBwYXJzZV9tZW1tYXBfb3B0KGNoYXIKIAkJICogdGhlIHJlYWwgbWVtIHNpemUgYmVm
+b3JlIG9yaWdpbmFsIG1lbW9yeSBtYXAgaXMKIAkJICogcmVzZXQuCiAJCSAqLwotCQllODIwX3Jl
+Z2lzdGVyX2FjdGl2ZV9yZWdpb25zKDAsIDAsIC0xVUwpOwotCQlzYXZlZF9tYXhfcGZuID0gZTgy
+MF9lbmRfb2ZfcmFtKCk7Ci0JCXJlbW92ZV9hbGxfYWN0aXZlX3JhbmdlcygpOworCQlzYXZlZF9t
+YXhfcGZuID0gZTgyMF9lbmQoKTsKICNlbmRpZgogCQllODIwLm5yX21hcCA9IDA7CiAJCXVzZXJk
+ZWYgPSAxOwpJbmRleDogbGludXgtMi42L2FyY2gveDg2L2tlcm5lbC9zZXR1cC5jCj09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2FyY2gveDg2L2tlcm5lbC9zZXR1cC5jCisrKyBsaW51eC0y
+LjYvYXJjaC94ODYva2VybmVsL3NldHVwLmMKQEAgLTcxNCwyMiArNzE0LDE4IEBAIHZvaWQgX19p
+bml0IHNldHVwX2FyY2goY2hhciAqKmNtZGxpbmVfcCkKIAllYXJseV9nYXJ0X2lvbW11X2NoZWNr
+KCk7CiAjZW5kaWYKIAotCWU4MjBfcmVnaXN0ZXJfYWN0aXZlX3JlZ2lvbnMoMCwgMCwgLTFVTCk7
+CiAJLyoKIAkgKiBwYXJ0aWFsbHkgdXNlZCBwYWdlcyBhcmUgbm90IHVzYWJsZSAtIHRodXMKIAkg
+KiB3ZSBhcmUgcm91bmRpbmcgdXB3YXJkczoKIAkgKi8KLQltYXhfcGZuID0gZTgyMF9lbmRfb2Zf
+cmFtKCk7CisJbWF4X3BmbiA9IGU4MjBfZW5kKCk7CiAKIAkvKiBwcmVhbGxvY2F0ZSA0ayBmb3Ig
+bXB0YWJsZSBtcGMgKi8KIAllYXJseV9yZXNlcnZlX2U4MjBfbXBjX25ldygpOwogCS8qIHVwZGF0
+ZSBlODIwIGZvciBtZW1vcnkgbm90IGNvdmVyZWQgYnkgV0IgTVRSUnMgKi8KIAltdHJyX2JwX2lu
+aXQoKTsKLQlpZiAobXRycl90cmltX3VuY2FjaGVkX21lbW9yeShtYXhfcGZuKSkgewotCQlyZW1v
+dmVfYWxsX2FjdGl2ZV9yYW5nZXMoKTsKLQkJZTgyMF9yZWdpc3Rlcl9hY3RpdmVfcmVnaW9ucygw
+LCAwLCAtMVVMKTsKLQkJbWF4X3BmbiA9IGU4MjBfZW5kX29mX3JhbSgpOwotCX0KKwlpZiAobXRy
+cl90cmltX3VuY2FjaGVkX21lbW9yeShtYXhfcGZuKSkKKwkJbWF4X3BmbiA9IGU4MjBfZW5kKCk7
+CiAKICNpZmRlZiBDT05GSUdfWDg2XzMyCiAJLyogbWF4X2xvd19wZm4gZ2V0IHVwZGF0ZWQgaGVy
+ZSAqLwpAQCAtNzcyLDkgKzc2OCw2IEBAIHZvaWQgX19pbml0IHNldHVwX2FyY2goY2hhciAqKmNt
+ZGxpbmVfcCkKIAkgKi8KIAlhY3BpX2Jvb3RfdGFibGVfaW5pdCgpOwogCi0JLyogUmVtb3ZlIGFj
+dGl2ZSByYW5nZXMgc28gcmVkaXNjb3Zlcnkgd2l0aCBOVU1BLWF3YXJlbmVzcyBoYXBwZW5zICov
+Ci0JcmVtb3ZlX2FsbF9hY3RpdmVfcmFuZ2VzKCk7Ci0KICNpZmRlZiBDT05GSUdfQUNQSV9OVU1B
+CiAJLyoKIAkgKiBQYXJzZSBTUkFUIHRvIGRpc2NvdmVyIG5vZGVzLgpJbmRleDogbGludXgtMi42
+L2luY2x1ZGUvYXNtLXg4Ni9lODIwLmgKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvaW5j
+bHVkZS9hc20teDg2L2U4MjAuaAorKysgbGludXgtMi42L2luY2x1ZGUvYXNtLXg4Ni9lODIwLmgK
+QEAgLTk5LDcgKzk5LDcgQEAgZXh0ZXJuIHZvaWQgZnJlZV9lYXJseSh1NjQgc3RhcnQsIHU2NCBl
+bgogZXh0ZXJuIHZvaWQgZWFybHlfcmVzX3RvX2Jvb3RtZW0odTY0IHN0YXJ0LCB1NjQgZW5kKTsK
+IGV4dGVybiB1NjQgZWFybHlfcmVzZXJ2ZV9lODIwKHU2NCBzdGFydHQsIHU2NCBzaXpldCwgdTY0
+IGFsaWduKTsKIAotZXh0ZXJuIHVuc2lnbmVkIGxvbmcgZTgyMF9lbmRfb2ZfcmFtKHZvaWQpOwor
+ZXh0ZXJuIHVuc2lnbmVkIGxvbmcgZTgyMF9lbmQodm9pZCk7CiBleHRlcm4gaW50IGU4MjBfZmlu
+ZF9hY3RpdmVfcmVnaW9uKGNvbnN0IHN0cnVjdCBlODIwZW50cnkgKmVpLAogCQkJCSAgdW5zaWdu
+ZWQgbG9uZyBzdGFydF9wZm4sCiAJCQkJICB1bnNpZ25lZCBsb25nIGxhc3RfcGZuLAo=
+------=_Part_38466_8413854.1215568598703--
