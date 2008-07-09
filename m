@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756151AbYGIWwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756278AbYGIWxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756151AbYGIWwS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 18:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbYGIWwK
+	id S1756278AbYGIWxj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 18:53:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbYGIWxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 18:52:10 -0400
-Received: from www.tglx.de ([62.245.132.106]:43214 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752345AbYGIWwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 18:52:09 -0400
-Date: Thu, 10 Jul 2008 00:52:02 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] Fix a compile warning in arch/x86/mm/init_64.c
-Message-ID: <20080709225202.GA3232@local>
+	Wed, 9 Jul 2008 18:53:31 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:34011 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751049AbYGIWxb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 18:53:31 -0400
+Message-ID: <487541C0.70702@keyaccess.nl>
+Date: Thu, 10 Jul 2008 00:54:56 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Russ Anderson <rja@sgi.com>
+CC: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       Jack Steiner <steiner@sgi.com>
+Subject: Re: [patch] x86 BIOS interface for RTC on SGI UV
+References: <20080709202719.GB22744@sgi.com> <4875266B.4020504@keyaccess.nl> <20080709213622.GC22744@sgi.com> <4875320D.2070306@keyaccess.nl> <20080709220944.GA18690@sgi.com>
+In-Reply-To: <20080709220944.GA18690@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes a minor compile warning in arch/x86/mm/init_64.c about passing a
-wrong pointer type as argument 2 to find_e820_area_size().
-Tested with 2.6.26-rc9.
+On 10-07-08 00:09, Russ Anderson wrote:
 
-Signed-of-by: Hans J. Koch <hjk@linutronix.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>
+> Ouch.  Thanks.
 
----
- arch/x86/mm/init_64.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Yep, should do. Pestering you about the include guard maybe missing a 
+_UV in there would be going overboard...
 
-Index: linux-2.6.26-rc/arch/x86/mm/init_64.c
-===================================================================
---- linux-2.6.26-rc.orig/arch/x86/mm/init_64.c	2008-07-10 00:18:52.000000000 +0200
-+++ linux-2.6.26-rc/arch/x86/mm/init_64.c	2008-07-10 00:25:43.000000000 +0200
-@@ -506,7 +506,7 @@
- 
- static void __init early_memtest(unsigned long start, unsigned long end)
- {
--	u64 t_start, t_size;
-+	unsigned long t_start, t_size;
- 	unsigned pattern;
- 
- 	if (!memtest_pattern)
+> Index: linux/include/asm-x86/uv/bios.h
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux/include/asm-x86/uv/bios.h	2008-07-09 17:01:42.000000000 -0500
+> @@ -0,0 +1,68 @@
+> +#ifndef _ASM_X86_BIOS_H
+> +#define _ASM_X86_BIOS_H
+
+Rene.
