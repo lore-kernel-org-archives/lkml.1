@@ -1,84 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756639AbYGILBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755815AbYGILJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756639AbYGILBT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 07:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbYGILBG
+	id S1755815AbYGILJW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 07:09:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbYGILJO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 07:01:06 -0400
-Received: from sinclair.provo.novell.com ([137.65.248.137]:19294 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752116AbYGILBF convert rfc822-to-8bit (ORCPT
+	Wed, 9 Jul 2008 07:09:14 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:14801 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752047AbYGILJN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 07:01:05 -0400
-Message-Id: <48746084.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Wed, 09 Jul 2008 04:53:56 -0600
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Nick Piggin" <nickpiggin@yahoo.com.au>
-Cc: <mingo@elte.hu>, <rostedt@goodmis.org>, <peterz@infradead.org>,
-       <npiggin@suse.de>, <linux-kernel@vger.kernel.org>,
-       <linux-rt-users@vger.kernel.org>
-Subject: Re: [PATCH 2/3] sched: terminate newidle balancing once at
-	least one task has moved over
-References: <20080627202444.3829.21595.stgit@lsg.lsg.lab.novell.com>
- <200807081500.18245.nickpiggin@yahoo.com.au>
- <48732751.BA47.005A.0@novell.com>
- <200807091809.52293.nickpiggin@yahoo.com.au>
-In-Reply-To: <200807091809.52293.nickpiggin@yahoo.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Wed, 9 Jul 2008 07:09:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=xMh/7lXF3MTCv7EPZaiSKngXwzDTSdrAdM0NkRpsELY+iX7Px4p7aC0qssnKLeFMi4
+         QvTiSM/FBR1cVfQ6tcc2N8rUCPZoSw70UWQ+3rBBZFeXUaYIo8vvknHtcYM//4pbIHCI
+         EYaQ8F/meXzeeGR9+7CtNXeYvFwAk0fIWjR4I=
+Message-ID: <bc64b4640807090409h2ebb8f4embae20b8511fbe459@mail.gmail.com>
+Date: Wed, 9 Jul 2008 15:09:12 +0400
+From: Dmitry <dbaryshkov@gmail.com>
+To: "Ben Dooks" <ben-linux@fluff.org>
+Subject: Re: [patch 3/4] MFD: Remove unnecessary fields if mfd_cell structure.
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       sameo@openedhand.com
+In-Reply-To: <20080709104932.905074060@fluff.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <20080709104916.200210922@fluff.org>
+	 <20080709104932.905074060@fluff.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Wed, Jul 9, 2008 at  4:09 AM, in message
-<200807091809.52293.nickpiggin@yahoo.com.au>, Nick Piggin
-<nickpiggin@yahoo.com.au> wrote: 
-> On Tuesday 08 July 2008 22:37, Gregory Haskins wrote:
->> >>> On Tue, Jul 8, 2008 at  1:00 AM, in message
->>
->> <200807081500.18245.nickpiggin@yahoo.com.au>, Nick Piggin
->>
->> <nickpiggin@yahoo.com.au> wrote:
->> > On Saturday 28 June 2008 06:29, Gregory Haskins wrote:
->> >> Inspired by Peter Zijlstra.
->> >>
->> >> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
->> >
->> > What happened to the feedback I sent about this?
->> >
->> > It is still nack from me.
->>
->> Ah yes.  Slipped through the cracks...sorry about that.
->>
->> What if we did "if (idle == CPU_NEWLY_IDLE && need_resched())" instead?
-> 
-> Isn't that exactly the same thing
+2008/7/9 Ben Dooks <ben-linux@fluff.org>:
+> The enable,disable,suspend and resume entry in the struct mfd_cell
+> do not seem to be necessary as they should be handled by the
+> platform driver that the device created has bound to.
 
-Not quite.  The former version would break on *any* succesful enqueue (as a result of a
-local move_task as well as a remote wake-up/migration).  The latter version will only
-break on the the remote variety.  You were concerned about stopping a move_task
-operation early because it would reduce efficiency, and I do not entirely disagree.
-However, this really only concerns the local type (which have now been removed).
+NAK. It's used e.g. by the tmio-nand driver. These fields provide easy
+way to support
+enhanced power management, etc.
 
-Remote preemptions should (IMO) always break immediately because it would have been likely
-to invalidate the f_b_g() calculation anyway, and low-latency requirements dictate
-its the right thing to do.
+>
+> Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+>
+> Index: linux-2.6.26-rc9-next20080709/include/linux/mfd/core.h
+> ===================================================================
+> --- linux-2.6.26-rc9-next20080709.orig/include/linux/mfd/core.h 2008-07-09 10:44:45.000000000 +0100
+> +++ linux-2.6.26-rc9-next20080709/include/linux/mfd/core.h      2008-07-09 10:45:06.000000000 +0100
+> @@ -23,12 +26,6 @@
+>  */
+>  struct mfd_cell {
+>        const char              *name;
+> -
+> -       int                     (*enable)(struct platform_device *dev);
+> -       int                     (*disable)(struct platform_device *dev);
+> -       int                     (*suspend)(struct platform_device *dev);
+> -       int                     (*resume)(struct platform_device *dev);
+> -
+>        void                    *driver_data; /* driver-specific data */
+>
+>        /*
+>
+> --
+>
 
-> because any task will preempt the idle thread?
 
-During NEWIDLE this is a preempt-disabled section because we are still in the middle
-of a schedule(). Therefore there will be no involuntary preemption and that is why we
-are concerned with making sure we check for voluntary preemption.  The move_tasks()
-will run to completion without this patch.  With this patch it will break the operation if
-someone tries to preempt us.
 
-I'll keep an open mind but I am pretty sure this is something we should be doing. As far
-as I can tell, there should be no downside with this second version.  As a compromise
-we could put an #ifdef CONFIG_PREEMPT around this new logic, but I don't think it
-is strictly necessary.
-
-Regards,
--Greg
+-- 
+With best wishes
+Dmitry
