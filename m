@@ -1,65 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754044AbYGIT1O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755709AbYGIT1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754044AbYGIT1O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 15:27:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750940AbYGIT07
+	id S1755709AbYGIT1j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 15:27:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbYGIT13
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 15:26:59 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44158 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751162AbYGIT06 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 15:26:58 -0400
-Date: Wed, 9 Jul 2008 21:26:30 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, LKML <linux-kernel@vger.kernel.org>,
-       Jens Axboe <axboe@kernel.dk>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <clameter@linux-foundation.org>,
-       Petr Tesarik <ptesarik@suse.cz>,
-       Virtualization <virtualization@lists.linux-foundation.org>,
-       Xen devel <xen-devel@lists.xensource.com>,
-       Thomas Friebel <thomas.friebel@amd.com>, Avi Kivity <avi@qumranet.com>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [patch] x86, paravirt-spinlocks: fix boot hang
-Message-ID: <20080709192630.GA4804@elte.hu>
-References: <20080707190749.299430659@goop.org> <20080709122852.GA30579@elte.hu> <20080709133358.GA7005@elte.hu> <20080709134944.GA15190@elte.hu> <4874DF7F.4080204@goop.org>
+	Wed, 9 Jul 2008 15:27:29 -0400
+Received: from mail.av.it.pt ([193.136.92.53]:42814 "EHLO av.it.pt"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750940AbYGIT12 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 15:27:28 -0400
+Message-ID: <48751121.8010808@av.it.pt>
+Date: Wed, 09 Jul 2008 20:27:29 +0100
+From: Bruno Santos <bsantos@av.it.pt>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4874DF7F.4080204@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Arjan van de Ven <arjan@infradead.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: semaphore: lockless fastpath using atomic_{inc,dec}_return
+References: <4874DBBF.1000907@av.it.pt> <20080709085018.3a76d1e0@infradead.org> <4874EDB5.7030007@av.it.pt>
+In-Reply-To: <4874EDB5.7030007@av.it.pt>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-
->> should never
->>     be built with -pg (which ftrace does). Marking paravirt.o as 
->>     non-pg and marking all spinlock ops as always-inline solve the 
->>     hang.
->>    
+Bruno Santos wrote:
+> Arjan van de Ven wrote:
+>> On Wed, 09 Jul 2008 16:39:43 +0100
+>> Bruno Santos <bsantos@av.it.pt> wrote:
+>>
+>>  
+>>> Hi,
+>>>
+>>>  >hi,
+>>>  >
+>>>  >not to ruin the party but... how is this lockless? An atomic
+>>>  >variable is every bit a "lock" as a spinlock is... and very much
+>>>  >equally expensive as well for most cases ;-(
+>>>
+>>> Perhaps not the best the choice of words, I should have omitted the
+>>> word lockless. But it seems my understanding of lockless and yours is
+>>> different. And indeed, it's very expensive as a spinlock, but
+>>> comparatively, is only one operation, that if successful doesn't have
+>>> to lock and then unlock (that's why I called it lockless ...).
+>>>     
+>>
+>> ok I only come from an Intel/x86 background, where unlock is basically
+>> free, and the "lock" is exactly the same cost as an atomic op.
+>> (in fact, an atomic op and a lock are the exact same code.. you're just
+>> open coding it)
+>>   
+> From your words if we do:
 >
-> Thanks Ingo, that would have taken me a while to work out.
+> spin_lock()
+> val = --foo;
+> spin_unlock();
+>
+> Has the same cost than:
+>
+> val = atomic_dec_return(&foo);
+>
+> ?
+>
+>>  
+>>> The mutex takes the same approach, however it uses it's own flavour
+>>> of atomic ops. What I'm really interested is if this brings any
+>>> benefit in terms of performance.
+>>>     
+>>
+>> on x86... I would highly doubt it since you have the same number of
+>> atomic operations. (it's not the lock that is expensive. ever. it's
+>> always the fact that a lock implies an atomic operation that makes it
+>> expensive)
+>>
+>>   
+>
+> How come I have the same number of atomic ops?
+>
+> Let's consider the fast case scenario (semaphore is unlocked for the 
+> 'down' and has no waiters for 'up') in x86:
+> - with the spinlock only approach we have 2 atomic ops, xadd for lock, 
+> inc for unlock. The unlock doesn't come for free in x86 after all.
+Sorry about typo, the inc for unlock is not atomic, so it indeed comes 
+for free, but we still have to pay for  all the overhead of lock - unlock.
+> - with the approach I presented we have 1 atomic op (xadd or it could 
+> be inc/dec if optimized)
+>
+> If go the slow path things get more expensive than the spinlock only 
+> approach: we have to lock, do some atomic ops for correctness, and 
+> unlock.
+>
 
-yeah, i figured i'd be the better candidate to debug ftrace related 
-problems ;-)
-
-> Presumably that means that xen/smp.o should also be built without -pg.  
-> In fact, should I move the spinlock code into its own file, so that 
-> ftrace can cover as much as it can?
-
-hm, yeah. Anything that can be called via the lowest level spinlock 
-functions should be either notrace, or, better, in a -pg-excluded .o 
-file. Putting it all into a separate file would cover it nicely i think.
-
-	Ingo
