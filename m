@@ -1,74 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758037AbYGILhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757917AbYGILia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758037AbYGILhr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 07:37:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757407AbYGILhb
+	id S1757917AbYGILia (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 07:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754201AbYGILiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 07:37:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34539 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757256AbYGILh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 07:37:29 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] Mark i2o config broken on 64-bit platforms.
-To: alan@redhat.com, Markus.Lidel@shadowconnect.com, vvs@sw.ru,
-       akpm@linux-foundation.org
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Date: Wed, 09 Jul 2008 12:35:47 +0100
-Message-ID: <20080709113547.19235.15424.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Jul 2008 07:38:22 -0400
+Received: from trinity.fluff.org ([89.145.97.151]:52044 "EHLO
+	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754138AbYGILiV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 07:38:21 -0400
+Date: Wed, 9 Jul 2008 12:38:19 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Dmitry <dbaryshkov@gmail.com>
+Cc: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [patch 3/4] MFD: Remove unnecessary fields if mfd_cell structure.
+Message-ID: <20080709113818.GJ8517@trinity.fluff.org>
+References: <20080709104916.200210922@fluff.org> <20080709104932.905074060@fluff.org> <bc64b4640807090409h2ebb8f4embae20b8511fbe459@mail.gmail.com> <20080709111215.GL8489@trinity.fluff.org> <bc64b4640807090416k7ab2f24aj1eae0cfd6c79b106@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <bc64b4640807090416k7ab2f24aj1eae0cfd6c79b106@mail.gmail.com>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.9i
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark i2o config broken on 64-bit platforms as it generates these:
+On Wed, Jul 09, 2008 at 03:16:47PM +0400, Dmitry wrote:
+> 2008/7/9 Ben Dooks <ben-linux@fluff.org>:
+> > On Wed, Jul 09, 2008 at 03:09:12PM +0400, Dmitry wrote:
+> >> 2008/7/9 Ben Dooks <ben-linux@fluff.org>:
+> >> > The enable,disable,suspend and resume entry in the struct mfd_cell
+> >> > do not seem to be necessary as they should be handled by the
+> >> > platform driver that the device created has bound to.
+> >>
+> >> NAK. It's used e.g. by the tmio-nand driver. These fields provide easy
+> >> way to support
+> >> enhanced power management, etc.
+> >
+> > What enhancements over the standard platform device model do you need?
+> 
+> As an example of what  we need, please check the tmio-nand driver.
 
-In file included from drivers/message/i2o/config-osm.c:39:
-drivers/message/i2o/i2o_config.c: In function 'i2o_cfg_passthru':
-drivers/message/i2o/i2o_config.c:889: warning: cast to pointer from integer of different size
-drivers/message/i2o/i2o_config.c:945: warning: cast to pointer from integer of different size
-
-which are apparently non-trivial to fix (eg: inserting a cast through unsigned
-long is not correct according to Linus).  This would be due to struct
-sg_simple_element only having a 32-bit addr_bus value.
-
-There are also a number of "TODO 64bit fix" comments.
-
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- drivers/message/i2o/Kconfig |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-
-diff --git a/drivers/message/i2o/Kconfig b/drivers/message/i2o/Kconfig
-index 5afa0e3..c102225 100644
---- a/drivers/message/i2o/Kconfig
-+++ b/drivers/message/i2o/Kconfig
-@@ -54,7 +54,7 @@ config I2O_EXT_ADAPTEC_DMA64
+As posted below, the driver on the linux-mtd list does not use this,
+and further more in [1] the method of getting to the the mfd_cell from
+a given platform_device has gone which would be used by [2] if it
+actually touched the mfd_cell information.
  
- config I2O_CONFIG
- 	tristate "I2O Configuration support"
--	depends on VIRT_TO_BUS
-+	depends on VIRT_TO_BUS && (BROKEN || !64BIT)
- 	---help---
- 	  Say Y for support of the configuration interface for the I2O adapters.
- 	  If you have a RAID controller from Adaptec and you want to use the
-@@ -66,6 +66,8 @@ config I2O_CONFIG
- 	  Note: If you want to use the new API you have to download the
- 	  i2o_config patch from http://i2o.shadowconnect.com/
- 
-+	  Note: This is broken on 64-bit architectures.
-+
- config I2O_CONFIG_OLD_IOCTL
- 	bool "Enable ioctls (OBSOLETE)"
- 	depends on I2O_CONFIG
+[1] http://lists.arm.linux.org.uk/lurker/message/20080708.153450.bb33046d.en.html
+[2] http://lists.infradead.org/pipermail/linux-mtd/2008-June/022137.html
+
+> >
+> >> >
+> >> > Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+> >> >
+> >> > Index: linux-2.6.26-rc9-next20080709/include/linux/mfd/core.h
+> >> > ===================================================================
+> >> > --- linux-2.6.26-rc9-next20080709.orig/include/linux/mfd/core.h 2008-07-09 10:44:45.000000000 +0100
+> >> > +++ linux-2.6.26-rc9-next20080709/include/linux/mfd/core.h      2008-07-09 10:45:06.000000000 +0100
+> >> > @@ -23,12 +26,6 @@
+> >> >  */
+> >> >  struct mfd_cell {
+> >> >        const char              *name;
+> >> > -
+> >> > -       int                     (*enable)(struct platform_device *dev);
+> >> > -       int                     (*disable)(struct platform_device *dev);
+> >> > -       int                     (*suspend)(struct platform_device *dev);
+> >> > -       int                     (*resume)(struct platform_device *dev);
+> >> > -
+> >> >        void                    *driver_data; /* driver-specific data */
+> >> >
+> >> >        /*
+> >> >
+> >> > --
+> >> >
+> >>
+> >>
+> >>
+> >> --
+> >> With best wishes
+> >> Dmitry
+> >
+> > --
+> > --
+> > Ben
+> >
+> > Q:      What's a light-year?
+> > A:      One-third less calories than a regular year.
+> >
+> >
+> 
+> 
+> 
+> -- 
+> With best wishes
+> Dmitry
+> 
+> -------------------------------------------------------------------
+> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+
+-- 
+-- 
+Ben
+
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
 
