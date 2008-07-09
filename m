@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbYGISXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbYGIS0d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754776AbYGISXZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 14:23:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752913AbYGISXR
+	id S1754528AbYGIS0d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 14:26:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752529AbYGIS0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 14:23:17 -0400
-Received: from gw.goop.org ([64.81.55.164]:37059 "EHLO mail.goop.org"
+	Wed, 9 Jul 2008 14:26:25 -0400
+Received: from gw.goop.org ([64.81.55.164]:40430 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752870AbYGISXR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 14:23:17 -0400
-Message-ID: <48750202.3060603@goop.org>
-Date: Wed, 09 Jul 2008 11:22:58 -0700
+	id S1751333AbYGIS0Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 14:26:24 -0400
+Message-ID: <487502BD.2020206@goop.org>
+Date: Wed, 09 Jul 2008 11:26:05 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Mike Travis <travis@sgi.com>
-CC: Christoph Lameter <cl@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
        linux-kernel@vger.kernel.org
 Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <4874F4F2.9010603@goop.org> <4874F7D9.5060607@linux-foundation.org> <4874FAB2.5080401@goop.org> <4875000A.3060004@sgi.com>
-In-Reply-To: <4875000A.3060004@sgi.com>
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <4874F4F2.9010603@goop.org> <4874F7D9.5060607@linux-foundation.org> <4874FD52.8070000@sgi.com> <4874FFC4.7050505@linux-foundation.org>
+In-Reply-To: <4874FFC4.7050505@linux-foundation.org>
 X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
@@ -30,32 +30,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-> Jeremy Fitzhardinge wrote:
-> ...
->   
->> Once the pda has shrunk as much as it can (which remove everything
->> except stack_canary, I think), then remove all the X_pda macros, since
->> there won't be any users anyway.
->>
->>    J
->>     
+Christoph Lameter wrote:
+> That is going to be difficult. The GS register is tied up for the pda area
+> as long as you have it. And you cannot get rid of the pda because of the library
+> compatibility issues. We would break binary compatibility if we would get rid of the pda.
 >
-> You bring up a good point here.  Since the stack_canary has to be 20
-> (or is that 0x20?) bytes from %gs, then it sounds like we'll still
-> need a pda struct of some sort.  And zero padding before that seems
-> counter-productive, so perhaps taking a poll of the most used pda
-> (or percpu) variables and keeping them in the same cache line would
-> be more useful?
+> If one attempts to remove one field after another then the converted accesses will not be able to use GS relative accesses anymore. This can lead to all sorts of complications.
+>   
 
-The offset is 40 (decimal).  I don't see any particular problem with 
-putting zero padding in there; we can get rid of it if 
-CONFIG_STACK_PROTECTOR is off.
+Eh?  Yes they will.  That's the whole point of making the pda a percpu 
+variable itself.  You can use %gs:<small> to get to the pda, and 
+%gs:<larger> to get to percpu variables.  Converting pda->percpu will 
+just have the effect of increasing the %gs offset into the percpu space.
 
-The trouble with reusing the space is that it's going to be things like 
-"current" which are the best candidates for going there - but if you do 
-that you lose i386 unification (unless you play some tricks where you 
-arrange to make the percpu variables land there while still appearing to 
-be normal percpu vars).
+This project isn't interesting to me unless per-cpu variables are 
+directly accessible off %gs.
 
     J
