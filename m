@@ -1,208 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757136AbYGIMbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756449AbYGIMfj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757136AbYGIMbT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 08:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbYGIMbH
+	id S1756449AbYGIMfj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 08:35:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbYGIMfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 08:31:07 -0400
-Received: from rn-out-0910.google.com ([64.233.170.191]:30774 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751961AbYGIMbF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 08:31:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=A0AxGl4tByOGTMFBoZEDA90A/ZxwdWDKzESkY4HWN2iNSdogFLYqG9JZVyiLcRt0Am
-         gAZGnU0qu/Zx4+6MemfjwN9WuoAfKY8t0q7qws68ain75bUVc+3xGkTmoinse18OqjG/
-         Arajc+q8mECkeY3Gt8579DfkL4GzTeVWTIVas=
-Message-ID: <bc64b4640807090531l6bd2bd69l5dd352dcd82ce8e6@mail.gmail.com>
-Date: Wed, 9 Jul 2008 16:31:01 +0400
-From: Dmitry <dbaryshkov@gmail.com>
-To: "Ben Dooks" <ben-linux@fluff.org>
-Subject: Re: [patch 4/4] MFD: Change mfd platform device usage to wrapper platform_device
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
-In-Reply-To: <20080709120720.GL8517@trinity.fluff.org>
+	Wed, 9 Jul 2008 08:35:30 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45112 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752783AbYGIMf3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 08:35:29 -0400
+Date: Wed, 9 Jul 2008 14:35:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, LKML <linux-kernel@vger.kernel.org>,
+       Jens Axboe <axboe@kernel.dk>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Lameter <clameter@linux-foundation.org>,
+       Petr Tesarik <ptesarik@suse.cz>,
+       Virtualization <virtualization@lists.linux-foundation.org>,
+       Xen devel <xen-devel@lists.xensource.com>,
+       Thomas Friebel <thomas.friebel@amd.com>, Avi Kivity <avi@qumranet.com>
+Subject: [patch] x86: paravirt spinlocks, !CONFIG_SMP build fixes (was: Re:
+	[PATCH RFC 0/4] Paravirtual spinlocks)
+Message-ID: <20080709123503.GA13610@elte.hu>
+References: <20080707190749.299430659@goop.org> <20080709122852.GA30579@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080709104916.200210922@fluff.org>
-	 <20080709104933.101610936@fluff.org>
-	 <bc64b4640807090415w781507fetfe332271ad158112@mail.gmail.com>
-	 <20080709112426.GN8489@trinity.fluff.org>
-	 <bc64b4640807090431g5b1960edua2508337973615da@mail.gmail.com>
-	 <20080709115045.GK8517@trinity.fluff.org>
-	 <bc64b4640807090456u15d12378qe25375ce4a6cd100@mail.gmail.com>
-	 <20080709120720.GL8517@trinity.fluff.org>
+In-Reply-To: <20080709122852.GA30579@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/7/9 Ben Dooks <ben-linux@fluff.org>:
-> On Wed, Jul 09, 2008 at 03:56:54PM +0400, Dmitry wrote:
->> 2008/7/9 Ben Dooks <ben-linux@fluff.org>:
->> > On Wed, Jul 09, 2008 at 03:31:04PM +0400, Dmitry wrote:
->> >> 2008/7/9 Ben Dooks <ben-linux@fluff.org>:
->> >> > On Wed, Jul 09, 2008 at 03:15:47PM +0400, Dmitry wrote:
->> >> >> 2008/7/9 Ben Dooks <ben-linux@fluff.org>:
->> >> >> > This patch changes the mfd core behaviour to wrapper the platform_device
->> >> >> > it creates in an struct mfd_device which contains the information
->> >> >> > about the cell that was created.
->> >> >> >
->> >> >> > 1) The creation of the resource list and then passing it to the
->> >> >> >   platform_device_add_resources() causes the allocation of a
->> >> >> >   large array on the stack as well as copying the source data
->> >> >> >   twice (it is copied from the mfd_cell to the temporary array
->> >> >> >   and then copied into the newly allocated array)
->> >> >> >
->> >> >> > 2) We can wrapper the platform_device into an mfd_device and use
->> >> >> >   that to do the platform_device and resource allocation in one
->> >> >> >   go to reduce the failiure.
->> >> >> >
->> >> >> > Note, is there actually any reason to pass the sub devices any
->> >> >> > information about the cell they are created from? The mfd core
->> >> >> > already makes the appropriate resource adjustments and anything
->> >> >> > else like clocks should be exported by the clock drivers?
->> >> >> >
->> >> >> > Signed-off-by: Ben Dooks <ben-linux@fluff.org>
->> >> >>
->> >> >>
->> >> >> NAK.
->> >> >> 0) It was discussed yesterday on the list and the decision was to go
->> >> >> in a different way.
->> >> >>   I've provided a bit cleaner patch with the same idea, but then we
->> >> >> decided to go in a bit different way.
->> >> >> 1) I prefer patch by Mike Rapoport which is more clear and goes in a
->> >> >> more correct way.
->> >> >
->> >> > How "more correct", whilst the patch by Mike makes the platform data
->> >> > be passed from the cell, there is no longer any way to get from the
->> >> > platform device to the mfd_cell...
->> >>
->> >> Basically we have two choises for the subdevice driver:
->> >> 1) it doesn't know about cells at all (e.g. generic-bl, IIRC). Then we are safe
->> >>    to loose that "cell" information
->> >> 2) If it does use cell information (to get access to hooks), we pass it
->> >>     via platform_data pointer in the mfd_cell and we are ok with it.
->> >
->> > Erm, that is complete non-answer. The driver model and various other
->> > parts of the kernel are littered with examples of embedding one
->> > structure within another to gain an C++ like object inheritance.
->> >
->> > I've supplied an reasonable example of doing this to create an mfd_cell
->> > device from an platform_device without creating an large amount of code
->> > and improving the efficiency and code-lineage in the process. I do not
->> > see how this isn't "correct" or in any way breaing the current linux
->> > model of doing things.
->>
->> It isn't breaking it. OK. I'm leaving the decision to the MFD or ARM
->> maintainers.
->> And BTW, nearly the same patch was sent yesterday by me[1]. Is it an independant
->> work, or did you miss my sign-off?
->>
->> [1]: http://permalink.gmane.org/gmane.linux.ports.arm.kernel/44142
->
-> Hmm, thanks, completely missed because it has a completely un-related
-> looking title.
->
->> >
->> >>
->> >> > The current driver is being inefficent in the way it creates resources
->> >> > on the stack and then calls a routine that does an kalloc/memcpy on
->> >> > the resources.
->> >>
->> >> I don't see any inefficiency ATM.
->> >>
->> >> >> 2) Please examine the tmio-nand driver (was here on the list and on
->> >> >> linux-mtd). It uses the mfd_cell
->> >> >>    to call hooks from the "host" driver (tc6393xb, more to be added soon).
->> >> >
->> >> > The one posted in [1] does not call these hooks at-all, can ou please
->> >> > explain why these hooks are needed in addition to the ones already
->> >> > available in the platform device driver?
->> >> >
->> >> > [1] http://lists.infradead.org/pipermail/linux-mtd/2008-June/022137.html
->> >>
->> >> +
->> >> +static int tmio_hw_init(struct platform_device *dev, struct tmio_nand *tmio)
->> >> +{
->> >> +     struct mfd_cell *cell = mfd_get_cell(dev);
->> >> +     const struct resource *nfcr = NULL;
->> >> +     unsigned long base;
->> >> +     int i;
->> >> +
->> >> +     for (i = 0; i < cell->num_resources; i++)
->> >> +             if (!strcmp((cell->resources+i)->name, TMIO_NAND_CONTROL))
->> >> +                     nfcr = &cell->resources[i];
->> >> +
->> >> +     if (nfcr == NULL)
->> >> +             return -ENOMEM;
->> >> +
->> >> +     if (cell->enable) {
->> >> +             int rc = cell->enable(dev);
->> >> +             if (rc)
->> >> +                     return rc;
->> >> +     }
->> >>
->> >> That cell->enable() is necessary to set up the host (in the tc6393xb
->> >> case to enable buffers)
->> >> to enable access to the nand.
->> >
->> > So, the enable/disable calls might be useful, however is there any
->> > reason this could not be handled by the clock framework? The suspend/resume
->> > entries where not used, and I belive should not be in here.
->>
->> They should be here for exactly the same reason. They are used by the drivers
->> that will be submitted later. E.g. OHCI driver needs such
->> suspend/resume handling.
->
-> No, you don't understand. I'll make a rather explicit point about the
-> very clever way the device tree works since the devices are registered
-> with their parent device set.
->
-> In the suspend, all sub devices are suspended via their
-> platform_driver.suspend method before the parent device's suspend method
-> is called. When resuming, the parent is resumed before calling the
-> children's platform_driver.resume methods.
 
-Suspending of sub-devices is handled in two places:
-1) suspend the state of subdevice (e.g. ohci stores some info) and then
-2)  sub-device host suspends/disables the cell (e.g. clocks, power, etc).
-  These steps depend completely on the MFD-device, not only on the sub-device.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-These two-stage power management is represented by the suspend/resume hooks
-in the mfd_cell. However, I think we will be able to drop the
-suspend/resume when/if
-generic clocks and voltage regulators frameworks get merged.
+> as there were no fundamental objections in this thread i've created a 
+> tip/x86/paravirt-spinlocks topic branch for these patches and started 
+> testing them.
 
->> > As noted before, mfd_get_cell() got dropped by [2]
->> >
->> > [2] http://lists.arm.linux.org.uk/lurker/message/20080708.153450.bb33046d.en.html
->>
->> Yes, and as I said before it will need some small modifications.
->>
->> --
->> With best wishes
->> Dmitry
->>
->> -------------------------------------------------------------------
->> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
->> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
->> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
->
-> --
-> Ben
->
-> Q:      What's a light-year?
-> A:      One-third less calories than a regular year.
->
->
+small UP build fixes below.
 
+	Ingo
 
+----------------->
+commit c77bc635bb0486b0ddbe03012a8662b399ae9cdb
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Wed Jul 9 14:33:33 2008 +0200
 
--- 
-With best wishes
-Dmitry
+    x86: paravirt spinlocks, !CONFIG_SMP build fixes
+    
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+diff --git a/arch/x86/kernel/paravirt.c b/arch/x86/kernel/paravirt.c
+index bba4041..6aa8aed 100644
+--- a/arch/x86/kernel/paravirt.c
++++ b/arch/x86/kernel/paravirt.c
+@@ -270,11 +270,13 @@ enum paravirt_lazy_mode paravirt_get_lazy_mode(void)
+ 
+ void __init paravirt_use_bytelocks(void)
+ {
++#ifdef CONFIG_SMP
+ 	pv_lock_ops.spin_is_locked = __byte_spin_is_locked;
+ 	pv_lock_ops.spin_is_contended = __byte_spin_is_contended;
+ 	pv_lock_ops.spin_lock = __byte_spin_lock;
+ 	pv_lock_ops.spin_trylock = __byte_spin_trylock;
+ 	pv_lock_ops.spin_unlock = __byte_spin_unlock;
++#endif
+ }
+ 
+ struct pv_info pv_info = {
+@@ -461,12 +463,14 @@ struct pv_mmu_ops pv_mmu_ops = {
+ };
+ 
+ struct pv_lock_ops pv_lock_ops = {
++#ifdef CONFIG_SMP
+ 	.spin_is_locked = __ticket_spin_is_locked,
+ 	.spin_is_contended = __ticket_spin_is_contended,
+ 
+ 	.spin_lock = __ticket_spin_lock,
+ 	.spin_trylock = __ticket_spin_trylock,
+ 	.spin_unlock = __ticket_spin_unlock,
++#endif
+ };
+ 
+ EXPORT_SYMBOL_GPL(pv_time_ops);
+diff --git a/include/asm-x86/paravirt.h b/include/asm-x86/paravirt.h
+index 65ed02c..b2aba8f 100644
+--- a/include/asm-x86/paravirt.h
++++ b/include/asm-x86/paravirt.h
+@@ -1387,6 +1387,8 @@ void _paravirt_nop(void);
+ 
+ void paravirt_use_bytelocks(void);
+ 
++#ifdef CONFIG_SMP
++
+ static inline int __raw_spin_is_locked(struct raw_spinlock *lock)
+ {
+ 	return PVOP_CALL1(int, pv_lock_ops.spin_is_locked, lock);
+@@ -1412,6 +1414,8 @@ static __always_inline void __raw_spin_unlock(struct raw_spinlock *lock)
+ 	return PVOP_VCALL1(pv_lock_ops.spin_unlock, lock);
+ }
+ 
++#endif
++
+ /* These all sit in the .parainstructions section to tell us what to patch. */
+ struct paravirt_patch_site {
+ 	u8 *instr; 		/* original instructions */
+
