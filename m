@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756325AbYGIQzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755065AbYGIQ4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756325AbYGIQzp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 12:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbYGIQvj
+	id S1755065AbYGIQ4X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 12:56:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbYGIQvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 12:51:39 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:53197 "EHLO relay.sgi.com"
+	Wed, 9 Jul 2008 12:51:41 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:53195 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751934AbYGIQvb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 12:51:31 -0400
-Message-Id: <20080709165130.417042000@polaris-admin.engr.sgi.com>
+	id S1751913AbYGIQva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 12:51:30 -0400
+Message-Id: <20080709165130.147071000@polaris-admin.engr.sgi.com>
 References: <20080709165129.292635000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 09 Jul 2008 09:51:37 -0700
+Date: Wed, 09 Jul 2008 09:51:35 -0700
 From: Mike Travis <travis@sgi.com>
 To: Jeremy Fitzhardinge <jeremy@goop.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -20,8 +20,8 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        "H. Peter Anvin" <hpa@zytor.com>,
        Christoph Lameter <cl@linux-foundation.org>,
        Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
-Subject: [RFC 08/15] x86_64: Replace xxx_pda() operations in include_asm-x86_mmu_context_64_h
-Content-Disposition: inline; filename=incl_pda_ops_include_asm-x86_mmu_context_64_h
+Subject: [RFC 06/15] x86_64: Replace xxx_pda() operations in include_asm-x86_current_h
+Content-Disposition: inline; filename=incl_pda_ops_include_asm-x86_current_h
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -41,43 +41,25 @@ Based on linux-2.6.tip/master
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- include/asm-x86/mmu_context_64.h |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ include/asm-x86/current.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- linux-2.6.tip.orig/include/asm-x86/mmu_context_64.h	2008-07-01 10:41:33.000000000 -0700
-+++ linux-2.6.tip/include/asm-x86/mmu_context_64.h	2008-07-01 10:49:14.220312889 -0700
-@@ -20,8 +20,8 @@ void destroy_context(struct mm_struct *m
- static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
+--- linux-2.6.tip.orig/include/asm-x86/current.h	2008-07-01 10:41:33.000000000 -0700
++++ linux-2.6.tip/include/asm-x86/current.h	2008-07-01 10:49:13.764285143 -0700
+@@ -17,12 +17,13 @@ static __always_inline struct task_struc
+ 
+ #ifndef __ASSEMBLY__
+ #include <asm/pda.h>
++#include <asm/percpu.h>
+ 
+ struct task_struct;
+ 
+ static __always_inline struct task_struct *get_current(void)
  {
- #ifdef CONFIG_SMP
--	if (read_pda(mmu_state) == TLBSTATE_OK)
--		write_pda(mmu_state, TLBSTATE_LAZY);
-+	if (x86_read_percpu(pda.mmu_state) == TLBSTATE_OK)
-+		x86_write_percpu(pda.mmu_state, TLBSTATE_LAZY);
- #endif
+-	return read_pda(pcurrent);
++	return x86_read_percpu(pda.pcurrent);
  }
  
-@@ -33,8 +33,8 @@ static inline void switch_mm(struct mm_s
- 		/* stop flush ipis for the previous mm */
- 		cpu_clear(cpu, prev->cpu_vm_mask);
- #ifdef CONFIG_SMP
--		write_pda(mmu_state, TLBSTATE_OK);
--		write_pda(active_mm, next);
-+		x86_write_percpu(pda.mmu_state, TLBSTATE_OK);
-+		x86_write_percpu(pda.active_mm, next);
- #endif
- 		cpu_set(cpu, next->cpu_vm_mask);
- 		load_cr3(next->pgd);
-@@ -44,8 +44,8 @@ static inline void switch_mm(struct mm_s
- 	}
- #ifdef CONFIG_SMP
- 	else {
--		write_pda(mmu_state, TLBSTATE_OK);
--		if (read_pda(active_mm) != next)
-+		x86_write_percpu(pda.mmu_state, TLBSTATE_OK);
-+		if (x86_read_percpu(pda.active_mm) != next)
- 			BUG();
- 		if (!cpu_test_and_set(cpu, next->cpu_vm_mask)) {
- 			/* We were in lazy tlb mode and leave_mm disabled
+ #else /* __ASSEMBLY__ */
 
 -- 
