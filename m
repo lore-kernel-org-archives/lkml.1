@@ -1,116 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757122AbYGIVV5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756554AbYGIVWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757122AbYGIVV5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 17:21:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753869AbYGIVVr
+	id S1756554AbYGIVWr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 17:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbYGIVWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 17:21:47 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:60174 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753828AbYGIVVq (ORCPT
+	Wed, 9 Jul 2008 17:22:37 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:47785 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751831AbYGIVWf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 17:21:46 -0400
-Subject: Re: 2.6.25.9: system clocks works normally then speeds up 4x...
-From: john stultz <johnstul@us.ibm.com>
-To: Philippe Troin <phil@fifi.org>
-Cc: linux-kernel@vger.kernel.org, macro@linux-mips.org
-In-Reply-To: <87wsjuzsmr.fsf@old-tantale.fifi.org>
-References: <87d4lm2792.fsf@old-tantale.fifi.org>
-	 <1f1b08da0807091255s77033943t2b686ddb537ceaae@mail.gmail.com>
-	 <874p6y25es.fsf@old-tantale.fifi.org>
-	 <1215634125.6149.8.camel@localhost.localdomain>
-	 <87wsjuzsmr.fsf@old-tantale.fifi.org>
+	Wed, 9 Jul 2008 17:22:35 -0400
+Subject: [RFC] simple dprobe like markers for the kernel
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
 Content-Type: text/plain
-Date: Wed, 09 Jul 2008 14:21:39 -0700
-Message-Id: <1215638499.6149.16.camel@localhost.localdomain>
+Date: Wed, 09 Jul 2008 16:22:31 -0500
+Message-Id: <1215638551.3444.39.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I've been looking at using the existing in kernel markers for dtrace
+named probing in systemtap.  What I find is that they're a bit
+heavyweight when compared to what dtrace does (because of the way they
+drop stubbable calling points).
 
-On Wed, 2008-07-09 at 13:53 -0700, Philippe Troin wrote:
-> john stultz <johnstul@us.ibm.com> writes:
-> 
-> > On Wed, 2008-07-09 at 13:01 -0700, Philippe Troin wrote:
-> > > "john stultz" <johnstul@us.ibm.com> writes:
-> > > 
-> > > > On Wed, Jul 9, 2008 at 12:21 PM, Philippe Troin <phil@fifi.org> wrote:
-> > > > >
-> > > > > Symptoms:
-> > > > >
-> > > > >  The system boots fine. Clock seems to run normally.
-> > > > >
-> > > > >  Then after a random amount of time (on the current boot, 3 days),
-> > > > >  clock starts to be running 2-4x faster (on the current boot, 4x).
-> > > > >
-> > > > >  I have tried booting with "nohz=off highres=off" but it does not
-> > > > >  help.
-> > > > 
-> > > > Could you provide the output from the following:
-> > > >    sudo cat /sys/devices/system/clocksource/clocksource0/*
-> > > 
-> > > Sure.
-> > > 
-> > > It is:
-> > > available: jiffies tsc 
-> > > current:   jiffies
-> > > 
-> > > > Did this issue occur with 2.6.24 or earlier kernels?
-> > > 
-> > > No.  It started with 2.6.25.
-> > > 
-> > > Interestingly:
-> > > 
-> > >   I've just modified the current clocksource to tsc and the clock went
-> > >   back to its normal speed.
-> > > 
-> > >   Then I reset the current clocksource to jiffies, and the clock went
-> > >   back to its (wrong) 4x speed.
-> > > 
-> > > So it looks like the kernel is counting jiffies 4x too fast.
-> > 
-> > When you're seeing the issue, can you do the following:
-> >   cat /proc/interrupts > interrupts
-> > 
-> >   <wait 10 seconds by your wristwatch> 
-> > 
-> >   cat /proc/interrupts >> interrupts
-> > 
-> > And send the results?
-> 
-> There you are:
-> 
->            CPU0       CPU1
->   0:        353          0   IO-APIC-edge      timer
-> LOC:  546305845   33155722   Local timer interrupts
-> Roughly 10 seconds later:
->   0:        353          0   IO-APIC-edge      timer
-> LOC:  546361653   33156517   Local timer interrupts
+This patch adds incredibly simple markers which are designed to be used
+via kprobes.  All it does is add an extra section to the kernel (and
+modules) which annotates the location in source file/line of the marker
+and a description of the variables of interest.  Tools like systemtap
+can then use the kernel dwarf2 debugging information to transform this
+to a precise probe point that gives access to the named variables.
 
-Huh. So that's a diff of:
-LOCdiff   55808        795  
+The beauty of this scheme is that it has zero cost in the unactivated
+case (the extra section is discardable if you're not interested in the
+information, and nothing is actually added into the routine being
+marked).  The disadvantage is that it's really unusable for rolling your
+own marker probes because it relies on the dwarf2 information to locate
+the probe point for kprobes and unravel the local variables of interest,
+so you need an external tool like systemtap to help you.
 
-So that's 55 seconds worth of ticks on cpu0 and not one on cpu1. So yea,
-something seems off with your timer interrupts.
+The scheme uses a printk format like string to describe the variables of
+interest, so if those variables disappear, the compile breaks (even in
+the unmarked case) which should help us keep the marked probe points
+current.
 
-> > Could you also try booting with noapic to see if that changes anything?
-> 
-> Sure.  This will mean I will lose the "wedged" system.  Is there
-> anything else that needs to be checked on it before I lose the broken
-> state?
-> Also keep in mind that the symptoms take a while to manifest
-> themselves (a few days typically).
+For instance, this is what SCSI would look like with a probe point added
+just before the command goes to the low level device
 
-I can't think of anything right off. But maybe we should give some
-others a chance to look.
+		trace_simple(queuecommand, "Command being queued %p Done function %p", cmd, scsi_done);
+		rtn = host->hostt->queuecommand(cmd, scsi_done);
+		trace_simple(queuecommand_return, "Command returning %p Return value %d", cmd, rtn);
 
-I would like to see the same /proc/interrupt data when the system is
-properly functioning as well. So whenever you do reboot, that would be
-interesting to me.
+Here you can see that each trace point describes two variables whose
+values can be viewed at that point by the relevant tools.  The format
+strings and variables can be used by a tool to perform dtrace -l like
+functionality:
 
-thanks
--john
+MODULE    FUNCTION         NAME                DESCRIPTION
+scsi_mod  scsi_dispatch_io queuecommand        Command being queued $sdev; Done function $scsi_done
+scsi_mod  scsi_dispatch_io queuecommand_return Command being queued $sdev; Return value $ret
+
+So the trace points recommend to the user what variables to use and
+briefly what they mean.
+
+James
+
+---
+
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index f054778..c0c38b8 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -299,6 +299,8 @@
+ 		.debug_funcnames 0 : { *(.debug_funcnames) }		\
+ 		.debug_typenames 0 : { *(.debug_typenames) }		\
+ 		.debug_varnames  0 : { *(.debug_varnames) }		\
++		/* simple markers (depends on dwarf2 debugging info) */	\
++		__simple_marker (INFO) : { *(__simple_marker) }		\
+ 
+ 		/* Stabs debugging sections.  */
+ #define STABS_DEBUG							\
+diff --git a/include/linux/simple_marker.h b/include/linux/simple_marker.h
+new file mode 100644
+index 0000000..675f5b1
+--- /dev/null
++++ b/include/linux/simple_marker.h
+@@ -0,0 +1,41 @@
++#include <linux/stringify.h>
++
++/* To be used for string format validity checking with gcc */
++static inline void __printf(1, 2)
++__trace_simple_check_format(const char *fmt, ...)
++{
++}
++
++#ifdef CONFIG_DEBUG_INFO
++#define trace_simple(name, format, args...)				\
++	do {								\
++		static const char __simple_name_##name[]		\
++		__attribute__((section("__simple_marker")))		\
++		__attribute__((__used__))				\
++		= #name;						\
++		static const char __simple_file_##name[]		\
++		__attribute__((section("__simple_marker")))		\
++		__attribute__((__used__))				\
++		= __FILE__;						\
++		static const char __simple_line_##name[]		\
++		__attribute__((section("__simple_marker")))		\
++		__attribute__((__used__))				\
++		= __stringify(__LINE__);				\
++		static const char __simple_format_##name[]		\
++		__attribute__((section("__simple_marker")))		\
++		__attribute__((__used__))				\
++		= #format;						\
++		static const char __simple_args_##name[]		\
++		__attribute__((section("__simple_marker")))		\
++		__attribute__((__used__))				\
++		= #args;						\
++		if (0)							\
++			__trace_simple_check_format(format, ## args);	\
++	} while(0)
++#else
++#define trace_simple(name, format, args...)				\
++	do {								\
++		if (0)							\
++			__trace_simple_check_format(format, ## args);	\
++	 } while(0)
++#endif
+
 
