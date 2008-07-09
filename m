@@ -1,80 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757828AbYGIMIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757910AbYGIMLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757828AbYGIMIW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 08:08:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbYGIMIG
+	id S1757910AbYGIMLf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 08:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbYGIML1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 08:08:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43549 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752152AbYGIMID (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 08:08:03 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20080709044743.0dd15a3f.akpm@linux-foundation.org>
-References: <20080709044743.0dd15a3f.akpm@linux-foundation.org> <20080709113547.19235.15424.stgit@warthog.procyon.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dhowells@redhat.com, alan@redhat.com, Markus.Lidel@shadowconnect.com,
-       vvs@sw.ru, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] Mark i2o config broken on 64-bit platforms.
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
-Date: Wed, 09 Jul 2008 13:07:47 +0100
-Message-ID: <6904.1215605267@redhat.com>
+	Wed, 9 Jul 2008 08:11:27 -0400
+Received: from rn-out-0910.google.com ([64.233.170.185]:7736 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750748AbYGIML0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 08:11:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=LlCOnG7KzeurEzrRbrPIzYlTt/7wUa9Lep/2S/ziaPni4WC1BvlMLVbQEmtiCFoVRT
+         EtTbf4ALH8pH11x1Dq9b+cqX6yeCnMBxGfuG/ypwbGRA6jDbRFYdlnLEeOY0oEFw1E5y
+         23fNW5FRbYRZJLoZ4i3Hu7Bk+Z3xEdWA+Ibas=
+Subject: Re: [PATCH 03/04] resource: use new resource type changes
+From: Josh Boyer <jwboyer@gmail.com>
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de, akpm@linux-foundation.org
+In-Reply-To: <20080709115452.14144.28953.sendpatchset@rx1.opensource.se>
+References: <20080709115428.14144.7121.sendpatchset@rx1.opensource.se>
+	 <20080709115452.14144.28953.sendpatchset@rx1.opensource.se>
+Content-Type: text/plain
+Date: Wed, 09 Jul 2008 08:11:13 -0400
+Message-Id: <1215605473.13186.2.camel@weaponx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Wed, 2008-07-09 at 20:54 +0900, Magnus Damm wrote:
+> Make sure resource_type() or IORESOURCE_TYPE_BITS are used instead of
+> bit operations. This needs more work, I ignored drivers/ for now.
+> 
+> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> ---
 
-> Is it actually known to be broken on 64-bit, or does it happen to work?
+<snip>
 
-It's casting a 32-bit value to a userspace pointer and then passing that to
-copy_to/from_user():
+>  arch/ppc/kernel/pci.c                      |   48 +++++++++++++---------------
+>  arch/ppc/syslib/ppc405_pci.c               |    2 -
+>  arch/ppc/syslib/ppc_sys.c                  |    2 -
 
-				// TODO 64bit fix
-				if (copy_from_user
-				    (p->virt,
-				     (void __user *)(unsigned long)sg[i].
-				     addr_bus, sg_size)) {
+You can drop the arch/ppc bits entirely.  arch/ppc won't exist in 2.6.27
 
-and:
+josh
 
-				// TODO 64bit fix
-				if (copy_to_user
-				    ((void __user *)sg[j].addr_bus, sg_list[j],
-				     sg_size)) {
-
-so someone's obviously aware that it is wrong.  According to vc-annotate it's
-been there since before Linus last reset the history, so obviously someone's
-aware of it.
-
-Another of these has in fact been cast in the way Linus objects to:
-
-				// TODO 64bit fix
-				if (copy_to_user
-				    ((void __user *)(u64) sg[j].addr_bus,
-				     sg_list[j].virt, sg_size)) {
-
-The problem, I suspect, is that userspace may have addresses that can't be
-held in the 32-bit addr_bus value, but the 32-bit value is held in the
-i2o_message struct:
-
-	static int i2o_cfg_passthru(unsigned long arg)
-	{
-	...
-		struct i2o_message *msg;
-	...
-			// TODO 64bit fix
-			sg = (struct sg_simple_element *)((&msg->u.head[0]) +
-							  sg_offset);
-	...
-	}
-
-and if these i2o_message structs are actually passed to the hardware, it may
-not be possible to actually expand them, and looking at i2o_msg_post(), that
-seems to be exactly what happens.
-
-David
