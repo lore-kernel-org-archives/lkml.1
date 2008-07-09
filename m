@@ -1,151 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757148AbYGIPYh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758062AbYGIPZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757148AbYGIPYh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 11:24:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753818AbYGIPY3
+	id S1758062AbYGIPZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 11:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754186AbYGIPZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 11:24:29 -0400
-Received: from ag-out-0708.google.com ([72.14.246.240]:33375 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753466AbYGIPY2 (ORCPT
+	Wed, 9 Jul 2008 11:25:17 -0400
+Received: from el-out-1112.google.com ([209.85.162.180]:52408 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753818AbYGIPZP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 11:24:28 -0400
+	Wed, 9 Jul 2008 11:25:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:references;
-        b=MX4J5f0hOZsi5WXHWuIZYOUwohqFyGOwlEUzhXerFbHrjBxyZy9PO0VHHZDx5uN6kF
-         f9bVzMHcTfibs9KULMkQlaIm5N8SqyB3HsVl2jWpUD6sm9TPfisZYRETgP1f/uMFqih5
-         KUXoz0MT/hi6RYmFx62dt4G0m5Xg3hPbArVgQ=
-Message-ID: <c56f29cb0807090824k727b0da7se1a019394cdbeea7@mail.gmail.com>
-Date: Wed, 9 Jul 2008 17:24:25 +0200
-From: "Jan Willem van den Brand" <janwillem.dev@googlemail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [RFC] ext3/jbd, kernel 2.6.13, make ext3 mountable as ext2 when journal is empty.
-In-Reply-To: <c56f29cb0807090821x74d0652ekc3ae4bb5725df76c@mail.gmail.com>
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=lq5rUJIFgjDfExPbRoGH7oOzTlRbLN47w/T5CAwfNYtSKpfszOHmuT4bgzgQUKEPP+
+         9w0XXWxpvrQiaTgAssu/ysGMJKeh9LjiQUaT1B8qD/BW1lUL7JgYe8kRwpaFNiN20Gzh
+         He7dGH6+4V8wNhGXx6wJtzaYlA1jdWokw9MAU=
+Date: Wed, 9 Jul 2008 19:25:05 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: akpm@linux-foundation.org, hpa@zytor.com, tglx@linutronix.de,
+       andi@firstfloor.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/5] early params NULL pointer deref fix
+Message-ID: <20080709152505.GA6784@asus>
+References: <486f61a9.1e35440a.5815.ffffbc7d@mx.google.com> <20080709115746.GA19060@elte.hu>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_6126_17774423.1215617065551"
-References: <c56f29cb0807090821x74d0652ekc3ae4bb5725df76c@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080709115746.GA19060@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_6126_17774423.1215617065551
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+[Ingo Molnar - Wed, Jul 09, 2008 at 01:57:48PM +0200]
+| 
+| * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+| 
+| >  This series fix a possible NULL pointer deref in case if user was 
+| > stupid enough to pass boot parameter without a mandatory value
+| > 
+| >  Actually there is a number of such issues on other platforms too 
+| > (like powerpc, sh, s390) so I think it should be fixed too (any 
+| > volunteers?)
+| > 
+| >  Any comments are welcome.
+| 
+| thanks Cyrill, i picked them up.
+| 
+| I'm wondering, would it be possible to filter NULL out on one higher 
+| level? Would it break any existing functionality? (i dont think it would 
+| or should)
+| 
+| 	Ingo
+| 
 
-This patch makes ext3 mountable as ext2 even in case of a power
-failure while mounted as ext3. We have tested it for kernel 2.6.13 but
-it should be fairly easy to get it to work for other versions.
+well, actually it would and should :)
 
-When mounting an ext3 file system as ext2 (without journalling) an
-incompatibility flag is checked to assure that the journal can be
-safely ignored. This INCOMPAT_RECOVER flag is set when ext3 is
-unmounted. The idea is that, at this point, all checkpointing data is
-transferred to disk.
+Currently parser does a simple thing - just parses command line and split
+key/param pairs. But kernel code uses it in three ways:
 
-In case of a power failure, the INCOMPAT flag is not reset. Systems
-that suffer from frequent power failure (e.g. SD-cards that are
-unsafely removed) will often not be mountable as ext2.
+ 1) as simple flag specified on booting
+ 2) as key and value
+ 3) combination of 1) and 2)
 
-I think that ext3 can be mounted as ext2 when there is no
-checkpointing data in the journal (no data being written from journal
-to disk). The journal is then skipped by both e2fsck and ext3
-mounting. To make aforementioned systems more frequently mountable as
-ext2 we reset the INCOMPAT flag when we are sure that there is no
-checkpointing data in the journal. We set it again as soon as there
-is.
+So for now I don't see any simple solution for this. We could use '='
+param postfix to specify that a mandatory value required for param and
+throw out any misconfigured boot options but it will make way 3) invalid
+so kernel code will have to be fixed then. So some additional review
+and conversation about this are needed.
 
-Furthermore, we observed that there is alsmost always checkpointing
-data in the journal. Therefore, we flush the journal on every file
-sync (journal flushing flushes checkppointing data) and we perform a
-file sync after every file close.
-
-Obviously, this solution will result in poor performance when many
-small files are frequently closed after write but that is not the case
-in our system (TomTom navigation device).
-
-I'd like to hear opinions about this solution.
-
-Best regards,
-
-Jan Willem van den Brand
-
-------=_Part_6126_17774423.1215617065551
-Content-Type: text/plain; name=patch.txt
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fig2tgyt1
-Content-Disposition: attachment; filename=patch.txt
-
-PT09PSBsaW51eC1zM2MyNHh4Lm9yZy9mcy9leHQzL2ZzeW5jLmMjMSAtIGxpbnV4LXMzYzI0eHgv
-ZnMvZXh0My9mc3luYy5jID09PT0KLS0tIGxpbnV4LXMzYzI0eHgub3JnL2ZzL2V4dDMvZnN5bmMu
-YwkgIDIwMDgtMDYtMzAgMTE6Mjg6NTEuMDAwMDAwMDAwICswMjAwCisrKyBsaW51eC1zM2MyNHh4
-L2ZzL2V4dDMvZnN5bmMuYwkgIDIwMDgtMDYtMzAgMTE6Mjg6MjcuMDAwMDAwMDAwICswMjAwCkBA
-IC0yOSw2ICsyOSw3IEBACiAjaW5jbHVkZSA8bGludXgvamJkLmg+CiAjaW5jbHVkZSA8bGludXgv
-ZXh0M19mcy5oPgogI2luY2x1ZGUgPGxpbnV4L2V4dDNfamJkLmg+CiAKIC8qCiAgKiBha3BtOiBB
-IG5ldyBkZXNpZ24gZm9yIGV4dDNfc3luY19maWxlKCkuCkBAIC00NSw2ICs0Niw3IEBACiBpbnQg
-ZXh0M19zeW5jX2ZpbGUoc3RydWN0IGZpbGUgKiBmaWxlLCBzdHJ1Y3QgZGVudHJ5ICpkZW50cnks
-IGludCBkYXRhc3luYykgIHsKIAlzdHJ1Y3QgaW5vZGUgKmlub2RlID0gZGVudHJ5LT5kX2lub2Rl
-OworCXN0cnVjdCBzdXBlcl9ibG9jayAqc2IgPSBpbm9kZS0+aV9zYjsKIAlpbnQgcmV0ID0gMDsK
-IAogCUpfQVNTRVJUKGV4dDNfam91cm5hbF9jdXJyZW50X2hhbmRsZSgpID09IDApOyBAQCAtODQs
-NSArODYsMTAgQEAKIAkJcmV0ID0gc3luY19pbm9kZShpbm9kZSwgJndiYyk7CiAJfQogb3V0Ogor
-CS8qIEFmdGVyIGFuIGZzeW5jLCB3ZSBlbXB0eSB0aGUgam91cm5hbCAoY2hlY2twb2ludCBhbGwK
-KwkgKiBUX0ZJTklTSEVEIHRyYW5zYWN0aW9ucyB0byBkaXNrLiAgKi8KKwlqb3VybmFsX2xvY2tf
-dXBkYXRlcyhFWFQzX1NCKHNiKS0+c19qb3VybmFsKTsKKwlqb3VybmFsX2ZsdXNoKEVYVDNfU0Io
-c2IpLT5zX2pvdXJuYWwpOworCWpvdXJuYWxfdW5sb2NrX3VwZGF0ZXMoRVhUM19TQihzYiktPnNf
-am91cm5hbCk7CiAJcmV0dXJuIHJldDsKIH0KPT09PSBsaW51eC1zM2MyNHh4Lm9yZy9mcy9qYmQv
-am91cm5hbC5jIzEgLSAvbGludXgtczNjMjR4eC9mcy9qYmQvam91cm5hbC5jID09PT0KLS0tIGxp
-bnV4LXMzYzI0eHgub3JnL2ZzL2piZC9qb3VybmFsLmMJICAgMjAwOC0wNi0zMCAxMToyODo1MS4w
-MDAwMDAwMDAgKzAyMDAKKysrIGxpbnV4LXMzYzI0eHgvZnMvamJkL2pvdXJuYWwuYwkgICAyMDA4
-LTA2LTMwIDExOjI2OjE2LjAwMDAwMDAwMCArMDIwMApAQCAtMjIsMTAgKzIyLDEzIEBACiAgKiBq
-b3VybmFsaW5nIChleHQyIGNhbiB1c2UgYSByZXNlcnZlZCBpbm9kZSBmb3Igc3RvcmluZyB0aGUg
-bG9nKS4KICAqLwogCisKKwogI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPgogI2luY2x1ZGUgPGxp
-bnV4L3RpbWUuaD4KICNpbmNsdWRlIDxsaW51eC9mcy5oPgogI2luY2x1ZGUgPGxpbnV4L2piZC5o
-PgorI2luY2x1ZGUgPGxpbnV4L2V4dDNfZnMuaD4KICNpbmNsdWRlIDxsaW51eC9lcnJuby5oPgog
-I2luY2x1ZGUgPGxpbnV4L3NsYWIuaD4KICNpbmNsdWRlIDxsaW51eC9zbXBfbG9jay5oPgpAQCAt
-MzcsNiArNDAsMjMgQEAKICNpbmNsdWRlIDxhc20vcGFnZS5oPgogI2luY2x1ZGUgPGxpbnV4L3By
-b2NfZnMuaD4KIAorc3RhdGljIHZvaWQgZXh0M19jb21taXRfc3VwZXIgKHN0cnVjdCBzdXBlcl9i
-bG9jayAqIHNiLAorCQkJICAgICAgIHN0cnVjdCBleHQzX3N1cGVyX2Jsb2NrICogZXMsCisJCQkg
-ICAgICAgaW50IHN5bmMpCit7CisJc3RydWN0IGJ1ZmZlcl9oZWFkICpzYmggPSBFWFQzX1NCKHNi
-KS0+c19zYmg7CisKKwlpZiAoIXNiaCkKKwkJcmV0dXJuOworCWVzLT5zX3d0aW1lID0gY3B1X3Rv
-X2xlMzIoZ2V0X3NlY29uZHMoKSk7CisJZXMtPnNfZnJlZV9ibG9ja3NfY291bnQgPSBjcHVfdG9f
-bGUzMihleHQzX2NvdW50X2ZyZWVfYmxvY2tzKHNiKSk7CisJZXMtPnNfZnJlZV9pbm9kZXNfY291
-bnQgPSBjcHVfdG9fbGUzMihleHQzX2NvdW50X2ZyZWVfaW5vZGVzKHNiKSk7CisJQlVGRkVSX1RS
-QUNFKHNiaCwgIm1hcmtpbmcgZGlydHkiKTsKKwltYXJrX2J1ZmZlcl9kaXJ0eShzYmgpOworCWlm
-IChzeW5jKQorCQlzeW5jX2RpcnR5X2J1ZmZlcihzYmgpOworfQorCiBFWFBPUlRfU1lNQk9MKGpv
-dXJuYWxfc3RhcnQpOwogRVhQT1JUX1NZTUJPTChqb3VybmFsX3Jlc3RhcnQpOwogRVhQT1JUX1NZ
-TUJPTChqb3VybmFsX2V4dGVuZCk7CkBAIC05MzgsNiArOTU4LDggQEAKIHsKIAlqb3VybmFsX3N1
-cGVyYmxvY2tfdCAqc2IgPSBqb3VybmFsLT5qX3N1cGVyYmxvY2s7CiAJc3RydWN0IGJ1ZmZlcl9o
-ZWFkICpiaCA9IGpvdXJuYWwtPmpfc2JfYnVmZmVyOworCXN0cnVjdCBzdXBlcl9ibG9jayAqIHNi
-X3A7CisJaW50IHNfc3RhcnRfd2FzX3plcm8gPSAwOwogCiAJLyoKIAkgKiBBcyBhIHNwZWNpYWwg
-Y2FzZSwgaWYgdGhlIG9uLWRpc2sgY29weSBpcyBhbHJlYWR5IG1hcmtlZCBhcyBuZWVkaW5nIEBA
-IC05NTksOCArOTgxLDIzIEBACiAJamJkX2RlYnVnKDEsIkpCRDogdXBkYXRpbmcgc3VwZXJibG9j
-ayAoc3RhcnQgJWxkLCBzZXEgJWQsIGVycm5vICVkKVxuIiwKIAkJICBqb3VybmFsLT5qX3RhaWws
-IGpvdXJuYWwtPmpfdGFpbF9zZXF1ZW5jZSwgam91cm5hbC0+al9lcnJubyk7CiAKKwlpZiAoc2It
-PnNfc3RhcnQ9PTApCisJICBzX3N0YXJ0X3dhc196ZXJvID0gMTsKIAlzYi0+c19zZXF1ZW5jZSA9
-IGNwdV90b19iZTMyKGpvdXJuYWwtPmpfdGFpbF9zZXF1ZW5jZSk7CiAJc2ItPnNfc3RhcnQgICAg
-PSBjcHVfdG9fYmUzMihqb3VybmFsLT5qX3RhaWwpOworCS8qIElmIHNfc3RhcnQgZ2V0cyBhIG5v
-bi16ZXJvIHZhbHVlIGhlcmUsIHdlIHJlc2V0IHRoZQorCSAqIGltY29tcGF0aWJpbGl0eSBmbGFn
-cyAqLworCWlmIChzX3N0YXJ0X3dhc196ZXJvICYmIHNiLT5zX3N0YXJ0IT0wKQorCSAgeworCSAg
-ICBzYl9wID0gKHN0cnVjdCBzdXBlcl9ibG9jayAqKShqb3VybmFsLT5qX3ByaXZhdGUpOworCSAg
-ICBFWFQzX1NFVF9JTkNPTVBBVF9GRUFUVVJFKHNiX3AsIEVYVDNfRkVBVFVSRV9JTkNPTVBBVF9S
-RUNPVkVSKTsKKwkgICAgLyogZmx1c2ggc3VwZXJfYmxvY2sgdG8gZGlzay4gKi8KKwkgICAgZXh0
-M19jb21taXRfc3VwZXIoc2JfcCwgRVhUM19TQihzYl9wKS0+c19lcywgMSk7CgorCSAgfQogCXNi
-LT5zX2Vycm5vICAgID0gY3B1X3RvX2JlMzIoam91cm5hbC0+al9lcnJubyk7CiAJc3Bpbl91bmxv
-Y2soJmpvdXJuYWwtPmpfc3RhdGVfbG9jayk7CiAKQEAgLTEzNDIsNiArMTM3OSw3IEBACiAJaW50
-IGVyciA9IDA7CiAJdHJhbnNhY3Rpb25fdCAqdHJhbnNhY3Rpb24gPSBOVUxMOwogCXVuc2lnbmVk
-IGxvbmcgb2xkX3RhaWw7CisJc3RydWN0IHN1cGVyX2Jsb2NrICogc2JfcDsKIAogCXNwaW5fbG9j
-aygmam91cm5hbC0+al9zdGF0ZV9sb2NrKTsKIApAQCAtMTM5MCw2ICsxNDI4LDE3IEBACiAJSl9B
-U1NFUlQoIWpvdXJuYWwtPmpfY2hlY2twb2ludF90cmFuc2FjdGlvbnMpOwogCUpfQVNTRVJUKGpv
-dXJuYWwtPmpfaGVhZCA9PSBqb3VybmFsLT5qX3RhaWwpOwogCUpfQVNTRVJUKGpvdXJuYWwtPmpf
-dGFpbF9zZXF1ZW5jZSA9PSBqb3VybmFsLT5qX3RyYW5zYWN0aW9uX3NlcXVlbmNlKTsKKworCS8q
-IFRoZSBqb3VybmFsIGlzIGVtcHR5LCB3ZSBjYW4gdXBkYXRlIHRoZSBjb21wYXRpYmlsaXR5IGZs
-YWdzCisJICogaW4gZXh0MydzIHN1cGVyYmxvY2sgYW5kIGZsdXNoIGl0IHRvIGRpc2sgKi8KKwlz
-Yl9wID0gKHN0cnVjdCBzdXBlcl9ibG9jayAqKShqb3VybmFsLT5qX3ByaXZhdGUpOworCUVYVDNf
-Q0xFQVJfSU5DT01QQVRfRkVBVFVSRShzYl9wLCBFWFQzX0ZFQVRVUkVfSU5DT01QQVRfUkVDT1ZF
-Uik7CgorCWV4dDNfY29tbWl0X3N1cGVyKHNiX3AsIEVYVDNfU0Ioc2JfcCktPnNfZXMsIDEpOwoK
-IAlzcGluX3VubG9jaygmam91cm5hbC0+al9zdGF0ZV9sb2NrKTsKIAlyZXR1cm4gZXJyOwogfQ==
-
-------=_Part_6126_17774423.1215617065551--
+		- Cyrill -
