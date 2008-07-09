@@ -1,153 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753118AbYGIT3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755212AbYGIT37@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753118AbYGIT3T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 15:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbYGIT3E
+	id S1755212AbYGIT37 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 15:29:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbYGIT3v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 15:29:04 -0400
-Received: from mailrelay006.isp.belgacom.be ([195.238.6.172]:23590 "EHLO
-	mailrelay006.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751483AbYGIT3B (ORCPT
+	Wed, 9 Jul 2008 15:29:51 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:3315 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751272AbYGIT3u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 15:29:01 -0400
-X-Belgacom-Dynamic: yes
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqEAAHysdEhR8saB/2dsb2JhbAAIsUo
-From: Laurent Pinchart <laurent.pinchart@skynet.be>
-To: Roland Dreier <roland@digitalvampire.org>
-Subject: Re: Linux 2.6.26-rc9 circular lock with uvcvideo on resume from hibernation
-Date: Wed, 9 Jul 2008 21:29:03 +0200
-User-Agent: KMail/1.9.9
-Cc: Romano Giannetti <romano@dea.icai.upcomillas.es>,
-       linux-kernel@vger.kernel.org, linux-uvc-devel@berlios.de
-References: <1215426867.5113.8.camel@pern> <878wwdbnjn.fsf@shaolin.home.digitalvampire.org>
-In-Reply-To: <878wwdbnjn.fsf@shaolin.home.digitalvampire.org>
-X-Face: 4Mf^tnii7k\_EnR5aobBm6Di[DZ9@AX1wJ"okBdX-UoJ>:SRn]c6DDU"qUIwfs98vF>=?utf-8?q?Tnf=0A=09SacR=7B?=(0Du"N%_.#X]"TXx)A'gKB1i7SK$CTLuy{h})c=g:'w3
+	Wed, 9 Jul 2008 15:29:50 -0400
+Date: Wed, 9 Jul 2008 23:29:43 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-serial@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: [PATCH v2] serial: 8250: fix shared interrupts issues with SMP
+	and RT kernels
+Message-ID: <20080709192943.GA12278@polina.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20080623232957.GA5111@polina.dev.rtsoft.ru> <20080624001221.GA20685@elte.hu> <20080701134343.GA1865@polina.dev.rtsoft.ru> <20080701144353.7285805d@lxorguk.ukuu.org.uk> <20080701150254.GA13390@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-Message-Id: <200807092129.03679.laurent.pinchart@skynet.be>
+In-Reply-To: <20080701150254.GA13390@polina.dev.rtsoft.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Romano and Roland,
-
-On Monday 07 July 2008, Roland Dreier wrote:
->  > [ 1132.942569] khubd/2264 is trying to acquire lock:
->  > [ 1132.942614]  (videodev_lock){--..}, at: [<f89e4595>]
->  > video_unregister_device+0x15/0x60 [videodev] [ 1132.942810]
->  > [ 1132.942811] but task is already holding lock:
->  > [ 1132.942890]  (&uvc_driver.open_mutex){--..}, at: [<f8a35c09>]
->  > uvc_disconnect+0x29/0x50 [uvcvideo]
->
-> Thanks very much for the report (and for testing development kernels
-> with lockdep enabled!).
-
-I second this. Thanks a lot.
-
-> I think the patch below should fix this.
->
-> Laurent -- if this patch looks good to you, please forward on for
-> merging.
->
-> Thanks,
->   Roland
->
+On Tue, Jul 01, 2008 at 07:02:54PM +0400, Anton Vorontsov wrote:
+[...]
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 > ---
->
-> [PATCH] uvc: Fix possible AB-BA deadlock with videodev_lock and open_mutex
->
-> The uvcvideo driver's uvc_v4l2_open() method is called from videodev's
-> video_open() function, which means it is called with the videodev_lock
-> mutex held.  uvc_v4l2_open() then takes uvc_driver.open_mutex to check
-> dev->state and avoid racing against a device disconnect, which means
-> that open_mutex must nest inside videodev_lock.
+> 
+> On Tue, Jul 01, 2008 at 02:43:53PM +0100, Alan Cox wrote:
+[...]
+> > It looks correct to me except that you cannot use spin_lock/disable_irq
+> > in that way safely. You must always disable_irq before taking the lock,
+> > or prove it is safe and use disable_irq_nosync
+> > 
+> > The reason:
+> > 		CPU#0 spin_lock_... [taken]
+> > 		CPU#1 IRQ
+> > 		CPU#1 spin_lock [waits]
+> > 		CPU#0 disable_irq (deadlock)
+> 
+> This deadlock possibility is interesting by itself, thanks for
+> mentioning it.
+> 
+> But this can't happen here. IRQ will not grab the up->port.lock,
+> because port isn't registered in the 8250 IRQ handling chain (yet).
 
-The open_mutex lock's main purpose is to prevent uvc_delete() being called 
-from kref_put() while an open operation is in progress. Protected dev->state 
-is a side effect which might not be required.
+Alan, are there any issues with the proof or the patch itself?
 
-> However uvc_disconnect() takes the open_mutex around setting
-> dev->state and also around putting its device reference.  However, if
-> uvc_disconnect() ends up dropping the last reference, it will call
-> uvc_delete(), which calls into the videodev code to unregister its
-> device, and this will end up taking videodev_lock.  This opens a
-> (unlikely in practice) window for an AB-BA deadlock and also causes a
-> lockdep warning because of the lock misordering.
+Thanks,
 
-I agree with this analysis.
+> As for _nosync, probably this is good idea indeed, and should be safe
+> AFAICS.
+> 
+>  drivers/serial/8250.c |    8 ++++++--
+>  1 files changed, 6 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+> index 76ccef7..cad0c2d 100644
+> --- a/drivers/serial/8250.c
+> +++ b/drivers/serial/8250.c
+> @@ -1831,7 +1831,9 @@ static int serial8250_startup(struct uart_port *port)
+>  		 * the interrupt is enabled.  Delays are necessary to
+>  		 * allow register changes to become visible.
+>  		 */
+> -		spin_lock_irqsave(&up->port.lock, flags);
+> +		spin_lock(&up->port.lock);
+> +		if (up->port.flags & UPF_SHARE_IRQ)
+> +			disable_irq_nosync(up->port.irq);
+>  
+>  		wait_for_xmitr(up, UART_LSR_THRE);
+>  		serial_out_sync(up, UART_IER, UART_IER_THRI);
+> @@ -1843,7 +1845,9 @@ static int serial8250_startup(struct uart_port *port)
+>  		iir = serial_in(up, UART_IIR);
+>  		serial_out(up, UART_IER, 0);
+>  
+> -		spin_unlock_irqrestore(&up->port.lock, flags);
+> +		if (up->port.flags & UPF_SHARE_IRQ)
+> +			enable_irq(up->port.irq);
+> +		spin_unlock(&up->port.lock);
+>  
+>  		/*
+>  		 * If the interrupt is not reasserted, setup a timer to
+> -- 
+> 1.5.5.4
+> 
 
-> Fortunately there is no apparent reason to hold open_mutex when doing
-> kref_put() in uvc_disconnect(): if uvc_v4l2_open() runs before the
-> state is set to UVC_DEV_DISCONNECTED, then it will take another
-> reference to the device and kref_put() won't call uvc_delete; if
-> uvc_v4l2_open() runs after the state is set, it will run before
-> uvc_delete(), see the state, and return immediately -- uvc_delete()
-> does uvc_unregister_video() (and hence video_unregister_device(),
-> which is synchronized with videodev_lock) as its first thing, so there
-> is no risk of use-after-free in uvc_v4l2_open().
-
-This introduces a race condition, see below.
-
-> Bug diagnosed based on a lockdep warning reported by Romano Giannetti
-> <romano@dea.icai.upcomillas.es>.
->
-> Signed-off-by: Roland Dreier <roland@digitalvampire.org>
-> ---
->  drivers/media/video/uvc/uvc_driver.c |    5 ++---
->  1 files changed, 2 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/media/video/uvc/uvc_driver.c
-> b/drivers/media/video/uvc/uvc_driver.c index 60ced58..5d60cb3 100644
-> --- a/drivers/media/video/uvc/uvc_driver.c
-> +++ b/drivers/media/video/uvc/uvc_driver.c
-> @@ -1634,11 +1634,10 @@ static void uvc_disconnect(struct usb_interface
-> *intf) * chance to increase the reference count (kref_get).
->  	 */
->  	mutex_lock(&uvc_driver.open_mutex);
-> -
->  	dev->state |= UVC_DEV_DISCONNECTED;
-> -	kref_put(&dev->kref, uvc_delete);
-> -
->  	mutex_unlock(&uvc_driver.open_mutex);
-> +
-> +	kref_put(&dev->kref, uvc_delete);
->  }
->
->  static int uvc_suspend(struct usb_interface *intf, pm_message_t message)
-
-uvc_disconnect()                      | uvc_v4l2_open()
-...                                   |
-mutex_lock(&uvc_driver.open_mutex);   |
-dev->state |= UVC_DEV_DISCONNECTED;   |
-mutex_unlock(&uvc_driver.open_mutex); |
-                                      |
-                                      | mutex_lock(&uvc_driver.open_mutex);
-                                      | vdev = video_devdata(file);
-                                      | video = video_get_drvdata(vdev);
-                                      |
-kref_put(&dev->kref, uvc_delete);     |
-                                      |
-                                      | if (video->dev->state...) 
-
-kref_put() in uvc_disconnect() will call uvc_delete(), which will in turn free 
-the video structure. uvc_v4l2_open() will then dereference freed memory when 
-testing the device state.
-
-I proper fix will involve videodev modifications. Fortunately, David 
-Ellingsworth posted a videodev patch to address the same kind of issue a few 
-days ago. Search the video4linux mailing list for a thread called "[PATCH] 
-videodev: fix sysfs kobj ref count". I'm currently reviewing his patch. As 
-soon as a proper fix is applied to videodev I will probably drop the 
-open_mutex lock acquisition in uvc_disconnect().
-
-In the meantime, and for kernel versions that don't include the videodev 
-patch, I don't know what to choose between a race condition that can lead to 
-freed memory dereference, and a AB-BA deadlock. Any opinion on that ?
-
-Best regards,
-
-Laurent Pinchart
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
