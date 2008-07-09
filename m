@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbYGIVDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757350AbYGIVD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756793AbYGIVDg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 17:03:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYGIVD2
+	id S1757350AbYGIVD5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 17:03:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060AbYGIVDr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 17:03:28 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:60554 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752369AbYGIVD1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 17:03:27 -0400
-Date: Wed, 9 Jul 2008 22:03:14 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Dmitry <dbaryshkov@gmail.com>
-Cc: ian <spyro@f2s.com>, linux-kernel@vger.kernel.org,
-       Ben Dooks <ben-linux@fluff.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [patch 4/4] MFD: Change mfd platform device usage to wrapper platform_device
-Message-ID: <20080709210314.GF26734@flint.arm.linux.org.uk>
-References: <20080709104916.200210922@fluff.org> <20080709104933.101610936@fluff.org> <bc64b4640807090415w781507fetfe332271ad158112@mail.gmail.com> <1215603916.3295.57.camel@wirenth> <bc64b4640807090452vc923216gfb14bb2c5974a61@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <bc64b4640807090452vc923216gfb14bb2c5974a61@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 9 Jul 2008 17:03:47 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:56712 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751489AbYGIVDq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 17:03:46 -0400
+Message-ID: <487527B1.4070305@sgi.com>
+Date: Wed, 09 Jul 2008 14:03:45 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <4874F30C.8020800@zytor.com> <4874F909.7060503@goop.org> <4874FEDF.90404@sgi.com> <20080709193404.GC4804@elte.hu>
+In-Reply-To: <20080709193404.GC4804@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 09, 2008 at 03:52:08PM +0400, Dmitry wrote:
-> 2008/7/9 ian <spyro@f2s.com>:
-> > On Wed, 2008-07-09 at 15:15 +0400, Dmitry wrote:
-> >> NAK.
-> >> 0) It was discussed yesterday on the list and the decision was to go
-> >> in a different way.
-> >
-> > It was?
-> >
-> > I prefer the wrapped way personally...
+Ingo Molnar wrote:
+> * Mike Travis <travis@sgi.com> wrote:
 > 
-> In any case IMO it's better to call platform_device_register() rather than
->  device_initialise()/platform_device_add().
+>>> This fragility makes me very nervous.  It seems hard enough to get 
+>>> this stuff working with current tools; making it work over the whole 
+>>> range of supported tools looks like its going to be hard.
+>> (me too ;-)
+>>
+>> Once I get a solid version working with (at least) gcc-4.2.4, then 
+>> regression testing with older tools will be easier, or at least a 
+>> table of results can be produced.
 > 
-> Samuel? Russell?
+> the problem is, we cannot just put it even into tip/master if there's no 
+> short-term hope of fixing a problem it triggers. gcc-4.2.3 is solid for 
+> me otherwise, for series of thousands of randomly built kernels.
 
-WTF???  That's just completely wrong - assuming the internals of how the
-platform device alloc API works...
+Great, I'll request we load gcc-4.2.3 on our devel server.
 
-What it's clear from my *brief* read of this thread is that the MFD
-support doesn't seem to be ready for mainline yet - there's clearly issues
-here that need further work.
+> 
+> can we just leave out the zero-based percpu stuff safely and could i 
+> test the rest of your series - or are there dependencies? I think 
+> zero-based percpu, while nice in theory, is probably just a very small 
+> positive effect so it's not a life or death issue. (or is there any 
+> deeper, semantic reason why we'd want it?)
 
-Given that, and where we are (there's maybe two of *my* days left until
-the merge window opens) I'm *very* tempted to drop the MFD support out
-of my tree for this merge window - which basically means removing
-5127/1, 5128/1 and 5129/1.
+I sort of assumed that zero-based would not make it into 2.6.26-rcX,
+and no, reaching 4096 cpus does not require it.  The other patches
+I've been submitting are more general and will fix possible panics
+(like stack overflows, etc.)
+
+Thanks,
+Mike
