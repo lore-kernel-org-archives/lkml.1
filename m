@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757713AbYGIPVq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758189AbYGIPWA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757713AbYGIPVq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 11:21:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbYGIPVZ
+	id S1758189AbYGIPWA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 11:22:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754228AbYGIPVu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 11:21:25 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41108 "EHLO
-	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753583AbYGIPVX (ORCPT
+	Wed, 9 Jul 2008 11:21:50 -0400
+Received: from smtp.eu.citrix.com ([62.200.22.115]:10428 "EHLO
+	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757917AbYGIPVt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 11:21:23 -0400
-Date: Wed, 9 Jul 2008 15:47:53 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Howells <dhowells@redhat.com>
-Cc: alan@redhat.com, Markus.Lidel@shadowconnect.com, vvs@sw.ru,
-       akpm@linux-foundation.org, dhowells@redhat.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] Mark i2o config broken on 64-bit platforms.
-Message-ID: <20080709154753.3dcfacab@the-village.bc.nu>
-In-Reply-To: <20080709113547.19235.15424.stgit@warthog.procyon.org.uk>
-References: <20080709113547.19235.15424.stgit@warthog.procyon.org.uk>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 9 Jul 2008 11:21:49 -0400
+X-IronPort-AV: E=Sophos;i="4.30,331,1212364800"; 
+   d="scan'208";a="950794"
+Message-ID: <4874D79B.7000101@eu.citrix.com>
+Date: Wed, 09 Jul 2008 16:22:03 +0100
+From: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@suse.cz>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0 of 2] fbcon: blinking text fix and implementation
+References: <486A4F5F.7030506@eu.citrix.com> <20080709144704.GA11006@ucw.cz>
+In-Reply-To: <20080709144704.GA11006@ucw.cz>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Jul 2008 15:21:45.0738 (UTC) FILETIME=[7FBD26A0:01C8E1D7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 09 Jul 2008 12:35:47 +0100
-David Howells <dhowells@redhat.com> wrote:
+Pavel Machek wrote:
 
-> Mark i2o config broken on 64-bit platforms as it generates these:
+> I'd prefer to call that 'feature' and leave it alone. Burning cpu
+> power to provide annoying blinking text is at least questionable...
 > 
-> In file included from drivers/message/i2o/config-osm.c:39:
-> drivers/message/i2o/i2o_config.c: In function 'i2o_cfg_passthru':
-> drivers/message/i2o/i2o_config.c:889: warning: cast to pointer from integer of different size
-> drivers/message/i2o/i2o_config.c:945: warning: cast to pointer from integer of different size
-> 
-> which are apparently non-trivial to fix (eg: inserting a cast through unsigned
-> long is not correct according to Linus).  This would be due to struct
-> sg_simple_element only having a 32-bit addr_bus value.
-> 
-> There are also a number of "TODO 64bit fix" comments.
-> 
-> Signed-off-by: David Howells <dhowells@redhat.com>
 
 
-NAK - it appears to be broken for 64bit user space only
+I knew someone would have replied something like this, sooner or later;
+this is why I sent two patches instead of just one.
+The first one is a bugfix, the second one is the implementation of a
+feature that some are not really missing.
+
+Anyway, I am not burning so much cpu power: I have implemented a very
+simple flag mechanism to scan the screen only when blinking text is
+added to the screen or if we are scrolling.
+The screen buffer is not so big, but if you are so concerned about
+performances, I can implement a more efficient way to know whether we
+need to scan the screen or not...
