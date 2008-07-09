@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753242AbYGIVOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754698AbYGIVTg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753242AbYGIVOl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 17:14:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757315AbYGIVN6
+	id S1754698AbYGIVTg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 17:19:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbYGIVTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 17:13:58 -0400
-Received: from mk-outboundfilter-4.mail.uk.tiscali.com ([212.74.114.32]:12707
-	"EHLO mk-outboundfilter-4.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757293AbYGIVN5 (ORCPT
+	Wed, 9 Jul 2008 17:19:24 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:49419 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751442AbYGIVTX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 17:13:57 -0400
-X-Trace: 109189903/mk-outboundfilter-2.mail.uk.tiscali.com/F2S/$F2S-ACCEPTED/f2s-freedom2Surf-customers/195.137.94.162
-X-SBRS: None
-X-RemoteIP: 195.137.94.162
-X-IP-MAIL-FROM: spyro@f2s.com
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq8AAPfGdEjDiV6i/2dsb2JhbAAIsVY
-X-IronPort-AV: E=Sophos;i="4.30,333,1212361200"; 
-   d="scan'208";a="109189903"
-X-IP-Direction: IN
-Subject: Re: [patch 4/4] MFD: Change mfd platform device usage to wrapper
-	platform_device
-From: ian <spyro@f2s.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Dmitry <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org,
-       Ben Dooks <ben-linux@fluff.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-In-Reply-To: <20080709210314.GF26734@flint.arm.linux.org.uk>
-References: <20080709104916.200210922@fluff.org>
-	 <20080709104933.101610936@fluff.org>
-	 <bc64b4640807090415w781507fetfe332271ad158112@mail.gmail.com>
-	 <1215603916.3295.57.camel@wirenth>
-	 <bc64b4640807090452vc923216gfb14bb2c5974a61@mail.gmail.com>
-	 <20080709210314.GF26734@flint.arm.linux.org.uk>
-Content-Type: text/plain
-Date: Wed, 09 Jul 2008 22:13:54 +0100
-Message-Id: <1215638034.3295.116.camel@wirenth>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Wed, 9 Jul 2008 17:19:23 -0400
+Message-ID: <487529AE.3060505@zytor.com>
+Date: Wed, 09 Jul 2008 17:12:14 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org>	<20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <20080709133958.612635f0@infradead.org> <4875231F.1020506@zytor.com> <487524A0.6020304@goop.org>
+In-Reply-To: <487524A0.6020304@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-09 at 22:03 +0100, Russell King - ARM Linux wrote:
+Jeremy Fitzhardinge wrote:
+> H. Peter Anvin wrote:
+>> 1. it means pda references are invalid if their offsets are ever more 
+>> than CONFIG_PHYSICAL_BASE (which I do not think is likely, but still...)
 > 
-> Given that, and where we are (there's maybe two of *my* days left
-> until the merge window opens) I'm *very* tempted to drop the MFD
-> support out of my tree for this merge window - which basically means
-> removing 5127/1, 5128/1 and 5129/1.
+> Why?
+> 
+> As an aside, could we solve the problems by making CONFIG_PHYSICAL_BASE 
+> 0 - putting the percpu variables as the first thing in the kernel - and 
+> relocating on load?  That would avoid having to make a special PT_LOAD 
+> segment at 0.  Hm, would that result in the pda and the boot params 
+> getting mushed together?
+> 
 
-Please dont.
+CONFIG_PHYSICAL_START rather.  And no, it can't be zero!  Realistically 
+we should make it 16 MB by default (currently 2 MB), to keep the DMA 
+zone clear.
 
-The code thats in already is perfectly ok for what its doing.
+Either way, I really suspect that the right thing to do is to use 
+negative offsets, with the possible exception of a handful of things (40 
+bytes or less, perhaps like current) which can get small positive 
+offsets and end up in the "super hot" cacheline.
 
-The discussion now is on ways to improve MFD for new devices, and
-somewhat tangential. All the improvements can wait until after 2.6.26.
+The sucky part is that I don't believe GNU ld has native support for a 
+"hanging down" section (one which has a fixed endpoint rather than a 
+starting point), so it requires extra magic around the link (or finding 
+some way to do it with linker script functions.)  Let me see if I can 
+cook up something in linker script that would actually work.
 
-
+	-hpa
 
