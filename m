@@ -1,191 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756196AbYGIWTB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755352AbYGIWXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756196AbYGIWTB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 18:19:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbYGIWSv
+	id S1755352AbYGIWXz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 18:23:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbYGIWXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 18:18:51 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:38561 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751731AbYGIWSu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 18:18:50 -0400
-Date: Wed, 9 Jul 2008 17:21:48 -0500
-From: Michael Halcrow <mhalcrow@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] eCryptfs: Do not try to open device files on mknod
-Message-ID: <20080709222148.GB6773@halcrowt61p.austin.ibm.com>
-Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
+	Wed, 9 Jul 2008 18:23:46 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48636 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750864AbYGIWXp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 18:23:45 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: linux-next@vger.kernel.org
+Subject: Re: linux-next: Tree for July 9 (kmemcheck: Caught 8-bit read from freed memory (ffff880127c120e8))
+Date: Thu, 10 Jul 2008 00:25:13 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <20080709183047.0eb1eb72.sfr@canb.auug.org.au> <200807100017.04397.rjw@sisk.pl>
+In-Reply-To: <200807100017.04397.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200807100025.13973.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When creating device nodes, eCryptfs needs to delay actually opening
-the lower persistent file until an application tries to open. Device
-handles may not be backed by anything when they first come into
-existence.
+On Thursday, 10 of July 2008, Rafael J. Wysocki wrote:
+> On Wednesday, 9 of July 2008, Stephen Rothwell wrote:
+> > Hi all,
+> > 
+> > Changes since next-20080708:
+> > 
+> > Temporarily dropped tree: ttydev (since it would not import on top of any
+> > tree I have)
+> > 
+> > The x86 tree lost a conflict against the ftrace tree.
+> > 
+> > The ide tree gained 2 conflicts against Linus' tree.
+> > 
+> > The nfs tree gained a conflict against Linus' tree.
+> > 
+> > The acpi tree lost 5 conflicts against various trees but gained another
+> > against the x86 tree.
+> > 
+> > The net tree lost 2 conflicts against the x86 wireless-current trees.
+> > 
+> > I have also applied the following patches for known problems (I assume
+> > that these will be merged into their appropriate trees shortly):
+> > 
+> > 	linux-next: zero based percpu build error on s390
+> > 	sparc64: sysdev API change fallout
+> > 
+> > I no longer needed to revert the commits from the mmc tree.
+> > ----------------------------------------------------------------------------
+> 
+> With this tree (and several previous ones, it appears) my quad core test
+> box's CPU is detected as one core.  With 2.6.26-rc9 four cores are
+> detected as appropriate.
+> 
+> dmesg from the failing kernel (today's linux-next) is at:
+> http://www.sisk.pl/kernel/debug/20080709/dmesg-20080709.log
+> 
+> dmesg from a non-failing kernel (2.6.26-rc9) is at:
+> http://www.sisk.pl/kernel/debug/20080709/dmesg-rc9.log
+> 
+> .config is at: http://www.sisk.pl/kernel/debug/20080709/next-config
 
-Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
----
- fs/ecryptfs/ecryptfs_kernel.h |    6 +++++-
- fs/ecryptfs/file.c            |   14 ++++++++++++++
- fs/ecryptfs/inode.c           |    6 ++++--
- fs/ecryptfs/main.c            |   29 +++++++++++++++++++----------
- 4 files changed, 42 insertions(+), 13 deletions(-)
+Ah, I see.  kmemcheck has detected a problem and disabled the secondary
+CPUs:
 
-diff --git a/fs/ecryptfs/ecryptfs_kernel.h b/fs/ecryptfs/ecryptfs_kernel.h
-index c15c257..023f19d 100644
---- a/fs/ecryptfs/ecryptfs_kernel.h
-+++ b/fs/ecryptfs/ecryptfs_kernel.h
-@@ -235,6 +235,7 @@ struct ecryptfs_crypt_stat {
- #define ECRYPTFS_METADATA_IN_XATTR  0x00000100
- #define ECRYPTFS_VIEW_AS_ENCRYPTED  0x00000200
- #define ECRYPTFS_KEY_SET            0x00000400
-+#define ECRYPTFS_DELAY_PERSISTENT   0x00000800
- 	u32 flags;
- 	unsigned int file_version;
- 	size_t iv_bytes;
-@@ -560,9 +561,11 @@ extern struct kmem_cache *ecryptfs_key_sig_cache;
- extern struct kmem_cache *ecryptfs_global_auth_tok_cache;
- extern struct kmem_cache *ecryptfs_key_tfm_cache;
- 
-+#define ECRYPTFS_INTERPOSE_FLAG_D_ADD                 0x00000001
-+#define ECRYPTFS_INTERPOSE_FLAG_DELAY_PERSISTENT_FILE 0x00000002
- int ecryptfs_interpose(struct dentry *hidden_dentry,
- 		       struct dentry *this_dentry, struct super_block *sb,
--		       int flag);
-+		       u32 flags);
- int ecryptfs_fill_zeros(struct file *file, loff_t new_length);
- int ecryptfs_decode_filename(struct ecryptfs_crypt_stat *crypt_stat,
- 			     const char *name, int length,
-@@ -690,5 +693,6 @@ void ecryptfs_msg_ctx_alloc_to_free(struct ecryptfs_msg_ctx *msg_ctx);
- int
- ecryptfs_spawn_daemon(struct ecryptfs_daemon **daemon, uid_t euid,
- 		      struct user_namespace *user_ns, struct pid *pid);
-+int ecryptfs_init_persistent_file(struct dentry *ecryptfs_dentry);
- 
- #endif /* #ifndef ECRYPTFS_KERNEL_H */
-diff --git a/fs/ecryptfs/file.c b/fs/ecryptfs/file.c
-index 2258b8f..1148876 100644
---- a/fs/ecryptfs/file.c
-+++ b/fs/ecryptfs/file.c
-@@ -191,6 +191,20 @@ static int ecryptfs_open(struct inode *inode, struct file *file)
- 				      | ECRYPTFS_ENCRYPTED);
- 	}
- 	mutex_unlock(&crypt_stat->cs_mutex);
-+	if (!ecryptfs_inode_to_private(inode)->lower_file) {
-+		BUG_ON(!(crypt_stat->flags & ECRYPTFS_DELAY_PERSISTENT));
-+		mutex_lock(&crypt_stat->cs_mutex);
-+		crypt_stat->flags &= ~(ECRYPTFS_ENCRYPTED);
-+		mutex_unlock(&crypt_stat->cs_mutex);
-+		rc = ecryptfs_init_persistent_file(ecryptfs_dentry);
-+		if (rc) {
-+			printk(KERN_ERR "%s: Error attempting to initialize "
-+			       "the persistent file for the dentry with name "
-+			       "[%s]; rc = [%d]\n", __func__,
-+			       ecryptfs_dentry->d_name.name, rc);
-+			goto out;
-+		}
-+	}
- 	ecryptfs_set_file_lower(
- 		file, ecryptfs_inode_to_private(inode)->lower_file);
- 	if (S_ISDIR(ecryptfs_dentry->d_inode->i_mode)) {
-diff --git a/fs/ecryptfs/inode.c b/fs/ecryptfs/inode.c
-index c92cc1c..56cf5d5 100644
---- a/fs/ecryptfs/inode.c
-+++ b/fs/ecryptfs/inode.c
-@@ -307,7 +307,8 @@ static struct dentry *ecryptfs_lookup(struct inode *dir, struct dentry *dentry,
- 		d_add(dentry, NULL);
- 		goto out;
- 	}
--	rc = ecryptfs_interpose(lower_dentry, dentry, dir->i_sb, 1);
-+	rc = ecryptfs_interpose(lower_dentry, dentry, dir->i_sb,
-+				ECRYPTFS_INTERPOSE_FLAG_D_ADD);
- 	if (rc) {
- 		ecryptfs_printk(KERN_ERR, "Error interposing\n");
- 		goto out_dput;
-@@ -537,7 +538,8 @@ ecryptfs_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t dev)
- 	rc = vfs_mknod(lower_dir_dentry->d_inode, lower_dentry, mode, dev);
- 	if (rc || !lower_dentry->d_inode)
- 		goto out;
--	rc = ecryptfs_interpose(lower_dentry, dentry, dir->i_sb, 0);
-+	rc = ecryptfs_interpose(lower_dentry, dentry, dir->i_sb,
-+				ECRYPTFS_INTERPOSE_FLAG_DELAY_PERSISTENT_FILE);
- 	if (rc)
- 		goto out;
- 	fsstack_copy_attr_times(dir, lower_dir_dentry->d_inode);
-diff --git a/fs/ecryptfs/main.c b/fs/ecryptfs/main.c
-index d603631..e47d04d 100644
---- a/fs/ecryptfs/main.c
-+++ b/fs/ecryptfs/main.c
-@@ -117,7 +117,7 @@ void __ecryptfs_printk(const char *fmt, ...)
-  *
-  * Returns zero on success; non-zero otherwise
-  */
--static int ecryptfs_init_persistent_file(struct dentry *ecryptfs_dentry)
-+int ecryptfs_init_persistent_file(struct dentry *ecryptfs_dentry)
- {
- 	struct ecryptfs_inode_info *inode_info =
- 		ecryptfs_inode_to_private(ecryptfs_dentry->d_inode);
-@@ -163,14 +163,14 @@ static int ecryptfs_init_persistent_file(struct dentry *ecryptfs_dentry)
-  * @lower_dentry: Existing dentry in the lower filesystem
-  * @dentry: ecryptfs' dentry
-  * @sb: ecryptfs's super_block
-- * @flag: If set to true, then d_add is called, else d_instantiate is called
-+ * @flags: flags to govern behavior of interpose procedure
-  *
-  * Interposes upper and lower dentries.
-  *
-  * Returns zero on success; non-zero otherwise
-  */
- int ecryptfs_interpose(struct dentry *lower_dentry, struct dentry *dentry,
--		       struct super_block *sb, int flag)
-+		       struct super_block *sb, u32 flags)
- {
- 	struct inode *lower_inode;
- 	struct inode *inode;
-@@ -207,7 +207,7 @@ int ecryptfs_interpose(struct dentry *lower_dentry, struct dentry *dentry,
- 		init_special_inode(inode, lower_inode->i_mode,
- 				   lower_inode->i_rdev);
- 	dentry->d_op = &ecryptfs_dops;
--	if (flag)
-+	if (flags & ECRYPTFS_INTERPOSE_FLAG_D_ADD)
- 		d_add(dentry, inode);
- 	else
- 		d_instantiate(dentry, inode);
-@@ -215,12 +215,21 @@ int ecryptfs_interpose(struct dentry *lower_dentry, struct dentry *dentry,
- 	/* This size will be overwritten for real files w/ headers and
- 	 * other metadata */
- 	fsstack_copy_inode_size(inode, lower_inode);
--	rc = ecryptfs_init_persistent_file(dentry);
--	if (rc) {
--		printk(KERN_ERR "%s: Error attempting to initialize the "
--		       "persistent file for the dentry with name [%s]; "
--		       "rc = [%d]\n", __func__, dentry->d_name.name, rc);
--		goto out;
-+	if (!(flags & ECRYPTFS_INTERPOSE_FLAG_DELAY_PERSISTENT_FILE)) {
-+		rc = ecryptfs_init_persistent_file(dentry);
-+		if (rc) {
-+			printk(KERN_ERR "%s: Error attempting to initialize "
-+			       "the persistent file for the dentry with name "
-+			       "[%s]; rc = [%d]\n", __func__,
-+			       dentry->d_name.name, rc);
-+			goto out;
-+		}
-+	} else {
-+		struct ecryptfs_inode_info *inode_info =
-+			ecryptfs_inode_to_private(dentry->d_inode);
-+
-+		inode_info->lower_file = NULL;
-+		inode_info->crypt_stat.flags |= ECRYPTFS_DELAY_PERSISTENT;
- 	}
- out:
- 	return rc;
--- 
-1.5.3.6
+kmemcheck: Caught 8-bit read from freed memory (ffff880127c120e8)
+iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiffffffffffffffffffffffffffffffff
+                                        ^
 
+Modules linked in:
+Pid: 0, comm: swapper Not tainted 2.6.26-rc9-next #37
+RIP: 0010:[<ffffffff802b5ac0>]  [<ffffffff802b5ac0>] check_poison_obj+0x90/0x210
+RSP: 0018:ffffffff806c1e08  EFLAGS: 00010293
+RAX: 000000000000006b RBX: 0000000000000000 RCX: ffffffff802b820e
+RDX: 0000000000000000 RSI: ffff880127c120e0 RDI: ffff880127c01480
+RBP: ffffffff806c1e48 R08: 0000000000000001 R09: 0000000000000001
+R10: 0000000000000001 R11: 0000000000000040 R12: ffff880127c120e8
+R13: 0000000000000040 R14: 0000000000000000 R15: 000000000000003f
+FS:  0000000000000000(0000) GS:ffffffff806b8f40(0000) knlGS:0000000000000000
+CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+CR2: ffff880127c101b8 CR3: 0000000000201000 CR4: 00000000000006a0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff4ff0 DR7: 0000000000000400
+ [<ffffffff802b647c>] cache_alloc_debugcheck_after+0x1ac/0x1f0
+ [<ffffffff802b7fac>] kmem_cache_alloc+0x9c/0x140
+ [<ffffffff802b820e>] do_tune_cpucache+0x2e/0x2d0
+ [<ffffffff802b862b>] enable_cpucache+0x3b/0xb0
+ [<ffffffff806e4caa>] kmem_cache_init+0x3ca/0x4c0
+ [<ffffffff806c8ece>] start_kernel+0x27e/0x4c0
+ [<ffffffff806c827c>] x86_64_start_reservations+0x7c/0xc0
+ [<ffffffff806c83b6>] x86_64_start_kernel+0xf6/0x100
+ [<ffffffffffffffff>] 0xffffffffffffffff
+Calibrating delay loop (skipped), value calculated using timer frequency.. <6>5015.24 BogoMIPS (lpj=10030484)
+Security Framework initialized
+SELinux:  Initializing.
+SELinux:  Starting in permissive mode
+selinux_register_security:  Registering secondary module capability
+Capability LSM initialized as secondary
+Mount-cache hash table entries: 256
+CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+CPU: L2 Cache: 512K (64 bytes/line)
+CPU: Physical Processor ID: 0
+CPU: Processor Core ID: 0
+using C1E aware idle routine
+ACPI: Core revision 20080609
+CPU0: AMD Phenom(tm) 9850 Quad-Core Processor stepping 03
+Using local APIC timer interrupts.
+APIC timer calibration result 12538092
+Detected 12.538 MHz APIC timer.
+kmemcheck: "Bugs, beware!"
+kmemcheck: Limiting number of CPUs to 1.
+
+Thanks,
+Rafael
