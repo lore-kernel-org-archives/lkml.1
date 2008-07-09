@@ -1,75 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757047AbYGIMjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757267AbYGIMmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757047AbYGIMjm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 08:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbYGIMje
+	id S1757267AbYGIMmW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 08:42:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbYGIMmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 08:39:34 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47450 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753118AbYGIMjd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 08:39:33 -0400
-Date: Wed, 9 Jul 2008 14:39:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, LKML <linux-kernel@vger.kernel.org>,
-       Jens Axboe <axboe@kernel.dk>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <clameter@linux-foundation.org>,
-       Petr Tesarik <ptesarik@suse.cz>,
-       Virtualization <virtualization@lists.linux-foundation.org>,
-       Xen devel <xen-devel@lists.xensource.com>,
-       Thomas Friebel <thomas.friebel@amd.com>, Avi Kivity <avi@qumranet.com>
-Subject: [patch] x86: paravirt spinlocks, modular build fix  (was: Re:
-	[PATCH RFC 0/4] Paravirtual spinlocks)
-Message-ID: <20080709123905.GA16340@elte.hu>
-References: <20080707190749.299430659@goop.org> <20080709122852.GA30579@elte.hu>
-MIME-Version: 1.0
+	Wed, 9 Jul 2008 08:42:14 -0400
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:55770 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752942AbYGIMmO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 08:42:14 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ap8EANxMdEhMQWVt/2dsb2JhbACBWq4y
+Date: Wed, 9 Jul 2008 08:42:10 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, Jason Baron <jbaron@redhat.com>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Subject: Re: [PATCH 2/3] stop_machine: simplify
+Message-ID: <20080709124210.GA882@Krystal>
+References: <200807081750.55536.rusty@rustcorp.com.au> <200807081756.47140.rusty@rustcorp.com.au> <20080708142703.GB8278@Krystal> <200807091211.39457.rusty@rustcorp.com.au>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080709122852.GA30579@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200807091211.39457.rusty@rustcorp.com.au>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 08:31:37 up 34 days, 17:12,  3 users,  load average: 1.97, 2.45,
+	2.34
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Rusty Russell (rusty@rustcorp.com.au) wrote:
+> On Wednesday 09 July 2008 00:27:03 Mathieu Desnoyers wrote:
+> > Hi Rusty,
+> >
+> > * Rusty Russell (rusty@rustcorp.com.au) wrote:
+> > > stop_machine creates a kthread which creates kernel threads.  We can
+> > > create those threads directly and simplify things a little.  Some care
+> > > must be taken with CPU hotunplug, which has special needs, but that code
+> > > seems more robust than it was in the past.
+> > >
+> > > Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> > > ---
+> > >  include/linux/stop_machine.h |   12 -
+> > >  kernel/cpu.c                 |   13 -
+> > >  kernel/stop_machine.c        |  299
+> > > ++++++++++++++++++------------------------- 3 files changed, 135
+> > > insertions(+), 189 deletions(-)
+> > >
+> > > diff --git a/include/linux/stop_machine.h b/include/linux/stop_machine.h
+> > > --- a/include/linux/stop_machine.h
+> > > +++ b/include/linux/stop_machine.h
+> > > @@ -17,13 +17,12 @@
+> > >   * @data: the data ptr for the @fn()
+> > >   * @cpu: if @cpu == n, run @fn() on cpu n
+> > >   *       if @cpu == NR_CPUS, run @fn() on any cpu
+> > > - *       if @cpu == ALL_CPUS, run @fn() first on the calling cpu, and
+> > > then - *       concurrently on all the other cpus
+> > > + *       if @cpu == ALL_CPUS, run @fn() on every online CPU.
+> > >   *
+> >
+> > I agree with this change if it makes things simpler. However, callers
+> > must be aware of this important change :
+> >
+> > "run @fn() first on the calling cpu, and then concurrently on all the
+> > other cpus" becomes "run @fn() on every online CPU".
+> 
+> OK.  Since that was never in mainline, I think you're the only one who needs 
+> to be aware of the semantic change?
+> 
+> The new symmetric implementation breaks it; hope that isn't a showstopper for 
+> you?
+> 
 
-another small fixlet.
+Nope, that should be ok with something like :
 
-	Ingo
+...
+                atomic_set(1, &stop_machine_first);
+                wrote_text = 0;
+                stop_machine_run(stop_machine_imv_update, (void *)imv,
+                                        ALL_CPUS);
+...
 
------------------>
-commit 0ea0f032767f41fb0a9586ab6acb5c1408ef16c5
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Wed Jul 9 14:39:15 2008 +0200
+static int stop_machine_imv_update(void *imv_ptr)
+{
+        struct __imv *imv = imv_ptr;
 
-    x86: paravirt spinlocks, modular build fix
-    
-    fix:
-    
-      MODPOST 408 modules
-    ERROR: "pv_lock_ops" [net/dccp/dccp.ko] undefined!
-    ERROR: "pv_lock_ops" [fs/jbd2/jbd2.ko] undefined!
-    ERROR: "pv_lock_ops" [drivers/media/common/saa7146_vv.ko] undefined!
-    
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+        if (atomic_dec_and_test(&stop_machine_first)) {
+                text_poke((void *)imv->imv, (void *)imv->var, imv->size);
+                smp_wmb(); /* make sure other cpus see that this has run */
+                wrote_text = 1;
+        } else {
+                while (!wrote_text)
+                        smp_rmb();
+                sync_core();
+        }
 
-diff --git a/arch/x86/kernel/paravirt.c b/arch/x86/kernel/paravirt.c
-index 6aa8aed..3edfd7a 100644
---- a/arch/x86/kernel/paravirt.c
-+++ b/arch/x86/kernel/paravirt.c
-@@ -472,6 +472,7 @@ struct pv_lock_ops pv_lock_ops = {
- 	.spin_unlock = __ticket_spin_unlock,
- #endif
- };
-+EXPORT_SYMBOL_GPL(pv_lock_ops);
- 
- EXPORT_SYMBOL_GPL(pv_time_ops);
- EXPORT_SYMBOL    (pv_cpu_ops);
+        flush_icache_range(imv->imv, imv->imv + imv->size);
+
+        return 0;
+}
+
+> > There were assumptions done in @fn() where a simple non atomic increment
+> > was used on a static variable to detect that it was the first thread to
+> > execute. It will have to be changed into an atomic inc/dec and test.
+> > Given that the other threads have tasks to perform _after_ the first
+> > thread has executed, they will have to busy-wait (spin) there waiting
+> > for the first thread to finish its execution.
+> 
+> I assume you can't do that step then call stop_machine.
+> 
+
+Indeed, I can't, because I need to have all other CPUs busy looping with
+interrupts disabled while I do the text_poke.
+
+Mathieu
+
+
+> Thanks,
+> Rusty.
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
