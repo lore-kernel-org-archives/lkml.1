@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbYGIIKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbYGIILr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755913AbYGIIKg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 04:10:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753060AbYGIIKU
+	id S1756511AbYGIILr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 04:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbYGIILa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 04:10:20 -0400
-Received: from smtp113.mail.mud.yahoo.com ([209.191.84.66]:38215 "HELO
-	smtp113.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752735AbYGIIKT (ORCPT
+	Wed, 9 Jul 2008 04:11:30 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:46396 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752984AbYGIIL3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 04:10:19 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=P5dwEiZXFJ5nBXr5FPIGqX0I95tNjAyLHMLngsoq7SXgDoNSqtW5RFuFOo6T24nh4juoUuu5xN6ezaWIIv8iar8Q4C/d3h4UL1l7cWELiJggZgxHyKyjJkWeYBWc45Vi6ItMGG+bVv+rnqH5D+a6Xs+2HZ6ksxhJl/TvTBnRLCs=  ;
-X-YMail-OSG: ubdXDiwVM1nDdn3dtcYwTWEorNHIlP_88JSvQv9bVMABqFZNJm_ofJNPu73pIjpjIwQjZ.EcTDuLJk71ntLH3JK0XIjGUytjpRM29MDQexUdeNl9uS68Cb769B6y36BQyG4-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "Gregory Haskins" <ghaskins@novell.com>
-Subject: Re: [PATCH 2/3] sched: terminate newidle balancing once at least one task has moved over
-Date: Wed, 9 Jul 2008 18:09:51 +1000
-User-Agent: KMail/1.9.5
-Cc: mingo@elte.hu, rostedt@goodmis.org, peterz@infradead.org, npiggin@suse.de,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-References: <20080627202444.3829.21595.stgit@lsg.lsg.lab.novell.com> <200807081500.18245.nickpiggin@yahoo.com.au> <48732751.BA47.005A.0@novell.com>
-In-Reply-To: <48732751.BA47.005A.0@novell.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807091809.52293.nickpiggin@yahoo.com.au>
+	Wed, 9 Jul 2008 04:11:29 -0400
+To: david@fromorbit.com
+CC: miklos@szeredi.hu, arjan@infradead.org, hch@infradead.org, tytso@mit.edu,
+       pavel@suse.cz, t-sato@yk.jp.nec.com, akpm@linux-foundation.org,
+       viro@ZenIV.linux.org.uk, linux-ext4@vger.kernel.org, xfs@oss.sgi.com,
+       dm-devel@redhat.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, axboe@kernel.dk,
+       mtk.manpages@googlemail.com
+In-reply-to: <20080709073358.GT11558@disturbed> (message from Dave Chinner on
+	Wed, 9 Jul 2008 17:33:58 +1000)
+Subject: Re: [PATCH 3/3] Add timeout feature
+References: <20080708231026.GP11558@disturbed> <20080708232031.GE18195@elf.ucw.cz> <20080709005254.GQ11558@disturbed> <20080709010922.GE9957@mit.edu> <E1KGSvZ-0006dB-53@pomaz-ex.szeredi.hu> <20080709061621.GA5260@infradead.org> <E1KGT4q-0006fD-Jb@pomaz-ex.szeredi.hu> <20080708234120.5072111f@infradead.org> <20080709065950.GR11558@disturbed> <E1KGTrq-0006qj-1u@pomaz-ex.szeredi.hu> <20080709073358.GT11558@disturbed>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Message-Id: <E1KGUlR-0006zH-FT@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 09 Jul 2008 10:11:01 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 08 July 2008 22:37, Gregory Haskins wrote:
-> >>> On Tue, Jul 8, 2008 at  1:00 AM, in message
->
-> <200807081500.18245.nickpiggin@yahoo.com.au>, Nick Piggin
->
-> <nickpiggin@yahoo.com.au> wrote:
-> > On Saturday 28 June 2008 06:29, Gregory Haskins wrote:
-> >> Inspired by Peter Zijlstra.
-> >>
-> >> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-> >
-> > What happened to the feedback I sent about this?
-> >
-> > It is still nack from me.
->
-> Ah yes.  Slipped through the cracks...sorry about that.
->
-> What if we did "if (idle == CPU_NEWLY_IDLE && need_resched())" instead?
+On Wed, 9 Jul 2008, Dave Chinner wrote:
+> On Wed, Jul 09, 2008 at 09:13:34AM +0200, Miklos Szeredi wrote:
+> > On Wed, 9 Jul 2008, Dave Chinner wrote:
+> > > The argument against Miklos' version is that there may be multiple
+> > > commands to execute while the fs is frozen.
+> > 
+> > Which is what a shell is for ;)
+> 
+> Yeah, weĺl, with your method I ca't tell a user to:
+> 
+> 	# xfs_freeze -f /mntpt
+> 	# xfs_db -r -c 'sb 0' -c 'p rootino' /dev/foo
+> 	128
+> 	# xfs_db -r -c 'ino 128' -c 'p core.format' /dev/foo
+> 	core.format = 2 (extents)
+> 	# xfs_db .....
+> 	.....
+> 	# xfs_freeze -u /mntpt
+> 
+> i.e. using the freeze to force all metadata to disk and
+> prevent it from changing while doing interactive debugging
+> of some problem.
 
-Isn't that exactly the same thing because any task will preempt the idle
-thread?
+	# run_freeze /mntpt /bin/bash
+	# ...
+	# ^D
+
+It's the same, no?
+
+Miklos
