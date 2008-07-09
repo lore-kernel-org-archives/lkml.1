@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbYGIUvt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755123AbYGIUz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755435AbYGIUvt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 16:51:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbYGIUv3
+	id S1755123AbYGIUz0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 16:55:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751504AbYGIUzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 16:51:29 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:34616 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753344AbYGIUv1 (ORCPT
+	Wed, 9 Jul 2008 16:55:18 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37873 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751076AbYGIUzR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 16:51:27 -0400
-Message-ID: <4875231F.1020506@zytor.com>
-Date: Wed, 09 Jul 2008 16:44:15 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 9 Jul 2008 16:55:17 -0400
+Message-ID: <487525B3.90904@sgi.com>
+Date: Wed, 09 Jul 2008 13:55:15 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
        Christoph Lameter <cl@linux-foundation.org>,
        Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
 Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org>	<20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <20080709133958.612635f0@infradead.org>
-In-Reply-To: <20080709133958.612635f0@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <20080709192822.GB4804@elte.hu>
+In-Reply-To: <20080709192822.GB4804@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Wed, 09 Jul 2008 13:11:03 -0700
-> Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+Ingo Molnar wrote:
+> * Mike Travis <travis@sgi.com> wrote:
 > 
->> Ingo Molnar wrote:
->>> Note that the zero-based percpu problems are completely unrelated
->>> to stackprotector. I was able to hit them with a
->>> stackprotector-disabled gcc-4.2.3 environment.
->> The only reason we need to keep a zero-based pda is to support 
->> stack-protector.  If we drop drop it, we can drop the pda - and its 
->> special zero-based properties - entirely.
+>>   * x86_64: Rebase per cpu variables to zero
+>>
+>>     Take advantage of the zero-based per cpu area provided above. Then 
+>>     we can directly use the x86_32 percpu operations. x86_32 offsets 
+>>     %fs by __per_cpu_start. x86_64 has %gs pointing directly to the 
+>>     pda and the per cpu area thereby allowing access to the pda with 
+>>     the x86_64 pda operations and access to the per cpu variables 
+>>     using x86_32 percpu operations.
 > 
-> what's wrong with zero based btw?
+> hm, have the binutils (or gcc) problems with this been resolved?
 > 
+> If common binutils versions miscompile the kernel with this feature then 
+> i guess we cannot just unconditionally enable it. (My hope is that it's 
+> not necessarily a binutils bug but some broken assumption of the kernel 
+> somewhere.)
+> 
+> 	Ingo
 
-Two problems:
+Currently I'm using gcc-4.2.4.  Which are you using?
 
-1. it means pda references are invalid if their offsets are ever more 
-than CONFIG_PHYSICAL_BASE (which I do not think is likely, but still...)
+I labeled it "RFC" as it does not quite work without THREAD_ORDER bumped to 2.
+And I believe the stack overflow is happening because of some interrupt
+routine as it does not happen on our simulator.
 
-2. some vague hints of a linker bug.
+After that is taken care of, I'll start regression testing earlier compilers.
+I think someone mentioned that gcc-2.something was the minimum required...?
 
-	-hpa
+Thanks,
+Mike
