@@ -1,90 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756195AbYGIVMP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756910AbYGIVMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756195AbYGIVMP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 17:12:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbYGIVL7
+	id S1756910AbYGIVMb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 17:12:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755834AbYGIVMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 17:11:59 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:46629 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751049AbYGIVL5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 17:11:57 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com>
-	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>
-	<48751B57.8030605@goop.org> <48751CF9.4020901@linux-foundation.org>
-	<4875209D.8010603@goop.org> <487522A8.60906@zytor.com>
-	<48752409.1030201@goop.org>
-Date: Wed, 09 Jul 2008 14:06:27 -0700
-In-Reply-To: <48752409.1030201@goop.org> (Jeremy Fitzhardinge's message of
-	"Wed, 09 Jul 2008 13:48:09 -0700")
-Message-ID: <m1abgqu5rg.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 9 Jul 2008 17:12:09 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48354 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755663AbYGIVMI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 17:12:08 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@suse.cz>
+Subject: Re: request_firmware vs. resume (was Re: [PATCH] bnx2 - use request_firmware())
+Date: Wed, 9 Jul 2008 23:13:54 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk,
+       mchan@broadcom.com, dwmw2@infradead.org, bastian@waldi.eu.org,
+       linux-kernel@vger.kernel.org
+References: <20080707221950.3dfba435@the-village.bc.nu> <20080708.015838.245133409.davem@davemloft.net> <20080709202547.GD11006@ucw.cz>
+In-Reply-To: <20080709202547.GD11006@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Jeremy Fitzhardinge <jeremy@goop.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
-	*      [score: 0.0971]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807092313.55777.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+On Wednesday, 9 of July 2008, Pavel Machek wrote:
+> Hi!
+> 
+> > > > The firmware needs to be reloaded every time the chip resets.
+> > > > You're not saving anything/
+> > > 
+> > > > See above, you aren't saving anything.  The firmware needs to stay
+> > > > around so it can be reloaded into the card during exceptions.
+> > > > 
+> > > > That is, unless you want a more failure prone system.
+> > > 
+> > > Ok so if tg3 always needs the same firmware and always needs it in memory
+> > > then maybe it isn't a significant candidate for request_firmware beyond
+> > > the neatness of distribution. I note the firmware hasn't changed in years
+> > > so it can easily be shipped separately and the one package would have
+> > > done for all this time.
+> > 
+> > It isn't just tg3.  All the broadcom gigabit chips need this
+> > kind of handling.
+> > 
+> > Basically all of the drivers we are pushing back on.
+> > 
+> > I bet there are other similar examples.
+> 
+> Be careful about request_firmware. Doing it right w.r.t.
+> suspend/resume is quite tricky: you have to load it from userspace
+> before kernel starts, so that you can use it during resume...
 
-> H. Peter Anvin wrote:
->> Thinking about this some more, I don't know if it would make sense to put the
->> x86-64 stack canary at the *end* of the percpu area, and otherwise use
->> negative offsets.  That would make sure they were readily reachable from
->> %rip-based references from within the kernel text area.
->
-> If we can move the canary then a whole pile of options open up.  But the problem
-> is that we can't.
+Rather, you have to cache it in memory before your ->suspend() is invoked.
 
-But we can pick an arbitrary point where %gs points at.
-
-Hmm.  This whole thing is even sillier then I thought.
-Why can't we access per cpu vars as:
-%gs:(per_cpu__var - __per_cpu_start) ?
-
-If we can subtract constants and allow the linker to perform that resolution
-at link.  A zero based per cpu segment becomes a moot issue.
-
-We may need to change the definition of PERCPU in vmlinux.lds.h to
-#define PERCPU(align)							\
-	. = ALIGN(align);						\
--	__per_cpu_start = .;					\
-	.data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) {		\
-+		__per_cpu_start = .;					\
-		*(.data.percpu)						\
-		*(.data.percpu.shared_aligned)				\
-+		__per_cpu_end = .;					\
-+	}
--	}								\
--	__per_cpu_end = .;
-
-
-So that the linker knows  __per_cpu_start and __per_cpu_end are in the same section
-but otherwise it sounds entirely reasonable.  Just slightly trickier math at link
-time.
-
-Eric
+Thanks,
+Rafael
