@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753975AbYGIMZQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbYGIM31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753975AbYGIMZQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 08:25:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbYGIMZA
+	id S1755435AbYGIM31 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 08:29:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbYGIM3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 08:25:00 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:60424 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752085AbYGIMY7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 08:24:59 -0400
-Date: Wed, 9 Jul 2008 08:24:01 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Arjan van de Ven <arjan@infradead.org>, Miklos Szeredi <miklos@szeredi.hu>,
-       hch@infradead.org, pavel@suse.cz, t-sato@yk.jp.nec.com,
-       akpm@linux-foundation.org, viro@ZenIV.linux.org.uk,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, dm-devel@redhat.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       axboe@kernel.dk, mtk.manpages@googlemail.com
-Subject: Re: [PATCH 3/3] Add timeout feature
-Message-ID: <20080709122401.GK9957@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Miklos Szeredi <miklos@szeredi.hu>, hch@infradead.org,
-	pavel@suse.cz, t-sato@yk.jp.nec.com, akpm@linux-foundation.org,
-	viro@ZenIV.linux.org.uk, linux-ext4@vger.kernel.org,
-	xfs@oss.sgi.com, dm-devel@redhat.com, linux-fsdevel@vger.kernel.org,
-	linux-kernel@vger.kernel.org, axboe@kernel.dk,
-	mtk.manpages@googlemail.com
-References: <20080709010922.GE9957@mit.edu> <E1KGSvZ-0006dB-53@pomaz-ex.szeredi.hu> <20080709061621.GA5260@infradead.org> <E1KGT4q-0006fD-Jb@pomaz-ex.szeredi.hu> <20080708234120.5072111f@infradead.org> <E1KGTTm-0006ke-Jh@pomaz-ex.szeredi.hu> <20080708235502.1c52a586@infradead.org> <20080709071346.GS11558@disturbed> <20080709110900.GI9957@mit.edu> <20080709114958.GV11558@disturbed>
+	Wed, 9 Jul 2008 08:29:19 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39926 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751834AbYGIM3T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 08:29:19 -0400
+Date: Wed, 9 Jul 2008 14:28:52 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, LKML <linux-kernel@vger.kernel.org>,
+       Jens Axboe <axboe@kernel.dk>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Lameter <clameter@linux-foundation.org>,
+       Petr Tesarik <ptesarik@suse.cz>,
+       Virtualization <virtualization@lists.linux-foundation.org>,
+       Xen devel <xen-devel@lists.xensource.com>,
+       Thomas Friebel <thomas.friebel@amd.com>, Avi Kivity <avi@qumranet.com>
+Subject: Re: [PATCH RFC 0/4] Paravirtual spinlocks
+Message-ID: <20080709122852.GA30579@elte.hu>
+References: <20080707190749.299430659@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080709114958.GV11558@disturbed>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <20080707190749.299430659@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 09, 2008 at 09:49:58PM +1000, Dave Chinner wrote:
-> (e) none of the above.  The kernel compilation will appear to pause
-> until the filesystem is unfrozen. No other visible effect should
-> occur. It will get blocked in a write or filesystem transaction
-> because the fs is frozen.
 
-So if the process which froze the filesystem accidentally tries
-writing to a log file (or database file containing the backup
-information, or whatever) that happens to be on the filesystem that is
-frozen, that process will get blocked and you end up in a deadlock;
-did I get that right?
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-						- Ted
+> My experiments show that using a Xen-specific lock helps guest 
+> performance a bit (reduction in elapsed and system time in a kernbench 
+> run), but most significantly, reduces overall physical CPU consumption 
+> by 10%, and so increases overall system scalability.
+
+that's rather impressive and looks nice, considering the fairly low 
+impact.
+
+as there were no fundamental objections in this thread i've created a 
+tip/x86/paravirt-spinlocks topic branch for these patches and started 
+testing them.
+
+i based the topic branch on tip/xen-64bit, so you should be able to get 
+the latest code by doing:
+
+  git-merge tip/x86/paravirt-spinlocks
+
+on tip/master.
+
+	Ingo
