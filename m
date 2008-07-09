@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755192AbYGITzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbYGIT5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755192AbYGITzp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 15:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbYGITzh
+	id S1754669AbYGIT5b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 15:57:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbYGIT5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 15:55:37 -0400
-Received: from wr-out-0506.google.com ([64.233.184.239]:19741 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750955AbYGITzg (ORCPT
+	Wed, 9 Jul 2008 15:57:22 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55282 "EHLO
+	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751227AbYGIT5W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 15:55:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=lY7hmkZ3CeZY/mfb/xTQ/VbTbt2dpjp0O1h1BeTljvsnezEPLZv2hVXzSS/L5n+9Ix
-         cZAHm0W6+pxOoRXlNjNu1Vc9dCNKvmB+QE7LUC1DVYptryDADx3Hy0OuRc33zW5HL1j8
-         V54E2Azr8b5HQmLBknsi+1UU+IP+B599WZuyQ=
-Message-ID: <1f1b08da0807091255s77033943t2b686ddb537ceaae@mail.gmail.com>
-Date: Wed, 9 Jul 2008 12:55:35 -0700
-From: "john stultz" <johnstul@us.ibm.com>
-To: "Philippe Troin" <phil@fifi.org>
-Subject: Re: 2.6.25.9: system clocks works normally then speeds up 4x...
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <87d4lm2792.fsf@old-tantale.fifi.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 9 Jul 2008 15:57:22 -0400
+Date: Wed, 9 Jul 2008 20:21:31 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: avorontsov@ru.mvista.com
+Cc: Ingo Molnar <mingo@elte.hu>, linux-serial@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: [PATCH v2] serial: 8250: fix shared interrupts issues with SMP
+ and RT kernels
+Message-ID: <20080709202131.362943ea@the-village.bc.nu>
+In-Reply-To: <20080709192943.GA12278@polina.dev.rtsoft.ru>
+References: <20080623232957.GA5111@polina.dev.rtsoft.ru>
+	<20080624001221.GA20685@elte.hu>
+	<20080701134343.GA1865@polina.dev.rtsoft.ru>
+	<20080701144353.7285805d@lxorguk.ukuu.org.uk>
+	<20080701150254.GA13390@polina.dev.rtsoft.ru>
+	<20080709192943.GA12278@polina.dev.rtsoft.ru>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <87d4lm2792.fsf@old-tantale.fifi.org>
-X-Google-Sender-Auth: e4f4521223d82847
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 9, 2008 at 12:21 PM, Philippe Troin <phil@fifi.org> wrote:
-> System info:
->
->  Dual Pentium-III
->  Tyan Tiger 133 motherboard
->  Running 2.6.25.9-40 (Fedora 8 kernel + IMQ + Layer7 patches)
->  Also tried with vanilla 2.6.25.9 - problem still shows up.
->
-> Symptoms:
->
->  The system boots fine. Clock seems to run normally.
->
->  Then after a random amount of time (on the current boot, 3 days),
->  clock starts to be running 2-4x faster (on the current boot, 4x).
->
->  I have tried booting with "nohz=off highres=off" but it does not
->  help.
+> > But this can't happen here. IRQ will not grab the up->port.lock,
+> > because port isn't registered in the 8250 IRQ handling chain (yet).
+> 
+> Alan, are there any issues with the proof or the patch itself?
 
-Could you provide the output from the following:
-   sudo cat /sys/devices/system/clocksource/clocksource0/*
+The logic looks fine, the analysis looks fine. 
 
-Did this issue occur with 2.6.24 or earlier kernels?
-
-thanks
--john
+Alan
