@@ -1,45 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421AbYGIUgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754798AbYGIUiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755421AbYGIUgY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 16:36:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbYGIUgQ
+	id S1754798AbYGIUiU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 16:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbYGIUiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 16:36:16 -0400
-Received: from gw.goop.org ([64.81.55.164]:56594 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751059AbYGIUgP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 16:36:15 -0400
-Message-ID: <4875212E.6090404@goop.org>
-Date: Wed, 09 Jul 2008 13:35:58 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Mike Travis <travis@sgi.com>, Christoph Lameter <cl@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<4874F4F2.9010603@goop.org> <4874F7D9.5060607@linux-foundation.org>	<4874FD52.8070000@sgi.com> <4874FFC4.7050505@linux-foundation.org>	<487502FB.3090106@sgi.com> <487507A1.2020100@goop.org> <m1r6a2yfip.fsf@frodo.ebiederm.org>
-In-Reply-To: <m1r6a2yfip.fsf@frodo.ebiederm.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Jul 2008 16:38:07 -0400
+Received: from hedwig.cmf.nrl.navy.mil ([134.207.12.162]:55817 "EHLO
+	hedwig.cmf.nrl.navy.mil" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751522AbYGIUiG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 16:38:06 -0400
+Message-Id: <200807092037.m69Kbmc0030545@cmf.nrl.navy.mil>
+From: "Chas Williams (CONTRACTOR)" <chas@cmf.nrl.navy.mil>
+To: davem@davemloft.net
+cc: netdev@vger.kernel.org, linux-atm-general@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [Linux-ATM-General] [PATCH] firmware: convert Ambassador ATM driver to request_firmware()
+In-reply-to: <1214853492.10393.350.camel@pmac.infradead.org>
+Date: Wed, 09 Jul 2008 16:37:48 -0400
+X-NRLCMF-Spam-Score: () hits=-0.014
+X-NRLCMF-Virus-Scanned: No virus found
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> How does gcc know to use %gs instead of the usual %fs for accessing
-> the stack protector variable?  My older gcc-4.1.x on ubuntu always uses %fs.
->   
+dave, please apply to net-next.  thanks! 
 
--mcmodel=kernel
+Author: Chas Williams - CONTRACTOR <chas@relax.cmf.nrl.navy.mil>
+Date:   Wed Jul 9 12:39:08 2008 -0400
 
-> Or we could do something completely evil.  And use the other segment
-> register for the stack canary.
->   
+    atm: [fore200e] use MODULE_FIRMWARE() and other suggested cleanups
+    
+    Signed-off-by: Chas Williams <chas@cmf.nrl.navy.mil>
 
-That would still require gcc changes, so it doesn't help much.
-
-    J
+diff --git a/drivers/atm/fore200e.c b/drivers/atm/fore200e.c
+index d5c1bbf..73338d2 100644
+--- a/drivers/atm/fore200e.c
++++ b/drivers/atm/fore200e.c
+@@ -2562,7 +2562,8 @@ fore200e_load_and_start_fw(struct fore200e* fore200e)
+     const struct firmware *firmware;
+     struct device *device;
+     struct fw_header *fw_header;
+-    u32 *fw_data, fw_size;
++    const __le32 *fw_data;
++    u32 fw_size;
+     u32 __iomem *load_addr;
+     char buf[48];
+     int err = -ENODEV;
+@@ -2582,7 +2583,7 @@ fore200e_load_and_start_fw(struct fore200e* fore200e)
+ 	return err;
+     }
+ 
+-    fw_data = (u32 *) firmware->data;
++    fw_data = (__le32 *) firmware->data;
+     fw_size = firmware->size / sizeof(u32);
+     fw_header = (struct fw_header *) firmware->data;
+     load_addr = fore200e->virt_base + le32_to_cpu(fw_header->load_offset);
+@@ -3199,6 +3200,14 @@ static const struct fore200e_bus fore200e_bus[] = {
+     {}
+ };
+ 
+-#ifdef MODULE_LICENSE
+ MODULE_LICENSE("GPL");
++#ifdef CONFIG_PCI
++#ifdef __LITTLE_ENDIAN__
++MODULE_FIRMWARE("pca200e.bin");
++#else
++MODULE_FIRMWARE("pca200e_ecd.bin2");
++#endif
++#endif /* CONFIG_PCI */
++#ifdef CONFIG_SBUS
++MODULE_FIRMWARE("sba200e_ecd.bin2");
+ #endif
