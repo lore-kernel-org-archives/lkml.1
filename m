@@ -1,77 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754920AbYGIKmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755081AbYGIKtp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754920AbYGIKmY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 06:42:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbYGIKmP
+	id S1755081AbYGIKtp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 06:49:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbYGIKth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 06:42:15 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:63514 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752078AbYGIKmO (ORCPT
+	Wed, 9 Jul 2008 06:49:37 -0400
+Received: from hull.simtec.co.uk ([78.105.113.97]:42485 "EHLO
+	ivanova.local.simtec.co.uk" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751365AbYGIKtg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 06:42:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=d0K6H33tSlvMwxwraJ3DBZLNU5vHc/KgxeHxs51LH7qhPEmbwGcROjcJe0axwkydNu
-         n43pOka9BIN2rjrFavRbJPyJTfkzvqntmclqg4rfvmyBL5vigFjx1GF3l5TFq5+X/n1u
-         TUnnGhwP9KauH/olLwAvl8LR9pJb0JVN3bqkA=
-Message-ID: <84144f020807090342h36719b2exa8bea85625a127e9@mail.gmail.com>
-Date: Wed, 9 Jul 2008 13:42:12 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: KokHow.Teh@infineon.com
-Subject: Re: Kmem_cache handling in linux-2.6.2x kernel
-Cc: linux-kernel@vger.kernel.org, cl@linux-foundation.org
-In-Reply-To: <31E09F73562D7A4D82119D7F6C172986046C7113@sinse303.ap.infineon.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <31E09F73562D7A4D82119D7F6C172986046C6ACA@sinse303.ap.infineon.com>
-	 <84144f020807090306o49f4deb4m3ded12acc961f214@mail.gmail.com>
-	 <31E09F73562D7A4D82119D7F6C172986046C7113@sinse303.ap.infineon.com>
-X-Google-Sender-Auth: 13fe413557e3b3e2
+	Wed, 9 Jul 2008 06:49:36 -0400
+Message-Id: <20080709104932.706237040@fluff.org>
+References: <20080709104916.200210922@fluff.org>
+User-Agent: quilt/0.46-1
+Date: Wed, 09 Jul 2008 11:49:18 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
+Cc: sameo@openedhand.com, dbaryshkov@gmail.com,
+       Ben Dooks <ben-linux@fluff.org>
+Subject: [patch 2/4] MFD: Coding style fixes
+Content-Disposition: inline; filename=mfd-fix-codingstyle.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Fix some coding style fixes in the mfd core driver.
 
-On Wed, Jul 9, 2008 at 1:30 PM,  <KokHow.Teh@infineon.com> wrote:
-> In my applications, only part of total number of objects of the
-> kmem_cache are freed. So my question is what happen to these "freed"
-> objects? How are these "freed" objects managed by the linux-MM? Would
-> they be reused by other kmem_cache_alloc() and/or kmalloc()?
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
-The free'd objects will be returned to the cache and are, of course,
-reused by later kmem_cache_alloc() and kmalloc() calls. Note that with
-_SLAB_, you never have cache sharing, so an object free'd by
-kmem_cache_free() is only available for a kmem_cache_alloc() of the
-same cache.
+Index: linux-2.6.26-rc9-next20080709/drivers/mfd/mfd-core.c
+===================================================================
+--- linux-2.6.26-rc9-next20080709.orig/drivers/mfd/mfd-core.c	2008-07-09 10:43:54.000000000 +0100
++++ linux-2.6.26-rc9-next20080709/drivers/mfd/mfd-core.c	2008-07-09 10:44:45.000000000 +0100
+@@ -16,9 +16,9 @@
+ #include <linux/mfd/core.h>
+ 
+ static int mfd_add_device(struct platform_device *parent,
+-		const struct mfd_cell *cell,
+-		struct resource *mem_base,
+-		int irq_base)
++			  const struct mfd_cell *cell,
++			  struct resource *mem_base,
++			  int irq_base)
+ {
+ 	struct resource res[cell->num_resources];
+ 	struct platform_device *pdev;
+@@ -75,11 +75,10 @@ fail_alloc:
+ 	return ret;
+ }
+ 
+-int mfd_add_devices(
+-		struct platform_device *parent,
+-		const struct mfd_cell *cells, int n_devs,
+-		struct resource *mem_base,
+-		int irq_base)
++int mfd_add_devices(struct platform_device *parent,
++		    const struct mfd_cell *cells, int n_devs,
++		    struct resource *mem_base,
++		    int irq_base)
+ {
+ 	int i;
+ 	int ret = 0;
+Index: linux-2.6.26-rc9-next20080709/include/linux/mfd/core.h
+===================================================================
+--- linux-2.6.26-rc9-next20080709.orig/include/linux/mfd/core.h	2008-07-09 10:43:54.000000000 +0100
++++ linux-2.6.26-rc9-next20080709/include/linux/mfd/core.h	2008-07-09 10:44:45.000000000 +0100
+@@ -1,5 +1,3 @@
+-#ifndef MFD_CORE_H
+-#define MFD_CORE_H
+ /*
+  * drivers/mfd/mfd-core.h
+  *
+@@ -13,6 +11,9 @@
+  *
+  */
+ 
++#ifndef MFD_CORE_H
++#define MFD_CORE_H
++
+ #include <linux/platform_device.h>
+ 
+ /*
+@@ -38,17 +39,15 @@ struct mfd_cell {
+ 	const struct resource	*resources;
+ };
+ 
+-static inline struct mfd_cell *
+-mfd_get_cell(struct platform_device *pdev)
++static inline struct mfd_cell *mfd_get_cell(struct platform_device *pdev)
+ {
+ 	return (struct mfd_cell *)pdev->dev.platform_data;
+ }
+ 
+-extern int mfd_add_devices(
+-		struct platform_device *parent,
+-		const struct mfd_cell *cells, int n_devs,
+-		struct resource *mem_base,
+-		int irq_base);
++extern int mfd_add_devices(struct platform_device *parent,
++			   const struct mfd_cell *cells, int n_devs,
++			   struct resource *mem_base,
++			   int irq_base);
+ 
+ extern void mfd_remove_devices(struct platform_device *parent);
+ 
 
-At some point in time, I wrote:
->>In addition, SLUB does slab merging so the same cache can be
->> transparently used by other kmem_cache_alloc() callers. So there really
->> are no reservation guarantees for a cache in OOM conditions.
-
-On Wed, Jul 9, 2008 at 1:30 PM,  <KokHow.Teh@infineon.com> wrote:
-> (1) SLUB is not available in 2.6.20 kernel which I am using for my
-> products. In this case, is there similar mechamisms in place to
-> faciliate "page-sharing" amongst the kmem_cache_alloc() callers?
-
-No.
-
-On Wed, Jul 9, 2008 at 1:30 PM,  <KokHow.Teh@infineon.com> wrote:
-> (2) Does this "page-sharing" happen for kmalloc() callers?
-
-The caches for kmalloc() are set up first, so a kmalloc() never dips
-into a cache created by kmem_cache_create(). But a kmem_cache_alloc()
-can dip into a kmalloc cache. Look at the create_kmalloc_cache() calls
-in kmem_cache_init() and the find_mergeable() call in
-kmem_cache_create() in mm/slub.c for details.
-
-Btw, you mentioned that you're allocating 64 KBs. So with SLUB, if you
-use _kmalloc()_ the request will be passed through to the page
-allocator directly (see kmalloc_large()).
+-- 
