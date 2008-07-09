@@ -1,45 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759709AbYGIPFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757974AbYGIPGh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759709AbYGIPFz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 11:05:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756761AbYGIPDi
+	id S1757974AbYGIPGh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 11:06:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759481AbYGIPFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 11:03:38 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:41342 "EHLO smtp.polymtl.ca"
+	Wed, 9 Jul 2008 11:05:05 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:41744 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758854AbYGIPDg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 11:03:36 -0400
-Message-Id: <20080709150044.698254444@polymtl.ca>
+	id S1759471AbYGIPFD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 11:05:03 -0400
+Message-Id: <20080709150046.737002691@polymtl.ca>
 References: <20080709145929.352201601@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 09 Jul 2008 10:59:33 -0400
+Date: Wed, 09 Jul 2008 10:59:39 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, Andi Kleen <ak@suse.de>,
+       linux-mm@kvack.org, Dave Hansen <haveblue@us.ibm.com>,
        Masami Hiramatsu <mhiramat@redhat.com>,
        Peter Zijlstra <peterz@infradead.org>,
        "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
        Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: [patch 04/15] LTTng instrumentation - irq
-Content-Disposition: inline; filename=lttng-instrumentation-irq.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed,  9 Jul 2008 15:00:45 +0000
+Subject: [patch 10/15] LTTng instrumentation - memory page faults
+Content-Disposition: inline; filename=lttng-instrumentation-memory.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed,  9 Jul 2008 15:00:47 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Instrumentation of IRQ related events : irq, softirq, tasklet entry and exit and
-softirq "raise" events.
-
-It allows tracers to perform latency analysis on those various types of
-interrupts and to detect interrupts with max/min/avg duration. It helps
-detecting driver or hardware problems which cause an ISR to take ages to
-execute. It has been shown to be the case with bogus hardware causing an mmio
-read to take a few milliseconds.
+Instrument the page fault entry and exit. Useful to detect delays caused by page
+faults and bad memory usage patterns.
 
 Those tracepoints are used by LTTng.
 
@@ -50,8 +43,9 @@ scheduler instrumentation (about 5 events in code scheduler code) was added.
 See the "Tracepoints" patch header for performance result detail.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Thomas Gleixner <tglx@linutronix.de>
-CC: Russell King <rmk+lkml@arm.linux.org.uk>
+CC: Andi Kleen <ak@suse.de>
+CC: linux-mm@kvack.org
+CC: Dave Hansen <haveblue@us.ibm.com>
 CC: Masami Hiramatsu <mhiramat@redhat.com>
 CC: 'Peter Zijlstra' <peterz@infradead.org>
 CC: "Frank Ch. Eigler" <fche@redhat.com>
@@ -61,131 +55,93 @@ CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
 CC: 'Steven Rostedt' <rostedt@goodmis.org>
 CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 ---
- kernel/irq-trace.h  |   36 ++++++++++++++++++++++++++++++++++++
- kernel/irq/handle.c |    6 ++++++
- kernel/softirq.c    |    8 ++++++++
- 3 files changed, 50 insertions(+)
+ mm/memory-trace.h |   14 ++++++++++++++
+ mm/memory.c       |   33 ++++++++++++++++++++++++---------
+ 2 files changed, 38 insertions(+), 9 deletions(-)
 
-Index: linux-2.6-lttng/kernel/irq/handle.c
+Index: linux-2.6-lttng/mm/memory.c
 ===================================================================
---- linux-2.6-lttng.orig/kernel/irq/handle.c	2008-07-09 10:57:33.000000000 -0400
-+++ linux-2.6-lttng/kernel/irq/handle.c	2008-07-09 10:57:35.000000000 -0400
-@@ -15,6 +15,7 @@
- #include <linux/random.h>
- #include <linux/interrupt.h>
- #include <linux/kernel_stat.h>
-+#include "../irq-trace.h"
+--- linux-2.6-lttng.orig/mm/memory.c	2008-07-09 10:58:31.000000000 -0400
++++ linux-2.6-lttng/mm/memory.c	2008-07-09 10:58:34.000000000 -0400
+@@ -61,6 +61,7 @@
  
- #include "internals.h"
+ #include <linux/swapops.h>
+ #include <linux/elf.h>
++#include "memory-trace.h"
  
-@@ -130,6 +131,9 @@ irqreturn_t handle_IRQ_event(unsigned in
+ #ifndef CONFIG_NEED_MULTIPLE_NODES
+ /* use the per-pgdat data instead for discontigmem - mbligh */
+@@ -2664,30 +2665,44 @@ unlock:
+ int handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+ 		unsigned long address, int write_access)
  {
- 	irqreturn_t ret, retval = IRQ_NONE;
- 	unsigned int status = 0;
-+	struct pt_regs *regs = get_irq_regs();
++	int res;
+ 	pgd_t *pgd;
+ 	pud_t *pud;
+ 	pmd_t *pmd;
+ 	pte_t *pte;
+ 
++	trace_memory_handle_fault_entry(mm, vma, address, write_access);
 +
-+	trace_irq_entry(irq, regs);
+ 	__set_current_state(TASK_RUNNING);
  
- 	handle_dynamic_tick(action);
+ 	count_vm_event(PGFAULT);
  
-@@ -148,6 +152,8 @@ irqreturn_t handle_IRQ_event(unsigned in
- 		add_interrupt_randomness(irq);
- 	local_irq_disable();
+-	if (unlikely(is_vm_hugetlb_page(vma)))
+-		return hugetlb_fault(mm, vma, address, write_access);
++	if (unlikely(is_vm_hugetlb_page(vma))) {
++		res = hugetlb_fault(mm, vma, address, write_access);
++		goto end;
++	}
  
-+	trace_irq_exit();
-+
- 	return retval;
+ 	pgd = pgd_offset(mm, address);
+ 	pud = pud_alloc(mm, pgd, address);
+-	if (!pud)
+-		return VM_FAULT_OOM;
++	if (!pud) {
++		res = VM_FAULT_OOM;
++		goto end;
++	}
+ 	pmd = pmd_alloc(mm, pud, address);
+-	if (!pmd)
+-		return VM_FAULT_OOM;
++	if (!pmd) {
++		res = VM_FAULT_OOM;
++		goto end;
++	}
+ 	pte = pte_alloc_map(mm, pmd, address);
+-	if (!pte)
+-		return VM_FAULT_OOM;
++	if (!pte) {
++		res = VM_FAULT_OOM;
++		goto end;
++	}
+ 
+-	return handle_pte_fault(mm, vma, address, pte, pmd, write_access);
++	res = handle_pte_fault(mm, vma, address, pte, pmd, write_access);
++end:
++	trace_memory_handle_fault_exit(res);
++	return res;
  }
  
-Index: linux-2.6-lttng/kernel/softirq.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/softirq.c	2008-07-09 10:57:33.000000000 -0400
-+++ linux-2.6-lttng/kernel/softirq.c	2008-07-09 10:57:35.000000000 -0400
-@@ -21,6 +21,7 @@
- #include <linux/rcupdate.h>
- #include <linux/smp.h>
- #include <linux/tick.h>
-+#include "irq-trace.h"
- 
- #include <asm/irq.h>
- /*
-@@ -205,7 +206,9 @@ restart:
- 
- 	do {
- 		if (pending & 1) {
-+			trace_irq_softirq_entry(h, softirq_vec);
- 			h->action(h);
-+			trace_irq_softirq_exit(h, softirq_vec);
- 			rcu_bh_qsctr_inc(cpu);
- 		}
- 		h++;
-@@ -297,6 +300,7 @@ void irq_exit(void)
-  */
- inline void raise_softirq_irqoff(unsigned int nr)
- {
-+	trace_irq_softirq_raise(nr);
- 	__raise_softirq_irqoff(nr);
- 
- 	/*
-@@ -394,7 +398,9 @@ static void tasklet_action(struct softir
- 			if (!atomic_read(&t->count)) {
- 				if (!test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
- 					BUG();
-+				trace_irq_tasklet_low_entry(t);
- 				t->func(t->data);
-+				trace_irq_tasklet_low_exit(t);
- 				tasklet_unlock(t);
- 				continue;
- 			}
-@@ -429,7 +435,9 @@ static void tasklet_hi_action(struct sof
- 			if (!atomic_read(&t->count)) {
- 				if (!test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
- 					BUG();
-+				trace_irq_tasklet_high_entry(t);
- 				t->func(t->data);
-+				trace_irq_tasklet_high_exit(t);
- 				tasklet_unlock(t);
- 				continue;
- 			}
-Index: linux-2.6-lttng/kernel/irq-trace.h
+ #ifndef __PAGETABLE_PUD_FOLDED
+Index: linux-2.6-lttng/mm/memory-trace.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/kernel/irq-trace.h	2008-07-09 10:57:35.000000000 -0400
-@@ -0,0 +1,36 @@
-+#ifndef _IRQ_TRACE_H
-+#define _IRQ_TRACE_H
++++ linux-2.6-lttng/mm/memory-trace.h	2008-07-09 10:58:34.000000000 -0400
+@@ -0,0 +1,14 @@
++#ifndef _MEMORY_TRACE_H
++#define _MEMORY_TRACE_H
 +
-+#include <linux/kdebug.h>
-+#include <linux/interrupt.h>
 +#include <linux/tracepoint.h>
 +
-+DEFINE_TRACE(irq_entry,
-+	TPPROTO(unsigned int id, struct pt_regs *regs),
-+	TPARGS(id, regs));
-+DEFINE_TRACE(irq_exit,
-+	TPPROTO(void),
-+	TPARGS());
-+DEFINE_TRACE(irq_softirq_entry,
-+	TPPROTO(struct softirq_action *h, struct softirq_action *softirq_vec),
-+	TPARGS(h, softirq_vec));
-+DEFINE_TRACE(irq_softirq_exit,
-+	TPPROTO(struct softirq_action *h, struct softirq_action *softirq_vec),
-+	TPARGS(h, softirq_vec));
-+DEFINE_TRACE(irq_softirq_raise,
-+	TPPROTO(unsigned int nr),
-+	TPARGS(nr));
-+DEFINE_TRACE(irq_tasklet_low_entry,
-+	TPPROTO(struct tasklet_struct *t),
-+	TPARGS(t));
-+DEFINE_TRACE(irq_tasklet_low_exit,
-+	TPPROTO(struct tasklet_struct *t),
-+	TPARGS(t));
-+DEFINE_TRACE(irq_tasklet_high_entry,
-+	TPPROTO(struct tasklet_struct *t),
-+	TPARGS(t));
-+DEFINE_TRACE(irq_tasklet_high_exit,
-+	TPPROTO(struct tasklet_struct *t),
-+	TPARGS(t));
++DEFINE_TRACE(memory_handle_fault_entry,
++	TPPROTO(struct mm_struct *mm, struct vm_area_struct *vma,
++		unsigned long address, int write_access),
++	TPARGS(mm, vma, address, write_access));
++DEFINE_TRACE(memory_handle_fault_exit,
++	TPPROTO(int res),
++	TPARGS(res));
 +
 +#endif
 
