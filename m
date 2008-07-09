@@ -1,74 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754798AbYGIUiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755909AbYGIUjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754798AbYGIUiU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 16:38:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbYGIUiH
+	id S1755909AbYGIUjo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 16:39:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751614AbYGIUjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 16:38:07 -0400
-Received: from hedwig.cmf.nrl.navy.mil ([134.207.12.162]:55817 "EHLO
-	hedwig.cmf.nrl.navy.mil" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751522AbYGIUiG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 16:38:06 -0400
-Message-Id: <200807092037.m69Kbmc0030545@cmf.nrl.navy.mil>
-From: "Chas Williams (CONTRACTOR)" <chas@cmf.nrl.navy.mil>
-To: davem@davemloft.net
-cc: netdev@vger.kernel.org, linux-atm-general@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [Linux-ATM-General] [PATCH] firmware: convert Ambassador ATM driver to request_firmware()
-In-reply-to: <1214853492.10393.350.camel@pmac.infradead.org>
-Date: Wed, 09 Jul 2008 16:37:48 -0400
-X-NRLCMF-Spam-Score: () hits=-0.014
-X-NRLCMF-Virus-Scanned: No virus found
+	Wed, 9 Jul 2008 16:39:37 -0400
+Received: from gw.goop.org ([64.81.55.164]:53273 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751527AbYGIUjg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 16:39:36 -0400
+Message-ID: <487521F7.6070708@goop.org>
+Date: Wed, 09 Jul 2008 13:39:19 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       x86@kernel.org, Stephen Tweedie <sct@redhat.com>,
+       Eduardo Habkost <ehabkost@redhat.com>,
+       Mark McLoughlin <markmc@redhat.com>
+Subject: Re: [patch] power, xen64: fix PM_SLEEP build dependencies
+References: <patchbomb.1215554782@localhost> <200807092217.53222.rjw@sisk.pl> <48751E34.3060100@goop.org> <200807092233.08930.rjw@sisk.pl>
+In-Reply-To: <200807092233.08930.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-dave, please apply to net-next.  thanks! 
+Rafael J. Wysocki wrote:
+> It does.  And it depends on PM, because HIBERNATION and SUSPEND both depend
+> on PM.
+>   
 
-Author: Chas Williams - CONTRACTOR <chas@relax.cmf.nrl.navy.mil>
-Date:   Wed Jul 9 12:39:08 2008 -0400
+OK, so can we change PM_SLEEP to depend on PM && (HIBERNATE || SUSPEND 
+|| XEN)?
 
-    atm: [fore200e] use MODULE_FIRMWARE() and other suggested cleanups
-    
-    Signed-off-by: Chas Williams <chas@cmf.nrl.navy.mil>
+Or I could add a separate XEN_SAVE_RESTORE config which depends on PM, 
+and then we make PM_SLEEP depend on XEN_SAVE_RESTORE.
 
-diff --git a/drivers/atm/fore200e.c b/drivers/atm/fore200e.c
-index d5c1bbf..73338d2 100644
---- a/drivers/atm/fore200e.c
-+++ b/drivers/atm/fore200e.c
-@@ -2562,7 +2562,8 @@ fore200e_load_and_start_fw(struct fore200e* fore200e)
-     const struct firmware *firmware;
-     struct device *device;
-     struct fw_header *fw_header;
--    u32 *fw_data, fw_size;
-+    const __le32 *fw_data;
-+    u32 fw_size;
-     u32 __iomem *load_addr;
-     char buf[48];
-     int err = -ENODEV;
-@@ -2582,7 +2583,7 @@ fore200e_load_and_start_fw(struct fore200e* fore200e)
- 	return err;
-     }
- 
--    fw_data = (u32 *) firmware->data;
-+    fw_data = (__le32 *) firmware->data;
-     fw_size = firmware->size / sizeof(u32);
-     fw_header = (struct fw_header *) firmware->data;
-     load_addr = fore200e->virt_base + le32_to_cpu(fw_header->load_offset);
-@@ -3199,6 +3200,14 @@ static const struct fore200e_bus fore200e_bus[] = {
-     {}
- };
- 
--#ifdef MODULE_LICENSE
- MODULE_LICENSE("GPL");
-+#ifdef CONFIG_PCI
-+#ifdef __LITTLE_ENDIAN__
-+MODULE_FIRMWARE("pca200e.bin");
-+#else
-+MODULE_FIRMWARE("pca200e_ecd.bin2");
-+#endif
-+#endif /* CONFIG_PCI */
-+#ifdef CONFIG_SBUS
-+MODULE_FIRMWARE("sba200e_ecd.bin2");
- #endif
+    J
