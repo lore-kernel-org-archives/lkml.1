@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754976AbYGIS2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbYGIScJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754976AbYGIS2f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 14:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbYGIS21
+	id S1754838AbYGIScJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 14:32:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbYGISb5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 14:28:27 -0400
-Received: from wx-out-0506.google.com ([66.249.82.235]:29410 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753051AbYGIS20 (ORCPT
+	Wed, 9 Jul 2008 14:31:57 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:32994 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752648AbYGISb5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 14:28:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=nmYcZ4lzubx5q8bFaEXuakd2XsPhoEeAiF4dlslDtIqDpNhYYFVAn6u+R41jkp+by0
-         NkcL7Vphx1Kei8LyAZLyHEXdtqqZuFffmFt8vJd+LZ1bWk9GwVT39ZqkCS2lVwM4XMkX
-         LfpquOI3VT0WvQbyulSteTU855QzR4dzI7NRg=
-Message-ID: <a4423d670807091128t3a03b739y66fcffcfcf961f8@mail.gmail.com>
-Date: Wed, 9 Jul 2008 22:28:24 +0400
-From: "Alexander Beregalov" <a.beregalov@gmail.com>
-To: mingo@elte.hu, yhlu.kernel@gmail.com, tglx@linutronix.de, hpa@zytor.com,
-       kernel-janitors@vger.kernel.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: [PATCH -next] arch/x86/kernel/cpu/common_64.c: remove double inclusions
+	Wed, 9 Jul 2008 14:31:57 -0400
+Message-ID: <4875041C.60206@sgi.com>
+Date: Wed, 09 Jul 2008 11:31:56 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Christoph Lameter <cl@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <4874F4F2.9010603@goop.org> <4874F7D9.5060607@linux-foundation.org> <4874FAB2.5080401@goop.org> <4875000A.3060004@sgi.com> <48750202.3060603@goop.org>
+In-Reply-To: <48750202.3060603@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexander Beregalov <a.beregalov@gmail.com>
+Jeremy Fitzhardinge wrote:
+...
+> The trouble with reusing the space is that it's going to be things like
+> "current" which are the best candidates for going there - but if you do
+> that you lose i386 unification (unless you play some tricks where you
+> arrange to make the percpu variables land there while still appearing to
+> be normal percpu vars).
+> 
+>    J
 
-x86: remove double inclusions in arch/x86/kernel/cpu/common_64.c
 
-
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
----
-
-diff --git a/arch/x86/kernel/cpu/common_64.c b/arch/x86/kernel/cpu/common_64.c
-index 7518502..85cf7e1 100644
---- a/arch/x86/kernel/cpu/common_64.c
-+++ b/arch/x86/kernel/cpu/common_64.c
-@@ -7,12 +7,9 @@
- #include <linux/module.h>
- #include <linux/kgdb.h>
- #include <linux/topology.h>
--#include <linux/string.h>
- #include <linux/delay.h>
- #include <linux/smp.h>
--#include <linux/module.h>
- #include <linux/percpu.h>
--#include <asm/processor.h>
- #include <asm/i387.h>
- #include <asm/msr.h>
- #include <asm/io.h>
+One more approach... ;-)  Once the pda and percpu vars are in the same
+area, then could the pda be used for both 32 and 64...?
