@@ -1,49 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753844AbYGIRJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbYGIRLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753844AbYGIRJz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 13:09:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbYGIRJr
+	id S1754547AbYGIRLk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 13:11:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbYGIRLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 13:09:47 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58701 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751376AbYGIRJr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 13:09:47 -0400
-Date: Wed, 9 Jul 2008 13:03:07 -0400
-From: Dave Jones <davej@redhat.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, x86@kernel.org
-Subject: Re: scripts/gcc-x86_64-has-stack-protector.sh missing ?
-Message-ID: <20080709170307.GC29961@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Sam Ravnborg <sam@ravnborg.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>, x86@kernel.org
-References: <20080709155844.GB29961@redhat.com> <20080709163557.GA1277@uranus.ravnborg.org>
-MIME-Version: 1.0
+	Wed, 9 Jul 2008 13:11:31 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:48814 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751412AbYGIRLa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 13:11:30 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAGGMdEhMQWVt/2dsb2JhbACBW69B
+Date: Wed, 9 Jul 2008 13:11:24 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Pekka Savola <pekkas@netcore.fi>,
+       netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       "'Peter Zijlstra'" <peterz@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "'Hideo AOKI'" <haoki@redhat.com>,
+       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
+       "'Steven Rostedt'" <rostedt@goodmis.org>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Subject: [patch 15/15] LTTng instrumentation - ipv6
+Message-ID: <20080709171124.GC12193@Krystal>
+References: <20080709145929.352201601@polymtl.ca> <4874EEF3.9010700@redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080709163557.GA1277@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4874EEF3.9010700@redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 13:07:41 up 34 days, 21:48,  5 users,  load average: 2.39, 1.94,
+	1.82
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 09, 2008 at 06:35:57PM +0200, Sam Ravnborg wrote:
- > On Wed, Jul 09, 2008 at 11:58:44AM -0400, Dave Jones wrote:
- > > I just did a 'make tags' on a fresh checkout of Linus' tree, and got this..
- > > 
- > > /bin/sh: /mnt/data/src/git-trees/kernel/linux-2.6/scripts/gcc-x86_64-has-stack-protector.sh: No such file or directory
- > > 
- > > arch/x86/Makefile references this, but it seems to not be in the tree.
- > 
- > Added by:
- > 4f7fd4d7a79193ceda4ce77f75e22917d33fa154
+* Masami Hiramatsu (mhiramat@redhat.com) wrote:
+> Hi Mathieu,
+> 
+> I couldn't find your 15th patch in my mailbox, neither lkml archive.
+> Could you resend it?
+> 
+> Thank you,
+> 
 
-Spooky. not sure what I screwed up, but a fresh git checkout fixed it.
+Sure, I think quilt had some problem with it because of a ill formatted
+email. Here it is.
 
-thanks,
 
-	Dave
+
+Instrument addr_add and del of network interfaces. Lets a tracer know the
+interface address changes.
+
+Those tracepoints are used by LTTng.
+
+About the performance impact of tracepoints (which is comparable to markers),
+even without immediate values optimizations, tests done by Hideo Aoki on ia64
+show no regression. His test case was using hackbench on a kernel where
+scheduler instrumentation (about 5 events in code scheduler code) was added.
+See the "Tracepoints" patch header for performance result detail.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Pekka Savola <pekkas@netcore.fi>
+CC: netdev@vger.kernel.org
+CC: David S. Miller <davem@davemloft.net>
+CC: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+CC: Masami Hiramatsu <mhiramat@redhat.com>
+CC: 'Peter Zijlstra' <peterz@infradead.org>
+CC: "Frank Ch. Eigler" <fche@redhat.com>
+CC: 'Ingo Molnar' <mingo@elte.hu>
+CC: 'Hideo AOKI' <haoki@redhat.com>
+CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
+CC: 'Steven Rostedt' <rostedt@goodmis.org>
+CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+---
+ net/ipv6/addrconf.c   |    4 ++++
+ net/ipv6/ipv6-trace.h |   14 ++++++++++++++
+ 2 files changed, 18 insertions(+)
+
+Index: linux-2.6-lttng/net/ipv6/addrconf.c
+===================================================================
+--- linux-2.6-lttng.orig/net/ipv6/addrconf.c	2008-07-09 10:55:46.000000000 -0400
++++ linux-2.6-lttng/net/ipv6/addrconf.c	2008-07-09 10:58:43.000000000 -0400
+@@ -85,6 +85,7 @@
+ 
+ #include <linux/proc_fs.h>
+ #include <linux/seq_file.h>
++#include "ipv6-trace.h"
+ 
+ /* Set to 3 to get tracing... */
+ #define ACONF_DEBUG 2
+@@ -650,6 +651,8 @@ ipv6_add_addr(struct inet6_dev *idev, co
+ 	/* For caller */
+ 	in6_ifa_hold(ifa);
+ 
++	trace_ipv6_addr_add(ifa);
++
+ 	/* Add to big hash table */
+ 	hash = ipv6_addr_hash(addr);
+ 
+@@ -2163,6 +2166,7 @@ static int inet6_addr_del(struct net *ne
+ 			in6_ifa_hold(ifp);
+ 			read_unlock_bh(&idev->lock);
+ 
++			trace_ipv6_addr_del(ifp);
+ 			ipv6_del_addr(ifp);
+ 
+ 			/* If the last address is deleted administratively,
+Index: linux-2.6-lttng/net/ipv6/ipv6-trace.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/net/ipv6/ipv6-trace.h	2008-07-09 10:58:43.000000000 -0400
+@@ -0,0 +1,14 @@
++#ifndef _IPV6_TRACE_H
++#define _IPV6_TRACE_H
++
++#include <net/if_inet6.h>
++#include <linux/tracepoint.h>
++
++DEFINE_TRACE(ipv6_addr_add,
++	TPPROTO(struct inet6_ifaddr *ifa),
++	TPARGS(ifa));
++DEFINE_TRACE(ipv6_addr_del,
++	TPPROTO(struct inet6_ifaddr *ifa),
++	TPARGS(ifa));
++
++#endif
+
 
 -- 
-http://www.codemonkey.org.uk
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
