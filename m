@@ -1,43 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755348AbYGITxe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755908AbYGITxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755348AbYGITxe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 15:53:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751074AbYGITxY
+	id S1755908AbYGITxq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 15:53:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755074AbYGITxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 15:53:24 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47762 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750926AbYGITxX (ORCPT
+	Wed, 9 Jul 2008 15:53:30 -0400
+Received: from qmta09.emeryville.ca.mail.comcast.net ([76.96.30.96]:47577 "EHLO
+	QMTA09.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754762AbYGITx3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 15:53:23 -0400
-Message-ID: <4875170C.4090500@linux-foundation.org>
-Date: Wed, 09 Jul 2008 14:52:44 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Wed, 9 Jul 2008 15:53:29 -0400
+X-Authority-Analysis: v=1.0 c=1 a=fmkApugzUIIA:10 a=kpXAE35kjxYA:10
+ a=GJPMjpJTlsuecQNlq0UA:9 a=H4b-8a9W12fmFzzUvBZkI9m4DmwA:4 a=JTUSPwgBgNAA:10
+ a=oCUJXWGl-OwA:10
+To: Laurent Pinchart <laurent.pinchart@skynet.be>
+Cc: Romano Giannetti <romano@dea.icai.upcomillas.es>,
+       linux-kernel@vger.kernel.org, linux-uvc-devel@berlios.de
+Subject: Re: Linux 2.6.26-rc9 circular lock with uvcvideo on resume from hibernation
+X-Message-Flag: Warning: May contain useful information
+X-Priority: 1
+X-MSMail-Priority: High
+References: <1215426867.5113.8.camel@pern>
+	<878wwdbnjn.fsf@shaolin.home.digitalvampire.org>
+	<200807092129.03679.laurent.pinchart@skynet.be>
+From: Roland Dreier <roland@digitalvampire.org>
+Date: Wed, 09 Jul 2008 12:53:26 -0700
+In-Reply-To: <200807092129.03679.laurent.pinchart@skynet.be> (Laurent Pinchart's message of "Wed, 9 Jul 2008 21:29:03 +0200")
+Message-ID: <87mykq96mh.fsf@shaolin.home.digitalvampire.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <4874F7D9.5060607@linux-foundation.org> <4874FD52.8070000@sgi.com> <4874FFC4.7050505@linux-foundation.org> <487502BD.2020206@goop.org> <487504A8.5040000@linux-foundation.org> <487507E7.6010102@goop.org> <48750945.8000201@linux-foundation.org> <48750C6C.5090606@goop.org> <48750D96.7030407@linux-foundation.org> <4875123F.1070504@goop.org> <20080709194136.GD4804@elte.hu>
-In-Reply-To: <20080709194136.GD4804@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
+ > uvc_disconnect()                      | uvc_v4l2_open()
+ > ...                                   |
+ > mutex_lock(&uvc_driver.open_mutex);   |
+ > dev->state |= UVC_DEV_DISCONNECTED;   |
+ > mutex_unlock(&uvc_driver.open_mutex); |
+ >                                       |
+ >                                       | mutex_lock(&uvc_driver.open_mutex);
+ >                                       | vdev = video_devdata(file);
+ >                                       | video = video_get_drvdata(vdev);
+ >                                       |
+ > kref_put(&dev->kref, uvc_delete);     |
+ >                                       |
+ >                                       | if (video->dev->state...) 
+ > 
+ > kref_put() in uvc_disconnect() will call uvc_delete(), which will in turn free 
+ > the video structure. uvc_v4l2_open() will then dereference freed memory when 
+ > testing the device state.
 
-> that makes sense. Does everyone agree on #1-#2-#3 and then gradual 
-> elimination of most pda members (without going through an intermediate 
-> renaming of pda members) being the way to go?
+I don't believe this is correct.  I tried to explain it in my
+changelog by saying "uvc_delete() does uvc_unregister_video() (and
+hence video_unregister_device(), which is synchronized with
+videodev_lock) as its first thing, so there is no risk of
+use-after-free in uvc_v4l2_open()."
 
-I think we all agree on 1-2-3.
+In other words, the first thing uvc_delete() does is call
+uvc_unregister_video(), which will video_unregister_device().  Since
+this needs to take videodev_lock, it will wait until uvc_v4l2_open()
+returns (which it will do, since state is now UVC_DEV_DISCONNECTED).
+So the video struct will not be freed until after uvc_v4l2_open()
+returns.
 
-The rest is TBD. Hope Jeremy can add his wisdom there to get the pda.X replaced by the proper percpu names for 32 bit. 
+As far as I can see there is no use-after-free.
 
-With Jeremy's approach we would be doing two steps at once (getting rid of pda ops plus unifying the variable names between 32 and 64 bit). Maybe more difficult to verify correctness. The removal of the pda ops is a pretty straighforward conversion.
+ - R.
+-- 
+Roland Dreier  <roland@digitalvampire.org>  GPG Key: 1024D/E0EEFAC0
+Fingerprint:     A89F B5E9 C185 F34D BD50  4009 37E2 25CC E0EE FAC0
+
+ Sending >500KB attachments is forbidden by the Geneva Convention.
+        Your country may be at risk if you fail to comply.
