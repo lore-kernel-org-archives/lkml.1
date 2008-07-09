@@ -1,71 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbYGIUd7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755876AbYGIUen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755361AbYGIUd7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 16:33:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbYGIUdu
+	id S1755876AbYGIUen (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 16:34:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbYGIUef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 16:33:50 -0400
-Received: from gw.goop.org ([64.81.55.164]:41230 "EHLO mail.goop.org"
+	Wed, 9 Jul 2008 16:34:35 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45291 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752217AbYGIUdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 16:33:50 -0400
-Message-ID: <4875209D.8010603@goop.org>
-Date: Wed, 09 Jul 2008 13:33:33 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1752217AbYGIUee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 16:34:34 -0400
+Date: Wed, 9 Jul 2008 22:34:19 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, "hpa@zytor.com" <hpa@zytor.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] tip/x86_64: fix e820 merge issue which broke
+	max_pfn_mapped
+Message-ID: <20080709203419.GA23790@elte.hu>
+References: <20080708230837.GD1678@linux-os.sc.intel.com> <86802c440807081759i3baafa9bj7e8ff544a1a78fb9@mail.gmail.com> <86802c440807081856y17eb1f1cs5647b2c2a765f429@mail.gmail.com> <20080709175621.GG1678@linux-os.sc.intel.com> <86802c440807091105g1dd8f8a0sa8220a1bfc65a79@mail.gmail.com> <4874FF58.5030800@goop.org> <20080709184405.GH1678@linux-os.sc.intel.com> <48750B87.70405@goop.org>
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu> <48751B57.8030605@goop.org> <48751CF9.4020901@linux-foundation.org>
-In-Reply-To: <48751CF9.4020901@linux-foundation.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48750B87.70405@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> Jeremy Fitzhardinge wrote:
->   
->> Ingo Molnar wrote:
->>     
->>> Note that the zero-based percpu problems are completely unrelated to
->>> stackprotector. I was able to hit them with a stackprotector-disabled
->>> gcc-4.2.3 environment.
->>>       
->> The only reason we need to keep a zero-based pda is to support
->> stack-protector.  If we drop drop it, we can drop the pda - and its
->> special zero-based properties - entirely.
->>     
+
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+
+>>> level1_fixmap_pgt" be a problem in itself?  It seems sound to me, 
+>>> but
+>>>     
+>>
+>> Yep. Reverting it made my system with 2GB memory boot fine again.
 >
->
-> Another reason to use a zero based per cpu area is to limit the offset range. Limiting the offset range allows in turn to limit the size of the generated instructions because it is part of the instruction.
+> Great.  Ingo, would you do the honours of shooting that patch?
 
-No, it makes no difference.  %gs:X always has a 32-bit offset in the 
-instruction, regardless of how big X is:
+done, i've applied the revert below.
 
-	mov %eax, %gs:0
-	mov %eax, %gs:0x1234567
-->
-   0:	65 89 04 25 00 00 00 00	mov    %eax,%gs:0x0
-   8:	65 89 04 25 67 45 23 01	mov    %eax,%gs:0x1234567
+	Ingo
 
+----------->
+commit 8e48d49043b716d2331facba9ecf0b34936ee8ea
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Wed Jul 9 22:32:33 2008 +0200
 
->  It also is easier to handle since __per_cpu_start does not figure
-> in the calculation of the offsets.
->   
+    Revert "x86_64: there's no need to preallocate level1_fixmap_pgt"
+    
+    This reverts commit 033786969d1d1b5af12a32a19d3a760314d05329.
+    
+    Suresh Siddha reported that this broke booting on his 2GB testbox.
+    
+    Reported-by: Suresh Siddha <suresh.b.siddha@intel.com>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-No, you do it the same as i386.  You set the segment base to be 
-percpu_area-__per_cpu_start, and then just refer to %gs:per_cpu__foo 
-directly.  You can use rip-relative addressing to make it a smaller 
-addressing mode too:
-
-   0:	65 89 05 00 00 00 00 	mov    %eax,%gs:0(%rip)        # 0x7
-
-
-    J
+diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
+index 2240f82..db3280a 100644
+--- a/arch/x86/kernel/head_64.S
++++ b/arch/x86/kernel/head_64.S
+@@ -362,6 +362,12 @@ NEXT_PAGE(level3_kernel_pgt)
+ 	.quad	level2_fixmap_pgt - __START_KERNEL_map + _PAGE_TABLE
+ 
+ NEXT_PAGE(level2_fixmap_pgt)
++	.fill	506,8,0
++	.quad	level1_fixmap_pgt - __START_KERNEL_map + _PAGE_TABLE
++	/* 8MB reserved for vsyscalls + a 2MB hole = 4 + 1 entries */
++	.fill	5,8,0
++
++NEXT_PAGE(level1_fixmap_pgt)
+ 	.fill	512,8,0
+ 
+ NEXT_PAGE(level2_ident_pgt)
