@@ -1,68 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754070AbYGIR5E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754174AbYGISAX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754070AbYGIR5E (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 13:57:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYGIR4y
+	id S1754174AbYGISAX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 14:00:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbYGISAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 13:56:54 -0400
-Received: from mga01.intel.com ([192.55.52.88]:62133 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752116AbYGIR4x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 13:56:53 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.30,332,1212390000"; 
-   d="scan'208";a="350688932"
-Date: Wed, 9 Jul 2008 10:56:21 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "mingo@elte.hu" <mingo@elte.hu>, "hpa@zytor.com" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] tip/x86_64: fix e820 merge issue which broke max_pfn_mapped
-Message-ID: <20080709175621.GG1678@linux-os.sc.intel.com>
-References: <20080708230837.GD1678@linux-os.sc.intel.com> <86802c440807081759i3baafa9bj7e8ff544a1a78fb9@mail.gmail.com> <86802c440807081856y17eb1f1cs5647b2c2a765f429@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440807081856y17eb1f1cs5647b2c2a765f429@mail.gmail.com>
-User-Agent: Mutt/1.4.1i
+	Wed, 9 Jul 2008 14:00:10 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60123 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752317AbYGISAJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 14:00:09 -0400
+Message-ID: <4874FCA7.3010507@sgi.com>
+Date: Wed, 09 Jul 2008 11:00:07 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <4874F4F2.9010603@goop.org>
+In-Reply-To: <4874F4F2.9010603@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 08, 2008 at 06:56:38PM -0700, Yinghai Lu wrote:
-> On Tue, Jul 8, 2008 at 5:59 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> > On Tue, Jul 8, 2008 at 4:08 PM, Suresh Siddha <suresh.b.siddha@intel.com> wrote:
-> >> With out this 64bit tip/master doesn't boot using ACPI on my system.
-> >> ---
-> >>
-> >> max_pfn_mapped should include all e820 entries.
-> >> The direct mapping extends to max_pfn_mapped, so that we can directly access
-> >> apertures, ACPI and other tables without having to play with fixmaps.
-> >>
-> >> With this, my system with 1GB memory boots fine with ACPI enabled.
-> >
-> > so without this patch, your system doesn't boot?
+Jeremy Fitzhardinge wrote:
+> Mike Travis wrote:
+>> This patchset provides the following:
+>>
+>>   * Cleanup: Fix early references to cpumask_of_cpu(0)
+>>
+>>     Provides an early cpumask_of_cpu(0) usable before the
+>> cpumask_of_cpu_map
+>>     is allocated and initialized.
+>>
+>>   * Generic: Percpu infrastructure to rebase the per cpu area to zero
+>>
+>>     This provides for the capability of accessing the percpu variables
+>>     using a local register instead of having to go through a table
+>>     on node 0 to find the cpu-specific offsets.  It also would allow
+>>     atomic operations on percpu variables to reduce required locking.
+>>     Uses a new config var HAVE_ZERO_BASED_PER_CPU to indicate to the
+>>     generic code that the arch has this new basing.
+>>
+>>     (Note: split into two patches, one to rebase percpu variables at 0,
+>>     and the second to actually use %gs as the base for percpu variables.)
+>>
+>>   * x86_64: Fold pda into per cpu area
+>>
+>>     Declare the pda as a per cpu variable. This will move the pda
+>>     area to an address accessible by the x86_64 per cpu macros.
+>>     Subtraction of __per_cpu_start will make the offset based from
+>>     the beginning of the per cpu area.  Since %gs is pointing to the
+>>     pda, it will then also point to the per cpu variables and can be
+>>     accessed thusly:
+>>
+>>     %gs:[&per_cpu_xxxx - __per_cpu_start]
+>>
+>>   * x86_64: Rebase per cpu variables to zero
+>>
+>>     Take advantage of the zero-based per cpu area provided above.
+>>     Then we can directly use the x86_32 percpu operations. x86_32
+>>     offsets %fs by __per_cpu_start. x86_64 has %gs pointing directly
+>>     to the pda and the per cpu area thereby allowing access to the
+>>     pda with the x86_64 pda operations and access to the per cpu
+>>     variables using x86_32 percpu operations.
 > 
-> how about attached patch?
+> The bulk of this series is pda_X to x86_X_percpu conversion.  This seems
+> like pointless churn to me; there's nothing inherently wrong with the
+> pda_X interfaces, and doing this transformation doesn't get us any
+> closer to unifying 32 and 64 bit.
 > 
-> [PATCH] x86: make max_pfn cover acpi table below 4g
+> I think we should start devolving things out of the pda in the other
+> direction: make a series where each patch takes a member of struct
+> x8664_pda, converts it to a per-cpu variable (where possible, the same
+> one that 32-bit uses), and updates all the references accordingly.  When
+> the pda is as empty as it can be, we can look at removing the
+> pda-specific interfaces.
 > 
-> when system have 4g less ram installed, and acpi table sit
-> near end of ram. make max_pfn cover them too.
-> so 64bit kernel don't need to mess up fixmap
+>    J
 
-Now the latest 64bit x86 tip/master (latest commit d1f7cb8) doesn't boot
-on any of my test systems :( It gets a very early exception..
+I did compartmentalize the changes so they were in separate patches,
+and in particular, by separating the changes to the include files, I
+was able to zero in on some problems much easier.
 
-I can't even revert your max_pfn patch, to see if this early exception is
-caused by this patch.. There seems to be more changes on top of it
-already overnight...
+But I have no objections to leaving the cpu_pda ops in place and then,
+as you're suggesting, extract and modify the fields as appropriate.
 
-BTW, please explain the need for your patch which has more changes, instead
-of my simple patch which was test booted on 3 different systems with both
-32bit and 64bit kernels...
+Another approach would be to leave the changes from XXX_pda() to
+x86_percpu_XXX in place, and do the patches with simply changing
+pda.VAR to VAR .)
 
-thanks,
-suresh
+In any case I would like to get this version working first, before
+attempting that rewrite, as that won't change the generated code.
+
+Btw, while I've got your attention... ;-), there's some code in
+arch/x86/xen/smp.c:xen_smp_prepare_boot_cpu() that should be looked
+at closer for zero-based per_cpu__gdt_page:
+
+	make_lowmem_page_readwrite(&per_cpu__gdt_page);
+
+(I wasn't sure how to deal with this but I suspect the __percpu_offset[]
+or __per_cpu_load should be added to it.)
+
+Thanks,
+Mike
