@@ -1,71 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757292AbYGIU50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757392AbYGIU5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757292AbYGIU50 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 16:57:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756707AbYGIU4Q
+	id S1757392AbYGIU5m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 16:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755595AbYGIU4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 16:56:16 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1557 "EHLO spitz.ucw.cz"
+	Wed, 9 Jul 2008 16:56:17 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1556 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755595AbYGIU4O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 16:56:14 -0400
-Date: Wed, 9 Jul 2008 22:14:48 +0200
+	id S1751982AbYGIU4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 16:56:15 -0400
+Date: Wed, 9 Jul 2008 22:44:13 +0200
 From: Pavel Machek <pavel@suse.cz>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Oliver Neukum <oliver@neukum.org>,
-       Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>,
-       linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [RFC] MAINTAINERS service, was: Re: alphabetic ordering of MAINTAINERS
-Message-ID: <20080709201447.GC11006@ucw.cz>
-References: <20080704063455.GA13999@digi.com> <200807040852.27809.oliver@neukum.org> <m3k5g1zv3u.fsf_-_@maximus.localdomain>
+To: Christoph Hellwig <hch@infradead.org>, Takashi Sato <t-sato@yk.jp.nec.com>,
+       akpm@linux-foundation.org, viro@ZenIV.linux.org.uk,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
+       "dm-devel@redhat.com" <dm-devel@redhat.com>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       axboe@kernel.dk, mtk.manpages@googlemail.com
+Subject: Re: [PATCH 3/3] Add timeout feature
+Message-ID: <20080709204412.GG11006@ucw.cz>
+References: <20080630212450t-sato@mail.jp.nec.com> <20080701081026.GB16691@infradead.org> <20080707110730.GG5643@ucw.cz> <20080708231026.GP11558@disturbed> <20080708232031.GE18195@elf.ucw.cz> <20080709005254.GQ11558@disturbed>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <m3k5g1zv3u.fsf_-_@maximus.localdomain>
+In-Reply-To: <20080709005254.GQ11558@disturbed>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2008-07-04 14:34:13, Krzysztof Halasa wrote:
-> Oliver Neukum <oliver@neukum.org> writes:
-> 
-> >> I wanted to add an entry to MAINTAINERS and while doing it I saw that in
-> >> the corresponding region the alphabetic ordering is broken.  Then I
-> >> inteded to fix that up for a trivial patch.  Next was to check the rest
-> >> of the file and there are so much misorderings that it's not sensible to
-> >> choose the trivial path anymore as there are currently 114 entries out
-> >> of order[1].
-> >
-> > What good does alphabetic ordering? You'll grep it anyway.
-> 
-> I was thinking about a mailing list / database service instead:
-> - source file/directory-based (e.g. someone could maintain whole
->   drivers/, someone else drivers/char and others drivers/char/asdfg.[ch])
-> - people would be able to add themselves as "observers" using mail
->   and/or HTML interface
-> - sending a patch would automatically trigger Cc: to all people
->   registered as maintainers (or "observers") for the files modified
-> - full recipient list would be present in mail sent by the service, so
->   the following discussion wouldn't need it anymore. It would be used
->   only for posting patches.
-> - as such, I don't expect a need for spam filtering - messages
->   containing no patch would be rejected in the SMTP session.
-> 
-> Pro: no more missing Cc:, no more manual lookups and guessing, you
->      just Cc: the service, possibility for "observers".
-> Con: another thing to create and maintain, you don't immediately know
->      who exactly has been sent a copy.
-> 
-> I think I could create a test service but after the test phase it
-> should probably go to some machine more reliable/able than mine.
+Hi!
 
-If something like that existed/was useful, I guess finding hosting
-would not be huge problem.
+> > > > > I still disagree with this whole patch.  There is not reason to let
+> > > > > the freeze request timeout - an auto-unfreezing will only confuse the
+> > > > > hell out of the caller.  The only reason where the current XFS freeze
+> > > > > call can hang and this would be theoretically useful is when the
+> > > > 
+> > > > What happens when someone dirties so much data that vm swaps out
+> > > > whatever process that frozen the filesystem?
+> > > 
+> > > a) you can't dirty a frozen filesystem - by definition a frozen
+> > >    filesystem is a *clean filesystem* and *cannot be dirtied*.
+> > 
+> > Can you stop me?
+> > 
+> > mmap("/some/huge_file", MAP_SHARED);
+> > 
+> > then write to memory mapping?
+> 
+> Sure - we can put a hook in ->page_mkwrite() to prevent it.  We
+> don't right now because nobody in the real world really cares if one
+> half of a concurrent user data change is in the old snapshot or the
+> new one......
+> 
+> > > b) Swap doesn't write through the filesystem
+> > > c) you can still read from a frozen filesystem to page your
+> > >    executable?? in.
+> > 
+> > atime modification should mean dirty data, right?
+> 
+> Metadata, not data. If that's really a problem (and it never has
+> been for XFS because we always allow in memory changes to atime)
+> then touch_atime could be easily changed to avoid this...
+> 
+> > And dirty data mean
+> > memory pressure, right? 
+> 
+> If you walk enough inodes while the filesystem is frozen, it
+> theoretically could happen.  Typically a filesystem is only for a
+> few seconds at a time so in the real world this has never, ever been
+> a problem.
 
-And yes, I like the idea.
+So we have freezing interface that does not really freeze, and
+that can break the system when filesystem is frozen for too long...
+:-(.
 
+Maybe you could use process freezer -- cgroup people are adding
+userspace interface to that -- to solve those... but that would mean
+stopping everyone but thread doing freezing...
+
+								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
