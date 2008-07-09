@@ -1,108 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757158AbYGILRm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756719AbYGILSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757158AbYGILRm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 07:17:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756488AbYGILRa
+	id S1756719AbYGILSi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 07:18:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbYGILS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 07:17:30 -0400
-Received: from smtp116.mail.mud.yahoo.com ([209.191.84.165]:35090 "HELO
-	smtp116.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757172AbYGILR2 (ORCPT
+	Wed, 9 Jul 2008 07:18:27 -0400
+Received: from mail-relay-03.mailcluster.net ([77.221.130.215]:56170 "EHLO
+	mail-relay-01.mailcluster.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753830AbYGILS0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 07:17:28 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=rqJG5JplRq7ZbM0QujE1D44Ra+e3pYesNLMePXMSGrM0rlKRr2byqeVazpaBHsTdyMoLl8+4/VfIUUoQVEVr7inKkdqO+pKSsale55lWVdy1ln5ubnWn4bGWHUDkI8AbKAHUFCrEtkav/YayWhcXMCsZ8x/2YUSloKQ3XV9gi/g=  ;
-X-YMail-OSG: rbD3I0AVM1kv9SFOhglwJbMCLdrSZHV3.tpH1wkDbCF39PcMI4DSDlHrNb8C0l3qZoxiOXB63NuHJyoBDbkjxkOwfDA3PyM51MdlZTBdFHcPSCG3fDhWoIUp6t5bT4_0dXc-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "Gregory Haskins" <ghaskins@novell.com>
-Subject: Re: [PATCH 2/3] sched: terminate newidle balancing once at least one task has moved over
-Date: Wed, 9 Jul 2008 21:17:01 +1000
-User-Agent: KMail/1.9.5
-Cc: mingo@elte.hu, rostedt@goodmis.org, peterz@infradead.org, npiggin@suse.de,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-References: <20080627202444.3829.21595.stgit@lsg.lsg.lab.novell.com> <200807091809.52293.nickpiggin@yahoo.com.au> <48746084.BA47.005A.0@novell.com>
-In-Reply-To: <48746084.BA47.005A.0@novell.com>
+	Wed, 9 Jul 2008 07:18:26 -0400
+Message-ID: <48749EB2.1070902@vlnb.net>
+Date: Wed, 09 Jul 2008 15:19:14 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+CC: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       scst-devel <scst-devel@lists.sourceforge.net>, nab@kernel.org
+Subject: Re: [ANNOUNCE]: Generic SCSI Target Mid-level For Linux (SCST),	target
+ drivers for iSCSI and QLogic Fibre Channel cards released
+References: <4873BCA5.10103@vlnb.net> <1215551354.3977.6.camel@haakon2.linux-iscsi.org>
+In-Reply-To: <1215551354.3977.6.camel@haakon2.linux-iscsi.org>
+Content-Type: text/plain; charset=KOI8-R; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807092117.01669.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 09 July 2008 20:53, Gregory Haskins wrote:
-> >>> On Wed, Jul 9, 2008 at  4:09 AM, in message
->
-> <200807091809.52293.nickpiggin@yahoo.com.au>, Nick Piggin
->
-> <nickpiggin@yahoo.com.au> wrote:
-> > On Tuesday 08 July 2008 22:37, Gregory Haskins wrote:
-> >> >>> On Tue, Jul 8, 2008 at  1:00 AM, in message
-> >>
-> >> <200807081500.18245.nickpiggin@yahoo.com.au>, Nick Piggin
-> >>
-> >> <nickpiggin@yahoo.com.au> wrote:
-> >> > On Saturday 28 June 2008 06:29, Gregory Haskins wrote:
-> >> >> Inspired by Peter Zijlstra.
-> >> >>
-> >> >> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-> >> >
-> >> > What happened to the feedback I sent about this?
-> >> >
-> >> > It is still nack from me.
-> >>
-> >> Ah yes.  Slipped through the cracks...sorry about that.
-> >>
-> >> What if we did "if (idle == CPU_NEWLY_IDLE && need_resched())" instead?
-> >
-> > Isn't that exactly the same thing
->
-> Not quite.  The former version would break on *any* succesful enqueue (as a
-> result of a local move_task as well as a remote wake-up/migration).  The
-> latter version will only break on the the remote variety.  You were
-> concerned about stopping a move_task operation early because it would
-> reduce efficiency, and I do not entirely disagree. However, this really
-> only concerns the local type (which have now been removed).
->
-> Remote preemptions should (IMO) always break immediately because it would
-> have been likely to invalidate the f_b_g() calculation anyway, and
-> low-latency requirements dictate its the right thing to do.
+Hi Nicholas,
 
-I thought this was about newidle balancing? Tasks are always going to
-be coming from remote runqueues, aren't they?
+Nicholas A. Bellinger wrote:
+> Hi Vlad,
+> 
+> On Tue, 2008-07-08 at 23:14 +0400, Vladislav Bolkhovitin wrote:
+>> I'm glad to announce that version 1.0.0 of Generic SCSI Target Middle 
+>> Level for Linux (SCST) was released and available for download from 
+>> http://scst.sourceforge.net/downloads.html
+> 
+> Congratulations on reaching your v1.0.0 release!
 
+Thanks!
 
-> > because any task will preempt the idle thread?
->
-> During NEWIDLE this is a preempt-disabled section because we are still in
-> the middle of a schedule(). Therefore there will be no involuntary
-> preemption and that is why we are concerned with making sure we check for
-> voluntary preemption.  The move_tasks() will run to completion without this
-> patch.  With this patch it will break the operation if someone tries to
-> preempt us.
+>> Comparison with the mainstream target middle level STGT you can find on 
+>> the SCST vs STGT page http://scst.sourceforge.net/scstvsstgt.html. In 
+>> short, SCST has the following main advantages over STGT:
+> 
+> I noticed that you included a reference to my presentation at LSF 08' on
+> your SCST vs. STGT page liked above, and took my description of your
+> work (you are more than welcome to come and present your own case at LSF
+> '09) very much out of context.
 
-Firstly, won't the act of pulling tasks set the need_resched condition?
+I wasn't on the presentation, so on it might have looked as out of 
+context. I have only documents, which I referenced. In them, especially 
+in "2008 Linux Storage & Filesystem Workshop" summary, it doesn't look 
+as I took it out of context. You put emphasis on "older" vs 
+"current"/"new", didn't you ;)? Plus, Mike Christie is also listed as an 
+author.
 
-Secondly, even if it does what you say, what exactly would be the difference
-between blocking a newly moved task from running and blocking a newly woken
-task from running? Either way you introduce the same worst case latency
-condition.
+BTW, there are another inaccuracies on your slides:
 
+  - STGT doesn't support "hardware accelerated traditional iSCSI 
+(Qlogic)", at least I have not found any signs of it.
 
-> I'll keep an open mind but I am pretty sure this is something we should be
-> doing. As far as I can tell, there should be no downside with this second
-> version. 
+  - For SCST you wrote "Only project to support PSCSI, FC and SAS Target 
+mode (with out of tree hardware drivers)". This is ambiguous statement, 
+but looks like you meant that SCST is intended and limited to support 
+only the listed transport. This is incorrect. SCST is intended to 
+support ALL possible transports and types backstorage.
 
-I don't think it has really been thought through that well. So I'm still
-against it.
+> If you wish to reference my presentation, please at least make the
+> comparision between LIO-Core+LIO-Target vs. SCST vs. STGT, and NOT JUST
+> SCST vs. STGT so that the community are large can understand the
+> differences and technical challenges.
 
-> As a compromise we could put an #ifdef CONFIG_PREEMPT around this 
-> new logic, but I don't think it is strictly necessary.
+The SCST vs STGT page was written a long ago, before I ever looked at 
+LIO. I wasn't actually going to refer to your presentation, just added a 
+small note to your funny, from my POV, "older" vs "new" architecture 
+comparison ;)
 
-That's not very nice. It's reasonable to run with CONFIG_PREEMPT but not
-blindly want to trade latency for throughput.
+But, when I have time for careful look, I'm going to write some LIO 
+critics. So far, at the first glance:
+
+  - It is too iSCSI-centric. ISCSI is a very special transport, so looks 
+like when you decide to add in LIO drivers for other transports, 
+especially for parallel SCSI and SAS, you are going to have big troubles 
+and major redesign. And this is a real showstopper for making LIO-Core 
+the default and the only SCSI target framework. SCST is SCSI-centric, 
+just because there's no way to make *SCSI* target framework not being 
+SCSI-centric. Nobody blames Linux SCSI (initiator) mid-layer for being 
+SCSI-centric, correct?
+
+  - Seems, it's a bit overcomplicated, because it has too many abstract 
+interfaces where there's not much need it them. Having too many abstract 
+interfaces makes code analyze a lot more complicated. For comparison, 
+SCST has only 2 such interfaces: for target drivers and for backstorage 
+dev handlers. Plus, there is half-abstract interface for memory 
+allocator (sgv_pool_set_allocator()) to allow scst_user to allocate user 
+space supplied pages. And they cover all needs.
+
+  - Pass-through mode (PSCSI) also provides non-enforced 1-to-1 
+relationship, as it used to be in STGT (now in STGT support for 
+pass-through mode seems to be removed), which isn't mentioned anywhere.
+
+  - There is some confusion in the code in the function and variable 
+names between persistent and SAM-2 reservations.
+
+  - There is at least one SCSI standard violation: target and LUN resets 
+don't clear the reservation.
+
+Again, it is the first impression, without deep analyze, so I might be 
+wrong somewhere.
+
+> The more in fighting between the
+> leaders in our community, the less the community benefits.
+
+Sure. If my note hurts you, I can remove it. But you should also remove 
+from your presentation and the summary paper those psychological 
+arguments to not confuse people.
+
+> Many thanks for your most valuable of time,
+> 
+> --nab
+
