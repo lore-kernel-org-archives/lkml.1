@@ -1,92 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbYGINOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757033AbYGINOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754869AbYGINOW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 09:14:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbYGINOH
+	id S1757033AbYGINOf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 09:14:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754028AbYGINOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 09:14:07 -0400
-Received: from mail37.messagelabs.com ([216.82.244.163]:32190 "EHLO
-	mail37.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751761AbYGINOF (ORCPT
+	Wed, 9 Jul 2008 09:14:16 -0400
+Received: from mail-out.m-online.net ([212.18.0.9]:44500 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753755AbYGINON (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 09:14:05 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-5.tower-37.messagelabs.com!1215609243!4819452!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.13]
-Date: Wed, 9 Jul 2008 15:13:53 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH v2] handle failure of irqchip->set_type in setup_irq
-Message-ID: <20080709131353.GA12009@digi.com>
-References: <20080625131101.GA6205@digi.com> <20080704104634.GA31634@digi.com> <20080704101717.28f6a771.akpm@linux-foundation.org> <20080704184307.GA8076@digi.com> <20080704120837.573adc9c.akpm@linux-foundation.org>
+	Wed, 9 Jul 2008 09:14:13 -0400
+X-Auth-Info: NcMUykYZEwxNeaDeUbcvf0XMrr4LSzkyNfiVlj+yoXY=
+X-Auth-Info: NcMUykYZEwxNeaDeUbcvf0XMrr4LSzkyNfiVlj+yoXY=
+X-Auth-Info: NcMUykYZEwxNeaDeUbcvf0XMrr4LSzkyNfiVlj+yoXY=
+X-Auth-Info: NcMUykYZEwxNeaDeUbcvf0XMrr4LSzkyNfiVlj+yoXY=
+X-Auth-Info: NcMUykYZEwxNeaDeUbcvf0XMrr4LSzkyNfiVlj+yoXY=
+X-Auth-Info: 0NLLVblehdTcl6pAGq1p6HQxECh3LK1axNhxXRhunzk=
+X-Auth-Info: 0NLLVblehdTcl6pAGq1p6HQxECh3LK1axNhxXRhunzk=
+Message-ID: <4874B9D5.1020309@grandegger.com>
+Date: Wed, 09 Jul 2008 15:15:01 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080704120837.573adc9c.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 09 Jul 2008 13:13:53.0287 (UTC) FILETIME=[A29A0970:01C8E1C5]
+To: Luotao Fu <l.fu@pengutronix.de>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.24-rc8-rt1: Strange latencies on mpc5200 powerpc - RCU	issue?
+References: <20080130102255.GA24890@linux.vnet.ibm.com> <47A0552D.20605@grandegger.com> <20080130105715.GE24890@linux.vnet.ibm.com> <20080130111559.GC20089@pengutronix.de> <486A3EBB.6030905@grandegger.com> <Pine.LNX.4.58.0807011036510.26650@gandalf.stny.rr.com> <486A573E.60107@grandegger.com> <486B607F.9040903@grandegger.com> <Pine.LNX.4.58.0807052041350.8466@gandalf.stny.rr.com> <48709348.6000101@grandegger.com> <20080708150826.GA30586@pengutronix.de> <4873C363.3070306@grandegger.com> <4874B4C0.5090500@pengutronix.de>
+In-Reply-To: <4874B4C0.5090500@pengutronix.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 4 Jul 2008 20:43:07 +0200 Uwe Kleine-K__nig <Uwe.Kleine-Koenig@digi.com> wrote:
-> 
-> > >                                            I wonder if we can do better.
-> > > Let me think about that.
-> > I was about to suggest something like:
-> >
-> >       /* WARNING: this returns a static pointer, so you cannot use the
-> >        * returned value after another call to creative_function_name
-> >        */
-> >       char *creative_function_name(void *addr)
-> >       {
-> >               static char buf[SOME_LENGTH];
-> >
-> >               ... format symbol name into buf ...
-> >
-> >               return buf;
-> >       }
-> >
-> > Then I could have used
-> >
-> >       pr_err("setting flow type for irq %u failed (%s)\n",
-> >                       irq, creative_function_name(chip->set_type));
-> >
-> > which looks definitely nicer.
-> 
-> Better would be
-> 
->         char buf[ENOUGH /* rofl */];
-> 
->         pr_err("setting flow type for irq %u failed (%s)\n",
->                         irq, render_function_name(buf, chip->set_type));
-> 
-> However I'm presently brewing up a plot to do this:
-> 
->         printk("function name is %Ss\n", (unsigned long *)chip->set_type);
-> 
-> which I think will work.  We can also do
-> 
->         printk("IP address is %Si\n", (unsigned long *)ip_address_buffer);
-> 
-> to replace NIPQUAD.  And similar printk extensions.
-> 
-> Am still thinking about it though.
-I assume the result is 0fe1ef24f7bd0020f29ffe287dfdb9ead33ca0b2?
+Hi Fu (without n)
 
-Should I send a new version using %pF or is it easier if you fix up the
-patch?
+Luotao Fu wrote:
+> Hi Wolfgang,
+> 
+> Wolfgang Grandegger wrote:
+>> Hi Fun,
+> 
+> What's so funny? ;-)
 
-Best regards
-Uwe
+Ah, oh, just a funny typo ;-).
 
--- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+> [...]
+> 
+>> But as Steven pointed out, the preempt_enable_noresched at that place
+>>  might be illegal, anyway. In 2.6.25-rt, trace_mark() is no longer
+>> used and I do not see an improvement with CONFIG_RCU_TRAC any more.
+>> Latencies go up to 600us. I also tried with CONFIG_RCU_BOOST
+>> disabled, but it did not improve the latencies. Actually, I still
+>> measure significantly different latencies with 2.6.24.4-rt4,
+>> 2.6.24.7-rt14 and 2.6.25.8-rt7, which is quite frustrating. As you
+>> seem not be able to reproduce my high latencies, I wonder if there
+>> are some toolchain or glibc related issues.
+> 
+> I took a quick look into the rcppreempt boost stuff in 2.6.24-rt and
+> 2.6.25-rt. As you have mentioned, trace_mark is no more used in
+> 2.6.24-rt. Instead of that flags are used to detect if the task is
+> preempted. It might indeed probably be some toolchain issue.
+> My powerpc toolchain I'm using here contains gcc 4.1.2 and glibc 2.5
+
+OK, in the past you have been able to reproduce the high latencies with 
+2.6.24-rt1 and CONFIG_RCU_TRACE disabled, IIRC. Did you use a different 
+toolchain at that time?
+
+Wolfgang.
