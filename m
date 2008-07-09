@@ -1,169 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbYGIDDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755275AbYGIDKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755547AbYGIDDl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 23:03:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbYGIDDd
+	id S1755275AbYGIDKI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 23:10:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbYGIDJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 23:03:33 -0400
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:58947 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751161AbYGIDDd (ORCPT
+	Tue, 8 Jul 2008 23:09:57 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:58635 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752783AbYGIDJ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 23:03:33 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAE7Hc0hMQWVt/2dsb2JhbACBXK8x
-Date: Tue, 8 Jul 2008 23:03:30 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [RFC patch 01/12] Kernel Tracepoints
-Message-ID: <20080709030330.GB4378@Krystal>
-References: <20080704235207.147809973@polymtl.ca> <20080704235423.789031024@polymtl.ca> <487243EC.1010704@redhat.com> <4873D019.4090504@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <4873D019.4090504@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 23:02:34 up 34 days,  7:43,  4 users,  load average: 2.17, 1.69,
-	1.62
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Tue, 8 Jul 2008 23:09:56 -0400
+To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: New ext4 patchset 2.6.26-rc9-ext4-1
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1KGQ42-0004P1-3m@closure.thunk.org>
+Date: Tue, 08 Jul 2008 23:09:54 -0400
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Masami Hiramatsu (mhiramat@redhat.com) wrote:
-> Hi Mathieu,
-> 
-> Masami Hiramatsu wrote:
-> [...]
-> >> +int tracepoint_probe_register(const char *name, void *probe)
-> >> +{
-> >> +	struct tracepoint_entry *entry;
-> >> +	int ret = 0;
-> >> +	void *old;
-> >> +
-> >> +	mutex_lock(&tracepoints_mutex);
-> >> +	entry = get_tracepoint(name);
-> >> +	if (!entry) {
-> >> +		entry = add_tracepoint(name);
-> >> +		if (IS_ERR(entry)) {
-> >> +			ret = PTR_ERR(entry);
-> >> +			goto end;
-> >> +		}
-> >> +	}
-> >> +	/*
-> >> +	 * If we detect that a call_rcu is pending for this tracepoint,
-> >> +	 * make sure it's executed now.
-> >> +	 */
-> >> +	if (entry->rcu_pending)
-> >> +		rcu_barrier();
-> >> +	old = tracepoint_entry_add_probe(entry, probe);
-> >> +	if (IS_ERR(old)) {
-> >> +		ret = PTR_ERR(old);
-> >> +		goto end;
-> >> +	}
-> >> +	mutex_unlock(&tracepoints_mutex);
-> >> +	tracepoint_update_probes();		/* may update entry */
-> >> +	mutex_lock(&tracepoints_mutex);
-> >> +	entry = get_tracepoint(name);
-> >> +	WARN_ON(!entry);
-> 
-> As I said in another patch, you might have to check
-> old != NULL here, because tracepoint_entry_add_probe() will
-> return NULL when you add a first probe to the entry.
-> 
-> >> +	entry->oldptr = old;
-> >> +	entry->rcu_pending = 1;
-> >> +	/* write rcu_pending before calling the RCU callback */
-> >> +	smp_wmb();
-> >> +#ifdef CONFIG_PREEMPT_RCU
-> >> +	synchronize_sched();	/* Until we have the call_rcu_sched() */
-> >> +#endif
-> >> +	call_rcu(&entry->rcu, free_old_closure);
-> >> +end:
-> >> +	mutex_unlock(&tracepoints_mutex);
-> >> +	return ret;
-> >> +}
-> >> +EXPORT_SYMBOL_GPL(tracepoint_probe_register);
-> >> +
-> >> +/**
-> >> + * tracepoint_probe_unregister -  Disconnect a probe from a tracepoint
-> >> + * @name: tracepoint name
-> >> + * @probe: probe function pointer
-> >> + *
-> >> + * We do not need to call a synchronize_sched to make sure the probes have
-> >> + * finished running before doing a module unload, because the module unload
-> >> + * itself uses stop_machine(), which insures that every preempt disabled section
-> >> + * have finished.
-> >> + */
-> >> +int tracepoint_probe_unregister(const char *name, void *probe)
-> >> +{
-> >> +	struct tracepoint_entry *entry;
-> >> +	void *old;
-> >> +	int ret = -ENOENT;
-> >> +
-> >> +	mutex_lock(&tracepoints_mutex);
-> >> +	entry = get_tracepoint(name);
-> >> +	if (!entry)
-> >> +		goto end;
-> >> +	if (entry->rcu_pending)
-> >> +		rcu_barrier();
-> >> +	old = tracepoint_entry_remove_probe(entry, probe);
-> >> +	mutex_unlock(&tracepoints_mutex);
-> >> +	tracepoint_update_probes();		/* may update entry */
-> >> +	mutex_lock(&tracepoints_mutex);
-> >> +	entry = get_tracepoint(name);
-> >> +	if (!entry)
-> >> +		goto end;
-> >> +	entry->oldptr = old;
-> >> +	entry->rcu_pending = 1;
-> >> +	/* write rcu_pending before calling the RCU callback */
-> >> +	smp_wmb();
-> >> +#ifdef CONFIG_PREEMPT_RCU
-> >> +	synchronize_sched();	/* Until we have the call_rcu_sched() */
-> >> +#endif
-> >> +	call_rcu(&entry->rcu, free_old_closure);
-> >> +	remove_tracepoint(name);	/* Ignore busy error message */
-> >> +	ret = 0;
-> >> +end:
-> >> +	mutex_unlock(&tracepoints_mutex);
-> >> +	return ret;
-> >> +}
-> >> +EXPORT_SYMBOL_GPL(tracepoint_probe_unregister);
-> >> +
-> 
-> On the other hand, tracepoint_entry_remove_probe() doesn't return NULL,
-> however, I think it might be better to introduce tracepoint_entry_free_old()
-> and simplify both of tracepoint_probe_register/unregister.
-> 
+As a git tree:
 
-Yes, the cleanup makes sense and removes an unnecessary call to call_rcu
-(which in fact simply kfree a NULL pointer, which is pointless). I'll
-integrate this change.
+git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git 2.6.26-rc9-ext4-1
+http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=shortlog;h=2.6.26-rc9
+-ext4-1
 
-Thanks,
+As a patchset:
 
-Mathieu
+ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.26-rc9-ext4-
+1
 
-> Thank you,
-> -- 
-> Masami Hiramatsu
-> 
-> Software Engineer
-> Hitachi Computer Products (America) Inc.
-> Software Solutions Division
-> 
-> e-mail: mhiramat@redhat.com
-> 
+Patches marked with a (*) are planned to be pushed to Linus during the
+next merge window.  Patches with an (+) have changed since the
+2.6.26-rc8-ext4-1 snapshot.
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+                                                        - Ted
+
+Akinobu Mita (1):
+    * ext4: fix ext4_init_block_bitmap() for metablock block group
+
+Akira Fujita (7):
+      ext4: online defrag-- Main function of defrag and ioctl implementation
+      ext4: online defrag-- Allocate new contiguous blocks with mballoc
+      ext4: online defrag-- Read and write file data with memory page
+      ext4: online defrag-- Exchange the blocks between two inodes
+      ext4: online defrag-- Defragmentation for the relevant files (-r mode)
+      ext4: online defrag-- Check the free space fragmentation (-f mode)
+      ext4: online defrag-- Move victim files for the target file (-f mode)
+
+Alex Tomas (2):
+   +* vfs: add hooks for ext4's delayed allocation support
+   +* ext4: Add delayed allocation support in data=writeback mode
+
+Alexey Dobriyan (1):
+    * ext4: switch to seq_files
+
+Aneesh Kumar K.V (13):
+   +* ext4: Fix mb_find_next_bit not to return larger than max
+    * ext4: start searching for the right extent from the goal group.
+    * ext4: Update i_disksize properly when allocating from fallocate area.
+    * ext4: Fix sparse warning
+    * ext4: Use inode preallocation with -o noextents
+    * ext4: cleanup block allocator
+    * ext4: Use page_mkwrite vma_operations to get mmap write notification.
+    * mm: Add range_cont mode for writeback
+    * ext4: Add ordered mode support for delalloc
+   +* ext4: Handle page without buffers in ext4_*_writepage()
+    * ext4: Enable delalloc by default.
+    * ext4: Don't allow nonextenst mount option for large filesystem
+      ext4: undo the stable boundary patch changes
+
+Duane Griffin (3):
+    * ext4: handle corrupted orphan list at mount
+    * ext4: handle deleting corrupted indirect blocks
+    * ext4: validate directory entry data before use
+
+Eric Sandeen (5):
+    * ext4: call blkdev_issue_flush on fsync
+    * ext4: use atomic functions to set bh_state
+   +* ext4: do not set extents feature from the kernel
+      vfs: vfs-level fiemap interface
+      ext4: reinstate ext4_ext_walk_space()
+      ext4: fiemap implementation
+
+Frederic Bohe (1):
+    * ext4: fix online resize with mballoc
+
+Girish Shilamkar (1):
+   +* Ext4: fix invalid block number magic for >16 TB fs
+
+Jan Kara (8):
+    * ext4: Set journal pointer to NULL when journal is released
+    * vfs: Move mark_inode_dirty() from under page lock in generic_write_end()
+    * ext4: Invert the locking order of page_lock and transaction start
+    * ext4: Fix lock inversion in ext4_ext_truncate()
+    * vfs: export filemap_fdatawrite_range()
+    * jbd2: Implement data=ordered mode handling via inodes
+    * ext4: Use new framework for data=ordered mode in JBD2
+    * jbd2: Remove data=ordered mode support using jbd buffer heads
+
+Jose R. Santos (2):
+    * ext4: New inode allocation for FLEX_BG meta-data groups.
+    * ext4: Documentation updates.
+
+Julia Lawall (1):
+    * ext4: Use BUG_ON() instead of BUG()
+
+Li Zefan (3):
+    * ext4: remove redundant code in ext4_fill_super()
+    * ext4: cleanup never-used magic numbers from htree code
+   +* ext4: fix build failure if DX_DEBUG is enabled
+
+Mingming Cao (9):
+    * ext4: Fix ext4_mb_init_cache return error
+    * jbd2: fix race between jbd2_journal_try_to_free_buffers() and jbd2 commit transaction
+    * ext4: mballoc avoid use root reserved blocks for non root allocation
+    * percpu_counter: new function percpu_counter_sum_and_set
+    * ext4: delayed allocation ENOSPC handling
+   +* ext4: Invert lock ordering of page_lock and transaction start in delalloc
+    * ext4: fix delalloc i_disksize early update issue
+   +* ext4: delayed allocation i_blocks fix for stat
+    * ext4: Documention update for new ordered mode and delayed allocation
+
+Shen Feng (9):
+    * ext4: fix comments to say "ext4"
+    * ext4: improve some code in rb tree part of dir.c
+    * ext4: add error processing when calling ext4_mb_init_cache in mballoc
+    * ext4: miscellaneous error checks and coding cleanups for mballoc
+    * ext4: remove double definitions of xattr macros
+    * ext4: remove quota allocation when ext4_mb_new_blocks fails
+    * ext4: return error when calling ext4_ext_split failed
+    * ext4: Make ext4_ext_find_extent fills ext_path completely
+    * ext4: Fix ext4_ext_journal_restart() to reflect errors up to the caller
+
+Theodore Ts'o (4):
+    * ext4: Rename read_block_bitmap() to ext4_read_block_bitmap()
+    * ext4: Remove unused variable from ext4_show_options
+    * jbd2: Add commit time into the commit block
+      ext4: Stable/Unstable boundary
+
