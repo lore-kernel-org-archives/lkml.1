@@ -1,50 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbYGIV5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbYGIV6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754429AbYGIV5U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 17:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbYGIV5J
+	id S1754865AbYGIV6r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 17:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbYGIV6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 17:57:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48538 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751502AbYGIV5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 17:57:08 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Theodore Tso <tytso@mit.edu>
-Subject: Re: request_firmware vs. resume (was Re: [PATCH] bnx2 - use request_firmware())
-Date: Wed, 9 Jul 2008 23:58:31 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pavel Machek <pavel@suse.cz>, David Miller <davem@davemloft.net>,
-       alan@lxorguk.ukuu.org.uk, mchan@broadcom.com, dwmw2@infradead.org,
-       bastian@waldi.eu.org, linux-kernel@vger.kernel.org
-References: <20080707221950.3dfba435@the-village.bc.nu> <200807092313.55777.rjw@sisk.pl> <20080709212024.GB8517@mit.edu>
-In-Reply-To: <20080709212024.GB8517@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 9 Jul 2008 17:58:40 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44268 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750955AbYGIV6i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 17:58:38 -0400
+Date: Wed, 9 Jul 2008 14:52:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH v2] handle failure of irqchip->set_type in setup_irq
+Message-Id: <20080709145253.f658db37.akpm@linux-foundation.org>
+In-Reply-To: <20080709131353.GA12009@digi.com>
+References: <20080625131101.GA6205@digi.com>
+	<20080704104634.GA31634@digi.com>
+	<20080704101717.28f6a771.akpm@linux-foundation.org>
+	<20080704184307.GA8076@digi.com>
+	<20080704120837.573adc9c.akpm@linux-foundation.org>
+	<20080709131353.GA12009@digi.com>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807092358.32605.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 9 of July 2008, Theodore Tso wrote:
-> On Wed, Jul 09, 2008 at 11:13:54PM +0200, Rafael J. Wysocki wrote:
-> > > Be careful about request_firmware. Doing it right w.r.t.
-> > > suspend/resume is quite tricky: you have to load it from userspace
-> > > before kernel starts, so that you can use it during resume...
+On Wed, 9 Jul 2008 15:13:53 +0200 Uwe Kleine-K__nig <Uwe.Kleine-Koenig@digi.com> wrote:
+
+> Andrew Morton wrote:
+> > On Fri, 4 Jul 2008 20:43:07 +0200 Uwe Kleine-K__nig <Uwe.Kleine-Koenig@digi.com> wrote:
 > > 
-> > Rather, you have to cache it in memory before your ->suspend() is invoked.
-> 
-> Translation: so much for saving "non-swappable kernel memory".
-> Unless, of course we add a pre-suspend hook.  (Which doesn't exist
-> yet, AFAICT from a quick perusal of Documentation/power/devices.txt.)
+> > > >                                            I wonder if we can do better.
+> > > > Let me think about that.
+> > > I was about to suggest something like:
+> > >
+> > >       /* WARNING: this returns a static pointer, so you cannot use the
+> > >        * returned value after another call to creative_function_name
+> > >        */
+> > >       char *creative_function_name(void *addr)
+> > >       {
+> > >               static char buf[SOME_LENGTH];
+> > >
+> > >               ... format symbol name into buf ...
+> > >
+> > >               return buf;
+> > >       }
+> > >
+> > > Then I could have used
+> > >
+> > >       pr_err("setting flow type for irq %u failed (%s)\n",
+> > >                       irq, creative_function_name(chip->set_type));
+> > >
+> > > which looks definitely nicer.
+> > 
+> > Better would be
+> > 
+> >         char buf[ENOUGH /* rofl */];
+> > 
+> >         pr_err("setting flow type for irq %u failed (%s)\n",
+> >                         irq, render_function_name(buf, chip->set_type));
+> > 
+> > However I'm presently brewing up a plot to do this:
+> > 
+> >         printk("function name is %Ss\n", (unsigned long *)chip->set_type);
+> > 
+> > which I think will work.  We can also do
+> > 
+> >         printk("IP address is %Si\n", (unsigned long *)ip_address_buffer);
+> > 
+> > to replace NIPQUAD.  And similar printk extensions.
+> > 
+> > Am still thinking about it though.
+> I assume the result is 0fe1ef24f7bd0020f29ffe287dfdb9ead33ca0b2?
 
-No, it doesn't.
+yup.
 
-You will be able to register a suspend notifier instead, but this requires
-one fix which is in the works.
+> Should I send a new version using %pF or is it easier if you fix up the
+> patch?
 
-Thanks,
-Rafael
+A new version would be nice, thanks.  Or an incremental diff, but I can and
+will turn new versions into an incremental in the twinkle of an eye, so
+either is OK.
