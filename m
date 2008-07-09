@@ -1,52 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753763AbYGIVVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757122AbYGIVV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753763AbYGIVVg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 17:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756348AbYGIVVY
+	id S1757122AbYGIVV5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 17:21:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753869AbYGIVVr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 17:21:24 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:49466 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756307AbYGIVVW (ORCPT
+	Wed, 9 Jul 2008 17:21:47 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:60174 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753828AbYGIVVq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 17:21:22 -0400
-Date: Wed, 9 Jul 2008 17:20:24 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@suse.cz>, David Miller <davem@davemloft.net>,
-       alan@lxorguk.ukuu.org.uk, mchan@broadcom.com, dwmw2@infradead.org,
-       bastian@waldi.eu.org, linux-kernel@vger.kernel.org
-Subject: Re: request_firmware vs. resume (was Re: [PATCH] bnx2 - use
-	request_firmware())
-Message-ID: <20080709212024.GB8517@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@suse.cz>,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk,
-	mchan@broadcom.com, dwmw2@infradead.org, bastian@waldi.eu.org,
-	linux-kernel@vger.kernel.org
-References: <20080707221950.3dfba435@the-village.bc.nu> <20080708.015838.245133409.davem@davemloft.net> <20080709202547.GD11006@ucw.cz> <200807092313.55777.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200807092313.55777.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Wed, 9 Jul 2008 17:21:46 -0400
+Subject: Re: 2.6.25.9: system clocks works normally then speeds up 4x...
+From: john stultz <johnstul@us.ibm.com>
+To: Philippe Troin <phil@fifi.org>
+Cc: linux-kernel@vger.kernel.org, macro@linux-mips.org
+In-Reply-To: <87wsjuzsmr.fsf@old-tantale.fifi.org>
+References: <87d4lm2792.fsf@old-tantale.fifi.org>
+	 <1f1b08da0807091255s77033943t2b686ddb537ceaae@mail.gmail.com>
+	 <874p6y25es.fsf@old-tantale.fifi.org>
+	 <1215634125.6149.8.camel@localhost.localdomain>
+	 <87wsjuzsmr.fsf@old-tantale.fifi.org>
+Content-Type: text/plain
+Date: Wed, 09 Jul 2008 14:21:39 -0700
+Message-Id: <1215638499.6149.16.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 09, 2008 at 11:13:54PM +0200, Rafael J. Wysocki wrote:
-> > Be careful about request_firmware. Doing it right w.r.t.
-> > suspend/resume is quite tricky: you have to load it from userspace
-> > before kernel starts, so that you can use it during resume...
+
+On Wed, 2008-07-09 at 13:53 -0700, Philippe Troin wrote:
+> john stultz <johnstul@us.ibm.com> writes:
 > 
-> Rather, you have to cache it in memory before your ->suspend() is invoked.
+> > On Wed, 2008-07-09 at 13:01 -0700, Philippe Troin wrote:
+> > > "john stultz" <johnstul@us.ibm.com> writes:
+> > > 
+> > > > On Wed, Jul 9, 2008 at 12:21 PM, Philippe Troin <phil@fifi.org> wrote:
+> > > > >
+> > > > > Symptoms:
+> > > > >
+> > > > >  The system boots fine. Clock seems to run normally.
+> > > > >
+> > > > >  Then after a random amount of time (on the current boot, 3 days),
+> > > > >  clock starts to be running 2-4x faster (on the current boot, 4x).
+> > > > >
+> > > > >  I have tried booting with "nohz=off highres=off" but it does not
+> > > > >  help.
+> > > > 
+> > > > Could you provide the output from the following:
+> > > >    sudo cat /sys/devices/system/clocksource/clocksource0/*
+> > > 
+> > > Sure.
+> > > 
+> > > It is:
+> > > available: jiffies tsc 
+> > > current:   jiffies
+> > > 
+> > > > Did this issue occur with 2.6.24 or earlier kernels?
+> > > 
+> > > No.  It started with 2.6.25.
+> > > 
+> > > Interestingly:
+> > > 
+> > >   I've just modified the current clocksource to tsc and the clock went
+> > >   back to its normal speed.
+> > > 
+> > >   Then I reset the current clocksource to jiffies, and the clock went
+> > >   back to its (wrong) 4x speed.
+> > > 
+> > > So it looks like the kernel is counting jiffies 4x too fast.
+> > 
+> > When you're seeing the issue, can you do the following:
+> >   cat /proc/interrupts > interrupts
+> > 
+> >   <wait 10 seconds by your wristwatch> 
+> > 
+> >   cat /proc/interrupts >> interrupts
+> > 
+> > And send the results?
+> 
+> There you are:
+> 
+>            CPU0       CPU1
+>   0:        353          0   IO-APIC-edge      timer
+> LOC:  546305845   33155722   Local timer interrupts
+> Roughly 10 seconds later:
+>   0:        353          0   IO-APIC-edge      timer
+> LOC:  546361653   33156517   Local timer interrupts
 
-Translation: so much for saving "non-swappable kernel memory".
-Unless, of course we add a pre-suspend hook.  (Which doesn't exist
-yet, AFAICT from a quick perusal of Documentation/power/devices.txt.)
+Huh. So that's a diff of:
+LOCdiff   55808        795  
 
+So that's 55 seconds worth of ticks on cpu0 and not one on cpu1. So yea,
+something seems off with your timer interrupts.
 
-     	    	   	 	    - Ted
+> > Could you also try booting with noapic to see if that changes anything?
+> 
+> Sure.  This will mean I will lose the "wedged" system.  Is there
+> anything else that needs to be checked on it before I lose the broken
+> state?
+> Also keep in mind that the symptoms take a while to manifest
+> themselves (a few days typically).
+
+I can't think of anything right off. But maybe we should give some
+others a chance to look.
+
+I would like to see the same /proc/interrupt data when the system is
+properly functioning as well. So whenever you do reboot, that would be
+interesting to me.
+
+thanks
+-john
+
