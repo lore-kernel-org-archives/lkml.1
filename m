@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755123AbYGIUz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753525AbYGIUzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755123AbYGIUz0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 16:55:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751504AbYGIUzS
+	id S1753525AbYGIUzs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 16:55:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755386AbYGIUzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 16:55:18 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37873 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751076AbYGIUzR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 16:55:17 -0400
-Message-ID: <487525B3.90904@sgi.com>
-Date: Wed, 09 Jul 2008 13:55:15 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <20080709192822.GB4804@elte.hu>
-In-Reply-To: <20080709192822.GB4804@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Jul 2008 16:55:35 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1518 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751504AbYGIUze (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 16:55:34 -0400
+Date: Wed, 9 Jul 2008 22:29:20 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Felipe Balbi <felipebalbi@users.sourceforge.net>
+Cc: Theodore Tso <tytso@mit.edu>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: Re: Battery life difference
+Message-ID: <20080709202920.GE11006@ucw.cz>
+References: <31e679430807050617u3fc706fasee9bb43a151c501f@mail.gmail.com> <20080705133601.GA20240@mit.edu> <31e679430807050700q765dc45ft198fcf1c0b91a9cc@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <31e679430807050700q765dc45ft198fcf1c0b91a9cc@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mike Travis <travis@sgi.com> wrote:
-> 
->>   * x86_64: Rebase per cpu variables to zero
->>
->>     Take advantage of the zero-based per cpu area provided above. Then 
->>     we can directly use the x86_32 percpu operations. x86_32 offsets 
->>     %fs by __per_cpu_start. x86_64 has %gs pointing directly to the 
->>     pda and the per cpu area thereby allowing access to the pda with 
->>     the x86_64 pda operations and access to the per cpu variables 
->>     using x86_32 percpu operations.
-> 
-> hm, have the binutils (or gcc) problems with this been resolved?
-> 
-> If common binutils versions miscompile the kernel with this feature then 
-> i guess we cannot just unconditionally enable it. (My hope is that it's 
-> not necessarily a binutils bug but some broken assumption of the kernel 
-> somewhere.)
-> 
-> 	Ingo
+Hi!
 
-Currently I'm using gcc-4.2.4.  Which are you using?
+> > You didn't say which battery you are using; I'm guessing you are using
+> > the 4 cell slim-line battery, which is rated at 28.8 Watt-hours?
+> 
+> yeah, the normal slim-battery.
+> 
+> > How many Watts is Powertop reporting that you are using?  I'm down to
+> 
+> eheh, it's only 15.5w :-p
+> 
+> > around 8-9 watts, and around 9.5 watts in "airplane mail reading mail"
+> > (wireless disabled, USB modules unloaded, screen brightness turned way
+> > down, laptop_mode enabled, all mail messages pulled into memory, and
+> > reading/deleting mail using mutt, a character-mode based mail reader
+> > --- if you use Evolution, your energy usage will definitely be higher  :-).
+> 
+> no crappy evolution, I use fluxbox and mutt. This ubuntu machine is
+> for testing purposes only :-p
+> 
+> Anyways, it's bad that we have to manually unload several modules,
+> specially usb. I'm sure windows reaches 9 watts consumption without
+> breaking functionality. And that's the big thing. I think that's something
+> we should be aiming. Dontcha think?
 
-I labeled it "RFC" as it does not quite work without THREAD_ORDER bumped to 2.
-And I believe the stack overflow is happening because of some interrupt
-routine as it does not happen on our simulator.
+Can you test Ted's suggestion to see if we have nailed the problem,
+first?
 
-After that is taken care of, I'll start regression testing earlier compilers.
-I think someone mentioned that gcc-2.something was the minimum required...?
+9W vs. 15W does not explain 1h30 vs 3h30 difference, afaict.
 
-Thanks,
-Mike
+(Of course, we are working on usb autosuspend. Try 2.6.26).
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
