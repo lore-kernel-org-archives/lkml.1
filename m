@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbYGID3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753216AbYGIEKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754775AbYGID3z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 23:29:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbYGID3r
+	id S1753216AbYGIEKW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 00:10:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbYGIEKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 23:29:47 -0400
-Received: from tomts25.bellnexxia.net ([209.226.175.188]:35763 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752510AbYGID3q (ORCPT
+	Wed, 9 Jul 2008 00:10:09 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:10554 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750818AbYGIEKI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 23:29:46 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAE7Hc0hMQWVt/2dsb2JhbACBXK8x
-Date: Tue, 8 Jul 2008 23:29:43 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Jason Baron <jbaron@redhat.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       Max Krasnyansky <maxk@qualcomm.com>
-Subject: Re: [PATCH 0/3] stop_machine enhancements and simplifications
-Message-ID: <20080709032943.GA5565@Krystal>
-References: <200807081750.55536.rusty@rustcorp.com.au> <20080708201012.GA21567@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 9 Jul 2008 00:10:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=S0t6WcSDmWO1Y9ghfN+wp3rJBsQaUMmlMsp/lBzWwhDLQBP737Z+3fj9ZXYK/r1qXC
+         4tRzKMAK8vlYghpM08FGzCpE0fHT1TvAhoWRd9/RuOp2GR33V3Eiad6J+Wx3AFPBQZpD
+         pb1FfuptJ0toslXDJi+OJz1c2PE3Yy+i8qsIg=
+Message-ID: <48743A1A.2010304@gmail.com>
+Date: Wed, 09 Jul 2008 13:10:02 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Komuro <komurojun-mbn@nifty.com>
+CC: Jeff Garzik <jeff@garzik.org>,
+       linux-pcmcia <linux-pcmcia@lists.infradead.org>,
+       linux-kernel@vger.kernel.org,
+       Dominik Brodowski <linux@dominikbrodowski.net>,
+       linux-ide@vger.kernel.org,
+       Kristoffer Ericson <kristoffer.ericson@gmail.com>, jgarzik@redhat.com,
+       rjw@sisk.pl
+Subject: Re: [KERNEL 2.6.26-rc4]  bugreport : pata_pcmcia with Sandisk Extreme
+ III 8GB
+References: <20080528225049.9a134e0d.Kristoffer.Ericson@Gmail.com>	<20080528222740.GB20893@isilmar.linta.de>	<20080530135728.be02d3dc.Kristoffer.Ericson@Gmail.com>	<20080607223716.7d142072.komurojun-mbn@nifty.com>	<20080611072029.GB28692@comet.dominikbrodowski.net>	<20080614120055.ad8fbee0.komurojun-mbn@nifty.com>	<48537149.4040102@garzik.org>	<20080614213612.96873c25.komurojun-mbn@nifty.com>	<4855D8E2.10409@gmail.com>	<20080616221145.e3b069b9.komurojun-mbn@nifty.com>	<485669A0.6000404@gmail.com>	<20080617212345.c452d8c5.komurojun-mbn@nifty.com>	<20080706103752.13935ffd.komurojun-mbn@nifty.com>	<4870D46C.7000604@gmail.com> <20080707214253.2406f81a.komurojun-mbn@nifty.com>
+In-Reply-To: <20080707214253.2406f81a.komurojun-mbn@nifty.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20080708201012.GA21567@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 23:27:51 up 34 days,  8:08,  3 users,  load average: 1.89, 1.35,
-	1.34
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jason Baron (jbaron@redhat.com) wrote:
-> On Tue, Jul 08, 2008 at 05:50:55PM +1000, Rusty Russell wrote:
-> > Hi all,
-> > 
-> >    Here are the three stop_machine patches I've queued for the next merge
-> > window.  The first two are pretty well tested via linux-next, the last is
-> > recent but fairly straightforward.
-> > 
-> >    I'm assuming that Jason and/or Mathieu have need for the ALL_CPUS mod,
-> > but it can be removed by the last of these patches (left in to reduce
-> > transition breakage).
-> 
-> hi,
-> 
-> I added the 'ALL_CPUS' feature to support the architecture independent immediate 
-> code that Mathieu wrote. So, if Mathieu needs it great, otherwise I have no 
-> other code depending on it.
-> 
-> thanks,
-> 
-> -Jason 
+Hello,
 
-Hi Rusty,
+Komuro wrote:
+>> How come ap->lock can get set to bogus address?  Can you please printk
+>> &host->lock and ap->lock after ata_host_alloc() without the patch?
+> 
+> Here is the output of printk.
+> Strangely, without the patch, the pata_pcmcia problem happens again.
 
-The immediate values implementation (the 'simple' version) uses this
-patch. If we include your simplification, I'll have to modify the
-immediate values patch a little bit so we deal with concurrent execution
-of all the threads, as I pointed out in my earlier email.
+Ah... super strange.  Can you please try to swap memory sticks around
+and see whether anything changes to rule out bad memory?  Another
+possibility is DMA corrupting the memory and printk makes the timing
+different and dodges the bullet.  Does putting msleep(100) in the
+pata_pcmcia init_one make any difference?
 
-Mathieu
-
+Thanks.
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+tejun
