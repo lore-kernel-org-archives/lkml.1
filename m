@@ -1,23 +1,266 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757458AbYGIPBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758020AbYGIPCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757458AbYGIPBx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 11:01:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbYGIPBf
+	id S1758020AbYGIPCR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 11:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757291AbYGIPBu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 11:01:35 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:35990 "EHLO smtp.polymtl.ca"
+	Wed, 9 Jul 2008 11:01:50 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:36180 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754212AbYGIPBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 11:01:34 -0400
-Message-Id: <20080709150048.888619627@polymtl.ca>
+	id S1756877AbYGIPBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 11:01:48 -0400
+Message-Id: <20080709150045.025136754@polymtl.ca>
 References: <20080709145929.352201601@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 09 Jul 2008 10:59:44 -0400
+Date: Wed, 09 Jul 2008 10:59:34 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed,  9 Jul 2008 15:00:49 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
+       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Subject: [patch 05/15] LTTng instrumentation - scheduler
+Content-Disposition: inline; filename=lttng-instrumentation-scheduler.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed,  9 Jul 2008 15:00:45 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Instrument the scheduler activity (sched_switch, migration, wakeups, wait for a
+task, signal delivery) and process/thread creation/destruction (fork, exit,
+kthread stop). Actually, kthread creation is not instrumented in this patch
+because it is architecture dependent. It allows to connect tracers such as
+ftrace which detects scheduling latencies, good/bad scheduler decisions. Tools
+like LTTng can export this scheduler information along with instrumentation of
+the rest of the kernel activity to perform post-mortem analysis on the scheduler
+activity.
+
+About the performance impact of tracepoints (which is comparable to markers),
+even without immediate values optimizations, tests done by Hideo Aoki on ia64
+show no regression. His test case was using hackbench on a kernel where
+scheduler instrumentation (about 5 events in code scheduler code) was added.
+See the "Tracepoints" patch header for performance result detail.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: 'Peter Zijlstra' <peterz@infradead.org>
+CC: 'Steven Rostedt' <rostedt@goodmis.org>
+CC: Thomas Gleixner <tglx@linutronix.de>
+CC: Masami Hiramatsu <mhiramat@redhat.com>
+CC: "Frank Ch. Eigler" <fche@redhat.com>
+CC: 'Ingo Molnar' <mingo@elte.hu>
+CC: 'Hideo AOKI' <haoki@redhat.com>
+CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
+CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+---
+ kernel/exit.c        |    6 ++++++
+ kernel/fork.c        |    3 +++
+ kernel/kthread.c     |    5 +++++
+ kernel/sched-trace.h |   43 +++++++++++++++++++++++++++++++++++++++++++
+ kernel/sched.c       |    4 ++++
+ kernel/signal.c      |    3 +++
+ 6 files changed, 64 insertions(+)
+
+Index: linux-2.6-lttng/kernel/kthread.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/kthread.c	2008-07-09 10:55:46.000000000 -0400
++++ linux-2.6-lttng/kernel/kthread.c	2008-07-09 10:57:43.000000000 -0400
+@@ -13,6 +13,7 @@
+ #include <linux/file.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
++#include "sched-trace.h"
+ 
+ #define KTHREAD_NICE_LEVEL (-5)
+ 
+@@ -187,6 +188,8 @@ int kthread_stop(struct task_struct *k)
+ 	/* It could exit after stop_info.k set, but before wake_up_process. */
+ 	get_task_struct(k);
+ 
++	trace_sched_kthread_stop(k);
++
+ 	/* Must init completion *before* thread sees kthread_stop_info.k */
+ 	init_completion(&kthread_stop_info.done);
+ 	smp_wmb();
+@@ -202,6 +205,8 @@ int kthread_stop(struct task_struct *k)
+ 	ret = kthread_stop_info.err;
+ 	mutex_unlock(&kthread_stop_lock);
+ 
++	trace_sched_kthread_stop_ret(ret);
++
+ 	return ret;
+ }
+ EXPORT_SYMBOL(kthread_stop);
+Index: linux-2.6-lttng/kernel/sched.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/sched.c	2008-07-09 10:55:46.000000000 -0400
++++ linux-2.6-lttng/kernel/sched.c	2008-07-09 10:57:43.000000000 -0400
+@@ -1987,6 +1987,7 @@ void wait_task_inactive(struct task_stru
+ 		 * just go back and repeat.
+ 		 */
+ 		rq = task_rq_lock(p, &flags);
++		trace_sched_wait_task(p);
+ 		running = task_running(rq, p);
+ 		on_rq = p->se.on_rq;
+ 		task_rq_unlock(rq, &flags);
+@@ -2275,6 +2276,7 @@ static int try_to_wake_up(struct task_st
+ 
+ 	smp_wmb();
+ 	rq = task_rq_lock(p, &flags);
++	trace_sched_try_wakeup(p);
+ 	old_state = p->state;
+ 	if (!(old_state & state))
+ 		goto out;
+@@ -2457,6 +2459,7 @@ void wake_up_new_task(struct task_struct
+ 	struct rq *rq;
+ 
+ 	rq = task_rq_lock(p, &flags);
++	trace_sched_wakeup_new_task(p);
+ 	BUG_ON(p->state != TASK_RUNNING);
+ 	update_rq_clock(rq);
+ 
+@@ -2884,6 +2887,7 @@ static void sched_migrate_task(struct ta
+ 	    || unlikely(cpu_is_offline(dest_cpu)))
+ 		goto out;
+ 
++	trace_sched_migrate_task(p, dest_cpu);
+ 	/* force the process onto the specified CPU */
+ 	if (migrate_task(p, dest_cpu, &req)) {
+ 		/* Need to wait for migration thread (might exit: take ref). */
+Index: linux-2.6-lttng/kernel/exit.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/exit.c	2008-07-09 10:55:46.000000000 -0400
++++ linux-2.6-lttng/kernel/exit.c	2008-07-09 10:57:43.000000000 -0400
+@@ -46,6 +46,7 @@
+ #include <linux/resource.h>
+ #include <linux/blkdev.h>
+ #include <linux/task_io_accounting_ops.h>
++#include "sched-trace.h"
+ 
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+@@ -149,6 +150,7 @@ static void __exit_signal(struct task_st
+ 
+ static void delayed_put_task_struct(struct rcu_head *rhp)
+ {
++	trace_sched_process_free(container_of(rhp, struct task_struct, rcu));
+ 	put_task_struct(container_of(rhp, struct task_struct, rcu));
+ }
+ 
+@@ -1040,6 +1042,8 @@ NORET_TYPE void do_exit(long code)
+ 
+ 	if (group_dead)
+ 		acct_process();
++	trace_sched_process_exit(tsk);
++
+ 	exit_sem(tsk);
+ 	exit_files(tsk);
+ 	exit_fs(tsk);
+@@ -1524,6 +1528,8 @@ static long do_wait(enum pid_type type, 
+ 	struct task_struct *tsk;
+ 	int flag, retval;
+ 
++	trace_sched_process_wait(pid);
++
+ 	add_wait_queue(&current->signal->wait_chldexit,&wait);
+ repeat:
+ 	/* If there is nothing that can match our critier just get out */
+Index: linux-2.6-lttng/kernel/fork.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/fork.c	2008-07-09 10:55:46.000000000 -0400
++++ linux-2.6-lttng/kernel/fork.c	2008-07-09 10:58:05.000000000 -0400
+@@ -56,6 +56,7 @@
+ #include <linux/proc_fs.h>
+ #include <linux/blkdev.h>
+ #include <linux/magic.h>
++#include "sched-trace.h"
+ 
+ #include <asm/pgtable.h>
+ #include <asm/pgalloc.h>
+@@ -1362,6 +1363,8 @@ long do_fork(unsigned long clone_flags,
+ 	if (!IS_ERR(p)) {
+ 		struct completion vfork;
+ 
++		trace_sched_process_fork(current, p);
++
+ 		nr = task_pid_vnr(p);
+ 
+ 		if (clone_flags & CLONE_PARENT_SETTID)
+Index: linux-2.6-lttng/kernel/signal.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/signal.c	2008-07-09 10:46:33.000000000 -0400
++++ linux-2.6-lttng/kernel/signal.c	2008-07-09 10:57:43.000000000 -0400
+@@ -26,6 +26,7 @@
+ #include <linux/freezer.h>
+ #include <linux/pid_namespace.h>
+ #include <linux/nsproxy.h>
++#include "sched-trace.h"
+ 
+ #include <asm/param.h>
+ #include <asm/uaccess.h>
+@@ -807,6 +808,8 @@ static int send_signal(int sig, struct s
+ 	struct sigpending *pending;
+ 	struct sigqueue *q;
+ 
++	trace_sched_signal_send(sig, t);
++
+ 	assert_spin_locked(&t->sighand->siglock);
+ 	if (!prepare_signal(sig, t))
+ 		return 0;
+Index: linux-2.6-lttng/kernel/sched-trace.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/kernel/sched-trace.h	2008-07-09 10:57:43.000000000 -0400
+@@ -0,0 +1,43 @@
++#ifndef _SCHED_TRACE_H
++#define _SCHED_TRACE_H
++
++#include <linux/tracepoint.h>
++
++DEFINE_TRACE(sched_kthread_stop,
++	TPPROTO(struct task_struct *t),
++	TPARGS(t));
++DEFINE_TRACE(sched_kthread_stop_ret,
++	TPPROTO(int ret),
++	TPARGS(ret));
++DEFINE_TRACE(sched_wait_task,
++	TPPROTO(struct task_struct *p),
++	TPARGS(p));
++DEFINE_TRACE(sched_try_wakeup,
++	TPPROTO(struct task_struct *p),
++	TPARGS(p));
++DEFINE_TRACE(sched_wakeup_new_task,
++	TPPROTO(struct task_struct *p),
++	TPARGS(p));
++DEFINE_TRACE(sched_switch,
++	TPPROTO(struct task_struct *prev, struct task_struct *next),
++	TPARGS(prev, next));
++DEFINE_TRACE(sched_migrate_task,
++	TPPROTO(struct task_struct *p, int dest_cpu),
++	TPARGS(p, dest_cpu));
++DEFINE_TRACE(sched_process_free,
++	TPPROTO(struct task_struct *p),
++	TPARGS(p));
++DEFINE_TRACE(sched_process_exit,
++	TPPROTO(struct task_struct *p),
++	TPARGS(p));
++DEFINE_TRACE(sched_process_wait,
++	TPPROTO(struct pid *pid),
++	TPARGS(pid));
++DEFINE_TRACE(sched_process_fork,
++	TPPROTO(struct task_struct *parent, struct task_struct *child),
++	TPARGS(parent, child));
++DEFINE_TRACE(sched_signal_send,
++	TPPROTO(int sig, struct task_struct *p),
++	TPARGS(sig, p));
++
++#endif
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
