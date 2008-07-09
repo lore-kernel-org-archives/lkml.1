@@ -1,98 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbYGILRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757158AbYGILRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758030AbYGILRU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 07:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757248AbYGILQz
+	id S1757158AbYGILRm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 07:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756488AbYGILRa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 07:16:55 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39145 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757172AbYGILQx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 07:16:53 -0400
-Date: Wed, 9 Jul 2008 13:16:21 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       Stephen Tweedie <sct@redhat.com>, Eduardo Habkost <ehabkost@redhat.com>,
-       Mark McLoughlin <markmc@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [patch] power, xen64: fix PM_SLEEP build dependencies (was: Re:
-	[PATCH 00 of 55] xen64: implement 64-bit Xen support)
-Message-ID: <20080709111621.GA2780@elte.hu>
-References: <patchbomb.1215554782@localhost> <20080709111219.GA24874@elte.hu>
+	Wed, 9 Jul 2008 07:17:30 -0400
+Received: from smtp116.mail.mud.yahoo.com ([209.191.84.165]:35090 "HELO
+	smtp116.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757172AbYGILR2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 07:17:28 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=rqJG5JplRq7ZbM0QujE1D44Ra+e3pYesNLMePXMSGrM0rlKRr2byqeVazpaBHsTdyMoLl8+4/VfIUUoQVEVr7inKkdqO+pKSsale55lWVdy1ln5ubnWn4bGWHUDkI8AbKAHUFCrEtkav/YayWhcXMCsZ8x/2YUSloKQ3XV9gi/g=  ;
+X-YMail-OSG: rbD3I0AVM1kv9SFOhglwJbMCLdrSZHV3.tpH1wkDbCF39PcMI4DSDlHrNb8C0l3qZoxiOXB63NuHJyoBDbkjxkOwfDA3PyM51MdlZTBdFHcPSCG3fDhWoIUp6t5bT4_0dXc-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: "Gregory Haskins" <ghaskins@novell.com>
+Subject: Re: [PATCH 2/3] sched: terminate newidle balancing once at least one task has moved over
+Date: Wed, 9 Jul 2008 21:17:01 +1000
+User-Agent: KMail/1.9.5
+Cc: mingo@elte.hu, rostedt@goodmis.org, peterz@infradead.org, npiggin@suse.de,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+References: <20080627202444.3829.21595.stgit@lsg.lsg.lab.novell.com> <200807091809.52293.nickpiggin@yahoo.com.au> <48746084.BA47.005A.0@novell.com>
+In-Reply-To: <48746084.BA47.005A.0@novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080709111219.GA24874@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200807092117.01669.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 09 July 2008 20:53, Gregory Haskins wrote:
+> >>> On Wed, Jul 9, 2008 at  4:09 AM, in message
+>
+> <200807091809.52293.nickpiggin@yahoo.com.au>, Nick Piggin
+>
+> <nickpiggin@yahoo.com.au> wrote:
+> > On Tuesday 08 July 2008 22:37, Gregory Haskins wrote:
+> >> >>> On Tue, Jul 8, 2008 at  1:00 AM, in message
+> >>
+> >> <200807081500.18245.nickpiggin@yahoo.com.au>, Nick Piggin
+> >>
+> >> <nickpiggin@yahoo.com.au> wrote:
+> >> > On Saturday 28 June 2008 06:29, Gregory Haskins wrote:
+> >> >> Inspired by Peter Zijlstra.
+> >> >>
+> >> >> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+> >> >
+> >> > What happened to the feedback I sent about this?
+> >> >
+> >> > It is still nack from me.
+> >>
+> >> Ah yes.  Slipped through the cracks...sorry about that.
+> >>
+> >> What if we did "if (idle == CPU_NEWLY_IDLE && need_resched())" instead?
+> >
+> > Isn't that exactly the same thing
+>
+> Not quite.  The former version would break on *any* succesful enqueue (as a
+> result of a local move_task as well as a remote wake-up/migration).  The
+> latter version will only break on the the remote variety.  You were
+> concerned about stopping a move_task operation early because it would
+> reduce efficiency, and I do not entirely disagree. However, this really
+> only concerns the local type (which have now been removed).
+>
+> Remote preemptions should (IMO) always break immediately because it would
+> have been likely to invalidate the f_b_g() calculation anyway, and
+> low-latency requirements dictate its the right thing to do.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+I thought this was about newidle balancing? Tasks are always going to
+be coming from remote runqueues, aren't they?
 
-> Testing: i've done a trial merge of tip/xen-64bit to tip/master - not 
-> pushed out yet. If it holds up in testing i'll put the integration 
-> rule into tip/master.
-> 
-> tip/xen-64bit (which i've just pushed out) can be cleanly git-merged 
-> into tip/master, so if you send updates then please send it against 
-> such a merged tree - even if tip/master does not have tip/xen-64bit 
-> yet. These patches will need at least half a day of testing before i 
-> can push them out.
 
-find a build fixlet below, for this config:
+> > because any task will preempt the idle thread?
+>
+> During NEWIDLE this is a preempt-disabled section because we are still in
+> the middle of a schedule(). Therefore there will be no involuntary
+> preemption and that is why we are concerned with making sure we check for
+> voluntary preemption.  The move_tasks() will run to completion without this
+> patch.  With this patch it will break the operation if someone tries to
+> preempt us.
 
-  http://redhat.com/~mingo/misc/config-Wed_Jul__9_13_02_55_CEST_2008.bad
+Firstly, won't the act of pulling tasks set the need_resched condition?
 
-Rafael, do you agree with how we now can enable PM_SLEEP without having 
-PM enabled? xen64 would like to have that - and it needs the fixlet 
-below.
+Secondly, even if it does what you say, what exactly would be the difference
+between blocking a newly moved task from running and blocking a newly woken
+task from running? Either way you introduce the same worst case latency
+condition.
 
-	Ingo
 
---------------->
-commit 9280dc82a739c68945d61c80ba06bef6a9383c87
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Wed Jul 9 13:09:43 2008 +0200
+> I'll keep an open mind but I am pretty sure this is something we should be
+> doing. As far as I can tell, there should be no downside with this second
+> version. 
 
-    power, xen64: fix PM_SLEEP build dependencies
-    
-    fix:
-    
-    kernel/built-in.o: In function `do_fork':
-    : undefined reference to `refrigerator'
-    kernel/built-in.o: In function `do_signal_stop':
-    signal.c:(.text+0x1b076): undefined reference to `refrigerator'
-    kernel/built-in.o: In function `ptrace_stop':
-    signal.c:(.text+0x1b285): undefined reference to `refrigerator'
-    kernel/built-in.o: In function `get_signal_to_deliver':
-    : undefined reference to `refrigerator'
-    kernel/built-in.o: In function `worker_thread':
-    workqueue.c:(.text+0x212c1): undefined reference to `refrigerator'
-    [...]
-    
-    as CONFIG_PM_SLEEP can now be enabled without CONFIG_PM.
-    
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+I don't think it has really been thought through that well. So I'm still
+against it.
 
-diff --git a/kernel/Makefile b/kernel/Makefile
-index 0a05120..6678a60 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -47,6 +47,7 @@ obj-$(CONFIG_UID16) += uid16.o
- obj-$(CONFIG_MODULES) += module.o
- obj-$(CONFIG_KALLSYMS) += kallsyms.o
- obj-$(CONFIG_PM) += power/
-+obj-$(CONFIG_PM_SLEEP) += power/
- obj-$(CONFIG_BSD_PROCESS_ACCT) += acct.o
- obj-$(CONFIG_KEXEC) += kexec.o
- obj-$(CONFIG_BACKTRACE_SELF_TEST) += backtracetest.o
+> As a compromise we could put an #ifdef CONFIG_PREEMPT around this 
+> new logic, but I don't think it is strictly necessary.
+
+That's not very nice. It's reasonable to run with CONFIG_PREEMPT but not
+blindly want to trade latency for throughput.
