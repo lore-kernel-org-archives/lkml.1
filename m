@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756246AbYGIVVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753763AbYGIVVg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756246AbYGIVVV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 17:21:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbYGIVVD
+	id S1753763AbYGIVVg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 17:21:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756348AbYGIVVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 17:21:03 -0400
-Received: from gw.goop.org ([64.81.55.164]:46752 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753232AbYGIVVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 17:21:01 -0400
-Message-ID: <48752BAC.2050905@goop.org>
-Date: Wed, 09 Jul 2008 14:20:44 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 9 Jul 2008 17:21:24 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:49466 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756307AbYGIVVW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 17:21:22 -0400
+Date: Wed, 9 Jul 2008 17:20:24 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@suse.cz>, David Miller <davem@davemloft.net>,
+       alan@lxorguk.ukuu.org.uk, mchan@broadcom.com, dwmw2@infradead.org,
+       bastian@waldi.eu.org, linux-kernel@vger.kernel.org
+Subject: Re: request_firmware vs. resume (was Re: [PATCH] bnx2 - use
+	request_firmware())
+Message-ID: <20080709212024.GB8517@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@suse.cz>,
+	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk,
+	mchan@broadcom.com, dwmw2@infradead.org, bastian@waldi.eu.org,
+	linux-kernel@vger.kernel.org
+References: <20080707221950.3dfba435@the-village.bc.nu> <20080708.015838.245133409.davem@davemloft.net> <20080709202547.GD11006@ucw.cz> <200807092313.55777.rjw@sisk.pl>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <48751CF9.4020901@linux-foundation.org>	<4875209D.8010603@goop.org> <487522A8.60906@zytor.com>	<48752409.1030201@goop.org> <m1abgqu5rg.fsf@frodo.ebiederm.org>
-In-Reply-To: <m1abgqu5rg.fsf@frodo.ebiederm.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200807092313.55777.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> But we can pick an arbitrary point where %gs points at.
->
-> Hmm.  This whole thing is even sillier then I thought.
-> Why can't we access per cpu vars as:
-> %gs:(per_cpu__var - __per_cpu_start) ?
->   
+On Wed, Jul 09, 2008 at 11:13:54PM +0200, Rafael J. Wysocki wrote:
+> > Be careful about request_firmware. Doing it right w.r.t.
+> > suspend/resume is quite tricky: you have to load it from userspace
+> > before kernel starts, so that you can use it during resume...
+> 
+> Rather, you have to cache it in memory before your ->suspend() is invoked.
 
-Because there's no linker reloc for doing subtraction (or addition) of 
-two symbols.
+Translation: so much for saving "non-swappable kernel memory".
+Unless, of course we add a pre-suspend hook.  (Which doesn't exist
+yet, AFAICT from a quick perusal of Documentation/power/devices.txt.)
 
-> If we can subtract constants and allow the linker to perform that resolution
-> at link.  A zero based per cpu segment becomes a moot issue.
->   
 
-They're not constants; they're symbols.
-
-    J
+     	    	   	 	    - Ted
