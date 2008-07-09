@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755138AbYGICh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754642AbYGICyi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755138AbYGICh7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jul 2008 22:37:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbYGIChw
+	id S1754642AbYGICyi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jul 2008 22:54:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbYGICya
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jul 2008 22:37:52 -0400
-Received: from waste.org ([66.93.16.53]:54318 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751993AbYGIChv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jul 2008 22:37:51 -0400
-Subject: Re: LKML mercurial repository borked
-From: Matt Mackall <mpm@selenic.com>
-To: Paul Jackson <pj@sgi.com>
-Cc: linux-kernel@vger.kernel.org, "Bryan O'Sullivan" <bos@serpentine.com>
-In-Reply-To: <20080708213131.1afb7314.pj@sgi.com>
-References: <20080708213131.1afb7314.pj@sgi.com>
-Content-Type: text/plain
-Date: Tue, 08 Jul 2008 21:37:00 -0500
-Message-Id: <1215571020.11311.246.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Jul 2008 22:54:30 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:55066 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752720AbYGICya (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jul 2008 22:54:30 -0400
+Date: Tue, 8 Jul 2008 22:53:04 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Duane Griffin <duaneg@dghda.com>
+Cc: akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
+       Mingming <cmm@us.ibm.com>, Sami Liedes <sliedes@cc.hut.fi>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ext4: handle deleting corrupted indirect blocks
+Message-ID: <20080709025304.GG9957@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Duane Griffin <duaneg@dghda.com>, akpm@linux-foundation.org,
+	sct@redhat.com, adilger@clusterfs.com, Mingming <cmm@us.ibm.com>,
+	Sami Liedes <sliedes@cc.hut.fi>, linux-ext4@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <1215528121-26934-1-git-send-email-duaneg@dghda.com> <1215528121-26934-2-git-send-email-duaneg@dghda.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1215528121-26934-2-git-send-email-duaneg@dghda.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jul 08, 2008 at 03:42:00PM +0100, Duane Griffin wrote:
+> +		if (bh2jh(this_bh))
+> +			ext4_journal_dirty_metadata(handle, this_bh);
+> +		else
+> +			ext4_error(inode->i_sb, __func__,
+> +				   "circular indirect block detected, "
+> +				   "inode=%lu, block=%lu",
+> +				   inode->i_ino, this_bh->b_blocknr);
 
-On Tue, 2008-07-08 at 21:31 -0500, Paul Jackson wrote:
-> The lkml mercurial (hg) repository at:
-> 
->   http://www.kernel.org/hg/linux-2.6
-> 
-> is borked.
-> 
-> Trying to "hg pull" from it fails quickly, with:
-> 
->   pulling from http://www.kernel.org/hg/linux-2.6
->   abort: 'http://www.kernel.org/hg/linux-2.6' does not appear to be an hg repository!
-> 
-> Going to 'http://www.kernel.org/hg/linux-2.6' with a web browser fills
-> ones browser screen with a RevlogError from some Python script.
-> 
-> The backdoor http://master.kernel.org/hg/linux-2.6 still works,
-> so my local configuration and installation of python and mercurial
-> is apparently not messed up.  However we are not supposed to use
-> that backdoor normally, as it has much less bandwidth (to quote
-> a two year old message I have from Bryan, the last time something
-> like this happened.)
+this_bh->b_blocknr is a sector_t, which could be 64-bits.  So this
+should be:
 
-Known problem from Python version skew between servers. Should be
-resolved soon.
+			ext4_error(inode->i_sb, __func__,
+				   "circular indirect block detected, "
+				   "inode=%lu, block=%llu",
+				   inode->i_ino,
+				   (unsigned long long) this_bh->b_blocknr);
 
--- 
-Mathematics is the supreme nostalgia of our time.
+I think.
+
+With this change, I've included your three patches into the ext4 patch
+queue.
+
+						- Ted
 
