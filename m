@@ -1,85 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757410AbYGILWK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757618AbYGILXy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757410AbYGILWK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 07:22:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbYGILV5
+	id S1757618AbYGILXy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 07:23:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbYGILXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 07:21:57 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54159 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752725AbYGILV5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 07:21:57 -0400
-Date: Wed, 9 Jul 2008 13:21:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       Stephen Tweedie <sct@redhat.com>, Eduardo Habkost <ehabkost@redhat.com>,
-       Mark McLoughlin <markmc@redhat.com>
-Subject: [patch] xen64: fix !HVC_XEN build dependency (was: Re: [PATCH 00
-	of 55] xen64: implement 64-bit Xen support)
-Message-ID: <20080709112133.GA4947@elte.hu>
-References: <patchbomb.1215554782@localhost> <20080709111219.GA24874@elte.hu>
+	Wed, 9 Jul 2008 07:23:46 -0400
+Received: from smtp3.infineon.com ([203.126.106.229]:17187 "EHLO
+	smtp3.infineon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752085AbYGILXq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 07:23:46 -0400
+X-SBRS: None
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080709111219.GA24874@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Kmem_cache handling in linux-2.6.2x kernel
+Date: Wed, 9 Jul 2008 19:23:42 +0800
+Message-ID: <31E09F73562D7A4D82119D7F6C172986046C717D@sinse303.ap.infineon.com>
+In-Reply-To: <84144f020807090342h36719b2exa8bea85625a127e9@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Kmem_cache handling in linux-2.6.2x kernel
+Thread-Index: AcjhsHYmXJvUHh34QImK0glILTWlEgAAxONg
+References: <31E09F73562D7A4D82119D7F6C172986046C6ACA@sinse303.ap.infineon.com> <84144f020807090306o49f4deb4m3ded12acc961f214@mail.gmail.com> <31E09F73562D7A4D82119D7F6C172986046C7113@sinse303.ap.infineon.com> <84144f020807090342h36719b2exa8bea85625a127e9@mail.gmail.com>
+From: <KokHow.Teh@infineon.com>
+To: <penberg@cs.helsinki.fi>
+Cc: <linux-kernel@vger.kernel.org>, <cl@linux-foundation.org>
+X-OriginalArrivalTime: 09 Jul 2008 11:23:42.0731 (UTC) FILETIME=[3E673DB0:01C8E1B6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi; 
 
-another small build problem that -tip testing exposed, with this config:
+>On Wed, Jul 9, 2008 at 1:30 PM,  <KokHow.Teh@infineon.com> wrote:
+>> In my applications, only part of total number of objects of the 
+>> kmem_cache are freed. So my question is what happen to these "freed"
+>> objects? How are these "freed" objects managed by the linux-MM? Would
 
-  http://redhat.com/~mingo/misc/config-Wed_Jul__9_13_02_55_CEST_2008.bad
+>> they be reused by other kmem_cache_alloc() and/or kmalloc()?
 
-find the fix below.
+>The free'd objects will be returned to the cache and are, of course,
+reused by later kmem_cache_alloc() and kmalloc() calls. 
+>Note that with _SLAB_, you never have cache sharing, so an object
+free'd by kmem_cache_free() is only available for a kmem_cache_alloc()
+of the same cache.
 
-	Ingo
+So with _SLAB_, kmem_cache_free() objects are only reusuable by
+kmem_cache_alloc() of the same cache.
 
-------------------->
-commit 615ec52c1c85f7bbbcced89761fcd89b2115865d
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Wed Jul 9 13:15:03 2008 +0200
+Are kmem_cache_free() objects reusable by _all_ kmalloc() calls? (*)
 
-    xen64: fix !HVC_XEN build dependency
-    
-    fix:
-    
-    arch/x86/xen/built-in.o: In function `set_page_prot':
-    enlighten.c:(.text+0x111d): undefined reference to `xen_raw_printk'
-    arch/x86/xen/built-in.o: In function `xen_start_kernel':
-    : undefined reference to `xen_raw_console_write'
-    arch/x86/xen/built-in.o: In function `xen_start_kernel':
-    : undefined reference to `xen_raw_console_write'
-    
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>At some point in time, I wrote:
+>>>In addition, SLUB does slab merging so the same cache can be  
+>>>transparently used by other kmem_cache_alloc() callers. So there 
+>>>really  are no reservation guarantees for a cache in OOM conditions.
 
-diff --git a/include/xen/hvc-console.h b/include/xen/hvc-console.h
-index 98b79bc..c3adde3 100644
---- a/include/xen/hvc-console.h
-+++ b/include/xen/hvc-console.h
-@@ -5,11 +5,12 @@ extern struct console xenboot_console;
- 
- #ifdef CONFIG_HVC_XEN
- void xen_console_resume(void);
-+void xen_raw_console_write(const char *str);
-+void xen_raw_printk(const char *fmt, ...);
- #else
- static inline void xen_console_resume(void) { }
-+static inline void xen_raw_console_write(const char *str) { }
-+static inline void xen_raw_printk(const char *fmt, ...) { }
- #endif
- 
--void xen_raw_console_write(const char *str);
--void xen_raw_printk(const char *fmt, ...);
--
- #endif	/* XEN_HVC_CONSOLE_H */
+>On Wed, Jul 9, 2008 at 1:30 PM,  <KokHow.Teh@infineon.com> wrote:
+>> (1) SLUB is not available in 2.6.20 kernel which I am using for my 
+>> products. In this case, is there similar mechamisms in place to 
+>> faciliate "page-sharing" amongst the kmem_cache_alloc() callers?
+
+>No.
+
+>On Wed, Jul 9, 2008 at 1:30 PM,  <KokHow.Teh@infineon.com> wrote:
+>> (2) Does this "page-sharing" happen for kmalloc() callers?
+
+>The caches for kmalloc() are set up first, so a kmalloc() never dips
+into a cache created by kmem_cache_create(). 
+
+This conflicts with (*) above.
+
+>But a kmem_cache_alloc() can dip into a kmalloc cache. Look at the
+create_kmalloc_cache() calls in kmem_cache_init() and the
+find_mergeable() call in
+>kmem_cache_create() in mm/slub.c for details.
+
+>Btw, you mentioned that you're allocating 64 KBs. So with SLUB, if you
+use _kmalloc()_ the request will be passed through to the page allocator
+directly (see kmalloc_large()).
+
+What's your point here? How would this compare to using the kmem_cache?
+
+Thanks.
+
+Regards,
+KH
