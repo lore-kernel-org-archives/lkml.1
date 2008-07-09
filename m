@@ -1,53 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756573AbYGIWdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756043AbYGIWew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756573AbYGIWdW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 18:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbYGIWdL
+	id S1756043AbYGIWew (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 18:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbYGIWeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 18:33:11 -0400
-Received: from gw.goop.org ([64.81.55.164]:35341 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751801AbYGIWdK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 18:33:10 -0400
-Message-ID: <48753C99.5050408@goop.org>
-Date: Wed, 09 Jul 2008 15:32:57 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Christoph Lameter <cl@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <48751CF9.4020901@linux-foundation.org>	<4875209D.8010603@goop.org> <48752CCD.30507@linux-foundation.org> <m1wsjupuiz.fsf@frodo.ebiederm.org>
-In-Reply-To: <m1wsjupuiz.fsf@frodo.ebiederm.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 9 Jul 2008 18:34:44 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:32845 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750881AbYGIWen (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 18:34:43 -0400
+Date: Wed, 9 Jul 2008 15:28:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ollie Wild <aaw@google.com>
+Cc: bugme-daemon@bugzilla.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Roland McGrath <roland@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Hugh Dickins <hugh@veritas.com>, pageexec@freemail.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Bug 11063] New: lack of GNU_STACK header doesn't result in rwx
+ stack on i386
+Message-Id: <20080709152831.99237c00.akpm@linux-foundation.org>
+In-Reply-To: <bug-11063-27@http.bugzilla.kernel.org/>
+References: <bug-11063-27@http.bugzilla.kernel.org/>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Christoph Lameter <cl@linux-foundation.org> writes:
->
->   
->> Note also that the 32 bit offset size limits the offset that can be added to the
->> segment register. You either need to place the per cpu area either in the last
->> 2G of the address space or in the first 2G. The zero based approach removes that
->> limitation.
->>     
->
-> Good point.  Which means that fundamentally we need to come up with a special
-> linker segment or some other way to guarantee that the offsets we use for per
-> cpu variables is within 2G of the segment register.
->
-> Which means that my idea of using the technique we use on x86_32 will not work.
 
-No, the compiler memory model we use guarantees that everything will be 
-within 2G of each other.  The linker will spew loudly if that's not the 
-case.
+(switched to email.  Please respond via emailed reply-to-all, not via the
+bugzilla web interface).
 
-    J
+On Wed,  9 Jul 2008 12:13:05 -0700 (PDT) bugme-daemon@bugzilla.kernel.org wrote:
+
+> http://bugzilla.kernel.org/show_bug.cgi?id=11063
+> 
+>            Summary: lack of GNU_STACK header doesn't result in rwx stack on
+>                     i386
+>            Product: Memory Management
+>            Version: 2.5
+>           Platform: All
+>         OS/Version: Linux
+>               Tree: Mainline
+>             Status: NEW
+>           Severity: normal
+>           Priority: P1
+>          Component: Other
+>         AssignedTo: akpm@osdl.org
+>         ReportedBy: pageexec@freemail.hu
+> 
+> 
+> Latest working kernel version: unknown, probably before the introduction of
+> unlimited argv
+> Earliest failing kernel version: unknown, probably after the introduction of
+> unlimited argv, 2.6.26-rc9 definitely fails
+> Distribution:
+> Hardware Environment:
+> Software Environment:
+> Problem Description:
+> ELF/i386 traditionally has an executable stack which in the PT_GNU_STACK world
+> is provided two ways: if the ELF has a RWE PT_GNU_STACK program header or if it
+> lacks that program header. due to this regression, the latter case results in a
+> non-executable stack with corresponding breakage of (old) userland binaries
+> that use nested function trampolines.
+> 
+> this bug was probably introduced when the unlimited argv feature was merged: in
+> that system the stack vma (and its vm_flags) is initialized too early, before
+> the incoming process' ELF header is consulted, which on i386 means that the
+> personality used for determining the executable status of the stack is that of
+> the old process, not the incoming one. later, in setup_arg_pages, only the
+> explicit setting (disable/enable) of stack executability is honoured,
+> EXSTACK_DEFAULT isn't consulted (i guess the assumption was that the initial
+> ->vm_flags setting got it right).
+> 
+> Steps to reproduce: run any ELF that lacks a PT_GNU_STACK program header and
+> check its stack vma, it'll be rw-, instead of rwx.
+> 
 
