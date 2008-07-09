@@ -1,43 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbYGIUlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756412AbYGIUlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756199AbYGIUlT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 16:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753304AbYGIUlE
+	id S1756412AbYGIUlk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 16:41:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbYGIUl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 16:41:04 -0400
-Received: from gw.goop.org ([64.81.55.164]:53295 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751070AbYGIUlD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 16:41:03 -0400
-Message-ID: <4875224F.1080702@goop.org>
-Date: Wed, 09 Jul 2008 13:40:47 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       x86@kernel.org, Stephen Tweedie <sct@redhat.com>,
-       Eduardo Habkost <ehabkost@redhat.com>,
-       Mark McLoughlin <markmc@redhat.com>
-Subject: Re: [patch] power, xen64: fix PM_SLEEP build dependencies
-References: <patchbomb.1215554782@localhost> <200807092202.27013.rjw@sisk.pl> <20080709200428.GB14009@elte.hu> <200807092217.53222.rjw@sisk.pl> <20080709202345.GG14009@elte.hu>
-In-Reply-To: <20080709202345.GG14009@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Jul 2008 16:41:29 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:35257 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753144AbYGIUl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 16:41:28 -0400
+From: John Keller <jpk@sgi.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-acpi@vger.kernel.org, John Keller <jpk@sgi.com>,
+       takayoshi.kochi@gmail.com
+Message-Id: <20080709204127.1458.5727.77728@attica.americas.sgi.com>
+Subject: [PATCH] x86: Allow MMCONFIG above 4GB on x86_64
+Date: Wed,  9 Jul 2008 15:41:27 -0500 (CDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> ok, i've reverted this from tip/master now, until you and Jeremy work 
-> out the details. (it shouldnt be a big limitation on xen64 anyway)
->   
+SGI UV will have MMCFG base addresses that are greater than 4GB (32 bits).
 
-Yes, that's fine.  It just means you lose Xen save restore unless you 
-also have SUSPEND or HIBERNATE enabled, which is OK.  I only found it 
-because I'm currently using an allnoconfig config with just enough to 
-make Xen work turned on.
+Signed-off-by: John Keller <jpk@sgi.com>
+---
+
+A similar patch was submitted over a year ago, but apparently was not
+merged in.
+
+   http://marc.info/?l=linux-acpi&m=117283388212912&w=2
 
 
-    J
+Index: linux-2.6/arch/x86/kernel/acpi/boot.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/acpi/boot.c	2008-07-09 13:02:54.000000000 -0500
++++ linux-2.6/arch/x86/kernel/acpi/boot.c	2008-07-09 15:25:32.000000000 -0500
+@@ -200,6 +200,7 @@ int __init acpi_parse_mcfg(struct acpi_t
+ 	}
+ 
+ 	memcpy(pci_mmcfg_config, &mcfg[1], config_size);
++#ifndef CONFIG_X86_64
+ 	for (i = 0; i < pci_mmcfg_config_num; ++i) {
+ 		if (pci_mmcfg_config[i].address > 0xFFFFFFFF) {
+ 			printk(KERN_ERR PREFIX
+@@ -209,6 +210,7 @@ int __init acpi_parse_mcfg(struct acpi_t
+ 			return -ENODEV;
+ 		}
+ 	}
++#endif
+ 
+ 	return 0;
+ }
