@@ -1,49 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758189AbYGIPWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757148AbYGIPYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758189AbYGIPWA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 11:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754228AbYGIPVu
+	id S1757148AbYGIPYh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 11:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753818AbYGIPY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 11:21:50 -0400
-Received: from smtp.eu.citrix.com ([62.200.22.115]:10428 "EHLO
-	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757917AbYGIPVt (ORCPT
+	Wed, 9 Jul 2008 11:24:29 -0400
+Received: from ag-out-0708.google.com ([72.14.246.240]:33375 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753466AbYGIPY2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 11:21:49 -0400
-X-IronPort-AV: E=Sophos;i="4.30,331,1212364800"; 
-   d="scan'208";a="950794"
-Message-ID: <4874D79B.7000101@eu.citrix.com>
-Date: Wed, 09 Jul 2008 16:22:03 +0100
-From: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Wed, 9 Jul 2008 11:24:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:references;
+        b=MX4J5f0hOZsi5WXHWuIZYOUwohqFyGOwlEUzhXerFbHrjBxyZy9PO0VHHZDx5uN6kF
+         f9bVzMHcTfibs9KULMkQlaIm5N8SqyB3HsVl2jWpUD6sm9TPfisZYRETgP1f/uMFqih5
+         KUXoz0MT/hi6RYmFx62dt4G0m5Xg3hPbArVgQ=
+Message-ID: <c56f29cb0807090824k727b0da7se1a019394cdbeea7@mail.gmail.com>
+Date: Wed, 9 Jul 2008 17:24:25 +0200
+From: "Jan Willem van den Brand" <janwillem.dev@googlemail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [RFC] ext3/jbd, kernel 2.6.13, make ext3 mountable as ext2 when journal is empty.
+In-Reply-To: <c56f29cb0807090821x74d0652ekc3ae4bb5725df76c@mail.gmail.com>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0 of 2] fbcon: blinking text fix and implementation
-References: <486A4F5F.7030506@eu.citrix.com> <20080709144704.GA11006@ucw.cz>
-In-Reply-To: <20080709144704.GA11006@ucw.cz>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Jul 2008 15:21:45.0738 (UTC) FILETIME=[7FBD26A0:01C8E1D7]
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_6126_17774423.1215617065551"
+References: <c56f29cb0807090821x74d0652ekc3ae4bb5725df76c@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
+------=_Part_6126_17774423.1215617065551
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> I'd prefer to call that 'feature' and leave it alone. Burning cpu
-> power to provide annoying blinking text is at least questionable...
-> 
+This patch makes ext3 mountable as ext2 even in case of a power
+failure while mounted as ext3. We have tested it for kernel 2.6.13 but
+it should be fairly easy to get it to work for other versions.
 
+When mounting an ext3 file system as ext2 (without journalling) an
+incompatibility flag is checked to assure that the journal can be
+safely ignored. This INCOMPAT_RECOVER flag is set when ext3 is
+unmounted. The idea is that, at this point, all checkpointing data is
+transferred to disk.
 
-I knew someone would have replied something like this, sooner or later;
-this is why I sent two patches instead of just one.
-The first one is a bugfix, the second one is the implementation of a
-feature that some are not really missing.
+In case of a power failure, the INCOMPAT flag is not reset. Systems
+that suffer from frequent power failure (e.g. SD-cards that are
+unsafely removed) will often not be mountable as ext2.
 
-Anyway, I am not burning so much cpu power: I have implemented a very
-simple flag mechanism to scan the screen only when blinking text is
-added to the screen or if we are scrolling.
-The screen buffer is not so big, but if you are so concerned about
-performances, I can implement a more efficient way to know whether we
-need to scan the screen or not...
+I think that ext3 can be mounted as ext2 when there is no
+checkpointing data in the journal (no data being written from journal
+to disk). The journal is then skipped by both e2fsck and ext3
+mounting. To make aforementioned systems more frequently mountable as
+ext2 we reset the INCOMPAT flag when we are sure that there is no
+checkpointing data in the journal. We set it again as soon as there
+is.
+
+Furthermore, we observed that there is alsmost always checkpointing
+data in the journal. Therefore, we flush the journal on every file
+sync (journal flushing flushes checkppointing data) and we perform a
+file sync after every file close.
+
+Obviously, this solution will result in poor performance when many
+small files are frequently closed after write but that is not the case
+in our system (TomTom navigation device).
+
+I'd like to hear opinions about this solution.
+
+Best regards,
+
+Jan Willem van den Brand
+
+------=_Part_6126_17774423.1215617065551
+Content-Type: text/plain; name=patch.txt
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fig2tgyt1
+Content-Disposition: attachment; filename=patch.txt
+
+PT09PSBsaW51eC1zM2MyNHh4Lm9yZy9mcy9leHQzL2ZzeW5jLmMjMSAtIGxpbnV4LXMzYzI0eHgv
+ZnMvZXh0My9mc3luYy5jID09PT0KLS0tIGxpbnV4LXMzYzI0eHgub3JnL2ZzL2V4dDMvZnN5bmMu
+YwkgIDIwMDgtMDYtMzAgMTE6Mjg6NTEuMDAwMDAwMDAwICswMjAwCisrKyBsaW51eC1zM2MyNHh4
+L2ZzL2V4dDMvZnN5bmMuYwkgIDIwMDgtMDYtMzAgMTE6Mjg6MjcuMDAwMDAwMDAwICswMjAwCkBA
+IC0yOSw2ICsyOSw3IEBACiAjaW5jbHVkZSA8bGludXgvamJkLmg+CiAjaW5jbHVkZSA8bGludXgv
+ZXh0M19mcy5oPgogI2luY2x1ZGUgPGxpbnV4L2V4dDNfamJkLmg+CiAKIC8qCiAgKiBha3BtOiBB
+IG5ldyBkZXNpZ24gZm9yIGV4dDNfc3luY19maWxlKCkuCkBAIC00NSw2ICs0Niw3IEBACiBpbnQg
+ZXh0M19zeW5jX2ZpbGUoc3RydWN0IGZpbGUgKiBmaWxlLCBzdHJ1Y3QgZGVudHJ5ICpkZW50cnks
+IGludCBkYXRhc3luYykgIHsKIAlzdHJ1Y3QgaW5vZGUgKmlub2RlID0gZGVudHJ5LT5kX2lub2Rl
+OworCXN0cnVjdCBzdXBlcl9ibG9jayAqc2IgPSBpbm9kZS0+aV9zYjsKIAlpbnQgcmV0ID0gMDsK
+IAogCUpfQVNTRVJUKGV4dDNfam91cm5hbF9jdXJyZW50X2hhbmRsZSgpID09IDApOyBAQCAtODQs
+NSArODYsMTAgQEAKIAkJcmV0ID0gc3luY19pbm9kZShpbm9kZSwgJndiYyk7CiAJfQogb3V0Ogor
+CS8qIEFmdGVyIGFuIGZzeW5jLCB3ZSBlbXB0eSB0aGUgam91cm5hbCAoY2hlY2twb2ludCBhbGwK
+KwkgKiBUX0ZJTklTSEVEIHRyYW5zYWN0aW9ucyB0byBkaXNrLiAgKi8KKwlqb3VybmFsX2xvY2tf
+dXBkYXRlcyhFWFQzX1NCKHNiKS0+c19qb3VybmFsKTsKKwlqb3VybmFsX2ZsdXNoKEVYVDNfU0Io
+c2IpLT5zX2pvdXJuYWwpOworCWpvdXJuYWxfdW5sb2NrX3VwZGF0ZXMoRVhUM19TQihzYiktPnNf
+am91cm5hbCk7CiAJcmV0dXJuIHJldDsKIH0KPT09PSBsaW51eC1zM2MyNHh4Lm9yZy9mcy9qYmQv
+am91cm5hbC5jIzEgLSAvbGludXgtczNjMjR4eC9mcy9qYmQvam91cm5hbC5jID09PT0KLS0tIGxp
+bnV4LXMzYzI0eHgub3JnL2ZzL2piZC9qb3VybmFsLmMJICAgMjAwOC0wNi0zMCAxMToyODo1MS4w
+MDAwMDAwMDAgKzAyMDAKKysrIGxpbnV4LXMzYzI0eHgvZnMvamJkL2pvdXJuYWwuYwkgICAyMDA4
+LTA2LTMwIDExOjI2OjE2LjAwMDAwMDAwMCArMDIwMApAQCAtMjIsMTAgKzIyLDEzIEBACiAgKiBq
+b3VybmFsaW5nIChleHQyIGNhbiB1c2UgYSByZXNlcnZlZCBpbm9kZSBmb3Igc3RvcmluZyB0aGUg
+bG9nKS4KICAqLwogCisKKwogI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPgogI2luY2x1ZGUgPGxp
+bnV4L3RpbWUuaD4KICNpbmNsdWRlIDxsaW51eC9mcy5oPgogI2luY2x1ZGUgPGxpbnV4L2piZC5o
+PgorI2luY2x1ZGUgPGxpbnV4L2V4dDNfZnMuaD4KICNpbmNsdWRlIDxsaW51eC9lcnJuby5oPgog
+I2luY2x1ZGUgPGxpbnV4L3NsYWIuaD4KICNpbmNsdWRlIDxsaW51eC9zbXBfbG9jay5oPgpAQCAt
+MzcsNiArNDAsMjMgQEAKICNpbmNsdWRlIDxhc20vcGFnZS5oPgogI2luY2x1ZGUgPGxpbnV4L3By
+b2NfZnMuaD4KIAorc3RhdGljIHZvaWQgZXh0M19jb21taXRfc3VwZXIgKHN0cnVjdCBzdXBlcl9i
+bG9jayAqIHNiLAorCQkJICAgICAgIHN0cnVjdCBleHQzX3N1cGVyX2Jsb2NrICogZXMsCisJCQkg
+ICAgICAgaW50IHN5bmMpCit7CisJc3RydWN0IGJ1ZmZlcl9oZWFkICpzYmggPSBFWFQzX1NCKHNi
+KS0+c19zYmg7CisKKwlpZiAoIXNiaCkKKwkJcmV0dXJuOworCWVzLT5zX3d0aW1lID0gY3B1X3Rv
+X2xlMzIoZ2V0X3NlY29uZHMoKSk7CisJZXMtPnNfZnJlZV9ibG9ja3NfY291bnQgPSBjcHVfdG9f
+bGUzMihleHQzX2NvdW50X2ZyZWVfYmxvY2tzKHNiKSk7CisJZXMtPnNfZnJlZV9pbm9kZXNfY291
+bnQgPSBjcHVfdG9fbGUzMihleHQzX2NvdW50X2ZyZWVfaW5vZGVzKHNiKSk7CisJQlVGRkVSX1RS
+QUNFKHNiaCwgIm1hcmtpbmcgZGlydHkiKTsKKwltYXJrX2J1ZmZlcl9kaXJ0eShzYmgpOworCWlm
+IChzeW5jKQorCQlzeW5jX2RpcnR5X2J1ZmZlcihzYmgpOworfQorCiBFWFBPUlRfU1lNQk9MKGpv
+dXJuYWxfc3RhcnQpOwogRVhQT1JUX1NZTUJPTChqb3VybmFsX3Jlc3RhcnQpOwogRVhQT1JUX1NZ
+TUJPTChqb3VybmFsX2V4dGVuZCk7CkBAIC05MzgsNiArOTU4LDggQEAKIHsKIAlqb3VybmFsX3N1
+cGVyYmxvY2tfdCAqc2IgPSBqb3VybmFsLT5qX3N1cGVyYmxvY2s7CiAJc3RydWN0IGJ1ZmZlcl9o
+ZWFkICpiaCA9IGpvdXJuYWwtPmpfc2JfYnVmZmVyOworCXN0cnVjdCBzdXBlcl9ibG9jayAqIHNi
+X3A7CisJaW50IHNfc3RhcnRfd2FzX3plcm8gPSAwOwogCiAJLyoKIAkgKiBBcyBhIHNwZWNpYWwg
+Y2FzZSwgaWYgdGhlIG9uLWRpc2sgY29weSBpcyBhbHJlYWR5IG1hcmtlZCBhcyBuZWVkaW5nIEBA
+IC05NTksOCArOTgxLDIzIEBACiAJamJkX2RlYnVnKDEsIkpCRDogdXBkYXRpbmcgc3VwZXJibG9j
+ayAoc3RhcnQgJWxkLCBzZXEgJWQsIGVycm5vICVkKVxuIiwKIAkJICBqb3VybmFsLT5qX3RhaWws
+IGpvdXJuYWwtPmpfdGFpbF9zZXF1ZW5jZSwgam91cm5hbC0+al9lcnJubyk7CiAKKwlpZiAoc2It
+PnNfc3RhcnQ9PTApCisJICBzX3N0YXJ0X3dhc196ZXJvID0gMTsKIAlzYi0+c19zZXF1ZW5jZSA9
+IGNwdV90b19iZTMyKGpvdXJuYWwtPmpfdGFpbF9zZXF1ZW5jZSk7CiAJc2ItPnNfc3RhcnQgICAg
+PSBjcHVfdG9fYmUzMihqb3VybmFsLT5qX3RhaWwpOworCS8qIElmIHNfc3RhcnQgZ2V0cyBhIG5v
+bi16ZXJvIHZhbHVlIGhlcmUsIHdlIHJlc2V0IHRoZQorCSAqIGltY29tcGF0aWJpbGl0eSBmbGFn
+cyAqLworCWlmIChzX3N0YXJ0X3dhc196ZXJvICYmIHNiLT5zX3N0YXJ0IT0wKQorCSAgeworCSAg
+ICBzYl9wID0gKHN0cnVjdCBzdXBlcl9ibG9jayAqKShqb3VybmFsLT5qX3ByaXZhdGUpOworCSAg
+ICBFWFQzX1NFVF9JTkNPTVBBVF9GRUFUVVJFKHNiX3AsIEVYVDNfRkVBVFVSRV9JTkNPTVBBVF9S
+RUNPVkVSKTsKKwkgICAgLyogZmx1c2ggc3VwZXJfYmxvY2sgdG8gZGlzay4gKi8KKwkgICAgZXh0
+M19jb21taXRfc3VwZXIoc2JfcCwgRVhUM19TQihzYl9wKS0+c19lcywgMSk7CgorCSAgfQogCXNi
+LT5zX2Vycm5vICAgID0gY3B1X3RvX2JlMzIoam91cm5hbC0+al9lcnJubyk7CiAJc3Bpbl91bmxv
+Y2soJmpvdXJuYWwtPmpfc3RhdGVfbG9jayk7CiAKQEAgLTEzNDIsNiArMTM3OSw3IEBACiAJaW50
+IGVyciA9IDA7CiAJdHJhbnNhY3Rpb25fdCAqdHJhbnNhY3Rpb24gPSBOVUxMOwogCXVuc2lnbmVk
+IGxvbmcgb2xkX3RhaWw7CisJc3RydWN0IHN1cGVyX2Jsb2NrICogc2JfcDsKIAogCXNwaW5fbG9j
+aygmam91cm5hbC0+al9zdGF0ZV9sb2NrKTsKIApAQCAtMTM5MCw2ICsxNDI4LDE3IEBACiAJSl9B
+U1NFUlQoIWpvdXJuYWwtPmpfY2hlY2twb2ludF90cmFuc2FjdGlvbnMpOwogCUpfQVNTRVJUKGpv
+dXJuYWwtPmpfaGVhZCA9PSBqb3VybmFsLT5qX3RhaWwpOwogCUpfQVNTRVJUKGpvdXJuYWwtPmpf
+dGFpbF9zZXF1ZW5jZSA9PSBqb3VybmFsLT5qX3RyYW5zYWN0aW9uX3NlcXVlbmNlKTsKKworCS8q
+IFRoZSBqb3VybmFsIGlzIGVtcHR5LCB3ZSBjYW4gdXBkYXRlIHRoZSBjb21wYXRpYmlsaXR5IGZs
+YWdzCisJICogaW4gZXh0MydzIHN1cGVyYmxvY2sgYW5kIGZsdXNoIGl0IHRvIGRpc2sgKi8KKwlz
+Yl9wID0gKHN0cnVjdCBzdXBlcl9ibG9jayAqKShqb3VybmFsLT5qX3ByaXZhdGUpOworCUVYVDNf
+Q0xFQVJfSU5DT01QQVRfRkVBVFVSRShzYl9wLCBFWFQzX0ZFQVRVUkVfSU5DT01QQVRfUkVDT1ZF
+Uik7CgorCWV4dDNfY29tbWl0X3N1cGVyKHNiX3AsIEVYVDNfU0Ioc2JfcCktPnNfZXMsIDEpOwoK
+IAlzcGluX3VubG9jaygmam91cm5hbC0+al9zdGF0ZV9sb2NrKTsKIAlyZXR1cm4gZXJyOwogfQ==
+
+------=_Part_6126_17774423.1215617065551--
