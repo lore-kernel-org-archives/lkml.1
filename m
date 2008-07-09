@@ -1,50 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755032AbYGILsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757670AbYGILuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755032AbYGILsS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 07:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754205AbYGILru
+	id S1757670AbYGILuV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 07:50:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753813AbYGILuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 07:47:50 -0400
-Received: from mk-outboundfilter-3.mail.uk.tiscali.com ([212.74.114.23]:46337
-	"EHLO mk-outboundfilter-3.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753584AbYGILrt (ORCPT
+	Wed, 9 Jul 2008 07:50:06 -0400
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:61019 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751354AbYGILuE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 07:47:49 -0400
-X-Trace: 142681429/mk-outboundfilter-1.mail.uk.tiscali.com/F2S/$F2S-ACCEPTED/f2s-freedom2Surf-customers/195.137.94.162
-X-SBRS: None
-X-RemoteIP: 195.137.94.162
-X-IP-MAIL-FROM: spyro@f2s.com
-X-IP-BHB: Once
+	Wed, 9 Jul 2008 07:50:04 -0400
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhEBAEBvV0jDiV6i/2dsb2JhbAAIrnw
-X-IronPort-AV: E=Sophos;i="4.30,331,1212361200"; 
-   d="scan'208";a="142681429"
-X-IP-Direction: IN
-Subject: Re: [patch 2/4] MFD: Coding style fixes
-From: ian <spyro@f2s.com>
-To: Dmitry <dbaryshkov@gmail.com>
-Cc: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk
-In-Reply-To: <bc64b4640807090411y774949f4q3c0881e93afa50bf@mail.gmail.com>
-References: <20080709104916.200210922@fluff.org>
-	 <20080709104932.706237040@fluff.org>
-	 <bc64b4640807090411y774949f4q3c0881e93afa50bf@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 09 Jul 2008 12:46:43 +0100
-Message-Id: <1215604003.3295.59.camel@wirenth>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+X-IronPort-Anti-Spam-Result: ApoEAMdCdEh5LFxA/2dsb2JhbACwCw
+X-IronPort-AV: E=Sophos;i="4.30,331,1212330600"; 
+   d="scan'208";a="145222754"
+Date: Wed, 9 Jul 2008 21:49:58 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>,
+       Miklos Szeredi <miklos@szeredi.hu>, hch@infradead.org, pavel@suse.cz,
+       t-sato@yk.jp.nec.com, akpm@linux-foundation.org,
+       viro@ZenIV.linux.org.uk, linux-ext4@vger.kernel.org, xfs@oss.sgi.com,
+       dm-devel@redhat.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, axboe@kernel.dk,
+       mtk.manpages@googlemail.com
+Subject: Re: [PATCH 3/3] Add timeout feature
+Message-ID: <20080709114958.GV11558@disturbed>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Miklos Szeredi <miklos@szeredi.hu>, hch@infradead.org,
+	pavel@suse.cz, t-sato@yk.jp.nec.com, akpm@linux-foundation.org,
+	viro@ZenIV.linux.org.uk, linux-ext4@vger.kernel.org,
+	xfs@oss.sgi.com, dm-devel@redhat.com, linux-fsdevel@vger.kernel.org,
+	linux-kernel@vger.kernel.org, axboe@kernel.dk,
+	mtk.manpages@googlemail.com
+References: <20080709005254.GQ11558@disturbed> <20080709010922.GE9957@mit.edu> <E1KGSvZ-0006dB-53@pomaz-ex.szeredi.hu> <20080709061621.GA5260@infradead.org> <E1KGT4q-0006fD-Jb@pomaz-ex.szeredi.hu> <20080708234120.5072111f@infradead.org> <E1KGTTm-0006ke-Jh@pomaz-ex.szeredi.hu> <20080708235502.1c52a586@infradead.org> <20080709071346.GS11558@disturbed> <20080709110900.GI9957@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080709110900.GI9957@mit.edu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-09 at 15:11 +0400, Dmitry wrote:
-> > Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+On Wed, Jul 09, 2008 at 07:09:00AM -0400, Theodore Tso wrote:
+> > 
+> > Bloody hell! Doesn't *anyone* understand that a frozen filesystem is
+> > *clean*? That the process of freezing it ensures all dirty data and
+> > metadata is written out before the freeze completes? And that once
+> > frozen, it can't be dirtied until unfrozen?
 > 
-> I don't have a strong feeling about this. As it's pretty much only
-> whitespace changes, my feelings are closer to NAK.  Leaving decision
-> to Samuel or Ian.
+> What do you mean by "it can't be diritied until unfrozen".  What
+> happens if I have a kernel compilation happening on a filesystem which
+> I am trying to freeze?   Does
 
-I like whitespace-fixing patches... so I'm ok with it.
+> (a) the freeze fail (because the checks equivalent to what happens
+> when you remount a filesystem read-only happen)?
+> 
+> (b) The process gets a kill -9 when it tries to write a file on the
+> frozen filesystem?
+> 
+> (c) The process gets a kill -STOP when it tries to write
+> to a file on the frozen filesystem?  
+> 
+> (d) The process won't fail, but just continue to run, filling the page
+> cache with dirty pages that can't be written out because the
+> filesystem is frozen?
 
+(e) none of the above.  The kernel compilation will appear to pause
+until the filesystem is unfrozen. No other visible effect should
+occur. It will get blocked in a write or filesystem transaction
+because the fs is frozen.
+
+Look at vfs_check_frozen() - any call to that will block if the
+filesystem is frozen or being frozen. The generic hook is in
+__generic_file_aio_write_nolock() and various other filesystems have
+calls in their specific write paths (fuse, ntfs, ocfs2, xfs, xip) to
+do this.
+
+For all other modifications, filesystem specific methods of
+blocking transactions are used. XFS uses vfs_check_frozen() in
+xfs_trans_alloc(), ext3 (and probably ocfs2) do it via
+their ->write_super_lockfs method calling journal_lock_updates(),
+ext4 via jbd2_lock_updates() and so on....
+
+When the filesystem is unfrozen the journal is unlocked and
+anything sleeping on the vfs_check_frozen() waitqueue is
+woken.....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
