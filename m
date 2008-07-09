@@ -1,90 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756077AbYGIIC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbYGIIKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756077AbYGIIC7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 04:02:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbYGIICq
+	id S1755913AbYGIIKg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 04:10:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753060AbYGIIKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 04:02:46 -0400
-Received: from gw.goop.org ([64.81.55.164]:54914 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752192AbYGIICp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 04:02:45 -0400
-Message-ID: <4874709A.1080801@goop.org>
-Date: Wed, 09 Jul 2008 01:02:34 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 9 Jul 2008 04:10:20 -0400
+Received: from smtp113.mail.mud.yahoo.com ([209.191.84.66]:38215 "HELO
+	smtp113.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752735AbYGIIKT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 04:10:19 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=P5dwEiZXFJ5nBXr5FPIGqX0I95tNjAyLHMLngsoq7SXgDoNSqtW5RFuFOo6T24nh4juoUuu5xN6ezaWIIv8iar8Q4C/d3h4UL1l7cWELiJggZgxHyKyjJkWeYBWc45Vi6ItMGG+bVv+rnqH5D+a6Xs+2HZ6ksxhJl/TvTBnRLCs=  ;
+X-YMail-OSG: ubdXDiwVM1nDdn3dtcYwTWEorNHIlP_88JSvQv9bVMABqFZNJm_ofJNPu73pIjpjIwQjZ.EcTDuLJk71ntLH3JK0XIjGUytjpRM29MDQexUdeNl9uS68Cb769B6y36BQyG4-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: "Gregory Haskins" <ghaskins@novell.com>
+Subject: Re: [PATCH 2/3] sched: terminate newidle balancing once at least one task has moved over
+Date: Wed, 9 Jul 2008 18:09:51 +1000
+User-Agent: KMail/1.9.5
+Cc: mingo@elte.hu, rostedt@goodmis.org, peterz@infradead.org, npiggin@suse.de,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+References: <20080627202444.3829.21595.stgit@lsg.lsg.lab.novell.com> <200807081500.18245.nickpiggin@yahoo.com.au> <48732751.BA47.005A.0@novell.com>
+In-Reply-To: <48732751.BA47.005A.0@novell.com>
 MIME-Version: 1.0
-To: Mark McLoughlin <markmc@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       x86@kernel.org, Stephen Tweedie <sct@redhat.com>,
-       Eduardo Habkost <ehabkost@redhat.com>
-Subject: Re: [PATCH 16 of 55] xen64: add extra pv_mmu_ops
-References: <76d0856d664470b81640.1215554798@localhost> <1215590110.16579.7.camel@muff>
-In-Reply-To: <1215590110.16579.7.camel@muff>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807091809.52293.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark McLoughlin wrote:
-> Hey Jeremy,
+On Tuesday 08 July 2008 22:37, Gregory Haskins wrote:
+> >>> On Tue, Jul 8, 2008 at  1:00 AM, in message
 >
-> On Tue, 2008-07-08 at 15:06 -0700, Jeremy Fitzhardinge wrote:
->   
->> We need extra pv_mmu_ops for 64-bit, to deal with the extra level of
->> pagetable.
->>
->> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
->> ---
->>  arch/x86/xen/enlighten.c   |   33 +++++++++++++++++++++++++++-
->>  arch/x86/xen/mmu.c         |   51 +++++++++++++++++++++++++++++++++++++++++++-
->>  arch/x86/xen/mmu.h         |   15 +++++++++++-
->>  include/asm-x86/xen/page.h |    4 +++
->>  4 files changed, 99 insertions(+), 4 deletions(-)
->>     
-> ...
->   
->> diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
->> --- a/arch/x86/xen/mmu.c
->> +++ b/arch/x86/xen/mmu.c
->> @@ -438,14 +438,19 @@
->>  
->>  void xen_set_pte(pte_t *ptep, pte_t pte)
->>  {
->> +#ifdef CONFIG_X86_PAE
->>  	ptep->pte_high = pte.pte_high;
->>  	smp_wmb();
->>  	ptep->pte_low = pte.pte_low;
->> +#else
->> +	*ptep = pte;
->> +#endif
->>  }
->>     
+> <200807081500.18245.nickpiggin@yahoo.com.au>, Nick Piggin
 >
-> You've dropped non-PAE support already, right? Any reason to use the
-> X86_PAE macro instead of X86_32?
->   
+> <nickpiggin@yahoo.com.au> wrote:
+> > On Saturday 28 June 2008 06:29, Gregory Haskins wrote:
+> >> Inspired by Peter Zijlstra.
+> >>
+> >> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+> >
+> > What happened to the feedback I sent about this?
+> >
+> > It is still nack from me.
+>
+> Ah yes.  Slipped through the cracks...sorry about that.
+>
+> What if we did "if (idle == CPU_NEWLY_IDLE && need_resched())" instead?
 
-It's a fine difference, but the specific thing I'm testing for is 
-actually PAE vs 64-bit (or even more specifically "can I update a whole 
-pte atomically?").  Testing for X86_32 is equivalent in the absence of 
-non-PAE 32-bit, but not quite as correct.  The other way I could do it 
-is as I have elsewhere:
-
-	if (sizeof(pte_t) > sizeof(long)) {
-		ptep->pte_high = pte.pte_high;
-		smp_wmb();
-		ptep->pte_low = pte.pte_low;
-	} else
-		*ptep = pte;
-
-But there are other places where it tests for this using PAE (and even 
-whole pvops which are only defined in the PAE case).
-
-You'll notice other places where I test for PAGETABLE_LEVELS == 3 where 
-the code  is generally handling 3-level pagetables, and others where I 
-test for PAE where it's something specific to PAE.
-
-    J
+Isn't that exactly the same thing because any task will preempt the idle
+thread?
