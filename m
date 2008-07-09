@@ -1,181 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757229AbYGIMHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757828AbYGIMIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757229AbYGIMHa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 08:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbYGIMHW
+	id S1757828AbYGIMIW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 08:08:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbYGIMIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 08:07:22 -0400
-Received: from trinity.fluff.org ([89.145.97.151]:56819 "EHLO
-	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751834AbYGIMHV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 08:07:21 -0400
-Date: Wed, 9 Jul 2008 13:07:20 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Dmitry <dbaryshkov@gmail.com>
-Cc: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [patch 4/4] MFD: Change mfd platform device usage to wrapper platform_device
-Message-ID: <20080709120720.GL8517@trinity.fluff.org>
-References: <20080709104916.200210922@fluff.org> <20080709104933.101610936@fluff.org> <bc64b4640807090415w781507fetfe332271ad158112@mail.gmail.com> <20080709112426.GN8489@trinity.fluff.org> <bc64b4640807090431g5b1960edua2508337973615da@mail.gmail.com> <20080709115045.GK8517@trinity.fluff.org> <bc64b4640807090456u15d12378qe25375ce4a6cd100@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <bc64b4640807090456u15d12378qe25375ce4a6cd100@mail.gmail.com>
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.9i
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@trinity.fluff.org
-X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
+	Wed, 9 Jul 2008 08:08:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43549 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752152AbYGIMID (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 08:08:03 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20080709044743.0dd15a3f.akpm@linux-foundation.org>
+References: <20080709044743.0dd15a3f.akpm@linux-foundation.org> <20080709113547.19235.15424.stgit@warthog.procyon.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dhowells@redhat.com, alan@redhat.com, Markus.Lidel@shadowconnect.com,
+       vvs@sw.ru, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] Mark i2o config broken on 64-bit platforms.
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
+Date: Wed, 09 Jul 2008 13:07:47 +0100
+Message-ID: <6904.1215605267@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 09, 2008 at 03:56:54PM +0400, Dmitry wrote:
-> 2008/7/9 Ben Dooks <ben-linux@fluff.org>:
-> > On Wed, Jul 09, 2008 at 03:31:04PM +0400, Dmitry wrote:
-> >> 2008/7/9 Ben Dooks <ben-linux@fluff.org>:
-> >> > On Wed, Jul 09, 2008 at 03:15:47PM +0400, Dmitry wrote:
-> >> >> 2008/7/9 Ben Dooks <ben-linux@fluff.org>:
-> >> >> > This patch changes the mfd core behaviour to wrapper the platform_device
-> >> >> > it creates in an struct mfd_device which contains the information
-> >> >> > about the cell that was created.
-> >> >> >
-> >> >> > 1) The creation of the resource list and then passing it to the
-> >> >> >   platform_device_add_resources() causes the allocation of a
-> >> >> >   large array on the stack as well as copying the source data
-> >> >> >   twice (it is copied from the mfd_cell to the temporary array
-> >> >> >   and then copied into the newly allocated array)
-> >> >> >
-> >> >> > 2) We can wrapper the platform_device into an mfd_device and use
-> >> >> >   that to do the platform_device and resource allocation in one
-> >> >> >   go to reduce the failiure.
-> >> >> >
-> >> >> > Note, is there actually any reason to pass the sub devices any
-> >> >> > information about the cell they are created from? The mfd core
-> >> >> > already makes the appropriate resource adjustments and anything
-> >> >> > else like clocks should be exported by the clock drivers?
-> >> >> >
-> >> >> > Signed-off-by: Ben Dooks <ben-linux@fluff.org>
-> >> >>
-> >> >>
-> >> >> NAK.
-> >> >> 0) It was discussed yesterday on the list and the decision was to go
-> >> >> in a different way.
-> >> >>   I've provided a bit cleaner patch with the same idea, but then we
-> >> >> decided to go in a bit different way.
-> >> >> 1) I prefer patch by Mike Rapoport which is more clear and goes in a
-> >> >> more correct way.
-> >> >
-> >> > How "more correct", whilst the patch by Mike makes the platform data
-> >> > be passed from the cell, there is no longer any way to get from the
-> >> > platform device to the mfd_cell...
-> >>
-> >> Basically we have two choises for the subdevice driver:
-> >> 1) it doesn't know about cells at all (e.g. generic-bl, IIRC). Then we are safe
-> >>    to loose that "cell" information
-> >> 2) If it does use cell information (to get access to hooks), we pass it
-> >>     via platform_data pointer in the mfd_cell and we are ok with it.
-> >
-> > Erm, that is complete non-answer. The driver model and various other
-> > parts of the kernel are littered with examples of embedding one
-> > structure within another to gain an C++ like object inheritance.
-> >
-> > I've supplied an reasonable example of doing this to create an mfd_cell
-> > device from an platform_device without creating an large amount of code
-> > and improving the efficiency and code-lineage in the process. I do not
-> > see how this isn't "correct" or in any way breaing the current linux
-> > model of doing things.
-> 
-> It isn't breaking it. OK. I'm leaving the decision to the MFD or ARM
-> maintainers.
-> And BTW, nearly the same patch was sent yesterday by me[1]. Is it an independant
-> work, or did you miss my sign-off?
-> 
-> [1]: http://permalink.gmane.org/gmane.linux.ports.arm.kernel/44142
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Hmm, thanks, completely missed because it has a completely un-related
-looking title.
- 
-> >
-> >>
-> >> > The current driver is being inefficent in the way it creates resources
-> >> > on the stack and then calls a routine that does an kalloc/memcpy on
-> >> > the resources.
-> >>
-> >> I don't see any inefficiency ATM.
-> >>
-> >> >> 2) Please examine the tmio-nand driver (was here on the list and on
-> >> >> linux-mtd). It uses the mfd_cell
-> >> >>    to call hooks from the "host" driver (tc6393xb, more to be added soon).
-> >> >
-> >> > The one posted in [1] does not call these hooks at-all, can ou please
-> >> > explain why these hooks are needed in addition to the ones already
-> >> > available in the platform device driver?
-> >> >
-> >> > [1] http://lists.infradead.org/pipermail/linux-mtd/2008-June/022137.html
-> >>
-> >> +
-> >> +static int tmio_hw_init(struct platform_device *dev, struct tmio_nand *tmio)
-> >> +{
-> >> +     struct mfd_cell *cell = mfd_get_cell(dev);
-> >> +     const struct resource *nfcr = NULL;
-> >> +     unsigned long base;
-> >> +     int i;
-> >> +
-> >> +     for (i = 0; i < cell->num_resources; i++)
-> >> +             if (!strcmp((cell->resources+i)->name, TMIO_NAND_CONTROL))
-> >> +                     nfcr = &cell->resources[i];
-> >> +
-> >> +     if (nfcr == NULL)
-> >> +             return -ENOMEM;
-> >> +
-> >> +     if (cell->enable) {
-> >> +             int rc = cell->enable(dev);
-> >> +             if (rc)
-> >> +                     return rc;
-> >> +     }
-> >>
-> >> That cell->enable() is necessary to set up the host (in the tc6393xb
-> >> case to enable buffers)
-> >> to enable access to the nand.
-> >
-> > So, the enable/disable calls might be useful, however is there any
-> > reason this could not be handled by the clock framework? The suspend/resume
-> > entries where not used, and I belive should not be in here.
-> 
-> They should be here for exactly the same reason. They are used by the drivers
-> that will be submitted later. E.g. OHCI driver needs such
-> suspend/resume handling.
+> Is it actually known to be broken on 64-bit, or does it happen to work?
 
-No, you don't understand. I'll make a rather explicit point about the
-very clever way the device tree works since the devices are registered
-with their parent device set.
+It's casting a 32-bit value to a userspace pointer and then passing that to
+copy_to/from_user():
 
-In the suspend, all sub devices are suspended via their
-platform_driver.suspend method before the parent device's suspend method
-is called. When resuming, the parent is resumed before calling the 
-children's platform_driver.resume methods.
- 
-> > As noted before, mfd_get_cell() got dropped by [2]
-> >
-> > [2] http://lists.arm.linux.org.uk/lurker/message/20080708.153450.bb33046d.en.html
-> 
-> Yes, and as I said before it will need some small modifications.
-> 
-> -- 
-> With best wishes
-> Dmitry
-> 
-> -------------------------------------------------------------------
-> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
-> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+				// TODO 64bit fix
+				if (copy_from_user
+				    (p->virt,
+				     (void __user *)(unsigned long)sg[i].
+				     addr_bus, sg_size)) {
 
--- 
-Ben
+and:
 
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
+				// TODO 64bit fix
+				if (copy_to_user
+				    ((void __user *)sg[j].addr_bus, sg_list[j],
+				     sg_size)) {
 
+so someone's obviously aware that it is wrong.  According to vc-annotate it's
+been there since before Linus last reset the history, so obviously someone's
+aware of it.
+
+Another of these has in fact been cast in the way Linus objects to:
+
+				// TODO 64bit fix
+				if (copy_to_user
+				    ((void __user *)(u64) sg[j].addr_bus,
+				     sg_list[j].virt, sg_size)) {
+
+The problem, I suspect, is that userspace may have addresses that can't be
+held in the 32-bit addr_bus value, but the 32-bit value is held in the
+i2o_message struct:
+
+	static int i2o_cfg_passthru(unsigned long arg)
+	{
+	...
+		struct i2o_message *msg;
+	...
+			// TODO 64bit fix
+			sg = (struct sg_simple_element *)((&msg->u.head[0]) +
+							  sg_offset);
+	...
+	}
+
+and if these i2o_message structs are actually passed to the hardware, it may
+not be possible to actually expand them, and looking at i2o_msg_post(), that
+seems to be exactly what happens.
+
+David
