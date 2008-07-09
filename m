@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754047AbYGISJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754697AbYGISMD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754047AbYGISJp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 14:09:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbYGISJh
+	id S1754697AbYGISMD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 14:12:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbYGISLx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 14:09:37 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60527 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752116AbYGISJg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 14:09:36 -0400
-Message-ID: <4874FEDF.90404@sgi.com>
-Date: Wed, 09 Jul 2008 11:09:35 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 9 Jul 2008 14:11:53 -0400
+Received: from gw.goop.org ([64.81.55.164]:48228 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752482AbYGISLw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 14:11:52 -0400
+Message-ID: <4874FF58.5030800@goop.org>
+Date: Wed, 09 Jul 2008 11:11:36 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <4874F30C.8020800@zytor.com> <4874F909.7060503@goop.org>
-In-Reply-To: <4874F909.7060503@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Suresh Siddha <suresh.b.siddha@intel.com>, "mingo@elte.hu" <mingo@elte.hu>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] tip/x86_64: fix e820 merge issue which broke max_pfn_mapped
+References: <20080708230837.GD1678@linux-os.sc.intel.com>	 <86802c440807081759i3baafa9bj7e8ff544a1a78fb9@mail.gmail.com>	 <86802c440807081856y17eb1f1cs5647b2c2a765f429@mail.gmail.com>	 <20080709175621.GG1678@linux-os.sc.intel.com> <86802c440807091105g1dd8f8a0sa8220a1bfc65a79@mail.gmail.com>
+In-Reply-To: <86802c440807091105g1dd8f8a0sa8220a1bfc65a79@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> H. Peter Anvin wrote:
->> Did the suspected linker bug issue ever get resolved?
-> 
-> I don't believe so.  I think Mike is getting very early crashes
-> depending on some combination of gcc, linker and kernel config.  Or
-> something.
+Yinghai Lu wrote:
+> try to reduce #ifdef CONFIG_X86_64/32, and make 32/64 at the same page.
+>
+> could be some regression from early_io_remap unifying from jeremy
+>
+> please check attached revert patch.
 
-Yes and unfortunately since SGI does not do it's own compilers any
-more (they were MIPS compilers), there's no one here that really
-understands the internals of the compile tools.
+Could my patch "x86_64: there's no need to preallocate 
+level1_fixmap_pgt" be a problem in itself?  It seems sound to me, but 
+none of my other code has any functional dependency on it; it's really 
+just cosmetic.
 
-> 
-> This fragility makes me very nervous.  It seems hard enough to get this
-> stuff working with current tools; making it work over the whole range of
-> supported tools looks like its going to be hard.
+The unified early_ioremap patch has been kicking around in tip.git for a 
+week or more now, and doesn't seem to have caused any problems.
 
-(me too ;-)
-
-Once I get a solid version working with (at least) gcc-4.2.4, then
-regression testing with older tools will be easier, or at least a
-table of results can be produced.
-
-Thanks,
-Mike
-
+    J
