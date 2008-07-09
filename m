@@ -1,71 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbYGINuq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753118AbYGINvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754782AbYGINuq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 09:50:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbYGINue
+	id S1753118AbYGINvA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 09:51:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754304AbYGINul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 09:50:34 -0400
-Received: from smtp-vbr8.xs4all.nl ([194.109.24.28]:4689 "EHLO
-	smtp-vbr8.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751801AbYGINue (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 09:50:34 -0400
-From: "Miquel van Smoorenburg" <miquels@cistron.nl>
-To: akpm@linux-foundation.org
-Subject: Re: [PATCH] Mark i2o config broken on 64-bit platforms.
-In-Reply-To: <20080709044743.0dd15a3f.akpm@linux-foundation.org>
-References: <20080709113547.19235.15424.stgit@warthog.procyon.org.uk>
-Organization: 
-Cc: alan@redhat.com, Markus.Lidel@shadowconnect.com, vvs@sw.ru,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       David Howells <dhowells@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-Id: <E1KGa1W-0004nG-Cw@n2o.xs4all.nl>
-Date: Wed, 09 Jul 2008 15:47:58 +0200
+	Wed, 9 Jul 2008 09:50:41 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42913 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754141AbYGINuk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 09:50:40 -0400
+Date: Wed, 9 Jul 2008 15:49:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, LKML <linux-kernel@vger.kernel.org>,
+       Jens Axboe <axboe@kernel.dk>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Lameter <clameter@linux-foundation.org>,
+       Petr Tesarik <ptesarik@suse.cz>,
+       Virtualization <virtualization@lists.linux-foundation.org>,
+       Xen devel <xen-devel@lists.xensource.com>,
+       Thomas Friebel <thomas.friebel@amd.com>, Avi Kivity <avi@qumranet.com>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: [patch] x86, paravirt-spinlocks: fix boot hang (was: Re: [PATCH
+	RFC 0/4] Paravirtual spinlocks)
+Message-ID: <20080709134944.GA15190@elte.hu>
+References: <20080707190749.299430659@goop.org> <20080709122852.GA30579@elte.hu> <20080709133358.GA7005@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080709133358.GA7005@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In article <xs4all.20080709044743.0dd15a3f.akpm@linux-foundation.org> you write:
->On Wed, 09 Jul 2008 12:35:47 +0100 David Howells <dhowells@redhat.com> wrote:
->
->> Mark i2o config broken on 64-bit platforms as it generates these:
->> 
->> In file included from drivers/message/i2o/config-osm.c:39:
->> drivers/message/i2o/i2o_config.c: In function 'i2o_cfg_passthru':
->> drivers/message/i2o/i2o_config.c:889: warning: cast to pointer from
->integer of different size
->> drivers/message/i2o/i2o_config.c:945: warning: cast to pointer from
->integer of different size
->> 
->> which are apparently non-trivial to fix (eg: inserting a cast through unsigned
->> long is not correct according to Linus).  This would be due to struct
->> sg_simple_element only having a 32-bit addr_bus value.
->> 
->Sigh.  I've been staring at that warning for so long.
->Is it actually known to be broken on 64-bit, or does it happen to work?
 
-The i2o driver works on 64 bit, though my experiences are less
-than stellar (which is why I submitted the dpt_i2o 64 bit update
-for 2.6.26).
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-However this warning doesn't have much to do with the functioning
-of the driver. It is the Adaptec DPT API for the management interface,
-and that API is currently 32 bits. The i2o layer and the dpt_i2o driver
-have have the same issues here.
+> the patches caused a boot hang with this config:
+> 
+>  http://redhat.com/~mingo/misc/config-Wed_Jul__9_14_47_04_CEST_2008.bad
 
-The adaptec management application ("raidutils") is also not 64-bit clean
-(read the code .. it puts pointers into ints etc etc), and fixing
-that is not trivial, _but_ the 32 bit version works on a 64 bit kernel.
+ok, fixed it via the patch below.
 
-Marking the whole i2o layer broken because the adaptec management API
-hasn't been updated to 64 bits (but does work in 32 bit compatibility
-mode) is going a bit to far I think.
+	Ingo
 
-First, if you want to mark something broken, it would be
-CONFIG_I2O_EXT_ADAPTEC .. second, compiling it gives warnings,
-but it works, and I bet people are using it.
+-------------->
+commit 6412367fe22dc54cc727e7bec5bd65c36c1a0754
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Wed Jul 9 15:42:09 2008 +0200
 
-Mike.
+    x86, paravirt-spinlocks: fix boot hang
+    
+    the paravirt-spinlock patches caused a boot hang with this config:
+    
+     http://redhat.com/~mingo/misc/config-Wed_Jul__9_14_47_04_CEST_2008.bad
+    
+    i have bisected it down to:
+    
+    |  commit e17b58c2e85bc2ad2afc07fb8d898017c2b75ed1
+    |  Author: Jeremy Fitzhardinge <jeremy@goop.org>
+    |  Date:   Mon Jul 7 12:07:53 2008 -0700
+    |
+    |      xen: implement Xen-specific spinlocks
+    
+    i.e. applying that patch alone causes the hang. The hang happens in the
+    ftrace self-test:
+    
+      initcall utsname_sysctl_init+0x0/0x19 returned 0 after 0 msecs
+      calling  init_sched_switch_trace+0x0/0x4c
+      Testing tracer sched_switch: PASSED
+      initcall init_sched_switch_trace+0x0/0x4c returned 0 after 167 msecs
+      calling  init_function_trace+0x0/0x12
+      Testing tracer ftrace:
+      [hard hang]
+    
+    it should have continued like this:
+    
+      Testing tracer ftrace: PASSED
+      initcall init_function_trace+0x0/0x12 returned 0 after 198 msecs
+      calling  init_irqsoff_tracer+0x0/0x14
+      Testing tracer irqsoff: PASSED
+      initcall init_irqsoff_tracer+0x0/0x14 returned 0 after 3 msecs
+      calling  init_mmio_trace+0x0/0x12
+      initcall init_mmio_trace+0x0/0x12 returned 0 after 0 msecs
+    
+    the problem is that such lowlevel primitives as spinlocks should never
+    be built with -pg (which ftrace does). Marking paravirt.o as non-pg and
+    marking all spinlock ops as always-inline solve the hang.
+    
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+index 2dd1ccd..faba669 100644
+--- a/arch/x86/kernel/Makefile
++++ b/arch/x86/kernel/Makefile
+@@ -7,10 +7,11 @@ extra-y                := head_$(BITS).o head$(BITS).o head.o init_task.o vmlinu
+ CPPFLAGS_vmlinux.lds += -U$(UTS_MACHINE)
+ 
+ ifdef CONFIG_FTRACE
+-# Do not profile debug utilities
++# Do not profile debug and lowlevel utilities
+ CFLAGS_REMOVE_tsc_64.o = -pg
+ CFLAGS_REMOVE_tsc_32.o = -pg
+ CFLAGS_REMOVE_rtc.o = -pg
++CFLAGS_REMOVE_paravirt.o = -pg
+ endif
+ 
+ #
