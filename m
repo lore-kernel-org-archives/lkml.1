@@ -1,58 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752545AbYGIHj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755966AbYGIHl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752545AbYGIHj0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 03:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756106AbYGIHjE
+	id S1755966AbYGIHl5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 03:41:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbYGIHlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 03:39:04 -0400
-Received: from mfo10.iij4u.or.jp ([210.138.174.80]:49524 "EHLO
-	mfo10.iij4u.or.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753628AbYGIHjD (ORCPT
+	Wed, 9 Jul 2008 03:41:49 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:51871 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751013AbYGIHlt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 03:39:03 -0400
-X-Greylist: delayed 552 seconds by postgrey-1.27 at vger.kernel.org; Wed, 09 Jul 2008 03:39:03 EDT
-Date: Wed, 9 Jul 2008 16:29:41 +0900
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] replace CONFIG_IOMMU with CONFIG_GART_IOMMU in iommu.h
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+	Wed, 9 Jul 2008 03:41:49 -0400
+Subject: Re: [RFC 00/11] CONFIG_KMOD removal
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>
+In-Reply-To: <200807091204.59755.rusty@rustcorp.com.au>
+References: <20080708170015.470877000@sipsolutions.net>
+	 <200807091204.59755.rusty@rustcorp.com.au>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-rM6f5auI9e1PvLnoeFmI"
+Date: Wed, 09 Jul 2008 09:41:05 +0200
+Message-Id: <1215589265.3670.27.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080709162913H.tomof@acm.org>
+X-Mailer: Evolution 2.22.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Should be CONFIG_GART_IOMMU instead of CONFIG_IOMMU here?
 
-Hmm, looks like it would be nice to have more cleanups of iommu.h and
-gart.h.
+--=-rM6f5auI9e1PvLnoeFmI
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-This is against tip/master.
+On Wed, 2008-07-09 at 12:04 +1000, Rusty Russell wrote:
+> On Wednesday 09 July 2008 03:00:15 Johannes Berg wrote:
+> > Some place with some code or conditional I just converted to use
+> > CONFIG_MODULES, other places can invoke request_module unconditionally
+> > because it compiles out when the kernel is not modular, and one place
+> > (so far) converted to try_then_request_module.
+>=20
+> Applied 1, 2, 3, 5, 9, 10 and 11.  The others had comments.
 
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] replace CONFIG_IOMMU with CONFIG_GART_IOMMU in iommu.h
+What to? I took akpm's advice and rebased them against linux-next, a few
+had minor conflicts. Nothing changed _much_, I only addressed the
+comments and fixed those small conflicts.
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- include/asm-x86/iommu.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I'll send the updated set.
 
-diff --git a/include/asm-x86/iommu.h b/include/asm-x86/iommu.h
-index 07862fd..cb7e989 100644
---- a/include/asm-x86/iommu.h
-+++ b/include/asm-x86/iommu.h
-@@ -5,7 +5,7 @@ extern void pci_iommu_shutdown(void);
- extern void no_iommu_init(void);
- extern int force_iommu, no_iommu;
- extern int iommu_detected;
--#ifdef CONFIG_IOMMU
-+#ifdef CONFIG_GART_IOMMU
- extern void gart_iommu_init(void);
- extern void gart_iommu_shutdown(void);
- extern void __init gart_parse_options(char *);
--- 
-1.5.4.2
+> I added a help comment to the KMOD Kconfig, pointing out that it is=20
+> deprecated.
+
+Good point.
+
+Thanks,
+johannes
+
+--=-rM6f5auI9e1PvLnoeFmI
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJIdGuMAAoJEKVg1VMiehFYw/QP/2IeMxmues7z42ZMITXzP/W1
+ZutU2yTUdBg+6qfAZajpR3wXtY769Abq/IlpCGhJbigX6wlQA6S5Mt4gjjoMd5tA
+zRJQAcB87wvJUmB5eAARNouwg8CB7D9K4SWg3oTFp5t/5VSTEFmTI0zyGu6Fa3Kw
+oRzTfw3KndB0CuN40acbIBHKbtEwCiEfri9DkcKdPWfLqnPiUY0CFFA1+1tZ5hJC
+GCBy55QJQMeee+QW68jZYExwGKtZk3t5Ry1HvDJrMlKnAiUB9FQFwtyDiWBt7EB5
+lwDF7Gg/C/Id5nIIqvLsIGBFy1C0N2ijG/PR/o/9iGZ0AV3RoSDHKNV4+p19Ow/n
+X2Xqv9dmfI+lmlfMy3EniWmIt6XJd6/noAIpNvSzjWjXXPDszFz/eF+zFffYNGPH
+bI0y5ALubXfsI9oe5F0l3FQznWe2PwXdbveh/R8YAamA7VXYMylbExKlhX00K5ZE
+i1KjZXKC1Y3tYmsIg1iXfSXtvIJUfLBKTabZRCktUhFxDu3jD8AR4ibkQz7Yf3yV
+MJ84mwNKwWV596I2IVd0WCeMzM+7jc47lqjW6ADNAGnfG+RAntj9zPW57I0rZaQR
+KqmxaNhB3io0bUab6CloCEDBH3B5QEu6bFnz9esnQd62KJjdU8IOxOuXly9WuAOS
+gZ5u/5jbHq6lohwPlQN0
+=kGoo
+-----END PGP SIGNATURE-----
+
+--=-rM6f5auI9e1PvLnoeFmI--
 
