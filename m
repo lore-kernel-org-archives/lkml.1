@@ -1,65 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755799AbYGIHLX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755523AbYGIHOG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755799AbYGIHLX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 03:11:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbYGIHLO
+	id S1755523AbYGIHOG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 03:14:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751801AbYGIHNw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 03:11:14 -0400
-Received: from sirius.lasnet.de ([78.47.116.19]:46800 "EHLO sirius.lasnet.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752696AbYGIHLO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 03:11:14 -0400
-Date: Wed, 9 Jul 2008 08:26:40 +0200
-From: Stefan Schmidt <stefan@datenfreihafen.org>
-To: Eric Miao <eric.y.miao@gmail.com>
-Cc: Daniel Ribeiro <drwyrm@gmail.com>, pHilipp Zabel <philipp.zabel@gmail.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, sameo@openedhand.com,
-       linux-kernel@vger.kernel.org
-Message-ID: <20080709062640.GC8087@datenfreihafen.org>
-References: <20080707184000.411913919@datenfreihafen.org> <20080707184129.554483476@datenfreihafen.org> <74d0deb30807071221u4e216f76l479766925c903b5f@mail.gmail.com> <20080707200251.GA3449@datenfreihafen.org> <48730DE2.2050302@gmail.com> <4873734F.4030808@gmail.com> <20080708203213.GF18479@datenfreihafen.org> <487423B3.3010604@gmail.com>
+	Wed, 9 Jul 2008 03:13:52 -0400
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:38216 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751119AbYGIHNv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 03:13:51 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAMr/c0h5LFxA/2dsb2JhbACweQ
+X-IronPort-AV: E=Sophos;i="4.30,330,1212330600"; 
+   d="scan'208";a="145069926"
+Date: Wed, 9 Jul 2008 17:13:46 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, hch@infradead.org, tytso@mit.edu,
+       pavel@suse.cz, t-sato@yk.jp.nec.com, akpm@linux-foundation.org,
+       viro@ZenIV.linux.org.uk, linux-ext4@vger.kernel.org, xfs@oss.sgi.com,
+       dm-devel@redhat.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, axboe@kernel.dk,
+       mtk.manpages@googlemail.com
+Subject: Re: [PATCH 3/3] Add timeout feature
+Message-ID: <20080709071346.GS11558@disturbed>
+Mail-Followup-To: Arjan van de Ven <arjan@infradead.org>,
+	Miklos Szeredi <miklos@szeredi.hu>, hch@infradead.org,
+	tytso@mit.edu, pavel@suse.cz, t-sato@yk.jp.nec.com,
+	akpm@linux-foundation.org, viro@ZenIV.linux.org.uk,
+	linux-ext4@vger.kernel.org, xfs@oss.sgi.com, dm-devel@redhat.com,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	axboe@kernel.dk, mtk.manpages@googlemail.com
+References: <20080708231026.GP11558@disturbed> <20080708232031.GE18195@elf.ucw.cz> <20080709005254.GQ11558@disturbed> <20080709010922.GE9957@mit.edu> <E1KGSvZ-0006dB-53@pomaz-ex.szeredi.hu> <20080709061621.GA5260@infradead.org> <E1KGT4q-0006fD-Jb@pomaz-ex.szeredi.hu> <20080708234120.5072111f@infradead.org> <E1KGTTm-0006ke-Jh@pomaz-ex.szeredi.hu> <20080708235502.1c52a586@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <487423B3.3010604@gmail.com>
-X-Mailer: Mutt http://www.mutt.org/
-X-KeyID: 0xDDF51665
-X-Website: http://www.datenfreihafen.org/
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Subject: Re: [Patch 06/10] mfd: PCAP driver for the Motorola EZX GSM mobile
-	phones
+In-Reply-To: <20080708235502.1c52a586@infradead.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
-
-On Wed, 2008-07-09 at 10:34, Eric Miao wrote:
+On Tue, Jul 08, 2008 at 11:55:02PM -0700, Arjan van de Ven wrote:
+> On Wed, 09 Jul 2008 08:48:42 +0200
+> Miklos Szeredi <miklos@szeredi.hu> wrote:
 > 
-> > o Eric, what do you like the PCAP_REDIRECT_IRQ flag to do?
+> > On Tue, 8 Jul 2008, Arjan van de Ven wrote:
+> > > nah he needs to do
+> > > 
+> > > make_snapshot ; backup-command ; unref_snapshot.
+> > > 
+> > > freezing isn't the right solution for the backup problem ;)
 > > 
+> > Confused, what's freezing _is_ for then?  Patch description says:
+> > 
+> >   Currently, ext3 in mainline Linux doesn't have the freeze feature
+> > which suspends write requests.  So, we cannot take a backup which
+> > keeps the filesystem's consistency with the storage device's features
+> >   (snapshot and replication) while it is mounted.
 > 
-> I'm seeing the following the block of code in the original patch:
->  
-> +/* PCAP */
-> +static int ezx_pcap_init(void)
-> +{
+> I tihnk the idea there is
 > 
-> ...
+> freeze . do the snapshot op . unfreeze . make backup of snapshot
 > 
-> +	/* redirect all interrupts to AP */
-> +	if (!(machine_is_ezx_a780() || machine_is_ezx_e680()))
-> +		ezx_pcap_write(PCAP_REG_INT_SEL, 0);
-> +
-> +	return 0;
-> +}
-> 
-> that prevent this driver from being generic, a flag of PCAP_REDIRECT_IRQ
-> might be used to decide the writing to PCAP_REG_INT_SEL is necessary.
+> one can argue about the need of doing the first 3 steps via a userland
+> loop; it sure sounds like one needs to be really careful to not do any
+> writes to the fs from the app that does snapshots (and that includes
+> doing any syscalls in the kernel that allocate memory.. just because
+> that already could cause unrelated data to be written from inside the
+> app. Not fun.)
 
-Ok, now we got it. :)
+Bloody hell! Doesn't *anyone* understand that a frozen filesystem is
+*clean*? That the process of freezing it ensures all dirty data and
+metadata is written out before the freeze completes? And that once
+frozen, it can't be dirtied until unfrozen?
 
-Will do as requested. Array changes are pending and we also have some more
-cleanups open. Will send a new patch when we have this ready.
+That's 3 (or is it 4 - maybe 5 now that I think about it) different
+ppl in 24 hours that have made this same broken argument about
+being unable to write back dirty data on a frozen filesystem......
 
-regards
-stefan Schmidt
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
