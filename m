@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758393AbYGJOdx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758570AbYGJOeP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758393AbYGJOdx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 10:33:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757994AbYGJOdK
+	id S1758570AbYGJOeP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 10:34:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758274AbYGJOdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 10:33:10 -0400
-Received: from [194.117.236.238] ([194.117.236.238]:60588 "EHLO
-	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1757985AbYGJOdJ (ORCPT
+	Thu, 10 Jul 2008 10:33:45 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:57755 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758269AbYGJOdo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 10:33:09 -0400
-Date: Thu, 10 Jul 2008 17:31:22 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: zhp <zhpsub@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: Is there any way to download all email archive of linux kernel,
- and then import to Gmail for search?
-Message-ID: <20080710173122.165849d4@linux360.ro>
-In-Reply-To: <20080710062516.10342511.akpm@linux-foundation.org>
-References: <337eb86f0807030721n1ab86217j2eb9a43d526ebf5f@mail.gmail.com>
-	<20080710062516.10342511.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 10 Jul 2008 10:33:44 -0400
+Message-ID: <48761C06.3020003@zytor.com>
+Date: Thu, 10 Jul 2008 10:26:14 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <48751CF9.4020901@linux-foundation.org>	<4875209D.8010603@goop.org> <48752CCD.30507@linux-foundation.org>	<m1wsjupuiz.fsf@frodo.ebiederm.org> <48753C99.5050408@goop.org> <m1ej62iq9z.fsf@frodo.ebiederm.org> <487555A8.2050007@zytor.com> <487556A5.5090907@goop.org> <4876194E.4080205@linux-foundation.org>
+In-Reply-To: <4876194E.4080205@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Jul 2008 06:25:16 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Thu, 3 Jul 2008 22:21:42 +0800 zhp <zhpsub@gmail.com> wrote:
+Christoph Lameter wrote:
+> With the zero based approach you do not have a relative address anymore. We are basically creating a new absolute address space where we place variables starting at zero.
 > 
-> > I have found that there is some methods for me to migrate local
-> > existing emails to Gmail for search.
-> > 
-> > * Gmail Loader
-> > see http://www.linux.com/articles/60733
-> > 
-> > * imapsync,
-> > see http://freshmeat.net/projects/imapsync/
-> > 
-> > However, the problem is where can I get all of the old mails to my
-> > local computer?
-> > Has anyone done such things sucessfully?
+> This means that we are fully independent from the placement of the percpu segment.
 > 
-> http://userweb.kernel.org/~akpm/lkml-mbox-archives/ might be useful.
+> The loader may place the per cpu segment with the initialized variables anywhere. We just need to set GS correctly for the boot cpu. We always need to refer to the per cpu variables
+> via GS or by adding the per cpu offset to the __per_cpu_offset[] (which is now badly named because it points directly to the start of the percpu segment for each processor).
 > 
-> (Gad, 8MB/sec bandwidth from my Tokyo hotel room to kernel.org!)
+> So there is no 2G limitation on the distance between the code and the percpu segment anymore. The 2G limitation still exists for the *size* of the per cpu segment. If we go beyond 2G in defined per cpu variables then the per cpu addresses will wrap.
 
-I'm reading LKML via NNTP from Gmane (not Gmail). But Gmane also
-provides mbox exporting, take a look at http://gmane.org/export.php
+Okay, this is getting somewhat annoying.  Several people now have missed 
+the point.
 
-I suppose you could use one of these two methods (NNTP or their export
-stuff) to download your old mails.
+Noone has talked about the actual placement of the percpu segment data.
 
+Using RIP-based references, however, are *cheaper* than using absolute 
+references.  For RIP-based references to be valid, then the *offsets* 
+need to be in the range [-2 GB + CONFIG_PHYSICAL_START ... 
+CONFIG_PHYSICAL_START).  This is similar to the constraint on absolute 
+refereces, where the *offsets* have to be in the range [-2 GB, 2 GB).
 
-	Cheers,
-	Eduard
+None of this affects the absolute positioning of the data.  The final 
+address are determined by:
+
+	fs_base + rip + offset
+or
+	fs_base + offset
+
+... respectively.  fs_base is an arbitrary 64-bit number; rip (in the 
+kernel) is in the range [-2 GB + CONFIG_PHYSICAL_START, 0), and offset 
+is in the range [-2 GB, 2 GB).
+
+(The high end of the rip range above is slightly too wide.)
+
+	-hpa
