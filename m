@@ -1,82 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757365AbYGJUfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755989AbYGJUnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757365AbYGJUfj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 16:35:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbYGJUfa
+	id S1755989AbYGJUnm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 16:43:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbYGJUne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 16:35:30 -0400
-Received: from mail.atlantis.sk ([80.94.52.35]:60772 "EHLO mail.atlantis.sk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753758AbYGJUf3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 16:35:29 -0400
-From: Ondrej Zary <linux@rainbow-software.org>
-To: Alan Cox <alan@redhat.com>
-Subject: Re: pata_it821x completely broken
-Date: Thu, 10 Jul 2008 22:35:20 +0200
-User-Agent: KMail/1.9.9
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-References: <200807042153.56644.linux@rainbow-software.org> <200807062350.35650.linux@rainbow-software.org> <20080706230118.GA25905@devserv.devel.redhat.com>
-In-Reply-To: <20080706230118.GA25905@devserv.devel.redhat.com>
+	Thu, 10 Jul 2008 16:43:34 -0400
+Received: from [198.99.130.12] ([198.99.130.12]:56732 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751514AbYGJUnd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 16:43:33 -0400
+Date: Thu, 10 Jul 2008 16:42:48 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Sergei Trofimovich <slyfox@uvaga.by>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: uml: sparse inlines gcc-4.{2,3} compilation hack
+Message-ID: <20080710204248.GA21205@c2.user-mode-linux.org>
+References: <20080710155029.4cf5cb8f@slyfox.slynet.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807102235.22651.linux@rainbow-software.org>
+In-Reply-To: <20080710155029.4cf5cb8f@slyfox.slynet.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-commenting out the error check after ata_dev_init_params() call in 
-ata_dev_read_id() function (libata-core.c), I got at least the device name. 
-The capacity is 0 so it doesn't work, obviously:
+On Thu, Jul 10, 2008 at 03:50:29PM +0300, Sergei Trofimovich wrote:
+> Small ARCH=um SUBARCH=i386 .config is in attach.
+> How to fix properly such kind of miscompilation? (gcc-4.3.1)
+> Now I have to use hacks like this:
 
-pata_it821x: controller in smart mode.
-ACPI: PCI Interrupt Link [LNKC] enabled at IRQ 11
-ACPI: PCI Interrupt 0000:00:12.0[A] -> Link [LNKC] -> GSI 11 (level, low) -> 
-IRQ 11
-PCI: Setting latency timer of device 0000:00:12.0 to 64
-scsi2 : pata_it821x
-scsi3 : pata_it821x
-ata3: PATA max MWDMA2 cmd 0x6800 ctl 0x6c00 bmdma 0x7800 irq 11
-ata4: PATA max MWDMA2 cmd 0x7000 ctl 0x7400 bmdma 0x7808 irq 11
-ata3.00: ATA-7: SAMSUNG HD400LD, WQ100-15, max UDMA/100
-ata3.00: 781422768 sectors, multi 0: LBA48
-ata3.01: ATA-0: Integrated Technology Express Inc, , max MWDMA2
-ata3.01: 0 sectors, multi 0, CHS 0/0/0
-IT821x RAID1 volume.
-ata3.00: configured for DMA
-ata3.01: configured for PIO
-scsi 2:0:0:0: Direct-Access     ATA      SAMSUNG HD400LD  WQ10 PQ: 0 ANSI: 5
-sd 2:0:0:0: [sdb] 781422768 512-byte hardware sectors (400088 MB)
-sd 2:0:0:0: [sdb] Write Protect is off
-sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support 
-DPO or FUA
-sd 2:0:0:0: [sdb] 781422768 512-byte hardware sectors (400088 MB)
-sd 2:0:0:0: [sdb] Write Protect is off
-sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support 
-DPO or FUA
- sdb: sdb1 sdb2 sdb3 sdb4
-sd 2:0:0:0: [sdb] Attached SCSI disk
-sd 2:0:0:0: Attached scsi generic sg2 type 0
-scsi 2:0:1:0: Direct-Access     ATA      Integrated Techn n/a  PQ: 0 ANSI: 5
-sd 2:0:1:0: [sdc] Too big for this kernel. Use a kernel compiled with support 
-for large block devices.
-sd 2:0:1:0: [sdc] 0 512-byte hardware sectors (0 MB)
-sd 2:0:1:0: [sdc] Write Protect is off
-sd 2:0:1:0: [sdc] Mode Sense: 00 3a 00 00
-sd 2:0:1:0: [sdc] Write cache: disabled, read cache: enabled, doesn't support 
-DPO or FUA
-sd 2:0:1:0: [sdc] Attached SCSI disk
-sd 2:0:1:0: Attached scsi generic sg3 type 0
+Use the patch below instead.
 
-
-(0 is too big for the kernel, interesting :)
-
+    	      	    Jeff
 
 -- 
-Ondrej Zary
+Work email - jdike at linux dot intel dot com
+
+
+commit 4f81c5350b44bcc501ab6f8a089b16d064b4d2f6
+Author: Jeff Dike <jdike@addtoit.com>
+Date:   Mon Jul 7 13:36:56 2008 -0400
+
+    [UML] fix gcc ICEs and unresolved externs
+    
+    There are various constraints on the use of unit-at-a-time:
+     - i386 uses no-unit-at-a-time for pre-4.0 (not 4.3)
+     - x86_64 uses unit-at-a-time always
+    
+    Uli reported a crash on x86_64 with gcc 4.1.2 with unit-at-a-time,
+    resulting in commit c0a18111e571138747a98af18b3a2124df56a0d1
+    
+    Ingo reported a gcc internal error with gcc 4.3 with no-unit-at-a-timem,
+    resulting in 22eecde2f9034764a3fd095eecfa3adfb8ec9a98
+    
+    Benny Halevy is seeing extern inlines not resolved with gcc 4.3 with
+    no-unit-at-a-time
+    
+    This patch reintroduces unit-at-a-time for gcc >= 4.0, bringing back the
+    possibility of Uli's crash.  If that happens, we'll debug it.
+    
+    I started seeing both the internal compiler errors and unresolved
+    inlines on Fedora 9.  This patch fixes both problems, without so far
+    reintroducing the crash reported by Uli.
+    
+    Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+    Cc: Benny Halevy <bhalevy@panasas.com>
+    Cc: Adrian Bunk <bunk@kernel.org>
+    Cc: Ingo Molnar <mingo@elte.hu>
+    Cc: Ulrich Drepper <drepper@redhat.com>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+
+diff --git a/arch/um/Makefile b/arch/um/Makefile
+index dbeab15..ca40397 100644
+--- a/arch/um/Makefile
++++ b/arch/um/Makefile
+@@ -77,7 +77,6 @@ include $(srctree)/$(ARCH_DIR)/Makefile-os-$(OS)
+ KERNEL_DEFINES = $(strip -Derrno=kernel_errno -Dsigprocmask=kernel_sigprocmask \
+ 			 -Dmktime=kernel_mktime $(ARCH_KERNEL_DEFINES))
+ KBUILD_CFLAGS += $(KERNEL_DEFINES)
+-KBUILD_CFLAGS += $(call cc-option,-fno-unit-at-a-time,)
+ 
+ PHONY += linux
+ 
+diff --git a/arch/um/Makefile-i386 b/arch/um/Makefile-i386
+index 561e373..302cbe5 100644
+--- a/arch/um/Makefile-i386
++++ b/arch/um/Makefile-i386
+@@ -32,4 +32,11 @@ cflags-y += $(call cc-option,-mpreferred-stack-boundary=2)
+ # an unresolved reference.
+ cflags-y += -ffreestanding
+ 
++# Disable unit-at-a-time mode on pre-gcc-4.0 compilers, it makes gcc use
++# a lot more stack due to the lack of sharing of stacklots.  Also, gcc
++# 4.3.0 needs -funit-at-a-time for extern inline functions.
++KBUILD_CFLAGS += $(shell if [ $(call cc-version) -lt 0400 ] ; then \
++			echo $(call cc-option,-fno-unit-at-a-time); \
++			else echo $(call cc-option,-funit-at-a-time); fi ;)
++
+ KBUILD_CFLAGS += $(cflags-y)
+diff --git a/arch/um/Makefile-x86_64 b/arch/um/Makefile-x86_64
+index 8ed362f..a9cd7e7 100644
+--- a/arch/um/Makefile-x86_64
++++ b/arch/um/Makefile-x86_64
+@@ -21,3 +21,6 @@ HEADER_ARCH := x86
+ 
+ LINK-$(CONFIG_LD_SCRIPT_DYN) += -Wl,-rpath,/lib64
+ LINK-y += -m64
++
++# Do unit-at-a-time unconditionally on x86_64, following the host
++KBUILD_CFLAGS += $(call cc-option,-funit-at-a-time)
