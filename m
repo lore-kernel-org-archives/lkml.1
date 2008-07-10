@@ -1,87 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759421AbYGJRI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758550AbYGJRKn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759421AbYGJRI0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 13:08:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757795AbYGJRH4
+	id S1758550AbYGJRKn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 13:10:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751639AbYGJRKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 13:07:56 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:36126 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757629AbYGJRHu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 13:07:50 -0400
-Subject: Re: [PATCH 05/15] regulator: regulator framework core
-From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
-To: pHilipp Zabel <philipp.zabel@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <74d0deb30807100904o404be423s314cc206a963396c@mail.gmail.com>
-References: <1215703578.13431.61.camel@odin>
-	 <74d0deb30807100904o404be423s314cc206a963396c@mail.gmail.com>
+	Thu, 10 Jul 2008 13:10:35 -0400
+Received: from mail-out1.uio.no ([129.240.10.57]:50325 "EHLO mail-out1.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751251AbYGJRKe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 13:10:34 -0400
+Subject: Re: nfs root error after modprobe iptable_nat
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Karl Hiramoto <karl@hiramoto.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-net@vger.kernel.org
+In-Reply-To: <48760ECF.1060103@hiramoto.org>
+References: <48760ECF.1060103@hiramoto.org>
 Content-Type: text/plain
-Date: Thu, 10 Jul 2008 18:07:48 +0100
-Message-Id: <1215709668.13431.83.camel@odin>
+Date: Thu, 10 Jul 2008 13:10:29 -0400
+Message-Id: <1215709829.7126.11.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: B7103CA215BE719EF1E44D04D0B5A5B0D8ACAAEB
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 52 total 9164017 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-10 at 18:04 +0200, pHilipp Zabel wrote:
-> On Thu, Jul 10, 2008 at 5:26 PM, Liam Girdwood
-> <lg@opensource.wolfsonmicro.com> wrote:
-
-> > +
-> > +/* current constraint check */
-> > +static int regulator_check_current_limit(struct regulator_dev *rdev,
-> > +                                       int *min_uA, int *max_uA)
-> > +{
-> > +       BUG_ON(*min_uA > *max_uA);
-> > +
-> > +       if (!rdev->constraints) {
-> > +               printk(KERN_ERR "%s: no constraints for %s\n", __func__,
-> > +                      rdev->desc->name);
-> > +               return -ENODEV;
-> > +       }
-> > +       if (!(rdev->constraints->valid_ops_mask & REGULATOR_CHANGE_CURRENT)) {
-> > +               printk(KERN_ERR "%s: operation not allowed for %s\n",
-> > +                      __func__, rdev->desc->name);
-> > +               return -EPERM;
-> > +       }
-> > +
-> > +       if (*max_uA > rdev->constraints->max_uA ||
-> > +           *min_uA < rdev->constraints->min_uA) {
-> > +               printk(KERN_ERR "%s: invalid current range %d-%duA for %s\n",
-> > +                      __func__, *min_uA, *max_uA, rdev->desc->name);
-> > +               return -EINVAL;
-> > +       }
-> > +
-> > +       *min_uA = max(*min_uA, rdev->constraints->min_uA);
-> > +       *max_uA = min(*max_uA, rdev->constraints->max_uA);
+On Thu, 2008-07-10 at 15:29 +0200, Karl Hiramoto wrote:
+> Hi all,
 > 
-> I don't understand this part. If max_uA > constraints->max_uA or
-> min_uA < constraints->min_uA, we returned with -EINVAL above. So in
-> this place
-> I'd expect min_uA to be >= constraints->min_uA and max_uA <=
-> constraints->max_uA, in which case the last two statements are no-ops.
+> loading nf_nat seems to cut my NFS root connection.
 > 
+> # modprobe iptable_nat
+> nf_conntrack version 0.5.0 (1024 buckets, 4096 max)
+> nfs: RPC call returned error 1
+> nfs: RPC call returned error 1
+> # nfs: RPC call returned error 1
+> nfs: RPC call returned error 1
+> 
+> 
+> 
+> 12:23:35.335832 IP (tos 0x0, ttl 64, id 0, offset 0, flags [DF], proto
+> UDP (17), length 136) 192.168.10.54.4259114599 > 192.168.10.51.2049: 108
+> lookup [|nfs]
+> 12:23:35.335920 IP (tos 0x0, ttl 64, id 0, offset 0, flags [DF], proto
+> UDP (17), length 56) 192.168.10.51.2049 > 192.168.10.54.4259114599:
+> reply ok 28 lookup ERROR: No such file or directory
+> 12:23:35.336611 IP (tos 0x0, ttl 64, id 0, offset 0, flags [DF], proto
+> UDP (17), length 136) 192.168.10.54.4259114600 > 192.168.10.51.2049: 108
+> lookup [|nfs]
+> 12:23:35.336650 IP (tos 0x0, ttl 64, id 0, offset 0, flags [DF], proto
+> UDP (17), length 56) 192.168.10.51.2049 > 192.168.10.54.4259114600:
+> reply ok 28 lookup ERROR: No such file or directory
+> 
+> 
+> 
+> NFS server:
+> uname -a
+> Linux karl-d820 2.6.25.10 #1 SMP Thu Jul 10 10:15:44 CEST 2008 i686
+> Intel(R) Core(TM)2 CPU T5500 @ 1.66GHz GenuineIntel GNU/Linux
+> 
+> 
+> 
+> NFS Client:
+> # uname -a
+> Linux NSB 2.6.25.10 #6 Thu Jul 10 13:04:15 CEST 2008 armv5teb unknown
+> uclibc 0.29
+> Intel  IXP425
+> 
+> 
+> On the server there are no error messages.  without loading NAT 
+> everything seems to work fine.
+> 
+> 
+> Comping NAT directly into the kernel also has the same results.
+> 
+> 
+> Not sure if i have something configured wrong, or if this is related to 
+> the patches sent by Trond a few days ago.
 
-It looks like the limit check with printk was added post min()/max()
-here and does indeed make them no-ops. I'll remove.
+errno 1 is the same as EPERM (i.e. permission denied). I'm not sure what
+is returning that error, but it isn't the NFS or SUNRPC layer.
 
-> In comparison, regulator_check_voltage silently fixes the requested
-> voltage range to fit into the constraints. Should
-> regulator_check_current_limit do the same?
+Have you tried a 'git bisect'?
 
-Yes, current should do the same and make sure the our consumers
-requested current window fits into the system constraints like voltage.
-Atm it just rejects it.
-
-Thanks
-
-Liam
-
+Cheers
+  Trond
 
