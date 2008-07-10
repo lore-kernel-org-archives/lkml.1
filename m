@@ -1,58 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757261AbYGJK5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbYGJK7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757261AbYGJK5l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 06:57:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755544AbYGJK5c
+	id S1757328AbYGJK7r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 06:59:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbYGJK7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 06:57:32 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:55927 "EHLO
-	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754406AbYGJK5a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 06:57:30 -0400
-X-BigFish: VPS-4(zz98dR62a3L7efVzz10d3izzz32i6bh87il43j64h)
-X-Spam-TCS-SCL: 3:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0K3SEFE-02-HXL-01
-Date: Thu, 10 Jul 2008 12:57:12 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: x86/pci: Broken build for X86_VISWS
-Message-ID: <20080710105712.GL7963@erda.amd.com>
-References: <20080710095757.GB5607@erda.amd.com> <20080710102305.GA20096@elte.hu> <20080710104216.GK7963@erda.amd.com> <20080710104446.GA3131@elte.hu>
+	Thu, 10 Jul 2008 06:59:40 -0400
+Received: from www.tglx.de ([62.245.132.106]:45310 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753814AbYGJK7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 06:59:39 -0400
+Date: Thu, 10 Jul 2008 12:58:51 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>
+Cc: Magnus Damm <magnus.damm@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "gregkh@suse.de" <gregkh@suse.de>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "hjk@linutronix.de" <hjk@linutronix.de>,
+       "lethal@linux-sh.org" <lethal@linux-sh.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] uio: uio_pdrv_genirq V2
+Message-ID: <20080710105850.GA3202@local>
+References: <20080710035254.27378.18682.sendpatchset@rx1.opensource.se> <20080710065639.GA16794@digi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080710104446.GA3131@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 10 Jul 2008 10:57:13.0791 (UTC) FILETIME=[B5BBFCF0:01C8E27B]
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080710065639.GA16794@digi.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10.07.08 12:44:46, Ingo Molnar wrote:
-> i'm wondering why you werent hit by the generic-ipi build bug. Perhaps 
-> you had SMP disabled?
+On Thu, Jul 10, 2008 at 08:56:39AM +0200, Uwe Kleine-König wrote:
+> > +
+> > +static irqreturn_t uio_pdrv_genirq_handler(int irq, struct uio_info *dev_info)
+> > +{
+> > +       struct uio_pdrv_genirq_platdata *priv = dev_info->priv;
+> > +       unsigned long flags;
+> > +
+> > +       /* Just disable the interrupt in the interrupt controller, and
+> > +        * remember the state so we can allow user space to enable it later.
+> > +        */
+> > +       spin_lock_irqsave(&priv->lock, flags);
+> > +       if (!priv->irq_disabled) {
+> > +               disable_irq_nosync(irq);
+> > +               priv->irq_disabled = 1;
+> > +       }
+> > +       spin_unlock_irqrestore(&priv->lock, flags);
+> > +       return IRQ_HANDLED;
+> > +}
+> > +
+> > +static int uio_pdrv_genirq_irqcontrol(struct uio_info *dev_info, s32 irq_on)
+> > +{
+> > +       struct uio_pdrv_genirq_platdata *priv = dev_info->priv;
+> > +       unsigned long flags;
+> > +
+> > +       /* Allow user space to enable and disable the interrupt
+> > +        * in the interrupt controller, but keep track of the
+> > +        * state to prevent per-irq depth damage.
+> > +        */
+> > +
+> > +       spin_lock_irqsave(&priv->lock, flags);
+> > +       if (irq_on && priv->irq_disabled)
+> > +               enable_irq(dev_info->irq);
+> > +       else if (!irq_on && !priv->irq_disabled)
+> > +               disable_irq(dev_info->irq);
+> I'm not sure if this is a problem on SMP.  Should you use
+> disable_irq_nosync here, too?  Probably it's OK.
 
-No:
+*_nosync should not be needed, as he doesn't call irqcontrol from the irq
+handler. But using the same lock in handler and irqcontrol presents a
+problem, as Alan pointed out.
 
-$ grep 'SMP\|VISWS' configs/linux-i386-visws.config 
-CONFIG_X86_SMP=y
-CONFIG_X86_32_SMP=y
-CONFIG_SMP=y
-CONFIG_X86_FIND_SMP_CONFIG=y
-CONFIG_X86_VISWS=y
-# CONFIG_X86_VSMP is not set
-CONFIG_X86_VISWS_APIC=y
+> 
+> > +
+> > +       priv->irq_disabled = !irq_on;
+> > +       spin_unlock_irqrestore(&priv->lock, flags);
+> > +       return 0;
+> > +}
+> 
+> 
+> > +       ret = uio_register_device(&pdev->dev, priv->uioinfo);
+> > +       if (ret) {
+> > +               dev_err(&pdev->dev, "unable to register uio device\n");
+> > +               goto bad1;
+> > +       }
+> > +
+> > +       platform_set_drvdata(pdev, priv);
+> This should probably go before uio_register_device.  (Uups, this is an
+> issue for uio_pdrv, too.)
 
-Probably it is because I am on the tip/x86/unify-pci tree where the
-IPI changes were not in.
+Yes, because uio_register_device will enable the irq, and you might
+arrive in the handler without having your platform data in place.
 
--Robert
-
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+Thanks,
+Hans
 
