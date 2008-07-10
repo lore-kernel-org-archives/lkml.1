@@ -1,44 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759197AbYGJQql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759383AbYGJQra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759197AbYGJQql (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 12:46:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758772AbYGJQqO
+	id S1759383AbYGJQra (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 12:47:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759239AbYGJQrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 12:46:14 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:35504 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758764AbYGJQqN (ORCPT
+	Thu, 10 Jul 2008 12:47:09 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:15360 "EHLO
+	IE1EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759231AbYGJQrI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 12:46:13 -0400
-Message-ID: <48763B36.80104@zytor.com>
-Date: Thu, 10 Jul 2008 12:39:18 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 10 Jul 2008 12:47:08 -0400
+X-BigFish: VPS-24(ze98mz1432R98dR7efV1805M873fnzz10d3izzz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0K3SULT-04-SDB-01
+Date: Thu, 10 Jul 2008 18:46:44 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       Sebastian.Biemueller@amd.com, robert.richter@amd.com, joro@8bytes.org
+Subject: Re: [PATCH 23/34] AMD IOMMU: add functions to find IOMMU device resources
+Message-ID: <20080710164644.GR14977@amd.com>
+References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com> <1214508490-29683-24-git-send-email-joerg.roedel@amd.com> <20080709191827.dbdfcd96.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Mike Travis <travis@sgi.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <20080709133958.612635f0@infradead.org>	<4875231F.1020506@zytor.com> <487524A0.6020304@goop.org>	<487529AE.3060505@zytor.com> <m1r6a2r9nj.fsf@frodo.ebiederm.org>	<48753A71.2030006@zytor.com> <m18wwahauq.fsf@frodo.ebiederm.org> <48763732.7020805@sgi.com> <487637DE.1050706@zytor.com> <48763A5E.7080105@linux-foundation.org>
-In-Reply-To: <48763A5E.7080105@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20080709191827.dbdfcd96.akpm@linux-foundation.org>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 10 Jul 2008 16:46:45.0064 (UTC) FILETIME=[89964C80:01C8E2AC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> H. Peter Anvin wrote:
+On Wed, Jul 09, 2008 at 07:18:27PM -0700, Andrew Morton wrote:
+> On Thu, 26 Jun 2008 21:27:59 +0200 Joerg Roedel <joerg.roedel@amd.com> wrote:
 > 
->> No, since the *addresses* can be arbitrary.  The current issue is about
->> *offsets.*
+> > This patch adds functions necessary to find the IOMMU resources for a specific
+> > device.
+> > 
+> > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> > ---
+> >  arch/x86/kernel/amd_iommu.c |   75 +++++++++++++++++++++++++++++++++++++++++++
+> >  1 files changed, 75 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+> > index c43d15d..47e80b5 100644
+> > --- a/arch/x86/kernel/amd_iommu.c
+> > +++ b/arch/x86/kernel/amd_iommu.c
+> > @@ -461,3 +461,78 @@ free_dma_dom:
+> >  	return NULL;
+> >  }
+> >  
+> > +static struct protection_domain *domain_for_device(u16 devid)
+> > +{
+> > +	struct protection_domain *dom;
+> > +	unsigned long flags;
+> > +
+> > +	read_lock_irqsave(&amd_iommu_devtable_lock, flags);
 > 
-> Well those are intimately connected.
+> Why is this cheerfully undocumented lock irq-safe?  Is it ever taken from
+> IRQ context?
 
-Not really, since gs_base is an arbitrary 64-bit pointer.
+This function is called from the dma-mapping path. As far as I know the
+DMA mapping functions can be called from interrupt context.
 
-	-hpa
+> 
+> > +	dom = amd_iommu_pd_table[devid];
+> > +	read_unlock_irqrestore(&amd_iommu_devtable_lock, flags);
+> > +
+> > +	return dom;
+> > +}
+> 
+> The locking in this function makes no sense.  We drop the lock then return
+> a value which the caller cannot use in a race-free fashion, because the
+> lock is no longer held.
+
+The lock only protects the protection domain table (and the device
+table) itself. It does not protect the values the pointers in that list
+point to. In this case its also not racy because a value to that list is
+only written once and then never changed again (currently). If this
+changes in the future (and it will) I will change the locking too. This
+will also need reference counting for 'struct protection_domain' which
+is not implemented yet.
+
+Joerg
+
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
