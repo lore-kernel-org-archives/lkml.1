@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756343AbYGJIz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbYGJI55@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756343AbYGJIz1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 04:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbYGJIzR
+	id S1755972AbYGJI55 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 04:57:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYGJI5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 04:55:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37662 "EHLO mx3.mail.elte.hu"
+	Thu, 10 Jul 2008 04:57:49 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60973 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751340AbYGJIzP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 04:55:15 -0400
-Date: Thu, 10 Jul 2008 10:55:00 +0200
+	id S1751648AbYGJI5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 04:57:48 -0400
+Date: Thu, 10 Jul 2008 10:57:30 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Elias Oltmanns <eo@nebensachen.de>
-Cc: linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: Scheduling issue with signal handling
-Message-ID: <20080710085500.GA19918@elte.hu>
-References: <87wsju88b1.fsf@denkblock.local>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jack Steiner <steiner@sgi.com>, tglx@linutronix.de, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] - Map UV chipset space - pagetable
+Message-ID: <20080710085730.GC19918@elte.hu>
+References: <20080701194532.GA28405@sgi.com> <20080710013533.e059f556.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87wsju88b1.fsf@denkblock.local>
+In-Reply-To: <20080710013533.e059f556.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,77 +35,26 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Elias Oltmanns <eo@nebensachen.de> wrote:
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> By sprinkling some printk()s all over the place, I've managed to 
-> establish the following sequence of events taking place in the event 
-> of delayed signal handling as described above: The first Ctrl+Z event 
-> enqueues a SIGTSTP signal which eventually results in a call to 
-> kick_process(). For some reason though, the signal isn't handled 
-> straight away but remains on the queue for some time. Consequently, 
-> subsequent Ctrl+Z events result in echoing another ^Z to the terminal 
-> but everything related to sending a signal is skipped (and rightly so) 
-> because the kernel detects that a SIGTSTP is still pending. 
-> Eventually, get_signal_to_deliver() dequeues the SIGTSTP signal and 
-> the shell propt appears.
+> On Tue, 1 Jul 2008 14:45:32 -0500 Jack Steiner <steiner@sgi.com> wrote:
 > 
-> My question is this: Even under high disk I/O pressure, the threads 
-> dealing with I/O to the terminal evidently still get their turn as 
-> indicated by the sequence of ^Z appearing on screen. Why is it then, 
-> that the threads which are meant to process the SIGTSTP or SIGINT 
-> signals aren't scheduled for some seconds and is there a way to change 
-> this?
+> > +	BUG_ON((phys & ~PMD_MASK) || (size & ~PMD_MASK));
 > 
-> Please let me know if there is anything I can try to investigate this 
-> any further or if you need further information.
+> BUG_ON(A || B) is usually a bad idea.  If it goes bang, you'll really wish
+> that it had been
 > 
-> Thanks in advance,
-> 
-> Elias
-> 
-> [1] http://lkml.org/lkml/2008/6/28/50
+> 	BUG_ON(A);
+> 	BUG_ON(B);
 
-hm, kick_process() is a no-op on !SMP.
+if you check how it's used:
 
-Basically, when a new signal is queued and a task is already running, it 
-will run in due course and process the signal the moment it's scheduled 
-again. (unless the signal is blocked)
++       init_extra_mapping_uc(UV_GLOBAL_MMR32_BASE, UV_GLOBAL_MMR32_SIZE);
++       init_extra_mapping_uc(UV_LOCAL_MMR_BASE, UV_LOCAL_MMR_SIZE);
 
-If a task is not already running, then the signal code will wake up the 
-task and it will then process the signal the moment it's executed.
-
-The maximum latency of a runnable task hitting the CPU is controlled via 
-/proc/sys/kernel/sched_latency [available if CONFIG_SCHED_DEBUG=y in the 
-.config] - 20 milliseconds on uniprocessors.
-
-Several seconds of lag is almost out of question and would indicate a 
-serious scheduler bug, or - which is far more likely - either an 
-application signal processing hickup or a kernel signal processing 
-hickup.
-
-If the lag happens with the task you can observe its worst-case 
-scheduling delay by looking at /proc/<PID>/sched, if you also have 
-CONFIG_SCHEDSTAT=y in your .config.
-
-For example, a random shell's delays on a testbox:
-
-  phoenix:~> grep se.wait_max /proc/$$/sched
-  se.wait_max                        :             3.338588
-
-That's 3.3 msecs _worst case_, on a system that has otherwise quite 
-insane load:
-
- 10:53:57 up  2:48,  2 users,  load average: 77.56, 94.33, 102.75
-
-So several seconds of delay, if it came from the scheduler, would be 
-really anomalous.
-
-As a final measure, instead of printk's, you could try the scheduler 
-tracer in linux-next (CONFIG_CONTEXT_SWITCH_TRACER=y), to have an exact 
-idea about what is going on and when. (see /debug/tracing/README)
-
-[ You might also want to try CONFIG_FTRACE=y and CONFIG_DYNAMIC_FTRACE=y
-  for extremely finegrained kernel tracing - available in linux-next 
-  too. ]
+those base/size pairs are really supposed to be aligned on 2MB. I.e. 
+this is a really 'impossible' scenario that is not really driven by any 
+external factor (hw or driver detail) and a compact check for it is 
+acceptable too.
 
 	Ingo
