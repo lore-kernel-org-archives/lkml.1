@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759943AbYGJTzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760054AbYGJT4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759943AbYGJTzy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 15:55:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYGJTzq
+	id S1760054AbYGJT4q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 15:56:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbYGJT4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 15:55:46 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:33930 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751216AbYGJTzp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 15:55:45 -0400
-Date: Thu, 10 Jul 2008 21:55:37 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Tomas Winkler <tomas.winkler@intel.com>
-Cc: linux-kernel@vger.kernel.org, Benzi Zbit <benzi.zbit@intel.com>
-Subject: Re: [PATCH 1/1 V3] MMC: core - fix the use of hard coded timeout
- value.
-Message-ID: <20080710215537.15a04805@mjolnir.drzeus.cx>
-In-Reply-To: <1215646903-810-1-git-send-email-tomas.winkler@intel.com>
-References: <1215646903-810-1-git-send-email-tomas.winkler@intel.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-17482-1215719743-0001-2"
+	Thu, 10 Jul 2008 15:56:38 -0400
+Received: from gw.goop.org ([64.81.55.164]:41339 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752419AbYGJT4h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 15:56:37 -0400
+Message-ID: <48766967.7040008@goop.org>
+Date: Thu, 10 Jul 2008 12:56:23 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Mike Travis <travis@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <20080709133958.612635f0@infradead.org>	<4875231F.1020506@zytor.com> <487524A0.6020304@goop.org>	<487529AE.3060505@zytor.com> <m1r6a2r9nj.fsf@frodo.ebiederm.org>	<48753A71.2030006@zytor.com> <m18wwahauq.fsf@frodo.ebiederm.org>	<48763732.7020805@sgi.com> <m1lk091soo.fsf@frodo.ebiederm.org>	<48765B03.6020905@goop.org> <m1ej61y2da.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1ej61y2da.fsf@frodo.ebiederm.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Eric W. Biederman wrote:
+> Jeremy Fitzhardinge <jeremy@goop.org> writes:
+>
+>   
+>> Eric W. Biederman wrote:
+>>     
+>>> I think we can get away with just simply realloc'ing the percpu area
+>>> on each cpu.  No fancy table manipulations required.  Just update
+>>> the base pointer in %gs and in someplace global.
+>>>
+>>>       
+>> It's perfectly legitimate to take the address of a percpu variable and store it
+>> somewhere.  We can't move them around.
+>>     
+>
+> Really?  I guess there are cases where that makes sense.  It is a pretty
+> rare case though.  Especially when you are not talking about doing it temporarily
+> with preemption disabled.  There are few enough users of the API I think we can
+> certainly explore the cost of forbidding in the general case of storing the
+> address of a percpu variable.
+>   
 
---=_freyr.drzeus.cx-17482-1215719743-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+No, that sounds like a bad idea.  For one, how would you enforce it?  
+How would you check for it?  It's one of those things that would mostly 
+work and then fail very rarely.
 
-On Thu, 10 Jul 2008 02:41:43 +0300
-Tomas Winkler <tomas.winkler@intel.com> wrote:
+Secondly, I depend on it.  I register a percpu structure with Xen to 
+share per-vcpu specific information (interrupt mask, time info, runstate 
+stats, etc).
 
-> From: Benzi Zbit <benzi.zbit@intel.com>
->=20
-> This adds reading and using of enable_timeout from the CIS
->=20
-> Signed-off-by: Benzi Zbit <benzi.zbit@intel.com>
-> Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
-> ---
-
-Looks ok. Applied.
-
---=20
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-17482-1215719743-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkh2aT0ACgkQ7b8eESbyJLg6JACfTObc8iyGQx1VwCCXxI8GD7f8
-DT8AoJQjNqqDS4IY6yuO/zpBntjrCqVR
-=Nq8R
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-17482-1215719743-0001-2--
+    J
