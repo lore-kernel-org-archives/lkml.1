@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757443AbYGJCfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757121AbYGJCmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757443AbYGJCfn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 22:35:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbYGJCfc
+	id S1757121AbYGJCmV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 22:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbYGJCmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 22:35:32 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44543 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750985AbYGJCfb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 22:35:31 -0400
-Date: Wed, 9 Jul 2008 22:34:29 -0400
-From: Bill Nottingham <notting@redhat.com>
-To: David Miller <davem@davemloft.net>
-Cc: kaber@trash.net, bridge@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [RFC PATCH 0/2] Allow full bridge configuration via sysfs
-Message-ID: <20080710023429.GB24665@nostromo.devel.redhat.com>
-Mail-Followup-To: David Miller <davem@davemloft.net>, kaber@trash.net,
-	bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-	netdev@vger.kernel.org
-References: <20080707205342.GA19710@nostromo.devel.redhat.com> <4872838B.1060603@trash.net> <20080707213420.GA20089@nostromo.devel.redhat.com> <20080707.145259.103902820.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080707.145259.103902820.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 9 Jul 2008 22:42:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35718 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752066AbYGJCmM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 22:42:12 -0400
+Date: Wed, 9 Jul 2008 19:36:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, tglx@linutronix.de, mingo@redhat.com,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       bhavna.sarathy@amd.com, Sebastian.Biemueller@amd.com,
+       robert.richter@amd.com, joro@8bytes.org
+Subject: Re: [PATCH 02/34] AMD IOMMU: add header file for driver data
+ structures and defines
+Message-Id: <20080709193601.347134bf.akpm@linux-foundation.org>
+In-Reply-To: <20080709185055.3b47c4db@infradead.org>
+References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com>
+	<1214508490-29683-3-git-send-email-joerg.roedel@amd.com>
+	<20080709183823.52bbfd37.akpm@linux-foundation.org>
+	<20080709185055.3b47c4db@infradead.org>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller (davem@davemloft.net) said: 
-> > Why, if netlink is the standard (and it's been around for a long
-> > damn time), was sysfs configuration for bonding added in 2005? Why
-> > was bridge configuration added in 2005, and *extended* in 2006 and
-> > 2007? Why were the user-space tools such as brctl ported from ioctl
-> > to sysfs?
-> 
-> Because often a lot of shit slips in when someone who understands
-> the ramifications is too busy or on vacation.
+On Wed, 9 Jul 2008 18:50:55 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
 
-Duly noted, will time all patch submissions to land during your
-vacations in the future.
-
-More seriously, if there's not a mechanism to prevent ABIs the
-kernel doesn't want like this being added, that's a problem.
-
-> We do want everything to be netlink based.
+> On Wed, 9 Jul 2008 18:38:23 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> Why?
+> > On Thu, 26 Jun 2008 21:27:38 +0200 Joerg Roedel
+> > <joerg.roedel@amd.com> wrote:
+> > 
+> > > +/* helper macros */
+> > > +#define LOW_U32(x) ((x) & ((1ULL << 32)-1))
+> > > +#define HIGH_U32(x) (LOW_U32((x) >> 32))
+> > 
+> > Please avoid putting general-purpose helpers into private header
+> > files.
 > 
-> Because it means that you can run one monitoring tool to listen
-> for netlink events and report them to the user for diagnosis.
+> especially broken helpers.
 > 
-> It means that network configuration events can be sent over
-> the wire and used remotely at some point.
+> A >> 32 on something that may be a 32 bit entry is bad; int32 >> 32...
+> gcc can (and does!) optimize that out.
 > 
-> The latter can never happen as long as we keep adding ad-hoc
-> config stuff.
+> (because it first gets translated into a SHR x86 instruction which then
+> notices it's encoded as a zero shift.. which then gets deleted)
+> 
 
-Sure, but it does make them more opaque to the normal user,
-leaving them wrapped in the same old ip/brctl/ifenslave/vconfig
-tools - for better or worse, people like the discoverability
-and obviousness of sysfs.
+Well yeah.  upper_32_bits() gets it all corect.  We could do a
+lower_32_bits() I suppose, if it's useful.
 
-Bill
