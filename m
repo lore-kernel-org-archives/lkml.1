@@ -1,83 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758584AbYGJNwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758610AbYGJNzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758584AbYGJNwm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 09:52:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756557AbYGJNwd
+	id S1758610AbYGJNzT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 09:55:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755125AbYGJNzH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 09:52:33 -0400
-Received: from usagi.ingate.se ([193.180.23.12]:55100 "EHLO usagi.ingate.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756273AbYGJNwc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 09:52:32 -0400
-X-Greylist: delayed 1261 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Jul 2008 09:52:32 EDT
-Message-ID: <48760F22.8040208@ingate.com>
-Date: Thu, 10 Jul 2008 15:31:14 +0200
-From: Marcus Sundberg <marcus@ingate.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Francois Romieu <romieu@fr.zoreil.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.26-rc9] r8169: Avoid thrashing PCI conf space on RTL_GIGA_MAC_VER_20.
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (usagi.ingate.se [193.180.23.12]); Thu, 10 Jul 2008 15:31:22 +0200 (CEST)
+	Thu, 10 Jul 2008 09:55:07 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:52942 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754505AbYGJNzF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 09:55:05 -0400
+Subject: Re: [RFC] simple dprobe like markers for the kernel
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
+In-Reply-To: <20080710033943.GA19022@Krystal>
+References: <1215638551.3444.39.camel@localhost.localdomain>
+	 <20080710033943.GA19022@Krystal>
+Content-Type: text/plain
+Date: Thu, 10 Jul 2008 08:55:01 -0500
+Message-Id: <1215698101.3353.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The magic write to register 0x82 will often cause PCI config space on
-my 8168 (PCI ID 10ec:8168, revision 2. mounted in an LG P300 laptop)
-to be filled with ones during driver load, and thus breaking NIC
-operation until reboot. If it does not happen on first driver load it
-can easily be reproduced by unloading and loading the driver a few
-times.
+On Wed, 2008-07-09 at 23:39 -0400, Mathieu Desnoyers wrote:
+> * James Bottomley (James.Bottomley@HansenPartnership.com) wrote:
+> > I've been looking at using the existing in kernel markers for dtrace
+> > named probing in systemtap.  What I find is that they're a bit
+> > heavyweight when compared to what dtrace does (because of the way they
+> > drop stubbable calling points).
+> > 
+> > This patch adds incredibly simple markers which are designed to be used
+> > via kprobes.  All it does is add an extra section to the kernel (and
+> > modules) which annotates the location in source file/line of the marker
+> > and a description of the variables of interest.  Tools like systemtap
+> > can then use the kernel dwarf2 debugging information to transform this
+> > to a precise probe point that gives access to the named variables.
+> > 
+> > The beauty of this scheme is that it has zero cost in the unactivated
+> > case (the extra section is discardable if you're not interested in the
+> > information, and nothing is actually added into the routine being
+> > marked).  The disadvantage is that it's really unusable for rolling your
+> > own marker probes because it relies on the dwarf2 information to locate
+> > the probe point for kprobes and unravel the local variables of interest,
+> > so you need an external tool like systemtap to help you.
+> > 
+> > The scheme uses a printk format like string to describe the variables of
+> > interest, so if those variables disappear, the compile breaks (even in
+> > the unmarked case) which should help us keep the marked probe points
+> > current.
+> > 
+> > For instance, this is what SCSI would look like with a probe point added
+> > just before the command goes to the low level device
+> > 
+> > 		trace_simple(queuecommand, "Command being queued %p Done function %p", cmd, scsi_done);
+> > 		rtn = host->hostt->queuecommand(cmd, scsi_done);
+> > 		trace_simple(queuecommand_return, "Command returning %p Return value %d", cmd, rtn);
+> > 
+> > Here you can see that each trace point describes two variables whose
+> > values can be viewed at that point by the relevant tools.  The format
+> > strings and variables can be used by a tool to perform dtrace -l like
+> > functionality:
+> > 
+> > MODULE    FUNCTION         NAME                DESCRIPTION
+> > scsi_mod  scsi_dispatch_io queuecommand        Command being queued $sdev; Done function $scsi_done
+> > scsi_mod  scsi_dispatch_io queuecommand_return Command being queued $sdev; Return value $ret
+> > 
+> > So the trace points recommend to the user what variables to use and
+> > briefly what they mean.
+> > 
+> > James
+> > 
+> 
+> Hi James,
+> 
+> It's interesting to see this try at a stubless marker scheme. A few
+> things as you and Frank pointed out :
+> - It depends on an external tool to parse the dwarf info, so it cannot
+>   be used by in-kernel tracers such as ftrace.
 
-The magic write was added long ago by this commit:
+Actually, I think I listed that as one of the issues.
 
-Author: François Romieu <romieu@fr.zoreil.com>
-Date:   Sat Jan 10 06:00:46 2004 -0500
+> - It does not require variable liveliness at the marker site : the
+>   compiler can freely optimize out the variable whenever it needs to.
 
-     [netdrvr r8169] Merge of changes done by Realtek to rtl8169_init_one():
-     - phy capability settings allows lower or equal capability as suggested
-       in Realtek's changes;
-     - I/O voodoo;
-     - no need to s/mdio_write/RTL8169_WRITE_GMII_REG/;
-     - s/rtl8169_hw_PHY_config/rtl8169_hw_phy_config/;
-     - rtl8169_hw_phy_config(): ad-hoc struct "phy_magic" to limit duplication
-       of code (yep, the u16 -> int conversions should work as expected);
-     - variable renames and whitepace changes ignored.
+Correct ... by design a zero impact probe must not affect the
+optimisation.
 
-As the 8168 wasn't supported by that version this patch simply removes
-the bogus write from mac versions <= RTL_GIGA_MAC_VER_06.
+> Besides those core concerns, I went through your patch, a small detail
+> seems incorrect. Please see the comment below.
+> 
+> > ---
+> > 
+> > diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+> > index f054778..c0c38b8 100644
+> > --- a/include/asm-generic/vmlinux.lds.h
+> > +++ b/include/asm-generic/vmlinux.lds.h
+> > @@ -299,6 +299,8 @@
+> >  		.debug_funcnames 0 : { *(.debug_funcnames) }		\
+> >  		.debug_typenames 0 : { *(.debug_typenames) }		\
+> >  		.debug_varnames  0 : { *(.debug_varnames) }		\
+> > +		/* simple markers (depends on dwarf2 debugging info) */	\
+> > +		__simple_marker (INFO) : { *(__simple_marker) }		\
+> >  
+> >  		/* Stabs debugging sections.  */
+> >  #define STABS_DEBUG							\
+> > diff --git a/include/linux/simple_marker.h b/include/linux/simple_marker.h
+> > new file mode 100644
+> > index 0000000..675f5b1
+> > --- /dev/null
+> > +++ b/include/linux/simple_marker.h
+> > @@ -0,0 +1,41 @@
+> > +#include <linux/stringify.h>
+> > +
+> > +/* To be used for string format validity checking with gcc */
+> > +static inline void __printf(1, 2)
+> > +__trace_simple_check_format(const char *fmt, ...)
+> > +{
+> > +}
+> > +
+> > +#ifdef CONFIG_DEBUG_INFO
+> > +#define trace_simple(name, format, args...)				\
+> > +	do {								\
+> > +		static const char __simple_name_##name[]		\
+> > +		__attribute__((section("__simple_marker")))		\
+> > +		__attribute__((__used__))				\
+> > +		= #name;						\
+> > +		static const char __simple_file_##name[]		\
+> > +		__attribute__((section("__simple_marker")))		\
+> > +		__attribute__((__used__))				\
+> > +		= __FILE__;						\
+> > +		static const char __simple_line_##name[]		\
+> > +		__attribute__((section("__simple_marker")))		\
+> > +		__attribute__((__used__))				\
+> > +		= __stringify(__LINE__);				\
+> > +		static const char __simple_format_##name[]		\
+> > +		__attribute__((section("__simple_marker")))		\
+> > +		__attribute__((__used__))				\
+> > +		= #format;						\
+> > +		static const char __simple_args_##name[]		\
+> > +		__attribute__((section("__simple_marker")))		\
+> > +		__attribute__((__used__))				\
+> > +		= #args;						\
+> 
+> All those variables placed in the __simple_marker section are not
+> guaranteed to be placed nicely together. There should be a structure
+> containing pointers to name, file, line, format and args strings (all
+> together) in a special section, and then those strings could be emitted
+> in another section. Otherwise, the compiler can freely choose to
+> interleave different strings from various tracing statements.
 
-Signed-off-by: Marcus Sundberg <marcus@ingate.com>
----
-The magic write is not present in the r8168 driver from RealTek either.
-Does anyone know what it's supposed to do?
+This is just an RFC and a proof of concept.  In practice the whole
+section will have to be constructed so that it's versioned (in case more
+information has to be added).  Realistically, string optimisation also
+needs to be done (since file will be repeated over and over again),
+which is also less easy to do.  However, the idea of using strings is
+deliberate since they're easier to parse than specific structures which
+have to be shared between tools (particularly when the information is
+variable length).
 
-//Marcus
+James
 
-  drivers/net/r8169.c |    6 ++++--
-  1 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
-index 6572425..42d7c0a 100644
---- a/drivers/net/r8169.c
-+++ b/drivers/net/r8169.c
-@@ -1438,8 +1438,10 @@ static void rtl8169_init_phy(struct net_device *dev, struct rtl8169_private *tp)
-
-  	rtl_hw_phy_config(dev);
-
--	dprintk("Set MAC Reg C+CR Offset 0x82h = 0x01h\n");
--	RTL_W8(0x82, 0x01);
-+	if (tp->mac_version <= RTL_GIGA_MAC_VER_06) {
-+		dprintk("Set MAC Reg C+CR Offset 0x82h = 0x01h\n");
-+		RTL_W8(0x82, 0x01);
-+	}
-
-  	pci_write_config_byte(tp->pci_dev, PCI_LATENCY_TIMER, 0x40);
-
--- 
----------------------------------------+--------------------------
-   Marcus Sundberg <marcus@ingate.com>  | Firewalls with SIP & NAT
-  Software Developer, Ingate Systems AB |  http://www.ingate.com/
