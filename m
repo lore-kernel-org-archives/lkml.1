@@ -1,85 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759593AbYGJSmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753686AbYGJSm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759593AbYGJSmc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 14:42:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756079AbYGJSlo
+	id S1753686AbYGJSm7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 14:42:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757170AbYGJSlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 14:41:44 -0400
+	Thu, 10 Jul 2008 14:41:46 -0400
 Received: from mga02.intel.com ([134.134.136.20]:65169 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753686AbYGJSlm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 14:41:42 -0400
+	id S1754664AbYGJSln (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 14:41:43 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.30,339,1212390000"; 
-   d="scan'208";a="409061616"
-Message-Id: <20080710182237.630380000@linux-os.sc.intel.com>
+   d="scan'208";a="409061669"
+Message-Id: <20080710182238.345436000@linux-os.sc.intel.com>
 References: <20080710181634.764954000@linux-os.sc.intel.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 10 Jul 2008 11:16:46 -0700
+Date: Thu, 10 Jul 2008 11:16:51 -0700
 From: Suresh Siddha <suresh.b.siddha@intel.com>
 To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
        akpm@linux-foundation.org, arjan@linux.intel.com, andi@firstfloor.org,
        ebiederm@xmission.com, jbarnes@virtuousgeek.org, steiner@sgi.com
 Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch 12/26] x64, x2apic/intr-remap: 8259 specific mask/unmask routines
-Content-Disposition: inline; filename=8259_routines.patch
+Subject: [patch 17/26] x64, x2apic/intr-remap: disable DMA-remapping if Interrupt-remapping is detected (temporary quirk)
+Content-Disposition: inline; filename=disable_dmar_if_intr_remapping.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-8259 specific mask/unmask routines which be used later while enabling
-interrupt-remapping.
+Interrupt-remapping enables queued invalidation. And once queued invalidation
+is enabled, IOTLB invalidation also needs to use the queued invalidation
+mechanism and the register based IOTLB invalidation doesn't work.
+
+For now, Support for IOTLB invalidation using queued invalidation is
+missing. Meanwhile, disable DMA-remapping, if Interrupt-remapping
+support is detected.
+
+For the meanwhile, if someone wants to really enable DMA-remapping, they
+can use nox2apic, which will disable interrupt-remapping and as such
+doesn't enable queued invalidation.
+
+And given that none of the release platforms support intr-remapping yet,
+we should be ok for this temporary hack.
 
 Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 ---
 
-Index: tree-x86/arch/x86/kernel/i8259.c
+Index: tree-x86/drivers/pci/dmar.c
 ===================================================================
---- tree-x86.orig/arch/x86/kernel/i8259.c	2008-07-10 09:51:45.000000000 -0700
-+++ tree-x86/arch/x86/kernel/i8259.c	2008-07-10 09:52:09.000000000 -0700
-@@ -282,6 +282,30 @@
+--- tree-x86.orig/drivers/pci/dmar.c	2008-07-10 09:52:03.000000000 -0700
++++ tree-x86/drivers/pci/dmar.c	2008-07-10 09:52:19.000000000 -0700
+@@ -457,6 +457,31 @@
  
- device_initcall(i8259A_init_sysfs);
- 
-+void mask_8259A(void)
-+{
-+	unsigned long flags;
+ #ifdef CONFIG_DMAR
+ 	{
++		struct acpi_table_dmar *dmar;
++		/*
++		 * for now we will disable dma-remapping when interrupt
++		 * remapping is enabled.
++		 * When support for queued invalidation for IOTLB invalidation
++		 * is added, we will not need this any more.
++		 */
++		dmar = (struct acpi_table_dmar *) dmar_tbl;
++		if (ret && cpu_has_x2apic && dmar->flags & 0x1) {
++			printk(KERN_INFO
++			       "Queued invalidation will be enabled to support "
++			       "x2apic and Intr-remapping.\n");
++			printk(KERN_INFO
++			       "Disabling IOMMU detection, because of missing "
++			       "queued invalidation support for IOTLB "
++			       "invalidation\n");
++			printk(KERN_INFO
++			       "Use \"nox2apic\", if you want to use Intel "
++			       " IOMMU for DMA-remapping and don't care about "
++			       " x2apic support\n");
 +
-+	spin_lock_irqsave(&i8259A_lock, flags);
++			dmar_disabled = 1;
++			return;
++		}
 +
-+	outb(0xff, PIC_MASTER_IMR);	/* mask all of 8259A-1 */
-+	outb(0xff, PIC_SLAVE_IMR);	/* mask all of 8259A-2 */
-+
-+	spin_unlock_irqrestore(&i8259A_lock, flags);
-+}
-+
-+void unmask_8259A(void)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&i8259A_lock, flags);
-+
-+	outb(cached_master_mask, PIC_MASTER_IMR); /* restore master IRQ mask */
-+	outb(cached_slave_mask, PIC_SLAVE_IMR);	  /* restore slave IRQ mask */
-+
-+	spin_unlock_irqrestore(&i8259A_lock, flags);
-+}
-+
- void init_8259A(int auto_eoi)
- {
- 	unsigned long flags;
-Index: tree-x86/include/asm-x86/i8259.h
-===================================================================
---- tree-x86.orig/include/asm-x86/i8259.h	2008-07-10 09:51:45.000000000 -0700
-+++ tree-x86/include/asm-x86/i8259.h	2008-07-10 09:52:09.000000000 -0700
-@@ -57,4 +57,7 @@
- 
- extern struct irq_chip i8259A_chip;
- 
-+extern void mask_8259A(void);
-+extern void unmask_8259A(void);
-+
- #endif	/* __ASM_I8259_H__ */
+ 		if (ret && !no_iommu && !iommu_detected && !swiotlb &&
+ 		    !dmar_disabled)
+ 			iommu_detected = 1;
 
 -- 
 
