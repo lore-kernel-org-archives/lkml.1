@@ -1,69 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758017AbYGJPMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758046AbYGJPP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758017AbYGJPMT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 11:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755629AbYGJPMG
+	id S1758046AbYGJPP0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 11:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756273AbYGJPPK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 11:12:06 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:20860 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755147AbYGJPMF (ORCPT
+	Thu, 10 Jul 2008 11:15:10 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:6292 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752354AbYGJPPI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 11:12:05 -0400
+	Thu, 10 Jul 2008 11:15:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=HbwMOrP4perQx3v82E2XON+SPXLYiKb6nsIwJUJ7Bt7q9CLD7DEt2rbz8pR0S90kwX
-         +FnLdOPk1kJAt2X7pYqfoPAYk1btngQlqVPBBaeJ21uavMGG1ptEjLvg+BemQc1qBuE7
-         qRRyJ5XHLy6j2BV24Ar0LcBJB4aNZziD/5Kks=
-Date: Thu, 10 Jul 2008 11:11:58 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Pavel Machek <pavel@suse.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Shaohua Li <shaohua.li@intel.com>, Len Brown <lenb@kernel.org>,
-       jikos@suse.cz
-Subject: Re: [PATCH -mm 4/8] serio: Speed-up resume
-Message-ID: <20080710151158.GA4332@anvil.corenet.prv>
-References: <200807100152.17755.rjw@sisk.pl> <200807100201.56232.rjw@sisk.pl> <20080710113535.GD15412@elf.ucw.cz>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=bcQAXwlyUFhVS+4CzqBpNTiEXZSULnpGSKnmDC5g5oAN20fDqJ3djzPKs/kp/R2bEH
+         idNhoOcG6V+DnbltqhydTsHI6h6m5WbwpfoaTskvVwNWckrQgK+Ass6JUez/Kfj7YC7D
+         BTwaFIOtfIIsi7hwhbBT1731zgWkSGIgaMfeE=
+Message-ID: <1ba2fa240807100815j6bda3c63q4fc4d0c5da826fe3@mail.gmail.com>
+Date: Thu, 10 Jul 2008 18:15:07 +0300
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "Johannes Berg" <johannes@sipsolutions.net>
+Subject: Re: Linux Wireless Mini-Summit -- Ottawa -- July 22, 2008
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1215700309.3483.21.camel@johannes.berg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080710113535.GD15412@elf.ucw.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20080709190915.GA8238@tuxdriver.com>
+	 <1215700309.3483.21.camel@johannes.berg>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 10, 2008 at 01:35:35PM +0200, Pavel Machek wrote:
-> On Thu 2008-07-10 02:01:55, Rafael J. Wysocki wrote:
-> > From: Shaohua Li <shaohua.li@intel.com>
-> > Subject: serio: Speed-up resume
-> > 
-> > serio_resume will call into psmouse_extensions(). In my test, the
-> > routine is very slow, it blocks resume about 1 sec. Below patch (move
-> > resume to kseriod, just like boot time probe) cures the issue in my
-> > test, and seems no side effect. I'm no familiar with serio driver, so
-> > please check. 
-> > 
-> > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> > Acked-by: Len Brown <lenb@kernel.org>
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Cc: Jiri Kosina <jikos@suse.cz>
-> 
-> ACK from me, but I'm not a serio expert.
-> 								Pavel
+On Thu, Jul 10, 2008 at 5:31 PM, Johannes Berg
+<johannes@sipsolutions.net> wrote:
+>
+>> 1500  Future work
+>
+> Maybe something about testing? Or I'll do a testing brainstorming
+> session after dinner.
+>
+> Obviously, testing at orbit never worked out, but it'd be good to have
+> _something_ other than everybody testing their thing locally. Ties in
+> with the virtual hardware, maybe?
+>
+>From the driver perspective it would be loop back phy (tx/rx), The
+peer side might be running on virtual HW. Currently it's not easy to
+establish automated regression over the air. Good portion of the flows
+can be tested this way.
 
-I think the patch makes sense, maybe it will even help with resume in
-general when we fail to resume for some reason and then when they reload
-drivers after the system is fully up it magically starts workign again.
-It is in my 'master' branch from which Andrew is pulling into -mm. I
-will let it sit there for a bit though.
+I'm also looking for easier bug reporting for unexperienced users
+maybe some uevent/HAL popping to application and emails it out/. Not
+sure really how to handle this and not create spams. I'm just
+expecting more real 'end users'.
 
--- 
-Dmitry
+
+Thanks
+Tomas
