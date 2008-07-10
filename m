@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754851AbYGJWa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755204AbYGJWnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754851AbYGJWa0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 18:30:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbYGJWaQ
+	id S1755204AbYGJWnn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 18:43:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753724AbYGJWne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 18:30:16 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60070 "EHLO mx1.redhat.com"
+	Thu, 10 Jul 2008 18:43:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42788 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752115AbYGJWaO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 18:30:14 -0400
-Message-ID: <48768D53.4000803@redhat.com>
-Date: Thu, 10 Jul 2008 15:29:39 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1753165AbYGJWnd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 18:43:33 -0400
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: Rik van Riel <riel@redhat.com>, Paul Menage <menage@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Libcg Devel Mailing List <libcg-devel@lists.sourceforge.net>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Peter Zijlstra <pzijlstr@redhat.com>,
-       Kazunaga Ikeno <k-ikeno@ak.jp.nec.com>,
-       Morton Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Graf <tgraf@redhat.com>
-Subject: Re: [RFC] How to handle the rules engine for cgroups
-References: <20080701191126.GA17376@redhat.com> <20080703101957.b3856904.kamezawa.hiroyu@jp.fujitsu.com> <20080703155446.GB9275@redhat.com> <6599ad830807100223m2453963cwcfbe6eb1ad54d517@mail.gmail.com> <20080710104852.797fe79c@cuia.bos.redhat.com> <20080710154035.GA12043@redhat.com> <48763129.9060903@redhat.com> <20080710132546.264a89cd@cuia.bos.redhat.com> <48764950.3050405@redhat.com> <20080710184142.GC12043@redhat.com>
-In-Reply-To: <20080710184142.GC12043@redhat.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86_64: fix delayed signals
+In-Reply-To: Linus Torvalds's message of  Thursday, 10 July 2008 15:06:51 -0700 <alpine.LFD.1.10.0807101459000.2936@woody.linux-foundation.org>
+X-Fcc: ~/Mail/linus
+References: <20080710215039.2A143154218@magilla.localdomain>
+	<alpine.LFD.1.10.0807101459000.2936@woody.linux-foundation.org>
+X-Windows: the cutting edge of obsolescence.
+Message-Id: <20080710224256.AD038154218@magilla.localdomain>
+Date: Thu, 10 Jul 2008 15:42:56 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+> But if you really want that behaviour, then re-introducing the loop would 
+> likely be the better approach (or should be combined), since I think you 
+> effectively just re-introduced it (at a much bigger granularity).
 
-Vivek Goyal wrote:
-> Before exec, we should be able to determine the
-> migration policy related to process/thread (either by reading file or
-> something else etc). Set the policy through cgroup file system. If exec
-> fails for some reason, we just need to go back to cgroup file system to
-> undo the effect of setting migration policy previously set for that thread.
+I don't think so.  Firstly, TIF_SIGPENDING is not the only flag in
+question.  There are other reasons to re-enter do_notify_resume().
+If those are set during signal processing et al, they should take
+effect before going back to user mode.
 
-That's what I said.  It would be necessary to get the old state and
-reset it if necessary.
+Second, there is always a race.  Anywhere after the last time the
+siglock was held inside do_signal(), there can be an interrupt that
+sets TIF_SIGPENDING (or other _TIF_DO_NOTIFY_MASK flags).  If you go
+on to return to user mode, then it can be a long time before the new
+signal is actually delivered (til the next tick).  
 
-As for the interface: I hope nobody honestly thinks that it is doable to
-perform a whole bunch of filesystem operations for every exec.
+It really is necessary to check all the _TIF_WORK_MASK flags with
+interrupts disabled, last thing.  I just don't see how any short
+cuts here can be robust.  It's simple, it's right, and it's what all
+the other paths (and all other arch code I've ever noticed) do.
 
-And more: reading a rule file, interpreting the rules to find the best
-match, etc is also too expensive.  Every process would have to read the
-rule file again.  If this is non-trivial or the rule file is large, the
-cost of an exec could easily be overshadowed by the cost of this
-preparation.  Unlike the kernel, the userlevel runtime cannot in general
-amortize the cost over several exec calls.  Handling all this in the
-kernel wouldn't have any of these problems.
+Since it's necessary to have robust checks in the final part of the
+assembly code path anyway, and stacked signals are rare, there is
+just no special reason to have a loop in do_signal().  In the common
+case it every time retakes the siglock again when unnecessary, with
+bad SMP performance effects; optimizing that with a signal_pending()
+check just shows why it's simpler not to have a loop.  Frankly, I'm
+glad we don't have one because it would fix only the scenario that
+has a test case that's real easy to write, and leave lying all the
+much more hairy ones that will cause someone to spend days and days
+some day later tearing his hair out.
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkh2jVMACgkQ2ijCOnn/RHQ6JACgx4W0dUh/MK6po23D1ObcnsKA
-HOAAn2Qfrh8m5zsdHQoniaoLl12Ut3ZE
-=IU/X
------END PGP SIGNATURE-----
+Thanks,
+Roland
