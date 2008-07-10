@@ -1,93 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757923AbYGJWJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755159AbYGJWRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757923AbYGJWJg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 18:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756475AbYGJWJ0
+	id S1755159AbYGJWRr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 18:17:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbYGJWRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 18:09:26 -0400
-Received: from wr-out-0506.google.com ([64.233.184.225]:49607 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753798AbYGJWJZ (ORCPT
+	Thu, 10 Jul 2008 18:17:36 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:53612 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750992AbYGJWRg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 18:09:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=Oe/Gun5lFEAh/LFZ+wOTs9hepHQ64UkBt34fNlsTLi8HhTFTo3hCdekmhunqc//MAN
-         +F+Pw/1HV5iKmfV01HR3TQG1t05NPta4qGsf7j/nB4cWqWrvOXqPeXihBJjxvP9hn2+H
-         R/w3YdE7JshWFhLyGU6kwN2KJi2o1u1Pw7HP0=
-Message-ID: <1f1b08da0807101509q355eda72ofa855be6e5f42e7f@mail.gmail.com>
-Date: Thu, 10 Jul 2008 15:09:24 -0700
-From: "john stultz" <johnstul@us.ibm.com>
-To: "Mayank Sharma" <mayanks@sirf.com>
-Subject: Re: Time drifting after multiple sleep/wakeup in timekeeping
-Cc: lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <013B1C915F9462459242424413ABB264011AC64C@bnglmail.sirf.com>
+	Thu, 10 Jul 2008 18:17:36 -0400
+Date: Fri, 11 Jul 2008 00:17:29 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Marcus Sundberg <marcus@ingate.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.26-rc9] r8169: Avoid thrashing PCI conf space on
+	RTL_GIGA_MAC_VER_20.
+Message-ID: <20080710221729.GB18477@electric-eye.fr.zoreil.com>
+References: <48760F22.8040208@ingate.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <AcjWuXCdruANDkKsEd3GhwAVxR+4QQ==>
-	 <013B1C915F9462459242424413ABB264011AC64C@bnglmail.sirf.com>
-X-Google-Sender-Auth: 6a759ad00ca3fb19
+In-Reply-To: <48760F22.8040208@ingate.com>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 25, 2008 at 4:48 AM, Mayank Sharma <mayanks@sirf.com> wrote:
-> I noticed a bug with respect to time drifting after multiple sleep/wakeup sequence. We have an embedded ARM11 based platform on which we have successfuly ported Linux. We also have a RTC on board. Hence we have implemented the read_persistent_clock() function overriding the one defined in kernel/time/timekeeping.c. What we observed was that after doing multiple sleep/wakeup sequences, the time reported by RTC and gettimeofday was drifting. After about 10 iterations the gettimeofday was lagging by about one second. Subsequently the lag only increased.
->
-> What looks to me is that in the timekeeping_resume function we are adding the number of seconds we have been sleeping to adjust the new time. But since we are adding only the seconds slept the update is only second level accurate. read_persistent_clock gives a second level granulaity, and hence we cannot help that. Hence after one sleep/wake sequence the gettimeoday would have lagged by delta (where delta is less than a second). On multiple such iterations the delta keeps adding up, becoming a second and thereafter we see a drift of more than a second.
->
-> If however we set the gettimeofday (xtime) to the RTC time on wakeup (Just like we do in timekeeping_init()) instead of just adding the sleep time, the drift will not accumulate. I am using the patch mentioned in the end of the mail to fix this issue. Let me know if this is a valid patch.
->
-> Regards,
-> Mayank
->
-> diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-> index e91c29f..6edf37f 100644
-> --- a/kernel/time/timekeeping.c
-> +++ b/kernel/time/timekeeping.c
-> @@ -288,12 +288,19 @@ static int timekeeping_resume(struct sys_device *dev)
->        if (now && (now > timekeeping_suspend_time)) {
->                unsigned long sleep_length = now - timekeeping_suspend_time;
->
-> -               xtime.tv_sec += sleep_length;
-> +               /* Syncronize the xtime with the rtc as is done during init. This
-> +                * ensures that drift is not accumulated while sleeping and waking
-> +                * multiple times
-> +                */
-> +               xtime.tv_sec = now;
-> +               xtime.tv_nsec = 0;
+Marcus Sundberg <marcus@ingate.com> :
+> The magic write to register 0x82 will often cause PCI config space on
+> my 8168 (PCI ID 10ec:8168, revision 2. mounted in an LG P300 laptop)
+> to be filled with ones during driver load, and thus breaking NIC
+> operation until reboot. If it does not happen on first driver load it
+> can easily be reproduced by unloading and loading the driver a few
+> times.
 
-This would only be better if we are sure the persistent clock is NTP
-synced (which it may not be) and it also waits for a second boundary
-to return. On x86 I know the stall-for-a-second-boundary trick was
-removed because it would add an extra 1sec delay to the suspend/resume
-time.
+I have added it at the root of the 'r8169' branch in repository:
 
-Additionally Mixing the above with the below could cause the monotonic
-clock to see inconsistencies.
+git://git.kernel.org/pub/scm/linux/kernel/git/romieu/netdev-2.6.git r8169
 
->                wall_to_monotonic.tv_sec -= sleep_length;
->                total_sleep_time += sleep_length;
->        }
->        /* Make sure that we have the correct xtime reference */
-> -       timespec_add_ns(&xtime, timekeeping_suspend_nsecs);
-> +       else {
-> +               timespec_add_ns(&xtime, timekeeping_suspend_nsecs);
-> +    }
->        update_xtime_cache(0);
->        /* re-base the last cycle value */
->        clock->cycle_last = 0;
+The branch is described below (on top of davem's 'next' branch).
 
-So instead,  I'd suggest extending the persistent_clock interface to
-support/return nanoseconds, so the delta can be more precise. This
-won't work on all hardware (since not all systems have nanosecond
-resolution rtcs) but avoids any delays trying to only return on second
-boundaries, etc.
+The whole serie is available as a patck-kit on top of 2.6.26-rc9 at:
 
-thanks
--john
+http://userweb.kernel.org/~romieu/r8169/2.6.26-rc9/20080710/ 
+
+
+Diffstat
+--------
+
+ drivers/net/r8169.c |  496 ++++++++++++++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 470 insertions(+), 26 deletions(-)
+
+Shortlog
+--------
+
+Francois Romieu (12):
+      r8169: update phy init parameters
+      r8169: new phy init parameters for the 8168b
+      r8169: shuffle some registers handling around (8168 operation only)
+      r8169: add 8168 registers description
+      r8169: make room for more specific 8168 hardware start procedure
+      r8169: Tx performance tweak
+      r8169: sync existing 8168 device hardware start sequences with vendor driver
+      r8169: add a new 8168 flavor
+      r8169: add a new 8168 flavor (bis)
+      r8169: add a new 8168 flavor (ter)
+      r8169: change default behavior for mildly identified 8168c chipsets
+      r8169: use pci_find_capability for the PCI-E features
+
+Marcus Sundberg (1):
+      r8169: avoid thrashing PCI conf space above RTL_GIGA_MAC_VER_06
+
+-- 
+Ueimor
