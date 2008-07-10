@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758133AbYGJQfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758529AbYGJQgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758133AbYGJQfm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 12:35:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbYGJQfe
+	id S1758529AbYGJQgV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 12:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbYGJQgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 12:35:34 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:55283 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750833AbYGJQfd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 12:35:33 -0400
-Date: Thu, 10 Jul 2008 12:35:15 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
-Cc: user-mode-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: UML kernel failed to start betvee 2.6.8-rc8 and current git
-	sources
-Message-ID: <20080710163514.GA17561@c2.user-mode-linux.org>
-References: <200807101619.54052.toralf.foerster@gmx.de>
+	Thu, 10 Jul 2008 12:36:12 -0400
+Received: from sirius.lasnet.de ([78.47.116.19]:54425 "EHLO sirius.lasnet.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751261AbYGJQgL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 12:36:11 -0400
+Date: Thu, 10 Jul 2008 18:40:08 +0200
+From: Stefan Schmidt <stefan@datenfreihafen.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Daniel Ribeiro <drwyrm@gmail.com>, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Message-ID: <20080710164008.GD14476@datenfreihafen.org>
+References: <20080707184000.411913919@datenfreihafen.org> <20080707184129.554483476@datenfreihafen.org> <74d0deb30807071221u4e216f76l479766925c903b5f@mail.gmail.com> <20080707200251.GA3449@datenfreihafen.org> <48730DE2.2050302@gmail.com> <4873734F.4030808@gmail.com> <20080708203213.GF18479@datenfreihafen.org> <20080710162158.GG10441@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200807101619.54052.toralf.foerster@gmx.de>
+In-Reply-To: <20080710162158.GG10441@flint.arm.linux.org.uk>
+X-Mailer: Mutt http://www.mutt.org/
+X-KeyID: 0xDDF51665
+X-Website: http://www.datenfreihafen.org/
 User-Agent: Mutt/1.5.18 (2008-05-17)
+Subject: Re: [Patch 06/10] mfd: PCAP driver for the Motorola EZX GSM mobile
+	phones
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 10, 2008 at 04:19:51PM +0200, Toralf Förster wrote:
-> from v2.6.26-rc8 to v2.6.26-rc9-56-g6329d30 sth. affected UML, b/c my user mode linux kernel produces this :
+Hello.
+
+On Thu, 2008-07-10 at 17:21, Russell King - ARM Linux wrote:
+> On Tue, Jul 08, 2008 at 10:32:13PM +0200, Stefan Schmidt wrote:
+> > Daniel fixed all of Philipps comments besides the voltage framework. From Eric
+> > comments we updated to the new IRQ part and moved to platform data.
 > 
-> ...
-> VFS: Mounted root (ext3 filesystem) readonly.
-> Registers -
->         0       0x0
->         1       0x0
->         2       0x0
->         3       0x0
->         4       0x0
->         5       0x0
->         6       0x0
->         7       0x0
->         8       0x0
->         9       0x0
->         10      0x0
->         11      0x0
->         12      0x0
->         13      0x0
->         14      0x0
->         15      0x0
->         16      0x0
-> Kernel panic - not syncing: do_syscall_stub : PTRACE_SETREGS failed, errno = 5
-> 
+> Due to the problems people were seeing with the IRQ numbering commit, we
+> (Eric and myself) have decided to drop that commit for the time being.
+> It will reappear after this merge window however.
 
-I have 2.6.26-rc9-00010-g3bc5ab9 and it seems fine.  I'll pull the latest git
-and see if that's still OK.
+Thanks for the note.I just run into it while testing your updated tree with our
+remaining patches. I remove this for now and will switch back to it when the
+dust has settled and it is back.
 
-What's the host?
-
-				Jeff
-
--- 
-Work email - jdike at linux dot intel dot com
+regards
+Stefan Schmidt
