@@ -1,76 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757473AbYGJNF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757287AbYGJNIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757473AbYGJNF3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 09:05:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754367AbYGJNFS
+	id S1757287AbYGJNIZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 09:08:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbYGJNIP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 09:05:18 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41306 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754360AbYGJNFR (ORCPT
+	Thu, 10 Jul 2008 09:08:15 -0400
+Received: from wr-out-0506.google.com ([64.233.184.235]:11894 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754174AbYGJNIO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 09:05:17 -0400
-Date: Thu, 10 Jul 2008 05:59:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, tglx@linutronix.de,
-       mingo@redhat.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
-       Sebastian.Biemueller@amd.com, robert.richter@amd.com, joro@8bytes.org
-Subject: Re: [PATCH 02/34] AMD IOMMU: add header file for driver data
- structures and defines
-Message-Id: <20080710055903.e0776757.akpm@linux-foundation.org>
-In-Reply-To: <20080710121221.GH14977@amd.com>
-References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com>
-	<1214508490-29683-3-git-send-email-joerg.roedel@amd.com>
-	<20080709183823.52bbfd37.akpm@linux-foundation.org>
-	<20080709185055.3b47c4db@infradead.org>
-	<20080709193601.347134bf.akpm@linux-foundation.org>
-	<20080710121221.GH14977@amd.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 10 Jul 2008 09:08:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :message-id:from;
+        b=TMN2hrO2o577KaRKSqRlzFTZ8sZR95GF3IEOnyXIUXJWUIiMvhsIDLGRchVkv0XlKs
+         rmuULIsP4zoiBhQI9EzTDw2D+GprRmbqvmcE7pE5LPuynNTLtEnzgfIppEIlk4ENuyW9
+         +Dm2v5YNPtSvYzGUdw3IvJ5Y2M3YfIiwxByww=
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: [RESEND] [PATCH -next 2/2] acpi,rfkill,backlight: comapl-laptop update - use rfkill switch subsystem
+Date: Thu, 10 Jul 2008 15:17:37 +0200
+User-Agent: KMail/1.9.9
+Cc: Cezary Jackiewicz <cezary.jackiewicz@gmail.com>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ak@linux.intel.com, Len Brown <lenb@kernel.org>,
+       Richard Purdie <rpurdie@rpsys.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20080709231059.778d16f4@debian> <200807092357.28013.IvDoorn@gmail.com> <20080710011201.GC15729@khazad-dum.debian.net>
+In-Reply-To: <20080710011201.GC15729@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807101517.38109.IvDoorn@gmail.com>
+From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Jul 2008 14:12:22 +0200 Joerg Roedel <joerg.roedel@amd.com> wrote:
-
-> On Wed, Jul 09, 2008 at 07:36:01PM -0700, Andrew Morton wrote:
-> > On Wed, 9 Jul 2008 18:50:55 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
+On Thursday 10 July 2008, Henrique de Moraes Holschuh wrote:
+> On Wed, 09 Jul 2008, Ivo van Doorn wrote:
+> > It is not mandatory if you are writing rfkill support for a driver that does not
+> > come with a rfkill switch. Such drivers can make use of the rfkill events produced
+> > by the hardware which does have such a switch.
 > > 
-> > > On Wed, 9 Jul 2008 18:38:23 -0700
-> > > Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > 
-> > > > On Thu, 26 Jun 2008 21:27:38 +0200 Joerg Roedel
-> > > > <joerg.roedel@amd.com> wrote:
-> > > > 
-> > > > > +/* helper macros */
-> > > > > +#define LOW_U32(x) ((x) & ((1ULL << 32)-1))
-> > > > > +#define HIGH_U32(x) (LOW_U32((x) >> 32))
-> > > > 
-> > > > Please avoid putting general-purpose helpers into private header
-> > > > files.
-> > > 
-> > > especially broken helpers.
-> > > 
-> > > A >> 32 on something that may be a 32 bit entry is bad; int32 >> 32...
-> > > gcc can (and does!) optimize that out.
-> > > 
-> > > (because it first gets translated into a SHR x86 instruction which then
-> > > notices it's encoded as a zero shift.. which then gets deleted)
-> > > 
-> > 
-> > Well yeah.  upper_32_bits() gets it all corect.  We could do a
-> > lower_32_bits() I suppose, if it's useful.
+> > When the hardware does have the rfkill switch, then yes rfkill_force_state() is mandatory.
+> > The get_state() callback function is optional, and allows rfkill to differentiate
+> > between soft and hardblock.
 > 
-> Ok cool, I agree. I will replace the HIGH_U32 macro with the
-> upper_32_bits() function and the other one with lower_32_bits() if it
-> exists. Who will take the patch for the introduction of that function?
-> 
+> Do you want me to mark rfkill_force_state() as mandatory in the docs?  It
+> *IS* the preferred way to deal with firmware/hardware-initiated state
+> changes, after all.
 
-I can do that.  We can slip it into mainline as soon as it's ready so that
-the for-2.6.27 patches contine to work.
+Please do. Thanks.
 
-Or we can just do it later, as a followup thing.  Probably this is better.
+> The rfkill subsystem will limp along without it, even when there are
+> hardware rfkill lines... but no OSD function will work, as the system will
+> pick up the change only when someone reads or writes to the state
+> attribute...
+
+That reason alone is good enough for me to mark it mandatory for any drivers
+which features the rfkill key. :)
+
+Ivo
