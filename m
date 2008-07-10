@@ -1,41 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759640AbYGJS73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760834AbYGJTCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759640AbYGJS73 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 14:59:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYGJS7T
+	id S1760834AbYGJTCO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 15:02:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754976AbYGJTB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 14:59:19 -0400
-Received: from gw.goop.org ([64.81.55.164]:58682 "EHLO mail.goop.org"
+	Thu, 10 Jul 2008 15:01:58 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:58867 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752682AbYGJS7S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 14:59:18 -0400
-Message-ID: <48765BF8.1070401@goop.org>
-Date: Thu, 10 Jul 2008 11:59:04 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>, akataria@vmware.com,
-       Thomas Gleixner <tglx@linutronix.de>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Daniel Hecht <dhecht@vmware.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 05/05] x86: Rename paravirtualized TSC functions
-References: <1214937816.20191.34.camel@promb-2n-dhcp368.eng.vmware.com> <20080709061336.GG9760@elte.hu> <86802c440807090020q516b6332qf8e0d65918e7001e@mail.gmail.com> <1215624603.3930.8.camel@alok-dev1> <86802c440807091038m6c14f165xede8b2b0316d0225@mail.gmail.com> <20080710072201.GE14377@elte.hu> <86802c440807100034w3a3ee192k8e565b75fd2df608@mail.gmail.com> <20080710075030.GA27361@elte.hu> <86802c440807100104s1e1f1cdeg421be2dbeffdcb75@mail.gmail.com> <20080710081206.GA4819@elte.hu>
-In-Reply-To: <20080710081206.GA4819@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1754778AbYGJTB4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 15:01:56 -0400
+Subject: Re: [PATCH 1/2] [PATCH] Fix a hugepage reservation check for
+	MAP_SHARED
+From: Adam Litke <agl@us.ibm.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, apw@shadowen.org
+In-Reply-To: <20080710173021.16433.90661.sendpatchset@skynet.skynet.ie>
+References: <20080710173001.16433.87538.sendpatchset@skynet.skynet.ie>
+	 <20080710173021.16433.90661.sendpatchset@skynet.skynet.ie>
+Content-Type: text/plain
+Organization: IBM
+Date: Thu, 10 Jul 2008 14:01:59 -0500
+Message-Id: <1215716519.14825.112.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> then my guess would be on:
->
->  89d7bb5: x86_64: add workaround for no %gs-based percpu
->   
+On Thu, 2008-07-10 at 18:30 +0100, Mel Gorman wrote:
+> When removing a huge page from the hugepage pool for a fault the system
+> checks to see if the mapping requires additional pages to be reserved, and
+> if it does whether there are any unreserved pages remaining.  If not, the
+> allocation fails without even attempting to get a page. In order to determine
+> whether to apply this check we call vma_has_private_reserves() which tells us
+> if this vma is MAP_PRIVATE and is the owner.  This incorrectly triggers the
+> remaining reservation test for MAP_SHARED mappings which prevents allocation
+> of the final page in the pool even though it is reserved for this mapping.
+> 
+> In reality we only want to check this for MAP_PRIVATE mappings where the
+> process is not the original mapper.  Replace vma_has_private_reserves() with
+> vma_has_reserves() which indicates whether further reserves are required,
+> and update the caller.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 
-I'd be surprised.  That patch just moves some code around, and adds a 
-couple of macros that only Xen uses.
+Acked-by: Adam Litke <agl@us.ibm.com>
 
-    J
+Tested and confirmed.
+
+-- 
+Adam Litke - (agl at us.ibm.com)
+IBM Linux Technology Center
+
