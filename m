@@ -1,47 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757305AbYGJLSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbYGJLYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757305AbYGJLSt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 07:18:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbYGJLSm
+	id S1756656AbYGJLYS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 07:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbYGJLYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 07:18:42 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:33812 "EHLO bagnes.atmel.com"
+	Thu, 10 Jul 2008 07:24:06 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51648 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753579AbYGJLSl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 07:18:41 -0400
-Date: Thu, 10 Jul 2008 13:17:50 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 2/4] mmc: Export internal host state through debugfs
-Message-ID: <20080710131750.57df4cd8@siona.local>
-In-Reply-To: <20080710103348.53344978@mjolnir.drzeus.cx>
-References: <1214843703-13199-1-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214918094-26758-1-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214918094-26758-2-git-send-email-haavard.skinnemoen@atmel.com>
-	<20080704194556.73061a08@mjolnir.drzeus.cx>
-	<20080705154436.27830440@siona.local>
-	<20080710103348.53344978@mjolnir.drzeus.cx>
-Organization: Atmel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1752345AbYGJLYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 07:24:05 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH]xen: fix up config dependencies on PM
+Date: Thu, 10 Jul 2008 13:25:42 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <487559AC.1010301@goop.org>
+In-Reply-To: <487559AC.1010301@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Jul 2008 11:17:57.0583 (UTC) FILETIME=[9B1795F0:01C8E27E]
+Content-Disposition: inline
+Message-Id: <200807101325.42586.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Jul 2008 10:33:48 +0200
-Pierre Ossman <drzeus-list@drzeus.cx> wrote:
-
-> > I guess we'll have to throw in a couple of #ifdefs then...
-> >   
+On Thursday, 10 of July 2008, Jeremy Fitzhardinge wrote:
+> Xen save/restore needs bits of code enabled by PM_SLEEP, and PM_SLEEP
+> depends on PM.  So make XEN_SAVE_RESTORE depend on PM and PM_SLEEP
+> depend on XEN_SAVE_RESTORE.
 > 
-> Have you managed do have a look at this?
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Not really, sorry. I'm currently on vacation, so I can't really do a
-lot of testing...but maybe I'll be able to cook up a patch during the
-next couple of days.
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Haavard
+> ---
+>  arch/x86/xen/Kconfig |    5 +++++
+>  kernel/power/Kconfig |    2 +-
+>  2 files changed, 6 insertions(+), 1 deletion(-)
+> 
+> ===================================================================
+> --- a/arch/x86/xen/Kconfig
+> +++ b/arch/x86/xen/Kconfig
+> @@ -23,3 +23,8 @@
+>           according to the maximum possible memory size of a Xen
+>           domain.  This array uses 1 page per gigabyte, so there's no
+>           need to be too stingy here.
+> +
+> +config XEN_SAVE_RESTORE
+> +       bool
+> +       depends on PM
+> +       default y
+> \ No newline at end of file
+> ===================================================================
+> --- a/kernel/power/Kconfig
+> +++ b/kernel/power/Kconfig
+> @@ -82,7 +82,7 @@
+>  
+>  config PM_SLEEP
+>  	bool
+> -	depends on SUSPEND || HIBERNATION
+> +	depends on SUSPEND || HIBERNATION || XEN_SAVE_RESTORE
+>  	default y
+>  
+>  config SUSPEND
+> 
