@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755705AbYGJJuC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754971AbYGJJ6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755705AbYGJJuC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 05:50:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbYGJJty
+	id S1754971AbYGJJ6W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 05:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752430AbYGJJ6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 05:49:54 -0400
-Received: from orion2.pixelized.ch ([195.190.190.13]:39057 "EHLO
-	orion.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751991AbYGJJtx (ORCPT
+	Thu, 10 Jul 2008 05:58:11 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:11626 "EHLO
+	WA4EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751991AbYGJJ6K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 05:49:53 -0400
-Message-ID: <4875DB38.4000209@cateee.net>
-Date: Thu, 10 Jul 2008 11:49:44 +0200
-From: "Giacomo A. Catenazzi" <cate@cateee.net>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Thu, 10 Jul 2008 05:58:10 -0400
+X-BigFish: VPS19(zz4015M62a3L1315m7cf0izz10d3izzz32i6bh87il62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0K3SBON-02-G7Z-01
+Date: Thu, 10 Jul 2008 11:57:58 +0200
+From: Robert Richter <robert.richter@amd.com>
+To: Ingo Molnar <mingo@redhat.com>
+CC: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>
+Subject: x86/pci: Broken build for X86_VISWS
+Message-ID: <20080710095757.GB5607@erda.amd.com>
 MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: bug in 2.6.26-rc9: sleeping function called from invalid context
- at kernel/rwsem:21
-References: <4875C615.90102@cateee.net> <19f34abd0807100234n46e2229ej5077d8c91d08e9f6@mail.gmail.com>
-In-Reply-To: <19f34abd0807100234n46e2229ej5077d8c91d08e9f6@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 10 Jul 2008 09:57:59.0239 (UTC) FILETIME=[6F0E6570:01C8E273]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vegard Nossum wrote:
-> On Thu, Jul 10, 2008 at 10:19 AM, Giacomo A. Catenazzi <cate@cateee.net> wrote:
->> Hello,
->>
->> yesterday at shutdown I had a crash. Unfortunately it seems
->> that there was one (or more) oops missing. The bug appeared
->> at unmounting partition at shutdown, so there are no logs
->> of the previous messages.
-> 
-> Thanks for the report.
-> 
-> It would be really useful to know which filesystems you are/were
-> using, including virtual filesystems like sysfs. Maybe you are using
-> ecryptfs or FUSE?
-> 
-> (It would also be interesting to see if you could run
-> /etc/rc0.d/S40umountfs while the machine is up, to see if you can get
-> the segfault but keep the machine usable enough to get the whole log.)
+Ingo,
 
-At home, my disks are only ext2.
-sysfs, procfs and other system fs and /dev/* mount points are not
-umounted in /etc/rc0.d/S40umountfs.
+during testing of my pci changes I observed a build error if X86_VISWS
+is set:
 
-By a quick look (I'm not at home), it seems that on my home computer
-only ext2 fs are umounted by /etc/rc0.d/S40umountfs.
+arch/x86/mach-visws/built-in.o: In function `machine_power_off':
+(.text+0x48): undefined reference to `pci_bus0'
+make[1]: *** [.tmp_vmlinux1] Error 1
+make: *** [sub-make] Error 2
 
-As I said, the bug doesn't seems reproducible,
-but I'll try harder later.
+The root cause is disabling PCI dependencies in change 1ac97018 that
+disables compilation of x86/pci for VISWS though there are files in
+needed to build. I am not sure if it is save to enable PCI for VISWS
+to fix this.
 
-At subsequent boot, the unclean fs were: / /var and /usr,
-Checking was done without error messages, so I think no busy
-or opened files at time of crash.
+Could you take a look at this?
 
-Note: at the boot, one filesystem was checked (after 30+x),
-I think it was /home. But I really think it is unrelated
-(but it means that some of the other fs have a boot count > 30)
+Thanks,
 
-ciao
-	cate
+-Robert
+
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
