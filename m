@@ -1,58 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757998AbYGJXm4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756908AbYGJXod@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757998AbYGJXm4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 19:42:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142AbYGJXms
+	id S1756908AbYGJXod (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 19:44:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbYGJXoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 19:42:48 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:56210 "EHLO
-	pd3mo1so-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753214AbYGJXmr (ORCPT
+	Thu, 10 Jul 2008 19:44:24 -0400
+Received: from mga10.intel.com ([192.55.52.92]:43762 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751052AbYGJXoY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 19:42:47 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=iecK5QHjX_ZIN2BwQZgA:9 a=GU9LRbqbh1sVlS4SG1ZZUz1a7m0A:4 a=MSl-tDqOz04A:10 a=cbiHbSXtdN4A:10 a=jKsaoXOG-p4A:10
-Message-ID: <48769EE4.3050101@shaw.ca>
-Date: Thu, 10 Jul 2008 17:44:36 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Thu, 10 Jul 2008 19:44:24 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.30,341,1212390000"; 
+   d="scan'208";a="589692007"
+Date: Thu, 10 Jul 2008 19:37:33 -0400
+From: Yong Wang <yong.y.wang@linux.intel.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>, mingo@elte.hu, hpa@zytor.com,
+       tglx@linutronix.de, akpm@linux-foundation.org, arjan@linux.intel.com,
+       andi@firstfloor.org, jbarnes@virtuousgeek.org, steiner@sgi.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 26/26] x64, x2apic/intr-remap: introduce
+	CONFIG_INTR_REMAP
+Message-ID: <20080710233733.GA21085@ywang-dev>
+References: <20080710181634.764954000@linux-os.sc.intel.com> <20080710182239.635284000@linux-os.sc.intel.com> <m1r6a1fhc8.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
-To: darrell.holigan@gmail.com
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Providing access to kernel memory from PCI bus
-References: <61c5c72f-6427-4dbf-b608-ceedc1859425@m45g2000hsb.googlegroups.com>
-In-Reply-To: <61c5c72f-6427-4dbf-b608-ceedc1859425@m45g2000hsb.googlegroups.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1r6a1fhc8.fsf@frodo.ebiederm.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-darrell.holigan@gmail.com wrote:
-> I'm developing a PCI driver under linux to communicate with an Intel
-> IQ80331 which supports PCI boot.  To accomplish this, the IQ80331
-> needs access to an image stored in the host processor's (AMCC 405GPr)
-> RAM.
+> Is it possible to run in x2apic mode without running in interrupt remapping mode?
+> Just send the irqs directly to the cpu?  It feels like it should be if an iommu
+> doesn't get in the way.
 > 
-> Linux boots, sees the PCI bridge and the address translation unit on
-> the IQ80331 (core is held in reset) and calls the probe function my
-> driver which retrieves the address allocated to BAR0 and ioremaps it.
-> The IQ80331 implements a single BAR which provides access to ATU
-> registers.
-> 
-> From here, I can configure the IQ80331 through BAR0 to do a long jump
-> at boot.  According to the dev manual I need to configure the outbound
-> window of the ATU so that it translates the jump to host memory where
-> my boot image is stored.
-> 
-> I have kmalloced kernel memory in my driver's ioctl and loaded in the
-> image from user space, but I do not understand the process to tell the
-> kernel that I want the kmalloced area available for access from PCI
-> devices.  I assume that I must do this explicitly since allowing
-> unrestricted access to kernel memory from PCI space would be a
-> security/stabilty concern, yes?  But I cannot find the proper kernel
-> API calls to do this.
 
-You should likely allocate the memory that you are making available to 
-the device using dma_alloc_coherent. That will give you a bus address 
-that points to the memory that you can give to your device.
+Yes, it is possible to run in x2apic mode without intr-remap. However, the extended
+cpu addressability will not be fully utilized that way.
