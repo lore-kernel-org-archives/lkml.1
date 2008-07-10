@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758606AbYGJRgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760966AbYGJRgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758606AbYGJRgV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 13:36:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757365AbYGJRgM
+	id S1760966AbYGJRgg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 13:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759451AbYGJRgR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 13:36:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54203 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757718AbYGJRgL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 13:36:11 -0400
-Message-ID: <48764840.6010607@linux-foundation.org>
-Date: Thu, 10 Jul 2008 12:34:56 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Mike Travis <travis@sgi.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+	Thu, 10 Jul 2008 13:36:17 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46874 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759330AbYGJRgP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 13:36:15 -0400
+Date: Thu, 10 Jul 2008 19:34:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <20080709133958.612635f0@infradead.org>	<4875231F.1020506@zytor.com> <487524A0.6020304@goop.org>	<487529AE.3060505@zytor.com> <m1r6a2r9nj.fsf@frodo.ebiederm.org>	<48753A71.2030006@zytor.com> <m18wwahauq.fsf@frodo.ebiederm.org> <48763732.7020805@sgi.com> <487641D6.5060206@goop.org> <48764307.20905@linux-foundation.org> <48764619.9040708@goop.org>
-In-Reply-To: <48764619.9040708@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: 2.6.26-rc9-git4: Reported regressions from 2.6.25
+Message-ID: <20080710173459.GA11648@elte.hu>
+References: <4yrA-dRoNlD.A.jcB.ny-cIB@albercik> <200807101725.36175.nickpiggin@yahoo.com.au> <20080710110213.GA6688@martell.zuzino.mipt.ru> <alpine.LFD.1.10.0807101020270.11076@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0807101020270.11076@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Christoph Lameter wrote:
->> Jeremy Fitzhardinge wrote:
->>
->>  
->>> You want to virtually map the percpu area?  How and when would it get
->>> extended?
->>>     
->>
->> It would get extended when cpu_alloc() is called and the allocator
->> finds that there is no per cpu memory available.
->>   
+
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> On Thu, 10 Jul 2008, Alexey Dobriyan wrote:
 > 
-> Which, I take it, allocates percpu memory.  It would have the same
-> caveats as vmalloc memory, with respect to accessing it during fault
-> handlers and nmi handlers, I take it.
+> > On Thu, Jul 10, 2008 at 05:25:35PM +1000, Nick Piggin wrote:
+> > > 
+> > > Attached is my fix for this problem. I don't think it is a 
+> > > regression as such, but it can't hurt to go into 2.6.26 IMO.
+> 
+> Nick, you're a hero.
 
-Right. One would not want to allocate per cpu memory in those contexts. The current allocpercpu() functions already have those restrictions.
+cool! :)
 
-> How would cpu_alloc() actually get used?  It doesn't make much sense for
-> general code, since we don't have the notion of a percpu pointer to
-> memory (vs a pointer to percpu memory).  Is the intended use for
-> allocating percpu memory in modules?  What other uses?
+(hm, could anyone please resend Nick's original mail? The original one 
+is not in my lkml folder nor on lkml.org - only the quoted one.)
 
-Argh. Do I have to reexplain all of this all over again? Please look at the latest cpu_alloc patchset and the related discussions.
-
-The cpu_alloc patchset introduces the concept of a pointer to percpu memory. Or you could call it an offset into the percpu segment that can be treated (in a restricted way) like a pointer....
-
-
-
+	Ingo
