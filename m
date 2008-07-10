@@ -1,73 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760027AbYGJSMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760247AbYGJSOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760027AbYGJSMy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 14:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753088AbYGJSMq
+	id S1760247AbYGJSOr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 14:14:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757999AbYGJSOf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 14:12:46 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43785 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752721AbYGJSMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 14:12:45 -0400
-Date: Thu, 10 Jul 2008 20:12:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Robert Richter <robert.richter@amd.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/5] x86/pci: patches for tip/x86/unify-pci
-Message-ID: <20080710181234.GA32174@elte.hu>
-References: <1215709106-9182-1-git-send-email-robert.richter@amd.com> <20080710171721.GA19737@elte.hu>
+	Thu, 10 Jul 2008 14:14:35 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:39926 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756361AbYGJSOe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 14:14:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent;
+        b=TADuBq9ICv1ulkCntUuc0G08jLnpSfLDZjKu7KoT5CiEL3l2Co26nYj124Zd26qp1x
+         00Rr1C2EAsT/7AABKGiJ0IUHdVuoqLBrYebkug5D+UhPL6MFonuYcpJO8HyZP7wBfL2u
+         VTYhJUcysjZPbpVFi0A0UsENiTtXrmj7lN99s=
+Date: Thu, 10 Jul 2008 20:14:16 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-next@vger.kernel.org, netdev@vger.kernel.org,
+       David Miller <davem@davemloft.net>
+Subject: [PATCH net-next] net: fix lockdep warning in qdisc_lock_tree()
+Message-ID: <20080710181416.GA8265@ami.dom.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080710171721.GA19737@elte.hu>
+In-Reply-To: <a4423d670807100204kf269814ncd649bf02312311b@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alexander Beregalov wrote, On 07/10/2008 11:04 AM:
+...
+> [    0.426638] =============================================
+> [    0.426638] [ INFO: possible recursive locking detected ]
+> [    0.426638] 2.6.26-rc9-next-20080710 #5
+> [    0.426638] ---------------------------------------------
+> [    0.426638] swapper/1 is trying to acquire lock:
+> [    0.426638]  (&queue->lock){-...}, at: [<ffffffff8041c3d0>]
+> qdisc_lock_tree+0x27/0x2c
+> [    0.426638]
+> [    0.426638] but task is already holding lock:
+> [    0.426638]  (&queue->lock){-...}, at: [<ffffffff8041c3c8>]
+> qdisc_lock_tree+0x1f/0x2c
+> [    0.426638]
+> [    0.426638] other info that might help us debug this:
+> [    0.426638] 3 locks held by swapper/1:
+> [    0.426638]  #0:  (net_mutex){--..}, at: [<ffffffff8040b827>]
+> register_pernet_device+0x1a/0x5a
+> [    0.426638]  #1:  (rtnl_mutex){--..}, at: [<ffffffff80417179>]
+> rtnl_lock+0x12/0x14
+> [    0.426638]  #2:  (&queue->lock){-...}, at: [<ffffffff8041c3c8>]
+> qdisc_lock_tree+0x1f/0x2c
+> [    0.426638]
+> [    0.426638] stack backtrace:
+> [    0.426638] Pid: 1, comm: swapper Not tainted 2.6.26-rc9-next-20080710 #5
+> [    0.426638]
+> [    0.426638] Call Trace:
+> [    0.426638]  [<ffffffff8024f95a>] __lock_acquire+0xba9/0xf12
+> [    0.426638]  [<ffffffff8041c3d0>] ? qdisc_lock_tree+0x27/0x2c
+> [    0.426638]  [<ffffffff8024fd48>] lock_acquire+0x85/0xa9
+> [    0.426638]  [<ffffffff8041c3d0>] ? qdisc_lock_tree+0x27/0x2c
+> [    0.426638]  [<ffffffff80476794>] _spin_lock+0x25/0x31
+> [    0.426638]  [<ffffffff8041c3d0>] qdisc_lock_tree+0x27/0x2c
+> [    0.426638]  [<ffffffff8041c412>] dev_init_scheduler+0x11/0x94
+> [    0.426638]  [<ffffffff8040f3be>] register_netdevice+0x296/0x3f0
+> [    0.426638]  [<ffffffff8040f552>] register_netdev+0x3a/0x48
+> [    0.426638]  [<ffffffff805fc274>] loopback_net_init+0x40/0x7a
+> [    0.426638]  [<ffffffff805fc222>] ? loopback_init+0x0/0x12
+...
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+lockdep needs separate lock init to distinguish rx and tx queue locks.
+(There is no real lockup danger.)
 
-> * Robert Richter <robert.richter@amd.com> wrote:
-> 
-> > This patch series contains patches for tip/x86/unify-pci. It fixes 
-> > NUMA initialization code reflecting latest changes in tip/master. 
-> > Also there are build fixes and minor cleanups. Patch #5 is a cherry 
-> > pick that fixes build on UP systems. Code reboots for smp/nosmp, 
-> > acpi/noacpi, numaq, 32/64bit. It compiles for visws.
-> 
-> thanks Robert. Today i've eliminated the VISWS subarch which greatly 
-> simplified your series. I've picked up these two fixes:
-> 
->  Robert Richter (2):
->        x86/pci merge: fixing numaq initialization
->        x86/pci: fix warnings in subsys_initcall functions
+Reported-by: Alexander Beregalov <a.beregalov@gmail.com>
+Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
 
-btw., this is how arch/x86/pci/Makefile looks like now in tip/master:
+---
 
------------------------------------------>
-pci-y                           := fixup.o
-pci-$(CONFIG_ACPI)              += acpi.o
-pci-y                           += legacy.o irq.o
+ net/core/dev.c |   20 ++++++++++++++------
+ 1 files changed, 14 insertions(+), 6 deletions(-)
 
-pci-$(CONFIG_X86_VISWS)         += visws.o
-
-pci-$(CONFIG_X86_NUMAQ)         += numa.o
-
-obj-y                           += $(pci-y) common.o early.o
-obj-y                           += amd_bus.o
-<-----------------------------------------
-
-it's _really_ clean now, and we dont have those weird overrides anymore. 
-Both VisWS and NUMAQ are now two straightforward runtime PCI overrides - 
-not build-time complications. Much more maintainable i think.
-
-	Ingo
+diff --git a/net/core/dev.c b/net/core/dev.c
+index a29a359..157b683 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -4090,17 +4090,25 @@ static struct net_device_stats *internal_stats(struct net_device *dev)
+ 	return &dev->stats;
+ }
+ 
+-static void netdev_init_one_queue(struct net_device *dev,
+-				  struct netdev_queue *queue)
++static void netdev_init_rx_queue(struct net_device *dev,
++				  struct netdev_queue *rx_queue)
+ {
+-	spin_lock_init(&queue->lock);
+-	queue->dev = dev;
++	spin_lock_init(&rx_queue->lock);
++	rx_queue->dev = dev;
++}
++
++/* lockdep needs separate init to distinguish these locks */
++static void netdev_init_tx_queue(struct net_device *dev,
++				  struct netdev_queue *tx_queue)
++{
++	spin_lock_init(&tx_queue->lock);
++	tx_queue->dev = dev;
+ }
+ 
+ static void netdev_init_queues(struct net_device *dev)
+ {
+-	netdev_init_one_queue(dev, &dev->rx_queue);
+-	netdev_init_one_queue(dev, &dev->tx_queue);
++	netdev_init_rx_queue(dev, &dev->rx_queue);
++	netdev_init_tx_queue(dev, &dev->tx_queue);
+ }
+ 
+ /**
