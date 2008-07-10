@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760211AbYGJRag@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760483AbYGJRbM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760211AbYGJRag (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 13:30:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756361AbYGJRaY
+	id S1760483AbYGJRbM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 13:31:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759433AbYGJRa4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 13:30:24 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:59049 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756619AbYGJRaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 13:30:22 -0400
-From: Mel Gorman <mel@csn.ul.ie>
-To: akpm@linux-foundation.org
-Cc: linux-mm@kvack.org, Mel Gorman <mel@csn.ul.ie>, agl@us.ibm.com,
-       linux-kernel@vger.kernel.org, apw@shadowen.org
-Message-Id: <20080710173021.16433.90661.sendpatchset@skynet.skynet.ie>
-In-Reply-To: <20080710173001.16433.87538.sendpatchset@skynet.skynet.ie>
-References: <20080710173001.16433.87538.sendpatchset@skynet.skynet.ie>
-Subject: [PATCH 1/2] [PATCH] Fix a hugepage reservation check for MAP_SHARED
-Date: Thu, 10 Jul 2008 18:30:21 +0100 (IST)
+	Thu, 10 Jul 2008 13:30:56 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:41095 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760344AbYGJRaz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 13:30:55 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=Ru3d2HYLujIvjUxJhuStzYUayqSUxwVz6CAXihPlRGaBs0wRc6/3ZHBkbWpD9vL5Z
+	B9qdsoKjHLONSbVBuOTUg==
+Message-ID: <6599ad830807101030i2f3a15a3l3409a36c11773f25@mail.gmail.com>
+Date: Thu, 10 Jul 2008 10:30:15 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Dhaval Giani" <dhaval@linux.vnet.ibm.com>
+Subject: Re: [Libcg-devel] [RFC] How to handle the rules engine for cgroups
+Cc: "Vivek Goyal" <vgoyal@redhat.com>, "Peter Zijlstra" <pzijlstr@redhat.com>,
+       "linux kernel mailing list" <linux-kernel@vger.kernel.org>,
+       "Libcg Devel Mailing List" <libcg-devel@lists.sourceforge.net>,
+       "Morton Andrew Morton" <akpm@linux-foundation.org>,
+       kamezawa.hiroyu@jp.fujitsu.com
+In-Reply-To: <20080710171838.GA4235@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080701191126.GA17376@redhat.com>
+	 <6599ad830807100207q26cf2416qb8d38d1d715b5ba0@mail.gmail.com>
+	 <20080710143307.GD3782@redhat.com>
+	 <6599ad830807100946j6db8d0d6se18f1b428c69ad5c@mail.gmail.com>
+	 <20080710171838.GA4235@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jul 10, 2008 at 10:18 AM, Dhaval Giani
+<dhaval@linux.vnet.ibm.com> wrote:
+>
+> I am sorry, I seem to missing something, but who moves the forked
+> children (which got forked during the time between the parent getting
+> classified into the right group and the fork itself) into the correct
+> group?
 
-When removing a huge page from the hugepage pool for a fault the system
-checks to see if the mapping requires additional pages to be reserved, and
-if it does whether there are any unreserved pages remaining.  If not, the
-allocation fails without even attempting to get a page. In order to determine
-whether to apply this check we call vma_has_private_reserves() which tells us
-if this vma is MAP_PRIVATE and is the owner.  This incorrectly triggers the
-remaining reservation test for MAP_SHARED mappings which prevents allocation
-of the final page in the pool even though it is reserved for this mapping.
+The classifier daemon would have to do that - my point was that it
+would be very clear exactly which processes needed this attention,
+since they'd end up in the root cgroup too.
 
-In reality we only want to check this for MAP_PRIVATE mappings where the
-process is not the original mapper.  Replace vma_has_private_reserves() with
-vma_has_reserves() which indicates whether further reserves are required,
-and update the caller.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
----
-
- mm/hugetlb.c |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
-
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.26-rc8-mm1-clean/mm/hugetlb.c linux-2.6.26-rc8-mm1-fix-needsreserve-check/mm/hugetlb.c
---- linux-2.6.26-rc8-mm1-clean/mm/hugetlb.c	2008-07-08 11:54:34.000000000 -0700
-+++ linux-2.6.26-rc8-mm1-fix-needsreserve-check/mm/hugetlb.c	2008-07-08 12:41:36.000000000 -0700
-@@ -343,13 +343,13 @@ void reset_vma_resv_huge_pages(struct vm
- }
- 
- /* Returns true if the VMA has associated reserve pages */
--static int vma_has_private_reserves(struct vm_area_struct *vma)
-+static int vma_has_reserves(struct vm_area_struct *vma)
- {
- 	if (vma->vm_flags & VM_SHARED)
--		return 0;
--	if (!is_vma_resv_set(vma, HPAGE_RESV_OWNER))
--		return 0;
--	return 1;
-+		return 1;
-+	if (is_vma_resv_set(vma, HPAGE_RESV_OWNER))
-+		return 1;
-+	return 0;
- }
- 
- static void clear_huge_page(struct page *page,
-@@ -421,7 +421,7 @@ static struct page *dequeue_huge_page_vm
- 	 * have no page reserves. This check ensures that reservations are
- 	 * not "stolen". The child may still get SIGKILLed
- 	 */
--	if (!vma_has_private_reserves(vma) &&
-+	if (!vma_has_reserves(vma) &&
- 			h->free_huge_pages - h->resv_huge_pages == 0)
- 		return NULL;
- 
+Paul
