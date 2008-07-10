@@ -1,41 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758679AbYGJQg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758282AbYGJQiw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758679AbYGJQg6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 12:36:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYGJQgu
+	id S1758282AbYGJQiw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 12:38:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750881AbYGJQip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 12:36:50 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56123 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751576AbYGJQgt (ORCPT
+	Thu, 10 Jul 2008 12:38:45 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:55147 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750833AbYGJQio (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 12:36:49 -0400
-Message-ID: <48763A5E.7080105@linux-foundation.org>
-Date: Thu, 10 Jul 2008 11:35:42 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Mike Travis <travis@sgi.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <20080709133958.612635f0@infradead.org>	<4875231F.1020506@zytor.com> <487524A0.6020304@goop.org>	<487529AE.3060505@zytor.com> <m1r6a2r9nj.fsf@frodo.ebiederm.org>	<48753A71.2030006@zytor.com> <m18wwahauq.fsf@frodo.ebiederm.org> <48763732.7020805@sgi.com> <487637DE.1050706@zytor.com>
-In-Reply-To: <487637DE.1050706@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 10 Jul 2008 12:38:44 -0400
+Subject: [PATCH] kernel/kprobes.c: Made kprobe_blacklist static.
+From: Daniel Guilak <guilak@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: trivial@kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, daniel@danielguilak.com
+Content-Type: text/plain
+Date: Thu, 10 Jul 2008 09:38:19 -0700
+Message-Id: <1215707899.6497.2.camel@dguilak-desk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
+Signed-off-by: Daniel Guilak <daniel@danielguilak.com>
+---
+ kernel/kprobes.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> No, since the *addresses* can be arbitrary.  The current issue is about
-> *offsets.*
-
-Well those are intimately connected.
+diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+index d4998f8..1485ca8 100644
+--- a/kernel/kprobes.c
++++ b/kernel/kprobes.c
+@@ -79,7 +79,7 @@ static DEFINE_PER_CPU(struct kprobe *, kprobe_instance) = NULL;
+  *
+  * For such cases, we now have a blacklist
+  */
+-struct kprobe_blackpoint kprobe_blacklist[] = {
++static struct kprobe_blackpoint kprobe_blacklist[] = {
+ 	{"preempt_schedule",},
+ 	{NULL}    /* Terminator */
+ };
+-- 
+1.5.4.3
 
 
