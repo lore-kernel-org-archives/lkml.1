@@ -1,70 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756121AbYGJTsL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758530AbYGJTtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756121AbYGJTsL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 15:48:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbYGJTr5
+	id S1758530AbYGJTtU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 15:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752395AbYGJTtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 15:47:57 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:45401 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751188AbYGJTr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 15:47:57 -0400
-Subject: Re: Checkpoint/restart (was Re: [PATCH 0/4] - v2 - Object creation
-	with a specified id)
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Oren Laadan <orenl@cs.columbia.edu>,
-       Kirill Korotaev <dev@parallels.com>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Nadia.Derbey@bull.net, Andrew Morton <akpm@linux-foundation.org>,
-       nick@nick-andrew.net, Alexey Dobriyan <adobriyan@gmail.com>
-In-Reply-To: <m14p6xy27s.fsf@frodo.ebiederm.org>
-References: <20080418054459.891481000@bull.net>
-	 <20080422193612.GA15835@martell.zuzino.mipt.ru>
-	 <1208890580.17117.14.camel@nimitz.home.sr71.net>
-	 <20080422210130.GA15937@martell.zuzino.mipt.ru>
-	 <1208904967.17117.51.camel@nimitz.home.sr71.net>
-	 <480ED9D5.1010906@parallels.com> <480FE037.2010302@cs.columbia.edu>
-	 <m1y74a7b4w.fsf@frodo.ebiederm.org> <1215709949.9398.15.camel@nimitz>
-	 <20080710173246.GA1857@us.ibm.com> <m163rd1sd5.fsf@frodo.ebiederm.org>
-	 <1215716794.9398.41.camel@nimitz>  <m14p6xy27s.fsf@frodo.ebiederm.org>
-Content-Type: text/plain
-Date: Thu, 10 Jul 2008 12:47:32 -0700
-Message-Id: <1215719252.9398.53.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Thu, 10 Jul 2008 15:49:10 -0400
+Received: from qb-out-0506.google.com ([72.14.204.234]:62499 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752836AbYGJTtH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 15:49:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=lErKTc5uwEsCGBrDo2WFGm5w8wUs/rkVzg20ZxR4DAU812j8wfT9Mff5sEt0N5ywi4
+         Sm2f8U6BDff/7Ue5O6ibmt/qEmIQwvE2YwGSupUU0mqCzq7fKCOoko736Bj2QXTTejMh
+         gxUwVZ9jJBgYTmqjGP7nWGzkZ4pWLjH2wxJno=
+Message-ID: <19f34abd0807101249y24632b50h769a7af2c9514864@mail.gmail.com>
+Date: Thu, 10 Jul 2008 21:49:03 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: v2.6.26-rc9: kernel BUG at kernel/sched.c:5858!
+Cc: Yanmin <yanmin_zhang@linux.intel.com>,
+       "Rusty Russell" <rusty@rustcorp.com.au>, "Ingo Molnar" <mingo@elte.hu>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
+       "Gautham R Shenoy" <ego@in.ibm.com>,
+       "Heiko Carstens" <heiko.carstens@de.ibm.com>, miaox@cn.fujitsu.com,
+       "Lai Jiangshan" <laijs@cn.fujitsu.com>, "Avi Kivity" <avi@qumranet.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <19f34abd0807100716k35e937batb4059f99fe46731b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080710115954.GA3639@damson.getinternet.no>
+	 <19f34abd0807100512y7fff3716r3ff37305e863f26@mail.gmail.com>
+	 <b647ffbd0807100550l44fae9fate511dafbf87564a4@mail.gmail.com>
+	 <19f34abd0807100604p70c2fec6geca65b2ba772dea@mail.gmail.com>
+	 <b647ffbd0807100703q442a9825hb857c321452027e7@mail.gmail.com>
+	 <19f34abd0807100716k35e937batb4059f99fe46731b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-10 at 12:21 -0700, Eric W. Biederman wrote:
-> > Are we talking about the VMA itself, or the memory backing the VMA?
-> 
-> The memory backing the VMA.  We need to store the page protections
-> that the memory was mapped with as well now that you point it out.  A
-> VMA is not user space visible, which is why we can arbitrarily split
-> and merge VMAs.
+Okay, some more info on this one...
 
-It is visible with /proc/$pid/{maps,smaps,numamaps?}.  That's the only
-efficient way I know of from userspace to figure out where userspace's
-memory is and if it *is* file backed, and what the permissions are.
+On Thu, Jul 10, 2008 at 4:16 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> BUG: unable to handle kernel paging request at da87d000
+> IP: [<c01991c7>] kmem_cache_alloc+0xc7/0xe0
+> *pde = 28180163 *pte = 1a87d160
+> Oops: 0002 [#1] PREEMPT SMP DEBUG_PAGEALLOC
+> Pid: 3850, comm: grep Not tainted (2.6.26-rc9-00059-gb190333 #5)
+> EIP: 0060:[<c01991c7>] EFLAGS: 00210203 CPU: 0
+> EIP is at kmem_cache_alloc+0xc7/0xe0
+> EAX: 00000000 EBX: da87c100 ECX: 1adad71a EDX: 6b6b6b6b
+> ESI: 00200282 EDI: da87d000 EBP: f60bfe74 ESP: f60bfe54
+>  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
 
-We also can't truly split them arbitrarily because the memory cost of
-the VMAs themselves might become too heavy (the remap_file_pages()
-problem).
+The register %ecx looks innocent but is very important here. The disassembly:
 
-It gets trickier when things are also private mappings in addition to
-being in a file-backed VMA.  We *do* need to checkpoint those, but only
-the pages to which there was a write.
+mov    %edx,%ecx
+shr    $0x2,%ecx
+rep stos %eax,%es:(%edi) <-- the fault
 
-There's also the problem of restoring things read-only, but VM_MAYWRITE.
-If there's a high level of (non-COW'd) sharing of these anonymous areas,
-we may not be able to even restore the set of processes unless we can
-replicate the sharing.  We might run out of memory if the sharing isn't
-replicated.
+So %ecx has been loaded from %edx... which is 0x6b6b6b6b/POISON_FREE.
+(0x6b6b6b6b >> 2 == 0x1adadada.)
 
-Memory is fun! :)
+%ecx is the counter for the memset, from here:
 
--- Dave
+        memset(object, 0, c->objsize);
 
+i.e. %ecx was loaded from c->objsize, so "c" must have been freed.
+Where did "c" come from? Uh-oh...
+
+        c = get_cpu_slab(s, smp_processor_id());
+
+This looks like it has very much to do with CPU hotplug/unplug. Is
+there a race between SLUB/hotplug since the CPU slab is used after it
+has been freed?
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
