@@ -1,95 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758044AbYGJPuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754986AbYGJP5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758044AbYGJPuZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 11:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753163AbYGJPuN
+	id S1754986AbYGJP5c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 11:57:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750972AbYGJP5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 11:50:13 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:33373 "EHLO
-	e28esmtp01.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750907AbYGJPuL (ORCPT
+	Thu, 10 Jul 2008 11:57:24 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:40928 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750896AbYGJP5Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 11:50:11 -0400
-Date: Thu, 10 Jul 2008 21:19:43 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Paul Menage <menage@google.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <pzijlstr@redhat.com>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Libcg Devel Mailing List <libcg-devel@lists.sourceforge.net>,
-       Morton Andrew Morton <akpm@linux-foundation.org>,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [Libcg-devel] [RFC] How to handle the rules engine for cgroups
-Message-ID: <20080710154943.GE18228@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20080701191126.GA17376@redhat.com> <6599ad830807100207q26cf2416qb8d38d1d715b5ba0@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6599ad830807100207q26cf2416qb8d38d1d715b5ba0@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 10 Jul 2008 11:57:24 -0400
+Subject: Re: [RFC] simple dprobe like markers for the kernel
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Theodore Tso <tytso@mit.edu>
+Cc: "Frank Ch. Eigler" <fche@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
+In-Reply-To: <20080710153017.GB25939@mit.edu>
+References: <1215638551.3444.39.camel__22002.9595810503$1215638656$gmane$org@localhost.localdomain>
+	 <y0m1w22qxoj.fsf@ton.toronto.redhat.com>
+	 <1215697794.3353.5.camel@localhost.localdomain>
+	 <20080710142208.GC1213@redhat.com>
+	 <1215700996.3353.30.camel@localhost.localdomain>
+	 <20080710153017.GB25939@mit.edu>
+Content-Type: text/plain
+Date: Thu, 10 Jul 2008 10:57:17 -0500
+Message-Id: <1215705437.3353.63.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 10, 2008 at 02:07:11AM -0700, Paul Menage wrote:
-> Hi Vivek,
+On Thu, 2008-07-10 at 11:30 -0400, Theodore Tso wrote:
+> On Thu, Jul 10, 2008 at 09:43:16AM -0500, James Bottomley wrote:
+> > No ... I'm used to optimisation strangeness.  Again, I'm not trying to
+> > eliminate it because that would defeat the zero impact purpose.  I'm
+> > trying to build a system that can be useful without any impact.  The
+> > consequence is going to be that certain trace points can't be used
+> > because of the optimiser, but that's the tradeoff.  As long as the
+> > people placing the trace points are subject matter experts in the
+> > subsystem (and actually using them) everything should be OK.
 > 
-> On Tue, Jul 1, 2008 at 12:11 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> >
-> > - netlink is not a reliable protocol.
-> >        - Messages can be dropped and one can loose message. That means a
-> >          newly forked process might never go into right group as meant.
-> 
-> One way that you could avoid the unreliability would be to not use
-> netlink, but instead use cgroups itself.
-> 
-> What we're looking for is a way to easily distinguish between
-> processes that are in the right cgroups, and processes that might be
-> in the wrong cgroups. Additionally, we want the children of such
-> processes to inherit the same status until we've dealt with them, and
-> not be able to change their status themselves.
-> 
-> That sounds a bit like a cgroup. How about the following?
-> 
-> - create a cgroup subsystem called "setuid".
-> 
-> - have a uid_changed() hook called by sys_setuid() and friends; this
-> hook would simply attach current to the root cgroup in the "setuid"
-> hierarchy if it wasn't already in that cgroup (which can be determined
-> with a couple of dereferences from current and no locking, so not
-> slowing down the normal case).
-> 
-> - userspace uses this by:
-> 
-> mount the setuid hierarchy, e.g. at /mnt/setuid
-> create a child cgroup /mnt/setuid/processed
-> while true:
->   wait for /mnt/setuid/tasks to be non-empty
->   read a pid from /mnt/setuid/tasks
->   move that pid to the appropriate cgroups in memory/cpu/etc
-> hierarchies if necessary
->   move that pid to /mnt/setuid/processed/tasks
-> 
-> i.e. any pid in the root cgroup of the setuid hierarchy is one that
-> needs attention and may need to be moved to different cgroups
-> 
+> So as I understand things, your light-weight tracepoints are designed
+> for very performance-sensitive code paths where we don't want to
+> disturbe the optimization in the deactivated state.  In
+> non-performance sensitive parts of the kernel, where cycle counting is
+> not so important, tracepoints can and probably should still be used.
+> So I don't think you were proposing eliminating the current kernel
+> markers in favor of this approach, yes?
 
-Where I see complications is handling forks happening in that time. It
-will take us a long time to ensure that a fork bomb goes into the
-correct cgroup as an example.
+That's right ... I started from the position that the current markers
+were too heavy for an I/O subsystem, but I'm sure they have many other
+uses.
 
-Also another issue, where does the pid reside in the memory/cpu hierarchy.
-If it is not in the correct cgroup at the time of exec, or soon after
-exec, the wrong cgroup is getting charged.
+> When you said a tool could determine if the tracepoint had gotten
+> optimized away, or the variables were no longer present, I assume you
+> meant at compile time, right?
 
-I liked the other idea you posted about in the other mail, having
-wrappers around. I believe that can be done at distro level, which
-should not really be too tough.
+Yes and no.  Yes because a tool will be able to detect the problems, but
+no if you're thinking an actual kernel compile would do it (unless some
+tool is designed for this and integrated into the build ... the obvious
+tool is systemtap, but that might cause some heartburn).
 
-Or maybe we can use something like selinux (ok, this really is a shot in
-the dark, i should read up before opening my mouth here.)
+>   So with the right tool built into the
+> kbuild infrastructure, if we could simply print warnings when
+> tracepoints had gotten optimized away, that would make the your simple
+> tracepoints quite safe for general use, I would think.
 
-Thanks,
--- 
-regards,
-Dhaval
+Yes ... but someone has to come up with the tool.  I suppose rebuilding
+the line number matrix and finding the variables at the location is easy
+mechanical dwarf stuff ... but it will give the kernel build a lot of
+external dependencies it didn't have before.
+
+Plus, this level of checking can only be done if dwarf is generated
+(i.e. CONFIG_KERNEL_DEBUG_INFO is y).
+
+James
+
+
