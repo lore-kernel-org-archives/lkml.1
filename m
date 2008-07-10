@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761256AbYGJTHE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760847AbYGJTKw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761256AbYGJTHE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 15:07:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754387AbYGJTGx
+	id S1760847AbYGJTKw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 15:10:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbYGJTKo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 15:06:53 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:46494 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754380AbYGJTGw (ORCPT
+	Thu, 10 Jul 2008 15:10:44 -0400
+Received: from qb-out-0506.google.com ([72.14.204.225]:36796 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754629AbYGJTKn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 15:06:52 -0400
-Subject: Re: Checkpoint/restart (was Re: [PATCH 0/4] - v2 - Object creation
-	with a specified id)
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Oren Laadan <orenl@cs.columbia.edu>,
-       Kirill Korotaev <dev@parallels.com>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Nadia.Derbey@bull.net, Andrew Morton <akpm@linux-foundation.org>,
-       nick@nick-andrew.net, Alexey Dobriyan <adobriyan@gmail.com>
-In-Reply-To: <m163rd1sd5.fsf@frodo.ebiederm.org>
-References: <20080418054459.891481000@bull.net>
-	 <20080422193612.GA15835@martell.zuzino.mipt.ru>
-	 <1208890580.17117.14.camel@nimitz.home.sr71.net>
-	 <20080422210130.GA15937@martell.zuzino.mipt.ru>
-	 <1208904967.17117.51.camel@nimitz.home.sr71.net>
-	 <480ED9D5.1010906@parallels.com> <480FE037.2010302@cs.columbia.edu>
-	 <m1y74a7b4w.fsf@frodo.ebiederm.org> <1215709949.9398.15.camel@nimitz>
-	 <20080710173246.GA1857@us.ibm.com>  <m163rd1sd5.fsf@frodo.ebiederm.org>
-Content-Type: text/plain
-Date: Thu, 10 Jul 2008 12:06:34 -0700
-Message-Id: <1215716794.9398.41.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Jul 2008 15:10:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=O5EjDCZ0Zs+uh85uXe41ZLHg/DAfvgB+egJ5AWful1XaPfFsj9a9f02lvzPLTMHK4b
+         2a/nHeR0sTMbnNZNGri+vq3vpsURmnZdJMkrD5YmXZO2ZMMAllWLY6dpSxkZEGkIaIq3
+         O+ei45zFCppBerobP0sEqwwq55GfpBdqP3iao=
+Message-ID: <19f34abd0807101210t4043de1en59cd2e64b13d259a@mail.gmail.com>
+Date: Thu, 10 Jul 2008 21:10:41 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: v2.6.26-rc7: BUG: unable to handle kernel NULL pointer dereference
+Cc: "Rusty Russell" <rusty@rustcorp.com.au>, "Mike Travis" <travis@sgi.com>,
+       "Adrian Bunk" <bunk@kernel.org>,
+       "Srivatsa Vaddagiri" <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org,
+       "Gautham R Shenoy" <ego@in.ibm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       "Heiko Carstens" <heiko.carstens@de.ibm.com>
+In-Reply-To: <1214294783.25608.75.camel@ymzhang>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+References: <20080622125633.GA8166@damson.getinternet.no>
+	 <200806231326.11328.rusty@rustcorp.com.au> <485FD644.80208@sgi.com>
+	 <200806241136.52430.rusty@rustcorp.com.au>
+	 <1214294783.25608.75.camel@ymzhang>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m6AJAufq004339
 
-On Thu, 2008-07-10 at 11:55 -0700, Eric W. Biederman wrote:
-> 
-> > If we do checkpoint-as-a-coredump, then we need userspace to coordinate
-> > a kernel-generated coredump with a user-generated (?) swapfile snapshot.
-> > But I guess we figure that out later.
-> 
-> Well it is a matter of which VMAs you dump.  For things that are file backed
-> you need to dump them.
+On Tue, Jun 24, 2008 at 10:06 AM, Zhang, Yanmin<yanmin_zhang@linux.intel.com> wrote:> In function _cpu_up, the panic happens when calling __raw_notifier_call_chain> at the second time. Kernel doesn't panic when calling it at the first time. If> just say because ï»¿of nr_cpu_ids, that's not right.>> By checking source codes, I find function do_boot_cpu is the culprit.> Consider below call chain:>  _cpu_up=>__cpu_up=>smp_ops.cpu_up=>native_cpu_up=>do_boot_cpu.>> So ï»¿do_boot_cpu is called in the end. In ï»¿do_boot_cpu, if boot_error==true,> cpu_clear(cpu, cpu_possible_map) is executed. So later on, when ï»¿_cpu_up> calls ï»¿__raw_notifier_call_chain at the second time to report CPU_UP_CANCELED,> because this cpu is already cleared from ï»¿cpu_possible_map, get_cpu_sysdev returns> NULL.>> Many resources are related to ï»¿cpu_possible_map, so it's better not to change it.>> Below patch against 2.6.26-rc7 fixes it by removing the bit clearing in ï»¿cpu_possible_map.>> Vegard, would you like to help test it?
+Yay! I just hit this again with your patch applied
+Inquiring remote APIC #1...... APIC #1 ID: failed... APIC #1 VERSION: failed... APIC #1 SPIV: failed
+and it works correctly, no NULL pointer error this time :-)
+I know it's applied to mainline already, actually with this tag too,even though I wasn't able to confirm it before:
+    Tested-by: Vegard Nossum <vegard.nossum@gmail.com>
+Thanks :-)
 
-Are we talking about the VMA itself, or the memory backing the VMA?
-
--- Dave
-
+Vegard
+-- "The animistic metaphor of the bug that maliciously sneaked in whilethe programmer was not looking is intellectually dishonest as itdisguises that the error is the programmer's own creation."	-- E. W. Dijkstra, EWD1036ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
