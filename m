@@ -1,80 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756571AbYGJIeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756830AbYGJIen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756571AbYGJIeL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 04:34:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbYGJId4
+	id S1756830AbYGJIen (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 04:34:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbYGJIee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 04:33:56 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:42261 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751125AbYGJIdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 04:33:55 -0400
-Date: Thu, 10 Jul 2008 10:33:48 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 2/4] mmc: Export internal host state through debugfs
-Message-ID: <20080710103348.53344978@mjolnir.drzeus.cx>
-In-Reply-To: <20080705154436.27830440@siona.local>
-References: <1214843703-13199-1-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214918094-26758-1-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214918094-26758-2-git-send-email-haavard.skinnemoen@atmel.com>
-	<20080704194556.73061a08@mjolnir.drzeus.cx>
-	<20080705154436.27830440@siona.local>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.4; i386-redhat-linux-gnu)
+	Thu, 10 Jul 2008 04:34:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48192 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751125AbYGJIed (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 04:34:33 -0400
+Date: Thu, 10 Jul 2008 01:28:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH v2] handle failure of irqchip->set_type in setup_irq
+Message-Id: <20080710012807.6a0e70b1.akpm@linux-foundation.org>
+In-Reply-To: <20080710082336.GA31219@digi.com>
+References: <20080625131101.GA6205@digi.com>
+	<20080704104634.GA31634@digi.com>
+	<20080704101717.28f6a771.akpm@linux-foundation.org>
+	<20080704184307.GA8076@digi.com>
+	<20080704120837.573adc9c.akpm@linux-foundation.org>
+	<20080709131353.GA12009@digi.com>
+	<20080709145253.f658db37.akpm@linux-foundation.org>
+	<20080710082336.GA31219@digi.com>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-12366-1215678833-0001-2"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Thu, 10 Jul 2008 10:23:36 +0200 Uwe Kleine-K__nig <Uwe.Kleine-Koenig@digi.com> wrote:
 
---=_freyr.drzeus.cx-12366-1215678833-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+> Hello,
+> 
+> Andrew Morton wrote:
+> > > > However I'm presently brewing up a plot to do this:
+> > > >
+> > > >         printk("function name is %Ss\n", (unsigned long *)chip->set_type);
+> > > >
+> > > > which I think will work.  We can also do
+> > > >
+> > > >         printk("IP address is %Si\n", (unsigned long *)ip_address_buffer);
+> > > >
+> > > > to replace NIPQUAD.  And similar printk extensions.
+> > > >
+> > > > Am still thinking about it though.
+> > > I assume the result is 0fe1ef24f7bd0020f29ffe287dfdb9ead33ca0b2?
+> > 
+> > yup.
+> When I saw this commit I wondered that it was you who told me to think
+> about this but the commiter was Linus.
 
-On Sat, 5 Jul 2008 15:44:36 +0200
-Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
+A long story.  I rubbed a magic lantern ;)
 
-> On Fri, 4 Jul 2008 19:45:56 +0200
-> Pierre Ossman <drzeus-list@drzeus.cx> wrote:
->=20
-> > I see that this version has no ifdef:s at all. Doesn't that mean a lot
-> > of useless code if DEBUG_FS is not enabled? You embedded guys are
-> > usually rather sensitive about such things. :)
->=20
-> Hmm...looks like gcc does a pretty poor job of eliminating unreachable
-> code, so we end up with about 1k of dead code in debugfs.o.
->=20
-> I guess we'll have to throw in a couple of #ifdefs then...
->=20
+> > > Should I send a new version using %pF or is it easier if you fix up the
+> > > patch?
+> > 
+> > A new version would be nice, thanks.  Or an incremental diff, but I can and
+> > will turn new versions into an incremental in the twinkle of an eye, so
+> > either is OK.
+> voila:
 
-Have you managed do have a look at this?
+Thanks.
 
---=20
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-12366-1215678833-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkh1yXAACgkQ7b8eESbyJLhyJQCggYNWJwITQQWPubIojN1MN9fS
-+jYAmwbQHm0RutFruNrwgNR0nANx3AN/
-=NiV7
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-12366-1215678833-0001-2--
