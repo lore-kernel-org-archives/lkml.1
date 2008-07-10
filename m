@@ -1,68 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758570AbYGJOeP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757958AbYGJOgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758570AbYGJOeP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 10:34:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758274AbYGJOdp
+	id S1757958AbYGJOgT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 10:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbYGJOgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 10:33:45 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:57755 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758269AbYGJOdo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 10:33:44 -0400
-Message-ID: <48761C06.3020003@zytor.com>
-Date: Thu, 10 Jul 2008 10:26:14 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 10 Jul 2008 10:36:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49293 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754455AbYGJOgD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 10:36:03 -0400
+Date: Thu, 10 Jul 2008 10:33:07 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Paul Menage <menage@google.com>
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Libcg Devel Mailing List <libcg-devel@lists.sourceforge.net>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Peter Zijlstra <pzijlstr@redhat.com>, kamezawa.hiroyu@jp.fujitsu.com,
+       Kazunaga Ikeno <k-ikeno@ak.jp.nec.com>,
+       Morton Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC] How to handle the rules engine for cgroups
+Message-ID: <20080710143307.GD3782@redhat.com>
+References: <20080701191126.GA17376@redhat.com> <6599ad830807100207q26cf2416qb8d38d1d715b5ba0@mail.gmail.com>
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <48751CF9.4020901@linux-foundation.org>	<4875209D.8010603@goop.org> <48752CCD.30507@linux-foundation.org>	<m1wsjupuiz.fsf@frodo.ebiederm.org> <48753C99.5050408@goop.org> <m1ej62iq9z.fsf@frodo.ebiederm.org> <487555A8.2050007@zytor.com> <487556A5.5090907@goop.org> <4876194E.4080205@linux-foundation.org>
-In-Reply-To: <4876194E.4080205@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6599ad830807100207q26cf2416qb8d38d1d715b5ba0@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> With the zero based approach you do not have a relative address anymore. We are basically creating a new absolute address space where we place variables starting at zero.
+On Thu, Jul 10, 2008 at 02:07:11AM -0700, Paul Menage wrote:
+> Hi Vivek,
 > 
-> This means that we are fully independent from the placement of the percpu segment.
+> On Tue, Jul 1, 2008 at 12:11 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> >
+> > - netlink is not a reliable protocol.
+> >        - Messages can be dropped and one can loose message. That means a
+> >          newly forked process might never go into right group as meant.
 > 
-> The loader may place the per cpu segment with the initialized variables anywhere. We just need to set GS correctly for the boot cpu. We always need to refer to the per cpu variables
-> via GS or by adding the per cpu offset to the __per_cpu_offset[] (which is now badly named because it points directly to the start of the percpu segment for each processor).
+> One way that you could avoid the unreliability would be to not use
+> netlink, but instead use cgroups itself.
 > 
-> So there is no 2G limitation on the distance between the code and the percpu segment anymore. The 2G limitation still exists for the *size* of the per cpu segment. If we go beyond 2G in defined per cpu variables then the per cpu addresses will wrap.
+> What we're looking for is a way to easily distinguish between
+> processes that are in the right cgroups, and processes that might be
+> in the wrong cgroups. Additionally, we want the children of such
+> processes to inherit the same status until we've dealt with them, and
+> not be able to change their status themselves.
+> 
+> That sounds a bit like a cgroup. How about the following?
+> 
+> - create a cgroup subsystem called "setuid".
+> 
+> - have a uid_changed() hook called by sys_setuid() and friends; this
+> hook would simply attach current to the root cgroup in the "setuid"
+> hierarchy if it wasn't already in that cgroup (which can be determined
+> with a couple of dereferences from current and no locking, so not
+> slowing down the normal case).
+> 
+> - userspace uses this by:
+> 
+> mount the setuid hierarchy, e.g. at /mnt/setuid
+> create a child cgroup /mnt/setuid/processed
+> while true:
+>   wait for /mnt/setuid/tasks to be non-empty
+>   read a pid from /mnt/setuid/tasks
+>   move that pid to the appropriate cgroups in memory/cpu/etc
+> hierarchies if necessary
+>   move that pid to /mnt/setuid/processed/tasks
+> 
+> i.e. any pid in the root cgroup of the setuid hierarchy is one that
+> needs attention and may need to be moved to different cgroups
+> 
+> A couple of enhancements to make this more usable might include:
+> 
+> - adding an API (via a new syscall or an eventfd?) to wait for a
+> cgroup to be non-empty, to avoid having to poll /mnt/setuid/tasks more
+> than necessary
+> 
+> - allow the user to designate certain processes and their children as
+> uninteresting so that their setuid calls don't trigger them being
+> moved back to the root (perhaps indicated via membership of an
+> "ignored" cgroup in the setuid hierarchy?)
+> 
+> This should be more reliable than netlink since it doesn't involve
+> userspace having to keep up with a stream of events - we're not
+> queuing up events, we're just shifting process group memberships.
+> 
+> Similar approaches could be used for a "setgid" hierarchy and an
+> "execve" hierarchy.
 
-Okay, this is getting somewhat annoying.  Several people now have missed 
-the point.
+We also need to do something to track all the forked childs after
+the setuid, setgid or exec till original parent event got classified
+and children need to meet the same treatment.
 
-Noone has talked about the actual placement of the percpu segment data.
-
-Using RIP-based references, however, are *cheaper* than using absolute 
-references.  For RIP-based references to be valid, then the *offsets* 
-need to be in the range [-2 GB + CONFIG_PHYSICAL_START ... 
-CONFIG_PHYSICAL_START).  This is similar to the constraint on absolute 
-refereces, where the *offsets* have to be in the range [-2 GB, 2 GB).
-
-None of this affects the absolute positioning of the data.  The final 
-address are determined by:
-
-	fs_base + rip + offset
-or
-	fs_base + offset
-
-... respectively.  fs_base is an arbitrary 64-bit number; rip (in the 
-kernel) is in the range [-2 GB + CONFIG_PHYSICAL_START, 0), and offset 
-is in the range [-2 GB, 2 GB).
-
-(The high end of the rip range above is slightly too wide.)
-
-	-hpa
+Thanks
+Vivek
