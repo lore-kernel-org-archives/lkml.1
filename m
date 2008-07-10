@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758657AbYGJPtZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758840AbYGJPtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758657AbYGJPtZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 11:49:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbYGJPtR
+	id S1758840AbYGJPtn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 11:49:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751080AbYGJPte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 11:49:17 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:36479 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750938AbYGJPtQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 11:49:16 -0400
-Message-ID: <48762DD2.5090802@zytor.com>
-Date: Thu, 10 Jul 2008 11:42:10 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 10 Jul 2008 11:49:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59167 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751365AbYGJPtd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 11:49:33 -0400
+Date: Thu, 10 Jul 2008 11:40:35 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: Paul Menage <menage@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Libcg Devel Mailing List <libcg-devel@lists.sourceforge.net>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Peter Zijlstra <pzijlstr@redhat.com>,
+       Kazunaga Ikeno <k-ikeno@ak.jp.nec.com>,
+       Morton Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Graf <tgraf@redhat.com>, Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [RFC] How to handle the rules engine for cgroups
+Message-ID: <20080710154035.GA12043@redhat.com>
+References: <20080701191126.GA17376@redhat.com> <20080703101957.b3856904.kamezawa.hiroyu@jp.fujitsu.com> <20080703155446.GB9275@redhat.com> <6599ad830807100223m2453963cwcfbe6eb1ad54d517@mail.gmail.com> <20080710104852.797fe79c@cuia.bos.redhat.com>
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <48751CF9.4020901@linux-foundation.org>	<4875209D.8010603@goop.org> <48752CCD.30507@linux-foundation.org>	<m1wsjupuiz.fsf@frodo.ebiederm.org> <48753C99.5050408@goop.org> <m1ej62iq9z.fsf@frodo.ebiederm.org> <487555A8.2050007@zytor.com> <487556A5.5090907@goop.org> <4876194E.4080205@linux-foundation.org> <48761C06.3020003@zytor.com> <48762A3B.5050104@linux-foundation.org>
-In-Reply-To: <48762A3B.5050104@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080710104852.797fe79c@cuia.bos.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
+On Thu, Jul 10, 2008 at 10:48:52AM -0400, Rik van Riel wrote:
+> On Thu, 10 Jul 2008 02:23:52 -0700
+> "Paul Menage" <menage@google.com> wrote:
 > 
-> Well the zero based results in this becoming always
+> > I don't see the rule-based approach being all that useful for our needs.
 > 
-> 	gs_base + absolute address in per cpu segment
+> Agreed, there really is no need for a rule-based approach in kernel space.
+> 
+> There are basically three different cases:
+> 
+> 1) daemons get started up in their own process groups, this can
+>    be handled by the initscripts
+> 
+> 2) user sessions (ssh, etc) start in their own process groups,
+>    this can be handled by PAM
+> 
+> 3) users fork processes that should go into special process
+>    groups - this could be handled by having a small ruleset
+>    in userspace handle things, right before calling exec(),
 
-You can do either way.  For RIP-based, you have to worry about the 
-possible range for the RIP register when referencing.  Currently, even 
-for "make allyesconfig" the per cpu segment is a lot smaller than the 
-minimum value for CONFIG_PHYSICAL_START (2 MB), so there is no issue, 
-but there is a distinct lack of wiggle room, which can be resolved 
-either by using negative offsets, or by moving the kernel text area up a 
-bit from -2 GB.
+That means application launcher (ex, shell) is aware of the right cgroup
+targeted application should go in and then move forked pid to right
+cgroup and call exec? Or you had something else in mind?
+ 
+>    it can even be hidden from the application by hooking into
+>    the exec() call
+> 
 
-> Why are RIP based references cheaper? The offset to the per cpu segment is certainly more than what can be fit into 16 bits.
+This means hooking into libc. So libc will parse rules file, determine
+the right cgroup, place application there and then call exec?
 
-Where are you getting 16 bits from?!?!  *There are no 16-bit offsets in 
-64-bit mode, period, full stop.*
+CCing, Ulrich also in case he has some thoughts.
 
-RIP-based references are cheaper because the x86-64 architects chose to 
-optimize RIP-based references over absolute references.  Therefore 
-RIP-based references are encodable with only a MODR/M byte, whereas 
-absolute references require a SIB byte as well -- longer instruction, 
-possibly a less optimized path through the CPU, and *definitely* 
-something that gets exercised less in the linker.
-
-	-hpa
+Thanks
+Vivek
