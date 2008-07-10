@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758241AbYGJOdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758393AbYGJOdx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758241AbYGJOdj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 10:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756819AbYGJOcm
+	id S1758393AbYGJOdx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 10:33:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757994AbYGJOdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 10:32:42 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:53486 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756592AbYGJOck (ORCPT
+	Thu, 10 Jul 2008 10:33:10 -0400
+Received: from [194.117.236.238] ([194.117.236.238]:60588 "EHLO
+	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1757985AbYGJOdJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 10:32:40 -0400
-Subject: Re: Linux Wireless Mini-Summit -- Ottawa -- July 22, 2008
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080709190915.GA8238@tuxdriver.com> (sfid-20080709_213808_434368_5FE083A0)
-References: <20080709190915.GA8238@tuxdriver.com>
-	 (sfid-20080709_213808_434368_5FE083A0)
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-/6metlsUcf40iya5uiWZ"
-Date: Thu, 10 Jul 2008 16:31:49 +0200
-Message-Id: <1215700309.3483.21.camel@johannes.berg>
+	Thu, 10 Jul 2008 10:33:09 -0400
+Date: Thu, 10 Jul 2008 17:31:22 +0300
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: zhp <zhpsub@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: Is there any way to download all email archive of linux kernel,
+ and then import to Gmail for search?
+Message-ID: <20080710173122.165849d4@linux360.ro>
+In-Reply-To: <20080710062516.10342511.akpm@linux-foundation.org>
+References: <337eb86f0807030721n1ab86217j2eb9a43d526ebf5f@mail.gmail.com>
+	<20080710062516.10342511.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 10 Jul 2008 06:25:16 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
---=-/6metlsUcf40iya5uiWZ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> On Thu, 3 Jul 2008 22:21:42 +0800 zhp <zhpsub@gmail.com> wrote:
+> 
+> > I have found that there is some methods for me to migrate local
+> > existing emails to Gmail for search.
+> > 
+> > * Gmail Loader
+> > see http://www.linux.com/articles/60733
+> > 
+> > * imapsync,
+> > see http://freshmeat.net/projects/imapsync/
+> > 
+> > However, the problem is where can I get all of the old mails to my
+> > local computer?
+> > Has anyone done such things sucessfully?
+> 
+> http://userweb.kernel.org/~akpm/lkml-mbox-archives/ might be useful.
+> 
+> (Gad, 8MB/sec bandwidth from my Tokyo hotel room to kernel.org!)
+
+I'm reading LKML via NNTP from Gmane (not Gmail). But Gmane also
+provides mbox exporting, take a look at http://gmane.org/export.php
+
+I suppose you could use one of these two methods (NNTP or their export
+stuff) to download your old mails.
 
 
-> 1500	Future work
-
-Maybe something about testing? Or I'll do a testing brainstorming
-session after dinner.
-
-Obviously, testing at orbit never worked out, but it'd be good to have
-_something_ other than everybody testing their thing locally. Ties in
-with the virtual hardware, maybe?
-
-johannes
-
---=-/6metlsUcf40iya5uiWZ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJIdh1RAAoJEKVg1VMiehFY/aYP/iHzQeuInHrBEb1rCmL9Avbi
-o6zFcHixMYHliZmKmkPiEtgtdY5sa1oXRtoTO9hkXnVM5faLND1OL4JB5V4xI56T
-WCyx6zyG/NlXJFdGpIoY2rcBgZ6sL3oFao4qmiekBEzYxUUIcxrlwvQ98WAvZvBo
-JZLky9FWQwicl7SZgKutt4LjKthEKDqDzqNQvDf13pxfhCjsy/sIF/W4hQJZY4OU
-fIkjrW8wwovYg4au3IGum1uF/lGKByuead/MKzUPk5VNx4tmkU/baujdKyL7TTbf
-jDud+5ztgiEcs0FJY3Lx6w60yUK13cawbwR6DkhK/6CNP4MYQKHQy2E0Zqa7Fb0M
-8IFTvOfJB9sinDtBSOL4w1NDWOCbDFst6KUWWWRxdGyF9S0JkvPF3HXiKpmsPLRj
-cWRlV4uwrkhq4am0J/YyoOi48S9PIopXQr98R1Cc0W4y4U9LLWF9OQxzPwFZgclk
-Cm+agZScdIbc2RsMCyLDU0mz9IljVtOUK/SsCK0QwrWwhrCPMCCqd1PWFFhorbix
-mEgBP73R7Fl5oinQK8nNqFl5jHJaqMc17v+FRg4MuCQCjSpo9WTeb0zaHDHly5ap
-vj0wd5RutWPLphSgzEhJ8+QtTijGRqgQTp06VZmeetfmr78Wdea898NdKpgq6yRh
-IpCOWoW2/1fmQjnkSpYa
-=8jkp
------END PGP SIGNATURE-----
-
---=-/6metlsUcf40iya5uiWZ--
-
+	Cheers,
+	Eduard
