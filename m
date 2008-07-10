@@ -1,48 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757389AbYGJMxG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757476AbYGJMxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757389AbYGJMxG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 08:53:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754033AbYGJMwz
+	id S1757476AbYGJMxw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 08:53:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754071AbYGJMxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 08:52:55 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:34113 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754047AbYGJMwy (ORCPT
+	Thu, 10 Jul 2008 08:53:43 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:63861 "EHLO
+	WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751167AbYGJMxm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 08:52:54 -0400
-Date: Thu, 10 Jul 2008 20:52:36 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: austin zhang <austin_zhang@linux.intel.com>
-Cc: johnpol@2ka.mipt.ru, davem@davemloft.net, chaapala@cisco.com,
-       linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       arjan@linux.intel.com
-Subject: Re: FW: [Fwd: [PATCH]Using Intel CRC32 instruction to implement hardware accelerated CRC32c algorithm.]
-Message-ID: <20080710125236.GA25895@gondor.apana.org.au>
-References: <000901c8e0d4$6f5cf230$7fb410ac@ccr.corp.intel.com> <1215512754.2906.23.camel@localhost.localdomain> <20080709074153.GA11927@gondor.apana.org.au> <1215689169.5257.7.camel@localhost.localdomain>
+	Thu, 10 Jul 2008 08:53:42 -0400
+X-BigFish: VPS-39(zz1432R98dR7efV1805M179dR873fnzz10d3izzz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0K3SJT7-03-RQZ-01
+Date: Thu, 10 Jul 2008 14:53:20 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       Sebastian.Biemueller@amd.com, robert.richter@amd.com, joro@8bytes.org
+Subject: Re: [PATCH 19/34] AMD IOMMU: add functions to send IOMMU commands
+Message-ID: <20080710125320.GN14977@amd.com>
+References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com> <1214508490-29683-20-git-send-email-joerg.roedel@amd.com> <20080709190453.527535f7.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <1215689169.5257.7.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080709190453.527535f7.akpm@linux-foundation.org>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 10 Jul 2008 12:53:20.0189 (UTC) FILETIME=[EE07F6D0:01C8E28B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 10, 2008 at 07:26:09AM -0400, austin zhang wrote:
->
-> > So my plan is to convert them and then remove the libcrc32c
-> > interface completely.
-> Because libcrc32c can be a module in original implemetation, so for
-> those other routine which call crc32c_le directly, this may not work for
-> them?  
+On Wed, Jul 09, 2008 at 07:04:53PM -0700, Andrew Morton wrote:
+> On Thu, 26 Jun 2008 21:27:55 +0200 Joerg Roedel <joerg.roedel@amd.com> wrote:
+> > +static int iommu_completion_wait(struct amd_iommu *iommu)
+> > +{
+> > +	int ret;
+> > +	struct command cmd;
+> > +	volatile u64 ready = 0;
+> > +	unsigned long ready_phys = virt_to_phys(&ready);
+> > +
+> > +	memset(&cmd, 0, sizeof(cmd));
+> > +	cmd.data[0] = LOW_U32(ready_phys) | CMD_COMPL_WAIT_STORE_MASK;
+> > +	cmd.data[1] = HIGH_U32(ready_phys);
+> > +	cmd.data[2] = 1; /* value written to 'ready' */
+> > +	CMD_SET_TYPE(&cmd, CMD_COMPL_WAIT);
+> > +
+> > +	iommu->need_sync = 0;
+> > +
+> > +	ret = iommu_queue_command(iommu, &cmd);
+> > +
+> > +	if (ret)
+> > +		return ret;
+> > +
+> > +	while (!ready)
+> > +		cpu_relax();
+> 
+> I busywait is a big red flag.  An uncommented one is not acceptable IMO.
+> 
+> What is the maximum duration?
 
-I've looked at them all (there are only three users of crc32c
-in the tree) and they can all be converted across.  I'll wait
-for ahash to hit Linus's tree before starting the conversion.
+This depends on the hardware and how many commands have to be executed
+before that command.
 
-Cheers,
+> Is it not possible to sleep and await an interrupt?
+
+Yes it is. I plan to do so as an optimization to the current code. But
+this needs changes to the address allocator to not allocate addresses
+which have been freed but not yet flushed from the IOMMU TLB.
+
+> Should we implement a timeout in case the hardware is busted?
+
+This is the best I think. Ok, if the hardware is busted the whole
+machine has a problem because DMA does not work reliably anymore. But I
+will add a counter to that loop to have an emergency exit from it until
+the optimization is implemented (which is a bit more work).
+
+> > +	return 0;
+> > +}
+> > +
+> > +static int iommu_queue_inv_dev_entry(struct amd_iommu *iommu, u16 devid)
+> > +{
+> > +	struct command cmd;
+> 
+> `command' was a poorly-chosen identifier for this structure.  Too generic.
+
+Hmm, maybe iommu_cmd. I don't want the identifier too long like
+amd_iommu_command because it is only used in that file and thus its
+clear that it belongs to the amd_iommu.
+
+Joerg
+
+
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
