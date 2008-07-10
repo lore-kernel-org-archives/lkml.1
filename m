@@ -1,48 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756929AbYGJNQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757374AbYGJNRk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756929AbYGJNQz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 09:16:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbYGJNQp
+	id S1757374AbYGJNRk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 09:17:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754737AbYGJNRT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 09:16:45 -0400
-Received: from swan.nt.tuwien.ac.at ([128.131.67.158]:46939 "EHLO
-	swan.nt.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753927AbYGJNQp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 09:16:45 -0400
-Date: Thu, 10 Jul 2008 15:16:42 +0200
-From: Thomas Zeitlhofer <tzeitlho+lkml@nt.tuwien.ac.at>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: IPSEC in 2.6.25 causes stalled connections
-Message-ID: <20080710131642.GB22105@swan.nt.tuwien.ac.at>
-References: <20080608010858.GA8877@swan.nt.tuwien.ac.at> <E1K8TuP-0002Qd-00@gondolin.me.apana.org.au> <20080618004544.GA25439@swan.nt.tuwien.ac.at> <20080708080742.GA25027@gondor.apana.org.au> <20080708213302.GA28842@swan.nt.tuwien.ac.at> <20080709084334.GA12484@gondor.apana.org.au> <20080710094345.GA24162@gondor.apana.org.au>
+	Thu, 10 Jul 2008 09:17:19 -0400
+Received: from chrocht.moloch.sk ([62.176.169.44]:38056 "EHLO mail.moloch.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754659AbYGJNRS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 09:17:18 -0400
+Message-ID: <48760BFB.90007@fastmq.com>
+Date: Thu, 10 Jul 2008 15:17:47 +0200
+From: Martin Sustrik <sustrik@fastmq.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080710094345.GA24162@gondor.apana.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Andrew Morton <akpm@linux-foundation.org>, Martin Lucina <mato@kotelna.sk>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Higher than expected disk write(2) latency
+References: <20080628121131.GA14181@nodbug.moloch.sk>	<20080709222701.8eab4924.akpm@linux-foundation.org>	<4875C45C.2010901@fastmq.com> <20080710093109.46db7c40@the-village.bc.nu>
+In-Reply-To: <20080710093109.46db7c40@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 10, 2008 at 05:43:45PM +0800, Herbert Xu wrote:
-> 
-> OK, found it: chainiv never called the completion function!
-> 
-> commit 066068afee313b7746e7a3de05b57dcd4149a2fe
-> Author: Herbert Xu <herbert@gondor.apana.org.au>
-> Date:   Thu Jul 10 17:42:36 2008 +0800
-> 
->     crypto: chainiv - Invoke completion function
->     
->     When chainiv postpones requests it never calls their completion functions.
->     This causes symptoms such as memory leaks when IPsec is in use.
->     
->     Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Hi Alan,
 
-Confirmed, your patch fixes the problem.
+>> What we see is that AIO performs rather bad while we are still 
+>> enqueueing more writes (it misses right position on the disk and has to 
+>> do superfluous disk revolvings), however, once we stop enqueueing new 
+>> write request, those already in the queue are processed swiftly.
+> 
+> Which disk scheduler are you using - some of the disk schedulers
+> intentionally delay writes to try and get better block merging.
 
-Thanks a lot!
+It's CFQ. Does it delay writes? And if so, what should we use instead?
 
-Thomas
+Thanks.
+Martin
