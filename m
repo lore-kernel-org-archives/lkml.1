@@ -1,41 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759224AbYGJRNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758230AbYGJRRo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759224AbYGJRNn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 13:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYGJRNg
+	id S1758230AbYGJRRo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 13:17:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbYGJRRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 13:13:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59555 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751372AbYGJRNf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 13:13:35 -0400
-Message-ID: <48764307.20905@linux-foundation.org>
-Date: Thu, 10 Jul 2008 12:12:39 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Thu, 10 Jul 2008 13:17:36 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44507 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751639AbYGJRRf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 13:17:35 -0400
+Date: Thu, 10 Jul 2008 19:17:21 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Robert Richter <robert.richter@amd.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/5] x86/pci: patches for tip/x86/unify-pci
+Message-ID: <20080710171721.GA19737@elte.hu>
+References: <1215709106-9182-1-git-send-email-robert.richter@amd.com>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Mike Travis <travis@sgi.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <20080709133958.612635f0@infradead.org>	<4875231F.1020506@zytor.com> <487524A0.6020304@goop.org>	<487529AE.3060505@zytor.com> <m1r6a2r9nj.fsf@frodo.ebiederm.org>	<48753A71.2030006@zytor.com> <m18wwahauq.fsf@frodo.ebiederm.org> <48763732.7020805@sgi.com> <487641D6.5060206@goop.org>
-In-Reply-To: <487641D6.5060206@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1215709106-9182-1-git-send-email-robert.richter@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
 
-> You want to virtually map the percpu area?  How and when would it get
-> extended?
+* Robert Richter <robert.richter@amd.com> wrote:
 
-It would get extended when cpu_alloc() is called and the allocator finds that there is no per cpu memory available.
+> This patch series contains patches for tip/x86/unify-pci. It fixes 
+> NUMA initialization code reflecting latest changes in tip/master. Also 
+> there are build fixes and minor cleanups. Patch #5 is a cherry pick 
+> that fixes build on UP systems. Code reboots for smp/nosmp, 
+> acpi/noacpi, numaq, 32/64bit. It compiles for visws.
 
+thanks Robert. Today i've eliminated the VISWS subarch which greatly 
+simplified your series. I've picked up these two fixes:
 
+ Robert Richter (2):
+       x86/pci merge: fixing numaq initialization
+       x86/pci: fix warnings in subsys_initcall functions
+
+the others were moot i think.
+
+Please check the tip/x86/generalize-visws, i just pushed them all out.
+
+	Ingo
