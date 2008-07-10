@@ -1,145 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762160AbYGJSrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761200AbYGJSoZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762160AbYGJSrS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 14:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758773AbYGJSl7
+	id S1761200AbYGJSoZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 14:44:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758000AbYGJSlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 14:41:59 -0400
-Received: from mga02.intel.com ([134.134.136.20]:13519 "EHLO mga02.intel.com"
+	Thu, 10 Jul 2008 14:41:50 -0400
+Received: from mga14.intel.com ([143.182.124.37]:45689 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756472AbYGJSlt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 14:41:49 -0400
+	id S1756282AbYGJSlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 14:41:44 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.30,339,1212390000"; 
-   d="scan'208";a="306573277"
-Message-Id: <20080710182238.487433000@linux-os.sc.intel.com>
+   d="scan'208";a="11424600"
+Message-Id: <20080710182238.631011000@linux-os.sc.intel.com>
 References: <20080710181634.764954000@linux-os.sc.intel.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 10 Jul 2008 11:16:52 -0700
+Date: Thu, 10 Jul 2008 11:16:53 -0700
 From: Suresh Siddha <suresh.b.siddha@intel.com>
 To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
        akpm@linux-foundation.org, arjan@linux.intel.com, andi@firstfloor.org,
        ebiederm@xmission.com, jbarnes@virtuousgeek.org, steiner@sgi.com
 Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch 18/26] x64, x2apic/intr-remap: x2apic ops for x2apic mode support
-Content-Disposition: inline; filename=basic_x2apic_ops.patch
+Subject: [patch 19/26] x64, x2apic/intr-remap: introcude self IPI to genapic routines
+Content-Disposition: inline; filename=self_ipi.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x2apic ops for x2apic mode support. This uses MSR interface and differs
-slightly from the xapic register layout.
+Introduce self IPI op for genapic.
 
 Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 ---
 
-Index: tree-x86/arch/x86/kernel/apic_64.c
+Index: tree-x86/arch/x86/kernel/genapic_64.c
 ===================================================================
---- tree-x86.orig/arch/x86/kernel/apic_64.c	2008-07-10 09:52:14.000000000 -0700
-+++ tree-x86/arch/x86/kernel/apic_64.c	2008-07-10 09:52:22.000000000 -0700
-@@ -171,6 +171,41 @@
+--- tree-x86.orig/arch/x86/kernel/genapic_64.c	2008-07-10 09:52:12.000000000 -0700
++++ tree-x86/arch/x86/kernel/genapic_64.c	2008-07-10 09:52:24.000000000 -0700
+@@ -61,7 +61,7 @@
  
- EXPORT_SYMBOL_GPL(apic_ops);
+ /* Same for both flat and physical. */
  
-+static void x2apic_wait_icr_idle(void)
-+{
-+	/* no need to wait for icr idle in x2apic */
-+	return;
-+}
-+
-+static u32 safe_x2apic_wait_icr_idle(void)
-+{
-+	/* no need to wait for icr idle in x2apic */
-+	return 0;
-+}
-+
-+void x2apic_icr_write(u32 low, u32 id)
-+{
-+	wrmsrl(APIC_BASE_MSR + (APIC_ICR >> 4), ((__u64) id) << 32 | low);
-+}
-+
-+u64 x2apic_icr_read(void)
-+{
-+	unsigned long val;
-+
-+	rdmsrl(APIC_BASE_MSR + (APIC_ICR >> 4), val);
-+	return val;
-+}
-+
-+static struct apic_ops x2apic_ops = {
-+	.read = native_apic_msr_read,
-+	.write = native_apic_msr_write,
-+	.write_atomic = native_apic_msr_write,
-+	.icr_read = x2apic_icr_read,
-+	.icr_write = x2apic_icr_write,
-+	.wait_icr_idle = x2apic_wait_icr_idle,
-+	.safe_wait_icr_idle = safe_x2apic_wait_icr_idle,
-+};
-+
- /**
-  * enable_NMI_through_LVT0 - enable NMI through local vector table 0
-  */
-Index: tree-x86/include/asm-x86/apic.h
-===================================================================
---- tree-x86.orig/include/asm-x86/apic.h	2008-07-10 09:52:14.000000000 -0700
-+++ tree-x86/include/asm-x86/apic.h	2008-07-10 09:52:22.000000000 -0700
-@@ -7,6 +7,8 @@
- #include <asm/apicdef.h>
- #include <asm/processor.h>
- #include <asm/system.h>
-+#include <asm/cpufeature.h>
-+#include <asm/msr.h>
- 
- #define ARCH_APICTIMER_STOPS_ON_C3	1
- 
-@@ -73,6 +75,26 @@
- 	return *((volatile u32 *)(APIC_BASE + reg));
+-void send_IPI_self(int vector)
++void apic_send_IPI_self(int vector)
+ {
+ 	__send_IPI_shortcut(APIC_DEST_SELF, vector, APIC_DEST_PHYSICAL);
  }
- 
-+static inline void native_apic_msr_write(u32 reg, u32 v)
-+{
-+	if (reg == APIC_DFR || reg == APIC_ID || reg == APIC_LDR ||
-+	    reg == APIC_LVR)
-+		return;
-+
-+	wrmsr(APIC_BASE_MSR + (reg >> 4), v, 0);
-+}
-+
-+static inline u32 native_apic_msr_read(u32 reg)
-+{
-+	u32 low, high;
-+
-+	if (reg == APIC_DFR)
-+		return -1;
-+
-+	rdmsr(APIC_BASE_MSR + (reg >> 4), low, high);
-+	return low;
-+}
-+
- #ifdef CONFIG_X86_32
- extern void apic_wait_icr_idle(void);
- extern u32 safe_apic_wait_icr_idle(void);
-Index: tree-x86/include/asm-x86/apicdef.h
+Index: tree-x86/arch/x86/kernel/genapic_flat_64.c
 ===================================================================
---- tree-x86.orig/include/asm-x86/apicdef.h	2008-07-10 09:51:45.000000000 -0700
-+++ tree-x86/include/asm-x86/apicdef.h	2008-07-10 09:52:22.000000000 -0700
-@@ -105,6 +105,7 @@
- #define	APIC_TMICT	0x380
- #define	APIC_TMCCT	0x390
- #define	APIC_TDCR	0x3E0
-+#define APIC_SELF_IPI	0x3F0
- #define		APIC_TDR_DIV_TMBASE	(1 << 2)
- #define		APIC_TDR_DIV_1		0xB
- #define		APIC_TDR_DIV_2		0x0
-@@ -128,6 +129,8 @@
- #define	APIC_EILVT3     0x530
+--- tree-x86.orig/arch/x86/kernel/genapic_flat_64.c	2008-07-10 09:52:12.000000000 -0700
++++ tree-x86/arch/x86/kernel/genapic_flat_64.c	2008-07-10 09:52:24.000000000 -0700
+@@ -131,6 +131,7 @@
+ 	.send_IPI_all = flat_send_IPI_all,
+ 	.send_IPI_allbutself = flat_send_IPI_allbutself,
+ 	.send_IPI_mask = flat_send_IPI_mask,
++	.send_IPI_self = apic_send_IPI_self,
+ 	.cpu_mask_to_apicid = flat_cpu_mask_to_apicid,
+ 	.phys_pkg_id = phys_pkg_id,
+ 	.read_apic_id = read_xapic_id,
+@@ -196,6 +197,7 @@
+ 	.send_IPI_all = physflat_send_IPI_all,
+ 	.send_IPI_allbutself = physflat_send_IPI_allbutself,
+ 	.send_IPI_mask = physflat_send_IPI_mask,
++	.send_IPI_self = apic_send_IPI_self,
+ 	.cpu_mask_to_apicid = physflat_cpu_mask_to_apicid,
+ 	.phys_pkg_id = phys_pkg_id,
+ 	.read_apic_id = read_xapic_id,
+Index: tree-x86/include/asm-x86/genapic_64.h
+===================================================================
+--- tree-x86.orig/include/asm-x86/genapic_64.h	2008-07-10 09:52:12.000000000 -0700
++++ tree-x86/include/asm-x86/genapic_64.h	2008-07-10 09:52:24.000000000 -0700
+@@ -24,6 +24,7 @@
+ 	void (*send_IPI_mask)(cpumask_t mask, int vector);
+ 	void (*send_IPI_allbutself)(int vector);
+ 	void (*send_IPI_all)(int vector);
++	void (*send_IPI_self)(int vector);
+ 	/* */
+ 	unsigned int (*cpu_mask_to_apicid)(cpumask_t cpumask);
+ 	unsigned int (*phys_pkg_id)(int index_msb);
+@@ -36,6 +37,7 @@
+ extern struct genapic apic_physflat;
+ extern int acpi_madt_oem_check(char *, char *);
  
- #define APIC_BASE (fix_to_virt(FIX_APIC_BASE))
-+#define APIC_BASE_MSR	0x800
-+#define X2APIC_ENABLE	(1UL << 10)
++extern void apic_send_IPI_self(int vector);
+ enum uv_system_type {UV_NONE, UV_LEGACY_APIC, UV_X2APIC, UV_NON_UNIQUE_APIC};
+ extern enum uv_system_type get_uv_system_type(void);
+ extern int is_uv_system(void);
+Index: tree-x86/include/asm-x86/hw_irq.h
+===================================================================
+--- tree-x86.orig/include/asm-x86/hw_irq.h	2008-07-10 09:51:45.000000000 -0700
++++ tree-x86/include/asm-x86/hw_irq.h	2008-07-10 09:52:24.000000000 -0700
+@@ -73,7 +73,9 @@
+ #endif
  
- #ifdef CONFIG_X86_32
- # define MAX_IO_APICS 64
+ /* IPI functions */
++#ifdef CONFIG_X86_32
+ extern void send_IPI_self(int vector);
++#endif
+ extern void send_IPI(int dest, int vector);
+ 
+ /* Statistics */
+Index: tree-x86/include/asm-x86/mach-default/mach_apic.h
+===================================================================
+--- tree-x86.orig/include/asm-x86/mach-default/mach_apic.h	2008-07-10 09:52:12.000000000 -0700
++++ tree-x86/include/asm-x86/mach-default/mach_apic.h	2008-07-10 09:52:24.000000000 -0700
+@@ -31,6 +31,7 @@
+ #define phys_pkg_id	(genapic->phys_pkg_id)
+ #define vector_allocation_domain    (genapic->vector_allocation_domain)
+ #define read_apic_id  (genapic->read_apic_id)
++#define send_IPI_self (genapic->send_IPI_self)
+ extern void setup_apic_routing(void);
+ #else
+ #define INT_DELIVERY_MODE dest_LowestPrio
 
 -- 
 
