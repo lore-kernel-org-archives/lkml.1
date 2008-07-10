@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758940AbYGJP1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758483AbYGJP2L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758940AbYGJP1i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 11:27:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758918AbYGJP0i
+	id S1758483AbYGJP2L (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 11:28:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757128AbYGJP0w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 11:26:38 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:55128 "EHLO
+	Thu, 10 Jul 2008 11:26:52 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:45141 "EHLO
 	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758908AbYGJP0h (ORCPT
+	by vger.kernel.org with ESMTP id S1759024AbYGJP0v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 11:26:37 -0400
-Subject: [PATCH 07/15] regulator: regulator test harness
+	Thu, 10 Jul 2008 11:26:51 -0400
+Subject: [PATCH 09/15] regulator: documentation - overview
 From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>,
        arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
        Mark Brown <broonie@opensource.wolfsonmicro.com>
 Content-Type: text/plain
-Date: Thu, 10 Jul 2008 16:26:34 +0100
-Message-Id: <1215703594.13431.63.camel@odin>
+Date: Thu, 10 Jul 2008 16:26:49 +0100
+Message-Id: <1215703609.13431.65.camel@odin>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
@@ -26,274 +26,192 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This provides a virtual regulator test harness which exposes a sysfs
-interface for setting power requirements, intended for test purposes only.
+This adds overview documentation describing the regulator framework and
+nomenclature used in the interface specific documentation and code.
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Signed-off-by: Liam Girdwood <lg@opensource.wolfsonmicro.com>
 ---
- drivers/regulator/virtual.c |  252 +++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 252 insertions(+), 0 deletions(-)
- create mode 100644 drivers/regulator/virtual.c
+ Documentation/power/regulator/overview.txt |  171 ++++++++++++++++++++++++++++
+ 1 files changed, 171 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/power/regulator/overview.txt
 
-diff --git a/drivers/regulator/virtual.c b/drivers/regulator/virtual.c
+diff --git a/Documentation/power/regulator/overview.txt b/Documentation/power/regulator/overview.txt
 new file mode 100644
-index 0000000..7018f1c
+index 0000000..bdcb332
 --- /dev/null
-+++ b/drivers/regulator/virtual.c
-@@ -0,0 +1,252 @@
-+/*
-+ * reg-virtual-consumer.c
-+ *
-+ * Copyright 2008 Wolfson Microelectronics PLC.
-+ *
-+ * Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation; either version 2 of the
-+ * License, or (at your option) any later version.
-+ */
++++ b/Documentation/power/regulator/overview.txt
+@@ -0,0 +1,171 @@
++Linux voltage and current regulator framework
++=============================================
 +
-+#include <linux/err.h>
-+#include <linux/mutex.h>
-+#include <linux/platform_device.h>
-+#include <linux/regulator/consumer.h>
++About
++=====
 +
-+struct virtual_consumer_data {
-+	struct mutex lock;
-+	struct regulator *regulator;
-+	int enabled;
-+	int min_uV;
-+	int max_uV;
-+	unsigned int mode;
-+};
++This framework is designed to provide a standard kernel interface to control
++voltage and current regulators.
 +
-+static void update_constraints(struct virtual_consumer_data *data)
-+{
-+	int ret;
++The intention is to allow systems to dynamically control regulator power output
++in order to save power and prolong battery life. This applies to both voltage
++regulators (where voltage output is controllable) and current sinks (where
++current limit is controllable).
 +
-+	if (data->min_uV && data->max_uV
-+	    && data->min_uV <= data->max_uV) {
-+		ret = regulator_set_voltage(data->regulator,
-+					    data->min_uV, data->max_uV);
-+		if (ret != 0) {
-+			printk(KERN_ERR "regulator_set_voltage() failed: %d\n",
-+			       ret);
-+			return;
-+		}
-+	}
-+
-+	if (data->min_uV && data->max_uV && !data->enabled) {
-+		ret = regulator_enable(data->regulator);
-+		if (ret == 0)
-+			data->enabled = 1;
-+		else
-+			printk(KERN_ERR "regulator_enable() failed: %d\n",
-+				ret);
-+	}
-+
-+	if (!(data->min_uV && data->max_uV) && data->enabled) {
-+		ret = regulator_disable(data->regulator);
-+		if (ret == 0)
-+			data->enabled = 0;
-+		else
-+			printk(KERN_ERR "regulator_disable() failed: %d\n",
-+				ret);
-+	}
-+}
-+
-+static ssize_t show_min_uV(struct device *dev,
-+			   struct device_attribute *attr, char *buf)
-+{
-+	struct virtual_consumer_data *data = dev_get_drvdata(dev);
-+	return sprintf(buf, "%d\n", data->min_uV);
-+}
-+
-+static ssize_t set_min_uV(struct device *dev, struct device_attribute *attr,
-+			  const char *buf, size_t count)
-+{
-+	struct virtual_consumer_data *data = dev_get_drvdata(dev);
-+	long val;
-+
-+	if (strict_strtol(buf, 10, &val) != 0)
-+		return count;
-+
-+	mutex_lock(&data->lock);
-+
-+	data->min_uV = val;
-+	update_constraints(data);
-+
-+	mutex_unlock(&data->lock);
-+
-+	return count;
-+}
-+
-+static ssize_t show_max_uV(struct device *dev,
-+			   struct device_attribute *attr, char *buf)
-+{
-+	struct virtual_consumer_data *data = dev_get_drvdata(dev);
-+	return sprintf(buf, "%d\n", data->max_uV);
-+}
-+
-+static ssize_t set_max_uV(struct device *dev, struct device_attribute *attr,
-+			  const char *buf, size_t count)
-+{
-+	struct virtual_consumer_data *data = dev_get_drvdata(dev);
-+	long val;
-+
-+	if (strict_strtol(buf, 10, &val) != 0)
-+		return count;
-+
-+	mutex_lock(&data->lock);
-+
-+	data->max_uV = val;
-+	update_constraints(data);
-+
-+	mutex_unlock(&data->lock);
-+
-+	return count;
-+}
-+
-+static ssize_t show_mode(struct device *dev,
-+			 struct device_attribute *attr, char *buf)
-+{
-+	struct virtual_consumer_data *data = dev_get_drvdata(dev);
-+
-+	switch (data->mode) {
-+	case REGULATOR_MODE_FAST:
-+		return sprintf(buf, "fast\n");
-+	case REGULATOR_MODE_NORMAL:
-+		return sprintf(buf, "normal\n");
-+	case REGULATOR_MODE_IDLE:
-+		return sprintf(buf, "idle\n");
-+	case REGULATOR_MODE_STANDBY:
-+		return sprintf(buf, "standby\n");
-+	default:
-+		return sprintf(buf, "unknown\n");
-+	}
-+}
-+
-+static ssize_t set_mode(struct device *dev, struct device_attribute *attr,
-+			const char *buf, size_t count)
-+{
-+	struct virtual_consumer_data *data = dev_get_drvdata(dev);
-+	unsigned int mode;
-+	int ret;
-+
-+	if (strncmp(buf, "fast", strlen("fast")) == 0)
-+		mode = REGULATOR_MODE_FAST;
-+	else if (strncmp(buf, "normal", strlen("normal")) == 0)
-+		mode = REGULATOR_MODE_NORMAL;
-+	else if (strncmp(buf, "idle", strlen("idle")) == 0)
-+		mode = REGULATOR_MODE_IDLE;
-+	else if (strncmp(buf, "standby", strlen("standby")) == 0)
-+		mode = REGULATOR_MODE_STANDBY;
-+	else {
-+		dev_err(dev, "Configuring invalid mode\n");
-+		return count;
-+	}
-+
-+	mutex_lock(&data->lock);
-+	ret = regulator_set_mode(data->regulator, mode);
-+	if (ret == 0)
-+		data->mode = mode;
-+	else
-+		dev_err(dev, "Failed to configure mode: %d\n", ret);
-+	mutex_unlock(&data->lock);
-+
-+	return count;
-+}
-+
-+static DEVICE_ATTR(min_microvolts, 0666, show_min_uV, set_min_uV);
-+static DEVICE_ATTR(max_microvolts, 0666, show_max_uV, set_max_uV);
-+static DEVICE_ATTR(mode, 0666, show_mode, set_mode);
-+
-+struct device_attribute *attributes[] = {
-+	&dev_attr_min_microvolts,
-+	&dev_attr_max_microvolts,
-+	&dev_attr_mode,
-+};
-+
-+static int regulator_virtual_consumer_probe(struct platform_device *pdev)
-+{
-+	char *reg_id = pdev->dev.platform_data;
-+	struct virtual_consumer_data *drvdata;
-+	int ret, i;
-+
-+	drvdata = kzalloc(sizeof(struct virtual_consumer_data), GFP_KERNEL);
-+	if (drvdata == NULL) {
-+		ret = -ENOMEM;
-+		goto err;
-+	}
-+
-+	mutex_init(&drvdata->lock);
-+
-+	drvdata->regulator = regulator_get(&pdev->dev, reg_id);
-+	if (IS_ERR(drvdata->regulator)) {
-+		ret = PTR_ERR(drvdata->regulator);
-+		goto err;
-+	}
-+
-+	for (i = 0; i < ARRAY_SIZE(attributes); i++) {
-+		ret = device_create_file(&pdev->dev, attributes[i]);
-+		if (ret != 0)
-+			goto err;
-+	}
-+
-+	drvdata->mode = regulator_get_mode(drvdata->regulator);
-+
-+	platform_set_drvdata(pdev, drvdata);
-+
-+	return 0;
-+
-+err:
-+	for (i = 0; i < ARRAY_SIZE(attributes); i++)
-+		device_remove_file(&pdev->dev, attributes[i]);
-+	kfree(drvdata);
-+	return ret;
-+}
-+
-+static int regulator_virtual_consumer_remove(struct platform_device *pdev)
-+{
-+	struct virtual_consumer_data *drvdata = platform_get_drvdata(pdev);
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(attributes); i++)
-+		device_remove_file(&pdev->dev, attributes[i]);
-+	if (drvdata->enabled)
-+		regulator_disable(drvdata->regulator);
-+	regulator_put(drvdata->regulator);
-+
-+	kfree(drvdata);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver regulator_virtual_consumer_driver = {
-+	.probe		= regulator_virtual_consumer_probe,
-+	.remove		= regulator_virtual_consumer_remove,
-+	.driver		= {
-+		.name		= "reg-virt-consumer",
-+	},
-+};
++(C) 2008  Wolfson Microelectronics PLC.
++Author: Liam Girdwood <lg@opensource.wolfsonmicro.com>
 +
 +
-+static int __init regulator_virtual_consumer_init(void)
-+{
-+	return platform_driver_register(&regulator_virtual_consumer_driver);
-+}
-+module_init(regulator_virtual_consumer_init);
++Nomenclature
++============
 +
-+static void __exit regulator_virtual_consumer_exit(void)
-+{
-+	platform_driver_unregister(&regulator_virtual_consumer_driver);
-+}
-+module_exit(regulator_virtual_consumer_exit);
++Some terms used in this document:-
 +
-+MODULE_AUTHOR("Mark Brown <broonie@opensource.wolfsonmicro.com>");
-+MODULE_DESCRIPTION("Virtual regulator consumer");
-+MODULE_LICENSE("GPL");
++  o Regulator    - Electronic device that supplies power to other devices.
++                   Most regulators can enable and disable their output whilst
++                   some can control their output voltage and or current.
++
++                   Input Voltage -> Regulator -> Output Voltage
++
++
++  o PMIC         - Power Management IC. An IC that contains numerous regulators
++                   and often contains other susbsystems.
++
++
++  o Consumer     - Electronic device that is supplied power by a regulator.
++                   Consumers can be classified into two types:-
++
++                   Static: consumer does not change it's supply voltage or
++                   current limit. It only needs to enable or disable it's
++                   power supply. It's supply voltage is set by the hardware,
++                   bootloader, firmware or kernel board initialisation code.
++
++                   Dynamic: consumer needs to change it's supply voltage or
++                   current limit to meet operation demands.
++
++
++  o Power Domain - Electronic circuit that is supplied it's input power by the
++                   output power of a regulator, switch or by another power
++                   domain.
++
++                   The supply regulator may be behind a switch(s). i.e.
++
++                   Regulator -+-> Switch-1 -+-> Switch-2 --> [Consumer A]
++                              |             |
++                              |             +-> [Consumer B], [Consumer C]
++                              |
++                              +-> [Consumer D], [Consumer E]
++
++                   That is one regulator and three power domains:
++
++                   Domain 1: Switch-1, Consumers D & E.
++                   Domain 2: Switch-2, Consumers B & C.
++                   Domain 3: Consumer A.
++
++                   and this represents a "supplies" relationship:
++
++                   Domain-1 --> Domain-2 --> Domain-3.
++
++                   A power domain may have regulators that are supplied power
++                   by other regulators. i.e.
++
++                   Regulator-1 -+-> Regulator-2 -+-> [Consumer A]
++                                |
++                                +-> [Consumer B]
++
++                   This gives us two regulators and two power domains:
++
++                   Domain 1: Regulator-2, Consumer B.
++                   Domain 2: Consumer A.
++
++                   and a "supplies" relationship:
++
++                   Domain-1 --> Domain-2
++
++
++  o Constraints  - Constraints are used to define power levels for performance
++                   and hardware protection. Constraints exist at three levels:
++
++                   Regulator Level: This is defined by the regulator hardware
++                   operating parameters and is specified in the regulator
++                   datasheet. i.e.
++
++                     - voltage output is in the range 800mV -> 3500mV.
++                     - regulator current output limit is 20mA @ 5V but is
++                       10mA @ 10V.
++
++                   Power Domain Level: This is defined in software by kernel
++                   level board initialisation code. It is used to constrain a
++                   power domain to a particular power range. i.e.
++
++                     - Domain-1 voltage is 3300mV
++                     - Domain-2 voltage is 1400mV -> 1600mV
++                     - Domain-3 current limit is 0mA -> 20mA.
++
++                   Consumer Level: This is defined by consumer drivers
++                   dynamically setting voltage or current limit levels.
++
++                   e.g. a consumer backlight driver asks for a current increase
++                   from 5mA to 10mA to increase LCD illumination. This passes
++                   to through the levels as follows :-
++
++                   Consumer: need to increase LCD brightness. Lookup and
++                   request next current mA value in brightness table (the
++                   consumer driver could be used on several different
++                   personalities based upon the same reference device).
++
++                   Power Domain: is the new current limit within the domain
++                   operating limits for this domain and system state (e.g.
++                   battery power, USB power)
++
++                   Regulator Domains: is the new current limit within the
++                   regulator operating parameters for input/ouput voltage.
++
++                   If the regulator request passes all the constraint tests
++                   then the new regulator value is applied.
++
++
++Design
++======
++
++The framework is designed and targeted at SoC based devices but may also be
++relevant to non SoC devices and is split into the following four interfaces:-
++
++
++   1. Consumer driver interface.
++
++      This uses a similar API to the kernel clock interface in that consumer
++      drivers can get and put a regulator (like they can with clocks atm) and
++      get/set voltage, current limit, mode, enable and disable. This should
++      allow consumers complete control over their supply voltage and current
++      limit. This also compiles out if not in use so drivers can be reused in
++      systems with no regulator based power control.
++
++        See Documentation/power/regulator/consumer.txt
++
++   2. Regulator driver interface.
++
++      This allows regulator drivers to register their regulators and provide
++      operations to the core. It also has a notifier call chain for propagating
++      regulator events to clients.
++
++        See Documentation/power/regulator/regulator.txt
++
++   3. Machine interface.
++
++      This interface is for machine specific code and allows the creation of
++      voltage/current domains (with constraints) for each regulator. It can
++      provide regulator constraints that will prevent device damage through
++      overvoltage or over current caused by buggy client drivers. It also
++      allows the creation of a regulator tree whereby some regulators are
++      supplied by others (similar to a clock tree).
++
++        See Documentation/power/regulator/machine.txt
++
++   4. Userspace ABI.
++
++      The framework also exports a lot of useful voltage/current/opmode data to
++      userspace via sysfs. This could be used to help monitor device power
++      consumption and status.
++
++        See Documentation/ABI/testing/regulator-sysfs.txt
 -- 
 1.5.4.3
 
