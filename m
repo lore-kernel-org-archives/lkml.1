@@ -1,62 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754306AbYGLHHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbYGLHH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754306AbYGLHHp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 03:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbYGLHHL
+	id S1754733AbYGLHH6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 03:07:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbYGLHHM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 03:07:11 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2588 "EHLO spitz.ucw.cz"
+	Sat, 12 Jul 2008 03:07:12 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2587 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751750AbYGLHHJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 03:07:09 -0400
-Date: Sat, 12 Jul 2008 09:01:51 +0200
+	id S1751813AbYGLHHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jul 2008 03:07:10 -0400
+Date: Thu, 10 Jul 2008 20:23:26 +0200
 From: Pavel Machek <pavel@suse.cz>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [2/3] POHMELFS: Documentation.
-Message-ID: <20080712070150.GD13483@ucw.cz>
-References: <20080707180736.GA15687@2ka.mipt.ru> <20080707181019.GC15687@2ka.mipt.ru>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Bert Wesarg <bert.wesarg@googlemail.com>, masbock@linux.vnet.ibm.com,
+       x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [9/9] MCE: Use 64bit machine check code on 32bit
+Message-ID: <20080710182325.GB13483@ucw.cz>
+References: <200807041120.678642023@firstfloor.org> <20080704212033.D40551B431F@basil.firstfloor.org> <36ca99e90807050250u718fa277t2297d6436fd14c4e@mail.gmail.com> <486F44C0.8050003@firstfloor.org> <36ca99e90807050317m7160c3eaj150ceac4440752a1@mail.gmail.com> <486F531E.6030303@firstfloor.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080707181019.GC15687@2ka.mipt.ru>
+In-Reply-To: <486F531E.6030303@firstfloor.org>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Sat 2008-07-05 12:55:26, Andi Kleen wrote:
+> Bert Wesarg wrote:
+> > On Sat, Jul 5, 2008 at 11:54, Andi Kleen <andi@firstfloor.org> wrote:
+> >>> Is this first "n" a typo?
+> >> No. The legacy machine check code that is going away is definitely
+> >> supposed to be default n. This is effectively a default y for
+> >> the new code.
+> > I didn't mean the "default n", but the "If you're still sure you want it, say n"
+> 
+> Ah that's indeed not correct. Thanks.
 
-> + * Completely async processing of all events (hard, symlinks and rename are the
-> + 	only exceptions) including object creation and data reading and writing.
+I thought it was a nice joke ;-).
 
-Hmm... this is little funny.
-
-	Async processing of most events (only exceptions are ...) ?
-
-
-> +POHMELFS network protocol.
-> +
-> +Basic structure used in network communication is following command:
-> +
-> +struct netfs_cmd
-> +{
-> +	__u16			cmd;	/* Command number */
-> +	__u16			csize;	/* Attached crypto information size */
-> +	__u16			cpad;	/* Attached padding size */
-> +	__u16			ext;	/* External flags */
-> +	__u32			size;	/* Size of the attached data */
-> +	__u32			trans;	/* Transaction id */
-> +	__u64			id;	/* Object ID to operate on. Used for feedback.*/
-> +	__u64			start;	/* Start of the object. */
-> +	__u64			iv;	/* IV sequence */
-> +	__u8			data[0];
-> +};
-
-Which endianity?
-
-							Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
