@@ -1,46 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759646AbYGJTjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756121AbYGJTsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759646AbYGJTjv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 15:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbYGJTjn
+	id S1756121AbYGJTsL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 15:48:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbYGJTr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 15:39:43 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:51300 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753206AbYGJTjm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 15:39:42 -0400
-Message-ID: <487663C4.6040309@zytor.com>
-Date: Thu, 10 Jul 2008 15:32:20 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Mike Travis <travis@sgi.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <48751CF9.4020901@linux-foundation.org>	<4875209D.8010603@goop.org> <48752CCD.30507@linux-foundation.org>	<m1wsjupuiz.fsf@frodo.ebiederm.org> <48753C99.5050408@goop.org>	<m1ej62iq9z.fsf@frodo.ebiederm.org> <487555A8.2050007@zytor.com>	<487556A5.5090907@goop.org> <4876194E.4080205@linux-foundation.org>	<48761C06.3020003@zytor.com> <48762A3B.5050104@linux-foundation.org>	<48762DD2.5090802@zytor.com> <487637A1.4080403@linux-foundation.org>	<m1prpl4pmh.fsf@frodo.ebiederm.org> <48764C21.4020601@zytor.com> <m1fxqhzhcu.fsf@frodo.ebiederm.org> <4876608B.10408@sgi.com>
-In-Reply-To: <4876608B.10408@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 10 Jul 2008 15:47:57 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:45401 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751188AbYGJTr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 15:47:57 -0400
+Subject: Re: Checkpoint/restart (was Re: [PATCH 0/4] - v2 - Object creation
+	with a specified id)
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Oren Laadan <orenl@cs.columbia.edu>,
+       Kirill Korotaev <dev@parallels.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Nadia.Derbey@bull.net, Andrew Morton <akpm@linux-foundation.org>,
+       nick@nick-andrew.net, Alexey Dobriyan <adobriyan@gmail.com>
+In-Reply-To: <m14p6xy27s.fsf@frodo.ebiederm.org>
+References: <20080418054459.891481000@bull.net>
+	 <20080422193612.GA15835@martell.zuzino.mipt.ru>
+	 <1208890580.17117.14.camel@nimitz.home.sr71.net>
+	 <20080422210130.GA15937@martell.zuzino.mipt.ru>
+	 <1208904967.17117.51.camel@nimitz.home.sr71.net>
+	 <480ED9D5.1010906@parallels.com> <480FE037.2010302@cs.columbia.edu>
+	 <m1y74a7b4w.fsf@frodo.ebiederm.org> <1215709949.9398.15.camel@nimitz>
+	 <20080710173246.GA1857@us.ibm.com> <m163rd1sd5.fsf@frodo.ebiederm.org>
+	 <1215716794.9398.41.camel@nimitz>  <m14p6xy27s.fsf@frodo.ebiederm.org>
+Content-Type: text/plain
+Date: Thu, 10 Jul 2008 12:47:32 -0700
+Message-Id: <1215719252.9398.53.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
+On Thu, 2008-07-10 at 12:21 -0700, Eric W. Biederman wrote:
+> > Are we talking about the VMA itself, or the memory backing the VMA?
 > 
-> The biggest growth came from moving all the xxx[NR_CPUS] arrays into
-> the per cpu area.  So you free up a huge amount of unused memory when
-> the NR_CPUS count starts getting into the ozone layer.  4k now, 16k
-> real soon now, ??? future?
-> 
+> The memory backing the VMA.  We need to store the page protections
+> that the memory was mapped with as well now that you point it out.  A
+> VMA is not user space visible, which is why we can arbitrarily split
+> and merge VMAs.
 
-Even (or perhaps especially) so, allocating the percpu area in 2 MB 
-increments is a total nonstarter.  It hurts the small, common 
-configurations way too much.  For SGI, it's probably fine.
+It is visible with /proc/$pid/{maps,smaps,numamaps?}.  That's the only
+efficient way I know of from userspace to figure out where userspace's
+memory is and if it *is* file backed, and what the permissions are.
 
-	-hpa
+We also can't truly split them arbitrarily because the memory cost of
+the VMAs themselves might become too heavy (the remap_file_pages()
+problem).
+
+It gets trickier when things are also private mappings in addition to
+being in a file-backed VMA.  We *do* need to checkpoint those, but only
+the pages to which there was a write.
+
+There's also the problem of restoring things read-only, but VM_MAYWRITE.
+If there's a high level of (non-COW'd) sharing of these anonymous areas,
+we may not be able to even restore the set of processes unless we can
+replicate the sharing.  We might run out of memory if the sharing isn't
+replicated.
+
+Memory is fun! :)
+
+-- Dave
+
