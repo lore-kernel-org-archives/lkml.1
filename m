@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbYGJIZF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754956AbYGJIdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756241AbYGJIZF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 04:25:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751789AbYGJIYr
+	id S1754956AbYGJIdk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 04:33:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbYGJIdb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 04:24:47 -0400
-Received: from orion2.pixelized.ch ([195.190.190.13]:59736 "EHLO
-	orion.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751125AbYGJIYq (ORCPT
+	Thu, 10 Jul 2008 04:33:31 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37077 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750955AbYGJIda (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 04:24:46 -0400
-X-Greylist: delayed 302 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Jul 2008 04:24:46 EDT
-Message-ID: <4875C615.90102@cateee.net>
-Date: Thu, 10 Jul 2008 10:19:33 +0200
-From: "Giacomo A. Catenazzi" <cate@cateee.net>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Thu, 10 Jul 2008 04:33:30 -0400
+Date: Thu, 10 Jul 2008 10:34:23 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Shaohua Li <shaohua.li@intel.com>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH -mm 7/8] ACPI hibernation: Utilize hardware signature
+Message-ID: <20080710083423.GD5629@elf.ucw.cz>
+References: <200807100152.17755.rjw@sisk.pl> <200807100205.52308.rjw@sisk.pl>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: bug in 2.6.26-rc9: sleeping function called from invalid context
- at kernel/rwsem:21
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200807100205.52308.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-yesterday at shutdown I had a crash. Unfortunately it seems
-that there was one (or more) oops missing. The bug appeared
-at unmounting partition at shutdown, so there are no logs
-of the previous messages.
+> Subject: ACPI hibernation: Utilize hardware signature
+> 
+> ACPI defines a hardware signature.  BIOS calculates the signature
+> according to hardware configure and if hardware changes while
+> hibernated, the signature will change.  In that case, S4 resume
+> should fail.
+> 
+> Still, there may be systems on which this mechanism does not work
+> correctly, so it is better to provide a workaround for them.  For
+> this reason, add a new switch to the acpi_sleep= command line
+> argument allowing one to disable hardware signature checking.
+> 
+> Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-A photo of the screen is in:
-http://cateee.net/files/oops/20080709010.jpg
+ACK.
 
-The oopes was in the git tree of two days ago.  I've not
-seen this crash on last kernel, but OTOH I don't know if
-the bug was reproducible.
-
-ciao
-	cate
-
-
-PS: unfortunately I had not time for further tests and
-better report, but I hope the trace is enough for such
-bugs.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
