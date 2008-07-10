@@ -1,182 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761207AbYGJSIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760027AbYGJSMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761207AbYGJSIc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 14:08:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760439AbYGJSHK
+	id S1760027AbYGJSMy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 14:12:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753088AbYGJSMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 14:07:10 -0400
-Received: from [194.117.236.238] ([194.117.236.238]:47377 "EHLO
-	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1760410AbYGJSHI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 14:07:08 -0400
-Date: Thu, 10 Jul 2008 21:06:17 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: penberg@cs.helsinki.fi
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [RFC PATCH 4/5] kmemtrace: SLUB hooks.
-Message-ID: <20080710210617.70975aed@linux360.ro>
-In-Reply-To: <1215712946-23572-4-git-send-email-eduard.munteanu@linux360.ro>
-References: <1215712946-23572-1-git-send-email-eduard.munteanu@linux360.ro>
- <1215712946-23572-2-git-send-email-eduard.munteanu@linux360.ro>
- <1215712946-23572-3-git-send-email-eduard.munteanu@linux360.ro>
- <1215712946-23572-4-git-send-email-eduard.munteanu@linux360.ro>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Jul 2008 14:12:46 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43785 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752721AbYGJSMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 14:12:45 -0400
+Date: Thu, 10 Jul 2008 20:12:34 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Robert Richter <robert.richter@amd.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/5] x86/pci: patches for tip/x86/unify-pci
+Message-ID: <20080710181234.GA32174@elte.hu>
+References: <1215709106-9182-1-git-send-email-robert.richter@amd.com> <20080710171721.GA19737@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080710171721.GA19737@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds hooks for the SLUB allocator, to allow tracing with kmemtrace.
 
-Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
----
- include/linux/slub_def.h |    9 +++++++-
- mm/slub.c                |   49 +++++++++++++++++++++++++++++++++++++++------
- 2 files changed, 50 insertions(+), 8 deletions(-)
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
-index d117ea2..d60ab10 100644
---- a/include/linux/slub_def.h
-+++ b/include/linux/slub_def.h
-@@ -10,6 +10,7 @@
- #include <linux/gfp.h>
- #include <linux/workqueue.h>
- #include <linux/kobject.h>
-+#include <linux/kmemtrace.h>
- 
- enum stat_item {
- 	ALLOC_FASTPATH,		/* Allocation from cpu slab */
-@@ -205,7 +206,13 @@ void *__kmalloc(size_t size, gfp_t flags);
- 
- static __always_inline void *kmalloc_large(size_t size, gfp_t flags)
- {
--	return (void *)__get_free_pages(flags | __GFP_COMP, get_order(size));
-+	unsigned int order = get_order(size);
-+	void *ret = (void *) __get_free_pages(flags, order);
-+
-+	kmemtrace_mark_alloc(KMEMTRACE_KIND_KERNEL, _THIS_IP_, ret,
-+			     size, PAGE_SIZE << order, flags);
-+
-+	return ret;
- }
- 
- static __always_inline void *kmalloc(size_t size, gfp_t flags)
-diff --git a/mm/slub.c b/mm/slub.c
-index 1a427c0..6841dfa 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -23,6 +23,7 @@
- #include <linux/kallsyms.h>
- #include <linux/memory.h>
- #include <linux/math64.h>
-+#include <linux/kmemtrace.h>
- 
- /*
-  * Lock order:
-@@ -1650,14 +1651,25 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
- 
- void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
- {
--	return slab_alloc(s, gfpflags, -1, __builtin_return_address(0));
-+	void *ret = slab_alloc(s, gfpflags, -1, __builtin_return_address(0));
-+
-+	kmemtrace_mark_alloc(KMEMTRACE_KIND_CACHE, _RET_IP_, ret,
-+			     s->objsize, s->size, gfpflags);
-+
-+	return ret;
- }
- EXPORT_SYMBOL(kmem_cache_alloc);
- 
- #ifdef CONFIG_NUMA
- void *kmem_cache_alloc_node(struct kmem_cache *s, gfp_t gfpflags, int node)
- {
--	return slab_alloc(s, gfpflags, node, __builtin_return_address(0));
-+	void *ret = slab_alloc(s, gfpflags, node,
-+			       __builtin_return_address(0));
-+	
-+	kmemtrace_mark_alloc_node(KMEMTRACE_KIND_CACHE, _RET_IP_, ret,
-+				  s->objsize, s->size, gfpflags, node);
-+
-+	return ret;
- }
- EXPORT_SYMBOL(kmem_cache_alloc_node);
- #endif
-@@ -1769,6 +1781,8 @@ void kmem_cache_free(struct kmem_cache *s, void *x)
- 	page = virt_to_head_page(x);
- 
- 	slab_free(s, page, x, __builtin_return_address(0));
-+
-+	kmemtrace_mark_free(KMEMTRACE_KIND_CACHE, _RET_IP_, x);
- }
- EXPORT_SYMBOL(kmem_cache_free);
- 
-@@ -2674,6 +2688,7 @@ static struct kmem_cache *get_slab(size_t size, gfp_t flags)
- void *__kmalloc(size_t size, gfp_t flags)
- {
- 	struct kmem_cache *s;
-+	void *ret;
- 
- 	if (unlikely(size > PAGE_SIZE))
- 		return kmalloc_large(size, flags);
-@@ -2683,7 +2698,12 @@ void *__kmalloc(size_t size, gfp_t flags)
- 	if (unlikely(ZERO_OR_NULL_PTR(s)))
- 		return s;
- 
--	return slab_alloc(s, flags, -1, __builtin_return_address(0));
-+	ret = slab_alloc(s, flags, -1, __builtin_return_address(0));
-+
-+	kmemtrace_mark_alloc(KMEMTRACE_KIND_KERNEL, _RET_IP_, ret,
-+			     size, (size_t) s->size, (unsigned long) flags);
-+
-+	return ret; 
- }
- EXPORT_SYMBOL(__kmalloc);
- 
-@@ -2702,16 +2722,29 @@ static void *kmalloc_large_node(size_t size, gfp_t flags, int node)
- void *__kmalloc_node(size_t size, gfp_t flags, int node)
- {
- 	struct kmem_cache *s;
--
--	if (unlikely(size > PAGE_SIZE))
--		return kmalloc_large_node(size, flags, node);
-+	void *ret;
-+
-+	if (unlikely(size > PAGE_SIZE)) {
-+		ret = kmalloc_large_node(size, flags, node);
-+		
-+		kmemtrace_mark_alloc_node(KMEMTRACE_KIND_KERNEL, _RET_IP_, ret,
-+					  size, PAGE_SIZE << get_order(size),
-+					  (unsigned long) flags, node);
-+		
-+		return ret;
-+	}
- 
- 	s = get_slab(size, flags);
- 
- 	if (unlikely(ZERO_OR_NULL_PTR(s)))
- 		return s;
- 
--	return slab_alloc(s, flags, node, __builtin_return_address(0));
-+	ret = slab_alloc(s, flags, node, __builtin_return_address(0));
-+	
-+	kmemtrace_mark_alloc_node(KMEMTRACE_KIND_KERNEL, _RET_IP_, ret,
-+				  size, s->size, (unsigned long) flags, node);
-+	
-+	return ret;
- }
- EXPORT_SYMBOL(__kmalloc_node);
- #endif
-@@ -2769,6 +2802,8 @@ void kfree(const void *x)
- 		return;
- 	}
- 	slab_free(page->slab, page, object, __builtin_return_address(0));
-+
-+	kmemtrace_mark_free(KMEMTRACE_KIND_KERNEL, _RET_IP_, x);
- }
- EXPORT_SYMBOL(kfree);
- 
--- 
-1.5.6.1
+> * Robert Richter <robert.richter@amd.com> wrote:
+> 
+> > This patch series contains patches for tip/x86/unify-pci. It fixes 
+> > NUMA initialization code reflecting latest changes in tip/master. 
+> > Also there are build fixes and minor cleanups. Patch #5 is a cherry 
+> > pick that fixes build on UP systems. Code reboots for smp/nosmp, 
+> > acpi/noacpi, numaq, 32/64bit. It compiles for visws.
+> 
+> thanks Robert. Today i've eliminated the VISWS subarch which greatly 
+> simplified your series. I've picked up these two fixes:
+> 
+>  Robert Richter (2):
+>        x86/pci merge: fixing numaq initialization
+>        x86/pci: fix warnings in subsys_initcall functions
+
+btw., this is how arch/x86/pci/Makefile looks like now in tip/master:
+
+----------------------------------------->
+pci-y                           := fixup.o
+pci-$(CONFIG_ACPI)              += acpi.o
+pci-y                           += legacy.o irq.o
+
+pci-$(CONFIG_X86_VISWS)         += visws.o
+
+pci-$(CONFIG_X86_NUMAQ)         += numa.o
+
+obj-y                           += $(pci-y) common.o early.o
+obj-y                           += amd_bus.o
+<-----------------------------------------
+
+it's _really_ clean now, and we dont have those weird overrides anymore. 
+Both VisWS and NUMAQ are now two straightforward runtime PCI overrides - 
+not build-time complications. Much more maintainable i think.
+
+	Ingo
