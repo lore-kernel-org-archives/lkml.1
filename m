@@ -1,76 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757359AbYGJCyw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756121AbYGJDLF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757359AbYGJCyw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 22:54:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbYGJCyo
+	id S1756121AbYGJDLF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 23:11:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbYGJDKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 22:54:44 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:50446 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753522AbYGJCyn (ORCPT
+	Wed, 9 Jul 2008 23:10:54 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:37455 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753272AbYGJDKx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 22:54:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=KCcefAGCnEZlZIcqIOGwGSFMaFGhNslnz/nAq5ZWhKZlvT9FBIBDnZjZoXdEXKGNO7
-         MMNVbIoraJLI+qC5c2Td0gV2gkmcVUkNeEtCbcZmalkdoYWDBY0Pf2WMUXxYqGhiBVMB
-         c0A4m6MtKz62RSX42CzrYQfB89LUfyioT/C7E=
-Date: Thu, 10 Jul 2008 06:51:49 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Quel Qun <kelk1@comcast.net>, LKML <linux-kernel@vger.kernel.org>,
-       linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: No console on Riva TNT since 2.6.26-0.rc4
-Message-ID: <20080710025149.GA4817@martell.zuzino.mipt.ru>
-References: <062620082004.6012.4863F668000CEA0D0000177C2200751090CE05040A05@comcast.net> <20080709194108.f18226e8.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080709194108.f18226e8.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 9 Jul 2008 23:10:53 -0400
+To: nickpiggin@yahoo.com.au
+Cc: a.p.zijlstra@chello.nl, kamezawa.hiroyu@jp.fujitsu.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] fix task dirty balancing
+In-Reply-To: Your message of "Wed, 9 Jul 2008 17:41:24 +1000"
+	<200807091741.25447.nickpiggin@yahoo.com.au>
+References: <200807091741.25447.nickpiggin@yahoo.com.au>
+X-Mailer: Cue version 0.8 (080625-0732/takashi)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20080710031051.887CA5A29@siro.lan>
+Date: Thu, 10 Jul 2008 12:10:51 +0900 (JST)
+From: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 09, 2008 at 07:41:08PM -0700, Andrew Morton wrote:
-> On Thu, 26 Jun 2008 20:04:56 +0000 kelk1@comcast.net (Quel Qun) wrote:
-> 
-> > Hi,
-> > 
-> > The system boots fine with 2.6.26-0.rc3.1mnb (Mandriva Cooker), but since rc4, I see a few squares of color, then a black screen and the console never comes back. This is independent of the resolution chosen when using vga=ask. The machine does boot and I can start X if I log in blindly. Only the F1 to F6 consoles are gone.
-> > 
-> > Bug originally reported and ignored on Cooker: https://qa.mandriva.com/show_bug.cgi?id=41302
-> > 
-> > My card is an old STB NVidia Riva TNT, monitor is a flat panel Dell 2007FP, system is a Dell Dimension XPS T600 (82371AB/EB/MB PIIX4 with PIII 600).
-> > 
-> > I cannot see anything different in /var/log/messages between rc3 and rc4 (vga=837)
-> > 
-> > vesafb: framebuffer at 0xfc000000, mapped to 0xd8880000, using 7500k, total
-> > 16320k
-> > vesafb: mode is 1600x1200x8, linelength=1600, pages=6
-> > vesafb: protected mode interface info at c000:02d2
-> > vesafb: pmi: set display start = c00c030b, set palette = c00c0381
-> > vesafb: pmi: ports = 3b4 3b5 3ba 3c0 3c1 3c4 3c5 3c6 3c7 3c8 3c9 3cc 3ce 3cf
-> > 3d0 3d1 3d2 3d3 3d4 3d5 3da
-> > vesafb: scrolling: redraw
-> > vesafb: Pseudocolor: size=8:8:8:8, shift=0:0:0:0
-> > Console: switching to colour frame buffer device 200x75
-> > fb0: VESA VGA frame buffer device
-> > 
-> > This is still true with a vanilla 2.6.26-rc8.
-> > 
-> > $ grep FB_RIVA /boot/config
-> > CONFIG_FB_RIVA=m
-> > # CONFIG_FB_RIVA_I2C is not set
-> > # CONFIG_FB_RIVA_DEBUG is not set
-> > CONFIG_FB_RIVA_BACKLIGHT=y
-> > 
-> 
-> Let's cc the fbdev list.
-> 
-> Is this a regression?  Was 2.6.25 OK?
+hi,
 
-2.6.26-rc3 was OK. -rc4 wasn't.
+thanks for the review.
 
+> On Wednesday 09 July 2008 09:38, YAMAMOTO Takashi wrote:
+> > hi,
+> >
+> > > Please beat me to cleaning up this stuff - otherwise I'll have to look
+> > > at it when I get back from holidays.
+> >
+> > how about the following?
+> 
+> Quite good, however I would like to keep the buffers warning if it isn't
+> too difficult (it has already caught one or two real bugs).
+
+isn't the WARN_ON_ONCE in __set_page_dirty_nobuffers enough?
+
+> Also, we should
+> split out the bugfix from the cleanup. But yes overall I think the result
+> looks quite nice.
+
+honestly, i don't think it makes much sense to separate the fix and
+the cleanup in this particular case.  trying to keep the bug while
+the code cleanup naturally fixes it, or vice versa, would be a waste
+of time.
+
+YAMAMOTO Takashi
+
+> 
+> 
+> > YAMAMOTO Takashi
+> >
+> >
+> > Signed-off-by: YAMAMOTO Takashi <yamamoto@valinux.co.jp>
+> > ---
+> >
+> > diff --git a/fs/buffer.c b/fs/buffer.c
+> > index 4ffb5bb..1bc833d 100644
+> > --- a/fs/buffer.c
+> > +++ b/fs/buffer.c
+> > @@ -699,41 +699,6 @@ void mark_buffer_dirty_inode(struct buffer_head *bh,
+> > struct inode *inode) EXPORT_SYMBOL(mark_buffer_dirty_inode);
+> >
+> >  /*
+> > - * Mark the page dirty, and set it dirty in the radix tree, and mark the
+> > inode - * dirty.
+> > - *
+> > - * If warn is true, then emit a warning if the page is not uptodate and
+> > has - * not been truncated.
+> > - */
+> > -static int __set_page_dirty(struct page *page,
+> > -		struct address_space *mapping, int warn)
+> > -{
+> > -	if (unlikely(!mapping))
+> > -		return !TestSetPageDirty(page);
+> > -
+> > -	if (TestSetPageDirty(page))
+> > -		return 0;
+> > -
+> > -	spin_lock_irq(&mapping->tree_lock);
+> > -	if (page->mapping) {	/* Race with truncate? */
+> > -		WARN_ON_ONCE(warn && !PageUptodate(page));
+> > -
+> > -		if (mapping_cap_account_dirty(mapping)) {
+> > -			__inc_zone_page_state(page, NR_FILE_DIRTY);
+> > -			__inc_bdi_stat(mapping->backing_dev_info,
+> > -					BDI_RECLAIMABLE);
+> > -			task_io_account_write(PAGE_CACHE_SIZE);
+> > -		}
+> > -		radix_tree_tag_set(&mapping->page_tree,
+> > -				page_index(page), PAGECACHE_TAG_DIRTY);
+> > -	}
+> > -	spin_unlock_irq(&mapping->tree_lock);
+> > -	__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+> > -
+> > -	return 1;
+> > -}
+> > -
+> > -/*
+> >   * Add a page to the dirty page list.
+> >   *
+> >   * It is a sad fact of life that this function is called from several
+> > places @@ -762,22 +727,21 @@ int __set_page_dirty_buffers(struct page
+> > *page) {
+> >  	struct address_space *mapping = page_mapping(page);
+> >
+> > -	if (unlikely(!mapping))
+> > -		return !TestSetPageDirty(page);
+> > -
+> > -	spin_lock(&mapping->private_lock);
+> > -	if (page_has_buffers(page)) {
+> > -		struct buffer_head *head = page_buffers(page);
+> > -		struct buffer_head *bh = head;
+> > +	if (likely(mapping)) {
+> > +		spin_lock(&mapping->private_lock);
+> > +		if (page_has_buffers(page)) {
+> > +			struct buffer_head *head = page_buffers(page);
+> > +			struct buffer_head *bh = head;
+> >
+> > -		do {
+> > -			set_buffer_dirty(bh);
+> > -			bh = bh->b_this_page;
+> > -		} while (bh != head);
+> > +			do {
+> > +				set_buffer_dirty(bh);
+> > +				bh = bh->b_this_page;
+> > +			} while (bh != head);
+> > +		}
+> > +		spin_unlock(&mapping->private_lock);
+> >  	}
+> > -	spin_unlock(&mapping->private_lock);
+> >
+> > -	return __set_page_dirty(page, mapping, 1);
+> > +	return __set_page_dirty_nobuffers(page);
+> >  }
+> >  EXPORT_SYMBOL(__set_page_dirty_buffers);
+> >
+> > @@ -1220,7 +1184,7 @@ void mark_buffer_dirty(struct buffer_head *bh)
+> >  	}
+> >
+> >  	if (!test_set_buffer_dirty(bh))
+> > -		__set_page_dirty(bh->b_page, page_mapping(bh->b_page), 0);
+> > +		__set_page_dirty_nobuffers(bh->b_page);
+> >  }
+> >
+> >  /*
+> > diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> > index 29b1d1e..e6fa69e 100644
+> > --- a/mm/page-writeback.c
+> > +++ b/mm/page-writeback.c
+> > @@ -176,7 +176,7 @@ void bdi_writeout_inc(struct backing_dev_info *bdi)
+> >  }
+> >  EXPORT_SYMBOL_GPL(bdi_writeout_inc);
+> >
+> > -static inline void task_dirty_inc(struct task_struct *tsk)
+> > +static void task_dirty_inc(struct task_struct *tsk)
+> >  {
+> >  	prop_inc_single(&vm_dirties, &tsk->dirties);
+> >  }
+> > @@ -1074,12 +1074,14 @@ int __set_page_dirty_no_writeback(struct page
+> > *page) */
+> >  int __set_page_dirty_nobuffers(struct page *page)
+> >  {
+> > -	if (!TestSetPageDirty(page)) {
+> > -		struct address_space *mapping = page_mapping(page);
+> > -		struct address_space *mapping2;
+> > +	struct address_space *mapping;
+> >
+> > -		if (!mapping)
+> > -			return 1;
+> > +	if (TestSetPageDirty(page))
+> > +		return 0;
+> > +
+> > +	mapping = page_mapping(page);
+> > +	if (likely(mapping)) {
+> > +		struct address_space *mapping2;
+> >
+> >  		spin_lock_irq(&mapping->tree_lock);
+> >  		mapping2 = page_mapping(page);
+> > @@ -1100,9 +1102,11 @@ int __set_page_dirty_nobuffers(struct page *page)
+> >  			/* !PageAnon && !swapper_space */
+> >  			__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+> >  		}
+> > -		return 1;
+> >  	}
+> > -	return 0;
+> > +
+> > +	task_dirty_inc(current);
+> > +
+> > +	return 1;
+> >  }
+> >  EXPORT_SYMBOL(__set_page_dirty_nobuffers);
+> >
+> > @@ -1122,7 +1126,7 @@ EXPORT_SYMBOL(redirty_page_for_writepage);
+> >   * If the mapping doesn't provide a set_page_dirty a_op, then
+> >   * just fall through and assume that it wants buffer_heads.
+> >   */
+> > -static int __set_page_dirty(struct page *page)
+> > +int set_page_dirty(struct page *page)
+> >  {
+> >  	struct address_space *mapping = page_mapping(page);
+> >
+> > @@ -1140,14 +1144,6 @@ static int __set_page_dirty(struct page *page)
+> >  	}
+> >  	return 0;
+> >  }
+> > -
+> > -int set_page_dirty(struct page *page)
+> > -{
+> > -	int ret = __set_page_dirty(page);
+> > -	if (ret)
+> > -		task_dirty_inc(current);
+> > -	return ret;
+> > -}
+> >  EXPORT_SYMBOL(set_page_dirty);
+> >
+> >  /*
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
