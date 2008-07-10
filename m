@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758570AbYGJPZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758842AbYGJP01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758570AbYGJPZw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 11:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758300AbYGJPZn
+	id S1758842AbYGJP01 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 11:26:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757224AbYGJPZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 11:25:43 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:55096 "EHLO
+	Thu, 10 Jul 2008 11:25:58 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:55107 "EHLO
 	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758298AbYGJPZl (ORCPT
+	by vger.kernel.org with ESMTP id S1758606AbYGJPZ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 11:25:41 -0400
-Subject: [PATCH 01/15] regulator: consumer device interface
+	Thu, 10 Jul 2008 11:25:57 -0400
+Subject: [PATCH 03/15] regulator: machine driver interface
 From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
        Mark Brown <broonie@opensource.wolfsonmicro.com>
 Content-Type: text/plain
-Date: Thu, 10 Jul 2008 16:25:39 +0100
-Message-Id: <1215703539.13431.57.camel@odin>
+Date: Thu, 10 Jul 2008 16:25:55 +0100
+Message-Id: <1215703555.13431.59.camel@odin>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
@@ -26,32 +26,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Add support to allow consumer device drivers to control their regulator
-power supply.
-
-This uses a similar API to the kernel clock interface in that consumer
-drivers can get and put a regulator (like they can with clocks atm) and
-get/set voltage, current limit, mode, enable and disable. This should
-allow consumers complete control over their supply voltage and current
-limit. This also compiles out if not in use so drivers can be reused in
-systems with no regulator based power control.
+This interface is for machine specific code and allows the creation of
+voltage/current domains (with constraints) for each regulator. It can
+provide regulator constraints that will prevent device damage through
+overvoltage or over current caused by buggy client drivers. It also
+allows the creation of a regulator tree whereby some regulators are
+supplied by others (similar to a clock tree).
 
 Signed-off-by: Liam Girdwood <lg@opensource.wolfsonmicro.com>
 Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 ---
- include/linux/regulator/consumer.h |  284 ++++++++++++++++++++++++++++++++++++
- 1 files changed, 284 insertions(+), 0 deletions(-)
- create mode 100644 include/linux/regulator/consumer.h
+ include/linux/regulator/machine.h |   84 +++++++++++++++++++++++++++++++++++++
+ 1 files changed, 84 insertions(+), 0 deletions(-)
+ create mode 100644 include/linux/regulator/machine.h
 
-diff --git a/include/linux/regulator/consumer.h b/include/linux/regulator/consumer.h
+diff --git a/include/linux/regulator/machine.h b/include/linux/regulator/machine.h
 new file mode 100644
-index 0000000..afdc455
+index 0000000..69b492c
 --- /dev/null
-+++ b/include/linux/regulator/consumer.h
-@@ -0,0 +1,284 @@
++++ b/include/linux/regulator/machine.h
+@@ -0,0 +1,84 @@
 +/*
-+ * consumer.h -- SoC Regulator consumer support.
++ * machine.h -- SoC Regulator support, machine/board driver API.
 + *
 + * Copyright (C) 2007, 2008 Wolfson Microelectronics PLC.
 + *
@@ -61,277 +57,77 @@ index 0000000..afdc455
 + * it under the terms of the GNU General Public License version 2 as
 + * published by the Free Software Foundation.
 + *
-+ * Regulator Consumer Interface.
-+ *
-+ * A Power Management Regulator framework for SoC based devices.
-+ * Features:-
-+ *   o Voltage and current level control.
-+ *   o Operating mode control.
-+ *   o Regulator status.
-+ *   o sysfs entries for showing client devices and status
-+ *
-+ * EXPERIMENTAL FEATURES:
-+ *   Dynamic Regulator operating Mode Switching (DRMS) - allows regulators
-+ *   to use most efficient operating mode depending upon voltage and load and
-+ *   is transparent to client drivers.
-+ *
-+ *   e.g. Devices x,y,z share regulator r. Device x and y draw 20mA each during
-+ *   IO and 1mA at idle. Device z draws 100mA when under load and 5mA when
-+ *   idling. Regulator r has > 90% efficiency in NORMAL mode at loads > 100mA
-+ *   but this drops rapidly to 60% when below 100mA. Regulator r has > 90%
-+ *   efficiency in IDLE mode at loads < 10mA. Thus regulator r will operate
-+ *   in normal mode for loads > 10mA and in IDLE mode for load <= 10mA.
-+ *
++ * Regulator Machine/Board Interface.
 + */
 +
-+#ifndef __LINUX_REGULATOR_CONSUMER_H_
-+#define __LINUX_REGULATOR_CONSUMER_H_
++#ifndef __LINUX_REGULATOR_MACHINE_H_
++#define __LINUX_REGULATOR_MACHINE_H_
 +
-+/*
-+ * Regulator operating modes.
-+ *
-+ * Regulators can run in a variety of different operating modes depending on
-+ * output load. This allows further system power savings by selecting the
-+ * best (and most efficient) regulator mode for a desired load.
-+ *
-+ * Most drivers will only care about NORMAL. The modes below are generic and
-+ * will probably not match the naming convention of your regulator data sheet
-+ * but should match the use cases in the datasheet.
-+ *
-+ * In order of power efficiency (least efficient at top).
-+ *
-+ *  Mode       Description
-+ *  FAST       Regulator can handle fast changes in it's load.
-+ *             e.g. useful in CPU voltage & frequency scaling where
-+ *             load can quickly increase with CPU frequency increases.
-+ *
-+ *  NORMAL     Normal regulator power supply mode. Most drivers will
-+ *             use this mode.
-+ *
-+ *  IDLE       Regulator runs in a more efficient mode for light
-+ *             loads. Can be used for devices that have a low power
-+ *             requirement during periods of inactivity. This mode
-+ *             may be more noisy than NORMAL and may not be able
-+ *             to handle fast load switching.
-+ *
-+ *  STANDBY    Regulator runs in the most efficient mode for very
-+ *             light loads. Can be used by devices when they are
-+ *             in a sleep/standby state. This mode is likely to be
-+ *             the most noisy and may not be able to handle fast load
-+ *             switching.
-+ *
-+ * NOTE: Most regulators will only support a subset of these modes. Some
-+ * will only just support NORMAL.
-+ *
-+ * These modes can be OR'ed together to make up a mask of valid register modes.
-+ */
-+
-+#define REGULATOR_MODE_FAST			0x1
-+#define REGULATOR_MODE_NORMAL			0x2
-+#define REGULATOR_MODE_IDLE			0x4
-+#define REGULATOR_MODE_STANDBY			0x8
-+
-+/*
-+ * Regulator notifier events.
-+ *
-+ * UNDER_VOLTAGE  Regulator output is under voltage.
-+ * OVER_CURRENT   Regulator output current is too high.
-+ * REGULATION_OUT Regulator output is out of regulation.
-+ * FAIL           Regulator output has failed.
-+ * OVER_TEMP      Regulator over temp.
-+ * FORCE_DISABLE  Regulator shut down by software.
-+ *
-+ * NOTE: These events can be OR'ed together when passed into handler.
-+ */
-+
-+#define REGULATOR_EVENT_UNDER_VOLTAGE		0x01
-+#define REGULATOR_EVENT_OVER_CURRENT		0x02
-+#define REGULATOR_EVENT_REGULATION_OUT		0x04
-+#define REGULATOR_EVENT_FAIL			0x08
-+#define REGULATOR_EVENT_OVER_TEMP		0x10
-+#define REGULATOR_EVENT_FORCE_DISABLE		0x20
++#include <linux/regulator/consumer.h>
 +
 +struct regulator;
 +
-+/**
-+ * struct regulator_bulk_data - Data used for bulk regulator operations.
++/*
++ * Regulator operation constraint flags. These flags are used to enable
++ * certain regulator operations and can be OR'ed together.
 + *
-+ * @supply   The name of the supply.  Initialised by the user before
-+ *           using the bulk regulator APIs.
-+ * @consumer The regulator consumer for the supply.  This will be managed
-+ *           by the bulk API.
-+ *
-+ * The regulator APIs provide a series of regulator_bulk_() API calls as
-+ * a convenience to consumers which require multiple supplies.  This
-+ * structure is used to manage data for these calls.
++ * VOLTAGE:  Regulator output voltage can be changed by software on this
++ *           board/machine.
++ * CURRENT:  Regulator output current can be changed by software on this
++ *           board machine.
++ * MODE:     Regulator operating mode can be changed by software on this
++ *           board machine.
++ * STATUS:   Regulator can be enabled and disabled.
++ * DRMS:     Dynamic Regulator Mode Switching is enabled for this regulator.
 + */
-+struct regulator_bulk_data {
-+	const char *supply;
-+	struct regulator *consumer;
++
++#define REGULATOR_CHANGE_VOLTAGE	0x1
++#define REGULATOR_CHANGE_CURRENT	0x2
++#define REGULATOR_CHANGE_MODE		0x4
++#define REGULATOR_CHANGE_STATUS		0x8
++#define REGULATOR_CHANGE_DRMS		0x10
++
++/**
++ * struct regulation_constraints - regulator operating constraints.
++ *
++ * This struct describes regulator and board/machine specific constraints.
++ */
++struct regulation_constraints {
++
++	char *name;
++
++	/* voltage output range (inclusive) - for voltage control */
++	int min_uV;
++	int max_uV;
++
++	/* current output range (inclusive) - for current control */
++	int min_uA;
++	int max_uA;
++
++	/* valid regulator operating modes for this machine */
++	unsigned int valid_modes_mask;
++
++	/* valid operations for regulator on this machine */
++	unsigned int valid_ops_mask;
++
++	/* regulator input voltage - only if supply is another regulator */
++	int input_uV;
++
++	/* constriant flags */
++	u32 always_on:1;	/* regulator never off when system is on */
++	u32 boot_on:1;		/* bootloader/firmware enabled regulator */
++	u32 apply_uV:1;		/* apply uV constraint iff min == max */
 +};
 +
-+#if defined(CONFIG_REGULATOR)
++int regulator_set_supply(const char *regulator, const char *regulator_supply);
 +
-+/* regulator get and put */
-+struct regulator *__must_check regulator_get(struct device *dev,
-+					     const char *id);
-+void regulator_put(struct regulator *regulator);
++const char *regulator_get_supply(const char *regulator);
 +
-+/* regulator output control and status */
-+int regulator_enable(struct regulator *regulator);
-+int regulator_disable(struct regulator *regulator);
-+int regulator_force_disable(struct regulator *regulator);
-+int regulator_is_enabled(struct regulator *regulator);
++int regulator_set_machine_constraints(const char *regulator,
++	struct regulation_constraints *constraints);
 +
-+int regulator_bulk_get(struct device *dev, int num_consumers,
-+		       struct regulator_bulk_data *consumers);
-+int regulator_bulk_enable(int num_consumers,
-+			  struct regulator_bulk_data *consumers);
-+int regulator_bulk_disable(int num_consumers,
-+			   struct regulator_bulk_data *consumers);
-+void regulator_bulk_free(int num_consumers,
-+			 struct regulator_bulk_data *consumers);
-+
-+int regulator_set_voltage(struct regulator *regulator, int min_uV, int max_uV);
-+int regulator_get_voltage(struct regulator *regulator);
-+int regulator_set_current_limit(struct regulator *regulator,
-+			       int min_uA, int max_uA);
-+int regulator_get_current_limit(struct regulator *regulator);
-+
-+int regulator_set_mode(struct regulator *regulator, unsigned int mode);
-+unsigned int regulator_get_mode(struct regulator *regulator);
-+int regulator_set_optimum_mode(struct regulator *regulator, int load_uA);
-+
-+/* regulator notifier block */
-+int regulator_register_notifier(struct regulator *regulator,
-+			      struct notifier_block *nb);
-+int regulator_unregister_notifier(struct regulator *regulator,
-+				struct notifier_block *nb);
-+
-+/* driver data - core doesn't touch */
-+void *regulator_get_drvdata(struct regulator *regulator);
-+void regulator_set_drvdata(struct regulator *regulator, void *data);
-+
-+#else
-+
-+/*
-+ * Make sure client drivers will still build on systems with no software
-+ * controllable voltage or current regulators.
-+ */
-+static inline struct regulator *__must_check regulator_get(struct device *dev,
-+	const char *id)
-+{
-+	/* Nothing except the stubbed out regulator API should be
-+	 * looking at the value except to check if it is an error
-+	 * value so the actual return value doesn't matter.
-+	 */
-+	return (struct regulator *)id;
-+}
-+static inline void regulator_put(struct regulator *regulator)
-+{
-+}
-+
-+static inline int regulator_enable(struct regulator *regulator)
-+{
-+	return 0;
-+}
-+
-+static inline int regulator_disable(struct regulator *regulator)
-+{
-+	return 0;
-+}
-+
-+static inline int regulator_is_enabled(struct regulator *regulator)
-+{
-+	return 1;
-+}
-+
-+static inline int regulator_bulk_get(struct device *dev,
-+				     int num_consumers,
-+				     struct regulator_bulk_data *consumers)
-+{
-+	return 0;
-+}
-+
-+static inline int regulator_bulk_enable(int num_consumers,
-+					struct regulator_bulk_data *consumers)
-+{
-+	return 0;
-+}
-+
-+static inline int regulator_bulk_disable(int num_consumers,
-+					 struct regulator_bulk_data *consumers)
-+{
-+	return 0;
-+}
-+
-+static inline void regulator_bulk_free(int num_consumers,
-+				       struct regulator_bulk_data *consumers)
-+{
-+}
-+
-+static inline int regulator_set_voltage(struct regulator *regulator,
-+					int min_uV, int max_uV)
-+{
-+	return 0;
-+}
-+
-+static inline int regulator_get_voltage(struct regulator *regulator)
-+{
-+	return 0;
-+}
-+
-+static inline int regulator_set_current_limit(struct regulator *regulator,
-+					     int min_uA, int max_uA)
-+{
-+	return 0;
-+}
-+
-+static inline int regulator_get_current_limit(struct regulator *regulator)
-+{
-+	return 0;
-+}
-+
-+static inline int regulator_set_mode(struct regulator *regulator,
-+	unsigned int mode)
-+{
-+	return 0;
-+}
-+
-+static inline unsigned int regulator_get_mode(struct regulator *regulator)
-+{
-+	return REGULATOR_MODE_NORMAL;
-+}
-+
-+static inline int regulator_set_optimum_mode(struct regulator *regulator,
-+					int load_uA)
-+{
-+	return REGULATOR_MODE_NORMAL;
-+}
-+
-+static inline int regulator_register_notifier(struct regulator *regulator,
-+			      struct notifier_block *nb)
-+{
-+	return 0;
-+}
-+
-+static inline int regulator_unregister_notifier(struct regulator *regulator,
-+				struct notifier_block *nb)
-+{
-+	return 0;
-+}
-+
-+static inline void *regulator_get_drvdata(struct regulator *regulator)
-+{
-+	return NULL;
-+}
-+
-+static inline void regulator_set_drvdata(struct regulator *regulator,
-+	void *data)
-+{
-+}
-+
-+#endif
++int regulator_set_device_supply(const char *regulator, struct device *dev,
++				const char *supply);
 +
 +#endif
 -- 
