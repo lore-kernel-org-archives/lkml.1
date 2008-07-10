@@ -1,49 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756560AbYGJBIK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756902AbYGJBI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756560AbYGJBIK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 21:08:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbYGJBHz
+	id S1756902AbYGJBI0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 21:08:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756148AbYGJBIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 21:07:55 -0400
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:35356 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753144AbYGJBHy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 21:07:54 -0400
-X-Sasl-enc: g1GKKePkgkoCcBOO7dolZ611EAl2+5Jeq3ZOEru8jYBe 1215652073
-Date: Wed, 9 Jul 2008 22:07:49 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Cezary Jackiewicz <cezary.jackiewicz@gmail.com>
-Cc: Ivo van Doorn <ivdoorn@gmail.com>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, ak@linux.intel.com,
-       Len Brown <lenb@kernel.org>, Richard Purdie <rpurdie@rpsys.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RESEND] [PATCH -next 2/2] acpi,rfkill,backlight:
-	comapl-laptop update - use rfkill switch subsystem
-Message-ID: <20080710010749.GB15729@khazad-dum.debian.net>
-References: <20080709231059.778d16f4@debian> <200807092333.01355.IvDoorn@gmail.com> <20080709234419.12d6eabc@debian>
+	Wed, 9 Jul 2008 21:08:05 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:34425 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755116AbYGJBIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 21:08:04 -0400
+From: Neil Brown <neilb@suse.de>
+To: Arkadiusz Miskiewicz <arekm@maven.pl>
+Date: Thu, 10 Jul 2008 11:07:58 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080709234419.12d6eabc@debian>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18549.24814.313777.410346@notabene.brown>
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       Dan Williams <dan.j.williams@intel.com>
+Subject: Re: 2.6.25.6 raid5 resync oops
+In-Reply-To: message from Arkadiusz Miskiewicz on Wednesday July 9
+References: <200807092019.20090.arekm@maven.pl>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 09 Jul 2008, Cezary Jackiewicz wrote:
-> Does calling rfkill_force_state () is mandatory? This driver implement 
-> get_state() hook, @state is always up-to-date.
+On Wednesday July 9, arekm@maven.pl wrote:
+> 
+> While kernel was resyncing raid5 array on 4 sata disks this happened
 
-It is not mandatory, but you will get delays and anti-social behaviour if
-you don't implement rfkill_force_state() on hardware that can do
-HARD_BLOCKED, and rfkill will be able to notice changes only when
-"provoked".
+Thanks for the report.
+> 
+> ------------[ cut here ]------------
+> kernel BUG at drivers/md/raid5.c:2398!
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+So in handle_parity_checks5, s->uptodate is not == disks.
+Not good (obviously).
+
+We only get into handle_parity_checks5 if:
+  STRIPE_OP_CHECK or STRIPE_OP_MODE_REPAIR_PD
+    are set in sh->ops.pending
+or
+  s.syncing and s.locked == 0 (and some other stuff).
+
+The first two bits only get set inside handle_parity_checks5,
+so the first time handle_parity_checks5 was called on this
+stripe_head, s.syncing was true and s.locked == 0.
+
+If s.syncing, and s.uptodate < disks, then we will have already
+called handle_issuing_new_read_requests5 which will have tried to read
+all disks that aren't uptodate, so 
+    s.uptodate + s.locked == disks
+which makes the BUG impossible .... except.....
+
+If we already have uptodate == disks-1, then it doesn't read
+the missing block and falls straight down to the BUG.
+
+Dan:  I think this is your code.  In 
+  __handle_issuing_new_read_requests5
+the
+		} else if ((s->uptodate < disks - 1) &&
+			test_bit(R5_Insync, &dev->flags)) {
+
+looks wrong.  We at least want a test on s->syncing in there, maybe:
+		} else if (((s->uptodate < disks - 1) || s->syncing) &&
+			test_bit(R5_Insync, &dev->flags)) {
+
+and given that we only compute blocks when a device is failed, (see 15
+lines earlier) I think we probably just want
+		} else if (test_bit(R5_Insync, &dev->flags)) {
+
+I notice that is was it in linux-next (though the functions are
+renamed - it is fetch_block5 there).
+
+I wonder if there is still time for 2.6.26 .. probably not.  It'll be
+released immediately after lwn.net release their weekly edition :-)
+
+Arkadiusz: a reboot (which you have probably done already) is all you
+  can do here. Your array will resync, and almost certainly won't hit
+  the bug again.  There should be no data loss.
+
+NeilBrown
