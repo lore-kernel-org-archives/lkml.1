@@ -1,235 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757287AbYGJP3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760205AbYGJPaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757287AbYGJP3U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 11:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759242AbYGJP11
+	id S1760205AbYGJPaf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 11:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759481AbYGJP2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 11:27:27 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:45162 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759234AbYGJP10 (ORCPT
+	Thu, 10 Jul 2008 11:28:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39059 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759476AbYGJP2N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 11:27:26 -0400
-Subject: [PATCH 13/15] regulator: documentation - ABI
-From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Content-Type: text/plain
-Date: Thu, 10 Jul 2008 16:27:23 +0100
-Message-Id: <1215703643.13431.69.camel@odin>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Thu, 10 Jul 2008 11:28:13 -0400
+Message-ID: <48762A3B.5050104@linux-foundation.org>
+Date: Thu, 10 Jul 2008 10:26:51 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <48751CF9.4020901@linux-foundation.org>	<4875209D.8010603@goop.org> <48752CCD.30507@linux-foundation.org>	<m1wsjupuiz.fsf@frodo.ebiederm.org> <48753C99.5050408@goop.org> <m1ej62iq9z.fsf@frodo.ebiederm.org> <487555A8.2050007@zytor.com> <487556A5.5090907@goop.org> <4876194E.4080205@linux-foundation.org> <48761C06.3020003@zytor.com>
+In-Reply-To: <48761C06.3020003@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds documentation describing the sysfs ABI used by the regulator
-framework.
+H. Peter Anvin wrote:
 
-Signed-off-by: Liam Girdwood <lg@opensource.wolfsonmicro.com>
----
- Documentation/ABI/testing/sysfs-class-regulator |  187 +++++++++++++++++++++++
- 1 files changed, 187 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-class-regulator
+> Noone has talked about the actual placement of the percpu segment data.
 
-diff --git a/Documentation/ABI/testing/sysfs-class-regulator b/Documentation/ABI/testing/sysfs-class-regulator
-new file mode 100644
-index 0000000..4655927
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-class-regulator
-@@ -0,0 +1,187 @@
-+What:		/sys/class/regulator/.../state
-+Date:		April 2008
-+KernelVersion:	2.6.26
-+Contact:	Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+Description:
-+		Each regulator directory will contain a field called
-+		state. This holds the regulator output state.
-+
-+		This will be one of the following strings:
-+
-+		'enabled'
-+		'disabled'
-+		'unknown'
-+
-+		'enabled' means the regulator output is ON and is supplying
-+		power to the system.
-+
-+		'disabled' means the regulator output is OFF and is not
-+		supplying power to the system..
-+
-+		'unknown' means software cannot determine the state.
-+
-+		NOTE: this field can be used in conjunction with microvolts
-+		and microamps to determine regulator output levels.
-+
-+
-+What:		/sys/class/regulator/.../type
-+Date:		April 2008
-+KernelVersion:	2.6.26
-+Contact:	Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+Description:
-+		Each regulator directory will contain a field called
-+		type. This holds the regulator type.
-+
-+		This will be one of the following strings:
-+
-+		'voltage'
-+		'current'
-+		'unknown'
-+
-+		'voltage' means the regulator output voltage can be controlled
-+		by software.
-+
-+		'current' means the regulator output current limit can be
-+		controlled by software.
-+
-+		'unknown' means software cannot control either voltage or
-+		current limit.
-+
-+
-+What:		/sys/class/regulator/.../microvolts
-+Date:		April 2008
-+KernelVersion:	2.6.26
-+Contact:	Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+Description:
-+		Each regulator directory will contain a field called
-+		microvolts. This holds the regulator output voltage setting
-+		measured in microvolts (i.e. E-6 Volts).
-+
-+		NOTE: This value should not be used to determine the regulator
-+		output voltage level as this value is the same regardless of
-+		whether the regulator is enabled or disabled.
-+
-+
-+What:		/sys/class/regulator/.../microamps
-+Date:		April 2008
-+KernelVersion:	2.6.26
-+Contact:	Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+Description:
-+		Each regulator directory will contain a field called
-+		microamps. This holds the regulator output current limit
-+		setting measured in microamps (i.e. E-6 Amps).
-+
-+		NOTE: This value should not be used to determine the regulator
-+		output current level as this value is the same regardless of
-+		whether the regulator is enabled or disabled.
-+
-+
-+What:		/sys/class/regulator/.../opmode
-+Date:		April 2008
-+KernelVersion:	2.6.26
-+Contact:	Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+Description:
-+		Each regulator directory will contain a field called
-+		opmode. This holds the regulator operating mode setting.
-+
-+		The opmode value can be one of the following strings:
-+
-+		'fast'
-+		'normal'
-+		'idle'
-+		'standby'
-+		'unknown'
-+
-+		The modes are described in include/linux/regulator/regulator.h
-+
-+		NOTE: This value should not be used to determine the regulator
-+		output operating mode as this value is the same regardless of
-+		whether the regulator is enabled or disabled.
-+
-+
-+What:		/sys/class/regulator/.../min_microvolts
-+Date:		April 2008
-+KernelVersion:	2.6.26
-+Contact:	Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+Description:
-+		Each regulator directory will contain a field called
-+		min_microvolts. This holds the minimum safe working regulator
-+		output voltage setting for this domain measured in microvolts.
-+
-+		NOTE: this will return the string 'constraint not defined' if
-+		the power domain has no min microvolts constraint defined by
-+		platform code.
-+
-+
-+What:		/sys/class/regulator/.../max_microvolts
-+Date:		April 2008
-+KernelVersion:	2.6.26
-+Contact:	Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+Description:
-+		Each regulator directory will contain a field called
-+		max_microvolts. This holds the maximum safe working regulator
-+		output voltage setting for this domain measured in microvolts.
-+
-+		NOTE: this will return the string 'constraint not defined' if
-+		the power domain has no max microvolts constraint defined by
-+		platform code.
-+
-+
-+What:		/sys/class/regulator/.../min_microamps
-+Date:		April 2008
-+KernelVersion:	2.6.26
-+Contact:	Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+Description:
-+		Each regulator directory will contain a field called
-+		min_microamps. This holds the minimum safe working regulator
-+		output current limit setting for this domain measured in
-+		microamps.
-+
-+		NOTE: this will return the string 'constraint not defined' if
-+		the power domain has no min microamps constraint defined by
-+		platform code.
-+
-+
-+What:		/sys/class/regulator/.../max_microamps
-+Date:		April 2008
-+KernelVersion:	2.6.26
-+Contact:	Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+Description:
-+		Each regulator directory will contain a field called
-+		max_microamps. This holds the maximum safe working regulator
-+		output current limit setting for this domain measured in
-+		microamps.
-+
-+		NOTE: this will return the string 'constraint not defined' if
-+		the power domain has no max microamps constraint defined by
-+		platform code.
-+
-+
-+What:		/sys/class/regulator/.../num_users
-+Date:		April 2008
-+KernelVersion:	2.6.26
-+Contact:	Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+Description:
-+		Each regulator directory will contain a field called
-+		num_users. This holds the number of consumer devices that
-+		have called regulator_enable() on this regulator.
-+
-+
-+What:		/sys/class/regulator/.../requested_microamps
-+Date:		April 2008
-+KernelVersion:	2.6.26
-+Contact:	Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+Description:
-+		Each regulator directory will contain a field called
-+		requested_microamps. This holds the total requested load
-+		current in microamps for this regulator from all its consumer
-+		devices.
-+
-+
-+What:		/sys/class/regulator/.../parent
-+Date:		April 2008
-+KernelVersion:	2.6.26
-+Contact:	Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+Description:
-+		Some regulator directories will contain a link called parent.
-+		This points to the parent or supply regulator if one exists.
--- 
-1.5.4.3
+But the placement of the percpu segment data is a problem because of the way we
+currently have the linker calculate offsets. I have had kernel configurations where I changed the placement of the percpu segment leading to linker failures because the percpu segment was not in 2G range of the code segment!
 
+This is a particular problem if we have a large number of processors (like 4096) that each require a sizable segment of virtual address space up there for the per cpu allocator.
 
+> None of this affects the absolute positioning of the data.  The final
+> address are determined by:
+> 
+>     fs_base + rip + offset
+> or
+>     fs_base + offset
+> 
+> ... respectively.  fs_base is an arbitrary 64-bit number; rip (in the
+> kernel) is in the range [-2 GB + CONFIG_PHYSICAL_START, 0), and offset
+> is in the range [-2 GB, 2 GB).
+
+Well the zero based results in this becoming always
+
+	gs_base + absolute address in per cpu segment
+
+Why are RIP based references cheaper? The offset to the per cpu segment is certainly more than what can be fit into 16 bits.
 
