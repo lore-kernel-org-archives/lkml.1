@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760883AbYGJRew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758606AbYGJRgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760883AbYGJRew (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 13:34:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758000AbYGJReo
+	id S1758606AbYGJRgV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 13:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757365AbYGJRgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 13:34:44 -0400
-Received: from mail.gmx.net ([213.165.64.20]:40406 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756157AbYGJRen (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 13:34:43 -0400
-X-Authenticated: #5108953
-X-Provags-ID: V01U2FsdGVkX18cnuNeZfgc/nKJVsw9kFhFL2jxoWGqxUeTaIq8qY
-	FFySaptjwP/Qko
-From: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>
-To: Jeff Dike <jdike@addtoit.com>
-Subject: Re: [uml-devel] UML kernel failed to start betvee 2.6.8-rc8 and current git sources
-Date: Thu, 10 Jul 2008 19:34:29 +0200
-User-Agent: KMail/1.9.9
-References: <200807101619.54052.toralf.foerster@gmx.de> <20080710165811.GA18429@c2.user-mode-linux.org>
-In-Reply-To: <20080710165811.GA18429@c2.user-mode-linux.org>
-Cc: user-mode-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+	Thu, 10 Jul 2008 13:36:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54203 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757718AbYGJRgL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 13:36:11 -0400
+Message-ID: <48764840.6010607@linux-foundation.org>
+Date: Thu, 10 Jul 2008 12:34:56 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart7463171.7x93uD96zl";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Mike Travis <travis@sgi.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <20080709133958.612635f0@infradead.org>	<4875231F.1020506@zytor.com> <487524A0.6020304@goop.org>	<487529AE.3060505@zytor.com> <m1r6a2r9nj.fsf@frodo.ebiederm.org>	<48753A71.2030006@zytor.com> <m18wwahauq.fsf@frodo.ebiederm.org> <48763732.7020805@sgi.com> <487641D6.5060206@goop.org> <48764307.20905@linux-foundation.org> <48764619.9040708@goop.org>
+In-Reply-To: <48764619.9040708@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200807101934.33636.toralf.foerster@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.64
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart7463171.7x93uD96zl
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Jeremy Fitzhardinge wrote:
+> Christoph Lameter wrote:
+>> Jeremy Fitzhardinge wrote:
+>>
+>>  
+>>> You want to virtually map the percpu area?  How and when would it get
+>>> extended?
+>>>     
+>>
+>> It would get extended when cpu_alloc() is called and the allocator
+>> finds that there is no per cpu memory available.
+>>   
+> 
+> Which, I take it, allocates percpu memory.  It would have the same
+> caveats as vmalloc memory, with respect to accessing it during fault
+> handlers and nmi handlers, I take it.
 
-At Thursday 10 July 2008 18:58:11 Jeff Dike wrote :
-> On Thu, Jul 10, 2008 at 04:19:51PM +0200, Toralf F=F6rster wrote:
-> > from v2.6.26-rc8 to v2.6.26-rc9-56-g6329d30 sth. affected UML, b/c my u=
-ser mode linux kernel produces this :
->=20
-> That UML runs fine here.  Did you also upgrade the host kernel between
-> rc8 and now?
->=20
-Yes, but that's not the reason. The UML crashes both under host kernel
-2.6.24-gentoo-r8 and 2.6.25-gentoo-r6. The last (available) working UML ker=
-nel
-is linux-v2.6.26-rc8-227 (tested under host kernel 2.6.25-gentoo-r6).
+Right. One would not want to allocate per cpu memory in those contexts. The current allocpercpu() functions already have those restrictions.
 
-=2D-=20
-MfG/Sincerely
+> How would cpu_alloc() actually get used?  It doesn't make much sense for
+> general code, since we don't have the notion of a percpu pointer to
+> memory (vs a pointer to percpu memory).  Is the intended use for
+> allocating percpu memory in modules?  What other uses?
 
-Toralf F=F6rster
-pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
+Argh. Do I have to reexplain all of this all over again? Please look at the latest cpu_alloc patchset and the related discussions.
 
---nextPart7463171.7x93uD96zl
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+The cpu_alloc patchset introduces the concept of a pointer to percpu memory. Or you could call it an offset into the percpu segment that can be treated (in a restricted way) like a pointer....
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
 
-iEYEABECAAYFAkh2SCkACgkQhyrlCH22naMjTwCgqfwm5tDOy6N5qLQ+0NYgnHnD
-l/sAoL074J3w1fI1wkVDU7MoRXuxopI+
-=07pG
------END PGP SIGNATURE-----
 
---nextPart7463171.7x93uD96zl--
