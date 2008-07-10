@@ -1,40 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756717AbYGJARv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbYGJAYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756717AbYGJARv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 20:17:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbYGJARm
+	id S1755044AbYGJAYI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 20:24:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbYGJAX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 20:17:42 -0400
-Received: from main.gmane.org ([80.91.229.2]:52834 "EHLO ciao.gmane.org"
+	Wed, 9 Jul 2008 20:23:56 -0400
+Received: from gw.goop.org ([64.81.55.164]:47699 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752101AbYGJARm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 20:17:42 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: "Shaun R." <mailinglists@unix-scripts.com>
-Subject: 64bit kernel, 32bit OS?
-Date: Wed, 9 Jul 2008 17:16:08 -0700
-Message-ID: <g53keq$vq1$1@ger.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
+	id S1751677AbYGJAX4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 20:23:56 -0400
+Message-ID: <4875568F.6030309@goop.org>
+Date: Wed, 09 Jul 2008 17:23:43 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Christoph Lameter <cl@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <48751CF9.4020901@linux-foundation.org>	<4875209D.8010603@goop.org> <48752CCD.30507@linux-foundation.org>	<m1wsjupuiz.fsf@frodo.ebiederm.org> <48753C99.5050408@goop.org> <m1ej62iq9z.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1ej62iq9z.fsf@frodo.ebiederm.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: ip68-5-154-128.oc.oc.cox.net
-X-MSMail-Priority: Normal
-X-Newsreader: Microsoft Windows Mail 6.0.6001.18000
-X-MimeOLE: Produced By Microsoft MimeOLE V6.0.6001.18000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If i where to run a 32bit OS on a 64bit kernel would there be any problems 
-with that?  I'm not trying to convert the OS to 64bit, just would rather not 
-have to build multiple kernels if i dont have too.  I'm talking x86_32 and 
-x86_64 btw too.
+Eric W. Biederman wrote:
+> Jeremy Fitzhardinge <jeremy@goop.org> writes:
+>
+>   
+>>> Which means that my idea of using the technique we use on x86_32 will not
+>>>       
+>> work.
+>>
+>> No, the compiler memory model we use guarantees that everything will be within
+>> 2G of each other.  The linker will spew loudly if that's not the case.
+>>     
+>
+> The per cpu area is at least theoretically dynamically allocated.  And we
+> really want to put it in cpu local memory.    Which means on any reasonable
+> NUMA machine the per cpu areas should be all over the box.
+>   
 
-~Shaun 
+Yes, but that doesn't matter in the slightest.  The effective address 
+will be within 2G of the base; the base can be anywhere.
 
+> So there is no guarantee that with an arbitrary 64bit address in %gs of anything.
+>
+> Grr.  Except you are correct.  We have to guarantee that the offsets we have
+> chosen at compile time still work.  And we know all of the compile time offsets
+> will be in the -2G range.  So they are all 32bit numbers.  Negative 32bit
+> numbers to be sure.  That trivially leaves us with everything working except
+> the nasty hard coded decimal 40.
+>   
 
+Right.
+
+    J
