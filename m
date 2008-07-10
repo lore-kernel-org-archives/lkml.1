@@ -1,106 +1,279 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755588AbYGJDoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755628AbYGJDww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755588AbYGJDoh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 23:44:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbYGJDo3
+	id S1755628AbYGJDww (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 23:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753654AbYGJDwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 23:44:29 -0400
-Received: from mga02.intel.com ([134.134.136.20]:12486 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753594AbYGJDo2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 23:44:28 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.30,335,1212390000"; 
-   d="scan'208,223";a="305085938"
-From: "Yang, Sheng" <sheng.yang@intel.com>
-Organization: Intel
-To: linux-pci@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] PCI: Add Bridge Configuration Retry bit in PCIE Control
-Date: Thu, 10 Jul 2008 11:45:43 +0800
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_nXYdIuGoR4dExgT"
-Message-Id: <200807101145.43839.sheng.yang@intel.com>
+	Wed, 9 Jul 2008 23:52:43 -0400
+Received: from rv-out-0506.google.com ([209.85.198.225]:7337 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753598AbYGJDwn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 23:52:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=xGPAU3FK8CdiACaCiW6LX9nofF8BxorVwwJPRoHepXlUo4SwhwvKEGOv/xgkX8L/Ec
+         irIBo5EtTFEdlyutFyLWPP8bUZ8/f/3KIES906UFV+Vov/mJqs+F3dKm4o+0QcVCT3XC
+         J++742W0xvZzKULXPupR/ZYH+NgHA8vqcJTfU=
+From: Magnus Damm <magnus.damm@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Uwe.Kleine-Koenig@digi.com, gregkh@suse.de, akpm@linux-foundation.org,
+       hjk@linutronix.de, lethal@linux-sh.org,
+       Magnus Damm <magnus.damm@gmail.com>, tglx@linutronix.de,
+       alan@lxorguk.ukuu.org.uk
+Date: Thu, 10 Jul 2008 12:52:54 +0900
+Message-Id: <20080710035254.27378.18682.sendpatchset@rx1.opensource.se>
+Subject: [PATCH] uio: uio_pdrv_genirq V2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_nXYdIuGoR4dExgT
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+This patch is V2 of uio_pdrv_genirq.c, a platform driver for UIO with 
+generic IRQ handling code. This driver is very similar to the regular
+UIO platform driver, but is only suitable for devices that are
+connected to the interrupt controller using unique interrupt lines.
 
-=46rom 7d8f4016eac2ac2877412b6c510616da4e08415e Mon Sep 17 00:00:00 2001
-=46rom: Sheng Yang <sheng.yang@intel.com>
-Date: Thu, 10 Jul 2008 11:43:33 +0800
-Subject: [PATCH] PCI: Add Bridge Configuration Retry bit in PCIE=20
-Control
+The uio_pdrv_genirq driver includes generic interrupt handling code
+which disables the serviced interrupt in the interrupt controller
+and makes the user space driver responsible for acknowledging the
+interrupt in the device and reenabling the interrupt in the interrupt
+controller.
 
-The bit 15 is Bridge Configuration Retry Reset and Initiate Function=20
-Level Reset bit.
+Shared interrupts are not supported since the in-kernel interrupt
+handler will disable the interrupt line in the interrupt controller,
+and in a shared interrupt configuration this will stop other devices
+from delivering interrupts.
 
-Signed-off-by: Sheng Yang <sheng.yang@intel.com>
-=2D--
- include/linux/pci_regs.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
+---
 
-diff --git a/include/linux/pci_regs.h b/include/linux/pci_regs.h
-index c0c1223..36ce86b 100644
-=2D-- a/include/linux/pci_regs.h
-+++ b/include/linux/pci_regs.h
-@@ -387,6 +387,7 @@
- #define  PCI_EXP_DEVCTL_AUX_PME	0x0400	/* Auxiliary Power PM Enable=20
-*/
- #define  PCI_EXP_DEVCTL_NOSNOOP_EN 0x0800  /* Enable No Snoop */
- #define  PCI_EXP_DEVCTL_READRQ	0x7000	/* Max_Read_Request_Size */
-+#define  PCI_EXP_DEVCTL_BCR_FLR 0x8000  /* Bridge Configuration=20
-Retry / FLR */
- #define PCI_EXP_DEVSTA		10	/* Device Status */
- #define  PCI_EXP_DEVSTA_CED	0x01	/* Correctable Error Detected */
- #define  PCI_EXP_DEVSTA_NFED	0x02	/* Non-Fatal Error Detected */
-=2D-
-1.5.6
+ Changes since V1
+  - allow user space to enable _and_ disable the interrupt
+  - replaced bitops with spinlock + irq_disabled variable
+  - renamed pdata variable name to priv
 
+ drivers/uio/Kconfig           |   13 ++
+ drivers/uio/Makefile          |    1 
+ drivers/uio/uio_pdrv_genirq.c |  186 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 200 insertions(+)
 
---Boundary-00=_nXYdIuGoR4dExgT
-Content-Type: text/x-diff;
-  charset="utf-8";
-  name="0001-PCI-Add-Bridge-Configuration-Retry-bit-in-PCIE-Cont.patch"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
-	filename="0001-PCI-Add-Bridge-Configuration-Retry-bit-in-PCIE-Cont.patch"
-
-=46rom 7d8f4016eac2ac2877412b6c510616da4e08415e Mon Sep 17 00:00:00 2001
-=46rom: Sheng Yang <sheng.yang@intel.com>
-Date: Thu, 10 Jul 2008 11:43:33 +0800
-Subject: [PATCH] PCI: Add Bridge Configuration Retry bit in PCIE Control
-
-The bit 15 is Bridge Configuration Retry Reset and Initiate Function Level =
-Reset
-bit.
-
-Signed-off-by: Sheng Yang <sheng.yang@intel.com>
-=2D--
- include/linux/pci_regs.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/pci_regs.h b/include/linux/pci_regs.h
-index c0c1223..36ce86b 100644
-=2D-- a/include/linux/pci_regs.h
-+++ b/include/linux/pci_regs.h
-@@ -387,6 +387,7 @@
- #define  PCI_EXP_DEVCTL_AUX_PME	0x0400	/* Auxiliary Power PM Enable */
- #define  PCI_EXP_DEVCTL_NOSNOOP_EN 0x0800  /* Enable No Snoop */
- #define  PCI_EXP_DEVCTL_READRQ	0x7000	/* Max_Read_Request_Size */
-+#define  PCI_EXP_DEVCTL_BCR_FLR 0x8000  /* Bridge Configuration Retry / FL=
-R */
- #define PCI_EXP_DEVSTA		10	/* Device Status */
- #define  PCI_EXP_DEVSTA_CED	0x01	/* Correctable Error Detected */
- #define  PCI_EXP_DEVSTA_NFED	0x02	/* Non-Fatal Error Detected */
-=2D-=20
-1.5.6
-
-
---Boundary-00=_nXYdIuGoR4dExgT--
+--- 0014/drivers/uio/Kconfig
++++ work/drivers/uio/Kconfig	2008-07-09 17:10:20.000000000 +0900
+@@ -33,6 +33,19 @@ config UIO_PDRV
+ 
+ 	  If you don't know what to do here, say N.
+ 
++config UIO_PDRV_GENIRQ
++	tristate "Userspace I/O platform driver with generic IRQ handling"
++	help
++	  Platform driver for Userspace I/O devices, including generic
++	  interrupt handling code. Shared interrupts are not supported.
++
++	  This kernel driver requires that the matching userspace driver
++	  handles interrupts in a special way. Userspace is responsible
++	  for acknowledging the hardware device if needed, and re-enabling
++	  interrupts in the interrupt controller using the write() syscall.
++
++	  If you don't know what to do here, say N.
++
+ config UIO_SMX
+ 	tristate "SMX cryptengine UIO interface"
+ 	depends on UIO
+--- 0014/drivers/uio/Makefile
++++ work/drivers/uio/Makefile	2008-07-09 17:10:20.000000000 +0900
+@@ -1,4 +1,5 @@
+ obj-$(CONFIG_UIO)	+= uio.o
+ obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
+ obj-$(CONFIG_UIO_PDRV)	+= uio_pdrv.o
++obj-$(CONFIG_UIO_PDRV_GENIRQ)	+= uio_pdrv_genirq.o
+ obj-$(CONFIG_UIO_SMX)	+= uio_smx.o
+--- /dev/null
++++ work/drivers/uio/uio_pdrv_genirq.c	2008-07-10 12:24:52.000000000 +0900
+@@ -0,0 +1,186 @@
++/*
++ * drivers/uio/uio_pdrv_genirq.c
++ *
++ * Userspace I/O platform driver with generic IRQ handling code.
++ *
++ * Copyright (C) 2008 Magnus Damm
++ *
++ * Based on uio_pdrv.c by Uwe Kleine-Koenig,
++ * Copyright (C) 2008 by Digi International Inc.
++ * All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ */
++
++#include <linux/platform_device.h>
++#include <linux/uio_driver.h>
++#include <linux/spinlock.h>
++#include <linux/interrupt.h>
++#include <linux/stringify.h>
++
++#define DRIVER_NAME "uio_pdrv_genirq"
++
++struct uio_pdrv_genirq_platdata {
++	struct uio_info *uioinfo;
++	spinlock_t lock;
++	int irq_disabled;
++};
++
++static irqreturn_t uio_pdrv_genirq_handler(int irq, struct uio_info *dev_info)
++{
++	struct uio_pdrv_genirq_platdata *priv = dev_info->priv;
++	unsigned long flags;
++
++	/* Just disable the interrupt in the interrupt controller, and
++	 * remember the state so we can allow user space to enable it later.
++	 */
++	spin_lock_irqsave(&priv->lock, flags);
++	if (!priv->irq_disabled) {
++		disable_irq_nosync(irq);
++		priv->irq_disabled = 1;
++	}
++	spin_unlock_irqrestore(&priv->lock, flags);
++	return IRQ_HANDLED;
++}
++
++static int uio_pdrv_genirq_irqcontrol(struct uio_info *dev_info, s32 irq_on)
++{
++	struct uio_pdrv_genirq_platdata *priv = dev_info->priv;
++	unsigned long flags;
++
++	/* Allow user space to enable and disable the interrupt
++	 * in the interrupt controller, but keep track of the
++	 * state to prevent per-irq depth damage.
++	 */
++
++	spin_lock_irqsave(&priv->lock, flags);
++	if (irq_on && priv->irq_disabled)
++		enable_irq(dev_info->irq);
++	else if (!irq_on && !priv->irq_disabled)
++		disable_irq(dev_info->irq);
++
++	priv->irq_disabled = !irq_on;
++	spin_unlock_irqrestore(&priv->lock, flags);
++	return 0;
++}
++
++static int uio_pdrv_genirq_probe(struct platform_device *pdev)
++{
++	struct uio_info *uioinfo = pdev->dev.platform_data;
++	struct uio_pdrv_genirq_platdata *priv;
++	struct uio_mem *uiomem;
++	int ret = -EINVAL;
++	int i;
++
++	if (!uioinfo || !uioinfo->name || !uioinfo->version) {
++		dev_err(&pdev->dev, "missing platform_data\n");
++		goto bad0;
++	}
++
++	if (uioinfo->handler || uioinfo->irqcontrol || uioinfo->irq_flags) {
++		dev_err(&pdev->dev, "interrupt configuration error\n");
++		goto bad0;
++	}
++
++	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
++	if (!priv) {
++		ret = -ENOMEM;
++		dev_err(&pdev->dev, "unable to kmalloc\n");
++		goto bad0;
++	}
++
++	priv->uioinfo = uioinfo;
++	spin_lock_init(&priv->lock);
++	priv->irq_disabled = 0; /* interrupt is enabled to begin with */
++
++	uiomem = &uioinfo->mem[0];
++
++	for (i = 0; i < pdev->num_resources; ++i) {
++		struct resource *r = &pdev->resource[i];
++
++		if (r->flags != IORESOURCE_MEM)
++			continue;
++
++		if (uiomem >= &uioinfo->mem[MAX_UIO_MAPS]) {
++			dev_warn(&pdev->dev, "device has more than "
++					__stringify(MAX_UIO_MAPS)
++					" I/O memory resources.\n");
++			break;
++		}
++
++		uiomem->memtype = UIO_MEM_PHYS;
++		uiomem->addr = r->start;
++		uiomem->size = r->end - r->start + 1;
++		++uiomem;
++	}
++
++	while (uiomem < &uioinfo->mem[MAX_UIO_MAPS]) {
++		uiomem->size = 0;
++		++uiomem;
++	}
++
++	/* This driver requires no hardware specific kernel code to handle
++	 * interrupts. Instead, the interrupt handler simply disables the
++	 * interrupt in the interrupt controller. User space is responsible
++	 * for performing hardware specific acknowledge and re-enabling of
++	 * the interrupt in the interrupt controller.
++	 *
++	 * Interrupt sharing is not supported.
++	 */
++
++	uioinfo->irq_flags = IRQF_DISABLED;
++	uioinfo->handler = uio_pdrv_genirq_handler;
++	uioinfo->irqcontrol = uio_pdrv_genirq_irqcontrol;
++	uioinfo->priv = priv;
++
++	ret = uio_register_device(&pdev->dev, priv->uioinfo);
++	if (ret) {
++		dev_err(&pdev->dev, "unable to register uio device\n");
++		goto bad1;
++	}
++
++	platform_set_drvdata(pdev, priv);
++	return 0;
++ bad1:
++	kfree(priv);
++ bad0:
++	return ret;
++}
++
++static int uio_pdrv_genirq_remove(struct platform_device *pdev)
++{
++	struct uio_pdrv_genirq_platdata *priv = platform_get_drvdata(pdev);
++
++	uio_unregister_device(priv->uioinfo);
++	kfree(priv);
++	return 0;
++}
++
++static struct platform_driver uio_pdrv_genirq = {
++	.probe = uio_pdrv_genirq_probe,
++	.remove = uio_pdrv_genirq_remove,
++	.driver = {
++		.name = DRIVER_NAME,
++		.owner = THIS_MODULE,
++	},
++};
++
++static int __init uio_pdrv_genirq_init(void)
++{
++	return platform_driver_register(&uio_pdrv_genirq);
++}
++
++static void __exit uio_pdrv_genirq_exit(void)
++{
++	platform_driver_unregister(&uio_pdrv_genirq);
++}
++
++module_init(uio_pdrv_genirq_init);
++module_exit(uio_pdrv_genirq_exit);
++
++MODULE_AUTHOR("Magnus Damm");
++MODULE_DESCRIPTION("Userspace I/O platform driver with generic IRQ handling");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:" DRIVER_NAME);
