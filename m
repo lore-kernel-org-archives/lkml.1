@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756411AbYGJEpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755344AbYGJEyz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756411AbYGJEpd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 00:45:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755451AbYGJEpP
+	id S1755344AbYGJEyz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 00:54:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbYGJEyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 00:45:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58304 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755207AbYGJEpL (ORCPT
+	Thu, 10 Jul 2008 00:54:46 -0400
+Received: from elrond2.infotech.no ([82.134.31.41]:35365 "EHLO
+	elrond2.infotech.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752233AbYGJEyp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 00:45:11 -0400
-Date: Wed, 9 Jul 2008 21:39:07 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: joerg.roedel@amd.com, tglx@linutronix.de, mingo@redhat.com,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       bhavna.sarathy@amd.com, Sebastian.Biemueller@amd.com,
-       robert.richter@amd.com, joro@8bytes.org
-Subject: Re: [PATCH 16/34] AMD IOMMU: add kernel command line parameters for
- AMD IOMMU
-Message-Id: <20080709213907.1e8b253b.akpm@linux-foundation.org>
-In-Reply-To: <20080710132447T.fujita.tomonori@lab.ntt.co.jp>
-References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com>
-	<1214508490-29683-17-git-send-email-joerg.roedel@amd.com>
-	<20080709185634.08c60937.akpm@linux-foundation.org>
-	<20080710132447T.fujita.tomonori@lab.ntt.co.jp>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 10 Jul 2008 00:54:45 -0400
+Message-ID: <48759603.9050803@torque.net>
+Date: Thu, 10 Jul 2008 00:54:27 -0400
+From: Douglas Gilbert <dougg@torque.net>
+Reply-To: dougg@torque.net
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: SCSI Mailing List <linux-scsi@vger.kernel.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       taggart@debian.org
+Subject: [ANNOUNCE] lsscsi-0.21 released
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Jul 2008 13:25:23 +0900 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+lsscsi is a utility that uses sysfs in linux 2.6 series kernels
+to list information about SCSI devices and SCSI hosts. Both a
+compact format (default) which is one line per device and a
+"classic" format (like the output of 'cat /proc/scsi/scsi') are
+supported.
 
-> I have one related question, we should document all the kernel boot
-> parameters in Documentation/kernel-parameters.txt?
-> 
-> Some of x86_64 boot parameters are in
-> Documentations/x86/x86_64/boot-options.txt. The parameters of IOMMUs
-> are scattered. It's confusing.
+Version 0.21 is available at
+http://www.torque.net/scsi/lsscsi.html
+More information can be found on that page including examples
+and a Download section for tarballs, rpm and deb packages.
+This is a maintenance release: lsscsi version 0.20 (released
+yesterday) was not sufficient to make lsscsi work on lk 2.6.26 .
 
-A single monolithic file has advantages.  I think I'd prefer that
-personally.  I'd forgotten that the x86-specific one exists, actually.
+ChangeLog:
+Version 0.21 2008/7/10 [svn: r64]
+   - more sysfs scanning work needed for lk 2.6.26
 
-If we _do_ want to split this all out into separate files, they should all
-be in a dedicated subdirectory under ./Documentation/, no?
+Version 0.20 2008/7/9 [svn: r43]
+   - Handle SCSI midlayer rework circa lk 2.6.25/26
+     - this fix needed if CONFIG_SYSFS_DEPRECATED_V2 is not
+       defined in the kernel build (lk 2.6.26)
+   ....
+
+Doug Gilbert
