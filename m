@@ -1,87 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756307AbYGJHyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbYGJH4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756307AbYGJHyP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 03:54:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbYGJHx7
+	id S1755865AbYGJH4Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 03:56:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbYGJH4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 03:53:59 -0400
-Received: from queueout01-winn.ispmail.ntl.com ([81.103.221.31]:8728 "EHLO
-	queueout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752030AbYGJHx6 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 03:53:58 -0400
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <200807100655.00857.elendil@planet.nl>
-References: <200807100655.00857.elendil@planet.nl>
+	Thu, 10 Jul 2008 03:56:17 -0400
+Received: from wf-out-1314.google.com ([209.85.200.169]:32967 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750898AbYGJH4Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 03:56:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=FQDRBra3ISXAzZQkH4k/2INdO0rzjiz6tmo9+oPSzxeZik29GXPb1UirUtv+BCYddn
+         WF+SMwiOFX/6KEWOCy38SloyCvNTJFtLmUD2IvTr+Gq8EHryPvfqemWezMCtRdaHGYhl
+         D3FMFqjFVGPu0HdmkRH1F0NqYZarJ7LySeRrk=
+Message-ID: <19f34abd0807100056j5a481c81k1ec9d5c398e5924c@mail.gmail.com>
+Date: Thu, 10 Jul 2008 09:56:16 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Subject: Re: Mysterious high wakeups-from-idle per second
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <E1KGmcV-0003Z0-4z@closure.thunk.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Date: Thu, 10 Jul 2008 08:47:41 +0100
-Message-Id: <1215676061.3452.29.camel@cthulhu.hellion.org.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 8BIT
-X-SA-Exim-Connect-IP: 192.168.1.1
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: [regression?] 2.6.26 floppy boot failure with kernel packed
-	using 'upx'
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <E1KGmcV-0003Z0-4z@closure.thunk.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-10 at 06:54 +0200, Frans Pop wrote:
-> The issue can also be reproduced using qemu without booting the floppy
-> itself. For the "bad" image:
-> # Boots correctly (but fails when mounting root fs):
-> $ qemu -kernel vmlinuz -hda /dev/zero
-> # Fails:
-> $ qemu -kernel vmlinuz.upx -hda /dev/zero
+On Thu, Jul 10, 2008 at 5:14 AM, Theodore Ts'o <tytso@mit.edu> wrote:
+>
+> I'm not sure when this started happening, as I haven't needed to run on
+> battery a lot, but I recently noticed (using a 2.6.26-rc9 kernel) that my
+> power utilization is 2-3 watts on my laptop higher than normal.  Running
+> powertop I see:
 
-I can repro this.
+Hi,
 
-> So, the primairy question here is:
-> - is this a kernel regression because whatever changed is no longer valid
->   conform "kernel format specs", or
-> - is this a latent issue in upx that somehow creates an invalid image, or
-> - does this change effectively create a new "type" of image that upx
->   just doesn't yet know how to handle correctly?
+I reported a similar (but not the same) problem earlier and one of the
+suggestions was to boot with idle=mwait. (And that fixed it for me,
+though the problem was fixed in code later.)
 
-This is the first time I've looked at UPX but from glancing through the
-code it certainly appears to make a lot of assumptions about the
-structure of the bzImage (to the point that it looks for specific code
-sequences within the binary).
-﻿
-It seems that the way UPX works is that it extracts the compressed image
-from the bzImage, recompresses it and rebuilds a new bzImage replacing
-the decompression stage (and possibly some of the other 16 bit startup,
-I'm not quite sure yet) with its own. The issue is that its new
-decompressor does not understand the ELF format and expects a raw
-binary.
+I'm not sure it's related to your problem, but I guess it's worth a try?
 
-I think that UPX probably has gone a bit beyond the documented
-interfaces, but it's not unreasonable way. In fact the changeset which
-you referenced (or one of the ones around it) actually adds further
-documentation (﻿in Documentation/x86/i386/boot.txt) and header fields to
-aid in doing the sort of extraction UPX wants to do and documents more
-explicitly the formats which can be expected to be found there. Also
-around the same time a checksum field was defined which is invalidated
-by the repacking.
-﻿
-All in all I'd say it should be treated as a new subtype/variant which
-UPX should support. I'd say adding support for bzImage v2.08 to UPX
-would be pretty easy for someone who knows the code base (I couldn't
-even find the decompressor code, but then it's pre-coffee time here..).
 
-Ian.
+Vegard
+
 -- 
-Ian Campbell
-
-Fame lost its appeal for me when I went into a public restroom and an
-autograph seeker handed me a pen and paper under the stall door.
-		-- Marlo Thomas
-
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
