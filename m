@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762941AbYGJSta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761466AbYGJSzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762941AbYGJSta (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 14:49:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761096AbYGJSoN
+	id S1761466AbYGJSzf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 14:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761269AbYGJSzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 14:44:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43428 "EHLO mx1.redhat.com"
+	Thu, 10 Jul 2008 14:55:14 -0400
+Received: from gw.goop.org ([64.81.55.164]:58661 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761079AbYGJSoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 14:44:12 -0400
-Date: Thu, 10 Jul 2008 14:41:42 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Rik van Riel <riel@redhat.com>, Paul Menage <menage@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Libcg Devel Mailing List <libcg-devel@lists.sourceforge.net>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Peter Zijlstra <pzijlstr@redhat.com>,
-       Kazunaga Ikeno <k-ikeno@ak.jp.nec.com>,
-       Morton Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Graf <tgraf@redhat.com>
-Subject: Re: [RFC] How to handle the rules engine for cgroups
-Message-ID: <20080710184142.GC12043@redhat.com>
-References: <20080701191126.GA17376@redhat.com> <20080703101957.b3856904.kamezawa.hiroyu@jp.fujitsu.com> <20080703155446.GB9275@redhat.com> <6599ad830807100223m2453963cwcfbe6eb1ad54d517@mail.gmail.com> <20080710104852.797fe79c@cuia.bos.redhat.com> <20080710154035.GA12043@redhat.com> <48763129.9060903@redhat.com> <20080710132546.264a89cd@cuia.bos.redhat.com> <48764950.3050405@redhat.com>
+	id S1761252AbYGJSzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 14:55:12 -0400
+Message-ID: <48765B03.6020905@goop.org>
+Date: Thu, 10 Jul 2008 11:54:59 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48764950.3050405@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Mike Travis <travis@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <20080709133958.612635f0@infradead.org>	<4875231F.1020506@zytor.com> <487524A0.6020304@goop.org>	<487529AE.3060505@zytor.com> <m1r6a2r9nj.fsf@frodo.ebiederm.org>	<48753A71.2030006@zytor.com> <m18wwahauq.fsf@frodo.ebiederm.org>	<48763732.7020805@sgi.com> <m1lk091soo.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1lk091soo.fsf@frodo.ebiederm.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 10, 2008 at 10:39:28AM -0700, Ulrich Drepper wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> Rik van Riel wrote:
-> > One easy way is to have a "migrate on exec" option added to the
-> > process group code.
-> 
-> That's going to be ugly because the exec functions are signal-safe.
-> I.e., they can happen at any time.  This would mean that one always has
-> to set the migration policy before every exec call and that there must
-> be a way to retrieve the currently selected policy so that it can
-> potentially be restored.  This policy must be a thread property, not a
-> process property.
-> 
+Eric W. Biederman wrote:
+> I think we can get away with just simply realloc'ing the percpu area
+> on each cpu.  No fancy table manipulations required.  Just update
+> the base pointer in %gs and in someplace global.
+>   
 
-Sorry, I did not understand exactly what's the problem with signal
-safe exec function. Before exec, we should be able to determine the
-migration policy related to process/thread (either by reading file or
-something else etc). Set the policy through cgroup file system. If exec
-fails for some reason, we just need to go back to cgroup file system to
-undo the effect of setting migration policy previously set for that thread.
+It's perfectly legitimate to take the address of a percpu variable and 
+store it somewhere.  We can't move them around.
 
-Thanks
-Vivek
+    J
