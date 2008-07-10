@@ -1,131 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757374AbYGJCcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757443AbYGJCfn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757374AbYGJCcR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 22:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751789AbYGJCcE
+	id S1757443AbYGJCfn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 22:35:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbYGJCfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 22:32:04 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53987 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753199AbYGJCcD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 22:32:03 -0400
-Date: Wed, 9 Jul 2008 19:26:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
-       Sebastian.Biemueller@amd.com, robert.richter@amd.com, joro@8bytes.org
-Subject: Re: [PATCH 25/34] AMD IOMMU: add dma_ops mapping functions for
- single mappings
-Message-Id: <20080709192606.c4f0c2cf.akpm@linux-foundation.org>
-In-Reply-To: <1214508490-29683-26-git-send-email-joerg.roedel@amd.com>
-References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com>
-	<1214508490-29683-26-git-send-email-joerg.roedel@amd.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Jul 2008 22:35:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44543 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750985AbYGJCfb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 22:35:31 -0400
+Date: Wed, 9 Jul 2008 22:34:29 -0400
+From: Bill Nottingham <notting@redhat.com>
+To: David Miller <davem@davemloft.net>
+Cc: kaber@trash.net, bridge@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [RFC PATCH 0/2] Allow full bridge configuration via sysfs
+Message-ID: <20080710023429.GB24665@nostromo.devel.redhat.com>
+Mail-Followup-To: David Miller <davem@davemloft.net>, kaber@trash.net,
+	bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+	netdev@vger.kernel.org
+References: <20080707205342.GA19710@nostromo.devel.redhat.com> <4872838B.1060603@trash.net> <20080707213420.GA20089@nostromo.devel.redhat.com> <20080707.145259.103902820.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080707.145259.103902820.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Jun 2008 21:28:01 +0200 Joerg Roedel <joerg.roedel@amd.com> wrote:
-
-> This patch adds the dma_ops specific mapping functions for single mappings.
+David Miller (davem@davemloft.net) said: 
+> > Why, if netlink is the standard (and it's been around for a long
+> > damn time), was sysfs configuration for bonding added in 2005? Why
+> > was bridge configuration added in 2005, and *extended* in 2006 and
+> > 2007? Why were the user-space tools such as brctl ported from ioctl
+> > to sysfs?
 > 
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> ---
->  arch/x86/kernel/amd_iommu.c |   59 +++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 59 insertions(+), 0 deletions(-)
+> Because often a lot of shit slips in when someone who understands
+> the ramifications is too busy or on vacation.
+
+Duly noted, will time all patch submissions to land during your
+vacations in the future.
+
+More seriously, if there's not a mechanism to prevent ABIs the
+kernel doesn't want like this being added, that's a problem.
+
+> We do want everything to be netlink based.
 > 
-> diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-> index e00a3e7..b4079f6 100644
-> --- a/arch/x86/kernel/amd_iommu.c
-> +++ b/arch/x86/kernel/amd_iommu.c
-> @@ -40,6 +40,11 @@ struct command {
->  static int dma_ops_unity_map(struct dma_ops_domain *dma_dom,
->  			     struct unity_map_entry *e);
->  
-> +static int iommu_has_npcache(struct amd_iommu *iommu)
-> +{
-> +	return iommu->cap & IOMMU_CAP_NPCACHE;
-> +}
-> +
->  static int __iommu_queue_command(struct amd_iommu *iommu, struct command *cmd)
->  {
->  	u32 tail, head;
-> @@ -641,3 +646,57 @@ static void __unmap_single(struct amd_iommu *iommu,
->  	dma_ops_free_addresses(dma_dom, dma_addr, pages);
->  }
->  
-> +static dma_addr_t map_single(struct device *dev, phys_addr_t paddr,
-> +			     size_t size, int dir)
-> +{
-> +	unsigned long flags;
-> +	struct amd_iommu *iommu;
-> +	struct protection_domain *domain;
-> +	u16 devid;
-> +	dma_addr_t addr;
-> +
-> +	get_device_resources(dev, &iommu, &domain, &devid);
-> +
-> +	if (iommu == NULL || domain == NULL)
-> +		return (dma_addr_t)paddr;
+> Why?
+> 
+> Because it means that you can run one monitoring tool to listen
+> for netlink events and report them to the user for diagnosis.
+> 
+> It means that network configuration events can be sent over
+> the wire and used remotely at some point.
+> 
+> The latter can never happen as long as we keep adding ad-hoc
+> config stuff.
 
-OK, a test case.  A reader of your code (ie: me) wants to find out what
-this code is doing.  What is the *meaning* of iommu == NULL || domain ==
-NULL here?
+Sure, but it does make them more opaque to the normal user,
+leaving them wrapped in the same old ip/brctl/ifenslave/vconfig
+tools - for better or worse, people like the discoverability
+and obviousness of sysfs.
 
-I go look at the (undocumented) get_device_resources() and I see that this:
-
-       if (_bdf >= amd_iommu_last_bdf) {
-
-happened.  I don't know what that semantically means and I gave up.
-
-I'm not saying that the code is unmaintainable, but I would assert that it
-is a heck of a lot harder to maintain than it could be, and than it should
-be.
-
-get_device_resources() has an open-coded copy of your DEVID() macro, btw.
-
-> +	spin_lock_irqsave(&domain->lock, flags);
-> +	addr = __map_single(dev, iommu, domain->priv, paddr, size, dir);
-> +	if (addr == bad_dma_address)
-> +		goto out;
-> +
-> +	if (iommu_has_npcache(iommu))
-> +		iommu_flush_pages(iommu, domain->id, addr, size);
-> +
-> +	if (iommu->need_sync)
-> +		iommu_completion_wait(iommu);
-> +
-> +out:
-> +	spin_unlock_irqrestore(&domain->lock, flags);
-> +
-> +	return addr;
-> +}
-> +
-> +static void unmap_single(struct device *dev, dma_addr_t dma_addr,
-> +			 size_t size, int dir)
-> +{
-> +	unsigned long flags;
-> +	struct amd_iommu *iommu;
-> +	struct protection_domain *domain;
-> +	u16 devid;
-> +
-> +	if (!get_device_resources(dev, &iommu, &domain, &devid))
-> +		return;
-> +
-> +	spin_lock_irqsave(&domain->lock, flags);
-> +
-> +	__unmap_single(iommu, domain->priv, dma_addr, size, dir);
-> +
-> +	iommu_flush_pages(iommu, domain->id, dma_addr, size);
-> +
-> +	if (iommu->need_sync)
-> +		iommu_completion_wait(iommu);
-> +
-> +	spin_unlock_irqrestore(&domain->lock, flags);
-> +}
-
+Bill
