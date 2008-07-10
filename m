@@ -1,117 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756662AbYGJIUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbYGJIYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756662AbYGJIUr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 04:20:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbYGJIUH
+	id S1755242AbYGJIYA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 04:24:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751370AbYGJIXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 04:20:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48903 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751502AbYGJIUD (ORCPT
+	Thu, 10 Jul 2008 04:23:45 -0400
+Received: from mail164.messagelabs.com ([216.82.253.131]:20919 "EHLO
+	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751352AbYGJIXn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 04:20:03 -0400
-Date: Thu, 10 Jul 2008 01:14:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Martin Sustrik <sustrik@fastmq.com>
-Cc: Martin Lucina <mato@kotelna.sk>, linux-kernel@vger.kernel.org,
-       linux-aio@kvack.org
-Subject: Re: Higher than expected disk write(2) latency
-Message-Id: <20080710011417.95532d51.akpm@linux-foundation.org>
-In-Reply-To: <4875C45C.2010901@fastmq.com>
-References: <20080628121131.GA14181@nodbug.moloch.sk>
-	<20080709222701.8eab4924.akpm@linux-foundation.org>
-	<4875C45C.2010901@fastmq.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Jul 2008 04:23:43 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-11.tower-164.messagelabs.com!1215678221!26821491!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.14]
+Date: Thu, 10 Jul 2008 10:23:36 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH v2] handle failure of irqchip->set_type in setup_irq
+Message-ID: <20080710082336.GA31219@digi.com>
+References: <20080625131101.GA6205@digi.com> <20080704104634.GA31634@digi.com> <20080704101717.28f6a771.akpm@linux-foundation.org> <20080704184307.GA8076@digi.com> <20080704120837.573adc9c.akpm@linux-foundation.org> <20080709131353.GA12009@digi.com> <20080709145253.f658db37.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080709145253.f658db37.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 10 Jul 2008 08:23:38.0067 (UTC) FILETIME=[40BC1A30:01C8E266]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Jul 2008 10:12:12 +0200 Martin Sustrik <sustrik@fastmq.com> wrote:
+Hello,
 
-> Hi Andrew,
+Andrew Morton wrote:
+> > > However I'm presently brewing up a plot to do this:
+> > >
+> > >         printk("function name is %Ss\n", (unsigned long *)chip->set_type);
+> > >
+> > > which I think will work.  We can also do
+> > >
+> > >         printk("IP address is %Si\n", (unsigned long *)ip_address_buffer);
+> > >
+> > > to replace NIPQUAD.  And similar printk extensions.
+> > >
+> > > Am still thinking about it though.
+> > I assume the result is 0fe1ef24f7bd0020f29ffe287dfdb9ead33ca0b2?
 > 
-> >> we're getting some rather high figures for write(2) latency when testing
-> >> synchronous writing to disk.  The test I'm running writes 2000 blocks of
-> >> contiguous data to a raw device, using O_DIRECT and various block sizes
-> >> down to a minimum of 512 bytes.  
-> >>
-> >> The disk is a Seagate ST380817AS SATA connected to an Intel ICH7
-> >> using ata_piix.  Write caching has been explicitly disabled on the
-> >> drive, and there is no other activity that should affect the test
-> >> results (all system filesystems are on a separate drive).  The system is
-> >> running Debian etch, with a 2.6.24 kernel.
-> >>
-> >> Observed results:
-> >>
-> >> size=1024, N=2000, took=4.450788 s, thput=3 mb/s seekc=1
-> >> write: avg=8.388851 max=24.998846 min=8.335624 ms
-> >> 8 ms: 1992 cases
-> >> 9 ms: 2 cases
-> >> 10 ms: 1 cases
-> >> 14 ms: 1 cases
-> >> 16 ms: 3 cases
-> >> 24 ms: 1 cases
-> > 
-> > stoopid question 1: are you writing to a regular file, or to /dev/sda?  If
-> > the former then metadata fetches will introduce glitches.
+> yup.
+When I saw this commit I wondered that it was you who told me to think
+about this but the commiter was Linus.
+ 
+> > Should I send a new version using %pF or is it easier if you fix up the
+> > patch?
 > 
-> Not a file, just a raw device.
-> 
-> > stoopid question 2: does the same effect happen with reads?
-> 
-> Dunno. The read is not critical for us. However, I would expect the same 
-> behaviour (see below).
-> 
-> We've got a satisfying explansation of the behaviour from Roger Heflin:
-> 
-> "You write sector n and n+1, it takes some amount of time for that first 
-> set of sectors to come under the head, when it does you write it and 
-> immediately return.   Immediately after that you attempt write sector 
-> n+2 and n+3 which just a bit ago passed under the head, so you have to 
-> wait an *ENTIRE* revolution for those sectors to again come under the 
-> head to be written, another ~8.3ms, and you continue to repeat this with 
-> each block being written.   If the sector was randomly placed in the 
-> rotation (ie 50% chance of the disk being off by 1/2 a rotation or 
-> less-you would have a 4.15 ms average seek time for your test)-but the 
-> case of sequential sync writes this leaves the sector about as far as 
-> possible from the head (it just passed under the head)."
-> 
-> Now, the obvious solution was to use AIO to be able to enqueue write 
-> requests even before the head reaches the end of the sector - thus there 
-> would be no need for superfluous disk revolvings.
-> 
-> We've actually measured this scenario with kernel AIO (libaio1) and this 
-> is what we'vew got (see attached graph).
-> 
-> The x axis represents individual write operations, y axis represents 
-> time. Crosses are operations enqueue times (when write requests were 
-> issues), circles are times of notifications (when the app was notified 
-> that the write request was processed).
-> 
-> What we see is that AIO performs rather bad while we are still 
-> enqueueing more writes (it misses right position on the disk and has to 
-> do superfluous disk revolvings), however, once we stop enqueueing new 
-> write request, those already in the queue are processed swiftly.
-> 
-> My guess (I am not a kernel hacker) would be that sync operations on the 
-> AIO queue are slowing down the retrieval from the queue and thus we miss 
-> the right place on the disk almost all the time. Once app stops 
-> enqueueing new write requests there's no contention on the queue and we 
-> are able to catch up with the speed of disk rotation.
-> 
-> If this is the case, the solution would be straightforward: When 
-> dequeueing from AIO queue, dequeue *all* the requests in the queue and 
-> place them into another non-synchronised queue. Getting an element from 
-> a non-sync queue is matter of few nanoseconds, thus we should be able to 
-> process it before head missis the right point on the disk. Once the 
-> non-sync queue is empty, we get *all* the requests from the AIO queue 
-> again. Etc.
-> 
-> Anyone any opinion on this matter?
+> A new version would be nice, thanks.  Or an incremental diff, but I can and
+> will turn new versions into an incremental in the twinkle of an eye, so
+> either is OK.
+voilà:
 
-Not immediately, but the fine folks on the linux-aio list might be able to
-help out.  If you have some simple testcase code which you can share then
-that would help things along.  
+--->8---
+>From c991997725fdce93352aab53ccab34f41b5afd52 Mon Sep 17 00:00:00 2001
+From: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
+Date: Thu, 10 Jul 2008 10:03:59 +0200
+Subject: [PATCH] __irq_set_trigger: use %pF to print the set_type callback's name
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+This uses the new feature of printk introduced in
+0fe1ef24f7bd0020f29ffe287dfdb9ead33ca0b2.
+
+The actual output is unchanged.
+
+Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
+---
+ kernel/irq/manage.c |   11 +++--------
+ 1 files changed, 3 insertions(+), 8 deletions(-)
+
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 178b966..e01ad8e 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -287,14 +287,9 @@ static int __irq_set_trigger(struct irq_chip *chip, unsigned int irq,
+ 
+ 	ret = chip->set_type(irq, flags & IRQF_TRIGGER_MASK);
+ 
+-	if (ret) {
+-		char buf[100];
+-
+-		snprintf(buf, sizeof(buf), KERN_ERR
+-				"setting flow type for irq %u failed (%%s)\n",
+-				irq);
+-		print_fn_descriptor_symbol(buf, chip->set_type);
+-	}
++	if (ret)
++		pr_err("setting flow type for irq %u failed (%pF)\n",
++				irq, chip->set_type);
+ 
+ 	return ret;
+ }
+-- 
+1.5.6
+
+
+-- 
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
