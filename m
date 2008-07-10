@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757972AbYGJUcQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758732AbYGJUc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757972AbYGJUcQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 16:32:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbYGJUcA
+	id S1758732AbYGJUc3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 16:32:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbYGJUcD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 16:32:00 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:40385 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751653AbYGJUcA (ORCPT
+	Thu, 10 Jul 2008 16:32:03 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:33972 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753893AbYGJUcB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 16:32:00 -0400
+	Thu, 10 Jul 2008 16:32:01 -0400
 From: ebiederm@xmission.com (Eric W. Biederman)
 To: Jeremy Fitzhardinge <jeremy@goop.org>
 Cc: Mike Travis <travis@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
@@ -27,10 +27,10 @@ References: <20080709165129.292635000@polaris-admin.engr.sgi.com>
 	<48763732.7020805@sgi.com> <m1lk091soo.fsf@frodo.ebiederm.org>
 	<48765B03.6020905@goop.org> <m1ej61y2da.fsf@frodo.ebiederm.org>
 	<48766967.7040008@goop.org>
-Date: Thu, 10 Jul 2008 13:25:33 -0700
+Date: Thu, 10 Jul 2008 13:22:52 -0700
 In-Reply-To: <48766967.7040008@goop.org> (Jeremy Fitzhardinge's message of
 	"Thu, 10 Jul 2008 12:56:23 -0700")
-Message-ID: <m13amhtrk2.fsf@frodo.ebiederm.org>
+Message-ID: <m1fxqhtroj.fsf@frodo.ebiederm.org>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -41,8 +41,8 @@ X-Spam-Combo: ;Jeremy Fitzhardinge <jeremy@goop.org>
 X-Spam-Relay-Country: 
 X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
 	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.2 BAYES_40 BODY: Bayesian spam probability is 20 to 40%
-	*      [score: 0.2065]
+	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
+	*      [score: 0.4514]
 	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
 	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
 	*  0.0 XM_SPF_Neutral SPF-Neutral
@@ -55,13 +55,18 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
+> No, that sounds like a bad idea.  For one, how would you enforce it?  How would
+> you check for it?  It's one of those things that would mostly work and then fail
+> very rarely.
+
+Well the easiest way would be to avoid the letting people take the address of
+per cpu memory, and just provide macros to read/write it.  We are 90% of the
+way there already so it isn't a big jump.
+
 > Secondly, I depend on it.  I register a percpu structure with Xen to share
 > per-vcpu specific information (interrupt mask, time info, runstate stats, etc).
 
-Note.  That I expect at least something like this is interesting in the context
-per cpu device queues.  However except possibly for Xen that implies allocating
-DMA addressable memory and going through that API, which will keep device drivers
-from using per cpu memory that way even if the allocating something for each cpu?
+Well even virtual allocation is likely to break the Xen sharing case as you
+would at least need to compute the physical address and pass it to Xen.
 
 Eric
-
