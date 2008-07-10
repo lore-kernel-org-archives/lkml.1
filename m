@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759826AbYGJRVF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759939AbYGJRVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759826AbYGJRVF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 13:21:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755704AbYGJRUl
+	id S1759939AbYGJRVX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 13:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759744AbYGJRU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 13:20:41 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:55866 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754840AbYGJRUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 13:20:40 -0400
-Message-ID: <487644E7.6080609@sgi.com>
-Date: Thu, 10 Jul 2008 10:20:39 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 10 Jul 2008 13:20:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57428 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759730AbYGJRU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 13:20:57 -0400
+Date: Thu, 10 Jul 2008 13:19:39 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Paul Menage <menage@google.com>
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Libcg Devel Mailing List <libcg-devel@lists.sourceforge.net>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Peter Zijlstra <pzijlstr@redhat.com>, kamezawa.hiroyu@jp.fujitsu.com,
+       Kazunaga Ikeno <k-ikeno@ak.jp.nec.com>,
+       Morton Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC] How to handle the rules engine for cgroups
+Message-ID: <20080710171939.GB12043@redhat.com>
+References: <20080701191126.GA17376@redhat.com> <6599ad830807100207q26cf2416qb8d38d1d715b5ba0@mail.gmail.com> <20080710140624.GB3782@redhat.com> <6599ad830807100941k330bb62cg7ae6a3d611e2dffa@mail.gmail.com>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <20080709133958.612635f0@infradead.org>	<4875231F.1020506@zytor.com> <487524A0.6020304@goop.org>	<487529AE.3060505@zytor.com> <m1r6a2r9nj.fsf@frodo.ebiederm.org>	<48753A71.2030006@zytor.com> <m18wwahauq.fsf@frodo.ebiederm.org> <48763732.7020805@sgi.com> <487637DE.1050706@zytor.com>
-In-Reply-To: <487637DE.1050706@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6599ad830807100941k330bb62cg7ae6a3d611e2dffa@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Mike Travis wrote:
->> Eric W. Biederman wrote:
->> ...
->>> Another alternative that almost fares better then a segment with
->>> a base of zero is a base of -32K or so.  Only trouble that would get us
->>> manually managing the per cpu area size again.
->>
->> One thing to remember is the eventual goal is implementing the cpu_alloc
->> functions which I think we've agreed has to be "growable".  This means
->> that
->> the addresses will need to be virtual to allow the same offsets for
->> all cpus.
->> The patchset I have uses 2Mb pages.  This "little" twist might figure
->> into the
->> implementation issues that are being discussed.
->>
+On Thu, Jul 10, 2008 at 09:41:06AM -0700, Paul Menage wrote:
+> On Thu, Jul 10, 2008 at 7:06 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> >
+> > This looks interesting. So above method should solve atleast the
+> > reliability issue of event transport to user space. Got few thougts.
+> >
+> > - Hopefully number of hiearchies will not explode as we will be
+> >  mounting one hierarchies per event type (uid change, gid change,
+> >  exec, maybe fork etc.).
 > 
-> No, since the *addresses* can be arbitrary.  The current issue is about
-> *offsets.*
-> 
->     -hpa
+> In what circumstances would you want to reclassify processes to a
+> different cgroup on a fork?
 
-Ok, thanks for clearing that up.  I just didn't want us to drop the ball
-trying to make that double play... ;-)
+I don't know. Balbir had mentioned in one of the mails in this thread
+regarding getting notification on fork.
 
-Cheers,
-Mike
+Thanks
+Vivek
