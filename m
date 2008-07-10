@@ -1,43 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755326AbYGJMNj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756079AbYGJMSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755326AbYGJMNj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 08:13:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756099AbYGJMNT
+	id S1756079AbYGJMSV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 08:18:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753595AbYGJMSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 08:13:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48188 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755958AbYGJMNS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 08:13:18 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20080710121350.52d854c7@the-village.bc.nu>
-References: <20080710121350.52d854c7@the-village.bc.nu> <E1KGa1W-0004nG-Cw@n2o.xs4all.nl> <20080709113547.19235.15424.stgit@warthog.procyon.org.uk> <4561.1215612914@redhat.com> <20080709164929.799e4e05@the-village.bc.nu> <1215630402.18506.10.camel@localhost.localdomain>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: dhowells@redhat.com, Miquel van Smoorenburg <miquels@cistron.nl>,
-       akpm@linux-foundation.org, alan@redhat.com,
-       Markus.Lidel@shadowconnect.com, vvs@sw.ru, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] Mark i2o config broken on 64-bit platforms.
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
-Date: Thu, 10 Jul 2008 13:12:13 +0100
-Message-ID: <27706.1215691933@redhat.com>
+	Thu, 10 Jul 2008 08:18:14 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:22938 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752704AbYGJMSN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 08:18:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=DkKsR09CZV1HC/YY6l7lUVqlOoDkmjYxNn404dU2OPS5v6BXSUpnfRbfHP93TaGaHy
+         USAh1Uh/Pqr7BnkTE+EknxdsnlYVeL0g/okS0umIWNsJiD1k6IwpI6Pf3jc6GVQ3Cj9+
+         lapxQlJopX4NvLy6YeUkQ0rMrCnE2xMY+WqRU=
+Message-ID: <82faac5b0807100518s7e826026g1963b320724654d8@mail.gmail.com>
+Date: Thu, 10 Jul 2008 22:18:10 +1000
+From: "Darren Jenkins" <darrenrjenkins@gmail.com>
+To: "Rustam Rakhimov" <rusyasoft@gmail.com>
+Subject: Re: [PATCH][RE-SEND] drivers/isdn/i4l/isdn_common.c fix small resource leak
+Cc: linux-kernel@vger.kernel.org, kkeil@suse.de
+In-Reply-To: <7600b1330807070409s26146222g7e981dd30cfe3c7e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1215384758.11092.23.camel@localhost.localdomain>
+	 <7600b1330807070409s26146222g7e981dd30cfe3c7e@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+G'day Rustam,
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-> -static inline int i2o_dma_alloc(struct device *dev, struct i2o_dma *addr,
-> -				size_t len, gfp_t gfp_mask)
-> ...
-> +extern int i2o_dma_alloc(struct device *dev, struct i2o_dma *addr, size_t len);
+On Mon, Jul 7, 2008 at 9:09 PM, Rustam Rakhimov <rusyasoft@gmail.com> wrote:
+> sorry I don't understand what this function is doing ?
+>
 
-But where is it now?  Have you forgotten to attach a new file?  i2o/memory.c
-perhaps?
+Looking at the code it looks like this function is writing data to the
+card in a legacy (B ?) mode.
 
-David
+
+Darren J.
