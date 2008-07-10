@@ -1,56 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757091AbYGJL1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757309AbYGJL3L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757091AbYGJL1S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 07:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbYGJL1F
+	id S1757309AbYGJL3L (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 07:29:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbYGJL25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 07:27:05 -0400
-Received: from mga10.intel.com ([192.55.52.92]:37063 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751653AbYGJL1E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 07:27:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.30,338,1212390000"; 
-   d="scan'208";a="351756380"
-Subject: Re: FW: [Fwd: [PATCH]Using Intel CRC32 instruction to implement
-	hardware accelerated CRC32c algorithm.]
-From: austin zhang <austin_zhang@linux.intel.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>, johnpol@2ka.mipt.ru
-Cc: davem@davemloft.net, chaapala@cisco.com, linux-crypto@vger.kernel.org,
-       linux-kernel@vger.kernel.org, arjan@linux.intel.com
-In-Reply-To: <20080709074153.GA11927@gondor.apana.org.au>
-References: <000901c8e0d4$6f5cf230$7fb410ac@ccr.corp.intel.com>
-	 <1215512754.2906.23.camel@localhost.localdomain>
-	 <20080709074153.GA11927@gondor.apana.org.au>
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 10 Jul 2008 07:26:09 -0400
-Message-Id: <1215689169.5257.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Thu, 10 Jul 2008 07:28:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33503 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753871AbYGJL24 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 07:28:56 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] Fix SDIO break control to now return success or an error
+To: drzeus-mmc@drzeus.cx, akpm@linux-foundation.org
+Cc: dhowells@redhat.com, alan@redhat.com, linux-kernel@vger.kernel.org
+Date: Thu, 10 Jul 2008 12:28:48 +0100
+Message-ID: <20080710112847.22339.88592.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-09 at 15:41 +0800, Herbert Xu wrote:
+Fix SDIO break control to now return success or an error.
 
-> I've just converted the crc32c module over to the new interface.
-> You can use this as an example.
-Herbert and ﻿Evgeniy,
-Sorry for late reply. Thanks a lot for your information and example, I
-will work out the intel-specific implemetation. After internal
-discussing and approval, I will post here for review again.
+This is a consequence of patch 9ea761bfef52c116fed4715d4043392c2503fe6a.
 
-> Unfortunately this leads to nasty hacks because the existing
-> interface does chaining in a way that isn't easily mapped over
-> to the crypto API.  However this is no great loss since there
-> is a grand total of two users in the tree :)
-> 
-> So my plan is to convert them and then remove the libcrc32c
-> interface completely.
-Because libcrc32c can be a module in original implemetation, so for
-those other routine which call crc32c_le directly, this may not work for
-them?  
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
+ drivers/mmc/card/sdio_uart.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
+
+
+diff --git a/drivers/mmc/card/sdio_uart.c b/drivers/mmc/card/sdio_uart.c
+index eeea84c..78ad487 100644
+--- a/drivers/mmc/card/sdio_uart.c
++++ b/drivers/mmc/card/sdio_uart.c
+@@ -885,12 +885,14 @@ static void sdio_uart_set_termios(struct tty_struct *tty, struct ktermios *old_t
+ 	sdio_uart_release_func(port);
+ }
+ 
+-static void sdio_uart_break_ctl(struct tty_struct *tty, int break_state)
++static int sdio_uart_break_ctl(struct tty_struct *tty, int break_state)
+ {
+ 	struct sdio_uart_port *port = tty->driver_data;
++	int result;
+ 
+-	if (sdio_uart_claim_func(port) != 0)
+-		return;
++	result = sdio_uart_claim_func(port);
++	if (result != 0)
++		return result;
+ 
+ 	if (break_state == -1)
+ 		port->lcr |= UART_LCR_SBC;
+@@ -899,6 +901,7 @@ static void sdio_uart_break_ctl(struct tty_struct *tty, int break_state)
+ 	sdio_out(port, UART_LCR, port->lcr);
+ 
+ 	sdio_uart_release_func(port);
++	return 0;
+ }
+ 
+ static int sdio_uart_tiocmget(struct tty_struct *tty, struct file *file)
 
