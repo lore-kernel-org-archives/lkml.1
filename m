@@ -1,80 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755415AbYGJHxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756307AbYGJHyP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755415AbYGJHxo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 03:53:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbYGJHxg
+	id S1756307AbYGJHyP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 03:54:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbYGJHx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 03:53:36 -0400
-Received: from mail37.messagelabs.com ([216.82.244.163]:10993 "EHLO
-	mail37.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751525AbYGJHxf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 03:53:35 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-5.tower-37.messagelabs.com!1215676414!4907300!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.14]
-Date: Thu, 10 Jul 2008 09:53:29 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: Re: [PATCH] Fix name of Russell King in various comments
-Message-ID: <20080710075329.GA24598@digi.com>
-References: <1214832433-11893-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <20080709235131.9b28dd12.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080709235131.9b28dd12.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 10 Jul 2008 07:53:30.0438 (UTC) FILETIME=[0B4DCE60:01C8E262]
+	Thu, 10 Jul 2008 03:53:59 -0400
+Received: from queueout01-winn.ispmail.ntl.com ([81.103.221.31]:8728 "EHLO
+	queueout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752030AbYGJHx6 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 03:53:58 -0400
+From: Ian Campbell <ijc@hellion.org.uk>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <200807100655.00857.elendil@planet.nl>
+References: <200807100655.00857.elendil@planet.nl>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 10 Jul 2008 08:47:41 +0100
+Message-Id: <1215676061.3452.29.camel@cthulhu.hellion.org.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 8BIT
+X-SA-Exim-Connect-IP: 192.168.1.1
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: [regression?] 2.6.26 floppy boot failure with kernel packed
+	using 'upx'
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 30 Jun 2008 15:27:13 +0200 Uwe Kleine-K__nig <Uwe.Kleine-Koenig@digi.com> wrote:
-> 
-> > This patch was created by
-> >
-> >       git grep -E -l 'Rus(el|s?e)l King' | xargs -r -t perl -p -i -e 's/Rus(el|s?e)l King/Russell King/g'
-> >
-> > Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-> > Signed-off-by: Uwe Kleine-K__nig <Uwe.Kleine-Koenig@digi.com>
-> > ---
-> >  drivers/usb/host/ohci-au1xxx.c  |    2 +-
-> >  drivers/usb/host/ohci-lh7a404.c |    2 +-
-> >  drivers/usb/host/ohci-s3c2410.c |    2 +-
-> >  drivers/usb/host/ohci-sa1111.c  |    2 +-
-> >  include/asm-avr32/setup.h       |    2 +-
-> >  5 files changed, 5 insertions(+), 5 deletions(-)
-> >
-> > diff --git a/drivers/usb/host/ohci-au1xxx.c b/drivers/usb/host/ohci-au1xxx.c
-> > index 1b9abdb..2ec3584 100644
-> > --- a/drivers/usb/host/ohci-au1xxx.c
-> > +++ b/drivers/usb/host/ohci-au1xxx.c
-> > @@ -8,7 +8,7 @@
-> >   * Bus Glue for AMD Alchemy Au1xxx
-> >   *
-> >   * Written by Christopher Hoover <ch@hpl.hp.com>
-> > - * Based on fragments of previous driver by Rusell King et al.
-> > + * Based on fragments of previous driver by Russell King et al.
-> 
-> Would the patch be smaller if we switched over to "Rusell" everywhere?
-I think no, the patch would be bigger.  Even if you would only change
-all occurences of "Russell King" to "Rusell King" this would affect ~500
-lines in my working copy. :-)
+On Thu, 2008-07-10 at 06:54 +0200, Frans Pop wrote:
+> The issue can also be reproduced using qemu without booting the floppy
+> itself. For the "bad" image:
+> # Boots correctly (but fails when mounting root fs):
+> $ qemu -kernel vmlinuz -hda /dev/zero
+> # Fails:
+> $ qemu -kernel vmlinuz.upx -hda /dev/zero
 
-> If so, we may as well do that.
-So no. :-)  Moreover as I'm a bit sensitive for misspellings of my name,
-too, I definitly support the patch as is.
+I can repro this.
 
-Best regards
-Uwe
+> So, the primairy question here is:
+> - is this a kernel regression because whatever changed is no longer valid
+>   conform "kernel format specs", or
+> - is this a latent issue in upx that somehow creates an invalid image, or
+> - does this change effectively create a new "type" of image that upx
+>   just doesn't yet know how to handle correctly?
 
+This is the first time I've looked at UPX but from glancing through the
+code it certainly appears to make a lot of assumptions about the
+structure of the bzImage (to the point that it looks for specific code
+sequences within the binary).
+ï»¿
+It seems that the way UPX works is that it extracts the compressed image
+from the bzImage, recompresses it and rebuilds a new bzImage replacing
+the decompression stage (and possibly some of the other 16 bit startup,
+I'm not quite sure yet) with its own. The issue is that its new
+decompressor does not understand the ELF format and expects a raw
+binary.
+
+I think that UPX probably has gone a bit beyond the documented
+interfaces, but it's not unreasonable way. In fact the changeset which
+you referenced (or one of the ones around it) actually adds further
+documentation (ï»¿in Documentation/x86/i386/boot.txt) and header fields to
+aid in doing the sort of extraction UPX wants to do and documents more
+explicitly the formats which can be expected to be found there. Also
+around the same time a checksum field was defined which is invalidated
+by the repacking.
+ï»¿
+All in all I'd say it should be treated as a new subtype/variant which
+UPX should support. I'd say adding support for bzImage v2.08 to UPX
+would be pretty easy for someone who knows the code base (I couldn't
+even find the decompressor code, but then it's pre-coffee time here..).
+
+Ian.
 -- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+Ian Campbell
+
+Fame lost its appeal for me when I went into a public restroom and an
+autograph seeker handed me a pen and paper under the stall door.
+		-- Marlo Thomas
+
