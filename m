@@ -1,24 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755646AbYGJKaw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbYGJKfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755646AbYGJKaw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 06:30:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699AbYGJKao
+	id S1756051AbYGJKfx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 06:35:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbYGJKfq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 06:30:44 -0400
-Received: from mail164.messagelabs.com ([216.82.253.131]:12512 "EHLO
-	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752419AbYGJKao (ORCPT
+	Thu, 10 Jul 2008 06:35:46 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48016 "EHLO
+	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752419AbYGJKfp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 06:30:44 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-11.tower-164.messagelabs.com!1215685843!26828935!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.13]
-Date: Thu, 10 Jul 2008 12:30:36 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Magnus Damm <magnus.damm@gmail.com>,
+	Thu, 10 Jul 2008 06:35:45 -0400
+Date: Thu, 10 Jul 2008 11:02:25 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= <Uwe.Kleine-Koenig@digi.com>
+Cc: Magnus Damm <magnus.damm@gmail.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "gregkh@suse.de" <gregkh@suse.de>,
        "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
@@ -26,48 +21,48 @@ CC: Magnus Damm <magnus.damm@gmail.com>,
        "lethal@linux-sh.org" <lethal@linux-sh.org>,
        "tglx@linutronix.de" <tglx@linutronix.de>
 Subject: Re: [PATCH] uio: uio_pdrv_genirq V2
-Message-ID: <20080710103036.GA32507@digi.com>
-References: <20080710035254.27378.18682.sendpatchset@rx1.opensource.se> <20080710065639.GA16794@digi.com> <20080710094641.0c52eaa7@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080710094641.0c52eaa7@the-village.bc.nu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 10 Jul 2008 10:30:40.0065 (UTC) FILETIME=[FFCCB310:01C8E277]
+Message-ID: <20080710110225.0dd636cf@the-village.bc.nu>
+In-Reply-To: <20080710103036.GA32507@digi.com>
+References: <20080710035254.27378.18682.sendpatchset@rx1.opensource.se>
+	<20080710065639.GA16794@digi.com>
+	<20080710094641.0c52eaa7@the-village.bc.nu>
+	<20080710103036.GA32507@digi.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> 
-> > > +       else if (!irq_on && !priv->irq_disabled)
-> > > +               disable_irq(dev_info->irq);
-> > I'm not sure if this is a problem on SMP.  Should you use
-> > disable_irq_nosync here, too?  Probably it's OK.
-> 
-> That one will also deadlock.
-Can you explain why?  I think irqcontrol is only called in task context.
-I only see one possible deadlock and that's disable_irq being called
-while the irq is IRQ_INPROGRESS on the same cpu.  I'm always willing to
-learn.
+On Thu, 10 Jul 2008 12:30:36 +0200
+Uwe Kleine-KÃ¶nig <Uwe.Kleine-Koenig@digi.com> wrote:
 
-> The easiest fix is probably to use test_and_set and friends for each I/O
-> operation.
-Actually using spinlock + irq_disabled variable is new in V2 of this
-patch.  Don't know why this changed, though.
+> Alan Cox wrote:
+> > 
+> > > > +       else if (!irq_on && !priv->irq_disabled)
+> > > > +               disable_irq(dev_info->irq);
+> > > I'm not sure if this is a problem on SMP.  Should you use
+> > > disable_irq_nosync here, too?  Probably it's OK.
+> > 
+> > That one will also deadlock.
+> Can you explain why?  I think irqcontrol is only called in task context.
+> I only see one possible deadlock and that's disable_irq being called
+> while the irq is IRQ_INPROGRESS on the same cpu.  I'm always willing to
+> learn.
 
->            You would then not need the lock to protect ->irq_disabled.
-> Propogating that throughout means your user space has to handle the case
-> of an IRQ arriving after disable returns but would be a fair bit saner I
-> think ?
-I think I didn't understand you right here, with the lock this can
-happen, too, doesn't it?
+	CPU0	 (UIO IRQ)		CPU1 (irqcontrol)
+	take IRQ
+					take spin lock
+	spin on spinlock
+					disable_irq (blocks)
 
-Best regards
-Uwe
+> I think I didn't understand you right here, with the lock this can
+> happen, too, doesn't it?
 
--- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+Actually yes - so it would simplify it without changing behaviour.
+
+Alan
