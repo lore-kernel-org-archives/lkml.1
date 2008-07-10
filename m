@@ -1,57 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755615AbYGJHLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754908AbYGJHNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755615AbYGJHLq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 03:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbYGJHLi
+	id S1754908AbYGJHNS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 03:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbYGJHNH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 03:11:38 -0400
-Received: from hobbit.corpit.ru ([81.13.94.6]:24176 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750835AbYGJHLi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 03:11:38 -0400
-Message-ID: <4875B627.9020209@msgid.tls.msk.ru>
-Date: Thu, 10 Jul 2008 11:11:35 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
-MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-CC: Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25: random stalls on certain hardware - regression?
-References: <4873E27C.6050504@msgid.tls.msk.ru> <200807091032.14786.oliver@neukum.org> <48748340.1060603@msgid.tls.msk.ru> <200807091337.32118.oliver@neukum.org>
-In-Reply-To: <200807091337.32118.oliver@neukum.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 10 Jul 2008 03:13:07 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:49326 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751354AbYGJHNG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 03:13:06 -0400
+Subject: Re: SL*B: drop kmem cache argument from constructor
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@linux-foundation.org, mpm@selenic.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, cl@linux-foundation.org
+In-Reply-To: <20080710011132.GA8327@martell.zuzino.mipt.ru>
+References: <20080710011132.GA8327@martell.zuzino.mipt.ru>
+Date: Thu, 10 Jul 2008 10:13:04 +0300
+Message-Id: <1215673985.6165.72.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver Neukum wrote:
+Hi Alexey,
 
-[hard hangs in 2.6.25+ may be related to select()]
+[Fixing up Andrew's email address.]
+
+On Thu, 2008-07-10 at 05:11 +0400, Alexey Dobriyan wrote:
+> Kmem cache passed to constructor is only needed for constructors that are
+> themselves multiplexeres. Nobody uses this "feature", nor does anybody uses
+> passed kmem cache in non-trivial way, so pass only pointer to object.
 > 
-> select() but not necessary the first call. I've got a report which seems
-> to indicate a rogue pointer while building the poll table. You might
-> strace a test programm and see whether it hangs in select() if it manages
-> to trigger the lockup.
+> Non-trivial places are:
+> 	arch/powerpc/mm/init_64.c
+> 	arch/powerpc/mm/hugetlbpage.c
+> 
+> This is flag day, yes.
 
-I wrote a small program that opens/closes tcp and unix sockets at random,
-does listen() on them and select()s them with zero timeout, with short
-sleep()s in between - so that most of the time it will be in sleep(),
-and only for a short time in select() and other syscalls.  So if strace
-will show it hanged in sleep() (most "active") we can't prove anything,
-and if it will hand in select().... well... we can't prove anything
-either, really... ;)  I think.  Today night it hanged again, now with
-2.6.26-pre9 kernel, but I wasn't able to see the strace output unfortunately.
-Will re-try again tonight.
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-The question here is if it all really worth the effort.  The thing is that
-we cant prove anything either way, because if it were hanged in sleep() it
-may be due to some OTHER program were in "bad" select() at that time, or
-if strace showed it hanged in select(), it may be that some other part of
-the system hanged at that time (but this is less likely still, as select()
-timeframe is very small compared with sleep() timeframe).
+However...
 
-Thanks!
+> --- a/arch/powerpc/mm/hugetlbpage.c
+> +++ b/arch/powerpc/mm/hugetlbpage.c
+> @@ -595,9 +595,9 @@ static int __init hugepage_setup_sz(char *str)
+>  }
+>  __setup("hugepagesz=", hugepage_setup_sz);
+>  
+> -static void zero_ctor(struct kmem_cache *cache, void *addr)
+> +static void zero_ctor(void *addr)
+>  {
+> -	memset(addr, 0, kmem_cache_size(cache));
+> +	memset(addr, 0, HUGEPTE_TABLE_SIZE);
+>  }
+>  
+>  static int __init hugetlbpage_init(void)
+> --- a/arch/powerpc/mm/init_64.c
+> +++ b/arch/powerpc/mm/init_64.c
+> @@ -136,9 +136,14 @@ static int __init setup_kcore(void)
+>  module_init(setup_kcore);
+>  #endif
+>  
+> -static void zero_ctor(struct kmem_cache *cache, void *addr)
+> +static void pgd_ctor(void *addr)
+>  {
+> -	memset(addr, 0, kmem_cache_size(cache));
+> +	memset(addr, 0, PGD_TABLE_SIZE);
+> +}
+> +
+> +static void pmd_ctor(void *addr)
+> +{
+> +	memset(addr, 0, PMD_TABLE_SIZE);
+>  }
+>  
+>  static const unsigned int pgtable_cache_size[2] = {
+> @@ -163,19 +168,8 @@ struct kmem_cache *pgtable_cache[ARRAY_SIZE(pgtable_cache_size)];
+>  
+>  void pgtable_cache_init(void)
+>  {
+> -	int i;
+> -
+> -	for (i = 0; i < ARRAY_SIZE(pgtable_cache_size); i++) {
+> -		int size = pgtable_cache_size[i];
+> -		const char *name = pgtable_cache_name[i];
+> -
+> -		pr_debug("Allocating page table cache %s (#%d) "
+> -			"for size: %08x...\n", name, i, size);
+> -		pgtable_cache[i] = kmem_cache_create(name,
+> -						     size, size,
+> -						     SLAB_PANIC,
+> -						     zero_ctor);
+> -	}
+> +	pgtable_cache[0] = kmem_cache_create(pgtable_cache_name[0], PGD_TABLE_SIZE, PGD_TABLE_SIZE, SLAB_PANIC, pgd_ctor);
+> +	pgtable_cache[1] = kmem_cache_create(pgtable_cache_name[1], PMD_TABLE_SIZE, PMD_TABLE_SIZE, SLAB_PANIC, pmd_ctor);
+>  }
 
-/mjt
+Can we please have these hunks merged first so that the final patch
+which removes the 'cache' argument from the function signature has no
+functional changes?
+
+		Pekka
+
