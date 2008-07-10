@@ -1,73 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759644AbYGJTa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760378AbYGJTcP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759644AbYGJTa6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 15:30:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753846AbYGJTau
+	id S1760378AbYGJTcP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 15:32:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753846AbYGJTcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 15:30:50 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:56304 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1752621AbYGJTat (ORCPT
+	Thu, 10 Jul 2008 15:32:00 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:36377 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751346AbYGJTb7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 15:30:49 -0400
-Date: Thu, 10 Jul 2008 15:30:19 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: Re: UML kernel failed to start betvee 2.6.8-rc8 and current git
-	sources
-Message-ID: <20080710193019.GA20112@c2.user-mode-linux.org>
-References: <200807101619.54052.toralf.foerster@gmx.de> <20080710163514.GA17561@c2.user-mode-linux.org> <200807102010.02772.toralf.foerster@gmx.de>
+	Thu, 10 Jul 2008 15:31:59 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Oren Laadan <orenl@cs.columbia.edu>,
+       Kirill Korotaev <dev@parallels.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Nadia.Derbey@bull.net, Andrew Morton <akpm@linux-foundation.org>,
+       nick@nick-andrew.net, Alexey Dobriyan <adobriyan@gmail.com>
+References: <20080418054459.891481000@bull.net>
+	<20080422193612.GA15835@martell.zuzino.mipt.ru>
+	<1208890580.17117.14.camel@nimitz.home.sr71.net>
+	<20080422210130.GA15937@martell.zuzino.mipt.ru>
+	<1208904967.17117.51.camel@nimitz.home.sr71.net>
+	<480ED9D5.1010906@parallels.com> <480FE037.2010302@cs.columbia.edu>
+	<m1y74a7b4w.fsf@frodo.ebiederm.org> <1215709949.9398.15.camel@nimitz>
+	<20080710173246.GA1857@us.ibm.com> <m163rd1sd5.fsf@frodo.ebiederm.org>
+	<1215716794.9398.41.camel@nimitz>
+Date: Thu, 10 Jul 2008 12:21:43 -0700
+In-Reply-To: <1215716794.9398.41.camel@nimitz> (Dave Hansen's message of "Thu,
+	10 Jul 2008 12:06:34 -0700")
+Message-ID: <m14p6xy27s.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200807102010.02772.toralf.foerster@gmx.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Dave Hansen <dave@linux.vnet.ibm.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.2 BAYES_40 BODY: Bayesian spam probability is 20 to 40%
+	*      [score: 0.2306]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: Checkpoint/restart (was Re: [PATCH 0/4] - v2 - Object creation with a specified id)
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 10, 2008 at 08:09:59PM +0200, Toralf Förster wrote:
-> At Thursday 10 July 2008 18:35:15 Jeff Dike wrote :
-> 
-> > What's the host?
-> 
-> tfoerste@n22 ~ $ uname -a
-> Linux n22 2.6.25-gentoo-r6 #4 Thu Jul 10 19:49:36 CEST 2008 i686 Intel(R) Pentium(R) M processor 1700MHz GenuineIntel GNU/Linux
-> 
-> BTW,  this works fine and shows only the config :
-> n22 ~ # linux-v2.6.26-rc8-227 --showconfig 
-> 
-> whereas this failed:
-> 
-> n22 ~ # linux-v2.6.26-rc9-56 --showconfig
-> Locating the bottom of the address space ... 0x0
-> Locating the top of the address space ... 0xc0000000
+Dave Hansen <dave@linux.vnet.ibm.com> writes:
 
-OK, I believe you're seeing the same bug as Uli saw here:
+> On Thu, 2008-07-10 at 11:55 -0700, Eric W. Biederman wrote:
+>> 
+>> > If we do checkpoint-as-a-coredump, then we need userspace to coordinate
+>> > a kernel-generated coredump with a user-generated (?) swapfile snapshot.
+>> > But I guess we figure that out later.
+>> 
+>> Well it is a matter of which VMAs you dump.  For things that are file backed
+>> you need to dump them.
 
-    http://marc.info/?l=linux-kernel&m=121011518003727&w=2
+For things that are file backed you DO NOT need to dump them.  (sorry typo).
 
-More precise symptoms are here:
+> Are we talking about the VMA itself, or the memory backing the VMA?
 
-     http://marc.info/?l=linux-kernel&m=121011722806093&w=2
+The memory backing the VMA.  We need to store the page protections
+that the memory was mapped with as well now that you point it out.  A
+VMA is not user space visible, which is why we can arbitrarily split
+and merge VMAs.
 
-I never did figure that one out.  I had the same kernel version, same
-toolchain, same everything as far as I could see, and I couldn't
-reproduce it, except with a binary that he gave me.
+Eric
 
-You're seeing it on i386, whereas he saw it on x86_64.
 
-The underlying problem is that somehow the UML initcalls aren't being
-run, which is why you're seeing all zeros in the register dump.
-
-If you bisect this, I bet you end up at the no-unit-at-a-time patch
-that he ended up at.  And I have no idea what that has to do with
-anything.
-
-				Jeff
-
--- 
-Work email - jdike at linux dot intel dot com
