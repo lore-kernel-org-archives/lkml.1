@@ -1,123 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760247AbYGJSOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761296AbYGJSPB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760247AbYGJSOr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 14:14:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757999AbYGJSOf
+	id S1761296AbYGJSPB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 14:15:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760263AbYGJSOw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 14:14:35 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:39926 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756361AbYGJSOe (ORCPT
+	Thu, 10 Jul 2008 14:14:52 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:35007 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760219AbYGJSOw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 14:14:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent;
-        b=TADuBq9ICv1ulkCntUuc0G08jLnpSfLDZjKu7KoT5CiEL3l2Co26nYj124Zd26qp1x
-         00Rr1C2EAsT/7AABKGiJ0IUHdVuoqLBrYebkug5D+UhPL6MFonuYcpJO8HyZP7wBfL2u
-         VTYhJUcysjZPbpVFi0A0UsENiTtXrmj7lN99s=
-Date: Thu, 10 Jul 2008 20:14:16 +0200
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-next@vger.kernel.org, netdev@vger.kernel.org,
-       David Miller <davem@davemloft.net>
-Subject: [PATCH net-next] net: fix lockdep warning in qdisc_lock_tree()
-Message-ID: <20080710181416.GA8265@ami.dom.local>
+	Thu, 10 Jul 2008 14:14:52 -0400
+Message-ID: <48765006.4020505@zytor.com>
+Date: Thu, 10 Jul 2008 14:08:06 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a4423d670807100204kf269814ncd649bf02312311b@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <20080709133958.612635f0@infradead.org>	<4875231F.1020506@zytor.com> <487524A0.6020304@goop.org>	<487529AE.3060505@zytor.com> <m1r6a2r9nj.fsf@frodo.ebiederm.org>	<48753A71.2030006@zytor.com> <m18wwahauq.fsf@frodo.ebiederm.org>
+In-Reply-To: <m18wwahauq.fsf@frodo.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander Beregalov wrote, On 07/10/2008 11:04 AM:
-...
-> [    0.426638] =============================================
-> [    0.426638] [ INFO: possible recursive locking detected ]
-> [    0.426638] 2.6.26-rc9-next-20080710 #5
-> [    0.426638] ---------------------------------------------
-> [    0.426638] swapper/1 is trying to acquire lock:
-> [    0.426638]  (&queue->lock){-...}, at: [<ffffffff8041c3d0>]
-> qdisc_lock_tree+0x27/0x2c
-> [    0.426638]
-> [    0.426638] but task is already holding lock:
-> [    0.426638]  (&queue->lock){-...}, at: [<ffffffff8041c3c8>]
-> qdisc_lock_tree+0x1f/0x2c
-> [    0.426638]
-> [    0.426638] other info that might help us debug this:
-> [    0.426638] 3 locks held by swapper/1:
-> [    0.426638]  #0:  (net_mutex){--..}, at: [<ffffffff8040b827>]
-> register_pernet_device+0x1a/0x5a
-> [    0.426638]  #1:  (rtnl_mutex){--..}, at: [<ffffffff80417179>]
-> rtnl_lock+0x12/0x14
-> [    0.426638]  #2:  (&queue->lock){-...}, at: [<ffffffff8041c3c8>]
-> qdisc_lock_tree+0x1f/0x2c
-> [    0.426638]
-> [    0.426638] stack backtrace:
-> [    0.426638] Pid: 1, comm: swapper Not tainted 2.6.26-rc9-next-20080710 #5
-> [    0.426638]
-> [    0.426638] Call Trace:
-> [    0.426638]  [<ffffffff8024f95a>] __lock_acquire+0xba9/0xf12
-> [    0.426638]  [<ffffffff8041c3d0>] ? qdisc_lock_tree+0x27/0x2c
-> [    0.426638]  [<ffffffff8024fd48>] lock_acquire+0x85/0xa9
-> [    0.426638]  [<ffffffff8041c3d0>] ? qdisc_lock_tree+0x27/0x2c
-> [    0.426638]  [<ffffffff80476794>] _spin_lock+0x25/0x31
-> [    0.426638]  [<ffffffff8041c3d0>] qdisc_lock_tree+0x27/0x2c
-> [    0.426638]  [<ffffffff8041c412>] dev_init_scheduler+0x11/0x94
-> [    0.426638]  [<ffffffff8040f3be>] register_netdevice+0x296/0x3f0
-> [    0.426638]  [<ffffffff8040f552>] register_netdev+0x3a/0x48
-> [    0.426638]  [<ffffffff805fc274>] loopback_net_init+0x40/0x7a
-> [    0.426638]  [<ffffffff805fc222>] ? loopback_init+0x0/0x12
-...
+Eric W. Biederman wrote:
+> 
+> Another alternative that almost fares better then a segment with
+> a base of zero is a base of -32K or so.  Only trouble that would get us
+> manually managing the per cpu area size again.
+> 
 
-lockdep needs separate lock init to distinguish rx and tx queue locks.
-(There is no real lockup danger.)
+Yes, an extra link pass would be better than that.  I have tried, and 
+none of the clever things I tried actually works, since GNU ld has 
+pretty much no way to get it to reveal its information ahead of time.
 
-Reported-by: Alexander Beregalov <a.beregalov@gmail.com>
-Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+However, I want to explore the details of the supposed toolchain issue; 
+it might be just a simple tweak to the way things are done now to fix it.
 
----
+Clearly, given the stack protector ABI, we want %gs:40 to be usable and 
+free.
 
- net/core/dev.c |   20 ++++++++++++++------
- 1 files changed, 14 insertions(+), 6 deletions(-)
-
-diff --git a/net/core/dev.c b/net/core/dev.c
-index a29a359..157b683 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -4090,17 +4090,25 @@ static struct net_device_stats *internal_stats(struct net_device *dev)
- 	return &dev->stats;
- }
- 
--static void netdev_init_one_queue(struct net_device *dev,
--				  struct netdev_queue *queue)
-+static void netdev_init_rx_queue(struct net_device *dev,
-+				  struct netdev_queue *rx_queue)
- {
--	spin_lock_init(&queue->lock);
--	queue->dev = dev;
-+	spin_lock_init(&rx_queue->lock);
-+	rx_queue->dev = dev;
-+}
-+
-+/* lockdep needs separate init to distinguish these locks */
-+static void netdev_init_tx_queue(struct net_device *dev,
-+				  struct netdev_queue *tx_queue)
-+{
-+	spin_lock_init(&tx_queue->lock);
-+	tx_queue->dev = dev;
- }
- 
- static void netdev_init_queues(struct net_device *dev)
- {
--	netdev_init_one_queue(dev, &dev->rx_queue);
--	netdev_init_one_queue(dev, &dev->tx_queue);
-+	netdev_init_rx_queue(dev, &dev->rx_queue);
-+	netdev_init_tx_queue(dev, &dev->tx_queue);
- }
- 
- /**
+	-hpa
