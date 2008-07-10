@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760802AbYGJRwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760860AbYGJRxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760802AbYGJRwW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 13:52:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758731AbYGJRwM
+	id S1760860AbYGJRxX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 13:53:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757827AbYGJRxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 13:52:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35449 "EHLO mx1.redhat.com"
+	Thu, 10 Jul 2008 13:53:14 -0400
+Received: from gw.goop.org ([64.81.55.164]:58053 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758422AbYGJRwL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 13:52:11 -0400
-Message-ID: <48764950.3050405@redhat.com>
-Date: Thu, 10 Jul 2008 10:39:28 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
+	id S1754181AbYGJRxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 13:53:13 -0400
+Message-ID: <48764C7C.5010309@goop.org>
+Date: Thu, 10 Jul 2008 10:53:00 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Vivek Goyal <vgoyal@redhat.com>, Paul Menage <menage@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Libcg Devel Mailing List <libcg-devel@lists.sourceforge.net>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Peter Zijlstra <pzijlstr@redhat.com>,
-       Kazunaga Ikeno <k-ikeno@ak.jp.nec.com>,
-       Morton Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Graf <tgraf@redhat.com>
-Subject: Re: [RFC] How to handle the rules engine for cgroups
-References: <20080701191126.GA17376@redhat.com>	<20080703101957.b3856904.kamezawa.hiroyu@jp.fujitsu.com>	<20080703155446.GB9275@redhat.com>	<6599ad830807100223m2453963cwcfbe6eb1ad54d517@mail.gmail.com>	<20080710104852.797fe79c@cuia.bos.redhat.com>	<20080710154035.GA12043@redhat.com>	<48763129.9060903@redhat.com> <20080710132546.264a89cd@cuia.bos.redhat.com>
-In-Reply-To: <20080710132546.264a89cd@cuia.bos.redhat.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <48751CF9.4020901@linux-foundation.org>	<4875209D.8010603@goop.org> <48752CCD.30507@linux-foundation.org>	<m1wsjupuiz.fsf@frodo.ebiederm.org> <48753C99.5050408@goop.org> <m1ej62iq9z.fsf@frodo.ebiederm.org> <487555A8.2050007@zytor.com> <487556A5.5090907@goop.org> <4876194E.4080205@linux-foundation.org> <48761C06.3020003@zytor.com> <48762A3B.5050104@linux-foundation.org> <48762DD2.5090802@zytor.com> <487637A1.4080403@linux-foundation.org> <487639ED.7000502@zytor.com> <48763CA6.9030802@linux-foundation.org> <487647EF.5010609@goop.org> <48764A01.1070402@linux-foundation.org>
+In-Reply-To: <48764A01.1070402@linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Christoph Lameter wrote:
+>> The nice thing about the non-zero-based scheme i386 uses is that setting
+>> gs-base to zero means that percpu variables accesses get directly to the
+>> prototype percpu data area, which simplifies boot time setup (which is
+>> doubly awkward on 32-bit because you need to generate a GDT entry rather
+>> than just load an MSR as you do in 64-bit).
+>>     
+>
+> Great but it causes trouble in other ways as discussed.
 
-Rik van Riel wrote:
-> One easy way is to have a "migrate on exec" option added to the
-> process group code.
+What other trouble?  It works fine.
 
-That's going to be ugly because the exec functions are signal-safe.
-I.e., they can happen at any time.  This would mean that one always has
-to set the migration policy before every exec call and that there must
-be a way to retrieve the currently selected policy so that it can
-potentially be restored.  This policy must be a thread property, not a
-process property.
+>  Its best to consistently access
+> per cpu variables using the segment registers.
+>   
 
-Sticky information like this is IMO always hairy at best.  We had the
-same discussion at the time of the sys_indirect discussion.  This new
-syscall proposal was the result of sticky information not being suitable
-and it could very well be used for the exec syscalls, too.
 
-Again, this is all about failing exec calls of which there can be
-arbitrarily many.
+It is, but initially the segment base is 0, so just using a percpu 
+variable does something sensible from the start with no special setup.
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkh2SVAACgkQ2ijCOnn/RHSYsgCfeH3tTQLSILTksRTfWPhffY0x
-okkAn0fQDRDBkqSboqzfrqlj1zpvA3Hm
-=bi0P
------END PGP SIGNATURE-----
+    J
