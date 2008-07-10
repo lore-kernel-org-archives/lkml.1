@@ -1,79 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760610AbYGJRcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760785AbYGJRdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760610AbYGJRcp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 13:32:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757827AbYGJRcg
+	id S1760785AbYGJRdT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 13:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758745AbYGJRdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 13:32:36 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:25206 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756293AbYGJRcf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 13:32:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=nRhulIynf94NCri7adWmsXsawEMArRFiTFbU/mJsUHbcRmI6ios5sWQK/s/2iPPzmJ
-         6NpAtZZUQntSOOzVYZ534o8ELGXQF0EDbiwZMdxWmnmlydVwldquz2lD07eS4j+IHA22
-         6ZHDUoYl6Ydd4KSV3nXLfuPFeszT9p/SyW9cQ=
-Message-ID: <86802c440807101032h6fc6cf16l829e4932477f43b3@mail.gmail.com>
-Date: Thu, 10 Jul 2008 10:32:35 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Joe Jin" <joe.jin@oracle.com>
-Subject: Re: [PATCH] x86_64: reserve crashkernel bootmem before reserve dma32 bootmem
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Andi Kleen" <andi@firstfloor.org>,
-       greg.marsden@oracle.com, tao.ma@oracle.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080710123446.GA1595@joejin-pc.cn.oracle.com>
+	Thu, 10 Jul 2008 13:33:05 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:59577 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759589AbYGJRdD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 13:33:03 -0400
+Date: Thu, 10 Jul 2008 12:32:46 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Oren Laadan <orenl@cs.columbia.edu>,
+       Kirill Korotaev <dev@parallels.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Nadia.Derbey@bull.net, Andrew Morton <akpm@linux-foundation.org>,
+       nick@nick-andrew.net, Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: Checkpoint/restart (was Re: [PATCH 0/4] - v2 - Object creation
+	with a specified id)
+Message-ID: <20080710173246.GA1857@us.ibm.com>
+References: <20080418054459.891481000@bull.net> <20080422193612.GA15835@martell.zuzino.mipt.ru> <1208890580.17117.14.camel@nimitz.home.sr71.net> <20080422210130.GA15937@martell.zuzino.mipt.ru> <1208904967.17117.51.camel@nimitz.home.sr71.net> <480ED9D5.1010906@parallels.com> <480FE037.2010302@cs.columbia.edu> <m1y74a7b4w.fsf@frodo.ebiederm.org> <1215709949.9398.15.camel@nimitz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080710123446.GA1595@joejin-pc.cn.oracle.com>
+In-Reply-To: <1215709949.9398.15.camel@nimitz>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 10, 2008 at 5:34 AM, Joe Jin <joe.jin@oracle.com> wrote:
-> Before reserve_crashkernel, dma32_reserve_bootmem would reserve 128M memory.
-> this cuased crashkernel end address must less than 64M or start address must
-> more than 192M except crashkernel memory reserved before dma32 memory reserved.
->
-> This patch against 2.6.26-rc9
->
-> Signed-off-by: Joe Jin <joe.jin@oracle.com>
-> ---
->  setup_64.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> --- linux-2.6.26-rc9/arch/x86/kernel/setup_64.c.orig    2008-07-10 16:34:12.000000000 +0800
-> +++ linux-2.6.26-rc9/arch/x86/kernel/setup_64.c 2008-07-10 16:35:00.000000000 +0800
-> @@ -444,8 +444,6 @@ void __init setup_arch(char **cmdline_p)
->        contig_initmem_init(0, end_pfn);
->  #endif
->
-> -       dma32_reserve_bootmem();
-> -
->  #ifdef CONFIG_ACPI_SLEEP
->        /*
->         * Reserve low memory region for sleep support.
-> @@ -486,6 +484,8 @@ void __init setup_arch(char **cmdline_p)
->  #endif
->        reserve_crashkernel();
->
-> +       dma32_reserve_bootmem();
-> +
->        reserve_ibft_region();
->
->        paging_init();
+Quoting Dave Hansen (dave@linux.vnet.ibm.com):
+> On Wed, 2008-07-09 at 18:58 -0700, Eric W. Biederman wrote:
+> > In the worst case today we can restore a checkpoint by replaying all of
+> > the user space actions that took us to get there.  That is a tedious
+> > and slow approach.
+> 
+> Yes, tedious and slow, *and* minimally invasive in the kernel.  Once we
+> have a tedious and slow process, we'll have some really good points when
+> we try to push the next set of patches to make it less slow and tedious.
+> We'll be able to describe an _actual_ set of problems to our fellow
+> kernel hackers.
+> 
+> So, the checkpoint-as-a-corefile idea sounds good to me, but it
+> definitely leaves a lot of questions about exactly how we'll need to do
+> the restore.
 
-Acked-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Talking with Dave over irc, I kind of liked the idea of creating a new
+fs/binfmt_cr.c that executes a checkpoint-as-a-coredump file.
 
-BTW: current tip/master already make dma32_reserve_bootmem start from 512M
-http://people.redhat.com/mingo/tip.git/readme.txt
+One thing I do not like about the checkpoint-as-coredump is that it begs
+us to dump all memory out into the file.  Our plan/hope was to save
+ourselves from writing out most memory by:
 
-YH
+	1. associating a separate swapfile with each container
+	2. doing a swapfile snapshot at each checkpoint
+	3. dumping the pte entries (/proc/self/)
+
+If we do checkpoint-as-a-coredump, then we need userspace to coordinate
+a kernel-generated coredump with a user-generated (?) swapfile snapshot.
+But I guess we figure that out later.
+
+-serge
