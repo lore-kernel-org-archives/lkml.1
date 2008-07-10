@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbYGJFQ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754780AbYGJFdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754694AbYGJFQ0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 01:16:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750948AbYGJFQT
+	id S1754780AbYGJFdf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 01:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbYGJFdZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 01:16:19 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:33744 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750920AbYGJFQS (ORCPT
+	Thu, 10 Jul 2008 01:33:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37753 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751188AbYGJFdY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 01:16:18 -0400
-Date: Thu, 10 Jul 2008 07:16:14 +0200
-From: Tino Keitel <tino.keitel@gmx.de>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Felipe Balbi <felipebalbi@users.sourceforge.net>,
-       Theodore Tso <tytso@mit.edu>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: Re: Battery life difference
-Message-ID: <20080710051614.GA12477@dose.home.local>
-Mail-Followup-To: Pavel Machek <pavel@suse.cz>,
-	Felipe Balbi <felipebalbi@users.sourceforge.net>,
-	Theodore Tso <tytso@mit.edu>,
-	Kernel development list <linux-kernel@vger.kernel.org>,
-	linux-acpi@vger.kernel.org
-References: <31e679430807050617u3fc706fasee9bb43a151c501f@mail.gmail.com> <20080705133601.GA20240@mit.edu> <31e679430807050700q765dc45ft198fcf1c0b91a9cc@mail.gmail.com> <20080709202920.GE11006@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080709202920.GE11006@ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 10 Jul 2008 01:33:24 -0400
+Date: Wed, 9 Jul 2008 22:27:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Martin Lucina <mato@kotelna.sk>
+Cc: linux-kernel@vger.kernel.org, Martin Sustrik <sustrik@fastmq.com>
+Subject: Re: Higher than expected disk write(2) latency
+Message-Id: <20080709222701.8eab4924.akpm@linux-foundation.org>
+In-Reply-To: <20080628121131.GA14181@nodbug.moloch.sk>
+References: <20080628121131.GA14181@nodbug.moloch.sk>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 09, 2008 at 22:29:20 +0200, Pavel Machek wrote:
+On Sat, 28 Jun 2008 14:11:32 +0200 Martin Lucina <mato@kotelna.sk> wrote:
 
-[...]
-
-> > Anyways, it's bad that we have to manually unload several modules,
-> > specially usb. I'm sure windows reaches 9 watts consumption without
-> > breaking functionality. And that's the big thing. I think that's something
-> > we should be aiming. Dontcha think?
+> we're getting some rather high figures for write(2) latency when testing
+> synchronous writing to disk.  The test I'm running writes 2000 blocks of
+> contiguous data to a raw device, using O_DIRECT and various block sizes
+> down to a minimum of 512 bytes.  
 > 
-> Can you test Ted's suggestion to see if we have nailed the problem,
-> first?
+> The disk is a Seagate ST380817AS SATA connected to an Intel ICH7
+> using ata_piix.  Write caching has been explicitly disabled on the
+> drive, and there is no other activity that should affect the test
+> results (all system filesystems are on a separate drive).  The system is
+> running Debian etch, with a 2.6.24 kernel.
 > 
-> 9W vs. 15W does not explain 1h30 vs 3h30 difference, afaict.
+> Observed results:
 > 
-> (Of course, we are working on usb autosuspend. Try 2.6.26).
+> size=1024, N=2000, took=4.450788 s, thput=3 mb/s seekc=1
+> write: avg=8.388851 max=24.998846 min=8.335624 ms
+> 8 ms: 1992 cases
+> 9 ms: 2 cases
+> 10 ms: 1 cases
+> 14 ms: 1 cases
+> 16 ms: 3 cases
+> 24 ms: 1 cases
 
-FWIW, with dimmed display, hard disk spun down, USB autosuspend enabled
-for all devices (I have to enable it from userspace for the fingerprint
-reader), and some other tricks [*], I get slightly below 9W on my X61s
-with uhci_hcd and ehci_hcd loaded and active WLAN, using kernel
-2.6.25.9.
+stoopid question 1: are you writing to a regular file, or to /dev/sda?  If
+the former then metadata fetches will introduce glitches.
 
-I also tried 2.6.26-rc to see if PCIE ASPM can save some power, but I
-didn't see a difference after I set it to "powersave". It looks like
-the BIOS already set sane values.
-
-Regards,
-Tino
-
-[*]: SATA link power management, HDA sound power saving, wireless LAN
-power saving, Ethernet speed set to 100 MBit/s, some other modules like
-yenta_socket unloaded
+stoopid question 2: does the same effect happen with reads?
