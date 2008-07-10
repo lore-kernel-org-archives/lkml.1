@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759572AbYGJTSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760641AbYGJTSa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759572AbYGJTSR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 15:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbYGJTSE
+	id S1760641AbYGJTSa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 15:18:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbYGJTSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 15:18:04 -0400
-Received: from triton.rz.uni-saarland.de ([134.96.7.25]:8677 "EHLO
+	Thu, 10 Jul 2008 15:18:06 -0400
+Received: from triton.rz.uni-saarland.de ([134.96.7.25]:8681 "EHLO
 	triton.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753030AbYGJTSD (ORCPT
+	with ESMTP id S1753035AbYGJTSE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 15:18:03 -0400
-Date: Thu, 10 Jul 2008 21:16:39 +0200
-From: Alexander van Heukelum <heukelum@mailshack.com>
+	Thu, 10 Jul 2008 15:18:04 -0400
+Date: Thu, 10 Jul 2008 21:14:52 +0200
+From: Alexander van Heukelum <heukelum@sleipnir.lusi.uni-sb.de>
 To: Ingo Molnar <mingo@elte.hu>, Cyrill Gorcunov <gorcunov@gmail.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] x86: traps_xx: modify x86_64 to use _log_lvl variants
-Message-ID: <20080710191638.GB19475@mailshack.com>
+Subject: [PATCH 1/2] x86: traps_xx: refactor die() like in x86_64
+Message-ID: <20080710191452.GA19475@mailshack.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -27,91 +27,166 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-i386 has show_trace_log_lvl and show_stack_log_lvl, allowing
-traces to be emitted with log-level annotations. This patch
-introduces them to x86_64, but log_lvl is only ever set to
-an empty string. Output of traces is unchanged.
+Make the diff between the traps_32.c and traps_64.c a bit smaller.
 
-i386-chunk is whitespace-only.
+Change traps_32.c to look more like traps_64.c:
+ - move lock information to file scope
+ - split out oops_begin() and oops_end() from die()
+ - increment nest counter in oops_begin
+
+Only whitespace change in traps_64.c
 
 Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
 ---
- arch/x86/kernel/traps_32.c |    2 +-
- arch/x86/kernel/traps_64.c |   24 ++++++++++++++++--------
- 2 files changed, 17 insertions(+), 9 deletions(-)
+ arch/x86/kernel/traps_32.c |   95 +++++++++++++++++++++++--------------------
+ arch/x86/kernel/traps_64.c |    2 +-
+ 2 files changed, 52 insertions(+), 45 deletions(-)
+
+Still, no functional changes intended.
+
+Cyrill Acked "x86: traps_xx: modify default_do_nmi" of my first
+series. I'm not quite sure if he intended that for the whole set.
+I welcome him to look at these too patches, though ;).
+
+Created on top of tip/core
+
+Greetings,
+    Alexander
 
 diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
-index 51cccde..c971dce 100644
+index 8a76897..51cccde 100644
 --- a/arch/x86/kernel/traps_32.c
 +++ b/arch/x86/kernel/traps_32.c
-@@ -256,7 +256,7 @@ static const struct stacktrace_ops print_trace_ops = {
- 
- static void
- show_trace_log_lvl(struct task_struct *task, struct pt_regs *regs,
--		   unsigned long *stack, unsigned long bp, char *log_lvl)
-+		unsigned long *stack, unsigned long bp, char *log_lvl)
- {
- 	dump_trace(task, regs, stack, bp, &print_trace_ops, log_lvl);
- 	printk("%s =======================\n", log_lvl);
-diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
-index 58b1619..a998cef 100644
---- a/arch/x86/kernel/traps_64.c
-+++ b/arch/x86/kernel/traps_64.c
-@@ -378,17 +378,24 @@ static const struct stacktrace_ops print_trace_ops = {
- 	.address = print_trace_address,
- };
- 
--void show_trace(struct task_struct *task, struct pt_regs *regs,
--		unsigned long *stack, unsigned long bp)
-+static void
-+show_trace_log_lvl(struct task_struct *task, struct pt_regs *regs,
-+		unsigned long *stack, unsigned long bp, char *log_lvl)
- {
- 	printk("\nCall Trace:\n");
--	dump_trace(task, regs, stack, bp, &print_trace_ops, NULL);
-+	dump_trace(task, regs, stack, bp, &print_trace_ops, log_lvl);
- 	printk("\n");
+@@ -383,6 +383,54 @@ int is_valid_bugaddr(unsigned long ip)
+ 	return ud2 == 0x0b0f;
  }
  
-+void show_trace(struct task_struct *task, struct pt_regs *regs,
-+		unsigned long *stack, unsigned long bp)
++static raw_spinlock_t die_lock = __RAW_SPIN_LOCK_UNLOCKED;
++static int die_owner = -1;
++static unsigned int die_nest_count;
++
++unsigned __kprobes long oops_begin(void)
 +{
-+	show_trace_log_lvl(task, regs, stack, bp, "");
++	unsigned long flags;
++
++	oops_enter();
++
++	if (die_owner != raw_smp_processor_id()) {
++		console_verbose();
++		raw_local_irq_save(flags);
++		__raw_spin_lock(&die_lock);
++		die_owner = smp_processor_id();
++		die_nest_count = 0;
++		bust_spinlocks(1);
++	} else {
++		raw_local_irq_save(flags);
++	}
++	die_nest_count++;
++	return flags;
 +}
 +
- static void
--_show_stack(struct task_struct *task, struct pt_regs *regs,
--		unsigned long *sp, unsigned long bp)
-+show_stack_log_lvl(struct task_struct *task, struct pt_regs *regs,
-+		unsigned long *sp, unsigned long bp, char *log_lvl)
++void __kprobes oops_end(unsigned long flags, struct pt_regs *regs, int signr)
++{
++	bust_spinlocks(0);
++	die_owner = -1;
++	add_taint(TAINT_DIE);
++	__raw_spin_unlock(&die_lock);
++	raw_local_irq_restore(flags);
++
++	if (!regs)
++		return;
++
++	if (kexec_should_crash(current))
++		crash_kexec(regs);
++
++	if (in_interrupt())
++		panic("Fatal exception in interrupt");
++
++	if (panic_on_oops)
++		panic("Fatal exception");
++
++	oops_exit();
++	do_exit(signr);
++}
++
+ int __kprobes __die(const char *str, struct pt_regs *regs, long err)
  {
- 	unsigned long *stack;
- 	int i;
-@@ -422,12 +429,12 @@ _show_stack(struct task_struct *task, struct pt_regs *regs,
- 		printk(" %016lx", *stack++);
- 		touch_nmi_watchdog();
+ 	unsigned short ss;
+@@ -423,31 +471,9 @@ int __kprobes __die(const char *str, struct pt_regs *regs, long err)
+  */
+ void die(const char *str, struct pt_regs *regs, long err)
+ {
+-	static struct {
+-		raw_spinlock_t lock;
+-		u32 lock_owner;
+-		int lock_owner_depth;
+-	} die = {
+-		.lock =			__RAW_SPIN_LOCK_UNLOCKED,
+-		.lock_owner =		-1,
+-		.lock_owner_depth =	0
+-	};
+-	unsigned long flags;
+-
+-	oops_enter();
+-
+-	if (die.lock_owner != raw_smp_processor_id()) {
+-		console_verbose();
+-		raw_local_irq_save(flags);
+-		__raw_spin_lock(&die.lock);
+-		die.lock_owner = smp_processor_id();
+-		die.lock_owner_depth = 0;
+-		bust_spinlocks(1);
+-	} else {
+-		raw_local_irq_save(flags);
+-	}
++	unsigned long flags = oops_begin();
+ 
+-	if (++die.lock_owner_depth < 3) {
++	if (die_nest_count < 3) {
+ 		report_bug(regs->ip, regs);
+ 
+ 		if (__die(str, regs, err))
+@@ -456,26 +482,7 @@ void die(const char *str, struct pt_regs *regs, long err)
+ 		printk(KERN_EMERG "Recursive die() failure, output suppressed\n");
  	}
--	show_trace(task, regs, sp, bp);
-+	show_trace_log_lvl(task, regs, sp, bp, log_lvl);
+ 
+-	bust_spinlocks(0);
+-	die.lock_owner = -1;
+-	add_taint(TAINT_DIE);
+-	__raw_spin_unlock(&die.lock);
+-	raw_local_irq_restore(flags);
+-
+-	if (!regs)
+-		return;
+-
+-	if (kexec_should_crash(current))
+-		crash_kexec(regs);
+-
+-	if (in_interrupt())
+-		panic("Fatal exception in interrupt");
+-
+-	if (panic_on_oops)
+-		panic("Fatal exception");
+-
+-	oops_exit();
+-	do_exit(SIGSEGV);
++	oops_end(flags, regs, SIGSEGV);
  }
  
- void show_stack(struct task_struct *task, unsigned long *sp)
- {
--	_show_stack(task, NULL, sp, 0);
-+	show_stack_log_lvl(task, NULL, sp, 0, "");
+ static inline void
+diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
+index 74e9929..58b1619 100644
+--- a/arch/x86/kernel/traps_64.c
++++ b/arch/x86/kernel/traps_64.c
+@@ -541,7 +541,7 @@ unsigned __kprobes long oops_begin(void)
  }
  
- /*
-@@ -477,7 +484,8 @@ void show_registers(struct pt_regs *regs)
- 		u8 *ip;
- 
- 		printk("Stack: ");
--		_show_stack(NULL, regs, (unsigned long *)sp, regs->bp);
-+		show_stack_log_lvl(NULL, regs, (unsigned long *)sp,
-+				regs->bp, "");
- 		printk("\n");
- 
- 		printk(KERN_EMERG "Code: ");
+ void __kprobes oops_end(unsigned long flags, struct pt_regs *regs, int signr)
+-{ 
++{
+ 	die_owner = -1;
+ 	bust_spinlocks(0);
+ 	die_nest_count--;
 -- 
 1.5.4.3
 
