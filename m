@@ -1,135 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755851AbYGJGkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbYGJGmM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755851AbYGJGkY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 02:40:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbYGJGkL
+	id S1756111AbYGJGmM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 02:42:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787AbYGJGmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 02:40:11 -0400
-Received: from mga11.intel.com ([192.55.52.93]:26083 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753312AbYGJGkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 02:40:09 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.30,336,1212390000"; 
-   d="scan'208,223";a="351318181"
-From: "Yang, Sheng" <sheng.yang@intel.com>
-Organization: Intel
-To: linux-pci@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] PCI: Add Bridge Configuration Retry bit in PCIE Control
-Date: Thu, 10 Jul 2008 14:41:25 +0800
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-References: <200807101145.43839.sheng.yang@intel.com>
-In-Reply-To: <200807101145.43839.sheng.yang@intel.com>
+	Thu, 10 Jul 2008 02:42:00 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:64604 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753703AbYGJGl6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 02:41:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=cOgvxiVB1WXyHZJ5sobHZ0xwlaGthuboNiGQpWd1yITmYhWEwwVWvusjrqrokFpmR2
+         Bihi6jCWb32qX4cJ8B0AEWWg/Rymu5pzRiaym03DBnaHfjPm7Pm+0PYZnkvfY0XY0rGz
+         VVW3WI125yRuzu3QHnm718A9MO2yxJEUAmmv4=
+Message-ID: <dac45060807092341u948e468r97fb652653ddb200@mail.gmail.com>
+Date: Thu, 10 Jul 2008 09:41:45 +0300
+From: "Mark Ryden" <markryde@gmail.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: Linux Wireless Mini-Summit -- Ottawa -- July 22, 2008
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080709190915.GA8238@tuxdriver.com>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_V8adIUoECD+Q+P8"
-Message-Id: <200807101441.25611.sheng.yang@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080709190915.GA8238@tuxdriver.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_V8adIUoECD+Q+P8
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hello,
+ Linux wireless is, without any doubt, a very important subject.
+Many people show interest in it.
 
-Updated patch with FLR capability indicated bit...
+It is good to hear that the third Linux Wireless mini-summit will
+occur at OLS, which will give opportunity to  many people (which some
+of them don't know much about linux wireless) to attend it (whereas
+the two last wireless mini-summits were not part of OLS, as far as I
+know).
 
-=46rom a6478de8d190a0343580023aa93c968e6b369c51 Mon Sep 17 00:00:00 2001
-=46rom: Sheng Yang <sheng.yang@intel.com>
-Date: Thu, 10 Jul 2008 14:39:13 +0800
-Subject: [PATCH] PCI: Add Function Level Reset related bits
+I want to add that It would be great if part of it (or hopefully, all
+of it) will be videoed and put on the web. I am sure that many
+(including me) will be glad to watch it. I am sure that making an
+effort like this is important and is of interest for the linux
+wireless community.
 
-The bit 28 in PCI-E Capability Register indicated Function Level Reset
-capability.
-
-The bit 15 in PCI-E Control Register is Bridge Configuration Retry=20
-Reset and
-Initiate Function Level Reset bit.
-
-Signed-off-by: Sheng Yang <sheng.yang@intel.com>
-=2D--
- include/linux/pci_regs.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/pci_regs.h b/include/linux/pci_regs.h
-index c0c1223..b656d22 100644
-=2D-- a/include/linux/pci_regs.h
-+++ b/include/linux/pci_regs.h
-@@ -375,6 +375,7 @@
- #define  PCI_EXP_DEVCAP_PWR_IND	0x4000	/* Power Indicator Present */
- #define  PCI_EXP_DEVCAP_PWR_VAL	0x3fc0000 /* Slot Power Limit Value=20
-*/
- #define  PCI_EXP_DEVCAP_PWR_SCL	0xc000000 /* Slot Power Limit Scale=20
-*/
-+#define  PCI_EXP_DEVCAP_FLR     0x10000000 /* Function Level Reset */
- #define PCI_EXP_DEVCTL		8	/* Device Control */
- #define  PCI_EXP_DEVCTL_CERE	0x0001	/* Correctable Error Reporting=20
-En. */
- #define  PCI_EXP_DEVCTL_NFERE	0x0002	/* Non-Fatal Error Reporting=20
-Enable */
-@@ -387,6 +388,7 @@
- #define  PCI_EXP_DEVCTL_AUX_PME	0x0400	/* Auxiliary Power PM Enable=20
-*/
- #define  PCI_EXP_DEVCTL_NOSNOOP_EN 0x0800  /* Enable No Snoop */
- #define  PCI_EXP_DEVCTL_READRQ	0x7000	/* Max_Read_Request_Size */
-+#define  PCI_EXP_DEVCTL_BCR_FLR 0x8000  /* Bridge Configuration=20
-Retry / FLR */
- #define PCI_EXP_DEVSTA		10	/* Device Status */
- #define  PCI_EXP_DEVSTA_CED	0x01	/* Correctable Error Detected */
- #define  PCI_EXP_DEVSTA_NFED	0x02	/* Non-Fatal Error Detected */
-=2D-
-1.5.6
+Regards,
+Mark Ryden
 
 
---Boundary-00=_V8adIUoECD+Q+P8
-Content-Type: text/x-diff;
-  charset="utf-8";
-  name="0001-PCI-Add-Function-Level-Reset-related-bits.patch"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
-	filename="0001-PCI-Add-Function-Level-Reset-related-bits.patch"
-
-=46rom a6478de8d190a0343580023aa93c968e6b369c51 Mon Sep 17 00:00:00 2001
-=46rom: Sheng Yang <sheng.yang@intel.com>
-Date: Thu, 10 Jul 2008 14:39:13 +0800
-Subject: [PATCH] PCI: Add Function Level Reset related bits
-
-The bit 28 in PCI-E Capability Register indicated Function Level Reset
-capability.
-
-The bit 15 in PCI-E Control Register is Bridge Configuration Retry Reset and
-Initiate Function Level Reset bit.
-
-Signed-off-by: Sheng Yang <sheng.yang@intel.com>
-=2D--
- include/linux/pci_regs.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/pci_regs.h b/include/linux/pci_regs.h
-index c0c1223..b656d22 100644
-=2D-- a/include/linux/pci_regs.h
-+++ b/include/linux/pci_regs.h
-@@ -375,6 +375,7 @@
- #define  PCI_EXP_DEVCAP_PWR_IND	0x4000	/* Power Indicator Present */
- #define  PCI_EXP_DEVCAP_PWR_VAL	0x3fc0000 /* Slot Power Limit Value */
- #define  PCI_EXP_DEVCAP_PWR_SCL	0xc000000 /* Slot Power Limit Scale */
-+#define  PCI_EXP_DEVCAP_FLR     0x10000000 /* Function Level Reset */
- #define PCI_EXP_DEVCTL		8	/* Device Control */
- #define  PCI_EXP_DEVCTL_CERE	0x0001	/* Correctable Error Reporting En. */
- #define  PCI_EXP_DEVCTL_NFERE	0x0002	/* Non-Fatal Error Reporting Enable */
-@@ -387,6 +388,7 @@
- #define  PCI_EXP_DEVCTL_AUX_PME	0x0400	/* Auxiliary Power PM Enable */
- #define  PCI_EXP_DEVCTL_NOSNOOP_EN 0x0800  /* Enable No Snoop */
- #define  PCI_EXP_DEVCTL_READRQ	0x7000	/* Max_Read_Request_Size */
-+#define  PCI_EXP_DEVCTL_BCR_FLR 0x8000  /* Bridge Configuration Retry / FL=
-R */
- #define PCI_EXP_DEVSTA		10	/* Device Status */
- #define  PCI_EXP_DEVSTA_CED	0x01	/* Correctable Error Detected */
- #define  PCI_EXP_DEVSTA_NFED	0x02	/* Non-Fatal Error Detected */
-=2D-=20
-1.5.6
-
-
---Boundary-00=_V8adIUoECD+Q+P8--
+On Wed, Jul 9, 2008 at 10:09 PM, John W. Linville
+<linville@tuxdriver.com> wrote:
+> The third Linux Wireless mini-summit will occur on Tuesday July 22,
+> 2008 in Ottawa, just before the Ottawa Linux Symposium.  OLS is
+> generously supporting Linux mini-summits by providing the room and
+> projector (http://www.linuxsymposium.org/2008/minisummits.php).
+> Several vendors are supporting the event by sponsoring their own
+> employees to attend, and Canonical and Intel have both helped with
+> travel funds for key community participants as well.
+>
+> Although it is already a bit late, I would like to re-open discussions
+> on our agenda for the meeting.  Based on current upstream topics and
+> those persons whom I expect to be attending, I have cobbled together
+> an agenda proposal below.  Please review it and feel free to suggest
+> amendments or alterations, or to elaborate or ask questions about my
+> proposed schedule of topics.
+>
+> I look forward to seeing many of you in Ottawa!
+>
+> John
+>
+> P.S.  If you intend to attend the event in Ottawa, please send me a
+> private reply to this note -- even if you believe that I already know
+> that you are coming! :-)
+>
+> ---
+>
+> 3rd Linux Wireless Summit
+> Ottawa, Canada
+> 22 July 2008
+>
+> Proposed Agenda
+>
+> 0830    Meet & Greet
+>
+>        Introductions and opening remarks
+>
+> 0900    Status Reports
+>
+>        Overview of where things stand today
+>
+>        - 802.11n
+>
+>        - QoS/Multiqueue
+>
+>        - Mesh mode (802.11s)
+>
+>        - RF kill
+>
+> 1015    Break
+>
+> 1100    Vendor/Distro Round Table
+>
+>        Representatives from hardware vendors and Linux distributions
+>        discuss issues around cooperation between themselves and the
+>        development community, what we are doing well, and what problems we
+>        are causing for each other.
+>
+> 1200    Lunch/Break (sorry, no funding)
+>
+> 1300    Current Work
+>
+>        Short presentations/discussions about work in progress
+>
+>        - encrypted management frames (802.11w)
+>
+>        - regulatory enforcement (802.11d, CRDA)
+>
+>        - virtual hardware (mac80211_hwsim)
+>
+> 1445    Break
+>
+> 1500    Future work
+>
+>        Short presentations/discussions about work that has previously
+>        been suggested or requested
+>
+>        - cfg80211/nl80211
+>                - time to push to replace WEXT?
+>                - tool enhancements and/or userland support?
+>
+>        - power management (suspend/resume)
+>
+>        - lib80211 (code sharing w/ full MAC drivers)
+>
+>        - rate scaling algorithms
+>                - minstrel
+>                - others?
+>
+>        - userland MLME
+>
+>        - userland driver implementation
+>
+> 1645    Break
+>
+> 1700    Maintainence Issues
+>
+>        Round table discussion of issues related to maintenance of
+>        the wireless trees
+>
+>        - trivial/cleanup patches
+>                - testing or other requirements?
+>                - should they have lower priority?
+>                - should they require ACKs from primary author?
+>
+>        - submissions to -stable
+>                - who should drive it?
+>                - what policies?
+>
+>        - rate scaling algs
+>                - driver-specific ok?  what limitations?
+>                - build policies (part of mac80211.ko?)
+>
+>        - questions/suggestions/complaints
+>
+> 1800    Dinner/Break (sorry, no funding)
+>
+> 2000    BoF/Break-out Sessions
+>
+>        Impromptu and/or unscheduled discussions as desired by group
+>        participants
+>
+> --
+> John W. Linville
+> linville@tuxdriver.com
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
