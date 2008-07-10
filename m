@@ -1,249 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757667AbYGJVwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755395AbYGJV42@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757667AbYGJVwT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 17:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbYGJVwF
+	id S1755395AbYGJV42 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 17:56:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbYGJV4U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 17:52:05 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:56561 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752173AbYGJVwD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 17:52:03 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Thomas Gleixner <tglx@linutronix.de> Gleixner" <tglx@linutronix.de>
-CC: Ingo Molnar <mingo@elte.hu>, <linux-kernel@vger.kernel.org>
-Date: Thu, 10 Jul 2008 14:48:54 -0700
-Message-ID: <m13amho1fd.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Thu, 10 Jul 2008 17:56:20 -0400
+Received: from mga03.intel.com ([143.182.124.21]:19707 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752524AbYGJV4T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 17:56:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.30,340,1212390000"; 
+   d="scan'208";a="11800065"
+Date: Thu, 10 Jul 2008 14:56:18 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "ebiederm@xmission.com" <ebiederm@xmission.com>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "steiner@sgi.com" <steiner@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       jeremy@goop.org
+Subject: Re: [patch 00/26] x64, x2apic/intr-remap: Interrupt-remapping and x2apic support
+Message-ID: <20080710215617.GM1678@linux-os.sc.intel.com>
+References: <20080710181634.764954000@linux-os.sc.intel.com> <20080710195320.GA23322@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;"Thomas Gleixner <tglx@linutronix.de> Gleixner"
-	<tglx@linutronix.de>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
-	*      [score: 0.4975]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: [PATCH] Enable polling for disabled screaming irqs
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <20080710195320.GA23322@elte.hu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jul 10, 2008 at 12:53:20PM -0700, Ingo Molnar wrote:
+> 
+> Btw., i threw it at the -tip test-cluster and got back a quick build
+> bugreport:
+> 
+> arch/x86/xen/enlighten.c: In function 'xen_patch':
+> arch/x86/xen/enlighten.c:1084: warning: label 'patch_site' defined but not used
+> arch/x86/xen/enlighten.c: At top level:
+> arch/x86/xen/enlighten.c:1272: error: expected identifier before '(' token
+> arch/x86/xen/enlighten.c:1273: error: expected '}' before '.' token
+> arch/x86/kernel/paravirt.c:376:2: error: invalid preprocessing directive
+> #ifndedarch/x86/kernel/paravirt.c:384:2: error: #endif without #if
+> 
+> with this config:
+> 
+>   http://redhat.com/~mingo/misc/config-Thu_Jul_10_21_43_28_CEST_2008.bad
 
-When we disable a screaming irq we never see it again.  If the irq
-line is shared or if the driver half works this is a real pain.  So
-periodically poll the handlers for screaming interrupts.
-
-I use a timer instead of the classic irq poll technique of working off
-the timer interrupt because when we use the local apic timers
-note_interrupt is never called (bug?).  Further on a system with
-dynamic ticks the timer interrupt might not even fire unless there is
-a timer telling it it needs to.
-
-I forced this case on my test system with an e1000 nic and my ssh
-session remained responsive despite the interrupt handler only being
-called every 10th of a second.
-
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+Ingo, that was my stupid typo. Please apply this patch. BTW, we
+need some more xen64 paravirt fixes in this area. I will look at it
+as soon as possible.
 ---
- kernel/irq/spurious.c |  147 ++++++++++++++++++++++++++++++------------------
- 1 files changed, 92 insertions(+), 55 deletions(-)
 
-diff --git a/kernel/irq/spurious.c b/kernel/irq/spurious.c
-index c66d3f1..3d97eba 100644
---- a/kernel/irq/spurious.c
-+++ b/kernel/irq/spurious.c
-@@ -12,83 +12,118 @@
- #include <linux/kallsyms.h>
- #include <linux/interrupt.h>
- #include <linux/moduleparam.h>
-+#include <linux/timer.h>
- 
- static int irqfixup __read_mostly;
- 
-+#define POLL_SPURIOUS_IRQ_INTERVAL (HZ/10)
-+static void poll_spurious_irqs(unsigned long dummy);
-+static DEFINE_TIMER(poll_spurious_irq_timer, poll_spurious_irqs, 0, 0);
-+
- /*
-  * Recovery handler for misrouted interrupts.
-  */
--static int misrouted_irq(int irq)
-+static int try_one_irq(int irq, struct irq_desc *desc)
- {
--	int i;
-+	struct irqaction *action;
- 	int ok = 0;
- 	int work = 0;	/* Did we do work for a real IRQ */
- 
--	for (i = 1; i < NR_IRQS; i++) {
--		struct irq_desc *desc = irq_desc + i;
--		struct irqaction *action;
--
--		if (i == irq)	/* Already tried */
--			continue;
--
--		spin_lock(&desc->lock);
--		/* Already running on another processor */
--		if (desc->status & IRQ_INPROGRESS) {
--			/*
--			 * Already running: If it is shared get the other
--			 * CPU to go looking for our mystery interrupt too
--			 */
--			if (desc->action && (desc->action->flags & IRQF_SHARED))
--				desc->status |= IRQ_PENDING;
--			spin_unlock(&desc->lock);
--			continue;
--		}
--		/* Honour the normal IRQ locking */
--		desc->status |= IRQ_INPROGRESS;
--		action = desc->action;
-+	spin_lock(&desc->lock);
-+	/* Already running on another processor */
-+	if (desc->status & IRQ_INPROGRESS) {
-+		/*
-+		 * Already running: If it is shared get the other
-+		 * CPU to go looking for our mystery interrupt too
-+		 */
-+		if (desc->action && (desc->action->flags & IRQF_SHARED))
-+			desc->status |= IRQ_PENDING;
- 		spin_unlock(&desc->lock);
-+		return ok;
-+	}
-+	/* Honour the normal IRQ locking */
-+	desc->status |= IRQ_INPROGRESS;
-+	action = desc->action;
-+	spin_unlock(&desc->lock);
- 
--		while (action) {
--			/* Only shared IRQ handlers are safe to call */
--			if (action->flags & IRQF_SHARED) {
--				if (action->handler(i, action->dev_id) ==
--						IRQ_HANDLED)
--					ok = 1;
--			}
--			action = action->next;
-+	while (action) {
-+		/* Only shared IRQ handlers are safe to call */
-+		if (action->flags & IRQF_SHARED) {
-+			if (action->handler(irq, action->dev_id) ==
-+				IRQ_HANDLED)
-+				ok = 1;
- 		}
--		local_irq_disable();
--		/* Now clean up the flags */
--		spin_lock(&desc->lock);
--		action = desc->action;
-+		action = action->next;
-+	}
-+	local_irq_disable();
-+	/* Now clean up the flags */
-+	spin_lock(&desc->lock);
-+	action = desc->action;
- 
-+	/*
-+	 * While we were looking for a fixup someone queued a real
-+	 * IRQ clashing with our walk:
-+	 */
-+	while ((desc->status & IRQ_PENDING) && action) {
- 		/*
--		 * While we were looking for a fixup someone queued a real
--		 * IRQ clashing with our walk:
--		 */
--		while ((desc->status & IRQ_PENDING) && action) {
--			/*
--			 * Perform real IRQ processing for the IRQ we deferred
--			 */
--			work = 1;
--			spin_unlock(&desc->lock);
--			handle_IRQ_event(i, action);
--			spin_lock(&desc->lock);
--			desc->status &= ~IRQ_PENDING;
--		}
--		desc->status &= ~IRQ_INPROGRESS;
--		/*
--		 * If we did actual work for the real IRQ line we must let the
--		 * IRQ controller clean up too
-+		 * Perform real IRQ processing for the IRQ we deferred
- 		 */
--		if (work && desc->chip && desc->chip->end)
--			desc->chip->end(i);
-+		work = 1;
- 		spin_unlock(&desc->lock);
-+		handle_IRQ_event(irq, action);
-+		spin_lock(&desc->lock);
-+		desc->status &= ~IRQ_PENDING;
-+	}
-+	desc->status &= ~IRQ_INPROGRESS;
-+	/*
-+	 * If we did actual work for the real IRQ line we must let the
-+	 * IRQ controller clean up too
-+	 */
-+	if (work && desc->chip && desc->chip->end)
-+		desc->chip->end(irq);
-+	spin_unlock(&desc->lock);
-+
-+	return ok;
-+	
-+}
-+
-+static int misrouted_irq(int irq)
-+{
-+	int i;
-+	int ok = 0;
-+
-+ 	for (i = 1; i < NR_IRQS; i++) {
-+		struct irq_desc *desc = irq_desc + i;
-+
-+		if (i == irq)	/* Already tried */
-+			continue;
-+
-+		if (try_one_irq(i, desc))
-+			ok = 1;
- 	}
- 	/* So the caller can adjust the irq error counts */
- 	return ok;
- }
- 
-+static void poll_spurious_irqs(unsigned long dummy)
-+{
-+	int i;
-+	for (i = 1; i < NR_IRQS; i++) {
-+		struct irq_desc *desc = irq_desc + i;
-+		unsigned int status;
-+
-+		/* Racy but it doesn't matter */
-+		status = desc->status;
-+		barrier();
-+		if (!(status & IRQ_SPURIOUS_DISABLED))
-+			continue;
-+
-+		try_one_irq(i, desc);
-+	}
-+
-+	mod_timer(&poll_spurious_irq_timer, jiffies + POLL_SPURIOUS_IRQ_INTERVAL);
-+}
-+
- /*
-  * If 99,900 of the previous 100,000 interrupts have not been handled
-  * then assume that the IRQ is stuck in some manner. Drop a diagnostic
-@@ -212,6 +247,8 @@ void note_interrupt(unsigned int irq, struct irq_desc *desc,
- 		desc->status |= IRQ_DISABLED | IRQ_SPURIOUS_DISABLED;
- 		desc->depth++;
- 		desc->chip->disable(irq);
-+
-+		mod_timer(&poll_spurious_irq_timer, jiffies + POLL_SPURIOUS_IRQ_INTERVAL);
- 	}
- 	desc->irqs_unhandled = 0;
- }
--- 
-1.5.3.rc6.17.g1911
+[patch] compile fix with x2apic patch and CONFIG_PARAVIRT
 
+fix the typo.
+
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
+
+diff --git a/arch/x86/kernel/paravirt.c b/arch/x86/kernel/paravirt.c
+index b80105a..4f29ff8 100644
+--- a/arch/x86/kernel/paravirt.c
++++ b/arch/x86/kernel/paravirt.c
+@@ -360,7 +360,7 @@ struct pv_cpu_ops pv_cpu_ops = {
+ 
+ struct pv_apic_ops pv_apic_ops = {
+ #ifdef CONFIG_X86_LOCAL_APIC
+-#ifnded CONFIG_X86_64
++#ifndef CONFIG_X86_64
+ 	.apic_write = native_apic_mem_write,
+ 	.apic_write_atomic = native_apic_mem_write_atomic,
+ 	.apic_read = native_apic_mem_read,
