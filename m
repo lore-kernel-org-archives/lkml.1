@@ -1,82 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756648AbYGJJYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757108AbYGJJZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756648AbYGJJYV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 05:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYGJJYN
+	id S1757108AbYGJJZw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 05:25:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbYGJJZj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 05:24:13 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:33374 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752090AbYGJJYM (ORCPT
+	Thu, 10 Jul 2008 05:25:39 -0400
+Received: from hpsmtp-eml19.kpnxchange.com ([213.75.38.84]:34784 "EHLO
+	hpsmtp-eml19.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753172AbYGJJZi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 05:24:12 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=uPA//0HXSoOCM9bcr2M69mo5ibqKqyzbmCypwakNhyo0o5FDqhCUZ3SoSJOLdIvlQ
-	w4x+3VzUySBvD7dyvdFvQ==
-Message-ID: <6599ad830807100223m2453963cwcfbe6eb1ad54d517@mail.gmail.com>
-Date: Thu, 10 Jul 2008 02:23:52 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Vivek Goyal" <vgoyal@redhat.com>
-Subject: Re: [RFC] How to handle the rules engine for cgroups
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux kernel mailing list" <linux-kernel@vger.kernel.org>,
-       "Libcg Devel Mailing List" <libcg-devel@lists.sourceforge.net>,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Peter Zijlstra" <pzijlstr@redhat.com>,
-       "Kazunaga Ikeno" <k-ikeno@ak.jp.nec.com>,
-       "Morton Andrew Morton" <akpm@linux-foundation.org>,
-       "Thomas Graf" <tgraf@redhat.com>, "Rik Van Riel" <riel@redhat.com>
-In-Reply-To: <20080703155446.GB9275@redhat.com>
+	Thu, 10 Jul 2008 05:25:38 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Ian Campbell <ijc@hellion.org.uk>
+Subject: Re: [regression?] 2.6.26 floppy boot failure with kernel packed using 'upx'
+Date: Thu, 10 Jul 2008 11:25:32 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+References: <200807100655.00857.elendil@planet.nl> <1215676061.3452.29.camel@cthulhu.hellion.org.uk>
+In-Reply-To: <1215676061.3452.29.camel@cthulhu.hellion.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080701191126.GA17376@redhat.com>
-	 <20080703101957.b3856904.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20080703155446.GB9275@redhat.com>
+Message-Id: <200807101125.34275.elendil@planet.nl>
+X-OriginalArrivalTime: 10 Jul 2008 09:25:34.0622 (UTC) FILETIME=[E7F963E0:01C8E26E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 3, 2008 at 8:54 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+On Thursday 10 July 2008, Ian Campbell wrote:
+> On Thu, 2008-07-10 at 06:54 +0200, Frans Pop wrote:
+> > The issue can also be reproduced using qemu without booting the
+> > floppy itself. For the "bad" image:
+> > # Boots correctly (but fails when mounting root fs):
+> > $ qemu -kernel vmlinuz -hda /dev/zero
+> > # Fails:
+> > $ qemu -kernel vmlinuz.upx -hda /dev/zero
 >
-> As of today it should happen because newly execed process will run into
-> same cgroup as parent.  But that's what probably we need to avoid.
-> For example, if an admin has created three cgroups "database", "browser"
-> "others" and a user launches "firefox" from shell (assuming shell is running
-> originally in "others" cgroup), then any memory allocation for firefox should
-> come from "browser" cgroup and not from "others".
-
-I think that I'm a little skeptical that anyone would ever want to do that.
-
-Wouldn't it be a simpler mechanism for the admin to simply have
-wrappers around the "firefox" and "oracle" binaries that move the
-process into the "browser" or "database" cgroup before running the
-real binaries?
-
+> I can repro this.
 >
-> I am assuming that this will be a requirement for enterprise class
-> systems. Would be good to know the experiences of people who are already
-> doing some kind of work load management.
+> All in all I'd say it should be treated as a new subtype/variant which
+> UPX should support. I'd say adding support for bzImage v2.08 to UPX
+> would be pretty easy for someone who knows the code base (I couldn't
+> even find the decompressor code, but then it's pre-coffee time here..).
 
-I can help there. :-) At Google we have two approaches:
+Thanks for the quick and complete reply Ian. I already expected this but 
+thought it would at least be useful to inform people here of the issue 
+(and get it indexed for search engines).
 
-- grid jobs, which are moved into the appropriate cgroup (actually,
-currently cpuset) by the grid daemon when it starts the job
+I have no problems with it not being treated as a bug/regression.
 
-- ssh logins, which are moved into the appropriate cpuset by a
-forced-command script specified in the sshd config.
+I've now filed a bug report against upx:
+http://sourceforge.net/tracker/?func=detail&aid=2014835&group_id=2331&atid=102331
 
-I don't see the rule-based approach being all that useful for our needs.
-
-It's all very well coming up with theoretical cases that a fancy new
-mechanism solves. But it carries more weight if someone can stand up
-and say "Yes, I want to use this on my real cluster of machines". (Or
-even "Yes, if this is implemented I *will* use it on my desktop" would
-be a start)
-
-Paul
+Cheers,
+FJP
