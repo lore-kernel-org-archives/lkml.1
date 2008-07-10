@@ -1,26 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756820AbYGJJSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757189AbYGJJTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756820AbYGJJSy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 05:18:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbYGJJSq
+	id S1757189AbYGJJTj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 05:19:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752916AbYGJJTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 05:18:46 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33521 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751648AbYGJJSp (ORCPT
+	Thu, 10 Jul 2008 05:19:31 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50716 "EHLO
+	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752774AbYGJJTa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 05:18:45 -0400
-Date: Thu, 10 Jul 2008 02:13:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jan Kara <jack@suse.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, stable@kernel.org
-Subject: Re: [PATCH] quota: Fix possible infinite loop in quota code
-Message-Id: <20080710021304.e5409793.akpm@linux-foundation.org>
-In-Reply-To: <20080710090553.GA21047@duck.suse.cz>
-References: <12156246412443-git-send-email-jack@suse.cz>
-	<20080709151254.9a36bdd8.akpm@linux-foundation.org>
-	<20080710090553.GA21047@duck.suse.cz>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+	Thu, 10 Jul 2008 05:19:30 -0400
+Date: Thu, 10 Jul 2008 09:46:41 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= <Uwe.Kleine-Koenig@digi.com>
+Cc: Magnus Damm <magnus.damm@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "gregkh@suse.de" <gregkh@suse.de>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "hjk@linutronix.de" <hjk@linutronix.de>,
+       "lethal@linux-sh.org" <lethal@linux-sh.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>
+Subject: Re: [PATCH] uio: uio_pdrv_genirq V2
+Message-ID: <20080710094641.0c52eaa7@the-village.bc.nu>
+In-Reply-To: <20080710065639.GA16794@digi.com>
+References: <20080710035254.27378.18682.sendpatchset@rx1.opensource.se>
+	<20080710065639.GA16794@digi.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -28,24 +36,16 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Jul 2008 11:05:53 +0200 Jan Kara <jack@suse.cz> wrote:
 
-> On Wed 09-07-08 15:12:54, Andrew Morton wrote:
-> > On Wed,  9 Jul 2008 19:30:41 +0200 Jan Kara <jack@suse.cz> wrote:
-> > 
-> > > When quota structure is going to be dropped and it is dirty, quota code
-> > > tries to write it. If the write fails for some reason (e. g. transaction
-> > > cannot be started because the journal is aborted), we try writing again
-> > > and again and again... Fix the problem by clearing the dirty bit even if
-> > > the write failed.
-> > 
-> > What do you consider the priority is here?  Needed in 2.6.26?  Backport to
-> > 2.6.25.x?  Merge into 2.6.27 with a backport to 2.6.26.x and 2.6.25.x?
-> > 
-> > Lots of options ;)
->   Since nobody has really seen it in the wild, I don't think it's urgent.
-> The bug has been there for 5 years or so without notice... I'd just let it
-> be included in 2.6.26.x maybe 2.6.25.x and push into 2.6.27.
-> 
+> > +       else if (!irq_on && !priv->irq_disabled)
+> > +               disable_irq(dev_info->irq);
+> I'm not sure if this is a problem on SMP.  Should you use
+> disable_irq_nosync here, too?  Probably it's OK.
 
-So noted, thanks.
+That one will also deadlock.
+
+The easiest fix is probably to use test_and_set and friends for each I/O
+operation. You would then not need the lock to protect ->irq_disabled.
+Propogating that throughout means your user space has to handle the case
+of an IRQ arriving after disable returns but would be a fair bit saner I
+think ?
