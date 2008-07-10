@@ -1,57 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759723AbYGJRqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760247AbYGJRqp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759723AbYGJRqV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 13:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbYGJRqM
+	id S1760247AbYGJRqp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 13:46:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757642AbYGJRqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 13:46:12 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:35479 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753088AbYGJRqL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 13:46:11 -0400
-Date: Thu, 10 Jul 2008 23:14:36 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Paul Menage <menage@google.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <pzijlstr@redhat.com>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Libcg Devel Mailing List <libcg-devel@lists.sourceforge.net>,
-       Morton Andrew Morton <akpm@linux-foundation.org>,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [Libcg-devel] [RFC] How to handle the rules engine for cgroups
-Message-ID: <20080710174436.GE4235@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20080701191126.GA17376@redhat.com> <6599ad830807100207q26cf2416qb8d38d1d715b5ba0@mail.gmail.com> <20080710143307.GD3782@redhat.com> <6599ad830807100946j6db8d0d6se18f1b428c69ad5c@mail.gmail.com> <20080710171838.GA4235@linux.vnet.ibm.com> <6599ad830807101030i2f3a15a3l3409a36c11773f25@mail.gmail.com>
+	Thu, 10 Jul 2008 13:46:36 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:49922 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753352AbYGJRqg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 13:46:36 -0400
+Message-ID: <48764AFA.10409@sgi.com>
+Date: Thu, 10 Jul 2008 10:46:34 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6599ad830807101030i2f3a15a3l3409a36c11773f25@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Christoph Lameter <cl@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <48751CF9.4020901@linux-foundation.org>	<4875209D.8010603@goop.org> <48752CCD.30507@linux-foundation.org>	<m1wsjupuiz.fsf@frodo.ebiederm.org> <48753C99.5050408@goop.org>	<m1ej62iq9z.fsf@frodo.ebiederm.org> <487555A8.2050007@zytor.com>	<487556A5.5090907@goop.org> <4876194E.4080205@linux-foundation.org>	<48761C06.3020003@zytor.com> <48762A3B.5050104@linux-foundation.org>	<48762DD2.5090802@zytor.com> <487637A1.4080403@linux-foundation.org> <m1prpl4pmh.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1prpl4pmh.fsf@frodo.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 10, 2008 at 10:30:15AM -0700, Paul Menage wrote:
-> On Thu, Jul 10, 2008 at 10:18 AM, Dhaval Giani
-> <dhaval@linux.vnet.ibm.com> wrote:
-> >
-> > I am sorry, I seem to missing something, but who moves the forked
-> > children (which got forked during the time between the parent getting
-> > classified into the right group and the fork itself) into the correct
-> > group?
+Eric W. Biederman wrote:
+...
 > 
-> The classifier daemon would have to do that - my point was that it
-> would be very clear exactly which processes needed this attention,
-> since they'd end up in the root cgroup too.
+> So please REFACTOR the patch that changes things to DO ONE THING PER PATCH.
 > 
+> Eric
 
-It still would not solve the problem of the correct group getting
-charged. Say for something like cpu, it would get fare more cpu time as
-opposed to what it should get. Its in the correct direction, but I am
-not sure if it is the solution. I was thinking of having a sandbox
-cgroup at each level, but then I am not very sure of this "correct
-cgroup getting charged" problem.
+Working feverishly on this exact thing... ;-)
 
--- 
-regards,
-Dhaval
