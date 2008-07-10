@@ -1,104 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756955AbYGJLFV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757201AbYGJLGq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756955AbYGJLFV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 07:05:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbYGJLFI
+	id S1757201AbYGJLGq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 07:06:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbYGJLGi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 07:05:08 -0400
-Received: from ik-out-1112.google.com ([66.249.90.179]:47240 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753134AbYGJLFH (ORCPT
+	Thu, 10 Jul 2008 07:06:38 -0400
+Received: from mail51.messagelabs.com ([216.82.244.179]:28731 "EHLO
+	mail51.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752194AbYGJLGh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 07:05:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=C/T21T6w+rKUiuiJqPrmNQ2tYR6xXwkBfOLkuXFZnt67noe7QoUHI/7mBwJLf7kwsX
-         oTAO+OF2hmo5QECOM6SchHMjHxpochLyBN7sOiEllLiYXTS8R/h1uxZFsOxmj8wbLoGq
-         VwQAuocBrwPnn5YD8FZGeBSObU1P2wyFuHNeo=
-Date: Thu, 10 Jul 2008 15:02:14 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: 2.6.26-rc9-git4: Reported regressions from 2.6.25
-Message-ID: <20080710110213.GA6688@martell.zuzino.mipt.ru>
-References: <4yrA-dRoNlD.A.jcB.ny-cIB@albercik> <200807101725.36175.nickpiggin@yahoo.com.au>
+	Thu, 10 Jul 2008 07:06:37 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-3.tower-51.messagelabs.com!1215687996!5547302!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.13]
+Date: Thu, 10 Jul 2008 13:06:31 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: "Hans J. Koch" <hjk@linutronix.de>
+CC: Magnus Damm <magnus.damm@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "gregkh@suse.de" <gregkh@suse.de>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "lethal@linux-sh.org" <lethal@linux-sh.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] uio: uio_pdrv_genirq V2
+Message-ID: <20080710110631.GA582@digi.com>
+References: <20080710035254.27378.18682.sendpatchset@rx1.opensource.se> <20080710065639.GA16794@digi.com> <20080710105850.GA3202@local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <200807101725.36175.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080710105850.GA3202@local>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 10 Jul 2008 11:06:33.0489 (UTC) FILETIME=[03572010:01C8E27D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 10, 2008 at 05:25:35PM +1000, Nick Piggin wrote:
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10629
-> > Subject		: 2.6.26-rc1-$sha1: RIP __d_lookup+0x8c/0x160
-> > Submitter	: Alexey Dobriyan <adobriyan@gmail.com>
-> > Date		: 2008-05-05 09:59 (65 days old)
-> > References	: http://lkml.org/lkml/2008/5/5/28
-> > Handled-By	: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Hi,
+
+Hans J. Koch wrote:
+> > > +       ret = uio_register_device(&pdev->dev, priv->uioinfo);
+> > > +       if (ret) {
+> > > +               dev_err(&pdev->dev, "unable to register uio device\n");
+> > > +               goto bad1;
+> > > +       }
+> > > +
+> > > +       platform_set_drvdata(pdev, priv);
+> > This should probably go before uio_register_device.  (Uups, this is an
+> > issue for uio_pdrv, too.)
 > 
-> Attached is my fix for this problem. I don't think it is a regression
-> as such, but it can't hurt to go into 2.6.26 IMO.
+> Yes, because uio_register_device will enable the irq, and you might
+> arrive in the handler without having your platform data in place.
+How do we want to fix that?  Should I sent a new version that also
+includes the memory-leak fix and copyright specification?  Or another
+incremental patch?
 
-> PREEMPT_RCU without HOTPLUG_CPU is broken.
+Best regards
+Uwe
 
-Bastard!
-
-rcutorture fixed here, starting cross-compile stuff (without much interest).
-
-> Annoyed this wasn't a crazy obscure error in the algorithm I could fix :)
-> I spent all day debugging it and had to make a special test case (rcutorture
-> didn't seem to trigger it), and a big RCU state logging infrastructure to log
-> millions of RCU state transitions and events. Oh well.
-
-> --- linux-2.6.orig/kernel/rcupreempt.c
-> +++ linux-2.6/kernel/rcupreempt.c
-> @@ -925,26 +925,22 @@ void rcu_offline_cpu(int cpu)
->  	spin_unlock_irqrestore(&rdp->lock, flags);
->  }
->  
-> -void __devinit rcu_online_cpu(int cpu)
-> -{
-> -	unsigned long flags;
-> -
-> -	spin_lock_irqsave(&rcu_ctrlblk.fliplock, flags);
-> -	cpu_set(cpu, rcu_cpu_online_map);
-> -	spin_unlock_irqrestore(&rcu_ctrlblk.fliplock, flags);
-> -}
-> -
->  #else /* #ifdef CONFIG_HOTPLUG_CPU */
->  
->  void rcu_offline_cpu(int cpu)
->  {
->  }
->  
-> -void __devinit rcu_online_cpu(int cpu)
-> +#endif /* #else #ifdef CONFIG_HOTPLUG_CPU */
-> +
-> +void __cpuinit rcu_online_cpu(int cpu)
->  {
-> -}
-> +	unsigned long flags;
->  
-> -#endif /* #else #ifdef CONFIG_HOTPLUG_CPU */
-> +	spin_lock_irqsave(&rcu_ctrlblk.fliplock, flags);
-> +	cpu_set(cpu, rcu_cpu_online_map);
-> +	spin_unlock_irqrestore(&rcu_ctrlblk.fliplock, flags);
-> +}
->  
->  static void rcu_process_callbacks(struct softirq_action *unused)
->  {
-
-
+-- 
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
