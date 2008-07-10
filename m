@@ -1,62 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbYGJJfK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756320AbYGJJoB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756128AbYGJJfK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 05:35:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbYGJJe5
+	id S1756320AbYGJJoB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 05:44:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbYGJJnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 05:34:57 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:23043 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751731AbYGJJe5 (ORCPT
+	Thu, 10 Jul 2008 05:43:50 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:54558 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751731AbYGJJnt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 05:34:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=iJUM9APzIefVS+Oc+QtrpW3fvgkyJy27ssYYbOYuIUILFt3XmltDaYOVMlvsDVfREv
-         KmyIWl0z+M9Tc6iQLLsB389r0YD7vHlk6QKgJe2ZhLDb70Yu3WW25P8hJIlI8tlLYADL
-         hEgqV3zm4YqxXufa5gWY97pjZG6V0WRoScsC4=
-Message-ID: <19f34abd0807100234n46e2229ej5077d8c91d08e9f6@mail.gmail.com>
-Date: Thu, 10 Jul 2008 11:34:54 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Giacomo A. Catenazzi" <cate@cateee.net>
-Subject: Re: bug in 2.6.26-rc9: sleeping function called from invalid context at kernel/rwsem:21
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4875C615.90102@cateee.net>
+	Thu, 10 Jul 2008 05:43:49 -0400
+Date: Thu, 10 Jul 2008 17:43:45 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Thomas Zeitlhofer <tzeitlho+lkml@nt.tuwien.ac.at>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: IPSEC in 2.6.25 causes stalled connections
+Message-ID: <20080710094345.GA24162@gondor.apana.org.au>
+References: <20080608010858.GA8877@swan.nt.tuwien.ac.at> <E1K8TuP-0002Qd-00@gondolin.me.apana.org.au> <20080618004544.GA25439@swan.nt.tuwien.ac.at> <20080708080742.GA25027@gondor.apana.org.au> <20080708213302.GA28842@swan.nt.tuwien.ac.at> <20080709084334.GA12484@gondor.apana.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <4875C615.90102@cateee.net>
+In-Reply-To: <20080709084334.GA12484@gondor.apana.org.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 10, 2008 at 10:19 AM, Giacomo A. Catenazzi <cate@cateee.net> wrote:
-> Hello,
->
-> yesterday at shutdown I had a crash. Unfortunately it seems
-> that there was one (or more) oops missing. The bug appeared
-> at unmounting partition at shutdown, so there are no logs
-> of the previous messages.
+On Wed, Jul 09, 2008 at 04:43:34PM +0800, Herbert Xu wrote:
+> 
+> Thanks! I've reproduced the problem.  Now we just need to figure
+> out what it is :)
 
-Thanks for the report.
+OK, found it: chainiv never called the completion function!
 
-It would be really useful to know which filesystems you are/were
-using, including virtual filesystems like sysfs. Maybe you are using
-ecryptfs or FUSE?
+commit 066068afee313b7746e7a3de05b57dcd4149a2fe
+Author: Herbert Xu <herbert@gondor.apana.org.au>
+Date:   Thu Jul 10 17:42:36 2008 +0800
 
-(It would also be interesting to see if you could run
-/etc/rc0.d/S40umountfs while the machine is up, to see if you can get
-the segfault but keep the machine usable enough to get the whole log.)
+    crypto: chainiv - Invoke completion function
+    
+    When chainiv postpones requests it never calls their completion functions.
+    This causes symptoms such as memory leaks when IPsec is in use.
+    
+    Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 
+diff --git a/crypto/chainiv.c b/crypto/chainiv.c
+index 6da3f57..9affade 100644
+--- a/crypto/chainiv.c
++++ b/crypto/chainiv.c
+@@ -117,6 +117,7 @@ static int chainiv_init(struct crypto_tfm *tfm)
+ static int async_chainiv_schedule_work(struct async_chainiv_ctx *ctx)
+ {
+ 	int queued;
++	int err = ctx->err;
+ 
+ 	if (!ctx->queue.qlen) {
+ 		smp_mb__before_clear_bit();
+@@ -131,7 +132,7 @@ static int async_chainiv_schedule_work(struct async_chainiv_ctx *ctx)
+ 	BUG_ON(!queued);
+ 
+ out:
+-	return ctx->err;
++	return err;
+ }
+ 
+ static int async_chainiv_postpone_request(struct skcipher_givcrypt_request *req)
+@@ -227,6 +228,7 @@ static void async_chainiv_do_postponed(struct work_struct *work)
+ 						     postponed);
+ 	struct skcipher_givcrypt_request *req;
+ 	struct ablkcipher_request *subreq;
++	int err;
+ 
+ 	/* Only handle one request at a time to avoid hogging keventd. */
+ 	spin_lock_bh(&ctx->lock);
+@@ -241,7 +243,11 @@ static void async_chainiv_do_postponed(struct work_struct *work)
+ 	subreq = skcipher_givcrypt_reqctx(req);
+ 	subreq->base.flags |= CRYPTO_TFM_REQ_MAY_SLEEP;
+ 
+-	async_chainiv_givencrypt_tail(req);
++	err = async_chainiv_givencrypt_tail(req);
++
++	local_bh_disable();
++	skcipher_givcrypt_complete(req, err);
++	local_bh_enable();
+ }
+ 
+ static int async_chainiv_init(struct crypto_tfm *tfm)
 
-Vegard
-
+Thanks,
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
