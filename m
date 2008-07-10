@@ -1,71 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbYGJIx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756343AbYGJIz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755341AbYGJIx4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 04:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbYGJIxs
+	id S1756343AbYGJIz1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 04:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbYGJIzR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 04:53:48 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:41260 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751374AbYGJIxr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 04:53:47 -0400
-Subject: Re: [PATCH] dsp56k: use request_firmware
-From: David Woodhouse <dwmw2@infradead.org>
-To: Fredrik Noring <noring@nocrew.org>
-Cc: Jaswinder Singh <jaswinder@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       kernelnewbies <kernelnewbies@nl.linux.org>,
-       kernel-janitors <kernel-janitors@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Lars Brinkhoff <lars@nocrew.org>,
-       Tomas =?ISO-8859-1?Q?Sk=E4re?= <tomas@nocrew.org>
-In-Reply-To: <CFF38114-82BA-4A35-B378-8D0A5628E560@nocrew.org>
-References: <1215253496.7816.7.camel@jaswinder.satnam>
-	 <A3D470E0-953E-40D6-BF5A-D06B76451154@nocrew.org>
-	 <1215357224.2817.2.camel@jaswinder.satnam>
-	 <43A34816-3B93-4D05-AE0A-65C0FBF35589@nocrew.org>
-	 <1215358732.2817.11.camel@jaswinder.satnam>
-	 <1215363247.3189.113.camel@shinybook.infradead.org>
-	 <35647D7D-85D1-4308-B3A1-63CDCC3F14F7@nocrew.org>
-	 <1215608750.11567.177.camel@pmac.infradead.org>
-	 <CFF38114-82BA-4A35-B378-8D0A5628E560@nocrew.org>
-Content-Type: text/plain
-Date: Thu, 10 Jul 2008 09:53:39 +0100
-Message-Id: <1215680019.11567.242.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 10 Jul 2008 04:55:17 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37662 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751340AbYGJIzP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 04:55:15 -0400
+Date: Thu, 10 Jul 2008 10:55:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Elias Oltmanns <eo@nebensachen.de>
+Cc: linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: Scheduling issue with signal handling
+Message-ID: <20080710085500.GA19918@elte.hu>
+References: <87wsju88b1.fsf@denkblock.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87wsju88b1.fsf@denkblock.local>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-10 at 09:38 +0200, Fredrik Noring wrote:
-> Hi David,
-> 
-> 9 jul 2008 kl. 15.05 skrev David Woodhouse:
-> > It is in fact identical. Disassembly with the tools found on  
-> > sourceforge
-> > was fun, since they have endianness bugs, don't recognise the 'JMP'
-> > which was the first instruction, and need each 3-byte instruction in  
-> > the
-> > binary to be prefixed with a zero byte to make it 4 bytes. But after
-> > sorting that out and going through it instruction by instruction, it
-> > really does seem to match.
-> 
-> Heh. Amazing.
-> 
-> [ I think the code can be simplified: It currently copies itself to a  
-> high program memory location, but this is not necessary because DSP  
-> soft reset was never implemented (the reset would have been trapped by  
-> the code, in order to load a new program). The driver instead power- 
-> cycles the DSP every time a new program is loaded. ]
 
-I did wonder about that. But since we can't test, we're not going to
-touch. Better to keep the assembler code which precisely matches the
-known-good binary.
+* Elias Oltmanns <eo@nebensachen.de> wrote:
 
--- 
-dwmw2
+> By sprinkling some printk()s all over the place, I've managed to 
+> establish the following sequence of events taking place in the event 
+> of delayed signal handling as described above: The first Ctrl+Z event 
+> enqueues a SIGTSTP signal which eventually results in a call to 
+> kick_process(). For some reason though, the signal isn't handled 
+> straight away but remains on the queue for some time. Consequently, 
+> subsequent Ctrl+Z events result in echoing another ^Z to the terminal 
+> but everything related to sending a signal is skipped (and rightly so) 
+> because the kernel detects that a SIGTSTP is still pending. 
+> Eventually, get_signal_to_deliver() dequeues the SIGTSTP signal and 
+> the shell propt appears.
+> 
+> My question is this: Even under high disk I/O pressure, the threads 
+> dealing with I/O to the terminal evidently still get their turn as 
+> indicated by the sequence of ^Z appearing on screen. Why is it then, 
+> that the threads which are meant to process the SIGTSTP or SIGINT 
+> signals aren't scheduled for some seconds and is there a way to change 
+> this?
+> 
+> Please let me know if there is anything I can try to investigate this 
+> any further or if you need further information.
+> 
+> Thanks in advance,
+> 
+> Elias
+> 
+> [1] http://lkml.org/lkml/2008/6/28/50
 
+hm, kick_process() is a no-op on !SMP.
+
+Basically, when a new signal is queued and a task is already running, it 
+will run in due course and process the signal the moment it's scheduled 
+again. (unless the signal is blocked)
+
+If a task is not already running, then the signal code will wake up the 
+task and it will then process the signal the moment it's executed.
+
+The maximum latency of a runnable task hitting the CPU is controlled via 
+/proc/sys/kernel/sched_latency [available if CONFIG_SCHED_DEBUG=y in the 
+.config] - 20 milliseconds on uniprocessors.
+
+Several seconds of lag is almost out of question and would indicate a 
+serious scheduler bug, or - which is far more likely - either an 
+application signal processing hickup or a kernel signal processing 
+hickup.
+
+If the lag happens with the task you can observe its worst-case 
+scheduling delay by looking at /proc/<PID>/sched, if you also have 
+CONFIG_SCHEDSTAT=y in your .config.
+
+For example, a random shell's delays on a testbox:
+
+  phoenix:~> grep se.wait_max /proc/$$/sched
+  se.wait_max                        :             3.338588
+
+That's 3.3 msecs _worst case_, on a system that has otherwise quite 
+insane load:
+
+ 10:53:57 up  2:48,  2 users,  load average: 77.56, 94.33, 102.75
+
+So several seconds of delay, if it came from the scheduler, would be 
+really anomalous.
+
+As a final measure, instead of printk's, you could try the scheduler 
+tracer in linux-next (CONFIG_CONTEXT_SWITCH_TRACER=y), to have an exact 
+idea about what is going on and when. (see /debug/tracing/README)
+
+[ You might also want to try CONFIG_FTRACE=y and CONFIG_DYNAMIC_FTRACE=y
+  for extremely finegrained kernel tracing - available in linux-next 
+  too. ]
+
+	Ingo
