@@ -1,82 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753908AbYGJKXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756852AbYGJKX6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753908AbYGJKXV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 06:23:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbYGJKXE
+	id S1756852AbYGJKX6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 06:23:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYGJKXt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 06:23:04 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:41586 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753156AbYGJKXB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 06:23:01 -0400
-Subject: Re: Linux Wireless Mini-Summit -- Ottawa -- July 22, 2008
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Tomas Winkler <tomasw@gmail.com>
-In-Reply-To: <20080709190915.GA8238@tuxdriver.com> (sfid-20080709_213808_434368_5FE083A0)
-References: <20080709190915.GA8238@tuxdriver.com>
-	 (sfid-20080709_213808_434368_5FE083A0)
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-yEpiEa3Bj02we0wir1ny"
-Date: Thu, 10 Jul 2008 12:22:15 +0200
-Message-Id: <1215685335.3483.5.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Thu, 10 Jul 2008 06:23:49 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35311 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753394AbYGJKXs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 06:23:48 -0400
+Date: Thu, 10 Jul 2008 12:23:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Robert Richter <robert.richter@amd.com>
+Cc: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: x86/pci: Broken build for X86_VISWS
+Message-ID: <20080710102305.GA20096@elte.hu>
+References: <20080710095757.GB5607@erda.amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080710095757.GB5607@erda.amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-yEpiEa3Bj02we0wir1ny
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+* Robert Richter <robert.richter@amd.com> wrote:
 
+> Ingo,
+> 
+> during testing of my pci changes I observed a build error if X86_VISWS 
+> is set:
+> 
+> arch/x86/mach-visws/built-in.o: In function `machine_power_off':
+> (.text+0x48): undefined reference to `pci_bus0'
+> make[1]: *** [.tmp_vmlinux1] Error 1
+> make: *** [sub-make] Error 2
+> 
+> The root cause is disabling PCI dependencies in change 1ac97018 that 
+> disables compilation of x86/pci for VISWS though there are files in 
+> needed to build. I am not sure if it is save to enable PCI for VISWS 
+> to fix this.
+> 
+> Could you take a look at this?
 
-> 0900	Status Reports
-> 	Overview of where things stand today
-> 	- 802.11n
-> 	- QoS/Multiqueue
-> 	- Mesh mode (802.11s)
-> 	- RF kill
+well spotted. Does the patch below fix it for you?
 
-And spectrum management (Tomas) please.
+	Ingo
 
-> 1300	Current Work
->=20
-> 	Short presentations/discussions about work in progress
-> 	- encrypted management frames (802.11w)
-> 	- regulatory enforcement (802.11d, CRDA)
-> 	- virtual hardware (mac80211_hwsim)
+------------------------->
+commit 50e810529abfb39259c2877ed8dc784a4bb81167
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Thu Jul 10 12:21:58 2008 +0200
 
-or here :)
+    x86: fix visws and vsmp build
+    
+    these two sub-architectures want PCI to be default-on, not default-off.
+    
+    Reported-by: Robert Richter <robert.richter@amd.com>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/Kconfig |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-We've seen initial patches that add a bit of infrastructure, but aren't
-using these things yet.
-
-johannes
-
---=-yEpiEa3Bj02we0wir1ny
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJIdeLTAAoJEKVg1VMiehFY/5MP/RU7a4XP4ZmXRUju2U8LLb+U
-lfDtoT41kKPfGCYufpndVed8UVaMF/x5T6aERZHmmzjZIWBS7CoaA02DKTWEIPax
-uhdRppYSeI+CWLNPXwh6+ivHHo7rpxkZYwbrutDfsB3IrLDBtaE2IG2EOV6kVDg7
-QC18KAnlwxdmsbQIC/ti7vouqql7jzG5igEY7a4aFth3KwgC24gYoKGTYRCcNryc
-VAzGi2ybqIFRn9HflmWvU31k3vYHJQri8c9JuGcPGZn8PfgTyBGpKAsFVkTPCZZE
-EKFq4ua/waChgzA2/iMfaHnaW019hE7M6JUoaY0HSwJo1mfW7yN8XOsLBqORyecf
-+fxdqhK3p8UAkqHhACdzwPuTvLQdAC/v5wbybOGodCj46QWceSCqnbR+baMvNxYZ
-+FGEKWDXZWJ2mCkTUETE+MFuSXU3Rv+LV7pKfnYl+4VhUI7ZxSrBqEcyh8m5C+0H
-fl8oBBPV25ac6yTORfJh2wKqduyAzRsZUVVNUDhmK9veRdHDBKmnIIVLvzpCeXuU
-GQm6XZD0rhKgftEV3BPom6POTCKyXl/MK1u4ceHhppOqn0aFJbxKFojRchO378Mb
-LCBgg+fiwf2kFD3hh1FW5un09WpkQfqLBOC1eX7MnGRFZdjeOstmfxYAH0JBIydC
-IFbRvgTzvRZnzlqdrT0C
-=4SlM
------END PGP SIGNATURE-----
-
---=-yEpiEa3Bj02we0wir1ny--
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 4d85501..c8f7fb6 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -287,7 +287,7 @@ config X86_VOYAGER
+ 
+ config X86_VISWS
+ 	bool "SGI 320/540 (Visual Workstation)"
+-	depends on X86_32 && !PCI
++	depends on X86_32 && PCI
+ 	help
+ 	  The SGI Visual Workstation series is an IA32-based workstation
+ 	  based on SGI systems chips with some legacy PC hardware attached.
+@@ -359,7 +359,7 @@ config X86_RDC321X
+ config X86_VSMP
+ 	bool "Support for ScaleMP vSMP"
+ 	select PARAVIRT
+-	depends on X86_64 && !PCI
++	depends on X86_64 && PCI
+ 	help
+ 	  Support for ScaleMP vSMP systems.  Say 'Y' here if this kernel is
+ 	  supposed to run on these EM64T-based machines.  Only choose this option
 
