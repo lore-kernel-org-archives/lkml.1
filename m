@@ -1,141 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754880AbYGJHTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755669AbYGJHU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754880AbYGJHTS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 03:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752493AbYGJHTF
+	id S1755669AbYGJHU6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 03:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbYGJHUv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 03:19:05 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:52027 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752573AbYGJHTC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 03:19:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=obHfwSqEdc3GXaHFYPNF/G5H9TMxDxlNkh0wIjHLwiIFpCVb51o76tkVJ4XCgsSQhO
-         86nx6/YSORXLnnCxuleUAAnDEp5dvxShGaegMDvodXYlM3wYaCA57/HwMoxtc1ieo+xF
-         Ym2UVDnMxVvKA0NCAmT5qyCKifqFNvD4ffxzs=
-Message-ID: <19f34abd0807100019t392621dci306420150343d13d@mail.gmail.com>
-Date: Thu, 10 Jul 2008 09:19:01 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: linux-next: Tree for July 9 (kmemcheck: Caught 8-bit read from freed memory (ffff880127c120e8))
-Cc: linux-next@vger.kernel.org, "Stephen Rothwell" <sfr@canb.auug.org.au>,
-       LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>
-In-Reply-To: <200807100025.13973.rjw@sisk.pl>
+	Thu, 10 Jul 2008 03:20:51 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44957 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751049AbYGJHUu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 03:20:50 -0400
+Date: Thu, 10 Jul 2008 09:20:23 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCh] x86: overmapped fix when 4K pages on tail - 64bit
+Message-ID: <20080710072023.GD14377@elte.hu>
+References: <200807080141.05436.yhlu.kernel@gmail.com> <200807080143.27997.yhlu.kernel@gmail.com> <200807092015.03004.yhlu.kernel@gmail.com> <20080710065316.GA14377@elte.hu> <86802c440807092357x293224bfh212665a164a41553@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080709183047.0eb1eb72.sfr@canb.auug.org.au>
-	 <200807100017.04397.rjw@sisk.pl> <200807100025.13973.rjw@sisk.pl>
+In-Reply-To: <86802c440807092357x293224bfh212665a164a41553@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 10, 2008 at 12:25 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Thursday, 10 of July 2008, Rafael J. Wysocki wrote:
->> With this tree (and several previous ones, it appears) my quad core test
->> box's CPU is detected as one core.  With 2.6.26-rc9 four cores are
->> detected as appropriate.
->>
->> dmesg from the failing kernel (today's linux-next) is at:
->> http://www.sisk.pl/kernel/debug/20080709/dmesg-20080709.log
->>
->> dmesg from a non-failing kernel (2.6.26-rc9) is at:
->> http://www.sisk.pl/kernel/debug/20080709/dmesg-rc9.log
->>
->> .config is at: http://www.sisk.pl/kernel/debug/20080709/next-config
->
-> Ah, I see.  kmemcheck has detected a problem and disabled the secondary
-> CPUs:
->
-> kmemcheck: Caught 8-bit read from freed memory (ffff880127c120e8)
-> iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiffffffffffffffffffffffffffffffff
->                                        ^
->
-> Modules linked in:
-> Pid: 0, comm: swapper Not tainted 2.6.26-rc9-next #37
-> RIP: 0010:[<ffffffff802b5ac0>]  [<ffffffff802b5ac0>] check_poison_obj+0x90/0x210
-> RSP: 0018:ffffffff806c1e08  EFLAGS: 00010293
-> RAX: 000000000000006b RBX: 0000000000000000 RCX: ffffffff802b820e
-> RDX: 0000000000000000 RSI: ffff880127c120e0 RDI: ffff880127c01480
-> RBP: ffffffff806c1e48 R08: 0000000000000001 R09: 0000000000000001
-> R10: 0000000000000001 R11: 0000000000000040 R12: ffff880127c120e8
-> R13: 0000000000000040 R14: 0000000000000000 R15: 000000000000003f
-> FS:  0000000000000000(0000) GS:ffffffff806b8f40(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> CR2: ffff880127c101b8 CR3: 0000000000201000 CR4: 00000000000006a0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff4ff0 DR7: 0000000000000400
->  [<ffffffff802b647c>] cache_alloc_debugcheck_after+0x1ac/0x1f0
->  [<ffffffff802b7fac>] kmem_cache_alloc+0x9c/0x140
->  [<ffffffff802b820e>] do_tune_cpucache+0x2e/0x2d0
->  [<ffffffff802b862b>] enable_cpucache+0x3b/0xb0
->  [<ffffffff806e4caa>] kmem_cache_init+0x3ca/0x4c0
->  [<ffffffff806c8ece>] start_kernel+0x27e/0x4c0
->  [<ffffffff806c827c>] x86_64_start_reservations+0x7c/0xc0
->  [<ffffffff806c83b6>] x86_64_start_kernel+0xf6/0x100
->  [<ffffffffffffffff>] 0xffffffffffffffff
-> Calibrating delay loop (skipped), value calculated using timer frequency.. <6>5015.24 BogoMIPS (lpj=10030484)
-> Security Framework initialized
-> SELinux:  Initializing.
-> SELinux:  Starting in permissive mode
-> selinux_register_security:  Registering secondary module capability
-> Capability LSM initialized as secondary
-> Mount-cache hash table entries: 256
-> CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
-> CPU: L2 Cache: 512K (64 bytes/line)
-> CPU: Physical Processor ID: 0
-> CPU: Processor Core ID: 0
-> using C1E aware idle routine
-> ACPI: Core revision 20080609
-> CPU0: AMD Phenom(tm) 9850 Quad-Core Processor stepping 03
-> Using local APIC timer interrupts.
-> APIC timer calibration result 12538092
-> Detected 12.538 MHz APIC timer.
-> kmemcheck: "Bugs, beware!"
-> kmemcheck: Limiting number of CPUs to 1.
 
-Hm.
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-No, they're not disabled because an error was detected. They're always
-disabled unless you explicitly allow the SMP+kmemcheck combination in
-config. But this combination sucks at the moment because it means
-halting all the CPUs on the system for every kernel-mode memory
-dereference on any CPU!
+> > that the number of mapping ranges depends on our programming, not on 
+> > any external factor. I.e. if anyone adds a new mapping range to the 
+> > kernel for any purpose, it must be extended - but otherwise it 
+> > cannot run out due to new hardware.
+> 
+> 4k, 2M, 1G, 2M, 4k
+> 
+> some day will get 512g page?
 
-Also, the error report is bogus. We should make kmemcheck depend on
-!CONFIG_DEBUG_SLAB && !CONFIG_SLUB_DEBUG_ON for now, because these
-modes interfere with the checking that kmemcheck does.
+i'd not be surprised to see that in ~10 years. Then we'll have to extend 
+the array to 7 entries ;-)
 
-(Just think of it -- if SLUB wants to check whether the padding was
-overwritten, it *will* have to make a read from the padding area. And
-kmemcheck will not differentiate between reads from the allocator vs.
-reads from the rest of the kernel. And in every other case, this read
-would be a real error.)
+btw., i have a weird system:
 
-That said, we *might* be able to do a kmemcheck_off()/kmemcheck_on()
-thing around the special code. Maybe a kmemcheck_read()  which
-bypasses the checking for a single read.
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
+[    0.000000]  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
+[    0.000000]  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
+[    0.000000]  BIOS-e820: 0000000000100000 - 000000003ed93000 (usable)
+[    0.000000]  BIOS-e820: 000000003ed93000 - 000000003ee4d000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 000000003ee4d000 - 000000003fea2000 (usable)
+[    0.000000]  BIOS-e820: 000000003fea2000 - 000000003fee9000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 000000003fee9000 - 000000003feed000 (usable)
+[    0.000000]  BIOS-e820: 000000003feed000 - 000000003feff000 (ACPI data)
+[    0.000000]  BIOS-e820: 000000003feff000 - 000000003ff00000 (usable)
 
-But I really do think kmemcheck and slab/slub debugging should be
-mutually exclusive. They do essentially the same thing, except that
-kmemcheck is much more eager and detects problems right where they
-happen (though sometimes too eagerly too; the false positives).
+look at the RAM splitup:
 
-Thanks for trying it out :-D
+  640K + BIOS-hole + ~1GB + acpi + 17MB + acpi + 16K + acpi + 4K
 
+and the end of it is not 1024 MB but 1023 MB.
 
-Vegard
+so the _best_ mapping strategy would probably be to do 2MB granular 
+mapping up to 1GB, i.e. to 'overmap' into the end of RAM. But we also 
+have to make sure that we have no PCI resources or weird chipset 
+resources in the final 1MB that could hurt us with PAT, aliasing-wise. 
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Since i'm not sure we can really ensure sanity on that level, i guess 
+your solution to precisely map everything without overmapping is our 
+best choice. Thus sane hw with such end of RAM mappings:
+
+ BIOS-e820: 0000000100000000 - 0000000120000000 (usable)
+
+and another one with:
+
+ BIOS-e820: 0000000100000000 - 0000000830000000 (usable)
+
+... would be slightly faster (because it would use 2MB TLBs at the end 
+of kernel RAM, instead of broken-up 4K TLBs)
+
+perhaps we could also have a config and boot option that would sanitize 
+the e820 map to just ignore all non-2MB granular RAM. Losing 1-2MB of 
+RAM is not an issue on a 32GB system.
+
+	Ingo
