@@ -1,45 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758858AbYGJRIH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759421AbYGJRI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758858AbYGJRIH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 13:08:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758875AbYGJRHt
+	id S1759421AbYGJRI0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 13:08:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757795AbYGJRH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 13:07:49 -0400
-Received: from gw.goop.org ([64.81.55.164]:55323 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758861AbYGJRHs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 13:07:48 -0400
-Message-ID: <487641D6.5060206@goop.org>
-Date: Thu, 10 Jul 2008 10:07:34 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Mike Travis <travis@sgi.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <20080709133958.612635f0@infradead.org>	<4875231F.1020506@zytor.com> <487524A0.6020304@goop.org>	<487529AE.3060505@zytor.com> <m1r6a2r9nj.fsf@frodo.ebiederm.org>	<48753A71.2030006@zytor.com> <m18wwahauq.fsf@frodo.ebiederm.org> <48763732.7020805@sgi.com>
-In-Reply-To: <48763732.7020805@sgi.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 10 Jul 2008 13:07:56 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:36126 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757629AbYGJRHu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 13:07:50 -0400
+Subject: Re: [PATCH 05/15] regulator: regulator framework core
+From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+To: pHilipp Zabel <philipp.zabel@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <74d0deb30807100904o404be423s314cc206a963396c@mail.gmail.com>
+References: <1215703578.13431.61.camel@odin>
+	 <74d0deb30807100904o404be423s314cc206a963396c@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 10 Jul 2008 18:07:48 +0100
+Message-Id: <1215709668.13431.83.camel@odin>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-> One thing to remember is the eventual goal is implementing the cpu_alloc
-> functions which I think we've agreed has to be "growable".  This means that
-> the addresses will need to be virtual to allow the same offsets for all cpus.
-> The patchset I have uses 2Mb pages.  This "little" twist might figure into the
-> implementation issues that are being discussed.
+On Thu, 2008-07-10 at 18:04 +0200, pHilipp Zabel wrote:
+> On Thu, Jul 10, 2008 at 5:26 PM, Liam Girdwood
+> <lg@opensource.wolfsonmicro.com> wrote:
 
-You want to virtually map the percpu area?  How and when would it get 
-extended?
+> > +
+> > +/* current constraint check */
+> > +static int regulator_check_current_limit(struct regulator_dev *rdev,
+> > +                                       int *min_uA, int *max_uA)
+> > +{
+> > +       BUG_ON(*min_uA > *max_uA);
+> > +
+> > +       if (!rdev->constraints) {
+> > +               printk(KERN_ERR "%s: no constraints for %s\n", __func__,
+> > +                      rdev->desc->name);
+> > +               return -ENODEV;
+> > +       }
+> > +       if (!(rdev->constraints->valid_ops_mask & REGULATOR_CHANGE_CURRENT)) {
+> > +               printk(KERN_ERR "%s: operation not allowed for %s\n",
+> > +                      __func__, rdev->desc->name);
+> > +               return -EPERM;
+> > +       }
+> > +
+> > +       if (*max_uA > rdev->constraints->max_uA ||
+> > +           *min_uA < rdev->constraints->min_uA) {
+> > +               printk(KERN_ERR "%s: invalid current range %d-%duA for %s\n",
+> > +                      __func__, *min_uA, *max_uA, rdev->desc->name);
+> > +               return -EINVAL;
+> > +       }
+> > +
+> > +       *min_uA = max(*min_uA, rdev->constraints->min_uA);
+> > +       *max_uA = min(*max_uA, rdev->constraints->max_uA);
+> 
+> I don't understand this part. If max_uA > constraints->max_uA or
+> min_uA < constraints->min_uA, we returned with -EINVAL above. So in
+> this place
+> I'd expect min_uA to be >= constraints->min_uA and max_uA <=
+> constraints->max_uA, in which case the last two statements are no-ops.
+> 
 
-    J
+It looks like the limit check with printk was added post min()/max()
+here and does indeed make them no-ops. I'll remove.
+
+> In comparison, regulator_check_voltage silently fixes the requested
+> voltage range to fit into the constraints. Should
+> regulator_check_current_limit do the same?
+
+Yes, current should do the same and make sure the our consumers
+requested current window fits into the system constraints like voltage.
+Atm it just rejects it.
+
+Thanks
+
+Liam
+
+
