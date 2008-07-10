@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbYGJI55@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756249AbYGJJCm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755972AbYGJI55 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 04:57:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYGJI5t
+	id S1756249AbYGJJCm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 05:02:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbYGJJCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 04:57:49 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60973 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751648AbYGJI5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 04:57:48 -0400
-Date: Thu, 10 Jul 2008 10:57:30 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jack Steiner <steiner@sgi.com>, tglx@linutronix.de, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] - Map UV chipset space - pagetable
-Message-ID: <20080710085730.GC19918@elte.hu>
-References: <20080701194532.GA28405@sgi.com> <20080710013533.e059f556.akpm@linux-foundation.org>
+	Thu, 10 Jul 2008 05:02:34 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:47330 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751353AbYGJJCd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 05:02:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Hmq1XDvntUakySaY3yNeidxwJ955EG+zouzJ4k0B/6bbHd7LtGUjwM6e2MRhCqWt0n
+         kxpH1S9VKbmbBKzAJkSBMBPHeb+WO8LEA/iwM9Rpfkt2I6Qih0xi39jOAkzYTskIT5Sv
+         s9C31QoGmE45dMR6/x1mkm2bB54s3VXHEZ7ao=
+Message-ID: <9b2db90b0807100202l53df9364tf36c5dfaf18bf1f5@mail.gmail.com>
+Date: Thu, 10 Jul 2008 12:02:33 +0300
+From: "Nir Tzachar" <nir.tzachar@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Problems with resume from s2ram following hibernate
+In-Reply-To: <9b2db90b0807100200h5e1eabaapada93d8e5cc3ec79@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080710013533.e059f556.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <9b2db90b0807100200h5e1eabaapada93d8e5cc3ec79@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+I use a Thinkpad t43p as my laptop, and encountered an annoying
+problem with suspend to ram following a hibernate cycle. In a few
+words, to resume after a suspend I have to manually press the power
+button -- resuming when opening the lid does not work.
 
-> On Tue, 1 Jul 2008 14:45:32 -0500 Jack Steiner <steiner@sgi.com> wrote:
-> 
-> > +	BUG_ON((phys & ~PMD_MASK) || (size & ~PMD_MASK));
-> 
-> BUG_ON(A || B) is usually a bad idea.  If it goes bang, you'll really wish
-> that it had been
-> 
-> 	BUG_ON(A);
-> 	BUG_ON(B);
+The problem manifests only after I put the machine through a
+successful hibernate cycle; if I start from a fresh boot and suspend
+the machine by closing the lid, it comes back to life when I once
+again open the lid. Repeating this suspend to ram cycle using lid acpi
+events works flawlessly (that is, until I hibernate...)
 
-if you check how it's used:
+I am currently using kernel 2.6.25 (with Gentoo patches), and have had
+the problem ever since I managed to get suspend to disk working. One
+issue which might be related is that I boot my kernel with
+"acpi_serialize", as otherwise I get many acpi error messages.
 
-+       init_extra_mapping_uc(UV_GLOBAL_MMR32_BASE, UV_GLOBAL_MMR32_SIZE);
-+       init_extra_mapping_uc(UV_LOCAL_MMR_BASE, UV_LOCAL_MMR_SIZE);
+My suspend script is simple, something along the lines of :
+echo disk > /sys/power/state
 
-those base/size pairs are really supposed to be aligned on 2MB. I.e. 
-this is a really 'impossible' scenario that is not really driven by any 
-external factor (hw or driver detail) and a compact check for it is 
-acceptable too.
+I'd really like to solve this issue, and am willing to invest time
+towards this. However, I have no idea where to begin. I'd appreciate
+any pointers / advice.
 
-	Ingo
+Thanks.
+
+p.s. Please cc me, I am not registered to the list.
