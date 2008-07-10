@@ -1,77 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756992AbYGJKsK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757067AbYGJKuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756992AbYGJKsK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 06:48:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbYGJKr4
+	id S1757067AbYGJKuv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 06:50:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbYGJKuk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 06:47:56 -0400
-Received: from mail28.messagelabs.com ([216.82.249.131]:12752 "EHLO
-	mail28.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752910AbYGJKr4 (ORCPT
+	Thu, 10 Jul 2008 06:50:40 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:33749 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753135AbYGJKui (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 06:47:56 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-10.tower-28.messagelabs.com!1215686875!20202260!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.13]
-Date: Thu, 10 Jul 2008 12:47:49 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Magnus Damm <magnus.damm@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "gregkh@suse.de" <gregkh@suse.de>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "hjk@linutronix.de" <hjk@linutronix.de>,
-       "lethal@linux-sh.org" <lethal@linux-sh.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>
-Subject: Re: [PATCH] uio: uio_pdrv_genirq V2
-Message-ID: <20080710104749.GA313@digi.com>
-References: <20080710035254.27378.18682.sendpatchset@rx1.opensource.se> <20080710065639.GA16794@digi.com> <20080710094641.0c52eaa7@the-village.bc.nu> <20080710103036.GA32507@digi.com> <20080710110225.0dd636cf@the-village.bc.nu>
+	Thu, 10 Jul 2008 06:50:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=MDg4ZSqVl15JqhpjCFNxB/QudLXaMm4Tl4UUFqCypcKdIGEiUbpix4m75YZezp+fdo
+         MkOeXs4wJJ7NCh3hB5UCXIZec5lfshZJ7PvMQScMVbiq4dDH4OReDLejOQdCop4Iho7J
+         /W0b27UK927OcjAvXHftZy/QRHSgKrLkb6+8Q=
+Message-ID: <1ba2fa240807100350n57e6121en46cc0febf12b6e50@mail.gmail.com>
+Date: Thu, 10 Jul 2008 13:50:37 +0300
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "Johannes Berg" <johannes@sipsolutions.net>
+Subject: Re: Linux Wireless Mini-Summit -- Ottawa -- July 22, 2008
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1215685335.3483.5.camel@johannes.berg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080710110225.0dd636cf@the-village.bc.nu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 10 Jul 2008 10:47:52.0434 (UTC) FILETIME=[6723B520:01C8E27A]
+References: <20080709190915.GA8238@tuxdriver.com>
+	 <1215685335.3483.5.camel@johannes.berg>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Alan,
+On Thu, Jul 10, 2008 at 1:22 PM, Johannes Berg
+<johannes@sipsolutions.net> wrote:
+>
+>> 0900  Status Reports
+>>       Overview of where things stand today
+>>       - 802.11n
+>>       - QoS/Multiqueue
+>>       - Mesh mode (802.11s)
+>>       - RF kill
+>
+> And spectrum management (Tomas) please.
 
-Alan Cox wrote:
-> On Thu, 10 Jul 2008 12:30:36 +0200
-> Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com> wrote:
-> 
-> > Alan Cox wrote:
-> > >
-> > > > > +       else if (!irq_on && !priv->irq_disabled)
-> > > > > +               disable_irq(dev_info->irq);
-> > > > I'm not sure if this is a problem on SMP.  Should you use
-> > > > disable_irq_nosync here, too?  Probably it's OK.
-> > >
-> > > That one will also deadlock.
-> > Can you explain why?  I think irqcontrol is only called in task context.
-> > I only see one possible deadlock and that's disable_irq being called
-> > while the irq is IRQ_INPROGRESS on the same cpu.  I'm always willing to
-> > learn.
-> 
->         CPU0     (UIO IRQ)              CPU1 (irqcontrol)
->         take IRQ
->                                         take spin lock
->         spin on spinlock
->                                         disable_irq (blocks)
-Ah, OK, that's because uio_pdrv_genirq_handler and
-uio_pdrv_genirq_irqcontrol share the lock.
 
-Is this something that lockdep can detect?
- 
-Best regards and thanks for clearifying
-Uwe
 
--- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+>
+> We've seen initial patches that add a bit of infrastructure, but aren't
+> using these things yet.
+
+Hope to submit all the patches before symposium.
+The whole package is already visible in iwl5000 branch of
+iwlwifi-2.6.git Need to clean it up and submit.
+
+Thanks
+Tomas
