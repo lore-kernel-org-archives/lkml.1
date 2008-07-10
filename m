@@ -1,76 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbYGJH32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755656AbYGJHbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755240AbYGJH32 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 03:29:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbYGJH3T
+	id S1755656AbYGJHbT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 03:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbYGJHbL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 03:29:19 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41823 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751354AbYGJH3S (ORCPT
+	Thu, 10 Jul 2008 03:31:11 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:54190 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751353AbYGJHbK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 03:29:18 -0400
-Message-ID: <4875BA19.3060101@jp.fujitsu.com>
-Date: Thu, 10 Jul 2008 16:28:25 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Thu, 10 Jul 2008 03:31:10 -0400
+Date: Thu, 10 Jul 2008 09:30:55 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, miaox@cn.fujitsu.com,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@qumranet.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [BUG] CFS vs cpu hotplug
+Message-ID: <20080710073055.GA7127@osiris.boeblingen.de.ibm.com>
+References: <1215642760.5310.12.camel@earth>
 MIME-Version: 1.0
-To: John Keller <jpk@sgi.com>
-CC: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       takayoshi.kochi@gmail.com
-Subject: Re: [PATCH] x86: Allow MMCONFIG above 4GB on x86_64
-References: <20080709204127.1458.5727.77728@attica.americas.sgi.com>
-In-Reply-To: <20080709204127.1458.5727.77728@attica.americas.sgi.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1215642760.5310.12.camel@earth>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John Keller wrote:
-> SGI UV will have MMCFG base addresses that are greater than 4GB (32 bits).
+On Thu, Jul 10, 2008 at 12:32:40AM +0200, Dmitry Adamushko wrote:
 > 
-> Signed-off-by: John Keller <jpk@sgi.com>
+> hm, while looking at this code again...
+> 
+> 
+> Ingo,
+> 
+> I think we may have a race between try_to_wake_up() and migrate_live_tasks() -> move_task_off_dead_cpu()
+> when the later one may end up looping endlessly.
+> 
+> 
+> Subject: sched: prevent a potentially endless loop in move_task_off_dead_cpu()
+> 
+> Interrupts are enabled on other CPUs when migration_call(CPU_DEAD, ...) is called so we may get a race
+> between try_to_wake_up() and migrate_live_tasks() -> move_task_off_dead_cpu(). The former one may push
+> a task out of a dead CPU causing the later one to loop endlessly.
 
-Fujitsu servers also will need this change.
+That's exactly what explains a dump I got yesterday. Thanks for fixing! :)
 
-Thanks,
-Kenji Kaneshige
+Will apply your patch and let you know if it fixes the problem.
+(may take until next week unfortunately).
 
-
+> Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+> 
+> ---
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 94ead43..9397b87 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -5621,8 +5621,10 @@ static int __migrate_task(struct task_struct *p, int src_cpu, int dest_cpu)
+> 
+>  	double_rq_lock(rq_src, rq_dest);
+>  	/* Already moved. */
+> -	if (task_cpu(p) != src_cpu)
+> +	if (task_cpu(p) != src_cpu) {
+> +		ret = 1;
+>  		goto out;
+> +	}
+>  	/* Affinity changed (again). */
+>  	if (!cpu_isset(dest_cpu, p->cpus_allowed))
+>  		goto out;
+> 
 > ---
 > 
-> A similar patch was submitted over a year ago, but apparently was not
-> merged in.
-> 
->    http://marc.info/?l=linux-acpi&m=117283388212912&w=2
-> 
-> 
-> Index: linux-2.6/arch/x86/kernel/acpi/boot.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/acpi/boot.c	2008-07-09 13:02:54.000000000 -0500
-> +++ linux-2.6/arch/x86/kernel/acpi/boot.c	2008-07-09 15:25:32.000000000 -0500
-> @@ -200,6 +200,7 @@ int __init acpi_parse_mcfg(struct acpi_t
->  	}
->  
->  	memcpy(pci_mmcfg_config, &mcfg[1], config_size);
-> +#ifndef CONFIG_X86_64
->  	for (i = 0; i < pci_mmcfg_config_num; ++i) {
->  		if (pci_mmcfg_config[i].address > 0xFFFFFFFF) {
->  			printk(KERN_ERR PREFIX
-> @@ -209,6 +210,7 @@ int __init acpi_parse_mcfg(struct acpi_t
->  			return -ENODEV;
->  		}
->  	}
-> +#endif
->  
->  	return 0;
->  }
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
-
-
