@@ -1,98 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762322AbYGJSrq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932301AbYGJSxL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762322AbYGJSrq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 14:47:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758947AbYGJSmG
+	id S932301AbYGJSxL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 14:53:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759161AbYGJSwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 14:42:06 -0400
-Received: from mga11.intel.com ([192.55.52.93]:47639 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758899AbYGJSmE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 14:42:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.30,339,1212390000"; 
-   d="scan'208";a="589105650"
-Message-Id: <20080710182236.911771000@linux-os.sc.intel.com>
-References: <20080710181634.764954000@linux-os.sc.intel.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 10 Jul 2008 11:16:41 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
-       akpm@linux-foundation.org, arjan@linux.intel.com, andi@firstfloor.org,
-       ebiederm@xmission.com, jbarnes@virtuousgeek.org, steiner@sgi.com
-Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch 07/26] x64, x2apic/intr-remap: move IOMMU_WAIT_OP() macro to intel-iommu.h
-Content-Disposition: inline; filename=move_iommu_wait_io_macro.patch
+	Thu, 10 Jul 2008 14:52:39 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:56134 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758915AbYGJSwi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 14:52:38 -0400
+Date: Thu, 10 Jul 2008 14:52:21 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
+Cc: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [uml-devel] UML kernel failed to start betvee 2.6.8-rc8 and
+	current git sources
+Message-ID: <20080710185221.GI18429@c2.user-mode-linux.org>
+References: <200807101619.54052.toralf.foerster@gmx.de> <20080710165811.GA18429@c2.user-mode-linux.org> <200807101934.33636.toralf.foerster@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200807101934.33636.toralf.foerster@gmx.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-move IOMMU_WAIT_OP() macro to header file.
+On Thu, Jul 10, 2008 at 07:34:29PM +0200, Toralf Förster wrote:
+> At Thursday 10 July 2008 18:58:11 Jeff Dike wrote :
+> > On Thu, Jul 10, 2008 at 04:19:51PM +0200, Toralf Förster wrote:
+> > > from v2.6.26-rc8 to v2.6.26-rc9-56-g6329d30 sth. affected UML, b/c my user mode linux kernel produces this :
+> > 
+> > That UML runs fine here.  Did you also upgrade the host kernel between
+> > rc8 and now?
+> > 
+> Yes, but that's not the reason. The UML crashes both under host kernel
+> 2.6.24-gentoo-r8 and 2.6.25-gentoo-r6. The last (available) working UML kernel
+> is linux-v2.6.26-rc8-227 (tested under host kernel 2.6.25-gentoo-r6).
 
-This will be used by both DMA-remapping and Intr-remapping.
+Can you send me your crashing UML binary?
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
+Also, can you bisect this and see where something broke?
 
-Index: tree-x86/drivers/pci/intel-iommu.c
-===================================================================
---- tree-x86.orig/drivers/pci/intel-iommu.c	2008-07-10 09:51:51.000000000 -0700
-+++ tree-x86/drivers/pci/intel-iommu.c	2008-07-10 09:51:59.000000000 -0700
-@@ -49,8 +49,6 @@
- 
- #define DEFAULT_DOMAIN_ADDRESS_WIDTH 48
- 
--#define DMAR_OPERATION_TIMEOUT ((cycles_t) tsc_khz*10*1000) /* 10sec */
--
- #define DOMAIN_MAX_ADDR(gaw) ((((u64)1) << gaw) - 1)
- 
- 
-@@ -486,19 +484,6 @@
- 	return 0;
- }
- 
--#define IOMMU_WAIT_OP(iommu, offset, op, cond, sts) \
--{\
--	cycles_t start_time = get_cycles();\
--	while (1) {\
--		sts = op (iommu->reg + offset);\
--		if (cond)\
--			break;\
--		if (DMAR_OPERATION_TIMEOUT < (get_cycles() - start_time))\
--			panic("DMAR hardware is malfunctioning\n");\
--		cpu_relax();\
--	}\
--}
--
- static void iommu_set_root_entry(struct intel_iommu *iommu)
- {
- 	void *addr;
-Index: tree-x86/drivers/pci/intel-iommu.h
-===================================================================
---- tree-x86.orig/drivers/pci/intel-iommu.h	2008-07-10 09:51:57.000000000 -0700
-+++ tree-x86/drivers/pci/intel-iommu.h	2008-07-10 09:51:59.000000000 -0700
-@@ -177,6 +177,21 @@
- #define dma_frcd_source_id(c) (c & 0xffff)
- #define dma_frcd_page_addr(d) (d & (((u64)-1) << 12)) /* low 64 bit */
- 
-+#define DMAR_OPERATION_TIMEOUT ((cycles_t) tsc_khz*10*1000) /* 10sec */
-+
-+#define IOMMU_WAIT_OP(iommu, offset, op, cond, sts) \
-+{\
-+	cycles_t start_time = get_cycles();\
-+	while (1) {\
-+		sts = op (iommu->reg + offset);\
-+		if (cond)\
-+			break;\
-+		if (DMAR_OPERATION_TIMEOUT < (get_cycles() - start_time))\
-+			panic("DMAR hardware is malfunctioning\n");\
-+		cpu_relax();\
-+	}\
-+}
-+
- struct intel_iommu {
- 	void __iomem	*reg; /* Pointer to hardware regs, virtual addr */
- 	u64		cap;
+      	      	     	  Jeff
 
 -- 
-
+Work email - jdike at linux dot intel dot com
