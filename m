@@ -1,57 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757484AbYGJOct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757958AbYGJOdF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757484AbYGJOct (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 10:32:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754770AbYGJOcc
+	id S1757958AbYGJOdF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 10:33:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755259AbYGJOcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 10:32:32 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:17600 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754659AbYGJOcb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 10:32:31 -0400
-To: "Tomas Winkler" <tomasw@gmail.com>
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux Wireless Mini-Summit -- Ottawa -- July 22, 2008
-References: <20080709190915.GA8238@tuxdriver.com>
-	<1ba2fa240807091713t1158c1ddp81c92ae26a002e46@mail.gmail.com>
-From: Kalle Valo <kalle.valo@nokia.com>
-Date: Thu, 10 Jul 2008 17:30:47 +0300
-In-Reply-To: <1ba2fa240807091713t1158c1ddp81c92ae26a002e46@mail.gmail.com> (ext Tomas Winkler's message of "Thu\, 10 Jul 2008 03\:13\:49 +0300")
-Message-ID: <87iqvd3j6w.fsf@nokia.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 10 Jul 2008 10:32:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58127 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755248AbYGJOcd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 10:32:33 -0400
+Date: Thu, 10 Jul 2008 10:30:18 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Paul Menage <menage@google.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Libcg Devel Mailing List <libcg-devel@lists.sourceforge.net>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Peter Zijlstra <pzijlstr@redhat.com>,
+       Kazunaga Ikeno <k-ikeno@ak.jp.nec.com>,
+       Morton Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Graf <tgraf@redhat.com>, Rik Van Riel <riel@redhat.com>
+Subject: Re: [RFC] How to handle the rules engine for cgroups
+Message-ID: <20080710143018.GC3782@redhat.com>
+References: <20080701191126.GA17376@redhat.com> <20080703101957.b3856904.kamezawa.hiroyu@jp.fujitsu.com> <20080703155446.GB9275@redhat.com> <6599ad830807100223m2453963cwcfbe6eb1ad54d517@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 10 Jul 2008 14:30:49.0358 (UTC) FILETIME=[8C6852E0:01C8E299]
-X-Nokia-AV: Clean
+Content-Disposition: inline
+In-Reply-To: <6599ad830807100223m2453963cwcfbe6eb1ad54d517@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tomas Winkler <tomasw@gmail.com> writes:
+On Thu, Jul 10, 2008 at 02:23:52AM -0700, Paul Menage wrote:
+> On Thu, Jul 3, 2008 at 8:54 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> >
+> > As of today it should happen because newly execed process will run into
+> > same cgroup as parent.  But that's what probably we need to avoid.
+> > For example, if an admin has created three cgroups "database", "browser"
+> > "others" and a user launches "firefox" from shell (assuming shell is running
+> > originally in "others" cgroup), then any memory allocation for firefox should
+> > come from "browser" cgroup and not from "others".
+> 
+> I think that I'm a little skeptical that anyone would ever want to do that.
+> 
+> Wouldn't it be a simpler mechanism for the admin to simply have
+> wrappers around the "firefox" and "oracle" binaries that move the
+> process into the "browser" or "database" cgroup before running the
+> real binaries?
+> 
 
->> Although it is already a bit late, I would like to re-open discussions
->> on our agenda for the meeting.  Based on current upstream topics and
->> those persons whom I expect to be attending, I have cobbled together
->> an agenda proposal below.  Please review it and feel free to suggest
->> amendments or alterations, or to elaborate or ask questions about my
->> proposed schedule of topics.
->>
->> I look forward to seeing many of you in Ottawa!
->
-> One more topic would be probably
->  power management/power save - connection to system power/power supply
-> (Battery/AC)
+Well, that would mean first wrappers need to be created around all the
+applications which needs to be controlled. Then wrapper needs to 
+synchronize with the classification daemon if I have been put into
+the right cgroup and can I go ahead with launching the real binary etc.
+This sounds ugly and putting wrappers around all the applications does
+not seem very practical. 
 
-I'm also very interested about this. mac80211 is lacking any support
-for Power Save Mode and I think we should fix that. At least having an
-interface to enable and disable PSM would be a start, but we could go
-even further than that.
+> >
+> > I am assuming that this will be a requirement for enterprise class
+> > systems. Would be good to know the experiences of people who are already
+> > doing some kind of work load management.
+> 
+> I can help there. :-) At Google we have two approaches:
+> 
+> - grid jobs, which are moved into the appropriate cgroup (actually,
+> currently cpuset) by the grid daemon when it starts the job
+> 
 
-I'm just worried if one day is enough for us. The agenda is getting
-quite long already.
+So grid daemon probably first forks off, determines the right cpuset
+move the job there and then do exec?
 
--- 
-Kalle Valo
+> - ssh logins, which are moved into the appropriate cpuset by a
+> forced-command script specified in the sshd config.
+> 
+> I don't see the rule-based approach being all that useful for our needs.
+> 
+> It's all very well coming up with theoretical cases that a fancy new
+> mechanism solves. But it carries more weight if someone can stand up
+> and say "Yes, I want to use this on my real cluster of machines". (Or
+> even "Yes, if this is implemented I *will* use it on my desktop" would
+> be a start)
+> 
+
+So it boils down to.
+
+1) Can we bear the delay in task classification (Especially, exec). If yes,
+  then all the classification job can take place in userspace.
+
+2) If no,
+	a) Then either we need to implement rule based engine to let
+	  kernel do classfication.
+
+	b) or we need to do various things in user space as you suggested.
+		- Pur wrapper around applications.
+		- Job launcher (ex. Grid daemon) is modified to determine
+		  the right cgroup and place application there before
+		  actually launching the job.
+
+Balbir and other people, any more thoughts on this? How exactly this thing
+need to be used in your work environment.
+
+I am little skeptical of options 2b working in most of the scenarios.
+
+Thanks
+Vivek
