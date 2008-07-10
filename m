@@ -1,57 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755869AbYGJG0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755312AbYGJGfQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755869AbYGJG0i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 02:26:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbYGJG0a
+	id S1755312AbYGJGfQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 02:35:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbYGJGfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 02:26:30 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37016 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750835AbYGJG03 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 02:26:29 -0400
-Date: Thu, 10 Jul 2008 08:26:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, joerg.roedel@amd.com,
-       tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
-       Sebastian.Biemueller@amd.com, robert.richter@amd.com, joro@8bytes.org
-Subject: Re: [PATCH 16/34] AMD IOMMU: add kernel command line parameters
-	for AMD IOMMU
-Message-ID: <20080710062603.GB23054@elte.hu>
-References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com> <1214508490-29683-17-git-send-email-joerg.roedel@amd.com> <20080709185634.08c60937.akpm@linux-foundation.org> <20080710132447T.fujita.tomonori@lab.ntt.co.jp> <20080709213907.1e8b253b.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080709213907.1e8b253b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 10 Jul 2008 02:35:05 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:58285 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752923AbYGJGfE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 02:35:04 -0400
+Date: Thu, 10 Jul 2008 08:34:57 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: David =?UTF-8?B?SMOkcmRlbWFu?= <david@hardeman.nu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: sdhci: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter -
+ disabling IRQ
+Message-ID: <20080710083457.7887d363@mjolnir.drzeus.cx>
+In-Reply-To: <20080624181656.GB14243@hardeman.nu>
+References: <20080624181656.GB14243@hardeman.nu>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-11481-1215671701-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+--=_freyr.drzeus.cx-11481-1215671701-0001-2
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-> On Thu, 10 Jul 2008 13:25:23 +0900 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> 
-> > I have one related question, we should document all the kernel boot
-> > parameters in Documentation/kernel-parameters.txt?
-> > 
-> > Some of x86_64 boot parameters are in
-> > Documentations/x86/x86_64/boot-options.txt. The parameters of IOMMUs
-> > are scattered. It's confusing.
-> 
-> A single monolithic file has advantages.  I think I'd prefer that 
-> personally.  I'd forgotten that the x86-specific one exists, actually.
+When sending bug reports, you should have a look in MAINTAINERS and
+make sure you cc the relevant people responsible for the part of the
+kernel you're having problems with. Thankfully Andrew Morton noticed
+your mail and forwarded it to me.
 
-yeah, it should be all in Documentation/kernel-parameters.txt.
+On Tue, 24 Jun 2008 20:16:56 +0200
+David H=C3=A4rdeman <david@hardeman.nu> wrote:
 
-	Ingo
+> I'm using my brand new HP 8510w laptop with kernel 2.6.25 (Debian kernel=
+=20
+> 2.6.25-2-amd64 version 2.6.25-5 to be exact) and the integrated memory=20
+> card reader is detected by the sdhci kernel module.
+>=20
+> However, about 10 minutes after boot I get the following message in=20
+> dmesg (pid and process may change of course):
+>=20
+> [  697.844419] irq 19: nobody cared (try booting with the "irqpoll" optio=
+n)
+
+Do you have a card in at this point? And can you give me a complete
+dmesg dump. The sdhci hardware might not be the culprit, but just a
+trigger in that it enables that interrupt line.
+
+--=20
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-11481-1215671701-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkh1rZQACgkQ7b8eESbyJLigIgCg7FwPtcwCdQTcYldTYh57ekWM
+sCgAoOR7eSjH4kim9oULRIplkQukskPJ
+=f+5K
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-11481-1215671701-0001-2--
