@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758701AbYGJP1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758940AbYGJP1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758701AbYGJP1T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 11:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758857AbYGJP03
+	id S1758940AbYGJP1i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 11:27:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758918AbYGJP0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 11:26:29 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:55122 "EHLO
+	Thu, 10 Jul 2008 11:26:38 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:55128 "EHLO
 	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758850AbYGJP01 (ORCPT
+	by vger.kernel.org with ESMTP id S1758908AbYGJP0h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 11:26:27 -0400
-Subject: [PATCH 06/15] regulator: add support for fixed regulators.
+	Thu, 10 Jul 2008 11:26:37 -0400
+Subject: [PATCH 07/15] regulator: regulator test harness
 From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>,
        arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
        Mark Brown <broonie@opensource.wolfsonmicro.com>
 Content-Type: text/plain
-Date: Thu, 10 Jul 2008 16:26:26 +0100
-Message-Id: <1215703586.13431.62.camel@odin>
+Date: Thu, 10 Jul 2008 16:26:34 +0100
+Message-Id: <1215703594.13431.63.camel@odin>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
@@ -26,25 +26,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds supports for regulator that are not software controlable. It allows
-them to coexist in systems with mixed supplies.
+This provides a virtual regulator test harness which exposes a sysfs
+interface for setting power requirements, intended for test purposes only.
 
 Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Signed-off-by: Mike Rapoport <mike@compulab.co.il>
 Signed-off-by: Liam Girdwood <lg@opensource.wolfsonmicro.com>
 ---
- drivers/regulator/fixed.c |  129 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 129 insertions(+), 0 deletions(-)
- create mode 100644 drivers/regulator/fixed.c
+ drivers/regulator/virtual.c |  252 +++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 252 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/regulator/virtual.c
 
-diff --git a/drivers/regulator/fixed.c b/drivers/regulator/fixed.c
+diff --git a/drivers/regulator/virtual.c b/drivers/regulator/virtual.c
 new file mode 100644
-index 0000000..d31db3e
+index 0000000..7018f1c
 --- /dev/null
-+++ b/drivers/regulator/fixed.c
-@@ -0,0 +1,129 @@
++++ b/drivers/regulator/virtual.c
+@@ -0,0 +1,252 @@
 +/*
-+ * fixed.c
++ * reg-virtual-consumer.c
 + *
 + * Copyright 2008 Wolfson Microelectronics PLC.
 + *
@@ -54,123 +53,246 @@ index 0000000..d31db3e
 + * modify it under the terms of the GNU General Public License as
 + * published by the Free Software Foundation; either version 2 of the
 + * License, or (at your option) any later version.
-+ *
-+ * This is useful for systems with mixed controllable and
-+ * non-controllable regulators, as well as for allowing testing on
-+ * systems with no controllable regulators.
 + */
 +
 +#include <linux/err.h>
 +#include <linux/mutex.h>
 +#include <linux/platform_device.h>
-+#include <linux/regulator/driver.h>
-+#include <linux/regulator/fixed.h>
++#include <linux/regulator/consumer.h>
 +
-+struct fixed_voltage_data {
-+	struct regulator_desc desc;
-+	struct regulator_dev *dev;
-+	int microvolts;
++struct virtual_consumer_data {
++	struct mutex lock;
++	struct regulator *regulator;
++	int enabled;
++	int min_uV;
++	int max_uV;
++	unsigned int mode;
 +};
 +
-+static int fixed_voltage_is_enabled(struct regulator_dev *dev)
++static void update_constraints(struct virtual_consumer_data *data)
 +{
-+	return 1;
-+}
-+
-+static int fixed_voltage_enable(struct regulator_dev *dev)
-+{
-+	return 0;
-+}
-+
-+static int fixed_voltage_get_voltage(struct regulator_dev *dev)
-+{
-+	struct fixed_voltage_data *data = rdev_get_drvdata(dev);
-+
-+	return data->microvolts;
-+}
-+
-+static struct regulator_ops fixed_voltage_ops = {
-+	.is_enabled = fixed_voltage_is_enabled,
-+	.enable = fixed_voltage_enable,
-+	.get_voltage = fixed_voltage_get_voltage,
-+};
-+
-+static int regulator_fixed_voltage_probe(struct platform_device *pdev)
-+{
-+	struct fixed_voltage_config *config = pdev->dev.platform_data;
-+	struct fixed_voltage_data *drvdata;
 +	int ret;
 +
-+	drvdata = kzalloc(sizeof(struct fixed_voltage_data), GFP_KERNEL);
++	if (data->min_uV && data->max_uV
++	    && data->min_uV <= data->max_uV) {
++		ret = regulator_set_voltage(data->regulator,
++					    data->min_uV, data->max_uV);
++		if (ret != 0) {
++			printk(KERN_ERR "regulator_set_voltage() failed: %d\n",
++			       ret);
++			return;
++		}
++	}
++
++	if (data->min_uV && data->max_uV && !data->enabled) {
++		ret = regulator_enable(data->regulator);
++		if (ret == 0)
++			data->enabled = 1;
++		else
++			printk(KERN_ERR "regulator_enable() failed: %d\n",
++				ret);
++	}
++
++	if (!(data->min_uV && data->max_uV) && data->enabled) {
++		ret = regulator_disable(data->regulator);
++		if (ret == 0)
++			data->enabled = 0;
++		else
++			printk(KERN_ERR "regulator_disable() failed: %d\n",
++				ret);
++	}
++}
++
++static ssize_t show_min_uV(struct device *dev,
++			   struct device_attribute *attr, char *buf)
++{
++	struct virtual_consumer_data *data = dev_get_drvdata(dev);
++	return sprintf(buf, "%d\n", data->min_uV);
++}
++
++static ssize_t set_min_uV(struct device *dev, struct device_attribute *attr,
++			  const char *buf, size_t count)
++{
++	struct virtual_consumer_data *data = dev_get_drvdata(dev);
++	long val;
++
++	if (strict_strtol(buf, 10, &val) != 0)
++		return count;
++
++	mutex_lock(&data->lock);
++
++	data->min_uV = val;
++	update_constraints(data);
++
++	mutex_unlock(&data->lock);
++
++	return count;
++}
++
++static ssize_t show_max_uV(struct device *dev,
++			   struct device_attribute *attr, char *buf)
++{
++	struct virtual_consumer_data *data = dev_get_drvdata(dev);
++	return sprintf(buf, "%d\n", data->max_uV);
++}
++
++static ssize_t set_max_uV(struct device *dev, struct device_attribute *attr,
++			  const char *buf, size_t count)
++{
++	struct virtual_consumer_data *data = dev_get_drvdata(dev);
++	long val;
++
++	if (strict_strtol(buf, 10, &val) != 0)
++		return count;
++
++	mutex_lock(&data->lock);
++
++	data->max_uV = val;
++	update_constraints(data);
++
++	mutex_unlock(&data->lock);
++
++	return count;
++}
++
++static ssize_t show_mode(struct device *dev,
++			 struct device_attribute *attr, char *buf)
++{
++	struct virtual_consumer_data *data = dev_get_drvdata(dev);
++
++	switch (data->mode) {
++	case REGULATOR_MODE_FAST:
++		return sprintf(buf, "fast\n");
++	case REGULATOR_MODE_NORMAL:
++		return sprintf(buf, "normal\n");
++	case REGULATOR_MODE_IDLE:
++		return sprintf(buf, "idle\n");
++	case REGULATOR_MODE_STANDBY:
++		return sprintf(buf, "standby\n");
++	default:
++		return sprintf(buf, "unknown\n");
++	}
++}
++
++static ssize_t set_mode(struct device *dev, struct device_attribute *attr,
++			const char *buf, size_t count)
++{
++	struct virtual_consumer_data *data = dev_get_drvdata(dev);
++	unsigned int mode;
++	int ret;
++
++	if (strncmp(buf, "fast", strlen("fast")) == 0)
++		mode = REGULATOR_MODE_FAST;
++	else if (strncmp(buf, "normal", strlen("normal")) == 0)
++		mode = REGULATOR_MODE_NORMAL;
++	else if (strncmp(buf, "idle", strlen("idle")) == 0)
++		mode = REGULATOR_MODE_IDLE;
++	else if (strncmp(buf, "standby", strlen("standby")) == 0)
++		mode = REGULATOR_MODE_STANDBY;
++	else {
++		dev_err(dev, "Configuring invalid mode\n");
++		return count;
++	}
++
++	mutex_lock(&data->lock);
++	ret = regulator_set_mode(data->regulator, mode);
++	if (ret == 0)
++		data->mode = mode;
++	else
++		dev_err(dev, "Failed to configure mode: %d\n", ret);
++	mutex_unlock(&data->lock);
++
++	return count;
++}
++
++static DEVICE_ATTR(min_microvolts, 0666, show_min_uV, set_min_uV);
++static DEVICE_ATTR(max_microvolts, 0666, show_max_uV, set_max_uV);
++static DEVICE_ATTR(mode, 0666, show_mode, set_mode);
++
++struct device_attribute *attributes[] = {
++	&dev_attr_min_microvolts,
++	&dev_attr_max_microvolts,
++	&dev_attr_mode,
++};
++
++static int regulator_virtual_consumer_probe(struct platform_device *pdev)
++{
++	char *reg_id = pdev->dev.platform_data;
++	struct virtual_consumer_data *drvdata;
++	int ret, i;
++
++	drvdata = kzalloc(sizeof(struct virtual_consumer_data), GFP_KERNEL);
 +	if (drvdata == NULL) {
 +		ret = -ENOMEM;
 +		goto err;
 +	}
 +
-+	drvdata->desc.name = kstrdup(config->supply_name, GFP_KERNEL);
-+	if (drvdata->desc.name == NULL) {
-+		ret = -ENOMEM;
++	mutex_init(&drvdata->lock);
++
++	drvdata->regulator = regulator_get(&pdev->dev, reg_id);
++	if (IS_ERR(drvdata->regulator)) {
++		ret = PTR_ERR(drvdata->regulator);
 +		goto err;
 +	}
-+	drvdata->desc.type = REGULATOR_VOLTAGE;
-+	drvdata->desc.owner = THIS_MODULE;
-+	drvdata->desc.ops = &fixed_voltage_ops,
 +
-+	drvdata->microvolts = config->microvolts;
-+
-+	drvdata->dev = regulator_register(&drvdata->desc, drvdata);
-+	if (IS_ERR(drvdata->dev)) {
-+		ret = PTR_ERR(drvdata->dev);
-+		goto err_name;
++	for (i = 0; i < ARRAY_SIZE(attributes); i++) {
++		ret = device_create_file(&pdev->dev, attributes[i]);
++		if (ret != 0)
++			goto err;
 +	}
++
++	drvdata->mode = regulator_get_mode(drvdata->regulator);
 +
 +	platform_set_drvdata(pdev, drvdata);
 +
-+	dev_dbg(&pdev->dev, "%s supplying %duV\n", drvdata->desc.name,
-+		drvdata->microvolts);
-+
 +	return 0;
 +
-+err_name:
-+	kfree(drvdata->desc.name);
 +err:
++	for (i = 0; i < ARRAY_SIZE(attributes); i++)
++		device_remove_file(&pdev->dev, attributes[i]);
 +	kfree(drvdata);
 +	return ret;
 +}
 +
-+static int regulator_fixed_voltage_remove(struct platform_device *pdev)
++static int regulator_virtual_consumer_remove(struct platform_device *pdev)
 +{
-+	struct fixed_voltage_data *drvdata = platform_get_drvdata(pdev);
++	struct virtual_consumer_data *drvdata = platform_get_drvdata(pdev);
++	int i;
 +
-+	regulator_unregister(drvdata->dev);
-+	kfree(drvdata->desc.name);
++	for (i = 0; i < ARRAY_SIZE(attributes); i++)
++		device_remove_file(&pdev->dev, attributes[i]);
++	if (drvdata->enabled)
++		regulator_disable(drvdata->regulator);
++	regulator_put(drvdata->regulator);
++
 +	kfree(drvdata);
 +
 +	return 0;
 +}
 +
-+static struct platform_driver regulator_fixed_voltage_driver = {
-+	.probe		= regulator_fixed_voltage_probe,
-+	.remove		= regulator_fixed_voltage_remove,
++static struct platform_driver regulator_virtual_consumer_driver = {
++	.probe		= regulator_virtual_consumer_probe,
++	.remove		= regulator_virtual_consumer_remove,
 +	.driver		= {
-+		.name		= "reg-fixed-voltage",
++		.name		= "reg-virt-consumer",
 +	},
 +};
 +
-+static int __init regulator_fixed_voltage_init(void)
-+{
-+	return platform_driver_register(&regulator_fixed_voltage_driver);
-+}
-+module_init(regulator_fixed_voltage_init);
 +
-+static void __exit regulator_fixed_voltage_exit(void)
++static int __init regulator_virtual_consumer_init(void)
 +{
-+	platform_driver_unregister(&regulator_fixed_voltage_driver);
++	return platform_driver_register(&regulator_virtual_consumer_driver);
 +}
-+module_exit(regulator_fixed_voltage_exit);
++module_init(regulator_virtual_consumer_init);
++
++static void __exit regulator_virtual_consumer_exit(void)
++{
++	platform_driver_unregister(&regulator_virtual_consumer_driver);
++}
++module_exit(regulator_virtual_consumer_exit);
 +
 +MODULE_AUTHOR("Mark Brown <broonie@opensource.wolfsonmicro.com>");
-+MODULE_DESCRIPTION("Fixed voltage regulator");
++MODULE_DESCRIPTION("Virtual regulator consumer");
 +MODULE_LICENSE("GPL");
 -- 
 1.5.4.3
