@@ -1,56 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760834AbYGJTCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761540AbYGJTDA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760834AbYGJTCO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 15:02:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754976AbYGJTB6
+	id S1761540AbYGJTDA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 15:03:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757365AbYGJTCv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 15:01:58 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:58867 "EHLO e5.ny.us.ibm.com"
+	Thu, 10 Jul 2008 15:02:51 -0400
+Received: from gw.goop.org ([64.81.55.164]:53865 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754778AbYGJTB4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 15:01:56 -0400
-Subject: Re: [PATCH 1/2] [PATCH] Fix a hugepage reservation check for
-	MAP_SHARED
-From: Adam Litke <agl@us.ibm.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, apw@shadowen.org
-In-Reply-To: <20080710173021.16433.90661.sendpatchset@skynet.skynet.ie>
-References: <20080710173001.16433.87538.sendpatchset@skynet.skynet.ie>
-	 <20080710173021.16433.90661.sendpatchset@skynet.skynet.ie>
-Content-Type: text/plain
-Organization: IBM
-Date: Thu, 10 Jul 2008 14:01:59 -0500
-Message-Id: <1215716519.14825.112.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	id S1752482AbYGJTCu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 15:02:50 -0400
+Message-ID: <48765CCD.4070308@goop.org>
+Date: Thu, 10 Jul 2008 12:02:37 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Takashi Iwai <tiwai@suse.de>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: next-0710: CONFIG_PARAVIRT broken on x86_64?
+References: <s5htzexryqy.wl%tiwai@suse.de>	<487621BC.4040001@goop.org> <s5hmykprv2q.wl%tiwai@suse.de>
+In-Reply-To: <s5hmykprv2q.wl%tiwai@suse.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-10 at 18:30 +0100, Mel Gorman wrote:
-> When removing a huge page from the hugepage pool for a fault the system
-> checks to see if the mapping requires additional pages to be reserved, and
-> if it does whether there are any unreserved pages remaining.  If not, the
-> allocation fails without even attempting to get a page. In order to determine
-> whether to apply this check we call vma_has_private_reserves() which tells us
-> if this vma is MAP_PRIVATE and is the owner.  This incorrectly triggers the
-> remaining reservation test for MAP_SHARED mappings which prevents allocation
-> of the final page in the pool even though it is reserved for this mapping.
-> 
-> In reality we only want to check this for MAP_PRIVATE mappings where the
-> process is not the original mapper.  Replace vma_has_private_reserves() with
-> vma_has_reserves() which indicates whether further reserves are required,
-> and update the caller.
-> 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Takashi Iwai wrote:
+> At Thu, 10 Jul 2008 07:50:36 -0700,
+> Jeremy Fitzhardinge wrote:
+>   
+>> Takashi Iwai wrote:
+>>     
+>>> Hi,
+>>>
+>>> does paravirt work on x86_64 with the recent linux-next kernels?
+>>> I have a boot problem, a segfault of init at the very beginning.
+>>>
+>>>   Freeing memory ...
+>>>   init[1]: segfault ... in libc-2.8.so
+>>>
+>>> The backtrace is like below:
+>>>   ? do_coredump
+>>>   ? blocking_notifier_call_chain
+>>>   do_exit
+>>>   do_group_exit
+>>>   get_signal_to_deliver
+>>>   do_notify_resume
+>>>   ? do_wait
+>>>   ? default_wake_function
+>>>   retint_signal
+>>>
+>>> The kconfig is below.  When I set CONFIG_PARAVIRT=n, it works fine.
+>>>
+>>> The problem exists at least since 20080703 until today, maybe in the
+>>> earlier versions, too.  The similar config works on i386.
+>>>   
+>>>       
+>> Is your userspace 32 or 64 bit?
+>>     
+>
+> 64bit.
+>   
 
-Acked-by: Adam Litke <agl@us.ibm.com>
+Booting native or under kvm?
 
-Tested and confirmed.
-
--- 
-Adam Litke - (agl at us.ibm.com)
-IBM Linux Technology Center
-
+    J
