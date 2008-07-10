@@ -1,83 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755759AbYGJBZO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756690AbYGJB1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755759AbYGJBZO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 21:25:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbYGJBZB
+	id S1756690AbYGJB1x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 21:27:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbYGJB1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 21:25:01 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60425 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752336AbYGJBZA (ORCPT
+	Wed, 9 Jul 2008 21:27:42 -0400
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:32991 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750828AbYGJB1l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 21:25:00 -0400
-Date: Wed, 9 Jul 2008 18:18:57 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Altobelli <david.altobelli@hp.com>
-Cc: linux-kernel@vger.kernel.org, greg@kroah.com, tony.camuso@hp.com
-Subject: Re: [PATCH][v5] HP iLO driver
-Message-Id: <20080709181857.4a38b920.akpm@linux-foundation.org>
-In-Reply-To: <20080702153853.GA18049@ldl.fc.hp.com>
-References: <20080702153853.GA18049@ldl.fc.hp.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Jul 2008 21:27:41 -0400
+X-Sasl-enc: f7E41dwFk/fXmAwuZkFUnArHRgn8tXHIal436+j4IVC1 1215653259
+Date: Wed, 9 Jul 2008 22:27:36 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Gerhard Wiesinger <lists@wiesinger.com>
+Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: Lots of con-current I/O = resets SATA link? (2.6.25.10)
+Message-ID: <20080710012736.GD15729@khazad-dum.debian.net>
+References: <alpine.DEB.1.10.0807051252200.12562@p34.internal.lan> <alpine.LFD.1.10.0807071649340.1160@bbs.intern> <alpine.LFD.1.10.0807071705490.2997@bbs.intern> <alpine.DEB.1.10.0807071149530.32508@p34.internal.lan> <alpine.LFD.1.10.0807080811560.5439@bbs.intern> <alpine.DEB.1.10.0807080433550.17980@p34.internal.lan> <alpine.LFD.1.10.0807081232350.32659@bbs.intern> <alpine.DEB.1.10.0807080915040.23688@p34.internal.lan> <alpine.LFD.1.10.0807090726200.686@bbs.intern>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0807090726200.686@bbs.intern>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Jul 2008 09:38:53 -0600 David Altobelli <david.altobelli@hp.com> wrote:
+On Wed, 09 Jul 2008, Gerhard Wiesinger wrote:
+> Load on power supply measured on 220V side with a true RMS Wattmeter:
 
-> A driver for the HP iLO/iLO2 management processor, which allows userspace
-> programs to query the management processor.  Programs can open a channel
-> to the device (/dev/hpilo/dXccbN), and use this to send/receive queries.  
-> The O_EXCL open flag is used to indicate that a particular channel cannot
-> be shared between processes.  This driver will replace various packages
-> HP has shipped, including hprsm and hp-ilo.
-> 
-> 	v4 -> v5
-> 	Converted more macros to inline functions
-> 	Reorganized to remove kzalloc under spinlock
-> 
-> 	v3 -> v4
-> 	Removed an upper case variable and some extra parens
-> 	Converted some macros to inline functions
-> 
-> 	v2 -> v3
-> 	Moved code from drivers/char to drivers/misc
-> 
-> 	v1 -> v2
-> 	Changed device path to /dev/hpilo/dXccbN.
-> 	Removed a volatile from fifobar variable.
-> 	Changed ILO_NAME to remove spaces.
-> 
->
-> ...
->
-> +static ssize_t ilo_write(struct file *fp, const char __user *buf,
-> +			 size_t len, loff_t *off)
-> +{
-> +	int err, pkt_id, pkt_len;
-> +	struct ccb_data *data;
-> +	struct ccb *driver_ccb;
-> +	struct ilo_hwinfo *hw;
-> +	void *pkt;
-> +
-> +	data = fp->private_data;
-> +	driver_ccb = &data->driver_ccb;
-> +	hw = data->ilo_hw;
-> +
-> +	if (is_device_reset(hw) || is_channel_reset(driver_ccb)) {
-> +		/*
-> +		 * If the device has been reset, applications
-> +		 * need to close and reopen all ccbs.
-> +		 */
-> +		ilo_reset(hw);
-> +		return -ENODEV;
-> +	}
+That won't help for the failure mode you're looking for.
 
-Can multiple processes open and write to this "device"?  If so, the above
-looks awfully racy.  Perhaps vfs-level i_mutex coverage will save us on the
-write-versus-write side, but not on write-versus-read.
+Hook an osciloscope to the power lines on the HD's power feed, and try to
+get it to trigger on any "big" variations.
 
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
