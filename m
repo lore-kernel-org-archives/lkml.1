@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760785AbYGJRdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760703AbYGJRc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760785AbYGJRdT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 13:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758745AbYGJRdF
+	id S1760703AbYGJRc5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 13:32:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760594AbYGJRcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 13:33:05 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:59577 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759589AbYGJRdD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 13:33:03 -0400
-Date: Thu, 10 Jul 2008 12:32:46 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Oren Laadan <orenl@cs.columbia.edu>,
-       Kirill Korotaev <dev@parallels.com>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Nadia.Derbey@bull.net, Andrew Morton <akpm@linux-foundation.org>,
-       nick@nick-andrew.net, Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: Checkpoint/restart (was Re: [PATCH 0/4] - v2 - Object creation
-	with a specified id)
-Message-ID: <20080710173246.GA1857@us.ibm.com>
-References: <20080418054459.891481000@bull.net> <20080422193612.GA15835@martell.zuzino.mipt.ru> <1208890580.17117.14.camel@nimitz.home.sr71.net> <20080422210130.GA15937@martell.zuzino.mipt.ru> <1208904967.17117.51.camel@nimitz.home.sr71.net> <480ED9D5.1010906@parallels.com> <480FE037.2010302@cs.columbia.edu> <m1y74a7b4w.fsf@frodo.ebiederm.org> <1215709949.9398.15.camel@nimitz>
+	Thu, 10 Jul 2008 13:32:43 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42258 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760586AbYGJRcn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 13:32:43 -0400
+Message-ID: <48764783.6030201@linux-foundation.org>
+Date: Thu, 10 Jul 2008 12:31:47 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1215709949.9398.15.camel@nimitz>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Mike Travis <travis@sgi.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <20080709133958.612635f0@infradead.org>	<4875231F.1020506@zytor.com> <487524A0.6020304@goop.org>	<487529AE.3060505@zytor.com> <m1r6a2r9nj.fsf@frodo.ebiederm.org>	<48753A71.2030006@zytor.com> <m18wwahauq.fsf@frodo.ebiederm.org> <48763732.7020805@sgi.com> <487637DE.1050706@zytor.com> <48763A5E.7080105@linux-foundation.org> <48763B36.80104@zytor.com> <48763D1C.8040206@linux-foundation.org> <48764530.7000909@goop.org>
+In-Reply-To: <48764530.7000909@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Dave Hansen (dave@linux.vnet.ibm.com):
-> On Wed, 2008-07-09 at 18:58 -0700, Eric W. Biederman wrote:
-> > In the worst case today we can restore a checkpoint by replaying all of
-> > the user space actions that took us to get there.  That is a tedious
-> > and slow approach.
+Jeremy Fitzhardinge wrote:
+>
+> The base address of the percpu area and the offsets from that base are
+> completely independent values.
+
+Definitely.
+
+
+> The addressing modes:
 > 
-> Yes, tedious and slow, *and* minimally invasive in the kernel.  Once we
-> have a tedious and slow process, we'll have some really good points when
-> we try to push the next set of patches to make it less slow and tedious.
-> We'll be able to describe an _actual_ set of problems to our fellow
-> kernel hackers.
+>    * ABS
+>    * off(%rip)
 > 
-> So, the checkpoint-as-a-corefile idea sounds good to me, but it
-> definitely leaves a lot of questions about exactly how we'll need to do
-> the restore.
+> Are exactly equivalent in what offsets they can generate, so long as *at
+> link time* the percpu *symbols* are within 2G of the code addressing
+> them.  *After* the addressing mode has generated an effective address
+> (by whatever means it likes), the %gs: override applies the segment
+> base, which can therefore offset the effective address to anywhere at all.
 
-Talking with Dave over irc, I kind of liked the idea of creating a new
-fs/binfmt_cr.c that executes a checkpoint-as-a-coredump file.
+Right. The problem is with the percpu area handled by the linker. That percpu area is used by the boot cpu and later we setup other additional per cpu areas. Those can be placed in an arbitrary way if one goes through a table of pointers to these areas.
 
-One thing I do not like about the checkpoint-as-coredump is that it begs
-us to dump all memory out into the file.  Our plan/hope was to save
-ourselves from writing out most memory by:
+However, that does not work if one calculates the virtual address instead of looking up a physical address.
 
-	1. associating a separate swapfile with each container
-	2. doing a swapfile snapshot at each checkpoint
-	3. dumping the pte entries (/proc/self/)
 
-If we do checkpoint-as-a-coredump, then we need userspace to coordinate
-a kernel-generated coredump with a user-generated (?) swapfile snapshot.
-But I guess we figure that out later.
 
--serge
+
+
