@@ -1,139 +1,648 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760450AbYGJSnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761494AbYGJSpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760450AbYGJSnT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 14:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757562AbYGJSlr
+	id S1761494AbYGJSpK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 14:45:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758589AbYGJSlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 14:41:47 -0400
-Received: from mga02.intel.com ([134.134.136.20]:28099 "EHLO mga02.intel.com"
+	Thu, 10 Jul 2008 14:41:53 -0400
+Received: from mga11.intel.com ([192.55.52.93]:47606 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754579AbYGJSln (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 14:41:43 -0400
+	id S1756183AbYGJSlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 14:41:44 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.30,339,1212390000"; 
-   d="scan'208";a="409061657"
-Message-Id: <20080710182237.772464000@linux-os.sc.intel.com>
+   d="scan'208";a="589105602"
+Message-Id: <20080710182236.049674000@linux-os.sc.intel.com>
 References: <20080710181634.764954000@linux-os.sc.intel.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 10 Jul 2008 11:16:47 -0700
+Date: Thu, 10 Jul 2008 11:16:35 -0700
 From: Suresh Siddha <suresh.b.siddha@intel.com>
 To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
        akpm@linux-foundation.org, arjan@linux.intel.com, andi@firstfloor.org,
        ebiederm@xmission.com, jbarnes@virtuousgeek.org, steiner@sgi.com
 Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch 13/26] x64, x2apic/intr-remap: ioapic routines which deal with initial io-apic RTE setup
-Content-Disposition: inline; filename=ioapic_routines.patch
+Subject: [patch 01/26] x64, x2apic/intr-remap: Intel vt-d, IOMMU code reorganization
+Content-Disposition: inline; filename=cleanup_intel_iommu_dmar_code.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Generic ioapic specific routines which be used later during enabling
-interrupt-remapping.
+code reorganization of the generic Intel vt-d parsing related routines and linux
+iommu routines specific to Intel vt-d.
+
+drivers/pci/dmar.c	now contains the generic vt-d parsing related routines
+drivers/pci/intel_iommu.c contains the iommu routines specific to vt-d
 
 Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 ---
 
-Index: tree-x86/arch/x86/kernel/io_apic_64.c
+Index: tree-x86/drivers/pci/dmar.c
 ===================================================================
---- tree-x86.orig/arch/x86/kernel/io_apic_64.c	2008-07-10 09:51:45.000000000 -0700
-+++ tree-x86/arch/x86/kernel/io_apic_64.c	2008-07-10 09:52:11.000000000 -0700
-@@ -114,6 +114,9 @@
+--- tree-x86.orig/drivers/pci/dmar.c	2008-07-10 09:51:45.000000000 -0700
++++ tree-x86/drivers/pci/dmar.c	2008-07-10 09:51:46.000000000 -0700
+@@ -19,9 +19,11 @@
+  * Author: Shaohua Li <shaohua.li@intel.com>
+  * Author: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
+  *
+- * This file implements early detection/parsing of DMA Remapping Devices
++ * This file implements early detection/parsing of Remapping Devices
+  * reported to OS through BIOS via DMA remapping reporting (DMAR) ACPI
+  * tables.
++ *
++ * These routines are used by both DMA-remapping and Interrupt-remapping
   */
- int nr_ioapic_registers[MAX_IO_APICS];
  
-+/* I/O APIC RTE contents at the OS boot up */
-+struct IO_APIC_route_entry *early_ioapic_entries[MAX_IO_APICS];
-+
- /* I/O APIC entries */
- struct mp_config_ioapic mp_ioapics[MAX_IO_APICS];
- int nr_ioapics;
-@@ -446,6 +449,69 @@
- 			clear_IO_APIC_pin(apic, pin);
+ #include <linux/pci.h>
+@@ -300,6 +302,37 @@
+ 	return ret;
  }
  
-+/*
-+ * Saves and masks all the unmasked IO-APIC RTE's
-+ */
-+int save_mask_IO_APIC_setup(void)
++int dmar_pci_device_match(struct pci_dev *devices[], int cnt,
++			  struct pci_dev *dev)
 +{
-+	union IO_APIC_reg_01 reg_01;
-+	unsigned long flags;
-+	int apic, pin;
++	int index;
 +
-+	/*
-+	 * The number of IO-APIC IRQ registers (== #pins):
-+	 */
-+	for (apic = 0; apic < nr_ioapics; apic++) {
-+		spin_lock_irqsave(&ioapic_lock, flags);
-+		reg_01.raw = io_apic_read(apic, 1);
-+		spin_unlock_irqrestore(&ioapic_lock, flags);
-+		nr_ioapic_registers[apic] = reg_01.bits.entries+1;
++	while (dev) {
++		for (index = 0; index < cnt; index++)
++			if (dev == devices[index])
++				return 1;
++
++		/* Check our parent */
++		dev = dev->bus->self;
 +	}
 +
-+	for (apic = 0; apic < nr_ioapics; apic++) {
-+		early_ioapic_entries[apic] =
-+			kzalloc(sizeof(struct IO_APIC_route_entry) *
-+				nr_ioapic_registers[apic], GFP_KERNEL);
-+		if (!early_ioapic_entries[apic])
-+			return -ENOMEM;
-+	}
-+
-+	for (apic = 0; apic < nr_ioapics; apic++)
-+		for (pin = 0; pin < nr_ioapic_registers[apic]; pin++) {
-+			struct IO_APIC_route_entry entry;
-+
-+			entry = early_ioapic_entries[apic][pin] =
-+				ioapic_read_entry(apic, pin);
-+			if (!entry.mask) {
-+				entry.mask = 1;
-+				ioapic_write_entry(apic, pin, entry);
-+			}
-+		}
 +	return 0;
 +}
 +
-+void restore_IO_APIC_setup(void)
++struct dmar_drhd_unit *
++dmar_find_matched_drhd_unit(struct pci_dev *dev)
 +{
-+	int apic, pin;
++	struct dmar_drhd_unit *drhd = NULL;
 +
-+	for (apic = 0; apic < nr_ioapics; apic++)
-+		for (pin = 0; pin < nr_ioapic_registers[apic]; pin++)
-+			ioapic_write_entry(apic, pin,
-+					   early_ioapic_entries[apic][pin]);
++	list_for_each_entry(drhd, &dmar_drhd_units, list) {
++		if (drhd->include_all || dmar_pci_device_match(drhd->devices,
++						drhd->devices_cnt, dev))
++			return drhd;
++	}
++
++	return NULL;
 +}
 +
-+void reinit_intr_remapped_IO_APIC(int intr_remapping)
+ 
+ int __init dmar_table_init(void)
+ {
+@@ -343,3 +376,58 @@
+ 
+ 	return (ACPI_SUCCESS(status) ? 1 : 0);
+ }
++
++struct intel_iommu *alloc_iommu(struct intel_iommu *iommu,
++				struct dmar_drhd_unit *drhd)
 +{
-+	/*
-+	 * for now plain restore of previous settings.
-+	 * TBD: In the case of OS enabling interrupt-remapping,
-+	 * IO-APIC RTE's need to be setup to point to interrupt-remapping
-+	 * table entries. for now, do a plain restore, and wait for
-+	 * the setup_IO_APIC_irqs() to do proper initialization.
-+	 */
-+	restore_IO_APIC_setup();
++	int map_size;
++	u32 ver;
++
++	iommu->reg = ioremap(drhd->reg_base_addr, PAGE_SIZE_4K);
++	if (!iommu->reg) {
++		printk(KERN_ERR "IOMMU: can't map the region\n");
++		goto error;
++	}
++	iommu->cap = dmar_readq(iommu->reg + DMAR_CAP_REG);
++	iommu->ecap = dmar_readq(iommu->reg + DMAR_ECAP_REG);
++
++	/* the registers might be more than one page */
++	map_size = max_t(int, ecap_max_iotlb_offset(iommu->ecap),
++		cap_max_fault_reg_offset(iommu->cap));
++	map_size = PAGE_ALIGN_4K(map_size);
++	if (map_size > PAGE_SIZE_4K) {
++		iounmap(iommu->reg);
++		iommu->reg = ioremap(drhd->reg_base_addr, map_size);
++		if (!iommu->reg) {
++			printk(KERN_ERR "IOMMU: can't map the region\n");
++			goto error;
++		}
++	}
++
++	ver = readl(iommu->reg + DMAR_VER_REG);
++	pr_debug("IOMMU %llx: ver %d:%d cap %llx ecap %llx\n",
++		drhd->reg_base_addr, DMAR_VER_MAJOR(ver), DMAR_VER_MINOR(ver),
++		iommu->cap, iommu->ecap);
++
++	spin_lock_init(&iommu->register_lock);
++
++	drhd->iommu = iommu;
++	return iommu;
++error:
++	kfree(iommu);
++	return NULL;
 +}
 +
- int skip_ioapic_setup;
- int ioapic_force;
- 
-Index: tree-x86/include/asm-x86/io_apic.h
-===================================================================
---- tree-x86.orig/include/asm-x86/io_apic.h	2008-07-10 09:51:45.000000000 -0700
-+++ tree-x86/include/asm-x86/io_apic.h	2008-07-10 09:52:11.000000000 -0700
-@@ -193,6 +193,12 @@
- extern int (*ioapic_renumber_irq)(int ioapic, int irq);
- extern void ioapic_init_mappings(void);
- 
-+#ifdef CONFIG_X86_64
-+extern int save_mask_IO_APIC_setup(void);
-+extern void restore_IO_APIC_setup(void);
-+extern void reinit_intr_remapped_IO_APIC(int);
++void free_iommu(struct intel_iommu *iommu)
++{
++	if (!iommu)
++		return;
++
++#ifdef CONFIG_DMAR
++	free_dmar_iommu(iommu);
 +#endif
 +
- #else  /* !CONFIG_X86_IO_APIC */
- #define io_apic_assign_pci_irqs 0
- static const int timer_through_8259 = 0;
++	if (iommu->reg)
++		iounmap(iommu->reg);
++	kfree(iommu);
++}
+Index: tree-x86/drivers/pci/intel-iommu.c
+===================================================================
+--- tree-x86.orig/drivers/pci/intel-iommu.c	2008-07-10 09:51:45.000000000 -0700
++++ tree-x86/drivers/pci/intel-iommu.c	2008-07-10 09:51:46.000000000 -0700
+@@ -990,6 +990,8 @@
+ 		return -ENOMEM;
+ 	}
+ 
++	spin_lock_init(&iommu->lock);
++
+ 	/*
+ 	 * if Caching mode is set, then invalid translations are tagged
+ 	 * with domainid 0. Hence we need to pre-allocate it.
+@@ -998,62 +1000,15 @@
+ 		set_bit(0, iommu->domain_ids);
+ 	return 0;
+ }
+-static struct intel_iommu *alloc_iommu(struct intel_iommu *iommu,
+-					struct dmar_drhd_unit *drhd)
+-{
+-	int ret;
+-	int map_size;
+-	u32 ver;
+-
+-	iommu->reg = ioremap(drhd->reg_base_addr, PAGE_SIZE_4K);
+-	if (!iommu->reg) {
+-		printk(KERN_ERR "IOMMU: can't map the region\n");
+-		goto error;
+-	}
+-	iommu->cap = dmar_readq(iommu->reg + DMAR_CAP_REG);
+-	iommu->ecap = dmar_readq(iommu->reg + DMAR_ECAP_REG);
+-
+-	/* the registers might be more than one page */
+-	map_size = max_t(int, ecap_max_iotlb_offset(iommu->ecap),
+-		cap_max_fault_reg_offset(iommu->cap));
+-	map_size = PAGE_ALIGN_4K(map_size);
+-	if (map_size > PAGE_SIZE_4K) {
+-		iounmap(iommu->reg);
+-		iommu->reg = ioremap(drhd->reg_base_addr, map_size);
+-		if (!iommu->reg) {
+-			printk(KERN_ERR "IOMMU: can't map the region\n");
+-			goto error;
+-		}
+-	}
+ 
+-	ver = readl(iommu->reg + DMAR_VER_REG);
+-	pr_debug("IOMMU %llx: ver %d:%d cap %llx ecap %llx\n",
+-		drhd->reg_base_addr, DMAR_VER_MAJOR(ver), DMAR_VER_MINOR(ver),
+-		iommu->cap, iommu->ecap);
+-	ret = iommu_init_domains(iommu);
+-	if (ret)
+-		goto error_unmap;
+-	spin_lock_init(&iommu->lock);
+-	spin_lock_init(&iommu->register_lock);
+-
+-	drhd->iommu = iommu;
+-	return iommu;
+-error_unmap:
+-	iounmap(iommu->reg);
+-error:
+-	kfree(iommu);
+-	return NULL;
+-}
+ 
+ static void domain_exit(struct dmar_domain *domain);
+-static void free_iommu(struct intel_iommu *iommu)
++
++void free_dmar_iommu(struct intel_iommu *iommu)
+ {
+ 	struct dmar_domain *domain;
+ 	int i;
+ 
+-	if (!iommu)
+-		return;
+-
+ 	i = find_first_bit(iommu->domain_ids, cap_ndoms(iommu->cap));
+ 	for (; i < cap_ndoms(iommu->cap); ) {
+ 		domain = iommu->domains[i];
+@@ -1078,10 +1033,6 @@
+ 
+ 	/* free context mapping */
+ 	free_context_table(iommu);
+-
+-	if (iommu->reg)
+-		iounmap(iommu->reg);
+-	kfree(iommu);
+ }
+ 
+ static struct dmar_domain * iommu_alloc_domain(struct intel_iommu *iommu)
+@@ -1426,37 +1377,6 @@
+ 	return NULL;
+ }
+ 
+-static int dmar_pci_device_match(struct pci_dev *devices[], int cnt,
+-     struct pci_dev *dev)
+-{
+-	int index;
+-
+-	while (dev) {
+-		for (index = 0; index < cnt; index++)
+-			if (dev == devices[index])
+-				return 1;
+-
+-		/* Check our parent */
+-		dev = dev->bus->self;
+-	}
+-
+-	return 0;
+-}
+-
+-static struct dmar_drhd_unit *
+-dmar_find_matched_drhd_unit(struct pci_dev *dev)
+-{
+-	struct dmar_drhd_unit *drhd = NULL;
+-
+-	list_for_each_entry(drhd, &dmar_drhd_units, list) {
+-		if (drhd->include_all || dmar_pci_device_match(drhd->devices,
+-						drhd->devices_cnt, dev))
+-			return drhd;
+-	}
+-
+-	return NULL;
+-}
+-
+ /* domain is initialized */
+ static struct dmar_domain *get_domain_for_dev(struct pci_dev *pdev, int gaw)
+ {
+@@ -1764,6 +1684,10 @@
+ 			goto error;
+ 		}
+ 
++		ret = iommu_init_domains(iommu);
++		if (ret)
++			goto error;
++
+ 		/*
+ 		 * TBD:
+ 		 * we could share the same root & context tables
+Index: tree-x86/drivers/pci/intel-iommu.h
+===================================================================
+--- tree-x86.orig/drivers/pci/intel-iommu.h	2008-07-10 09:51:45.000000000 -0700
++++ tree-x86/drivers/pci/intel-iommu.h	2008-07-10 09:51:46.000000000 -0700
+@@ -27,19 +27,7 @@
+ #include <linux/sysdev.h>
+ #include "iova.h"
+ #include <linux/io.h>
+-
+-/*
+- * We need a fixed PAGE_SIZE of 4K irrespective of
+- * arch PAGE_SIZE for IOMMU page tables.
+- */
+-#define PAGE_SHIFT_4K		(12)
+-#define PAGE_SIZE_4K		(1UL << PAGE_SHIFT_4K)
+-#define PAGE_MASK_4K		(((u64)-1) << PAGE_SHIFT_4K)
+-#define PAGE_ALIGN_4K(addr)	(((addr) + PAGE_SIZE_4K - 1) & PAGE_MASK_4K)
+-
+-#define IOVA_PFN(addr)		((addr) >> PAGE_SHIFT_4K)
+-#define DMA_32BIT_PFN		IOVA_PFN(DMA_32BIT_MASK)
+-#define DMA_64BIT_PFN		IOVA_PFN(DMA_64BIT_MASK)
++#include "dma_remapping.h"
+ 
+ /*
+  * Intel IOMMU register specification per version 1.0 public spec.
+@@ -187,158 +175,31 @@
+ #define dma_frcd_source_id(c) (c & 0xffff)
+ #define dma_frcd_page_addr(d) (d & (((u64)-1) << 12)) /* low 64 bit */
+ 
+-/*
+- * 0: Present
+- * 1-11: Reserved
+- * 12-63: Context Ptr (12 - (haw-1))
+- * 64-127: Reserved
+- */
+-struct root_entry {
+-	u64	val;
+-	u64	rsvd1;
+-};
+-#define ROOT_ENTRY_NR (PAGE_SIZE_4K/sizeof(struct root_entry))
+-static inline bool root_present(struct root_entry *root)
+-{
+-	return (root->val & 1);
+-}
+-static inline void set_root_present(struct root_entry *root)
+-{
+-	root->val |= 1;
+-}
+-static inline void set_root_value(struct root_entry *root, unsigned long value)
+-{
+-	root->val |= value & PAGE_MASK_4K;
+-}
+-
+-struct context_entry;
+-static inline struct context_entry *
+-get_context_addr_from_root(struct root_entry *root)
+-{
+-	return (struct context_entry *)
+-		(root_present(root)?phys_to_virt(
+-		root->val & PAGE_MASK_4K):
+-		NULL);
+-}
+-
+-/*
+- * low 64 bits:
+- * 0: present
+- * 1: fault processing disable
+- * 2-3: translation type
+- * 12-63: address space root
+- * high 64 bits:
+- * 0-2: address width
+- * 3-6: aval
+- * 8-23: domain id
+- */
+-struct context_entry {
+-	u64 lo;
+-	u64 hi;
+-};
+-#define context_present(c) ((c).lo & 1)
+-#define context_fault_disable(c) (((c).lo >> 1) & 1)
+-#define context_translation_type(c) (((c).lo >> 2) & 3)
+-#define context_address_root(c) ((c).lo & PAGE_MASK_4K)
+-#define context_address_width(c) ((c).hi &  7)
+-#define context_domain_id(c) (((c).hi >> 8) & ((1 << 16) - 1))
+-
+-#define context_set_present(c) do {(c).lo |= 1;} while (0)
+-#define context_set_fault_enable(c) \
+-	do {(c).lo &= (((u64)-1) << 2) | 1;} while (0)
+-#define context_set_translation_type(c, val) \
+-	do { \
+-		(c).lo &= (((u64)-1) << 4) | 3; \
+-		(c).lo |= ((val) & 3) << 2; \
+-	} while (0)
+-#define CONTEXT_TT_MULTI_LEVEL 0
+-#define context_set_address_root(c, val) \
+-	do {(c).lo |= (val) & PAGE_MASK_4K;} while (0)
+-#define context_set_address_width(c, val) do {(c).hi |= (val) & 7;} while (0)
+-#define context_set_domain_id(c, val) \
+-	do {(c).hi |= ((val) & ((1 << 16) - 1)) << 8;} while (0)
+-#define context_clear_entry(c) do {(c).lo = 0; (c).hi = 0;} while (0)
+-
+-/*
+- * 0: readable
+- * 1: writable
+- * 2-6: reserved
+- * 7: super page
+- * 8-11: available
+- * 12-63: Host physcial address
+- */
+-struct dma_pte {
+-	u64 val;
+-};
+-#define dma_clear_pte(p)	do {(p).val = 0;} while (0)
+-
+-#define DMA_PTE_READ (1)
+-#define DMA_PTE_WRITE (2)
+-
+-#define dma_set_pte_readable(p) do {(p).val |= DMA_PTE_READ;} while (0)
+-#define dma_set_pte_writable(p) do {(p).val |= DMA_PTE_WRITE;} while (0)
+-#define dma_set_pte_prot(p, prot) \
+-		do {(p).val = ((p).val & ~3) | ((prot) & 3); } while (0)
+-#define dma_pte_addr(p) ((p).val & PAGE_MASK_4K)
+-#define dma_set_pte_addr(p, addr) do {\
+-		(p).val |= ((addr) & PAGE_MASK_4K); } while (0)
+-#define dma_pte_present(p) (((p).val & 3) != 0)
+-
+-struct intel_iommu;
+-
+-struct dmar_domain {
+-	int	id;			/* domain id */
+-	struct intel_iommu *iommu;	/* back pointer to owning iommu */
+-
+-	struct list_head devices; 	/* all devices' list */
+-	struct iova_domain iovad;	/* iova's that belong to this domain */
+-
+-	struct dma_pte	*pgd;		/* virtual address */
+-	spinlock_t	mapping_lock;	/* page table lock */
+-	int		gaw;		/* max guest address width */
+-
+-	/* adjusted guest address width, 0 is level 2 30-bit */
+-	int		agaw;
+-
+-#define DOMAIN_FLAG_MULTIPLE_DEVICES 1
+-	int		flags;
+-};
+-
+-/* PCI domain-device relationship */
+-struct device_domain_info {
+-	struct list_head link;	/* link to domain siblings */
+-	struct list_head global; /* link to global list */
+-	u8 bus;			/* PCI bus numer */
+-	u8 devfn;		/* PCI devfn number */
+-	struct pci_dev *dev; /* it's NULL for PCIE-to-PCI bridge */
+-	struct dmar_domain *domain; /* pointer to domain */
+-};
+-
+-extern int init_dmars(void);
+-
+ struct intel_iommu {
+ 	void __iomem	*reg; /* Pointer to hardware regs, virtual addr */
+ 	u64		cap;
+ 	u64		ecap;
+-	unsigned long 	*domain_ids; /* bitmap of domains */
+-	struct dmar_domain **domains; /* ptr to domains */
+ 	int		seg;
+ 	u32		gcmd; /* Holds TE, EAFL. Don't need SRTP, SFL, WBF */
+-	spinlock_t	lock; /* protect context, domain ids */
+ 	spinlock_t	register_lock; /* protect register handling */
++
++#ifdef CONFIG_DMAR
++	unsigned long 	*domain_ids; /* bitmap of domains */
++	struct dmar_domain **domains; /* ptr to domains */
++	spinlock_t	lock; /* protect context, domain ids */
+ 	struct root_entry *root_entry; /* virtual address */
+ 
+ 	unsigned int irq;
+ 	unsigned char name[7];    /* Device Name */
+ 	struct msi_msg saved_msg;
+ 	struct sys_device sysdev;
++#endif
+ };
+ 
+-#ifndef CONFIG_DMAR_GFX_WA
+-static inline void iommu_prepare_gfx_mapping(void)
+-{
+-	return;
+-}
+-#endif /* !CONFIG_DMAR_GFX_WA */
++extern struct dmar_drhd_unit * dmar_find_matched_drhd_unit(struct pci_dev *dev);
++
++extern struct intel_iommu *alloc_iommu(struct intel_iommu *iommu,
++				       struct dmar_drhd_unit *drhd);
++extern void free_iommu(struct intel_iommu *iommu);
+ 
+ #endif
+Index: tree-x86/drivers/pci/dma_remapping.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ tree-x86/drivers/pci/dma_remapping.h	2008-07-10 09:51:46.000000000 -0700
+@@ -0,0 +1,155 @@
++#ifndef _DMA_REMAPPING_H
++#define _DMA_REMAPPING_H
++
++/*
++ * We need a fixed PAGE_SIZE of 4K irrespective of
++ * arch PAGE_SIZE for IOMMU page tables.
++ */
++#define PAGE_SHIFT_4K		(12)
++#define PAGE_SIZE_4K		(1UL << PAGE_SHIFT_4K)
++#define PAGE_MASK_4K		(((u64)-1) << PAGE_SHIFT_4K)
++#define PAGE_ALIGN_4K(addr)	(((addr) + PAGE_SIZE_4K - 1) & PAGE_MASK_4K)
++
++#define IOVA_PFN(addr)		((addr) >> PAGE_SHIFT_4K)
++#define DMA_32BIT_PFN		IOVA_PFN(DMA_32BIT_MASK)
++#define DMA_64BIT_PFN		IOVA_PFN(DMA_64BIT_MASK)
++
++
++/*
++ * 0: Present
++ * 1-11: Reserved
++ * 12-63: Context Ptr (12 - (haw-1))
++ * 64-127: Reserved
++ */
++struct root_entry {
++	u64	val;
++	u64	rsvd1;
++};
++#define ROOT_ENTRY_NR (PAGE_SIZE_4K/sizeof(struct root_entry))
++static inline bool root_present(struct root_entry *root)
++{
++	return (root->val & 1);
++}
++static inline void set_root_present(struct root_entry *root)
++{
++	root->val |= 1;
++}
++static inline void set_root_value(struct root_entry *root, unsigned long value)
++{
++	root->val |= value & PAGE_MASK_4K;
++}
++
++struct context_entry;
++static inline struct context_entry *
++get_context_addr_from_root(struct root_entry *root)
++{
++	return (struct context_entry *)
++		(root_present(root)?phys_to_virt(
++		root->val & PAGE_MASK_4K):
++		NULL);
++}
++
++/*
++ * low 64 bits:
++ * 0: present
++ * 1: fault processing disable
++ * 2-3: translation type
++ * 12-63: address space root
++ * high 64 bits:
++ * 0-2: address width
++ * 3-6: aval
++ * 8-23: domain id
++ */
++struct context_entry {
++	u64 lo;
++	u64 hi;
++};
++#define context_present(c) ((c).lo & 1)
++#define context_fault_disable(c) (((c).lo >> 1) & 1)
++#define context_translation_type(c) (((c).lo >> 2) & 3)
++#define context_address_root(c) ((c).lo & PAGE_MASK_4K)
++#define context_address_width(c) ((c).hi &  7)
++#define context_domain_id(c) (((c).hi >> 8) & ((1 << 16) - 1))
++
++#define context_set_present(c) do {(c).lo |= 1;} while (0)
++#define context_set_fault_enable(c) \
++	do {(c).lo &= (((u64)-1) << 2) | 1;} while (0)
++#define context_set_translation_type(c, val) \
++	do { \
++		(c).lo &= (((u64)-1) << 4) | 3; \
++		(c).lo |= ((val) & 3) << 2; \
++	} while (0)
++#define CONTEXT_TT_MULTI_LEVEL 0
++#define context_set_address_root(c, val) \
++	do {(c).lo |= (val) & PAGE_MASK_4K;} while (0)
++#define context_set_address_width(c, val) do {(c).hi |= (val) & 7;} while (0)
++#define context_set_domain_id(c, val) \
++	do {(c).hi |= ((val) & ((1 << 16) - 1)) << 8;} while (0)
++#define context_clear_entry(c) do {(c).lo = 0; (c).hi = 0;} while (0)
++
++/*
++ * 0: readable
++ * 1: writable
++ * 2-6: reserved
++ * 7: super page
++ * 8-11: available
++ * 12-63: Host physcial address
++ */
++struct dma_pte {
++	u64 val;
++};
++#define dma_clear_pte(p)	do {(p).val = 0;} while (0)
++
++#define DMA_PTE_READ (1)
++#define DMA_PTE_WRITE (2)
++
++#define dma_set_pte_readable(p) do {(p).val |= DMA_PTE_READ;} while (0)
++#define dma_set_pte_writable(p) do {(p).val |= DMA_PTE_WRITE;} while (0)
++#define dma_set_pte_prot(p, prot) \
++		do {(p).val = ((p).val & ~3) | ((prot) & 3); } while (0)
++#define dma_pte_addr(p) ((p).val & PAGE_MASK_4K)
++#define dma_set_pte_addr(p, addr) do {\
++		(p).val |= ((addr) & PAGE_MASK_4K); } while (0)
++#define dma_pte_present(p) (((p).val & 3) != 0)
++
++struct intel_iommu;
++
++struct dmar_domain {
++	int	id;			/* domain id */
++	struct intel_iommu *iommu;	/* back pointer to owning iommu */
++
++	struct list_head devices; 	/* all devices' list */
++	struct iova_domain iovad;	/* iova's that belong to this domain */
++
++	struct dma_pte	*pgd;		/* virtual address */
++	spinlock_t	mapping_lock;	/* page table lock */
++	int		gaw;		/* max guest address width */
++
++	/* adjusted guest address width, 0 is level 2 30-bit */
++	int		agaw;
++
++#define DOMAIN_FLAG_MULTIPLE_DEVICES 1
++	int		flags;
++};
++
++/* PCI domain-device relationship */
++struct device_domain_info {
++	struct list_head link;	/* link to domain siblings */
++	struct list_head global; /* link to global list */
++	u8 bus;			/* PCI bus numer */
++	u8 devfn;		/* PCI devfn number */
++	struct pci_dev *dev; /* it's NULL for PCIE-to-PCI bridge */
++	struct dmar_domain *domain; /* pointer to domain */
++};
++
++extern int init_dmars(void);
++extern void free_dmar_iommu(struct intel_iommu *iommu);
++
++#ifndef CONFIG_DMAR_GFX_WA
++static inline void iommu_prepare_gfx_mapping(void)
++{
++	return;
++}
++#endif /* !CONFIG_DMAR_GFX_WA */
++
++#endif
 
 -- 
 
