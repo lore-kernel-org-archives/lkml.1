@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbYGJKfx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756083AbYGJKi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756051AbYGJKfx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 06:35:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbYGJKfq
+	id S1756083AbYGJKi6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 06:38:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbYGJKiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 06:35:46 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48016 "EHLO
-	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752419AbYGJKfp convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 06:35:45 -0400
-Date: Thu, 10 Jul 2008 11:02:25 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= <Uwe.Kleine-Koenig@digi.com>
-Cc: Magnus Damm <magnus.damm@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "gregkh@suse.de" <gregkh@suse.de>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "hjk@linutronix.de" <hjk@linutronix.de>,
-       "lethal@linux-sh.org" <lethal@linux-sh.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>
-Subject: Re: [PATCH] uio: uio_pdrv_genirq V2
-Message-ID: <20080710110225.0dd636cf@the-village.bc.nu>
-In-Reply-To: <20080710103036.GA32507@digi.com>
-References: <20080710035254.27378.18682.sendpatchset@rx1.opensource.se>
-	<20080710065639.GA16794@digi.com>
-	<20080710094641.0c52eaa7@the-village.bc.nu>
-	<20080710103036.GA32507@digi.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 10 Jul 2008 06:38:50 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43583 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752524AbYGJKiu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 06:38:50 -0400
+Date: Thu, 10 Jul 2008 12:38:31 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Robert Richter <robert.richter@amd.com>
+Cc: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: x86/pci: Broken build for X86_VISWS
+Message-ID: <20080710103831.GA30650@elte.hu>
+References: <20080710095757.GB5607@erda.amd.com> <20080710102305.GA20096@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080710102305.GA20096@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Jul 2008 12:30:36 +0200
-Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com> wrote:
 
-> Alan Cox wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> * Robert Richter <robert.richter@amd.com> wrote:
+> 
+> > Ingo,
 > > 
-> > > > +       else if (!irq_on && !priv->irq_disabled)
-> > > > +               disable_irq(dev_info->irq);
-> > > I'm not sure if this is a problem on SMP.  Should you use
-> > > disable_irq_nosync here, too?  Probably it's OK.
+> > during testing of my pci changes I observed a build error if X86_VISWS 
+> > is set:
 > > 
-> > That one will also deadlock.
-> Can you explain why?  I think irqcontrol is only called in task context.
-> I only see one possible deadlock and that's disable_irq being called
-> while the irq is IRQ_INPROGRESS on the same cpu.  I'm always willing to
-> learn.
+> > arch/x86/mach-visws/built-in.o: In function `machine_power_off':
+> > (.text+0x48): undefined reference to `pci_bus0'
+> > make[1]: *** [.tmp_vmlinux1] Error 1
+> > make: *** [sub-make] Error 2
+> > 
+> > The root cause is disabling PCI dependencies in change 1ac97018 that 
+> > disables compilation of x86/pci for VISWS though there are files in 
+> > needed to build. I am not sure if it is save to enable PCI for VISWS 
+> > to fix this.
+> > 
+> > Could you take a look at this?
+> 
+> well spotted. Does the patch below fix it for you?
 
-	CPU0	 (UIO IRQ)		CPU1 (irqcontrol)
-	take IRQ
-					take spin lock
-	spin on spinlock
-					disable_irq (blocks)
+there's another visws build bug related to generic-ipi - i fixed that in 
+tip/master.
 
-> I think I didn't understand you right here, with the lock this can
-> happen, too, doesn't it?
-
-Actually yes - so it would simplify it without changing behaviour.
-
-Alan
+	Ingo
