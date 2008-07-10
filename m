@@ -1,117 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757992AbYGJUBn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758352AbYGJUC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757992AbYGJUBn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 16:01:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753049AbYGJUBe
+	id S1758352AbYGJUC0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 16:02:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753049AbYGJUCQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 16:01:34 -0400
-Received: from cantor.suse.de ([195.135.220.2]:56328 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751455AbYGJUBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 16:01:33 -0400
-Date: Thu, 10 Jul 2008 13:01:31 -0700
-From: Mark Fasheh <mfasheh@suse.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
-       Joel Becker <joel.becker@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [git patch] one more ocfs2 regression fix
-Message-ID: <20080710200131.GP28100@wotan.suse.de>
-Reply-To: Mark Fasheh <mfasheh@suse.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 10 Jul 2008 16:02:16 -0400
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:35676 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751455AbYGJUCP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 16:02:15 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=yFz5tK9t+X5ARrpstbiyJjHYb6RcnxhMcmTUaKWWs3iTz1Ljvfh9rJ9JOqkYhIlBNJstZyxYkW9i7mC9qX9Cw9funYZrD/dAEjbxmDZEKvMmT2ezP1r696g4zFZ7o4yUWImjd87deQt+Hr58EVfS54vl73b4S6SBjkbmPbmo/s8=  ;
+X-YMail-OSG: 4hlhj.cVM1metRMY4m7nZkyhKH48v75QH0tBo5lLIrk7ZCiPdDJPdYOD9QGcj8qzeiNbR6HR06jRJWBYqX0Q9rW6JxjbnlCN0USy8VqXpg--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Jiri Slaby <jirislaby@gmail.com>, Michael Buesch <mb@bu3sch.de>
+Subject: Re: [PATCH v3] Add bt8xxgpio driver
+Date: Thu, 10 Jul 2008 13:02:12 -0700
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, mchehab@infradead.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Marcel Holtmann <marcel@holtmann.org>
+References: <200807101914.10174.mb@bu3sch.de> <487651CA.6030405@gmail.com>
+In-Reply-To: <487651CA.6030405@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Mutt/1.5.9i
+Message-Id: <200807101302.12765.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks to Geoffrey Pan for reporting this and testing the fix so quickly. I
-also verified this fix on my test cluster today, since things are getting
-down to the wire. It's definitely 2.6.26 material.
-	--Mark
+On Thursday 10 July 2008, Jiri Slaby wrote:
+> > --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> > +++ linux-next/drivers/gpio/bt8xxgpio.c	2008-07-10 19:05:56.000000000 +0200
+> > @@ -0,0 +1,348 @@
+> [...]
+> > +static int bt8xxgpio_gpio_direction_input(struct gpio_chip *gpio, unsigned nr)
+> > +{
+> > +	struct bt8xxgpio *bg = container_of(gpio, struct bt8xxgpio, gpio);
+> > +	unsigned long flags;
+> > +	u32 outen, data;
+> > +
+> > +	spin_lock_irqsave(&bg->lock, flags);
+> 
+> Why all those irq variants? I can't see interrupts anywhere. May gpio call this 
+> from irq?
 
-Please pull from 'upstream-linus' branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-linus
+Not that routine (see Documentation/gpio.txt where
+that's specified) ... but other using the same lock.
 
-to receive the following updates:
+When setting GPIO direction, spin_lock_irq() style
+calls are appropriate (but this isn't wrong).
 
- fs/ocfs2/dlmglue.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+The gpio_{get,set}_value() accessors may be called
+from IRQ context, so they need to save/restor the
+IRQ flags.
 
-From: Mark Fasheh <mfasheh@suse.com>
 
-ocfs2: Fix flags in ocfs2_file_lock
+> some flushing of posted values here?
 
-The stack-glue merge changed the way we use flags in dlmglue in that we now
-use the fs/dlm equivalents. Unfortunately, a merge error left the new flock
-code only partially updated. This took a while to show up though, because
-the lock level constants are actually identical between o2dlm and fs/dlm.
-The *_CONVERT and *_NOQUEUE flags have different values though, which is
-eventually causing a crash in flags_to_o2dlm().
+See Documentation/gpio.txt:
 
-Signed-off-by: Mark Fasheh <mfasheh@suse.com>
----
- fs/ocfs2/dlmglue.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
++ Note that these operations include I/O barriers on platforms
++ which need to use them; drivers don't need to add them explicitly.
 
-diff --git a/fs/ocfs2/dlmglue.c b/fs/ocfs2/dlmglue.c
-index 394d25a..80e20d9 100644
---- a/fs/ocfs2/dlmglue.c
-+++ b/fs/ocfs2/dlmglue.c
-@@ -1554,8 +1554,8 @@ out:
-  */
- int ocfs2_file_lock(struct file *file, int ex, int trylock)
- {
--	int ret, level = ex ? LKM_EXMODE : LKM_PRMODE;
--	unsigned int lkm_flags = trylock ? LKM_NOQUEUE : 0;
-+	int ret, level = ex ? DLM_LOCK_EX : DLM_LOCK_PR;
-+	unsigned int lkm_flags = trylock ? DLM_LKF_NOQUEUE : 0;
- 	unsigned long flags;
- 	struct ocfs2_file_private *fp = file->private_data;
- 	struct ocfs2_lock_res *lockres = &fp->fp_flock;
-@@ -1582,7 +1582,7 @@ int ocfs2_file_lock(struct file *file, int ex, int trylock)
- 		 * Get the lock at NLMODE to start - that way we
- 		 * can cancel the upconvert request if need be.
- 		 */
--		ret = ocfs2_lock_create(osb, lockres, LKM_NLMODE, 0);
-+		ret = ocfs2_lock_create(osb, lockres, DLM_LOCK_NL, 0);
- 		if (ret < 0) {
- 			mlog_errno(ret);
- 			goto out;
-@@ -1597,7 +1597,7 @@ int ocfs2_file_lock(struct file *file, int ex, int trylock)
- 	}
- 
- 	lockres->l_action = OCFS2_AST_CONVERT;
--	lkm_flags |= LKM_CONVERT;
-+	lkm_flags |= DLM_LKF_CONVERT;
- 	lockres->l_requested = level;
- 	lockres_or_flags(lockres, OCFS2_LOCK_BUSY);
- 
-@@ -1664,7 +1664,7 @@ void ocfs2_file_unlock(struct file *file)
- 	if (!(lockres->l_flags & OCFS2_LOCK_ATTACHED))
- 		return;
- 
--	if (lockres->l_level == LKM_NLMODE)
-+	if (lockres->l_level == DLM_LOCK_NL)
- 		return;
- 
- 	mlog(0, "Unlock: \"%s\" flags: 0x%lx, level: %d, act: %d\n",
-@@ -1678,11 +1678,11 @@ void ocfs2_file_unlock(struct file *file)
- 	lockres_or_flags(lockres, OCFS2_LOCK_BLOCKED);
- 	lockres->l_blocking = DLM_LOCK_EX;
- 
--	gen = ocfs2_prepare_downconvert(lockres, LKM_NLMODE);
-+	gen = ocfs2_prepare_downconvert(lockres, DLM_LOCK_NL);
- 	lockres_add_mask_waiter(lockres, &mw, OCFS2_LOCK_BUSY, 0);
- 	spin_unlock_irqrestore(&lockres->l_lock, flags);
- 
--	ret = ocfs2_downconvert_lock(osb, lockres, LKM_NLMODE, 0, gen);
-+	ret = ocfs2_downconvert_lock(osb, lockres, DLM_LOCK_NL, 0, gen);
- 	if (ret) {
- 		mlog_errno(ret);
- 		return;
--- 
-1.5.4.1
+That's the key thing:  drivers using I/O calls should
+not need to insert bus or platform specific calls to
+make sure the calls take effect.
 
+
+Also:
+
+> +	return !!(val & (1 << nr));
+
+GPIO values are zero/nonzero, not zero/one.  So the "!!"
+can be removed.
+
+- Dave
