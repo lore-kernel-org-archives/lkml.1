@@ -1,100 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbYGJK7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756955AbYGJLFV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757328AbYGJK7r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 06:59:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbYGJK7k
+	id S1756955AbYGJLFV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 07:05:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbYGJLFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 06:59:40 -0400
-Received: from www.tglx.de ([62.245.132.106]:45310 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753814AbYGJK7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 06:59:39 -0400
-Date: Thu, 10 Jul 2008 12:58:51 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>
-Cc: Magnus Damm <magnus.damm@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "gregkh@suse.de" <gregkh@suse.de>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "hjk@linutronix.de" <hjk@linutronix.de>,
-       "lethal@linux-sh.org" <lethal@linux-sh.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] uio: uio_pdrv_genirq V2
-Message-ID: <20080710105850.GA3202@local>
-References: <20080710035254.27378.18682.sendpatchset@rx1.opensource.se> <20080710065639.GA16794@digi.com>
+	Thu, 10 Jul 2008 07:05:08 -0400
+Received: from ik-out-1112.google.com ([66.249.90.179]:47240 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753134AbYGJLFH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 07:05:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=C/T21T6w+rKUiuiJqPrmNQ2tYR6xXwkBfOLkuXFZnt67noe7QoUHI/7mBwJLf7kwsX
+         oTAO+OF2hmo5QECOM6SchHMjHxpochLyBN7sOiEllLiYXTS8R/h1uxZFsOxmj8wbLoGq
+         VwQAuocBrwPnn5YD8FZGeBSObU1P2wyFuHNeo=
+Date: Thu, 10 Jul 2008 15:02:14 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: 2.6.26-rc9-git4: Reported regressions from 2.6.25
+Message-ID: <20080710110213.GA6688@martell.zuzino.mipt.ru>
+References: <4yrA-dRoNlD.A.jcB.ny-cIB@albercik> <200807101725.36175.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080710065639.GA16794@digi.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <200807101725.36175.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 10, 2008 at 08:56:39AM +0200, Uwe Kleine-König wrote:
-> > +
-> > +static irqreturn_t uio_pdrv_genirq_handler(int irq, struct uio_info *dev_info)
-> > +{
-> > +       struct uio_pdrv_genirq_platdata *priv = dev_info->priv;
-> > +       unsigned long flags;
-> > +
-> > +       /* Just disable the interrupt in the interrupt controller, and
-> > +        * remember the state so we can allow user space to enable it later.
-> > +        */
-> > +       spin_lock_irqsave(&priv->lock, flags);
-> > +       if (!priv->irq_disabled) {
-> > +               disable_irq_nosync(irq);
-> > +               priv->irq_disabled = 1;
-> > +       }
-> > +       spin_unlock_irqrestore(&priv->lock, flags);
-> > +       return IRQ_HANDLED;
-> > +}
-> > +
-> > +static int uio_pdrv_genirq_irqcontrol(struct uio_info *dev_info, s32 irq_on)
-> > +{
-> > +       struct uio_pdrv_genirq_platdata *priv = dev_info->priv;
-> > +       unsigned long flags;
-> > +
-> > +       /* Allow user space to enable and disable the interrupt
-> > +        * in the interrupt controller, but keep track of the
-> > +        * state to prevent per-irq depth damage.
-> > +        */
-> > +
-> > +       spin_lock_irqsave(&priv->lock, flags);
-> > +       if (irq_on && priv->irq_disabled)
-> > +               enable_irq(dev_info->irq);
-> > +       else if (!irq_on && !priv->irq_disabled)
-> > +               disable_irq(dev_info->irq);
-> I'm not sure if this is a problem on SMP.  Should you use
-> disable_irq_nosync here, too?  Probably it's OK.
-
-*_nosync should not be needed, as he doesn't call irqcontrol from the irq
-handler. But using the same lock in handler and irqcontrol presents a
-problem, as Alan pointed out.
-
+On Thu, Jul 10, 2008 at 05:25:35PM +1000, Nick Piggin wrote:
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10629
+> > Subject		: 2.6.26-rc1-$sha1: RIP __d_lookup+0x8c/0x160
+> > Submitter	: Alexey Dobriyan <adobriyan@gmail.com>
+> > Date		: 2008-05-05 09:59 (65 days old)
+> > References	: http://lkml.org/lkml/2008/5/5/28
+> > Handled-By	: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 > 
-> > +
-> > +       priv->irq_disabled = !irq_on;
-> > +       spin_unlock_irqrestore(&priv->lock, flags);
-> > +       return 0;
-> > +}
-> 
-> 
-> > +       ret = uio_register_device(&pdev->dev, priv->uioinfo);
-> > +       if (ret) {
-> > +               dev_err(&pdev->dev, "unable to register uio device\n");
-> > +               goto bad1;
-> > +       }
-> > +
-> > +       platform_set_drvdata(pdev, priv);
-> This should probably go before uio_register_device.  (Uups, this is an
-> issue for uio_pdrv, too.)
+> Attached is my fix for this problem. I don't think it is a regression
+> as such, but it can't hurt to go into 2.6.26 IMO.
 
-Yes, because uio_register_device will enable the irq, and you might
-arrive in the handler without having your platform data in place.
+> PREEMPT_RCU without HOTPLUG_CPU is broken.
 
-Thanks,
-Hans
+Bastard!
+
+rcutorture fixed here, starting cross-compile stuff (without much interest).
+
+> Annoyed this wasn't a crazy obscure error in the algorithm I could fix :)
+> I spent all day debugging it and had to make a special test case (rcutorture
+> didn't seem to trigger it), and a big RCU state logging infrastructure to log
+> millions of RCU state transitions and events. Oh well.
+
+> --- linux-2.6.orig/kernel/rcupreempt.c
+> +++ linux-2.6/kernel/rcupreempt.c
+> @@ -925,26 +925,22 @@ void rcu_offline_cpu(int cpu)
+>  	spin_unlock_irqrestore(&rdp->lock, flags);
+>  }
+>  
+> -void __devinit rcu_online_cpu(int cpu)
+> -{
+> -	unsigned long flags;
+> -
+> -	spin_lock_irqsave(&rcu_ctrlblk.fliplock, flags);
+> -	cpu_set(cpu, rcu_cpu_online_map);
+> -	spin_unlock_irqrestore(&rcu_ctrlblk.fliplock, flags);
+> -}
+> -
+>  #else /* #ifdef CONFIG_HOTPLUG_CPU */
+>  
+>  void rcu_offline_cpu(int cpu)
+>  {
+>  }
+>  
+> -void __devinit rcu_online_cpu(int cpu)
+> +#endif /* #else #ifdef CONFIG_HOTPLUG_CPU */
+> +
+> +void __cpuinit rcu_online_cpu(int cpu)
+>  {
+> -}
+> +	unsigned long flags;
+>  
+> -#endif /* #else #ifdef CONFIG_HOTPLUG_CPU */
+> +	spin_lock_irqsave(&rcu_ctrlblk.fliplock, flags);
+> +	cpu_set(cpu, rcu_cpu_online_map);
+> +	spin_unlock_irqrestore(&rcu_ctrlblk.fliplock, flags);
+> +}
+>  
+>  static void rcu_process_callbacks(struct softirq_action *unused)
+>  {
+
 
