@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbYGJAd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755352AbYGJAge@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756198AbYGJAd0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 20:33:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbYGJAdT
+	id S1755352AbYGJAge (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 20:36:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbYGJAg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 20:33:19 -0400
-Received: from igw2.br.ibm.com ([32.104.18.25]:41807 "EHLO igw2.br.ibm.com"
+	Wed, 9 Jul 2008 20:36:26 -0400
+Received: from igw1.br.ibm.com ([32.104.18.24]:38323 "EHLO igw1.br.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752378AbYGJAdS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 20:33:18 -0400
-Subject: Re: [PATCH] tpm: add Intel TPM TIS device HID
+	id S1752345AbYGJAgZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jul 2008 20:36:25 -0400
+Subject: Re: [tpmdd-devel] Patch for Broadcom TPM TIS device HID
 From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-To: Marcel Selhorst <tpm@selhorst.net>
-Cc: Marcin Obara <marcin_obara@users.sourceforge.net>,
-       tpmdd-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <486B4460.5000702@selhorst.net>
-References: <alpine.DEB.1.00.0806281913410.7076@ip-195-3-221-75.vnet.pl>
-	 <486B4460.5000702@selhorst.net>
+To: eledisez <eledisez@grounation.org>
+Cc: tpmdd-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <379cac7442a57a702f75cb2194dee9eb@localhost>
+References: <2d97a3960807050312w76bde4c7hadeebb8a36aae761@mail.gmail.com>
+	 <1215640191.25273.45.camel@blackbox>
+	 <379cac7442a57a702f75cb2194dee9eb@localhost>
 Content-Type: text/plain
-Date: Wed, 09 Jul 2008 21:31:17 -0300
-Message-Id: <1215649878.25273.73.camel@blackbox>
+Date: Wed, 09 Jul 2008 21:34:23 -0300
+Message-Id: <1215650063.25273.77.camel@blackbox>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
@@ -27,30 +27,58 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+This depends on patch posted with "[PATCH] tpm: add Intel TPM TIS device HID" subject.
 
-On Wed, 2008-07-02 at 11:03 +0200, Marcel Selhorst wrote:
-> Acked-by: Marcel Selhorst <tpm@selhorst.net>
+From: LE DISEZ Erwan <eledisez@grounation.org>
+Subject: add Broadcom TPM TIS device HID
+
+	Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+---
+ drivers/char/tpm/tpm_tis.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
+index c7a977b..ed1879c 100644
+--- a/drivers/char/tpm/tpm_tis.c
++++ b/drivers/char/tpm/tpm_tis.c
+@@ -622,6 +622,7 @@ static struct pnp_device_id tpm_pnp_tbl[] __devinitdata = {
+ 	{"ATM1200", 0},		/* Atmel */
+ 	{"IFX0102", 0},		/* Infineon */
+ 	{"BCM0101", 0},		/* Broadcom */
++	{"BCM0102", 0},		/* Broadcom */
+ 	{"NSC1200", 0},		/* National */
+ 	{"ICO0102", 0},		/* Intel */
+ 	/* Add new here */
+-- 
+
+On Thu, 2008-07-10 at 01:03 +0200, eledisez wrote:
+> Hi,
 > 
-> Marcin Obara schrieb:
-> > This patch adds Intel TPM TIS device HID :  ICO0102
+> all right, for the next time.
+> 
+> Thanks.
+> Erwan.
+> 
+> On Wed, 09 Jul 2008 18:49:51 -0300, Rajiv Andrade
+> <srajiv@linux.vnet.ibm.com> wrote:
+> > Please add the Signed-off-by and whenever possible submit the patch in
+> > `patch -p1' form.
 > > 
-> > Signed-off-by: Marcin Obara <marcin_obara@users.sourceforge.net>
+> > Thanks,
+> > Rajiv
 > > 
-> > --- linux_tpm/drivers/char/tpm/tpm_tis.c	2008-06-05 20:51:13.000000000 +0200
-> > +++ linux_intel/drivers/char/tpm/tpm_tis.c	2008-06-25 06:31:39.000000000 +0200
-> > @@ -623,6 +623,7 @@ static struct pnp_device_id tpm_pnp_tbl[
-> >  	{"IFX0102", 0},		/* Infineon */
-> >  	{"BCM0101", 0},		/* Broadcom */
-> >  	{"NSC1200", 0},		/* National */
-> > +	{"ICO0102", 0},		/* Intel */
-> >  	/* Add new here */
-> >  	{"", 0},		/* User Specified */
-> >  	{"", 0}			/* Terminator */
-> > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> > On Sat, 2008-07-05 at 12:12 +0200, Erwan LE DISEZ wrote:
+> >> This patch adds Broadcom TPM TIS device HID : BCM0102.
+> >> 
+> >> Tested with by DELL D630 Laptop computer.
+> >> Best regards. LE DISEZ Erwan.
+> >>
+> > -------------------------------------------------------------------------
+> >> Sponsored by: SourceForge.net Community Choice Awards: VOTE NOW!
+> >> Studies have shown that voting for your favorite open source project,
+> >> along with a healthy diet, reduces your potential for chronic lameness
+> >> and boredom. Vote Now at http://www.sourceforge.net/community/cca08
+> >> _______________________________________________ tpmdd-devel mailing list
+> > tpmdd-devel@lists.sourceforge.net
+> > https://lists.sourceforge.net/lists/listinfo/tpmdd-devel
 
