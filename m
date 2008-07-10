@@ -1,50 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbYGJMyj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbYGJMza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757530AbYGJMyj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 08:54:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754071AbYGJMya
+	id S1757567AbYGJMza (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 08:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbYGJMzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 08:54:30 -0400
-Received: from sandesh.cdotd.ernet.in ([196.1.105.47]:53058 "EHLO
-	sandesh.cdotd.ernet.in" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754033AbYGJMy3 (ORCPT
+	Thu, 10 Jul 2008 08:55:22 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:9990 "EHLO
+	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754209AbYGJMzW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 08:54:29 -0400
-X-Greylist: delayed 2085 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Jul 2008 08:54:29 EDT
-From: "Prabhat Gupta" <prabhatg@cdotd.ernet.in>
-To: linux-kernel@vger.kernel.org
-Subject: System Hangs while loading ISICOM module...
-Date: Thu, 10 Jul 2008 18:18:26 +0530
-Message-Id: <20080710124826.M52865@cdotd.ernet.in>
-X-Mailer: Open WebMail 2.51 20050228
-X-OriginatingIP: 192.168.1.172 (prabhatg)
+	Thu, 10 Jul 2008 08:55:22 -0400
+X-BigFish: VPS-29(zz1432R98dR7efV1805M873fnzz10d3izzz32i6bh43j63h)
+X-Spam-TCS-SCL: 2:0
+X-WSS-ID: 0K3SJVT-03-RST-01
+Date: Thu, 10 Jul 2008 14:54:39 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       Sebastian.Biemueller@amd.com, robert.richter@amd.com, joro@8bytes.org
+Subject: Re: [PATCH 22/34] AMD IOMMU: add domain allocation and deallocation functions
+Message-ID: <20080710125439.GO14977@amd.com>
+References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com> <1214508490-29683-23-git-send-email-joerg.roedel@amd.com> <20080709191459.673a9a4c.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=iso-8859-1
-X-imss-version: 2.051
-X-imss-result: Passed
-X-imss-scanInfo: M:B L:E SM:2
-X-imss-tmaseResult: TT:1 TS:-4.5510 TC:1F TRN:24 TV:5.5.1026(16022.007)
-X-imss-scores: Clean:100.00000 C:0 M:0 S:0 R:0
-X-imss-settings: Baseline:5 C:4 M:4 S:4 R:1 (0.0000 0.0000)
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20080709191459.673a9a4c.akpm@linux-foundation.org>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 10 Jul 2008 12:54:39.0675 (UTC) FILETIME=[1D6890B0:01C8E28C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My system configuration is x86_64 GNU/Linux with kernel 2.6.18-53.el5. I have a
-Multi-tech ISI card inserted into one of the PCI slots on my PC. I compile the driver
-(isicom.c available with the kernel source) and try to load it using insmod. The system
-hangs after insmod. I added some prints and found that the system hanged in the
-following line in the function :
+On Wed, Jul 09, 2008 at 07:14:59PM -0700, Andrew Morton wrote:
+> On Thu, 26 Jun 2008 21:27:58 +0200 Joerg Roedel <joerg.roedel@amd.com> wrote:
+> 
+> > +static u16 domain_id_alloc(void)
+> > +{
+> > +	unsigned long flags;
+> > +	int id;
+> > +
+> > +	write_lock_irqsave(&amd_iommu_devtable_lock, flags);
+> > +	id = find_first_zero_bit(amd_iommu_pd_alloc_bitmap, MAX_DOMAIN_ID);
+> > +	BUG_ON(id == 0);
+> > +	if (id > 0 && id < MAX_DOMAIN_ID)
+> > +		__set_bit(id, amd_iommu_pd_alloc_bitmap);
+> > +	else
+> > +		id = 0;
+> > +	write_unlock_irqrestore(&amd_iommu_devtable_lock, flags);
+> > +
+> > +	return id;
+> > +}
+> 
+> Presumably this is not performance-critical.  If it is, an IDR
+> tree would help.
 
-static int __devinit reset_card() when the card is being given a reset by writing 0x0
-i.e. in the line  outw(0, base + 0x8); /* Reset */. I am not able to find a solution to
-it. When I comment this line, the system doesn't hang but the driver loading fails in
-static int __devinit load_firmware() by giving warning "Card1 rejected load header,
-Address:0x8000, Count:0x10, Status:0xdd"
+No, its not performance critical. Domain id allocation is only done at
+IOMMU initialization currently. In the future it may also be used at
+virtual machine creation when we have device passthrough for KVM.
 
-Any suggestion would be of immense help to me. Thanks in advance.
+Joerg
 
-Regards,
-Prabhat
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
