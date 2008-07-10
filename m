@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759818AbYGJRnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759723AbYGJRqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759818AbYGJRnb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 13:43:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757353AbYGJRnX
+	id S1759723AbYGJRqV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 13:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbYGJRqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 13:43:23 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47022 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756381AbYGJRnX (ORCPT
+	Thu, 10 Jul 2008 13:46:12 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:35479 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753088AbYGJRqL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 13:43:23 -0400
-Message-ID: <48764A01.1070402@linux-foundation.org>
-Date: Thu, 10 Jul 2008 12:42:25 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Thu, 10 Jul 2008 13:46:11 -0400
+Date: Thu, 10 Jul 2008 23:14:36 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Paul Menage <menage@google.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <pzijlstr@redhat.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Libcg Devel Mailing List <libcg-devel@lists.sourceforge.net>,
+       Morton Andrew Morton <akpm@linux-foundation.org>,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [Libcg-devel] [RFC] How to handle the rules engine for cgroups
+Message-ID: <20080710174436.GE4235@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20080701191126.GA17376@redhat.com> <6599ad830807100207q26cf2416qb8d38d1d715b5ba0@mail.gmail.com> <20080710143307.GD3782@redhat.com> <6599ad830807100946j6db8d0d6se18f1b428c69ad5c@mail.gmail.com> <20080710171838.GA4235@linux.vnet.ibm.com> <6599ad830807101030i2f3a15a3l3409a36c11773f25@mail.gmail.com>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <48751CF9.4020901@linux-foundation.org>	<4875209D.8010603@goop.org> <48752CCD.30507@linux-foundation.org>	<m1wsjupuiz.fsf@frodo.ebiederm.org> <48753C99.5050408@goop.org> <m1ej62iq9z.fsf@frodo.ebiederm.org> <487555A8.2050007@zytor.com> <487556A5.5090907@goop.org> <4876194E.4080205@linux-foundation.org> <48761C06.3020003@zytor.com> <48762A3B.5050104@linux-foundation.org> <48762DD2.5090802@zytor.com> <487637A1.4080403@linux-foundation.org> <487639ED.7000502@zytor.com> <48763CA6.9030802@linux-foundation.org> <487647EF.5010609@goop.org>
-In-Reply-To: <487647EF.5010609@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6599ad830807101030i2f3a15a3l3409a36c11773f25@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
+On Thu, Jul 10, 2008 at 10:30:15AM -0700, Paul Menage wrote:
+> On Thu, Jul 10, 2008 at 10:18 AM, Dhaval Giani
+> <dhaval@linux.vnet.ibm.com> wrote:
+> >
+> > I am sorry, I seem to missing something, but who moves the forked
+> > children (which got forked during the time between the parent getting
+> > classified into the right group and the fork itself) into the correct
+> > group?
+> 
+> The classifier daemon would have to do that - my point was that it
+> would be very clear exactly which processes needed this attention,
+> since they'd end up in the root cgroup too.
+> 
 
-> If %gs:0 points to start of your percpu area, then all the offsets off
-> %gs are going to be no larger than the amount of percpu memory you
-> have.  The gs base itself can be any 64-bit address, so it doesn't
-> matter where it is within overall kernel memory.  Using zero-based
-> percpu area means that you must set a non-zero %gs base before you can
-> access the percpu area.
+It still would not solve the problem of the correct group getting
+charged. Say for something like cpu, it would get fare more cpu time as
+opposed to what it should get. Its in the correct direction, but I am
+not sure if it is the solution. I was thinking of having a sandbox
+cgroup at each level, but then I am not very sure of this "correct
+cgroup getting charged" problem.
 
-Correct.
-
-> If the layout of the percpu area is done by the linker by packing all
-> the percpu variables into one section, then any address computation
-> using a percpu variable symbol will generate an offset which is
-> appropriate to apply to a %gs: addressing mode.
-
-Of course.
-
-> The nice thing about the non-zero-based scheme i386 uses is that setting
-> gs-base to zero means that percpu variables accesses get directly to the
-> prototype percpu data area, which simplifies boot time setup (which is
-> doubly awkward on 32-bit because you need to generate a GDT entry rather
-> than just load an MSR as you do in 64-bit).
-
-Great but it causes trouble in other ways as discussed. Its best to consistently access
-per cpu variables using the segment registers.
+-- 
+regards,
+Dhaval
