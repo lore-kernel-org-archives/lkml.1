@@ -1,103 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757476AbYGJMxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbYGJMyj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757476AbYGJMxw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 08:53:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754071AbYGJMxn
+	id S1757530AbYGJMyj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 08:54:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754071AbYGJMya
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 08:53:43 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:63861 "EHLO
-	WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751167AbYGJMxm (ORCPT
+	Thu, 10 Jul 2008 08:54:30 -0400
+Received: from sandesh.cdotd.ernet.in ([196.1.105.47]:53058 "EHLO
+	sandesh.cdotd.ernet.in" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754033AbYGJMy3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 08:53:42 -0400
-X-BigFish: VPS-39(zz1432R98dR7efV1805M179dR873fnzz10d3izzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0K3SJT7-03-RQZ-01
-Date: Thu, 10 Jul 2008 14:53:20 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
-       Sebastian.Biemueller@amd.com, robert.richter@amd.com, joro@8bytes.org
-Subject: Re: [PATCH 19/34] AMD IOMMU: add functions to send IOMMU commands
-Message-ID: <20080710125320.GN14977@amd.com>
-References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com> <1214508490-29683-20-git-send-email-joerg.roedel@amd.com> <20080709190453.527535f7.akpm@linux-foundation.org>
+	Thu, 10 Jul 2008 08:54:29 -0400
+X-Greylist: delayed 2085 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Jul 2008 08:54:29 EDT
+From: "Prabhat Gupta" <prabhatg@cdotd.ernet.in>
+To: linux-kernel@vger.kernel.org
+Subject: System Hangs while loading ISICOM module...
+Date: Thu, 10 Jul 2008 18:18:26 +0530
+Message-Id: <20080710124826.M52865@cdotd.ernet.in>
+X-Mailer: Open WebMail 2.51 20050228
+X-OriginatingIP: 192.168.1.172 (prabhatg)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20080709190453.527535f7.akpm@linux-foundation.org>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 10 Jul 2008 12:53:20.0189 (UTC) FILETIME=[EE07F6D0:01C8E28B]
+Content-Type: text/plain;
+	charset=iso-8859-1
+X-imss-version: 2.051
+X-imss-result: Passed
+X-imss-scanInfo: M:B L:E SM:2
+X-imss-tmaseResult: TT:1 TS:-4.5510 TC:1F TRN:24 TV:5.5.1026(16022.007)
+X-imss-scores: Clean:100.00000 C:0 M:0 S:0 R:0
+X-imss-settings: Baseline:5 C:4 M:4 S:4 R:1 (0.0000 0.0000)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 09, 2008 at 07:04:53PM -0700, Andrew Morton wrote:
-> On Thu, 26 Jun 2008 21:27:55 +0200 Joerg Roedel <joerg.roedel@amd.com> wrote:
-> > +static int iommu_completion_wait(struct amd_iommu *iommu)
-> > +{
-> > +	int ret;
-> > +	struct command cmd;
-> > +	volatile u64 ready = 0;
-> > +	unsigned long ready_phys = virt_to_phys(&ready);
-> > +
-> > +	memset(&cmd, 0, sizeof(cmd));
-> > +	cmd.data[0] = LOW_U32(ready_phys) | CMD_COMPL_WAIT_STORE_MASK;
-> > +	cmd.data[1] = HIGH_U32(ready_phys);
-> > +	cmd.data[2] = 1; /* value written to 'ready' */
-> > +	CMD_SET_TYPE(&cmd, CMD_COMPL_WAIT);
-> > +
-> > +	iommu->need_sync = 0;
-> > +
-> > +	ret = iommu_queue_command(iommu, &cmd);
-> > +
-> > +	if (ret)
-> > +		return ret;
-> > +
-> > +	while (!ready)
-> > +		cpu_relax();
-> 
-> I busywait is a big red flag.  An uncommented one is not acceptable IMO.
-> 
-> What is the maximum duration?
+My system configuration is x86_64 GNU/Linux with kernel 2.6.18-53.el5. I have a
+Multi-tech ISI card inserted into one of the PCI slots on my PC. I compile the driver
+(isicom.c available with the kernel source) and try to load it using insmod. The system
+hangs after insmod. I added some prints and found that the system hanged in the
+following line in the function :
 
-This depends on the hardware and how many commands have to be executed
-before that command.
+static int __devinit reset_card() when the card is being given a reset by writing 0x0
+i.e. in the line  outw(0, base + 0x8); /* Reset */. I am not able to find a solution to
+it. When I comment this line, the system doesn't hang but the driver loading fails in
+static int __devinit load_firmware() by giving warning "Card1 rejected load header,
+Address:0x8000, Count:0x10, Status:0xdd"
 
-> Is it not possible to sleep and await an interrupt?
+Any suggestion would be of immense help to me. Thanks in advance.
 
-Yes it is. I plan to do so as an optimization to the current code. But
-this needs changes to the address allocator to not allocate addresses
-which have been freed but not yet flushed from the IOMMU TLB.
-
-> Should we implement a timeout in case the hardware is busted?
-
-This is the best I think. Ok, if the hardware is busted the whole
-machine has a problem because DMA does not work reliably anymore. But I
-will add a counter to that loop to have an emergency exit from it until
-the optimization is implemented (which is a bit more work).
-
-> > +	return 0;
-> > +}
-> > +
-> > +static int iommu_queue_inv_dev_entry(struct amd_iommu *iommu, u16 devid)
-> > +{
-> > +	struct command cmd;
-> 
-> `command' was a poorly-chosen identifier for this structure.  Too generic.
-
-Hmm, maybe iommu_cmd. I don't want the identifier too long like
-amd_iommu_command because it is only used in that file and thus its
-clear that it belongs to the amd_iommu.
-
-Joerg
-
-
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+Regards,
+Prabhat
 
