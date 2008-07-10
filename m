@@ -1,68 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758192AbYGJUoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756943AbYGJUrJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758192AbYGJUoT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 16:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbYGJUoJ
+	id S1756943AbYGJUrJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 16:47:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbYGJUq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 16:44:09 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:43305 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752985AbYGJUoI (ORCPT
+	Thu, 10 Jul 2008 16:46:57 -0400
+Received: from mga02.intel.com ([134.134.136.20]:38076 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753150AbYGJUq4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 16:44:08 -0400
-Date: Thu, 10 Jul 2008 13:42:51 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, joerg.roedel@amd.com,
-       tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
-       Sebastian.Biemueller@amd.com, robert.richter@amd.com, joro@8bytes.org
-Subject: Re: [PATCH 16/34] AMD IOMMU: add kernel command line parameters for
- AMD IOMMU
-Message-Id: <20080710134251.b2591ea8.randy.dunlap@oracle.com>
-In-Reply-To: <20080710062603.GB23054@elte.hu>
-References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com>
-	<1214508490-29683-17-git-send-email-joerg.roedel@amd.com>
-	<20080709185634.08c60937.akpm@linux-foundation.org>
-	<20080710132447T.fujita.tomonori@lab.ntt.co.jp>
-	<20080709213907.1e8b253b.akpm@linux-foundation.org>
-	<20080710062603.GB23054@elte.hu>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
+	Thu, 10 Jul 2008 16:46:56 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.30,340,1212390000"; 
+   d="scan'208";a="306837378"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "alan@redhat.com" <alan@redhat.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Thu, 10 Jul 2008 13:46:49 -0700
+Subject: [PATCH] Fix ia64 simserial.c for Ldisc revamp
+Thread-Topic: [PATCH] Fix ia64 simserial.c for Ldisc revamp
+Thread-Index: AcjizhNmCx0J3A0DRMu7w3IRq+nQjQ==
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA3064DE226@orsmsx505.amr.corp.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Transfer-Encoding: 7BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Jul 2008 08:26:03 +0200 Ingo Molnar wrote:
+This driver is "hidden" in arch/ia64 ... so it didn't get updated
+by the Ldisc revamp.
 
-> 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Thu, 10 Jul 2008 13:25:23 +0900 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> > 
-> > > I have one related question, we should document all the kernel boot
-> > > parameters in Documentation/kernel-parameters.txt?
-> > > 
-> > > Some of x86_64 boot parameters are in
-> > > Documentations/x86/x86_64/boot-options.txt. The parameters of IOMMUs
-> > > are scattered. It's confusing.
-> > 
-> > A single monolithic file has advantages.  I think I'd prefer that 
-> > personally.  I'd forgotten that the x86-specific one exists, actually.
-> 
-> yeah, it should be all in Documentation/kernel-parameters.txt.
+Signed-off-by: Tony Luck <tony.luck@intel.com>
 
-Agreed.
 
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+diff --git a/arch/ia64/hp/sim/simserial.c b/arch/ia64/hp/sim/simserial.c
+index 23cafc8..f870bbf 100644
+--- a/arch/ia64/hp/sim/simserial.c
++++ b/arch/ia64/hp/sim/simserial.c
+@@ -354,8 +354,8 @@ static void rs_flush_buffer(struct tty_struct *tty)
+        wake_up_interruptible(&tty->write_wait);
+
+        if ((tty->flags & (1 << TTY_DO_WRITE_WAKEUP)) &&
+-           tty->ldisc.write_wakeup)
+-               (tty->ldisc.write_wakeup)(tty);
++           tty->ldisc.ops->write_wakeup)
++               (tty->ldisc.ops->write_wakeup)(tty);
+ }
+
+ /*
+@@ -407,8 +407,9 @@ static void rs_unthrottle(struct tty_struct * tty)
+ /*
+  * rs_break() --- routine which turns the break handling on or off
+  */
+-static void rs_break(struct tty_struct *tty, int break_state)
++static int rs_break(struct tty_struct *tty, int break_state)
+ {
++       return 0;
+ }
+
+ static int rs_ioctl(struct tty_struct *tty, struct file * file,
+@@ -625,7 +626,7 @@ static void rs_close(struct tty_struct *tty, struct file * filp)
+        shutdown(info);
+        if (tty->ops->flush_buffer)
+                tty->ops->flush_buffer(tty);
+-       if (tty->ldisc.flush_buffer) tty->ldisc.flush_buffer(tty);
++       if (tty->ldisc.ops->flush_buffer) tty->ldisc.ops->flush_buffer(tty);
+        info->event = 0;
+        info->tty = NULL;
+        if (info->blocked_open) {
+
+
