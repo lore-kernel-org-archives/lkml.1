@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758881AbYGJQlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759031AbYGJQlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758881AbYGJQlS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 12:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbYGJQlH
+	id S1759031AbYGJQlm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 12:41:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756756AbYGJQlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 12:41:07 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:33159 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751639AbYGJQlF (ORCPT
+	Thu, 10 Jul 2008 12:41:32 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:31555 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753138AbYGJQlb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 12:41:05 -0400
-Message-ID: <487639ED.7000502@zytor.com>
-Date: Thu, 10 Jul 2008 12:33:49 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 10 Jul 2008 12:41:31 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=HaQd2lJXMd7/BtEP2J6WGRl+W3uNEzSo+Yb482KrHVXpm8Pq4a+lz3vhpsAypQfNi
+	WTzVFV/gImvTxyh+9YSww==
+Message-ID: <6599ad830807100941k330bb62cg7ae6a3d611e2dffa@mail.gmail.com>
+Date: Thu, 10 Jul 2008 09:41:06 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Vivek Goyal" <vgoyal@redhat.com>
+Subject: Re: [RFC] How to handle the rules engine for cgroups
+Cc: "linux kernel mailing list" <linux-kernel@vger.kernel.org>,
+       "Libcg Devel Mailing List" <libcg-devel@lists.sourceforge.net>,
+       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
+       "Peter Zijlstra" <pzijlstr@redhat.com>, kamezawa.hiroyu@jp.fujitsu.com,
+       "Kazunaga Ikeno" <k-ikeno@ak.jp.nec.com>,
+       "Morton Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20080710140624.GB3782@redhat.com>
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <48751CF9.4020901@linux-foundation.org>	<4875209D.8010603@goop.org> <48752CCD.30507@linux-foundation.org>	<m1wsjupuiz.fsf@frodo.ebiederm.org> <48753C99.5050408@goop.org> <m1ej62iq9z.fsf@frodo.ebiederm.org> <487555A8.2050007@zytor.com> <487556A5.5090907@goop.org> <4876194E.4080205@linux-foundation.org> <48761C06.3020003@zytor.com> <48762A3B.5050104@linux-foundation.org> <48762DD2.5090802@zytor.com> <487637A1.4080403@linux-foundation.org>
-In-Reply-To: <487637A1.4080403@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080701191126.GA17376@redhat.com>
+	 <6599ad830807100207q26cf2416qb8d38d1d715b5ba0@mail.gmail.com>
+	 <20080710140624.GB3782@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> H. Peter Anvin wrote:
-> 
->> but there is a distinct lack of wiggle room, which can be resolved
->> either by using negative offsets, or by moving the kernel text area up a
->> bit from -2 GB.
-> 
-> Lets say we reserve 256MB of cpu alloc space per processor.
-> 
-> On a system with 4k processors this will result in the need for 1TB virtual address space for per cpu areas (note that there may be more processors in the future). Preferably we would calculate the address of the per cpu area by
-> 
-> 	PERCPU_START_ADDRESS + PERCPU_SIZE * smp_processor_id()
-> 
-> instead of looking it up in a table because that will save a memory access on per_cpu().
+On Thu, Jul 10, 2008 at 7:06 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+>
+> This looks interesting. So above method should solve atleast the
+> reliability issue of event transport to user space. Got few thougts.
+>
+> - Hopefully number of hiearchies will not explode as we will be
+>  mounting one hierarchies per event type (uid change, gid change,
+>  exec, maybe fork etc.).
 
-It will, but it might still be a net loss due to higher load on the TLB 
-(you're effectively using the TLB to do the table lookup for you.)  On 
-the other hand, Mike points out that once we move away from fixed-sized 
-segments we pretty much have to use virtual addresses anyway(*).
+In what circumstances would you want to reclassify processes to a
+different cgroup on a fork?
 
-> The first percpu area would ideally be the per cpu segment generated by the linker.
-> 
-> How would that fit into the address map? In particular the 2G distance between code and the first per cpu area must not be violated unless we go to a zero based approach.
-
-If with "zero-based" you mean "nonzero gs_base for the boot CPU" then 
-yes, you're right.
-
-Note again that that is completely orthogonal to RIP-based versus absolute.
-
-	-hpa
-
+Paul
