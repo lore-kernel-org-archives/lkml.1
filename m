@@ -1,77 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755159AbYGJWRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754851AbYGJWa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755159AbYGJWRr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 18:17:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbYGJWRg
+	id S1754851AbYGJWa0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 18:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbYGJWaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 18:17:36 -0400
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:53612 "EHLO
-	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750992AbYGJWRg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 18:17:36 -0400
-Date: Fri, 11 Jul 2008 00:17:29 +0200
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Marcus Sundberg <marcus@ingate.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.26-rc9] r8169: Avoid thrashing PCI conf space on
-	RTL_GIGA_MAC_VER_20.
-Message-ID: <20080710221729.GB18477@electric-eye.fr.zoreil.com>
-References: <48760F22.8040208@ingate.com>
+	Thu, 10 Jul 2008 18:30:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60070 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752115AbYGJWaO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 18:30:14 -0400
+Message-ID: <48768D53.4000803@redhat.com>
+Date: Thu, 10 Jul 2008 15:29:39 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48760F22.8040208@ingate.com>
-X-Organisation: Land of Sunshine Inc.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: Rik van Riel <riel@redhat.com>, Paul Menage <menage@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Libcg Devel Mailing List <libcg-devel@lists.sourceforge.net>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Peter Zijlstra <pzijlstr@redhat.com>,
+       Kazunaga Ikeno <k-ikeno@ak.jp.nec.com>,
+       Morton Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Graf <tgraf@redhat.com>
+Subject: Re: [RFC] How to handle the rules engine for cgroups
+References: <20080701191126.GA17376@redhat.com> <20080703101957.b3856904.kamezawa.hiroyu@jp.fujitsu.com> <20080703155446.GB9275@redhat.com> <6599ad830807100223m2453963cwcfbe6eb1ad54d517@mail.gmail.com> <20080710104852.797fe79c@cuia.bos.redhat.com> <20080710154035.GA12043@redhat.com> <48763129.9060903@redhat.com> <20080710132546.264a89cd@cuia.bos.redhat.com> <48764950.3050405@redhat.com> <20080710184142.GC12043@redhat.com>
+In-Reply-To: <20080710184142.GC12043@redhat.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marcus Sundberg <marcus@ingate.com> :
-> The magic write to register 0x82 will often cause PCI config space on
-> my 8168 (PCI ID 10ec:8168, revision 2. mounted in an LG P300 laptop)
-> to be filled with ones during driver load, and thus breaking NIC
-> operation until reboot. If it does not happen on first driver load it
-> can easily be reproduced by unloading and loading the driver a few
-> times.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-I have added it at the root of the 'r8169' branch in repository:
+Vivek Goyal wrote:
+> Before exec, we should be able to determine the
+> migration policy related to process/thread (either by reading file or
+> something else etc). Set the policy through cgroup file system. If exec
+> fails for some reason, we just need to go back to cgroup file system to
+> undo the effect of setting migration policy previously set for that thread.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/romieu/netdev-2.6.git r8169
+That's what I said.  It would be necessary to get the old state and
+reset it if necessary.
 
-The branch is described below (on top of davem's 'next' branch).
+As for the interface: I hope nobody honestly thinks that it is doable to
+perform a whole bunch of filesystem operations for every exec.
 
-The whole serie is available as a patck-kit on top of 2.6.26-rc9 at:
+And more: reading a rule file, interpreting the rules to find the best
+match, etc is also too expensive.  Every process would have to read the
+rule file again.  If this is non-trivial or the rule file is large, the
+cost of an exec could easily be overshadowed by the cost of this
+preparation.  Unlike the kernel, the userlevel runtime cannot in general
+amortize the cost over several exec calls.  Handling all this in the
+kernel wouldn't have any of these problems.
 
-http://userweb.kernel.org/~romieu/r8169/2.6.26-rc9/20080710/ 
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-
-Diffstat
---------
-
- drivers/net/r8169.c |  496 ++++++++++++++++++++++++++++++++++++++++++++++++---
- 1 files changed, 470 insertions(+), 26 deletions(-)
-
-Shortlog
---------
-
-Francois Romieu (12):
-      r8169: update phy init parameters
-      r8169: new phy init parameters for the 8168b
-      r8169: shuffle some registers handling around (8168 operation only)
-      r8169: add 8168 registers description
-      r8169: make room for more specific 8168 hardware start procedure
-      r8169: Tx performance tweak
-      r8169: sync existing 8168 device hardware start sequences with vendor driver
-      r8169: add a new 8168 flavor
-      r8169: add a new 8168 flavor (bis)
-      r8169: add a new 8168 flavor (ter)
-      r8169: change default behavior for mildly identified 8168c chipsets
-      r8169: use pci_find_capability for the PCI-E features
-
-Marcus Sundberg (1):
-      r8169: avoid thrashing PCI conf space above RTL_GIGA_MAC_VER_06
-
--- 
-Ueimor
+iEYEARECAAYFAkh2jVMACgkQ2ijCOnn/RHQ6JACgx4W0dUh/MK6po23D1ObcnsKA
+HOAAn2Qfrh8m5zsdHQoniaoLl12Ut3ZE
+=IU/X
+-----END PGP SIGNATURE-----
