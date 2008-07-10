@@ -1,51 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757189AbYGJJTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756648AbYGJJYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757189AbYGJJTj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 05:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752916AbYGJJTb
+	id S1756648AbYGJJYV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 05:24:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYGJJYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 05:19:31 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50716 "EHLO
-	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752774AbYGJJTa (ORCPT
+	Thu, 10 Jul 2008 05:24:13 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:33374 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752090AbYGJJYM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 05:19:30 -0400
-Date: Thu, 10 Jul 2008 09:46:41 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= <Uwe.Kleine-Koenig@digi.com>
-Cc: Magnus Damm <magnus.damm@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "gregkh@suse.de" <gregkh@suse.de>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "hjk@linutronix.de" <hjk@linutronix.de>,
-       "lethal@linux-sh.org" <lethal@linux-sh.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>
-Subject: Re: [PATCH] uio: uio_pdrv_genirq V2
-Message-ID: <20080710094641.0c52eaa7@the-village.bc.nu>
-In-Reply-To: <20080710065639.GA16794@digi.com>
-References: <20080710035254.27378.18682.sendpatchset@rx1.opensource.se>
-	<20080710065639.GA16794@digi.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 10 Jul 2008 05:24:12 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=uPA//0HXSoOCM9bcr2M69mo5ibqKqyzbmCypwakNhyo0o5FDqhCUZ3SoSJOLdIvlQ
+	w4x+3VzUySBvD7dyvdFvQ==
+Message-ID: <6599ad830807100223m2453963cwcfbe6eb1ad54d517@mail.gmail.com>
+Date: Thu, 10 Jul 2008 02:23:52 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Vivek Goyal" <vgoyal@redhat.com>
+Subject: Re: [RFC] How to handle the rules engine for cgroups
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux kernel mailing list" <linux-kernel@vger.kernel.org>,
+       "Libcg Devel Mailing List" <libcg-devel@lists.sourceforge.net>,
+       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
+       "Peter Zijlstra" <pzijlstr@redhat.com>,
+       "Kazunaga Ikeno" <k-ikeno@ak.jp.nec.com>,
+       "Morton Andrew Morton" <akpm@linux-foundation.org>,
+       "Thomas Graf" <tgraf@redhat.com>, "Rik Van Riel" <riel@redhat.com>
+In-Reply-To: <20080703155446.GB9275@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080701191126.GA17376@redhat.com>
+	 <20080703101957.b3856904.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20080703155446.GB9275@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jul 3, 2008 at 8:54 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+>
+> As of today it should happen because newly execed process will run into
+> same cgroup as parent.  But that's what probably we need to avoid.
+> For example, if an admin has created three cgroups "database", "browser"
+> "others" and a user launches "firefox" from shell (assuming shell is running
+> originally in "others" cgroup), then any memory allocation for firefox should
+> come from "browser" cgroup and not from "others".
 
-> > +       else if (!irq_on && !priv->irq_disabled)
-> > +               disable_irq(dev_info->irq);
-> I'm not sure if this is a problem on SMP.  Should you use
-> disable_irq_nosync here, too?  Probably it's OK.
+I think that I'm a little skeptical that anyone would ever want to do that.
 
-That one will also deadlock.
+Wouldn't it be a simpler mechanism for the admin to simply have
+wrappers around the "firefox" and "oracle" binaries that move the
+process into the "browser" or "database" cgroup before running the
+real binaries?
 
-The easiest fix is probably to use test_and_set and friends for each I/O
-operation. You would then not need the lock to protect ->irq_disabled.
-Propogating that throughout means your user space has to handle the case
-of an IRQ arriving after disable returns but would be a fair bit saner I
-think ?
+>
+> I am assuming that this will be a requirement for enterprise class
+> systems. Would be good to know the experiences of people who are already
+> doing some kind of work load management.
+
+I can help there. :-) At Google we have two approaches:
+
+- grid jobs, which are moved into the appropriate cgroup (actually,
+currently cpuset) by the grid daemon when it starts the job
+
+- ssh logins, which are moved into the appropriate cpuset by a
+forced-command script specified in the sshd config.
+
+I don't see the rule-based approach being all that useful for our needs.
+
+It's all very well coming up with theoretical cases that a fancy new
+mechanism solves. But it carries more weight if someone can stand up
+and say "Yes, I want to use this on my real cluster of machines". (Or
+even "Yes, if this is implemented I *will* use it on my desktop" would
+be a start)
+
+Paul
