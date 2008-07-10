@@ -1,70 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbYGJLYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757091AbYGJL1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756656AbYGJLYS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 07:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbYGJLYG
+	id S1757091AbYGJL1S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 07:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbYGJL1F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 07:24:06 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51648 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752345AbYGJLYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 07:24:05 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH]xen: fix up config dependencies on PM
-Date: Thu, 10 Jul 2008 13:25:42 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <487559AC.1010301@goop.org>
-In-Reply-To: <487559AC.1010301@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807101325.42586.rjw@sisk.pl>
+	Thu, 10 Jul 2008 07:27:05 -0400
+Received: from mga10.intel.com ([192.55.52.92]:37063 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751653AbYGJL1E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 07:27:04 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.30,338,1212390000"; 
+   d="scan'208";a="351756380"
+Subject: Re: FW: [Fwd: [PATCH]Using Intel CRC32 instruction to implement
+	hardware accelerated CRC32c algorithm.]
+From: austin zhang <austin_zhang@linux.intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>, johnpol@2ka.mipt.ru
+Cc: davem@davemloft.net, chaapala@cisco.com, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com
+In-Reply-To: <20080709074153.GA11927@gondor.apana.org.au>
+References: <000901c8e0d4$6f5cf230$7fb410ac@ccr.corp.intel.com>
+	 <1215512754.2906.23.camel@localhost.localdomain>
+	 <20080709074153.GA11927@gondor.apana.org.au>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 10 Jul 2008 07:26:09 -0400
+Message-Id: <1215689169.5257.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 10 of July 2008, Jeremy Fitzhardinge wrote:
-> Xen save/restore needs bits of code enabled by PM_SLEEP, and PM_SLEEP
-> depends on PM.  So make XEN_SAVE_RESTORE depend on PM and PM_SLEEP
-> depend on XEN_SAVE_RESTORE.
-> 
-> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+On Wed, 2008-07-09 at 15:41 +0800, Herbert Xu wrote:
 
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+> I've just converted the crc32c module over to the new interface.
+> You can use this as an example.
+Herbert and ﻿Evgeniy,
+Sorry for late reply. Thanks a lot for your information and example, I
+will work out the intel-specific implemetation. After internal
+discussing and approval, I will post here for review again.
 
-> ---
->  arch/x86/xen/Kconfig |    5 +++++
->  kernel/power/Kconfig |    2 +-
->  2 files changed, 6 insertions(+), 1 deletion(-)
+> Unfortunately this leads to nasty hacks because the existing
+> interface does chaining in a way that isn't easily mapped over
+> to the crypto API.  However this is no great loss since there
+> is a grand total of two users in the tree :)
 > 
-> ===================================================================
-> --- a/arch/x86/xen/Kconfig
-> +++ b/arch/x86/xen/Kconfig
-> @@ -23,3 +23,8 @@
->           according to the maximum possible memory size of a Xen
->           domain.  This array uses 1 page per gigabyte, so there's no
->           need to be too stingy here.
-> +
-> +config XEN_SAVE_RESTORE
-> +       bool
-> +       depends on PM
-> +       default y
-> \ No newline at end of file
-> ===================================================================
-> --- a/kernel/power/Kconfig
-> +++ b/kernel/power/Kconfig
-> @@ -82,7 +82,7 @@
->  
->  config PM_SLEEP
->  	bool
-> -	depends on SUSPEND || HIBERNATION
-> +	depends on SUSPEND || HIBERNATION || XEN_SAVE_RESTORE
->  	default y
->  
->  config SUSPEND
-> 
+> So my plan is to convert them and then remove the libcrc32c
+> interface completely.
+Because libcrc32c can be a module in original implemetation, so for
+those other routine which call crc32c_le directly, this may not work for
+them?  
+
+
