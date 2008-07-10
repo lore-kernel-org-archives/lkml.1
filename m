@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbYGJIPH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755770AbYGJIUV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756214AbYGJIPH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 04:15:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbYGJIOv
+	id S1755770AbYGJIUV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 04:20:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbYGJIUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 04:14:51 -0400
-Received: from nebensachen.de ([195.34.83.29]:51361 "EHLO mail.nebensachen.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750955AbYGJIOu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 04:14:50 -0400
-X-Hashcash: 1:20:080710:mingo@elte.hu::RPjBE6k3zKKlfZHW:00003rvB
-X-Hashcash: 1:20:080710:linux-kernel@vger.kernel.org::rYbxv9KaKGPqmtrF:00000000000000000000000000000000013rU
-From: Elias Oltmanns <eo@nebensachen.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Scheduling issue with signal handling
-Date: Thu, 10 Jul 2008 10:14:42 +0200
-Message-ID: <87wsju88b1.fsf@denkblock.local>
-User-Agent: Gnus/5.110007 (No Gnus v0.7)
+	Thu, 10 Jul 2008 04:20:05 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:53202 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750980AbYGJIUD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 04:20:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=cDKSlk341JqA1QZZrJoDvp5WoKHDKyjyFAXJyNEDqffO8RFtwRJR0Qj4am0B9JtgFE
+         PHbyb60/7Xh6YLrEIpNTJXkhuSWer5AaEEII/MNXSjAgwNwTFzViDWeiw4smlTuS/My/
+         v6a9+10KvnrTz4p+QyS8ahoqJ3TGstJzFKa54=
+Message-ID: <4875C5C2.6010703@gmail.com>
+Date: Thu, 10 Jul 2008 10:18:10 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Matthias Schniedermeyer <ms@citd.de>
+CC: "Shaun R." <mailinglists@unix-scripts.com>, linux-kernel@vger.kernel.org
+Subject: Re: 64bit kernel, 32bit OS?
+References: <g53keq$vq1$1@ger.gmane.org> <20080710072037.GA10883@citd.de>
+In-Reply-To: <20080710072037.GA10883@citd.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi there,
+On 07/10/2008 09:20 AM, Matthias Schniedermeyer wrote:
+> On 09.07.2008 17:16, Shaun R. wrote:
+>> If i where to run a 32bit OS on a 64bit kernel would there be any 
+>> problems with that?  I'm not trying to convert the OS to 64bit, just 
+>> would rather not have to build multiple kernels if i dont have too.  I'm 
+>> talking x86_32 and x86_64 btw too.
+> 
+> I guess you mean 32bit userspace with a 64bit kernel.
+> 
+> And that's no problem as long as "CONFIG_IA32_EMULATION" is set
+> The option is in the menu: Executable file formats / Emulations
+> and is called: IA32 Emulation
 
-in another thread [1] we've discussed something which, after some
-testing, I now believe to be a problem related to scheduling /
-preemption.
+Just my $.02. I do this configuration for years on some machines.
 
-Here is the problem: If there is heavy disk I/O in the background,
-signals sent to an I/O related process interactively by pressing Ctrl+Z
-or Ctrl+C are sometimes processed quite sluggishly. I can pretty
-reliably reproduce this using a test case provided by the original
-reporter [1] (on a uniprocessor if that's of any consequence). The
-problem has been verified to exist at least since 2.6.19 but it's become
-much easier to observe and thus attracted attention since 2.6.25 because
-pressing Ctrl+Z or Ctrl+C is now acknowledged by printing ^Z or ^C to
-the terminal, respectively. As a result, the user gets slightly
-irritated and possibly impatient when pressing Ctrl+Z repeatedly or just
-holding down these keys generates a string like
-^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z
-but the shell prompt doesn't appear for up to a few seconds.
+The only problem I've ever met is that some drivers are broken to support this 
+configuration, some ioctls or mmap structures simply binary differs on 32 and 
+64-bit (due to different alignment and members size) and the driver can't cope 
+with that -- doesn't define ioctls independently on arch or let the structures 
+unaligned.
 
-By sprinkling some printk()s all over the place, I've managed to
-establish the following sequence of events taking place in the event of
-delayed signal handling as described above:
-The first Ctrl+Z event enqueues a SIGTSTP signal which eventually
-results in a call to kick_process(). For some reason though, the signal
-isn't handled straight away but remains on the queue for some time.
-Consequently, subsequent Ctrl+Z events result in echoing another ^Z to
-the terminal but everything related to sending a signal is skipped (and
-rightly so) because the kernel detects that a SIGTSTP is still pending.
-Eventually, get_signal_to_deliver() dequeues the SIGTSTP signal and the
-shell propt appears.
-
-My question is this: Even under high disk I/O pressure, the threads
-dealing with I/O to the terminal evidently still get their turn as
-indicated by the sequence of ^Z appearing on screen. Why is it then,
-that the threads which are meant to process the SIGTSTP or SIGINT signals
-aren't scheduled for some seconds and is there a way to change this?
-
-Please let me know if there is anything I can try to investigate this
-any further or if you need further information.
-
-Thanks in advance,
-
-Elias
-
-[1] http://lkml.org/lkml/2008/6/28/50
+So make sure you won't use any proprietary blob which can't handle this (e.g. 
+nvidia is OK).
