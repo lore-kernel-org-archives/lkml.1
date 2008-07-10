@@ -1,99 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757958AbYGJOgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757597AbYGJOnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757958AbYGJOgT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 10:36:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbYGJOgF
+	id S1757597AbYGJOnb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 10:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754845AbYGJOnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 10:36:05 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49293 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754455AbYGJOgD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 10:36:03 -0400
-Date: Thu, 10 Jul 2008 10:33:07 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Paul Menage <menage@google.com>
-Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Libcg Devel Mailing List <libcg-devel@lists.sourceforge.net>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Peter Zijlstra <pzijlstr@redhat.com>, kamezawa.hiroyu@jp.fujitsu.com,
-       Kazunaga Ikeno <k-ikeno@ak.jp.nec.com>,
-       Morton Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC] How to handle the rules engine for cgroups
-Message-ID: <20080710143307.GD3782@redhat.com>
-References: <20080701191126.GA17376@redhat.com> <6599ad830807100207q26cf2416qb8d38d1d715b5ba0@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6599ad830807100207q26cf2416qb8d38d1d715b5ba0@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 10 Jul 2008 10:43:24 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:38478 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754659AbYGJOnX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 10:43:23 -0400
+Subject: Re: [RFC] simple dprobe like markers for the kernel
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
+In-Reply-To: <20080710142208.GC1213@redhat.com>
+References: <1215638551.3444.39.camel__22002.9595810503$1215638656$gmane$org@localhost.localdomain>
+	 <y0m1w22qxoj.fsf@ton.toronto.redhat.com>
+	 <1215697794.3353.5.camel@localhost.localdomain>
+	 <20080710142208.GC1213@redhat.com>
+Content-Type: text/plain
+Date: Thu, 10 Jul 2008 09:43:16 -0500
+Message-Id: <1215700996.3353.30.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 10, 2008 at 02:07:11AM -0700, Paul Menage wrote:
-> Hi Vivek,
+On Thu, 2008-07-10 at 10:22 -0400, Frank Ch. Eigler wrote:
+> Hi -
 > 
-> On Tue, Jul 1, 2008 at 12:11 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> >
-> > - netlink is not a reliable protocol.
-> >        - Messages can be dropped and one can loose message. That means a
-> >          newly forked process might never go into right group as meant.
+> On Thu, Jul 10, 2008 at 08:49:54AM -0500, James Bottomley wrote:
+> > [...]
+> > > Another disadvantage is one that came up earlier when markers were
+> > > initially thought up: that something so invisible to the compiler (no
+> > > code being generated in the instruction stream, after optimization,
+> > > may be impossible to locate: not just the statement but also the
+> > > putative parameters.
+> > 
+> > Actually, I listed that one as an advantage.  But, in order to be
+> > completely zero impact, the probe cannot interfere with optimisation,
+> > and so you run the risk of having the probe point do strange things
+> > (like it's in the middle of a loop that gets unrolled) or that the
+> > variables you want to advertise get optimised away.
+> > 
+> > All of this is mitigated by correct selection of the probe points and
+> > the variables.
 > 
-> One way that you could avoid the unreliability would be to not use
-> netlink, but instead use cgroups itself.
-> 
-> What we're looking for is a way to easily distinguish between
-> processes that are in the right cgroups, and processes that might be
-> in the wrong cgroups. Additionally, we want the children of such
-> processes to inherit the same status until we've dealt with them, and
-> not be able to change their status themselves.
-> 
-> That sounds a bit like a cgroup. How about the following?
-> 
-> - create a cgroup subsystem called "setuid".
-> 
-> - have a uid_changed() hook called by sys_setuid() and friends; this
-> hook would simply attach current to the root cgroup in the "setuid"
-> hierarchy if it wasn't already in that cgroup (which can be determined
-> with a couple of dereferences from current and no locking, so not
-> slowing down the normal case).
-> 
-> - userspace uses this by:
-> 
-> mount the setuid hierarchy, e.g. at /mnt/setuid
-> create a child cgroup /mnt/setuid/processed
-> while true:
->   wait for /mnt/setuid/tasks to be non-empty
->   read a pid from /mnt/setuid/tasks
->   move that pid to the appropriate cgroups in memory/cpu/etc
-> hierarchies if necessary
->   move that pid to /mnt/setuid/processed/tasks
-> 
-> i.e. any pid in the root cgroup of the setuid hierarchy is one that
-> needs attention and may need to be moved to different cgroups
-> 
-> A couple of enhancements to make this more usable might include:
-> 
-> - adding an API (via a new syscall or an eventfd?) to wait for a
-> cgroup to be non-empty, to avoid having to poll /mnt/setuid/tasks more
-> than necessary
-> 
-> - allow the user to designate certain processes and their children as
-> uninteresting so that their setuid calls don't trigger them being
-> moved back to the root (perhaps indicated via membership of an
-> "ignored" cgroup in the setuid hierarchy?)
-> 
-> This should be more reliable than netlink since it doesn't involve
-> userspace having to keep up with a stream of events - we're not
-> queuing up events, we're just shifting process group memberships.
-> 
-> Similar approaches could be used for a "setgid" hierarchy and an
-> "execve" hierarchy.
+> Well, you can test your theory: replace some "tracepoints" or markers
+> or printk's with this, and see if systemtap (or gdb) can get at the
+> same data.
 
-We also need to do something to track all the forked childs after
-the setuid, setgid or exec till original parent event got classified
-and children need to meet the same treatment.
+That's what I'm actually already doing ... so far it works nicely.
 
-Thanks
-Vivek
+> When "correct selection" is a function of any particular compiler's
+> optimization algorithms, it will be difficult for a human programmer
+> to get it right.
+
+Not necessarily.  A tracepoint by a barrier will always be pretty much
+OK, as will variables that are either passed in or passed to functions
+(since they have to be instantiated to pass as arguments).
+
+Plus screw ups are easily detectable by a tool that parses the dwarf.
+
+The essential point is that we need zero impact trace points and that
+makes them difficult to place in this fashion.  However, the burden of
+placing and verifying them rests with the people in the actual subsystem
+(who are also the ones who hopefully get the most use out of them).
+
+> > > Long ago, someone proposed inserting an asm("nop") mini-markers into
+> > > the instruction stream, which could then be used as an anchor to tie a
+> > > kprobe to, so that would solve the statement-location problem.
+> > 
+> > But you don't need a nop ... you just need a line number.
+> 
+> That's *if* the line number ends up being resolvable back to a PC.  In
+> fact, since there is no code emitted for it, that particular line
+> number will not actually appear in DWARF line records.
+
+Erm, no ... dwarf is designed to emit an entry for every line in the
+file (whether it contains a statment or not).  The empty lines get
+elided in the line number program (because you can attach them to the
+first statement following) but a correct parser will recover them (by
+design in the dwarf).
+
+> > > But it doesn't help assure that the parameters will be available in
+> > > dwarf, so someone else proposed adding another asm that just asks the
+> > > parameters to be evaluated and placed *somewhere*.  Each asm input
+> > > constraint was to be the loosest possible, so as to not force the
+> > > compiler to put the values into registers (and evict their normal
+> > > tracing-ignorant tenants).
+> > 
+> > Actually, it does.  Assuming the probe is placed in the code by someone
+> > who knows what they're doing and is using it, you can ensure that what
+> > you're advertising actually exists.  [...]
+> 
+> You misunderstood - I am not talking about whether the variables exist
+> in the context of the source code.  The question is which of those
+> variables still exist, live & addressable, in the machine code and
+> execution state.  You may be surprised to what extent compiler
+> optimizations disrupt a simple source-level reading of the situation.
+
+No ... I'm used to optimisation strangeness.  Again, I'm not trying to
+eliminate it because that would defeat the zero impact purpose.  I'm
+trying to build a system that can be useful without any impact.  The
+consequence is going to be that certain trace points can't be used
+because of the optimiser, but that's the tradeoff.  As long as the
+people placing the trace points are subject matter experts in the
+subsystem (and actually using them) everything should be OK.
+
+> > > So that's roughly how we arrived at recent markers.  They expose to
+> > > the compiler the parameters, but arrange not to evaluate them unless
+> > > necessary.  The most recent markers code patches nops over most or all
+> > > the hot path instructions, so there is no tangible performance impact.
+> > 
+> > Yes there are.  There are actually two performance impacts:
+> > 
+> >      1. The nops themselves take cycles to execute ... small, granted,
+> >         but it adds up with lots of probe points
+> >      2. The probes interfere with optimisation since to replace them
+> >         with a function call, they must be barriers. [...]
+> 
+> That's why I qualified it with "tangible".  Please confirm your
+> intuition about these costs.
+
+1 is pretty obvious ... the nops have a defined cycle time in every
+instruction architecture.  The optimisation costs are very difficult to
+quantify since they vary so much from compiler to compiler and function
+to function.
+
+James
+
+
