@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758695AbYGJT2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759644AbYGJTa6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758695AbYGJT2Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 15:28:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbYGJT2D
+	id S1759644AbYGJTa6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 15:30:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753846AbYGJTau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 15:28:03 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:61568 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753008AbYGJT2B (ORCPT
+	Thu, 10 Jul 2008 15:30:50 -0400
+Received: from [198.99.130.12] ([198.99.130.12]:56304 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1752621AbYGJTat (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 15:28:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:organization:reply-to:to:cc:subject:message-id:user-agent
-         :mime-version:content-type:content-transfer-encoding:from;
-        b=LZTYd5fNYhQhbnbqjnHeuR2f08Hggs/L1X3lsTuqO82YSr2RJpJWBBZhyl8bajKhk5
-         G2iSk9XlIqrpke5agGONk7kXCOyPoNF/RHd06N7pQzCvUtbfLVinSabYC4hsllysYz6Y
-         uBgCtljkq6VIPK1cF1t/Ngh4hKl7Xg0Qndslc=
-Date: Thu, 10 Jul 2008 14:27:11 -0500
-Organization: Xiotech Corporation
-Reply-To: Mark Rustad <MRustad@gmail.com>
-To: openipmi-developer@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, wim@iguana.be
-Subject: [PATCH] IPMI: return correct value from ipmi_write
-Message-ID: <4876628f.41O/uzQ5H7nSU2Vg%MRustad@gmail.com>
-User-Agent: Heirloom mailx 12.3 7/15/07
+	Thu, 10 Jul 2008 15:30:49 -0400
+Date: Thu, 10 Jul 2008 15:30:19 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: Re: UML kernel failed to start betvee 2.6.8-rc8 and current git
+	sources
+Message-ID: <20080710193019.GA20112@c2.user-mode-linux.org>
+References: <200807101619.54052.toralf.foerster@gmx.de> <20080710163514.GA17561@c2.user-mode-linux.org> <200807102010.02772.toralf.foerster@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Mark Rustad <mrustad@gmail.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200807102010.02772.toralf.foerster@gmx.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mark Rustad <MRustad@gmail.com>
+On Thu, Jul 10, 2008 at 08:09:59PM +0200, Toralf Förster wrote:
+> At Thursday 10 July 2008 18:35:15 Jeff Dike wrote :
+> 
+> > What's the host?
+> 
+> tfoerste@n22 ~ $ uname -a
+> Linux n22 2.6.25-gentoo-r6 #4 Thu Jul 10 19:49:36 CEST 2008 i686 Intel(R) Pentium(R) M processor 1700MHz GenuineIntel GNU/Linux
+> 
+> BTW,  this works fine and shows only the config :
+> n22 ~ # linux-v2.6.26-rc8-227 --showconfig 
+> 
+> whereas this failed:
+> 
+> n22 ~ # linux-v2.6.26-rc9-56 --showconfig
+> Locating the bottom of the address space ... 0x0
+> Locating the top of the address space ... 0xc0000000
 
-This patch corrects the handling of write operations to the IPMI watchdog
-to work as intended by returning the number of characters actually
-processed. Without this patch, an "echo V >/dev/watchdog" enables the
-watchdog if IPMI is providing the watchdog function.
+OK, I believe you're seeing the same bug as Uli saw here:
 
-Signed-off-by: Mark Rustad <MRustad@gmail.com>
----
-I have not checked all of the watchdogs to see if there are others that have
-this problem, but the one I was using before using the IPMI one did work
-right. It was also a big surprise how much the default watchdog timeout
-varies from one to another. Let me tell you that the 10 second default
-for the IPMI watchdog was a real sore spot while tracking this problem down!
-This problem goes back at least as far as 2.6.20, but I generated this patch
-based on 2.6.26-rc9. I have applied, compiled and tested this fix.
+    http://marc.info/?l=linux-kernel&m=121011518003727&w=2
 
- drivers/char/ipmi/ipmi_watchdog.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+More precise symptoms are here:
 
---- a/drivers/char/ipmi/ipmi_watchdog.c	2008-07-10 09:31:52.000000000 -0500
-+++ b/drivers/char/ipmi/ipmi_watchdog.c	2008-07-10 09:33:41.000000000 -0500
-@@ -755,9 +755,8 @@ static ssize_t ipmi_write(struct file *f
- 		rv = ipmi_heartbeat();
- 		if (rv)
- 			return rv;
--		return 1;
- 	}
--	return 0;
-+	return len;
- }
- 
- static ssize_t ipmi_read(struct file *file,
+     http://marc.info/?l=linux-kernel&m=121011722806093&w=2
+
+I never did figure that one out.  I had the same kernel version, same
+toolchain, same everything as far as I could see, and I couldn't
+reproduce it, except with a binary that he gave me.
+
+You're seeing it on i386, whereas he saw it on x86_64.
+
+The underlying problem is that somehow the UML initcalls aren't being
+run, which is why you're seeing all zeros in the register dump.
+
+If you bisect this, I bet you end up at the no-unit-at-a-time patch
+that he ended up at.  And I have no idea what that has to do with
+anything.
+
+				Jeff
+
+-- 
+Work email - jdike at linux dot intel dot com
