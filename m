@@ -1,38 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754917AbYGJIl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755611AbYGJIoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754917AbYGJIl6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 04:41:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751353AbYGJIlu
+	id S1755611AbYGJIoQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 04:44:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbYGJIoB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 04:41:50 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57347 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751340AbYGJIlt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 04:41:49 -0400
-Date: Thu, 10 Jul 2008 01:35:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jack Steiner <steiner@sgi.com>
-Cc: mingo@elte.hu, tglx@linutronix.de, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] - Map UV chipset space - pagetable
-Message-Id: <20080710013533.e059f556.akpm@linux-foundation.org>
-In-Reply-To: <20080701194532.GA28405@sgi.com>
-References: <20080701194532.GA28405@sgi.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Jul 2008 04:44:01 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56311 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751353AbYGJIoA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 04:44:00 -0400
+Date: Thu, 10 Jul 2008 10:43:39 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org
+Subject: Re: [PATCH] replace CONFIG_IOMMU with CONFIG_GART_IOMMU in iommu.h
+Message-ID: <20080710084339.GA12386@elte.hu>
+References: <20080709162913H.tomof@acm.org> <20080709085230.GA6267@elte.hu> <20080710082753T.fujita.tomonori@lab.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080710082753T.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0001]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Jul 2008 14:45:32 -0500 Jack Steiner <steiner@sgi.com> wrote:
 
-> +	BUG_ON((phys & ~PMD_MASK) || (size & ~PMD_MASK));
+* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 
-BUG_ON(A || B) is usually a bad idea.  If it goes bang, you'll really wish
-that it had been
+> > agreed about the cleanups. We are willing to test RFC patches :-)
+> 
+> Ok, how about this?
 
-	BUG_ON(A);
-	BUG_ON(B);
+a perfect beginning - applied to tip/x86/core, thanks!
+
+> If you are fine with the intention of this, then I'll send the 
+> follow-up cleanups.
+
+please do!
+
+> Note that iommu.h includes some gart things that everyone needs. If 
+> you like, I'll rename gart.h gart_priv.h (or something) and move the 
+> gart stuff in iommu.h to gart.h.
+
+yeah. Or just move it into iommu.h and turn gart.h into the true 
+GART-specific include file? (and add iommu.h includes to files that are 
+affected)
+
+	Ingo
