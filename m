@@ -1,81 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754986AbYGJP5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758006AbYGJP6J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754986AbYGJP5c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 11:57:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750972AbYGJP5Y
+	id S1758006AbYGJP6J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 11:58:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753686AbYGJP54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 11:57:24 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:40928 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750896AbYGJP5Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 11:57:24 -0400
-Subject: Re: [RFC] simple dprobe like markers for the kernel
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Theodore Tso <tytso@mit.edu>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
-In-Reply-To: <20080710153017.GB25939@mit.edu>
-References: <1215638551.3444.39.camel__22002.9595810503$1215638656$gmane$org@localhost.localdomain>
-	 <y0m1w22qxoj.fsf@ton.toronto.redhat.com>
-	 <1215697794.3353.5.camel@localhost.localdomain>
-	 <20080710142208.GC1213@redhat.com>
-	 <1215700996.3353.30.camel@localhost.localdomain>
-	 <20080710153017.GB25939@mit.edu>
-Content-Type: text/plain
-Date: Thu, 10 Jul 2008 10:57:17 -0500
-Message-Id: <1215705437.3353.63.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Jul 2008 11:57:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60023 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750986AbYGJP5z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 11:57:55 -0400
+Message-ID: <48763129.9060903@redhat.com>
+Date: Thu, 10 Jul 2008 08:56:25 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: Rik van Riel <riel@redhat.com>, Paul Menage <menage@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Libcg Devel Mailing List <libcg-devel@lists.sourceforge.net>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Peter Zijlstra <pzijlstr@redhat.com>,
+       Kazunaga Ikeno <k-ikeno@ak.jp.nec.com>,
+       Morton Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Graf <tgraf@redhat.com>
+Subject: Re: [RFC] How to handle the rules engine for cgroups
+References: <20080701191126.GA17376@redhat.com> <20080703101957.b3856904.kamezawa.hiroyu@jp.fujitsu.com> <20080703155446.GB9275@redhat.com> <6599ad830807100223m2453963cwcfbe6eb1ad54d517@mail.gmail.com> <20080710104852.797fe79c@cuia.bos.redhat.com> <20080710154035.GA12043@redhat.com>
+In-Reply-To: <20080710154035.GA12043@redhat.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-10 at 11:30 -0400, Theodore Tso wrote:
-> On Thu, Jul 10, 2008 at 09:43:16AM -0500, James Bottomley wrote:
-> > No ... I'm used to optimisation strangeness.  Again, I'm not trying to
-> > eliminate it because that would defeat the zero impact purpose.  I'm
-> > trying to build a system that can be useful without any impact.  The
-> > consequence is going to be that certain trace points can't be used
-> > because of the optimiser, but that's the tradeoff.  As long as the
-> > people placing the trace points are subject matter experts in the
-> > subsystem (and actually using them) everything should be OK.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Vivek Goyal wrote:
+>>    it can even be hidden from the application by hooking into
+>>    the exec() call
+>>
 > 
-> So as I understand things, your light-weight tracepoints are designed
-> for very performance-sensitive code paths where we don't want to
-> disturbe the optimization in the deactivated state.  In
-> non-performance sensitive parts of the kernel, where cycle counting is
-> not so important, tracepoints can and probably should still be used.
-> So I don't think you were proposing eliminating the current kernel
-> markers in favor of this approach, yes?
+> This means hooking into libc. So libc will parse rules file, determine
+> the right cgroup, place application there and then call exec?
 
-That's right ... I started from the position that the current markers
-were too heavy for an I/O subsystem, but I'm sure they have many other
-uses.
+As with any "solution" based on userlevel code, the problem is overhead
+and interfaces.
 
-> When you said a tool could determine if the tracepoint had gotten
-> optimized away, or the variables were no longer present, I assume you
-> meant at compile time, right?
+Such a rules file would be a real file, I assume, and as such we'd have
+to read it every time an exec call is made.  At least we'd have to check
+using a stat() call that nothing changed.  That's always a big overhead.
 
-Yes and no.  Yes because a tool will be able to detect the problems, but
-no if you're thinking an actual kernel compile would do it (unless some
-tool is designed for this and integrated into the build ... the obvious
-tool is systemtap, but that might cause some heartburn).
+Once the information is available, how is it used?  We'd have to pass
+additional information to the exec syscalls.  And it has to happen so
+that if the exec call fails the original process is not affected (i.e.,
+premature changing isn't an option).  The method also must be
+thread-safe in a limited way: executing failing exec syscalls in
+multiple threads mustn't disturb the process.
 
->   So with the right tool built into the
-> kbuild infrastructure, if we could simply print warnings when
-> tracepoints had gotten optimized away, that would make the your simple
-> tracepoints quite safe for general use, I would think.
-
-Yes ... but someone has to come up with the tool.  I suppose rebuilding
-the line number matrix and finding the variables at the location is easy
-mechanical dwarf stuff ... but it will give the kernel build a lot of
-external dependencies it didn't have before.
-
-Plus, this level of checking can only be done if dwarf is generated
-(i.e. CONFIG_KERNEL_DEBUG_INFO is y).
-
-James
+There is one set of problems which I don't care about but others likely
+will: what happens if some program uses the syscalls directly?  And what
+happens with old libcs and old statically linked programs?  It's exactly
+the kind of problem why I tell people to never linked statically but
+some people don't listen.
 
 
+The additional file update check is hurting performance but since I hope
+what we will get an inotify-like interface that doesn't need normal file
+descriptors (or any file descriptors) I think I can live with it.
+Somebody would "just" have to implement, e.g., the anonfd functionality
+discussed some time ago.  (Make sure to talk to Al Viro who already
+mentioned to me that it'll be "fun").
+
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkh2MSkACgkQ2ijCOnn/RHTepgCgrlkwQMItX2QGW6Tw//lw4vH2
+ItIAoJ7qyQE31jpQ2D8fBIO/yqmrwgcH
+=NQMC
+-----END PGP SIGNATURE-----
