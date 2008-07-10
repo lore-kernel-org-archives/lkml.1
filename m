@@ -1,113 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755989AbYGJUnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758192AbYGJUoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755989AbYGJUnm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 16:43:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbYGJUne
+	id S1758192AbYGJUoT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 16:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbYGJUoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 16:43:34 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:56732 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751514AbYGJUnd (ORCPT
+	Thu, 10 Jul 2008 16:44:09 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:43305 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752985AbYGJUoI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 16:43:33 -0400
-Date: Thu, 10 Jul 2008 16:42:48 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Sergei Trofimovich <slyfox@uvaga.by>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: uml: sparse inlines gcc-4.{2,3} compilation hack
-Message-ID: <20080710204248.GA21205@c2.user-mode-linux.org>
-References: <20080710155029.4cf5cb8f@slyfox.slynet.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080710155029.4cf5cb8f@slyfox.slynet.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 10 Jul 2008 16:44:08 -0400
+Date: Thu, 10 Jul 2008 13:42:51 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, joerg.roedel@amd.com,
+       tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       Sebastian.Biemueller@amd.com, robert.richter@amd.com, joro@8bytes.org
+Subject: Re: [PATCH 16/34] AMD IOMMU: add kernel command line parameters for
+ AMD IOMMU
+Message-Id: <20080710134251.b2591ea8.randy.dunlap@oracle.com>
+In-Reply-To: <20080710062603.GB23054@elte.hu>
+References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com>
+	<1214508490-29683-17-git-send-email-joerg.roedel@amd.com>
+	<20080709185634.08c60937.akpm@linux-foundation.org>
+	<20080710132447T.fujita.tomonori@lab.ntt.co.jp>
+	<20080709213907.1e8b253b.akpm@linux-foundation.org>
+	<20080710062603.GB23054@elte.hu>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 10, 2008 at 03:50:29PM +0300, Sergei Trofimovich wrote:
-> Small ARCH=um SUBARCH=i386 .config is in attach.
-> How to fix properly such kind of miscompilation? (gcc-4.3.1)
-> Now I have to use hacks like this:
+On Thu, 10 Jul 2008 08:26:03 +0200 Ingo Molnar wrote:
 
-Use the patch below instead.
+> 
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Thu, 10 Jul 2008 13:25:23 +0900 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> > 
+> > > I have one related question, we should document all the kernel boot
+> > > parameters in Documentation/kernel-parameters.txt?
+> > > 
+> > > Some of x86_64 boot parameters are in
+> > > Documentations/x86/x86_64/boot-options.txt. The parameters of IOMMUs
+> > > are scattered. It's confusing.
+> > 
+> > A single monolithic file has advantages.  I think I'd prefer that 
+> > personally.  I'd forgotten that the x86-specific one exists, actually.
+> 
+> yeah, it should be all in Documentation/kernel-parameters.txt.
 
-    	      	    Jeff
+Agreed.
 
--- 
-Work email - jdike at linux dot intel dot com
-
-
-commit 4f81c5350b44bcc501ab6f8a089b16d064b4d2f6
-Author: Jeff Dike <jdike@addtoit.com>
-Date:   Mon Jul 7 13:36:56 2008 -0400
-
-    [UML] fix gcc ICEs and unresolved externs
-    
-    There are various constraints on the use of unit-at-a-time:
-     - i386 uses no-unit-at-a-time for pre-4.0 (not 4.3)
-     - x86_64 uses unit-at-a-time always
-    
-    Uli reported a crash on x86_64 with gcc 4.1.2 with unit-at-a-time,
-    resulting in commit c0a18111e571138747a98af18b3a2124df56a0d1
-    
-    Ingo reported a gcc internal error with gcc 4.3 with no-unit-at-a-timem,
-    resulting in 22eecde2f9034764a3fd095eecfa3adfb8ec9a98
-    
-    Benny Halevy is seeing extern inlines not resolved with gcc 4.3 with
-    no-unit-at-a-time
-    
-    This patch reintroduces unit-at-a-time for gcc >= 4.0, bringing back the
-    possibility of Uli's crash.  If that happens, we'll debug it.
-    
-    I started seeing both the internal compiler errors and unresolved
-    inlines on Fedora 9.  This patch fixes both problems, without so far
-    reintroducing the crash reported by Uli.
-    
-    Signed-off-by: Jeff Dike <jdike@linux.intel.com>
-    Cc: Benny Halevy <bhalevy@panasas.com>
-    Cc: Adrian Bunk <bunk@kernel.org>
-    Cc: Ingo Molnar <mingo@elte.hu>
-    Cc: Ulrich Drepper <drepper@redhat.com>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-
-diff --git a/arch/um/Makefile b/arch/um/Makefile
-index dbeab15..ca40397 100644
---- a/arch/um/Makefile
-+++ b/arch/um/Makefile
-@@ -77,7 +77,6 @@ include $(srctree)/$(ARCH_DIR)/Makefile-os-$(OS)
- KERNEL_DEFINES = $(strip -Derrno=kernel_errno -Dsigprocmask=kernel_sigprocmask \
- 			 -Dmktime=kernel_mktime $(ARCH_KERNEL_DEFINES))
- KBUILD_CFLAGS += $(KERNEL_DEFINES)
--KBUILD_CFLAGS += $(call cc-option,-fno-unit-at-a-time,)
- 
- PHONY += linux
- 
-diff --git a/arch/um/Makefile-i386 b/arch/um/Makefile-i386
-index 561e373..302cbe5 100644
---- a/arch/um/Makefile-i386
-+++ b/arch/um/Makefile-i386
-@@ -32,4 +32,11 @@ cflags-y += $(call cc-option,-mpreferred-stack-boundary=2)
- # an unresolved reference.
- cflags-y += -ffreestanding
- 
-+# Disable unit-at-a-time mode on pre-gcc-4.0 compilers, it makes gcc use
-+# a lot more stack due to the lack of sharing of stacklots.  Also, gcc
-+# 4.3.0 needs -funit-at-a-time for extern inline functions.
-+KBUILD_CFLAGS += $(shell if [ $(call cc-version) -lt 0400 ] ; then \
-+			echo $(call cc-option,-fno-unit-at-a-time); \
-+			else echo $(call cc-option,-funit-at-a-time); fi ;)
-+
- KBUILD_CFLAGS += $(cflags-y)
-diff --git a/arch/um/Makefile-x86_64 b/arch/um/Makefile-x86_64
-index 8ed362f..a9cd7e7 100644
---- a/arch/um/Makefile-x86_64
-+++ b/arch/um/Makefile-x86_64
-@@ -21,3 +21,6 @@ HEADER_ARCH := x86
- 
- LINK-$(CONFIG_LD_SCRIPT_DYN) += -Wl,-rpath,/lib64
- LINK-y += -m64
-+
-+# Do unit-at-a-time unconditionally on x86_64, following the host
-+KBUILD_CFLAGS += $(call cc-option,-funit-at-a-time)
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
