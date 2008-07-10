@@ -1,232 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756121AbYGJDLF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755290AbYGJDOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756121AbYGJDLF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jul 2008 23:11:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbYGJDKy
+	id S1755290AbYGJDOR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jul 2008 23:14:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbYGJDOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jul 2008 23:10:54 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:37455 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753272AbYGJDKx (ORCPT
+	Wed, 9 Jul 2008 23:14:05 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56237 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753582AbYGJDOE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jul 2008 23:10:53 -0400
-To: nickpiggin@yahoo.com.au
-Cc: a.p.zijlstra@chello.nl, kamezawa.hiroyu@jp.fujitsu.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] fix task dirty balancing
-In-Reply-To: Your message of "Wed, 9 Jul 2008 17:41:24 +1000"
-	<200807091741.25447.nickpiggin@yahoo.com.au>
-References: <200807091741.25447.nickpiggin@yahoo.com.au>
-X-Mailer: Cue version 0.8 (080625-0732/takashi)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20080710031051.887CA5A29@siro.lan>
-Date: Thu, 10 Jul 2008 12:10:51 +0900 (JST)
-From: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
+	Wed, 9 Jul 2008 23:14:04 -0400
+From: "Takashi Nishiie" <t-nishiie@np.css.fujitsu.com>
+To: "'Mathieu Desnoyers'" <mathieu.desnoyers@polymtl.ca>,
+       <akpm@linux-foundation.org>, "'Ingo Molnar'" <mingo@elte.hu>,
+       <linux-kernel@vger.kernel.org>,
+       "'Peter Zijlstra'" <peterz@infradead.org>
+Cc: "'Steven Rostedt'" <rostedt@goodmis.org>,
+       "'Thomas Gleixner'" <tglx@linutronix.de>,
+       "'Masami Hiramatsu'" <mhiramat@redhat.com>,
+       "'Frank Ch. Eigler'" <fche@redhat.com>,
+       "'Hideo AOKI'" <haoki@redhat.com>,
+       "'Eduard - Gabriel Munteanu'" <eduard.munteanu@linux360.ro>
+References: <20080709145929.352201601@polymtl.ca> <20080709150045.025136754@polymtl.ca> <20080709153434.GA9186@Krystal> <20080709162158.GB10601@Krystal> <20080709190957.GA16779@Krystal>
+In-Reply-To: <20080709190957.GA16779@Krystal>
+Subject: RE: [PATCH] ftrace port to tracepoints (linux-next)
+Date: Thu, 10 Jul 2008 12:14:01 +0900
+Message-ID: <010401c8e23b$020b6c30$06224490$@css.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+thread-index: Acjh94VSI4e6molBSHC3X1aU77hYJQAQccOA
+Content-Language: ja
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
+Hi,Mathieu
 
-thanks for the review.
+I think that it is wonderful that the source code becomes simple by 
+changing kernel markers to tracepoints. 
 
-> On Wednesday 09 July 2008 09:38, YAMAMOTO Takashi wrote:
-> > hi,
-> >
-> > > Please beat me to cleaning up this stuff - otherwise I'll have to look
-> > > at it when I get back from holidays.
-> >
-> > how about the following?
-> 
-> Quite good, however I would like to keep the buffers warning if it isn't
-> too difficult (it has already caught one or two real bugs).
+However, it seems to forget to correct the error message.
 
-isn't the WARN_ON_ONCE in __set_page_dirty_nobuffers enough?
+For example.
+Mathieu Wrote:
+>-	ret = marker_probe_register("kernel_sched_wakeup",
+>-			"pid %d state %ld ## rq %p task %p rq->curr %p",
+>-			wake_up_callback,
+>-			&ctx_trace);
+>+	ret = register_trace_sched_wakeup(probe_sched_wakeup);
+> 	if (ret) {
+> 		pr_info("wakeup trace: Couldn't add marker"
+> 			" probe to kernel_sched_wakeup\n");
+> 		return ret;
+> 	}
 
-> Also, we should
-> split out the bugfix from the cleanup. But yes overall I think the result
-> looks quite nice.
+ 	if (ret) {
+- 		pr_info("wakeup trace: Couldn't add marker"
++		pr_info("wakeup trace: Couldn't activate tracepoint"
+ 			" probe to kernel_sched_wakeup\n");
+ 		return ret;
+ 	}
 
-honestly, i don't think it makes much sense to separate the fix and
-the cleanup in this particular case.  trying to keep the bug while
-the code cleanup naturally fixes it, or vice versa, would be a waste
-of time.
+Thank you,
+--
+Takashi Nishiie
 
-YAMAMOTO Takashi
 
-> 
-> 
-> > YAMAMOTO Takashi
-> >
-> >
-> > Signed-off-by: YAMAMOTO Takashi <yamamoto@valinux.co.jp>
-> > ---
-> >
-> > diff --git a/fs/buffer.c b/fs/buffer.c
-> > index 4ffb5bb..1bc833d 100644
-> > --- a/fs/buffer.c
-> > +++ b/fs/buffer.c
-> > @@ -699,41 +699,6 @@ void mark_buffer_dirty_inode(struct buffer_head *bh,
-> > struct inode *inode) EXPORT_SYMBOL(mark_buffer_dirty_inode);
-> >
-> >  /*
-> > - * Mark the page dirty, and set it dirty in the radix tree, and mark the
-> > inode - * dirty.
-> > - *
-> > - * If warn is true, then emit a warning if the page is not uptodate and
-> > has - * not been truncated.
-> > - */
-> > -static int __set_page_dirty(struct page *page,
-> > -		struct address_space *mapping, int warn)
-> > -{
-> > -	if (unlikely(!mapping))
-> > -		return !TestSetPageDirty(page);
-> > -
-> > -	if (TestSetPageDirty(page))
-> > -		return 0;
-> > -
-> > -	spin_lock_irq(&mapping->tree_lock);
-> > -	if (page->mapping) {	/* Race with truncate? */
-> > -		WARN_ON_ONCE(warn && !PageUptodate(page));
-> > -
-> > -		if (mapping_cap_account_dirty(mapping)) {
-> > -			__inc_zone_page_state(page, NR_FILE_DIRTY);
-> > -			__inc_bdi_stat(mapping->backing_dev_info,
-> > -					BDI_RECLAIMABLE);
-> > -			task_io_account_write(PAGE_CACHE_SIZE);
-> > -		}
-> > -		radix_tree_tag_set(&mapping->page_tree,
-> > -				page_index(page), PAGECACHE_TAG_DIRTY);
-> > -	}
-> > -	spin_unlock_irq(&mapping->tree_lock);
-> > -	__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
-> > -
-> > -	return 1;
-> > -}
-> > -
-> > -/*
-> >   * Add a page to the dirty page list.
-> >   *
-> >   * It is a sad fact of life that this function is called from several
-> > places @@ -762,22 +727,21 @@ int __set_page_dirty_buffers(struct page
-> > *page) {
-> >  	struct address_space *mapping = page_mapping(page);
-> >
-> > -	if (unlikely(!mapping))
-> > -		return !TestSetPageDirty(page);
-> > -
-> > -	spin_lock(&mapping->private_lock);
-> > -	if (page_has_buffers(page)) {
-> > -		struct buffer_head *head = page_buffers(page);
-> > -		struct buffer_head *bh = head;
-> > +	if (likely(mapping)) {
-> > +		spin_lock(&mapping->private_lock);
-> > +		if (page_has_buffers(page)) {
-> > +			struct buffer_head *head = page_buffers(page);
-> > +			struct buffer_head *bh = head;
-> >
-> > -		do {
-> > -			set_buffer_dirty(bh);
-> > -			bh = bh->b_this_page;
-> > -		} while (bh != head);
-> > +			do {
-> > +				set_buffer_dirty(bh);
-> > +				bh = bh->b_this_page;
-> > +			} while (bh != head);
-> > +		}
-> > +		spin_unlock(&mapping->private_lock);
-> >  	}
-> > -	spin_unlock(&mapping->private_lock);
-> >
-> > -	return __set_page_dirty(page, mapping, 1);
-> > +	return __set_page_dirty_nobuffers(page);
-> >  }
-> >  EXPORT_SYMBOL(__set_page_dirty_buffers);
-> >
-> > @@ -1220,7 +1184,7 @@ void mark_buffer_dirty(struct buffer_head *bh)
-> >  	}
-> >
-> >  	if (!test_set_buffer_dirty(bh))
-> > -		__set_page_dirty(bh->b_page, page_mapping(bh->b_page), 0);
-> > +		__set_page_dirty_nobuffers(bh->b_page);
-> >  }
-> >
-> >  /*
-> > diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> > index 29b1d1e..e6fa69e 100644
-> > --- a/mm/page-writeback.c
-> > +++ b/mm/page-writeback.c
-> > @@ -176,7 +176,7 @@ void bdi_writeout_inc(struct backing_dev_info *bdi)
-> >  }
-> >  EXPORT_SYMBOL_GPL(bdi_writeout_inc);
-> >
-> > -static inline void task_dirty_inc(struct task_struct *tsk)
-> > +static void task_dirty_inc(struct task_struct *tsk)
-> >  {
-> >  	prop_inc_single(&vm_dirties, &tsk->dirties);
-> >  }
-> > @@ -1074,12 +1074,14 @@ int __set_page_dirty_no_writeback(struct page
-> > *page) */
-> >  int __set_page_dirty_nobuffers(struct page *page)
-> >  {
-> > -	if (!TestSetPageDirty(page)) {
-> > -		struct address_space *mapping = page_mapping(page);
-> > -		struct address_space *mapping2;
-> > +	struct address_space *mapping;
-> >
-> > -		if (!mapping)
-> > -			return 1;
-> > +	if (TestSetPageDirty(page))
-> > +		return 0;
-> > +
-> > +	mapping = page_mapping(page);
-> > +	if (likely(mapping)) {
-> > +		struct address_space *mapping2;
-> >
-> >  		spin_lock_irq(&mapping->tree_lock);
-> >  		mapping2 = page_mapping(page);
-> > @@ -1100,9 +1102,11 @@ int __set_page_dirty_nobuffers(struct page *page)
-> >  			/* !PageAnon && !swapper_space */
-> >  			__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
-> >  		}
-> > -		return 1;
-> >  	}
-> > -	return 0;
-> > +
-> > +	task_dirty_inc(current);
-> > +
-> > +	return 1;
-> >  }
-> >  EXPORT_SYMBOL(__set_page_dirty_nobuffers);
-> >
-> > @@ -1122,7 +1126,7 @@ EXPORT_SYMBOL(redirty_page_for_writepage);
-> >   * If the mapping doesn't provide a set_page_dirty a_op, then
-> >   * just fall through and assume that it wants buffer_heads.
-> >   */
-> > -static int __set_page_dirty(struct page *page)
-> > +int set_page_dirty(struct page *page)
-> >  {
-> >  	struct address_space *mapping = page_mapping(page);
-> >
-> > @@ -1140,14 +1144,6 @@ static int __set_page_dirty(struct page *page)
-> >  	}
-> >  	return 0;
-> >  }
-> > -
-> > -int set_page_dirty(struct page *page)
-> > -{
-> > -	int ret = __set_page_dirty(page);
-> > -	if (ret)
-> > -		task_dirty_inc(current);
-> > -	return ret;
-> > -}
-> >  EXPORT_SYMBOL(set_page_dirty);
-> >
-> >  /*
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+
