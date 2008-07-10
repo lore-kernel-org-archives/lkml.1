@@ -1,79 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbYGJXcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbYGJXhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755893AbYGJXcR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 19:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbYGJXcB
+	id S1756150AbYGJXhR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 19:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464AbYGJXhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 19:32:01 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:57474 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751929AbYGJXcA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 19:32:00 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
-       akpm@linux-foundation.org, arjan@linux.intel.com, andi@firstfloor.org,
-       ebiederm@xmission.com, jbarnes@virtuousgeek.org, steiner@sgi.com,
-       linux-kernel@vger.kernel.org
-References: <20080710181634.764954000@linux-os.sc.intel.com>
-	<20080710182239.635284000@linux-os.sc.intel.com>
-Date: Thu, 10 Jul 2008 16:29:59 -0700
-In-Reply-To: <20080710182239.635284000@linux-os.sc.intel.com> (Suresh Siddha's
-	message of "Thu, 10 Jul 2008 11:17:00 -0700")
-Message-ID: <m1r6a1fhc8.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 10 Jul 2008 19:37:06 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:55559 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753501AbYGJXhF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 19:37:05 -0400
+Message-ID: <48769D1E.3030003@sgi.com>
+Date: Thu, 10 Jul 2008 16:37:02 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Suresh Siddha <suresh.b.siddha@intel.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.2 BAYES_40 BODY: Bayesian spam probability is 20 to 40%
-	*      [score: 0.2085]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [patch 26/26] x64, x2apic/intr-remap: introduce CONFIG_INTR_REMAP
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <48751CF9.4020901@linux-foundation.org>	<4875209D.8010603@goop.org> <48752CCD.30507@linux-foundation.org>	<m1wsjupuiz.fsf@frodo.ebiederm.org> <48753C99.5050408@goop.org>	<m1ej62iq9z.fsf@frodo.ebiederm.org> <487555A8.2050007@zytor.com>	<487556A5.5090907@goop.org> <4876194E.4080205@linux-foundation.org>	<48761C06.3020003@zytor.com> <48762A3B.5050104@linux-foundation.org>	<48762DD2.5090802@zytor.com> <487637A1.4080403@linux-foundation.org>	<m1prpl4pmh.fsf@frodo.ebiederm.org> <48764C21.4020601@zytor.com> <m1fxqhzhcu.fsf@frodo.ebiederm.org> <4876608B.10408@sgi.com> <487663C4.6040309@zytor.com>
+In-Reply-To: <487663C4.6040309@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suresh Siddha <suresh.b.siddha@intel.com> writes:
+H. Peter Anvin wrote:
+> Mike Travis wrote:
+>>
+>> The biggest growth came from moving all the xxx[NR_CPUS] arrays into
+>> the per cpu area.  So you free up a huge amount of unused memory when
+>> the NR_CPUS count starts getting into the ozone layer.  4k now, 16k
+>> real soon now, ??? future?
+>>
+> 
+> Even (or perhaps especially) so, allocating the percpu area in 2 MB
+> increments is a total nonstarter.  It hurts the small, common
+> configurations way too much.  For SGI, it's probably fine.
+> 
+>     -hpa
 
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> ---
->
-> Index: tree-x86/arch/x86/Kconfig
-> ===================================================================
-> --- tree-x86.orig/arch/x86/Kconfig	2008-07-10 09:51:44.000000000 -0700
-> +++ tree-x86/arch/x86/Kconfig	2008-07-10 09:52:43.000000000 -0700
-> @@ -1657,6 +1657,14 @@
->  	 workaround will setup a 1:1 mapping for the first
->  	 16M to make floppy (an ISA device) work.
->  
-> +config INTR_REMAP
-> +	bool "Support for Interrupt Remapping (EXPERIMENTAL)"
-> +	depends on X86_64 && X86_IO_APIC && PCI_MSI && ACPI && EXPERIMENTAL
-> +	help
-> +	 Supports Interrupt remapping for IO-APIC and MSI devices.
-> +	 To use x2apic mode in the CPU's which support x2APIC enhancements or
-> +	 to support platforms with CPU's having > 8 bit APIC ID, say Y.
-> +
+Yes, "right-sizing" the kernel for systems from 512M laptops to 4k cpu
+systems with memory totally maxed out, using only a binary distribution
+has proven tricky (at best... ;-)
 
-This has got to be the strangest config option.
-X86_IO_APIC makes sense.  Fundamentally it is the wrong config option but that
-isn't the fault of your code.
+One alternative was to only allocate a chunk similar in size to
+PERCPU_ENOUGH_ROOM and allow for startup options to create a bigger
+space if needed.  Though the realloc idea has some merit if we can
+validate the non-use of pointers to specific cpu's percpu vars.
+(CPU_ALLOC contains a function to dereference a percpu offset.)
 
-PCI_MSI should not matter.
+The discussion started at:
 
-Is it possible to run in x2apic mode without running in interrupt remapping mode?
-Just send the irqs directly to the cpu?  It feels like it should be if an iommu
-doesn't get in the way.
+	http://marc.info/?l=linux-kernel&m=121212026716085&w=4
 
-Eric
+Thanks,
+Mike
