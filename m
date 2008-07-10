@@ -1,76 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759984AbYGJRWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759297AbYGJRWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759984AbYGJRWS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 13:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757365AbYGJRWJ
+	id S1759297AbYGJRWa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 13:22:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757670AbYGJRWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 10 Jul 2008 13:22:09 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:27132 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753618AbYGJRWG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 13:22:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=J8z4nr8gHjW3RN/cmmfCOVePp032lNl7RWKfXrRTfefL6Ki5STFyYa2bWx1I4ZhJkm
-         BzYEJUVydyjGviuGbY+WxWMgmgsWYuHQ5HYDMFBZSszLgi0lib6eyM4ApDddH8xEzXDm
-         fWudzre47bSzXv9zc/i4eQ7fNbz5HQs0bHq4c=
-Message-ID: <35f686220807101021l76446ef5wdcdb41062fcc9540@mail.gmail.com>
-Date: Thu, 10 Jul 2008 10:21:57 -0700
-From: "Alok kataria" <alokkataria1@gmail.com>
-To: "Glauber Costa" <gcosta@redhat.com>
-Subject: Re: [PATCH] remove duplicate call to use_tsc_delay.
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
-       x86@kernel.org, akataria@vmware.com
-In-Reply-To: <1215709307-13558-1-git-send-email-gcosta@redhat.com>
+Received: from gw.goop.org ([64.81.55.164]:53993 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754664AbYGJRWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 13:22:08 -0400
+Message-ID: <48764530.7000909@goop.org>
+Date: Thu, 10 Jul 2008 10:21:52 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Mike Travis <travis@sgi.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <20080709133958.612635f0@infradead.org>	<4875231F.1020506@zytor.com> <487524A0.6020304@goop.org>	<487529AE.3060505@zytor.com> <m1r6a2r9nj.fsf@frodo.ebiederm.org>	<48753A71.2030006@zytor.com> <m18wwahauq.fsf@frodo.ebiederm.org> <48763732.7020805@sgi.com> <487637DE.1050706@zytor.com> <48763A5E.7080105@linux-foundation.org> <48763B36.80104@zytor.com> <48763D1C.8040206@linux-foundation.org>
+In-Reply-To: <48763D1C.8040206@linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1215709307-13558-1-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My bad,
+Christoph Lameter wrote:
+> H. Peter Anvin wrote:
+>   
+>> Christoph Lameter wrote:
+>>     
+>>> H. Peter Anvin wrote:
+>>>
+>>>       
+>>>> No, since the *addresses* can be arbitrary.  The current issue is about
+>>>> *offsets.*
+>>>>         
+>>> Well those are intimately connected.
+>>>       
+>> Not really, since gs_base is an arbitrary 64-bit pointer.
+>>     
+>
+> The current scheme ties the offsets to kernel code addresses.
+>   
 
-Acked-by: Alok N Kataria <akataria@vmware.com>
+This is getting very frustrating.  We've been going around and around on 
+this point, what, 5 or 6 times at least.
 
-Thanks !!.
---
-Alok
+The base address of the percpu area and the offsets from that base are 
+completely independent values.
 
-On Thu, Jul 10, 2008 at 10:01 AM, Glauber Costa <gcosta@redhat.com> wrote:
-> Integration generated a duplicate call to use_tsc_delay.
-> Particularly, the one that is done before we check for general
-> tsc usability seems wrong.
->
-> Signed-off-by: Glauber Costa <gcosta@redhat.com>
-> ---
->  arch/x86/kernel/tsc.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-> index 4a775d0..3c36f92 100644
-> --- a/arch/x86/kernel/tsc.c
-> +++ b/arch/x86/kernel/tsc.c
-> @@ -513,7 +513,6 @@ void __init tsc_init(void)
->         */
->        for_each_possible_cpu(cpu)
->                set_cyc2ns_scale(cpu_khz, cpu);
-> -       use_tsc_delay();
->
->        if (tsc_disabled > 0)
->                return;
-> --
-> 1.5.5.1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+The offset is limited to 2G.  The 2G limit applies regardless of how you 
+compute your effective address.  It doesn't matter if its absolute.  It 
+doesn't matter if it's rip-relative.  It doesn't matter if it's 
+zero-based.  Small absolute addresses generate exactly the same form as 
+large absolute addresses.  There is no 8-bit or 16-bit address mode.
+
+The base is arbitrary.  It can be any canonical address at all.  It has 
+no effect on how you compute your offset.
+
+The addressing modes:
+
+    * ABS
+    * off(%rip)
+
+Are exactly equivalent in what offsets they can generate, so long as *at 
+link time* the percpu *symbols* are within 2G of the code addressing 
+them.  *After* the addressing mode has generated an effective address 
+(by whatever means it likes), the %gs: override applies the segment 
+base, which can therefore offset the effective address to anywhere at all.
+
+    J
