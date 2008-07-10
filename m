@@ -1,73 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbYGJINA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbYGJIPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756775AbYGJINA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 04:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756505AbYGJIMZ
+	id S1756214AbYGJIPH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 04:15:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbYGJIOv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 04:12:25 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52191 "EHLO mx2.mail.elte.hu"
+	Thu, 10 Jul 2008 04:14:51 -0400
+Received: from nebensachen.de ([195.34.83.29]:51361 "EHLO mail.nebensachen.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754462AbYGJIMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 04:12:24 -0400
-Date: Thu, 10 Jul 2008 10:12:06 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: akataria@vmware.com, Thomas Gleixner <tglx@linutronix.de>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Daniel Hecht <dhecht@vmware.com>, LKML <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 05/05] x86: Rename paravirtualized TSC functions
-Message-ID: <20080710081206.GA4819@elte.hu>
-References: <1214937816.20191.34.camel@promb-2n-dhcp368.eng.vmware.com> <20080709061336.GG9760@elte.hu> <86802c440807090020q516b6332qf8e0d65918e7001e@mail.gmail.com> <1215624603.3930.8.camel@alok-dev1> <86802c440807091038m6c14f165xede8b2b0316d0225@mail.gmail.com> <20080710072201.GE14377@elte.hu> <86802c440807100034w3a3ee192k8e565b75fd2df608@mail.gmail.com> <20080710075030.GA27361@elte.hu> <86802c440807100104s1e1f1cdeg421be2dbeffdcb75@mail.gmail.com>
+	id S1750955AbYGJIOu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 04:14:50 -0400
+X-Hashcash: 1:20:080710:mingo@elte.hu::RPjBE6k3zKKlfZHW:00003rvB
+X-Hashcash: 1:20:080710:linux-kernel@vger.kernel.org::rYbxv9KaKGPqmtrF:00000000000000000000000000000000013rU
+From: Elias Oltmanns <eo@nebensachen.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Scheduling issue with signal handling
+Date: Thu, 10 Jul 2008 10:14:42 +0200
+Message-ID: <87wsju88b1.fsf@denkblock.local>
+User-Agent: Gnus/5.110007 (No Gnus v0.7)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440807100104s1e1f1cdeg421be2dbeffdcb75@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi there,
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+in another thread [1] we've discussed something which, after some
+testing, I now believe to be a problem related to scheduling /
+preemption.
 
-> first round bisect all works..
-> 
-> it seems make oldconfig change setting between different setting...
+Here is the problem: If there is heavy disk I/O in the background,
+signals sent to an I/O related process interactively by pressing Ctrl+Z
+or Ctrl+C are sometimes processed quite sluggishly. I can pretty
+reliably reproduce this using a test case provided by the original
+reporter [1] (on a uniprocessor if that's of any consequence). The
+problem has been verified to exist at least since 2.6.19 but it's become
+much easier to observe and thus attracted attention since 2.6.25 because
+pressing Ctrl+Z or Ctrl+C is now acknowledged by printing ^Z or ^C to
+the terminal, respectively. As a result, the user gets slightly
+irritated and possibly impatient when pressing Ctrl+Z repeatedly or just
+holding down these keys generates a string like
+^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z
+but the shell prompt doesn't appear for up to a few seconds.
 
-yeah. The thing i do is this: i create a .config.bisect and at every 
-bisection step i copy it into .config and do a 'make oldconfig'.
+By sprinkling some printk()s all over the place, I've managed to
+establish the following sequence of events taking place in the event of
+delayed signal handling as described above:
+The first Ctrl+Z event enqueues a SIGTSTP signal which eventually
+results in a call to kick_process(). For some reason though, the signal
+isn't handled straight away but remains on the queue for some time.
+Consequently, subsequent Ctrl+Z events result in echoing another ^Z to
+the terminal but everything related to sending a signal is skipped (and
+rightly so) because the kernel detects that a SIGTSTP is still pending.
+Eventually, get_signal_to_deliver() dequeues the SIGTSTP signal and the
+shell propt appears.
 
-this means that options are picked up again, even if a 'dive back into 
-the past' causes a bisection point to lose a config setting.
+My question is this: Even under high disk I/O pressure, the threads
+dealing with I/O to the terminal evidently still get their turn as
+indicated by the sequence of ^Z appearing on screen. Why is it then,
+that the threads which are meant to process the SIGTSTP or SIGINT signals
+aren't scheduled for some seconds and is there a way to change this?
 
-> 
-> diff .config config.full.good
-> 4c4
-> < # Thu Jul 10 00:52:52 2008
-> ---
-> > # Thu Jul 10 00:40:03 2008
-> 295,296c295
-> < CONFIG_CC_STACKPROTECTOR_ALL=y
-> < CONFIG_CC_STACKPROTECTOR=y
-> ---
-> > # CONFIG_CC_STACKPROTECTOR is not set
-> 
-> it seems some recent change doesn't like stackprotector.
+Please let me know if there is anything I can try to investigate this
+any further or if you need further information.
 
-then my guess would be on:
+Thanks in advance,
 
- 89d7bb5: x86_64: add workaround for no %gs-based percpu
+Elias
 
-you might want to try your luck and revert that one alone from latest 
-tip/master.
-
-	Ingo
+[1] http://lkml.org/lkml/2008/6/28/50
