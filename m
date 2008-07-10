@@ -1,306 +1,348 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762776AbYGJSsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762682AbYGJSsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762776AbYGJSsw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 14:48:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759228AbYGJSmL
+	id S1762682AbYGJSsh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 14:48:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759145AbYGJSmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 14:42:11 -0400
-Received: from mga11.intel.com ([192.55.52.93]:47658 "EHLO mga11.intel.com"
+	Thu, 10 Jul 2008 14:42:09 -0400
+Received: from mga11.intel.com ([192.55.52.93]:47639 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759040AbYGJSmI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 14:42:08 -0400
+	id S1758941AbYGJSmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 14:42:05 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.30,339,1212390000"; 
-   d="scan'208";a="352525771"
-Message-Id: <20080710182236.337449000@linux-os.sc.intel.com>
+   d="scan'208";a="589105654"
+Message-Id: <20080710182237.056521000@linux-os.sc.intel.com>
 References: <20080710181634.764954000@linux-os.sc.intel.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 10 Jul 2008 11:16:37 -0700
+Date: Thu, 10 Jul 2008 11:16:42 -0700
 From: Suresh Siddha <suresh.b.siddha@intel.com>
 To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
        akpm@linux-foundation.org, arjan@linux.intel.com, andi@firstfloor.org,
        ebiederm@xmission.com, jbarnes@virtuousgeek.org, steiner@sgi.com
 Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch 03/26] x64, x2apic/intr-remap: code re-structuring, to be used by both DMA and Interrupt remapping
-Content-Disposition: inline; filename=parse_iommus_early.patch
+Subject: [patch 08/26] x64, x2apic/intr-remap: Queued invalidation infrastructure (part of VT-d)
+Content-Disposition: inline; filename=qi_infrastructure.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allocate the iommu during the parse of DMA remapping hardware
-definition structures. And also, introduce routines for device
-scope initialization which will be explicitly called during
-dma-remapping initialization.
+Queued invalidation (part of Intel Virtualization Technology for
+Directed I/O architecture) infrastructure.
 
-These will be used for enabling interrupt remapping separately from the
-existing DMA-remapping enabling sequence.
+This will be used for invalidating the interrupt entry cache in the
+case of Interrupt-remapping and IOTLB invalidation in the case
+of DMA-remapping.
 
 Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 ---
 
 Index: tree-x86/drivers/pci/dmar.c
 ===================================================================
---- tree-x86.orig/drivers/pci/dmar.c	2008-07-10 09:51:49.000000000 -0700
-+++ tree-x86/drivers/pci/dmar.c	2008-07-10 09:51:51.000000000 -0700
-@@ -174,19 +174,37 @@
- 	struct acpi_dmar_hardware_unit *drhd;
- 	struct dmar_drhd_unit *dmaru;
- 	int ret = 0;
--	static int include_all;
+--- tree-x86.orig/drivers/pci/dmar.c	2008-07-10 09:51:57.000000000 -0700
++++ tree-x86/drivers/pci/dmar.c	2008-07-10 09:52:01.000000000 -0700
+@@ -28,6 +28,7 @@
  
- 	dmaru = kzalloc(sizeof(*dmaru), GFP_KERNEL);
- 	if (!dmaru)
- 		return -ENOMEM;
+ #include <linux/pci.h>
+ #include <linux/dmar.h>
++#include <linux/timer.h>
+ #include "iova.h"
+ #include "intel-iommu.h"
  
-+	dmaru->hdr = header;
- 	drhd = (struct acpi_dmar_hardware_unit *)header;
- 	dmaru->reg_base_addr = drhd->address;
- 	dmaru->include_all = drhd->flags & 0x1; /* BIT0: INCLUDE_ALL */
- 
-+	ret = alloc_iommu(dmaru);
-+	if (ret) {
-+		kfree(dmaru);
-+		return ret;
+@@ -509,3 +510,152 @@
+ 		iounmap(iommu->reg);
+ 	kfree(iommu);
+ }
++
++/*
++ * Reclaim all the submitted descriptors which have completed its work.
++ */
++static inline void reclaim_free_desc(struct q_inval *qi)
++{
++	while (qi->desc_status[qi->free_tail] == QI_DONE) {
++		qi->desc_status[qi->free_tail] = QI_FREE;
++		qi->free_tail = (qi->free_tail + 1) % QI_LENGTH;
++		qi->free_cnt++;
 +	}
-+	dmar_register_drhd_unit(dmaru);
-+	return 0;
 +}
 +
-+static int __init
-+dmar_parse_dev(struct dmar_drhd_unit *dmaru)
++/*
++ * Submit the queued invalidation descriptor to the remapping
++ * hardware unit and wait for its completion.
++ */
++void qi_submit_sync(struct qi_desc *desc, struct intel_iommu *iommu)
 +{
-+	struct acpi_dmar_hardware_unit *drhd;
-+	static int include_all;
-+	int ret;
++	struct q_inval *qi = iommu->qi;
++	struct qi_desc *hw, wait_desc;
++	int wait_index, index;
++	unsigned long flags;
 +
-+	drhd = (struct acpi_dmar_hardware_unit *) dmaru->hdr;
++	if (!qi)
++		return;
 +
- 	if (!dmaru->include_all)
- 		ret = dmar_parse_dev_scope((void *)(drhd + 1),
--				((void *)drhd) + header->length,
-+				((void *)drhd) + drhd->header.length,
- 				&dmaru->devices_cnt, &dmaru->devices,
- 				drhd->segment);
- 	else {
-@@ -199,10 +217,10 @@
- 		include_all = 1;
- 	}
- 
--	if (ret || (dmaru->devices_cnt == 0 && !dmaru->include_all))
-+	if (ret || (dmaru->devices_cnt == 0 && !dmaru->include_all)) {
-+		list_del(&dmaru->list);
- 		kfree(dmaru);
--	else
--		dmar_register_drhd_unit(dmaru);
++	hw = qi->desc;
++
++	spin_lock(&qi->q_lock);
++	while (qi->free_cnt < 3) {
++		spin_unlock(&qi->q_lock);
++		cpu_relax();
++		spin_lock(&qi->q_lock);
 +	}
- 	return ret;
- }
- 
-@@ -211,23 +229,35 @@
- {
- 	struct acpi_dmar_reserved_memory *rmrr;
- 	struct dmar_rmrr_unit *rmrru;
--	int ret = 0;
- 
- 	rmrru = kzalloc(sizeof(*rmrru), GFP_KERNEL);
- 	if (!rmrru)
- 		return -ENOMEM;
- 
-+	rmrru->hdr = header;
- 	rmrr = (struct acpi_dmar_reserved_memory *)header;
- 	rmrru->base_address = rmrr->base_address;
- 	rmrru->end_address = rmrr->end_address;
 +
-+	dmar_register_rmrr_unit(rmrru);
-+	return 0;
++	index = qi->free_head;
++	wait_index = (index + 1) % QI_LENGTH;
++
++	qi->desc_status[index] = qi->desc_status[wait_index] = QI_IN_USE;
++
++	hw[index] = *desc;
++
++	wait_desc.low = QI_IWD_STATUS_DATA(2) | QI_IWD_STATUS_WRITE | QI_IWD_TYPE;
++	wait_desc.high = virt_to_phys(&qi->desc_status[wait_index]);
++
++	hw[wait_index] = wait_desc;
++
++	__iommu_flush_cache(iommu, &hw[index], sizeof(struct qi_desc));
++	__iommu_flush_cache(iommu, &hw[wait_index], sizeof(struct qi_desc));
++
++	qi->free_head = (qi->free_head + 2) % QI_LENGTH;
++	qi->free_cnt -= 2;
++
++	spin_lock_irqsave(&iommu->register_lock, flags);
++	/*
++	 * update the HW tail register indicating the presence of
++	 * new descriptors.
++	 */
++	writel(qi->free_head << 4, iommu->reg + DMAR_IQT_REG);
++	spin_unlock_irqrestore(&iommu->register_lock, flags);
++
++	while (qi->desc_status[wait_index] != QI_DONE) {
++		spin_unlock(&qi->q_lock);
++		cpu_relax();
++		spin_lock(&qi->q_lock);
++	}
++
++	qi->desc_status[index] = QI_DONE;
++
++	reclaim_free_desc(qi);
++	spin_unlock(&qi->q_lock);
 +}
 +
-+static int __init
-+rmrr_parse_dev(struct dmar_rmrr_unit *rmrru)
++/*
++ * Flush the global interrupt entry cache.
++ */
++void qi_global_iec(struct intel_iommu *iommu)
 +{
-+	struct acpi_dmar_reserved_memory *rmrr;
-+	int ret;
++	struct qi_desc desc;
 +
-+	rmrr = (struct acpi_dmar_reserved_memory *) rmrru->hdr;
- 	ret = dmar_parse_dev_scope((void *)(rmrr + 1),
--		((void *)rmrr) + header->length,
-+		((void *)rmrr) + rmrr->header.length,
- 		&rmrru->devices_cnt, &rmrru->devices, rmrr->segment);
- 
--	if (ret || (rmrru->devices_cnt == 0))
-+	if (ret || (rmrru->devices_cnt == 0)) {
-+		list_del(&rmrru->list);
- 		kfree(rmrru);
--	else
--		dmar_register_rmrr_unit(rmrru);
-+	}
- 	return ret;
- }
- 
-@@ -333,15 +363,42 @@
- 	return NULL;
- }
- 
-+int __init dmar_dev_scope_init(void)
-+{
-+	struct dmar_drhd_unit *drhd;
-+	struct dmar_rmrr_unit *rmrr;
-+	int ret = -ENODEV;
++	desc.low = QI_IEC_TYPE;
++	desc.high = 0;
 +
-+	for_each_drhd_unit(drhd) {
-+		ret = dmar_parse_dev(drhd);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	for_each_rmrr_units(rmrr) {
-+		ret = rmrr_parse_dev(rmrr);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	return ret;
++	qi_submit_sync(&desc, iommu);
 +}
 +
- 
- int __init dmar_table_init(void)
- {
--
-+	static int dmar_table_initialized;
- 	int ret;
- 
-+	if (dmar_table_initialized)
++/*
++ * Enable Queued Invalidation interface. This is a must to support
++ * interrupt-remapping. Also used by DMA-remapping, which replaces
++ * register based IOTLB invalidation.
++ */
++int dmar_enable_qi(struct intel_iommu *iommu)
++{
++	u32 cmd, sts;
++	unsigned long flags;
++	struct q_inval *qi;
++
++	if (!ecap_qis(iommu->ecap))
++		return -ENOENT;
++
++	/*
++	 * queued invalidation is already setup and enabled.
++	 */
++	if (iommu->qi)
 +		return 0;
 +
-+	dmar_table_initialized = 1;
-+
- 	ret = parse_dmar_table();
- 	if (ret) {
--		printk(KERN_INFO PREFIX "parse DMAR table failure.\n");
-+		if (ret != -ENODEV)
-+			printk(KERN_INFO PREFIX "parse DMAR table failure.\n");
- 		return ret;
- 	}
- 
-@@ -377,7 +434,7 @@
- 	return (ACPI_SUCCESS(status) ? 1 : 0);
- }
- 
--struct intel_iommu *alloc_iommu(struct dmar_drhd_unit *drhd)
-+int alloc_iommu(struct dmar_drhd_unit *drhd)
- {
- 	struct intel_iommu *iommu;
- 	int map_size;
-@@ -386,7 +443,7 @@
- 
- 	iommu = kzalloc(sizeof(*iommu), GFP_KERNEL);
- 	if (!iommu)
--		return NULL;
++	iommu->qi = kmalloc(sizeof(*qi), GFP_KERNEL);
++	if (!iommu->qi)
 +		return -ENOMEM;
- 
- 	iommu->seq_id = iommu_allocated++;
- 
-@@ -419,10 +476,10 @@
- 	spin_lock_init(&iommu->register_lock);
- 
- 	drhd->iommu = iommu;
--	return iommu;
++
++	qi = iommu->qi;
++
++	qi->desc = (void *)(get_zeroed_page(GFP_KERNEL));
++	if (!qi->desc) {
++		kfree(qi);
++		iommu->qi = 0;
++		return -ENOMEM;
++	}
++
++	qi->desc_status = kmalloc(QI_LENGTH * sizeof(int), GFP_KERNEL);
++	if (!qi->desc_status) {
++		free_page((unsigned long) qi->desc);
++		kfree(qi);
++		iommu->qi = 0;
++		return -ENOMEM;
++	}
++
++	qi->free_head = qi->free_tail = 0;
++	qi->free_cnt = QI_LENGTH;
++
++	spin_lock_init(&qi->q_lock);
++
++	spin_lock_irqsave(&iommu->register_lock, flags);
++	/* write zero to the tail reg */
++	writel(0, iommu->reg + DMAR_IQT_REG);
++
++	dmar_writeq(iommu->reg + DMAR_IQA_REG, virt_to_phys(qi->desc));
++
++	cmd = iommu->gcmd | DMA_GCMD_QIE;
++	iommu->gcmd |= DMA_GCMD_QIE;
++	writel(cmd, iommu->reg + DMAR_GCMD_REG);
++
++	/* Make sure hardware complete it */
++	IOMMU_WAIT_OP(iommu, DMAR_GSTS_REG, readl, (sts & DMA_GSTS_QIES), sts);
++	spin_unlock_irqrestore(&iommu->register_lock, flags);
++
 +	return 0;
- error:
- 	kfree(iommu);
--	return NULL;
-+	return -1;
- }
- 
- void free_iommu(struct intel_iommu *iommu)
++}
 Index: tree-x86/drivers/pci/intel-iommu.c
 ===================================================================
---- tree-x86.orig/drivers/pci/intel-iommu.c	2008-07-10 09:51:49.000000000 -0700
-+++ tree-x86/drivers/pci/intel-iommu.c	2008-07-10 09:51:51.000000000 -0700
-@@ -1665,11 +1665,8 @@
- 	for_each_drhd_unit(drhd) {
- 		if (drhd->ignored)
- 			continue;
--		iommu = alloc_iommu(drhd);
--		if (!iommu) {
--			ret = -ENOMEM;
--			goto error;
--		}
-+
-+		iommu = drhd->iommu;
- 
- 		ret = iommu_init_domains(iommu);
- 		if (ret)
-@@ -2324,6 +2321,9 @@
- 	if (dmar_table_init())
- 		return 	-ENODEV;
- 
-+	if (dmar_dev_scope_init())
-+		return 	-ENODEV;
-+
- 	iommu_init_mempool();
- 	dmar_init_reserved_ranges();
- 
-Index: tree-x86/include/linux/dmar.h
-===================================================================
---- tree-x86.orig/include/linux/dmar.h	2008-07-10 09:51:45.000000000 -0700
-+++ tree-x86/include/linux/dmar.h	2008-07-10 09:51:51.000000000 -0700
-@@ -46,12 +46,14 @@
- 
- extern int dmar_table_init(void);
- extern int early_dmar_detect(void);
-+extern int dmar_dev_scope_init(void);
- 
- extern struct list_head dmar_drhd_units;
- extern struct list_head dmar_rmrr_units;
- 
- struct dmar_drhd_unit {
- 	struct list_head list;		/* list of drhd units	*/
-+	struct  acpi_dmar_header *hdr;	/* ACPI header		*/
- 	u64	reg_base_addr;		/* register base address*/
- 	struct	pci_dev **devices; 	/* target device array	*/
- 	int	devices_cnt;		/* target device count	*/
-@@ -62,6 +64,7 @@
- 
- struct dmar_rmrr_unit {
- 	struct list_head list;		/* list of rmrr units	*/
-+	struct acpi_dmar_header *hdr;	/* ACPI header		*/
- 	u64	base_address;		/* reserved base address*/
- 	u64	end_address;		/* reserved end address */
- 	struct pci_dev **devices;	/* target devices */
-@@ -72,6 +75,8 @@
- 	list_for_each_entry(drhd, &dmar_drhd_units, list)
- #define for_each_rmrr_units(rmrr) \
- 	list_for_each_entry(rmrr, &dmar_rmrr_units, list)
-+
-+extern int alloc_iommu(struct dmar_drhd_unit *);
- #else
- static inline void detect_intel_iommu(void)
- {
-@@ -81,6 +86,9 @@
- {
- 	return -ENODEV;
+--- tree-x86.orig/drivers/pci/intel-iommu.c	2008-07-10 09:51:59.000000000 -0700
++++ tree-x86/drivers/pci/intel-iommu.c	2008-07-10 09:52:01.000000000 -0700
+@@ -181,13 +181,6 @@
+ 	kmem_cache_free(iommu_iova_cache, iova);
  }
+ 
+-static inline void __iommu_flush_cache(
+-	struct intel_iommu *iommu, void *addr, int size)
+-{
+-	if (!ecap_coherent(iommu->ecap))
+-		clflush_cache_range(addr, size);
+-}
 -
-+static inline int dmar_table_init(void)
-+{
-+	return -ENODEV;
-+}
- #endif /* !CONFIG_DMAR */
- #endif /* __DMAR_H__ */
+ /* Gets context entry for a given bus and devfn */
+ static struct context_entry * device_to_context_entry(struct intel_iommu *iommu,
+ 		u8 bus, u8 devfn)
 Index: tree-x86/drivers/pci/intel-iommu.h
 ===================================================================
---- tree-x86.orig/drivers/pci/intel-iommu.h	2008-07-10 09:51:49.000000000 -0700
-+++ tree-x86/drivers/pci/intel-iommu.h	2008-07-10 09:51:51.000000000 -0700
-@@ -199,7 +199,7 @@
+--- tree-x86.orig/drivers/pci/intel-iommu.h	2008-07-10 09:51:59.000000000 -0700
++++ tree-x86/drivers/pci/intel-iommu.h	2008-07-10 09:52:01.000000000 -0700
+@@ -27,6 +27,7 @@
+ #include <linux/sysdev.h>
+ #include "iova.h"
+ #include <linux/io.h>
++#include <asm/cacheflush.h>
+ #include "dma_remapping.h"
  
+ /*
+@@ -51,6 +52,10 @@
+ #define	DMAR_PLMLIMIT_REG 0x6c	/* PMRR low limit */
+ #define	DMAR_PHMBASE_REG 0x70	/* pmrr high base addr */
+ #define	DMAR_PHMLIMIT_REG 0x78	/* pmrr high limit */
++#define DMAR_IQH_REG	0x80	/* Invalidation queue head register */
++#define DMAR_IQT_REG	0x88	/* Invalidation queue tail register */
++#define DMAR_IQA_REG	0x90	/* Invalidation queue addr register */
++#define DMAR_ICS_REG	0x98	/* Invalidation complete status register */
+ 
+ #define OFFSET_STRIDE		(9)
+ /*
+@@ -114,6 +119,7 @@
+ #define ecap_max_iotlb_offset(e) \
+ 	(ecap_iotlb_offset(e) + ecap_niotlb_iunits(e) * 16)
+ #define ecap_coherent(e)	((e) & 0x1)
++#define ecap_qis(e)		((e) & 0x2)
+ #define ecap_eim_support(e)	((e >> 4) & 0x1)
+ #define ecap_ir_support(e)	((e >> 3) & 0x1)
+ 
+@@ -131,6 +137,17 @@
+ #define DMA_TLB_IH_NONLEAF (((u64)1) << 6)
+ #define DMA_TLB_MAX_SIZE (0x3f)
+ 
++/* INVALID_DESC */
++#define DMA_ID_TLB_GLOBAL_FLUSH	(((u64)1) << 3)
++#define DMA_ID_TLB_DSI_FLUSH	(((u64)2) << 3)
++#define DMA_ID_TLB_PSI_FLUSH	(((u64)3) << 3)
++#define DMA_ID_TLB_READ_DRAIN	(((u64)1) << 7)
++#define DMA_ID_TLB_WRITE_DRAIN	(((u64)1) << 6)
++#define DMA_ID_TLB_DID(id)	(((u64)((id & 0xffff) << 16)))
++#define DMA_ID_TLB_IH_NONLEAF	(((u64)1) << 6)
++#define DMA_ID_TLB_ADDR(addr)	(addr)
++#define DMA_ID_TLB_ADDR_MASK(mask)	(mask)
++
+ /* PMEN_REG */
+ #define DMA_PMEN_EPM (((u32)1)<<31)
+ #define DMA_PMEN_PRS (((u32)1)<<0)
+@@ -140,6 +157,7 @@
+ #define DMA_GCMD_SRTP (((u32)1) << 30)
+ #define DMA_GCMD_SFL (((u32)1) << 29)
+ #define DMA_GCMD_EAFL (((u32)1) << 28)
++#define DMA_GCMD_QIE (((u32)1) << 26)
+ #define DMA_GCMD_WBF (((u32)1) << 27)
+ 
+ /* GSTS_REG */
+@@ -147,6 +165,7 @@
+ #define DMA_GSTS_RTPS (((u32)1) << 30)
+ #define DMA_GSTS_FLS (((u32)1) << 29)
+ #define DMA_GSTS_AFLS (((u32)1) << 28)
++#define DMA_GSTS_QIES (((u32)1) << 26)
+ #define DMA_GSTS_WBFS (((u32)1) << 27)
+ 
+ /* CCMD_REG */
+@@ -192,6 +211,40 @@
+ 	}\
+ }
+ 
++#define QI_LENGTH	256	/* queue length */
++
++enum {
++	QI_FREE,
++	QI_IN_USE,
++	QI_DONE
++};
++
++#define QI_CC_TYPE		0x1
++#define QI_IOTLB_TYPE		0x2
++#define QI_DIOTLB_TYPE		0x3
++#define QI_IEC_TYPE		0x4
++#define QI_IWD_TYPE		0x5
++
++#define QI_IEC_SELECTIVE	(((u64)1) << 4)
++#define QI_IEC_IIDEX(idx)	(((u64)(idx & 0xffff) << 32))
++#define QI_IEC_IM(m)		(((u64)(m & 0x1f) << 27))
++
++#define QI_IWD_STATUS_DATA(d)	(((u64)d) << 32)
++#define QI_IWD_STATUS_WRITE	(((u64)1) << 5)
++
++struct qi_desc {
++	u64 low, high;
++};
++
++struct q_inval {
++	spinlock_t      q_lock;
++	struct qi_desc  *desc;          /* invalidation queue */
++	int             *desc_status;   /* desc status */
++	int             free_head;      /* first free entry */
++	int             free_tail;      /* last free entry */
++	int             free_cnt;
++};
++
+ struct intel_iommu {
+ 	void __iomem	*reg; /* Pointer to hardware regs, virtual addr */
+ 	u64		cap;
+@@ -212,8 +265,16 @@
+ 	struct msi_msg saved_msg;
+ 	struct sys_device sysdev;
+ #endif
++	struct q_inval  *qi;            /* Queued invalidation info */
+ };
+ 
++static inline void __iommu_flush_cache(
++	struct intel_iommu *iommu, void *addr, int size)
++{
++	if (!ecap_coherent(iommu->ecap))
++		clflush_cache_range(addr, size);
++}
++
  extern struct dmar_drhd_unit * dmar_find_matched_drhd_unit(struct pci_dev *dev);
  
--extern struct intel_iommu *alloc_iommu(struct dmar_drhd_unit *drhd);
-+extern int alloc_iommu(struct dmar_drhd_unit *drhd);
- extern void free_iommu(struct intel_iommu *iommu);
- 
- #endif
+ extern int alloc_iommu(struct dmar_drhd_unit *drhd);
 
 -- 
 
