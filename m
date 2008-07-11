@@ -1,86 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755254AbYGKIQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757010AbYGKIQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755254AbYGKIQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 04:16:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbYGKIQR
+	id S1757010AbYGKIQr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 04:16:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756609AbYGKIQd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 04:16:17 -0400
-Received: from bigben2.bytemark.co.uk ([80.68.81.132]:53292 "EHLO
-	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750955AbYGKIQQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 04:16:16 -0400
-Date: Fri, 11 Jul 2008 09:16:13 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: akpm@linux-foundation.org, linux-mm@kvack.org, agl@us.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] [PATCH] Fix a hugepage reservation check for MAP_SHARED
-Message-ID: <20080711081600.GN7410@shadowen.org>
-References: <20080710173001.16433.87538.sendpatchset@skynet.skynet.ie> <20080710173021.16433.90661.sendpatchset@skynet.skynet.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080710173021.16433.90661.sendpatchset@skynet.skynet.ie>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 11 Jul 2008 04:16:33 -0400
+Received: from main.gmane.org ([80.91.229.2]:48276 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756347AbYGKIQa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 04:16:30 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
+Subject: Re: [PATCH 15/15] regulator: maintainers - add maintainers for  
+ regulator framework (new for V5)
+Date: Fri, 11 Jul 2008 11:16:16 +0300
+Message-ID: <487716D0.2020003@teltonika.lt>
+References: <1215703671.13431.71.camel@odin>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 82-135-208-232.static.zebra.lt
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+In-Reply-To: <1215703671.13431.71.camel@odin>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 10, 2008 at 06:30:21PM +0100, Mel Gorman wrote:
+Liam Girdwood wrote:
+> Adds Liam Girdwood and Mark Brown as regulator framework maintainers.
 > 
-> When removing a huge page from the hugepage pool for a fault the system
-> checks to see if the mapping requires additional pages to be reserved, and
-> if it does whether there are any unreserved pages remaining.  If not, the
-> allocation fails without even attempting to get a page. In order to determine
-> whether to apply this check we call vma_has_private_reserves() which tells us
-> if this vma is MAP_PRIVATE and is the owner.  This incorrectly triggers the
-> remaining reservation test for MAP_SHARED mappings which prevents allocation
-> of the final page in the pool even though it is reserved for this mapping.
-> 
-> In reality we only want to check this for MAP_PRIVATE mappings where the
-> process is not the original mapper.  Replace vma_has_private_reserves() with
-> vma_has_reserves() which indicates whether further reserves are required,
-> and update the caller.
-
-Acked-by: Andy Whitcroft <apw@shadowen.org>
-
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> Signed-off-by: Liam Girdwood <lg@opensource.wolfsonmicro.com>
 > ---
+>  MAINTAINERS |    9 +++++++++
+>  1 files changed, 9 insertions(+), 0 deletions(-)
 > 
->  mm/hugetlb.c |   12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
-> 
-> diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.26-rc8-mm1-clean/mm/hugetlb.c linux-2.6.26-rc8-mm1-fix-needsreserve-check/mm/hugetlb.c
-> --- linux-2.6.26-rc8-mm1-clean/mm/hugetlb.c	2008-07-08 11:54:34.000000000 -0700
-> +++ linux-2.6.26-rc8-mm1-fix-needsreserve-check/mm/hugetlb.c	2008-07-08 12:41:36.000000000 -0700
-> @@ -343,13 +343,13 @@ void reset_vma_resv_huge_pages(struct vm
->  }
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 6476125..551d231 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -4424,6 +4424,15 @@ M:	kaber@trash.net
+>  L:	netdev@vger.kernel.org
+>  S:	Maintained
 >  
->  /* Returns true if the VMA has associated reserve pages */
-> -static int vma_has_private_reserves(struct vm_area_struct *vma)
-> +static int vma_has_reserves(struct vm_area_struct *vma)
->  {
->  	if (vma->vm_flags & VM_SHARED)
-> -		return 0;
-> -	if (!is_vma_resv_set(vma, HPAGE_RESV_OWNER))
-> -		return 0;
-> -	return 1;
-> +		return 1;
-> +	if (is_vma_resv_set(vma, HPAGE_RESV_OWNER))
-> +		return 1;
-> +	return 0;
->  }
->  
->  static void clear_huge_page(struct page *page,
-> @@ -421,7 +421,7 @@ static struct page *dequeue_huge_page_vm
->  	 * have no page reserves. This check ensures that reservations are
->  	 * not "stolen". The child may still get SIGKILLed
->  	 */
-> -	if (!vma_has_private_reserves(vma) &&
-> +	if (!vma_has_reserves(vma) &&
->  			h->free_huge_pages - h->resv_huge_pages == 0)
->  		return NULL;
->  
+> +VOLTAGE AND CURRENT REGULATOR FRAMEWORK
+> +P:	Liam Girdwood
+> +M:	lg@opensource.wolfsonmicro.com
+> +P:	Mark Brown
+> +M:	broonie@opensource.wolfsonmicro.com
+> +W:	http://opensource.wolfsonmicro.com/node/15
+> +T:	git opensource.wolfsonmicro.com:/linux-2.6-audioplus.git
 
--apw
+Shouldn't this be:
+git://git.kernel.org/pub/scm/linux/kernel/git/lrg/voltage-2.6.git
+
+> +S:	Supported
+> +
+>  VT1211 HARDWARE MONITOR DRIVER
+>  P:	Juerg Haefliger
+>  M:	juergh@gmail.com
+
