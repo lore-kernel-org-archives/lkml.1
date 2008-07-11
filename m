@@ -1,71 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756033AbYGKXUL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757031AbYGKXWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756033AbYGKXUL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 19:20:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbYGKXT5
+	id S1757031AbYGKXWR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 19:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753230AbYGKXWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 19:19:57 -0400
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:61026 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752278AbYGKXT4 (ORCPT
+	Fri, 11 Jul 2008 19:22:07 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:46706 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752315AbYGKXWE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 19:19:56 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5337"; a="4481945"
-Message-ID: <4877EA9A.1070700@qualcomm.com>
-Date: Fri, 11 Jul 2008 16:19:54 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 11 Jul 2008 19:22:04 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Elias Oltmanns <eo@nebensachen.de>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Clark Williams <clark.williams@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jon Masters <jonathan@jonmasters.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+References: <Pine.LNX.4.58.0807101242070.3740@gandalf.stny.rr.com>
+	<87zlop7bp6.fsf@denkblock.local>
+	<20080710132832.38cc5048.randy.dunlap@oracle.com>
+	<Pine.LNX.4.58.0807101956120.7719@gandalf.stny.rr.com>
+	<Pine.LNX.4.58.0807102035550.7719@gandalf.stny.rr.com>
+	<20080711121655.05810822.akpm@linux-foundation.org>
+	<Pine.LNX.4.58.0807111546560.25977@gandalf.stny.rr.com>
+	<20080711153740.b86acadd.akpm@linux-foundation.org>
+Date: Fri, 11 Jul 2008 16:16:43 -0700
+In-Reply-To: <20080711153740.b86acadd.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Fri, 11 Jul 2008 15:37:40 -0700")
+Message-ID: <m13amg9fl0.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-CC: Vegard Nossum <vegard.nossum@gmail.com>, Paul Menage <menage@google.com>,
-       Paul Jackson <pj@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       miaox@cn.fujitsu.com, rostedt@goodmis.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: current linux-2.6.git: cpusets completely broken
-References: <19f34abd0807111207q2ad2011csdb46c6f451fe0f6d@mail.gmail.com>	 <6599ad830807111236t2bc9aa02ned59dcc58f14b1bf@mail.gmail.com>	 <19f34abd0807111243s549b0facvbd0a650358463231@mail.gmail.com> <b647ffbd0807111603m45b65f73q90399891fb8795f1@mail.gmail.com>
-In-Reply-To: <b647ffbd0807111603m45b65f73q90399891fb8795f1@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
+	*      [score: 0.4661]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.5 XM_Body_Dirty_Words Contains a dirty word
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH -v2] ftrace: Documentation
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Adamushko wrote:
-> Does the patch below help?
-> 
-> (non-white-space-damaged version is attached)
-> 
-> diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-> index 9fceb97..ae61dc9 100644
-> --- a/kernel/cpuset.c
-> +++ b/kernel/cpuset.c
-> @@ -1912,11 +1912,21 @@ static void common_cpu_mem_hotplug_unplug(void)
->  static int cpuset_handle_cpuhp(struct notifier_block *unused_nb,
->                                 unsigned long phase, void *unused_cpu)
->  {
-> -       if (phase == CPU_DYING || phase == CPU_DYING_FROZEN)
-> +       swicth (phase) {
-> +       case CPU_UP_CANCELED:
-> +       case CPU_UP_CANCELED_FROZEN:
-> +       case CPU_DOWN_FAILED:
-> +       case CPU_DOWN_FAILED_FROZEN:
-> +       case CPU_ONLINE:
-> +       case CPU_ONLINE_FROZEN:
-> +       case CPU_DEAD:
-> +       case CPU_DEAD_FROZEN:
-> +               common_cpu_mem_hotplug_unplug();
-> +               break;
-> +       default:
->                 return NOTIFY_DONE;
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-I was always wondering why we're running that logic for every hotplug 
-event.
-For example, do we care for UP_CANCELED* and DOWN_FAILED* ? Presumably 
-nothing should've changed, no ?
-btw I'm just going by the name of the event. So UP_CANCELED to me sounds 
-like CPU never got to the ONLINE stage and cpuset should not really care.
+> On Fri, 11 Jul 2008 16:59:53 -0400 (EDT) Steven Rostedt <rostedt@goodmis.org>
 
-Max
+>> > > +
+>> > > +Here's an example of the output format of the file "trace"
+>> > > +
+>> > > +                             --------
+>> > > +# tracer: ftrace
+>> > > +#
+>> > > +#           TASK-PID   CPU#    TIMESTAMP  FUNCTION
+>> > > +#              | |      |          |         |
+>> > > +            bash-4251  [01] 10152.583854: path_put <-path_walk
+>> > > +            bash-4251  [01] 10152.583855: dput <-path_put
+>> > > +            bash-4251  [01] 10152.583855: _atomic_dec_and_lock <-dput
+>> > > +                             --------
+>> >
+>> > pids are no longer unique system-wide, and any part of the kernel ABI which
+>> > exports them to userspace is, basically, broken.  Oh well.
+>> 
+>> What should be used instead?  Of course we're not using a kernel ABI, we
+>> are using an API (text based ;-) But more on that later.
+>
+> Well that's an interesting question and it has come up before.  There
+> are times when the kernel wants to display a process identifier at
+> least in a printk.  Oopses are one prominent example.
+>
+> Perhaps we do need a way of doing this in a post-pid-namespace-world. 
+> Presumably it would be of the form "pidns-identifier:pid", and just
+> plain old "pid" if no pid namespaces are in operation, for some
+> back-compatibility where possible.
+>
+> Eric, any thoughts?
+
+I don't quite know what we are doing here.  Is this a /proc or /sysfs file?
+
+After a long series of discussion on semantics what we came up with
+was that the pid namespaces are hierarchical and that a struct pid
+will have a numerical identifier in each pid namespace.  Which means
+that for printing pids in the case of printks especially for oops
+reports we can just go with pid number in the init_pid_ns.  Which is
+the classic system wide pid.
+
+In every other case I know besides printk we are delivering the data to an
+application, and that application is running in a pid namespace
+therefore we really want to figure out the pid namespace and give it the
+information.
+
+For filesystem interfaces (besides proc which provides a natural split)
+the classic answer is to capture namespaces at mount time.  And display
+the data in the filesystem relative to the namespaces we captured.
+
+Eric
+
+
 
 
