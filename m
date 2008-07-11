@@ -1,78 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759410AbYGKUph@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756727AbYGKUp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759410AbYGKUph (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 16:45:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbYGKUp2
+	id S1756727AbYGKUp4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 16:45:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbYGKUpq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 16:45:28 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60529 "EHLO ogre.sisk.pl"
+	Fri, 11 Jul 2008 16:45:46 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39125 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752664AbYGKUp2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 16:45:28 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@suse.cz>
-Subject: Re: 2.6.26-rc7: BUG at kernel/power/snapshot.c:493
-Date: Fri, 11 Jul 2008 22:47:44 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Soeren Sonnenburg <kernel@nn7.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-References: <1214584985.22228.15.camel@localhost> <200807112233.53207.rjw@sisk.pl> <20080711204023.GE6843@elf.ucw.cz>
-In-Reply-To: <20080711204023.GE6843@elf.ucw.cz>
+	id S1755799AbYGKUpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 16:45:45 -0400
+Date: Fri, 11 Jul 2008 22:45:21 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>, "hpa@zytor.com" <hpa@zytor.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "ebiederm@xmission.com" <ebiederm@xmission.com>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "steiner@sgi.com" <steiner@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jeremy@goop.org" <jeremy@goop.org>
+Subject: Re: [patch 00/26] x64, x2apic/intr-remap: Interrupt-remapping and
+	x2apic support
+Message-ID: <20080711204521.GA15689@elte.hu>
+References: <20080710181634.764954000@linux-os.sc.intel.com> <20080710195320.GA23322@elte.hu> <20080710215617.GM1678@linux-os.sc.intel.com> <20080711102814.GA17938@elte.hu> <20080711200957.GA8173@elte.hu> <20080711203151.GU1678@linux-os.sc.intel.com> <86802c440807111342j5fbf21e1ibd5129718cde4e43@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807112247.44530.rjw@sisk.pl>
+In-Reply-To: <86802c440807111342j5fbf21e1ibd5129718cde4e43@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 11 of July 2008, Pavel Machek wrote:
-> On Fri 2008-07-11 22:33:52, Rafael J. Wysocki wrote:
-> > On Friday, 11 of July 2008, Pavel Machek wrote:
-> > > Hi!
-> > > 
-> > > > > > Anyone else seeing this? Happened after resuming from s2both (from
-> > > > > > disk)...
-> > > > > 
-> > > > > At what point exactly did it happen?
-> > > > 
-> > > > I am attaching the full dmesg.
-> > > 
-> > > Something is seriously wrong here.
-> > > 
-> > > > usbcore: registered new interface driver usbhid
-> > > > usbhid: v2.6:USB HID core driver
-> > > > TCP cubic registered
-> > > > NET: Registered protocol family 10
-> > > > lo: Disabled Privacy Extensions
-> > > > Mobile IPv6
-> > > > NET: Registered protocol family 17
-> > > > NET: Registered protocol family 15
-> > > > Using IPI No-Shortcut mode
-> > > > RAMDISK: ext2 filesystem found at block 0
-> > > > RAMDISK: Loading 2000KiB [1 disk] into ram disk... |/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|done.
-> 
-> (1)
-> > > > EXT2-fs warning: checktime reached, running e2fsck is recommended
-> (2)
-> > > > VFS: Mounted root (ext2 filesystem).
-> > > > ------------[ cut here ]------------
-> > > > kernel BUG at kernel/power/snapshot.c:493!
-> > > > invalid opcode: 0000 [#1] PREEMPT SMP 
-> > > > Modules linked in:
-> > > 
-> > > This is _after_ we mounted filesystems... we should not be resuming at
-> > > this point.
-> > 
-> > This is an initrd, isn't it?
-> 
-> Does not look like so: it mounted some filesystem at (1), and
-> checktime is reached. I thought initrd is read-only RAM disk -- it
-> should not reach check time, no?
 
-Yes, it will reach the check time if it's ext2 (which is the case).
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-Thanks,
-Rafael
+> Setting APIC routing to physical flat
+> Kernel panic - not syncing: Boot APIC ID in local APIC unexpected (0 vs 4)
+> Pid: 1, comm: swapper Not tainted 2.6.26-rc9-tip-01763-g74f94b1-dirty #320
+> 
+> Call Trace:
+>  [<ffffffff80a21505>] ? set_cpu_sibling_map+0x38c/0x3bd
+>  [<ffffffff80245215>] ? read_xapic_id+0x25/0x3e
+>  [<ffffffff80e5a2c3>] ? verify_local_APIC+0x139/0x1b9
+>  [<ffffffff80245215>] ? read_xapic_id+0x25/0x3e
+>  [<ffffffff80e589af>] ? native_smp_prepare_cpus+0x224/0x2e9
+>  [<ffffffff80e4881a>] ? kernel_init+0x64/0x341
+>  [<ffffffff8022a439>] ? child_rip+0xa/0x11
+>  [<ffffffff80e487b6>] ? kernel_init+0x0/0x341
+>  [<ffffffff8022a42f>] ? child_rip+0x0/0x11
+> 
+> 
+> guess read_apic_id changing cuase some problem...
+
+i got a build error sooner so i've taken it out of tip/master again.
+
+	Ingo
