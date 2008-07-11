@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760240AbYGKVTr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761034AbYGKVUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760240AbYGKVTr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 17:19:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756740AbYGKVSk
+	id S1761034AbYGKVUg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 17:20:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760425AbYGKVS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 17:18:40 -0400
-Received: from mail.tor.primus.ca ([216.254.136.21]:38207 "EHLO
-	mail-01.primus.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756272AbYGKVSh (ORCPT
+	Fri, 11 Jul 2008 17:18:58 -0400
+Received: from mail.tor.primus.ca ([216.254.136.21]:36953 "EHLO
+	mail-07.primus.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760252AbYGKVSx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 17:18:37 -0400
+	Fri, 11 Jul 2008 17:18:53 -0400
 From: Matthew Wilcox <matthew@wil.cx>
 To: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: grundler@parisc-linux.org, mingo@elte.hu, tglx@linutronix.de,
@@ -17,9 +17,9 @@ Cc: grundler@parisc-linux.org, mingo@elte.hu, tglx@linutronix.de,
        benh@kernel.crashing.org, jbarnes@virtuousgeek.org,
        rdunlap@xenotime.net, mtk.manpages@gmail.com, ebiederm@xmission.com,
        Matthew Wilcox <matthew@wil.cx>, Matthew Wilcox <willy@linux.intel.com>
-Subject: [PATCH 5/6] AHCI: Request multiple MSIs
-Date: Fri, 11 Jul 2008 17:16:57 -0400
-Message-Id: <1215811018-15270-5-git-send-email-matthew@wil.cx>
+Subject: [PATCH 3/6] PCI MSI: Add support for multiple messages
+Date: Fri, 11 Jul 2008 17:16:55 -0400
+Message-Id: <1215811018-15270-3-git-send-email-matthew@wil.cx>
 X-Mailer: git-send-email 1.5.5.4
 In-Reply-To: <20080711211559.GV14894@parisc-linux.org>
 References: <20080711211559.GV14894@parisc-linux.org>
@@ -27,158 +27,220 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-AHCI controllers can support up to 16 interrupts, one per port.  This
-saves us a readl() in the interrupt path to determine which port has
-generated the interrupt.
+Add the new API pci_enable_msi_block() to allow drivers to
+request multiple MSI and reimplement pci_enable_msi in terms of
+pci_enable_msi_block.  Ensure that the architecture back ends don't
+have to know about multiple MSI.
 
 Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
 ---
- drivers/ata/ahci.c |  104 +++++++++++++++++++++++++++++++++++++++++++++++++--
- 1 files changed, 99 insertions(+), 5 deletions(-)
+ arch/powerpc/kernel/msi.c |    4 ++
+ drivers/pci/msi.c         |   69 +++++++++++++++++++++++++++++++-------------
+ drivers/pci/msi.h         |    4 --
+ include/linux/msi.h       |    1 +
+ include/linux/pci.h       |    6 ++-
+ 5 files changed, 57 insertions(+), 27 deletions(-)
 
-diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
-index 5e6468a..a3f6331 100644
---- a/drivers/ata/ahci.c
-+++ b/drivers/ata/ahci.c
-@@ -102,6 +102,7 @@ enum {
- 	/* HOST_CTL bits */
- 	HOST_RESET		= (1 << 0),  /* reset controller; self-clear */
- 	HOST_IRQ_EN		= (1 << 1),  /* global IRQ enable */
-+	HOST_MSI_RSM		= (1 << 2),  /* Revert to Single Message */
- 	HOST_AHCI_EN		= (1 << 31), /* AHCI enabled */
- 
- 	/* HOST_CAP bits */
-@@ -1771,6 +1772,19 @@ static void ahci_port_intr(struct ata_port *ap)
+diff --git a/arch/powerpc/kernel/msi.c b/arch/powerpc/kernel/msi.c
+index c62d101..5bc8dda 100644
+--- a/arch/powerpc/kernel/msi.c
++++ b/arch/powerpc/kernel/msi.c
+@@ -19,6 +19,10 @@ int arch_msi_check_device(struct pci_dev* dev, int nvec, int type)
+ 		return -ENOSYS;
  	}
- }
  
-+static irqreturn_t ahci_msi_interrupt(int irq, void *dev_instance)
-+{
-+	struct ata_host *host = dev_instance;
-+	int port = get_irq_subchannel(irq);
-+	struct ata_port *ap = host->ports[port];
++	/* PowerPC doesn't support multiple MSI yet */
++	if (type == PCI_CAP_ID_MSI && nvec > 1)
++		return 1;
 +
-+	spin_lock(&ap->host->lock);
-+	ahci_port_intr(ap);
-+	spin_unlock(&ap->host->lock);
-+
-+	return IRQ_HANDLED;
-+}
-+
- static irqreturn_t ahci_interrupt(int irq, void *dev_instance)
- {
- 	struct ata_host *host = dev_instance;
-@@ -2220,6 +2234,80 @@ static void ahci_p5wdh_workaround(struct ata_host *host)
- 	}
- }
+ 	if (ppc_md.msi_check_device) {
+ 		pr_debug("msi: Using platform check routine.\n");
+ 		return ppc_md.msi_check_device(dev, nvec, type);
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index 104f297..853a0f2 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -45,6 +45,13 @@ arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+ 	struct msi_desc *entry;
+ 	int ret;
  
-+static int ahci_request_irq(struct pci_dev *pdev, struct ata_host *host,
-+							int n_irqs)
-+{
-+	int rc;
++	/*
++	 * If an architecture wants to support multiple MSI, it needs to
++	 * override arch_setup_msi_irqs()
++	 */
++	if (type == PCI_CAP_ID_MSI && nvec > 1)
++		return 1;
 +
-+	if (n_irqs) {
-+		rc = pci_enable_msi_block(pdev, n_irqs);
-+		if (rc)
-+			return rc;
-+	}
+ 	list_for_each_entry(entry, &dev->msi_list, list) {
+ 		ret = arch_setup_msi_irq(dev, entry);
+ 		if (ret)
+@@ -186,6 +193,12 @@ void write_msi_msg(unsigned int irq, struct msi_msg *msg)
+ 	} else {
+ 		struct pci_dev *dev = entry->dev;
+ 		int pos = entry->msi_attrib.pos;
++		u16 msgctl;
 +
-+	if (n_irqs > 1) {
-+		void __iomem *mmio = host->iomap[AHCI_PCI_BAR];
-+		u32 host_ctl = readl(mmio + HOST_CTL);
-+		if (host_ctl & HOST_MSI_RSM)
-+			goto try_different;
-+		rc = devm_request_irq(host->dev, pdev->irq, ahci_msi_interrupt,
-+				IRQF_DISABLED,
-+				dev_driver_string(host->dev), host);
-+	} else {
-+		rc = devm_request_irq(host->dev, pdev->irq, ahci_interrupt,
-+				IRQF_SHARED,
-+				dev_driver_string(host->dev), host);
-+	}
-+
-+	if (!rc)
-+		return 0;
-+
-+ try_different:
-+	pci_disable_msi(pdev);
-+	pci_intx(pdev, 1);
-+	return (n_irqs == 1) ? rc : 1;
-+}
-+
-+/*
-+ * We only need one interrupt per port (plus one for CCC which isn't
-+ * supported yet), but some AHCI controllers refuse to use multiple MSIs
-+ * unless they get the maximum number of interrupts.  We don't support the
-+ * mode where fewer interrupts are assigned than we have ports.
++		pci_read_config_word(dev, msi_control_reg(pos), &msgctl);
++		msgctl &= ~PCI_MSI_FLAGS_QSIZE;
++		msgctl |= entry->msi_attrib.multiple << 4;
++		pci_write_config_word(dev, msi_control_reg(pos), msgctl);
+ 
+ 		pci_write_config_dword(dev, msi_lower_address_reg(pos),
+ 					msg->address_lo);
+@@ -301,13 +314,15 @@ EXPORT_SYMBOL_GPL(pci_restore_msi_state);
+ /**
+  * msi_capability_init - configure device's MSI capability structure
+  * @dev: pointer to the pci_dev data structure of MSI device function
++ * @nvec: number of interrupts to allocate
+  *
+- * Setup the MSI capability structure of device function with a single
+- * MSI irq, regardless of device function is capable of handling
+- * multiple messages. A return of zero indicates the successful setup
+- * of an entry zero with the new MSI irq or non-zero for otherwise.
+- **/
+-static int msi_capability_init(struct pci_dev *dev)
++ * Setup the MSI capability structure of the device with the requested
++ * number of interrupts.  A return value of zero indicates the successful
++ * setup of an entry with the new MSI irq.  A negative return value indicates
++ * an error, and a positive return value indicates the number of interrupts
++ * which could have been allocated.
 + */
-+static int ahci_setup_irqs(struct pci_dev *pdev, struct ata_host *host)
-+{
-+	struct ahci_host_priv *hpriv = host->private_data;
-+	int n_irqs, pos, rc;
-+	u16 control;
-+
-+	if (hpriv->flags & AHCI_HFLAG_NO_MSI)
-+		goto no_msi;
-+
-+	rc = ahci_request_irq(pdev, host, host->n_ports);
-+	if (rc == 0)
-+		return 0;
-+	if (rc < 0)
-+		goto no_msi;
-+
-+	/* Find out how many it might want */
-+	pos = pci_find_capability(pdev, PCI_CAP_ID_MSI);
-+	pci_read_config_word(pdev, pos + PCI_MSI_FLAGS, &control);
-+	n_irqs = 1 << ((control & PCI_MSI_FLAGS_QMASK) >> 1);
-+
-+	rc = ahci_request_irq(pdev, host, n_irqs);
-+	if (rc == 0)
-+		return 0;
-+	if (rc < 0)
-+		goto no_msi;
-+
-+	rc = ahci_request_irq(pdev, host, 1);
-+	if (rc == 0)
-+		return 0;
-+
-+ no_msi:
-+	return ahci_request_irq(pdev, host, 0);
-+}
-+
- static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
++static int msi_capability_init(struct pci_dev *dev, int nvec)
  {
- 	static int printed_version;
-@@ -2278,9 +2366,6 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	    (pdev->revision == 0xa1 || pdev->revision == 0xa2))
- 		hpriv->flags |= AHCI_HFLAG_NO_MSI;
+ 	struct msi_desc *entry;
+ 	int pos, ret;
+@@ -351,7 +366,7 @@ static int msi_capability_init(struct pci_dev *dev)
+ 	list_add_tail(&entry->list, &dev->msi_list);
  
--	if ((hpriv->flags & AHCI_HFLAG_NO_MSI) || pci_enable_msi(pdev))
--		pci_intx(pdev, 1);
--
- 	/* save initial config */
- 	ahci_save_initial_config(pdev, hpriv);
- 
-@@ -2335,8 +2420,17 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	ahci_print_info(host);
- 
- 	pci_set_master(pdev);
--	return ata_host_activate(host, pdev->irq, ahci_interrupt, IRQF_SHARED,
--				 &ahci_sht);
-+
-+	rc = ata_host_start(host);
-+	if (rc)
-+		return rc;
-+
-+	rc = ahci_setup_irqs(pdev, host);
-+	if (rc)
-+		return rc;
-+
-+	rc = ata_host_register(host, &ahci_sht);
-+	return rc;
+ 	/* Configure MSI capability structure */
+-	ret = arch_setup_msi_irqs(dev, 1, PCI_CAP_ID_MSI);
++	ret = arch_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSI);
+ 	if (ret) {
+ 		msi_free_irqs(dev);
+ 		return ret;
+@@ -503,36 +518,48 @@ static int pci_msi_check_device(struct pci_dev* dev, int nvec, int type)
  }
  
- static int __init ahci_init(void)
+ /**
+- * pci_enable_msi - configure device's MSI capability structure
+- * @dev: pointer to the pci_dev data structure of MSI device function
++ * pci_enable_msi_block - configure device's MSI capability structure
++ * @dev: device to configure
++ * @nvec: number of interrupts to configure
+  *
+- * Setup the MSI capability structure of device function with
+- * a single MSI irq upon its software driver call to request for
+- * MSI mode enabled on its hardware device function. A return of zero
+- * indicates the successful setup of an entry zero with the new MSI
+- * irq or non-zero for otherwise.
+- **/
+-int pci_enable_msi(struct pci_dev* dev)
++ * Allocate IRQs for a device with the MSI capability.
++ * This function returns a negative errno if an error occurs.  If it
++ * is unable to allocate the number of interrupts requested, it returns
++ * the number of interrupts it might be able to allocate.  If it successfully
++ * allocates at least the number of interrupt vectors requested, it returns
++ * 0 and updates the @dev's irq member to the new interrupt number.
++ */
++int pci_enable_msi_block(struct pci_dev *dev, unsigned int nvec)
+ {
+-	int status;
++	int status, pos, maxvec;
++	u16 msgctl;
++
++	pos = pci_find_capability(dev, PCI_CAP_ID_MSI);
++	if (!pos)
++		return -EINVAL;
++	pci_read_config_word(dev, pos + PCI_MSI_FLAGS, &msgctl);
++	maxvec = 1 << ((msgctl & PCI_MSI_FLAGS_QMASK) >> 1);
++	if (nvec > maxvec)
++		return maxvec;
+ 
+-	status = pci_msi_check_device(dev, 1, PCI_CAP_ID_MSI);
++	status = pci_msi_check_device(dev, nvec, PCI_CAP_ID_MSI);
+ 	if (status)
+ 		return status;
+ 
+ 	WARN_ON(!!dev->msi_enabled);
+ 
+-	/* Check whether driver already requested for MSI-X irqs */
++	/* Check whether driver already requested MSI-X irqs */
+ 	if (dev->msix_enabled) {
+ 		printk(KERN_INFO "PCI: %s: Can't enable MSI.  "
+ 			"Device already has MSI-X enabled\n",
+ 			pci_name(dev));
+ 		return -EINVAL;
+ 	}
+-	status = msi_capability_init(dev);
++
++	status = msi_capability_init(dev, nvec);
+ 	return status;
+ }
+-EXPORT_SYMBOL(pci_enable_msi);
++EXPORT_SYMBOL(pci_enable_msi_block);
+ 
+ void pci_msi_shutdown(struct pci_dev* dev)
+ {
+diff --git a/drivers/pci/msi.h b/drivers/pci/msi.h
+index 3898f52..b72e0bd 100644
+--- a/drivers/pci/msi.h
++++ b/drivers/pci/msi.h
+@@ -22,12 +22,8 @@
+ #define msi_disable(control)		control &= ~PCI_MSI_FLAGS_ENABLE
+ #define multi_msi_capable(control) \
+ 	(1 << ((control & PCI_MSI_FLAGS_QMASK) >> 1))
+-#define multi_msi_enable(control, num) \
+-	control |= (((num >> 1) << 4) & PCI_MSI_FLAGS_QSIZE);
+ #define is_64bit_address(control)	(!!(control & PCI_MSI_FLAGS_64BIT))
+ #define is_mask_bit_support(control)	(!!(control & PCI_MSI_FLAGS_MASKBIT))
+-#define msi_enable(control, num) multi_msi_enable(control, num); \
+-	control |= PCI_MSI_FLAGS_ENABLE
+ 
+ #define msix_table_offset_reg(base)	(base + 0x04)
+ #define msix_pba_offset_reg(base)	(base + 0x08)
+diff --git a/include/linux/msi.h b/include/linux/msi.h
+index 13a8a1b..70fcebc 100644
+--- a/include/linux/msi.h
++++ b/include/linux/msi.h
+@@ -18,6 +18,7 @@ extern void write_msi_msg(unsigned int irq, struct msi_msg *msg);
+ struct msi_desc {
+ 	struct {
+ 		__u8	is_msix	: 1;
++		__u8	multiple: 3;	/* log2 number of messages */
+ 		__u8	maskbit	: 1; 	/* mask-pending bit supported ?   */
+ 		__u8	masked	: 1;
+ 		__u8	is_64	: 1;	/* Address size: 0=32bit 1=64bit  */
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index d18b1dd..16df5f9 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -699,7 +699,7 @@ struct msix_entry {
+ 
+ 
+ #ifndef CONFIG_PCI_MSI
+-static inline int pci_enable_msi(struct pci_dev *dev)
++static inline int pci_enable_msi_block(struct pci_dev *dev, unsigned int nvec)
+ {
+ 	return -1;
+ }
+@@ -726,7 +726,7 @@ static inline void msi_remove_pci_irq_vectors(struct pci_dev *dev)
+ static inline void pci_restore_msi_state(struct pci_dev *dev)
+ { }
+ #else
+-extern int pci_enable_msi(struct pci_dev *dev);
++extern int pci_enable_msi_block(struct pci_dev *dev, unsigned int nvec);
+ extern void pci_msi_shutdown(struct pci_dev *dev);
+ extern void pci_disable_msi(struct pci_dev *dev);
+ extern int pci_enable_msix(struct pci_dev *dev,
+@@ -737,6 +737,8 @@ extern void msi_remove_pci_irq_vectors(struct pci_dev *dev);
+ extern void pci_restore_msi_state(struct pci_dev *dev);
+ #endif
+ 
++#define pci_enable_msi(pdev)	pci_enable_msi_block(pdev, 1)
++
+ #ifdef CONFIG_HT_IRQ
+ /* The functions a driver should call */
+ int  ht_create_irq(struct pci_dev *dev, int idx);
 -- 
 1.5.5.4
 
