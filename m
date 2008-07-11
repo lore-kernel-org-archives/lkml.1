@@ -1,45 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755892AbYGKSLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755324AbYGKSPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755892AbYGKSLR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 14:11:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753557AbYGKSLH
+	id S1755324AbYGKSPI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 14:15:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750902AbYGKSOy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 14:11:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41329 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753441AbYGKSLG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 14:11:06 -0400
-Date: Fri, 11 Jul 2008 11:10:25 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Roland McGrath <roland@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Elias Oltmanns <eo@nebensachen.de>,
-       =?ISO-8859-15?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH] x86_64: fix delayed signals
-In-Reply-To: <alpine.LFD.1.10.0807111031310.2936@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0807111102450.2936@woody.linux-foundation.org>
-References: <20080710215039.2A143154218@magilla.localdomain> <20080711054605.GA17851@elte.hu> <alpine.LFD.1.10.0807111031310.2936@woody.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Fri, 11 Jul 2008 14:14:54 -0400
+Received: from khc.piap.pl ([195.187.100.11]:38398 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753131AbYGKSOx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 14:14:53 -0400
+To: <netdev@vger.kernel.org>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Kernel panic 2.6.25.10 IXP4xx
+References: <m3y7481wbo.fsf@maximus.localdomain>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Fri, 11 Jul 2008 20:14:51 +0200
+In-Reply-To: <m3y7481wbo.fsf@maximus.localdomain> (Krzysztof Halasa's message of "Fri\, 11 Jul 2008 13\:42\:19 +0200")
+Message-ID: <m3skug1e5g.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Krzysztof Halasa <khc@pm.waw.pl> writes:
 
+> I'm told this is reproducible. The kernel in question is a (patched a
+> bit) 2.6.25.10. ARM, Intel IXP425 CPU, big-endian. The exact
+> patch set is available.
 
-On Fri, 11 Jul 2008, Linus Torvalds wrote:
-> 
-> But it would be really good to have the thing bisected regardless of what 
-> it is.
+It seems the extra patches aren't really used, though. The
+configuration is basically:
 
-Btw, did any of the impacted people test -rc9? Edwin's report is about 
--rc2 and -rc8, and one of the things we fixed since -rc8 is that incorrect 
-and unintentional nr_zones zeroing that effectively disabled kswapd - and 
-made everybody do synchronous memory freeing when they wanted to allocate 
-more memory.. That can play havoc with any interactive stuff.
+ifconfig eth0 192.168.0.1/24 (ixp4xx_eth driver, without the last fix
+	correcting the device eth_poll() (NAPI) return value applied)
 
-		Linus
+modprobe speedtch (USB ADSL, PPP over ATM)
+
+iptables -t nat -A POSTROUTING -s 192.168.0.0/24 -d 0/0 -o ppp0 -j
+	MASQUERADE (seems unrelated)
+
+/sbin/pppd call speedtch (plugin pppoatm.so)
+
+I'm going to try to recreate it on my machine.
+-- 
+Krzysztof Halasa
