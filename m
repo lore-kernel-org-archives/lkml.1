@@ -1,46 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758414AbYGKTTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758066AbYGKTUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758414AbYGKTTj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 15:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758930AbYGKTS2
+	id S1758066AbYGKTUf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 15:20:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759275AbYGKTSh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 15:18:28 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:1441 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758736AbYGKTS1 (ORCPT
+	Fri, 11 Jul 2008 15:18:37 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54226 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756399AbYGKTSg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 15:18:27 -0400
-Date: Fri, 11 Jul 2008 20:18:25 +0100
-From: Mark Brown <broonie@sirena.org.uk>
-To: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH 10/15] regulator: documentation - consumer interface
-Message-ID: <20080711191824.GA28821@sirena.org.uk>
-Mail-Followup-To: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
-	linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.arm.linux.org.uk
-References: <1215703618.13431.66.camel@odin> <487777D5.7050807@teltonika.lt>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <487777D5.7050807@teltonika.lt>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+	Fri, 11 Jul 2008 15:18:36 -0400
+Date: Fri, 11 Jul 2008 12:18:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Josh Boyer <jwboyer@gmail.com>
+Cc: Magnus Damm <magnus.damm@gmail.com>, linux-kernel@vger.kernel.org,
+       gregkh@suse.de
+Subject: Re: [PATCH 03/04] resource: use new resource type changes
+Message-Id: <20080711121801.03fad25d.akpm@linux-foundation.org>
+In-Reply-To: <1215605473.13186.2.camel@weaponx>
+References: <20080709115428.14144.7121.sendpatchset@rx1.opensource.se>
+	<20080709115452.14144.28953.sendpatchset@rx1.opensource.se>
+	<1215605473.13186.2.camel@weaponx>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 11, 2008 at 06:10:13PM +0300, Paulius Zaleckas wrote:
-> Liam Girdwood wrote:
+On Wed, 09 Jul 2008 08:11:13 -0400 Josh Boyer <jwboyer@gmail.com> wrote:
 
-> >+previously enabled by bootloader or kernel board initialisation code.
+> >  arch/ppc/kernel/pci.c                      |   48 +++++++++++++---------------
+> >  arch/ppc/syslib/ppc405_pci.c               |    2 -
+> >  arch/ppc/syslib/ppc_sys.c                  |    2 -
+> 
+> You can drop the arch/ppc bits entirely.  arch/ppc won't exist in 2.6.27
 
-> initialization
->         ^
+yeah, I just applied the patch and ignored all the splatter.  Hopefully it
+still works.
 
-Not in the UK :)
-
--- 
-"You grabbed my hand and we fell into it, like a daydream - or a fever."
+(linux-next -> thatta way, guys)
