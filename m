@@ -1,59 +1,234 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759400AbYGKPJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759565AbYGKPKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759400AbYGKPJo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 11:09:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753019AbYGKPJf
+	id S1759565AbYGKPKd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 11:10:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbYGKPKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 11:09:35 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50321 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752671AbYGKPJf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 11:09:35 -0400
-Date: Fri, 11 Jul 2008 15:51:13 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Howells <dhowells@redhat.com>
-Cc: alan@redhat.com, akpm@linux-foundation.org, dhowells@redhat.com,
-       linux-am33-list@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] MN10300: Fix MN10300's serial port driver to get at its
- tty_struct
-Message-ID: <20080711155113.256e89d1@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080711145201.24870.13609.stgit@warthog.procyon.org.uk>
-References: <20080711145201.24870.13609.stgit@warthog.procyon.org.uk>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Fri, 11 Jul 2008 11:10:25 -0400
+Received: from main.gmane.org ([80.91.229.2]:58960 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752116AbYGKPKY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 11:10:24 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
+Subject: Re: [PATCH 10/15] regulator: documentation - consumer interface
+Date: Fri, 11 Jul 2008 18:10:13 +0300
+Message-ID: <487777D5.7050807@teltonika.lt>
+References: <1215703618.13431.66.camel@odin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 82-135-208-232.static.zebra.lt
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+In-Reply-To: <1215703618.13431.66.camel@odin>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Jul 2008 15:52:01 +0100
-David Howells <dhowells@redhat.com> wrote:
+Liam Girdwood wrote:
+> This adds documentation describing the consumer device interface.
+> 
+> Signed-off-by: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+> ---
+>  Documentation/power/regulator/consumer.txt |  182 ++++++++++++++++++++++++++++
+>  1 files changed, 182 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/power/regulator/consumer.txt
+> 
+> diff --git a/Documentation/power/regulator/consumer.txt b/Documentation/power/regulator/consumer.txt
+> new file mode 100644
+> index 0000000..9ea688d
+> --- /dev/null
+> +++ b/Documentation/power/regulator/consumer.txt
+> @@ -0,0 +1,182 @@
+> +Regulator Consumer Driver Interface
+> +===================================
+> +
+> +This text describes the regulator interface for consumer device drivers.
+> +Please see overview.txt for a description of the terms used in this text.
+> +
+> +
+> +1. Consumer Regulator Access (static & dynamic drivers)
+> +=======================================================
+> +
+> +A consumer driver can get access to it's supply regulator by calling :-
+> +
+> +regulator = regulator_get(dev, "Vcc");
+> +
+> +The consumer passes in it's struct device pointer and power supply ID. The core
+> +then finds the correct regulator by consulting a machine specific lookup table.
+> +If the lookup is successful then this call will return a pointer to the struct
+> +regulator that supplies this consumer.
+> +
+> +To release the regulator the consumer driver should call :-
+> +
+> +regulator_put(regulator);
+> +
+> +Consumers can be supplied by more than one regulator e.g. codec consumer with
+> +analog and digital supplies :-
+> +
+> +digital = regulator_get(dev, "Vcc");  /* digital core */
+> +analog = regulator_get(dev, "Avdd");  /* analog */
+> +
+> +The regulator access functions regulator_get() and regulator_put() will
+> +usually be called in your device drivers probe() and remove() respectively.
+> +
+> +
+> +2. Regulator Output Enable & Disable (static & dynamic drivers)
+> +====================================================================
+> +
+> +A consumer can enable it's power supply by calling:-
+> +
+> +int regulator_enable(regulator);
+> +
+> +NOTE: The supply may already be enabled before regulator_enabled() is called.
+> +This may happen if the consumer shares the regulator or the regulator has been
+> +previously enabled by bootloader or kernel board initialisation code.
 
-> Fix MN10300's serial port driver to get at its tty_struct as this moved from
-> struct uart_info into struct tty_port in patch:
-> 
-> 	commit 2500487cb5b4dbee56e127d699d14101016c5031
-> 	Author: Alan Cox <alan@redhat.com>
-> 	Date:   Fri Jul 11 17:23:39 2008 +1000
-> 
-> 	    07-serial-core-use-tty_port
-> 
-> 	    Switch the serial_core based drivers to use the new tty_port
-> 	    structure. We can't quite use all of it yet because of the
-> 	    dynamically allocated extras in the serial_core layer.
-> 
-> 	    Signed-off-by: Alan Cox <alan@redhat.com>
-> 
-> Signed-off-by: David Howells <dhowells@redhat.com>
+initialization
+         ^
+> +
+> +A consumer can determine if a regulator is enabled by calling :-
+> +
+> +int regulator_is_enabled(regulator);
+> +
+> +This will return > zero when the regulator is enabled.
+> +
+> +
+> +A consumer can disable it's supply when no longer needed by calling :-
+> +
+> +int regulator_disable(regulator);
+> +
+> +NOTE: This may not disable the supply if it's shared with other consumers. The
+> +regulator will only be disabled when the enabled reference count is zero.
+> +
+> +Finally, a regulator can be forcefully disabled in the case of an emergency :-
+> +
+> +int regulator_force_disable(regulator);
+> +
+> +NOTE: this will immediately and forcefully shutdown the regulator output. All
+> +consumers will be powered off.
+> +
+> +
+> +3. Regulator Voltage Control & Status (dynamic drivers)
+> +======================================================
+> +
+> +Some consumer drivers need to be able to dynamically change their supply
+> +voltage to match system operating points. e.g. CPUfreq drivers can scale
+> +voltage along with frequency to save power, SD drivers may need to select the
+> +correct card voltage, etc.
+> +
+> +Consumers can control their supply voltage by calling :-
+> +
+> +int regulator_set_voltage(regulator, min_uV, max_uV);
+> +
+> +Where min_uV and max_uV are the minimum and maximum acceptable voltages in
+> +microvolts.
+> +
+> +NOTE: this can be called when the regulator is enabled or disabled. If called
+> +when enabled, then the voltage changes instantly, otherwise the voltage
+> +configuration changes and the voltage is physically set when the regulator is
+> +next enabled.
+> +
+> +The regulators configured voltage output can be found by calling :-
+> +
+> +int regulator_get_voltage(regulator);
+> +
+> +NOTE: get_voltage() will return the configured output voltage whether the
+> +regulator is enabled or disabled and should NOT be used to determine regulator
+> +output state. However this can be used in conjunction with is_enabled() to
+> +determind the regulator physical output voltage.
 
-I don't suppose you'd consider putting the driver into drivers/serial so
-it was actually sanely possible to update all the tty drivers together.
-There are lots more changes to come and it would be easier if drivers
-didn't keep hiding 8(
+determine
+         ^
+> +
+> +
+> +4. Regulator Current Limit Control & Status (dynamic drivers)
+> +===========================================================
+> +
+> +Some consumer drivers need to be able to dynamically change their supply
+> +current limit to match system operating points. e.g. LCD backlight driver can
+> +change the current limit to vary the backlight brightness, USB drivers may want
+> +to set the limit to 500mA when supplying power.
+> +
+> +Consumers can control their supply current limit by calling :-
+> +
+> +int regulator_set_current_limit(regulator, min_uV, max_uV);
+> +
+> +Where min_uA and max_uA are the minimum and maximum acceptable current limit in
+> +microamps.
+> +
+> +NOTE: this can be called when the regulator is enabled or disabled. If called
+> +when enabled, then the current limit changes instantly, otherwise the current
+> +limit configuration changes and the current limit is physically set when the
+> +regulator is next enabled.
+> +
+> +A regulators current limit can be found by calling :-
+> +
+> +int regulator_get_current_limit(regulator);
+> +
+> +NOTE: get_current_limit() will return the current limit whether the regulator
+> +is enabled or disabled and should not be used to determine regulator current
+> +load.
+> +
+> +
+> +5. Regulator Operating Mode Control & Status (dynamic drivers)
+> +=============================================================
+> +
+> +Some consumers can further save system power by changing the operating mode of
+> +their supply regulator to be more efficient when the consumers operating state
+> +changes. e.g. consumer driver is idle and subsequently draws less current
+> +
+> +Regulator operating mode can be changed indirectly or directly.
+> +
+> +Indirect operating mode control.
+> +--------------------------------
+> +Consumer drivers can request a change in their supply regulator operating mode
+> +by calling :-
+> +
+> +int regulator_set_optimum_mode(struct regulator *regulator, int load_uA);
+> +
+> +This will cause the core to recalculate the total load on the regulator (based
+> +on all it's consumers) and change operating mode (if necessary and permitted)
+> +to best match the current operating load.
+> +
+> +The load_uA value can be determined from the consumers datasheet. e.g.most
+> +datasheets have tables showing the max current consumed in certain situations.
+> +
+> +Most consumers will use indirect operating mode control since they have no
+> +knowledge of the regulator or whether the regulator is shared with other
+> +consumers.
+> +
+> +Direct operating mode control.
+> +------------------------------
+> +Bespoke or tightly coupled drivers may want to directly control regulator
+> +operating mode depending on their operating point. This can be achieved by
+> +calling :-
+> +
+> +int regulator_set_mode(struct regulator *regulator, unsigned int mode);
+> +unsigned int regulator_get_mode(struct regulator *regulator);
+> +
+> +Direct mode will only be used by consumers that *know* about the regulator and
+> +are not sharing the regulator with other consumers.
+> +
+> +
+> +6. Regulator Events
+> +===================
+> +Regulators can notify consumers of external events. Events could be received by
+> +consumers under regulator stress or failure conditions.
+> +
+> +Consumers can register interest in regulator events by calling :-
+> +
+> +int regulator_register_notifier(struct regulator *regulator,
+> +			      struct notifier_block *nb);
+> +
+> +Consumers can uregister interest by calling :-
+> +
+> +int regulator_unregister_notifier(struct regulator *regulator,
+> +				struct notifier_block *nb);
+> +
+> +Regulators use the kernel notifier framework to send event to thier interested
+> +consumers.
 
-Alan
