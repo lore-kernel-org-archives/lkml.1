@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760867AbYGKPU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762056AbYGKPUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760867AbYGKPU0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 11:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760924AbYGKPRU
+	id S1762056AbYGKPUo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 11:20:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761583AbYGKPTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 11:17:20 -0400
-Received: from chrocht.moloch.sk ([62.176.169.44]:39438 "EHLO mail.moloch.sk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754626AbYGKPRT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 11:17:19 -0400
-Message-ID: <4877799F.4040104@fastmq.com>
-Date: Fri, 11 Jul 2008 17:17:51 +0200
-From: Martin Sustrik <sustrik@fastmq.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Andrew Morton <akpm@linux-foundation.org>, Martin Lucina <mato@kotelna.sk>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Higher than expected disk write(2) latency
-References: <20080628121131.GA14181@nodbug.moloch.sk>	<20080709222701.8eab4924.akpm@linux-foundation.org>	<4875C45C.2010901@fastmq.com> <20080710093109.46db7c40@the-village.bc.nu>
-In-Reply-To: <20080710093109.46db7c40@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 11 Jul 2008 11:19:11 -0400
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:63088 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761575AbYGKPTJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 11:19:09 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgcFAO8Td0hMQWVt/2dsb2JhbACBWq1u
+Date: Fri, 11 Jul 2008 11:19:06 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: ltt-dev@lists.casi.polymtl.ca
+Cc: linux-kernel@vger.kernel.org
+Subject: LTTng 0.10-pre57 for linux 2.6.26-rc9 (with userspace tracing for
+	x86)
+Message-ID: <20080711151905.GA13558@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:09:59 up 36 days, 19:50,  5 users,  load average: 2.73, 2.42,
+	2.67
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Hi,
 
-> Which disk scheduler are you using - some of the disk schedulers
-> intentionally delay writes to try and get better block merging.
+Here is a new release of LTTng for the 2.6.26-rc9 kernel, which
+introduces :
 
-We've run the test with different I/O schedulers. We've found out that 
-poor performance we've seen before was due to the short AIO queue size. 
-Now, when queue size is big enough to hold all the write requests in the 
-test, the results are much better. Have a look here for the code of the 
-test and the results in form of graphs:
+- The tracepoints infrastructure.
+- Architecture independent markers converted to tracepoints.
+- Re-introduction of userspace tracing, only for x86 for now. Allows to
+  do boot-time tracing (such as tracing the init process). Adds 2 system
+  calls : sys_marker (marker registration) and sys_trace (tracing per
+  se). The type support is currently limited : strings are formatted in
+  userspace and sent to the kernel for logging under the event
+  "userspace_string". I am doing this simple implementation to get the
+  feature in until I have time to think more carefully about namespacing
+  issues, typing and 32/64 bits processes in 64 bits architectures.
 
-http://www.zeromq.org/results:aio
+Please consider this last feature experimental. Review and testing is
+welcome. The userspace linker script and library needed to perform
+userspace tracing, as well as some sample code and Makefile, are
+available in the svn repository at
 
-There are still at least two problems I see:
+http://ltt.polymtl.ca/svn/markers-userspace/
 
-1. Enqueueing of writes seems to block every now and then although the 
-size of AIO queue is large enough to hold all the requests in the test.
+Ports of the linker script, kernel-api.h (which should be
+per-architecture) and of markers-userspace-x86.patch to other
+architectures are welcome.
 
-2. We've observed that messages are batched for writes by approximately 
-30 per batch. The latency impact of messages 2-30 is almost zero, 
-however, the impact of the first message is much higher than expected. I 
-would expect latency of one disk revolving (8.3 ms) + optionally latency 
-of head movement (say 10 us). What we are seing are latencies of 30-60 ms.
+As always, please follow the compatibility list and the quickstart guide
+located at :
 
-Martin
+http://ltt.polymtl.ca/svn/ltt/branches/poly/doc/developer/lttng-lttv-compatibility.html
+
+http://ltt.polymtl.ca/svn/ltt/branches/poly/QUICKSTART
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
