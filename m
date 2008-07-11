@@ -1,98 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbYGKRWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171AbYGKRu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756032AbYGKRWR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 13:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbYGKRWG
+	id S1755171AbYGKRu3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 13:50:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbYGKRuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 13:22:06 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:48204 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752728AbYGKRWE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 13:22:04 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Duran, Leo" <leo.duran@amd.com>
-Cc: "Roedel, Joerg" <Joerg.Roedel@amd.com>,
-       "Richter, Robert" <rrichter@elbe.amd.com>,
-       "Biemueller, Sebastian" <Sebastian.Biemueller@amd.com>,
-       <linux-kernel@vger.kernel.org>, <iommu@lists.linux-foundation.org>,
-       <mingo@redhat.com>, <tglx@linutronix.de>,
-       "Sarathy, Bhavna" <Bhavna.Sarathy@amd.com>
-References: <6453C3CB8E2B3646B0D020C1126132730149A6C6@sausexmb4.amd.com>
-Date: Fri, 11 Jul 2008 10:20:33 -0700
-In-Reply-To: <6453C3CB8E2B3646B0D020C1126132730149A6C6@sausexmb4.amd.com> (Leo
-	Duran's message of "Fri, 11 Jul 2008 11:23:46 -0500")
-Message-ID: <m1k5fsfice.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 11 Jul 2008 13:50:20 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41839 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753798AbYGKRuT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 13:50:19 -0400
+Date: Fri, 11 Jul 2008 19:50:02 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: [patch] x86: fix savesegment() bug causing crashes on 64-bit
+Message-ID: <20080711175002.GA32116@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;"Duran, Leo" <leo.duran@amd.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
-	*      [score: 0.1306]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 00/34] AMD IOMMU driver
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_00,URI_HEX autolearn=no SpamAssassin version=3.2.3
+	0.4 URI_HEX                URI: URI hostname has long hexadecimal sequence
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Duran, Leo" <leo.duran@amd.com> writes:
+    
+i spent a fair amount of time chasing a 64-bit bootup crash in 
+tip/master that manifested itself as bootup segfaults:
+    
+      S10network[1825]: segfault at 7f3e2b5d16b8 ip 00000031108748c9 sp 00007fffb9c14c70 error 4 in libc-2.7.so[3110800000+14d000]
+    
+eventually causing init to die and panic the system:
+    
+      Kernel panic - not syncing: Attempted to kill init!
+      Pid: 1, comm: init Not tainted 2.6.26-rc9-tip #13878
+    
+after a marathonic bisection session, the bad commit turned out to be 
+this one in tip/x86/*:
+    
+    | b7675791859075418199c7af86a116ea34eaf5bd is first bad commit
+    | commit b7675791859075418199c7af86a116ea34eaf5bd
+    | Author: Jeremy Fitzhardinge <jeremy@goop.org>
+    | Date:   Wed Jun 25 00:19:00 2008 -0400
+    |
+    |     x86: remove open-coded save/load segment operations
+    |
+    |     This removes a pile of buggy open-coded implementations of savesegment
+    |     and loadsegment.
+    
+after some more bisection of this patch itself, it turns out that what
+makes the difference are the savesegment() changes to __switch_to().
+    
+Taking a look at this portion of arch/x86/kernel/process_64.o revealed
+this crutial difference:
+    
+    | good:    99c:       8c e0                   mov    %fs,%eax
+    |          99e:       89 45 cc                mov    %eax,-0x34(%rbp)
+    |
+    | bad:     99c:       8c 65 cc                mov    %fs,-0x34(%rbp)
+    
+which is due to:
+    
+    |                 unsigned fsindex;
+    | -               asm volatile("movl %%fs,%0" : "=r" (fsindex));
+    | +               savesegment(fs, fsindex);
+    
+savesegment() is implemented as:
+    
+     #define savesegment(seg, value)                                \
+              asm("mov %%" #seg ",%0":"=rm" (value) : : "memory")
+    
+note the "m" modifier - it allows GCC to generate the segment move
+into a memory operand as well.
+    
+But regarding segment operands there's a subtle detail in the x86
+instruction set: the above 16-bit moves are zero-extend, but only
+    
+If it goes to a memory operand, -0x34(%rbp) in the above case, there's
+no zero-extend to 32-bit and the instruction will only save 16 bits
+    
+The other 16 bits is random data - which can cause problems when that 
+value is used later on.
+    
+The solution is to only allow segment operands to go to registers. This 
+fix allows my test-system to boot up without crashing.
+    
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/asm-x86/system.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> On Friday, July 11, 2008 5:22 AM, Eric W. Biederman wrote:
->
->> Small question.  Does this IOMMU also support irq remapping?
->> 
->> Intel is starting to merge support for their iommu that supports irq
->> remapping and I am curious what the implications are going to be to
->> support both of these iommus?
->> 
->> Assuming their is irq remapping support it isn't tied to x2apic
->> support in the cpus is it?
->> 
-> Follow-up questions: 
-> (1) Outside of a virtualization environment, is there functional value
-> for "irq remapping" by an IOMMU? And, if there is, (2) How would this
-> functionality get abstracted? (e.g., as dma_ops abstracts 'address
-> remapping' by the IOMMU)
-
-Current x86 hardware ioapics have significant issues with irq
-migration.  So things like real cpu hotplug are not really
-supportable unless there is better hardware or an iommu.
-
-There is a good case for linux to support kernel bypass for some hardware.
->From kvm where linux acts as a hypervisor to crazy people wanting to
-device drivers in user space, to the classic HPC mpi stack that
-wants to go as fast as possible.
-
-Then there is the Intel case where the are extending their cpu apicids
-to 32bit and require going through a hypervisor to encode all of the
-necessary bits.  I think we can go to 16bit cpus without doing that
-but it is a squeeze.
-
-If we are going to run under under a hypervisor we need at least the
-abstraction of going through an iommu (in that case a hypercall) 
-so we can run under a hypervisor.
-
-So right now we are just starting to design the abstraction, and I'm
-hoping we can get as large a perspective on what it should look like
-as we can.  
-
-I expect the api will look something like:
-struct irq_map_info x86_map_irq(irq, cpumask);
-
-Where struct irq_map_info would return the architecture defined bits
-that we can program into an msi or an ioapic routing entry.
-
-With x86_map_irq looking up an appropriate ops structure and calling
-the iommu specific operation.
-
-Eric
+diff --git a/include/asm-x86/system.h b/include/asm-x86/system.h
+index 45641bc..929345a 100644
+--- a/include/asm-x86/system.h
++++ b/include/asm-x86/system.h
+@@ -164,7 +164,7 @@ extern void native_load_gs_index(unsigned);
+  * Save a segment register away
+  */
+ #define savesegment(seg, value)				\
+-	asm("mov %%" #seg ",%0":"=rm" (value) : : "memory")
++	asm("mov %%" #seg ",%0":"=r" (value) : : "memory")
+ 
+ static inline unsigned long get_limit(unsigned long segment)
+ {
