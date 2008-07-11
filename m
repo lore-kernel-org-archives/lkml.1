@@ -1,70 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756438AbYGKXCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754152AbYGKXD2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756438AbYGKXCq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 19:02:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbYGKXCe
+	id S1754152AbYGKXD2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 19:03:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbYGKXDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 19:02:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54101 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755915AbYGKXCb (ORCPT
+	Fri, 11 Jul 2008 19:03:21 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:8480 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751482AbYGKXDT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 19:02:31 -0400
-Date: Fri, 11 Jul 2008 16:02:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [patch 13/17] Use WARN() in drivers/base/
-Message-Id: <20080711160213.ec94e613.akpm@linux-foundation.org>
-In-Reply-To: <20080711155105.70eb496a@infradead.org>
-References: <20080708093800.274504ba@infradead.org>
-	<20080708095307.6423cb6f@infradead.org>
-	<20080711122011.7ddf42ef.akpm@linux-foundation.org>
-	<20080711135409.6638498d@infradead.org>
-	<20080711151110.ab2b5401.akpm@linux-foundation.org>
-	<20080711155105.70eb496a@infradead.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Jul 2008 19:03:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:references;
+        b=cjHuRJvOGmeuHLmk+IRNbd6SOH4SHWnkkLA+4yLi/PbTZ/eJuk0+QF5HdyT8bhUSb8
+         um/qRHr5/e/hNKPk6mLrSuA0deMYT7OaWavwGgyK0qrRlgjOXbFUqo+qyAGGhcnYNAry
+         vN3xTHESAm3GeExGsGzP4DKsgptjEkAgncbic=
+Message-ID: <b647ffbd0807111603m45b65f73q90399891fb8795f1@mail.gmail.com>
+Date: Sat, 12 Jul 2008 01:03:18 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Vegard Nossum" <vegard.nossum@gmail.com>
+Subject: Re: current linux-2.6.git: cpusets completely broken
+Cc: "Paul Menage" <menage@google.com>, "Max Krasnyansky" <maxk@qualcomm.com>,
+       "Paul Jackson" <pj@sgi.com>, "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       miaox@cn.fujitsu.com, rostedt@goodmis.org,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <19f34abd0807111243s549b0facvbd0a650358463231@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_32131_12938469.1215817398836"
+References: <19f34abd0807111207q2ad2011csdb46c6f451fe0f6d@mail.gmail.com>
+	 <6599ad830807111236t2bc9aa02ned59dcc58f14b1bf@mail.gmail.com>
+	 <19f34abd0807111243s549b0facvbd0a650358463231@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Jul 2008 15:51:05 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
+------=_Part_32131_12938469.1215817398836
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> On Fri, 11 Jul 2008 15:11:10 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > 
-> > I don't suppose there's any way of tricking the preprocessor into
-> > supporting
-> > 
-> > 	WARN_ON(foo == 42);
-> > 
-> > as well as
-> > 
-> > 	WARN_ON(foo == 42, "bite me!");
-> > 
-> 
-> after reading preprocessor docs from gcc and trying some things:
-> We can do this. It comes at a price: the price is a blank line in the
-> WARN trace for the "no printk comments" case, and we lose the ability
-> to override the printk level. (which you can argue is a feature by just
-> setting it to KERN_WARNING).
-> 
-> (and some interesting but otherwise non-harmful preprocessor stuff in
-> headers)
+2008/7/11 Vegard Nossum <vegard.nossum@gmail.com>:
+> On Fri, Jul 11, 2008 at 9:36 PM, Paul Menage <menage@google.com> wrote:
+>> On Fri, Jul 11, 2008 at 12:07 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+>>>
+>>> The result of having CPUSETS enabled as above is a 100% reproducible
+>>> BUG on the very first cpu hot-unplug:
+>>>
+>>> ------------[ cut here ]------------
+>>> kernel BUG at xxx/linux-2.6/kernel/sched.c:5859!
+>>
+>> That doesn't quite match up with any BUG in 2.6.26-rc9 - what tree is
+>> this last crash based on?
+>
+> latest mainline. Commit e5a5816f7875207cb0a0a7032e39a4686c5e10a4.
+>
+> Is this one:
+>
+> /* called under rq->lock with disabled interrupts */
+> static void migrate_dead(unsigned int dead_cpu, struct task_struct *p)
+> {
+>        struct rq *rq = cpu_rq(dead_cpu);
+>
+>        /* Must be exiting, otherwise would be on tasklist. */
+>        BUG_ON(!p->exit_state);
+>
+>>> Also, this is on the latest linux-2.6.git! Since we're so close to
+>>> release, maybe cpusets should simply be marked BROKEN for now? (Unless
+>>> we can fix it, of course. The alternative is to apply Miao Xie's
+>>> workaround patch temporarily.)
+>>
+>> If we were going to mark anything as broken, wouldn't cpu-hotplug be
+>> the more appropriate victim? I suspect that there are more systems
+>> using cpusets in production environments than using cpu hotplug. But
+>> as you say, fixing it sounds better.
+>
+> I'm sorry for the harsh characterization and suggestion; please accept
+> my apology. It was purely a result of my excitement at having made
+> some progress in this case.
+>
+> But I have more good news; reverting this:
+>
+> commit f18f982abf183e91f435990d337164c7a43d1e6d
+> Author: Max Krasnyansky <maxk@qualcomm.com>
+> Date:   Thu May 29 11:17:01 2008 -0700
+>
+>    sched: CPU hotplug events must not destroy scheduler domains created by the
+> cpusets
 
-the blank line: might be avoidable by doing some extra work at runtime
-to recognise its presence?
+Does the patch below help?
 
-overriding facility level: doesn't sound very useful, as WARN()'s
-stack-trace's facility level is not controllable.
+(non-white-space-damaged version is attached)
 
-> Is this is price worth paying to not have a second macro?
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index 9fceb97..ae61dc9 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -1912,11 +1912,21 @@ static void common_cpu_mem_hotplug_unplug(void)
+ static int cpuset_handle_cpuhp(struct notifier_block *unused_nb,
+                                unsigned long phase, void *unused_cpu)
+ {
+-       if (phase == CPU_DYING || phase == CPU_DYING_FROZEN)
++       swicth (phase) {
++       case CPU_UP_CANCELED:
++       case CPU_UP_CANCELED_FROZEN:
++       case CPU_DOWN_FAILED:
++       case CPU_DOWN_FAILED_FROZEN:
++       case CPU_ONLINE:
++       case CPU_ONLINE_FROZEN:
++       case CPU_DEAD:
++       case CPU_DEAD_FROZEN:
++               common_cpu_mem_hotplug_unplug();
++               break;
++       default:
+                return NOTIFY_DONE;
 
-Dunno, how ugly is the patch?
+-       common_cpu_mem_hotplug_unplug();
+-       return 0;
++       return NOTIFY_OK;
+ }
 
-It would be rather nice to not go and fatten the interface.  Would
-there be additional text or data size costs?
+ #ifdef CONFIG_MEMORY_HOTPLU
+
+
+
+-- 
+Best regards,
+Dmitry Adamushko
+
+------=_Part_32131_12938469.1215817398836
+Content-Type: text/x-diff; name=003-fix-cpuset.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fije9rch0
+Content-Disposition: attachment; filename=003-fix-cpuset.patch
+
+ZGlmZiAtLWdpdCBhL2tlcm5lbC9jcHVzZXQuYyBiL2tlcm5lbC9jcHVzZXQuYwppbmRleCA5ZmNl
+Yjk3Li5hZTYxZGM5IDEwMDY0NAotLS0gYS9rZXJuZWwvY3B1c2V0LmMKKysrIGIva2VybmVsL2Nw
+dXNldC5jCkBAIC0xOTEyLDExICsxOTEyLDIxIEBAIHN0YXRpYyB2b2lkIGNvbW1vbl9jcHVfbWVt
+X2hvdHBsdWdfdW5wbHVnKHZvaWQpCiBzdGF0aWMgaW50IGNwdXNldF9oYW5kbGVfY3B1aHAoc3Ry
+dWN0IG5vdGlmaWVyX2Jsb2NrICp1bnVzZWRfbmIsCiAJCQkJdW5zaWduZWQgbG9uZyBwaGFzZSwg
+dm9pZCAqdW51c2VkX2NwdSkKIHsKLQlpZiAocGhhc2UgPT0gQ1BVX0RZSU5HIHx8IHBoYXNlID09
+IENQVV9EWUlOR19GUk9aRU4pCisJc3dpY3RoIChwaGFzZSkgeworCWNhc2UgQ1BVX1VQX0NBTkNF
+TEVEOgorCWNhc2UgQ1BVX1VQX0NBTkNFTEVEX0ZST1pFTjoKKwljYXNlIENQVV9ET1dOX0ZBSUxF
+RDoKKwljYXNlIENQVV9ET1dOX0ZBSUxFRF9GUk9aRU46CisJY2FzZSBDUFVfT05MSU5FOgorCWNh
+c2UgQ1BVX09OTElORV9GUk9aRU46CisJY2FzZSBDUFVfREVBRDoKKwljYXNlIENQVV9ERUFEX0ZS
+T1pFTjoKKwkJY29tbW9uX2NwdV9tZW1faG90cGx1Z191bnBsdWcoKTsKKwkJYnJlYWs7CisJZGVm
+YXVsdDoKIAkJcmV0dXJuIE5PVElGWV9ET05FOwogCi0JY29tbW9uX2NwdV9tZW1faG90cGx1Z191
+bnBsdWcoKTsKLQlyZXR1cm4gMDsKKwlyZXR1cm4gTk9USUZZX09LOwogfQogCiAjaWZkZWYgQ09O
+RklHX01FTU9SWV9IT1RQTFVHCg==
+------=_Part_32131_12938469.1215817398836--
