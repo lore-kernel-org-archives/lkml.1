@@ -1,82 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755386AbYGKQ4H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756173AbYGKQ4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755386AbYGKQ4H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 12:56:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbYGKQzz
+	id S1756173AbYGKQ4Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 12:56:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754567AbYGKQz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 12:55:55 -0400
-Received: from smtp8.server.rpi.edu ([128.113.2.228]:49983 "EHLO
-	smtp8.server.rpi.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753895AbYGKQzy (ORCPT
+	Fri, 11 Jul 2008 12:55:58 -0400
+Received: from mail1.physik.fu-berlin.de ([160.45.35.12]:38588 "EHLO
+	mail1.physik.fu-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754378AbYGKQz5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 12:55:54 -0400
-Message-ID: <4877908C.4060706@rpi.edu>
-Date: Fri, 11 Jul 2008 12:55:40 -0400
-From: David Brigada <brigad@rpi.edu>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Jordan Crouse <jordan.crouse@amd.com>
-CC: jim.cromie@gmail.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-geode@lists.infradead.org
-Subject: Re: PCI-ISA Bridge not operating
-References: <487774F9.6000001@rpi.edu> <20080711164845.GB28720@cosmic.amd.com> (sfid-20080711_174547_429140_033022C1)
-In-Reply-To: <20080711164845.GB28720@cosmic.amd.com> (sfid-20080711_174547_429140_033022C1)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 11 Jul 2008 12:55:57 -0400
+X-Greylist: delayed 3069 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Jul 2008 12:55:57 EDT
+Subject: [PATCH] x86: Fix ldt limit for 64 bit
+From: Michael Karcher <kernel@mkarcher.dialup.fu-berlin.de>
+To: tglx@linuxtronix.de, mingo@redhat.com, hpa@zytor.com
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Fri, 11 Jul 2008 18:04:46 +0200
+Message-Id: <1215792286.8831.14.camel@hermes2.karcher.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
-X-RPI-SA-Score: undef - spam scanning disabled
-X-CanItPRO-Stream: default
-X-Canit-Stats-ID: Bayes signature not available
+X-ZEDV-Virus-Scanned: No viruses found. [ClamAV 0.92/7691/Fri Jul 11 16:33:58 2008]
+X-ZEDV-Spam-Level: ----
+X-ZEDV-Spam-Checker-Version: SpamAssassin 3.2.3 (2007-08-08) on zs01.physik.fu-berlin.de
+X-ZEDV-Spam-Status: No, score=-4.4 required=5.0 tests=ALL_TRUSTED,BAYES_00 autolearn=ham version=3.2.3
+X-ZEDV-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+X-Scan-Signature: 48a0a142371ef84aa1c0cd31e7bdf556
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jordan Crouse wrote:
-> On 11/07/08 10:58 -0400, David Brigada wrote:
->> Hi,
->>
->> I'm working with the MSM800XEV board from Digital-Logic.  This board 
->> uses a Geode LX800 for a CPU and has the CS5536 companion board also 
->> installed.  The board works with an IT8888G IC that provides a PCI/ISA 
->> bridge to a PC/104 bus that is externally provided.
->>
->> If I boot with FreeDOS, I can twiddle I/O ports, and the proper ISA 
->> signaling comes over the PC/104 bus.  In Linux, the /IOW or /IOR line 
->> goes low as expected, but the address doesn't come over the bus.  The 
->> DOS that I'm running doesn't seem to have any specific drivers for the 
->> chip, I'm guessing that the hardware should "just work" --- the IT8888G 
->> is designed to grab I/O requests in the ISA range off the PCI bus after 
->> a short delay if nothing else grabs them first.
->>
->> I have a feeling that it has something to do with the CS5536 companion 
->> chip, as it seems as though there is a driver for a PCI/ISA bridge on 
->> that chip, though I can't get much detail from AMD's datasheet on that 
->> functionality.  I do know that on the MSM800XEV, any such functionality 
->> is wired to the IT8888G, not the CS5536.
->>
->> There are two kernel config options related to the PCI IDs of the parts 
->> of the device that handle the ISA bus, CONFIG_SCx200_ACB and 
->> CONFIG_CS5535_GPIO.  I've tried disabling both, but it doesn't seem to help.
->>
->> In lspci, the CS5536 PCI/ISA bridge is shown, but not the IT8888G.
->>
->> Any ideas?
-> 
-> ISA should indeed "just work".  The only thing I'm wondering is if
-> the kernel is interfering (it shouldn't).  I assume that since it works
-> in FreeDOS that there is no possibility that something on the PCI bus
-> is grabbing the cycles instead.
+From: Michael Karcher <kernel@mkarcher.dialup.fu-berlin.de>
 
-That's what I'm thinking --- that the CS5536 PCI/ISA bridge is claiming 
-the cycles.
+Fix size of LDT entries. On x86-64, ldt_desc is a double-sized descriptor.
 
-> How are you trying to access the device in Linux?  Through a kernel module
-> or a user application running as root?
+Signed-off-by: Michael Karcher <kernel@mkarcher.dialup.fu-berlin.de>
+---
+ include/asm-x86/desc.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-I've tried both.  I have a kernel module that I wrote for the hardware. 
-  When I couldn't get that working, I tried looping some code that keeps 
-touching the same I/O port that I'm using.
+diff --git a/include/asm-x86/desc.h b/include/asm-x86/desc.h
+index 268a012..28bddbc 100644
+--- a/include/asm-x86/desc.h
++++ b/include/asm-x86/desc.h
+@@ -192,8 +192,8 @@ static inline void native_set_ldt(const void *addr, unsigned int entries)
+ 		unsigned cpu = smp_processor_id();
+ 		ldt_desc ldt;
+ 
+-		set_tssldt_descriptor(&ldt, (unsigned long)addr,
+-				      DESC_LDT, entries * sizeof(ldt) - 1);
++		set_tssldt_descriptor(&ldt, (unsigned long)addr, DESC_LDT,
++				      entries * LDT_ENTRY_SIZE - 1);
+ 		write_gdt_entry(get_cpu_gdt_table(cpu), GDT_ENTRY_LDT,
+ 				&ldt, DESC_LDT);
+ 		asm volatile("lldt %w0"::"q" (GDT_ENTRY_LDT*8));
+-- 
+1.5.5.4
 
-> Jordan
-> 
-
-Dave
