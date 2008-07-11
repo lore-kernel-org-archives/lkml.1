@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757004AbYGKQVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbYGKQZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757004AbYGKQVS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 12:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbYGKQVG
+	id S1756106AbYGKQZT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 12:25:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbYGKQZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 12:21:06 -0400
-Received: from mga02.intel.com ([134.134.136.20]:64470 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753810AbYGKQVF convert rfc822-to-8bit (ORCPT
+	Fri, 11 Jul 2008 12:25:07 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:19266 "EHLO
+	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751277AbYGKQZG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 12:21:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.30,346,1212390000"; 
-   d="scan'208";a="308849398"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: "alan@redhat.com" <alan@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Fri, 11 Jul 2008 09:20:53 -0700
-Subject: RE: [PATCH] Fix ia64 simserial.c for Ldisc revamp
-Thread-Topic: [PATCH] Fix ia64 simserial.c for Ldisc revamp
-Thread-Index: AcjjbyzURhX6pU9LQLWe4wD4HrN7OQAAmVJQ
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA30653A0D8@orsmsx505.amr.corp.intel.com>
-References: <57C9024A16AD2D4C97DC78E552063EA3064DE226@orsmsx505.amr.corp.intel.com>
- <20080711164221.163ab1df@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080711164221.163ab1df@lxorguk.ukuu.org.uk>
-Accept-Language: en-US
-Content-Language: en-US
+	Fri, 11 Jul 2008 12:25:06 -0400
+X-BigFish: VPS-33(zz1432R98dR7efV1805M19c2kzzzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0K3UO94-01-I0V-01
+X-MIMEOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 00/34] AMD IOMMU driver
+Date: Fri, 11 Jul 2008 11:23:46 -0500
+Message-ID: <6453C3CB8E2B3646B0D020C1126132730149A6C6@sausexmb4.amd.com>
+In-Reply-To: <m1d4lk90vq.fsf@frodo.ebiederm.org>
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+Thread-topic: [PATCH 00/34] AMD IOMMU driver
+Thread-index: Acjjb+D9/QRR/Zp2Rxm28fDRDFIgdQAAW7mw
+From: "Duran, Leo" <leo.duran@amd.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Roedel, Joerg" <Joerg.Roedel@amd.com>
+CC: "Richter, Robert" <rrichter@elbe.amd.com>,
+       "Biemueller, Sebastian" <Sebastian.Biemueller@amd.com>,
+       <linux-kernel@vger.kernel.org>, <iommu@lists.linux-foundation.org>,
+       <mingo@redhat.com>, <tglx@linutronix.de>,
+       "Sarathy, Bhavna" <Bhavna.Sarathy@amd.com>
+X-OriginalArrivalTime: 11 Jul 2008 16:24:47.0737 (UTC) FILETIME=[A2CFE690:01C8E372]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> How does this look instead
+On Friday, July 11, 2008 5:22 AM, Eric W. Biederman wrote:
 
-@@ -490,12 +460,6 @@ static void rs_set_termios(struct tty_struct *tty, struct ktermios *old_termios)
- {
-        unsigned int cflag = tty->termios->c_cflag;
+> Small question.  Does this IOMMU also support irq remapping?
+> 
+> Intel is starting to merge support for their iommu that supports irq
+> remapping and I am curious what the implications are going to be to
+> support both of these iommus?
+> 
+> Assuming their is irq remapping support it isn't tied to x2apic
+> support in the cpus is it?
+> 
+Follow-up questions: 
+(1) Outside of a virtualization environment, is there functional value
+for "irq remapping" by an IOMMU? And, if there is, (2) How would this
+functionality get abstracted? (e.g., as dma_ops abstracts 'address
+remapping' by the IOMMU)
 
--       if (   (cflag == old_termios->c_cflag)
--           && (   RELEVANT_IFLAG(tty->termios->c_iflag)
--               == RELEVANT_IFLAG(old_termios->c_iflag)))
--         return;
+Leo.
 
-Since you deleted the only use of "cflag" in this function, you can delete
-the declaration too.
-
-@@ -623,9 +587,8 @@ static void rs_close(struct tty_struct *tty, struct file * filp)
-         * the line discipline to only process XON/XOFF characters.
-         */
-        shutdown(info);
--       if (tty->ops->flush_buffer)
--               tty->ops->flush_buffer(tty);
--       if (tty->ldisc.flush_buffer) tty->ldisc.flush_buffer(tty);
-+       rs_flush_buffer(tty);
-+       tty_ldisc_flush(tty)
-
-A ';' on the end of this line would make the compiler much happier :-)
-
-
-With these two additions it looks great.
-
-Thanks
-
--Tony
