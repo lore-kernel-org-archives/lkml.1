@@ -1,92 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbYGKSb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753923AbYGKScW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754841AbYGKSb6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 14:31:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbYGKSbu
+	id S1753923AbYGKScW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 14:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755362AbYGKScK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 14:31:50 -0400
-Received: from tomts43.bellnexxia.net ([209.226.175.110]:51410 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752289AbYGKSbt (ORCPT
+	Fri, 11 Jul 2008 14:32:10 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34872 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755361AbYGKScJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 14:31:49 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlIGACQ+d0hMRKxB/2dsb2JhbACBW64c
-Date: Fri, 11 Jul 2008 14:31:46 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: ltt-dev@lists.casi.polymtl.ca
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] LTTng 0.10-pre58 for linux 2.6.26-rc9 (with
-	userspace tracing for x86)
-Message-ID: <20080711183145.GA23053@Krystal>
-References: <20080711151905.GA13558@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20080711151905.GA13558@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:31:17 up 36 days, 23:12,  5 users,  load average: 0.62, 0.66,
-	1.02
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Fri, 11 Jul 2008 14:32:09 -0400
+Date: Fri, 11 Jul 2008 11:31:26 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Roland McGrath <roland@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Elias Oltmanns <eo@nebensachen.de>,
+       =?ISO-8859-15?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH] x86_64: fix delayed signals
+In-Reply-To: <alpine.LFD.1.10.0807111102450.2936@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0807111120470.2936@woody.linux-foundation.org>
+References: <20080710215039.2A143154218@magilla.localdomain> <20080711054605.GA17851@elte.hu> <alpine.LFD.1.10.0807111031310.2936@woody.linux-foundation.org> <alpine.LFD.1.10.0807111102450.2936@woody.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-LTTng 0.10-pre58 fixes tracepoint probe build in some configurations and
-x86 arch-specific irq instrumentation.
 
-Mathieu
 
-* Mathieu Desnoyers (compudj@krystal.dyndns.org) wrote:
-> Hi,
+On Fri, 11 Jul 2008, Linus Torvalds wrote:
 > 
-> Here is a new release of LTTng for the 2.6.26-rc9 kernel, which
-> introduces :
-> 
-> - The tracepoints infrastructure.
-> - Architecture independent markers converted to tracepoints.
-> - Re-introduction of userspace tracing, only for x86 for now. Allows to
->   do boot-time tracing (such as tracing the init process). Adds 2 system
->   calls : sys_marker (marker registration) and sys_trace (tracing per
->   se). The type support is currently limited : strings are formatted in
->   userspace and sent to the kernel for logging under the event
->   "userspace_string". I am doing this simple implementation to get the
->   feature in until I have time to think more carefully about namespacing
->   issues, typing and 32/64 bits processes in 64 bits architectures.
-> 
-> Please consider this last feature experimental. Review and testing is
-> welcome. The userspace linker script and library needed to perform
-> userspace tracing, as well as some sample code and Makefile, are
-> available in the svn repository at
-> 
-> http://ltt.polymtl.ca/svn/markers-userspace/
-> 
-> Ports of the linker script, kernel-api.h (which should be
-> per-architecture) and of markers-userspace-x86.patch to other
-> architectures are welcome.
-> 
-> As always, please follow the compatibility list and the quickstart guide
-> located at :
-> 
-> http://ltt.polymtl.ca/svn/ltt/branches/poly/doc/developer/lttng-lttv-compatibility.html
-> 
-> http://ltt.polymtl.ca/svn/ltt/branches/poly/QUICKSTART
-> 
-> Mathieu
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> 
-> _______________________________________________
-> ltt-dev mailing list
-> ltt-dev@lists.casi.polymtl.ca
-> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
-> 
+> Btw, did any of the impacted people test -rc9? Edwin's report is about 
+> -rc2 and -rc8, and one of the things we fixed since -rc8 is that incorrect 
+> and unintentional nr_zones zeroing that effectively disabled kswapd - and 
+> made everybody do synchronous memory freeing when they wanted to allocate 
+> more memory.. That can play havoc with any interactive stuff.
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Hmm. Edwin's latencytop output includes this (ignoring the _very_ top 
+entries that are all either CD-ROM media change tests or are interruptible 
+pipe/select things) at the top:
+
+	21 10264428 915514 get_request_wait __make_request generic_make_request
+		submit_bio xfs_submit_ioend_bio xfs_submit_ioend 
+		xfs_page_state_convert xfs_vm_writepage __writepage 
+		write_cache_pages generic_writepages xfs_vm_writepages
+
+	26 3369263 2260529 down xfs_buf_iowait xfs_buf_iostart xfs_buf_read_flags 
+		xfs_trans_read_buf xfs_imap_to_bp xfs_itobp xfs_iread 
+		xfs_iget_core xfs_iget xfs_lookup xfs_vn_lookup 1 17888 17888 down 
+		xfs_buf_iowait xfs_buf_iostart xfs_buf_read_flags 
+		xfs_trans_read_buf xfs_da_do_buf xfs_da_read_buf 
+		xfs_dir2_block_getdents xfs_readdir xfs_file_readdir vfs_readdir 
+		sys_getdents64
+	..
+
+which says that (a) yes, readdir() is part of the problematic paths, so my 
+patch may make a difference but also (b) we also have so many writeback 
+IO's in flight that the write request queue is totally full, and the 
+writing side is simply waiting for the queue to empty.
+
+I guess (b) isn't a surprise (considering the load), but it does explain 
+why any IO read will be very much delayed. If the IO scheduler (or the 
+disk itself - tagged commands etc) doesn't prioritize reads and 
+effectively always put them ahead of the queue, you can get very very long 
+latencies just because you have to wait for lots of writes to complete 
+first.
+
+			Linus
