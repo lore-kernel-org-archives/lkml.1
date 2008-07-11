@@ -1,53 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757107AbYGKUXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760561AbYGKUYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757107AbYGKUXq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 16:23:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760202AbYGKUXa
+	id S1760561AbYGKUYX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 16:24:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756399AbYGKUYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 16:23:30 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45466 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760169AbYGKUX3 (ORCPT
+	Fri, 11 Jul 2008 16:24:07 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40376 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757133AbYGKUYF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 16:23:29 -0400
-Date: Fri, 11 Jul 2008 21:05:16 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: Andrew Morton <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
-       Russell King <rmk+lkml@arm.linux.org.uk>, linux-serial@vger.kernel.org,
-       Bryan Wu <cooloney@kernel.org>
-Subject: Re: [PATCH] serial8250: Sanity check nr_uarts on all paths.
-Message-ID: <20080711210516.02a04245@lxorguk.ukuu.org.uk>
-In-Reply-To: <m1wsjsdxr1.fsf@frodo.ebiederm.org>
-References: <m1wsjsdxr1.fsf@frodo.ebiederm.org>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Jul 2008 16:24:05 -0400
+Date: Fri, 11 Jul 2008 22:24:35 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Vivek Goyal <vgoyal@redhat.com>, Huang Ying <ying.huang@intel.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [PATCH -mm 1/2] kexec jump -v12: kexec jump
+Message-ID: <20080711202434.GB6261@elf.ucw.cz>
+References: <1215401122.4660.4.camel@caritas-dev.intel.com> <20080708145051.GA14745@redhat.com> <20080711122131.b6461ab1.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080711122131.b6461ab1.akpm@linux-foundation.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Jul 2008 12:30:42 -0700
-ebiederm@xmission.com (Eric W. Biederman) wrote:
+On Fri 2008-07-11 12:21:31, Andrew Morton wrote:
+> On Tue, 8 Jul 2008 10:50:51 -0400 Vivek Goyal <vgoyal@redhat.com> wrote:
+> 
+> > On Mon, Jul 07, 2008 at 11:25:22AM +0800, Huang Ying wrote:
+> > > This patch provides an enhancement to kexec/kdump. It implements
+> > > the following features:
+> > > 
+> > > - Backup/restore memory used by the original kernel before/after
+> > >   kexec.
+> > > 
+> > > - Save/restore CPU state before/after kexec.
+> > > 
+> > 
+> > Hi Huang,
+> > 
+> > In general this patch set looks good enough to live in -mm and
+> > get some testing going.
+> > 
+> > To me, adding capability to return back to original kernel looks
+> > like a logical extension to kexec functionality.
+> 
+> Exciting ;)  It's much less code than I expected.
+> 
+> I don't think I understand the feature any more.  Once upon a time we
+> thought that this might become a new and better (or at least
+> better-code-sharing) way of doing suspend-to-disk.  How far are we from
+> that?
 
-> 
-> 
-> I had 8250.nr_uarts=16 in the boot line of a test kernel and I had a
-> weird mysterious crash in sysfs.  After an taking in depth look I realized
-> that CONFIG_SERIAL_8250_NR_UARTS was set to 4 and I was walking off
-> the end of the serial8250_ports array.
-> 
-> Ouch!!!
-> 
-> Don't let this happen to someone else.
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+Well, it will be tricky to get kjump-hibernation right with respect to
+ACPI, but we should be fairly close to basic hibernation working with
+this. It has major advantage of not needing refrigerator (and few
+disadvantages -- like doing aditional boot during suspend).
 
-Acked-by: Alan Cox <alan@redhat.com>
-
-Added to ttydev tree but please fire straight at Linus in case he fancies
-it for 2.6.26
+But main reason I'd like kjump to be in is different -- it should be
+useful to stuff like "dump but continue running", etc...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
