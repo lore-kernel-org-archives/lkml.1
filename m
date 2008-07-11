@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761947AbYGKNzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762067AbYGKN41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761947AbYGKNzp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 09:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759207AbYGKNsT
+	id S1762067AbYGKN41 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 09:56:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754711AbYGKNsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 09:48:19 -0400
-Received: from zbr.yandex.ru ([213.180.219.33]:34979 "EHLO gavana.yandex.ru"
+	Fri, 11 Jul 2008 09:48:21 -0400
+Received: from zbr.yandex.ru ([213.180.219.33]:34977 "EHLO gavana.yandex.ru"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759410AbYGKNrz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 09:47:55 -0400
+	id S1759399AbYGKNry (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 09:47:54 -0400
 From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>, David Fries <david@fries.net>,
        Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: [PATCH 23/30] W1: ds2490.c simplify and fix ds_touch_bit
-Date: Fri, 11 Jul 2008 17:51:38 +0400
-Message-Id: <1215784307412-git-send-email-johnpol@2ka.mipt.ru>
+Subject: [PATCH 15/30] W1: w1_int.c use first available master number
+Date: Fri, 11 Jul 2008 17:51:30 +0400
+Message-Id: <12157843062359-git-send-email-johnpol@2ka.mipt.ru>
 X-Mailer: git-send-email 1.5.2.5
 In-Reply-To: <12157843054074-git-send-email-johnpol@2ka.mipt.ru>
 References: <12157843054074-git-send-email-johnpol@2ka.mipt.ru>
@@ -23,67 +23,90 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Simplify and fix ds_touch_bit.  If a device is attached in the middle
-of a bus search the status register will return more than the default
-16 bytes.  The additional bytes indicate that it has detected a new
-device.  The way ds_wait_status is coded, if it doesn't read 16 status
-bytes it returns an error value.  ds_touch_bit then will detect that
-error and return an error.  In that case it doesn't read the input
-buffer and returns uninitialized data.  It doesn't stop there.  The
-next transaction will not expect the extra byte in the input buffer
-and the short read will cause an error and clear out both the old byte
-and new data in the input buffer.
-
-Just ignore the value of ds_wait_status.  It is still required to wait
-until ds2490 is again idle and there is data to read when ds_recv_data
-is called.  This also removes the while loop.  None of the other
-commands wait and verify that the issued command is in the status
-register.
+Follow the example of other devices (like the joystick device).  Pick
+the first available id for each detected device.  Currently for USB
+devices, suspending and resuming would cause the number to increment.
 
 Signed-off-by: David Fries <david@fries.net>
 Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 
 ---
- drivers/w1/masters/ds2490.c |   21 ++++-----------------
- 1 files changed, 4 insertions(+), 17 deletions(-)
+ drivers/w1/w1_int.c |   32 ++++++++++++++++++++++++++------
+ 1 files changed, 26 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/w1/masters/ds2490.c b/drivers/w1/masters/ds2490.c
-index 6bfd6a9..b1ae1a0 100644
---- a/drivers/w1/masters/ds2490.c
-+++ b/drivers/w1/masters/ds2490.c
-@@ -490,28 +490,15 @@ static int ds_set_pullup(struct ds_device *dev, int delay)
+diff --git a/drivers/w1/w1_int.c b/drivers/w1/w1_int.c
+index 3fd6e66..a3a5456 100644
+--- a/drivers/w1/w1_int.c
++++ b/drivers/w1/w1_int.c
+@@ -29,7 +29,6 @@
+ #include "w1_netlink.h"
+ #include "w1_int.h"
  
- static int ds_touch_bit(struct ds_device *dev, u8 bit, u8 *tbit)
+-static u32 w1_ids = 1;
+ static int w1_search_count = -1; /* Default is continual scan */
+ module_param_named(search_count, w1_search_count, int, 0);
+ 
+@@ -102,9 +101,10 @@ static void w1_free_dev(struct w1_master *dev)
+ 
+ int w1_add_master_device(struct w1_bus_master *master)
  {
--	int err, count;
-+	int err;
- 	struct ds_status st;
--	u16 value = (COMM_BIT_IO | COMM_IM) | ((bit) ? COMM_D : 0);
--	u16 cmd;
+-	struct w1_master *dev;
++	struct w1_master *dev, *entry;
+ 	int retval = 0;
+ 	struct w1_netlink_msg msg;
++	int id, found;
  
--	err = ds_send_control(dev, value, 0);
-+	err = ds_send_control(dev, COMM_BIT_IO | COMM_IM | (bit ? COMM_D : 0),
-+		0);
- 	if (err)
- 		return err;
+         /* validate minimum functionality */
+         if (!(master->touch_bit && master->reset_bus) &&
+@@ -126,13 +126,33 @@ int w1_add_master_device(struct w1_bus_master *master)
+ 		master->set_pullup = NULL;
+ 	}
  
--	count = 0;
--	do {
--		err = ds_wait_status(dev, &st);
--		if (err)
--			return err;
--
--		cmd = st.command0 | (st.command1 << 8);
--	} while (cmd != value && ++count < 10);
--
--	if (err < 0 || count >= 10) {
--		printk(KERN_ERR "Failed to obtain status.\n");
--		return -EINVAL;
--	}
-+	ds_wait_status(dev, &st);
+-	dev = w1_alloc_dev(w1_ids++, w1_max_slave_count, w1_max_slave_ttl, &w1_master_driver, &w1_master_device);
+-	if (!dev)
++	/* Lock until the device is added (or not) to w1_masters. */
++	mutex_lock(&w1_mlock);
++	/* Search for the first available id (starting at 1). */
++	id = 0;
++	do {
++		++id;
++		found = 0;
++		list_for_each_entry(entry, &w1_masters, w1_master_entry) {
++			if (entry->id == id) {
++				found = 1;
++				break;
++			}
++		}
++	} while (found);
++
++	dev = w1_alloc_dev(id, w1_max_slave_count, w1_max_slave_ttl,
++		&w1_master_driver, &w1_master_device);
++	if (!dev) {
++		mutex_unlock(&w1_mlock);
+ 		return -ENOMEM;
++	}
  
- 	err = ds_recv_data(dev, tbit, sizeof(*tbit));
- 	if (err < 0)
+ 	retval =  w1_create_master_attributes(dev);
+-	if (retval)
++	if (retval) {
++		mutex_unlock(&w1_mlock);
+ 		goto err_out_free_dev;
++	}
+ 
+ 	memcpy(dev->bus_master, master, sizeof(struct w1_bus_master));
+ 
+@@ -144,10 +164,10 @@ int w1_add_master_device(struct w1_bus_master *master)
+ 		dev_err(&dev->dev,
+ 			 "Failed to create new kernel thread. err=%d\n",
+ 			 retval);
++		mutex_unlock(&w1_mlock);
+ 		goto err_out_rm_attr;
+ 	}
+ 
+-	mutex_lock(&w1_mlock);
+ 	list_add(&dev->w1_master_entry, &w1_masters);
+ 	mutex_unlock(&w1_mlock);
+ 
 -- 
 1.4.4.4
 
