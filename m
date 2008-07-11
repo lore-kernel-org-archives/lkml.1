@@ -1,117 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760185AbYGKWIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758909AbYGKWC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760185AbYGKWIr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 18:08:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756207AbYGKWIh
+	id S1758909AbYGKWC4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 18:02:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755942AbYGKWCs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 18:08:37 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:2479 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754737AbYGKWIg (ORCPT
+	Fri, 11 Jul 2008 18:02:48 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:38504 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755934AbYGKWCr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 18:08:36 -0400
+	Fri, 11 Jul 2008 18:02:47 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=QxPC8pw5263cbIVr3xcjQaI5bj8EU1wblOdS5sfX2zEDmR0fEO59njNl52Ie47cFaE
-         TE5HzM0ogT6K6lG5IbCaUqj6Y3DzBkTvXcnB1howbdnfz1KvAaYMel1gGBxdFEHhsz02
-         isBjd6/bagPP7XKM1c4JA2g60aof8giX5/Sqg=
-Message-ID: <ea8d860a0807111508m74d92fbep84306c80753bf591@mail.gmail.com>
-Date: Sat, 12 Jul 2008 00:08:34 +0200
-From: "Marcin Obara" <marcin_obara@users.sourceforge.net>
-To: Valdis.Kletnieks@vt.edu
-Subject: Re: patch tpm-correct-tpm-timeouts-to-jiffies-conversion.patch breaks stuff
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Marcel Selhorst" <tpm@selhorst.net>,
-       "Kylene Jo Hall" <kjhall@us.ibm.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <18107.1215803534@turing-police.cc.vt.edu>
+         :references;
+        b=bDl0zNhE5x93lGB81HmZEAw6814SQe5xCfdWRCAqTmIUnqEeZZqEEoEWq0LaM3Nwiv
+         QDnSNETij3pNcFQI2n8S2eY+uCZ5lgqnzNg8pPHdClT8qmM9w/9pgv5aKo1aGmu0QV8i
+         zNTX3hUkohhSgb9MRlATQaQ/NaDey1PjKDfz0=
+Message-ID: <86802c440807111502n9835b5fybd99ed388bb71b7d@mail.gmail.com>
+Date: Fri, 11 Jul 2008 15:02:47 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Suresh Siddha" <suresh.b.siddha@intel.com>
+Subject: Re: [patch 00/26] x64, x2apic/intr-remap: Interrupt-remapping and x2apic support
+Cc: "Ingo Molnar" <mingo@elte.hu>, "hpa@zytor.com" <hpa@zytor.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "ebiederm@xmission.com" <ebiederm@xmission.com>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "steiner@sgi.com" <steiner@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jeremy@goop.org" <jeremy@goop.org>
+In-Reply-To: <20080711212418.GV1678@linux-os.sc.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <18107.1215803534@turing-police.cc.vt.edu>
-X-Google-Sender-Auth: bb219b4efd47a211
+References: <20080710181634.764954000@linux-os.sc.intel.com>
+	 <20080710195320.GA23322@elte.hu>
+	 <20080710215617.GM1678@linux-os.sc.intel.com>
+	 <20080711102814.GA17938@elte.hu> <20080711200957.GA8173@elte.hu>
+	 <20080711203151.GU1678@linux-os.sc.intel.com>
+	 <86802c440807111342j5fbf21e1ibd5129718cde4e43@mail.gmail.com>
+	 <20080711204521.GA15689@elte.hu>
+	 <20080711212418.GV1678@linux-os.sc.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/7/11  <Valdis.Kletnieks@vt.edu>:
-> With tpm-correct-tpm-timeouts-to-jiffies-conversion.patch reverted, I
-> get -ETIME errors from libtpm2.0/utils/tpm_demo:
+On Fri, Jul 11, 2008 at 2:24 PM, Suresh Siddha
+<suresh.b.siddha@intel.com> wrote:
+> On Fri, Jul 11, 2008 at 01:45:21PM -0700, Ingo Molnar wrote:
+>>
+>> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>>
+>> > Setting APIC routing to physical flat
+>> > Kernel panic - not syncing: Boot APIC ID in local APIC unexpected (0 vs 4)
+>> > Pid: 1, comm: swapper Not tainted 2.6.26-rc9-tip-01763-g74f94b1-dirty #320
+>> >
+>> > Call Trace:
+>> >  [<ffffffff80a21505>] ? set_cpu_sibling_map+0x38c/0x3bd
+>> >  [<ffffffff80245215>] ? read_xapic_id+0x25/0x3e
+>> >  [<ffffffff80e5a2c3>] ? verify_local_APIC+0x139/0x1b9
+>> >  [<ffffffff80245215>] ? read_xapic_id+0x25/0x3e
+>> >  [<ffffffff80e589af>] ? native_smp_prepare_cpus+0x224/0x2e9
+>> >  [<ffffffff80e4881a>] ? kernel_init+0x64/0x341
+>> >  [<ffffffff8022a439>] ? child_rip+0xa/0x11
+>> >  [<ffffffff80e487b6>] ? kernel_init+0x0/0x341
+>> >  [<ffffffff8022a42f>] ? child_rip+0x0/0x11
+>> >
+>> >
+>> > guess read_apic_id changing cuase some problem...
 >
-> With the patch in place, the first read dies horribly, as reported by
-> strace -T -r utils/tpm_demo:
+> Yinghai, Can you please try the appended patch to see if it fixes your problem?
 >
-> 0.000969 open("/dev/tpm0", O_RDWR) = 3 <0.000080>
-> 0.000237 write(3, "\0\301\0\0\0\22\0\0\0e\0\0\0\6\0\0\0\0", 18) = 18 <0.012652>
-> 0.012814 read(3, 0x7fffd26cd430, 4096) = -1 ETIME (Timer expired) <0.000068>
-> 0.000168 close(3)                  = 0 <0.000041>
-> 0.000132 exit_group(-1)            = ?
+> I guess you need to try the tip/x86/x2apic tree now please :(
 >
-> Note that the write() call took 0.012 seconds, but the read() was hit with
-> a -ETIME after only 0.000068 seconds, so it's obviously too short.
-Not exactly.
-read() call only returns result of already done TPM transmission.
-All TPM transmission is done in write() call.
-Transmission contains 3 timeoutable operations connected with timeout values:
-- timeout 2 (_b) = 2000000 =  2 sec
-      in    tpm_tis.c:tpm_tis_send():
-           if (wait_for_stat
-                   (chip, TPM_STS_COMMAND_READY, chip->vendor.timeout_b,
-                    &chip->vendor.int_queue) < 0) {
-                       rc = -ETIME;
-- for ordinal = 0xe0 - duration TPM_SHORT = 1000 = 0,001 sec
-      in    tpm_tis.c:tpm_tis_send():
-           if (wait_for_stat
-                   (chip, TPM_STS_DATA_AVAIL | TPM_STS_VALID,
-                    tpm_calc_ordinal_duration(chip, ordinal),
-                    &chip->vendor.read_queue) < 0) {
-                       rc = -ETIME;
-
-- timeout 3 (_c) = 750000 = 0,75 sec
-      in tmp_tis.c:recv_data():
-             wait_for_stat(chip,
-                            TPM_STS_DATA_AVAIL | TPM_STS_VALID,
-                            chip->vendor.timeout_c,
-                            &chip->vendor.read_queue)
-
-So for this example, we have timeouts:
-- 2 sec   (timeout_b)
-- 0,001 sec    (TPM_SHORT)
-- 0,75 sec  (timeout_c)
-Transaction time was
- 0,013 sec  ( > 0.001)
-write() call response would be at least 0,75 sec if failed on
-timeout_b or timeout_c.
-It looks like duration TPM_SHORT = 1000 returned by your Broadcom chip
-is too short (=wrong).
-
-> Dumping the raw values in the 'data + TPM_GET_CAP_mumble' I see:
+> BTW, I don't know why we even do verify_local_APIC() in 64bit. Especially
+> when we don't care for the return value, it should be a no-op.
 >
-> [ 2170.060661] timeout 1 = 750000
-> [ 2170.060866] timeout 2 = 2000000
-> [ 2170.060994] timeout 3 = 750000
-> [ 2170.061119] timeout 4 = 750000
-> [ 2170.072437] raw durations are 1000 2000000 120000000
+> ---
+> genapic's read_apic_id() returns the actual apic id extracted from
+> the APIC_ID register. And in some cases like UV, read_apic_id()
+> returns completely different values from APIC ID register.
 >
-> (all values are before application of foo_to_jiffies)
+> Use the native apic register read, rather than genapic read_apic_id()
+> in verify_local_APIC()
 >
-> So is the spec wrong, or is my chipset on drugs, or?
+> And also, lapic_suspend() should also use native apic register read.
+>
+> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> ---
+>
+> diff --git a/arch/x86/kernel/apic_64.c b/arch/x86/kernel/apic_64.c
+> index 9a319d7..dd05010 100644
+> --- a/arch/x86/kernel/apic_64.c
+> +++ b/arch/x86/kernel/apic_64.c
+> @@ -698,10 +698,10 @@ int __init verify_local_APIC(void)
+>        /*
+>         * The ID register is read/write in a real APIC.
+>         */
+> -       reg0 = read_apic_id();
+> +       reg0 = apic_read(APIC_ID);
+>        apic_printk(APIC_DEBUG, "Getting ID: %x\n", reg0);
+>        apic_write(APIC_ID, reg0 ^ APIC_ID_MASK);
+> -       reg1 = read_apic_id();
+> +       reg1 = apic_read(APIC_ID);
+>        apic_printk(APIC_DEBUG, "Getting ID: %x\n", reg1);
+>        apic_write(APIC_ID, reg0);
+>        if (reg1 != (reg0 ^ APIC_ID_MASK))
+> @@ -1336,7 +1336,7 @@ static int lapic_suspend(struct sys_device *dev, pm_message_t state)
+>
+>        maxlvt = lapic_get_maxlvt();
+>
+> -       apic_pm_state.apic_id = read_apic_id();
+> +       apic_pm_state.apic_id = apic_read(APIC_ID);
+>        apic_pm_state.apic_taskpri = apic_read(APIC_TASKPRI);
+>        apic_pm_state.apic_ldr = apic_read(APIC_LDR);
+>        apic_pm_state.apic_dfr = apic_read(APIC_DFR);
+>
 
-So your chipset is on drugs.
+works. it should be merged into the patch that introduce new read_apic_id
 
-It's strange range of returned timeouts/durations:
-0,75 / 2 / 0,75 / 0,75  (sec)
-0,001  / 2 / 120 (sec)
+really should unify read_apic_id, GET_APIC_ID, GET_XAPIC_ID...
 
-With reversed patch timeouts would be:
-12,5 min / 33 min / 12,5 min / 12,5 min
-1 sec / ~33 min / ~33 hours!!!!
-I can not event imagine TPM driver hanging for over 1 day on one write() call .
-
-In my opinion Broadcom 0102 TPM chip is broken.
-
-Regards
-Marcin
+YH
