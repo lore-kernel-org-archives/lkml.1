@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758524AbYGKLHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758194AbYGKLIM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758524AbYGKLHn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 07:07:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754418AbYGKLCA
+	id S1758194AbYGKLIM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 07:08:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbYGKLCD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 07:02:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40469 "EHLO mx1.redhat.com"
+	Fri, 11 Jul 2008 07:02:03 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40471 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755355AbYGKLB5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 07:01:57 -0400
+	id S1754306AbYGKLCA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 07:02:00 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 17/18] [GFS2] Remove support for unused and pointless flag
-Date: Fri, 11 Jul 2008 11:11:18 +0100
-Message-Id: <1215771119431-git-send-email-swhiteho@redhat.com>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, Miklos Szeredi <mszeredi@suse.cz>,
+       Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 13/18] [GFS2] don't call permission()
+Date: Fri, 11 Jul 2008 11:11:14 +0100
+Message-Id: <12157711093284-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <12157711171692-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <12157711073280-git-send-email-swhiteho@redhat.com>
 References: <121577107950-git-send-email-swhiteho@redhat.com>
  <12157710872782-git-send-email-swhiteho@redhat.com>
  <1215771089769-git-send-email-swhiteho@redhat.com>
@@ -30,154 +31,218 @@ References: <121577107950-git-send-email-swhiteho@redhat.com>
  <12157711041157-git-send-email-swhiteho@redhat.com>
  <1215771106247-git-send-email-swhiteho@redhat.com>
  <12157711073280-git-send-email-swhiteho@redhat.com>
- <12157711093284-git-send-email-swhiteho@redhat.com>
- <12157711133727-git-send-email-swhiteho@redhat.com>
- <12157711153366-git-send-email-swhiteho@redhat.com>
- <12157711171692-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Whitehouse <swhiteho@redhat.com>
+From: Miklos Szeredi <miklos@szeredi.hu>
 
-The ability to mark files for direct i/o access when opened
-normally is both unused and pointless, so this patch removes
-support for that feature.
+GFS2 calls permission() to verify permissions after locks on the files
+have been taken.
 
+For this it's sufficient to call gfs2_permission() instead.  This
+results in the following changes:
+
+  - IS_RDONLY() check is not performed
+  - IS_IMMUTABLE() check is not performed
+  - devcgroup_inode_permission() is not called
+  - security_inode_permission() is not called
+
+IS_RDONLY() should be unnecessary anyway, as the per-mount read-only
+flag should provide protection against read-only remounts during
+operations.  do_gfs2_set_flags() has been fixed to perform
+mnt_want_write()/mnt_drop_write() to protect against remounting
+read-only.
+
+IS_IMMUTABLE has been added to gfs2_permission()
+
+Repeating the security checks seems to be pointless, as they don't
+normally change, and if they do, it's independent of the filesystem
+state.
+
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/incore.h b/fs/gfs2/incore.h
-index 4ab3c3a..448697a 100644
---- a/fs/gfs2/incore.h
-+++ b/fs/gfs2/incore.h
-@@ -421,7 +421,6 @@ struct gfs2_tune {
- 	unsigned int gt_quota_quantum; /* Secs between syncs to quota file */
- 	unsigned int gt_atime_quantum; /* Min secs between atime updates */
- 	unsigned int gt_new_files_jdata;
--	unsigned int gt_new_files_directio;
- 	unsigned int gt_max_readahead; /* Max bytes to read-ahead from disk */
- 	unsigned int gt_stall_secs; /* Detects trouble! */
- 	unsigned int gt_complain_secs;
 diff --git a/fs/gfs2/inode.c b/fs/gfs2/inode.c
-index caf4090..6da0ab3 100644
+index 09453d0..caf4090 100644
 --- a/fs/gfs2/inode.c
 +++ b/fs/gfs2/inode.c
-@@ -789,13 +789,8 @@ static void init_dinode(struct gfs2_inode *dip, struct gfs2_glock *gl,
- 		if ((dip->i_di.di_flags & GFS2_DIF_INHERIT_JDATA) ||
- 		    gfs2_tune_get(sdp, gt_new_files_jdata))
- 			di->di_flags |= cpu_to_be32(GFS2_DIF_JDATA);
--		if ((dip->i_di.di_flags & GFS2_DIF_INHERIT_DIRECTIO) ||
--		    gfs2_tune_get(sdp, gt_new_files_directio))
--			di->di_flags |= cpu_to_be32(GFS2_DIF_DIRECTIO);
- 	} else if (S_ISDIR(mode)) {
- 		di->di_flags |= cpu_to_be32(dip->i_di.di_flags &
--					    GFS2_DIF_INHERIT_DIRECTIO);
--		di->di_flags |= cpu_to_be32(dip->i_di.di_flags &
- 					    GFS2_DIF_INHERIT_JDATA);
+@@ -504,7 +504,7 @@ struct inode *gfs2_lookupi(struct inode *dir, const struct qstr *name,
  	}
  
-diff --git a/fs/gfs2/ops_file.c b/fs/gfs2/ops_file.c
-index 1737af9..21b397d 100644
---- a/fs/gfs2/ops_file.c
-+++ b/fs/gfs2/ops_file.c
-@@ -134,7 +134,6 @@ static const u32 fsflags_to_gfs2[32] = {
- 	[7] = GFS2_DIF_NOATIME,
- 	[12] = GFS2_DIF_EXHASH,
- 	[14] = GFS2_DIF_INHERIT_JDATA,
--	[20] = GFS2_DIF_INHERIT_DIRECTIO,
- };
+ 	if (!is_root) {
+-		error = permission(dir, MAY_EXEC, NULL);
++		error = gfs2_permission(dir, MAY_EXEC);
+ 		if (error)
+ 			goto out;
+ 	}
+@@ -667,7 +667,7 @@ static int create_ok(struct gfs2_inode *dip, const struct qstr *name,
+ {
+ 	int error;
  
- static const u32 gfs2_to_fsflags[32] = {
-@@ -143,7 +142,6 @@ static const u32 gfs2_to_fsflags[32] = {
- 	[gfs2fl_AppendOnly] = FS_APPEND_FL,
- 	[gfs2fl_NoAtime] = FS_NOATIME_FL,
- 	[gfs2fl_ExHash] = FS_INDEX_FL,
--	[gfs2fl_InheritDirectio] = FS_DIRECTIO_FL,
- 	[gfs2fl_InheritJdata] = FS_JOURNAL_DATA_FL,
- };
- 
-@@ -161,12 +159,8 @@ static int gfs2_get_flags(struct file *filp, u32 __user *ptr)
+-	error = permission(&dip->i_inode, MAY_WRITE | MAY_EXEC, NULL);
++	error = gfs2_permission(&dip->i_inode, MAY_WRITE | MAY_EXEC);
+ 	if (error)
  		return error;
  
- 	fsflags = fsflags_cvt(gfs2_to_fsflags, ip->i_di.di_flags);
--	if (!S_ISDIR(inode->i_mode)) {
--		if (ip->i_di.di_flags & GFS2_DIF_JDATA)
--			fsflags |= FS_JOURNAL_DATA_FL;
--		if (ip->i_di.di_flags & GFS2_DIF_DIRECTIO)
--			fsflags |= FS_DIRECTIO_FL;
--	}
-+	if (!S_ISDIR(inode->i_mode) && ip->i_di.di_flags & GFS2_DIF_JDATA)
-+		fsflags |= FS_JOURNAL_DATA_FL;
- 	if (put_user(fsflags, ptr))
- 		error = -EFAULT;
+@@ -1134,7 +1134,7 @@ int gfs2_unlink_ok(struct gfs2_inode *dip, const struct qstr *name,
+ 	if (IS_APPEND(&dip->i_inode))
+ 		return -EPERM;
  
-@@ -195,13 +189,11 @@ void gfs2_set_inode_flags(struct inode *inode)
+-	error = permission(&dip->i_inode, MAY_WRITE | MAY_EXEC, NULL);
++	error = gfs2_permission(&dip->i_inode, MAY_WRITE | MAY_EXEC);
+ 	if (error)
+ 		return error;
  
- /* Flags that can be set by user space */
- #define GFS2_FLAGS_USER_SET (GFS2_DIF_JDATA|			\
--			     GFS2_DIF_DIRECTIO|			\
- 			     GFS2_DIF_IMMUTABLE|		\
- 			     GFS2_DIF_APPENDONLY|		\
- 			     GFS2_DIF_NOATIME|			\
- 			     GFS2_DIF_SYNC|			\
- 			     GFS2_DIF_SYSTEM|			\
--			     GFS2_DIF_INHERIT_DIRECTIO|		\
- 			     GFS2_DIF_INHERIT_JDATA)
+diff --git a/fs/gfs2/inode.h b/fs/gfs2/inode.h
+index 580da45..04e9fef 100644
+--- a/fs/gfs2/inode.h
++++ b/fs/gfs2/inode.h
+@@ -91,6 +91,7 @@ int gfs2_rmdiri(struct gfs2_inode *dip, const struct qstr *name,
+ 		struct gfs2_inode *ip);
+ int gfs2_unlink_ok(struct gfs2_inode *dip, const struct qstr *name,
+ 		   const struct gfs2_inode *ip);
++int gfs2_permission(struct inode *inode, int mask);
+ int gfs2_ok_to_move(struct gfs2_inode *this, struct gfs2_inode *to);
+ int gfs2_readlinki(struct gfs2_inode *ip, char **buf, unsigned int *len);
+ int gfs2_glock_nq_atime(struct gfs2_holder *gh);
+diff --git a/fs/gfs2/ops_file.c b/fs/gfs2/ops_file.c
+index 0ff512a..1737af9 100644
+--- a/fs/gfs2/ops_file.c
++++ b/fs/gfs2/ops_file.c
+@@ -15,6 +15,7 @@
+ #include <linux/uio.h>
+ #include <linux/blkdev.h>
+ #include <linux/mm.h>
++#include <linux/mount.h>
+ #include <linux/fs.h>
+ #include <linux/gfs2_ondisk.h>
+ #include <linux/ext2_fs.h>
+@@ -220,10 +221,14 @@ static int do_gfs2_set_flags(struct file *filp, u32 reqflags, u32 mask)
+ 	int error;
+ 	u32 new_flags, flags;
  
- /**
-@@ -292,8 +284,6 @@ static int gfs2_set_flags(struct file *filp, u32 __user *ptr)
- 	if (!S_ISDIR(inode->i_mode)) {
- 		if (gfsflags & GFS2_DIF_INHERIT_JDATA)
- 			gfsflags ^= (GFS2_DIF_JDATA | GFS2_DIF_INHERIT_JDATA);
--		if (gfsflags & GFS2_DIF_INHERIT_DIRECTIO)
--			gfsflags ^= (GFS2_DIF_DIRECTIO | GFS2_DIF_INHERIT_DIRECTIO);
- 		return do_gfs2_set_flags(filp, gfsflags, ~0);
+-	error = gfs2_glock_nq_init(ip->i_gl, LM_ST_EXCLUSIVE, 0, &gh);
++	error = mnt_want_write(filp->f_path.mnt);
+ 	if (error)
+ 		return error;
+ 
++	error = gfs2_glock_nq_init(ip->i_gl, LM_ST_EXCLUSIVE, 0, &gh);
++	if (error)
++		goto out_drop_write;
++
+ 	flags = ip->i_di.di_flags;
+ 	new_flags = (flags & ~mask) | (reqflags & mask);
+ 	if ((new_flags ^ flags) == 0)
+@@ -242,7 +247,7 @@ static int do_gfs2_set_flags(struct file *filp, u32 reqflags, u32 mask)
+ 	    !capable(CAP_LINUX_IMMUTABLE))
+ 		goto out;
+ 	if (!IS_IMMUTABLE(inode)) {
+-		error = permission(inode, MAY_WRITE, NULL);
++		error = gfs2_permission(inode, MAY_WRITE);
+ 		if (error)
+ 			goto out;
  	}
- 	return do_gfs2_set_flags(filp, gfsflags, ~GFS2_DIF_JDATA);
-@@ -494,11 +484,6 @@ static int gfs2_open(struct inode *inode, struct file *file)
- 			goto fail_gunlock;
+@@ -272,6 +277,8 @@ out_trans_end:
+ 	gfs2_trans_end(sdp);
+ out:
+ 	gfs2_glock_dq_uninit(&gh);
++out_drop_write:
++	mnt_drop_write(filp->f_path.mnt);
+ 	return error;
+ }
+ 
+diff --git a/fs/gfs2/ops_inode.c b/fs/gfs2/ops_inode.c
+index 2686ad4..1e252df 100644
+--- a/fs/gfs2/ops_inode.c
++++ b/fs/gfs2/ops_inode.c
+@@ -163,7 +163,7 @@ static int gfs2_link(struct dentry *old_dentry, struct inode *dir,
+ 	if (error)
+ 		goto out;
+ 
+-	error = permission(dir, MAY_WRITE | MAY_EXEC, NULL);
++	error = gfs2_permission(dir, MAY_WRITE | MAY_EXEC);
+ 	if (error)
+ 		goto out_gunlock;
+ 
+@@ -669,7 +669,7 @@ static int gfs2_rename(struct inode *odir, struct dentry *odentry,
+ 			}
  		}
+ 	} else {
+-		error = permission(ndir, MAY_WRITE | MAY_EXEC, NULL);
++		error = gfs2_permission(ndir, MAY_WRITE | MAY_EXEC);
+ 		if (error)
+ 			goto out_gunlock;
  
--		/* Listen to the Direct I/O flag */
--
--		if (ip->i_di.di_flags & GFS2_DIF_DIRECTIO)
--			file->f_flags |= O_DIRECT;
--
- 		gfs2_glock_dq_uninit(&i_gh);
+@@ -704,7 +704,7 @@ static int gfs2_rename(struct inode *odir, struct dentry *odentry,
+ 	/* Check out the dir to be renamed */
+ 
+ 	if (dir_rename) {
+-		error = permission(odentry->d_inode, MAY_WRITE, NULL);
++		error = gfs2_permission(odentry->d_inode, MAY_WRITE);
+ 		if (error)
+ 			goto out_gunlock;
+ 	}
+@@ -891,7 +891,7 @@ static void *gfs2_follow_link(struct dentry *dentry, struct nameidata *nd)
+  * Returns: errno
+  */
+ 
+-static int gfs2_permission(struct inode *inode, int mask, struct nameidata *nd)
++int gfs2_permission(struct inode *inode, int mask)
+ {
+ 	struct gfs2_inode *ip = GFS2_I(inode);
+ 	struct gfs2_holder i_gh;
+@@ -905,13 +905,22 @@ static int gfs2_permission(struct inode *inode, int mask, struct nameidata *nd)
+ 		unlock = 1;
  	}
  
-diff --git a/fs/gfs2/super.c b/fs/gfs2/super.c
-index 12fe38f..63a8a90 100644
---- a/fs/gfs2/super.c
-+++ b/fs/gfs2/super.c
-@@ -65,7 +65,6 @@ void gfs2_tune_init(struct gfs2_tune *gt)
- 	gt->gt_quota_quantum = 60;
- 	gt->gt_atime_quantum = 3600;
- 	gt->gt_new_files_jdata = 0;
--	gt->gt_new_files_directio = 0;
- 	gt->gt_max_readahead = 1 << 18;
- 	gt->gt_stall_secs = 600;
- 	gt->gt_complain_secs = 10;
-diff --git a/fs/gfs2/sys.c b/fs/gfs2/sys.c
-index 6f7e2e5..7484655 100644
---- a/fs/gfs2/sys.c
-+++ b/fs/gfs2/sys.c
-@@ -412,7 +412,6 @@ TUNE_ATTR(max_readahead, 0);
- TUNE_ATTR(complain_secs, 0);
- TUNE_ATTR(statfs_slow, 0);
- TUNE_ATTR(new_files_jdata, 0);
--TUNE_ATTR(new_files_directio, 0);
- TUNE_ATTR(quota_simul_sync, 1);
- TUNE_ATTR(quota_cache_secs, 1);
- TUNE_ATTR(stall_secs, 1);
-@@ -441,7 +440,6 @@ static struct attribute *tune_attrs[] = {
- 	&tune_attr_quotad_secs.attr,
- 	&tune_attr_quota_scale.attr,
- 	&tune_attr_new_files_jdata.attr,
--	&tune_attr_new_files_directio.attr,
- 	NULL,
- };
+-	error = generic_permission(inode, mask, gfs2_check_acl);
++	if ((mask & MAY_WRITE) && IS_IMMUTABLE(inode))
++		error = -EACCES;
++	else
++		error = generic_permission(inode, mask, gfs2_check_acl);
+ 	if (unlock)
+ 		gfs2_glock_dq_uninit(&i_gh);
  
+ 	return error;
+ }
+ 
++static int gfs2_iop_permission(struct inode *inode, int mask,
++			       struct nameidata *nd)
++{
++	return gfs2_permission(inode, mask);
++}
++
+ static int setattr_size(struct inode *inode, struct iattr *attr)
+ {
+ 	struct gfs2_inode *ip = GFS2_I(inode);
+@@ -1141,7 +1150,7 @@ static int gfs2_removexattr(struct dentry *dentry, const char *name)
+ }
+ 
+ const struct inode_operations gfs2_file_iops = {
+-	.permission = gfs2_permission,
++	.permission = gfs2_iop_permission,
+ 	.setattr = gfs2_setattr,
+ 	.getattr = gfs2_getattr,
+ 	.setxattr = gfs2_setxattr,
+@@ -1160,7 +1169,7 @@ const struct inode_operations gfs2_dir_iops = {
+ 	.rmdir = gfs2_rmdir,
+ 	.mknod = gfs2_mknod,
+ 	.rename = gfs2_rename,
+-	.permission = gfs2_permission,
++	.permission = gfs2_iop_permission,
+ 	.setattr = gfs2_setattr,
+ 	.getattr = gfs2_getattr,
+ 	.setxattr = gfs2_setxattr,
+@@ -1172,7 +1181,7 @@ const struct inode_operations gfs2_dir_iops = {
+ const struct inode_operations gfs2_symlink_iops = {
+ 	.readlink = gfs2_readlink,
+ 	.follow_link = gfs2_follow_link,
+-	.permission = gfs2_permission,
++	.permission = gfs2_iop_permission,
+ 	.setattr = gfs2_setattr,
+ 	.getattr = gfs2_getattr,
+ 	.setxattr = gfs2_setxattr,
 -- 
 1.5.1.2
 
