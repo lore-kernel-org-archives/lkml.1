@@ -1,87 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759513AbYGKXWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757325AbYGKXYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759513AbYGKXWa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 19:22:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbYGKXWI
+	id S1757325AbYGKXYS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 19:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbYGKXYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 19:22:08 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:9353 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753118AbYGKXWH (ORCPT
+	Fri, 11 Jul 2008 19:24:08 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42867 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753118AbYGKXYH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 19:22:07 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAICHd0h5LFxA/2dsb2JhbACqRA
-X-IronPort-AV: E=Sophos;i="4.30,348,1212330600"; 
-   d="scan'208";a="147025742"
-Date: Sat, 12 Jul 2008 09:22:01 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Sebastian Siewior <lkml@ml.breakpoint.cc>
-Cc: Mikael Abrahamsson <swmike@swm.pp.se>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com
-Subject: Re: xfs bug in 2.6.26-rc9
-Message-ID: <20080711232201.GG11558@disturbed>
-Mail-Followup-To: Sebastian Siewior <lkml@ml.breakpoint.cc>,
-	Mikael Abrahamsson <swmike@swm.pp.se>, linux-kernel@vger.kernel.org,
-	xfs@oss.sgi.com
-References: <alpine.DEB.1.10.0807110939520.30192@uplift.swm.pp.se> <20080711084248.GU29319@disturbed> <20080711190209.GA7401@Chamillionaire.breakpoint.cc>
+	Fri, 11 Jul 2008 19:24:07 -0400
+Date: Fri, 11 Jul 2008 16:22:46 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Roland McGrath <roland@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Elias Oltmanns <eo@nebensachen.de>,
+       =?ISO-8859-15?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [PATCH] x86_64: fix delayed signals
+In-Reply-To: <alpine.LFD.1.10.0807111337060.2873@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0807111617470.3459@woody.linux-foundation.org>
+References: <20080710215039.2A143154218@magilla.localdomain> <20080711054605.GA17851@elte.hu> <alpine.LFD.1.10.0807111031310.2936@woody.linux-foundation.org> <alpine.LFD.1.10.0807111102450.2936@woody.linux-foundation.org>
+ <alpine.LFD.1.10.0807111337060.2873@woody.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080711190209.GA7401@Chamillionaire.breakpoint.cc>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 11, 2008 at 09:02:09PM +0200, Sebastian Siewior wrote:
-> * Dave Chinner | 2008-07-11 18:42:49 [+1000]:
+
+
+On Fri, 11 Jul 2008, Linus Torvalds wrote:
 > 
-> >Oh - you must be running a debug XFS.  CONFIG_XFS_DEBUG was only
-> >introduced in 2.6.26-rc1 and defaults to 'N', so you must have
-> >selected the non-default option when prompted. This will cause your
-> >machine to oops at the slightest inconsistency that is found,
-> >regardless of whether it is fatal or not. Like the help text says,
-> >don't set this unless you are an XFS developer....
-> Could you please add this to the Kconfig entry.
+> No, after testing more, I think Edwin is right.
 
-I effectively quoted from it:
+Naah. It is true that there is a huge delay in doing
 
-config XFS_DEBUG
-        bool "XFS Debugging support (EXPERIMENTAL)"
-        depends on XFS_FS && EXPERIMENTAL
-        help
-          Say Y here to get an XFS build with many debugging features,
-          including ASSERT checks, function wrappers around macros,
-          and extra sanity-checking functions in various code paths.
+	ls -l /usr/bin
 
-          Note that the resulting code will be HUGE and SLOW, and probably
-          not useful unless you are debugging a particular problem.
+and then pressing ^C, but after having hit my head against this for a 
+while, I realized that it has nothing to do with the kernel.
 
-          Say N unless you are an XFS developer, or you play one on TV.
+Doing an "strace ls" showed that ls doesn't play any games with signals 
+etc, which fooled me into looking for a kernel reason. 
 
-> Debug mode is usually
-> noisy, little slower and mostly usefull just to the developers but *I*
-> would not expect to BUG() in the non-fatal case.
+HOWEVER, it looks like at least fedora does a
 
-What do you expect debug code to do? Asserts are designed to
-drop the machine into a debugger when they fail so the problem can
-be, well, debugged.
+	alias ls='ls --color=auto'
 
-> Not sure but if this is just for hch and you than a define in xfs.h
-> might be safer :)
+and it turns out that if you do that --color=auto, then ls will indeed 
+catch all normal signals and set a "please stop now" flag, instead of 
+dying immediately. The reason is probably to avoiding leaving the terminal 
+with some odd color if interrupted in an inconvenient place.
 
-And any other XFS developer using the XFS git tree or mainline, as
-tends to happen these days. And there are cases where a debug XFS
-might be needed to help find a problem that is being hit out in
-the field.
+So I was chasing this latency thing totally unnecessarily. It's in user 
+space (or at least _my_ particular issue was).
 
-Like all other debug config options, don't set them unless you know
-what you are doing....
+Other user cases may obviously be elsewhere.
 
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+		Linus
