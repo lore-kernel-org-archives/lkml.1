@@ -1,109 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760532AbYGKVY1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756272AbYGKVYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760532AbYGKVY1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 17:24:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbYGKVYU
+	id S1756272AbYGKVYl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 17:24:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760197AbYGKVYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 17:24:20 -0400
-Received: from mga11.intel.com ([192.55.52.93]:60950 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752572AbYGKVYT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 17:24:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.30,347,1212390000"; 
-   d="scan'208";a="591902649"
-Date: Fri, 11 Jul 2008 14:24:19 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
+	Fri, 11 Jul 2008 17:24:32 -0400
+Received: from outbound-mail-150.bluehost.com ([67.222.38.40]:57720 "HELO
+	outbound-mail-150.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760754AbYGKVYb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 17:24:31 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User:DomainKey-Status;
+	b=Jaht4QQu//bY+qfKfdZbYpApLScslpXRBdJXSvzqYA9aJLHCYK7r8mhpoXzyWPt0W+8SK6JYB3fT3U+ka/+EBXVTgpL97VLALIA+GNxDtzGztbhnE58L9BeizitJERPn;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "ebiederm@xmission.com" <ebiederm@xmission.com>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "steiner@sgi.com" <steiner@sgi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jeremy@goop.org" <jeremy@goop.org>
-Subject: Re: [patch 00/26] x64, x2apic/intr-remap: Interrupt-remapping and x2apic support
-Message-ID: <20080711212418.GV1678@linux-os.sc.intel.com>
-References: <20080710181634.764954000@linux-os.sc.intel.com> <20080710195320.GA23322@elte.hu> <20080710215617.GM1678@linux-os.sc.intel.com> <20080711102814.GA17938@elte.hu> <20080711200957.GA8173@elte.hu> <20080711203151.GU1678@linux-os.sc.intel.com> <86802c440807111342j5fbf21e1ibd5129718cde4e43@mail.gmail.com> <20080711204521.GA15689@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: [PATCH 0/2] x86/pci: Renaming numa into numaq
+Date: Fri, 11 Jul 2008 14:24:20 -0700
+User-Agent: KMail/1.9.9
+Cc: Robert Richter <robert.richter@amd.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <1215771521-6848-1-git-send-email-robert.richter@amd.com> <20080711192733.GA32623@elte.hu>
+In-Reply-To: <20080711192733.GA32623@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080711204521.GA15689@elte.hu>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200807111424.21147.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 66.205.146.252 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 11, 2008 at 01:45:21PM -0700, Ingo Molnar wrote:
-> 
-> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> 
-> > Setting APIC routing to physical flat
-> > Kernel panic - not syncing: Boot APIC ID in local APIC unexpected (0 vs 4)
-> > Pid: 1, comm: swapper Not tainted 2.6.26-rc9-tip-01763-g74f94b1-dirty #320
-> >
-> > Call Trace:
-> >  [<ffffffff80a21505>] ? set_cpu_sibling_map+0x38c/0x3bd
-> >  [<ffffffff80245215>] ? read_xapic_id+0x25/0x3e
-> >  [<ffffffff80e5a2c3>] ? verify_local_APIC+0x139/0x1b9
-> >  [<ffffffff80245215>] ? read_xapic_id+0x25/0x3e
-> >  [<ffffffff80e589af>] ? native_smp_prepare_cpus+0x224/0x2e9
-> >  [<ffffffff80e4881a>] ? kernel_init+0x64/0x341
-> >  [<ffffffff8022a439>] ? child_rip+0xa/0x11
-> >  [<ffffffff80e487b6>] ? kernel_init+0x0/0x341
-> >  [<ffffffff8022a42f>] ? child_rip+0x0/0x11
-> >
-> >
-> > guess read_apic_id changing cuase some problem...
+On Friday, July 11, 2008 12:27:33 pm Ingo Molnar wrote:
+> * Robert Richter <robert.richter@amd.com> wrote:
+> > This patch series renames numa into numaq for x86/pci code.
+>
+> applied to tip/x86/unify-pci:
+>
+>   Robert Richter (5):
+>        x86/pci: Removing pci-y in Makefile
+>        x86/pci: Changing subsystem initialization order for NUMA
+>        x86/pci: renamed: numa.c -> numaq_32.c
+>        x86/pci: renaming numa into numaq
+>        x86/pci: Changing subsystem init for visws
+>
+> thanks Robert.
+>
+> Jesse, do you give us a general Ack for this direction and these
+> commits? The changes are way too intermixed with other x86 bits to be
+> cleanly separable at this stage, so it would be nice if we merged this
+> via the x86 tree. Find below a list of commit IDs that change
+> arch/x86/pci/ - all but the last few ones are in linux-next as well.
 
-Yinghai, Can you please try the appended patch to see if it fixes your problem?
+Yeah, no problem with the general direction.  I'll re-review Robert's latest 
+stuff when I get a chance, but it looked pretty good to me in the first pass.
 
-I guess you need to try the tip/x86/x2apic tree now please :(
-
-BTW, I don't know why we even do verify_local_APIC() in 64bit. Especially
-when we don't care for the return value, it should be a no-op.
-
----
-genapic's read_apic_id() returns the actual apic id extracted from
-the APIC_ID register. And in some cases like UV, read_apic_id()
-returns completely different values from APIC ID register.
-
-Use the native apic register read, rather than genapic read_apic_id()
-in verify_local_APIC()
-
-And also, lapic_suspend() should also use native apic register read.
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
-
-diff --git a/arch/x86/kernel/apic_64.c b/arch/x86/kernel/apic_64.c
-index 9a319d7..dd05010 100644
---- a/arch/x86/kernel/apic_64.c
-+++ b/arch/x86/kernel/apic_64.c
-@@ -698,10 +698,10 @@ int __init verify_local_APIC(void)
- 	/*
- 	 * The ID register is read/write in a real APIC.
- 	 */
--	reg0 = read_apic_id();
-+	reg0 = apic_read(APIC_ID);
- 	apic_printk(APIC_DEBUG, "Getting ID: %x\n", reg0);
- 	apic_write(APIC_ID, reg0 ^ APIC_ID_MASK);
--	reg1 = read_apic_id();
-+	reg1 = apic_read(APIC_ID);
- 	apic_printk(APIC_DEBUG, "Getting ID: %x\n", reg1);
- 	apic_write(APIC_ID, reg0);
- 	if (reg1 != (reg0 ^ APIC_ID_MASK))
-@@ -1336,7 +1336,7 @@ static int lapic_suspend(struct sys_device *dev, pm_message_t state)
- 
- 	maxlvt = lapic_get_maxlvt();
- 
--	apic_pm_state.apic_id = read_apic_id();
-+	apic_pm_state.apic_id = apic_read(APIC_ID);
- 	apic_pm_state.apic_taskpri = apic_read(APIC_TASKPRI);
- 	apic_pm_state.apic_ldr = apic_read(APIC_LDR);
- 	apic_pm_state.apic_dfr = apic_read(APIC_DFR);
+Thanks,
+Jesse
