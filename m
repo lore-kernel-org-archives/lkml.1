@@ -1,88 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758753AbYGKMuG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758196AbYGKMyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758753AbYGKMuG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 08:50:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbYGKMt4
+	id S1758196AbYGKMyR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 08:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbYGKMyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 08:49:56 -0400
-Received: from spirit.analogic.com ([204.178.40.4]:4438 "EHLO
-	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750947AbYGKMtz convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 08:49:55 -0400
+	Fri, 11 Jul 2008 08:54:06 -0400
+Received: from bu3sch.de ([62.75.166.246]:55508 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750844AbYGKMyF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 08:54:05 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH v3] Add bt8xxgpio driver
+Date: Fri, 11 Jul 2008 14:53:19 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Jiri Slaby <jirislaby@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, mchehab@infradead.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Marcel Holtmann <marcel@holtmann.org>
+References: <200807101914.10174.mb@bu3sch.de> <487651CA.6030405@gmail.com> <200807101302.12765.david-b@pacbell.net>
+In-Reply-To: <200807101302.12765.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 11 Jul 2008 12:47:10.0351 (UTC) FILETIME=[3C00E9F0:01C8E354]
-Content-class: urn:content-classes:message
-Subject: Re: [PATCH 17/18] [GFS2] Remove support for unused and pointlessflag
-Date: Fri, 11 Jul 2008 08:47:10 -0400
-Message-ID: <Pine.LNX.4.61.0807110845430.18299@chaos.analogic.com>
-In-Reply-To: <1215777139.4011.188.camel@quoit>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 17/18] [GFS2] Remove support for unused and pointlessflag
-Thread-Index: AcjjVDwIOb0OgcaHTGm0JgD0HnQXnA==
-References: <121577107950-git-send-email-swhiteho@redhat.com> <1215771091790-git-send-email-swhiteho@redhat.com> <12157710931623-git-send-email-swhiteho@redhat.com> <12157710954145-git-send-email-swhiteho@redhat.com> <12157710973601-git-send-email-swhiteho@redhat.com> <12157710983282-git-send-email-swhiteho@redhat.com> <12157711013356-git-send-email-swhiteho@redhat.com> <12157711023743-git-send-email-swhiteho@redhat.com> <12157711041157-git-send-email-swhiteho@redhat.com> <1215771106247-git-send-email-swhiteho@redhat.com> <12157711073280-git-send-email-swhiteho@redhat.com> <12157711093284-git-send-email-swhiteho@redhat.com> <12157711133727-git-send-email-swhiteho@redhat.com> <12157711153366-git-send-email-swhiteho@redhat.com> <12157711171692-git-send-email-swhiteho@redhat.com> <1215771119431-git-send-email-swhiteho@redhat.com> <Pine.LNX.4.61.0807110714110.18083@chaos.analog! ic.com> <1215777139.4011.188.camel@quoit>
-From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-To: "Steven Whitehouse" <swhiteho@redhat.com>
-Cc: "Linux kernel" <linux-kernel@vger.kernel.org>, <cluster-devel@redhat.com>
-Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-X-TM-AS-Product-Ver: SMEX-8.0.0.1259-5.500.1027-16024.007
-X-TM-AS-Result: No--19.755000-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807111453.20162.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 11 Jul 2008, Steven Whitehouse wrote:
-
-> Hi,
->
-> On Fri, 2008-07-11 at 07:19 -0400, linux-os (Dick Johnson) wrote:
->> On Fri, 11 Jul 2008 swhiteho@redhat.com wrote:
->>
->>> From: Steven Whitehouse <swhiteho@redhat.com>
->>>
->>> The ability to mark files for direct i/o access when opened
->>> normally is both unused and pointless, so this patch removes
->>> support for that feature.
->> [Snipped...]
->>
->> So linux is no longer going to support commercial databases?
-[Snipped...]
-
->>
-> No, thats not what it means...., but perhaps I could have explained it
-> better. You can still use O_DIRECT flags in open syscalls in exactly the
-> same way as before. What this patch removes is the (never used, and IMHO
-> pointless) feature of being able to set a flag on the inode (via
-> chattr/setattr) to force open's to set O_DIRECT in every case, even when
-> the application didn't ask for it. The reason that its pointless is that
-> applications which don't otherwise support O_DIRECT are very unlikely to
-> supply suitably aligned buffers and I/O requests, so that overriding the
-> O_DIRECT flag for such applications will most likely result in an I/O
-> error.
->
-> GFS2 will still support O_DIRECT just the same as it has always done,
-> and this doesn't affect any other filesystem's support for that feature
-> either,
->
-> Steve.
-
-Thanks for the clarification!
-
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.28 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
+On Thursday 10 July 2008 22:02:12 David Brownell wrote:
+> See Documentation/gpio.txt:
+> 
+> + Note that these operations include I/O barriers on platforms
+> + which need to use them; drivers don't need to add them explicitly.
+> 
+> That's the key thing:  drivers using I/O calls should
+> not need to insert bus or platform specific calls to
+> make sure the calls take effect.
 
 
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+Well, as I said, I am OK with an I/O-barrier, which is mmiowb().
+But flushing, by reading the register back, is not acceptable for
+me in this case, unless someone can show me hardware that needs this.
+And even then I'd implement the flushing only conditionally for
+that hardware.
 
-Thank you.
+-- 
+Greetings Michael.
