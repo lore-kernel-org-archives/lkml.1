@@ -1,110 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761799AbYGKPTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760867AbYGKPU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761799AbYGKPTj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 11:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753935AbYGKPQF
+	id S1760867AbYGKPU0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 11:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760924AbYGKPRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 11:16:05 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:44396 "EHLO
-	WA4EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753914AbYGKPQD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 11:16:03 -0400
-X-BigFish: VPS4(zzzz10d3izzz32i43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0K3UL24-03-1QC-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: mingo@redhat.com, tglx@linutronix.de
-CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       bhavna.sarathy@amd.com, robert.richter@amd.com,
-       Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 16/16] AMD IOMMU: replace DEVID macro with a function
-Date: Fri, 11 Jul 2008 17:14:35 +0200
-Message-ID: <1215789275-20975-17-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1215789275-20975-1-git-send-email-joerg.roedel@amd.com>
-References: <1215789275-20975-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 11 Jul 2008 15:14:36.0383 (UTC) FILETIME=[D4A646F0:01C8E368]
+	Fri, 11 Jul 2008 11:17:20 -0400
+Received: from chrocht.moloch.sk ([62.176.169.44]:39438 "EHLO mail.moloch.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754626AbYGKPRT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 11:17:19 -0400
+Message-ID: <4877799F.4040104@fastmq.com>
+Date: Fri, 11 Jul 2008 17:17:51 +0200
+From: Martin Sustrik <sustrik@fastmq.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Andrew Morton <akpm@linux-foundation.org>, Martin Lucina <mato@kotelna.sk>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Higher than expected disk write(2) latency
+References: <20080628121131.GA14181@nodbug.moloch.sk>	<20080709222701.8eab4924.akpm@linux-foundation.org>	<4875C45C.2010901@fastmq.com> <20080710093109.46db7c40@the-village.bc.nu>
+In-Reply-To: <20080710093109.46db7c40@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch replaces the DEVID macro with a function and uses them where
-apropriate (also in the core code).
+Hi all,
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/kernel/amd_iommu.c       |    2 +-
- arch/x86/kernel/amd_iommu_init.c  |    9 +++++----
- include/asm-x86/amd_iommu_types.h |    7 +++++++
- 3 files changed, 13 insertions(+), 5 deletions(-)
+> Which disk scheduler are you using - some of the disk schedulers
+> intentionally delay writes to try and get better block merging.
 
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index dec10e1..8c3deb0 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -664,7 +664,7 @@ static int get_device_resources(struct device *dev,
- 	BUG_ON(!dev || dev->bus != &pci_bus_type || !dev->dma_mask);
- 
- 	pcidev = to_pci_dev(dev);
--	_bdf = (pcidev->bus->number << 8) | pcidev->devfn;
-+	_bdf = calc_devid(pcidev->bus->number, pcidev->devfn);
- 
- 	/* device not translated by any IOMMU in the system? */
- 	if (_bdf >= amd_iommu_last_bdf) {
-diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
-index e0ff940..9bf1b81 100644
---- a/arch/x86/kernel/amd_iommu_init.c
-+++ b/arch/x86/kernel/amd_iommu_init.c
-@@ -30,7 +30,6 @@
- /*
-  * definitions for the ACPI scanning code
-  */
--#define DEVID(bus, devfn) (((bus) << 8) | (devfn))
- #define PCI_BUS(x) (((x) >> 8) & 0xff)
- #define IVRS_HEADER_LENGTH 48
- 
-@@ -295,7 +294,7 @@ static int __init find_last_devid_on_pci(int bus, int dev, int fn, int cap_ptr)
- 	u32 cap;
- 
- 	cap = read_pci_config(bus, dev, fn, cap_ptr+MMIO_RANGE_OFFSET);
--	update_last_devid(DEVID(MMIO_GET_BUS(cap), MMIO_GET_LD(cap)));
-+	update_last_devid(calc_devid(MMIO_GET_BUS(cap), MMIO_GET_LD(cap)));
- 
- 	return 0;
- }
-@@ -494,8 +493,10 @@ static void __init init_iommu_from_pci(struct amd_iommu *iommu)
- 	iommu->cap = read_pci_config(bus, dev, fn, cap_ptr+MMIO_CAP_HDR_OFFSET);
- 
- 	range = read_pci_config(bus, dev, fn, cap_ptr+MMIO_RANGE_OFFSET);
--	iommu->first_device = DEVID(MMIO_GET_BUS(range), MMIO_GET_FD(range));
--	iommu->last_device = DEVID(MMIO_GET_BUS(range), MMIO_GET_LD(range));
-+	iommu->first_device = calc_devid(MMIO_GET_BUS(range),
-+					 MMIO_GET_FD(range));
-+	iommu->last_device = calc_devid(MMIO_GET_BUS(range),
-+					MMIO_GET_LD(range));
- }
- 
- /*
-diff --git a/include/asm-x86/amd_iommu_types.h b/include/asm-x86/amd_iommu_types.h
-index 2e8601b..22aa58c 100644
---- a/include/asm-x86/amd_iommu_types.h
-+++ b/include/asm-x86/amd_iommu_types.h
-@@ -332,4 +332,11 @@ static inline void print_devid(u16 devid, int nl)
- 		printk("\n");
- }
- 
-+/* takes bus and device/function and returns the device id
-+ * FIXME: should that be in generic PCI code? */
-+static inline u16 calc_devid(u8 bus, u8 devfn)
-+{
-+	return (((u16)bus) << 8) | devfn;
-+}
-+
- #endif
--- 
-1.5.3.7
+We've run the test with different I/O schedulers. We've found out that 
+poor performance we've seen before was due to the short AIO queue size. 
+Now, when queue size is big enough to hold all the write requests in the 
+test, the results are much better. Have a look here for the code of the 
+test and the results in form of graphs:
 
+http://www.zeromq.org/results:aio
 
+There are still at least two problems I see:
+
+1. Enqueueing of writes seems to block every now and then although the 
+size of AIO queue is large enough to hold all the requests in the test.
+
+2. We've observed that messages are batched for writes by approximately 
+30 per batch. The latency impact of messages 2-30 is almost zero, 
+however, the impact of the first message is much higher than expected. I 
+would expect latency of one disk revolving (8.3 ms) + optionally latency 
+of head movement (say 10 us). What we are seing are latencies of 30-60 ms.
+
+Martin
