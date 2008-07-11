@@ -1,44 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbYGKQOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756305AbYGKQSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755322AbYGKQOT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 12:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbYGKQOH
+	id S1756305AbYGKQSr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 12:18:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753903AbYGKQSi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 12:14:07 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:55721 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753333AbYGKQOG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 12:14:06 -0400
-Message-ID: <4877852A.7070203@zytor.com>
-Date: Fri, 11 Jul 2008 12:07:06 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Mike Travis <travis@sgi.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <20080709133958.612635f0@infradead.org>	<4875231F.1020506@zytor.com> <487524A0.6020304@goop.org>	<487529AE.3060505@zytor.com> <m1r6a2r9nj.fsf@frodo.ebiederm.org>	<48753A71.2030006@zytor.com> <m18wwahauq.fsf@frodo.ebiederm.org> <48763732.7020805@sgi.com> <487641D6.5060206@goop.org> <487649B2.3000405@sgi.com> <48764E8A.5010400@zytor.com> <4876766F.4030605@linux-foundation.org> <48767804.8080007@zytor.com> <48767A28.7070900@linux-foundation.org> <48767AF5.7030205@zytor.com> <48777D15.6040107@linux-foundation.org>
-In-Reply-To: <48777D15.6040107@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Jul 2008 12:18:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47598 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753333AbYGKQSi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 12:18:38 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20080711155113.256e89d1@lxorguk.ukuu.org.uk>
+References: <20080711155113.256e89d1@lxorguk.ukuu.org.uk> <20080711145201.24870.13609.stgit@warthog.procyon.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: dhowells@redhat.com, alan@redhat.com, akpm@linux-foundation.org,
+       linux-am33-list@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] MN10300: Fix MN10300's serial port driver to get at its tty_struct
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
+Date: Fri, 11 Jul 2008 17:17:58 +0100
+Message-ID: <25350.1215793078@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
->>>
->> No, not i386.  x86-64.
-> 
-> x86_64 are small systems? For 64 bit use one would expect 4GB of memory.
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-Hardly so.  i386 has too many other limitations; for one thing, it 
-starts having performance problems (needing HIHGMEM) at less than 1 GB. 
-  The additional registers, etc.
+> I don't suppose you'd consider putting the driver into drivers/serial so
+> it was actually sanely possible to update all the tty drivers together.
+> There are lots more changes to come and it would be easier if drivers
+> didn't keep hiding 8(
 
-	-hpa
+Do you want a bunch of .S files moving in there?
+
+David
