@@ -1,212 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758930AbYGKBcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757562AbYGKBjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758930AbYGKBcR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 21:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755603AbYGKBcF
+	id S1757562AbYGKBjf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 21:39:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbYGKBj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 21:32:05 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:38028 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755495AbYGKBcE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 21:32:04 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
-       akpm@linux-foundation.org, arjan@linux.intel.com, andi@firstfloor.org,
-       ebiederm@xmission.com, jbarnes@virtuousgeek.org, steiner@sgi.com,
-       linux-kernel@vger.kernel.org
-References: <20080710181634.764954000@linux-os.sc.intel.com>
-	<20080710182239.205057000@linux-os.sc.intel.com>
-Date: Thu, 10 Jul 2008 18:22:57 -0700
-In-Reply-To: <20080710182239.205057000@linux-os.sc.intel.com> (Suresh Siddha's
-	message of "Thu, 10 Jul 2008 11:16:57 -0700")
-Message-ID: <m1fxqhdxji.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 10 Jul 2008 21:39:27 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:44236 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751962AbYGKBj1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 21:39:27 -0400
+Message-ID: <4876B9CD.6080802@sgi.com>
+Date: Thu, 10 Jul 2008 18:39:25 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Suresh Siddha <suresh.b.siddha@intel.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
-	*      [score: 0.4996]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [patch 23/26] x64, x2apic/intr-remap: MSI and MSI-X support for interrupt remapping infrastructure
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: "H. Peter Anvin" <hpa@zytor.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <48751CF9.4020901@linux-foundation.org>	<4875209D.8010603@goop.org> <48752CCD.30507@linux-foundation.org>	<m1wsjupuiz.fsf@frodo.ebiederm.org> <48753C99.5050408@goop.org>	<m1ej62iq9z.fsf@frodo.ebiederm.org> <487555A8.2050007@zytor.com>	<487556A5.5090907@goop.org> <4876194E.4080205@linux-foundation.org>	<48761C06.3020003@zytor.com> <48762A3B.5050104@linux-foundation.org>	<48762DD2.5090802@zytor.com> <487637A1.4080403@linux-foundation.org>	<m1prpl4pmh.fsf@frodo.ebiederm.org> <48764C21.4020601@zytor.com>	<m1fxqhzhcu.fsf@frodo.ebiederm.org> <4876608B.10408@sgi.com> <m1zloptrwt.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1zloptrwt.fsf@frodo.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suresh Siddha <suresh.b.siddha@intel.com> writes:
+Eric W. Biederman wrote:
+> Mike Travis <travis@sgi.com> writes:
+> 
+> 
+>> The biggest growth came from moving all the xxx[NR_CPUS] arrays into
+>> the per cpu area.  So you free up a huge amount of unused memory when
+>> the NR_CPUS count starts getting into the ozone layer.  4k now, 16k
+>> real soon now, ??? future?
+> 
+> Hmm.  Do you know how big a role kernel_stat plays.
+> 
+> It is a per cpu structure that is sized via NR_IRQS.  NR_IRQS is by NR_CPUS.
+> So ultimately the amount of memory take up is NR_CPUS*NR_CPUS*32 or so.
+> 
+> I have a patch I wrote long ago, that addresses that specific nasty configuration
+> by moving the per cpu irq counters into pointer available from struct irq_desc.
+> 
+> The next step which I did not get to (but is interesting from a scaling perspective)
+> was to start dynamically allocating the irq structures.
+> 
+> Eric
 
-> MSI and MSI-X support for interrupt remapping infrastructure.
->
-> MSI address register will be programmed with interrupt-remapping table
-> entry(IRTE) index and the IRTE will contain information about the vector,
-> cpu destination, etc.
->
-> For MSI-X, all the IRTE's will be consecutively allocated in the table,
-> and the address registers will contain the starting index to the block
-> and the data register will contain the subindex with in that block.
->
-> This also introduces a new irq_chip for cleaner irq migration (in the process
-> context as opposed to the current irq migration in the context of an interrupt.
-> interrupt-remapping infrastructure will help us achieve this).
->
-> As MSI is edge triggered, irq migration is a simple atomic update(of vector
-> and cpu destination) of IRTE and flushing the hardware cache.
+If you could dig that up, that would be great.  Another engr here at SGI
+took that task off my hands and he's been able to do a few things to reduce
+the "# irqs" but irq_desc is still one of the bigger static arrays (>256k).
 
-A couple of things.  I believe MSI edge triggered irqs can always be migrated
-safely outside of irq context.
+(There was some discussion a while back on this very subject.)
 
-Flushing the hardware cache sounds like it will flush the irqs towards the cpu.
-How do we flush the inflight irqs flushed to the apic.  Does a register read work?
+The top data users are:
 
-For MSI irqs going directly to the cpu it should, as long as the cpu and local
-apic count as the same device from the perspective of pci ordering rules.
+====== Data (-l 500)
+    1 - ingo-test-0701-256
+    2 - 4k-defconfig
+    3 - ingo-test-0701
 
+      .1.      .2.      .3.    ..final..
+  1048576  -917504  +917504 1048576      .  __log_buf(.bss)
+   262144  -262144  +262144  262144      .  gl_hash_table(.bss)
+   122360  -122360  +122360  122360      .  g_bitstream(.data)
+   119756  -119756  +119756  119756      .  init_data(.rodata)
+    89760   -89760   +89760   89760      .  o2net_nodes(.bss)
+    76800   -76800  +614400  614400  +700%  early_node_map(.data)
+    44548   -44548   +44548   44548      .  typhoon_firmware_image(.rodata)
+    43008  +215040        .  258048  +500%  irq_desc(.data.cacheline_aligned)
+    42768   -42768   +42768   42768      .  s_firmLoad(.data)
+    41184   -41184   +41184   41184      .  saa7134_boards(.data)
+    38912   -38912   +38912   38912      .  dabusb(.bss)
+    34804   -34804   +34804   34804      .  g_Firmware(.data)
+    32768   -32768   +32768   32768      .  read_buffers(.bss)
+    19968   -19968  +159744  159744  +700%  initkmem_list3(.init.data)
+    18041   -18041   +18041   18041      .  OperationalCodeImage_GEN1(.data)
+    16507   -16507   +16507   16507      .  OperationalCodeImage_GEN2(.data)
+    16464   -16464   +16464   16464      .  ipw_geos(.rodata)
+    16388  +114688  -114688   16388      .  map_pid_to_cmdline(.bss)
+    16384   -16384   +16384   16384      .  gl_hash_locks(.bss)
+    16384  +245760        .  262144 +1500%  boot_pageset(.bss)
+    16128  +215040        .  231168 +1333%  irq_cfg(.data.read_mostly)
 
-> Index: tree-x86/arch/x86/kernel/io_apic_64.c
-> ===================================================================
-> --- tree-x86.orig/arch/x86/kernel/io_apic_64.c 2008-07-10 09:52:31.000000000
-> -0700
-> +++ tree-x86/arch/x86/kernel/io_apic_64.c 2008-07-10 09:52:34.000000000 -0700
-> @@ -2289,6 +2289,9 @@
->  
->  	dynamic_irq_cleanup(irq);
->  
-> +#ifdef CONFIG_INTR_REMAP
-> +	free_irte(irq);
-> +#endif
->  	spin_lock_irqsave(&vector_lock, flags);
->  	__clear_irq_vector(irq);
->  	spin_unlock_irqrestore(&vector_lock, flags);
-> @@ -2307,11 +2310,42 @@
->  
->  	tmp = TARGET_CPUS;
->  	err = assign_irq_vector(irq, tmp);
-> -	if (!err) {
-> -		cpus_and(tmp, cfg->domain, tmp);
-> -		dest = cpu_mask_to_apicid(tmp);
-> +	if (err)
-> +		return err;
-> +
-> +	cpus_and(tmp, cfg->domain, tmp);
-> +	dest = cpu_mask_to_apicid(tmp);
-
-Can we simplify this a little.  In particular have a function 
-
-struct IOAPIC_ROUTE_entry x86_map_irq(irq, mask);
-
-Where x86_map_irq would ultimately figure out the path to the cpu.
-In the simple case it would just call assign_irq_vector();
-When irqs are remapped it would perform the additional
-map_irq_to_irte_handle();
-modify_irte(irq, &irte);
-
-And then have the generic msi code and the ioapic code.
-Map from the struct IOAPIC_ROUTE_entry or whatever to the appropriate bits for the hardware
-they control.
-
-That should allows us a lot more flexibility going forward with less code then is in your
-patches.
-
-> +#ifdef CONFIG_INTR_REMAP
-> +	if (irq_remapped(irq)) {
-> +		struct irte irte;
-> +		int ir_index;
-> +		u16 sub_handle;
-> +
-> +		ir_index = map_irq_to_irte_handle(irq, &sub_handle);
-> +		BUG_ON(ir_index == -1);
-> +
-> +		memset (&irte, 0, sizeof(irte));
-> +
-> +		irte.present = 1;
-> +		irte.dst_mode = INT_DEST_MODE;
-> +		irte.trigger_mode = 0; /* edge */
-> +		irte.dlvry_mode = INT_DELIVERY_MODE;
-> +		irte.vector = cfg->vector;
-> +		irte.dest_id = IRTE_DEST(dest);
-> +
-> +		modify_irte(irq, &irte);
->  
->  		msg->address_hi = MSI_ADDR_BASE_HI;
-> +		msg->data = sub_handle;
-> +		msg->address_lo = MSI_ADDR_BASE_LO | MSI_ADDR_IR_EXT_INT |
-> +				  MSI_ADDR_IR_SHV |
-> +				  MSI_ADDR_IR_INDEX1(ir_index) |
-> +				  MSI_ADDR_IR_INDEX2(ir_index);
-> +	} else
-> +#endif
-> +	{
-> +		msg->address_hi = MSI_ADDR_BASE_HI;
->  		msg->address_lo =
->  			MSI_ADDR_BASE_LO |
->  			((INT_DEST_MODE == 0) ?
-> @@ -2361,6 +2395,55 @@
->  	write_msi_msg(irq, &msg);
->  	irq_desc[irq].affinity = mask;
->  }
-> +
-> +#ifdef CONFIG_INTR_REMAP
-> +/*
-> + * Migrate the MSI irq to another cpumask. This migration is
-> + * done in the process context using interrupt-remapping hardware.
-> + */
-> +static void ir_set_msi_irq_affinity(unsigned int irq, cpumask_t mask)
-> +{
-> +	struct irq_cfg *cfg = irq_cfg + irq;
-> +	unsigned int dest;
-> +	cpumask_t tmp, cleanup_mask;
-> +	struct irte irte;
-> +
-> +	cpus_and(tmp, mask, cpu_online_map);
-> +	if (cpus_empty(tmp))
-> +		return;
-> +
-> +	if (get_irte(irq, &irte))
-> +		return;
-> +
-> +	if (assign_irq_vector(irq, mask))
-> +		return;
-> +
-> +	cpus_and(tmp, cfg->domain, mask);
-> +	dest = cpu_mask_to_apicid(tmp);
-> +
-> +	irte.vector = cfg->vector;
-> +	irte.dest_id = IRTE_DEST(dest);
-> +
-> +	/*
-> +	 * atomically update the IRTE with the new destination and vector.
-> +	 */
-> +	modify_irte(irq, &irte);
-> +
-> +	/*
-> +	 * After this point, all the interrupts will start arriving
-> +	 * at the new destination. So, time to cleanup the previous
-> +	 * vector allocation.
-> +	 */
-> +	if (cfg->move_in_progress) {
-> +		cpus_and(cleanup_mask, cfg->old_domain, cpu_online_map);
-> +		cfg->move_cleanup_count = cpus_weight(cleanup_mask);
-> +		send_IPI_mask(cleanup_mask, IRQ_MOVE_CLEANUP_VECTOR);
-> +		cfg->move_in_progress = 0;
-> +	}
-> +
-> +	irq_desc[irq].affinity = mask;
-> +}
-> +#endif
->  #endif /* CONFIG_SMP */
->  
->  /*
-> @@ -2378,26 +2461,157 @@
->  	.retrigger	= ioapic_retrigger_irq,
->  };
