@@ -1,114 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171AbYGKRu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755707AbYGKRvp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755171AbYGKRu3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 13:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbYGKRuU
+	id S1755707AbYGKRvp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 13:51:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbYGKRvh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 13:50:20 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41839 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753798AbYGKRuT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 13:50:19 -0400
-Date: Fri, 11 Jul 2008 19:50:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: [patch] x86: fix savesegment() bug causing crashes on 64-bit
-Message-ID: <20080711175002.GA32116@elte.hu>
+	Fri, 11 Jul 2008 13:51:37 -0400
+Received: from qb-out-0506.google.com ([72.14.204.238]:29750 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753113AbYGKRvg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 13:51:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=dhlVR05YonDtlnJNSVvHa5eGoryJBOzxH8+Q67KUWf5+vT+nb+7HnbNDf+PErdFSD/
+         d7dM89ZHQDxL1W1kMUGkq42q66TW5XsTt3YxKqsqzGPaGpx4xJCC/I29q7thziU5yd0f
+         YG72Hd6eCdmh6dhr9BUfe+NFlJFOAyamKsX5Q=
+Message-ID: <19f34abd0807111051q7b4a42b1l1f9ee05d45601ac3@mail.gmail.com>
+Date: Fri, 11 Jul 2008 19:51:34 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+Subject: Re: v2.6.26-rc9: kernel BUG at kernel/sched.c:5858!
+Cc: Yanmin <yanmin_zhang@linux.intel.com>,
+       "Rusty Russell" <rusty@rustcorp.com.au>, "Ingo Molnar" <mingo@elte.hu>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
+       "Gautham R Shenoy" <ego@in.ibm.com>,
+       "Heiko Carstens" <heiko.carstens@de.ibm.com>, miaox@cn.fujitsu.com,
+       "Lai Jiangshan" <laijs@cn.fujitsu.com>, "Avi Kivity" <avi@qumranet.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <19f34abd0807110404p5c588debu681aa466cc98ad08@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_00,URI_HEX autolearn=no SpamAssassin version=3.2.3
-	0.4 URI_HEX                URI: URI hostname has long hexadecimal sequence
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20080710115954.GA3639@damson.getinternet.no>
+	 <b647ffbd0807100550l44fae9fate511dafbf87564a4@mail.gmail.com>
+	 <19f34abd0807100604p70c2fec6geca65b2ba772dea@mail.gmail.com>
+	 <b647ffbd0807100703q442a9825hb857c321452027e7@mail.gmail.com>
+	 <19f34abd0807100716k35e937batb4059f99fe46731b@mail.gmail.com>
+	 <19f34abd0807101249y24632b50h769a7af2c9514864@mail.gmail.com>
+	 <b647ffbd0807101316o97fe6d4p5b2cbcda472f2ae1@mail.gmail.com>
+	 <19f34abd0807102249t6b2e9e97l97bc5b22cc7709ef@mail.gmail.com>
+	 <b647ffbd0807110202o10ca65c7yf93d8b2146a05e33@mail.gmail.com>
+	 <19f34abd0807110404p5c588debu681aa466cc98ad08@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-    
-i spent a fair amount of time chasing a 64-bit bootup crash in 
-tip/master that manifested itself as bootup segfaults:
-    
-      S10network[1825]: segfault at 7f3e2b5d16b8 ip 00000031108748c9 sp 00007fffb9c14c70 error 4 in libc-2.7.so[3110800000+14d000]
-    
-eventually causing init to die and panic the system:
-    
-      Kernel panic - not syncing: Attempted to kill init!
-      Pid: 1, comm: init Not tainted 2.6.26-rc9-tip #13878
-    
-after a marathonic bisection session, the bad commit turned out to be 
-this one in tip/x86/*:
-    
-    | b7675791859075418199c7af86a116ea34eaf5bd is first bad commit
-    | commit b7675791859075418199c7af86a116ea34eaf5bd
-    | Author: Jeremy Fitzhardinge <jeremy@goop.org>
-    | Date:   Wed Jun 25 00:19:00 2008 -0400
-    |
-    |     x86: remove open-coded save/load segment operations
-    |
-    |     This removes a pile of buggy open-coded implementations of savesegment
-    |     and loadsegment.
-    
-after some more bisection of this patch itself, it turns out that what
-makes the difference are the savesegment() changes to __switch_to().
-    
-Taking a look at this portion of arch/x86/kernel/process_64.o revealed
-this crutial difference:
-    
-    | good:    99c:       8c e0                   mov    %fs,%eax
-    |          99e:       89 45 cc                mov    %eax,-0x34(%rbp)
-    |
-    | bad:     99c:       8c 65 cc                mov    %fs,-0x34(%rbp)
-    
-which is due to:
-    
-    |                 unsigned fsindex;
-    | -               asm volatile("movl %%fs,%0" : "=r" (fsindex));
-    | +               savesegment(fs, fsindex);
-    
-savesegment() is implemented as:
-    
-     #define savesegment(seg, value)                                \
-              asm("mov %%" #seg ",%0":"=rm" (value) : : "memory")
-    
-note the "m" modifier - it allows GCC to generate the segment move
-into a memory operand as well.
-    
-But regarding segment operands there's a subtle detail in the x86
-instruction set: the above 16-bit moves are zero-extend, but only
-    
-If it goes to a memory operand, -0x34(%rbp) in the above case, there's
-no zero-extend to 32-bit and the instruction will only save 16 bits
-    
-The other 16 bits is random data - which can cause problems when that 
-value is used later on.
-    
-The solution is to only allow segment operands to go to registers. This 
-fix allows my test-system to boot up without crashing.
-    
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/asm-x86/system.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On Fri, Jul 11, 2008 at 1:04 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> On Fri, Jul 11, 2008 at 11:02 AM, Dmitry Adamushko
+> <dmitry.adamushko@gmail.com> wrote:
+>> Vegard,
+>>
+>>
+>> regarding the first crash. Would you please run your test with the
+>> following debugging patch and let me know its output?
+>>
+>> The apperance of " * [ pid ] comm (name), orig_cpu() ... " means we
+>> hit a problematic case (with Miao Xie's patch it shouldn't crash).
+>>
+>> I see that you have CONFIG_SCHED_DEBUG=y so I'm also interested in
+>> messages from sched_domain_debug() - "CPU# attaching ...". IOW, all
+>> the kernel messages appearing while a cpu is going down and up.
+[...]
 
-diff --git a/include/asm-x86/system.h b/include/asm-x86/system.h
-index 45641bc..929345a 100644
---- a/include/asm-x86/system.h
-+++ b/include/asm-x86/system.h
-@@ -164,7 +164,7 @@ extern void native_load_gs_index(unsigned);
-  * Save a segment register away
-  */
- #define savesegment(seg, value)				\
--	asm("mov %%" #seg ",%0":"=rm" (value) : : "memory")
-+	asm("mov %%" #seg ",%0":"=r" (value) : : "memory")
- 
- static inline unsigned long get_limit(unsigned long segment)
- {
+> Ok, now I tested it on my laptop (sorry, no serial console :-)) and I
+
+Now I tested using serial console, but nothing new:
+
+CPU0 attaching NULL sched-domain.
+CPU1 attaching NULL sched-domain.
+CPU0 attaching sched-domain:
+ domain 0: span 0-1
+  groups: 0 1
+  domain 1: span 0-1
+   groups: 0-1
+CPU1 attaching sched-domain:
+ domain 0: span 0-1
+  groups: 1 0
+  domain 1: span 0-1
+   groups: 0-1
+ * [ 7 ] comm (ksoftirqd/1), orig_cpu (1), dst_cpu (1), cpu (1)
+CPU 1 is now offline
+ * [ 1228 ] comm (kjournald), orig_cpu (0), dst_cpu (0), cpu (0)
+ * [ 3113 ] comm (klogd), orig_cpu (0), dst_cpu (0), cpu (0)
+BUG: spinlock recursion on CPU#0, syslogd/3110
+
+and here the output stops. I find this REALLY strange, look at the
+spinlock recursion code:
+
+        printk(KERN_EMERG "BUG: spinlock %s on CPU#%d, %s/%d\n",
+                msg, raw_smp_processor_id(),
+                current->comm, task_pid_nr(current));
+        printk(KERN_EMERG " lock: %p, .magic: %08x, .owner: %s/%d, "
+                        ".owner_cpu: %d\n",
+                lock, lock->magic,
+                owner ? owner->comm : "<none>",
+                owner ? task_pid_nr(owner) : -1,
+                lock->owner_cpu);
+
+why would it not be able to print the second line?
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
