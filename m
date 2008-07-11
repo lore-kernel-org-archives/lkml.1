@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758260AbYGKN2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757301AbYGKNgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758260AbYGKN2d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 09:28:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbYGKN2Y
+	id S1757301AbYGKNgq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 09:36:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754066AbYGKNgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 09:28:24 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58832 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751911AbYGKN2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 09:28:23 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] Fix bacct_add_tsk()'s use of do_div()
-To: jlan@sgi.com, akpm@linux-foundation.org
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
-Date: Fri, 11 Jul 2008 14:28:13 +0100
-Message-ID: <20080711132812.8441.66366.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.1
+	Fri, 11 Jul 2008 09:36:37 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:59587 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752584AbYGKNgg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 09:36:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ZMboR+Y2xET2AP/ayV2ETJFndu98gr+3mKnaY4Ibb5m7tyluI/C3kjfY/WIFya0y2f
+         4ANNfHJNzSeyQW+gkkGnINbM+betYHo80oez2Ov5VeXvGJwBJ+/NMsGdpwvHUKqWpkER
+         LLNeH9dIPaChq9EwXiOzQ0ncgOkJes0i6Zgo4=
+Message-ID: <19f34abd0807110636u4502c112t56b97218eb8b30d@mail.gmail.com>
+Date: Fri, 11 Jul 2008 15:36:33 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "=?UTF-8?Q?T=C3=B6r=C3=B6k_Edwin?=" <edwintorok@gmail.com>
+Subject: Re: today's linux-next fails to boot
+Cc: linux-next@vger.kernel.org, "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4877400B.1000400@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+References: <4877400B.1000400@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m6BDaofq024352
 
-Fix bacct_add_tsk()'s use of do_div() on an s64 by making ac_etime a u64
-instead and dividing that.
+On Fri, Jul 11, 2008 at 1:12 PM, TÃ¶rÃ¶k Edwin <edwintorok@gmail.com> wrote:> Hi,>> Today's linux-next tree (commit> 93847083e4791567931bd17c039cc35881cdad29) fails to boot:> [built with gcc-4.2.4-3]>> BUG: Int 14: CR2 b0049dea>     EDI 00000082 ESI 00000000 EBP c059be88 ESP c059be5c>     EBX f000ec62 EDX 0000000e ECX c0595480 EAX f000ec62>     err 00000000 EIP c0181ca0  CS 00000060 flg 00010082> Stack:   00000040 c06a2ba0 000080d0 c0595480 c0000f19c c000f180 c0581120> c059bea8>         c02bf19b 00000000 00000080 c059beb8 c0000f194 c000f180 0000000a> c059beb8>         c03a1059 00000000 00000000 c059bed8 c05c4c7c  0009efff 00000000> c04f4df4
+Hi,
+One really simple way of getting some more info out of this is to takethe EIP value (here c0181ca0) and run it through addr2line:
+    $ addr2line -e vmlinux -i c0181ca0
+But you need to make sure that the bzImage/vmlinux you bootedcorresponds to the vmlinux you are running addr2line against.
+This will tell you the source line which produced the page fault andwill probably give a good clue as to what went wrong.
+Thanks for reporting :-)
 
-Possibly this should be guarded lest the interval calculation turn up negative,
-but the possible negativity of the result of the division is cast away, and it
-shouldn't end up negative anyway.
-
-This was introduced by patch f3cef7a99469afc159fec3a61b42dc7ca5b6824f.
-
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- kernel/tsacct.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-
-diff --git a/kernel/tsacct.c b/kernel/tsacct.c
-index 4ab1b58..30e877f 100644
---- a/kernel/tsacct.c
-+++ b/kernel/tsacct.c
-@@ -28,14 +28,14 @@
- void bacct_add_tsk(struct taskstats *stats, struct task_struct *tsk)
- {
- 	struct timespec uptime, ts;
--	s64 ac_etime;
-+	u64 ac_etime;
- 
- 	BUILD_BUG_ON(TS_COMM_LEN < TASK_COMM_LEN);
- 
- 	/* calculate task elapsed time in timespec */
- 	do_posix_clock_monotonic_gettime(&uptime);
- 	ts = timespec_sub(uptime, tsk->start_time);
--	/* rebase elapsed time to usec */
-+	/* rebase elapsed time to usec (should never be negative) */
- 	ac_etime = timespec_to_ns(&ts);
- 	do_div(ac_etime, NSEC_PER_USEC);
- 	stats->ac_etime = ac_etime;
-
+Vegard
+-- "The animistic metaphor of the bug that maliciously sneaked in whilethe programmer was not looking is intellectually dishonest as itdisguises that the error is the programmer's own creation."	-- E. W. Dijkstra, EWD1036ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
