@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759125AbYGKTSe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758738AbYGKTSv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759125AbYGKTSe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 15:18:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754894AbYGKTSL
+	id S1758738AbYGKTSv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 15:18:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758498AbYGKTSW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 15:18:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45527 "EHLO
+	Fri, 11 Jul 2008 15:18:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41840 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753902AbYGKTSK (ORCPT
+	by vger.kernel.org with ESMTP id S1758435AbYGKTSV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 15:18:10 -0400
-Date: Fri, 11 Jul 2008 12:17:36 -0700
+	Fri, 11 Jul 2008 15:18:21 -0400
+Date: Fri, 11 Jul 2008 12:17:29 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Jack Steiner <steiner@sgi.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] - GRU virtual -> physical translation
-Message-Id: <20080711121736.18687570.akpm@linux-foundation.org>
-In-Reply-To: <20080709191439.GA7307@sgi.com>
-References: <20080709191439.GA7307@sgi.com>
+To: Michael Halcrow <mhalcrow@us.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] eCryptfs: Do not try to open device files on mknod
+Message-Id: <20080711121729.af5750de.akpm@linux-foundation.org>
+In-Reply-To: <20080709222148.GB6773@halcrowt61p.austin.ibm.com>
+References: <20080709222148.GB6773@halcrowt61p.austin.ibm.com>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,16 +26,16 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Jul 2008 14:14:39 -0500 Jack Steiner <steiner@sgi.com> wrote:
+On Wed, 9 Jul 2008 17:21:48 -0500 Michael Halcrow <mhalcrow@us.ibm.com> wrote:
 
-> Open code the equivalent to follow_page(). This eliminates the
-> requirement for an EXPORT of follow_page().
+> When creating device nodes, eCryptfs needs to delay actually opening
+> the lower persistent file until an application tries to open. Device
+> handles may not be backed by anything when they first come into
+> existence.
 
-I'd prefer to export follow_page() - copying-n-pasting just to avoid
-exporting the darn thing is silly.
+Generates a reject against your eariler
+ecryptfs-privileged-kthread-for-lower-file-opens.patch.
 
-> In addition, the code
-> is optimized for the specific case that is needed by the GRU and only
-> supports architectures supported by the GRU (ia64 & x86_64).
-
-Unless you think that this alone justifies the patch?
+It was easy enough to fix, but I'd sugest that you raise and test new
+patches against at least the other pending ones, rather than against virgin
+mainline.  Because stuff happens...
