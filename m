@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758007AbYGKLI2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758974AbYGKLIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758007AbYGKLI2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 07:08:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754031AbYGKLCF
+	id S1758974AbYGKLIp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 07:08:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbYGKLCl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 07:02:05 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40473 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755091AbYGKLCD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 07:02:03 -0400
-From: swhiteho@redhat.com
-To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Li Xiaodong <lixd@cn.fujitsu.com>, Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 18/18] [GFS2] Remove unused declaration
-Date: Fri, 11 Jul 2008 11:11:19 +0100
-Message-Id: <12157711203714-git-send-email-swhiteho@redhat.com>
-X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <1215771119431-git-send-email-swhiteho@redhat.com>
-References: <121577107950-git-send-email-swhiteho@redhat.com>
- <12157710872782-git-send-email-swhiteho@redhat.com>
- <1215771089769-git-send-email-swhiteho@redhat.com>
- <1215771091790-git-send-email-swhiteho@redhat.com>
- <12157710931623-git-send-email-swhiteho@redhat.com>
- <12157710954145-git-send-email-swhiteho@redhat.com>
- <12157710973601-git-send-email-swhiteho@redhat.com>
- <12157710983282-git-send-email-swhiteho@redhat.com>
- <12157711013356-git-send-email-swhiteho@redhat.com>
- <12157711023743-git-send-email-swhiteho@redhat.com>
- <12157711041157-git-send-email-swhiteho@redhat.com>
- <1215771106247-git-send-email-swhiteho@redhat.com>
- <12157711073280-git-send-email-swhiteho@redhat.com>
- <12157711093284-git-send-email-swhiteho@redhat.com>
- <12157711133727-git-send-email-swhiteho@redhat.com>
- <12157711153366-git-send-email-swhiteho@redhat.com>
- <12157711171692-git-send-email-swhiteho@redhat.com>
- <1215771119431-git-send-email-swhiteho@redhat.com>
+	Fri, 11 Jul 2008 07:02:41 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:36777 "EHLO
+	SG2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757536AbYGKLCk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 07:02:40 -0400
+X-BigFish: VPS23(zzzz10d3izz5a6ciz32i87il61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0K3U9C0-01-XCQ-01
+From: Robert Richter <robert.richter@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Robert Richter <robert.richter@amd.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH] x86/pci: Changing subsystem initialization order for NUMA
+Date: Fri, 11 Jul 2008 12:14:27 +0200
+Message-ID: <1215771268-30007-1-git-send-email-robert.richter@amd.com>
+X-Mailer: git-send-email 1.5.5.4
+X-OriginalArrivalTime: 11 Jul 2008 11:02:26.0195 (UTC) FILETIME=[9A5ACE30:01C8E345]
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Li Xiaodong <lixd@cn.fujitsu.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>
+Signed-off-by: Robert Richter <robert.richter@amd.com>
+---
+ arch/x86/pci/legacy.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-The implementation of gfs2_inode_attr_in is removed.
-So remove its declaration.
-
-Signed-off-by: Li Xiaodong <lixd@cn.fujitsu.com>
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
-
-diff --git a/fs/gfs2/inode.h b/fs/gfs2/inode.h
-index 04e9fef..6074c25 100644
---- a/fs/gfs2/inode.h
-+++ b/fs/gfs2/inode.h
-@@ -72,7 +72,6 @@ static inline void gfs2_inum_out(const struct gfs2_inode *ip,
- }
+diff --git a/arch/x86/pci/legacy.c b/arch/x86/pci/legacy.c
+index 132876c..60e8caa 100644
+--- a/arch/x86/pci/legacy.c
++++ b/arch/x86/pci/legacy.c
+@@ -57,14 +57,14 @@ static int __init pci_legacy_init(void)
  
+ int __init pci_subsys_init(void)
+ {
++#ifdef CONFIG_X86_NUMAQ
++	pci_numa_init();
++#endif
+ #ifdef CONFIG_ACPI
+ 	pci_acpi_init();
+ #endif
+ 	pci_legacy_init();
+ 	pcibios_irq_init();
+-#ifdef CONFIG_X86_NUMAQ
+-	pci_numa_init();
+-#endif
+ 	pcibios_init();
  
--void gfs2_inode_attr_in(struct gfs2_inode *ip);
- void gfs2_set_iop(struct inode *inode);
- struct inode *gfs2_inode_lookup(struct super_block *sb, unsigned type, 
- 				u64 no_addr, u64 no_formal_ino,
+ 	return 0;
 -- 
-1.5.1.2
+1.5.5.4
+
 
