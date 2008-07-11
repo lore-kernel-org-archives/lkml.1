@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755889AbYGKK2H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756864AbYGKK2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755889AbYGKK2H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 06:28:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751789AbYGKK14
+	id S1756864AbYGKK2Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 06:28:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756094AbYGKK2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 06:27:56 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:52469 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751698AbYGKK1z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 06:27:55 -0400
-Date: Fri, 11 Jul 2008 12:28:44 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Robert Richter <robert.richter@amd.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/5] x86/pci: patches for tip/x86/unify-pci
-Message-ID: <20080711102844.GB22725@uranus.ravnborg.org>
-References: <1215709106-9182-1-git-send-email-robert.richter@amd.com> <20080710171721.GA19737@elte.hu> <20080710181234.GA32174@elte.hu> <20080710195249.GB17255@uranus.ravnborg.org> <20080710195425.GB23322@elte.hu> <20080711082042.GT7963@erda.amd.com> <20080711102205.GA22725@uranus.ravnborg.org> <20080711102310.GA17033@elte.hu>
+	Fri, 11 Jul 2008 06:28:11 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:59889 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755927AbYGKK2J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 06:28:09 -0400
+Subject: Re: [PATCH 1/2] regulator: TI bq24022 Li-Ion Charger driver
+From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+To: Philipp Zabel <philipp.zabel@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <1215716683.17490.29.camel@localhost.localdomain>
+References: <1215716683.17490.29.camel@localhost.localdomain>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 11 Jul 2008 11:28:07 +0100
+Message-Id: <1215772087.6634.7.camel@odin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080711102310.GA17033@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 
-> > obj-y is empty when you enter the Makefile.
-> > So if you start out with ':=' or '+=' is no difference.
-> 
-> i guess it's safer to use +=, because it's ordering invariant.
-> 
-> We should use := only if we absolutely want to override the current 
-> rules.
+On Thu, 2008-07-10 at 21:04 +0200, Philipp Zabel wrote:
+> This adds a regulator driver for the TI bq24022 Single-Chip
+> Li-Ion Charger with its nCE and ISET2 pins connected to GPIOs.
 
-In the past I was carefully to use ':=' for the first assignmnet so the
-variable was a " simply expanded variables" variable.
-But as I have added a 'obj-y := ' in kbuild we should
-be safe.
+snip
 
-" simply expanded variables" is some special make stuff.
+> +static struct platform_driver bq24022_driver = {
+> +	.driver = {
+> +		.name = "bq24022",
+> +	},
+> +	.remove = __devexit_p(bq24022_remove),
+> +};
+> +
+> +static int __init bq24022_init()
 
-A typical:
+missing void
 
-FOO = bar
+> +{
+> +	platform_driver_probe(&bq24022_driver, bq24022_probe);
+> +}
+> +
 
-is a "recursively expanded variable".
-Here the assingment is evaluated on each usage.
+missing return value.
 
-	Sam
+> +static void __exit bq24022_exit()
+
+﻿missing void
+
+> +{
+> +	platform_driver_unregister(&bq24022_driver);
+> +}
+
+Could you fix these and resubmit.
+
+Thanks
+
+Liam
+
