@@ -1,119 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754670AbYGKXnI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757592AbYGKXwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754670AbYGKXnI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 19:43:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757526AbYGKXmx
+	id S1757592AbYGKXwV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 19:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbYGKXwF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 19:42:53 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:31767 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757104AbYGKXmw (ORCPT
+	Fri, 11 Jul 2008 19:52:05 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:50254 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754807AbYGKXwE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 19:42:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=IQoAg2nvd7Ub5X0Egv8lFUPwLq91DAvzaqow6hkyGHi0A2kKN2up/H7oYzKdmxFpQQ
-         Z/dwmQf/49MWdP9u1U2iqQuAR3rx2nUfb7YqJwc9QWd5H7YAc2pum1oNCb/8tJklGWMq
-         vukbaIJJ407L0MTIkpYytcFmqQ+iqfE8JVjOY=
-Message-ID: <b647ffbd0807111642v4e8edf87t62c4ee82d86e332b@mail.gmail.com>
-Date: Sat, 12 Jul 2008 01:42:51 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Subject: Re: v2.6.26-rc9: kernel BUG at kernel/sched.c:5858!
-Cc: Yanmin <yanmin_zhang@linux.intel.com>,
-       "Rusty Russell" <rusty@rustcorp.com.au>, "Ingo Molnar" <mingo@elte.hu>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Gautham R Shenoy" <ego@in.ibm.com>,
-       "Heiko Carstens" <heiko.carstens@de.ibm.com>, miaox@cn.fujitsu.com,
-       "Lai Jiangshan" <laijs@cn.fujitsu.com>, "Avi Kivity" <avi@qumranet.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <19f34abd0807111051q7b4a42b1l1f9ee05d45601ac3@mail.gmail.com>
+	Fri, 11 Jul 2008 19:52:04 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: "mingo@elte.hu" <mingo@elte.hu>, "hpa@zytor.com" <hpa@zytor.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "steiner@sgi.com" <steiner@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <20080710181634.764954000@linux-os.sc.intel.com>
+	<20080710182239.205057000@linux-os.sc.intel.com>
+	<m1fxqhdxji.fsf@frodo.ebiederm.org>
+	<20080711060714.GT1678@linux-os.sc.intel.com>
+	<m1hcawaj9v.fsf@frodo.ebiederm.org>
+	<20080711230711.GX1678@linux-os.sc.intel.com>
+Date: Fri, 11 Jul 2008 16:50:08 -0700
+In-Reply-To: <20080711230711.GX1678@linux-os.sc.intel.com> (Suresh Siddha's
+	message of "Fri, 11 Jul 2008 16:07:12 -0700")
+Message-ID: <m1fxqg6kwf.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080710115954.GA3639@damson.getinternet.no>
-	 <19f34abd0807100604p70c2fec6geca65b2ba772dea@mail.gmail.com>
-	 <b647ffbd0807100703q442a9825hb857c321452027e7@mail.gmail.com>
-	 <19f34abd0807100716k35e937batb4059f99fe46731b@mail.gmail.com>
-	 <19f34abd0807101249y24632b50h769a7af2c9514864@mail.gmail.com>
-	 <b647ffbd0807101316o97fe6d4p5b2cbcda472f2ae1@mail.gmail.com>
-	 <19f34abd0807102249t6b2e9e97l97bc5b22cc7709ef@mail.gmail.com>
-	 <b647ffbd0807110202o10ca65c7yf93d8b2146a05e33@mail.gmail.com>
-	 <19f34abd0807110404p5c588debu681aa466cc98ad08@mail.gmail.com>
-	 <19f34abd0807111051q7b4a42b1l1f9ee05d45601ac3@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Suresh Siddha <suresh.b.siddha@intel.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0050]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [patch 23/26] x64, x2apic/intr-remap: MSI and MSI-X support for interrupt remapping infrastructure
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/7/11 Vegard Nossum <vegard.nossum@gmail.com>:
-> On Fri, Jul 11, 2008 at 1:04 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
->> On Fri, Jul 11, 2008 at 11:02 AM, Dmitry Adamushko
->> <dmitry.adamushko@gmail.com> wrote:
->>> Vegard,
->>>
->>>
->>> regarding the first crash. Would you please run your test with the
->>> following debugging patch and let me know its output?
->>>
->>> The apperance of " * [ pid ] comm (name), orig_cpu() ... " means we
->>> hit a problematic case (with Miao Xie's patch it shouldn't crash).
->>>
->>> I see that you have CONFIG_SCHED_DEBUG=y so I'm also interested in
->>> messages from sched_domain_debug() - "CPU# attaching ...". IOW, all
->>> the kernel messages appearing while a cpu is going down and up.
-> [...]
+Suresh Siddha <suresh.b.siddha@intel.com> writes:
+
+> On Fri, Jul 11, 2008 at 01:59:24AM -0700, Eric W. Biederman wrote:
+
+> Sure. Will probably introduce irq_mapping_ops (which may be as simple as
+> ops containing specific msi_compose_msg, ioapic_compose_rte, etc). This
+> should simiplify the setup code. I will look into this and post these patches
+> next week.
+
+Thanks.  I am a little leery of separate hooks for different message
+types.  As they are just different ways of encoding the information
+for an interrupt message.  The index parameter seems to have placed
+the same bits in the same relative location for both msi and the
+ioapic_rte.  Which suggests to me that we have an architecturally
+defined correspondence between the bits.  If that is indeed the case
+and if we can continue to do that we should be able to keep the
+complexity of the arch code down with sharing code, and letting the
+iommu be oblivious to what part of the architecture will be sending
+interrupt messages.
+
+Although looking at it.  In theory if not in practice there are 64 bits
+in an ioapic_rte message and 36 bits in an msi message (as long as we 
+maintain the architecturally standard window).  So we may actually
+be able to encode more information in one message then in the other.
+
+>> need multiple irq_chip structures (although it may be worth it if we
+>> can detect we can optimize irq migration).
 >
->> Ok, now I tested it on my laptop (sorry, no serial console :-)) and I
->
-> Now I tested using serial console, but nothing new:
->
-> CPU0 attaching NULL sched-domain.
-> CPU1 attaching NULL sched-domain.
-> CPU0 attaching sched-domain:
->  domain 0: span 0-1
->  groups: 0 1
->  domain 1: span 0-1
->   groups: 0-1
-> CPU1 attaching sched-domain:
->  domain 0: span 0-1
->  groups: 1 0
->  domain 1: span 0-1
->   groups: 0-1
+> Depending on the IOMMU/hardware, they may define different irq_chip's
+> if they add/simplify functionality, or may  use existing irq_chip's.
 
-hmm, sched-domains have been rebuilt too early. The soon-to-be-offline
-cpu #1 is included (as it's still in cpu_online_map presumably).
+There are a lot of variables, as long as end result is relatively clean
+and maintainable.
 
->  * [ 7 ] comm (ksoftirqd/1), orig_cpu (1), dst_cpu (1), cpu (1)
-
-Have you removed "__migrate_dead ... " printk messages? This one
-should be printed after __stop_machine_run(take_cpu_down, ...) and
-before migrate_live_tasks() takes place... so we would have seen
-"__migrate_dead..." message for ksoftirqd/1 a bit later, I guess.
-
-> CPU 1 is now offline
-
-migrate_live_tasks() should take place here...
-
->  * [ 1228 ] comm (kjournald), orig_cpu (0), dst_cpu (0), cpu (0)
->  * [ 3113 ] comm (klogd), orig_cpu (0), dst_cpu (0), cpu (0)
-
-I guess, these were migrated onto cpu#0 by migrate_live_tasks() but
-now try_to_wake_up() has been called for them. Due to the fact that
-cpu#1 is visible on the sched-domains, the load-balancer
-(select_task_rq()) picks it up erronneusly... bum.
-
-
-
-
->
-> Vegard
->
-
--- 
-Best regards,
-Dmitry Adamushko
+Eric
