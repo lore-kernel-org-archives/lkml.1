@@ -1,61 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758738AbYGKQZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754765AbYGKQj7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758738AbYGKQZx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 12:25:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751929AbYGKQZq
+	id S1754765AbYGKQj7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 12:39:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbYGKQjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 12:25:46 -0400
-Received: from smtp5.server.rpi.edu ([128.113.2.225]:51649 "EHLO
-	smtp5.server.rpi.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751125AbYGKQZp (ORCPT
+	Fri, 11 Jul 2008 12:39:51 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:32797 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751789AbYGKQju (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 12:25:45 -0400
-X-Greylist: delayed 5248 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Jul 2008 12:25:45 EDT
-Message-ID: <487774F9.6000001@rpi.edu>
-Date: Fri, 11 Jul 2008 10:58:01 -0400
-From: David Brigada <brigad@rpi.edu>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-CC: jim.cromie@gmail.com, linux-geode@lists.infradead.org
-Subject: PCI-ISA Bridge not operating
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 11 Jul 2008 12:39:50 -0400
+Date: Fri, 11 Jul 2008 17:22:04 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Howells <dhowells@redhat.com>
+Cc: dhowells@redhat.com, alan@redhat.com, akpm@linux-foundation.org,
+       linux-am33-list@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] MN10300: Fix MN10300's serial port driver to get at its
+ tty_struct
+Message-ID: <20080711172204.5552a0d9@lxorguk.ukuu.org.uk>
+In-Reply-To: <25350.1215793078@redhat.com>
+References: <20080711155113.256e89d1@lxorguk.ukuu.org.uk>
+	<20080711145201.24870.13609.stgit@warthog.procyon.org.uk>
+	<25350.1215793078@redhat.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-RPI-SA-Score: undef - spam scanning disabled
-X-CanItPRO-Stream: default
-X-Canit-Stats-ID: Bayes signature not available
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 11 Jul 2008 17:17:58 +0100
+David Howells <dhowells@redhat.com> wrote:
 
-I'm working with the MSM800XEV board from Digital-Logic.  This board 
-uses a Geode LX800 for a CPU and has the CS5536 companion board also 
-installed.  The board works with an IT8888G IC that provides a PCI/ISA 
-bridge to a PC/104 bus that is externally provided.
+> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> 
+> > I don't suppose you'd consider putting the driver into drivers/serial so
+> > it was actually sanely possible to update all the tty drivers together.
+> > There are lots more changes to come and it would be easier if drivers
+> > didn't keep hiding 8(
+> 
+> Do you want a bunch of .S files moving in there?
 
-If I boot with FreeDOS, I can twiddle I/O ports, and the proper ISA 
-signaling comes over the PC/104 bus.  In Linux, the /IOW or /IOR line 
-goes low as expected, but the address doesn't come over the bus.  The 
-DOS that I'm running doesn't seem to have any specific drivers for the 
-chip, I'm guessing that the hardware should "just work" --- the IT8888G 
-is designed to grab I/O requests in the ISA range off the PCI bus after 
-a short delay if nothing else grabs them first.
-
-I have a feeling that it has something to do with the CS5536 companion 
-chip, as it seems as though there is a driver for a PCI/ISA bridge on 
-that chip, though I can't get much detail from AMD's datasheet on that 
-functionality.  I do know that on the MSM800XEV, any such functionality 
-is wired to the IT8888G, not the CS5536.
-
-There are two kernel config options related to the PCI IDs of the parts 
-of the device that handle the ISA bus, CONFIG_SCx200_ACB and 
-CONFIG_CS5535_GPIO.  I've tried disabling both, but it doesn't seem to help.
-
-In lspci, the CS5536 PCI/ISA bridge is shown, but not the IT8888G.
-
-Any ideas?
-
-Thanks,
-David Brigada
+The .S files are a neccessary part of the tty driver ?
