@@ -1,114 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760135AbYGKOKx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760512AbYGKOLv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760135AbYGKOKx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 10:10:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755318AbYGKOKo
+	id S1760512AbYGKOLv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 10:11:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755550AbYGKOLn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 10:10:44 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:34595 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752498AbYGKOKn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 10:10:43 -0400
-Date: Fri, 11 Jul 2008 10:10:42 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patches] libata fixes for .26
-Message-ID: <20080711141042.GA17624@havoc.gtf.org>
+	Fri, 11 Jul 2008 10:11:43 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:34777 "EHLO
+	IE1EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754711AbYGKOLm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 10:11:42 -0400
+X-BigFish: VPS-2(zz1432R98dR7efV1805M9320iv19c2kzz10d3izzz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0K3UI33-03-R66-01
+Date: Fri, 11 Jul 2008 16:11:24 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       Sebastian.Biemueller@amd.com, robert.richter@amd.com, joro@8bytes.org
+Subject: Re: [PATCH 00/34] AMD IOMMU driver
+Message-ID: <20080711141124.GU14977@amd.com>
+References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com> <m1d4lk90vq.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <m1d4lk90vq.fsf@frodo.ebiederm.org>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 11 Jul 2008 14:11:24.0689 (UTC) FILETIME=[009FB010:01C8E360]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jul 11, 2008 at 03:22:01AM -0700, Eric W. Biederman wrote:
+> Joerg Roedel <joerg.roedel@amd.com> writes:
+> 
+> > Hi,
+> >
+> > this is the first post of the initial driver for AMD IOMMU hardware. The driver
+> > is tested on hardware with various loads (disk and network) and showed no
+> > problems.
+> >
+> > It currently supports DMA remapping using the dma_ops API in the x86
+> > architecture code. It also supports isolation of device DMA address spaces as
+> > far as the hardware allows that (means each device can get its own DMA address
+> > space and can't access the DMA memory of other devices).
+> >
+> > Please give this code a good review and send me your comments about it so that
+> > I can fix all possible bugs and objections and move this driver forward to
+> > merging quality.
+> 
+> Small question.  Does this IOMMU also support irq remapping?
+> 
+> Intel is starting to merge support for their iommu that supports irq
+> remapping and I am curious what the implications are going to be to
+> support both of these iommus?
 
-Please pull from 'upstream-linus' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
+Yes, AMD IOMMU also has interrupt remapping support.
 
-to receive the following updates:
+> Assuming their is irq remapping support it isn't tied to x2apic
+> support in the cpus is it?
 
- drivers/ata/libata-acpi.c |   19 ++++++++++++++++---
- drivers/ata/pata_sis.c    |    1 +
- 2 files changed, 17 insertions(+), 3 deletions(-)
+Not sure what you mean here. I am not aware of an x2apic on AMD.
 
-Kai Krakow (1):
-      Added Targa Visionary 1000 IDE adapter to pata_sis.c
+Joerg
 
-Tejun Heo (1):
-      libata-acpi: filter out DIPM enable
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
-Zhang Rui (1):
-      libata-acpi: don't call sleeping function from invalid context
-
-diff --git a/drivers/ata/libata-acpi.c b/drivers/ata/libata-acpi.c
-index 3ff8b14..9330b79 100644
---- a/drivers/ata/libata-acpi.c
-+++ b/drivers/ata/libata-acpi.c
-@@ -29,14 +29,16 @@
- enum {
- 	ATA_ACPI_FILTER_SETXFER	= 1 << 0,
- 	ATA_ACPI_FILTER_LOCK	= 1 << 1,
-+	ATA_ACPI_FILTER_DIPM	= 1 << 2,
- 
- 	ATA_ACPI_FILTER_DEFAULT	= ATA_ACPI_FILTER_SETXFER |
--				  ATA_ACPI_FILTER_LOCK,
-+				  ATA_ACPI_FILTER_LOCK |
-+				  ATA_ACPI_FILTER_DIPM,
- };
- 
- static unsigned int ata_acpi_gtf_filter = ATA_ACPI_FILTER_DEFAULT;
- module_param_named(acpi_gtf_filter, ata_acpi_gtf_filter, int, 0644);
--MODULE_PARM_DESC(acpi_gtf_filter, "filter mask for ACPI _GTF commands, set to filter out (0x1=set xfermode, 0x2=lock/freeze lock)");
-+MODULE_PARM_DESC(acpi_gtf_filter, "filter mask for ACPI _GTF commands, set to filter out (0x1=set xfermode, 0x2=lock/freeze lock, 0x4=DIPM)");
- 
- #define NO_PORT_MULT		0xffff
- #define SATA_ADR(root, pmp)	(((root) << 16) | (pmp))
-@@ -195,6 +197,10 @@ static void ata_acpi_handle_hotplug(struct ata_port *ap, struct ata_device *dev,
- 		/* This device does not support hotplug */
- 		return;
- 
-+	if (event == ACPI_NOTIFY_BUS_CHECK ||
-+	    event == ACPI_NOTIFY_DEVICE_CHECK)
-+		status = acpi_evaluate_integer(handle, "_STA", NULL, &sta);
-+
- 	spin_lock_irqsave(ap->lock, flags);
- 
- 	switch (event) {
-@@ -202,7 +208,6 @@ static void ata_acpi_handle_hotplug(struct ata_port *ap, struct ata_device *dev,
- 	case ACPI_NOTIFY_DEVICE_CHECK:
- 		ata_ehi_push_desc(ehi, "ACPI event");
- 
--		status = acpi_evaluate_integer(handle, "_STA", NULL, &sta);
- 		if (ACPI_FAILURE(status)) {
- 			ata_port_printk(ap, KERN_ERR,
- 				"acpi: failed to determine bay status (0x%x)\n",
-@@ -690,6 +695,14 @@ static int ata_acpi_filter_tf(const struct ata_taskfile *tf,
- 			return 1;
- 	}
- 
-+	if (ata_acpi_gtf_filter & ATA_ACPI_FILTER_DIPM) {
-+		/* inhibit enabling DIPM */
-+		if (tf->command == ATA_CMD_SET_FEATURES &&
-+		    tf->feature == SETFEATURES_SATA_ENABLE &&
-+		    tf->nsect == SATA_DIPM)
-+			return 1;
-+	}
-+
- 	return 0;
- }
- 
-diff --git a/drivers/ata/pata_sis.c b/drivers/ata/pata_sis.c
-index e82c66e..26345d7 100644
---- a/drivers/ata/pata_sis.c
-+++ b/drivers/ata/pata_sis.c
-@@ -56,6 +56,7 @@ static const struct sis_laptop sis_laptop[] = {
- 	{ 0x5513, 0x1043, 0x1107 },	/* ASUS A6K */
- 	{ 0x5513, 0x1734, 0x105F },	/* FSC Amilo A1630 */
- 	{ 0x5513, 0x1071, 0x8640 },     /* EasyNote K5305 */
-+	{ 0x5513, 0x1039, 0x5513 },	/* Targa Visionary 1000 */
- 	/* end marker */
- 	{ 0, }
- };
