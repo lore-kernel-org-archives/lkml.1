@@ -1,117 +1,391 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758060AbYGKTIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757419AbYGKTLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758060AbYGKTIZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 15:08:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755848AbYGKTIN
+	id S1757419AbYGKTLd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 15:11:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbYGKTLR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 15:08:13 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36981 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755093AbYGKTIL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 15:08:11 -0400
-Date: Fri, 11 Jul 2008 21:07:49 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       =?iso-8859-1?B?VPZy9ms=?= Edwin <edwintorok@gmail.com>,
-       Takashi Iwai <tiwai@suse.de>, linux-next@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-Subject: Re: today's linux-next fails to boot
-Message-ID: <20080711190749.GB21758@elte.hu>
-References: <4877400B.1000400@gmail.com> <487772B6.4090100@gmail.com> <20080711145322.GA25698@elte.hu> <200807111710.42826.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200807111710.42826.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 11 Jul 2008 15:11:17 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:53367 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752350AbYGKTLQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 15:11:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=MY2dVLOKauNrJ8wb8uvdZI28JS+GMhLDBYNyYmlgrb8/5zrBd29lde4ThheTIfkLal
+         kbkdfXxCpxsNdjm9mz2WJ0oDhgvbrFTEOndeELr5ZXRHxQejcSa72EgV5RcVF6x7R1ej
+         Yyg3R3hWHInsuV9Aeag0pSE/pH0z4qZkt9jJA=
+Subject: [PATCH 1/6] byteorder: add a new include/linux/swab.h to define
+	byteswapping functions
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 11 Jul 2008 12:11:11 -0700
+Message-Id: <1215803471.15972.20.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Collect the implementations from include/linux/byteorder/swab.h, swabb.h
+in swab.h
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+The functionality provided covers:
+u16 swab16(u16 val) - return a byteswapped 16 bit value
+u32 swab32(u32 val) - return a byteswapped 32 bit value
+u64 swab64(u64 val) - return a byteswapped 64 bit value
+u32 swahw32(u32 val) - return a wordswapped 32 bit value
+u32 swahb32(u32 val) - return a high/low byteswapped 32 bit value
 
-> On Friday, 11 of July 2008, Ingo Molnar wrote:
-> > 
-> > * Török Edwin <edwintorok@gmail.com> wrote:
-> > 
-> > > On 2008-07-11 16:59, Ingo Molnar wrote:
-> > > > * Török Edwin <edwintorok@gmail.com> wrote:
-> > > >
-> > > >   
-> > > >>> [Added Ingo to Cc]
-> > > >>>
-> > > >>> I get the boot problem on i386 with 2008-07-11 linux-next tree, too.
-> > > >>> In my case, no error appears on the screen, just staying blank and
-> > > >>> dead.  It seems stopping at the very beginning, soon after GRUB, so
-> > > >>> could be the same reason.
-> > > >>>   
-> > > >>>       
-> > > >> I don't see any boot messages on the screen, I get that BUG message as
-> > > >> soon as grub's menu dissapears.
-> > > >> I have bisected it to this range so far:
-> > > >> git-bisect good aa03060a78c1aec53075a0c8ca7be19cedfbea8f
-> > > >> git-bisect bad b1611c0058bc6635e7257e755c3f194933a7a6df
-> > > >>
-> > > >> Should I continue to bisect?
-> > > >>     
-> > > >
-> > > > could you check latest tip/master, does it boot fine with the same 
-> > > > config?
-> > > 
-> > > tip/master boots fine.
-> > 
-> > to update linux-next to the latest bits in -tip, you can perhaps do 
-> > something like this:
-> > 
-> >  git-merge tip/auto-x86-next
-> >  git-merge tip/auto-core-next
-> >  git-merge tip/auto-cpus4096-next
-> >  git-merge tip/auto-ftrace-next
-> >  git-merge tip/auto-generic-ipi-next
-> >  git-merge tip/auto-genirq-next
-> >  git-merge tip/auto-latest
-> >  git-merge tip/auto-safe-poison-pointers-next
-> >  git-merge tip/auto-sched-next
-> >  git-merge tip/auto-stackprotector-next
-> >  git-merge tip/auto-timers-next
-> > 
-> > but it's easily possible that the bug is in some other portion of 
-> > linux-next.
-> 
-> Hm, I haven't tested the linux-next from today myself yet, but I have 
-> a related question.  Namely, is there a way to get a log of commits 
-> that have been added since the previous linux-next?
-> 
-> That may help to find a guilty patch if the yesterday's linux-next 
-> works.
+The above versions also do compile-time folding if possible.
 
-at least in -tip it works like this:
+Similar to above, but return swapped value from a naturally-aligned pointer
+u16 swab16p(u16 *p)
+u32 swab32p(u32 *p)
+u64 swab64p(u64 *p)
+u32 swahw32p(u32 *p)
+u32 swahb32p(u32 *p)
 
-   git-shortlog tip-history-2008-07-10_09.58_Thu..
+Similar to above, but swap the value in-place (in-situ)
+void swab16s(u16 *p)
+void swab32s(u32 *p)
+void swab64s(u64 *p)
+void swahw32s(u32 *p)
+void swahb32s(u32 *p)
 
-or, a more practical format with commit IDs on the same line:
+Arches can override any of these with an optimized version by defining an
+inline in their asm/byteorder.h (example given for swab16()):
 
-  git log --no-merges --pretty=format:"%h: %s" \
-      tip-history-2008-07-10_09.58_Thu..
+u16 __arch_swab16() {}
 
-you can restrict it to a given piece of code as well, say:
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ include/linux/swab.h |  309 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 309 insertions(+), 0 deletions(-)
 
-  git log --no-merges --pretty=format:"%h: %s" \
-      tip-history-2008-07-10_09.58_Thu.. -- arch/x86/ include/asm-x86/
+diff --git a/include/linux/swab.h b/include/linux/swab.h
+new file mode 100644
+index 0000000..8f955b2
+--- /dev/null
++++ b/include/linux/swab.h
+@@ -0,0 +1,309 @@
++#ifndef _LINUX_SWAB_H
++#define _LINUX_SWAB_H
++
++#include <linux/types.h>
++#include <linux/compiler.h>
++#include <asm/byteorder.h>
++
++/*
++ * casts are necessary for constants, because we never know how for sure
++ * how U/UL/ULL map to __u16, __u32, __u64. At least not in a portable way.
++ */
++#define __const_swab16(x) ((__u16)(				\
++	(((__u16)(x) & (__u16)0x00ffU) << 8) |			\
++	(((__u16)(x) & (__u16)0xff00U) >> 8)))
++
++#define __const_swab32(x) ((__u32)(				\
++	(((__u32)(x) & (__u32)0x000000ffUL) << 24) |		\
++	(((__u32)(x) & (__u32)0x0000ff00UL) <<  8) |		\
++	(((__u32)(x) & (__u32)0x00ff0000UL) >>  8) |		\
++	(((__u32)(x) & (__u32)0xff000000UL) >> 24)))
++
++#define __const_swab64(x) ((__u64)(				\
++	(((__u64)(x) & (__u64)0x00000000000000ffULL) << 56) |	\
++	(((__u64)(x) & (__u64)0x000000000000ff00ULL) << 40) |	\
++	(((__u64)(x) & (__u64)0x0000000000ff0000ULL) << 24) |	\
++	(((__u64)(x) & (__u64)0x00000000ff000000ULL) <<  8) |	\
++	(((__u64)(x) & (__u64)0x000000ff00000000ULL) >>  8) |	\
++	(((__u64)(x) & (__u64)0x0000ff0000000000ULL) >> 24) |	\
++	(((__u64)(x) & (__u64)0x00ff000000000000ULL) >> 40) |	\
++	(((__u64)(x) & (__u64)0xff00000000000000ULL) >> 56)))
++
++#define __const_swahw32(x) ((__u32)(				\
++	(((__u32)(x) & (__u32)0x0000ffffUL) << 16) |		\
++	(((__u32)(x) & (__u32)0xffff0000UL) >> 16)))
++
++#define __const_swahb32(x) ((__u32)(				\
++	(((__u32)(x) & (__u32)0x00ff00ffUL) << 8) |		\
++	(((__u32)(x) & (__u32)0xff00ff00UL) >> 8)))
++
++/*
++ * Implement the following as inlines, but define the interface using
++ * macros to allow constant folding when possible:
++ * ___swab16, ___swab32, ___swab64, ___swahw32, ___swahb32
++ */
++
++static inline __attribute_const__ __u16 ___swab16(__u16 val)
++{
++#ifdef HAVE_ARCH_SWAB16
++	return __arch_swab16(val);
++#elif defined(HAVE_ARCH_SWAB16P)
++	return __arch_swab16p(&val);
++#else
++	return __const_swab16(val);
++#endif
++}
++
++static inline __attribute_const__ __u32 ___swab32(__u32 val)
++{
++#ifdef HAVE_ARCH_SWAB32
++	return __arch_swab32(val);
++#elif defined(HAVE_ARCH_SWAB32P)
++	return __arch_swab32p(&val);
++#else
++	return __const_swab32(val);
++#endif
++}
++
++static inline __attribute_const__ __u64 ___swab64(__u64 val)
++{
++#ifdef HAVE_ARCH_SWAB64
++	return __arch_swab64(val);
++#elif defined(HAVE_ARCH_SWAB64P)
++	return __arch_swab64p(&val);
++#elif defined(__SWAB_64_THRU_32__)
++	__u32 h = val >> 32;
++	__u32 l = val & ((1ULL << 32) - 1);
++	return (((__u64)___swab32(l)) << 32) | ((__u64)(___swab32(h)));
++#else
++	return __const_swab64(val);
++#endif
++}
++
++static inline __attribute_const__ __u32 ___swahw32(__u32 val)
++{
++#ifdef HAVE_ARCH_SWAHW32
++	return __arch_swahw32(val);
++#elif defined(HAVE_ARCH_SWAHW32P)
++	return __arch_swahw32p(&val);
++#else
++	return __const_swahw32(val);
++#endif
++}
++
++static inline __attribute_const__ __u32 ___swahb32(__u32 val)
++{
++#ifdef HAVE_ARCH_SWAHB32
++	return __arch_swahb32(val);
++#elif defined(HAVE_ARCH_SWAHB32P)
++	return __arch_swahb32p(&val);
++#else
++	return __const_swahb32(val);
++#endif
++}
++
++/**
++ * __swab16 - return a byteswapped 16-bit value
++ * @x: value to byteswap
++ */
++#define __swab16(x)				\
++	(__builtin_constant_p((__u16)(x)) ?	\
++	__const_swab16((x)) :			\
++	___swab16((x)))
++
++/**
++ * __swab32 - return a byteswapped 32-bit value
++ * @x: value to byteswap
++ */
++#define __swab32(x)				\
++	(__builtin_constant_p((__u32)(x)) ?	\
++	__const_swab32((x)) :			\
++	___swab32((x)))
++
++/**
++ * __swab64 - return a byteswapped 64-bit value
++ * @x: value to byteswap
++ */
++#define __swab64(x)				\
++	(__builtin_constant_p((__u64)(x)) ?	\
++	__const_swab64((x)) :			\
++	___swab64((x)))
++
++/**
++ * __swahw32 - return a word-swapped 32-bit value
++ * @x: value to wordswap
++ *
++ * __swahw32(0x12340000) is 0x00001234
++ */
++#define __swahw32(x)				\
++	(__builtin_constant_p((__u32)(x)) ?	\
++	__const_swahw32((x)) :			\
++	___swahw32((x)))
++
++/**
++ * __swahb32 - return a high and low byte-swapped 32-bit value
++ * @x: value to byteswap
++ *
++ * __swahb32(0x12345678) is 0x34127856
++ */
++#define __swahb32(x)				\
++	(__builtin_constant_p((__u32)(x)) ?	\
++	__const_swahb32((x)) :			\
++	___swahb32((x)))
++
++/**
++ * __swab16p - return a byteswapped 16-bit value from a pointer
++ * @p: pointer to a naturally-aligned 16-bit value
++ */
++static inline __u16 __swab16p(const __u16 *p)
++{
++#ifdef HAVE_ARCH_SWAB16P
++	return __arch_swab16p(p);
++#else
++	return __swab16(*p);
++#endif
++}
++
++/**
++ * __swab32p - return a byteswapped 32-bit value from a pointer
++ * @p: pointer to a naturally-aligned 32-bit value
++ */
++static inline __u32 __swab32p(const __u32 *p)
++{
++#ifdef HAVE_ARCH_SWAB32P
++	return __arch_swab32p(p);
++#else
++	return __swab32(*p);
++#endif
++}
++
++/**
++ * __swab64p - return a byteswapped 64-bit value from a pointer
++ * @p: pointer to a naturally-aligned 64-bit value
++ */
++static inline __u64 __swab64p(const __u64 *p)
++{
++#ifdef HAVE_ARCH_SWAB64P
++	return __arch_swab64p(p);
++#else
++	return __swab64(*p);
++#endif
++}
++
++/**
++ * __swahw32p - return a wordswapped 32-bit value from a pointer
++ * @p: pointer to a naturally-aligned 32-bit value
++ *
++ * See __swahw32() for details of wordswapping.
++ */
++static inline __u32 __swahw32p(const __u32 *p)
++{
++#ifdef HAVE_ARCH_SWAHW32P
++	return __arch_swahw32p(p);
++#else
++	return __swahw32(*p);
++#endif
++}
++
++/**
++ * __swahb32p - return a high and low byteswapped 32-bit value from a pointer
++ * @p: pointer to a naturally-aligned 32-bit value
++ *
++ * See __swahb32() for details of high/low byteswapping.
++ */
++static inline __u32 __swahb32p(const __u32 *p)
++{
++#ifdef HAVE_ARCH_SWAHB32P
++	return __arch_swahb32p(p);
++#else
++	return __swahb32(*p);
++#endif
++}
++
++/**
++ * __swab16s - byteswap a 16-bit value in-place
++ * @p: pointer to a naturally-aligned 16-bit value
++ */
++static inline void __swab16s(__u16 *p)
++{
++#ifdef HAVE_ARCH_SWAB16S
++	__arch_swab16s(p);
++#else
++	*p = __swab16p(p);
++#endif
++}
++/**
++ * __swab32s - byteswap a 32-bit value in-place
++ * @p: pointer to a naturally-aligned 32-bit value
++ */
++static inline void __swab32s(__u32 *p)
++{
++#ifdef HAVE_ARCH_SWAB32S
++	__arch_swab32s(p);
++#else
++	*p = __swab32p(p);
++#endif
++}
++
++/**
++ * __swab64s - byteswap a 64-bit value in-place
++ * @p: pointer to a naturally-aligned 64-bit value
++ */
++static inline void __swab64s(__u64 *p)
++{
++#ifdef HAVE_ARCH_SWAB64S
++	__arch_swab64s(p);
++#else
++	*p = __swab64p(p);
++#endif
++}
++
++/**
++ * __swahw32s - wordswap a 32-bit value in-place
++ * @p: pointer to a naturally-aligned 32-bit value
++ *
++ * See __swahw32() for details of wordswapping
++ */
++static inline void __swahw32s(__u32 *p)
++{
++#ifdef HAVE_ARCH_SWAHW32S
++	__arch_swahw32s(p);
++#else
++	*p = __swahw32p(p);
++#endif
++}
++
++/**
++ * __swahb32s - high and low byteswap a 32-bit value in-place
++ * @p: pointer to a naturally-aligned 32-bit value
++ *
++ * See __swahb32() for details of high and low byte swapping
++ */
++static inline void __swahb32s(__u32 *p)
++{
++#ifdef HAVE_ARCH_SWAHB32S
++	__arch_swahb32s(p);
++#else
++	*p = __swahb32p(p);
++#endif
++}
++
++#ifdef __KERNEL__
++# define swab16 __swab16
++# define swab32 __swab32
++# define swab64 __swab64
++# define swahw32 __swahw32
++# define swahb32 __swahb32
++# define swab16p __swab16p
++# define swab32p __swab32p
++# define swab64p __swab64p
++# define swahw32p __swahw32p
++# define swahb32p __swahb32p
++# define swab16s __swab16s
++# define swab32s __swab32s
++# define swab64s __swab64s
++# define swahw32s __swahw32s
++# define swahb32s __swahb32s
++#endif /* __KERNEL__ */
++
++#endif /* _LINUX_SWAB_H */
+-- 
+1.5.6.2.393.g45096
 
-this doesnt work in linux-next nearly as well, due to the Quilt imported 
-trees. Every time a quilt queue is updated and reimported, there's a 
-stream of repeat commits.
 
-	Ingo
