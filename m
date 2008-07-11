@@ -1,115 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757031AbYGKXWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759513AbYGKXWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757031AbYGKXWR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 19:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753230AbYGKXWH
+	id S1759513AbYGKXWa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 19:22:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbYGKXWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 19:22:07 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:46706 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752315AbYGKXWE (ORCPT
+	Fri, 11 Jul 2008 19:22:08 -0400
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:9353 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753118AbYGKXWH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 19:22:04 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Elias Oltmanns <eo@nebensachen.de>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Clark Williams <clark.williams@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jon Masters <jonathan@jonmasters.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-References: <Pine.LNX.4.58.0807101242070.3740@gandalf.stny.rr.com>
-	<87zlop7bp6.fsf@denkblock.local>
-	<20080710132832.38cc5048.randy.dunlap@oracle.com>
-	<Pine.LNX.4.58.0807101956120.7719@gandalf.stny.rr.com>
-	<Pine.LNX.4.58.0807102035550.7719@gandalf.stny.rr.com>
-	<20080711121655.05810822.akpm@linux-foundation.org>
-	<Pine.LNX.4.58.0807111546560.25977@gandalf.stny.rr.com>
-	<20080711153740.b86acadd.akpm@linux-foundation.org>
-Date: Fri, 11 Jul 2008 16:16:43 -0700
-In-Reply-To: <20080711153740.b86acadd.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Fri, 11 Jul 2008 15:37:40 -0700")
-Message-ID: <m13amg9fl0.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 11 Jul 2008 19:22:07 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAICHd0h5LFxA/2dsb2JhbACqRA
+X-IronPort-AV: E=Sophos;i="4.30,348,1212330600"; 
+   d="scan'208";a="147025742"
+Date: Sat, 12 Jul 2008 09:22:01 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: Sebastian Siewior <lkml@ml.breakpoint.cc>
+Cc: Mikael Abrahamsson <swmike@swm.pp.se>, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com
+Subject: Re: xfs bug in 2.6.26-rc9
+Message-ID: <20080711232201.GG11558@disturbed>
+Mail-Followup-To: Sebastian Siewior <lkml@ml.breakpoint.cc>,
+	Mikael Abrahamsson <swmike@swm.pp.se>, linux-kernel@vger.kernel.org,
+	xfs@oss.sgi.com
+References: <alpine.DEB.1.10.0807110939520.30192@uplift.swm.pp.se> <20080711084248.GU29319@disturbed> <20080711190209.GA7401@Chamillionaire.breakpoint.cc>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
-	*      [score: 0.4661]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.5 XM_Body_Dirty_Words Contains a dirty word
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH -v2] ftrace: Documentation
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <20080711190209.GA7401@Chamillionaire.breakpoint.cc>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+On Fri, Jul 11, 2008 at 09:02:09PM +0200, Sebastian Siewior wrote:
+> * Dave Chinner | 2008-07-11 18:42:49 [+1000]:
+> 
+> >Oh - you must be running a debug XFS.  CONFIG_XFS_DEBUG was only
+> >introduced in 2.6.26-rc1 and defaults to 'N', so you must have
+> >selected the non-default option when prompted. This will cause your
+> >machine to oops at the slightest inconsistency that is found,
+> >regardless of whether it is fatal or not. Like the help text says,
+> >don't set this unless you are an XFS developer....
+> Could you please add this to the Kconfig entry.
 
-> On Fri, 11 Jul 2008 16:59:53 -0400 (EDT) Steven Rostedt <rostedt@goodmis.org>
+I effectively quoted from it:
 
->> > > +
->> > > +Here's an example of the output format of the file "trace"
->> > > +
->> > > +                             --------
->> > > +# tracer: ftrace
->> > > +#
->> > > +#           TASK-PID   CPU#    TIMESTAMP  FUNCTION
->> > > +#              | |      |          |         |
->> > > +            bash-4251  [01] 10152.583854: path_put <-path_walk
->> > > +            bash-4251  [01] 10152.583855: dput <-path_put
->> > > +            bash-4251  [01] 10152.583855: _atomic_dec_and_lock <-dput
->> > > +                             --------
->> >
->> > pids are no longer unique system-wide, and any part of the kernel ABI which
->> > exports them to userspace is, basically, broken.  Oh well.
->> 
->> What should be used instead?  Of course we're not using a kernel ABI, we
->> are using an API (text based ;-) But more on that later.
->
-> Well that's an interesting question and it has come up before.  There
-> are times when the kernel wants to display a process identifier at
-> least in a printk.  Oopses are one prominent example.
->
-> Perhaps we do need a way of doing this in a post-pid-namespace-world. 
-> Presumably it would be of the form "pidns-identifier:pid", and just
-> plain old "pid" if no pid namespaces are in operation, for some
-> back-compatibility where possible.
->
-> Eric, any thoughts?
+config XFS_DEBUG
+        bool "XFS Debugging support (EXPERIMENTAL)"
+        depends on XFS_FS && EXPERIMENTAL
+        help
+          Say Y here to get an XFS build with many debugging features,
+          including ASSERT checks, function wrappers around macros,
+          and extra sanity-checking functions in various code paths.
 
-I don't quite know what we are doing here.  Is this a /proc or /sysfs file?
+          Note that the resulting code will be HUGE and SLOW, and probably
+          not useful unless you are debugging a particular problem.
 
-After a long series of discussion on semantics what we came up with
-was that the pid namespaces are hierarchical and that a struct pid
-will have a numerical identifier in each pid namespace.  Which means
-that for printing pids in the case of printks especially for oops
-reports we can just go with pid number in the init_pid_ns.  Which is
-the classic system wide pid.
+          Say N unless you are an XFS developer, or you play one on TV.
 
-In every other case I know besides printk we are delivering the data to an
-application, and that application is running in a pid namespace
-therefore we really want to figure out the pid namespace and give it the
-information.
+> Debug mode is usually
+> noisy, little slower and mostly usefull just to the developers but *I*
+> would not expect to BUG() in the non-fatal case.
 
-For filesystem interfaces (besides proc which provides a natural split)
-the classic answer is to capture namespaces at mount time.  And display
-the data in the filesystem relative to the namespaces we captured.
+What do you expect debug code to do? Asserts are designed to
+drop the machine into a debugger when they fail so the problem can
+be, well, debugged.
 
-Eric
+> Not sure but if this is just for hch and you than a define in xfs.h
+> might be safer :)
 
+And any other XFS developer using the XFS git tree or mainline, as
+tends to happen these days. And there are cases where a debug XFS
+might be needed to help find a problem that is being hit out in
+the field.
 
+Like all other debug config options, don't set them unless you know
+what you are doing....
 
+Cheers,
 
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
