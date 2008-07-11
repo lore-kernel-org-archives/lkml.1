@@ -1,79 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758899AbYGKV7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759047AbYGKWIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758899AbYGKV7y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 17:59:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754770AbYGKV7p
+	id S1759047AbYGKWIW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 18:08:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755934AbYGKWIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 17:59:45 -0400
-Received: from mga02.intel.com ([134.134.136.20]:29220 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751514AbYGKV7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 17:59:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.30,347,1212390000"; 
-   d="scan'208";a="309366550"
-Date: Fri, 11 Jul 2008 14:59:43 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Matthew Wilcox <matthew@wil.cx>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "jgarzik@pobox.com" <jgarzik@pobox.com>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "rdunlap@xenotime.net" <rdunlap@xenotime.net>,
-       "mtk.manpages@gmail.com" <mtk.manpages@gmail.com>
-Subject: Re: Multiple MSI, take 3
-Message-ID: <20080711215943.GW1678@linux-os.sc.intel.com>
-References: <20080711005719.GO14894@parisc-linux.org> <m1iqvc91li.fsf@frodo.ebiederm.org>
-Mime-Version: 1.0
+	Fri, 11 Jul 2008 18:08:16 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:63500 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755890AbYGKWIO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 18:08:14 -0400
+Date: Fri, 11 Jul 2008 15:07:40 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Louis Rilling <louis.rilling@kerlabs.com>
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+Subject: Re: [BUGFIX][PATCH v2 0/2] configfs: Fix cleanup after mkdir()
+	failure
+Message-ID: <20080711220740.GC22577@mail.oracle.com>
+Mail-Followup-To: Louis Rilling <louis.rilling@kerlabs.com>,
+	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+References: <1215183366-17479-1-git-send-email-louis.rilling@kerlabs.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1iqvc91li.fsf@frodo.ebiederm.org>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <1215183366-17479-1-git-send-email-louis.rilling@kerlabs.com>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 11, 2008 at 03:06:33AM -0700, Eric W. Biederman wrote:
-> Matthew Wilcox <matthew@wil.cx> writes:
-> 
-> > I'd like to thank Michael Ellerman for his feedback.  This is a much
-> > better patchset than it used to be.
-> 
-> There is a reason we don't have an API to support this.  Linux can not
-> reasonably support this, especially not on current X86.  The designers
-> of the of the AHCI were idiots and should have used MSI-X.
-> 
-> Attempting to support multiple irqs in an MSI capability breaks
-> every interesting use of an irq.
-> 
-> mask/unmask is will likely break because the mask bit is optional
-> and when it is not present we disable the msi capability.
-> 
-> We can not set the affinity individually so we can not allow
-> different queues to be processed on different cores.
-> 
-> So in general it seems something that we have to jump through a million
-> hurdles and the result is someones twisted parody of a multiple working
-> irqs, that even Intel's IOMMU can't cure.
+On Fri, Jul 04, 2008 at 04:56:04PM +0200, Louis Rilling wrote:
+> This patchset fixes two kinds of bugs happening when
+> configfs_attach_group()/configfs_attach_item() fail and userspace races with
+> mkdir() or symlink().
 
-With interrupt-remapping, we can program the individual interrupt
-remapping table entries to point to different cpu's etc. All we have
-to take care is, do the IRTE allocation in a consecutive block and
-program the starting index to the MSI registers.
+	Ok, I've merged all this work.  Please check out my configfs-ALL
+branch and make sure I have everything we've worked on.
 
-Just curious Eric, why do you think that won't work?
+http://oss.oracle.com/git/?p=jlbec/linux-2.6.git;a=shortlog;h=configfs-ALL
+git://oss.oracle.com/git/jlbec/linux-2.6.git configfs-ALL
 
-thanks,
-suresh
+Joel
 
-> So unless the performance of the AHCI is better by a huge amount I don't
-> see the point, and even then I am extremely sceptical.
-> 
-> Eric
+-- 
+
+Life's Little Instruction Book #335
+
+	"Every so often, push your luck."
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
