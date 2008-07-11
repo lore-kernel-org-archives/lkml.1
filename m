@@ -1,107 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760492AbYGKTZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761387AbYGKTZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760492AbYGKTZe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 15:25:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760972AbYGKTXn
+	id S1761387AbYGKTZy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 15:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760952AbYGKTYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 15:23:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52640 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760961AbYGKTXm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 15:23:42 -0400
-Date: Fri, 11 Jul 2008 12:22:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jon Tollefson <kniht@linux.vnet.ibm.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, penberg@cs.helsinki.fi,
-       mpm@selenic.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       cl@linux-foundation.org, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: SL*B: drop kmem cache argument from constructor
-Message-Id: <20080711122228.eb40247f.akpm@linux-foundation.org>
-In-Reply-To: <48763C60.9020805@linux.vnet.ibm.com>
-References: <20080710011132.GA8327@martell.zuzino.mipt.ru>
-	<48763C60.9020805@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 11 Jul 2008 15:24:10 -0400
+Received: from ns2.suse.de ([195.135.220.15]:40566 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761177AbYGKTYH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 15:24:07 -0400
+Message-ID: <4877B339.4080103@suse.com>
+Date: Fri, 11 Jul 2008 15:23:37 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ReiserFS Mailing List <reiserfs-devel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH] reiserfs: discard prealloc in reiserfs_delete_inode
+References: <4873B3D2.1090101@suse.com> <20080711121850.dfd60681.akpm@linux-foundation.org>
+In-Reply-To: <20080711121850.dfd60681.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Jul 2008 11:44:16 -0500 Jon Tollefson <kniht@linux.vnet.ibm.com> wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> Alexey Dobriyan wrote:
-> > Kmem cache passed to constructor is only needed for constructors that are
-> > themselves multiplexeres. Nobody uses this "feature", nor does anybody uses
-> > passed kmem cache in non-trivial way, so pass only pointer to object.
-> >
-> > Non-trivial places are:
-> > 	arch/powerpc/mm/init_64.c
-> > 	arch/powerpc/mm/hugetlbpage.c
-> >   
-> ...<snip>...
-> > --- a/arch/powerpc/mm/hugetlbpage.c
-> > +++ b/arch/powerpc/mm/hugetlbpage.c
-> > @@ -595,9 +595,9 @@ static int __init hugepage_setup_sz(char *str)
-> >  }
-> >  __setup("hugepagesz=", hugepage_setup_sz);
-> >
-> > -static void zero_ctor(struct kmem_cache *cache, void *addr)
-> > +static void zero_ctor(void *addr)
-> >  {
-> > -	memset(addr, 0, kmem_cache_size(cache));
-> > +	memset(addr, 0, HUGEPTE_TABLE_SIZE);
-> >   
-> This isn't going to work with the multiple huge page size support.  The
-> HUGEPTE_TABLE_SIZE macro now takes a parameter with of the mmu psize
-> index to indicate the size of page.
+Andrew Morton wrote:
+> On Tue, 08 Jul 2008 14:37:06 -0400 Jeff Mahoney <jeffm@suse.com> wrote:
 > 
+>>  With the removal of struct file from the xattr code, reiserfs_file_release()
+>>  isn't used anymore, so the prealloc isn't discarded. This causes hangs
+>>  later down the line.
+>>
+>>  This patch adds it to reiserfs_delete_inode. In most cases it will be
+>>  a no-op due to it already having been called, but will avoid hangs with xattrs.
+>>
+>> Signed-off-by: Jeff Mahoney <jeffm@suse.com>
+>> ---
+>>  fs/reiserfs/inode.c |    2 ++
+>>  1 file changed, 2 insertions(+)
+>>
+>> --- a/fs/reiserfs/inode.c
+>> +++ b/fs/reiserfs/inode.c
+>> @@ -45,6 +45,8 @@ void reiserfs_delete_inode(struct inode
+>>  			goto out;
+>>  		reiserfs_update_inode_transaction(inode);
+>>  
+>> +		reiserfs_discard_prealloc(&th, inode);
+>> +
+>>  		err = reiserfs_delete_object(&th, inode);
+>>  
+>>  		/* Do quota update inside a transaction for journaled quotas. We must do that
+> 
+> Can you please remind us when "the removal of struct file from the xattr
+> code" happened?
+> 
+> Because hangs aren't good, and 2.6.25 might want this.
 
-hrm.  I suppose we could hold our noses and use ksize(), assuming that
-we're ready to use ksize() at this stage in the object's lifetime.
+You're right. It was added in 2.6.25-rc7. I'll ping Greg about including
+it in the stable tree.
 
-Better would be to just use kmem_cache_zalloc()?
+- -Jeff
 
---- a/arch/powerpc/mm/hugetlbpage.c~slb-drop-kmem-cache-argument-from-constructor-fix
-+++ a/arch/powerpc/mm/hugetlbpage.c
-@@ -113,7 +113,7 @@ static inline pte_t *hugepte_offset(huge
- static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
- 			   unsigned long address, unsigned int psize)
- {
--	pte_t *new = kmem_cache_alloc(huge_pgtable_cache(psize),
-+	pte_t *new = kmem_cache_zalloc(huge_pgtable_cache(psize),
- 				      GFP_KERNEL|__GFP_REPEAT);
- 
- 	if (! new)
-@@ -730,11 +730,6 @@ static int __init hugepage_setup_sz(char
- }
- __setup("hugepagesz=", hugepage_setup_sz);
- 
--static void zero_ctor(void *addr)
--{
--	memset(addr, 0, HUGEPTE_TABLE_SIZE);
--}
--
- static int __init hugetlbpage_init(void)
- {
- 	unsigned int psize;
-@@ -756,7 +751,7 @@ static int __init hugetlbpage_init(void)
- 						HUGEPTE_TABLE_SIZE(psize),
- 						HUGEPTE_TABLE_SIZE(psize),
- 						0,
--						zero_ctor);
-+						NULL);
- 			if (!huge_pgtable_cache(psize))
- 				panic("hugetlbpage_init(): could not create %s"\
- 				      "\n", HUGEPTE_CACHE_NAME(psize));
-_
+- --
+Jeff Mahoney
+SUSE Labs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-
-btw, Nick, what's with that dopey
-
-	huge_pgtable_cache(psize) = kmem_cache_create(...
-
-trick?  The result of a function call is not an lvalue, and writing a
-macro which pretends to be a function and then using it in some manner
-in which a function cannot be used is seven ways silly :(
+iEYEARECAAYFAkh3szkACgkQLPWxlyuTD7IOyACZAd0+kO4D+bPjx1W1pX/APgl+
+eKgAoJ75yKu/IlmHxvlmyWM5DThyKCQL
+=BLAB
+-----END PGP SIGNATURE-----
