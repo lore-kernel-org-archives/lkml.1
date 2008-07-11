@@ -1,72 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760561AbYGKUYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760125AbYGKUZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760561AbYGKUYX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 16:24:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756399AbYGKUYH
+	id S1760125AbYGKUZv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 16:25:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbYGKUZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 16:24:07 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40376 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757133AbYGKUYF (ORCPT
+	Fri, 11 Jul 2008 16:25:43 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:33795 "EHLO
+	IE1EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754125AbYGKUZm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 16:24:05 -0400
-Date: Fri, 11 Jul 2008 22:24:35 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Huang Ying <ying.huang@intel.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATCH -mm 1/2] kexec jump -v12: kexec jump
-Message-ID: <20080711202434.GB6261@elf.ucw.cz>
-References: <1215401122.4660.4.camel@caritas-dev.intel.com> <20080708145051.GA14745@redhat.com> <20080711122131.b6461ab1.akpm@linux-foundation.org>
+	Fri, 11 Jul 2008 16:25:42 -0400
+X-BigFish: VPS-15(zz1432R98dR7efV1805Mzz10d3izzz32i6bh87il43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0K3UZE8-02-MH0-01
+Date: Fri, 11 Jul 2008 14:29:06 -0600
+From: Jordan Crouse <jordan.crouse@amd.com>
+To: David Brigada <brigad@rpi.edu>
+CC: jim.cromie@gmail.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-geode@lists.infradead.org
+Subject: Re: PCI-ISA Bridge not operating
+Message-ID: <20080711202906.GF29570@cosmic.amd.com>
+References: <487774F9.6000001@rpi.edu> <20080711164845.GB28720@cosmic.amd.com> <4877908C.4060706@rpi.edu> <4877AD63.3000405@rpi.edu> <20080711191045.GB29570@cosmic.amd.com> <4877BF32.9040304@rpi.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <20080711122131.b6461ab1.akpm@linux-foundation.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <4877BF32.9040304@rpi.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 11 Jul 2008 20:25:31.0621 (UTC) FILETIME=[4409B150:01C8E394]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2008-07-11 12:21:31, Andrew Morton wrote:
-> On Tue, 8 Jul 2008 10:50:51 -0400 Vivek Goyal <vgoyal@redhat.com> wrote:
-> 
-> > On Mon, Jul 07, 2008 at 11:25:22AM +0800, Huang Ying wrote:
-> > > This patch provides an enhancement to kexec/kdump. It implements
-> > > the following features:
-> > > 
-> > > - Backup/restore memory used by the original kernel before/after
-> > >   kexec.
-> > > 
-> > > - Save/restore CPU state before/after kexec.
-> > > 
+On 11/07/08 16:14 -0400, David Brigada wrote:
+> Jordan Crouse wrote:
+> > On 11/07/08 14:58 -0400, David Brigada wrote:
+> >> David Brigada wrote:
+> >>> Jordan Crouse wrote:
+> >>>> On 11/07/08 10:58 -0400, David Brigada wrote:
+> >>>>> Hi,
+> >>>>>
+> >>>>> I'm working with the MSM800XEV board from Digital-Logic.  This board 
+> >>>>> uses a Geode LX800 for a CPU and has the CS5536 companion board also 
+> >>>>> installed.  The board works with an IT8888G IC that provides a PCI/ISA 
+> >>>>> bridge to a PC/104 bus that is externally provided.
+> >>>>>
+> >>>>> If I boot with FreeDOS, I can twiddle I/O ports, and the proper ISA 
+> >>>>> signaling comes over the PC/104 bus.  In Linux, the /IOW or /IOR line 
+> >>>>> goes low as expected, but the address doesn't come over the bus.  The 
+> >>>>> DOS that I'm running doesn't seem to have any specific drivers for the 
+> >>>>> chip, I'm guessing that the hardware should "just work" --- the IT8888G 
+> >>>>> is designed to grab I/O requests in the ISA range off the PCI bus after 
+> >>>>> a short delay if nothing else grabs them first.
+> >>>>>
+> >>>>> I have a feeling that it has something to do with the CS5536 companion 
+> >>>>> chip, as it seems as though there is a driver for a PCI/ISA bridge on 
+> >>>>> that chip, though I can't get much detail from AMD's datasheet on that 
+> >>>>> functionality.  I do know that on the MSM800XEV, any such functionality 
+> >>>>> is wired to the IT8888G, not the CS5536.
+> >>>>>
+> >>>>> There are two kernel config options related to the PCI IDs of the parts 
+> >>>>> of the device that handle the ISA bus, CONFIG_SCx200_ACB and 
+> >>>>> CONFIG_CS5535_GPIO.  I've tried disabling both, but it doesn't seem to help.
+> >>>>>
+> >>>>> In lspci, the CS5536 PCI/ISA bridge is shown, but not the IT8888G.
+> >>>>>
+> >>>>> Any ideas?
+> >>>> ISA should indeed "just work".  The only thing I'm wondering is if
+> >>>> the kernel is interfering (it shouldn't).  I assume that since it works
+> >>>> in FreeDOS that there is no possibility that something on the PCI bus
+> >>>> is grabbing the cycles instead.
+> >>> That's what I'm thinking --- that the CS5536 PCI/ISA bridge is claiming 
+> >>> the cycles.
+> >>>
+> >>>> How are you trying to access the device in Linux?  Through a kernel module
+> >>>> or a user application running as root?
+> >>> I've tried both.  I have a kernel module that I wrote for the hardware. 
+> >>>   When I couldn't get that working, I tried looping some code that keeps 
+> >>> touching the same I/O port that I'm using.
+> >>>
+> >>>> Jordan
+> >>>>
+> >>> Dave
+> >> Looking through the documentation for the CS5536, in the "CS56536 
+> >> Companion Device Data Book," section 5.2.8, it says the following:
+> >>
+> >>  > If the SDOFF (Subtractive Decode Off) bit in the GLPCI_MSR_CTRL (MSR
+> >>  > 51000010h[10]) is cleared (reset value), any PCI transaction, other
+> >>  > than Configuration Read/Write, Interrupt Acknowledge, and Special
+> >>  > Cycle transactions, not claimed by any device (i.3., not asserting
+> >>  > DEVSEL#) within the default active decode cycles (three cycles
+> >>  > immediately after FRAME# being asserted) will be accepted by GLPCI_SB
+> >>  > at the fourth clock edge.
+> >>
+> >> This is the same behavior that the IT8888G chip uses --- it waits three 
+> >> cycles for another device to claim it and then passes the transaction 
+> >> along.  I'm guessing that the CS5536 might be grabbing it (maybe it's 
+> >> electrically closer, or the logic is more optimized) before the IT8888G 
+> >> can handle it.
+> >>
+> >> Does this seem feasible as to what could be happening?
 > > 
-> > Hi Huang,
+> > Sure, but then why does FreeDOS work?  It shouldn't be any different
+> > when the bits hit the line.
 > > 
-> > In general this patch set looks good enough to live in -mm and
-> > get some testing going.
-> > 
-> > To me, adding capability to return back to original kernel looks
-> > like a logical extension to kexec functionality.
+> > Jordan
 > 
-> Exciting ;)  It's much less code than I expected.
-> 
-> I don't think I understand the feature any more.  Once upon a time we
-> thought that this might become a new and better (or at least
-> better-code-sharing) way of doing suspend-to-disk.  How far are we from
-> that?
+> That *is* puzzling.  When I do lspci, the entry for the IT8888G does not 
+> appear.  I don't have much experience with PCI internals.  Would that be 
+> because there is no driver for it in the kernel, or is there something 
+> more insidious afoot?
 
-Well, it will be tricky to get kjump-hibernation right with respect to
-ACPI, but we should be fairly close to basic hibernation working with
-this. It has major advantage of not needing refrigerator (and few
-disadvantages -- like doing aditional boot during suspend).
+Well - the first step would be to get a dmesg output.  if the kernel
+is doing anything to the device at all, the dmesg will show it.
 
-But main reason I'd like kjump to be in is different -- it should be
-useful to stuff like "dump but continue running", etc...
-									Pavel
+Jordan
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Jordan Crouse
+Systems Software Development Engineer 
+Advanced Micro Devices, Inc.
+
