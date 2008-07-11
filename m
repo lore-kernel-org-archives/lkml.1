@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758266AbYGKMcg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758351AbYGKMeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758266AbYGKMcg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 08:32:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbYGKMc3
+	id S1758351AbYGKMeY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 08:34:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753054AbYGKMeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 08:32:29 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:27029 "EHLO
-	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755005AbYGKMc2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 08:32:28 -0400
-X-BigFish: VPS-19(zz1432R98dR62a3L7efV1805Mzz10d3izzz32i6bh87il43j66h)
-X-Spam-TCS-SCL: 5:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0K3UDHO-01-3MH-01
-Date: Fri, 11 Jul 2008 14:32:14 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Gabor Gombas <gombasg@sztaki.hu>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH 1/2] x86/pci: renamed: numa.c -> numaq_32.c
-Message-ID: <20080711123213.GA7963@erda.amd.com>
-References: <1215771521-6848-1-git-send-email-robert.richter@amd.com> <1215771521-6848-2-git-send-email-robert.richter@amd.com> <20080711123001.GC10337@boogie.lpds.sztaki.hu>
+	Fri, 11 Jul 2008 08:34:16 -0400
+Received: from ozlabs.org ([203.10.76.45]:53897 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751671AbYGKMeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 08:34:15 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH -next-20080709] fixup stop_machine use cpu mask vs ftrace
+Date: Fri, 11 Jul 2008 22:34:00 +1000
+User-Agent: KMail/1.9.9
+Cc: Milton Miller <miltonm@bga.com>, Ingo Molnar <mingo@redhat.com>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200807081756.47140.rusty@rustcorp.com.au> <for-27-patch0-1@bga.com> <20080711074602.GB27849@elte.hu>
+In-Reply-To: <20080711074602.GB27849@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080711123001.GC10337@boogie.lpds.sztaki.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 11 Jul 2008 12:32:15.0827 (UTC) FILETIME=[26D36230:01C8E352]
+Message-Id: <200807112234.00993.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11.07.08 14:30:01, Gabor Gombas wrote:
-> On Fri, Jul 11, 2008 at 12:18:40PM +0200, Robert Richter wrote:
-> 
-> > --- /dev/null
-> > +++ b/arch/x86/pci/numaq_32.c
-> > @@ -0,0 +1,178 @@
-> > +/*
-> > + * numa.c - Low-level PCI access for NUMA-Q machines
-> > + */
-> > +
-> 
-> Either fix the filename or just drop it completely.
+On Friday 11 July 2008 17:46:03 Ingo Molnar wrote:
+> * Milton Miller <miltonm@bga.com> wrote:
+> > Hi Rusty, Ingo.
+> >
+> > Rusty's patch [PATCH 3/3] stop_machine: use cpu mask rather than magic
+> > numbers didn't find kernel/trace/ftrace.c in -next, causing an
+> > immediate almost NULL pointer dereference in ftrace_dynamic_init.
+>
+> Rusty - what's going on here? Please do not change APIs like that, which
+> cause code to crash. Either do a compatible API change, or change it
+> over in a way that causes clear build failures, not crashes.
 
-Next patch in this series. This is only the git-mv.
+To be fair, I did.  Unfortunately GCC only warns about passing an int to a 
+pointer arg, and boom.
 
--Robert
+But compatible is even better.  Given the number of stop_machine_run users I 
+thought it unlikely that a new one would be introduced during the change.  I 
+was wrong, so I'll do it the Right Way.
 
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
-
+Cheers,
+Rusty.
