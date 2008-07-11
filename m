@@ -1,50 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759314AbYGKUcG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756007AbYGKUc1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759314AbYGKUcG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 16:32:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754928AbYGKUbx
+	id S1756007AbYGKUc1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 16:32:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755724AbYGKUby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 11 Jul 2008 16:31:54 -0400
+Received: from mga09.intel.com ([134.134.136.24]:54637 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754125AbYGKUbx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 11 Jul 2008 16:31:53 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35556 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753344AbYGKUbw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 16:31:52 -0400
-Date: Fri, 11 Jul 2008 21:14:09 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ondrej Zary <linux@rainbow-software.org>
-Cc: Alan Cox <alan@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-Subject: Re: pata_it821x completely broken
-Message-ID: <20080711211409.2eef4ddb@lxorguk.ukuu.org.uk>
-In-Reply-To: <200807112043.36772.linux@rainbow-software.org>
-References: <200807042153.56644.linux@rainbow-software.org>
-	<20080706230118.GA25905@devserv.devel.redhat.com>
-	<200807102235.22651.linux@rainbow-software.org>
-	<200807112043.36772.linux@rainbow-software.org>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.30,347,1212390000"; 
+   d="scan'208";a="309226657"
+Date: Fri, 11 Jul 2008 13:31:52 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "ebiederm@xmission.com" <ebiederm@xmission.com>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "steiner@sgi.com" <steiner@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jeremy@goop.org" <jeremy@goop.org>
+Subject: Re: [patch 00/26] x64, x2apic/intr-remap: Interrupt-remapping and x2apic support
+Message-ID: <20080711203151.GU1678@linux-os.sc.intel.com>
+References: <20080710181634.764954000@linux-os.sc.intel.com> <20080710195320.GA23322@elte.hu> <20080710215617.GM1678@linux-os.sc.intel.com> <20080711102814.GA17938@elte.hu> <20080711200957.GA8173@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080711200957.GA8173@elte.hu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > commenting out the error check after ata_dev_init_params() call in
-> > ata_dev_read_id() function (libata-core.c), I got at least the device name.
-> > The capacity is 0 so it doesn't work, obviously:
+On Fri, Jul 11, 2008 at 01:09:57PM -0700, Ingo Molnar wrote:
+> 
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > > >   http://redhat.com/~mingo/misc/config-Thu_Jul_10_21_43_28_CEST_2008.bad
+> > >
+> > > Ingo, that was my stupid typo. Please apply this patch. BTW, we need
+> > > some more xen64 paravirt fixes in this area. I will look at it as
+> > > soon as possible.
+> >
+> > applied to tip/x86/x2apic - thanks Suresh.
+> 
+> another problem is the redefinition of apic_read(), causing:
+> 
+>  arch/x86/xen/enlighten.c: In function ‘xen_patch':
+>  arch/x86/xen/enlighten.c:1084: warning: label ‘patch_site' defined but not used
+>  arch/x86/xen/enlighten.c: At top level:
+>  arch/x86/xen/enlighten.c:1272: error: expected identifier before ‘(' token
+>  arch/x86/xen/enlighten.c:1273: error: expected ‘}' before ‘.' token
+> 
+> with this config:
+> 
+>   http://redhat.com/~mingo/misc/config-Fri_Jul_11_21_51_18_CEST_2008.bad
+> 
+> the continued spaghetti in all the APIC variants is quite ugly. This
+> should all be handled via a single apic_ops template that should cover
+> the paravirt and native variants as well.
 
-If you don't read the ID then it wouldn't.
+Ingo, I just posted the fix for this.
 
-> I captured the IDENTIFY data from the virtual device. I'm not ATA guru but
-> looking at the data, there are zeros at many places where something should be.
-> That number starting at 0x78 looks like size of the array in sectors
-> (0x4C726C or 0x4C6C72 - the array is built from 2.5GB and 6.4GB drives).
+To cleanup the code:
 
-The Ident data for the virtual device is fairly sparse but the specs
-don't require a lot of the field are filled in and only the LBA really
-matters.
+struct pv_apic_ops {
+#ifdef CONFIG_X86_LOCAL_APIC
+	/*
+	* Direct APIC operations, principally for VMI.  Ideally
+	* these shouldn't be in this interface.
+	*/
+	void (*apic_write)(unsigned long reg, u32 v);
+	void (*apic_write_atomic)(unsigned long reg, u32 v);
+	u32 (*apic_read)(unsigned long reg);
 
+Probably we should move the three above routines to basic apic_ops, which just
+deal with the apic HW accesses and retain the below for pv_apic_ops, which
+care more than the basic reg accesses. This will be true for both 32/64bits..
+
+        void (*setup_boot_clock)(void);
+        void (*setup_secondary_clock)(void);
+
+        void (*startup_ipi_hook)(int phys_apicid,
+                                 unsigned long start_eip,
+                                 unsigned long start_esp);
+#endif
+};
+
+
+Unless there is an objection, I will post the fix.
+
+thanks,
+suresh
