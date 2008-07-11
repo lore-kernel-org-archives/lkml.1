@@ -1,102 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758073AbYGKLMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758865AbYGKLMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758073AbYGKLMV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 07:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbYGKLMG
+	id S1758865AbYGKLMg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 07:12:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756897AbYGKLMR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 07:12:06 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:59823 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753483AbYGKLME (ORCPT
+	Fri, 11 Jul 2008 07:12:17 -0400
+Received: from gv-out-0910.google.com ([216.239.58.185]:14034 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756758AbYGKLMP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 07:12:04 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       grundler@parisc-linux.org, mingo@elte.hu, tglx@linutronix.de,
-       jgarzik@pobox.com, linux-ide@vger.kernel.org, suresh.b.siddha@intel.com,
-       benh@kernel.crashing.org, jbarnes@virtuousgeek.org,
-       rdunlap@xenotime.net, mtk.manpages@gmail.com
-References: <20080711005719.GO14894@parisc-linux.org>
-	<m1iqvc91li.fsf@frodo.ebiederm.org>
-	<20080711102326.GR14894@parisc-linux.org>
-Date: Fri, 11 Jul 2008 04:05:28 -0700
-In-Reply-To: <20080711102326.GR14894@parisc-linux.org> (Matthew Wilcox's
-	message of "Fri, 11 Jul 2008 04:23:26 -0600")
-Message-ID: <m1tzew7kav.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 11 Jul 2008 07:12:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=k7FfU5xVewu7UPiItn4yuy/jgumSrDgwgo86uIiuq3OkHzCI4Kr0/2u+hzKrN5u8UC
+         dp1z2DpnjfxeWSnJ+MhEsETR+wu5IhVuIgTQUPJ7qNai1/cJf/gMhIJABrfVnll/tTf9
+         okALl0xamRPoy0EUqzYob79XFm9Pz0LBXNo4Q=
+Message-ID: <4877400B.1000400@gmail.com>
+Date: Fri, 11 Jul 2008 14:12:11 +0300
+From: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Matthew Wilcox <matthew@wil.cx>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
-	*      [score: 0.1620]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.4 FVGT_m_MULTI_ODD Contains multiple odd letter combinations
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: Multiple MSI, take 3
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+To: linux-next@vger.kernel.org
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: today's linux-next fails to boot
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox <matthew@wil.cx> writes:
+Hi,
 
-> On Fri, Jul 11, 2008 at 03:06:33AM -0700, Eric W. Biederman wrote:
->> Matthew Wilcox <matthew@wil.cx> writes:
->> 
->> > I'd like to thank Michael Ellerman for his feedback.  This is a much
->> > better patchset than it used to be.
->> 
->> There is a reason we don't have an API to support this.  Linux can not
->> reasonably support this, especially not on current X86.  The designers
->> of the of the AHCI were idiots and should have used MSI-X.
->
-> Thank you for your constructive feedback, Eric.  Unfortunately, we have
-> to deal with the world as it is, not how we would like it to be.  Since
-> I have it running, I'd like to know what is unreasonable about the
-> implementation.
+Today's linux-next tree (commit
+93847083e4791567931bd17c039cc35881cdad29) fails to boot:
+[built with gcc-4.2.4-3]
 
-At the very least it is setting all kinds of expectations that it
-doesn't meet.
+BUG: Int 14: CR2 b0049dea
+     EDI 00000082 ESI 00000000 EBP c059be88 ESP c059be5c
+     EBX f000ec62 EDX 0000000e ECX c0595480 EAX f000ec62
+     err 00000000 EIP c0181ca0  CS 00000060 flg 00010082
+Stack:   00000040 c06a2ba0 000080d0 c0595480 c0000f19c c000f180 c0581120
+c059bea8
+         c02bf19b 00000000 00000080 c059beb8 c0000f194 c000f180 0000000a
+c059beb8
+         c03a1059 00000000 00000000 c059bed8 c05c4c7c  0009efff 00000000
+c04f4df4
 
-In addition the MSI-X spec predates the AHCI device by a long shot.
-In general my experience has been that the hardware designers who
-really care and have done their homework and can actually take
-advantage of multiple irqs have implemented MSI-X.
+I get this as soon as I boot from grub2, strangely the error message is
+at the bottom of the screen, and I can't see the full message (scrolling
+won't work).
 
->> mask/unmask is will likely break because the mask bit is optional
->> and when it is not present we disable the msi capability.
->
-> I believe this is fixable.  I will attempt to do so.
+The last kernel I built & booted was 2.6.26-rc8 from Linus's tree. I
+will try to built&boot 2.6.26-rc9, and then bisect.
 
-Assuming AHCI implements the mask bits.  In the general case this
-is not fixable.  I know of several devices that do not implement 
-the optional mask bits.
+This happens on 32-bit Dell Inspiron 6400 (Intel Core Duo T2300 @1.66
+Ghz CPU),  Intel ICH-7 chipset, and a seagate SATA drive. 
+I will provide  full hardware details once I bisected the problem.
 
->> We can not set the affinity individually so we can not allow
->> different queues to be processed on different cores.
->
-> This is true, and yet, it is still useful.  Just not as useful as one
-> would want.
+Meanwhile, if somebody has an idea as to what is wrong?
 
-Also a case of mismatched expectations.  The linux irq API allows
-irqs to be bound to different cpus individually.  Multi msi does
-not meet that contract.
-
->> So unless the performance of the AHCI is better by a huge amount I don't
->> see the point, and even then I am extremely sceptical.
->
-> I don't have performance numbers yet, but surely you can see that
-> avoiding a register read in the interrupt path is a large win?
-
-No.  It is not obvious to me.
-
-Eric
+Best regards,
+--Edwin
