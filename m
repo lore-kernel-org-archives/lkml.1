@@ -1,80 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760029AbYGKUTZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759858AbYGKUUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760029AbYGKUTZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 16:19:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbYGKUTI
+	id S1759858AbYGKUUz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 16:20:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbYGKUUr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 16:19:08 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:43798 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754928AbYGKUTG (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 16:19:06 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Marcin Obara <marcin_obara@users.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Marcel Selhorst <tpm@selhorst.net>, Kylene Jo Hall <kjhall@us.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: patch tpm-correct-tpm-timeouts-to-jiffies-conversion.patch breaks stuff
-In-Reply-To: Your message of "Fri, 11 Jul 2008 21:39:52 +0200."
-             <ea8d860a0807111239u2d8318d0k74312f6b74ebc06a@mail.gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <18107.1215803534@turing-police.cc.vt.edu>
-            <ea8d860a0807111239u2d8318d0k74312f6b74ebc06a@mail.gmail.com>
+	Fri, 11 Jul 2008 16:20:47 -0400
+Received: from [194.117.236.238] ([194.117.236.238]:53625 "EHLO
+	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1750921AbYGKUUq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 16:20:46 -0400
+Date: Fri, 11 Jul 2008 23:19:23 +0300
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       "Christoph Lameter" <cl@linux-foundation.org>
+Subject: Re: [RFC PATCH 4/5] kmemtrace: SLUB hooks.
+Message-ID: <20080711231923.0f827113@linux360.ro>
+In-Reply-To: <84144f020807110145g3467d77md54e3d734ecba2c6@mail.gmail.com>
+References: <1215712946-23572-1-git-send-email-eduard.munteanu@linux360.ro>
+	<1215712946-23572-2-git-send-email-eduard.munteanu@linux360.ro>
+	<1215712946-23572-3-git-send-email-eduard.munteanu@linux360.ro>
+	<1215712946-23572-4-git-send-email-eduard.munteanu@linux360.ro>
+	<20080710210617.70975aed@linux360.ro>
+	<84144f020807110145g3467d77md54e3d734ecba2c6@mail.gmail.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1215807507_7279P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Fri, 11 Jul 2008 16:18:27 -0400
-Message-ID: <48384.1215807507@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1215807507_7279P
-Content-Type: text/plain; charset=us-ascii
+On Fri, 11 Jul 2008 11:45:59 +0300
+"Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
 
-On Fri, 11 Jul 2008 21:39:52 +0200, Marcin Obara said:
-> 2008/7/11  <Valdis.Kletnieks@vt.edu>:
+> Hi Eduard-Gabriel,
 > 
+> On Thu, Jul 10, 2008 at 9:06 PM, Eduard - Gabriel Munteanu
+> <eduard.munteanu@linux360.ro> wrote:
+> > This adds hooks for the SLUB allocator, to allow tracing with
+> > kmemtrace.
 > >
-> > So is the spec wrong, or is my chipset on drugs, or?
+> > Signed-off-by: Eduard - Gabriel Munteanu
+> > <eduard.munteanu@linux360.ro>
+> 
+> > @@ -205,7 +206,13 @@ void *__kmalloc(size_t size, gfp_t flags);
 > >
-> Can you provide configuration information?
-> - used TPM chip
-> - used TPM kernel modules
+> >  static __always_inline void *kmalloc_large(size_t size, gfp_t
+> > flags) {
+> > -       return (void *)__get_free_pages(flags | __GFP_COMP,
+> > get_order(size));
+> > +       unsigned int order = get_order(size);
+> > +       void *ret = (void *) __get_free_pages(flags, order);
+> > +
+> > +       kmemtrace_mark_alloc(KMEMTRACE_KIND_KERNEL, _THIS_IP_, ret,
+> > +                            size, PAGE_SIZE << order, flags);
+> 
+> Oh, I missed this on the first review. Here we have, like in SLOB,
+> page allocator pass-through, so wouldn't KIND_PAGES be more
+> appropriate?
 
-This is on a Dell Latitude D820 with an x86_64 2.6.25-rc8-mm kernel.
+The rationale was to be able to trace how kmalloc()s perform, no matter
+what the allocator does behind the scenes. Presumably, the developer
+would know what kmalloc() really does with an allocation request.
 
-% lsmod | grep tpm
-tpm_tis                11660  0 
-tpm                    13760  1 tpm_tis
-tpm_bios                6464  1 tpm
-
-dmesg says:
-
-tpm_tis 00:0f: 1.2 TPM (device-id 0x1001, rev-id 2)
-
-and lspnp -v says:
-
-00:0f BCM0102 TPM chipset
-    state = active
-        mem 0xfed40000-0xfed44fff
-        io 0xcb0-0xcbb
-
-(Yes, I'm confused why it's BCM0102 and not BCM0101)..
+Does this sound okay?
 
 
---==_Exmh_1215807507_7279P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFId8ATcC3lWbTT17ARAjptAKDmgWs7Pt0YspaIa8wFFlkCn91HkgCeJTpR
-M0/e8s/hVs98ANFTV+/LfbE=
-=GGog
------END PGP SIGNATURE-----
-
---==_Exmh_1215807507_7279P--
+	Eduard
