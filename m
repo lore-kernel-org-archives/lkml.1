@@ -1,73 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757484AbYGKUKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbYGKUMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757484AbYGKUKg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 16:10:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754539AbYGKUK1
+	id S1758166AbYGKUMi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 16:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755687AbYGKUMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 16:10:27 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37229 "EHLO mx3.mail.elte.hu"
+	Fri, 11 Jul 2008 16:12:30 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35842 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754025AbYGKUK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 16:10:26 -0400
-Date: Fri, 11 Jul 2008 22:09:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: "hpa@zytor.com" <hpa@zytor.com>, "tglx@linutronix.de" <tglx@linutronix.de>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "ebiederm@xmission.com" <ebiederm@xmission.com>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "steiner@sgi.com" <steiner@sgi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       jeremy@goop.org
-Subject: Re: [patch 00/26] x64, x2apic/intr-remap: Interrupt-remapping and
-	x2apic support
-Message-ID: <20080711200957.GA8173@elte.hu>
-References: <20080710181634.764954000@linux-os.sc.intel.com> <20080710195320.GA23322@elte.hu> <20080710215617.GM1678@linux-os.sc.intel.com> <20080711102814.GA17938@elte.hu>
+	id S1755075AbYGKUMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 16:12:30 -0400
+Date: Fri, 11 Jul 2008 16:11:49 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Huang Ying <ying.huang@intel.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       Horms <horms@verge.net.au>
+Subject: Re: [PATCH -mm 1/2] kexec jump -v12: kexec jump
+Message-ID: <20080711201149.GB3298@redhat.com>
+References: <1215401122.4660.4.camel@caritas-dev.intel.com> <20080708145051.GA14745@redhat.com> <20080711122131.b6461ab1.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080711102814.GA17938@elte.hu>
+In-Reply-To: <20080711122131.b6461ab1.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> > >   http://redhat.com/~mingo/misc/config-Thu_Jul_10_21_43_28_CEST_2008.bad
-> > 
-> > Ingo, that was my stupid typo. Please apply this patch. BTW, we need 
-> > some more xen64 paravirt fixes in this area. I will look at it as 
-> > soon as possible.
+On Fri, Jul 11, 2008 at 12:21:31PM -0700, Andrew Morton wrote:
+> On Tue, 8 Jul 2008 10:50:51 -0400 Vivek Goyal <vgoyal@redhat.com> wrote:
 > 
-> applied to tip/x86/x2apic - thanks Suresh.
+> > On Mon, Jul 07, 2008 at 11:25:22AM +0800, Huang Ying wrote:
+> > > This patch provides an enhancement to kexec/kdump. It implements
+> > > the following features:
+> > > 
+> > > - Backup/restore memory used by the original kernel before/after
+> > >   kexec.
+> > > 
+> > > - Save/restore CPU state before/after kexec.
+> > > 
+> > 
+> > Hi Huang,
+> > 
+> > In general this patch set looks good enough to live in -mm and
+> > get some testing going.
+> > 
+> > To me, adding capability to return back to original kernel looks
+> > like a logical extension to kexec functionality.
+> 
+> Exciting ;)  It's much less code than I expected.
+> 
+> I don't think I understand the feature any more.  Once upon a time we
+> thought that this might become a new and better (or at least
+> better-code-sharing) way of doing suspend-to-disk.  How far are we from
+> that?
+> 
 
-another problem is the redefinition of apic_read(), causing:
+Hi Andrew,
 
- arch/x86/xen/enlighten.c: In function ‘xen_patch':
- arch/x86/xen/enlighten.c:1084: warning: label ‘patch_site' defined but not used
- arch/x86/xen/enlighten.c: At top level:
- arch/x86/xen/enlighten.c:1272: error: expected identifier before ‘(' token
- arch/x86/xen/enlighten.c:1273: error: expected ‘}' before ‘.' token
+We can use this patchset for hibernation, but can it be a better way of doing
+things than what we already have, I don't know. Last time I had raised
+this question and power people had various views. In the end, Pavel wanted
+this patchset to be in.  Pavel, can tell more here...
 
-with this config:
+To me this patchset looks interesting for couple of reasons.
 
-  http://redhat.com/~mingo/misc/config-Fri_Jul_11_21_51_18_CEST_2008.bad
+- Looks like an interesting feature where one can have a separate kernel
+  in memory and one can switch between the kernels on the fly. It can
+  be modified to have more than one kernel in memory at a time.
 
-the continued spaghetti in all the APIC variants is quite ugly. This 
-should all be handled via a single apic_ops template that should cover 
-the paravirt and native variants as well.
+- So far kexec was one directional. One can only kexec to new kernel and
+  old kernel was gone. Now this patchset makes kexec functionality kind
+  of bidirectional and this looks like logical extension and can lead
+  to intersting use cases in future.
 
-	Ingo
+Huang also talks of using this feature for snapshotting kernel and
+invoking some BIOS code in protected mode. I am not very sure how exactly
+are they planning to use it. Huang, do you have more details on this?
+
+> What are the prospects of supporting other architectures?
+> 
+
+I think it should be doable on other architectures as well where kexec
+is supported. Can't think of a reason why it can't be. Huang, what do
+you think?
+
+> Who maintains kexec-tools, and are they OK with merging up the
+> corresponding changes?
+> 
+
+I think Eric still has the ownership of kexec-tools. But it has been
+long since kexec-tools has been updated. Now simon horman is maintaining
+a separate tree, kexec-tools-testing, and all the active development
+is taking place there.
+
+Huang has not exactly posted kexec-tools patches but has given link
+to kexec-tools patches and no body has objected so far. I am CCing it
+to Simon Horman, if he sees any issues.
+
+Thanks
+Vivek
