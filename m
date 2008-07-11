@@ -1,63 +1,319 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756272AbYGKVYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760926AbYGKV0C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756272AbYGKVYl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 17:24:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760197AbYGKVYc
+	id S1760926AbYGKV0C (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 17:26:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbYGKVZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 17:24:32 -0400
-Received: from outbound-mail-150.bluehost.com ([67.222.38.40]:57720 "HELO
-	outbound-mail-150.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760754AbYGKVYb (ORCPT
+	Fri, 11 Jul 2008 17:25:53 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:22377 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752317AbYGKVZv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 17:24:31 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User:DomainKey-Status;
-	b=Jaht4QQu//bY+qfKfdZbYpApLScslpXRBdJXSvzqYA9aJLHCYK7r8mhpoXzyWPt0W+8SK6JYB3fT3U+ka/+EBXVTgpL97VLALIA+GNxDtzGztbhnE58L9BeizitJERPn;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 0/2] x86/pci: Renaming numa into numaq
-Date: Fri, 11 Jul 2008 14:24:20 -0700
-User-Agent: KMail/1.9.9
-Cc: Robert Richter <robert.richter@amd.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <1215771521-6848-1-git-send-email-robert.richter@amd.com> <20080711192733.GA32623@elte.hu>
-In-Reply-To: <20080711192733.GA32623@elte.hu>
+	Fri, 11 Jul 2008 17:25:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=uId3dKTqCpxNrw6WIsLwmu3td9joIYRBuXCBKZJGUGkA97OqWm9eIMqdLJ6nslt44k
+         CBvtvcXmU0hOCO3CnwTuDvsk1r65555d4BNV3z5MInt12xpATATWs7lggayIDW4wKiMM
+         uxxe6OwSRlg3+BNaeLYGdF8ppDAF+qVgMyqwI=
+Message-ID: <5a4c581d0807111425r72e39528w841e24a9b956c245@mail.gmail.com>
+Date: Fri, 11 Jul 2008 23:25:50 +0200
+From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+To: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [Cbe-oss-dev] [regression/bisected] corrupt CD data after media change and delay
+Cc: linux-scsi@vger.kernel.org,
+       "Linux Kernel Development" <linux-kernel@vger.kernel.org>,
+       "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+       "Maarten Bressers" <mbres@gentoo.org>, "Daniel Drake" <dsd@gentoo.org>,
+       "Cell Broadband Engine OSS Development" <cbe-oss-dev@ozlabs.org>
+In-Reply-To: <5a4c581d0806220614seab6598ufa798d8642295495@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807111424.21147.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 66.205.146.252 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
+References: <Pine.LNX.4.64.0806061458300.6228@vixen.sonytel.be>
+	 <Pine.LNX.4.64.0806131932350.30730@vixen.sonytel.be>
+	 <5a4c581d0806180147qf8fc731y527c79bfb73401b2@mail.gmail.com>
+	 <Pine.LNX.4.64.0806181156460.13297@vixen.sonytel.be>
+	 <5a4c581d0806180515g5f24e9d9m85369bfa0a5f2228@mail.gmail.com>
+	 <5a4c581d0806210718m77be63c9l444d8d7d7a5266bd@mail.gmail.com>
+	 <Pine.LNX.4.64.0806221018220.9736@vixen.sonytel.be>
+	 <5a4c581d0806220614seab6598ufa798d8642295495@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, July 11, 2008 12:27:33 pm Ingo Molnar wrote:
-> * Robert Richter <robert.richter@amd.com> wrote:
-> > This patch series renames numa into numaq for x86/pci code.
+On Sun, Jun 22, 2008 at 3:14 PM, Alessandro Suardi
+<alessandro.suardi@gmail.com> wrote:
+> On Sun, Jun 22, 2008 at 10:18 AM, Geert Uytterhoeven
+> <Geert.Uytterhoeven@sonycom.com> wrote:
+>> On Sat, 21 Jun 2008, Alessandro Suardi wrote:
+>>> On Wed, Jun 18, 2008 at 2:15 PM, Alessandro Suardi
+>>> <alessandro.suardi@gmail.com> wrote:
+>>> > On Wed, Jun 18, 2008 at 1:13 PM, Geert Uytterhoeven
+>>> > <Geert.Uytterhoeven@sonycom.com> wrote:
+>>> >> On Wed, 18 Jun 2008, Alessandro Suardi wrote:
+>>> >>> On Fri, Jun 13, 2008 at 7:33 PM, Geert Uytterhoeven
+>>> >>> <Geert.Uytterhoeven@sonycom.com> wrote:
+>>> >>> > On Fri, 6 Jun 2008, Geert Uytterhoeven wrote:
+>>> >>> >> When mounting a CD/DVD more than 30 seconds after inserting it, and reading
+>>> >>> >> from it, we get:
+>>> >>> >
+>>> >>> > Apparently the fix didn't make it to all the CCed lists...
+>>> >>> >
+>>> >>> > http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fjejb%2Fscsi-rc-fixes-2.6.git;a=commitdiff_plain;h=d1daeabf0da5bfa1943272ce508e2ba785730bf0
+>>> >>>
+>>> >>> Oh, that's in mainline ? I still have the problem of having to
+>>> >>
+>>> >> Not yet, it's in the scsi-rc-fixes-2.6 tree.
+>>> >>
+>>> >>>  insert DVD / try accessing it and get errors / eject / re-insert
+>>> >>>  and then it magically works... the messages have changed
+>>> >>>  from what they were as reported here
+>>> >>>
+>>> >>> http://bugzilla.kernel.org/show_bug.cgi?id=10116
+>>> >>>
+>>> >>>  (see comments #8 and #9) to these ones, in 2.6.26-rc6-git4:
+>>> >>>
+>>> >>> Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] Result:
+>>> >>> hostbyte=0x00 driverbyte=0x08
+>>> >>> Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] Sense Key : 0x3 [current]
+>>> >>> Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] ASC=0x11 ASCQ=0x0
+>>> >>> Jun 17 22:38:43 sandman kernel: end_request: I/O error, dev sr0, sector 232
+>>> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 29
+>>> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 30
+>>> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 31
+>>> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 32
+>>> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 33
+>>> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 34
+>>> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 35
+>>> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 36
+>>> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 37
+>>> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 38
+>>> >>>
+>>> >>> here I eject and reinsert the disc, and:
+>>> >>>
+>>> >>> Jun 17 22:39:10 sandman kernel: UDF-fs: No VRS found
+>>> >>>
+>>> >>>  lo and behold, no problem.
+>>> >>>
+>>> >>> This does not, alas, happen every time. It might be at the first
+>>> >>>  DVD access after booting the laptop, but I haven't investigated
+>>> >>>  in this detail yet.
+>>> >>
+>>> >> Does /sys/block/sr0/size reflect the correct size of the DVD?
+>>> >>
+>>> >> Did you try applying the patch?
+>>> >
+>>> > ATM I'm away from home (as usual), I'll post back when
+>>> >  I have the info you asked for and tried applying the
+>>> >  above patch. Thanks !
+>>>
+>>> Sigh. I haven't been able to reproduce the problem once since
+>>>  I posted this. Will keep trying...
+>>
+>> Perhaps because the fix is now in mainline?
 >
-> applied to tip/x86/unify-pci:
+> Eh, that may be a reason :)
 >
->   Robert Richter (5):
->        x86/pci: Removing pci-y in Makefile
->        x86/pci: Changing subsystem initialization order for NUMA
->        x86/pci: renamed: numa.c -> numaq_32.c
->        x86/pci: renaming numa into numaq
->        x86/pci: Changing subsystem init for visws
->
-> thanks Robert.
->
-> Jesse, do you give us a general Ack for this direction and these
-> commits? The changes are way too intermixed with other x86 bits to be
-> cleanly separable at this stage, so it would be nice if we merged this
-> via the x86 tree. Find below a list of commit IDs that change
-> arch/x86/pci/ - all but the last few ones are in linux-next as well.
+> I'm indeed tracking mainline and haven't reproduced with
+>  at least six different discs in -rc7.
 
-Yeah, no problem with the general direction.  I'll re-review Robert's latest 
-stuff when I get a chance, but it looked pretty good to me in the first pass.
+Just had the symptoms again in -rc9-git9 :(
+
+Relevant part of dmesg:
+
+<mount -r /cdrom, access file with gmplayer>
+
+SELinux: initialized (dev fuse, type fuse), uses genfs_contexts
+ISO 9660 Extensions: Microsoft Joliet Level 3
+ISO 9660 Extensions: RRIP_1991A
+SELinux: initialized (dev sr0, type iso9660), uses genfs_contexts
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+Buffer I/O error on device sr0, logical block 2110628
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+Buffer I/O error on device sr0, logical block 2110629
+attempt to access beyond end of device
+sr0: rw=0, want=8442524, limit=2097151
+Buffer I/O error on device sr0, logical block 2110630
+attempt to access beyond end of device
+sr0: rw=0, want=8442528, limit=2097151
+Buffer I/O error on device sr0, logical block 2110631
+attempt to access beyond end of device
+sr0: rw=0, want=8442532, limit=2097151
+Buffer I/O error on device sr0, logical block 2110632
+attempt to access beyond end of device
+sr0: rw=0, want=8442536, limit=2097151
+Buffer I/O error on device sr0, logical block 2110633
+attempt to access beyond end of device
+sr0: rw=0, want=8442540, limit=2097151
+Buffer I/O error on device sr0, logical block 2110634
+attempt to access beyond end of device
+sr0: rw=0, want=8442544, limit=2097151
+Buffer I/O error on device sr0, logical block 2110635
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+Buffer I/O error on device sr0, logical block 2110628
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+Buffer I/O error on device sr0, logical block 2110629
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442516, limit=2097151
+attempt to access beyond end of device
+sr0: rw=0, want=8442520, limit=2097151
+
+<here I eject, reinsert and remount the DVD>
+
+UDF-fs: No VRS found
+ISO 9660 Extensions: Microsoft Joliet Level 3
+ISO 9660 Extensions: RRIP_1991A
+SELinux: initialized (dev sr0, type iso9660), uses genfs_contexts
+
+<now works fine>
+
+Have to say that I didn't wait N seconds in the beginning,
+ but just rather
+
+ - plop cdrom in
+ - close tray
+ - mount -r /cdrom while disc is still spinning
+
+Unfortunately I only have this after eject/remount:
+
+[asuardi@sandman ~]$ cat /sys/block/sr0/size
+9133120
+
+Final note, as I said earlier in the thread, this is definitely
+ an occurrence of first device access after boot - as I just
+ rebooted:
+
+[asuardi@sandman ~]$ uptime
+ 23:25:28 up 17 min,  6 users,  load average: 0.09, 0.18, 0.15
+[asuardi@sandman ~]$ uname -a
+Linux sandman 2.6.26-rc9-git9 #7 Fri Jul 11 21:59:15 CEST 2008 i686
+i686 i386 GNU/Linux
 
 Thanks,
-Jesse
+
+--alessandro
+
+ "Give me love / Or give me hate
+ Give me anything that's not just ok"
+
+ (Sophia, 'Weightless')
