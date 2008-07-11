@@ -1,258 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756266AbYGKPr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759698AbYGKPsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756266AbYGKPr0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 11:47:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbYGKPrS
+	id S1759698AbYGKPsl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 11:48:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbYGKPsc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 11:47:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58986 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751413AbYGKPrR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 11:47:17 -0400
-Date: Fri, 11 Jul 2008 11:46:39 -0400
-Message-Id: <200807111546.m6BFkdqA026828@pobox-2.corp.redhat.com>
-From: Glauber Costa <gcosta@redhat.com>
-To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, x86@kernel.org
-Subject: [GIT PULL] dwarf headers integration
+	Fri, 11 Jul 2008 11:48:32 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54381 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752841AbYGKPsb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 11:48:31 -0400
+Date: Fri, 11 Jul 2008 16:31:03 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Marian =?UTF-8?B?QWxkZW5ow7Z2ZWw=?= 
+	<marian.aldenhoevel@mba-software.de>
+Cc: linux-kernel@vger.kernel.org, Gilles Espinasse <g.esp@free.fr>
+Subject: Re: Building a kernel for SiS55-based system. No, wait! It's a 
+ Vortex86SX.
+Message-ID: <20080711163103.6c2102a0@lxorguk.ukuu.org.uk>
+In-Reply-To: <48777FB9.8090102@mba-software.de>
+References: <4860959E.6020207@mba-software.de>
+	<1214471767.48635e574384b@imp.free.fr>
+	<48708724.6020904@mba-software.de>
+	<25e301c8df53$6a525780$f9b5a8c0@pii350>
+	<48777FB9.8090102@mba-software.de>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo, please pull the latest master git tree from:
+> Patches included:
+> 
+>    http://www.dmp.com.tw/tech/Vortex86SX/patch-2.6.18-DMP.gz
+> 
+> The bottom line is that current kernels don't work, the last one I know that
+> works is 2.6.18.. That is used in Debian Etch and I was able to confirm
+> operation by booting that one.
+> 
+> I have since downgraded my build-system to use 2.6.18.3 and that runs
+> fine on my hardware. So now I can set it all up any way I like directly
+> from upstream sources. Hooray!
+> 
+> Thank you very much.
+> 
+> Maybe someone smarter than me can figure out what the actual problem is,
+> when it was introduced since 2.6.18 and then presumeably fix it. Until
+> then I think I can live OK with the kernel I have now.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/glommer/linux-2.6-x86-integration.git master
+So 2.6.18 works and 2.6.19 fails ? What is the failure that is observed.
+My first thought would be FPU emulation as nobody uses it any more.
 
-into your tip/auto-x86-next tree
-
-It contains integration of the dwarf headers.
-
-Thanks!
-
-	Glauber
-
------------------->
-Glauber Costa (4):
-      x86: use matching CFI_ENDPROC
-      x86: use ignore macro instead of hash comment
-      x86: use AS_CFI instead of UNWIND_INFO
-      x86: merge dwarf2 headers
-
- arch/x86/kernel/entry_32.S  |    1 +
- include/asm-x86/dwarf2.h    |   62 ++++++++++++++++++++++++++++++++++++++++--
- include/asm-x86/dwarf2_32.h |   61 ------------------------------------------
- include/asm-x86/dwarf2_64.h |   56 --------------------------------------
- 4 files changed, 60 insertions(+), 120 deletions(-)
- delete mode 100644 include/asm-x86/dwarf2_32.h
- delete mode 100644 include/asm-x86/dwarf2_64.h
-
-diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
-index 53393c3..cfe28a7 100644
---- a/arch/x86/kernel/entry_32.S
-+++ b/arch/x86/kernel/entry_32.S
-@@ -1024,6 +1024,7 @@ ENTRY(xen_sysenter_target)
- 	RING0_INT_FRAME
- 	addl $5*4, %esp		/* remove xen-provided frame */
- 	jmp sysenter_past_esp
-+	CFI_ENDPROC
- 
- ENTRY(xen_hypervisor_callback)
- 	CFI_STARTPROC
-diff --git a/include/asm-x86/dwarf2.h b/include/asm-x86/dwarf2.h
-index b3cbb0c..0bfe250 100644
---- a/include/asm-x86/dwarf2.h
-+++ b/include/asm-x86/dwarf2.h
-@@ -1,5 +1,61 @@
--#ifdef CONFIG_X86_32
--# include "dwarf2_32.h"
-+#ifndef _DWARF2_H
-+#define _DWARF2_H
-+
-+#ifndef __ASSEMBLY__
-+#warning "asm/dwarf2.h should be only included in pure assembly files"
-+#endif
-+
-+/*
-+   Macros for dwarf2 CFI unwind table entries.
-+   See "as.info" for details on these pseudo ops. Unfortunately
-+   they are only supported in very new binutils, so define them
-+   away for older version.
-+ */
-+
-+#ifdef CONFIG_AS_CFI
-+
-+#define CFI_STARTPROC .cfi_startproc
-+#define CFI_ENDPROC .cfi_endproc
-+#define CFI_DEF_CFA .cfi_def_cfa
-+#define CFI_DEF_CFA_REGISTER .cfi_def_cfa_register
-+#define CFI_DEF_CFA_OFFSET .cfi_def_cfa_offset
-+#define CFI_ADJUST_CFA_OFFSET .cfi_adjust_cfa_offset
-+#define CFI_OFFSET .cfi_offset
-+#define CFI_REL_OFFSET .cfi_rel_offset
-+#define CFI_REGISTER .cfi_register
-+#define CFI_RESTORE .cfi_restore
-+#define CFI_REMEMBER_STATE .cfi_remember_state
-+#define CFI_RESTORE_STATE .cfi_restore_state
-+#define CFI_UNDEFINED .cfi_undefined
-+
-+#ifdef CONFIG_AS_CFI_SIGNAL_FRAME
-+#define CFI_SIGNAL_FRAME .cfi_signal_frame
-+#else
-+#define CFI_SIGNAL_FRAME
-+#endif
-+
- #else
--# include "dwarf2_64.h"
-+
-+/* Due to the structure of pre-exisiting code, don't use assembler line
-+   comment character # to ignore the arguments. Instead, use a dummy macro. */
-+.macro ignore a=0, b=0, c=0, d=0
-+.endm
-+
-+#define CFI_STARTPROC	ignore
-+#define CFI_ENDPROC	ignore
-+#define CFI_DEF_CFA	ignore
-+#define CFI_DEF_CFA_REGISTER	ignore
-+#define CFI_DEF_CFA_OFFSET	ignore
-+#define CFI_ADJUST_CFA_OFFSET	ignore
-+#define CFI_OFFSET	ignore
-+#define CFI_REL_OFFSET	ignore
-+#define CFI_REGISTER	ignore
-+#define CFI_RESTORE	ignore
-+#define CFI_REMEMBER_STATE ignore
-+#define CFI_RESTORE_STATE ignore
-+#define CFI_UNDEFINED ignore
-+#define CFI_SIGNAL_FRAME ignore
-+
-+#endif
-+
- #endif
-diff --git a/include/asm-x86/dwarf2_32.h b/include/asm-x86/dwarf2_32.h
-deleted file mode 100644
-index 6d66398..0000000
---- a/include/asm-x86/dwarf2_32.h
-+++ /dev/null
-@@ -1,61 +0,0 @@
--#ifndef _DWARF2_H
--#define _DWARF2_H
--
--#ifndef __ASSEMBLY__
--#warning "asm/dwarf2.h should be only included in pure assembly files"
--#endif
--
--/*
--   Macros for dwarf2 CFI unwind table entries.
--   See "as.info" for details on these pseudo ops. Unfortunately
--   they are only supported in very new binutils, so define them
--   away for older version.
-- */
--
--#ifdef CONFIG_UNWIND_INFO
--
--#define CFI_STARTPROC .cfi_startproc
--#define CFI_ENDPROC .cfi_endproc
--#define CFI_DEF_CFA .cfi_def_cfa
--#define CFI_DEF_CFA_REGISTER .cfi_def_cfa_register
--#define CFI_DEF_CFA_OFFSET .cfi_def_cfa_offset
--#define CFI_ADJUST_CFA_OFFSET .cfi_adjust_cfa_offset
--#define CFI_OFFSET .cfi_offset
--#define CFI_REL_OFFSET .cfi_rel_offset
--#define CFI_REGISTER .cfi_register
--#define CFI_RESTORE .cfi_restore
--#define CFI_REMEMBER_STATE .cfi_remember_state
--#define CFI_RESTORE_STATE .cfi_restore_state
--#define CFI_UNDEFINED .cfi_undefined
--
--#ifdef CONFIG_AS_CFI_SIGNAL_FRAME
--#define CFI_SIGNAL_FRAME .cfi_signal_frame
--#else
--#define CFI_SIGNAL_FRAME
--#endif
--
--#else
--
--/* Due to the structure of pre-exisiting code, don't use assembler line
--   comment character # to ignore the arguments. Instead, use a dummy macro. */
--.macro ignore a=0, b=0, c=0, d=0
--.endm
--
--#define CFI_STARTPROC	ignore
--#define CFI_ENDPROC	ignore
--#define CFI_DEF_CFA	ignore
--#define CFI_DEF_CFA_REGISTER	ignore
--#define CFI_DEF_CFA_OFFSET	ignore
--#define CFI_ADJUST_CFA_OFFSET	ignore
--#define CFI_OFFSET	ignore
--#define CFI_REL_OFFSET	ignore
--#define CFI_REGISTER	ignore
--#define CFI_RESTORE	ignore
--#define CFI_REMEMBER_STATE ignore
--#define CFI_RESTORE_STATE ignore
--#define CFI_UNDEFINED ignore
--#define CFI_SIGNAL_FRAME ignore
--
--#endif
--
--#endif
-diff --git a/include/asm-x86/dwarf2_64.h b/include/asm-x86/dwarf2_64.h
-deleted file mode 100644
-index c950519..0000000
---- a/include/asm-x86/dwarf2_64.h
-+++ /dev/null
-@@ -1,56 +0,0 @@
--#ifndef _DWARF2_H
--#define _DWARF2_H 1
--
--#ifndef __ASSEMBLY__
--#warning "asm/dwarf2.h should be only included in pure assembly files"
--#endif
--
--/*
--   Macros for dwarf2 CFI unwind table entries.
--   See "as.info" for details on these pseudo ops. Unfortunately
--   they are only supported in very new binutils, so define them
--   away for older version.
-- */
--
--#ifdef CONFIG_AS_CFI
--
--#define CFI_STARTPROC .cfi_startproc
--#define CFI_ENDPROC .cfi_endproc
--#define CFI_DEF_CFA .cfi_def_cfa
--#define CFI_DEF_CFA_REGISTER .cfi_def_cfa_register
--#define CFI_DEF_CFA_OFFSET .cfi_def_cfa_offset
--#define CFI_ADJUST_CFA_OFFSET .cfi_adjust_cfa_offset
--#define CFI_OFFSET .cfi_offset
--#define CFI_REL_OFFSET .cfi_rel_offset
--#define CFI_REGISTER .cfi_register
--#define CFI_RESTORE .cfi_restore
--#define CFI_REMEMBER_STATE .cfi_remember_state
--#define CFI_RESTORE_STATE .cfi_restore_state
--#define CFI_UNDEFINED .cfi_undefined
--#ifdef CONFIG_AS_CFI_SIGNAL_FRAME
--#define CFI_SIGNAL_FRAME .cfi_signal_frame
--#else
--#define CFI_SIGNAL_FRAME
--#endif
--
--#else
--
--/* use assembler line comment character # to ignore the arguments. */
--#define CFI_STARTPROC	#
--#define CFI_ENDPROC	#
--#define CFI_DEF_CFA	#
--#define CFI_DEF_CFA_REGISTER	#
--#define CFI_DEF_CFA_OFFSET	#
--#define CFI_ADJUST_CFA_OFFSET	#
--#define CFI_OFFSET	#
--#define CFI_REL_OFFSET	#
--#define CFI_REGISTER	#
--#define CFI_RESTORE	#
--#define CFI_REMEMBER_STATE	#
--#define CFI_RESTORE_STATE	#
--#define CFI_UNDEFINED	#
--#define CFI_SIGNAL_FRAME	#
--
--#endif
--
--#endif
+Alan
