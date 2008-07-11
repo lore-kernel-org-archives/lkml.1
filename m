@@ -1,81 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760873AbYGKUvw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761050AbYGKUwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760873AbYGKUvw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 16:51:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbYGKUvo
+	id S1761050AbYGKUwW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 16:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756924AbYGKUwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 16:51:44 -0400
-Received: from casper.infradead.org ([85.118.1.10]:48980 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751121AbYGKUvn (ORCPT
+	Fri, 11 Jul 2008 16:52:12 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:41079 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756940AbYGKUwL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 16:51:43 -0400
-Date: Fri, 11 Jul 2008 13:51:43 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [patch 2/17] Add a WARN() macro that acts like WARN_ON()+printk
-Message-ID: <20080711135143.23e26a7c@infradead.org>
-In-Reply-To: <20080711121949.ec5db301.akpm@linux-foundation.org>
-References: <20080708093800.274504ba@infradead.org>
-	<20080708094023.260a31bb@infradead.org>
-	<20080711121949.ec5db301.akpm@linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 11 Jul 2008 16:52:11 -0400
+Date: Fri, 11 Jul 2008 22:52:53 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Zhang Rui <rui.zhang@intel.com>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] [RFC PATCH 0/4] save and restore ACPI NVS memory
+	during hibernation
+Message-ID: <20080711205253.GI6843@elf.ucw.cz>
+References: <1215051868.5628.32.camel@rzhang-dt.sh.intel.com> <200807092137.18966.rjw@sisk.pl> <20080711185139.GA6843@elf.ucw.cz> <200807112118.35562.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200807112118.35562.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Jul 2008 12:19:49 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Tue, 8 Jul 2008 09:40:23 -0700 Arjan van de Ven
-> <arjan@infradead.org> wrote:
-> 
-> > From: Arjan van de Ven <arjan@linux.intel.com>
+On Fri 2008-07-11 21:18:34, Rafael J. Wysocki wrote:
+> On Friday, 11 of July 2008, Pavel Machek wrote:
+> > On Wed 2008-07-09 21:37:18, Rafael J. Wysocki wrote:
+> > > On Tuesday, 8 of July 2008, Pavel Machek wrote:
+> > > > Hi!
+> > > > 
+> > > > > According to the ACPI spec, ACPI NVS memory region is required to
+> > > > > be saved/restored by OS during hibernation.
+> > > > > 
+> > > > > Section 15.3.2 ACPI Spec 3.0b,
+> > > > > "OSPM will call the _PTS control method some time before entering
+> > > > > a sleeping state, to allow the platform???s AML code to update
+> > > > > this memory image before entering the sleeping state.
+> > > > > After the system awakes from an S4 state, OSPM will restore this
+> > > > > memory area and call the _WAK control method to enable the BIOS
+> > > > > to reclaim its memory image."
+> > > > > 
+> > > > > This patch set add the mechanism to save/restore ACPI NVS memory
+> > > > > during hibernation.
+> > > > > 
+> > > > > Patch 01: call platform_begin before swsusp_shrink_memory.
+> > > > > 	So that we can allocate enough pages for ACPI NVS memory
+> > > > > 	before shrink the memory.
+> > > > 
+> > > > Why is it neccessary to allocate memory for a copy? We should be able
+> > > > to save ACPI NVS area same way we are saving kernel pages, no?
+> > > 
+> > > Because we want to restore it from the hibernated kernel (when it gets control
+> > > back again).
 > > 
-> > Add a WARN() macro that acts like WARN_ON(), with the added feature
-> > that it takes a printk like argument that is printed as part of the
-> > warning message.
-> > 
+> > Why is that important? So we can run some ACPI methods from hibernated
+> > kernel before restoring it?
 > 
-> Apart from a little whitespace tweak, this is identical to what I
-> already had.
-> 
-> > +#define WARN_ONCE(condition, format...)
-> > ({			\
-> > +	static int
-> > __warned;					\
-> > +	int __ret_warn_once
-> > = !!(condition);			\
-> > +								\
-> > +	if
-> > (unlikely(__ret_warn_once))				\
-> > +		if (WARN(!__warned, format))
-> > 			\
-> > +			__warned =
-> > 1;				\
-> > +	unlikely(__ret_warn_once);				\
-> > +})
-> 
-> Except it adds this operation, without describing it at all in the
-> changelog.
-> 
-> Is this some brainfart, or am I missing something?  I can see some
-> sense in a WARN_ONCE(format...), but not in a WARN_ONCE() which takes
-> a `condition' and should be called WARN_ON_ONCE(), which we already
-> have.
+> We're supposed to restore it right prior to executing _WAK, which is after
+> we've executed _BFS.  This is a bit theoretical, because no one seems to
+> actaully implement _BFS, but well.
 
-WARN_ON_ONCE() doesn't take printk arguments. So WARN_ONCE() is
-WAR_ON_ONCE() with printk arguments...
-
-
+Could we just call _BFS from the "loading" kernel, instead? That would
+save us that copying code...
+									Pavel
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
