@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755783AbYGKJAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbYGKJBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755783AbYGKJAZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 05:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbYGKJAN
+	id S1756882AbYGKJBi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 05:01:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbYGKJBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 05:00:13 -0400
-Received: from mail29.messagelabs.com ([216.82.249.147]:14468 "EHLO
-	mail29.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752855AbYGKJAL (ORCPT
+	Fri, 11 Jul 2008 05:01:30 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:18281 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751854AbYGKJB3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 05:00:11 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-8.tower-29.messagelabs.com!1215766810!18559457!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.14]
-Date: Fri, 11 Jul 2008 11:00:03 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: Magnus Damm <magnus.damm@gmail.com>
-CC: "Hans J. Koch" <hjk@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "gregkh@suse.de" <gregkh@suse.de>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "lethal@linux-sh.org" <lethal@linux-sh.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] uio: uio_pdrv_genirq V2
-Message-ID: <20080711090003.GA20108@digi.com>
-References: <20080710035254.27378.18682.sendpatchset@rx1.opensource.se> <20080710065639.GA16794@digi.com> <20080710105850.GA3202@local> <aec7e5c30807110145s1106bb2bs60026400390e3de3@mail.gmail.com>
+	Fri, 11 Jul 2008 05:01:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=nI4SRVNbp2Xd3u1XETy3vjZk4JvGivlTTaHyabpYb/9K3iBe0VC7CYtu2j2zVo93Jz
+         uKNYSmyV7vawU7vy1wXUXDBjLt2sUQo36utEYugJ/wLtpOzAfBvh2IPVRpFCS2FIRY4F
+         gXg6Jtmh+9nRVkByo3LbCY5nsq9TGN3+yNP3Q=
+Message-ID: <86802c440807110201u4ece646aw4d67a2630d653b33@mail.gmail.com>
+Date: Fri, 11 Jul 2008 02:01:29 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [x86, patch] turn x86 VISWS into a generic architecture
+Cc: "Robert Richter" <robert.richter@amd.com>, linux-kernel@vger.kernel.org,
+       "the arch/x86 maintainers" <x86@kernel.org>,
+       "James Bottomley" <James.Bottomley@hansenpartnership.com>
+In-Reply-To: <20080711085407.GB20987@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <aec7e5c30807110145s1106bb2bs60026400390e3de3@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 11 Jul 2008 09:00:04.0224 (UTC) FILETIME=[8232F000:01C8E334]
+References: <20080710170712.GA14583@elte.hu>
+	 <20080711083946.GU7963@erda.amd.com> <20080711085407.GB20987@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Fri, Jul 11, 2008 at 1:54 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Robert Richter <robert.richter@amd.com> wrote:
+>
+>> On 10.07.08 19:07:12, Ingo Molnar wrote:
+>>
+>> [...]
+>>
+>> > diff --git a/arch/x86/pci/Makefile b/arch/x86/pci/Makefile
+>> > index 99d9f09..e515e8d 100644
+>> > --- a/arch/x86/pci/Makefile
+>> > +++ b/arch/x86/pci/Makefile
+>> > @@ -9,9 +9,7 @@ pci-y                               := fixup.o
+>> >  pci-$(CONFIG_ACPI)         += acpi.o
+>> >  pci-y                              += legacy.o irq.o
+>> >
+>> > -# Careful: VISWS overrule the pci-y above. The colons are
+>> > -# therefor correct. This needs a proper fix by distangling the code.
+>> > -pci-$(CONFIG_X86_VISWS)            := visws.o fixup.o
+>> > +pci-$(CONFIG_X86_VISWS)            += visws.o
+>>
+>> Ingo, if we turn this into generic code, we have to remove the
+>> subsys_initcall for this too. Otherwise subsystem initialization is
+>> running twice, in legacy.c and in visws.c.
+>
+> Ok. Mind sending a patch for this against tip/master? Both your changes
+> and the visws cleanups are all in there and are tested through on
+> typical hardware.
+>
+> (Also, there's the suggestion from Yinghai to first do the numa init.)
 
-Magnus Damm wrote:
-> On Thu, Jul 10, 2008 at 7:58 PM, Hans J. Koch <hjk@linutronix.de> wrote:
-> > On Thu, Jul 10, 2008 at 08:56:39AM +0200, Uwe Kleine-König wrote:
-> >> > +       ret = uio_register_device(&pdev->dev, priv->uioinfo);
-> >> > +       if (ret) {
-> >> > +               dev_err(&pdev->dev, "unable to register uio device\n");
-> >> > +               goto bad1;
-> >> > +       }
-> >> > +
-> >> > +       platform_set_drvdata(pdev, priv);
-> >> This should probably go before uio_register_device.  (Uups, this is an
-> >> issue for uio_pdrv, too.)
-> >
-> > Yes, because uio_register_device will enable the irq, and you might
-> > arrive in the handler without having your platform data in place.
-> 
-> I'd say that this is a non-issue.
-> 
-> Only uio_pdrv_genirq_remove() is using the platform data. This
-> remove() method won't be called if uio_pdrv_genirq_probe() returns
-> failure. The UIO subsystem is using uioinfo->priv which of course is
-> set up correctly already.
-... let me check ... yes, it's true.  So it only looks ugly :-)
+could change the numa.c to numaq.c too. that name is confusing..
 
-Uwe
-
--- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+YH
