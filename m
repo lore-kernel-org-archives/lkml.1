@@ -1,74 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754793AbYGKDaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbYGKDjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754793AbYGKDaX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 23:30:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbYGKDaJ
+	id S1754865AbYGKDjS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 23:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbYGKDjD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 23:30:09 -0400
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:42477 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752369AbYGKDaI (ORCPT
+	Thu, 10 Jul 2008 23:39:03 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:43817 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753309AbYGKDjB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 23:30:08 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=tql3oytqVMvnvWN6BGV8fozwKXiZsqIv3CZdm/DVJeZqzGpKUDJKPpUlf4l5pueEv6TItEF6t3gVgEATPXQSe1Kvm8woi2TK0pFZpfqxZhRC+Qmp36LukDjty9lEF+h7mAA5HHRVRz8JfE/fCbPEvK21HUwyjf/o4cFjVeBG5Tk=  ;
-X-YMail-OSG: HL1LlEMVM1mHybJRqlrsttSHrKNeyy77sx8nNBN7wqG3PixFE7eeDHgc4MsIk_p0qW6JP.NFdOW5pWi6EDihWley4RGJvCew4e9RHdxEJlN8xLv5DO.7.WO.4qXpAfPpjO4-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Jack Steiner <steiner@sgi.com>
-Subject: Re: [patch 12/13] GRU Driver V3 -  export is_uv_system(), zap_page_range() & follow_page()
-Date: Fri, 11 Jul 2008 13:30:01 +1000
-User-Agent: KMail/1.9.5
-Cc: Hugh Dickins <hugh@veritas.com>, Christoph Hellwig <hch@infradead.org>,
-       cl@linux-foundation.org, akpm@osdl.org, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de, holt@sgi.com, andrea@qumranet.com,
-       linux-mm@kvack.org
-References: <20080703213348.489120321@attica.americas.sgi.com> <200807110252.00887.nickpiggin@yahoo.com.au> <20080710172036.GB5972@sgi.com>
-In-Reply-To: <20080710172036.GB5972@sgi.com>
+	Thu, 10 Jul 2008 23:39:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=pbKlzYmOhQ2b03OFr1M4ZfTGcAuVI/7HkGuK46AiHQr2wS/ppW759fdC4wYxzts0J+
+         IuMLI45FNtnBph03MVjXcN6btqMDvXL1/rtFrUz5aU0B08WDNtOLmStpCl+nOr8Hb3nH
+         C2yhQuhwKDiwC6dj/kw7c3XNddLZq7QkFUvOw=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: [PATCH] x86: save slit
+Date: Thu, 10 Jul 2008 20:36:37 -0700
+User-Agent: KMail/1.9.9
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <200807080141.05436.yhlu.kernel@gmail.com> <200807092016.36490.yhlu.kernel@gmail.com> <200807092017.51004.yhlu.kernel@gmail.com>
+In-Reply-To: <200807092017.51004.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807111330.02090.nickpiggin@yahoo.com.au>
+Message-Id: <200807102036.37697.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 11 July 2008 03:20, Jack Steiner wrote:
-> On Fri, Jul 11, 2008 at 02:52:00AM +1000, Nick Piggin wrote:
 
-> > lockless gup checks for struct page by checking a bit in the pte.
-> > This should be enough to guarantee  it is cacheable memory (unless
-> > another driver has done something tricky like set the the page's
-> > cache attributes to UC or WC -- I don't know if there is a way to
-> > completely avoid all corner cases).
->
-> The GRU itself has no need to reference the page struct.
-> However, it WILL reference valid ptes that represent pages imported from
-> other SSIs via xpmem. These will have cacheable ptes but no page structs.
+in case we are using fixmap to read it. and that fixmap could be clearred by others.
 
-Oh, I'm sorry Jack, I misread the patch and thought you still had
-the page_to_phys thing in there... OK, then it probably isn't
-broken. And in which case you would have to add a little code to
-gup.c...
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
+---
+ arch/x86/mm/srat_64.c |   14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
 
-> Maybe checking the pte attributes is the best way to do the check.
->
-> If we take this approach, what is a good API for the gup.c walker?
-> Return the pte attributes?
->
-> 	int get_user_pte(struct mm_struct *mm, unsigned long address,
-> 	        int write, unsigned long *paddr, int *pageshift, pgprot_t *prot)
->
-> The GRU would enforce the check for cacheable access.
-
-Yeah that wouldn't be a bad API, although being a lockless, may-fail,
-not available on all archs kind of thing, I would prefer a different
-name, maybe get_user_pte_fast() to match?
-
-Thanks,
-Nick
+Index: linux-2.6/arch/x86/mm/srat_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/srat_64.c
++++ linux-2.6/arch/x86/mm/srat_64.c
+@@ -100,7 +100,19 @@ static __init inline int srat_disabled(v
+ /* Callback for SLIT parsing */
+ void __init acpi_numa_slit_init(struct acpi_table_slit *slit)
+ {
+-	acpi_slit = slit;
++	unsigned length;
++	unsigned long phys;
++
++	length = slit->header.length;
++	phys = find_e820_area(0, max_pfn_mapped<<PAGE_SHIFT, length,
++		 PAGE_SIZE);
++
++	if (phys == -1L)
++		panic(" Can not save slit!\n");
++
++	acpi_slit = __va(phys);
++	memcpy(acpi_slit, slit, length);
++	reserve_early(phys, phys + length, "ACPI SLIT");
+ }
+ 
+ /* Callback for Proximity Domain -> LAPIC mapping */
