@@ -1,98 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752621AbYGKUzQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760975AbYGKUzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752621AbYGKUzQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 16:55:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbYGKUzA
+	id S1760975AbYGKUzq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 16:55:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbYGKUzg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 16:55:00 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:61013 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751121AbYGKUy7 (ORCPT
+	Fri, 11 Jul 2008 16:55:36 -0400
+Received: from mail164.messagelabs.com ([216.82.253.131]:46855 "EHLO
+	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753234AbYGKUzf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 16:54:59 -0400
-X-IronPort-AV: E=Sophos;i="4.30,347,1212364800"; 
-   d="scan'208";a="52050109"
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: [PATCH for bkl-removal v2] IB/umad: BKL is not needed for ib_umad_open()
-References: <aday748mad3.fsf@cisco.com>
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 11 Jul 2008 13:54:40 -0700
-In-Reply-To: <aday748mad3.fsf@cisco.com> (Roland Dreier's message of "Fri, 11
-	Jul 2008 13:31:04 -0700")
-Message-ID: <adaod54m99r.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Fri, 11 Jul 2008 16:55:35 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-3.tower-164.messagelabs.com!1215809733!11865301!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.14]
+From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: <linux-kernel@vger.kernel.org>
+CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH, RFC] use hrtimer in sched_clock
+Date: Fri, 11 Jul 2008 22:55:27 +0200
+Message-ID: <1215809727-28598-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
+X-Mailer: git-send-email 1.5.6.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 11 Jul 2008 20:54:41.0360 (UTC) FILETIME=[56F6AD00:01C8E398]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 11 Jul 2008 20:55:30.0162 (UTC) FILETIME=[740D4520:01C8E398]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove explicit lock_kernel() calls and document why the code is safe.
+This should make it unnecessary to overwrite sched_clock for a higher
+precision.
+With this patch I get sub-jiffie timing with CONFIG_PRINTK_TIME=y.
 
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
+Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>
 ---
-Resending with s/proble/problem/
+Hello,
 
-diff --git a/drivers/infiniband/core/user_mad.c b/drivers/infiniband/core/user_mad.c
-index 260b3df..d31e5bb 100644
---- a/drivers/infiniband/core/user_mad.c
-+++ b/drivers/infiniband/core/user_mad.c
-@@ -47,7 +47,6 @@
- #include <linux/kref.h>
- #include <linux/compat.h>
- #include <linux/semaphore.h>
--#include <linux/smp_lock.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -778,23 +777,33 @@ static long ib_umad_compat_ioctl(struct file *filp, unsigned int cmd,
- }
- #endif
- 
-+/*
-+ * ib_umad_open() does not need the BKL:
-+ *
-+ *  - umad_port[] accesses are protected by port_lock, the
-+ *    ib_umad_port structures are properly reference counted, and
-+ *    everything else is purely local to the file being created, so
-+ *    races against other open calls are not a problem;
-+ *  - the ioctl method does not affect any global state outside of the
-+ *    file structure being operated on;
-+ *  - the port is added to umad_port[] as the last part of module
-+ *    initialization so the open method will either immediately run
-+ *    -ENXIO, or all required initialization will be done.
-+ */
- static int ib_umad_open(struct inode *inode, struct file *filp)
+I tested the patch on arch-arm/mach-ns9xxx and it seem seams to work.
+But I admit I didn't test it deeply and I didn't measure if there is any
+overhead.
+
+Best regards
+Uwe
+
+ kernel/sched_clock.c      |    6 +++++-
+ kernel/time/timekeeping.c |   16 +++++++++-------
+ 2 files changed, 14 insertions(+), 8 deletions(-)
+
+diff --git a/kernel/sched_clock.c b/kernel/sched_clock.c
+index ce05271..12daf55 100644
+--- a/kernel/sched_clock.c
++++ b/kernel/sched_clock.c
+@@ -242,5 +242,9 @@ EXPORT_SYMBOL_GPL(sched_clock_idle_wakeup_event);
+  */
+ unsigned long long __attribute__((weak)) sched_clock(void)
  {
- 	struct ib_umad_port *port;
- 	struct ib_umad_file *file;
- 	int ret = 0;
- 
--	lock_kernel();
- 	spin_lock(&port_lock);
- 	port = umad_port[iminor(inode) - IB_UMAD_MINOR_BASE];
- 	if (port)
- 		kref_get(&port->umad_dev->ref);
- 	spin_unlock(&port_lock);
- 
--	if (!port) {
--		unlock_kernel();
-+	if (!port)
- 		return -ENXIO;
--	}
- 
- 	mutex_lock(&port->file_mutex);
- 
-@@ -823,7 +832,6 @@ static int ib_umad_open(struct inode *inode, struct file *filp)
- 
- out:
- 	mutex_unlock(&port->file_mutex);
--	unlock_kernel();
- 	return ret;
+-	return (unsigned long long)jiffies * (NSEC_PER_SEC / HZ);
++	struct timespec ts;
++
++	ktime_get_ts(&ts);
++
++	return (long long)ts.tv_sec * NSEC_PER_SEC + ts.tv_nsec;
  }
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index e91c29f..49412f2 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -67,16 +67,18 @@ struct clocksource *clock;
+ static inline s64 __get_nsec_offset(void)
+ {
+ 	cycle_t cycle_now, cycle_delta;
+-	s64 ns_offset;
++	s64 ns_offset = 0;
  
+-	/* read clocksource: */
+-	cycle_now = clocksource_read(clock);
++	if (likely(clock)) {
++		/* read clocksource: */
++		cycle_now = clocksource_read(clock);
+ 
+-	/* calculate the delta since the last update_wall_time: */
+-	cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
++		/* calculate the delta since the last update_wall_time: */
++		cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
+ 
+-	/* convert to nanoseconds: */
+-	ns_offset = cyc2ns(clock, cycle_delta);
++		/* convert to nanoseconds: */
++		ns_offset = cyc2ns(clock, cycle_delta);
++	}
+ 
+ 	return ns_offset;
+ }
+-- 
+1.5.6.2
+
