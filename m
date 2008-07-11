@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757325AbYGKXYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757659AbYGKXZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757325AbYGKXYS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 19:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbYGKXYI
+	id S1757659AbYGKXZq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 19:25:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbYGKXZj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 19:24:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42867 "EHLO
+	Fri, 11 Jul 2008 19:25:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36269 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753118AbYGKXYH (ORCPT
+	by vger.kernel.org with ESMTP id S1753295AbYGKXZj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 19:24:07 -0400
-Date: Fri, 11 Jul 2008 16:22:46 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Roland McGrath <roland@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Elias Oltmanns <eo@nebensachen.de>,
-       =?ISO-8859-15?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [PATCH] x86_64: fix delayed signals
-In-Reply-To: <alpine.LFD.1.10.0807111337060.2873@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0807111617470.3459@woody.linux-foundation.org>
-References: <20080710215039.2A143154218@magilla.localdomain> <20080711054605.GA17851@elte.hu> <alpine.LFD.1.10.0807111031310.2936@woody.linux-foundation.org> <alpine.LFD.1.10.0807111102450.2936@woody.linux-foundation.org>
- <alpine.LFD.1.10.0807111337060.2873@woody.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 11 Jul 2008 19:25:39 -0400
+Date: Fri, 11 Jul 2008 16:24:57 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] bridge: send correct MTU value in PMTU
+Message-ID: <20080711162457.76afddd7@extreme>
+In-Reply-To: <20080711171935.GA25603@hrz.tu-chemnitz.de>
+References: <20080711124735.GA16996@hrz.tu-chemnitz.de>
+	<20080711083423.64b67c0c@extreme>
+	<20080711171935.GA25603@hrz.tu-chemnitz.de>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 11 Jul 2008 19:19:35 +0200
+Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de> wrote:
 
-
-On Fri, 11 Jul 2008, Linus Torvalds wrote:
+> On Fri, Jul 11, 2008 at 08:34:23AM -0700, Stephen Hemminger wrote:
+> > On Fri, 11 Jul 2008 14:47:35 +0200
+> > Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de> wrote:
+> > 
+> > > [...]
+> > 
+> > 
+> > port should always be non-null so the existing fake_rtable can
+> > just go away no?
 > 
-> No, after testing more, I think Edwin is right.
+> I wondered about that too. But since bridge_parent() is also checking port
+> for NULL, and the code calling this is carefully checking these cases, i
+> assumed that this is quite possible. If you can assert that port is
+> non-NULL, we can remove this, but i have to admit that i don't get the
+> whole picture to be sure about this.
 
-Naah. It is true that there is a huge delay in doing
+bridge_parent can only be NULL if the bridge is process of deletion (via RCU).
+So if bridge_parent() returns NULL, code should not bother with further processing
+and return (dropping skb if this function does that).
 
-	ls -l /usr/bin
-
-and then pressing ^C, but after having hit my head against this for a 
-while, I realized that it has nothing to do with the kernel.
-
-Doing an "strace ls" showed that ls doesn't play any games with signals 
-etc, which fooled me into looking for a kernel reason. 
-
-HOWEVER, it looks like at least fedora does a
-
-	alias ls='ls --color=auto'
-
-and it turns out that if you do that --color=auto, then ls will indeed 
-catch all normal signals and set a "please stop now" flag, instead of 
-dying immediately. The reason is probably to avoiding leaving the terminal 
-with some odd color if interrupted in an inconvenient place.
-
-So I was chasing this latency thing totally unnecessarily. It's in user 
-space (or at least _my_ particular issue was).
-
-Other user cases may obviously be elsewhere.
-
-		Linus
