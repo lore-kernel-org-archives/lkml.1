@@ -1,68 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758177AbYGKU0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbYGKUbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758177AbYGKU0u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 16:26:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbYGKU0m
+	id S1758131AbYGKUbT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 16:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbYGKUbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 16:26:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33489 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751337AbYGKU0l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 16:26:41 -0400
-Date: Fri, 11 Jul 2008 16:19:59 -0400
-From: Dave Jones <davej@redhat.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Remove init_mm export as planned for 2.6.26
-Message-ID: <20080711201959.GA1007@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
+	Fri, 11 Jul 2008 16:31:07 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:6014 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751940AbYGKUbG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 16:31:06 -0400
+X-IronPort-AV: E=Sophos;i="4.30,347,1212364800"; 
+   d="scan'208";a="52035791"
+From: Roland Dreier <rdreier@cisco.com>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: [PATCH for bkl-removal] IB/umad: BKL is not needed for ib_umad_open()
+X-Message-Flag: Warning: May contain useful information
+Date: Fri, 11 Jul 2008 13:31:04 -0700
+Message-ID: <aday748mad3.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 11 Jul 2008 20:31:04.0728 (UTC) FILETIME=[0A95C980:01C8E395]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Dave Jones <davej@redhat.com>
+Remove explicit lock_kernel() calls and document why the code is safe.
 
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index 46ece3f..5e89689 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -270,18 +270,6 @@ Who:	Michael Buesch <mb@bu3sch.de>
- 
- ---------------------------
- 
--What:	init_mm export
--When:	2.6.26
--Why:	Not used in-tree. The current out-of-tree users used it to
--	work around problems in the CPA code which should be resolved
--	by now. One usecase was described to provide verification code
--	of the CPA operation. That's a good idea in general, but such
--	code / infrastructure should be in the kernel and not in some
--	out-of-tree driver.
--Who:	Thomas Gleixner <tglx@linutronix.de>
--
------------------------------
--
- What:	usedac i386 kernel parameter
- When:	2.6.27
- Why:	replaced by allowdac and no dac combination
-diff --git a/arch/x86/kernel/init_task.c b/arch/x86/kernel/init_task.c
-index a4f93b4..d399180 100644
---- a/arch/x86/kernel/init_task.c
-+++ b/arch/x86/kernel/init_task.c
-@@ -14,7 +14,6 @@ static struct fs_struct init_fs = INIT_FS;
- static struct signal_struct init_signals = INIT_SIGNALS(init_signals);
- static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
- struct mm_struct init_mm = INIT_MM(init_mm);
--EXPORT_UNUSED_SYMBOL(init_mm); /* will be removed in 2.6.26 */
- 
- /*
-  * Initial thread structure.
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+Hi Jon, more BKL removal for your tree.  Should be ready for 2.6.27.
 
--- 
-http://www.codemonkey.org.uk
+diff --git a/drivers/infiniband/core/user_mad.c b/drivers/infiniband/core/user_mad.c
+index 260b3df..d31e5bb 100644
+--- a/drivers/infiniband/core/user_mad.c
++++ b/drivers/infiniband/core/user_mad.c
+@@ -47,7 +47,6 @@
+ #include <linux/kref.h>
+ #include <linux/compat.h>
+ #include <linux/semaphore.h>
+-#include <linux/smp_lock.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -778,23 +777,33 @@ static long ib_umad_compat_ioctl(struct file *filp, unsigned int cmd,
+ }
+ #endif
+ 
++/*
++ * ib_umad_open() does not need the BKL:
++ *
++ *  - umad_port[] accesses are protected by port_lock, the
++ *    ib_umad_port structures are properly reference counted, and
++ *    everything else is purely local to the file being created, so
++ *    races against other open calls are not a proble;
++ *  - the ioctl method does not affect any global state outside of the
++ *    file structure being operated on;
++ *  - the port is added to umad_port[] as the last part of module
++ *    initialization so the open method will either immediately run
++ *    -ENXIO, or all required initialization will be done.
++ */
+ static int ib_umad_open(struct inode *inode, struct file *filp)
+ {
+ 	struct ib_umad_port *port;
+ 	struct ib_umad_file *file;
+ 	int ret = 0;
+ 
+-	lock_kernel();
+ 	spin_lock(&port_lock);
+ 	port = umad_port[iminor(inode) - IB_UMAD_MINOR_BASE];
+ 	if (port)
+ 		kref_get(&port->umad_dev->ref);
+ 	spin_unlock(&port_lock);
+ 
+-	if (!port) {
+-		unlock_kernel();
++	if (!port)
+ 		return -ENXIO;
+-	}
+ 
+ 	mutex_lock(&port->file_mutex);
+ 
+@@ -823,7 +832,6 @@ static int ib_umad_open(struct inode *inode, struct file *filp)
+ 
+ out:
+ 	mutex_unlock(&port->file_mutex);
+-	unlock_kernel();
+ 	return ret;
+ }
+ 
