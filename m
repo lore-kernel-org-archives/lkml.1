@@ -1,77 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756858AbYGKItg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757498AbYGKIvH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756858AbYGKItg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 04:49:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbYGKIt2
+	id S1757498AbYGKIvH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 04:51:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753659AbYGKIuy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 04:49:28 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:26733 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751854AbYGKIt1 (ORCPT
+	Fri, 11 Jul 2008 04:50:54 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:38401 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752676AbYGKIuw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 04:49:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=rG9GUw//HfVl57SZpJusvtJkr3Wqang4qoPlWjCqRdATv2vdcbUGYLTC5SrQ5AL1hc
-         b3qLAeGIJHy/yZwzmp4+STCymV+ySBwNtZI5JGwe390P5roGj1JtdWUriyQGC89jSoxK
-         MWIVClFk6uhNvsmygdJWOm7v2kjF1qmO6adms=
-Message-ID: <84144f020807110149v4806404fjdb9c3e4af3cfdb70@mail.gmail.com>
-Date: Fri, 11 Jul 2008 11:49:27 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Eduard - Gabriel Munteanu" <eduard.munteanu@linux360.ro>
-Subject: Re: [RFC PATCH 3/5] kmemtrace: SLAB hooks.
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       "Christoph Lameter" <cl@linux-foundation.org>
-In-Reply-To: <20080710210611.7c194a70@linux360.ro>
+	Fri, 11 Jul 2008 04:50:52 -0400
+Date: Fri, 11 Jul 2008 02:50:36 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       grundler@parisc-linux.org, mingo@elte.hu, tglx@linutronix.de,
+       jgarzik@pobox.com, linux-ide@vger.kernel.org, suresh.b.siddha@intel.com,
+       benh@kernel.crashing.org, jbarnes@virtuousgeek.org,
+       rdunlap@xenotime.net, mtk.manpages@gmail.com,
+       Matthew Wilcox <willy@linux.intel.com>
+Subject: Re: [PATCH] x86-64: Support for multiple MSIs
+Message-ID: <20080711085035.GP14894@parisc-linux.org>
+References: <20080711005719.GO14894@parisc-linux.org> <1215738002-4961-5-git-send-email-matthew@wil.cx> <4876E68F.3050200@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1215712946-23572-1-git-send-email-eduard.munteanu@linux360.ro>
-	 <1215712946-23572-2-git-send-email-eduard.munteanu@linux360.ro>
-	 <1215712946-23572-3-git-send-email-eduard.munteanu@linux360.ro>
-	 <20080710210611.7c194a70@linux360.ro>
-X-Google-Sender-Auth: 73870cf8d34a27dc
+In-Reply-To: <4876E68F.3050200@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Eduard-Gabriel,
+On Fri, Jul 11, 2008 at 01:50:23PM +0900, Kenji Kaneshige wrote:
+> I'm very sorry for very delayed comment, but I have a concern
+> about irq affinity code. Since I didn't have enough time to
+> look at your patch, I might be misunderstanding something...
+> 
+> In my understanding, when irq affinity is changed on one of
+> the IRQs corresponding to MSI, it will not completed until
+> interrupts occur on all the IRQs. Attempts to change irq
+> affinity before previous affinity change is finished will be
+> ignored. Here, suppose that device uses three MSI irqs. In
+> this case, your patch manages four irqs, but only three
+> interrupts are used. If irq affinity changed on this MSI
+> interrupts, will it be completed?
 
-On Thu, Jul 10, 2008 at 9:06 PM, Eduard - Gabriel Munteanu
-<eduard.munteanu@linux360.ro> wrote:
-> This adds hooks for the SLAB allocator, to allow tracing with kmemtrace.
->
-> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
->  static inline void *kmalloc(size_t size, gfp_t flags)
->  {
-> +       void *ret;
-> +
->        if (__builtin_constant_p(size)) {
->                int i = 0;
->
-> @@ -50,10 +53,17 @@ static inline void *kmalloc(size_t size, gfp_t flags)
->  found:
->  #ifdef CONFIG_ZONE_DMA
->                if (flags & GFP_DMA)
-> -                       return kmem_cache_alloc(malloc_sizes[i].cs_dmacachep,
-> -                                               flags);
-> +                       ret = kmem_cache_alloc(malloc_sizes[i].cs_dmacachep,
-> +                                              flags | __GFP_NOTRACE);
-> +               else
->  #endif
-> -               return kmem_cache_alloc(malloc_sizes[i].cs_cachep, flags);
-> +                       ret = kmem_cache_alloc(malloc_sizes[i].cs_cachep,
-> +                                              flags | __GFP_NOTRACE);
-> +
-> +               kmemtrace_mark_alloc(KMEMTRACE_KIND_KERNEL, _THIS_IP_, ret,
-> +                                    size, malloc_sizes[i].cs_size, flags);
-> +
-> +               return ret;
+I have tested the affinity code with an ICH9 AHCI:
 
-I think this would be cleaner if you'd simply add a new
-__kmem_cache_alloc() entry point in SLAB that takes the "kind" as an
-argument. That way you wouldn't have to play tricks with GFP flags.
+495:     117233     117966     118033     117797   PCI-MSI-edge      ahci
+496:      29860      29106      30191      28705   PCI-MSI-edge      ahci
+497:          0          0          0          0   PCI-MSI-edge      ahci
+498:          0          0          0          0   PCI-MSI-edge      ahci
+499:          0          0          0          0   PCI-MSI-edge      ahci
+500:          0          0          0          0   PCI-MSI-edge      ahci
+
+This chip requires 16 MSIs to be registered, and it has 6 ports.
+Only ports 0 and 1 have a device attached.  If I change the mask of
+an active irq (eg 495 or 496), it takes effect on both of them.  If I
+change the mask of an inactive irq (497-500), nothing happens.  But I
+can subsequently change the mask on 495 or 496 successfully.
+
+I can't tell you why this works this way; I haven't looked in enough
+detail at the irq affinity code, but this is my observation.
+
+Thanks for your comment.
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
