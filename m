@@ -1,74 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762056AbYGKPUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758139AbYGKP1X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762056AbYGKPUo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 11:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761583AbYGKPTL
+	id S1758139AbYGKP1X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 11:27:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753632AbYGKP1P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 11:19:11 -0400
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:63088 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761575AbYGKPTJ (ORCPT
+	Fri, 11 Jul 2008 11:27:15 -0400
+Received: from gv-out-0910.google.com ([216.239.58.190]:25993 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754066AbYGKP1N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 11:19:09 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgcFAO8Td0hMQWVt/2dsb2JhbACBWq1u
-Date: Fri, 11 Jul 2008 11:19:06 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: ltt-dev@lists.casi.polymtl.ca
-Cc: linux-kernel@vger.kernel.org
-Subject: LTTng 0.10-pre57 for linux 2.6.26-rc9 (with userspace tracing for
-	x86)
-Message-ID: <20080711151905.GA13558@Krystal>
+	Fri, 11 Jul 2008 11:27:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=ZFKzC7KTMBlb+gQoCMCuKmGnqzeg+kX4nlLFX0NJ4a+QQEUzn12jPe+aYiNjhRMQca
+         13YGUAoX11QVikT3EclNpKFFvxD/lmmUYgMu9RGS7BGx+6cJaZowMbcJwd+nT9fFlXrw
+         uMresDnWVAcMAgeZXFtxa2q61++YHJEp5lw/8=
+Subject: Re: [PATCH 1/2] regulator: TI bq24022 Li-Ion Charger driver
+From: Philipp Zabel <philipp.zabel@gmail.com>
+To: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <1215772087.6634.7.camel@odin>
+References: <1215716683.17490.29.camel@localhost.localdomain>
+	 <1215772087.6634.7.camel@odin>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 11 Jul 2008 17:27:07 +0200
+Message-Id: <1215790027.16329.2.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:09:59 up 36 days, 19:50,  5 users,  load average: 2.73, 2.42,
-	2.67
-User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Am Freitag, den 11.07.2008, 11:28 +0100 schrieb Liam Girdwood:
+> On Thu, 2008-07-10 at 21:04 +0200, Philipp Zabel wrote:
+> > This adds a regulator driver for the TI bq24022 Single-Chip
+> > Li-Ion Charger with its nCE and ISET2 pins connected to GPIOs.
+> 
+> snip
+> 
+> > +static struct platform_driver bq24022_driver = {
+> > +	.driver = {
+> > +		.name = "bq24022",
+> > +	},
+> > +	.remove = __devexit_p(bq24022_remove),
+> > +};
+> > +
+> > +static int __init bq24022_init()
+> 
+> missing void
+> 
+> > +{
+> > +	platform_driver_probe(&bq24022_driver, bq24022_probe);
+> > +}
+> > +
+> 
+> missing return value.
+> 
+> > +static void __exit bq24022_exit()
+> 
+> ﻿missing void
+> 
+> > +{
+> > +	platform_driver_unregister(&bq24022_driver);
+> > +}
+> 
+> Could you fix these and resubmit.
 
-Here is a new release of LTTng for the 2.6.26-rc9 kernel, which
-introduces :
+Thanks, fixed version will follow in a second.
 
-- The tracepoints infrastructure.
-- Architecture independent markers converted to tracepoints.
-- Re-introduction of userspace tracing, only for x86 for now. Allows to
-  do boot-time tracing (such as tracing the init process). Adds 2 system
-  calls : sys_marker (marker registration) and sys_trace (tracing per
-  se). The type support is currently limited : strings are formatted in
-  userspace and sent to the kernel for logging under the event
-  "userspace_string". I am doing this simple implementation to get the
-  feature in until I have time to think more carefully about namespacing
-  issues, typing and 32/64 bits processes in 64 bits architectures.
+regards
+Philipp
 
-Please consider this last feature experimental. Review and testing is
-welcome. The userspace linker script and library needed to perform
-userspace tracing, as well as some sample code and Makefile, are
-available in the svn repository at
-
-http://ltt.polymtl.ca/svn/markers-userspace/
-
-Ports of the linker script, kernel-api.h (which should be
-per-architecture) and of markers-userspace-x86.patch to other
-architectures are welcome.
-
-As always, please follow the compatibility list and the quickstart guide
-located at :
-
-http://ltt.polymtl.ca/svn/ltt/branches/poly/doc/developer/lttng-lttv-compatibility.html
-
-http://ltt.polymtl.ca/svn/ltt/branches/poly/QUICKSTART
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
