@@ -1,185 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758206AbYGKOPo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759168AbYGKOQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758206AbYGKOPo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 10:15:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbYGKOPb
+	id S1759168AbYGKOQh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 10:16:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbYGKOQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 10:15:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45074 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751841AbYGKOPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 10:15:30 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] Fix warnings on calls to P54P_READ() for which the result is
-	discarded
-To: flamingice@sourmilk.net, akpm@linux-foundation.org
-Cc: dhowells@redhat.com, linville@tuxdriver.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Date: Fri, 11 Jul 2008 15:14:43 +0100
-Message-ID: <20080711141443.14665.63279.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.1
+	Fri, 11 Jul 2008 10:16:28 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:50258 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752106AbYGKOQ1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 10:16:27 -0400
+Date: Fri, 11 Jul 2008 10:16:26 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Brownell <david-b@pacbell.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: All 2.6.26-rcX hang immediately after loading ohci_hcd
+In-Reply-To: <200807110903.48500.arvidjaar@mail.ru>
+Message-ID: <Pine.LNX.4.44L0.0807111013060.2515-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix warnings on calls to P54P_READ() for which the result is discarded because
-the side-effect of accessing hardware is what's of interest, not the result of
-performing the read.
+[If nobody minds, after this message I will remove everything except 
+linux-usb from the CC: list.]
 
-The warnings are of the form:
+On Fri, 11 Jul 2008, Andrey Borzenkov wrote:
 
-drivers/net/wireless/p54/p54pci.c:55: warning: value computed is not used
+> On Sunday 06 July 2008, Alan Stern wrote:
+> > There doesn't seem to be much choice.
+> > 
+> > As I recall, the consequences of leaving the old code were that 
+> > sometimes a suspend or a resume wouldn't work as expected.  That's 
+> > better than hanging the entire system -- but on the other hand, it 
+> > would affect more people.
+> > 
+> > Andrey, when you have time I'd like to do some more debugging to find 
+> > out exactly what's going wrong.
+> >
+> 
+> Let me know what you need. I am still running rc8 but may update if needed.
 
-Casting to (void) gets rid of this.
+That's good; it'll help initially to test a system with the bug 
+present.
 
-They were introduced in patch eff1a59c48e3c6a006eb4fe5f2e405a996f2259d.
+To start with, add a printk near the start of ohci_irq() in ohci-hcd.c.  
+Have it display in hex the value of "ints", immediately after the 
+ohci_readl() call.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- drivers/net/wireless/p54/p54pci.c |   32 ++++++++++++++++----------------
- 1 files changed, 16 insertions(+), 16 deletions(-)
-
-
-diff --git a/drivers/net/wireless/p54/p54pci.c b/drivers/net/wireless/p54/p54pci.c
-index 7dd4add..47a3654 100644
---- a/drivers/net/wireless/p54/p54pci.c
-+++ b/drivers/net/wireless/p54/p54pci.c
-@@ -52,14 +52,14 @@ static int p54p_upload_firmware(struct ieee80211_hw *dev)
- 	u32 remains, left, device_addr;
- 
- 	P54P_WRITE(int_enable, cpu_to_le32(0));
--	P54P_READ(int_enable);
-+	(void) P54P_READ(int_enable);
- 	udelay(10);
- 
- 	reg = P54P_READ(ctrl_stat);
- 	reg &= cpu_to_le32(~ISL38XX_CTRL_STAT_RESET);
- 	reg &= cpu_to_le32(~ISL38XX_CTRL_STAT_RAMBOOT);
- 	P54P_WRITE(ctrl_stat, reg);
--	P54P_READ(ctrl_stat);
-+	(void) P54P_READ(ctrl_stat);
- 	udelay(10);
- 
- 	reg |= cpu_to_le32(ISL38XX_CTRL_STAT_RESET);
-@@ -89,7 +89,7 @@ static int p54p_upload_firmware(struct ieee80211_hw *dev)
- 		u32 i = 0;
- 		left = min((u32)0x1000, remains);
- 		P54P_WRITE(direct_mem_base, cpu_to_le32(device_addr));
--		P54P_READ(int_enable);
-+		(void) P54P_READ(int_enable);
- 
- 		device_addr += 0x1000;
- 		while (i < left) {
-@@ -98,7 +98,7 @@ static int p54p_upload_firmware(struct ieee80211_hw *dev)
- 		}
- 
- 		remains -= left;
--		P54P_READ(int_enable);
-+		(void) P54P_READ(int_enable);
- 	}
- 
- 	release_firmware(fw_entry);
-@@ -108,7 +108,7 @@ static int p54p_upload_firmware(struct ieee80211_hw *dev)
- 	reg &= cpu_to_le32(~ISL38XX_CTRL_STAT_RESET);
- 	reg |= cpu_to_le32(ISL38XX_CTRL_STAT_RAMBOOT);
- 	P54P_WRITE(ctrl_stat, reg);
--	P54P_READ(ctrl_stat);
-+	(void) P54P_READ(ctrl_stat);
- 	udelay(10);
- 
- 	reg |= cpu_to_le32(ISL38XX_CTRL_STAT_RESET);
-@@ -167,11 +167,11 @@ static int p54p_read_eeprom(struct ieee80211_hw *dev)
- 
- 	memset(ring_control, 0, sizeof(*ring_control));
- 	P54P_WRITE(ring_control_base, cpu_to_le32(priv->ring_control_dma));
--	P54P_READ(ring_control_base);
-+	(void) P54P_READ(ring_control_base);
- 	udelay(10);
- 
- 	P54P_WRITE(int_enable, cpu_to_le32(ISL38XX_INT_IDENT_INIT));
--	P54P_READ(int_enable);
-+	(void) P54P_READ(int_enable);
- 	udelay(10);
- 
- 	P54P_WRITE(dev_int, cpu_to_le32(ISL38XX_DEV_INT_RESET));
-@@ -184,7 +184,7 @@ static int p54p_read_eeprom(struct ieee80211_hw *dev)
- 	}
- 
- 	P54P_WRITE(int_enable, cpu_to_le32(ISL38XX_INT_IDENT_UPDATE));
--	P54P_READ(int_enable);
-+	(void) P54P_READ(int_enable);
- 
- 	hdr = eeprom + 0x2010;
- 	p54_fill_eeprom_readback(hdr);
-@@ -230,7 +230,7 @@ static int p54p_read_eeprom(struct ieee80211_hw *dev)
-  out:
- 	kfree(eeprom);
- 	P54P_WRITE(int_enable, cpu_to_le32(0));
--	P54P_READ(int_enable);
-+	(void) P54P_READ(int_enable);
- 	udelay(10);
- 	free_irq(priv->pdev->irq, priv);
- 	P54P_WRITE(dev_int, cpu_to_le32(ISL38XX_DEV_INT_RESET));
-@@ -397,7 +397,7 @@ static void p54p_tx(struct ieee80211_hw *dev, struct p54_control_hdr *data,
- 	spin_unlock_irqrestore(&priv->lock, flags);
- 
- 	P54P_WRITE(dev_int, cpu_to_le32(ISL38XX_DEV_INT_UPDATE));
--	P54P_READ(dev_int);
-+	(void) P54P_READ(dev_int);
- 
- 	/* FIXME: unlikely to happen because the device usually runs out of
- 	   memory before we fill the ring up, but we can make it impossible */
-@@ -426,17 +426,17 @@ static int p54p_open(struct ieee80211_hw *dev)
- 	p54p_upload_firmware(dev);
- 
- 	P54P_WRITE(ring_control_base, cpu_to_le32(priv->ring_control_dma));
--	P54P_READ(ring_control_base);
-+	(void) P54P_READ(ring_control_base);
- 	wmb();
- 	udelay(10);
- 
- 	P54P_WRITE(int_enable, cpu_to_le32(ISL38XX_INT_IDENT_INIT));
--	P54P_READ(int_enable);
-+	(void) P54P_READ(int_enable);
- 	wmb();
- 	udelay(10);
- 
- 	P54P_WRITE(dev_int, cpu_to_le32(ISL38XX_DEV_INT_RESET));
--	P54P_READ(dev_int);
-+	(void) P54P_READ(dev_int);
- 
- 	if (!wait_for_completion_interruptible_timeout(&priv->boot_comp, HZ)) {
- 		printk(KERN_ERR "%s: Cannot boot firmware!\n",
-@@ -446,12 +446,12 @@ static int p54p_open(struct ieee80211_hw *dev)
- 	}
- 
- 	P54P_WRITE(int_enable, cpu_to_le32(ISL38XX_INT_IDENT_UPDATE));
--	P54P_READ(int_enable);
-+	(void) P54P_READ(int_enable);
- 	wmb();
- 	udelay(10);
- 
- 	P54P_WRITE(dev_int, cpu_to_le32(ISL38XX_DEV_INT_UPDATE));
--	P54P_READ(dev_int);
-+	(void) P54P_READ(dev_int);
- 	wmb();
- 	udelay(10);
- 
-@@ -466,7 +466,7 @@ static void p54p_stop(struct ieee80211_hw *dev)
- 	struct p54p_desc *desc;
- 
- 	P54P_WRITE(int_enable, cpu_to_le32(0));
--	P54P_READ(int_enable);
-+	(void) P54P_READ(int_enable);
- 	udelay(10);
- 
- 	free_irq(priv->pdev->irq, dev);
+Alan Stern
 
