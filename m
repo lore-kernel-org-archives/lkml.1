@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761774AbYGKNyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761947AbYGKNzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761774AbYGKNyx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 09:54:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759424AbYGKNsR
+	id S1761947AbYGKNzp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 09:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759207AbYGKNsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 09:48:17 -0400
-Received: from zbr.yandex.ru ([213.180.219.33]:34991 "EHLO gavana.yandex.ru"
+	Fri, 11 Jul 2008 09:48:19 -0400
+Received: from zbr.yandex.ru ([213.180.219.33]:34979 "EHLO gavana.yandex.ru"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759437AbYGKNr6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 09:47:58 -0400
+	id S1759410AbYGKNrz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 09:47:55 -0400
 From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>, David Fries <david@fries.net>,
        Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: [PATCH 6/30] W1: feature, w1_therm.c use strong pullup and documentation
-Date: Fri, 11 Jul 2008 17:51:21 +0400
-Message-Id: <12157843061218-git-send-email-johnpol@2ka.mipt.ru>
+Subject: [PATCH 23/30] W1: ds2490.c simplify and fix ds_touch_bit
+Date: Fri, 11 Jul 2008 17:51:38 +0400
+Message-Id: <1215784307412-git-send-email-johnpol@2ka.mipt.ru>
 X-Mailer: git-send-email 1.5.2.5
 In-Reply-To: <12157843054074-git-send-email-johnpol@2ka.mipt.ru>
 References: <12157843054074-git-send-email-johnpol@2ka.mipt.ru>
@@ -23,122 +23,67 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added strong pullup to thermal sensor driver and general documentation
-on the sensor.
+Simplify and fix ds_touch_bit.  If a device is attached in the middle
+of a bus search the status register will return more than the default
+16 bytes.  The additional bytes indicate that it has detected a new
+device.  The way ds_wait_status is coded, if it doesn't read 16 status
+bytes it returns an error value.  ds_touch_bit then will detect that
+error and return an error.  In that case it doesn't read the input
+buffer and returns uninitialized data.  It doesn't stop there.  The
+next transaction will not expect the extra byte in the input buffer
+and the short read will cause an error and clear out both the old byte
+and new data in the input buffer.
+
+Just ignore the value of ds_wait_status.  It is still required to wait
+until ds2490 is again idle and there is data to read when ds_recv_data
+is called.  This also removes the while loop.  None of the other
+commands wait and verify that the issued command is in the status
+register.
 
 Signed-off-by: David Fries <david@fries.net>
 Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 
 ---
- Documentation/w1/00-INDEX        |    2 +
- Documentation/w1/slaves/00-INDEX |    4 +++
- Documentation/w1/slaves/w1_therm |   41 ++++++++++++++++++++++++++++++++++++++
- drivers/w1/slaves/w1_therm.c     |   15 ++++++++++++-
- 4 files changed, 60 insertions(+), 2 deletions(-)
+ drivers/w1/masters/ds2490.c |   21 ++++-----------------
+ 1 files changed, 4 insertions(+), 17 deletions(-)
 
-diff --git a/Documentation/w1/00-INDEX b/Documentation/w1/00-INDEX
-index 5270cf4..cb49802 100644
---- a/Documentation/w1/00-INDEX
-+++ b/Documentation/w1/00-INDEX
-@@ -1,5 +1,7 @@
- 00-INDEX
- 	- This file
-+slaves/
-+	- Drivers that provide support for specific family codes.
- masters/
- 	- Individual chips providing 1-wire busses.
- w1.generic
-diff --git a/Documentation/w1/slaves/00-INDEX b/Documentation/w1/slaves/00-INDEX
-new file mode 100644
-index 0000000..f8101d6
---- /dev/null
-+++ b/Documentation/w1/slaves/00-INDEX
-@@ -0,0 +1,4 @@
-+00-INDEX
-+	- This file
-+w1_therm
-+	- The Maxim/Dallas Semiconductor ds18*20 temperature sensor.
-diff --git a/Documentation/w1/slaves/w1_therm b/Documentation/w1/slaves/w1_therm
-new file mode 100644
-index 0000000..0403aaa
---- /dev/null
-+++ b/Documentation/w1/slaves/w1_therm
-@@ -0,0 +1,41 @@
-+Kernel driver w1_therm
-+====================
-+
-+Supported chips:
-+  * Maxim ds18*20 based temperature sensors.
-+
-+Author: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-+
-+
-+Description
-+-----------
-+
-+w1_therm provides basic temperature conversion for ds18*20 devices.
-+supported family codes:
-+W1_THERM_DS18S20	0x10
-+W1_THERM_DS1822		0x22
-+W1_THERM_DS18B20	0x28
-+
-+Support is provided through the sysfs w1_slave file.  Each open and
-+read sequence will initiate a temperature conversion then provide two
-+lines of ASCII output.  The first line contains the nine hex bytes
-+read along with a calculated crc value and YES or NO if it matched.
-+If the crc matched the returned values are retained.  The second line
-+displays the retained values along with a temperature in millidegrees
-+Centigrade after t=.
-+
-+Parasite powered devices are limited to one slave performing a
-+temperature conversion at a time.  If none of the devices are parasite
-+powered it would be possible to convert all the devices at the same
-+time and then go back to read individual sensors.  That isn't
-+currently supported.  The driver also doesn't support reduced
-+precision (which would also reduce the conversion time).
-+
-+The module parameter strong_pullup can be set to 0 to disable the
-+strong pullup or 1 to enable.  If enabled the 5V strong pullup will be
-+enabled when the conversion is taking place provided the master driver
-+must support the strong pullup (or it falls back to a pullup
-+resistor).  The DS18b20 temperature sensor specification lists a
-+maximum current draw of 1.5mA and that a 5k pullup resistor is not
-+sufficient.  The strong pullup is designed to provide the additional
-+current required.
-diff --git a/drivers/w1/slaves/w1_therm.c b/drivers/w1/slaves/w1_therm.c
-index fb28aca..e87f464 100644
---- a/drivers/w1/slaves/w1_therm.c
-+++ b/drivers/w1/slaves/w1_therm.c
-@@ -37,6 +37,14 @@ MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Evgeniy Polyakov <johnpol@2ka.mipt.ru>");
- MODULE_DESCRIPTION("Driver for 1-wire Dallas network protocol, temperature family.");
+diff --git a/drivers/w1/masters/ds2490.c b/drivers/w1/masters/ds2490.c
+index 6bfd6a9..b1ae1a0 100644
+--- a/drivers/w1/masters/ds2490.c
++++ b/drivers/w1/masters/ds2490.c
+@@ -490,28 +490,15 @@ static int ds_set_pullup(struct ds_device *dev, int delay)
  
-+/* Allow the strong pullup to be disabled, but default to enabled.
-+ * If it was disabled a parasite powered device might not get the require
-+ * current to do a temperature conversion.  If it is enabled parasite powered
-+ * devices have a better chance of getting the current required.
-+ */
-+static int w1_strong_pullup = 1;
-+module_param_named(strong_pullup, w1_strong_pullup, int, 0);
-+
- static u8 bad_roms[][9] = {
- 				{0xaa, 0x00, 0x4b, 0x46, 0xff, 0xff, 0x0c, 0x10, 0x87},
- 				{}
-@@ -192,9 +200,12 @@ static ssize_t w1_therm_read_bin(struct kobject *kobj,
- 			int count = 0;
- 			unsigned int tm = 750;
+ static int ds_touch_bit(struct ds_device *dev, u8 bit, u8 *tbit)
+ {
+-	int err, count;
++	int err;
+ 	struct ds_status st;
+-	u16 value = (COMM_BIT_IO | COMM_IM) | ((bit) ? COMM_D : 0);
+-	u16 cmd;
  
-+			/* 750ms strong pullup (or delay) after the convert */
-+			if (w1_strong_pullup)
-+				w1_next_pullup(dev, tm);
- 			w1_write_8(dev, W1_CONVERT_TEMP);
+-	err = ds_send_control(dev, value, 0);
++	err = ds_send_control(dev, COMM_BIT_IO | COMM_IM | (bit ? COMM_D : 0),
++		0);
+ 	if (err)
+ 		return err;
+ 
+-	count = 0;
+-	do {
+-		err = ds_wait_status(dev, &st);
+-		if (err)
+-			return err;
 -
--			msleep(tm);
-+			if (!w1_strong_pullup)
-+				msleep(tm);
+-		cmd = st.command0 | (st.command1 << 8);
+-	} while (cmd != value && ++count < 10);
+-
+-	if (err < 0 || count >= 10) {
+-		printk(KERN_ERR "Failed to obtain status.\n");
+-		return -EINVAL;
+-	}
++	ds_wait_status(dev, &st);
  
- 			if (!w1_reset_select_slave(sl)) {
- 
+ 	err = ds_recv_data(dev, tbit, sizeof(*tbit));
+ 	if (err < 0)
 -- 
 1.4.4.4
 
