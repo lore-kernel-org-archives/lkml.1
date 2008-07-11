@@ -1,112 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760436AbYGKUvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760873AbYGKUvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760436AbYGKUvR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 16:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbYGKUvG
+	id S1760873AbYGKUvw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 16:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbYGKUvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 16:51:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46892 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752664AbYGKUvD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 16:51:03 -0400
-Date: Fri, 11 Jul 2008 16:50:52 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Bob Montgomery <bob.montgomery@hp.com>
-Cc: "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: AMD Family 10H machine check on vmcore read
-Message-ID: <20080711205052.GC3298@redhat.com>
-References: <1215472086.3361.297.camel@amd.troyhebe> <20080708132855.GB7866@redhat.com> <1215624760.3361.314.camel@amd.troyhebe>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1215624760.3361.314.camel@amd.troyhebe>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 11 Jul 2008 16:51:44 -0400
+Received: from casper.infradead.org ([85.118.1.10]:48980 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751121AbYGKUvn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 16:51:43 -0400
+Date: Fri, 11 Jul 2008 13:51:43 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [patch 2/17] Add a WARN() macro that acts like WARN_ON()+printk
+Message-ID: <20080711135143.23e26a7c@infradead.org>
+In-Reply-To: <20080711121949.ec5db301.akpm@linux-foundation.org>
+References: <20080708093800.274504ba@infradead.org>
+	<20080708094023.260a31bb@infradead.org>
+	<20080711121949.ec5db301.akpm@linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 09, 2008 at 11:32:40AM -0600, Bob Montgomery wrote:
-> On Tue, 2008-07-08 at 13:28 +0000, Vivek Goyal wrote:
-> > On Mon, Jul 07, 2008 at 05:08:06PM -0600, Bob Montgomery wrote:
-> > > We maintain a 2.6.18 derived kernel.
-> > > When testing kdump on a new AMD Family 10h (16) processor, once in the
-> > > kdump kernel, a read from either /proc/vmcore or /dev/oldmem that
-> > > corresponds to the area of memory identified in the original (crashing)
-> > > kernel by these boot messages:
+On Fri, 11 Jul 2008 12:19:49 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Tue, 8 Jul 2008 09:40:23 -0700 Arjan van de Ven
+> <arjan@infradead.org> wrote:
 > 
-> > >
-> > > On a Family 15 AMD64 processor running this kernel and kdump kernel, I
-> > > can read the areas identified as being in the aperture from the kdump
-> > > kernel and get values, but on the new processor, reads from the kdump
-> > > kernel that are within that address range result in the machine check:
-> > >
-> > > HARDWARE ERROR
-> > > CPU 0: Machine Check Exception:                4 Bank 4: be0000010005001b
-> > > TSC 141bd974323de ADDR 1c000000 MISC e00c0ffe01000000
-> > >
-> 
-> > Hi Bob,
+> > From: Arjan van de Ven <arjan@linux.intel.com>
 > > 
-> > I am not sure what's happening here. Because in /proc/iomem, GART reserved
-> > area is reported as System RAM, kdump kernel will try to read this area
-> > and save it. Now I am not sure, what is so special about this area that
-> > mapping it and reading it in second kernel would cause a MCE.
+> > Add a WARN() macro that acts like WARN_ON(), with the added feature
+> > that it takes a printk like argument that is printed as part of the
+> > warning message.
 > > 
-> > CCing it to LKML, hoping people knowing GART will be able to provide some
-> > input.
-> > 
-> > > But I don't see this fix upstream in the kernel.  So I'm wondering if
-> > > some other patch protects other kdump kernels from this problem.  In
-> > > particular, a recent patch that informed the e820 map about the gart
-> > > aperture to prevent a normal kernel and a kexec kernel from putting it
-> > > at different addresses.  It didn't mention machine checks from kdump
-> > > kernels, but I wonder if it would have prevented access to that memory
-> > > area by having it be excluded from the /proc/vmcore list of areas??
-> > 
-> > Can you provide a link to the patch above? If /proc/iomem, does not report
-> > GART area as system ram then it will be excluded from the dump. (IIUC,
-> > IOMMU tables are in GART area and ideally one should be capturing it to
-> > find out how IOMMU tables looked like at the time of crash).
 > 
-> The patch that I thought might be related is:
->  x86: disable the GART early, 64-bit
+> Apart from a little whitespace tweak, this is identical to what I
+> already had.
 > 
-> author     Yinghai Lu <Yinghai.Lu@Sun.COM>
->            Wed, 30 Jan 2008 12:33:09 +0000 (13:33 +0100)
-> committer  Ingo Molnar <mingo@elte.hu>
->            Wed, 30 Jan 2008 12:33:09 +0000 (13:33 +0100)
-> commit     aaf230424204864e2833dcc1da23e2cb0b9f39cd
-> tree       a42042f5135aa63a780964bd053ae174211ab62f
+> > +#define WARN_ONCE(condition, format...)
+> > ({			\
+> > +	static int
+> > __warned;					\
+> > +	int __ret_warn_once
+> > = !!(condition);			\
+> > +								\
+> > +	if
+> > (unlikely(__ret_warn_once))				\
+> > +		if (WARN(!__warned, format))
+> > 			\
+> > +			__warned =
+> > 1;				\
+> > +	unlikely(__ret_warn_once);				\
+> > +})
 > 
-> I thought it might be relevant because of this included comment:
+> Except it adds this operation, without describing it at all in the
+> changelog.
 > 
-> > hm, i'm wondering, instead of modifying the GART, why dont we simply
-> > _detect_ whatever GART settings we have inherited, and propagate that
-> > into our e820 maps? I.e. if there's inconsistency, then punch that out
-> > from the memory maps and just dont use that memory.
-> 
-> But this patch doesn't mention machine checks as the symptom that
-> initiated the patch.
-> 
-> And my reason for looking was because I didn't think I could be the
-> first person to try reading /proc/vmcore on a Family 10h processor.  So
-> I wondered why it hadn't been seen by some other tester, and thought
-> some other patch might have "fixed" it a different way on newer kernels
-> than mine.
-> 
+> Is this some brainfart, or am I missing something?  I can see some
+> sense in a WARN_ONCE(format...), but not in a WARN_ONCE() which takes
+> a `condition' and should be called WARN_ON_ONCE(), which we already
+> have.
 
-Hi Bob,
+WARN_ON_ONCE() doesn't take printk arguments. So WARN_ONCE() is
+WAR_ON_ONCE() with printk arguments...
 
-So it looks like this patch will mark aperture region as non RAM and kudmp
-will not try to dump that memory and will not run into MCE. Have you tried
-the kernel with this patch? Does it work for you?
 
-At this point I don't know, why accessing the aperture region of first
-kernel causes MCE. May be Andi or Yinghai will know, CCing them.
-
-So backporting the Yinghai's patch to your kernel should help here.
-
-Thanks
-Vivek
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
