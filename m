@@ -1,123 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759584AbYGKB3H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758930AbYGKBcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759584AbYGKB3H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 21:29:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755789AbYGKB2x
+	id S1758930AbYGKBcR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 21:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755603AbYGKBcF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 21:28:53 -0400
-Received: from mga02.intel.com ([134.134.136.20]:59389 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755492AbYGKB2w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 21:28:52 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.30,341,1212390000"; 
-   d="scan'208";a="307376661"
-Subject: Re: ACPI Error under 2.6.26-rc*
-From: Zhang Rui <rui.zhang@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andre Prendel <andre_prendel@gmx.de>, kernel-testers@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1215739210.1617.28.camel@rzhang-dt>
-References: <20080709083829.GA5748@linux.int.dgn.ag>
-	 <200807102255.23090.rjw@sisk.pl>  <1215739210.1617.28.camel@rzhang-dt>
-Content-Type: text/plain
-Date: Fri, 11 Jul 2008 09:28:02 +0800
-Message-Id: <1215739682.1617.32.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Jul 2008 21:32:05 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:38028 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755495AbYGKBcE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 21:32:04 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
+       akpm@linux-foundation.org, arjan@linux.intel.com, andi@firstfloor.org,
+       ebiederm@xmission.com, jbarnes@virtuousgeek.org, steiner@sgi.com,
+       linux-kernel@vger.kernel.org
+References: <20080710181634.764954000@linux-os.sc.intel.com>
+	<20080710182239.205057000@linux-os.sc.intel.com>
+Date: Thu, 10 Jul 2008 18:22:57 -0700
+In-Reply-To: <20080710182239.205057000@linux-os.sc.intel.com> (Suresh Siddha's
+	message of "Thu, 10 Jul 2008 11:16:57 -0700")
+Message-ID: <m1fxqhdxji.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Suresh Siddha <suresh.b.siddha@intel.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
+	*      [score: 0.4996]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [patch 23/26] x64, x2apic/intr-remap: MSI and MSI-X support for interrupt remapping infrastructure
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-07-11 at 09:20 +0800, Zhang Rui wrote:
-> On Fri, 2008-07-11 at 04:55 +0800, Rafael J. Wysocki wrote:
-> > [Adding CCs.]
-> > 
-> > On Wednesday, 9 of July 2008, Andre Prendel wrote:
-> > > Hi,
-> > >
-> > > I have had some ACPI Problems working under the 2.6.26-rc's in the
-> > last weeks.
-> > > Power off does not work well. "System halted" is the last output,
-> > but power is
-> > > not switch off. The lastest stable kernel (2.6.25.10) works fine for
-> > me. After
-> > > that I tried 2.6.26-rc1 and the error occurs. AFAIR I had these
-> > problems with
-> > > all 2.6.26-rc's until 2.6.26-rc8-git4. I did not tested newer ones.
-> > >
-> > > Dmesg output is attached.
-> > >
-> > > Andre
-> > >
-> > > ----------------------------------
-> > > [    0.000000] Linux version 2.6.26-rc1 (andre@ubuntu) (gcc version
-> > 4.1.3 20070929 (prerelease) (Ubuntu 4.1.2-16ubuntu2)) #8 SMP Tue Jul 8
-> > 22:28:14 CEST 2008
-> > > [    0.000000] BIOS-provided physical RAM map:
-> > > [    0.000000]  BIOS-e820: 0000000000000000 - 000000000009fc00
-> > (usable)
-> > > [    0.000000]  BIOS-e820: 000000000009fc00 - 00000000000a0000
-> > (reserved)
-> > > [    0.000000]  BIOS-e820: 00000000000f0000 - 0000000000100000
-> > (reserved)
-> > > [    0.000000]  BIOS-e820: 0000000000100000 - 000000001fff0000
-> > (usable)
-> > > [    0.000000]  BIOS-e820: 0000000021ff0000 - 0000000021ff8000 (ACPI
-> > data)
-> > > [    0.000000]  BIOS-e820: 0000000021ff8000 - 0000000022000000 (ACPI
-> > NVS)
-> > > [    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec01000
-> > (reserved)
-> > > [    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee01000
-> > (reserved)
-> > > [    0.000000]  BIOS-e820: 00000000ffee0000 - 00000000fff00000
-> > (reserved)
-> > > [    0.000000]  BIOS-e820: 00000000fffc0000 - 0000000100000000
-> > (reserved)
-> > > [    0.000000] x86: PAT support disabled.
-> > > [    0.000000] 511MB LOWMEM available.
-> > > [    0.000000] Entering add_active_range(0, 0, 131056) 0 entries of
-> > 256 used
-> > > [    0.000000] Zone PFN ranges:
-> > > [    0.000000]   DMA             0 ->     4096
-> > > [    0.000000]   Normal       4096 ->   131056
-> > > [    0.000000] Movable zone start PFN for each node
-> > > [    0.000000] early_node_map[1] active PFN ranges
-> > > [    0.000000]     0:        0 ->   131056
-> > > [    0.000000] On node 0 totalpages: 131056
-> > > [    0.000000]   DMA zone: 32 pages used for memmap
-> > > [    0.000000]   DMA zone: 0 pages reserved
-> > > [    0.000000]   DMA zone: 4064 pages, LIFO batch:0
-> > > [    0.000000]   Normal zone: 991 pages used for memmap
-> > > [    0.000000]   Normal zone: 125969 pages, LIFO batch:31
-> > > [    0.000000]   Movable zone: 0 pages used for memmap
-> > > [    0.000000] DMI 2.3 present.
-> > > [    0.000000] ACPI: RSDP 000FA340, 0014 (r0 AMI   )
-> > > [    0.000000] ACPI:      21FF0000, 0000 (r0
-> > 0             0)
-> > > [    0.000000] ACPI Error (tbutils-0472): Invalid length 0x0 in
-> > RSDT/XSDT [20080321]
-> 
-> Please attach the acpidump output using the latest pmtools at
-> http://www.lesswatts.org/patches/linux_acpi/
-> 
-Please also attach the dmesg output of a working kernel.
+Suresh Siddha <suresh.b.siddha@intel.com> writes:
+
+> MSI and MSI-X support for interrupt remapping infrastructure.
+>
+> MSI address register will be programmed with interrupt-remapping table
+> entry(IRTE) index and the IRTE will contain information about the vector,
+> cpu destination, etc.
+>
+> For MSI-X, all the IRTE's will be consecutively allocated in the table,
+> and the address registers will contain the starting index to the block
+> and the data register will contain the subindex with in that block.
+>
+> This also introduces a new irq_chip for cleaner irq migration (in the process
+> context as opposed to the current irq migration in the context of an interrupt.
+> interrupt-remapping infrastructure will help us achieve this).
+>
+> As MSI is edge triggered, irq migration is a simple atomic update(of vector
+> and cpu destination) of IRTE and flushing the hardware cache.
+
+A couple of things.  I believe MSI edge triggered irqs can always be migrated
+safely outside of irq context.
+
+Flushing the hardware cache sounds like it will flush the irqs towards the cpu.
+How do we flush the inflight irqs flushed to the apic.  Does a register read work?
+
+For MSI irqs going directly to the cpu it should, as long as the cpu and local
+apic count as the same device from the perspective of pci ordering rules.
 
 
-> thanks,
-> rui
-> > 
-> > 
-> > 
-> > 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Index: tree-x86/arch/x86/kernel/io_apic_64.c
+> ===================================================================
+> --- tree-x86.orig/arch/x86/kernel/io_apic_64.c 2008-07-10 09:52:31.000000000
+> -0700
+> +++ tree-x86/arch/x86/kernel/io_apic_64.c 2008-07-10 09:52:34.000000000 -0700
+> @@ -2289,6 +2289,9 @@
+>  
+>  	dynamic_irq_cleanup(irq);
+>  
+> +#ifdef CONFIG_INTR_REMAP
+> +	free_irte(irq);
+> +#endif
+>  	spin_lock_irqsave(&vector_lock, flags);
+>  	__clear_irq_vector(irq);
+>  	spin_unlock_irqrestore(&vector_lock, flags);
+> @@ -2307,11 +2310,42 @@
+>  
+>  	tmp = TARGET_CPUS;
+>  	err = assign_irq_vector(irq, tmp);
+> -	if (!err) {
+> -		cpus_and(tmp, cfg->domain, tmp);
+> -		dest = cpu_mask_to_apicid(tmp);
+> +	if (err)
+> +		return err;
+> +
+> +	cpus_and(tmp, cfg->domain, tmp);
+> +	dest = cpu_mask_to_apicid(tmp);
 
+Can we simplify this a little.  In particular have a function 
+
+struct IOAPIC_ROUTE_entry x86_map_irq(irq, mask);
+
+Where x86_map_irq would ultimately figure out the path to the cpu.
+In the simple case it would just call assign_irq_vector();
+When irqs are remapped it would perform the additional
+map_irq_to_irte_handle();
+modify_irte(irq, &irte);
+
+And then have the generic msi code and the ioapic code.
+Map from the struct IOAPIC_ROUTE_entry or whatever to the appropriate bits for the hardware
+they control.
+
+That should allows us a lot more flexibility going forward with less code then is in your
+patches.
+
+> +#ifdef CONFIG_INTR_REMAP
+> +	if (irq_remapped(irq)) {
+> +		struct irte irte;
+> +		int ir_index;
+> +		u16 sub_handle;
+> +
+> +		ir_index = map_irq_to_irte_handle(irq, &sub_handle);
+> +		BUG_ON(ir_index == -1);
+> +
+> +		memset (&irte, 0, sizeof(irte));
+> +
+> +		irte.present = 1;
+> +		irte.dst_mode = INT_DEST_MODE;
+> +		irte.trigger_mode = 0; /* edge */
+> +		irte.dlvry_mode = INT_DELIVERY_MODE;
+> +		irte.vector = cfg->vector;
+> +		irte.dest_id = IRTE_DEST(dest);
+> +
+> +		modify_irte(irq, &irte);
+>  
+>  		msg->address_hi = MSI_ADDR_BASE_HI;
+> +		msg->data = sub_handle;
+> +		msg->address_lo = MSI_ADDR_BASE_LO | MSI_ADDR_IR_EXT_INT |
+> +				  MSI_ADDR_IR_SHV |
+> +				  MSI_ADDR_IR_INDEX1(ir_index) |
+> +				  MSI_ADDR_IR_INDEX2(ir_index);
+> +	} else
+> +#endif
+> +	{
+> +		msg->address_hi = MSI_ADDR_BASE_HI;
+>  		msg->address_lo =
+>  			MSI_ADDR_BASE_LO |
+>  			((INT_DEST_MODE == 0) ?
+> @@ -2361,6 +2395,55 @@
+>  	write_msi_msg(irq, &msg);
+>  	irq_desc[irq].affinity = mask;
+>  }
+> +
+> +#ifdef CONFIG_INTR_REMAP
+> +/*
+> + * Migrate the MSI irq to another cpumask. This migration is
+> + * done in the process context using interrupt-remapping hardware.
+> + */
+> +static void ir_set_msi_irq_affinity(unsigned int irq, cpumask_t mask)
+> +{
+> +	struct irq_cfg *cfg = irq_cfg + irq;
+> +	unsigned int dest;
+> +	cpumask_t tmp, cleanup_mask;
+> +	struct irte irte;
+> +
+> +	cpus_and(tmp, mask, cpu_online_map);
+> +	if (cpus_empty(tmp))
+> +		return;
+> +
+> +	if (get_irte(irq, &irte))
+> +		return;
+> +
+> +	if (assign_irq_vector(irq, mask))
+> +		return;
+> +
+> +	cpus_and(tmp, cfg->domain, mask);
+> +	dest = cpu_mask_to_apicid(tmp);
+> +
+> +	irte.vector = cfg->vector;
+> +	irte.dest_id = IRTE_DEST(dest);
+> +
+> +	/*
+> +	 * atomically update the IRTE with the new destination and vector.
+> +	 */
+> +	modify_irte(irq, &irte);
+> +
+> +	/*
+> +	 * After this point, all the interrupts will start arriving
+> +	 * at the new destination. So, time to cleanup the previous
+> +	 * vector allocation.
+> +	 */
+> +	if (cfg->move_in_progress) {
+> +		cpus_and(cleanup_mask, cfg->old_domain, cpu_online_map);
+> +		cfg->move_cleanup_count = cpus_weight(cleanup_mask);
+> +		send_IPI_mask(cleanup_mask, IRQ_MOVE_CLEANUP_VECTOR);
+> +		cfg->move_in_progress = 0;
+> +	}
+> +
+> +	irq_desc[irq].affinity = mask;
+> +}
+> +#endif
+>  #endif /* CONFIG_SMP */
+>  
+>  /*
+> @@ -2378,26 +2461,157 @@
+>  	.retrigger	= ioapic_retrigger_irq,
+>  };
