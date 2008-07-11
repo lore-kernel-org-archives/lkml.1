@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762895AbYGKN77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759499AbYGKODW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762895AbYGKN77 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 09:59:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754067AbYGKN7t
+	id S1759499AbYGKODW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 10:03:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbYGKODK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 09:59:49 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39341 "EHLO mx3.mail.elte.hu"
+	Fri, 11 Jul 2008 10:03:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35334 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759675AbYGKN7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 09:59:48 -0400
-Date: Fri, 11 Jul 2008 15:59:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?B?VPZy9ms=?= Edwin <edwintorok@gmail.com>
-Cc: Takashi Iwai <tiwai@suse.de>, linux-next@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: today's linux-next fails to boot
-Message-ID: <20080711135937.GA25004@elte.hu>
-References: <4877400B.1000400@gmail.com> <s5hy747rvpr.wl%tiwai@suse.de> <48775C69.6050107@gmail.com>
+	id S1751226AbYGKODJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 10:03:09 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] Fix netfilter xt_time's time_mt()'s use of do_div()
+To: jengelh@computergmbh.de, akpm@linux-foundation.org
+Cc: dhowells@redhat.com, kaber@trash.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Date: Fri, 11 Jul 2008 15:02:06 +0100
+Message-ID: <20080711140206.982.19421.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <48775C69.6050107@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fix netfilter xt_time's time_mt()'s use of do_div() on an s64 by using
+div_s64() instead.
 
-* Török Edwin <edwintorok@gmail.com> wrote:
+This was introduced by patch ee4411a1b1e0b679c99686629b5eab5a072ce49f.
 
-> > [Added Ingo to Cc]
-> >
-> > I get the boot problem on i386 with 2008-07-11 linux-next tree, too.
-> > In my case, no error appears on the screen, just staying blank and
-> > dead.  It seems stopping at the very beginning, soon after GRUB, so
-> > could be the same reason.
-> >   
-> 
-> I don't see any boot messages on the screen, I get that BUG message as
-> soon as grub's menu dissapears.
-> I have bisected it to this range so far:
-> git-bisect good aa03060a78c1aec53075a0c8ca7be19cedfbea8f
-> git-bisect bad b1611c0058bc6635e7257e755c3f194933a7a6df
-> 
-> Should I continue to bisect?
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-could you check latest tip/master, does it boot fine with the same 
-config?
+ net/netfilter/xt_time.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-	Ingo
+
+diff --git a/net/netfilter/xt_time.c b/net/netfilter/xt_time.c
+index ed76baa..9f32859 100644
+--- a/net/netfilter/xt_time.c
++++ b/net/netfilter/xt_time.c
+@@ -173,7 +173,7 @@ time_mt(const struct sk_buff *skb, const struct net_device *in,
+ 		__net_timestamp((struct sk_buff *)skb);
+ 
+ 	stamp = ktime_to_ns(skb->tstamp);
+-	do_div(stamp, NSEC_PER_SEC);
++	stamp = div_s64(stamp, NSEC_PER_SEC);
+ 
+ 	if (info->flags & XT_TIME_LOCAL_TZ)
+ 		/* Adjust for local timezone */
+
