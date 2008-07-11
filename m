@@ -1,177 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758651AbYGKAWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757329AbYGKA22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758651AbYGKAWR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 20:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755490AbYGKAWA
+	id S1757329AbYGKA22 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 20:28:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754701AbYGKA2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 20:22:00 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59386
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755340AbYGKAV7 (ORCPT
+	Thu, 10 Jul 2008 20:28:19 -0400
+Received: from ik-out-1112.google.com ([66.249.90.179]:53353 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751547AbYGKA2T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 20:21:59 -0400
-Date: Thu, 10 Jul 2008 17:21:59 -0700 (PDT)
-Message-Id: <20080710.172159.229303434.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 10 Jul 2008 20:28:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=ORVlU6C3KrduuFBI75We8e4Y0y3eqT6/Z4YqpsTezXtFUrBUdh9wEaPeBiQBFt5Fup
+         5k2rWlTZvNgOnriICAy27L7crSWE3H8Zs8f1TkfW4JLq4Lp43GmmIIU+wbKg4n06PrEZ
+         yc3znFVusFxoYQHjjiCf1jBK9MmSCakjDnb4o=
+Message-ID: <6d291e080807101728j62be7c93qba11aa214a8dfe1@mail.gmail.com>
+Date: Thu, 10 Jul 2008 19:28:16 -0500
+From: "Stoyan Gaydarov" <stoyboyker@gmail.com>
+To: rjw@sisk.pl, pavel@suse.cz
+Subject: [PATCH] ioctl conversion
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This changes the ioctl usage of kernel/power/user.c to use the unlocked_ioctl
 
-The usual slew of small fixup, but there is an OOPS'er and
-a leak fix or two in here.  Highlights:
+Signed-off-by: Stoyan Gaydarov <stoyboyker@gmail.com>
 
-1) fib_trie can OOPS due to inconsistent error return value
-   handling.  Fix from Ben Hutchings.
+diff -uprN linux-2.6.26-rc9/kernel/power/user.c devel/kernel/power/user.c
+--- linux-2.6.26-rc9/kernel/power/user.c        2008-07-05
+17:53:22.000000000 -0500
++++ devel/kernel/power/user.c   2008-07-10 19:26:42.000000000 -0500
+@@ -18,6 +18,7 @@
+ #include <linux/mm.h>
+ #include <linux/swap.h>
+ #include <linux/swapops.h>
++#include <linux/smp_lock.h>
+ #include <linux/pm.h>
+ #include <linux/fs.h>
+ #include <linux/console.h>
+@@ -164,20 +165,28 @@ static ssize_t snapshot_write(struct fil
+        return res;
+ }
 
-2) Duplicate address handling race in ipv6 fixed by Andrey Vagin.
+-static int snapshot_ioctl(struct inode *inode, struct file *filp,
+-                          unsigned int cmd, unsigned long arg)
++static long snapshot_ioctl(struct file *filp, unsigned int cmd,
++                          unsigned long arg)
+ {
+        int error = 0;
+        struct snapshot_data *data;
+        loff_t size;
+        sector_t offset;
 
-3) TUN devices can get wedged with TX flow control disabled,
-   fix from Max Krasnyansky.  This aparently hits virtualization
-   folks a bit, particularly kvm.
+-       if (_IOC_TYPE(cmd) != SNAPSHOT_IOC_MAGIC)
++       lock_kernel();
++
++       if (_IOC_TYPE(cmd) != SNAPSHOT_IOC_MAGIC) {
++               unlock_kernel();
+                return -ENOTTY;
+-       if (_IOC_NR(cmd) > SNAPSHOT_IOC_MAXNR)
++       }
++       if (_IOC_NR(cmd) > SNAPSHOT_IOC_MAXNR) {
++               unlock_kernel();
+                return -ENOTTY;
+-       if (!capable(CAP_SYS_ADMIN))
++       }
++       if (!capable(CAP_SYS_ADMIN)) {
++               unlock_kernel();
+                return -EPERM;
++       }
 
-4) netfilter TCP connection tracking can get into an endless
-   loop, fix from Patrick McHardy.
+        data = filp->private_data;
 
-5) SCTP bug fixes from Vlad Yasevich.
+@@ -390,6 +399,7 @@ static int snapshot_ioctl(struct inode *
 
-6) Various IRDA small fixups.
+        }
 
-7) Merge of wireless bug fixes via John W. Linville
++       unlock_kernel();
+        return error;
+ }
 
-8) IPv4 sysctl documentation improvements from J. Bruce Fields
-   and Stephen Hemminger.
+@@ -399,7 +409,7 @@ static const struct file_operations snap
+        .read = snapshot_read,
+        .write = snapshot_write,
+        .llseek = no_llseek,
+-       .ioctl = snapshot_ioctl,
++       .unlocked_ioctl = snapshot_ioctl,
+ };
 
-9) Netlabel SKB double-free cure, and an ipv6 namespace fixup
-   from Denis V. Lunev
-
-Please pull, thanks a lot!
-
-The following changes since commit 7f2d38eb7a42bea1c1df51bbdaa2ca0f0bdda07f:
-  Oliver Hartkopp (1):
-        can: add sanity checks
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Andrey Vagin (1):
-      ipv6: fix race between ipv6_del_addr and DAD timer
-
-Ben Hutchings (1):
-      ipv4: fib_trie: Fix lookup error return
-
-Darren Jenkins (1):
-      drivers/net/wireless/iwlwifi/iwl-3945.c Fix type issue on 64bit
-
-David Howells (1):
-      netfilter: nf_nat_snmp_basic: fix a range check in NAT for SNMP
-
-David S. Miller (1):
-      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
-
-Denis V. Lunev (2):
-      netlabel: netlink_unicast calls kfree_skb on error path by itself
-      ipv6: missed namespace context in ipv6_rthdr_rcv
-
-Firat Birlik (1):
-      zd1211rw: add ID for AirTies WUS-201
-
-Guy Cohen (1):
-      mac80211: move netif_carrier_on to after ieee80211_bss_info_change_notify
-
-Ihar Hrachyshka (1):
-      libertas: fix memory alignment problems on the blackfin
-
-Ivo van Doorn (2):
-      mac80211: Only flush workqueue when last interface was removed
-      rt2x00: Disable synchronization during initialization
-
-J. Bruce Fields (1):
-      Documentation: clarify tcp_{r,w}mem sysctl docs
-
-John W. Linville (1):
-      hostap_cs: correct poor NULL checks in suspend/resume routines
-
-Julius Volz (1):
-      irda: Fix netlink error path return value
-
-Luis Carlos Cobo (1):
-      zd1211rw: stop beacons on remove_interface
-
-Mattias Nissler (1):
-      rc80211_pid: Fix fast_start parameter handling
-
-Max Krasnyansky (1):
-      tun: Persistent devices can get stuck in xoff state
-
-Michael Buesch (1):
-      ssb-pcicore: Fix IRQ-vector init on embedded devices
-
-Milton Miller (1):
-      tcp: correct kcalloc usage
-
-Patrick McHardy (1):
-      netfilter: nf_conntrack_tcp: fix endless loop
-
-Steffen Klassert (1):
-      xfrm: Add a XFRM_STATE_AF_UNSPEC flag to xfrm_usersa_info
-
-Stephen Hemminger (1):
-      ip: sysctl documentation cleanup
-
-Ville Syrjala (1):
-      irda: New device ID for nsc-ircc
-
-Vlad Yasevich (2):
-      sctp: Mark the tsn as received after all allocations finish
-      sctp: Add documentation for sctp sysctl variable
-
-Vladimir Koutny (1):
-      mac80211: don't report selected IBSS when not found
-
-Wang Chen (1):
-      irda: via-ircc proper dma freeing
-
- Documentation/networking/ip-sysctl.txt  |  256 ++++++++++++++++++++++++++-----
- drivers/net/irda/nsc-ircc.c             |    1 +
- drivers/net/irda/via-ircc.c             |    3 +
- drivers/net/tun.c                       |    6 +
- drivers/net/wireless/hostap/hostap_cs.c |   12 +-
- drivers/net/wireless/iwlwifi/iwl-3945.c |    4 +-
- drivers/net/wireless/libertas/scan.c    |    4 +-
- drivers/net/wireless/rt2x00/rt2400pci.c |   11 ++
- drivers/net/wireless/rt2x00/rt2500pci.c |   11 ++
- drivers/net/wireless/rt2x00/rt2500usb.c |    7 +
- drivers/net/wireless/rt2x00/rt61pci.c   |    9 +
- drivers/net/wireless/rt2x00/rt73usb.c   |    9 +
- drivers/net/wireless/zd1211rw/zd_mac.c  |    1 +
- drivers/net/wireless/zd1211rw/zd_usb.c  |    1 +
- drivers/ssb/driver_pcicore.c            |    7 +
- include/linux/xfrm.h                    |    1 +
- net/ipv4/fib_trie.c                     |   17 +--
- net/ipv4/netfilter/nf_nat_snmp_basic.c  |    2 +-
- net/ipv4/tcp_probe.c                    |    2 +-
- net/ipv6/addrconf.c                     |    4 +-
- net/ipv6/exthdrs.c                      |    2 +-
- net/irda/irnetlink.c                    |    4 +-
- net/mac80211/main.c                     |    4 +-
- net/mac80211/mlme.c                     |   13 +-
- net/mac80211/rc80211_pid.h              |    5 -
- net/mac80211/rc80211_pid_algo.c         |   31 ++---
- net/netfilter/nf_conntrack_proto_tcp.c  |   10 +-
- net/netlabel/netlabel_cipso_v4.c        |    7 +-
- net/netlabel/netlabel_mgmt.c            |   12 +--
- net/netlabel/netlabel_unlabeled.c       |    6 +-
- net/sctp/sm_statefuns.c                 |    9 +-
- net/sctp/ulpevent.c                     |    5 +
- net/xfrm/xfrm_user.c                    |    3 +-
- 33 files changed, 351 insertions(+), 128 deletions(-)
+ static struct miscdevice snapshot_device = {
