@@ -1,118 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760829AbYGKUuG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760436AbYGKUvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760829AbYGKUuG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 16:50:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbYGKUtx
+	id S1760436AbYGKUvR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 16:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbYGKUvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 16:49:53 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50868 "EHLO mx2.mail.elte.hu"
+	Fri, 11 Jul 2008 16:51:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46892 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759933AbYGKUtw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 16:49:52 -0400
-Date: Fri, 11 Jul 2008 22:49:31 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: "hpa@zytor.com" <hpa@zytor.com>, "tglx@linutronix.de" <tglx@linutronix.de>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "ebiederm@xmission.com" <ebiederm@xmission.com>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "steiner@sgi.com" <steiner@sgi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jeremy@goop.org" <jeremy@goop.org>
-Subject: Re: [patch 00/26] x64, x2apic/intr-remap: Interrupt-remapping and
-	x2apic support
-Message-ID: <20080711204931.GB15689@elte.hu>
-References: <20080710181634.764954000@linux-os.sc.intel.com> <20080710195320.GA23322@elte.hu> <20080710215617.GM1678@linux-os.sc.intel.com> <20080711102814.GA17938@elte.hu> <20080711200957.GA8173@elte.hu> <20080711203151.GU1678@linux-os.sc.intel.com>
+	id S1752664AbYGKUvD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 16:51:03 -0400
+Date: Fri, 11 Jul 2008 16:50:52 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Bob Montgomery <bob.montgomery@hp.com>
+Cc: "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: AMD Family 10H machine check on vmcore read
+Message-ID: <20080711205052.GC3298@redhat.com>
+References: <1215472086.3361.297.camel@amd.troyhebe> <20080708132855.GB7866@redhat.com> <1215624760.3361.314.camel@amd.troyhebe>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080711203151.GU1678@linux-os.sc.intel.com>
+In-Reply-To: <1215624760.3361.314.camel@amd.troyhebe>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
-
-> On Fri, Jul 11, 2008 at 01:09:57PM -0700, Ingo Molnar wrote:
-> > 
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > > >   http://redhat.com/~mingo/misc/config-Thu_Jul_10_21_43_28_CEST_2008.bad
-> > > >
-> > > > Ingo, that was my stupid typo. Please apply this patch. BTW, we need
-> > > > some more xen64 paravirt fixes in this area. I will look at it as
-> > > > soon as possible.
+On Wed, Jul 09, 2008 at 11:32:40AM -0600, Bob Montgomery wrote:
+> On Tue, 2008-07-08 at 13:28 +0000, Vivek Goyal wrote:
+> > On Mon, Jul 07, 2008 at 05:08:06PM -0600, Bob Montgomery wrote:
+> > > We maintain a 2.6.18 derived kernel.
+> > > When testing kdump on a new AMD Family 10h (16) processor, once in the
+> > > kdump kernel, a read from either /proc/vmcore or /dev/oldmem that
+> > > corresponds to the area of memory identified in the original (crashing)
+> > > kernel by these boot messages:
+> 
 > > >
-> > > applied to tip/x86/x2apic - thanks Suresh.
+> > > On a Family 15 AMD64 processor running this kernel and kdump kernel, I
+> > > can read the areas identified as being in the aperture from the kdump
+> > > kernel and get values, but on the new processor, reads from the kdump
+> > > kernel that are within that address range result in the machine check:
+> > >
+> > > HARDWARE ERROR
+> > > CPU 0: Machine Check Exception:                4 Bank 4: be0000010005001b
+> > > TSC 141bd974323de ADDR 1c000000 MISC e00c0ffe01000000
+> > >
+> 
+> > Hi Bob,
 > > 
-> > another problem is the redefinition of apic_read(), causing:
+> > I am not sure what's happening here. Because in /proc/iomem, GART reserved
+> > area is reported as System RAM, kdump kernel will try to read this area
+> > and save it. Now I am not sure, what is so special about this area that
+> > mapping it and reading it in second kernel would cause a MCE.
 > > 
-> >  arch/x86/xen/enlighten.c: In function ‘xen_patch':
-> >  arch/x86/xen/enlighten.c:1084: warning: label ‘patch_site' defined but not used
-> >  arch/x86/xen/enlighten.c: At top level:
-> >  arch/x86/xen/enlighten.c:1272: error: expected identifier before ‘(' token
-> >  arch/x86/xen/enlighten.c:1273: error: expected ‘}' before ‘.' token
+> > CCing it to LKML, hoping people knowing GART will be able to provide some
+> > input.
 > > 
-> > with this config:
+> > > But I don't see this fix upstream in the kernel.  So I'm wondering if
+> > > some other patch protects other kdump kernels from this problem.  In
+> > > particular, a recent patch that informed the e820 map about the gart
+> > > aperture to prevent a normal kernel and a kexec kernel from putting it
+> > > at different addresses.  It didn't mention machine checks from kdump
+> > > kernels, but I wonder if it would have prevented access to that memory
+> > > area by having it be excluded from the /proc/vmcore list of areas??
 > > 
-> >   http://redhat.com/~mingo/misc/config-Fri_Jul_11_21_51_18_CEST_2008.bad
-> > 
-> > the continued spaghetti in all the APIC variants is quite ugly. This
-> > should all be handled via a single apic_ops template that should cover
-> > the paravirt and native variants as well.
+> > Can you provide a link to the patch above? If /proc/iomem, does not report
+> > GART area as system ram then it will be excluded from the dump. (IIUC,
+> > IOMMU tables are in GART area and ideally one should be capturing it to
+> > find out how IOMMU tables looked like at the time of crash).
 > 
-> Ingo, I just posted the fix for this.
-
-applied to tip/x86/x2apic:
-
-  Suresh Siddha (3):
-        x2apic: uninline uv_init_apic_ldr()
-        x2apic: xen64 paravirt basic apic ops
-        x2apic: kernel-parameter documentation for "x2apic_phys"
-
-thanks Suresh.
-
-> To cleanup the code:
+> The patch that I thought might be related is:
+>  x86: disable the GART early, 64-bit
 > 
-> struct pv_apic_ops {
-> #ifdef CONFIG_X86_LOCAL_APIC
-> 	/*
-> 	* Direct APIC operations, principally for VMI.  Ideally
-> 	* these shouldn't be in this interface.
-> 	*/
-> 	void (*apic_write)(unsigned long reg, u32 v);
-> 	void (*apic_write_atomic)(unsigned long reg, u32 v);
-> 	u32 (*apic_read)(unsigned long reg);
+> author     Yinghai Lu <Yinghai.Lu@Sun.COM>
+>            Wed, 30 Jan 2008 12:33:09 +0000 (13:33 +0100)
+> committer  Ingo Molnar <mingo@elte.hu>
+>            Wed, 30 Jan 2008 12:33:09 +0000 (13:33 +0100)
+> commit     aaf230424204864e2833dcc1da23e2cb0b9f39cd
+> tree       a42042f5135aa63a780964bd053ae174211ab62f
 > 
-> Probably we should move the three above routines to basic apic_ops, 
-> which just deal with the apic HW accesses and retain the below for 
-> pv_apic_ops, which care more than the basic reg accesses. This will be 
-> true for both 32/64bits..
+> I thought it might be relevant because of this included comment:
 > 
->         void (*setup_boot_clock)(void);
->         void (*setup_secondary_clock)(void);
+> > hm, i'm wondering, instead of modifying the GART, why dont we simply
+> > _detect_ whatever GART settings we have inherited, and propagate that
+> > into our e820 maps? I.e. if there's inconsistency, then punch that out
+> > from the memory maps and just dont use that memory.
 > 
->         void (*startup_ipi_hook)(int phys_apicid,
->                                  unsigned long start_eip,
->                                  unsigned long start_esp);
-> #endif
-> };
+> But this patch doesn't mention machine checks as the symptom that
+> initiated the patch.
 > 
-> Unless there is an objection, I will post the fix.
+> And my reason for looking was because I didn't think I could be the
+> first person to try reading /proc/vmcore on a Family 10h processor.  So
+> I wondered why it hadn't been seen by some other tester, and thought
+> some other patch might have "fixed" it a different way on newer kernels
+> than mine.
+> 
 
-ok. Jeremy, agreed?
+Hi Bob,
 
-	Ingo
+So it looks like this patch will mark aperture region as non RAM and kudmp
+will not try to dump that memory and will not run into MCE. Have you tried
+the kernel with this patch? Does it work for you?
+
+At this point I don't know, why accessing the aperture region of first
+kernel causes MCE. May be Andi or Yinghai will know, CCing them.
+
+So backporting the Yinghai's patch to your kernel should help here.
+
+Thanks
+Vivek
