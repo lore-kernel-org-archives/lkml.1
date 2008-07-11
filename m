@@ -1,83 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759306AbYGKLQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758736AbYGKLVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759306AbYGKLQh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 07:16:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755521AbYGKLQ0
+	id S1758736AbYGKLVQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 07:21:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbYGKLU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 07:16:26 -0400
-Received: from sh.osrg.net ([192.16.179.4]:36555 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755506AbYGKLQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 07:16:25 -0400
-Date: Fri, 11 Jul 2008 20:15:52 +0900
-To: mpatocka@redhat.com
-Cc: fujita.tomonori@lab.ntt.co.jp, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: [SUGGESTION]: drop virtual merge accounting in I/O requests
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <Pine.LNX.4.64.0807110649510.16550@engineering.redhat.com>
-References: <Pine.LNX.4.64.0807101702090.19775@engineering.redhat.com>
-	<20080711152054C.fujita.tomonori@lab.ntt.co.jp>
-	<Pine.LNX.4.64.0807110649510.16550@engineering.redhat.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080711201558J.fujita.tomonori@lab.ntt.co.jp>
+	Fri, 11 Jul 2008 07:20:58 -0400
+Received: from odyssey.analogic.com ([204.178.40.5]:2273 "EHLO
+	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753483AbYGKLU5 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 07:20:57 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 11 Jul 2008 11:19:15.0389 (UTC) FILETIME=[F3E196D0:01C8E347]
+Content-class: urn:content-classes:message
+Subject: Re: [PATCH 17/18] [GFS2] Remove support for unused and pointless flag
+Date: Fri, 11 Jul 2008 07:19:14 -0400
+Message-ID: <Pine.LNX.4.61.0807110714110.18083@chaos.analogic.com>
+In-Reply-To: <1215771119431-git-send-email-swhiteho@redhat.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 17/18] [GFS2] Remove support for unused and pointless flag
+Thread-Index: AcjjR/PrdPV6kJ6TTi+k9nZ7cVsOiQ==
+References: <121577107950-git-send-email-swhiteho@redhat.com> <12157710872782-git-send-email-swhiteho@redhat.com> <1215771089769-git-send-email-swhiteho@redhat.com> <1215771091790-git-send-email-swhiteho@redhat.com> <12157710931623-git-send-email-swhiteho@redhat.com> <12157710954145-git-send-email-swhiteho@redhat.com> <12157710973601-git-send-email-swhiteho@redhat.com> <12157710983282-git-send-email-swhiteho@redhat.com> <12157711013356-git-send-email-swhiteho@redhat.com> <12157711023743-git-send-email-swhiteho@redhat.com> <12157711041157-git-send-email-swhiteho@redhat.com> <1215771106247-git-send-email-swhiteho@redhat.com> <12157711073280-git-send-email-swhiteho@redhat.com> <12157711093284-git-send-email-swhiteho@redhat.com> <12157711133727-git-send-email-swhiteho@redhat.com> <12157711153366-git-send-email-swhiteho@redhat.com> <12157711171692-git-send-email-swhiteho@redhat.com> <1215771119431-git-send-email-swhiteho@redhat.com>
+From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+To: "Steven Whitehouse" <swhiteho@redhat.com>
+Cc: <linux-kernel@vger.kernel.org>, <cluster-devel@redhat.com>
+Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+X-TM-AS-Product-Ver: SMEX-8.0.0.1259-5.500.1027-16024.006
+X-TM-AS-Result: No--17.645000-8.000000-31
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Jul 2008 06:52:09 -0400 (EDT)
-Mikulas Patocka <mpatocka@redhat.com> wrote:
 
-> 
-> 
-> On Fri, 11 Jul 2008, FUJITA Tomonori wrote:
-> 
-> > On Thu, 10 Jul 2008 17:56:08 -0400 (EDT)
-> > Mikulas Patocka <mpatocka@redhat.com> wrote:
-> >
-> >> When I thought about it more, I realized that this accounting of virtual
-> >> segments in I/O layer can't work correctly at all. If an architecture
-> >> defines symbols BIOVEC_VIRT_MERGEABLE and BIOVEC_VIRT_OVERSIZE, it
-> >> declares that it's IOMMU must merge any two regions satisfying these
-> >> conditions. But in an IOMMU, it is impossible to guarantee, because:
-> >
-> > Yeah, IOMMUs can't guarantee that. The majority of architectures set
-> > BIO_VMERGE_BOUNDARY to 0 so they don't hit this, I think.
-> 
-> Yes, the architectures without IOMMU don't hit this problem.
+On Fri, 11 Jul 2008 swhiteho@redhat.com wrote:
 
-I meant that even if some architectures support IOMMUs, they set
-BIO_VMERGE_BOUNDARY to 0.
+> From: Steven Whitehouse <swhiteho@redhat.com>
+>
+> The ability to mark files for direct i/o access when opened
+> normally is both unused and pointless, so this patch removes
+> support for that feature.
+[Snipped...]
+
+So linux is no longer going to support commercial databases?
+Oracle and others need the O_DIRECT attribute. Linux can
+probably igonore it, but such an open cannot fail or else
+Linux gets thrown out of the commercial enterprise when
+an upgrade disables an entire financial institution.
+
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.28 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
 
 
-> >> * the bus address is allocated basiclly randomly, so we can hit
-> >> dev->dma_parms->segment_boundary_mask any time. This will prevent virtual
-> >> merging from happenning. I/O layer doesn't know the bus address at the
-> >> time it merges requests, so it can't predict when this happens.
-> >>
-> >> * the IOMMU isn't guaranteed to find a continuous space in it's bus
-> >> address space. If it skips over already mapped regions, it can't perform
-> >> virtual merging.
-> >>
-> >> * when creating the mapping, we can hit per-device limit
-> >> "dev->dma_parms->max_segment_size" --- but the I/O layer checks only
-> >> against global limit BIOVEC_VIRT_OVERSIZE. (this last issue is fixable,
-> >> the previous two are not).
-> >
-> > I think that the block layer can handle this properly via
-> > q->max_segment_size. We have the same value at two different
-> > places. Yeah, it's not good...
-> >
-> >
-> > BTW, inia100_template sets sg_tablesize to SG_ALL. If the controller
-> > has at most 32 SG entries per request, we need to fix that.
-> 
-> Later, it sets that to shost->sg_tablesize = TOTAL_SG_ENTRY; I don't know 
-> why in inia100_template there is SG_ALL.
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
 
-Thanks, I overlooked it.
-
-Seems that the driver sets shost->sg_tablesize to TOTAL_SG_ENTRY
-unconditionally. Setting it in inia100_template is better.
+Thank you.
