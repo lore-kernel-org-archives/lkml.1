@@ -1,81 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760720AbYGKUjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760261AbYGKUj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760720AbYGKUjU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 16:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753602AbYGKUjH
+	id S1760261AbYGKUj6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 16:39:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbYGKUjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 16:39:07 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60476 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760119AbYGKUjG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 16:39:06 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH -mm 1/2] kexec jump -v12: kexec jump
-Date: Fri, 11 Jul 2008 22:40:58 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Andrew Morton <akpm@linux-foundation.org>, Vivek Goyal <vgoyal@redhat.com>,
-       Huang Ying <ying.huang@intel.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-References: <1215401122.4660.4.camel@caritas-dev.intel.com> <20080711122131.b6461ab1.akpm@linux-foundation.org> <20080711202434.GB6261@elf.ucw.cz>
-In-Reply-To: <20080711202434.GB6261@elf.ucw.cz>
+	Fri, 11 Jul 2008 16:39:49 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:41006 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756125AbYGKUjt convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 16:39:49 -0400
+Date: Fri, 11 Jul 2008 22:40:23 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Soeren Sonnenburg <kernel@nn7.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.26-rc7: BUG at kernel/power/snapshot.c:493
+Message-ID: <20080711204023.GE6843@elf.ucw.cz>
+References: <1214584985.22228.15.camel@localhost> <1214590455.22228.16.camel@localhost> <20080711195452.GB7190@elf.ucw.cz> <200807112233.53207.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807112240.59461.rjw@sisk.pl>
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <200807112233.53207.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 11 of July 2008, Pavel Machek wrote:
-> On Fri 2008-07-11 12:21:31, Andrew Morton wrote:
-> > On Tue, 8 Jul 2008 10:50:51 -0400 Vivek Goyal <vgoyal@redhat.com> wrote:
+On Fri 2008-07-11 22:33:52, Rafael J. Wysocki wrote:
+> On Friday, 11 of July 2008, Pavel Machek wrote:
+> > Hi!
 > > 
-> > > On Mon, Jul 07, 2008 at 11:25:22AM +0800, Huang Ying wrote:
-> > > > This patch provides an enhancement to kexec/kdump. It implements
-> > > > the following features:
+> > > > > Anyone else seeing this? Happened after resuming from s2both (from
+> > > > > disk)...
 > > > > 
-> > > > - Backup/restore memory used by the original kernel before/after
-> > > >   kexec.
-> > > > 
-> > > > - Save/restore CPU state before/after kexec.
-> > > > 
+> > > > At what point exactly did it happen?
 > > > 
-> > > Hi Huang,
-> > > 
-> > > In general this patch set looks good enough to live in -mm and
-> > > get some testing going.
-> > > 
-> > > To me, adding capability to return back to original kernel looks
-> > > like a logical extension to kexec functionality.
+> > > I am attaching the full dmesg.
 > > 
-> > Exciting ;)  It's much less code than I expected.
+> > Something is seriously wrong here.
 > > 
-> > I don't think I understand the feature any more.  Once upon a time we
-> > thought that this might become a new and better (or at least
-> > better-code-sharing) way of doing suspend-to-disk.  How far are we from
-> > that?
+> > > usbcore: registered new interface driver usbhid
+> > > usbhid: v2.6:USB HID core driver
+> > > TCP cubic registered
+> > > NET: Registered protocol family 10
+> > > lo: Disabled Privacy Extensions
+> > > Mobile IPv6
+> > > NET: Registered protocol family 17
+> > > NET: Registered protocol family 15
+> > > Using IPI No-Shortcut mode
+> > > RAMDISK: ext2 filesystem found at block 0
+> > > RAMDISK: Loading 2000KiB [1 disk] into ram disk... |/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|done.
+
+(1)
+> > > EXT2-fs warning: checktime reached, running e2fsck is recommended
+(2)
+> > > VFS: Mounted root (ext2 filesystem).
+> > > ------------[ cut here ]------------
+> > > kernel BUG at kernel/power/snapshot.c:493!
+> > > invalid opcode: 0000 [#1] PREEMPT SMP 
+> > > Modules linked in:
+> > 
+> > This is _after_ we mounted filesystems... we should not be resuming at
+> > this point.
 > 
-> Well, it will be tricky to get kjump-hibernation right with respect to
-> ACPI, but we should be fairly close to basic hibernation working with
-> this. It has major advantage of not needing refrigerator (and few
-> disadvantages -- like doing aditional boot during suspend).
+> This is an initrd, isn't it?
 
-Please, stop that.  This has always been a bogus argument.
+Does not look like so: it mounted some filesystem at (1), and
+checktime is reached. I thought initrd is read-only RAM disk -- it
+should not reach check time, no?
 
-The truth is we could do hibernation without the freezer if
-(a) some drivers were fixed not to rely on it (kexec doesn't help here),
-(b) we had support at the block layer or filesystems level (kexec is a big
-   workaround here).
+> In which case we can be resuming (using the user land "resume") exactly at this
+> point, no?
+>  
+> > > Pid: 568, comm: linuxrc Not tainted (2.6.26-rc7-sonne #35)
+> > > EIP: 0060:[<c0157f99>] EFLAGS: 00010282 CPU: 0
+> > > EIP is at memory_bm_set_bit+0x29/0x30
+> > > EAX: fffffff2 EBX: f7165f1c ECX: 00000000 EDX: 03000200
+> > > ESI: f7115000 EDI: b7f2a008 EBP: f7165f28 ESP: f7165f18
+> > >  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> > > Process linuxrc (pid: 568, ti=f7164000 task=f7b65f80 task.ti=f7164000)
+> > > Stack: f7165f1c 00000013 f7117000 00000002 f7165f5c c0158e9b bf96e5ec c02dd570 
+> > >        00001000 c05fa980 00000008 00000008 00000000 00000000 f7000200 c05fa980 
+> > >        b7f2a008 f7165f70 c015b3af f7000200 b7f2a008 00001000 f7165f90 c0185e28 
+> > > Call Trace:
+> > >  [<c0158e9b>] ? snapshot_write_next+0xcb/0x7a0
+> > >  [<c02dd570>] ? write_chan+0x0/0x380
+> > >  [<c015b3af>] ? snapshot_write+0x1f/0x70
+> > >  [<c0185e28>] ? vfs_write+0x98/0x120
+> > >  [<c015b390>] ? snapshot_write+0x0/0x70
+> > >  [<c0185f6d>] ? sys_write+0x3d/0x70
+> > >  [<c010333a>] ? syscall_call+0x7/0xb
+> > >  =======================
+> > > Code: 00 00 55 89 e5 53 83 ec 0c 8d 4d f8 8d 5d f4 89 1c 24 e8 4b ff ff ff 85 c0 75 10 8b 55 f8 8b 45 f4 f0 0f ab 02 83 c4 0c 5b 5d c3 <0f> 0b eb fe 8d 76 00 8b 0d 0c a9 5f c0 55 89 e5 85 c9 74 14 8b 
+> > > EIP: [<c0157f99>] memory_bm_set_bit+0x29/0x30 SS:ESP 0068:f7165f18
+> > > ---[ end trace 70a926e889075b3c ]---
+> > 
+> > > Clocksource tsc unstable (delta = -208377644 ns)
+> > > kjournald starting.  Commit interval 5 seconds
+> > > EXT3 FS on sda3, internal journal
+> > > ext3_orphan_cleanup: deleting unreferenced inode 1805649
+> > > ext3_orphan_cleanup: deleting unreferenced inode 1228813
+> > > EXT3-fs: sda3: 2 orphan inodes deleted
+> > > EXT3-fs: recovery complete.
+> > > EXT3-fs: mounted filesystem with ordered data mode.
+> > > VFS: Mounted root (ext3 filesystem).
+> > > Trying to move old root to /initrd ... /initrd does not exist. Ignored.
+> > > Unmounting old root
+> > > Trying to free ramdisk memory ... okay
+> > > Freeing unused kernel memory: 268k freed
+> > > kjournald starting.  Commit interval 5 seconds
+> > > EXT3-fs warning: mounting fs with errors, running e2fsck is recommended
+> > > EXT3 FS on dm-0, internal journal
+> > > EXT3-fs: recovery complete.
+> > > EXT3-fs: mounted filesystem with ordered data mode.
+> > 
+> > You should really fsck at this point.
+> 
+> I don't really think so.
 
-> But main reason I'd like kjump to be in is different -- it should be
-> useful to stuff like "dump but continue running", etc...
+Well, "mounted fs with errors" indicates a problem, right?
 
-That's a different thing.
-
-Thanks,
-Rafael
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
