@@ -1,89 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756701AbYGKLqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757938AbYGKLqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756701AbYGKLqf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 07:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892AbYGKLq2
+	id S1757938AbYGKLqt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 07:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756887AbYGKLqj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 07:46:28 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:60852 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753616AbYGKLq1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 07:46:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ZPHtEu7VDZQQEM1AuRG1oh5ziTfflLBtYU21SGlHMAiFob42anRoHjuiDspk/xHKgZ
-         VOfJC0Gyv8uJpoANBruBV3lhF4BtYYKAEw+Bo+QWC8OyCSowqtqqdkat6HTv9KNBKKuC
-         unEgcbR1Cv9oe4NRzH/MfRsIU4LGpuVNH47WM=
-Message-ID: <b647ffbd0807110446y4ce1d7b0l7c8e0517a2da3672@mail.gmail.com>
-Date: Fri, 11 Jul 2008 13:46:26 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Subject: Re: v2.6.26-rc9: kernel BUG at kernel/sched.c:5858!
-Cc: Yanmin <yanmin_zhang@linux.intel.com>,
-       "Rusty Russell" <rusty@rustcorp.com.au>, "Ingo Molnar" <mingo@elte.hu>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Gautham R Shenoy" <ego@in.ibm.com>,
-       "Heiko Carstens" <heiko.carstens@de.ibm.com>, miaox@cn.fujitsu.com,
-       "Lai Jiangshan" <laijs@cn.fujitsu.com>, "Avi Kivity" <avi@qumranet.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <19f34abd0807110404p5c588debu681aa466cc98ad08@mail.gmail.com>
+	Fri, 11 Jul 2008 07:46:39 -0400
+Received: from mga01.intel.com ([192.55.52.88]:2648 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756864AbYGKLqh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 07:46:37 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.30,344,1212390000"; 
+   d="scan'208";a="590927220"
+From: Maciej Sosnowski <maciej.sosnowski@intel.com>
+Subject: [PATCH 0/2] I/OAT: watchdog/reset and tcp_dma_copybreak
+To: dan.j.williams@intel.com
+Cc: shannon.nelson@intel.com, linux-kernel@vger.kernel.org
+Date: Fri, 11 Jul 2008 13:36:38 +0200
+Message-ID: <20080711113553.337.50006.stgit@linux.site>
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080710115954.GA3639@damson.getinternet.no>
-	 <b647ffbd0807100550l44fae9fate511dafbf87564a4@mail.gmail.com>
-	 <19f34abd0807100604p70c2fec6geca65b2ba772dea@mail.gmail.com>
-	 <b647ffbd0807100703q442a9825hb857c321452027e7@mail.gmail.com>
-	 <19f34abd0807100716k35e937batb4059f99fe46731b@mail.gmail.com>
-	 <19f34abd0807101249y24632b50h769a7af2c9514864@mail.gmail.com>
-	 <b647ffbd0807101316o97fe6d4p5b2cbcda472f2ae1@mail.gmail.com>
-	 <19f34abd0807102249t6b2e9e97l97bc5b22cc7709ef@mail.gmail.com>
-	 <b647ffbd0807110202o10ca65c7yf93d8b2146a05e33@mail.gmail.com>
-	 <19f34abd0807110404p5c588debu681aa466cc98ad08@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/7/11 Vegard Nossum <vegard.nossum@gmail.com>:
-> [ ... ]
->
-> Ok, now I tested it on my laptop (sorry, no serial console :-)) and I
-> get a spinlock recursion.
+It has been a while since last ioatdma update.
+Here are two patches that are a result of 
+ioatdma sustaining and performance tuning efforts
+for both I/OAT versions 1.2 and 2.0.
 
-Not reproduceable without my debugging patch and with Miao's?
+This patches apply to kernel 2.6.26-rc9.
 
+Maciej Sosnowski (2):
+     I/OAT: Add watchdog/reset functionality to ioatdma driver
+     I/OAT: tcp_dma_copybreak default value dependant on I/OAT version
 
-> Sorry for bad pics, but it's the best I can
-> do with the camera at hand:
->
-> http://folk.uio.no/vegardno/linux/DSC04925.JPG
-> http://folk.uio.no/vegardno/linux/DSC04926.JPG
-> http://folk.uio.no/vegardno/linux/DSC04927.JPG (probably best pic, but
-> some of the msg is cut off, see pic #1 instead)
->
-> Should I use Miao Xie's patch as well?
+ drivers/dma/dmaengine.c   |    3 
+ drivers/dma/ioat_dma.c    |  273 +++++++++++++++++++++++++++++++++++-
+ drivers/dma/ioatdma.h     |   10 +
+ include/linux/dmaengine.h |    2 
+ 4 files changed, 281 insertions(+), 7 deletions(-)
 
-My debugging patch already includes it.
-
-Ok, so this initial problem is reproduceable on your laptop? I did try
-to get it on my dual-core laptop without success. Maybe you could send
-me your config-spec (offline) and your test scripts?
-Then we could stop crashing your PCs :-)
-
-
->
-> Thanks,
->
->
-> Vegard
->
-
--- 
-Best regards,
-Dmitry Adamushko
+--
+Maciej
