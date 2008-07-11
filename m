@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758161AbYGKT4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758798AbYGKT5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758161AbYGKT4Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 15:56:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754849AbYGKT4D
+	id S1758798AbYGKT5W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 15:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754849AbYGKT5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 15:56:03 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:31068 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750848AbYGKT4B (ORCPT
+	Fri, 11 Jul 2008 15:57:08 -0400
+Received: from [194.117.236.238] ([194.117.236.238]:46993 "EHLO
+	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1754125AbYGKT5H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 15:56:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Fp0nAg5ew9gcJ3FZR1F56yAWOgHnJUd2dH80dGma30FITeuREsAymD08UWq/C4NkVf
-         oQSIPLXj5OSOSCcssN1KDqSPpFbOPV/2qjL5kgwSint9kxSYbn/AOMFzDDiHAQvpyRo6
-         wJWvxUH0WSfubhsUeqtmTsS0rD/2QBxs+XaRw=
-Date: Fri, 11 Jul 2008 23:53:05 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: arjan@linux.intel.com, akpm@osdl.org
-Subject: Re: + use-warn-in-fs-proc.patch added to -mm tree
-Message-ID: <20080711195305.GA29379@martell.zuzino.mipt.ru>
-References: <200807111851.m6BIpLra031332@imap1.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200807111851.m6BIpLra031332@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 11 Jul 2008 15:57:07 -0400
+Date: Fri, 11 Jul 2008 22:56:00 +0300
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [RFC PATCH 2/5] Add new GFP flag __GFP_NOTRACE.
+Message-ID: <20080711225600.6532b9cf@linux360.ro>
+In-Reply-To: <48777110.3000104@linux-foundation.org>
+References: <1215712946-23572-1-git-send-email-eduard.munteanu@linux360.ro>
+	<1215712946-23572-2-git-send-email-eduard.munteanu@linux360.ro>
+	<20080710210606.65e240f4@linux360.ro>
+	<48777110.3000104@linux-foundation.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 11, 2008 at 11:45:40AM -0700, akpm@linux-foundation.org wrote:
-> --- a/fs/proc/generic.c~use-warn-in-fs-proc
-> +++ a/fs/proc/generic.c
-> @@ -806,12 +806,9 @@ continue_removing:
->  	if (S_ISDIR(de->mode))
->  		parent->nlink--;
->  	de->nlink = 0;
-> -	if (de->subdir) {
-> -		printk(KERN_WARNING "%s: removing non-empty directory "
-> +	WARN(de->subdir, KERN_WARNING "%s: removing non-empty directory "
->  			"'%s/%s', leaking at least '%s'\n", __func__,
->  			de->parent->name, de->name, de->subdir->name);
-> -		WARN_ON(1);
-> -	}
+On Fri, 11 Jul 2008 09:41:20 -0500
+Christoph Lameter <cl@linux-foundation.org> wrote:
 
-It would be nice to call it WARN_IF but OK anyway.
+> Eduard - Gabriel Munteanu wrote:
+> 
+> > This is used by kmemtrace to correctly classify different kinds of
+> > allocations, without recording one event multiple times. Example:
+> > SLAB's kmalloc() calls kmem_cache_alloc(), but we want to record
+> > this only as a kmalloc.
+> 
+> Well then I guess we need to put the recording logic into
+> kmem_cache_alloc?
 
+Okay, will do it another way. I thought there may be other legitimate
+uses of something like __GFP_NOTRACE.
+
+
+	Eduard
