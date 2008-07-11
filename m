@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760055AbYGKNtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760530AbYGKNuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760055AbYGKNtX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 09:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759423AbYGKNrz
+	id S1760530AbYGKNuk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 09:50:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759385AbYGKNsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 09:47:55 -0400
-Received: from zbr.yandex.ru ([213.180.219.33]:34974 "EHLO gavana.yandex.ru"
+	Fri, 11 Jul 2008 09:48:00 -0400
+Received: from zbr.yandex.ru ([213.180.219.33]:34983 "EHLO gavana.yandex.ru"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758178AbYGKNru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 09:47:50 -0400
+	id S1759378AbYGKNry (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 09:47:54 -0400
 From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>, David Fries <david@fries.net>,
        Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: [PATCH 5/30] W1: feature, enable hardware strong pullup
-Date: Fri, 11 Jul 2008 17:51:20 +0400
-Message-Id: <12157843051033-git-send-email-johnpol@2ka.mipt.ru>
+Subject: [PATCH 20/30] W1: ds2490.c add support for strong pullup
+Date: Fri, 11 Jul 2008 17:51:35 +0400
+Message-Id: <1215784306963-git-send-email-johnpol@2ka.mipt.ru>
 X-Mailer: git-send-email 1.5.2.5
 In-Reply-To: <12157843054074-git-send-email-johnpol@2ka.mipt.ru>
 References: <12157843054074-git-send-email-johnpol@2ka.mipt.ru>
@@ -23,276 +23,207 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a strong pullup option to the w1 system.  This supplies extra
-power for parasite powered devices.  There is a w1_master_pullup sysfs
-entry and enable_pullup module parameter to enable or disable the
-strong pullup.
+Add strong pullup support for ds2490 driver, also drop mdelay(750),
+which busy waits, usage in favour of msleep for long delays.  Now with
+msleep only being called when the strong pullup is active, one wire
+bus operations are only taking minimal system overhead.
 
-The one wire bus requires at a minimum one wire and ground.  The
-common wire is used for sending and receiving data as well as
-supplying power to devices that are parasite powered of which
-temperature sensors can be one example.  The bus must be idle and left
-high while a temperature conversion is in progress, in addition the
-normal pullup resister on larger networks or even higher temperatures
-might not supply enough power.  The pullup resister can't provide too
-much pullup current, because devices need to pull the bus down to
-write a value.  This enables the strong pullup for supported hardware,
-which can supply more current when requested.  Unsupported hardware
-will just delay with the bus high.
-
-The hardware USB 2490 one wire bus master has a bit on some commands
-which will enable the strong pullup as soon as the command finishes
-executing.  To use strong pullup, call the new w1_next_pullup function
-to register the duration.  The next write command will call set_pullup
-before sending the data, and reset the duration to zero once it
-returns.
+The new set_pullup will only enable the strong pullup when requested,
+which is expected to be the only write operation that will benefit
+from a strong pullup.
 
 Signed-off-by: David Fries <david@fries.net>
 Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 
 ---
- drivers/w1/w1.c     |   30 ++++++++++++++++++++++
- drivers/w1/w1.h     |   12 +++++++++
- drivers/w1/w1_int.c |   16 ++++++++++++
- drivers/w1/w1_io.c  |   68 ++++++++++++++++++++++++++++++++++++++++++++++++---
- 4 files changed, 122 insertions(+), 4 deletions(-)
+ drivers/w1/masters/ds2490.c |   76 +++++++++++++++++++++---------------------
+ 1 files changed, 38 insertions(+), 38 deletions(-)
 
-diff --git a/drivers/w1/w1.c b/drivers/w1/w1.c
-index 9b5c117..76274ae 100644
---- a/drivers/w1/w1.c
-+++ b/drivers/w1/w1.c
-@@ -270,6 +270,34 @@ static ssize_t w1_master_attribute_show_search(struct device *dev,
- 	return count;
- }
+diff --git a/drivers/w1/masters/ds2490.c b/drivers/w1/masters/ds2490.c
+index c8365fb..8ab2c86 100644
+--- a/drivers/w1/masters/ds2490.c
++++ b/drivers/w1/masters/ds2490.c
+@@ -98,11 +98,6 @@
+ #define BRANCH_MAIN			0xCC
+ #define BRANCH_AUX			0x33
  
-+static ssize_t w1_master_attribute_store_pullup(struct device *dev,
-+						struct device_attribute *attr,
-+						const char *buf, size_t count)
-+{
-+	struct w1_master *md = dev_to_w1_master(dev);
-+
-+	mutex_lock(&md->mutex);
-+	md->enable_pullup = simple_strtol(buf, NULL, 0);
-+	mutex_unlock(&md->mutex);
-+	wake_up_process(md->thread);
-+
-+	return count;
-+}
-+
-+static ssize_t w1_master_attribute_show_pullup(struct device *dev,
-+					       struct device_attribute *attr,
-+					       char *buf)
-+{
-+	struct w1_master *md = dev_to_w1_master(dev);
-+	ssize_t count;
-+
-+	mutex_lock(&md->mutex);
-+	count = sprintf(buf, "%d\n", md->enable_pullup);
-+	mutex_unlock(&md->mutex);
-+
-+	return count;
-+}
-+
- static ssize_t w1_master_attribute_show_pointer(struct device *dev, struct device_attribute *attr, char *buf)
- {
- 	struct w1_master *md = dev_to_w1_master(dev);
-@@ -365,6 +393,7 @@ static W1_MASTER_ATTR_RO(attempts, S_IRUGO);
- static W1_MASTER_ATTR_RO(timeout, S_IRUGO);
- static W1_MASTER_ATTR_RO(pointer, S_IRUGO);
- static W1_MASTER_ATTR_RW(search, S_IRUGO | S_IWUGO);
-+static W1_MASTER_ATTR_RW(pullup, S_IRUGO | S_IWUGO);
+-/*
+- * Duration of the strong pull-up pulse in milliseconds.
+- */
+-#define PULLUP_PULSE_DURATION		750
+-
+ /* Status flags */
+ #define ST_SPUA				0x01  /* Strong Pull-up is active */
+ #define ST_PRGA				0x02  /* 12V programming pulse is being generated */
+@@ -131,6 +126,11 @@ struct ds_device
  
- static struct attribute *w1_master_default_attrs[] = {
- 	&w1_master_attribute_name.attr,
-@@ -375,6 +404,7 @@ static struct attribute *w1_master_default_attrs[] = {
- 	&w1_master_attribute_timeout.attr,
- 	&w1_master_attribute_pointer.attr,
- 	&w1_master_attribute_search.attr,
-+	&w1_master_attribute_pullup.attr,
- 	NULL
+ 	int			ep[NUM_EP];
+ 
++	/* Strong PullUp
++	 * 0: pullup not active, else duration in milliseconds
++	 */
++	int			spu_sleep;
++
+ 	struct w1_bus_master	master;
  };
  
-diff --git a/drivers/w1/w1.h b/drivers/w1/w1.h
-index 34ee01e..00b84ab 100644
---- a/drivers/w1/w1.h
-+++ b/drivers/w1/w1.h
-@@ -142,6 +142,12 @@ struct w1_bus_master
- 	 */
- 	u8		(*reset_bus)(void *);
+@@ -192,7 +192,7 @@ static int ds_send_control_cmd(struct ds_device *dev, u16 value, u16 index)
  
-+	/**
-+	 * Put out a strong pull-up pulse of the specified duration.
-+	 * @return -1=Error, 0=completed
-+	 */
-+	u8		(*set_pullup)(void *, int);
+ 	return err;
+ }
+-#if 0
 +
- 	/** Really nice hardware can handles the different types of ROM search
- 	 *  w1_master* is passed to the slave found callback.
- 	 */
-@@ -167,6 +173,11 @@ struct w1_master
- 	void			*priv;
- 	int			priv_size;
- 
-+	/** 5V strong pullup enabled flag, 1 enabled, zero disabled. */
-+	int			enable_pullup;
-+	/** 5V strong pullup duration in milliseconds, zero disabled. */
-+	int			pullup_duration;
-+
- 	struct task_struct	*thread;
- 	struct mutex		mutex;
- 
-@@ -201,6 +212,7 @@ u8 w1_calc_crc8(u8 *, int);
- void w1_write_block(struct w1_master *, const u8 *, int);
- u8 w1_read_block(struct w1_master *, u8 *, int);
- int w1_reset_select_slave(struct w1_slave *sl);
-+void w1_next_pullup(struct w1_master *, int);
- 
- static inline struct w1_slave* dev_to_w1_slave(struct device *dev)
+ static int ds_send_control_mode(struct ds_device *dev, u16 value, u16 index)
  {
-diff --git a/drivers/w1/w1_int.c b/drivers/w1/w1_int.c
-index bd877b2..9d723ef 100644
---- a/drivers/w1/w1_int.c
-+++ b/drivers/w1/w1_int.c
-@@ -31,6 +31,9 @@
+ 	int err;
+@@ -207,7 +207,7 @@ static int ds_send_control_mode(struct ds_device *dev, u16 value, u16 index)
  
- static u32 w1_ids = 1;
- 
-+static int w1_enable_pullup = 1;
-+module_param_named(enable_pullup, w1_enable_pullup, int, 0);
+ 	return err;
+ }
+-#endif
 +
- static struct w1_master * w1_alloc_dev(u32 id, int slave_count, int slave_ttl,
- 				       struct device_driver *driver,
- 				       struct device *device)
-@@ -59,6 +62,7 @@ static struct w1_master * w1_alloc_dev(u32 id, int slave_count, int slave_ttl,
- 	dev->initialized	= 0;
- 	dev->id			= id;
- 	dev->slave_ttl		= slave_ttl;
-+	dev->enable_pullup	= w1_enable_pullup;
-         dev->search_count	= -1; /* continual scan */
+ static int ds_send_control(struct ds_device *dev, u16 value, u16 index)
+ {
+ 	int err;
+@@ -294,14 +294,6 @@ static int ds_recv_status(struct ds_device *dev, struct ds_status *st)
+ 		if (count < 0)
+ 			return err;
+ 	}
+-#if 0
+-	if (st->status & ST_IDLE) {
+-		printk(KERN_INFO "Resetting pulse after ST_IDLE.\n");
+-		err = ds_start_pulse(dev, PULLUP_PULSE_DURATION);
+-		if (err)
+-			return err;
+-	}
+-#endif
  
- 	/* 1 for w1_process to decrement
-@@ -107,6 +111,18 @@ int w1_add_master_device(struct w1_bus_master *master)
- 		printk(KERN_ERR "w1_add_master_device: invalid function set\n");
- 		return(-EINVAL);
-         }
-+	/* While it would be electrically possible to make a device that
-+	 * generated a strong pullup in bit bang mode, only hardare that
-+	 * controls 1-wire time frames are even expected to support a strong
-+	 * pullup.  w1_io.c would need to support calling set_pullup before
-+	 * the last write_bit operation of a w1_write_8 which it currently
-+	 * doesn't.
-+	 */
-+	if (!master->write_byte && !master->touch_bit && master->set_pullup) {
-+		printk(KERN_ERR "w1_add_master_device: set_pullup requires "
-+			"write_byte or touch_bit, disabling\n");
-+		master->set_pullup = NULL;
+ 	return err;
+ }
+@@ -472,32 +464,26 @@ static int ds_set_speed(struct ds_device *dev, int speed)
+ }
+ #endif  /*  0  */
+ 
+-static int ds_start_pulse(struct ds_device *dev, int delay)
++static int ds_set_pullup(struct ds_device *dev, int delay)
+ {
+ 	int err;
+ 	u8 del = 1 + (u8)(delay >> 4);
+-	struct ds_status st;
+-
+-#if 0
+-	err = ds_stop_pulse(dev, 10);
+-	if (err)
+-		return err;
+-
+-	err = ds_send_control_mode(dev, MOD_PULSE_EN, PULSE_SPUE);
+-	if (err)
+-		return err;
+-#endif
+-	err = ds_send_control(dev, COMM_SET_DURATION | COMM_IM, del);
+-	if (err)
+-		return err;
+ 
+-	err = ds_send_control(dev, COMM_PULSE | COMM_IM | COMM_F, 0);
++	dev->spu_sleep = 0;
++	err = ds_send_control_mode(dev, MOD_PULSE_EN, delay?PULSE_SPUE:0);
+ 	if (err)
+ 		return err;
+ 
+-	mdelay(delay);
++	if (delay) {
++		err = ds_send_control(dev, COMM_SET_DURATION | COMM_IM, del);
++		if (err)
++			return err;
+ 
+-	ds_wait_status(dev, &st);
++		/* Just storing delay would not get the trunication and
++		 * roundup.
++		 */
++		dev->spu_sleep = del<<4;
 +	}
  
- 	dev = w1_alloc_dev(w1_ids++, w1_max_slave_count, w1_max_slave_ttl, &w1_master_driver, &w1_master_device);
- 	if (!dev)
-diff --git a/drivers/w1/w1_io.c b/drivers/w1/w1_io.c
-index 0056ef6..a2f0d5f 100644
---- a/drivers/w1/w1_io.c
-+++ b/drivers/w1/w1_io.c
-@@ -93,6 +93,40 @@ static void w1_write_bit(struct w1_master *dev, int bit)
+ 	return err;
+ }
+@@ -558,6 +544,9 @@ static int ds_write_byte(struct ds_device *dev, u8 byte)
+ 	if (err)
+ 		return err;
+ 
++	if (dev->spu_sleep)
++		msleep(dev->spu_sleep);
++
+ 	err = ds_wait_status(dev, &st);
+ 	if (err)
+ 		return err;
+@@ -566,8 +555,6 @@ static int ds_write_byte(struct ds_device *dev, u8 byte)
+ 	if (err < 0)
+ 		return err;
+ 
+-	ds_start_pulse(dev, PULLUP_PULSE_DURATION);
+-
+ 	return !(byte == rbyte);
  }
  
- /**
-+ * Pre-write operation, currently only supporting strong pullups.
-+ * Program the hardware for a strong pullup, if one has been requested and
-+ * the hardware supports it.
-+ *
-+ * @param dev     the master device
-+ */
-+static void w1_pre_write(struct w1_master *dev)
-+{
-+	if (dev->pullup_duration &&
-+		dev->enable_pullup && dev->bus_master->set_pullup) {
-+		dev->bus_master->set_pullup(dev->bus_master->data,
-+			dev->pullup_duration);
-+	}
-+}
+@@ -603,7 +590,7 @@ static int ds_read_block(struct ds_device *dev, u8 *buf, int len)
+ 	if (err < 0)
+ 		return err;
+ 
+-	err = ds_send_control(dev, COMM_BLOCK_IO | COMM_IM | COMM_SPU, len);
++	err = ds_send_control(dev, COMM_BLOCK_IO | COMM_IM, len);
+ 	if (err)
+ 		return err;
+ 
+@@ -630,14 +617,15 @@ static int ds_write_block(struct ds_device *dev, u8 *buf, int len)
+ 	if (err)
+ 		return err;
+ 
++	if (dev->spu_sleep)
++		msleep(dev->spu_sleep);
 +
-+/**
-+ * Post-write operation, currently only supporting strong pullups.
-+ * If a strong pullup was requested, clear it if the hardware supports
-+ * them, or execute the delay otherwise, in either case clear the request.
-+ *
-+ * @param dev     the master device
-+ */
-+static void w1_post_write(struct w1_master *dev)
-+{
-+	if (dev->pullup_duration) {
-+		if (dev->enable_pullup && dev->bus_master->set_pullup)
-+			dev->bus_master->set_pullup(dev->bus_master->data, 0);
-+		else
-+			msleep(dev->pullup_duration);
-+		dev->pullup_duration = 0;
-+	}
-+}
-+
-+/**
-  * Writes 8 bits.
-  *
-  * @param dev     the master device
-@@ -102,11 +136,17 @@ void w1_write_8(struct w1_master *dev, u8 byte)
- {
- 	int i;
+ 	ds_wait_status(dev, &st);
  
--	if (dev->bus_master->write_byte)
-+	if (dev->bus_master->write_byte) {
-+		w1_pre_write(dev);
- 		dev->bus_master->write_byte(dev->bus_master->data, byte);
-+	}
- 	else
--		for (i = 0; i < 8; ++i)
-+		for (i = 0; i < 8; ++i) {
-+			if (i==7)
-+				w1_pre_write(dev);
- 			w1_touch_bit(dev, (byte >> i) & 0x1);
-+		}
-+	w1_post_write(dev);
+ 	err = ds_recv_data(dev, buf, len);
+ 	if (err < 0)
+ 		return err;
+ 
+-	ds_start_pulse(dev, PULLUP_PULSE_DURATION);
+-
+ 	return !(err == len);
  }
- EXPORT_SYMBOL_GPL(w1_write_8);
  
-@@ -203,11 +243,14 @@ void w1_write_block(struct w1_master *dev, const u8 *buf, int len)
- {
- 	int i;
- 
--	if (dev->bus_master->write_block)
-+	if (dev->bus_master->write_block) {
-+		w1_pre_write(dev);
- 		dev->bus_master->write_block(dev->bus_master->data, buf, len);
-+	}
- 	else
- 		for (i = 0; i < len; ++i)
--			w1_write_8(dev, buf[i]);
-+			w1_write_8(dev, buf[i]); // calls w1_pre_write
-+	w1_post_write(dev);
- }
- EXPORT_SYMBOL_GPL(w1_write_block);
- 
-@@ -306,3 +349,20 @@ int w1_reset_select_slave(struct w1_slave *sl)
+@@ -803,6 +791,16 @@ static u8 ds9490r_reset(void *data)
  	return 0;
  }
- EXPORT_SYMBOL_GPL(w1_reset_select_slave);
-+
-+/**
-+ * Put out a strong pull-up of the specified duration after the next write
-+ * operation.  Not all hardware supports strong pullups.  Hardware that
-+ * doesn't support strong pullups will sleep for the given time after the
-+ * write operation without a strong pullup.  This is a one shot request for
-+ * the next write, specifying zero will clear a previous request.
-+ * The w1 master lock must be held.
-+ *
-+ * @param delay	time in milliseconds
-+ * @return	0=success, anything else=error
-+ */
-+void w1_next_pullup(struct w1_master *dev, int delay)
+ 
++static u8 ds9490r_set_pullup(void *data, int delay)
 +{
-+	dev->pullup_duration = delay;
++	struct ds_device *dev = data;
++
++	if (ds_set_pullup(dev, delay))
++		return 1;
++
++	return 0;
 +}
-+EXPORT_SYMBOL_GPL(w1_next_pullup);
++
+ static int ds_w1_init(struct ds_device *dev)
+ {
+ 	memset(&dev->master, 0, sizeof(struct w1_bus_master));
+@@ -816,6 +814,7 @@ static int ds_w1_init(struct ds_device *dev)
+ 	dev->master.read_block	= &ds9490r_read_block;
+ 	dev->master.write_block	= &ds9490r_write_block;
+ 	dev->master.reset_bus	= &ds9490r_reset;
++	dev->master.set_pullup	= &ds9490r_set_pullup;
+ 
+ 	return w1_add_master_device(&dev->master);
+ }
+@@ -839,6 +838,7 @@ static int ds_probe(struct usb_interface *intf,
+ 		printk(KERN_INFO "Failed to allocate new DS9490R structure.\n");
+ 		return -ENOMEM;
+ 	}
++	dev->spu_sleep = 0;
+ 	dev->udev = usb_get_dev(udev);
+ 	if (!dev->udev) {
+ 		err = -ENOMEM;
 -- 
 1.4.4.4
 
