@@ -1,60 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756116AbYGKC3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756274AbYGKCco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756116AbYGKC3S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 22:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753598AbYGKC3J
+	id S1756274AbYGKCco (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 22:32:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753637AbYGKCcf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 22:29:09 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:35806 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751671AbYGKC3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 22:29:08 -0400
-Message-ID: <4876C572.3070803@sgi.com>
-Date: Thu, 10 Jul 2008 19:29:06 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Suresh Siddha <suresh.b.siddha@intel.com>, mingo@elte.hu, hpa@zytor.com,
-       tglx@linutronix.de, akpm@linux-foundation.org, arjan@linux.intel.com,
-       andi@firstfloor.org, jbarnes@virtuousgeek.org, steiner@sgi.com,
+	Thu, 10 Jul 2008 22:32:35 -0400
+Received: from hostap.isc.org ([149.20.54.63]:49677 "EHLO hostap.isc.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753054AbYGKCce (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jul 2008 22:32:34 -0400
+X-Greylist: delayed 3021 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Jul 2008 22:32:34 EDT
+Date: Fri, 11 Jul 2008 04:41:13 +0300
+From: Jouni Malinen <j@w1.fi>
+To: Kalle Valo <kalle.valo@nokia.com>
+Cc: Tomas Winkler <tomasw@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [patch 19/26] x64, x2apic/intr-remap: introcude self IPI to genapic
- routines
-References: <20080710181634.764954000@linux-os.sc.intel.com>	<20080710182238.631011000@linux-os.sc.intel.com> <m1mykpfh56.fsf@frodo.ebiederm.org>
-In-Reply-To: <m1mykpfh56.fsf@frodo.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: Linux Wireless Mini-Summit -- Ottawa -- July 22, 2008
+Message-ID: <20080711014113.GE7284@jm.kir.nu>
+References: <20080709190915.GA8238@tuxdriver.com> <1ba2fa240807091713t1158c1ddp81c92ae26a002e46@mail.gmail.com> <87iqvd3j6w.fsf@nokia.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87iqvd3j6w.fsf@nokia.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Spam-Score: -4.2
+X-Spam-Bar: ----
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
->> Index: tree-x86/include/asm-x86/hw_irq.h
->> ===================================================================
->> --- tree-x86.orig/include/asm-x86/hw_irq.h 2008-07-10 09:51:45.000000000 -0700
->> +++ tree-x86/include/asm-x86/hw_irq.h	2008-07-10 09:52:24.000000000 -0700
->> @@ -73,7 +73,9 @@
->>  #endif
->>  
->>  /* IPI functions */
->> +#ifdef CONFIG_X86_32
->>  extern void send_IPI_self(int vector);
->> +#endif
->>  extern void send_IPI(int dest, int vector);
-> 
-> Cute undoing unification.
-> 
-> Eric
+On Thu, Jul 10, 2008 at 05:30:47PM +0300, Kalle Valo wrote:
 
-On a similar subject I would really like to change the send_IPI_mask to pass a
-pointer to the cpumask_t arg:
+> I'm just worried if one day is enough for us. The agenda is getting
+> quite long already.
 
-        void (*send_IPI_mask)(cpumask_t mask, int vector);
-
-
-This bloats the stack by 512 bytes and seemingly is called by some fairly
-nested routines.  Any opinions?
-
-Thanks,
-Mike
+There should be plenty of time to continue discussions after (or even
+before) the mini-summit since I would assume most people stay for OLS.
+For example, I will be in Ottawa for the full week (July 18-27) and
+will be available for discussions related to wireless topics both
+before and after the mini-summit itself.
+ 
+-- 
+Jouni Malinen                                            PGP id EFC895FA
