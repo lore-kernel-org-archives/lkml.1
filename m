@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759012AbYGKLHG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758524AbYGKLHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759012AbYGKLHG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 07:07:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756698AbYGKLB7
+	id S1758524AbYGKLHn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 07:07:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754418AbYGKLCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 07:01:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40465 "EHLO mx1.redhat.com"
+	Fri, 11 Jul 2008 07:02:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40469 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753851AbYGKLB4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 07:01:56 -0400
+	id S1755355AbYGKLB5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 07:01:57 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
 Cc: Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 16/18] [GFS2] Replace rgrp "recent list" with mru list
-Date: Fri, 11 Jul 2008 11:11:17 +0100
-Message-Id: <12157711171692-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH 17/18] [GFS2] Remove support for unused and pointless flag
+Date: Fri, 11 Jul 2008 11:11:18 +0100
+Message-Id: <1215771119431-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <12157711153366-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <12157711171692-git-send-email-swhiteho@redhat.com>
 References: <121577107950-git-send-email-swhiteho@redhat.com>
  <12157710872782-git-send-email-swhiteho@redhat.com>
  <1215771089769-git-send-email-swhiteho@redhat.com>
@@ -33,222 +33,151 @@ References: <121577107950-git-send-email-swhiteho@redhat.com>
  <12157711093284-git-send-email-swhiteho@redhat.com>
  <12157711133727-git-send-email-swhiteho@redhat.com>
  <12157711153366-git-send-email-swhiteho@redhat.com>
+ <12157711171692-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Whitehouse <swhiteho@redhat.com>
 
-This patch removes the "recent list" which is used during allocation
-and replaces it with the (already existing) mru list used during
-deletion. The "recent list" was not a true mru list leading to a number
-of inefficiencies including a "next" function which made scanning the
-list an order N^2 operation wrt to the number of list elements.
-
-This should increase allocation performance with large numbers of rgrps.
-Its also a useful preparation and cleanup before some further changes
-which are planned in this area.
+The ability to mark files for direct i/o access when opened
+normally is both unused and pointless, so this patch removes
+support for that feature.
 
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
 diff --git a/fs/gfs2/incore.h b/fs/gfs2/incore.h
-index 4b734c6..4ab3c3a 100644
+index 4ab3c3a..448697a 100644
 --- a/fs/gfs2/incore.h
 +++ b/fs/gfs2/incore.h
-@@ -77,7 +77,6 @@ struct gfs2_rgrp_host {
- struct gfs2_rgrpd {
- 	struct list_head rd_list;	/* Link with superblock */
- 	struct list_head rd_list_mru;
--	struct list_head rd_recent;	/* Recently used rgrps */
- 	struct gfs2_glock *rd_gl;	/* Glock for this rgrp */
- 	u64 rd_addr;			/* grp block disk address */
- 	u64 rd_data0;			/* first data location */
-@@ -529,7 +528,6 @@ struct gfs2_sbd {
- 	struct mutex sd_rindex_mutex;
- 	struct list_head sd_rindex_list;
- 	struct list_head sd_rindex_mru_list;
--	struct list_head sd_rindex_recent_list;
- 	struct gfs2_rgrpd *sd_rindex_forward;
- 	unsigned int sd_rgrps;
- 
-diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
-index 6ba69dd..b4d1d64 100644
---- a/fs/gfs2/ops_fstype.c
-+++ b/fs/gfs2/ops_fstype.c
-@@ -64,7 +64,6 @@ static struct gfs2_sbd *init_sbd(struct super_block *sb)
- 	mutex_init(&sdp->sd_rindex_mutex);
- 	INIT_LIST_HEAD(&sdp->sd_rindex_list);
- 	INIT_LIST_HEAD(&sdp->sd_rindex_mru_list);
--	INIT_LIST_HEAD(&sdp->sd_rindex_recent_list);
- 
- 	INIT_LIST_HEAD(&sdp->sd_jindex_list);
- 	spin_lock_init(&sdp->sd_jindex_spin);
-diff --git a/fs/gfs2/rgrp.c b/fs/gfs2/rgrp.c
-index 3401628..2d90fb2 100644
---- a/fs/gfs2/rgrp.c
-+++ b/fs/gfs2/rgrp.c
-@@ -371,11 +371,6 @@ static void clear_rgrpdi(struct gfs2_sbd *sdp)
- 
- 	spin_lock(&sdp->sd_rindex_spin);
- 	sdp->sd_rindex_forward = NULL;
--	head = &sdp->sd_rindex_recent_list;
--	while (!list_empty(head)) {
--		rgd = list_entry(head->next, struct gfs2_rgrpd, rd_recent);
--		list_del(&rgd->rd_recent);
--	}
- 	spin_unlock(&sdp->sd_rindex_spin);
- 
- 	head = &sdp->sd_rindex_list;
-@@ -945,107 +940,30 @@ static struct inode *try_rgrp_unlink(struct gfs2_rgrpd *rgd, u64 *last_unlinked)
- }
- 
- /**
-- * recent_rgrp_first - get first RG from "recent" list
-- * @sdp: The GFS2 superblock
-- * @rglast: address of the rgrp used last
-- *
-- * Returns: The first rgrp in the recent list
-- */
--
--static struct gfs2_rgrpd *recent_rgrp_first(struct gfs2_sbd *sdp,
--					    u64 rglast)
--{
--	struct gfs2_rgrpd *rgd;
--
--	spin_lock(&sdp->sd_rindex_spin);
--
--	if (rglast) {
--		list_for_each_entry(rgd, &sdp->sd_rindex_recent_list, rd_recent) {
--			if (rgrp_contains_block(rgd, rglast))
--				goto out;
--		}
--	}
--	rgd = NULL;
--	if (!list_empty(&sdp->sd_rindex_recent_list))
--		rgd = list_entry(sdp->sd_rindex_recent_list.next,
--				 struct gfs2_rgrpd, rd_recent);
--out:
--	spin_unlock(&sdp->sd_rindex_spin);
--	return rgd;
--}
--
--/**
-  * recent_rgrp_next - get next RG from "recent" list
-  * @cur_rgd: current rgrp
-- * @remove:
-  *
-  * Returns: The next rgrp in the recent list
-  */
- 
--static struct gfs2_rgrpd *recent_rgrp_next(struct gfs2_rgrpd *cur_rgd,
--					   int remove)
-+static struct gfs2_rgrpd *recent_rgrp_next(struct gfs2_rgrpd *cur_rgd)
- {
- 	struct gfs2_sbd *sdp = cur_rgd->rd_sbd;
- 	struct list_head *head;
- 	struct gfs2_rgrpd *rgd;
- 
- 	spin_lock(&sdp->sd_rindex_spin);
--
--	head = &sdp->sd_rindex_recent_list;
--
--	list_for_each_entry(rgd, head, rd_recent) {
--		if (rgd == cur_rgd) {
--			if (cur_rgd->rd_recent.next != head)
--				rgd = list_entry(cur_rgd->rd_recent.next,
--						 struct gfs2_rgrpd, rd_recent);
--			else
--				rgd = NULL;
--
--			if (remove)
--				list_del(&cur_rgd->rd_recent);
--
--			goto out;
--		}
-+	head = &sdp->sd_rindex_mru_list;
-+	if (unlikely(cur_rgd->rd_list_mru.next == head)) {
-+		spin_unlock(&sdp->sd_rindex_spin);
-+		return NULL;
+@@ -421,7 +421,6 @@ struct gfs2_tune {
+ 	unsigned int gt_quota_quantum; /* Secs between syncs to quota file */
+ 	unsigned int gt_atime_quantum; /* Min secs between atime updates */
+ 	unsigned int gt_new_files_jdata;
+-	unsigned int gt_new_files_directio;
+ 	unsigned int gt_max_readahead; /* Max bytes to read-ahead from disk */
+ 	unsigned int gt_stall_secs; /* Detects trouble! */
+ 	unsigned int gt_complain_secs;
+diff --git a/fs/gfs2/inode.c b/fs/gfs2/inode.c
+index caf4090..6da0ab3 100644
+--- a/fs/gfs2/inode.c
++++ b/fs/gfs2/inode.c
+@@ -789,13 +789,8 @@ static void init_dinode(struct gfs2_inode *dip, struct gfs2_glock *gl,
+ 		if ((dip->i_di.di_flags & GFS2_DIF_INHERIT_JDATA) ||
+ 		    gfs2_tune_get(sdp, gt_new_files_jdata))
+ 			di->di_flags |= cpu_to_be32(GFS2_DIF_JDATA);
+-		if ((dip->i_di.di_flags & GFS2_DIF_INHERIT_DIRECTIO) ||
+-		    gfs2_tune_get(sdp, gt_new_files_directio))
+-			di->di_flags |= cpu_to_be32(GFS2_DIF_DIRECTIO);
+ 	} else if (S_ISDIR(mode)) {
+ 		di->di_flags |= cpu_to_be32(dip->i_di.di_flags &
+-					    GFS2_DIF_INHERIT_DIRECTIO);
+-		di->di_flags |= cpu_to_be32(dip->i_di.di_flags &
+ 					    GFS2_DIF_INHERIT_JDATA);
  	}
--
--	rgd = NULL;
--	if (!list_empty(head))
--		rgd = list_entry(head->next, struct gfs2_rgrpd, rd_recent);
--
--out:
-+	rgd = list_entry(cur_rgd->rd_list_mru.next, struct gfs2_rgrpd, rd_list_mru);
- 	spin_unlock(&sdp->sd_rindex_spin);
- 	return rgd;
- }
+ 
+diff --git a/fs/gfs2/ops_file.c b/fs/gfs2/ops_file.c
+index 1737af9..21b397d 100644
+--- a/fs/gfs2/ops_file.c
++++ b/fs/gfs2/ops_file.c
+@@ -134,7 +134,6 @@ static const u32 fsflags_to_gfs2[32] = {
+ 	[7] = GFS2_DIF_NOATIME,
+ 	[12] = GFS2_DIF_EXHASH,
+ 	[14] = GFS2_DIF_INHERIT_JDATA,
+-	[20] = GFS2_DIF_INHERIT_DIRECTIO,
+ };
+ 
+ static const u32 gfs2_to_fsflags[32] = {
+@@ -143,7 +142,6 @@ static const u32 gfs2_to_fsflags[32] = {
+ 	[gfs2fl_AppendOnly] = FS_APPEND_FL,
+ 	[gfs2fl_NoAtime] = FS_NOATIME_FL,
+ 	[gfs2fl_ExHash] = FS_INDEX_FL,
+-	[gfs2fl_InheritDirectio] = FS_DIRECTIO_FL,
+ 	[gfs2fl_InheritJdata] = FS_JOURNAL_DATA_FL,
+ };
+ 
+@@ -161,12 +159,8 @@ static int gfs2_get_flags(struct file *filp, u32 __user *ptr)
+ 		return error;
+ 
+ 	fsflags = fsflags_cvt(gfs2_to_fsflags, ip->i_di.di_flags);
+-	if (!S_ISDIR(inode->i_mode)) {
+-		if (ip->i_di.di_flags & GFS2_DIF_JDATA)
+-			fsflags |= FS_JOURNAL_DATA_FL;
+-		if (ip->i_di.di_flags & GFS2_DIF_DIRECTIO)
+-			fsflags |= FS_DIRECTIO_FL;
+-	}
++	if (!S_ISDIR(inode->i_mode) && ip->i_di.di_flags & GFS2_DIF_JDATA)
++		fsflags |= FS_JOURNAL_DATA_FL;
+ 	if (put_user(fsflags, ptr))
+ 		error = -EFAULT;
+ 
+@@ -195,13 +189,11 @@ void gfs2_set_inode_flags(struct inode *inode)
+ 
+ /* Flags that can be set by user space */
+ #define GFS2_FLAGS_USER_SET (GFS2_DIF_JDATA|			\
+-			     GFS2_DIF_DIRECTIO|			\
+ 			     GFS2_DIF_IMMUTABLE|		\
+ 			     GFS2_DIF_APPENDONLY|		\
+ 			     GFS2_DIF_NOATIME|			\
+ 			     GFS2_DIF_SYNC|			\
+ 			     GFS2_DIF_SYSTEM|			\
+-			     GFS2_DIF_INHERIT_DIRECTIO|		\
+ 			     GFS2_DIF_INHERIT_JDATA)
  
  /**
-- * recent_rgrp_add - add an RG to tail of "recent" list
-- * @new_rgd: The rgrp to add
-- *
-- */
--
--static void recent_rgrp_add(struct gfs2_rgrpd *new_rgd)
--{
--	struct gfs2_sbd *sdp = new_rgd->rd_sbd;
--	struct gfs2_rgrpd *rgd;
--	unsigned int count = 0;
--	unsigned int max = sdp->sd_rgrps / gfs2_jindex_size(sdp);
--
--	spin_lock(&sdp->sd_rindex_spin);
--
--	list_for_each_entry(rgd, &sdp->sd_rindex_recent_list, rd_recent) {
--		if (rgd == new_rgd)
--			goto out;
--
--		if (++count >= max)
--			goto out;
--	}
--	list_add_tail(&new_rgd->rd_recent, &sdp->sd_rindex_recent_list);
--
--out:
--	spin_unlock(&sdp->sd_rindex_spin);
--}
--
--/**
-  * forward_rgrp_get - get an rgrp to try next from full list
-  * @sdp: The GFS2 superblock
-  *
-@@ -1112,9 +1030,7 @@ static struct inode *get_local_rgrp(struct gfs2_inode *ip, u64 *last_unlinked)
- 	int loops = 0;
- 	int error, rg_locked;
+@@ -292,8 +284,6 @@ static int gfs2_set_flags(struct file *filp, u32 __user *ptr)
+ 	if (!S_ISDIR(inode->i_mode)) {
+ 		if (gfsflags & GFS2_DIF_INHERIT_JDATA)
+ 			gfsflags ^= (GFS2_DIF_JDATA | GFS2_DIF_INHERIT_JDATA);
+-		if (gfsflags & GFS2_DIF_INHERIT_DIRECTIO)
+-			gfsflags ^= (GFS2_DIF_DIRECTIO | GFS2_DIF_INHERIT_DIRECTIO);
+ 		return do_gfs2_set_flags(filp, gfsflags, ~0);
+ 	}
+ 	return do_gfs2_set_flags(filp, gfsflags, ~GFS2_DIF_JDATA);
+@@ -494,11 +484,6 @@ static int gfs2_open(struct inode *inode, struct file *file)
+ 			goto fail_gunlock;
+ 		}
  
--	/* Try recently successful rgrps */
+-		/* Listen to the Direct I/O flag */
 -
--	rgd = recent_rgrp_first(sdp, ip->i_goal);
-+	rgd = gfs2_blk2rgrpd(sdp, ip->i_goal);
- 
- 	while (rgd) {
- 		rg_locked = 0;
-@@ -1136,11 +1052,9 @@ static struct inode *get_local_rgrp(struct gfs2_inode *ip, u64 *last_unlinked)
- 				gfs2_glock_dq_uninit(&al->al_rgd_gh);
- 			if (inode)
- 				return inode;
--			rgd = recent_rgrp_next(rgd, 1);
--			break;
+-		if (ip->i_di.di_flags & GFS2_DIF_DIRECTIO)
+-			file->f_flags |= O_DIRECT;
 -
-+			/* fall through */
- 		case GLR_TRYFAILED:
--			rgd = recent_rgrp_next(rgd, 0);
-+			rgd = recent_rgrp_next(rgd);
- 			break;
+ 		gfs2_glock_dq_uninit(&i_gh);
+ 	}
  
- 		default:
-@@ -1199,7 +1113,9 @@ static struct inode *get_local_rgrp(struct gfs2_inode *ip, u64 *last_unlinked)
+diff --git a/fs/gfs2/super.c b/fs/gfs2/super.c
+index 12fe38f..63a8a90 100644
+--- a/fs/gfs2/super.c
++++ b/fs/gfs2/super.c
+@@ -65,7 +65,6 @@ void gfs2_tune_init(struct gfs2_tune *gt)
+ 	gt->gt_quota_quantum = 60;
+ 	gt->gt_atime_quantum = 3600;
+ 	gt->gt_new_files_jdata = 0;
+-	gt->gt_new_files_directio = 0;
+ 	gt->gt_max_readahead = 1 << 18;
+ 	gt->gt_stall_secs = 600;
+ 	gt->gt_complain_secs = 10;
+diff --git a/fs/gfs2/sys.c b/fs/gfs2/sys.c
+index 6f7e2e5..7484655 100644
+--- a/fs/gfs2/sys.c
++++ b/fs/gfs2/sys.c
+@@ -412,7 +412,6 @@ TUNE_ATTR(max_readahead, 0);
+ TUNE_ATTR(complain_secs, 0);
+ TUNE_ATTR(statfs_slow, 0);
+ TUNE_ATTR(new_files_jdata, 0);
+-TUNE_ATTR(new_files_directio, 0);
+ TUNE_ATTR(quota_simul_sync, 1);
+ TUNE_ATTR(quota_cache_secs, 1);
+ TUNE_ATTR(stall_secs, 1);
+@@ -441,7 +440,6 @@ static struct attribute *tune_attrs[] = {
+ 	&tune_attr_quotad_secs.attr,
+ 	&tune_attr_quota_scale.attr,
+ 	&tune_attr_new_files_jdata.attr,
+-	&tune_attr_new_files_directio.attr,
+ 	NULL,
+ };
  
- out:
- 	if (begin) {
--		recent_rgrp_add(rgd);
-+		spin_lock(&sdp->sd_rindex_spin);
-+		list_move(&rgd->rd_list_mru, &sdp->sd_rindex_mru_list);
-+		spin_unlock(&sdp->sd_rindex_spin);
- 		rgd = gfs2_rgrpd_get_next(rgd);
- 		if (!rgd)
- 			rgd = gfs2_rgrpd_get_first(sdp);
 -- 
 1.5.1.2
 
