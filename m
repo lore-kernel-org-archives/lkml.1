@@ -1,72 +1,283 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759699AbYGKP1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760032AbYGKP2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759699AbYGKP1j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 11:27:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758788AbYGKP11
+	id S1760032AbYGKP2W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 11:28:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754378AbYGKP2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 11:27:27 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:60314 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758603AbYGKP1Z convert rfc822-to-8bit (ORCPT
+	Fri, 11 Jul 2008 11:28:12 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:54117 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751059AbYGKP2L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 11:27:25 -0400
+	Fri, 11 Jul 2008 11:28:11 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=eY1rMcfOQdUZdz+umbNCQwS9YlBI0gNUmic+kGJq8e+8rckrqy/GpG8AaV8DVctipL
-         qa7S/pOeekjfvsrtQCFXp1pA0ZUBg611U9uTLmMWbGb4VzQwkqe7GmCv5tCs8eCF9n7K
-         R6CA11r70guBZGydNL0/kpdk+UgiDLqDkc0aQ=
-Message-ID: <48777BD3.4010204@gmail.com>
-Date: Fri, 11 Jul 2008 18:27:15 +0300
-From: =?UTF-8?B?VMO2csO2ayBFZHdpbg==?= <edwintorok@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
-MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Takashi Iwai <tiwai@suse.de>,
-       linux-next@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: today's linux-next fails to boot
-References: <4877400B.1000400@gmail.com> <s5hy747rvpr.wl%tiwai@suse.de>	 <48775C69.6050107@gmail.com> <20080711135937.GA25004@elte.hu>	 <487772B6.4090100@gmail.com>	 <19f34abd0807110754n1a095671ua9132471b6a81540@mail.gmail.com> <19f34abd0807110800o5b283f00n4be7449ed3b06e5a@mail.gmail.com>
-In-Reply-To: <19f34abd0807110800o5b283f00n4be7449ed3b06e5a@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=jHrgykdQzd6K/yqsw6t5QedLI/GbIzb8coAeruDhCGI3P0E2FgQ055q8mQ01S9SFS/
+         iipr/lLiQJRFC5IqoCRqgmatdTaoVRTZln3Y+yzkRVOcTCt/Prt+aA2/l2Uyphl4dJwH
+         6F9vXXgAr5qS6TqvmP1hqjusa0EZzhEO/3CxM=
+Subject: [PATCH v2] regulator: TI bq24022 Li-Ion Charger driver
+From: Philipp Zabel <philipp.zabel@gmail.com>
+To: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Content-Type: text/plain
+Date: Fri, 11 Jul 2008 17:28:06 +0200
+Message-Id: <1215790087.16329.6.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008-07-11 18:00, Vegard Nossum wrote:
->> On Fri, Jul 11, 2008 at 4:48 PM, Török Edwin <edwintorok@gmail.com> wrote:
->>     
->>>> One really simple way of getting some more info out of this is to take
->>>> the EIP value (here c0181ca0) and run it through addr2line:
->>>>
->>>>     $ addr2line -e vmlinux -i c0181ca0
->>>>         
->>> Thanks for the hint, I rebuilt a failing kernel, and this is what
->>> addr2line says:
->>>
->>> $ addr2line -e vmlinux -i c0181ca0
->>>
->>> ??:0
->>> $ addr2line -e vmlinux -f c0181ca0
->>> kmem_cache_alloc
->>> ??:0
->>>       
->
-> BTW, did the new kernel fail in exactly the same place? 
+This adds a regulator driver for the TI bq24022 Single-Chip
+Li-Ion Charger with its nCE and ISET2 pins connected to GPIOs.
 
-Yep, I am using ccache, same sources -> same binary.
+Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
+---
+ drivers/regulator/Kconfig         |   10 ++
+ drivers/regulator/Makefile        |    2 +
+ drivers/regulator/bq24022.c       |  167 +++++++++++++++++++++++++++++++++++++
+ include/linux/regulator/bq24022.h |   23 +++++
+ 4 files changed, 202 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/regulator/bq24022.c
+ create mode 100644 include/linux/regulator/bq24022.h
 
-addr2line -i now says:
-/var/local/src/linux-2.6.git/linux-2.6/mm/slub.c:1648
-/var/local/src/linux-2.6.git/linux-2.6/mm/slub.c:1662
+diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
+index 84f89ec..a656128 100644
+--- a/drivers/regulator/Kconfig
++++ b/drivers/regulator/Kconfig
+@@ -46,4 +46,14 @@ config REGULATOR_VIRTUAL_CONSUMER
+ 
+           If unsure, say no.
+ 
++config REGULATOR_BQ24022
++	tristate "TI bq24022 Dual Input 1-Cell Li-Ion Charger IC"
++	default n
++	select REGULATOR
++	help
++	  This driver controls a TI bq24022 Charger attached via
++	  GPIOs. The provided current regulator can enable/disable
++	  charging select between 100 mA and 500 mA charging current
++	  limit.
++
+ endmenu
+diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
+index 29528b7..ac2c64e 100644
+--- a/drivers/regulator/Makefile
++++ b/drivers/regulator/Makefile
+@@ -7,4 +7,6 @@ obj-$(CONFIG_REGULATOR) += core.o
+ obj-$(CONFIG_REGULATOR_FIXED_VOLTAGE) += fixed.o
+ obj-$(CONFIG_REGULATOR_VIRTUAL_CONSUMER) += virtual.o
+ 
++obj-$(CONFIG_REGULATOR_BQ24022) += bq24022.o
++
+ ccflags-$(CONFIG_REGULATOR_DEBUG) += -DDEBUG
+diff --git a/drivers/regulator/bq24022.c b/drivers/regulator/bq24022.c
+new file mode 100644
+index 0000000..263699d
+--- /dev/null
++++ b/drivers/regulator/bq24022.c
+@@ -0,0 +1,167 @@
++/*
++ * Support for TI bq24022 (bqTINY-II) Dual Input (USB/AC Adpater)
++ * 1-Cell Li-Ion Charger connected via GPIOs.
++ *
++ * Copyright (c) 2008 Philipp Zabel
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/err.h>
++#include <linux/gpio.h>
++#include <linux/regulator/bq24022.h>
++#include <linux/regulator/driver.h>
++
++static int bq24022_set_current_limit(struct regulator_dev *rdev,
++					int min_uA, int max_uA)
++{
++	struct platform_device *pdev = rdev_get_drvdata(rdev);
++	struct bq24022_mach_info *pdata = pdev->dev.platform_data;
++
++	dev_dbg(&pdev->dev, "setting current limit to %s mA\n",
++		max_uA >= 500000 ? "500" : "100");
++
++	/* REVISIT: maybe return error if min_uA != 0 ? */
++	gpio_set_value(pdata->gpio_iset2, max_uA >= 500000);
++	return 0;
++}
++
++static int bq24022_get_current_limit(struct regulator_dev *rdev)
++{
++	struct platform_device *pdev = rdev_get_drvdata(rdev);
++	struct bq24022_mach_info *pdata = pdev->dev.platform_data;
++
++	return gpio_get_value(pdata->gpio_iset2) ? 500000 : 100000;
++}
++
++static int bq24022_enable(struct regulator_dev *rdev)
++{
++	struct platform_device *pdev = rdev_get_drvdata(rdev);
++	struct bq24022_mach_info *pdata = pdev->dev.platform_data;
++
++	dev_dbg(&pdev->dev, "enabling charger\n");
++
++	gpio_set_value(pdata->gpio_nce, 0);
++	return 0;
++}
++
++static int bq24022_disable(struct regulator_dev *rdev)
++{
++	struct platform_device *pdev = rdev_get_drvdata(rdev);
++	struct bq24022_mach_info *pdata = pdev->dev.platform_data;
++
++	dev_dbg(&pdev->dev, "disabling charger\n");
++
++	gpio_set_value(pdata->gpio_nce, 1);
++	return 0;
++}
++
++static int bq24022_is_enabled(struct regulator_dev *rdev)
++{
++	struct platform_device *pdev = rdev_get_drvdata(rdev);
++	struct bq24022_mach_info *pdata = pdev->dev.platform_data;
++
++	return !gpio_get_value(pdata->gpio_nce);
++}
++
++static struct regulator_ops bq24022_ops = {
++	.set_current_limit = bq24022_set_current_limit,
++	.get_current_limit = bq24022_get_current_limit,
++	.enable            = bq24022_enable,
++	.disable           = bq24022_disable,
++	.is_enabled        = bq24022_is_enabled,
++};
++
++static struct regulator_desc bq24022_desc = {
++	.name  = "bq24022",
++	.ops   = &bq24022_ops,
++	.type  = REGULATOR_CURRENT,
++};
++
++static int __init bq24022_probe(struct platform_device *pdev)
++{
++	struct bq24022_mach_info *pdata = pdev->dev.platform_data;
++	struct regulator_dev *bq24022;
++	int ret;
++
++	if (!pdata || !pdata->gpio_nce || !pdata->gpio_iset2)
++		return -EINVAL;
++
++	ret = gpio_request(pdata->gpio_nce, "ncharge_en");
++	if (ret) {
++		dev_dbg(&pdev->dev, "couldn't request nCE GPIO: %d\n",
++			pdata->gpio_nce);
++		goto err_ce;
++	}
++	ret = gpio_request(pdata->gpio_iset2, "charge_mode");
++	if (ret) {
++		dev_dbg(&pdev->dev, "couldn't request ISET2 GPIO: %d\n",
++			pdata->gpio_iset2);
++		goto err_iset2;
++	}
++	ret = gpio_direction_output(pdata->gpio_iset2, 0);
++	ret = gpio_direction_output(pdata->gpio_nce, 1);
++
++	bq24022 = regulator_register(&bq24022_desc, pdev);
++	if (IS_ERR(bq24022)) {
++		dev_dbg(&pdev->dev, "couldn't register regulator\n");
++		ret = PTR_ERR(bq24022);
++		goto err_reg;
++	}
++	platform_set_drvdata(pdev, bq24022);
++	dev_dbg(&pdev->dev, "registered regulator\n");
++
++	return 0;
++err_reg:
++	gpio_free(pdata->gpio_iset2);
++err_iset2:
++	gpio_free(pdata->gpio_nce);
++err_ce:
++	return ret;
++}
++
++static int __devexit bq24022_remove(struct platform_device *pdev)
++{
++	struct bq24022_mach_info *pdata = pdev->dev.platform_data;
++	struct regulator_dev *bq24022 = platform_get_drvdata(pdev);
++
++	regulator_unregister(bq24022);
++	gpio_free(pdata->gpio_iset2);
++	gpio_free(pdata->gpio_nce);
++
++	return 0;
++}
++
++static struct platform_driver bq24022_driver = {
++	.driver = {
++		.name = "bq24022",
++	},
++	.remove = __devexit_p(bq24022_remove),
++};
++
++static int __init bq24022_init(void)
++{
++	return platform_driver_probe(&bq24022_driver, bq24022_probe);
++}
++
++static void __exit bq24022_exit(void)
++{
++	platform_driver_unregister(&bq24022_driver);
++}
++
++/*
++ * make sure this is probed before gpio_vbus and pda_power,
++ * but after asic3 or other GPIO expander drivers.
++ */
++subsys_initcall(bq24022_init);
++module_exit(bq24022_exit);
++
++MODULE_AUTHOR("Philipp Zabel");
++MODULE_DESCRIPTION("TI bq24022 Li-Ion Charger driver");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/regulator/bq24022.h b/include/linux/regulator/bq24022.h
+new file mode 100644
+index 0000000..6824a81
+--- /dev/null
++++ b/include/linux/regulator/bq24022.h
+@@ -0,0 +1,23 @@
++/*
++ * Support for TI bq24022 (bqTINY-II) Dual Input (USB/AC Adpater)
++ * 1-Cell Li-Ion Charger connected via GPIOs.
++ *
++ * Copyright (c) 2008 Philipp Zabel
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++
++/**
++ *bq24022_mach_info - platform data for bq24022
++ *@gpio_nce: GPIO line connected to the nCE pin,
++ *           used to enable / disable charging.
++ *@gpio_iset2: GPIO line connected to the ISET2 pin,
++ *             used to limit charging current to 100 mA / 500 mA.
++ */
++struct bq24022_mach_info {
++	int gpio_nce;
++	int gpio_iset2;
++};
+-- 
+1.5.6.2
 
-Strangely the EIP is the same even after rebuilding with debug info.
-
-Since tip/master supports the latency tracing features, I won't dig
-further into the linux-next problem now
-(we'll know tomorrow if the commits in tip solve the boot problem).
-
-Best regards,
---Edwin
 
