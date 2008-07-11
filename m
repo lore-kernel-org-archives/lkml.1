@@ -1,88 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758184AbYGKVov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756940AbYGKVpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758184AbYGKVov (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 17:44:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754526AbYGKVon
+	id S1756940AbYGKVpX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 17:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755467AbYGKVpH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 17:44:43 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53637 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753872AbYGKVom (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 17:44:42 -0400
-From: John Keller <jpk@sgi.com>
-Message-Id: <200807112144.m6BLiWIQ414755@fcbayern.americas.sgi.com>
-Subject: Re: x86: PCI multi domain/segment config access
-To: matthew@wil.cx (Matthew Wilcox)
-Date: Fri, 11 Jul 2008 16:44:32 -0500 (CDT)
-Cc: jpk@sgi.com (John Keller), linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-In-Reply-To: <20080711212117.GW14894@parisc-linux.org> from "Matthew Wilcox" at Jul 11, 2008 03:21:17 PM
-X-Mailer: ELM [version 2.5 PL2]
+	Fri, 11 Jul 2008 17:45:07 -0400
+Received: from gw.goop.org ([64.81.55.164]:44607 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754526AbYGKVpG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 17:45:06 -0400
+Message-ID: <4877D454.1080504@goop.org>
+Date: Fri, 11 Jul 2008 14:44:52 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+CC: mingo@elte.hu, x86@kernel.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/3] x2apic: xen64 paravirt basic apic ops
+References: <20080711201442.769225000@linux-os.sc.intel.com> <20080711201442.910680000@linux-os.sc.intel.com>
+In-Reply-To: <20080711201442.910680000@linux-os.sc.intel.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> On Fri, Jul 11, 2008 at 04:13:47PM -0500, John Keller wrote:
-> > On x86 PCI Config space access to domains/segments > 0 appears to be broken.
-> > The noted patch related to PCI ext config space has all config accesses
-> > to offsets < 256 using conf1 if available, which is most likely the case.
-> > 
-> > This would force usage of conf1 for non-extended config access (< 256) on
-> > PCI domains > 0.
-> > 
-> > Am I missing something, or how would a conf1 access reference a domain
-> > other than zero?
-> 
-> You're correct.  Sorry about that, I wasn't thinking about domains at
-> the time I wrote the patch.  Try this:
+Suresh Siddha wrote:
+> Define the Xen specific basic apic ops, in additon to paravirt apic ops,
+> with some misc warning fixes.
+>   
 
-Yup, just what we were thinking.
-Works fine.
+This looks fine to me, other than apic_ops is 64-bit only.  What's the 
+unification plan?
 
-Acked-by: John Keller <jpk@sgi.com>
+    J
 
-
-
-> 
-> [X86] Fix PCI config space for domains > 0
-> 
-> John Keller reports that PCI config space access is broken on machines
-> with more than one domain.  conf1 accesses only work for domain 0.
-> 
-> Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
-> 
-> diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
-> index 6e64aaf..fe33533 100644
-> --- a/arch/x86/pci/common.c
-> +++ b/arch/x86/pci/common.c
-> @@ -31,7 +31,7 @@ struct pci_raw_ops *raw_pci_ext_ops;
->  int raw_pci_read(unsigned int domain, unsigned int bus, unsigned int devfn,
->  						int reg, int len, u32 *val)
+> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+> ---
+>
+> Index: tree-x86/arch/x86/xen/enlighten.c
+> ===================================================================
+> --- tree-x86.orig/arch/x86/xen/enlighten.c	2008-07-11 11:26:17.000000000 -0700
+> +++ tree-x86/arch/x86/xen/enlighten.c	2008-07-11 11:55:58.000000000 -0700
+> @@ -576,16 +576,45 @@
+>  }
+>  
+>  #ifdef CONFIG_X86_LOCAL_APIC
+> -static u32 xen_apic_read(unsigned long reg)
+> +static u32 xen_apic_read(u32 reg)
 >  {
-> -	if (reg < 256 && raw_pci_ops)
-> +	if (domain == 0 && reg < 256 && raw_pci_ops)
->  		return raw_pci_ops->read(domain, bus, devfn, reg, len, val);
->  	if (raw_pci_ext_ops)
->  		return raw_pci_ext_ops->read(domain, bus, devfn, reg, len, val);
-> @@ -41,7 +41,7 @@ int raw_pci_read(unsigned int domain, unsigned int bus, unsigned int devfn,
->  int raw_pci_write(unsigned int domain, unsigned int bus, unsigned int devfn,
->  						int reg, int len, u32 val)
+>  	return 0;
+>  }
+>  
+> -static void xen_apic_write(unsigned long reg, u32 val)
+> +static void xen_apic_write(u32 reg, u32 val)
 >  {
-> -	if (reg < 256 && raw_pci_ops)
-> +	if (domain == 0 && reg < 256 && raw_pci_ops)
->  		return raw_pci_ops->write(domain, bus, devfn, reg, len, val);
->  	if (raw_pci_ext_ops)
->  		return raw_pci_ext_ops->write(domain, bus, devfn, reg, len, val);
-> 
-> -- 
-> Intel are signing my paycheques ... these opinions are still mine
-> "Bill, look, we understand that you're interested in selling us this
-> operating system, but compare it to ours.  We can't possibly take such
-> a retrograde step."
-> 
+>  	/* Warn to see if there's any stray references */
+>  	WARN_ON(1);
+>  }
+> +
+> +#ifdef CONFIG_X86_64
+> +static u64 xen_apic_icr_read(void)
+> +{
+> +	return 0;
+> +}
+> +
+> +static void xen_apic_icr_write(u32 low, u32 id)
+> +{
+> +	/* Warn to see if there's any stray references */
+> +	WARN_ON(1);
+> +}
+> +
+> +static void xen_apic_wait_icr_idle(void)
+> +{
+> +        return;
+> +}
+> +
+> +static struct apic_ops xen_basic_apic_ops = {
+> +	.read = xen_apic_read,
+> +	.write = xen_apic_write,
+> +	.write_atomic = xen_apic_write,
+> +	.icr_read = xen_apic_icr_read,
+> +	.icr_write = xen_apic_icr_write,
+> +	.wait_icr_idle = xen_apic_wait_icr_idle,
+> +	.safe_wait_icr_idle = xen_apic_wait_icr_idle,
+> +};
+> +#endif
+> +
+>  #endif
+>  
+>  static void xen_flush_tlb(void)
+> @@ -1269,9 +1298,11 @@
+>  
+>  static const struct pv_apic_ops xen_apic_ops __initdata = {
+>  #ifdef CONFIG_X86_LOCAL_APIC
+> +#ifndef CONFIG_X86_64
+>  	.apic_write = xen_apic_write,
+>  	.apic_write_atomic = xen_apic_write,
+>  	.apic_read = xen_apic_read,
+> +#endif
+>  	.setup_boot_clock = paravirt_nop,
+>  	.setup_secondary_clock = paravirt_nop,
+>  	.startup_ipi_hook = paravirt_nop,
+> @@ -1673,6 +1704,12 @@
+>  	pv_irq_ops = xen_irq_ops;
+>  	pv_apic_ops = xen_apic_ops;
+>  	pv_mmu_ops = xen_mmu_ops;
+> +#ifdef CONFIG_X86_64
+> +	/*
+> +	 * for 64bit, set up the basic apic ops aswell.
+> +	 */
+> +	apic_ops = &xen_basic_apic_ops;
+> +#endif
+>  
+>  	if (xen_feature(XENFEAT_mmu_pt_update_preserve_ad)) {
+>  		pv_mmu_ops.ptep_modify_prot_start = xen_ptep_modify_prot_start;
+> Index: tree-x86/include/asm-x86/paravirt.h
+> ===================================================================
+> --- tree-x86.orig/include/asm-x86/paravirt.h	2008-07-11 10:58:31.000000000 -0700
+> +++ tree-x86/include/asm-x86/paravirt.h	2008-07-11 12:00:12.000000000 -0700
+> @@ -200,13 +200,15 @@
+>  
+>  struct pv_apic_ops {
+>  #ifdef CONFIG_X86_LOCAL_APIC
+> +#ifndef CONFIG_X86_64
+>  	/*
+>  	 * Direct APIC operations, principally for VMI.  Ideally
+>  	 * these shouldn't be in this interface.
+>  	 */
+> -	void (*apic_write)(unsigned long reg, u32 v);
+> -	void (*apic_write_atomic)(unsigned long reg, u32 v);
+> -	u32 (*apic_read)(unsigned long reg);
+> +	void (*apic_write)(u32 reg, u32 v);
+> +	void (*apic_write_atomic)(u32 reg, u32 v);
+> +	u32 (*apic_read)(u32 reg);
+> +#endif
+>  	void (*setup_boot_clock)(void);
+>  	void (*setup_secondary_clock)(void);
+>  
+> @@ -903,17 +905,17 @@
+>   * Basic functions accessing APICs.
+>   */
+>  #ifndef CONFIG_X86_64
+> -static inline void apic_write(unsigned long reg, u32 v)
+> +static inline void apic_write(u32 reg, u32 v)
+>  {
+>  	PVOP_VCALL2(pv_apic_ops.apic_write, reg, v);
+>  }
+>  
+> -static inline void apic_write_atomic(unsigned long reg, u32 v)
+> +static inline void apic_write_atomic(u32 reg, u32 v)
+>  {
+>  	PVOP_VCALL2(pv_apic_ops.apic_write_atomic, reg, v);
+>  }
+>  
+> -static inline u32 apic_read(unsigned long reg)
+> +static inline u32 apic_read(u32 reg)
+>  {
+>  	return PVOP_CALL1(unsigned long, pv_apic_ops.apic_read, reg);
+>  }
+> Index: tree-x86/arch/x86/lguest/boot.c
+> ===================================================================
+> --- tree-x86.orig/arch/x86/lguest/boot.c	2008-07-11 10:36:24.000000000 -0700
+> +++ tree-x86/arch/x86/lguest/boot.c	2008-07-11 12:01:51.000000000 -0700
+> @@ -783,11 +783,11 @@
+>   * code qualifies for Advanced.  It will also never interrupt anything.  It
+>   * does, however, allow us to get through the Linux boot code. */
+>  #ifdef CONFIG_X86_LOCAL_APIC
+> -static void lguest_apic_write(unsigned long reg, u32 v)
+> +static void lguest_apic_write(u32 reg, u32 v)
+>  {
+>  }
+>  
+> -static u32 lguest_apic_read(unsigned long reg)
+> +static u32 lguest_apic_read(u32 reg)
+>  {
+>  	return 0;
+>  }
+>
+>   
 
