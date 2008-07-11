@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758814AbYGKTR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758298AbYGKTSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758814AbYGKTR1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 15:17:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755235AbYGKTRO
+	id S1758298AbYGKTSU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 15:18:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754113AbYGKTSK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 15:17:14 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41717 "EHLO
+	Fri, 11 Jul 2008 15:18:10 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54693 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757759AbYGKTRN (ORCPT
+	by vger.kernel.org with ESMTP id S1753309AbYGKTSJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 15:17:13 -0400
-Date: Fri, 11 Jul 2008 12:16:38 -0700
+	Fri, 11 Jul 2008 15:18:09 -0400
+Date: Fri, 11 Jul 2008 12:16:46 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Philipp Zabel <philipp.zabel@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Liam Girdwood <lg@opensource.wolfsonmicro.com>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH 1/2] regulator: TI bq24022 Li-Ion Charger driver
-Message-Id: <20080711121638.3710c1ad.akpm@linux-foundation.org>
-In-Reply-To: <1215716683.17490.29.camel@localhost.localdomain>
-References: <1215716683.17490.29.camel@localhost.localdomain>
+To: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+Cc: eledisez <eledisez@grounation.org>, tpmdd-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [tpmdd-devel] Patch for Broadcom TPM TIS device HID
+Message-Id: <20080711121646.cafaef2c.akpm@linux-foundation.org>
+In-Reply-To: <1215650063.25273.77.camel@blackbox>
+References: <2d97a3960807050312w76bde4c7hadeebb8a36aae761@mail.gmail.com>
+	<1215640191.25273.45.camel@blackbox>
+	<379cac7442a57a702f75cb2194dee9eb@localhost>
+	<1215650063.25273.77.camel@blackbox>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,41 +30,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Jul 2008 21:04:43 +0200 Philipp Zabel <philipp.zabel@gmail.com> wrote:
+On Wed, 09 Jul 2008 21:34:23 -0300 Rajiv Andrade <srajiv@linux.vnet.ibm.com> wrote:
 
-> +/**
-> + *bq24022_mach_info - platform data for bq24022
-> + *@gpio_nce: GPIO line connected to the nCE pin,
-> + *           used to enable / disable charging.
-> + *@gpio_iset2: GPIO line connected to the ISET2 pin,
-> + *             used to limit charging current to 100 mA / 500 mA.
-> + */
+> This depends on patch posted with "[PATCH] tpm: add Intel TPM TIS device HID" subject.
+> 
+> From: LE DISEZ Erwan <eledisez@grounation.org>
+> Subject: add Broadcom TPM TIS device HID
+> 
+> 	Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+> ---
+>  drivers/char/tpm/tpm_tis.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
+> index c7a977b..ed1879c 100644
+> --- a/drivers/char/tpm/tpm_tis.c
+> +++ b/drivers/char/tpm/tpm_tis.c
+> @@ -622,6 +622,7 @@ static struct pnp_device_id tpm_pnp_tbl[] __devinitdata = {
+>  	{"ATM1200", 0},		/* Atmel */
+>  	{"IFX0102", 0},		/* Infineon */
+>  	{"BCM0101", 0},		/* Broadcom */
+> +	{"BCM0102", 0},		/* Broadcom */
+>  	{"NSC1200", 0},		/* National */
+>  	{"ICO0102", 0},		/* Intel */
+>  	/* Add new here */
 
-We normally have a space after the "*" in kerneldoc comments (some
-weird people use a tab and waste space).
+Thanks.  I'll see if we can squeeze this into 2.6.26.
 
-I don't know whether the kerneldoc processors will correctly handle
-the above.  I guess I'll fix it so we don't find out.
+I'm a bit confused over who wrote the patch?  Your changelog implies it
+was LE DISEZ Erwan <eledisez@grounation.org>.  Is that correct?
 
-Also, I _think_ that kerneldoc will barf over the multi-line parameter
-descriptions.  I'll join those lines.
+Also: Debora and Rajiv, could we please get your email addresses
+into ./MAINTAINERS?  At present all we have is
 
---- a/include/linux/regulator/bq24022.h~regulator-ti-bq24022-li-ion-charger-driver-fix
-+++ a/include/linux/regulator/bq24022.h
-@@ -11,11 +11,9 @@
-  */
- 
- /**
-- *bq24022_mach_info - platform data for bq24022
-- *@gpio_nce: GPIO line connected to the nCE pin,
-- *           used to enable / disable charging.
-- *@gpio_iset2: GPIO line connected to the ISET2 pin,
-- *             used to limit charging current to 100 mA / 500 mA.
-+ * bq24022_mach_info - platform data for bq24022
-+ * @gpio_nce: GPIO line connected to the nCE pin, used to enable / disable charging
-+ * @gpio_iset2: GPIO line connected to the ISET2 pin, used to limit charging current to 100 mA / 500 mA
-  */
- struct bq24022_mach_info {
- 	int gpio_nce;
-_
+TPM DEVICE DRIVER
+P:     Debora Velarde
+P:     Rajiv Andrade
+M:      tpmdd-devel@lists.sourceforge.net
+W:      http://tpmdd.sourceforge.net
+P:      Marcel Selhorst
+M:      tpm@selhorst.net
+W:      http://www.prosec.rub.de/tpm/
+L:      tpmdd-devel@lists.sourceforge.net
+S:      Maintained
 
+(pls fix the whitespace there too!)
