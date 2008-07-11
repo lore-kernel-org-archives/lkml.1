@@ -1,170 +1,248 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757008AbYGKSic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756209AbYGKSko@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757008AbYGKSic (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 14:38:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754542AbYGKShq
+	id S1756209AbYGKSko (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 14:40:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753862AbYGKSke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 14:37:46 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:64601 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754309AbYGKSho (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 14:37:44 -0400
-Date: Fri, 11 Jul 2008 19:35:23 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] x86: I/O APIC: Never configure IRQ2
-Message-ID: <Pine.LNX.4.55.0807111926310.31940@cliff.in.clinika.pl>
+	Fri, 11 Jul 2008 14:40:34 -0400
+Received: from mail-relay-04.mailcluster.net ([77.221.130.216]:50672 "EHLO
+	mail-relay-02.mailcluster.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752704AbYGKSkc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 14:40:32 -0400
+Message-ID: <4877A948.6090507@vlnb.net>
+Date: Fri, 11 Jul 2008 22:41:12 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+CC: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       scst-devel <scst-devel@lists.sourceforge.net>,
+       "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>,
+       Jeff Garzik <jeff@garzik.org>,
+       Leonid Grossman <leonid.grossman@neterion.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Pete Wyckoff <pw@osc.edu>,
+       Ming Zhang <blackmagic02881@gmail.com>,
+       "Ross S. W. Walker" <rwalker@medallion.com>,
+       Rafiu Fakunle <rafiu@openfiler.com>,
+       Mike Mazarick <mazarick@bellsouth.net>, Andrew Morton <akpm@osdl.org>,
+       David Miller <davem@davemloft.net>, Christoph Hellwig <hch@lst.de>,
+       "Ted Ts'o" <tytso@thunk.org>, Jerome Martin <tramjoe.merin@gmail.com>
+Subject: Re: [ANNOUNCE]: Generic SCSI Target Mid-level For	Linux	(SCST),	target
+ drivers for iSCSI and QLogic Fibre Channel cards	released
+References: <4873BCA5.10103@vlnb.net>	 <1215551354.3977.6.camel@haakon2.linux-iscsi.org>	 <48749EB2.1070902@vlnb.net>	 <1215632043.9339.89.camel@haakon2.linux-iscsi.org>	 <48765433.70604@vlnb.net> <1215725167.31245.104.camel@haakon2.linux-iscsi.org>
+In-Reply-To: <1215725167.31245.104.camel@haakon2.linux-iscsi.org>
+Content-Type: text/plain; charset=KOI8-R; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- There is no such entity as ISA IRQ2.  The ACPI spec does not make it
-explicitly clear, but does not preclude it either -- all it says is ISA
-legacy interrupts are identity mapped by default (subject to overrides),
-but it does not state whether IRQ2 exists or not.  As a result if there is
-no IRQ0 override, then IRQ2 is normally initialised as an ISA interrupt,
-which implies an edge-triggered line, which is unmasked by default as this
-is what we do for edge-triggered I/O APIC interrupts so as not to miss an
-edge.
+Nicholas A. Bellinger wrote:
+>>>>  And this is a real showstopper for making LIO-Core 
+>>>> the default and the only SCSI target framework. SCST is SCSI-centric, 
+>>> Well, one needs to understand that LIO-Core subsystem API is more than a
+>>> SCSI target framework.  Its a generic method of accessing any possible
+>>> storage object of the storage stack, and having said engine handle the
+>>> hardware restrictions (be they physical or virtual) for the underlying
+>>> storage object.  It can run as a SCSI engine to real (or emualted) SCSI
+>>> hardware from linux/drivers/scsi, but the real strength is that it sits
+>>> above the SCSI/BLOCK/FILE layers and uses a single codepath for all
+>>> underlying storage objects.  For example in the lio-core-2.6.git tree, I
+>>> chose the location linux/drivers/lio-core, because LIO-Core uses 'struct
+>>> file' from fs/, 'struct block_device' from block/ and struct scsi_device
+>>> from drivers/scsi.
+>> SCST and iSCSI-SCST, basically, do the same things, except iSCSI MC/S 
+>> and related, + something more, like 1-to-many pass-through and 
+>> scst_user, which need a big chunks of code, correct? And they are 
+>> together about 2 times smaller:
+> 
+> Yes, something much more.  A complete implementation of traditional
+> iSCSI/TCP (known as RFC-3720), iSCSI/SCTP (which will be important in
+> the future), and IPv6 (also important) is a significant amount of logic.
+> When I say a 'complete implementation' I mean:
+> 
+> I) Active-Active connection layer recovery (known as
+> ErrorRecoveryLevel=2).  (We are going to use the same code for iSER for
+> inter-nexus OS independent (eg: below the SCSI Initiator level)
+> recovery.  Again, the important part here is that recovery and
+> outstanding task migration happens transparently to the host OS SCSI
+> subsystem.  This means (at least with iSCSI and iSER): not having to
+> register multiple LUNs and depend (at least completely) on SCSI WWN
+> information, and OS dependent SCSI level multipath.  
+> 
+> II) MC/S for multiplexing (same as I), as well as being able to
+> multiplex across multiple cards and subnets (using TCP, SCTP has
+> multi-homing).  Also being able to bring iSCSI connections up/down on
+> the fly, until we all have iSCSI/SCTP, is very important too.
+> 
+> III) Every possible combination of RFC-3720 defined parameter keys (and
+> provide the apparatis to prove it).  And yes, anyone can do this today
+> against their own Target.  I created core-iscsi-dv specifically for
+> testing LIO-Target <-> LIO-Core back in 2005.  Core-iSCSI-DV is the
+> _ONLY_ _PUBLIC_ RFC-3720 domain validation tool that will actually
+> demonstrate, using ANY data integrity tool complete domain validation of
+> user defined keys.  Please have a look at:
+> 
+> http://linux-iscsi.org/index.php/Core-iscsi-dv
+> 
+> http://www.linux-iscsi.org/files/core-iscsi-dv/README
+> 
+> Any traditional iSCSI target mode implementation + Storage Engine +
+> Subsystem Plugin that thinks its ready to go into the kernel will have
+> to pass at LEAST the 8k test loop interations, the simplest being:
+> 
+> HeaderDigest, DataDigest, MaxRecvDataSegmentLength (512 -> 262144, in
+> 512 byte increments)
+> 
+> Core-iSCSI-DV is also a great indication of stability and data integrity
+> of hardware/software of an iSCSI Target + Engine, espically when you
+> have multiple core-iscsi-dv nodes hitting multiple VHACS clouds on
+> physical machines within the cluster.  I have never run IET against
+> core-iscsi-dv personally, and I don't think Ming or Ross has either.  So
+> until SOMEONE actually does this first, I think that iSCSI-SCST is more
+> of an experiment for your our devel that a strong contender for
+> Linux/iSCSI Target Mode.
 
- To the best of my knowledge it is useless, as IRQ2 has not been in use
-since the PC/AT as back then it was taken by the 8259A cascade interrupt
-to the slave, with the line position in the slot rerouted to newly-created
-IRQ9.  No device could thus make use of this line with the pair of 8259A
-chips.  Now in theory INTIN2 of the I/O APIC may be usable, but the
-interrupt of the device wired to it would not be available in the PIC mode
-at all, so I seriously doubt if anybody decided to reuse it for a regular
-device.
+There are big doubts among storage experts if features I and II are 
+needed at all, see, e.g. http://lkml.org/lkml/2008/2/5/331. I also tend 
+to agree, that for block storage on practice MC/S is not needed or, at 
+least, definitely doesn't worth the effort, because:
 
- However there are two common uses of INTIN2.  One is for IRQ0, with an
-ACPI interrupt override (or its equivalent in the MP table).  But in this
-case IRQ2 is gone entirely with INTIN0 left vacant.  The other one is for
-an 8959A ExtINTA cascade.  In this case IRQ0 goes to INTIN0 and if ACPI is
-used INTIN2 is assumed to be IRQ2 (there is no override and ACPI has no
-way to report ExtINTA interrupts).  This is where a problem happens.
+1. It is useless for sync. untagged operation (regular reads in most 
+cases over a single stream), when always there is only one command being 
+executed at any time, because of the commands connection allegiance, 
+which forbids transferring data for a command over multiple connections.
 
- The problem is INTIN2 is configured as a native APIC interrupt, with a
-vector assigned and the mask cleared.  And the line may indeed get active
-and inject interrupts if the master 8959A has its timer interrupt enabled
-(it might happen for other interrupts too, but they are normally masked in
-the process of rerouting them to the I/O APIC).  There are two cases where
-it will happen:
+2. The only advantage it has over traditional OS multi-pathing is 
+keeping commands execution order, but on practice at the moment there is 
+no demand for this feature, because all OS'es I know don't rely on 
+commands order to protect data integrity. They use other techniques, 
+like queue draining. A good target should be able itself to scheduler 
+coming commands for execution in the correct from performance POV order 
+  and not rely for that on the commands order as they came from initiators.
 
-* When the I/O APIC NMI watchdog is enabled.  This is actually a misnomer
-  as the watchdog pulses are delivered through the 8259A to the LINT0
-  inputs of all the local APICs in the system.  The implication is the
-  output of the master 8259A goes high and low repeatedly, signalling
-  interrupts to INTIN2 which is enabled too!
+ From other side, devices bonding also preserves commands execution 
+order, but doesn't suffer from the connection allegiance limitation of 
+MC/S, so can boost performance ever for sync untagged operations. Plus, 
+it's pretty simple, easy to use and doesn't need any additional code. I 
+don't have the exact numbers of MC/S vs bonding performance comparison 
+(mostly, because open-iscsi doesn't support MC/S, but very curious to 
+see them), but have very strong suspicious that on modern OS'es, which 
+do TCP frames reorder in zero-copy manner, there shouldn't be much 
+performance difference between MC/S vs bonding in the maximum possible 
+throughput, but bonding should outperform MC/S a lot in case of sync 
+untagged operations.
 
-  [The origin of the name is I think for a brief period during the
-  development we had a capability in our code to configure the watchdog to
-  use an I/O APIC input; that would be INTIN2 in this scenario.]
+Anyway, I think features I and II, if added, would increase iSCSI-SCST 
+kernel side code not more than on 5K lines, because most of the code is 
+already there, the most important part which missed is fixes of locking 
+problems, which almost never add a lot of code. Relating Core-iSCSI-DV, 
+I'm sure iSCSI-SCST will pass it without problems among the required set 
+of iSCSI features, although still there are some limitations, derived 
+from IET, for instance, support for multu-PDU commands in discovery 
+sessions, which isn't implemented. But for adding to iSCSI-SCST optional 
+iSCSI features there should be good *practical* reasons, which at the 
+moment don't exist. And unused features are bad features, because they 
+overcomplicate the code and make its maintainance harder for no gain.
 
-* When the native route of IRQ0 via INTIN0 fails for whatever reason -- as
-  it happens with the system considered here.  In this scenario the timer
-  pulse is delivered through the 8259A to LINT0 input of the local APIC of
-  the bootstrap processor, quite similarly to how is done for the watchdog
-  described above.  The result is, again, INTIN2 receives these pulses 
-  too.  Rafael's system used to escape this scenario, because an incorrect
-  IRQ0 override would occupy INTIN2 and prevent it from being unmasked.
+So, current SCST+iSCSI-SCST 36K lines + 5K new lines = 41K lines, which 
+still a lot less than LIO's 63K lines. I downloaded the cleanuped 
+lio-core-2.6.git tree and:
 
- My conclusion is IRQ2 should be excluded from configuration in all the
-cases and the current exception for ACPI systems should be lifted.  The
-reason being the exception not only being useless, but harmful as well.
+$ find lio-core-2.6/drivers/lio-core -type f -name "*.[ch]"|xargs wc
+57064  156617 1548344 total
 
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Andreas Herrmann <andreas.herrmann3@amd.com>
----
-patch-2.6.26-rc1-20080505-ioapic-noirq2-1
-diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/arch/x86/kernel/io_apic_32.c linux-2.6.26-rc1-20080505/arch/x86/kernel/io_apic_32.c
---- linux-2.6.26-rc1-20080505.macro/arch/x86/kernel/io_apic_32.c	2008-05-27 19:42:31.000000000 +0000
-+++ linux-2.6.26-rc1-20080505/arch/x86/kernel/io_apic_32.c	2008-07-09 18:38:58.000000000 +0000
-@@ -2268,11 +2268,21 @@ out:
- }
- 
- /*
-- *
-- * IRQ's that are handled by the PIC in the MPS IOAPIC case.
-- * - IRQ2 is the cascade IRQ, and cannot be a io-apic IRQ.
-- *   Linux doesn't really care, as it's not actually used
-- *   for any interrupt handling anyway.
-+ * Traditionally ISA IRQ2 is the cascade IRQ, and is not available
-+ * to devices.  However there may be an I/O APIC pin available for
-+ * this interrupt regardless.  The pin may be left unconnected, but
-+ * typically it will be reused as an ExtINT cascade interrupt for
-+ * the master 8259A.  In the MPS case such a pin will normally be
-+ * reported as an ExtINT interrupt in the MP table.  With ACPI
-+ * there is no provision for ExtINT interrupts, and in the absence
-+ * of an override it would be treated as an ordinary ISA I/O APIC
-+ * interrupt, that is edge-triggered and unmasked by default.  We
-+ * used to do this, but it caused problems on some systems because
-+ * of the NMI watchdog and sometimes IRQ0 of the 8254 timer using
-+ * the same ExtINT cascade interrupt to drive the local APIC of the
-+ * bootstrap processor.  Therefore we refrain from routing IRQ2 to
-+ * the I/O APIC in all cases now.  No actual device should request
-+ * it anyway.  --macro
-  */
- #define PIC_IRQS	(1 << PIC_CASCADE_IR)
- 
-@@ -2286,10 +2296,7 @@ void __init setup_IO_APIC(void)
- 
- 	enable_IO_APIC();
- 
--	if (acpi_ioapic)
--		io_apic_irqs = ~0;	/* all IRQs go through IOAPIC */
--	else
--		io_apic_irqs = ~PIC_IRQS;
-+	io_apic_irqs = ~PIC_IRQS;
- 
- 	printk("ENABLING IO-APIC IRQs\n");
- 
-diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/arch/x86/kernel/io_apic_64.c linux-2.6.26-rc1-20080505/arch/x86/kernel/io_apic_64.c
---- linux-2.6.26-rc1-20080505.macro/arch/x86/kernel/io_apic_64.c	2008-06-18 03:24:54.000000000 +0000
-+++ linux-2.6.26-rc1-20080505/arch/x86/kernel/io_apic_64.c	2008-07-09 18:45:16.000000000 +0000
-@@ -1779,11 +1779,21 @@ static int __init notimercheck(char *s)
- __setup("no_timer_check", notimercheck);
- 
- /*
-- *
-- * IRQs that are handled by the PIC in the MPS IOAPIC case.
-- * - IRQ2 is the cascade IRQ, and cannot be a io-apic IRQ.
-- *   Linux doesn't really care, as it's not actually used
-- *   for any interrupt handling anyway.
-+ * Traditionally ISA IRQ2 is the cascade IRQ, and is not available
-+ * to devices.  However there may be an I/O APIC pin available for
-+ * this interrupt regardless.  The pin may be left unconnected, but
-+ * typically it will be reused as an ExtINT cascade interrupt for
-+ * the master 8259A.  In the MPS case such a pin will normally be
-+ * reported as an ExtINT interrupt in the MP table.  With ACPI
-+ * there is no provision for ExtINT interrupts, and in the absence
-+ * of an override it would be treated as an ordinary ISA I/O APIC
-+ * interrupt, that is edge-triggered and unmasked by default.  We
-+ * used to do this, but it caused problems on some systems because
-+ * of the NMI watchdog and sometimes IRQ0 of the 8254 timer using
-+ * the same ExtINT cascade interrupt to drive the local APIC of the
-+ * bootstrap processor.  Therefore we refrain from routing IRQ2 to
-+ * the I/O APIC in all cases now.  No actual device should request
-+ * it anyway.  --macro
-  */
- #define PIC_IRQS	(1<<2)
- 
-@@ -1794,10 +1804,7 @@ void __init setup_IO_APIC(void)
- 	 * calling enable_IO_APIC() is moved to setup_local_APIC for BP
- 	 */
- 
--	if (acpi_ioapic)
--		io_apic_irqs = ~0;	/* all IRQs go through IOAPIC */
--	else
--		io_apic_irqs = ~PIC_IRQS;
-+	io_apic_irqs = ~PIC_IRQS;
- 
- 	apic_printk(APIC_VERBOSE, "ENABLING IO-APIC IRQs\n");
- 
+Still much bigger.
+
+> Obviously not.  Also, what I was talking about there was the strength
+> and flexibility of the LIO-Core design (it even ran on the Playstation 2
+> at one point, http://linux-iscsi.org/index.php/Playstation2/iSCSI, when
+> MIPS r5900 boots modern v2.6, then we will do it again with LIO :-)
+
+SCST and the target drivers have been successfully ran on PPC and 
+Sparc64, so I don't see any reasons, why it can't be ran on Playstation 
+2 as well.
+
+>>>>   - Pass-through mode (PSCSI) also provides non-enforced 1-to-1 
+>>>> relationship, as it used to be in STGT (now in STGT support for 
+>>>> pass-through mode seems to be removed), which isn't mentioned anywhere.
+>>>>
+>>> Please be more specific by what you mean here.  Also, note that because
+>>> PSCSI is an LIO-Core subsystem plugin, LIO-Core handles the limitations
+>>> of the storage object through the LIO-Core subsystem API.  This means
+>>> that things like (received initiator CDB sectors > LIO-Core storage
+>>> object max_sectors) are handled generically by LIO-Core, using a single
+>>> set of algoritims for all I/O interaction with Linux storage systems.
+>>> These algoritims are also the same for DIFFERENT types of transport
+>>> fabrics, both those that expect LIO-Core to allocate memory, OR that
+>>> hardware will have preallocated memory and possible restrictions from
+>>> the CPU/BUS architecture (take non-cache coherent MIPS for example) of
+>>> how the memory gets DMA'ed or PIO'ed down to the packet's intended
+>>> storage object.
+>> See here: 
+>> http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg06911.html
+>>
+> 
+> <nod>
+> 
+>>>>   - There is some confusion in the code in the function and variable 
+>>>> names between persistent and SAM-2 reservations.
+>>> Well, that would be because persistent reservations are not emulated
+>>> generally for all of the subsystem plugins just yet.  Obviously with
+>>> LIO-Core/PSCSI if the underlying hardware supports it, it will work.
+>> What you did (passing reservation commands directly to devices and 
+>> nothing more) will work only with a single initiator per device, where 
+>> reservations in the majority of cases are not needed at all.
+> 
+> I know, like I said, implementing Persistent Reservations for stuff
+> besides real SCSI hardware with LIO-Core/PSCSI is a TODO item.  Note
+> that the VHACS cloud (see below) will need this for DRBD objects at some
+> point.
+
+The problem is that persistent reservations don't work for multiple 
+initiators even for real SCSI hardware with LIO-Core/PSCSI and I clearly 
+described why in the referenced e-mail. Nicholas, why don't you want to 
+see it?
+
+>>>>> The more in fighting between the
+>>>>> leaders in our community, the less the community benefits.
+>>>> Sure. If my note hurts you, I can remove it. But you should also remove 
+>>>> from your presentation and the summary paper those psychological 
+>>>> arguments to not confuse people.
+>>>>
+>>> Its not about removing, it is about updating the page to better reflect
+>>> the bigger picture so folks coming to the sight can get the latest
+>>> information from last update.
+>> Your suggestions?
+>>
+> 
+> I would consider helping with this at some point, but as you can see, I
+> am extremly busy ATM.  I have looked at SCST quite a bit over the years,
+> but I am not the one making a public comparision page, at least not
+> yet. :-)  So until then, at least explain how there are 3 projects on
+> your page, with the updated 10,000 ft overviews, and mabye even add some
+> links to LIO-Target and a bit about VHACS cloud.  I would be willing to
+> include info about SCST into the Linux-iSCSI.org wiki.  Also, please
+> feel free to open an account and start adding stuff about SCST yourself
+> to the site.
+> 
+> For Linux-iSCSI.org and VHACS (which is really where everything is going
+> now), please have a look at:
+> 
+> http://linux-iscsi.org/index.php/VHACS-VM
+> http://linux-iscsi.org/index.php/VHACS
+> 
+> Btw, the VHACS and LIO-Core design will allow for other fabrics to be
+> used inside our cloud, and between other virtualized client setups who
+> speak the wire protocol presented by the server side of VHACS cloud.
+> 
+> Many thanks for your most valuable of time,
+> 
+> --nab
+> 
+> 
+> 
+> 
+
