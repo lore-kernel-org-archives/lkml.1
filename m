@@ -1,75 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760512AbYGKOLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758206AbYGKOPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760512AbYGKOLv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 10:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755550AbYGKOLn
+	id S1758206AbYGKOPo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 10:15:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbYGKOPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 10:11:43 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:34777 "EHLO
-	IE1EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754711AbYGKOLm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 10:11:42 -0400
-X-BigFish: VPS-2(zz1432R98dR7efV1805M9320iv19c2kzz10d3izzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0K3UI33-03-R66-01
-Date: Fri, 11 Jul 2008 16:11:24 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
-       Sebastian.Biemueller@amd.com, robert.richter@amd.com, joro@8bytes.org
-Subject: Re: [PATCH 00/34] AMD IOMMU driver
-Message-ID: <20080711141124.GU14977@amd.com>
-References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com> <m1d4lk90vq.fsf@frodo.ebiederm.org>
+	Fri, 11 Jul 2008 10:15:31 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45074 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751841AbYGKOPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 10:15:30 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] Fix warnings on calls to P54P_READ() for which the result is
+	discarded
+To: flamingice@sourmilk.net, akpm@linux-foundation.org
+Cc: dhowells@redhat.com, linville@tuxdriver.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Date: Fri, 11 Jul 2008 15:14:43 +0100
+Message-ID: <20080711141443.14665.63279.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <m1d4lk90vq.fsf@frodo.ebiederm.org>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 11 Jul 2008 14:11:24.0689 (UTC) FILETIME=[009FB010:01C8E360]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 11, 2008 at 03:22:01AM -0700, Eric W. Biederman wrote:
-> Joerg Roedel <joerg.roedel@amd.com> writes:
-> 
-> > Hi,
-> >
-> > this is the first post of the initial driver for AMD IOMMU hardware. The driver
-> > is tested on hardware with various loads (disk and network) and showed no
-> > problems.
-> >
-> > It currently supports DMA remapping using the dma_ops API in the x86
-> > architecture code. It also supports isolation of device DMA address spaces as
-> > far as the hardware allows that (means each device can get its own DMA address
-> > space and can't access the DMA memory of other devices).
-> >
-> > Please give this code a good review and send me your comments about it so that
-> > I can fix all possible bugs and objections and move this driver forward to
-> > merging quality.
-> 
-> Small question.  Does this IOMMU also support irq remapping?
-> 
-> Intel is starting to merge support for their iommu that supports irq
-> remapping and I am curious what the implications are going to be to
-> support both of these iommus?
+Fix warnings on calls to P54P_READ() for which the result is discarded because
+the side-effect of accessing hardware is what's of interest, not the result of
+performing the read.
 
-Yes, AMD IOMMU also has interrupt remapping support.
+The warnings are of the form:
 
-> Assuming their is irq remapping support it isn't tied to x2apic
-> support in the cpus is it?
+drivers/net/wireless/p54/p54pci.c:55: warning: value computed is not used
 
-Not sure what you mean here. I am not aware of an x2apic on AMD.
+Casting to (void) gets rid of this.
 
-Joerg
+They were introduced in patch eff1a59c48e3c6a006eb4fe5f2e405a996f2259d.
 
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ drivers/net/wireless/p54/p54pci.c |   32 ++++++++++++++++----------------
+ 1 files changed, 16 insertions(+), 16 deletions(-)
+
+
+diff --git a/drivers/net/wireless/p54/p54pci.c b/drivers/net/wireless/p54/p54pci.c
+index 7dd4add..47a3654 100644
+--- a/drivers/net/wireless/p54/p54pci.c
++++ b/drivers/net/wireless/p54/p54pci.c
+@@ -52,14 +52,14 @@ static int p54p_upload_firmware(struct ieee80211_hw *dev)
+ 	u32 remains, left, device_addr;
+ 
+ 	P54P_WRITE(int_enable, cpu_to_le32(0));
+-	P54P_READ(int_enable);
++	(void) P54P_READ(int_enable);
+ 	udelay(10);
+ 
+ 	reg = P54P_READ(ctrl_stat);
+ 	reg &= cpu_to_le32(~ISL38XX_CTRL_STAT_RESET);
+ 	reg &= cpu_to_le32(~ISL38XX_CTRL_STAT_RAMBOOT);
+ 	P54P_WRITE(ctrl_stat, reg);
+-	P54P_READ(ctrl_stat);
++	(void) P54P_READ(ctrl_stat);
+ 	udelay(10);
+ 
+ 	reg |= cpu_to_le32(ISL38XX_CTRL_STAT_RESET);
+@@ -89,7 +89,7 @@ static int p54p_upload_firmware(struct ieee80211_hw *dev)
+ 		u32 i = 0;
+ 		left = min((u32)0x1000, remains);
+ 		P54P_WRITE(direct_mem_base, cpu_to_le32(device_addr));
+-		P54P_READ(int_enable);
++		(void) P54P_READ(int_enable);
+ 
+ 		device_addr += 0x1000;
+ 		while (i < left) {
+@@ -98,7 +98,7 @@ static int p54p_upload_firmware(struct ieee80211_hw *dev)
+ 		}
+ 
+ 		remains -= left;
+-		P54P_READ(int_enable);
++		(void) P54P_READ(int_enable);
+ 	}
+ 
+ 	release_firmware(fw_entry);
+@@ -108,7 +108,7 @@ static int p54p_upload_firmware(struct ieee80211_hw *dev)
+ 	reg &= cpu_to_le32(~ISL38XX_CTRL_STAT_RESET);
+ 	reg |= cpu_to_le32(ISL38XX_CTRL_STAT_RAMBOOT);
+ 	P54P_WRITE(ctrl_stat, reg);
+-	P54P_READ(ctrl_stat);
++	(void) P54P_READ(ctrl_stat);
+ 	udelay(10);
+ 
+ 	reg |= cpu_to_le32(ISL38XX_CTRL_STAT_RESET);
+@@ -167,11 +167,11 @@ static int p54p_read_eeprom(struct ieee80211_hw *dev)
+ 
+ 	memset(ring_control, 0, sizeof(*ring_control));
+ 	P54P_WRITE(ring_control_base, cpu_to_le32(priv->ring_control_dma));
+-	P54P_READ(ring_control_base);
++	(void) P54P_READ(ring_control_base);
+ 	udelay(10);
+ 
+ 	P54P_WRITE(int_enable, cpu_to_le32(ISL38XX_INT_IDENT_INIT));
+-	P54P_READ(int_enable);
++	(void) P54P_READ(int_enable);
+ 	udelay(10);
+ 
+ 	P54P_WRITE(dev_int, cpu_to_le32(ISL38XX_DEV_INT_RESET));
+@@ -184,7 +184,7 @@ static int p54p_read_eeprom(struct ieee80211_hw *dev)
+ 	}
+ 
+ 	P54P_WRITE(int_enable, cpu_to_le32(ISL38XX_INT_IDENT_UPDATE));
+-	P54P_READ(int_enable);
++	(void) P54P_READ(int_enable);
+ 
+ 	hdr = eeprom + 0x2010;
+ 	p54_fill_eeprom_readback(hdr);
+@@ -230,7 +230,7 @@ static int p54p_read_eeprom(struct ieee80211_hw *dev)
+  out:
+ 	kfree(eeprom);
+ 	P54P_WRITE(int_enable, cpu_to_le32(0));
+-	P54P_READ(int_enable);
++	(void) P54P_READ(int_enable);
+ 	udelay(10);
+ 	free_irq(priv->pdev->irq, priv);
+ 	P54P_WRITE(dev_int, cpu_to_le32(ISL38XX_DEV_INT_RESET));
+@@ -397,7 +397,7 @@ static void p54p_tx(struct ieee80211_hw *dev, struct p54_control_hdr *data,
+ 	spin_unlock_irqrestore(&priv->lock, flags);
+ 
+ 	P54P_WRITE(dev_int, cpu_to_le32(ISL38XX_DEV_INT_UPDATE));
+-	P54P_READ(dev_int);
++	(void) P54P_READ(dev_int);
+ 
+ 	/* FIXME: unlikely to happen because the device usually runs out of
+ 	   memory before we fill the ring up, but we can make it impossible */
+@@ -426,17 +426,17 @@ static int p54p_open(struct ieee80211_hw *dev)
+ 	p54p_upload_firmware(dev);
+ 
+ 	P54P_WRITE(ring_control_base, cpu_to_le32(priv->ring_control_dma));
+-	P54P_READ(ring_control_base);
++	(void) P54P_READ(ring_control_base);
+ 	wmb();
+ 	udelay(10);
+ 
+ 	P54P_WRITE(int_enable, cpu_to_le32(ISL38XX_INT_IDENT_INIT));
+-	P54P_READ(int_enable);
++	(void) P54P_READ(int_enable);
+ 	wmb();
+ 	udelay(10);
+ 
+ 	P54P_WRITE(dev_int, cpu_to_le32(ISL38XX_DEV_INT_RESET));
+-	P54P_READ(dev_int);
++	(void) P54P_READ(dev_int);
+ 
+ 	if (!wait_for_completion_interruptible_timeout(&priv->boot_comp, HZ)) {
+ 		printk(KERN_ERR "%s: Cannot boot firmware!\n",
+@@ -446,12 +446,12 @@ static int p54p_open(struct ieee80211_hw *dev)
+ 	}
+ 
+ 	P54P_WRITE(int_enable, cpu_to_le32(ISL38XX_INT_IDENT_UPDATE));
+-	P54P_READ(int_enable);
++	(void) P54P_READ(int_enable);
+ 	wmb();
+ 	udelay(10);
+ 
+ 	P54P_WRITE(dev_int, cpu_to_le32(ISL38XX_DEV_INT_UPDATE));
+-	P54P_READ(dev_int);
++	(void) P54P_READ(dev_int);
+ 	wmb();
+ 	udelay(10);
+ 
+@@ -466,7 +466,7 @@ static void p54p_stop(struct ieee80211_hw *dev)
+ 	struct p54p_desc *desc;
+ 
+ 	P54P_WRITE(int_enable, cpu_to_le32(0));
+-	P54P_READ(int_enable);
++	(void) P54P_READ(int_enable);
+ 	udelay(10);
+ 
+ 	free_irq(priv->pdev->irq, dev);
 
