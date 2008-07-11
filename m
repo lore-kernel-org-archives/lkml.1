@@ -1,81 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbYGKRTv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbYGKRWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756020AbYGKRTv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 13:19:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbYGKRTo
+	id S1756032AbYGKRWR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 13:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbYGKRWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 13:19:44 -0400
-Received: from lana.hrz.tu-chemnitz.de ([134.109.132.3]:38950 "EHLO
-	lana.hrz.tu-chemnitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753798AbYGKRTn (ORCPT
+	Fri, 11 Jul 2008 13:22:06 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:48204 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752728AbYGKRWE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 13:19:43 -0400
-Date: Fri, 11 Jul 2008 19:19:35 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] bridge: send correct MTU value in PMTU
-Message-ID: <20080711171935.GA25603@hrz.tu-chemnitz.de>
-References: <20080711124735.GA16996@hrz.tu-chemnitz.de> <20080711083423.64b67c0c@extreme>
+	Fri, 11 Jul 2008 13:22:04 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Duran, Leo" <leo.duran@amd.com>
+Cc: "Roedel, Joerg" <Joerg.Roedel@amd.com>,
+       "Richter, Robert" <rrichter@elbe.amd.com>,
+       "Biemueller, Sebastian" <Sebastian.Biemueller@amd.com>,
+       <linux-kernel@vger.kernel.org>, <iommu@lists.linux-foundation.org>,
+       <mingo@redhat.com>, <tglx@linutronix.de>,
+       "Sarathy, Bhavna" <Bhavna.Sarathy@amd.com>
+References: <6453C3CB8E2B3646B0D020C1126132730149A6C6@sausexmb4.amd.com>
+Date: Fri, 11 Jul 2008 10:20:33 -0700
+In-Reply-To: <6453C3CB8E2B3646B0D020C1126132730149A6C6@sausexmb4.amd.com> (Leo
+	Duran's message of "Fri, 11 Jul 2008 11:23:46 -0500")
+Message-ID: <m1k5fsfice.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="pWyiEgJYm5f9v55/"
-Content-Disposition: inline
-In-Reply-To: <20080711083423.64b67c0c@extreme>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Spam-Score: 0.2 (/)
-X-Spam-Report: --- Start der SpamAssassin 3.2.5 Textanalyse (0.2 Punkte)
-	Fragen an/questions to:  Postmaster TU Chemnitz <postmaster@tu-chemnitz.de>
-	-1.4 ALL_TRUSTED            Nachricht wurde nur ueber vertrauenswuerdige Rechner
-	weitergeleitet
-	1.6 TVD_RCVD_IP            TVD_RCVD_IP
-	--- Ende der SpamAssassin Textanalyse
-X-Scan-Signature: 439a779e86734b9f9e658ea38d6cb1c3
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;"Duran, Leo" <leo.duran@amd.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
+	*      [score: 0.1306]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH 00/34] AMD IOMMU driver
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+"Duran, Leo" <leo.duran@amd.com> writes:
 
---pWyiEgJYm5f9v55/
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> On Friday, July 11, 2008 5:22 AM, Eric W. Biederman wrote:
+>
+>> Small question.  Does this IOMMU also support irq remapping?
+>> 
+>> Intel is starting to merge support for their iommu that supports irq
+>> remapping and I am curious what the implications are going to be to
+>> support both of these iommus?
+>> 
+>> Assuming their is irq remapping support it isn't tied to x2apic
+>> support in the cpus is it?
+>> 
+> Follow-up questions: 
+> (1) Outside of a virtualization environment, is there functional value
+> for "irq remapping" by an IOMMU? And, if there is, (2) How would this
+> functionality get abstracted? (e.g., as dma_ops abstracts 'address
+> remapping' by the IOMMU)
 
-On Fri, Jul 11, 2008 at 08:34:23AM -0700, Stephen Hemminger wrote:
-> On Fri, 11 Jul 2008 14:47:35 +0200
-> Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de> wrote:
->=20
-> > [...]
->=20
->=20
-> port should always be non-null so the existing fake_rtable can
-> just go away no?
+Current x86 hardware ioapics have significant issues with irq
+migration.  So things like real cpu hotplug are not really
+supportable unless there is better hardware or an iommu.
 
-I wondered about that too. But since bridge_parent() is also checking port
-for NULL, and the code calling this is carefully checking these cases, i
-assumed that this is quite possible. If you can assert that port is
-non-NULL, we can remove this, but i have to admit that i don't get the
-whole picture to be sure about this.
+There is a good case for linux to support kernel bypass for some hardware.
+>From kvm where linux acts as a hypervisor to crazy people wanting to
+device drivers in user space, to the classic HPC mpi stack that
+wants to go as fast as possible.
 
->=20
-> Also some of this could be #ifdef CONFIG_BRNETFILTER
+Then there is the Intel case where the are extending their cpu apicids
+to 32bit and require going through a hypervisor to encode all of the
+necessary bits.  I think we can go to 16bit cpus without doing that
+but it is a squeeze.
 
-Thanks, you're right. I will prepare the patch again with some #ifdefs.
+If we are going to run under under a hypervisor we need at least the
+abstraction of going through an iommu (in that case a hypercall) 
+so we can run under a hypervisor.
 
-regards,
-	Simon
+So right now we are just starting to design the abstraction, and I'm
+hoping we can get as large a perspective on what it should look like
+as we can.  
 
---pWyiEgJYm5f9v55/
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+I expect the api will look something like:
+struct irq_map_info x86_map_irq(irq, cpumask);
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Where struct irq_map_info would return the architecture defined bits
+that we can program into an msi or an ioapic routing entry.
 
-iD8DBQFId5Ymrzg/fFk7axYRAr5EAJ9zm9U/mnvWlEexz2Wtx6pNu3H9QACg0t4S
-kovqWcfGFCxpkJA8wGVd60g=
-=Nqm4
------END PGP SIGNATURE-----
+With x86_map_irq looking up an appropriate ops structure and calling
+the iommu specific operation.
 
---pWyiEgJYm5f9v55/--
+Eric
