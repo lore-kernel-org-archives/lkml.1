@@ -1,45 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759188AbYGKBsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759813AbYGKBtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759188AbYGKBsY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 21:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755055AbYGKBsQ
+	id S1759813AbYGKBtR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 21:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755055AbYGKBtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 21:48:16 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:44494 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754096AbYGKBsP (ORCPT
+	Thu, 10 Jul 2008 21:49:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53328 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754096AbYGKBtG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 21:48:15 -0400
-Message-ID: <4876BA4B.5010102@zytor.com>
-Date: Thu, 10 Jul 2008 21:41:31 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 10 Jul 2008 21:49:06 -0400
+Date: Thu, 10 Jul 2008 18:48:16 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86_64: fix delayed signals
+In-Reply-To: <20080711005243.ADE90154218@magilla.localdomain>
+Message-ID: <alpine.LFD.1.10.0807101824150.2936@woody.linux-foundation.org>
+References: <20080710215039.2A143154218@magilla.localdomain> <alpine.LFD.1.10.0807101459000.2936@woody.linux-foundation.org> <20080710224256.AD038154218@magilla.localdomain> <alpine.LFD.1.10.0807101549590.2936@woody.linux-foundation.org>
+ <20080711005243.ADE90154218@magilla.localdomain>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Mike Travis <travis@sgi.com>
-CC: Christoph Lameter <cl@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com>	<m1abgqzv3g.fsf@frodo.ebiederm.org> <20080709200757.GD14009@elte.hu>	<48751B57.8030605@goop.org> <48751CF9.4020901@linux-foundation.org>	<4875209D.8010603@goop.org> <48752CCD.30507@linux-foundation.org>	<m1wsjupuiz.fsf@frodo.ebiederm.org> <48753C99.5050408@goop.org> <m1ej62iq9z.fsf@frodo.ebiederm.org> <487555A8.2050007@zytor.com> <487556A5.5090907@goop.org> <4876194E.4080205@linux-foundation.org> <48761C06.3020003@zytor.com> <48762A3B.5050104@linux-foundation.org> <48762DD2.5090802@zytor.com> <487637A1.4080403@linux-foundation.org> <487639ED.7000502@zytor.com> <48763CA6.9030802@linux-foundation.org> <487647EF.5010609@goop.org> <48764A01.1070402@linux-foundation.org> <48764C7C.5010309@goop.org> <48767692.4080504@linux-foundation.org> <487677F0.4000404@goop.org> <4876799B.7010204@linux-foundation.org> <48767F4F.1010209@zytor.com> <4876A56C.3050707@sgi.com> <4876A5CA.7020109@zytor.com> <4876B043.7040304@sgi.com>
-In-Reply-To: <4876B043.7040304@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-> 
-> I was thinking that supporting virtual percpu addresses would take a fair
-> amount of code that, if living in a MODULE, wouldn't impact small systems.
-> But it seems to be not worth the effort... ;-)
-> 
 
-No, and it seems pretty toxic.  If we're doing virtual, they should 
-almost certainly always be virtual (except perhaps on UP.)  Page size is 
-a separate issue.
 
-	-hpa
+On Thu, 10 Jul 2008, Roland McGrath wrote:
+> 
+> i386 has never behaved this way, and still doesn't.
+
+Btw, I told you differently, you didn't believe me. So I went back just 
+because I have an ego easily the size of Manhattan, and when you doubt me, 
+my ego is hurt.
+
+i386 _has_ very much behaved this way. The system call code literally used 
+to do
+
+		..
+	        cmpl $0,sigpending(%ebx)
+	        jne signal_return
+		..
+
+and then 'signal_return' case would handle one signal and then return to 
+user space:
+
+		..
+	        call SYMBOL_NAME(do_signal)
+	#ifdef CONFIG_SMP
+	        GET_CURRENT(%ebx)
+	#endif
+	        cli
+	        CHECK_SOFTIRQ
+	        je restore_all
+		..
+
+ie it would call "restore_all" without re-checking signals. I wasn't 
+hallucinating.
+
+So that's really old code.
+
+The _really_ ancient code (like a decade ago or more) used to actually 
+loop in do_signal() generating multiple signal stacks in one go. Then, a 
+long long time ago, that was actually removed, and we expressly only tried 
+to queue one signal at a time. I do not remember why, but it was before 
+2.4.0. Probably _long_ before, but it's so long ago my memory is 
+unreliable.
+
+The "queue multiple signals" code that you claim has always been there is 
+in fact pretty recent. For x86-32, it was a thing introduced in commit 
+c3ff8ec31c1249d268cd11390649768a12bec1b9: by _you_, just three years ago, 
+in 2.6.14, in regular git times.
+
+So the x86-64 behaviour actually matches what the x86-32 behavior was at 
+the time before things split.
+
+And I'd also like to point out another commit, namely "[PATCH] fix broken 
+vm86 interrupt/signal handling" (4031ff388138b58e5cd472dccce38828bcb8c706) 
+that fixed a bug with an endless loop you had introduced in that original 
+x86-32 code when you fixed this exact same issue back when.
+
+Heh. That's the kind of thing that worries me.
+
+			Linus
