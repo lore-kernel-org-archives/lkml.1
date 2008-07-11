@@ -1,35 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757712AbYGKUDA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758869AbYGKUDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757712AbYGKUDA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 16:03:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752671AbYGKUCx
+	id S1758869AbYGKUDf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 16:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbYGKUD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 16:02:53 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:57336 "EHLO
+	Fri, 11 Jul 2008 16:03:27 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:57858 "EHLO
 	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750848AbYGKUCw (ORCPT
+	with ESMTP id S1750773AbYGKUD0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 16:02:52 -0400
-Date: Fri, 11 Jul 2008 13:02:14 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Louis Rilling <louis.rilling@kerlabs.com>
-Cc: joel.becker@hawkmoon.kerlabs.com, linux-kernel@vger.kernel.org,
-       ocfs2-devel@oss.oracle.com
-Subject: Re: [BUGFIX][PATCH v2 1/2] configfs: Prevent userspace from
-	creating new entries under attaching directories
-Message-ID: <20080711200214.GA22577@mail.oracle.com>
-Mail-Followup-To: Louis Rilling <louis.rilling@kerlabs.com>,
-	joel.becker@hawkmoon.kerlabs.com, linux-kernel@vger.kernel.org,
-	ocfs2-devel@oss.oracle.com
-References: <1215183366-17479-1-git-send-email-louis.rilling@kerlabs.com> <1215183366-17479-2-git-send-email-louis.rilling@kerlabs.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1215183366-17479-2-git-send-email-louis.rilling@kerlabs.com>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 11 Jul 2008 16:03:26 -0400
+Date: Fri, 11 Jul 2008 12:57:31 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: tglx <tglx@linutronix.de>, akpm <akpm@linux-foundation.org>
+Subject: [PATCH -next] acpi_pm clccksource: fix printk format warning
+Message-Id: <20080711125731.770dd278.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Whitelist: TRUE
@@ -38,25 +29,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 04, 2008 at 04:56:05PM +0200, Louis Rilling wrote:
-> Changelog:
->   - Rename configfs_validate_dir() in configfs_dir_set_ready()
->   - Introduce configfs_dirent_is_ready() helper to unbloat a bit
->     CONFIGFS_USET_CREATING checks
+From: Randy Dunlap <randy.dunlap@oracle.com>
+cc: tglx@linutronix.de
 
-	Looks good.
+Fix printk format warning in acpi_pm clocksource:
 
-Joel
+linux-next-20080711/drivers/clocksource/acpi_pm.c:231: warning: format '%04lx' expects type 'long unsigned int', but argument 2 has type 'u32'
 
--- 
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/clocksource/acpi_pm.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-"Lately I've been talking in my sleep.
- Can't imagine what I'd have to say.
- Except my world will be right
- When love comes back my way."
+--- linux-next-20080711.orig/drivers/clocksource/acpi_pm.c
++++ linux-next-20080711/drivers/clocksource/acpi_pm.c
+@@ -227,8 +227,8 @@ static int __init parse_pmtmr(char *arg)
+ 	if (strict_strtoul(arg, 16, &base))
+ 		return -EINVAL;
+ 
+-	printk(KERN_INFO "PMTMR IOPort override: 0x%04lx -> 0x%04lx\n",
+-	       pmtmr_ioport, base);
++	printk(KERN_INFO "PMTMR IOPort override: 0x%04x -> 0x%04lx\n",
++	       (unsigned int)pmtmr_ioport, base);
+ 	pmtmr_ioport = base;
+ 
+ 	return 1;
 
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
