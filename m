@@ -1,100 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757329AbYGKA22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756780AbYGKAdH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757329AbYGKA22 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 20:28:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754701AbYGKA2T
+	id S1756780AbYGKAdH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 20:33:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877AbYGKAc4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 20:28:19 -0400
-Received: from ik-out-1112.google.com ([66.249.90.179]:53353 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751547AbYGKA2T (ORCPT
+	Thu, 10 Jul 2008 20:32:56 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:51079 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751547AbYGKAcz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 20:28:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=ORVlU6C3KrduuFBI75We8e4Y0y3eqT6/Z4YqpsTezXtFUrBUdh9wEaPeBiQBFt5Fup
-         5k2rWlTZvNgOnriICAy27L7crSWE3H8Zs8f1TkfW4JLq4Lp43GmmIIU+wbKg4n06PrEZ
-         yc3znFVusFxoYQHjjiCf1jBK9MmSCakjDnb4o=
-Message-ID: <6d291e080807101728j62be7c93qba11aa214a8dfe1@mail.gmail.com>
-Date: Thu, 10 Jul 2008 19:28:16 -0500
-From: "Stoyan Gaydarov" <stoyboyker@gmail.com>
-To: rjw@sisk.pl, pavel@suse.cz
-Subject: [PATCH] ioctl conversion
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+	Thu, 10 Jul 2008 20:32:55 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=lJ3DqhVu9Ms2VRMGi3oKU5W3YqHNGtJx+Z7euk9Qd0vAceFe/9TzyCgfdBfxiA4oh
+	Brs3sm8gvauz5Vr5Hp+Gw==
+Message-ID: <6599ad830807101732w43e09514t281455861da53bad@mail.gmail.com>
+Date: Thu, 10 Jul 2008 17:32:30 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Max Krasnyansky" <maxk@qualcomm.com>
+Subject: Re: [RFC][PATCH] CGroups: Add a per-subsystem hierarchy lock
+Cc: a.p.zijlstra@chello.nl, pj@sgi.com, vegard.nossum@gmail.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <486C59BE.3020400@qualcomm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <20080627075912.92AE43D6907@localhost>
+	 <6599ad830806271702y2c1df2edh3a75dda75336ddad@mail.gmail.com>
+	 <486AFC33.7010901@qualcomm.com>
+	 <6599ad830807021531r16013460re28f813be8293d6c@mail.gmail.com>
+	 <486C59BE.3020400@qualcomm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This changes the ioctl usage of kernel/power/user.c to use the unlocked_ioctl
+On Wed, Jul 2, 2008 at 9:46 PM, Max Krasnyansky <maxk@qualcomm.com> wrote:
+>
+> mkdir /dev/cpuset
+> mount -t cgroup -o cpuset cpuset /dev/cpuset
+> mkdir /dev/cpuset/0
+> mkdir /dev/cpuset/1
+> echo 0-2 > /dev/cpuset/0/cpuset.cpus
+> echo 3   > /dev/cpuset/1/cpuset.cpus
+> echo 0 > /dev/cpuset/cpuset.sched_load_balance
+> echo 0 > /sys/devices/system/cpu/cpu3/online
+>
 
-Signed-off-by: Stoyan Gaydarov <stoyboyker@gmail.com>
+OK, I still can't reproduce this, on a 2-cpu system using one cpu for
+each cpuset.
 
-diff -uprN linux-2.6.26-rc9/kernel/power/user.c devel/kernel/power/user.c
---- linux-2.6.26-rc9/kernel/power/user.c        2008-07-05
-17:53:22.000000000 -0500
-+++ devel/kernel/power/user.c   2008-07-10 19:26:42.000000000 -0500
-@@ -18,6 +18,7 @@
- #include <linux/mm.h>
- #include <linux/swap.h>
- #include <linux/swapops.h>
-+#include <linux/smp_lock.h>
- #include <linux/pm.h>
- #include <linux/fs.h>
- #include <linux/console.h>
-@@ -164,20 +165,28 @@ static ssize_t snapshot_write(struct fil
-        return res;
- }
+But the basic problem seemns to be that we have cpu_hotplug.lock taken
+at the outer level (when offlining a CPU) and at the inner level (via
+get_online_cpus() called from the guts of partition_sched_domains(),
+if we didn't already take it at the outer level.
 
--static int snapshot_ioctl(struct inode *inode, struct file *filp,
--                          unsigned int cmd, unsigned long arg)
-+static long snapshot_ioctl(struct file *filp, unsigned int cmd,
-+                          unsigned long arg)
- {
-        int error = 0;
-        struct snapshot_data *data;
-        loff_t size;
-        sector_t offset;
+While looking at the code trying to figure out a nice way around this,
+it struck me that we have the call path
 
--       if (_IOC_TYPE(cmd) != SNAPSHOT_IOC_MAGIC)
-+       lock_kernel();
-+
-+       if (_IOC_TYPE(cmd) != SNAPSHOT_IOC_MAGIC) {
-+               unlock_kernel();
-                return -ENOTTY;
--       if (_IOC_NR(cmd) > SNAPSHOT_IOC_MAXNR)
-+       }
-+       if (_IOC_NR(cmd) > SNAPSHOT_IOC_MAXNR) {
-+               unlock_kernel();
-                return -ENOTTY;
--       if (!capable(CAP_SYS_ADMIN))
-+       }
-+       if (!capable(CAP_SYS_ADMIN)) {
-+               unlock_kernel();
-                return -EPERM;
-+       }
+cpuset_track_online_nodes() ->
+  common_cpu_mem_hotplug_unplug() ->
+    scan_for_empty_cpusets() ->
+      access cpu_online_map with no calls to get_online_cpus()
 
-        data = filp->private_data;
+Is that allowed? Maybe we need separate versions of
+scan_for_empty_cpusets() that look at memory and cpus?
 
-@@ -390,6 +399,7 @@ static int snapshot_ioctl(struct inode *
+I think that we're going to want eventually a solution such pushing
+the locking of cpuset_subsys.hierarchy_mutex down into the first part
+of partition_sched_domains, that actually walks the cpuset tree
 
-        }
-
-+       unlock_kernel();
-        return error;
- }
-
-@@ -399,7 +409,7 @@ static const struct file_operations snap
-        .read = snapshot_read,
-        .write = snapshot_write,
-        .llseek = no_llseek,
--       .ioctl = snapshot_ioctl,
-+       .unlocked_ioctl = snapshot_ioctl,
- };
-
- static struct miscdevice snapshot_device = {
+Paul
