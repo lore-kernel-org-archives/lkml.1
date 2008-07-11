@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757010AbYGKIQr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756892AbYGKIRs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757010AbYGKIQr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 04:16:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756609AbYGKIQd
+	id S1756892AbYGKIRs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 04:17:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbYGKIRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 04:16:33 -0400
-Received: from main.gmane.org ([80.91.229.2]:48276 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756347AbYGKIQa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 04:16:30 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
-Subject: Re: [PATCH 15/15] regulator: maintainers - add maintainers for  
- regulator framework (new for V5)
-Date: Fri, 11 Jul 2008 11:16:16 +0300
-Message-ID: <487716D0.2020003@teltonika.lt>
-References: <1215703671.13431.71.camel@odin>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 82-135-208-232.static.zebra.lt
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-In-Reply-To: <1215703671.13431.71.camel@odin>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk
+	Fri, 11 Jul 2008 04:17:33 -0400
+Received: from bigben2.bytemark.co.uk ([80.68.81.132]:53324 "EHLO
+	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751854AbYGKIRd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 04:17:33 -0400
+Date: Fri, 11 Jul 2008 09:17:34 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: akpm@linux-foundation.org, linux-mm@kvack.org, agl@us.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] [PATCH] Align faulting address to a hugepage boundary before unmapping
+Message-ID: <20080711081734.GO7410@shadowen.org>
+References: <20080710173001.16433.87538.sendpatchset@skynet.skynet.ie> <20080710173041.16433.21192.sendpatchset@skynet.skynet.ie>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080710173041.16433.21192.sendpatchset@skynet.skynet.ie>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Liam Girdwood wrote:
-> Adds Liam Girdwood and Mark Brown as regulator framework maintainers.
+On Thu, Jul 10, 2008 at 06:30:41PM +0100, Mel Gorman wrote:
 > 
-> Signed-off-by: Liam Girdwood <lg@opensource.wolfsonmicro.com>
-> ---
->  MAINTAINERS |    9 +++++++++
->  1 files changed, 9 insertions(+), 0 deletions(-)
+> When taking a fault for COW on a private mapping it is possible that the
+> parent will have to steal the original page from its children due to an
+> insufficient hugepage pool.  In this case, unmap_ref_private() is called
+> for the faulting address to unmap via unmap_hugepage_range(). This patch
+> ensures that the address used for unmapping is hugepage-aligned.
 > 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 6476125..551d231 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -4424,6 +4424,15 @@ M:	kaber@trash.net
->  L:	netdev@vger.kernel.org
->  S:	Maintained
->  
-> +VOLTAGE AND CURRENT REGULATOR FRAMEWORK
-> +P:	Liam Girdwood
-> +M:	lg@opensource.wolfsonmicro.com
-> +P:	Mark Brown
-> +M:	broonie@opensource.wolfsonmicro.com
-> +W:	http://opensource.wolfsonmicro.com/node/15
-> +T:	git opensource.wolfsonmicro.com:/linux-2.6-audioplus.git
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 
-Shouldn't this be:
-git://git.kernel.org/pub/scm/linux/kernel/git/lrg/voltage-2.6.git
+Acked-by: Andy Whitcroft <apw@shadowen.org>
 
-> +S:	Supported
-> +
->  VT1211 HARDWARE MONITOR DRIVER
->  P:	Juerg Haefliger
->  M:	juergh@gmail.com
+Clearly far too many of our tests use page aligned accesss to trigger
+behaviour.
 
+>  mm/hugetlb.c |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.26-rc8-mm1-clean/mm/hugetlb.c linux-2.6.26-rc8-mm1-fix-needsreserve-check/mm/hugetlb.c
+> --- linux-2.6.26-rc8-mm1-clean/mm/hugetlb.c	2008-07-08 11:54:34.000000000 -0700
+> +++ linux-2.6.26-rc8-mm1-fix-needsreserve-check/mm/hugetlb.c	2008-07-08 15:50:00.000000000 -0700
+> @@ -1767,6 +1767,7 @@ int unmap_ref_private(struct mm_struct *
+>  	 * vm_pgoff is in PAGE_SIZE units, hence the different calculation
+>  	 * from page cache lookup which is in HPAGE_SIZE units.
+>  	 */
+> +	address = address & huge_page_mask(hstate_vma(vma));
+>  	pgoff = ((address - vma->vm_start) >> PAGE_SHIFT)
+>  		+ (vma->vm_pgoff >> PAGE_SHIFT);
+>  	mapping = (struct address_space *)page_private(page);
+
+-apw
