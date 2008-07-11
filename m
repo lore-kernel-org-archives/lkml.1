@@ -1,75 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756780AbYGKAdH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757375AbYGKAgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756780AbYGKAdH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 20:33:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877AbYGKAc4
+	id S1757375AbYGKAgf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 20:36:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755081AbYGKAg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 20:32:56 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:51079 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751547AbYGKAcz (ORCPT
+	Thu, 10 Jul 2008 20:36:28 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:22356 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754877AbYGKAg1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jul 2008 20:32:55 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=lJ3DqhVu9Ms2VRMGi3oKU5W3YqHNGtJx+Z7euk9Qd0vAceFe/9TzyCgfdBfxiA4oh
-	Brs3sm8gvauz5Vr5Hp+Gw==
-Message-ID: <6599ad830807101732w43e09514t281455861da53bad@mail.gmail.com>
-Date: Thu, 10 Jul 2008 17:32:30 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Max Krasnyansky" <maxk@qualcomm.com>
-Subject: Re: [RFC][PATCH] CGroups: Add a per-subsystem hierarchy lock
-Cc: a.p.zijlstra@chello.nl, pj@sgi.com, vegard.nossum@gmail.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <486C59BE.3020400@qualcomm.com>
+	Thu, 10 Jul 2008 20:36:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=LGIthlQwOjqKWVslOlRQ47q7ryqsj53fTVcRiTA6MrAmVfGWwFLtmYPq4eDe14fnQq
+         lilv0U9r06r0Fcffku/P+shz1H+HA710Ltb/2mX0QYveDwlj4SZ31zloeNyrYLhIH3Hc
+         Ow97r4acqTaY4xQqYCO9nNh3RWxbUJ+xINtiY=
+Date: Fri, 11 Jul 2008 04:32:58 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Oren Laadan <orenl@cs.columbia.edu>,
+       Kirill Korotaev <dev@parallels.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Nadia.Derbey@bull.net, Andrew Morton <akpm@linux-foundation.org>,
+       nick@nick-andrew.net
+Subject: Re: Checkpoint/restart (was Re: [PATCH 0/4] - v2 - Object creation
+	with a specified id)
+Message-ID: <20080711003258.GA23143@martell.zuzino.mipt.ru>
+References: <1208904967.17117.51.camel@nimitz.home.sr71.net> <480ED9D5.1010906@parallels.com> <480FE037.2010302@cs.columbia.edu> <m1y74a7b4w.fsf@frodo.ebiederm.org> <1215709949.9398.15.camel@nimitz> <20080710173246.GA1857@us.ibm.com> <m163rd1sd5.fsf@frodo.ebiederm.org> <1215716794.9398.41.camel@nimitz> <m14p6xy27s.fsf@frodo.ebiederm.org> <1215719252.9398.53.camel@nimitz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080627075912.92AE43D6907@localhost>
-	 <6599ad830806271702y2c1df2edh3a75dda75336ddad@mail.gmail.com>
-	 <486AFC33.7010901@qualcomm.com>
-	 <6599ad830807021531r16013460re28f813be8293d6c@mail.gmail.com>
-	 <486C59BE.3020400@qualcomm.com>
+In-Reply-To: <1215719252.9398.53.camel@nimitz>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 2, 2008 at 9:46 PM, Max Krasnyansky <maxk@qualcomm.com> wrote:
->
-> mkdir /dev/cpuset
-> mount -t cgroup -o cpuset cpuset /dev/cpuset
-> mkdir /dev/cpuset/0
-> mkdir /dev/cpuset/1
-> echo 0-2 > /dev/cpuset/0/cpuset.cpus
-> echo 3   > /dev/cpuset/1/cpuset.cpus
-> echo 0 > /dev/cpuset/cpuset.sched_load_balance
-> echo 0 > /sys/devices/system/cpu/cpu3/online
->
+On Thu, Jul 10, 2008 at 12:47:32PM -0700, Dave Hansen wrote:
+> On Thu, 2008-07-10 at 12:21 -0700, Eric W. Biederman wrote:
+> > > Are we talking about the VMA itself, or the memory backing the VMA?
+> > 
+> > The memory backing the VMA.  We need to store the page protections
+> > that the memory was mapped with as well now that you point it out.  A
+> > VMA is not user space visible, which is why we can arbitrarily split
+> > and merge VMAs.
+> 
+> It is visible with /proc/$pid/{maps,smaps,numamaps?}.  That's the only
+> efficient way I know of from userspace to figure out where userspace's
+> memory is and if it *is* file backed, and what the permissions are.
 
-OK, I still can't reproduce this, on a 2-cpu system using one cpu for
-each cpuset.
+None of those files exist if PROC_FS is off.
 
-But the basic problem seemns to be that we have cpu_hotplug.lock taken
-at the outer level (when offlining a CPU) and at the inner level (via
-get_online_cpus() called from the guts of partition_sched_domains(),
-if we didn't already take it at the outer level.
+> We also can't truly split them arbitrarily because the memory cost of
+> the VMAs themselves might become too heavy (the remap_file_pages()
+> problem).
+> 
+> It gets trickier when things are also private mappings in addition to
+> being in a file-backed VMA.  We *do* need to checkpoint those, but only
+> the pages to which there was a write.
+> 
+> There's also the problem of restoring things read-only, but VM_MAYWRITE.
+> If there's a high level of (non-COW'd) sharing of these anonymous areas,
+> we may not be able to even restore the set of processes unless we can
+> replicate the sharing.  We might run out of memory if the sharing isn't
+> replicated.
 
-While looking at the code trying to figure out a nice way around this,
-it struck me that we have the call path
-
-cpuset_track_online_nodes() ->
-  common_cpu_mem_hotplug_unplug() ->
-    scan_for_empty_cpusets() ->
-      access cpu_online_map with no calls to get_online_cpus()
-
-Is that allowed? Maybe we need separate versions of
-scan_for_empty_cpusets() that look at memory and cpus?
-
-I think that we're going to want eventually a solution such pushing
-the locking of cpuset_subsys.hierarchy_mutex down into the first part
-of partition_sched_domains, that actually walks the cpuset tree
-
-Paul
