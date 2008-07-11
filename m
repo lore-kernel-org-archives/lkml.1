@@ -1,234 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759565AbYGKPKd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759862AbYGKPL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759565AbYGKPKd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 11:10:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbYGKPKZ
+	id S1759862AbYGKPL0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 11:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754103AbYGKPLR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 11:10:25 -0400
-Received: from main.gmane.org ([80.91.229.2]:58960 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752116AbYGKPKY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 11:10:24 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
-Subject: Re: [PATCH 10/15] regulator: documentation - consumer interface
-Date: Fri, 11 Jul 2008 18:10:13 +0300
-Message-ID: <487777D5.7050807@teltonika.lt>
-References: <1215703618.13431.66.camel@odin>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 82-135-208-232.static.zebra.lt
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-In-Reply-To: <1215703618.13431.66.camel@odin>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk
+	Fri, 11 Jul 2008 11:11:17 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:44571 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752572AbYGKPLP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 11:11:15 -0400
+Date: Fri, 11 Jul 2008 09:10:58 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       grundler@parisc-linux.org, mingo@elte.hu, tglx@linutronix.de,
+       jgarzik@pobox.com, linux-ide@vger.kernel.org, suresh.b.siddha@intel.com,
+       benh@kernel.crashing.org, jbarnes@virtuousgeek.org,
+       rdunlap@xenotime.net, mtk.manpages@gmail.com
+Subject: Re: Multiple MSI, take 3
+Message-ID: <20080711151058.GU14894@parisc-linux.org>
+References: <20080711005719.GO14894@parisc-linux.org> <m1iqvc91li.fsf@frodo.ebiederm.org> <20080711102326.GR14894@parisc-linux.org> <m1iqvc7iys.fsf@frodo.ebiederm.org> <20080711121744.GT14894@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080711121744.GT14894@parisc-linux.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Liam Girdwood wrote:
-> This adds documentation describing the consumer device interface.
-> 
-> Signed-off-by: Liam Girdwood <lg@opensource.wolfsonmicro.com>
-> ---
->  Documentation/power/regulator/consumer.txt |  182 ++++++++++++++++++++++++++++
->  1 files changed, 182 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/power/regulator/consumer.txt
-> 
-> diff --git a/Documentation/power/regulator/consumer.txt b/Documentation/power/regulator/consumer.txt
-> new file mode 100644
-> index 0000000..9ea688d
-> --- /dev/null
-> +++ b/Documentation/power/regulator/consumer.txt
-> @@ -0,0 +1,182 @@
-> +Regulator Consumer Driver Interface
-> +===================================
-> +
-> +This text describes the regulator interface for consumer device drivers.
-> +Please see overview.txt for a description of the terms used in this text.
-> +
-> +
-> +1. Consumer Regulator Access (static & dynamic drivers)
-> +=======================================================
-> +
-> +A consumer driver can get access to it's supply regulator by calling :-
-> +
-> +regulator = regulator_get(dev, "Vcc");
-> +
-> +The consumer passes in it's struct device pointer and power supply ID. The core
-> +then finds the correct regulator by consulting a machine specific lookup table.
-> +If the lookup is successful then this call will return a pointer to the struct
-> +regulator that supplies this consumer.
-> +
-> +To release the regulator the consumer driver should call :-
-> +
-> +regulator_put(regulator);
-> +
-> +Consumers can be supplied by more than one regulator e.g. codec consumer with
-> +analog and digital supplies :-
-> +
-> +digital = regulator_get(dev, "Vcc");  /* digital core */
-> +analog = regulator_get(dev, "Avdd");  /* analog */
-> +
-> +The regulator access functions regulator_get() and regulator_put() will
-> +usually be called in your device drivers probe() and remove() respectively.
-> +
-> +
-> +2. Regulator Output Enable & Disable (static & dynamic drivers)
-> +====================================================================
-> +
-> +A consumer can enable it's power supply by calling:-
-> +
-> +int regulator_enable(regulator);
-> +
-> +NOTE: The supply may already be enabled before regulator_enabled() is called.
-> +This may happen if the consumer shares the regulator or the regulator has been
-> +previously enabled by bootloader or kernel board initialisation code.
+On Fri, Jul 11, 2008 at 06:17:44AM -0600, Matthew Wilcox wrote:
+> On Fri, Jul 11, 2008 at 04:34:19AM -0700, Eric W. Biederman wrote:
+> > There is one idea that seems to model this cleanly
+> > without breaking all kinds of expectations.
+> > 
+> > That is an irq with a very small data payload.
+> > 
+> > In that case we wire all of the vectors up to a single
+> > irq handler that computes the payload as:
+> > payload = vector - base-vector.
+> > 
+> > And then we figure out how to pass that to the handler in irqaction.
+> > 
+> > To most of the system it is a single irq so it avoids breaking
+> > expectations about what an irq is.
+> > 
+> > To everything else it is a little odd, and has it's own unique
+> > set of rules (which is good as well).
 
-initialization
-         ^
-> +
-> +A consumer can determine if a regulator is enabled by calling :-
-> +
-> +int regulator_is_enabled(regulator);
-> +
-> +This will return > zero when the regulator is enabled.
-> +
-> +
-> +A consumer can disable it's supply when no longer needed by calling :-
-> +
-> +int regulator_disable(regulator);
-> +
-> +NOTE: This may not disable the supply if it's shared with other consumers. The
-> +regulator will only be disabled when the enabled reference count is zero.
-> +
-> +Finally, a regulator can be forcefully disabled in the case of an emergency :-
-> +
-> +int regulator_force_disable(regulator);
-> +
-> +NOTE: this will immediately and forcefully shutdown the regulator output. All
-> +consumers will be powered off.
-> +
-> +
-> +3. Regulator Voltage Control & Status (dynamic drivers)
-> +======================================================
-> +
-> +Some consumer drivers need to be able to dynamically change their supply
-> +voltage to match system operating points. e.g. CPUfreq drivers can scale
-> +voltage along with frequency to save power, SD drivers may need to select the
-> +correct card voltage, etc.
-> +
-> +Consumers can control their supply voltage by calling :-
-> +
-> +int regulator_set_voltage(regulator, min_uV, max_uV);
-> +
-> +Where min_uV and max_uV are the minimum and maximum acceptable voltages in
-> +microvolts.
-> +
-> +NOTE: this can be called when the regulator is enabled or disabled. If called
-> +when enabled, then the voltage changes instantly, otherwise the voltage
-> +configuration changes and the voltage is physically set when the regulator is
-> +next enabled.
-> +
-> +The regulators configured voltage output can be found by calling :-
-> +
-> +int regulator_get_voltage(regulator);
-> +
-> +NOTE: get_voltage() will return the configured output voltage whether the
-> +regulator is enabled or disabled and should NOT be used to determine regulator
-> +output state. However this can be used in conjunction with is_enabled() to
-> +determind the regulator physical output voltage.
+Having implemented this, I wish to retract my earlier statement:
 
-determine
-         ^
-> +
-> +
-> +4. Regulator Current Limit Control & Status (dynamic drivers)
-> +===========================================================
-> +
-> +Some consumer drivers need to be able to dynamically change their supply
-> +current limit to match system operating points. e.g. LCD backlight driver can
-> +change the current limit to vary the backlight brightness, USB drivers may want
-> +to set the limit to 500mA when supplying power.
-> +
-> +Consumers can control their supply current limit by calling :-
-> +
-> +int regulator_set_current_limit(regulator, min_uV, max_uV);
-> +
-> +Where min_uA and max_uA are the minimum and maximum acceptable current limit in
-> +microamps.
-> +
-> +NOTE: this can be called when the regulator is enabled or disabled. If called
-> +when enabled, then the current limit changes instantly, otherwise the current
-> +limit configuration changes and the current limit is physically set when the
-> +regulator is next enabled.
-> +
-> +A regulators current limit can be found by calling :-
-> +
-> +int regulator_get_current_limit(regulator);
-> +
-> +NOTE: get_current_limit() will return the current limit whether the regulator
-> +is enabled or disabled and should not be used to determine regulator current
-> +load.
-> +
-> +
-> +5. Regulator Operating Mode Control & Status (dynamic drivers)
-> +=============================================================
-> +
-> +Some consumers can further save system power by changing the operating mode of
-> +their supply regulator to be more efficient when the consumers operating state
-> +changes. e.g. consumer driver is idle and subsequently draws less current
-> +
-> +Regulator operating mode can be changed indirectly or directly.
-> +
-> +Indirect operating mode control.
-> +--------------------------------
-> +Consumer drivers can request a change in their supply regulator operating mode
-> +by calling :-
-> +
-> +int regulator_set_optimum_mode(struct regulator *regulator, int load_uA);
-> +
-> +This will cause the core to recalculate the total load on the regulator (based
-> +on all it's consumers) and change operating mode (if necessary and permitted)
-> +to best match the current operating load.
-> +
-> +The load_uA value can be determined from the consumers datasheet. e.g.most
-> +datasheets have tables showing the max current consumed in certain situations.
-> +
-> +Most consumers will use indirect operating mode control since they have no
-> +knowledge of the regulator or whether the regulator is shared with other
-> +consumers.
-> +
-> +Direct operating mode control.
-> +------------------------------
-> +Bespoke or tightly coupled drivers may want to directly control regulator
-> +operating mode depending on their operating point. This can be achieved by
-> +calling :-
-> +
-> +int regulator_set_mode(struct regulator *regulator, unsigned int mode);
-> +unsigned int regulator_get_mode(struct regulator *regulator);
-> +
-> +Direct mode will only be used by consumers that *know* about the regulator and
-> +are not sharing the regulator with other consumers.
-> +
-> +
-> +6. Regulator Events
-> +===================
-> +Regulators can notify consumers of external events. Events could be received by
-> +consumers under regulator stress or failure conditions.
-> +
-> +Consumers can register interest in regulator events by calling :-
-> +
-> +int regulator_register_notifier(struct regulator *regulator,
-> +			      struct notifier_block *nb);
-> +
-> +Consumers can uregister interest by calling :-
-> +
-> +int regulator_unregister_notifier(struct regulator *regulator,
-> +				struct notifier_block *nb);
-> +
-> +Regulators use the kernel notifier framework to send event to thier interested
-> +consumers.
+> I think rather than passing the 'vector - base_vector' integer, the
+> request_irq_block() should pass in an array of pointers as large as nvec
+> and irqaction passes the appropriate pointer to the handler.
 
+That idea requires a lot of mucking with generic_IRQ_handle, which I'm
+not willing to do.  Anyone have any problems with the below patch?
+
+I've not implemented the corresponding bit in io_apic_64.c yet, so
+completely untested.
+
+diff --git a/arch/x86/kernel/irq_64.c b/arch/x86/kernel/irq_64.c
+index 3aac154..a5d79e9 100644
+--- a/arch/x86/kernel/irq_64.c
++++ b/arch/x86/kernel/irq_64.c
+@@ -173,7 +173,7 @@ asmlinkage unsigned int do_IRQ(struct pt_regs *regs)
+ 	stack_overflow_check(regs);
+ #endif
+ 
+-	if (likely(irq < NR_IRQS))
++	if (likely((irq & ARCH_IRQ_DATA_MASK) < NR_IRQS))
+ 		generic_handle_irq(irq);
+ 	else {
+ 		if (!disable_apic)
+diff --git a/include/linux/irq.h b/include/linux/irq.h
+index 552e0ec..19c679c 100644
+--- a/include/linux/irq.h
++++ b/include/linux/irq.h
+@@ -282,6 +282,19 @@ extern unsigned int __do_IRQ(unsigned int irq);
+ #endif
+ 
+ /*
++ * For multiple MSI, we allow a small amount of data to be passed to
++ * the interrupt handler to determine which vector was called.  MSI
++ * only allows 32 interrupts, so we default to requiring 5 bits of
++ * information to be passed.  If your arch has NR_IRQS set higher than
++ * 2^27, you have some extremely large arrays and probably want to consider
++ * defining ARCH_IRQ_DATA_SHIFT and ARCH_IRQ_DATA_MASK.
++ */
++#ifndef ARCH_IRQ_DATA_SHIFT
++#define ARCH_IRQ_DATA_SHIFT 27
++#define ARCH_IRQ_DATA_MASK ((1 << ARCH_IRQ_DATA_SHIFT) - 1)
++#endif
++
++/*
+  * Architectures call this to let the generic IRQ layer
+  * handle an interrupt. If the descriptor is attached to an
+  * irqchip-style controller then we call the ->handle_irq() handler,
+@@ -289,7 +302,7 @@ extern unsigned int __do_IRQ(unsigned int irq);
+  */
+ static inline void generic_handle_irq(unsigned int irq)
+ {
+-	struct irq_desc *desc = irq_desc + irq;
++	struct irq_desc *desc = irq_desc + (irq & ARCH_IRQ_DATA_MASK);
+ 
+ #ifdef CONFIG_GENERIC_HARDIRQS_NO__DO_IRQ
+ 	desc->handle_irq(irq, desc);
+diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
+index 5fa6198..86ff1ab 100644
+--- a/kernel/irq/handle.c
++++ b/kernel/irq/handle.c
+@@ -126,7 +126,7 @@ irqreturn_t no_action(int cpl, void *dev_id)
+  *
+  * Handles the action chain of an irq event
+  */
+-irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action)
++irqreturn_t handle_IRQ_event(unsigned int irq_plus_data, struct irqaction *action)
+ {
+ 	irqreturn_t ret, retval = IRQ_NONE;
+ 	unsigned int status = 0;
+@@ -137,7 +137,7 @@ irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action)
+ 		local_irq_enable_in_hardirq();
+ 
+ 	do {
+-		ret = action->handler(irq, action->dev_id);
++		ret = action->handler(irq_plus_data, action->dev_id);
+ 		if (ret == IRQ_HANDLED)
+ 			status |= action->flags;
+ 		retval |= ret;
+@@ -163,15 +163,16 @@ irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action)
+  * This is the original x86 implementation which is used for every
+  * interrupt type.
+  */
+-unsigned int __do_IRQ(unsigned int irq)
++unsigned int __do_IRQ(unsigned int irq_plus_data)
+ {
++	unsigned int irq = irq_plus_data & ARCH_IRQ_DATA_MASK;
+ 	struct irq_desc *desc = irq_desc + irq;
+ 	struct irqaction *action;
+ 	unsigned int status;
+ 
+ 	kstat_this_cpu.irqs[irq]++;
+ 	if (CHECK_IRQ_PER_CPU(desc->status)) {
+-		irqreturn_t action_ret;
++		irqreturn_t ret;
+ 
+ 		/*
+ 		 * No locking required for CPU-local interrupts:
+@@ -179,9 +180,9 @@ unsigned int __do_IRQ(unsigned int irq)
+ 		if (desc->chip->ack)
+ 			desc->chip->ack(irq);
+ 		if (likely(!(desc->status & IRQ_DISABLED))) {
+-			action_ret = handle_IRQ_event(irq, desc->action);
++			ret = handle_IRQ_event(irq_plus_data, desc->action);
+ 			if (!noirqdebug)
+-				note_interrupt(irq, desc, action_ret);
++				note_interrupt(irq, desc, ret);
+ 		}
+ 		desc->chip->end(irq);
+ 		return 1;
+@@ -233,7 +234,7 @@ unsigned int __do_IRQ(unsigned int irq)
+ 
+ 		spin_unlock(&desc->lock);
+ 
+-		action_ret = handle_IRQ_event(irq, action);
++		action_ret = handle_IRQ_event(irq_plus_data, action);
+ 		if (!noirqdebug)
+ 			note_interrupt(irq, desc, action_ret);
+ 
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
