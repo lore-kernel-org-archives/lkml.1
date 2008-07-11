@@ -1,57 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758111AbYGKIqu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756858AbYGKItg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758111AbYGKIqu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 04:46:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755262AbYGKIqk
+	id S1756858AbYGKItg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 04:49:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbYGKIt2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 04:46:40 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:60196 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754450AbYGKIqj (ORCPT
+	Fri, 11 Jul 2008 04:49:28 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:26733 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751854AbYGKIt1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 04:46:39 -0400
-Date: Fri, 11 Jul 2008 17:52:13 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
-Cc: linux-mm@kvack.org, menage@google.com,
-       containers@lists.linux-foundation.org, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RFC] dirty balancing for cgroups
-Message-Id: <20080711175213.dc69f068.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080711083446.AC5425A22@siro.lan>
-References: <20080711161349.c5831081.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080711083446.AC5425A22@siro.lan>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 11 Jul 2008 04:49:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=rG9GUw//HfVl57SZpJusvtJkr3Wqang4qoPlWjCqRdATv2vdcbUGYLTC5SrQ5AL1hc
+         b3qLAeGIJHy/yZwzmp4+STCymV+ySBwNtZI5JGwe390P5roGj1JtdWUriyQGC89jSoxK
+         MWIVClFk6uhNvsmygdJWOm7v2kjF1qmO6adms=
+Message-ID: <84144f020807110149v4806404fjdb9c3e4af3cfdb70@mail.gmail.com>
+Date: Fri, 11 Jul 2008 11:49:27 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Eduard - Gabriel Munteanu" <eduard.munteanu@linux360.ro>
+Subject: Re: [RFC PATCH 3/5] kmemtrace: SLAB hooks.
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       "Christoph Lameter" <cl@linux-foundation.org>
+In-Reply-To: <20080710210611.7c194a70@linux360.ro>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1215712946-23572-1-git-send-email-eduard.munteanu@linux360.ro>
+	 <1215712946-23572-2-git-send-email-eduard.munteanu@linux360.ro>
+	 <1215712946-23572-3-git-send-email-eduard.munteanu@linux360.ro>
+	 <20080710210611.7c194a70@linux360.ro>
+X-Google-Sender-Auth: 73870cf8d34a27dc
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Jul 2008 17:34:46 +0900 (JST)
-yamamoto@valinux.co.jp (YAMAMOTO Takashi) wrote:
+Hi Eduard-Gabriel,
 
-> hi,
-> 
-> > > my patch penalizes heavy-writer cgroups as task_dirty_limit does
-> > > for heavy-writer tasks.  i don't think that it's necessary to be
-> > > tied to the memory subsystem because i merely want to group writers.
-> > > 
-> > Hmm, maybe what I need is different from this ;)
-> > Does not seem to be a help for memory reclaim under memcg.
-> 
-> to implement what you need, i think that we need to keep track of
-> the numbers of dirty-pages in each memory cgroups as a first step.
-> do you agree?
-> 
-yes, I think so, now.
+On Thu, Jul 10, 2008 at 9:06 PM, Eduard - Gabriel Munteanu
+<eduard.munteanu@linux360.ro> wrote:
+> This adds hooks for the SLAB allocator, to allow tracing with kmemtrace.
+>
+> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+>  static inline void *kmalloc(size_t size, gfp_t flags)
+>  {
+> +       void *ret;
+> +
+>        if (__builtin_constant_p(size)) {
+>                int i = 0;
+>
+> @@ -50,10 +53,17 @@ static inline void *kmalloc(size_t size, gfp_t flags)
+>  found:
+>  #ifdef CONFIG_ZONE_DMA
+>                if (flags & GFP_DMA)
+> -                       return kmem_cache_alloc(malloc_sizes[i].cs_dmacachep,
+> -                                               flags);
+> +                       ret = kmem_cache_alloc(malloc_sizes[i].cs_dmacachep,
+> +                                              flags | __GFP_NOTRACE);
+> +               else
+>  #endif
+> -               return kmem_cache_alloc(malloc_sizes[i].cs_cachep, flags);
+> +                       ret = kmem_cache_alloc(malloc_sizes[i].cs_cachep,
+> +                                              flags | __GFP_NOTRACE);
+> +
+> +               kmemtrace_mark_alloc(KMEMTRACE_KIND_KERNEL, _THIS_IP_, ret,
+> +                                    size, malloc_sizes[i].cs_size, flags);
+> +
+> +               return ret;
 
-may be not difficult but will add extra overhead ;( Sigh..
-
-
-
-Thanks,
--Kame
-
+I think this would be cleaner if you'd simply add a new
+__kmem_cache_alloc() entry point in SLAB that takes the "kind" as an
+argument. That way you wouldn't have to play tricks with GFP flags.
