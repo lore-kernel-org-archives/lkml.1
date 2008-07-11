@@ -1,89 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756643AbYGKFtq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbYGKF7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756643AbYGKFtq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 01:49:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbYGKFti
+	id S1755399AbYGKF7g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 01:59:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbYGKF72
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 01:49:38 -0400
-Received: from qb-out-0506.google.com ([72.14.204.235]:22440 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752759AbYGKFth (ORCPT
+	Fri, 11 Jul 2008 01:59:28 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:53305 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752488AbYGKF71 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 01:49:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=rAP8WIVIrxjaVVqCK8ptL05egs0wIOHo1zSqHfLQq+CacvR6JsaFaYB1t7xUHG7q36
-         Yn6W48FkMDeSTALzGHDcJBtt0W/ru3BWNsg99atUE0o1syks5/bMg7ashuOtUCKKDFh+
-         67gHd1pC/ltwTeOlnHoUY2B9bvuW7FiyxDLIk=
-Message-ID: <19f34abd0807102249t6b2e9e97l97bc5b22cc7709ef@mail.gmail.com>
-Date: Fri, 11 Jul 2008 07:49:34 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-Subject: Re: v2.6.26-rc9: kernel BUG at kernel/sched.c:5858!
-Cc: "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       Yanmin <yanmin_zhang@linux.intel.com>,
-       "Rusty Russell" <rusty@rustcorp.com.au>, "Ingo Molnar" <mingo@elte.hu>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Gautham R Shenoy" <ego@in.ibm.com>,
-       "Heiko Carstens" <heiko.carstens@de.ibm.com>, miaox@cn.fujitsu.com,
-       "Lai Jiangshan" <laijs@cn.fujitsu.com>, "Avi Kivity" <avi@qumranet.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <b647ffbd0807101316o97fe6d4p5b2cbcda472f2ae1@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080710115954.GA3639@damson.getinternet.no>
-	 <19f34abd0807100512y7fff3716r3ff37305e863f26@mail.gmail.com>
-	 <b647ffbd0807100550l44fae9fate511dafbf87564a4@mail.gmail.com>
-	 <19f34abd0807100604p70c2fec6geca65b2ba772dea@mail.gmail.com>
-	 <b647ffbd0807100703q442a9825hb857c321452027e7@mail.gmail.com>
-	 <19f34abd0807100716k35e937batb4059f99fe46731b@mail.gmail.com>
-	 <19f34abd0807101249y24632b50h769a7af2c9514864@mail.gmail.com>
-	 <b647ffbd0807101316o97fe6d4p5b2cbcda472f2ae1@mail.gmail.com>
+	Fri, 11 Jul 2008 01:59:27 -0400
+To: kamezawa.hiroyu@jp.fujitsu.com
+Cc: a.p.zijlstra@chello.nl, linux-mm@kvack.org, menage@google.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][RFC] dirty balancing for cgroups
+In-Reply-To: Your message of "Fri, 11 Jul 2008 14:15:11 +0900"
+	<20080711141511.515e69a5.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080711141511.515e69a5.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Cue version 0.8 (080625-0732/takashi)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20080711055926.9AF4F5A03@siro.lan>
+Date: Fri, 11 Jul 2008 14:59:26 +0900 (JST)
+From: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 10, 2008 at 10:16 PM, Dmitry Adamushko
-<dmitry.adamushko@gmail.com> wrote:
-> Yeah, it's possible that a caller of kmem_cache_alloc() ->
-> slab_alloc() can be migrated on another CPU right after
-> local_irq_restore() and before memset(). The inital cpu can become
-> offline in the mean time (or a migration is a consequence of the CPU
-> going offline) so its 'kmem_cache_cpu' structure gets freed (
-> slab_cpuup_callback).
->
-> At some point of time the caller continues on another CPU having an
-> obsolete pointer...
->
-> does something like this help?
+> > >  - This looks simple but, could you merge this into memory resource controller ?
+> > 
+> > why?
+> > 
+> 3 points.
+>  1. Is this useful if used alone ?
 
-Nice :-)
+it can be.  why not?
 
-By the way, this also explains the heavy corruption I was seeing (NULL
-pointers in lists detected by list debugging, etc.); SLUB was doing a
-HUGE memset of 0 on arbitrary memory, i.e. the memset effectively
-became:
+>  2. memcg requires this kind of feature, basically.
+> 
+>  3. I wonder I need more work to make this work well under memcg.
 
-    memset(object, 0, 0x1adadada);
+i'm not sure if i understand these points.  can you explain a bit?
 
-..and in some of the cases, the machine didn't crash inside SLUB but
-proceeded...
+my patch penalizes heavy-writer cgroups as task_dirty_limit does
+for heavy-writer tasks.  i don't think that it's necessary to be
+tied to the memory subsystem because i merely want to group writers.
 
-I guess I should reload and try the latest -git now :-)
+otoh, if you want to limit the number (or percentage or whatever) of
+dirty pages in a memory cgroup, it can't be done independently from
+the memory subsystem, of course.  it's another story, tho.
 
-Thanks!
+YAMAMOTO Takashi
 
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+> 
+> If chasing page->cgroup and memcg make this patch much more complex,
+> I think this style of implimentation is a choice.
+> 
+>  About 3. 
+>     Does this works well if I changes get_dirty_limit()'s
+>     determine_dirtyable_memory() calculation under memcg ?
+>     But to do this seems not valid if dirty_ratio cgroup and memcg cgroup 
+>     containes different set of tasks.
+>  
+> Thanks,
+> -Kame
