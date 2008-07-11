@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760700AbYGKTY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761255AbYGKTYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760700AbYGKTY2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 15:24:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbYGKTUz
+	id S1761255AbYGKTYr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 15:24:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760428AbYGKTVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 15:20:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51603 "EHLO
+	Fri, 11 Jul 2008 15:21:43 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55968 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757628AbYGKTUx (ORCPT
+	by vger.kernel.org with ESMTP id S1760412AbYGKTVm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 15:20:53 -0400
-Date: Fri, 11 Jul 2008 12:20:11 -0700
+	Fri, 11 Jul 2008 15:21:42 -0400
+Date: Fri, 11 Jul 2008 12:20:56 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [patch 13/17] Use WARN() in drivers/base/
-Message-Id: <20080711122011.7ddf42ef.akpm@linux-foundation.org>
-In-Reply-To: <20080708095307.6423cb6f@infradead.org>
-References: <20080708093800.274504ba@infradead.org>
-	<20080708095307.6423cb6f@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: David Howells <dhowells@redhat.com>, jirislaby@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix a const assignment in moxa_load_fw()
+Message-Id: <20080711122056.8b36c084.akpm@linux-foundation.org>
+In-Reply-To: <20080708171029.08db0f4d@the-village.bc.nu>
+References: <20080708154416.24850.30733.stgit@warthog.procyon.org.uk>
+	<20080708171029.08db0f4d@the-village.bc.nu>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,29 +28,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Jul 2008 09:53:07 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
+On Tue, 8 Jul 2008 17:10:29 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>Index: linux.trees.git/drivers/base/core.c
+> On Tue, 08 Jul 2008 16:44:16 +0100
+> David Howells <dhowells@redhat.com> wrote:
+> 
+> > Fix an assignment of a const pointer to a non-const pointer in moxa_load_fw().
+> > 
+> > This was introduced by patch 037182346f0991683cc7320a257c3f6089432cee.
+> > 
+> > Signed-off-by: David Howells <dhowells@redhat.com>
+> 
+> Acked-by: Alan Cox <alan@redhat.com>
 
-A number of these patches had mangled signed-off-by: lines.
+Appears to already be fixed in linux-next, perhaps by this:
 
-Please try to be consistent in the presence and placement of the ^--- line
-at the end of the changelog.
+commit b30a6a47716ba1a5112b44f0a3962daff961935e
+Author: Alan Cox <alan@redhat.com>
+Date:   Fri Jul 4 19:18:14 2008 +1000
 
-I verified that all three copies of "Use WARN() in fs/" were the same.
+    83-tty-moxa-warning
+    
+    Signed-off-by: Alan Cox <alan@redhat.com>
 
-I've decided that I don't like the whole thing :(  This:
+which, err, isn't in today's linux-next because the whole tty tree got
+accidentally dropped.  Not that this was a tty patch.
 
-#define WARN(condition, format...) ({					\
-	int __ret_warn_on = !!(condition);				\
-	if (unlikely(__ret_warn_on))					\
-		__WARN_printf(format);					\
-	unlikely(__ret_warn_on);					\
-})
-
-is not a WARN().  It is a WARN_ON() function.  The use of this name now leaves
-us no sensible name under which to implement
-
-#define WARN(format...)
-
-
+Hopefully the patches in this tree will get title and changelog repairs
+before they go much further.  I suspect a lot of this damage was due to
+incompatibility between Alan's patch-file format and the expectations of
+Stephen's scripts.
