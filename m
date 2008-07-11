@@ -1,248 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756209AbYGKSko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755707AbYGKSoD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756209AbYGKSko (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 14:40:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753862AbYGKSke
+	id S1755707AbYGKSoD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 14:44:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbYGKSno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 14:40:34 -0400
-Received: from mail-relay-04.mailcluster.net ([77.221.130.216]:50672 "EHLO
-	mail-relay-02.mailcluster.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752704AbYGKSkc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 14:40:32 -0400
-Message-ID: <4877A948.6090507@vlnb.net>
-Date: Fri, 11 Jul 2008 22:41:12 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 11 Jul 2008 14:43:44 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:55473 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753923AbYGKSnn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 14:43:43 -0400
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Alan Cox <alan@redhat.com>
+Subject: Re: pata_it821x completely broken
+Date: Fri, 11 Jul 2008 20:43:34 +0200
+User-Agent: KMail/1.9.9
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+References: <200807042153.56644.linux@rainbow-software.org> <20080706230118.GA25905@devserv.devel.redhat.com> <200807102235.22651.linux@rainbow-software.org>
+In-Reply-To: <200807102235.22651.linux@rainbow-software.org>
 MIME-Version: 1.0
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-CC: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       scst-devel <scst-devel@lists.sourceforge.net>,
-       "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>,
-       Jeff Garzik <jeff@garzik.org>,
-       Leonid Grossman <leonid.grossman@neterion.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Pete Wyckoff <pw@osc.edu>,
-       Ming Zhang <blackmagic02881@gmail.com>,
-       "Ross S. W. Walker" <rwalker@medallion.com>,
-       Rafiu Fakunle <rafiu@openfiler.com>,
-       Mike Mazarick <mazarick@bellsouth.net>, Andrew Morton <akpm@osdl.org>,
-       David Miller <davem@davemloft.net>, Christoph Hellwig <hch@lst.de>,
-       "Ted Ts'o" <tytso@thunk.org>, Jerome Martin <tramjoe.merin@gmail.com>
-Subject: Re: [ANNOUNCE]: Generic SCSI Target Mid-level For	Linux	(SCST),	target
- drivers for iSCSI and QLogic Fibre Channel cards	released
-References: <4873BCA5.10103@vlnb.net>	 <1215551354.3977.6.camel@haakon2.linux-iscsi.org>	 <48749EB2.1070902@vlnb.net>	 <1215632043.9339.89.camel@haakon2.linux-iscsi.org>	 <48765433.70604@vlnb.net> <1215725167.31245.104.camel@haakon2.linux-iscsi.org>
-In-Reply-To: <1215725167.31245.104.camel@haakon2.linux-iscsi.org>
-Content-Type: text/plain; charset=KOI8-R; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807112043.36772.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nicholas A. Bellinger wrote:
->>>>  And this is a real showstopper for making LIO-Core 
->>>> the default and the only SCSI target framework. SCST is SCSI-centric, 
->>> Well, one needs to understand that LIO-Core subsystem API is more than a
->>> SCSI target framework.  Its a generic method of accessing any possible
->>> storage object of the storage stack, and having said engine handle the
->>> hardware restrictions (be they physical or virtual) for the underlying
->>> storage object.  It can run as a SCSI engine to real (or emualted) SCSI
->>> hardware from linux/drivers/scsi, but the real strength is that it sits
->>> above the SCSI/BLOCK/FILE layers and uses a single codepath for all
->>> underlying storage objects.  For example in the lio-core-2.6.git tree, I
->>> chose the location linux/drivers/lio-core, because LIO-Core uses 'struct
->>> file' from fs/, 'struct block_device' from block/ and struct scsi_device
->>> from drivers/scsi.
->> SCST and iSCSI-SCST, basically, do the same things, except iSCSI MC/S 
->> and related, + something more, like 1-to-many pass-through and 
->> scst_user, which need a big chunks of code, correct? And they are 
->> together about 2 times smaller:
-> 
-> Yes, something much more.  A complete implementation of traditional
-> iSCSI/TCP (known as RFC-3720), iSCSI/SCTP (which will be important in
-> the future), and IPv6 (also important) is a significant amount of logic.
-> When I say a 'complete implementation' I mean:
-> 
-> I) Active-Active connection layer recovery (known as
-> ErrorRecoveryLevel=2).  (We are going to use the same code for iSER for
-> inter-nexus OS independent (eg: below the SCSI Initiator level)
-> recovery.  Again, the important part here is that recovery and
-> outstanding task migration happens transparently to the host OS SCSI
-> subsystem.  This means (at least with iSCSI and iSER): not having to
-> register multiple LUNs and depend (at least completely) on SCSI WWN
-> information, and OS dependent SCSI level multipath.  
-> 
-> II) MC/S for multiplexing (same as I), as well as being able to
-> multiplex across multiple cards and subnets (using TCP, SCTP has
-> multi-homing).  Also being able to bring iSCSI connections up/down on
-> the fly, until we all have iSCSI/SCTP, is very important too.
-> 
-> III) Every possible combination of RFC-3720 defined parameter keys (and
-> provide the apparatis to prove it).  And yes, anyone can do this today
-> against their own Target.  I created core-iscsi-dv specifically for
-> testing LIO-Target <-> LIO-Core back in 2005.  Core-iSCSI-DV is the
-> _ONLY_ _PUBLIC_ RFC-3720 domain validation tool that will actually
-> demonstrate, using ANY data integrity tool complete domain validation of
-> user defined keys.  Please have a look at:
-> 
-> http://linux-iscsi.org/index.php/Core-iscsi-dv
-> 
-> http://www.linux-iscsi.org/files/core-iscsi-dv/README
-> 
-> Any traditional iSCSI target mode implementation + Storage Engine +
-> Subsystem Plugin that thinks its ready to go into the kernel will have
-> to pass at LEAST the 8k test loop interations, the simplest being:
-> 
-> HeaderDigest, DataDigest, MaxRecvDataSegmentLength (512 -> 262144, in
-> 512 byte increments)
-> 
-> Core-iSCSI-DV is also a great indication of stability and data integrity
-> of hardware/software of an iSCSI Target + Engine, espically when you
-> have multiple core-iscsi-dv nodes hitting multiple VHACS clouds on
-> physical machines within the cluster.  I have never run IET against
-> core-iscsi-dv personally, and I don't think Ming or Ross has either.  So
-> until SOMEONE actually does this first, I think that iSCSI-SCST is more
-> of an experiment for your our devel that a strong contender for
-> Linux/iSCSI Target Mode.
+On Thursday 10 July 2008 22:35:20 Ondrej Zary wrote:
+> Hello,
+> commenting out the error check after ata_dev_init_params() call in
+> ata_dev_read_id() function (libata-core.c), I got at least the device name.
+> The capacity is 0 so it doesn't work, obviously:
+>
+> pata_it821x: controller in smart mode.
+> ACPI: PCI Interrupt Link [LNKC] enabled at IRQ 11
+> ACPI: PCI Interrupt 0000:00:12.0[A] -> Link [LNKC] -> GSI 11 (level, low)
+> -> IRQ 11
+> PCI: Setting latency timer of device 0000:00:12.0 to 64
+> scsi2 : pata_it821x
+> scsi3 : pata_it821x
+> ata3: PATA max MWDMA2 cmd 0x6800 ctl 0x6c00 bmdma 0x7800 irq 11
+> ata4: PATA max MWDMA2 cmd 0x7000 ctl 0x7400 bmdma 0x7808 irq 11
+> ata3.00: ATA-7: SAMSUNG HD400LD, WQ100-15, max UDMA/100
+> ata3.00: 781422768 sectors, multi 0: LBA48
+> ata3.01: ATA-0: Integrated Technology Express Inc, , max MWDMA2
+> ata3.01: 0 sectors, multi 0, CHS 0/0/0
+> IT821x RAID1 volume.
+> ata3.00: configured for DMA
+> ata3.01: configured for PIO
+> scsi 2:0:0:0: Direct-Access     ATA      SAMSUNG HD400LD  WQ10 PQ: 0 ANSI:
+> 5 sd 2:0:0:0: [sdb] 781422768 512-byte hardware sectors (400088 MB)
+> sd 2:0:0:0: [sdb] Write Protect is off
+> sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+> sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't
+> support DPO or FUA
+> sd 2:0:0:0: [sdb] 781422768 512-byte hardware sectors (400088 MB)
+> sd 2:0:0:0: [sdb] Write Protect is off
+> sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+> sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't
+> support DPO or FUA
+>  sdb: sdb1 sdb2 sdb3 sdb4
+> sd 2:0:0:0: [sdb] Attached SCSI disk
+> sd 2:0:0:0: Attached scsi generic sg2 type 0
+> scsi 2:0:1:0: Direct-Access     ATA      Integrated Techn n/a  PQ: 0 ANSI:
+> 5 sd 2:0:1:0: [sdc] Too big for this kernel. Use a kernel compiled with
+> support for large block devices.
+> sd 2:0:1:0: [sdc] 0 512-byte hardware sectors (0 MB)
+> sd 2:0:1:0: [sdc] Write Protect is off
+> sd 2:0:1:0: [sdc] Mode Sense: 00 3a 00 00
+> sd 2:0:1:0: [sdc] Write cache: disabled, read cache: enabled, doesn't
+> support DPO or FUA
+> sd 2:0:1:0: [sdc] Attached SCSI disk
+> sd 2:0:1:0: Attached scsi generic sg3 type 0
+>
+>
+> (0 is too big for the kernel, interesting :)
 
-There are big doubts among storage experts if features I and II are 
-needed at all, see, e.g. http://lkml.org/lkml/2008/2/5/331. I also tend 
-to agree, that for block storage on practice MC/S is not needed or, at 
-least, definitely doesn't worth the effort, because:
+Some more details:
+ata_dev_read_id() is calling ata_dev_init_params with 0 heads and 0 sectors.
+Also ata_id_n_sectors returns 0 (through the last return statement
+(return id[1] * id[3] * id[6]).
 
-1. It is useless for sync. untagged operation (regular reads in most 
-cases over a single stream), when always there is only one command being 
-executed at any time, because of the commands connection allegiance, 
-which forbids transferring data for a command over multiple connections.
+I captured the IDENTIFY data from the virtual device. I'm not ATA guru but
+looking at the data, there are zeros at many places where something should be.
+That number starting at 0x78 looks like size of the array in sectors
+(0x4C726C or 0x4C6C72 - the array is built from 2.5GB and 6.4GB drives).
 
-2. The only advantage it has over traditional OS multi-pathing is 
-keeping commands execution order, but on practice at the moment there is 
-no demand for this feature, because all OS'es I know don't rely on 
-commands order to protect data integrity. They use other techniques, 
-like queue draining. A good target should be able itself to scheduler 
-coming commands for execution in the correct from performance POV order 
-  and not rely for that on the commands order as they came from initiators.
+ADDRESS      00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F   ASCII
+-------------------------------------------------------------------------------
+0x00000000   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0x00000010   00 00 00 00 20 08 11 07 18 06 17 05 01 01 00 0A   .... ...........
+0x00000020   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0x00000030   00 00 00 00 00 00 49 6E 74 65 67 72 61 74 65 64   ......Integrated
+0x00000040   20 54 65 63 68 6E 6F 6C 6F 67 79 20 45 78 70 72    Technology Expr
+0x00000050   65 73 73 20 49 6E 63 20 20 20 20 20 20 20 00 00   ess Inc       ..
+0x00000060   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0x00000070   00 00 00 00 00 00 00 00 6C 72 00 4C 00 00 00 07   ........lr.L....
+0x00000080   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0x00000090   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0x000000A0   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0x000000B0   00 07 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0x000000C0   00 00 00 00 00 00 00 00 6C 72 00 4C 00 00 00 00   ........lr.L....
+0x000000D0   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0x000000E0   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0x000000F0   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0x00000100   00 00 00 01 00 0C 31 33 21 21 91 11 00 91 32 66   ......13!!....2f
+0x00000110   00 21 00 21 00 01 05 05 00 05 05 00 00 00 00 05   .!.!............
+0x00000120   00 05 00 05 00 40 00 00 00 00 00 00 00 00 00 00   .....@..........
+0x00000130   00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00   ................
+0x00000140   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0x00000150   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0x00000160   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0x00000170   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0x00000180   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0x00000190   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0x000001A0   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0x000001B0   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0x000001C0   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0x000001D0   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0x000001E0   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0x000001F0   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
 
- From other side, devices bonding also preserves commands execution 
-order, but doesn't suffer from the connection allegiance limitation of 
-MC/S, so can boost performance ever for sync untagged operations. Plus, 
-it's pretty simple, easy to use and doesn't need any additional code. I 
-don't have the exact numbers of MC/S vs bonding performance comparison 
-(mostly, because open-iscsi doesn't support MC/S, but very curious to 
-see them), but have very strong suspicious that on modern OS'es, which 
-do TCP frames reorder in zero-copy manner, there shouldn't be much 
-performance difference between MC/S vs bonding in the maximum possible 
-throughput, but bonding should outperform MC/S a lot in case of sync 
-untagged operations.
 
-Anyway, I think features I and II, if added, would increase iSCSI-SCST 
-kernel side code not more than on 5K lines, because most of the code is 
-already there, the most important part which missed is fixes of locking 
-problems, which almost never add a lot of code. Relating Core-iSCSI-DV, 
-I'm sure iSCSI-SCST will pass it without problems among the required set 
-of iSCSI features, although still there are some limitations, derived 
-from IET, for instance, support for multu-PDU commands in discovery 
-sessions, which isn't implemented. But for adding to iSCSI-SCST optional 
-iSCSI features there should be good *practical* reasons, which at the 
-moment don't exist. And unused features are bad features, because they 
-overcomplicate the code and make its maintainance harder for no gain.
+I've also looked at the driver source from ITE
+http://www.ite.com.tw/product_info/file/pc/LinuxDriver_it8212_092005-09.zip
+It contains some interesting structs and also one line of interesting text:
 
-So, current SCST+iSCSI-SCST 36K lines + 5K new lines = 41K lines, which 
-still a lot less than LIO's 63K lines. I downloaded the cleanuped 
-lio-core-2.6.git tree and:
+* Extra IDE commands supported by Accusys
 
-$ find lio-core-2.6/drivers/lio-core -type f -name "*.[ch]"|xargs wc
-57064  156617 1548344 total
 
-Still much bigger.
 
-> Obviously not.  Also, what I was talking about there was the strength
-> and flexibility of the LIO-Core design (it even ran on the Playstation 2
-> at one point, http://linux-iscsi.org/index.php/Playstation2/iSCSI, when
-> MIPS r5900 boots modern v2.6, then we will do it again with LIO :-)
-
-SCST and the target drivers have been successfully ran on PPC and 
-Sparc64, so I don't see any reasons, why it can't be ran on Playstation 
-2 as well.
-
->>>>   - Pass-through mode (PSCSI) also provides non-enforced 1-to-1 
->>>> relationship, as it used to be in STGT (now in STGT support for 
->>>> pass-through mode seems to be removed), which isn't mentioned anywhere.
->>>>
->>> Please be more specific by what you mean here.  Also, note that because
->>> PSCSI is an LIO-Core subsystem plugin, LIO-Core handles the limitations
->>> of the storage object through the LIO-Core subsystem API.  This means
->>> that things like (received initiator CDB sectors > LIO-Core storage
->>> object max_sectors) are handled generically by LIO-Core, using a single
->>> set of algoritims for all I/O interaction with Linux storage systems.
->>> These algoritims are also the same for DIFFERENT types of transport
->>> fabrics, both those that expect LIO-Core to allocate memory, OR that
->>> hardware will have preallocated memory and possible restrictions from
->>> the CPU/BUS architecture (take non-cache coherent MIPS for example) of
->>> how the memory gets DMA'ed or PIO'ed down to the packet's intended
->>> storage object.
->> See here: 
->> http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg06911.html
->>
-> 
-> <nod>
-> 
->>>>   - There is some confusion in the code in the function and variable 
->>>> names between persistent and SAM-2 reservations.
->>> Well, that would be because persistent reservations are not emulated
->>> generally for all of the subsystem plugins just yet.  Obviously with
->>> LIO-Core/PSCSI if the underlying hardware supports it, it will work.
->> What you did (passing reservation commands directly to devices and 
->> nothing more) will work only with a single initiator per device, where 
->> reservations in the majority of cases are not needed at all.
-> 
-> I know, like I said, implementing Persistent Reservations for stuff
-> besides real SCSI hardware with LIO-Core/PSCSI is a TODO item.  Note
-> that the VHACS cloud (see below) will need this for DRBD objects at some
-> point.
-
-The problem is that persistent reservations don't work for multiple 
-initiators even for real SCSI hardware with LIO-Core/PSCSI and I clearly 
-described why in the referenced e-mail. Nicholas, why don't you want to 
-see it?
-
->>>>> The more in fighting between the
->>>>> leaders in our community, the less the community benefits.
->>>> Sure. If my note hurts you, I can remove it. But you should also remove 
->>>> from your presentation and the summary paper those psychological 
->>>> arguments to not confuse people.
->>>>
->>> Its not about removing, it is about updating the page to better reflect
->>> the bigger picture so folks coming to the sight can get the latest
->>> information from last update.
->> Your suggestions?
->>
-> 
-> I would consider helping with this at some point, but as you can see, I
-> am extremly busy ATM.  I have looked at SCST quite a bit over the years,
-> but I am not the one making a public comparision page, at least not
-> yet. :-)  So until then, at least explain how there are 3 projects on
-> your page, with the updated 10,000 ft overviews, and mabye even add some
-> links to LIO-Target and a bit about VHACS cloud.  I would be willing to
-> include info about SCST into the Linux-iSCSI.org wiki.  Also, please
-> feel free to open an account and start adding stuff about SCST yourself
-> to the site.
-> 
-> For Linux-iSCSI.org and VHACS (which is really where everything is going
-> now), please have a look at:
-> 
-> http://linux-iscsi.org/index.php/VHACS-VM
-> http://linux-iscsi.org/index.php/VHACS
-> 
-> Btw, the VHACS and LIO-Core design will allow for other fabrics to be
-> used inside our cloud, and between other virtualized client setups who
-> speak the wire protocol presented by the server side of VHACS cloud.
-> 
-> Many thanks for your most valuable of time,
-> 
-> --nab
-> 
-> 
-> 
-> 
-
+-- 
+Ondrej Zary
