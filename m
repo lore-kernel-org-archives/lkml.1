@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756262AbYGKLGE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758150AbYGKLGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756262AbYGKLGE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 07:06:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756667AbYGKLBz
+	id S1758150AbYGKLGg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 07:06:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756676AbYGKLB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 07:01:55 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40458 "EHLO mx1.redhat.com"
+	Fri, 11 Jul 2008 07:01:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40459 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756607AbYGKLBy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756625AbYGKLBy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 11 Jul 2008 07:01:54 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Steven Whitehouse <swhiteho@redhat.com>,
-       Bob Peterson <rpeterso@redhat.com>
-Subject: [PATCH 14/18] [GFS2] Fix delayed demote race
-Date: Fri, 11 Jul 2008 11:11:15 +0100
-Message-Id: <12157711133727-git-send-email-swhiteho@redhat.com>
+Cc: Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 15/18] [GFS2] Allow local DF locks when holding a cached EX glock
+Date: Fri, 11 Jul 2008 11:11:16 +0100
+Message-Id: <12157711153366-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <12157711093284-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <12157711133727-git-send-email-swhiteho@redhat.com>
 References: <121577107950-git-send-email-swhiteho@redhat.com>
  <12157710872782-git-send-email-swhiteho@redhat.com>
  <1215771089769-git-send-email-swhiteho@redhat.com>
@@ -32,43 +31,47 @@ References: <121577107950-git-send-email-swhiteho@redhat.com>
  <1215771106247-git-send-email-swhiteho@redhat.com>
  <12157711073280-git-send-email-swhiteho@redhat.com>
  <12157711093284-git-send-email-swhiteho@redhat.com>
+ <12157711133727-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Whitehouse <swhiteho@redhat.com>
 
-There is a race in the delayed demote code where it does the wrong thing
-if a demotion to UN has occurred for other reasons before the delay has
-expired. This patch adds an assert to catch that condition as well as
-fixing the root cause by adding an additional check for the UN state.
+We already allow local SH locks while we hold a cached EX glock, so here
+we allow DF locks as well. This works only because we rely on the VFS's
+invalidation for locally cached data, and because if we hold an EX lock,
+then we know that no other node can be caching data relating to this
+file.
+
+It dramatically speeds up initial writes to O_DIRECT files since we fall
+back to buffered I/O for this and would otherwise bounce between DF and
+EX modes on each and every write call. The lessons to be learned from
+that are to ensure that (for the time being anyway) O_DIRECT files are
+preallocated and that they are written to using reasonably large I/O
+sizes. Even so this change fixes that corner case nicely
 
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
-Cc: Bob Peterson <rpeterso@redhat.com>
 
 diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
-index 8d5450f..cd0aa21 100644
+index cd0aa21..13391e5 100644
 --- a/fs/gfs2/glock.c
 +++ b/fs/gfs2/glock.c
-@@ -587,6 +587,7 @@ static void run_queue(struct gfs2_glock *gl, const int nonblock)
- 		if (nonblock)
- 			goto out_sched;
- 		set_bit(GLF_DEMOTE_IN_PROGRESS, &gl->gl_flags);
-+		GLOCK_BUG_ON(gl, gl->gl_demote_state == LM_ST_EXCLUSIVE);
- 		gl->gl_target = gl->gl_demote_state;
- 	} else {
- 		if (test_bit(GLF_DEMOTE, &gl->gl_flags))
-@@ -617,7 +618,9 @@ static void glock_work_func(struct work_struct *work)
- 	if (test_and_clear_bit(GLF_REPLY_PENDING, &gl->gl_flags))
- 		finish_xmote(gl, gl->gl_reply);
- 	spin_lock(&gl->gl_spin);
--	if (test_and_clear_bit(GLF_PENDING_DEMOTE, &gl->gl_flags)) {
-+	if (test_and_clear_bit(GLF_PENDING_DEMOTE, &gl->gl_flags) &&
-+	    gl->gl_state != LM_ST_UNLOCKED &&
-+	    gl->gl_demote_state != LM_ST_EXCLUSIVE) {
- 		unsigned long holdtime, now = jiffies;
- 		holdtime = gl->gl_tchange + gl->gl_ops->go_min_hold_time;
- 		if (time_before(now, holdtime))
+@@ -267,8 +267,12 @@ static inline int may_grant(const struct gfs2_glock *gl, const struct gfs2_holde
+ 		return 1;
+ 	if (gh->gh_flags & GL_EXACT)
+ 		return 0;
+-	if (gh->gh_state == LM_ST_SHARED && gl->gl_state == LM_ST_EXCLUSIVE)
+-		return 1;
++	if (gl->gl_state == LM_ST_EXCLUSIVE) {
++		if (gh->gh_state == LM_ST_SHARED && gh_head->gh_state == LM_ST_SHARED)
++			return 1;
++		if (gh->gh_state == LM_ST_DEFERRED && gh_head->gh_state == LM_ST_DEFERRED)
++			return 1;
++	}
+ 	if (gl->gl_state != LM_ST_UNLOCKED && (gh->gh_flags & LM_FLAG_ANY))
+ 		return 1;
+ 	return 0;
 -- 
 1.5.1.2
 
