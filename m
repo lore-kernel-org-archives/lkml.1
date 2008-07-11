@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761111AbYGKBD1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759225AbYGKBDJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761111AbYGKBD1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jul 2008 21:03:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759373AbYGKBCm
+	id S1759225AbYGKBDJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jul 2008 21:03:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759327AbYGKBCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jul 2008 21:02:42 -0400
-Received: from mail.tor.primus.ca ([216.254.136.21]:43098 "EHLO
-	mail-08.primus.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758013AbYGKBCg (ORCPT
+	Thu, 10 Jul 2008 21:02:39 -0400
+Received: from mail.tor.primus.ca ([216.254.136.21]:40280 "EHLO
+	mail-07.primus.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757519AbYGKBCg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 10 Jul 2008 21:02:36 -0400
 From: Matthew Wilcox <matthew@wil.cx>
@@ -17,9 +17,9 @@ Cc: grundler@parisc-linux.org, mingo@elte.hu, tglx@linutronix.de,
        benh@kernel.crashing.org, jbarnes@virtuousgeek.org,
        rdunlap@xenotime.net, mtk.manpages@gmail.com,
        Matthew Wilcox <matthew@wil.cx>, Matthew Wilcox <willy@linux.intel.com>
-Subject: [PATCH] AHCI: Request multiple MSIs
-Date: Thu, 10 Jul 2008 21:00:01 -0400
-Message-Id: <1215738002-4961-4-git-send-email-matthew@wil.cx>
+Subject: [PATCH] PCI MSI: Replace 'type' with 'is_msix'
+Date: Thu, 10 Jul 2008 20:59:58 -0400
+Message-Id: <1215738002-4961-1-git-send-email-matthew@wil.cx>
 X-Mailer: git-send-email 1.5.5.4
 In-Reply-To: <20080711005719.GO14894@parisc-linux.org>
 References: <20080711005719.GO14894@parisc-linux.org>
@@ -27,181 +27,232 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-AHCI controllers can support up to 16 interrupts, one per port.  This
-saves us a readl() in the interrupt path to determine which port has
-generated the interrupt.
+By changing from a 5-bit field to a 1-bit field, we free up some bits
+that can be used by a later patch.  Also rearrange the fields for better
+packing on 64-bit platforms (reducing the size of msi_desc from 72 bytes
+to 64 bytes).
 
 Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
 ---
- drivers/ata/ahci.c |  127 +++++++++++++++++++++++++++++++++++++++++++++++++--
- 1 files changed, 122 insertions(+), 5 deletions(-)
+ drivers/pci/msi.c   |  100 ++++++++++++++++----------------------------------
+ include/linux/msi.h |    4 +-
+ 2 files changed, 34 insertions(+), 70 deletions(-)
 
-diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
-index 5e6468a..12562fc 100644
---- a/drivers/ata/ahci.c
-+++ b/drivers/ata/ahci.c
-@@ -102,6 +102,7 @@ enum {
- 	/* HOST_CTL bits */
- 	HOST_RESET		= (1 << 0),  /* reset controller; self-clear */
- 	HOST_IRQ_EN		= (1 << 1),  /* global IRQ enable */
-+	HOST_MSI_RSM		= (1 << 2),  /* Revert to Single Message */
- 	HOST_AHCI_EN		= (1 << 31), /* AHCI enabled */
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index 8c61304..104f297 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -106,20 +106,10 @@ static void msix_flush_writes(unsigned int irq)
  
- 	/* HOST_CAP bits */
-@@ -1771,6 +1772,15 @@ static void ahci_port_intr(struct ata_port *ap)
+ 	entry = get_irq_msi(irq);
+ 	BUG_ON(!entry || !entry->dev);
+-	switch (entry->msi_attrib.type) {
+-	case PCI_CAP_ID_MSI:
+-		/* nothing to do */
+-		break;
+-	case PCI_CAP_ID_MSIX:
+-	{
++	if (entry->msi_attrib.is_msix) {
+ 		int offset = entry->msi_attrib.entry_nr * PCI_MSIX_ENTRY_SIZE +
+ 			PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET;
+ 		readl(entry->mask_base + offset);
+-		break;
+-	}
+-	default:
+-		BUG();
+-		break;
  	}
  }
  
-+static irqreturn_t ahci_msi_interrupt(int irq, void *dev_instance)
-+{
-+	struct ata_port *ap = dev_instance;
-+	spin_lock(&ap->host->lock);
-+	ahci_port_intr(ap);
-+	spin_unlock(&ap->host->lock);
-+	return IRQ_HANDLED;
-+}
-+
- static irqreturn_t ahci_interrupt(int irq, void *dev_instance)
- {
- 	struct ata_host *host = dev_instance;
-@@ -2220,6 +2230,107 @@ static void ahci_p5wdh_workaround(struct ata_host *host)
+@@ -129,8 +119,12 @@ static void msi_set_mask_bits(unsigned int irq, u32 mask, u32 flag)
+ 
+ 	entry = get_irq_msi(irq);
+ 	BUG_ON(!entry || !entry->dev);
+-	switch (entry->msi_attrib.type) {
+-	case PCI_CAP_ID_MSI:
++	if (entry->msi_attrib.is_msix) {
++		int offset = entry->msi_attrib.entry_nr * PCI_MSIX_ENTRY_SIZE +
++			PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET;
++		writel(flag, entry->mask_base + offset);
++		readl(entry->mask_base + offset);
++	} else {
+ 		if (entry->msi_attrib.maskbit) {
+ 			int pos;
+ 			u32 mask_bits;
+@@ -143,18 +137,6 @@ static void msi_set_mask_bits(unsigned int irq, u32 mask, u32 flag)
+ 		} else {
+ 			msi_set_enable(entry->dev, !flag);
+ 		}
+-		break;
+-	case PCI_CAP_ID_MSIX:
+-	{
+-		int offset = entry->msi_attrib.entry_nr * PCI_MSIX_ENTRY_SIZE +
+-			PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET;
+-		writel(flag, entry->mask_base + offset);
+-		readl(entry->mask_base + offset);
+-		break;
+-	}
+-	default:
+-		BUG();
+-		break;
  	}
+ 	entry->msi_attrib.masked = !!flag;
  }
- 
-+static int ahci_request_irqs(struct pci_dev *pdev, struct ata_host *host,
-+								int n_irqs)
-+{
-+	int i, rc;
-+
-+	if (n_irqs > host->n_ports) {
-+		n_irqs = host->n_ports;
-+	} else if (n_irqs < host->n_ports || n_irqs == 1) {
-+		n_irqs--;
-+		rc = devm_request_irq(host->dev, pdev->irq + n_irqs,
-+				ahci_interrupt,
-+				IRQF_SHARED | (n_irqs ? IRQF_DISABLED : 0),
-+				dev_driver_string(host->dev), host);
-+		if (rc)
-+			return rc;
-+	}
-+
-+	for (i = 0; i < n_irqs; i++) {
-+		rc = devm_request_irq(host->dev, pdev->irq + i,
-+				ahci_msi_interrupt, IRQF_DISABLED,
-+				dev_driver_string(host->dev), host->ports[i]);
-+		if (rc)
-+			goto free_irqs;
-+	}
-+
-+	return 0;
-+
-+ free_irqs:
-+ 	if (n_irqs < host->n_ports)
-+		devm_free_irq(host->dev, pdev->irq + n_irqs, host);
-+	while (i >= 0)
-+		devm_free_irq(host->dev, pdev->irq + i, host->ports[i]);
-+	return rc;
-+}
-+
-+static int ahci_setup_irq_block(struct pci_dev *pdev, struct ata_host *host,
-+							int n_irqs)
-+{
-+	int rc;
-+
-+	rc = pci_enable_msi_block(pdev, n_irqs);
-+	if (rc)
-+		return rc;
-+	if (n_irqs > 1) {
-+		void __iomem *mmio = host->iomap[AHCI_PCI_BAR];
-+		u32 host_ctl = readl(mmio + HOST_CTL);
-+		if (host_ctl & HOST_MSI_RSM)
-+			goto try_different;
-+	}
-+
-+	rc = ahci_request_irqs(pdev, host, n_irqs);
-+	if (!rc)
-+		return 0;
-+
-+ try_different:
-+	pci_disable_msi(pdev);
-+	pci_intx(pdev, 1);
-+	return (n_irqs == 1) ? rc : 1;
-+}
-+
-+static int ahci_setup_irqs(struct pci_dev *pdev, struct ata_host *host)
-+{
-+	struct ahci_host_priv *hpriv = host->private_data;
-+	int n_irqs, pos, rc;
-+	u16 control;
-+
-+	if (hpriv->flags & AHCI_HFLAG_NO_MSI)
-+		goto no_msi;
-+
-+	/*
-+	 * We only need one interrupt per port (plus one for CCC which
-+	 * isn't supported yet), but some AHCI controllers refuse to use
-+	 * multiple MSIs unless they get the maximum number of interrupts
-+	 */
-+
-+	rc = ahci_setup_irq_block(pdev, host, host->n_ports);
-+	if (rc == 0)
-+		return 0;
-+	if (rc < 0)
-+		goto no_msi;
-+
-+	/* Find out how many it might want */
-+	pos = pci_find_capability(pdev, PCI_CAP_ID_MSI);
-+	pci_read_config_word(pdev, pos + PCI_MSI_FLAGS, &control);
-+	n_irqs = 1 << ((control & PCI_MSI_FLAGS_QMASK) >> 1);
-+
-+	for (;;) {
-+		rc = ahci_setup_irq_block(pdev, host, n_irqs);
-+		if (rc == 0)
-+			return 0;
-+		if (rc < 0)
-+			goto no_msi;
-+		n_irqs = rc;
-+	}
-+
-+	return 0;
-+
-+ no_msi:
-+	return ahci_request_irqs(pdev, host, 1);
-+}
-+
- static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+@@ -162,9 +144,14 @@ static void msi_set_mask_bits(unsigned int irq, u32 mask, u32 flag)
+ void read_msi_msg(unsigned int irq, struct msi_msg *msg)
  {
- 	static int printed_version;
-@@ -2278,9 +2389,6 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	    (pdev->revision == 0xa1 || pdev->revision == 0xa2))
- 		hpriv->flags |= AHCI_HFLAG_NO_MSI;
- 
--	if ((hpriv->flags & AHCI_HFLAG_NO_MSI) || pci_enable_msi(pdev))
--		pci_intx(pdev, 1);
+ 	struct msi_desc *entry = get_irq_msi(irq);
+-	switch(entry->msi_attrib.type) {
+-	case PCI_CAP_ID_MSI:
+-	{
++	if (entry->msi_attrib.is_msix) {
++		void __iomem *base = entry->mask_base +
++			entry->msi_attrib.entry_nr * PCI_MSIX_ENTRY_SIZE;
++
++		msg->address_lo = readl(base + PCI_MSIX_ENTRY_LOWER_ADDR_OFFSET);
++		msg->address_hi = readl(base + PCI_MSIX_ENTRY_UPPER_ADDR_OFFSET);
++		msg->data = readl(base + PCI_MSIX_ENTRY_DATA_OFFSET);
++	} else {
+ 		struct pci_dev *dev = entry->dev;
+ 		int pos = entry->msi_attrib.pos;
+ 		u16 data;
+@@ -180,30 +167,23 @@ void read_msi_msg(unsigned int irq, struct msi_msg *msg)
+ 			pci_read_config_word(dev, msi_data_reg(pos, 0), &data);
+ 		}
+ 		msg->data = data;
+-		break;
+-	}
+-	case PCI_CAP_ID_MSIX:
+-	{
+-		void __iomem *base;
+-		base = entry->mask_base +
+-			entry->msi_attrib.entry_nr * PCI_MSIX_ENTRY_SIZE;
 -
- 	/* save initial config */
- 	ahci_save_initial_config(pdev, hpriv);
- 
-@@ -2335,8 +2443,17 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	ahci_print_info(host);
- 
- 	pci_set_master(pdev);
--	return ata_host_activate(host, pdev->irq, ahci_interrupt, IRQF_SHARED,
--				 &ahci_sht);
-+
-+	rc = ata_host_start(host);
-+	if (rc)
-+		return rc;
-+
-+	rc = ahci_setup_irqs(pdev, host);
-+	if (rc)
-+		return rc;
-+
-+	rc = ata_host_register(host, &ahci_sht);
-+	return rc;
+-		msg->address_lo = readl(base + PCI_MSIX_ENTRY_LOWER_ADDR_OFFSET);
+-		msg->address_hi = readl(base + PCI_MSIX_ENTRY_UPPER_ADDR_OFFSET);
+-		msg->data = readl(base + PCI_MSIX_ENTRY_DATA_OFFSET);
+- 		break;
+- 	}
+- 	default:
+-		BUG();
+ 	}
  }
  
- static int __init ahci_init(void)
+ void write_msi_msg(unsigned int irq, struct msi_msg *msg)
+ {
+ 	struct msi_desc *entry = get_irq_msi(irq);
+-	switch (entry->msi_attrib.type) {
+-	case PCI_CAP_ID_MSI:
+-	{
++	if (entry->msi_attrib.is_msix) {
++		void __iomem *base;
++		base = entry->mask_base +
++			entry->msi_attrib.entry_nr * PCI_MSIX_ENTRY_SIZE;
++
++		writel(msg->address_lo,
++			base + PCI_MSIX_ENTRY_LOWER_ADDR_OFFSET);
++		writel(msg->address_hi,
++			base + PCI_MSIX_ENTRY_UPPER_ADDR_OFFSET);
++		writel(msg->data, base + PCI_MSIX_ENTRY_DATA_OFFSET);
++	} else {
+ 		struct pci_dev *dev = entry->dev;
+ 		int pos = entry->msi_attrib.pos;
+ 
+@@ -218,23 +198,6 @@ void write_msi_msg(unsigned int irq, struct msi_msg *msg)
+ 			pci_write_config_word(dev, msi_data_reg(pos, 0),
+ 						msg->data);
+ 		}
+-		break;
+-	}
+-	case PCI_CAP_ID_MSIX:
+-	{
+-		void __iomem *base;
+-		base = entry->mask_base +
+-			entry->msi_attrib.entry_nr * PCI_MSIX_ENTRY_SIZE;
+-
+-		writel(msg->address_lo,
+-			base + PCI_MSIX_ENTRY_LOWER_ADDR_OFFSET);
+-		writel(msg->address_hi,
+-			base + PCI_MSIX_ENTRY_UPPER_ADDR_OFFSET);
+-		writel(msg->data, base + PCI_MSIX_ENTRY_DATA_OFFSET);
+-		break;
+-	}
+-	default:
+-		BUG();
+ 	}
+ 	entry->msg = *msg;
+ }
+@@ -359,7 +322,7 @@ static int msi_capability_init(struct pci_dev *dev)
+ 	if (!entry)
+ 		return -ENOMEM;
+ 
+-	entry->msi_attrib.type = PCI_CAP_ID_MSI;
++	entry->msi_attrib.is_msix = 0;
+ 	entry->msi_attrib.is_64 = is_64bit_address(control);
+ 	entry->msi_attrib.entry_nr = 0;
+ 	entry->msi_attrib.maskbit = is_mask_bit_support(control);
+@@ -446,7 +409,7 @@ static int msix_capability_init(struct pci_dev *dev,
+ 			break;
+ 
+  		j = entries[i].entry;
+-		entry->msi_attrib.type = PCI_CAP_ID_MSIX;
++		entry->msi_attrib.is_msix = 1;
+ 		entry->msi_attrib.is_64 = 1;
+ 		entry->msi_attrib.entry_nr = j;
+ 		entry->msi_attrib.maskbit = 1;
+@@ -589,12 +552,13 @@ void pci_msi_shutdown(struct pci_dev* dev)
+ 		u32 mask = entry->msi_attrib.maskbits_mask;
+ 		msi_set_mask_bits(dev->irq, mask, ~mask);
+ 	}
+-	if (!entry->dev || entry->msi_attrib.type != PCI_CAP_ID_MSI)
++	if (!entry->dev || entry->msi_attrib.is_msix)
+ 		return;
+ 
+ 	/* Restore dev->irq to its default pin-assertion irq */
+ 	dev->irq = entry->msi_attrib.default_irq;
+ }
++
+ void pci_disable_msi(struct pci_dev* dev)
+ {
+ 	struct msi_desc *entry;
+@@ -605,7 +569,7 @@ void pci_disable_msi(struct pci_dev* dev)
+ 	pci_msi_shutdown(dev);
+ 
+ 	entry = list_entry(dev->msi_list.next, struct msi_desc, list);
+-	if (!entry->dev || entry->msi_attrib.type != PCI_CAP_ID_MSI)
++	if (!entry->dev || entry->msi_attrib.is_msix)
+ 		return;
+ 
+ 	msi_free_irqs(dev);
+@@ -624,7 +588,7 @@ static int msi_free_irqs(struct pci_dev* dev)
+ 	arch_teardown_msi_irqs(dev);
+ 
+ 	list_for_each_entry_safe(entry, tmp, &dev->msi_list, list) {
+-		if (entry->msi_attrib.type == PCI_CAP_ID_MSIX) {
++		if (entry->msi_attrib.is_msix) {
+ 			writel(1, entry->mask_base + entry->msi_attrib.entry_nr
+ 				  * PCI_MSIX_ENTRY_SIZE
+ 				  + PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET);
+diff --git a/include/linux/msi.h b/include/linux/msi.h
+index 8f29392..13a8a1b 100644
+--- a/include/linux/msi.h
++++ b/include/linux/msi.h
+@@ -17,13 +17,13 @@ extern void write_msi_msg(unsigned int irq, struct msi_msg *msg);
+ 
+ struct msi_desc {
+ 	struct {
+-		__u8	type	: 5; 	/* {0: unused, 5h:MSI, 11h:MSI-X} */
++		__u8	is_msix	: 1;
+ 		__u8	maskbit	: 1; 	/* mask-pending bit supported ?   */
+ 		__u8	masked	: 1;
+ 		__u8	is_64	: 1;	/* Address size: 0=32bit 1=64bit  */
+ 		__u8	pos;	 	/* Location of the msi capability */
+-		__u32	maskbits_mask;  /* mask bits mask */
+ 		__u16	entry_nr;    	/* specific enabled entry 	  */
++		__u32	maskbits_mask;  /* mask bits mask */
+ 		unsigned default_irq;	/* default pre-assigned irq	  */
+ 	}msi_attrib;
+ 
 -- 
 1.5.5.4
 
