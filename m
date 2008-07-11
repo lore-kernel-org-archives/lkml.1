@@ -1,103 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757186AbYGKIVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757303AbYGKIWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757186AbYGKIVh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 04:21:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbYGKIVY
+	id S1757303AbYGKIWT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 04:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbYGKIWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 04:21:24 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:8937 "EHLO
-	VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751862AbYGKIVW (ORCPT
+	Fri, 11 Jul 2008 04:22:08 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:63711 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750932AbYGKIWF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 04:21:22 -0400
-X-BigFish: VPS-19(zz1432R98dR62a3L7efV1805Mzz10d3izzz32i6bh87il43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0K3U1VA-02-KEE-01
-Date: Fri, 11 Jul 2008 10:20:43 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/5] x86/pci: patches for tip/x86/unify-pci
-Message-ID: <20080711082042.GT7963@erda.amd.com>
-References: <1215709106-9182-1-git-send-email-robert.richter@amd.com> <20080710171721.GA19737@elte.hu> <20080710181234.GA32174@elte.hu> <20080710195249.GB17255@uranus.ravnborg.org> <20080710195425.GB23322@elte.hu>
+	Fri, 11 Jul 2008 04:22:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=o2eVZ8HiPtjBgWPLWjpQXtPJseeiy7S947798TvE4HheUX+07wBX6S6MU3wQWgXjKL
+         0MYzK9/0Q1oijFcNYe1OWberijSMuxSjm7G4EniT9jS9aLk1Y/0ItstSZJ27ULCFKwaL
+         5tKL9lCHIU79OffOjVtupd1kdtAKellbd9kyc=
+Message-ID: <6d291e080807110121t203c7cd0v9c84fb087cd75aa0@mail.gmail.com>
+Date: Fri, 11 Jul 2008 03:21:59 -0500
+From: "Stoyan Gaydarov" <stoyboyker@gmail.com>
+To: "Arnd Bergmann" <arnd@arndb.de>
+Subject: Re: [PATCH] ioctl conversion
+Cc: rjw@sisk.pl, pavel@suse.cz, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+In-Reply-To: <200807111008.21497.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080710195425.GB23322@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 11 Jul 2008 08:20:45.0080 (UTC) FILETIME=[040A2180:01C8E32F]
+References: <6d291e080807101728j62be7c93qba11aa214a8dfe1@mail.gmail.com>
+	 <200807111008.21497.arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10.07.08 21:54:25, Ingo Molnar wrote:
-> 
-> * Sam Ravnborg <sam@ravnborg.org> wrote:
-> 
-> > On Thu, Jul 10, 2008 at 08:12:34PM +0200, Ingo Molnar wrote:
-> > > 
-> > > * Ingo Molnar <mingo@elte.hu> wrote:
-> > > 
-> > > > * Robert Richter <robert.richter@amd.com> wrote:
-> > > > 
-> > > > > This patch series contains patches for tip/x86/unify-pci. It fixes 
-> > > > > NUMA initialization code reflecting latest changes in tip/master. 
-> > > > > Also there are build fixes and minor cleanups. Patch #5 is a cherry 
-> > > > > pick that fixes build on UP systems. Code reboots for smp/nosmp, 
-> > > > > acpi/noacpi, numaq, 32/64bit. It compiles for visws.
-> > > > 
-> > > > thanks Robert. Today i've eliminated the VISWS subarch which greatly 
-> > > > simplified your series. I've picked up these two fixes:
-> > > > 
-> > > >  Robert Richter (2):
-> > > >        x86/pci merge: fixing numaq initialization
-> > > >        x86/pci: fix warnings in subsys_initcall functions
-> > > 
-> > > btw., this is how arch/x86/pci/Makefile looks like now in tip/master:
-> > > 
-> > > ----------------------------------------->
-> > > pci-y                           := fixup.o
-> > > pci-$(CONFIG_ACPI)              += acpi.o
-> > > pci-y                           += legacy.o irq.o
-> > > 
-> > > pci-$(CONFIG_X86_VISWS)         += visws.o
-> > > 
-> > > pci-$(CONFIG_X86_NUMAQ)         += numa.o
-> > > 
-> > > obj-y                           += $(pci-y) common.o early.o
-> > > obj-y                           += amd_bus.o
-> > > <-----------------------------------------
-> > 
-> > So if I am not mistaken you can kill pci-y entirely:
+On Fri, Jul 11, 2008 at 3:08 AM, Arnd Bergmann <arnd@arndb.de> wrote:
+> On Friday 11 July 2008, Stoyan Gaydarov wrote:
+>> -       if (_IOC_TYPE(cmd) != SNAPSHOT_IOC_MAGIC)
+>> +       lock_kernel();
+>> +
+>> +       if (_IOC_TYPE(cmd) != SNAPSHOT_IOC_MAGIC) {
+>> +               unlock_kernel();
+>>                 return -ENOTTY;
+>> -       if (_IOC_NR(cmd) > SNAPSHOT_IOC_MAXNR)
+>> +       }
+>> +       if (_IOC_NR(cmd) > SNAPSHOT_IOC_MAXNR) {
+>> +               unlock_kernel();
+>>                 return -ENOTTY;
+>> -       if (!capable(CAP_SYS_ADMIN))
+>> +       }
+>> +       if (!capable(CAP_SYS_ADMIN)) {
+>> +               unlock_kernel();
+>>                 return -EPERM;
+>> +       }
+>>
+>>         data = filp->private_data;
+>
+> The more common way to express this is to end the function with
+>
+> out:
+>        unlock_kernel();
+>        return ret;
+> }
 
-Yes, but...
+This would work normally but there are three early returns and the
+rest are just switch statements that set the return code.
 
-> > 
-> > obj-y                           := fixup.o
-
-... this is with a plus:
-
-obj-y                           += fixup.o
-
-> > obj-$(CONFIG_ACPI)              += acpi.o
-> > obj-y                           += legacy.o irq.o
-> > 
-> > obj-$(CONFIG_X86_VISWS)         += visws.o
-> > 
-> > obj-$(CONFIG_X86_NUMAQ)         += numa.o
-> > 
-> > obj-y                           += common.o early.o
-> > obj-y                           += amd_bus.o
-> 
-> ah, indeed :-) Very nice.
-> 
-> 	Ingo
-> 
-
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
-
+>
+> and then jump to that label in the error case. This makes it
+> much easier to verify that you haven't missed a cased.
+>
+>        Arnd <><
+>
