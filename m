@@ -1,90 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758943AbYGKPIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759400AbYGKPJo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758943AbYGKPIn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 11:08:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbYGKPIe
+	id S1759400AbYGKPJo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 11:09:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753019AbYGKPJf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 11:08:34 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59022 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751031AbYGKPId convert rfc822-to-8bit (ORCPT
+	Fri, 11 Jul 2008 11:09:35 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50321 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752671AbYGKPJf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 11:08:33 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: today's linux-next fails to boot
-Date: Fri, 11 Jul 2008 17:10:41 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Ingo Molnar <mingo@elte.hu>,
-       =?iso-8859-1?q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>,
-       Takashi Iwai <tiwai@suse.de>, linux-next@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-References: <4877400B.1000400@gmail.com> <487772B6.4090100@gmail.com> <20080711145322.GA25698@elte.hu>
-In-Reply-To: <20080711145322.GA25698@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200807111710.42826.rjw@sisk.pl>
+	Fri, 11 Jul 2008 11:09:35 -0400
+Date: Fri, 11 Jul 2008 15:51:13 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Howells <dhowells@redhat.com>
+Cc: alan@redhat.com, akpm@linux-foundation.org, dhowells@redhat.com,
+       linux-am33-list@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] MN10300: Fix MN10300's serial port driver to get at its
+ tty_struct
+Message-ID: <20080711155113.256e89d1@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080711145201.24870.13609.stgit@warthog.procyon.org.uk>
+References: <20080711145201.24870.13609.stgit@warthog.procyon.org.uk>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 11 of July 2008, Ingo Molnar wrote:
-> 
-> * Török Edwin <edwintorok@gmail.com> wrote:
-> 
-> > On 2008-07-11 16:59, Ingo Molnar wrote:
-> > > * Török Edwin <edwintorok@gmail.com> wrote:
-> > >
-> > >   
-> > >>> [Added Ingo to Cc]
-> > >>>
-> > >>> I get the boot problem on i386 with 2008-07-11 linux-next tree, too.
-> > >>> In my case, no error appears on the screen, just staying blank and
-> > >>> dead.  It seems stopping at the very beginning, soon after GRUB, so
-> > >>> could be the same reason.
-> > >>>   
-> > >>>       
-> > >> I don't see any boot messages on the screen, I get that BUG message as
-> > >> soon as grub's menu dissapears.
-> > >> I have bisected it to this range so far:
-> > >> git-bisect good aa03060a78c1aec53075a0c8ca7be19cedfbea8f
-> > >> git-bisect bad b1611c0058bc6635e7257e755c3f194933a7a6df
-> > >>
-> > >> Should I continue to bisect?
-> > >>     
-> > >
-> > > could you check latest tip/master, does it boot fine with the same 
-> > > config?
-> > 
-> > tip/master boots fine.
-> 
-> to update linux-next to the latest bits in -tip, you can perhaps do 
-> something like this:
-> 
->  git-merge tip/auto-x86-next
->  git-merge tip/auto-core-next
->  git-merge tip/auto-cpus4096-next
->  git-merge tip/auto-ftrace-next
->  git-merge tip/auto-generic-ipi-next
->  git-merge tip/auto-genirq-next
->  git-merge tip/auto-latest
->  git-merge tip/auto-safe-poison-pointers-next
->  git-merge tip/auto-sched-next
->  git-merge tip/auto-stackprotector-next
->  git-merge tip/auto-timers-next
-> 
-> but it's easily possible that the bug is in some other portion of 
-> linux-next.
+On Fri, 11 Jul 2008 15:52:01 +0100
+David Howells <dhowells@redhat.com> wrote:
 
-Hm, I haven't tested the linux-next from today myself yet, but I have a related
-question.  Namely, is there a way to get a log of commits that have been
-added since the previous linux-next?
+> Fix MN10300's serial port driver to get at its tty_struct as this moved from
+> struct uart_info into struct tty_port in patch:
+> 
+> 	commit 2500487cb5b4dbee56e127d699d14101016c5031
+> 	Author: Alan Cox <alan@redhat.com>
+> 	Date:   Fri Jul 11 17:23:39 2008 +1000
+> 
+> 	    07-serial-core-use-tty_port
+> 
+> 	    Switch the serial_core based drivers to use the new tty_port
+> 	    structure. We can't quite use all of it yet because of the
+> 	    dynamically allocated extras in the serial_core layer.
+> 
+> 	    Signed-off-by: Alan Cox <alan@redhat.com>
+> 
+> Signed-off-by: David Howells <dhowells@redhat.com>
 
-That may help to find a guilty patch if the yesterday's linux-next works.
+I don't suppose you'd consider putting the driver into drivers/serial so
+it was actually sanely possible to update all the tty drivers together.
+There are lots more changes to come and it would be easier if drivers
+didn't keep hiding 8(
 
-Thanks,
-Rafael
+Alan
