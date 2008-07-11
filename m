@@ -1,114 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759288AbYGKUHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759855AbYGKUHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759288AbYGKUHS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 16:07:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbYGKUHH
+	id S1759855AbYGKUHl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 16:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755032AbYGKUH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 16:07:07 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:27718 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750773AbYGKUHF (ORCPT
+	Fri, 11 Jul 2008 16:07:27 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:24804 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759467AbYGKUHZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 16:07:05 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5337"; a="4646453"
-Message-ID: <4877BD66.30802@qualcomm.com>
-Date: Fri, 11 Jul 2008 13:07:02 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 11 Jul 2008 16:07:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=r84OlPTb52yDJONEGp9DYEQAgDfjMv8D6HQkvUkrv+Gxt2DkAq8K0jOZSUMoGS4uF/
+         kbbVlVhWMJBx6vgeMer1drJOCncDSFQ48aKflcDKQXcz9kLAPDyS6hKDD60wOxfhq4W+
+         /MQbrdQEELmBb+IJx0ialJy9PDQ163D4/uoig=
+Message-ID: <e9c3a7c20807111307q1b7c4ed0wb2864e2dae6abe90@mail.gmail.com>
+Date: Fri, 11 Jul 2008 13:07:24 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Maciej Sosnowski" <maciej.sosnowski@intel.com>
+Subject: Re: [PATCH 1/2] I/OAT: Add watchdog/reset functionality to ioatdma driver
+Cc: shannon.nelson@intel.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20080711113646.337.14164.stgit@linux.site>
 MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: Paul Menage <menage@google.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Paul Jackson <pj@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       miaox@cn.fujitsu.com, rostedt@goodmis.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: current linux-2.6.git: cpusets completely broken
-References: <19f34abd0807111207q2ad2011csdb46c6f451fe0f6d@mail.gmail.com>	 <6599ad830807111236t2bc9aa02ned59dcc58f14b1bf@mail.gmail.com> <19f34abd0807111243s549b0facvbd0a650358463231@mail.gmail.com>
-In-Reply-To: <19f34abd0807111243s549b0facvbd0a650358463231@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080711113553.337.50006.stgit@linux.site>
+	 <20080711113646.337.14164.stgit@linux.site>
+X-Google-Sender-Auth: 810f4cd2ad202051
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vegard Nossum wrote:
-> On Fri, Jul 11, 2008 at 9:36 PM, Paul Menage <menage@google.com> wrote:
->> On Fri, Jul 11, 2008 at 12:07 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
->>> The result of having CPUSETS enabled as above is a 100% reproducible
->>> BUG on the very first cpu hot-unplug:
->>>
->>> ------------[ cut here ]------------
->>> kernel BUG at xxx/linux-2.6/kernel/sched.c:5859!
->> That doesn't quite match up with any BUG in 2.6.26-rc9 - what tree is
->> this last crash based on?
-> 
-> latest mainline. Commit e5a5816f7875207cb0a0a7032e39a4686c5e10a4.
-> 
-> Is this one:
-> 
-> /* called under rq->lock with disabled interrupts */
-> static void migrate_dead(unsigned int dead_cpu, struct task_struct *p)
-> {
->         struct rq *rq = cpu_rq(dead_cpu);
-> 
->         /* Must be exiting, otherwise would be on tasklist. */
->         BUG_ON(!p->exit_state);
-> 
->>> Also, this is on the latest linux-2.6.git! Since we're so close to
->>> release, maybe cpusets should simply be marked BROKEN for now? (Unless
->>> we can fix it, of course. The alternative is to apply Miao Xie's
->>> workaround patch temporarily.)
->> If we were going to mark anything as broken, wouldn't cpu-hotplug be
->> the more appropriate victim? I suspect that there are more systems
->> using cpusets in production environments than using cpu hotplug. But
->> as you say, fixing it sounds better.
-> 
-> I'm sorry for the harsh characterization and suggestion; please accept
-> my apology. It was purely a result of my excitement at having made
-> some progress in this case.
-> 
-> But I have more good news; reverting this:
-> 
-> commit f18f982abf183e91f435990d337164c7a43d1e6d
-> Author: Max Krasnyansky <maxk@qualcomm.com>
-> Date:   Thu May 29 11:17:01 2008 -0700
-> 
->     sched: CPU hotplug events must not destroy scheduler domains created by the
-> cpusets
-> 
->     First issue is not related to the cpusets. We're simply leaking doms_cur.
->     It's allocated in arch_init_sched_domains() which is called for every
->     hotplug event. So we just keep reallocation doms_cur without freeing it.
->     I introduced free_sched_domains() function that cleans things up.
-> 
->     Second issue is that sched domains created by the cpusets are
->     completely destroyed by the CPU hotplug events. For all CPU hotplug
->     events scheduler attaches all CPUs to the NULL domain and then puts
->     them all into the single domain thereby destroying domains created
->     by the cpusets (partition_sched_domains).
->     The solution is simple, when cpusets are enabled scheduler should not
->     create default domain and instead let cpusets do that. Which is
->     exactly what the patch does.
-> 
->     Signed-off-by: Max Krasnyansky <maxk@qualcomm.com>
->     Cc: pj@sgi.com
->     Cc: menage@google.com
->     Cc: rostedt@goodmis.org
->     Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
->     Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> 
-> gets rid of the BUG! (Added people to Ccs.)
-Really ? Just by looking at the backtraces in your first email it seems 
-unrelated.
+On Fri, Jul 11, 2008 at 4:36 AM, Maciej Sosnowski
+<maciej.sosnowski@intel.com> wrote:
+> Due to occasional DMA channel hangs observed for I/OAT versions 1.2 and 2.0
+> a watchdog has been introduced to check every 2 seconds
+> if all channels progress normally.
+> If stuck channel is detected, driver resets it.
+> The reset is done in two parts. The second part is scheduled
+> by the first one to reinitialize the channel after the restart.
+>
 
-> Might I instead suggest a revert of this? (Again, unless somebody else
-> can spot the real error and fix it before 2.6.26 is out :-))
-I'd actually be ok with reverting it. Paul and I were looking into some 
-circular locking issues triggered by the very same patch. Since we do 
-not have a solution yet we could revert it for now and work on a fix 
-during .27-rc series.
+checkpatch had some valid suggestions, please give it a run.
 
-Max
+A general comment about this change it seems to add a bit of
+complexity.  The driver now has two workqueue routines and a tasklet.
+Might some of these be combined?  In other words, do we need a free
+running watchdog when no descriptors are in flight?  It seems that
+using a timer to kick the cleanup tasklet could be used in place of
+the ioat_dma_chan_watchdog workqueue.
 
+> Sleep time in self_test has been increased to 10ms
+> since in some cases 1ms appeared not to be enough.
 
+This should be broken out into a separate patch.  Perhaps with an
+explanation of why it needs extra time for this particular
+transaction.
+
+Regards,
+Dan
