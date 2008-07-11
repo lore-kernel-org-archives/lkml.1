@@ -1,88 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757145AbYGKInD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757861AbYGKInq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757145AbYGKInD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 04:43:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753168AbYGKImx
+	id S1757861AbYGKInq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 04:43:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753168AbYGKInh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 04:42:53 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:22459 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752515AbYGKImw (ORCPT
+	Fri, 11 Jul 2008 04:43:37 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:17850 "EHLO
+	SG2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752676AbYGKIng (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 04:42:52 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEABW4dkh5LFxA/2dsb2JhbACwKg
-X-IronPort-AV: E=Sophos;i="4.30,343,1212330600"; 
-   d="scan'208";a="146660671"
-Date: Fri, 11 Jul 2008 18:42:49 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Mikael Abrahamsson <swmike@swm.pp.se>
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: xfs bug in 2.6.26-rc9
-Message-ID: <20080711084248.GU29319@disturbed>
-Mail-Followup-To: Mikael Abrahamsson <swmike@swm.pp.se>,
-	linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-References: <alpine.DEB.1.10.0807110939520.30192@uplift.swm.pp.se>
+	Fri, 11 Jul 2008 04:43:36 -0400
+X-BigFish: VPS-19(zz1432R98dR62a3L7efV1805Mzz10d3izzz32i6bh87il43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0K3U2WC-02-LL7-01
+Date: Fri, 11 Jul 2008 10:43:22 +0200
+From: Robert Richter <robert.richter@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/5] x86/pci: patches for tip/x86/unify-pci
+Message-ID: <20080711084322.GV7963@erda.amd.com>
+References: <1215709106-9182-1-git-send-email-robert.richter@amd.com> <20080710171721.GA19737@elte.hu> <20080710181234.GA32174@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0807110939520.30192@uplift.swm.pp.se>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080710181234.GA32174@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 11 Jul 2008 08:43:24.0231 (UTC) FILETIME=[2E281D70:01C8E332]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 11, 2008 at 09:46:47AM +0200, Mikael Abrahamsson wrote:
->
-> I received this when running xfs_fsr to defragment my xfs volume (which  
-> resides on a crypted lvm).
+On 10.07.08 20:12:34, Ingo Molnar wrote:
+> 
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > * Robert Richter <robert.richter@amd.com> wrote:
+> > 
+> > > This patch series contains patches for tip/x86/unify-pci. It fixes 
+> > > NUMA initialization code reflecting latest changes in tip/master. 
+> > > Also there are build fixes and minor cleanups. Patch #5 is a cherry 
+> > > pick that fixes build on UP systems. Code reboots for smp/nosmp, 
+> > > acpi/noacpi, numaq, 32/64bit. It compiles for visws.
+> > 
+> > thanks Robert. Today i've eliminated the VISWS subarch which greatly 
+> > simplified your series. I've picked up these two fixes:
+> > 
+> >  Robert Richter (2):
+> >        x86/pci merge: fixing numaq initialization
+> >        x86/pci: fix warnings in subsys_initcall functions
+> 
+> btw., this is how arch/x86/pci/Makefile looks like now in tip/master:
+> 
+> ----------------------------------------->
+> pci-y                           := fixup.o
+> pci-$(CONFIG_ACPI)              += acpi.o
+> pci-y                           += legacy.o irq.o
+> 
+> pci-$(CONFIG_X86_VISWS)         += visws.o
+> 
+> pci-$(CONFIG_X86_NUMAQ)         += numa.o
+> 
+> obj-y                           += $(pci-y) common.o early.o
+> obj-y                           += amd_bus.o
+> <-----------------------------------------
+> 
+> it's _really_ clean now, and we dont have those weird overrides anymore. 
+> Both VisWS and NUMAQ are now two straightforward runtime PCI overrides - 
+> not build-time complications. Much more maintainable i think.
 
-Hmmmm. XFS has a history of triggering unique bugs in crypted
-volumes - thank you for letting us know up front that this is
-what you are using.
+Yes, it really looks nice now.
 
-> Could it be that something is wrong with my xfs volume and this is not  
-> being properly handled (since it seems to refer to getbmap below?).
+-Robert
 
-Could be - xfs_check will tell you if there is anything wrong with
-it.
-
-> Kernel is configured with oldconfig from ubuntu hardy stock kernel plus  
-> Alsa. Hardware can be seen at  
-> <https://bugs.launchpad.net/ubuntu/+source/linux/+bug/235074>.
->
-> Kernel oopsed (caps lock+other flashing when I woke up this morning),  
-> don't know if it's related to the below bug or if it's something else.  
-> Screensaver was on so I couldn't see any text to see more info.
->
-> Jul  8 04:44:56 via kernel: [554197.888008] ------------[ cut here ]------------
-> Jul  8 04:44:56 via kernel: [554197.888008] kernel BUG at fs/xfs/support/debug.c:81!
-> Jul  8 04:44:56 via kernel: [554197.888008] invalid opcode: 0000 [#1] SMP
-> Jul  8 04:44:56 via kernel: [554197.888008] Modules linked in: soundcore  
-> ac97_bus isofs udf crc_itu_t nvidia(P) af_packet rfcomm l2c
-                               ^^^^^^^^^
-
-That could also be a factor.
-
->  Pid: 16200, comm: xfs_fsr Tainted: P          (2.6.26-rc8 #1)
->  EIP: 0060:[<f956201b>] EFLAGS: 00010282 CPU: 0
->  EIP is at assfail+0x1b/0x20 [xfs]
-             ^^^^^^^
-
-Oh - you must be running a debug XFS.  CONFIG_XFS_DEBUG was only
-introduced in 2.6.26-rc1 and defaults to 'N', so you must have
-selected the non-default option when prompted. This will cause your
-machine to oops at the slightest inconsistency that is found,
-regardless of whether it is fatal or not. Like the help text says,
-don't set this unless you are an XFS developer....
-
-That aside, what was the assert failure reported prior to the oops? i.e.
-paste the lines in the log before the ---[ cut here ]--- line?
-One of them will start with 'Assertion failed:', I think....
-
-Cheers,
-
-Dave.
 -- 
-Dave Chinner
-david@fromorbit.com
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
