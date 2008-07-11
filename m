@@ -1,170 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759217AbYGKPlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759051AbYGKPoP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759217AbYGKPlU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 11:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752345AbYGKPlL
+	id S1759051AbYGKPoP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 11:44:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753898AbYGKPn7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 11:41:11 -0400
-Received: from waste.org ([66.93.16.53]:34720 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751291AbYGKPlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 11:41:10 -0400
-Subject: Re: [RFC PATCH 5/5] kmemtrace: SLOB hooks.
-From: Matt Mackall <mpm@selenic.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Christoph Lameter <cl@linux-foundation.org>
-In-Reply-To: <84144f020807110144t359ef9d3q36a0ca7caa36841f@mail.gmail.com>
-References: <1215712946-23572-1-git-send-email-eduard.munteanu@linux360.ro>
-	 <1215712946-23572-2-git-send-email-eduard.munteanu@linux360.ro>
-	 <1215712946-23572-3-git-send-email-eduard.munteanu@linux360.ro>
-	 <1215712946-23572-4-git-send-email-eduard.munteanu@linux360.ro>
-	 <1215712946-23572-5-git-send-email-eduard.munteanu@linux360.ro>
-	 <20080710210623.1cad3c3c@linux360.ro>
-	 <84144f020807110144t359ef9d3q36a0ca7caa36841f@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 11 Jul 2008 10:36:37 -0500
-Message-Id: <1215790597.4800.2.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Jul 2008 11:43:59 -0400
+Received: from mail.mba-software.de ([62.75.137.201]:58887 "EHLO
+	mail.mba-software.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752836AbYGKPn7 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 11:43:59 -0400
+Message-ID: <48777FB9.8090102@mba-software.de>
+Date: Fri, 11 Jul 2008 17:43:53 +0200
+From: =?ISO-8859-1?Q?Marian_Aldenh=F6vel?= 
+	<marian.aldenhoevel@mba-software.de>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Gilles Espinasse <g.esp@free.fr>
+Subject: Re: Building a kernel for SiS55-based system. No, wait! It's a  Vortex86SX.
+References: <4860959E.6020207@mba-software.de> <1214471767.48635e574384b@imp.free.fr> <48708724.6020904@mba-software.de> <25e301c8df53$6a525780$f9b5a8c0@pii350>
+In-Reply-To: <25e301c8df53$6a525780$f9b5a8c0@pii350>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-On Fri, 2008-07-11 at 11:44 +0300, Pekka Enberg wrote:
-> Hi,
-> 
-> Matt, can you take a look at this? I know you don't want *debugging*
-> code in SLOB but this is for instrumentation.
+>>> Could you try with distrib images to know if it could be related to your
+>>> compilation system
 
-I presume this code all disappears in a default SLOB build?
+Thank you for your advice re network boot and trying stock kernels. I did
+set that up and learned a lot.
 
-> On Thu, Jul 10, 2008 at 9:06 PM, Eduard - Gabriel Munteanu
-> <eduard.munteanu@linux360.ro> wrote:
-> > This adds hooks for the SLOB allocator, to allow tracing with kmemtrace.
-> >
-> > Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-> > ---
-> >  mm/slob.c |   37 +++++++++++++++++++++++++++++++------
-> >  1 files changed, 31 insertions(+), 6 deletions(-)
-> >
-> > diff --git a/mm/slob.c b/mm/slob.c
-> > index a3ad667..44f395a 100644
-> > --- a/mm/slob.c
-> > +++ b/mm/slob.c
-> > @@ -65,6 +65,7 @@
-> >  #include <linux/module.h>
-> >  #include <linux/rcupdate.h>
-> >  #include <linux/list.h>
-> > +#include <linux/kmemtrace.h>
-> >  #include <asm/atomic.h>
-> >
-> >  /*
-> > @@ -463,27 +464,38 @@ void *__kmalloc_node(size_t size, gfp_t gfp, int node)
-> >  {
-> >        unsigned int *m;
-> >        int align = max(ARCH_KMALLOC_MINALIGN, ARCH_SLAB_MINALIGN);
-> > +       void *ret;
+For one I learned that the CPU I am fighting with is in fact called
+Vortex86SX. My first information (see subject) was either wrong or is a
+less well-known alias for the same chip. Sorry for that.
 
-There's tons of tab damage in this patch. Or perhaps it's just been
-mangled by someone's mailer?
+Once armed with that information I was able to find more bits and pieces:
 
-> >        if (size < PAGE_SIZE - align) {
-> >                if (!size)
-> >                        return ZERO_SIZE_PTR;
-> >
-> >                m = slob_alloc(size + align, gfp, align, node);
-> > +
-> >                if (!m)
-> >                        return NULL;
-> >                *m = size;
-> > -               return (void *)m + align;
-> > +               ret = (void *)m + align;
-> > +
-> > +               kmemtrace_mark_alloc_node(KMEMTRACE_KIND_KERNEL,
-> > +                                         _RET_IP_, ret,
-> > +                                         size, size + align, gfp, node);
-> >        } else {
-> > -               void *ret;
-> > +               unsigned int order = get_order(size);
-> >
-> > -               ret = slob_new_page(gfp | __GFP_COMP, get_order(size), node);
-> > +               ret = slob_new_page(gfp | __GFP_COMP, order, node);
-> >                if (ret) {
-> >                        struct page *page;
-> >                        page = virt_to_page(ret);
-> >                        page->private = size;
-> >                }
-> > -               return ret;
-> > +
-> > +               kmemtrace_mark_alloc_node(KMEMTRACE_KIND_KERNEL,
-> 
-> The latter case is actually page allocator pass-through so I wonder if
-> we want to use KIND_PAGES here instead?
-> 
-> > +                                         _RET_IP_, ret,
-> > +                                         size, PAGE_SIZE << order, gfp, node);
-> >        }
-> > +
-> > +       return ret;
-> >  }
-> >  EXPORT_SYMBOL(__kmalloc_node);
-> >
-> > @@ -501,6 +513,8 @@ void kfree(const void *block)
-> >                slob_free(m, *m + align);
-> >        } else
-> >                put_page(&sp->page);
-> > +
-> > +       kmemtrace_mark_free(KMEMTRACE_KIND_KERNEL, _RET_IP_, block);
-> 
-> Same comment here.
-> 
-> >  }
-> >  EXPORT_SYMBOL(kfree);
-> >
-> > @@ -569,10 +583,19 @@ void *kmem_cache_alloc_node(struct kmem_cache *c, gfp_t flags, int node)
-> >  {
-> >        void *b;
-> >
-> > -       if (c->size < PAGE_SIZE)
-> > +       if (c->size < PAGE_SIZE) {
-> >                b = slob_alloc(c->size, flags, c->align, node);
-> > -       else
-> > +               kmemtrace_mark_alloc_node(KMEMTRACE_KIND_CACHE,
-> > +                                         _RET_IP_, b, c->size,
-> > +                                         SLOB_UNITS(c->size) * SLOB_UNIT,
-> > +                                         flags, node);
-> > +       } else {
-> >                b = slob_new_page(flags, get_order(c->size), node);
-> > +               kmemtrace_mark_alloc_node(KMEMTRACE_KIND_CACHE,
-> > +                                         _RET_IP_, b, c->size,
-> > +                                         PAGE_SIZE << get_order(c->size),
-> > +                                         flags, node);
-> > +       }
-> >
-> >        if (c->ctor)
-> >                c->ctor(c, b);
-> > @@ -608,6 +631,8 @@ void kmem_cache_free(struct kmem_cache *c, void *b)
-> >        } else {
-> >                __kmem_cache_free(b, c->size);
-> >        }
-> > +
-> > +       kmemtrace_mark_free(KMEMTRACE_KIND_CACHE, _RET_IP_, b);
-> >  }
-> >  EXPORT_SYMBOL(kmem_cache_free);
-> >
-> > --
-> > 1.5.6.1
-> >
-> > --
-> > To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> > the body to majordomo@kvack.org.  For more info on Linux MM,
-> > see: http://www.linux-mm.org/ .
-> > Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> >
+   http://www.phys.ethz.ch/~abe/MicroClientJr/
+
+ > "Kompatibel zu 486SX statt Pentium MMX: Kleinerer Befehlssatz, keine FPU,
+ > schmälere Bus-Breite. Debian GNU/Linux 4.0 Etch läuft darauf (X.org aus Etch
+ > nicht), grml und Ubuntu nicht. Debian GNU/Linux Lenny/Sid Userland läft
+ > ebenfalls darauf, aber der 2.6.24er Kernel aus Sid nicht."
+
+"Compatible with 486SX instead of Pentium MMX: Smaller Instruction set, no
+FPU, narrower Bus. Debian GNU/Linux 4.0 Etch are running (X.org from Etch
+does not), grml and Ubuntu are not. Debian GNU/Linux Lenny/Sid Userland
+works but the 2.6.24 Kernel from Sid does not."
+
+The builder of the chip even has detailed information on how to build
+Linux 2.6.18 for it:
+
+   ftp://download@ftp.dmp.com.tw/vortex86sx/Vortex86SX_Linux_HowTo.pdf
+
+Patches included:
+
+   http://www.dmp.com.tw/tech/Vortex86SX/patch-2.6.18-DMP.gz
+
+The bottom line is that current kernels don't work, the last one I know that
+works is 2.6.18.. That is used in Debian Etch and I was able to confirm
+operation by booting that one.
+
+I have since downgraded my build-system to use 2.6.18.3 and that runs
+fine on my hardware. So now I can set it all up any way I like directly
+from upstream sources. Hooray!
+
+Thank you very much.
+
+Maybe someone smarter than me can figure out what the actual problem is,
+when it was introduced since 2.6.18 and then presumeably fix it. Until
+then I think I can live OK with the kernel I have now.
+
+Ciao, MM
 -- 
-Mathematics is the supreme nostalgia of our time.
+Marian Aldenhövel, Rosenhain 23, 53123 Bonn
+http://www.marian-aldenhoevel.de
+"I ran some quick calculations on it. He's about 80% on the right
+  track.  That leaves him only 20% dead when he crashes." Bob C
+
 
