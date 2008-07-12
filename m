@@ -1,70 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757599AbYGLCcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756752AbYGLCpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757599AbYGLCcR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 22:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbYGLCcG
+	id S1756752AbYGLCpL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 22:45:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbYGLCo6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 22:32:06 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:58194 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753054AbYGLCcF (ORCPT
+	Fri, 11 Jul 2008 22:44:58 -0400
+Received: from userg501.nifty.com ([202.248.238.81]:64359 "EHLO
+	userg501.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751201AbYGLCo5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 22:32:05 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Vivek Goyal <vgoyal@redhat.com>, Huang Ying <ying.huang@intel.com>,
-       nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-References: <1215401122.4660.4.camel@caritas-dev.intel.com>
-	<20080711122131.b6461ab1.akpm@linux-foundation.org>
-	<20080711202434.GB6261@elf.ucw.cz> <200807112240.59461.rjw@sisk.pl>
-Date: Fri, 11 Jul 2008 19:23:04 -0700
-In-Reply-To: <200807112240.59461.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Fri, 11 Jul 2008 22:40:58 +0200")
-Message-ID: <m1lk076dtj.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;"Rafael J. Wysocki" <rjw@sisk.pl>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
-	*      [score: 0.4330]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH -mm 1/2] kexec jump -v12: kexec jump
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+	Fri, 11 Jul 2008 22:44:57 -0400
+DomainKey-Signature: a=rsa-sha1; s=userg501; d=nifty.com; c=nofws; q=dns;
+	h=date:from:to:cc:subject:message-id:in-reply-to:references:
+	x-mailer:mime-version:content-type:content-transfer-encoding;
+	b=UAHglFEKYGbDAxEShOm6TsMAGODN3Al5pK5r6CXk0TUt092f44RnjztCrKD6OdpLg
+	YlwGPe1KzKzPTwRhllB8Q==
+X-Nifty-SrcIP: [220.145.29.110]
+Date: Sat, 12 Jul 2008 11:39:16 +0900
+From: Komuro <komurojun-mbn@nifty.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>,
+       linux-pcmcia <linux-pcmcia@lists.infradead.org>,
+       linux-kernel@vger.kernel.org,
+       Dominik Brodowski <linux@dominikbrodowski.net>,
+       linux-ide@vger.kernel.org,
+       Kristoffer Ericson <kristoffer.ericson@gmail.com>, jgarzik@redhat.com,
+       rjw@sisk.pl
+Subject: Re: [KERNEL 2.6.26-rc4]  bugreport : pata_pcmcia with Sandisk
+ Extreme III 8GB
+Message-Id: <20080712113916.fb69df6b.komurojun-mbn@nifty.com>
+In-Reply-To: <48743A1A.2010304@gmail.com>
+References: <20080528225049.9a134e0d.Kristoffer.Ericson@Gmail.com>
+	<20080528222740.GB20893@isilmar.linta.de>
+	<20080530135728.be02d3dc.Kristoffer.Ericson@Gmail.com>
+	<20080607223716.7d142072.komurojun-mbn@nifty.com>
+	<20080611072029.GB28692@comet.dominikbrodowski.net>
+	<20080614120055.ad8fbee0.komurojun-mbn@nifty.com>
+	<48537149.4040102@garzik.org>
+	<20080614213612.96873c25.komurojun-mbn@nifty.com>
+	<4855D8E2.10409@gmail.com>
+	<20080616221145.e3b069b9.komurojun-mbn@nifty.com>
+	<485669A0.6000404@gmail.com>
+	<20080617212345.c452d8c5.komurojun-mbn@nifty.com>
+	<20080706103752.13935ffd.komurojun-mbn@nifty.com>
+	<4870D46C.7000604@gmail.com>
+	<20080707214253.2406f81a.komurojun-mbn@nifty.com>
+	<48743A1A.2010304@gmail.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-> The truth is we could do hibernation without the freezer if
-> (a) some drivers were fixed not to rely on it (kexec doesn't help here),
-> (b) we had support at the block layer or filesystems level (kexec is a big
->    workaround here).
+Hello,
 
-I just realized with a little care the block layer does have support for this,
-or something very close.
+> Ah... super strange.  Can you please try to swap memory sticks around
+> and see whether anything changes to rule out bad memory?  
 
-You setup a software raid mirror with one disk device.    The physical
-device can come in and out while the filesystems depend on the real device.
+I tried the pata_pcmcia on 3(three) PC.but the result is same.
+So I think the memory is good.
 
-I expect a hardware pass through device configured to do exactly the
-above would be about 100 lines of code, so getting past the filesystem
-hurdle should be very doable.  Arguably we should be able to do this
-up a level, but it is easy enough to do that you can do a proof of
-concept with out that.
+> Another
+> possibility is DMA corrupting the memory and printk makes the timing
+> different and dodges the bullet.  Does putting msleep(100) in the
+> pata_pcmcia init_one make any difference?
 
-Now I'm curious to see how far you can go with just the device hotplug support.
+I tried the msleep , but it still does not work.
 
-Eric
+By the way,
+If I delete the pata_pcmcia.ko from /lib/modules/...
+and insert the ata pcmcia card,
+only /sys/bus/pcmcia/devices/0.0 exist.
+
+But if I install the pata_pcmcia.ko,
+/sys/bus/pcmcia/devices/0.0 and
+/sys/bus/pcmcia/devices/0.1 exist.
+
+Maybe the sysfs or something like that 
+is the problem.
+
+Best Regards
+Komuro
