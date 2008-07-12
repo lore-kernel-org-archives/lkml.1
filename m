@@ -1,100 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752955AbYGLE4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753273AbYGLFG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752955AbYGLE4j (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 00:56:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750900AbYGLE4c
+	id S1753273AbYGLFG3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 01:06:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750939AbYGLFGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 00:56:32 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46737 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750829AbYGLE4b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 00:56:31 -0400
-Date: Sat, 12 Jul 2008 06:56:15 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Robert Richter <robert.richter@amd.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [osrc-patches] [PATCH] x86: Add PCI IDs for AMD Barcelona PCI
-	devices
-Message-ID: <20080712045615.GA11092@elte.hu>
-References: <20080627140905.EBD1C83D4@erda.amd.com> <20080711124659.GC7963@erda.amd.com>
+	Sat, 12 Jul 2008 01:06:23 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:56900 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750844AbYGLFGW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jul 2008 01:06:22 -0400
+Date: Sat, 12 Jul 2008 07:06:12 +0200
+From: Sebastian Siewior <lkml@ml.breakpoint.cc>
+To: Dave Chinner <david@fromorbit.com>
+Cc: Mikael Abrahamsson <swmike@swm.pp.se>, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com
+Subject: Re: xfs bug in 2.6.26-rc9
+Message-ID: <20080712050612.GA11334@Chamillionaire.breakpoint.cc>
+References: <alpine.DEB.1.10.0807110939520.30192@uplift.swm.pp.se> <20080711084248.GU29319@disturbed> <20080711190209.GA7401@Chamillionaire.breakpoint.cc> <20080711232201.GG11558@disturbed>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20080711124659.GC7963@erda.amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080711232201.GG11558@disturbed>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Dave Chinner | 2008-07-12 09:22:01 [+1000]:
 
-* Robert Richter <robert.richter@amd.com> wrote:
+>I effectively quoted from it:
+>
+>config XFS_DEBUG
+>        bool "XFS Debugging support (EXPERIMENTAL)"
+>        depends on XFS_FS && EXPERIMENTAL
+>        help
+>          Say Y here to get an XFS build with many debugging features,
+>          including ASSERT checks, function wrappers around macros,
+>          and extra sanity-checking functions in various code paths.
+>
+>          Note that the resulting code will be HUGE and SLOW, and probably
+>          not useful unless you are debugging a particular problem.
+>
+>          Say N unless you are an XFS developer, or you play one on TV.
+>
+>> Debug mode is usually
+>> noisy, little slower and mostly usefull just to the developers but *I*
+>> would not expect to BUG() in the non-fatal case.
+>
+>What do you expect debug code to do? Asserts are designed to
+>drop the machine into a debugger when they fail so the problem can
+>be, well, debugged.
+Sorry, I haven't read this. Userspace assert() results in abort() so it
+sane to bug() in kernel.
 
-> Ingo, what about this patch. Could you apply it somewhere to the tip 
-> tree? I will then fix all hardcoded device entries in the code.
-
-i suspect we could do it if the include/linux/pci_ids.h modification is 
-fine with Jesse - it appears the maintenance policy right now is for 
-everyone to add to include/linux/pci_ids.h on an as-needed basis:
-
-$ git-log-line linus..linux-next include/linux/pci_ids.h
-
-# 1126de5: Merge commit 'mmc/next'
-# bd3b052: Merge commit 'galak/powerpc-next'
-# edf0e24: powerpc/85xx: Add support for MPC8536DS
-# 34f80b0: bnx2x: Add support for BCM57711 HW
-# d3bca0e: sdhci: support JMicron secondary interface
-# 4ae127d: Merge branch 'master' of master.kernel.org:/pub/scm/linux/kernel/git/
-# da65b53e4: Merge branch 'master' of master.kernel.org:/pub/scm/linux/kernel/git/
-# da57e6983: tg3: Add 5785 ASIC revision
-
-Which would normally go fine and not create conflicts because the 
-modifications are distributed randomly over that file.
-
-I'd suggest for you to send it together with the clean up patches, so 
-that the context is clear.
-
-	Ingo
-
-> On 27.06.08 16:04:28, Robert Richter wrote:
-> > Signed-off-by: Robert Richter <robert.richter@amd.com>
-> > ---
-> >  include/linux/pci_ids.h |    5 +++++
-> >  1 files changed, 5 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-> > index eafc9d6..4a2557c 100644
-> > --- a/include/linux/pci_ids.h
-> > +++ b/include/linux/pci_ids.h
-> > @@ -497,6 +497,11 @@
-> >  #define PCI_DEVICE_ID_AMD_K8_NB_ADDRMAP	0x1101
-> >  #define PCI_DEVICE_ID_AMD_K8_NB_MEMCTL	0x1102
-> >  #define PCI_DEVICE_ID_AMD_K8_NB_MISC	0x1103
-> > +#define PCI_DEVICE_ID_AMD_10H_NB_HT	0x1200
-> > +#define PCI_DEVICE_ID_AMD_10H_NB_MAP	0x1201
-> > +#define PCI_DEVICE_ID_AMD_10H_NB_DRAM	0x1202
-> > +#define PCI_DEVICE_ID_AMD_10H_NB_MISC	0x1203
-> > +#define PCI_DEVICE_ID_AMD_10H_NB_LINK	0x1204
-> >  #define PCI_DEVICE_ID_AMD_LANCE		0x2000
-> >  #define PCI_DEVICE_ID_AMD_LANCE_HOME	0x2001
-> >  #define PCI_DEVICE_ID_AMD_SCSI		0x2020
-> > -- 
-> > 1.5.5.4
-> > 
-> > _______________________________________________
-> > osrc-patches mailing list
-> > osrc-patches@elbe.amd.com
-> > https://ddcwww.amd.com/mailman/listinfo/osrc-patches
-> 
-> -- 
-> Advanced Micro Devices, Inc.
-> Operating System Research Center
-> email: robert.richter@amd.com
+>Dave.
+Sebastian
