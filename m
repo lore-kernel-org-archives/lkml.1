@@ -1,68 +1,275 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596AbYGLHxB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072AbYGLICI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754596AbYGLHxB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 03:53:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbYGLHww
+	id S1754072AbYGLICI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 04:02:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbYGLIB4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 03:52:52 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:17831 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752098AbYGLHwv (ORCPT
+	Sat, 12 Jul 2008 04:01:56 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:21404 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751883AbYGLIBz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 03:52:51 -0400
+	Sat, 12 Jul 2008 04:01:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=enj2scHrNEOUQpI8Z1eHVKhFNizB4kFjTCJCRC5Vu5/t0/byUEbsAmm+HRiavIsTK0
-         9AoqD3vqagbzEl5u/sSsAKipw6Z/r9ZZNG/snsVH5Yer1opXFgxZNk5irdm9XIryK/Ot
-         i3oUafauAkLeExgddW7+Th6Sc3HAMKnUU5p0c=
-Message-ID: <e2e108260807120052j5264ba21u118dda546128dd35@mail.gmail.com>
-Date: Sat, 12 Jul 2008 09:52:47 +0200
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Subject: Re: [Scst-devel] [ANNOUNCE]: Generic SCSI Target Mid-level For Linux (followup)
-Cc: "Vladislav Bolkhovitin" <vst@vlnb.net>, "Andrew Morton" <akpm@osdl.org>,
-       "Rafiu Fakunle" <rafiu@openfiler.com>, linux-scsi@vger.kernel.org,
-       "Jeff Garzik" <jeff@garzik.org>, "David Miller" <davem@davemloft.net>,
-       "Mike Mazarick" <mazarick@bellsouth.net>,
-       "Leonid Grossman" <leonid.grossman@neterion.com>,
-       linux-kernel@vger.kernel.org, "Pete Wyckoff" <pw@osc.edu>,
-       "Ross S. W. Walker" <rwalker@medallion.com>,
-       scst-devel <scst-devel@lists.sourceforge.net>,
-       "Ted Ts'o" <tytso@thunk.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Jerome Martin" <tramjoe.merin@gmail.com>,
-       "Christoph Hellwig" <hch@lst.de>,
-       "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>
-In-Reply-To: <1215833281.13668.94.camel@haakon2.linux-iscsi.org>
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=NabUUzf+rNS/8i6SvB8Dbs+aQy1xFiJMAGnRJdXTjDMmPhRwntETnuE1Z8S0cUryBB
+         jhG2muQTNK2Su2cHRkRzQhCYKAGbFj630zHugDm9PJ/OQ4HiXcHtp2BvQDWLBhfLrc6e
+         9QxoFHfkEPBgm52QLCmpgyGh8tKtab7oDPbJQ=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: [PATCH] x86: make 64bit have get_apic_id
+Date: Sat, 12 Jul 2008 01:01:20 -0700
+User-Agent: KMail/1.9.9
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <200807080141.05436.yhlu.kernel@gmail.com> <200807111843.11157.yhlu.kernel@gmail.com> <200807111844.17084.yhlu.kernel@gmail.com>
+In-Reply-To: <200807111844.17084.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <4873BCA5.10103@vlnb.net>
-	 <1215551354.3977.6.camel@haakon2.linux-iscsi.org>
-	 <48749EB2.1070902@vlnb.net>
-	 <1215632043.9339.89.camel@haakon2.linux-iscsi.org>
-	 <48765433.70604@vlnb.net>
-	 <1215725167.31245.104.camel@haakon2.linux-iscsi.org>
-	 <4877A948.6090507@vlnb.net>
-	 <1215833281.13668.94.camel@haakon2.linux-iscsi.org>
+Message-Id: <200807120101.20554.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 12, 2008 at 5:28 AM, Nicholas A. Bellinger
-<nab@linux-iscsi.org> wrote:
-> Using MC/S with a modern iSCSI implementation to take advantage of lots
-> of cores and hardware threads is something that allows one to multiplex
-> across multiple vendor's NIC ports, with the least possible overhead, in
-> the OS INDEPENDENT manner.
 
-Why do you emphasize MC/S so much ? Any datacenter operator that has
-the choice between MC/S and using a faster network technology will
-choose the last IMHO. It's much more convenient to use e.g. 10 GbE
-instead of multiple 1 GbE connections.
+and read_apic_id become macro
+GET_APIC_ID(apic_read(APIC_ID))
 
-Bart.
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+
+---
+ arch/x86/kernel/genapic_flat_64.c           |   26 +++++++++++++++++++++++---
+ arch/x86/kernel/genx2apic_cluster.c         |   20 +++++++++++++++++++-
+ arch/x86/kernel/genx2apic_phys.c            |   20 +++++++++++++++++++-
+ arch/x86/kernel/genx2apic_uv_x.c            |   23 ++++++++++++++++++++---
+ include/asm-x86/genapic_64.h                |    4 +++-
+ include/asm-x86/mach-default/mach_apic.h    |    2 +-
+ include/asm-x86/mach-default/mach_apicdef.h |    6 +++---
+ 7 files changed, 88 insertions(+), 13 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/genapic_flat_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/genapic_flat_64.c
++++ linux-2.6/arch/x86/kernel/genapic_flat_64.c
+@@ -97,11 +97,27 @@ static void flat_send_IPI_all(int vector
+ 		__send_IPI_shortcut(APIC_DEST_ALLINC, vector, APIC_DEST_LOGICAL);
+ }
+ 
++static unsigned int get_apic_id(unsigned long x)
++{
++	unsigned int id;
++
++	id = (((x)>>24) & 0xFFu);
++	return id;
++}
++
++static unsigned long set_apic_id(unsigned int id)
++{
++	unsigned long x;
++
++	x = ((id & 0xFFu)<<24);
++	return x;
++}
++
+ static unsigned int read_xapic_id(void)
+ {
+ 	unsigned int id;
+ 
+-	id = GET_APIC_ID(apic_read(APIC_ID));
++	id = get_apic_id(apic_read(APIC_ID));
+ 	return id;
+ }
+ 
+@@ -134,7 +150,9 @@ struct genapic apic_flat =  {
+ 	.send_IPI_self = apic_send_IPI_self,
+ 	.cpu_mask_to_apicid = flat_cpu_mask_to_apicid,
+ 	.phys_pkg_id = phys_pkg_id,
+-	.read_apic_id = read_xapic_id,
++	.get_apic_id = get_apic_id,
++	.set_apic_id = set_apic_id,
++	.apic_id_mask = (0xFFu<<24),
+ };
+ 
+ /*
+@@ -200,5 +218,7 @@ struct genapic apic_physflat =  {
+ 	.send_IPI_self = apic_send_IPI_self,
+ 	.cpu_mask_to_apicid = physflat_cpu_mask_to_apicid,
+ 	.phys_pkg_id = phys_pkg_id,
+-	.read_apic_id = read_xapic_id,
++	.get_apic_id = get_apic_id,
++	.set_apic_id = set_apic_id,
++	.apic_id_mask = (0xFFu<<24),
+ };
+Index: linux-2.6/arch/x86/kernel/genx2apic_cluster.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/genx2apic_cluster.c
++++ linux-2.6/arch/x86/kernel/genx2apic_cluster.c
+@@ -94,6 +94,22 @@ static unsigned int x2apic_cpu_mask_to_a
+ 		return BAD_APICID;
+ }
+ 
++static unsigned int get_apic_id(unsigned long x)
++{
++	unsigned int id;
++
++	id = x;
++	return id;
++}
++
++static unsigned long set_apic_id(unsigned int id)
++{
++	unsigned long x;
++
++	x = id;
++	return x;
++}
++
+ static unsigned int x2apic_read_id(void)
+ {
+ 	return apic_read(APIC_ID);
+@@ -131,5 +147,7 @@ struct genapic apic_x2apic_cluster = {
+ 	.send_IPI_self = x2apic_send_IPI_self,
+ 	.cpu_mask_to_apicid = x2apic_cpu_mask_to_apicid,
+ 	.phys_pkg_id = phys_pkg_id,
+-	.read_apic_id = x2apic_read_id,
++	.get_apic_id = get_apic_id,
++	.set_apic_id = set_apic_id,
++	.apic_id_mask = (0xFFFFFFFFu),
+ };
+Index: linux-2.6/arch/x86/kernel/genx2apic_phys.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/genx2apic_phys.c
++++ linux-2.6/arch/x86/kernel/genx2apic_phys.c
+@@ -84,6 +84,22 @@ static unsigned int x2apic_cpu_mask_to_a
+ 		return BAD_APICID;
+ }
+ 
++static unsigned int get_apic_id(unsigned long x)
++{
++	unsigned int id;
++
++	id = x;
++	return id;
++}
++
++static unsigned long set_apic_id(unsigned int id)
++{
++	unsigned long x;
++
++	x = id;
++	return x;
++}
++
+ static unsigned int x2apic_read_id(void)
+ {
+ 	return apic_read(APIC_ID);
+@@ -118,5 +134,7 @@ struct genapic apic_x2apic_phys = {
+ 	.send_IPI_self = x2apic_send_IPI_self,
+ 	.cpu_mask_to_apicid = x2apic_cpu_mask_to_apicid,
+ 	.phys_pkg_id = phys_pkg_id,
+-	.read_apic_id = x2apic_read_id,
++	.get_apic_id = get_apic_id,
++	.set_apic_id = set_apic_id,
++	.apic_id_mask = (0xFFFFFFFFu),
+ };
+Index: linux-2.6/arch/x86/kernel/genx2apic_uv_x.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/genx2apic_uv_x.c
++++ linux-2.6/arch/x86/kernel/genx2apic_uv_x.c
+@@ -139,16 +139,31 @@ static unsigned int uv_cpu_mask_to_apici
+ 		return BAD_APICID;
+ }
+ 
+-static unsigned int uv_read_apic_id(void)
++static unsigned int get_apic_id(unsigned long x)
+ {
+ 	unsigned int id;
+ 
+ 	WARN_ON(preemptible() && num_online_cpus() > 1);
+-	id = apic_read(APIC_ID) | __get_cpu_var(x2apic_extra_bits);
++	id = x | __get_cpu_var(x2apic_extra_bits);
+ 
+ 	return id;
+ }
+ 
++static long set_apic_id(unsigned int id)
++{
++	unsigned long x;
++
++	/* maskout x2apic_extra_bits ? */
++	x = id;
++	return x;
++}
++
++static unsigned int uv_read_apic_id(void)
++{
++
++	return get_apic_id(apic_read(APIC_ID));
++}
++
+ static unsigned int phys_pkg_id(int index_msb)
+ {
+ 	return uv_read_apic_id() >> index_msb;
+@@ -175,7 +190,9 @@ struct genapic apic_x2apic_uv_x = {
+ 	/* ZZZ.send_IPI_self = uv_send_IPI_self, */
+ 	.cpu_mask_to_apicid = uv_cpu_mask_to_apicid,
+ 	.phys_pkg_id = phys_pkg_id,	/* Fixme ZZZ */
+-	.read_apic_id = uv_read_apic_id,
++	.get_apic_id = get_apic_id,
++	.set_apic_id = set_apic_id,
++	.apic_id_mask = (0xFFFFFFFFu),
+ };
+ 
+ static __cpuinit void set_x2apic_extra_bits(int pnode)
+Index: linux-2.6/include/asm-x86/genapic_64.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/genapic_64.h
++++ linux-2.6/include/asm-x86/genapic_64.h
+@@ -28,7 +28,9 @@ struct genapic {
+ 	/* */
+ 	unsigned int (*cpu_mask_to_apicid)(cpumask_t cpumask);
+ 	unsigned int (*phys_pkg_id)(int index_msb);
+-	unsigned int (*read_apic_id)(void);
++	unsigned int (*get_apic_id)(unsigned long x);
++	unsigned long (*set_apic_id)(unsigned int id);
++	unsigned long apic_id_mask;
+ };
+ 
+ extern struct genapic *genapic;
+Index: linux-2.6/include/asm-x86/mach-default/mach_apic.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/mach-default/mach_apic.h
++++ linux-2.6/include/asm-x86/mach-default/mach_apic.h
+@@ -30,7 +30,7 @@ static inline cpumask_t target_cpus(void
+ #define cpu_mask_to_apicid (genapic->cpu_mask_to_apicid)
+ #define phys_pkg_id	(genapic->phys_pkg_id)
+ #define vector_allocation_domain    (genapic->vector_allocation_domain)
+-#define read_apic_id  (genapic->read_apic_id)
++#define read_apic_id()  (GET_APIC_ID(apic_read(APIC_ID)))
+ #define send_IPI_self (genapic->send_IPI_self)
+ extern void setup_apic_routing(void);
+ #else
+Index: linux-2.6/include/asm-x86/mach-default/mach_apicdef.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/mach-default/mach_apicdef.h
++++ linux-2.6/include/asm-x86/mach-default/mach_apicdef.h
+@@ -4,9 +4,9 @@
+ #include <asm/apic.h>
+ 
+ #ifdef CONFIG_X86_64
+-#define	APIC_ID_MASK		(0xFFu<<24)
+-#define GET_APIC_ID(x)		(((x)>>24) & 0xFFu)
+-#define	SET_APIC_ID(x)		(((x)<<24))
++#define	APIC_ID_MASK		(genapic->apic_id_mask)
++#define GET_APIC_ID(x)		(genapic->get_apic_id(x))
++#define	SET_APIC_ID(x)		(genapic->set_apic_id(x))
+ #else
+ #define		APIC_ID_MASK		(0xF<<24)
+ static inline unsigned get_apic_id(unsigned long x) 
