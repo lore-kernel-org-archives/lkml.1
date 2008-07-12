@@ -1,44 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbYGLTwF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754888AbYGLTzP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754572AbYGLTwF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 15:52:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbYGLTvz
+	id S1754888AbYGLTzP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 15:55:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbYGLTzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 15:51:55 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:23639 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751828AbYGLTvy (ORCPT
+	Sat, 12 Jul 2008 15:55:04 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2157 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752502AbYGLTzD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 15:51:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=RRFFe2zx2wXyHML9SxlzotNx1DMx6qvzLax2LK4Hixc2n58F+zv6Ud9Jt+2yQ08MQv
-         ddFqD1yykGM8xBGvdXinCb0y3KFj+lOyoZDpNziz7yJ+x0aoYoa80LR1638DHp9bkBMC
-         e+pYQo1SImxjtFzeWXdGsPIoY6tUnfdM/sQHA=
-Date: Sat, 12 Jul 2008 23:51:53 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>, yhlu.kernel@gmail.com
-Subject: apic merging
-Message-ID: <20080712195153.GA11442@asus>
+	Sat, 12 Jul 2008 15:55:03 -0400
+Date: Sat, 12 Jul 2008 15:55:02 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, <nigel@nigel.suspend2.net>,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       <linux-pm@lists.linux-foundation.org>, Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [linux-pm] [PATCH -mm 1/2] kexec jump -v12: kexec jump
+In-Reply-To: <m1ej5z4v7v.fsf@frodo.ebiederm.org>
+Message-ID: <Pine.LNX.4.44L0.0807121551590.17776-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On Fri, 11 Jul 2008, Eric W. Biederman wrote:
 
-in one of my mail I mentoined that I've started unification
-of apic code... that happens I will be quite busy a moth
-or maybe more with other duties so I'm not able to process
-on this :( if someone on lkml list was not starting such
-a procedure 'cause of me - please do. Sorry for my... well
-promises :(
+> > Forcing the second set of requests to filter through an extra software 
+> > layer is a clumsy way of accomplishing this.  There ought to be a 
+> > better approach.
+> 
+> The point was something different.  The reasons we can not store the
+> state of the system with the hardware devices logically hot unplugged
+> (and thus reuse all of the find device hotplug methods) is because
+> things like the filesystem layer don't know how to cope with their
+> block devices going away an coming back.
 
-		- Cyrill -
+This is not how the procedure works.  During hibernation, block devices
+are not logically hot-unplugged.  (If they were then they couldn't be
+used for writing the memory image.)  Instead, they are quiesced or
+suspended and their input queues are plugged.
+
+> That is the problem inserting an virtual software device in the middle
+> can solve.  If that works should there be a better way?  Certainly but
+> to prove it out starting with a block device wrapper is a trivial way to
+> go.
+
+This sounds like a solution to a non-existent problem.
+
+Alan Stern
+
