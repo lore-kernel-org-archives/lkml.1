@@ -1,73 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755854AbYGLWsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755618AbYGLXAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755854AbYGLWsp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 18:48:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbYGLWsi
+	id S1755618AbYGLXAj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 19:00:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbYGLXAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 18:48:38 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:8741 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752417AbYGLWsh (ORCPT
+	Sat, 12 Jul 2008 19:00:32 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:45019 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752370AbYGLXAb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 18:48:37 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5337"; a="4664565"
-Message-ID: <487934C6.9060802@qualcomm.com>
-Date: Sat, 12 Jul 2008 15:48:38 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sat, 12 Jul 2008 19:00:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=OZ0w8Kuaaozv4QcsSlpHPODlkxLkLH+jKZhxWjTIRRFMnFNUHTS3pru4xxYfpWIdxd
+         O4LX3ukXJenptKwNfY3oNzF8eCB0XHrfRnmdrghCcbDpbFnvAQsQOMRaQuOeygqUriCd
+         AIz59HMxRxG83WGm5F6Ubne3oGXmT4NWpSCVE=
+Message-ID: <19f34abd0807121600l653e28bfwb5cce2d880b7f2cd@mail.gmail.com>
+Date: Sun, 13 Jul 2008 01:00:30 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: current linux-2.6.git: cpusets completely broken
+Cc: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>,
+       "Paul Menage" <menage@google.com>,
+       "Max Krasnyansky" <maxk@qualcomm.com>, "Paul Jackson" <pj@sgi.com>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>, miaox@cn.fujitsu.com,
+       rostedt@goodmis.org, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.1.10.0807121504010.2959@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: a.p.zijlstra@chello.nl, pj@sgi.com, vegard.nossum@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] CGroups: Add a per-subsystem hierarchy lock
-References: <20080627075912.92AE43D6907@localhost>	 <6599ad830806271702y2c1df2edh3a75dda75336ddad@mail.gmail.com>	 <486AFC33.7010901@qualcomm.com>	 <6599ad830807021531r16013460re28f813be8293d6c@mail.gmail.com>	 <486C59BE.3020400@qualcomm.com> <6599ad830807101732w43e09514t281455861da53bad@mail.gmail.com>
-In-Reply-To: <6599ad830807101732w43e09514t281455861da53bad@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080712031736.GA3040@damson.getinternet.no>
+	 <alpine.LFD.1.10.0807112026390.2875@woody.linux-foundation.org>
+	 <b647ffbd0807120304o7a500dc9oce761e51c9dce908@mail.gmail.com>
+	 <alpine.LFD.1.10.0807121254490.2875@woody.linux-foundation.org>
+	 <alpine.LFD.1.10.0807121411350.2875@woody.linux-foundation.org>
+	 <alpine.LFD.1.10.0807121504010.2959@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Wed, Jul 2, 2008 at 9:46 PM, Max Krasnyansky <maxk@qualcomm.com> wrote:
->> mkdir /dev/cpuset
->> mount -t cgroup -o cpuset cpuset /dev/cpuset
->> mkdir /dev/cpuset/0
->> mkdir /dev/cpuset/1
->> echo 0-2 > /dev/cpuset/0/cpuset.cpus
->> echo 3   > /dev/cpuset/1/cpuset.cpus
->> echo 0 > /dev/cpuset/cpuset.sched_load_balance
->> echo 0 > /sys/devices/system/cpu/cpu3/online
->>
-> 
-> OK, I still can't reproduce this, on a 2-cpu system using one cpu for
-> each cpuset.
-> 
-> But the basic problem seemns to be that we have cpu_hotplug.lock taken
-> at the outer level (when offlining a CPU) and at the inner level (via
-> get_online_cpus() called from the guts of partition_sched_domains(),
-> if we didn't already take it at the outer level.
-Yes. I'm looking at this stuff right now.
+O Master Penguin,
 
-> While looking at the code trying to figure out a nice way around this,
-> it struck me that we have the call path
-> 
-> cpuset_track_online_nodes() ->
->   common_cpu_mem_hotplug_unplug() ->
->     scan_for_empty_cpusets() ->
->       access cpu_online_map with no calls to get_online_cpus()
-> 
-> Is that allowed? Maybe we need separate versions of
-> scan_for_empty_cpusets() that look at memory and cpus?
-Yes. This also came up in the other discussions. ie That we need to have this
-split up somehow. Looks like my fix for domain handling exposed all kinds of
-problems that we punted on before :).
+On Sun, Jul 13, 2008 at 12:07 AM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+> Assuming I didn't do anythign stupid, of course, which is why it would
+> definitely need much more testing. And especially if Vegard can test it
+> with the case that oopsed for him due to the bad migration..
 
-> I think that we're going to want eventually a solution such pushing
-> the locking of cpuset_subsys.hierarchy_mutex down into the first part
-> of partition_sched_domains, that actually walks the cpuset tree
-Right now I'm trying to get away with not using new locks. Since we need some
-solution for 2.6.26 and new cgroup locking that you added is probably a .27
-material.
+Your patch has been tested and found to be working!
 
-Max
+It was applied on top of latest linux-2.6.git with the right config
+and passed all my tests, including the bad test-case.
+
+(A little pet horse for the occasion: Testing can show the presence of
+errors, but not their absence. But that's a different story.)
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
