@@ -1,182 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753888AbYGLKDI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754263AbYGLKEr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753888AbYGLKDI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 06:03:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbYGLKC4
+	id S1754263AbYGLKEr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 06:04:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYGLKEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 06:02:56 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:54457 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751555AbYGLKCz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 06:02:55 -0400
-Message-ID: <487880D7.1040608@cn.fujitsu.com>
-Date: Sat, 12 Jul 2008 18:00:55 +0800
-From: Miao Xie <miaox@cn.fujitsu.com>
-Reply-To: miaox@cn.fujitsu.com
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Vegard Nossum <vegard.nossum@gmail.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Paul Menage <menage@google.com>, Max Krasnyansky <maxk@qualcomm.com>,
-       Paul Jackson <pj@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
+	Sat, 12 Jul 2008 06:04:39 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:1675 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752123AbYGLKEi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jul 2008 06:04:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=P/zq7H6PcsexKou1GT9EvRE9rHU1Mg3jIxw7Aa0pElY34cY1QHWNmJ8BiELxgZPxoF
+         mWWHkUR84/kquQadC7XPBjotqaZCeBJSVVP+6QUYDBgswhDgkCYo7gu1OC5KSNtjMmdF
+         7svmLQS+KpGgcOY0T+vWpQbpSaGGNuVDlV/CI=
+Message-ID: <b647ffbd0807120304o7a500dc9oce761e51c9dce908@mail.gmail.com>
+Date: Sat, 12 Jul 2008 12:04:36 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
 Subject: Re: current linux-2.6.git: cpusets completely broken
-References: <20080712031736.GA3040@damson.getinternet.no> <alpine.LFD.1.10.0807112026390.2875@woody.linux-foundation.org>
+Cc: "Vegard Nossum" <vegard.nossum@gmail.com>,
+       "Paul Menage" <menage@google.com>,
+       "Max Krasnyansky" <maxk@qualcomm.com>, "Paul Jackson" <pj@sgi.com>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>, miaox@cn.fujitsu.com,
+       rostedt@goodmis.org, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
 In-Reply-To: <alpine.LFD.1.10.0807112026390.2875@woody.linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080712031736.GA3040@damson.getinternet.no>
+	 <alpine.LFD.1.10.0807112026390.2875@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-on 2008-7-12 11:28 Linus Torvalds wrote:
-> 
+2008/7/12 Linus Torvalds <torvalds@linux-foundation.org>:
+>
+>
 > On Sat, 12 Jul 2008, Vegard Nossum wrote:
+>>
 >> Can somebody else please test/ack/review it too? This should eventually
 >> go into 2.6.26 if it doesn't break anything else.
-> 
-> And Dmitry, _please_ also explain what was going on. Why did things break 
-> from calling common_cpu_mem_hotplug_unplug() too much? That function is 
-> called pretty randomly anyway (for just about any random CPU event), so 
+>
+> And Dmitry, _please_ also explain what was going on. Why did things break
+> from calling common_cpu_mem_hotplug_unplug() too much? That function is
+> called pretty randomly anyway (for just about any random CPU event), so
 > why did it fail in some circumstances?
-> 
-> 		Linus
-> 
 
-My explanation:
-	http://lkml.org/lkml/2008/7/7/75
-this bug occurred on the kernel compiled with CONFIG_CPUSETS=y.
+Upon CPU_DOWN_PREPARE, update_sched_domains() ->
+detach_destroy_domains(&cpu_online_map) ;
+does the following:
 
-As Dmitry said in the following mail, modifying try_to_wake_up() to fix this bug
-is not perfect. Maybe we need update the sched domain before migrating tasks.
-	http://lkml.org/lkml/2008/7/7/94
+/*
+ * Force a reinitialization of the sched domains hierarchy. The domains
+ * and groups cannot be updated in place without racing with the balancing
+ * code, so we temporarily attach all running cpus to the NULL domain
+ * which will prevent rebalancing while the sched domains are recalculated.
+ */
 
-So I remake a patch to fix this bug by updating the sched domain when a cpu is in
-CPU_DOWN_PREPARE state.
+The sched-domains should be rebuilt when a CPU_DOWN ops. is completed,
+effectivelly either upon CPU_DEAD{_FROZEN} (upon success) or
+CPU_DOWN_FAILED{_FROZEN} (upon failure -- restore the things to their
+initial state). That's what update_sched_domains() also does but only
+for !CPUSETS case.
 
-I think Vegard Nossum's patch is not so good because it is not necessary to detach
-all the sched domains when making a cpu offline.
+With Max's patch, sched-domains' reinitialization is delegated to CPUSETS code:
 
-Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+cpuset_handle_cpuhp() -> common_cpu_mem_hotplug_unplug() ->
+rebuild_sched_domains()
 
----
- include/linux/sched.h |    1 +
- kernel/cpuset.c       |   30 +++++++++++++++++++++++++-----
- kernel/sched.c        |   28 +++++++++++++++++++++++++++-
- 3 files changed, 53 insertions(+), 6 deletions(-)
+which as you've said "called pretty randomly anyway", e.g. for CPU_UP_PREPARE.
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index c5d3f84..cf40eae 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -817,6 +817,7 @@ struct sched_domain {
- #endif
- };
- 
-+extern void detach_sched_domains(int cpu);
- extern void partition_sched_domains(int ndoms_new, cpumask_t *doms_new,
- 				    struct sched_domain_attr *dattr_new);
- extern int arch_reinit_sched_domains(void);
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-index 9fceb97..64fa742 100644
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -1910,13 +1910,33 @@ static void common_cpu_mem_hotplug_unplug(void)
-  */
- 
- static int cpuset_handle_cpuhp(struct notifier_block *unused_nb,
--				unsigned long phase, void *unused_cpu)
-+				unsigned long phase, void *hcpu)
- {
--	if (phase == CPU_DYING || phase == CPU_DYING_FROZEN)
--		return NOTIFY_DONE;
-+	int cpu = (long)hcpu;
- 
--	common_cpu_mem_hotplug_unplug();
--	return 0;
-+	switch (phase) {
-+	case CPU_DOWN_PREPARE:
-+	case CPU_DOWN_PREPARE_FROZEN:
-+		cgroup_lock();
-+		get_online_cpus();
-+		detach_sched_domains(cpu);
-+		put_online_cpus();
-+		cgroup_unlock();
-+		break;
-+
-+	case CPU_DOWN_FAILED:
-+	case CPU_DOWN_FAILED_FROZEN:
-+	case CPU_DEAD:
-+	case CPU_DEAD_FROZEN:
-+	case CPU_ONLINE:
-+	case CPU_ONLINE_FROZEN:
-+		common_cpu_mem_hotplug_unplug();
-+		break;
-+
-+	default:
-+		return NOTIFY_DONE;
-+	}
-+	return NOTIFY_OK;
- }
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 4e2f603..73e0026 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -7315,6 +7315,32 @@ static int dattrs_equal(struct sched_domain_attr *cur, int idx_cur,
- 			sizeof(struct sched_domain_attr));
- }
- 
-+
-+/*
-+ * Detach sched domains from a group of cpus which are in the same domain with
-+ * the specified cpu. These cpus will now be attach to the NULL domain.
-+ *
-+ * Call with hotplug lock and cgroup lock held
-+ */
-+void detach_sched_domains(int cpu)
-+{
-+	int i;
-+
-+	unregister_sched_domain_sysctl();
-+
-+	mutex_lock(&sched_domains_mutex);
-+
-+	for (i = 0; i < ndoms_cur; i++) {
-+		if (cpu_isset(cpu, doms_cur[i])) {
-+			detach_destroy_domains(doms_cur + i);
-+			cpus_clear(doms_cur[i]);
-+			break;
-+		}
-+	}
-+
-+	mutex_unlock(&sched_domains_mutex);
-+}
-+
- /*
-  * Partition sched domains as specified by the 'ndoms_new'
-  * cpumasks in the array doms_new[] of cpumasks. This compares
-@@ -7481,6 +7507,7 @@ int sched_create_sysfs_power_savings_entries(struct sysdev_class *cls)
- static int update_sched_domains(struct notifier_block *nfb,
- 				unsigned long action, void *hcpu)
- {
-+#ifndef CONFIG_CPUSETS
- 	switch (action) {
- 	case CPU_UP_PREPARE:
- 	case CPU_UP_PREPARE_FROZEN:
-@@ -7506,7 +7533,6 @@ static int update_sched_domains(struct notifier_block *nfb,
- 		return NOTIFY_DONE;
- 	}
- 
--#ifndef CONFIG_CPUSETS
- 	/*
- 	 * Create default domain partitioning if cpusets are disabled.
- 	 * Otherwise we let cpusets rebuild the domains based on the
+[ ah, then rebuild_sched_domains() should not be there. It should be
+nop for MEMPLUG events I presume - should make another patch. ]
+
+Being called for CPU_UP_PREPARE (and if its callback is called after
+update_sched_domains()), it just negates all the work done by
+update_sched_domains() -- i.e. a soon-to-be-offline cpu is included in
+the sched-domains and that makes it visible for the load-balancer
+while the CPU_DOWN ops. is in progress.
+
+__migrate_live_tasks() moves the tasks off a 'dead' cpu (it's already
+"offline" when this function is called).
+
+try_to_wake_up() is called for one of these tasks from another CPU ->
+the load-balancer (wake_idle()) picks up a "dead" CPU and places the
+task on it. Then e.g. BUG_ON(rq->nr_running) detects this a bit later
+-> oops.
+
+Now another funny thing is that we probably have a memory leak with
+common_cpu_mem_hotplug_unplug() "randomly" calling
+rebuild_sched_domains() and sometimes re-allocating domains when they
+already exist.
+
+
+>
+>                Linus
+>
+
 -- 
-1.5.4.rc3
-
-
+Best regards,
+Dmitry Adamushko
