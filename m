@@ -1,76 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754599AbYGLLF6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754612AbYGLLM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754599AbYGLLF6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 07:05:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYGLLFv
+	id S1754612AbYGLLM2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 07:12:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbYGLLMV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 07:05:51 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:59764 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752192AbYGLLFu (ORCPT
+	Sat, 12 Jul 2008 07:12:21 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50487 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751469AbYGLLMU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 07:05:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=lSy9QrQdeezqRu4FV0GSWNzr5XCk1vbpQpWxeCnlExGc5b55dc7+CMdeVENXyfkyJW
-         6oebQmlfTbor723f0t9+hv0kxHBVSJSoegPrgn+u0zTXWTV8Ns6xZ4oQPeq69bqqKNDu
-         WblxPQR+KdYPP24g+sCkUyViI/o1ekoh5bgHw=
-Message-ID: <b647ffbd0807120405j3a0d28eaq26df8858b2ff3d3d@mail.gmail.com>
-Date: Sat, 12 Jul 2008 13:05:49 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: miaox@cn.fujitsu.com
-Subject: Re: current linux-2.6.git: cpusets completely broken
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Vegard Nossum" <vegard.nossum@gmail.com>,
-       "Paul Menage" <menage@google.com>,
-       "Max Krasnyansky" <maxk@qualcomm.com>, "Paul Jackson" <pj@sgi.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>, rostedt@goodmis.org,
-       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <487880D7.1040608@cn.fujitsu.com>
+	Sat, 12 Jul 2008 07:12:20 -0400
+Date: Sat, 12 Jul 2008 20:11:02 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Tom Zanussi <tzanussi@gmail.com>, Jens Axboe <jens.axboe@oracle.com>
+Subject: [mmotm] smp.c: fix build error 
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20080712200835.F6AC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="ISO-2022-JP"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080712031736.GA3040@damson.getinternet.no>
-	 <alpine.LFD.1.10.0807112026390.2875@woody.linux-foundation.org>
-	 <487880D7.1040608@cn.fujitsu.com>
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/7/12 Miao Xie <miaox@cn.fujitsu.com>:
-> [ ... ]
->
-> My explanation:
->        http://lkml.org/lkml/2008/7/7/75
-> this bug occurred on the kernel compiled with CONFIG_CPUSETS=y.
->
-> As Dmitry said in the following mail, modifying try_to_wake_up() to fix this bug
-> is not perfect. Maybe we need update the sched domain before migrating tasks.
->        http://lkml.org/lkml/2008/7/7/94
->
-> So I remake a patch to fix this bug by updating the sched domain when a cpu is in
-> CPU_DOWN_PREPARE state.
->
-> I think Vegard Nossum's patch is not so good because it is not necessary to detach
-> all the sched domains when making a cpu offline.
+Against: mmotm
+Patch name: full-conversion-to-early_initcall-interface-remove-old-interface-fix-fix.patch
+Applies after: full-conversion-to-early_initcall-interface-remove-old-interface-fix.patch
 
-(that was my "not so good" patch :-)
+--------------------------------
 
-Yes, maybe. OTOH, your patch does it in a more drastic way which
-should be analyzed more carefully.
-Perhaps, for .27 but that's just my 2 cents.
+Now, init_call_single_data() is static function.
+then redundant declaration cause build error as below.
 
-Plus, rebuild_sched_domains() has to be called only for cpu-hotplug events.
+     kernel/smp.c:36: error: static declaration of ‘init_call_single_data’ follows non-static declaration
+     include/linux/smp.h:77: error: previous declaration of ‘init_call_single_data’ was here
+     kernel/smp.c:47: warning: initialization from incompatible pointer type
+     make[1]: *** [kernel/smp.o] error 1
 
-(I guess it just shows once more that common_cpu_mem_hotplug_unplug()
-should be re-designed a bit)
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>
+Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: Tom Zanussi <tzanussi@gmail.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+
+---
+ include/linux/smp.h |    5 -----
+ 1 file changed, 5 deletions(-)
+
+Index: b/include/linux/smp.h
+===================================================================
+--- a/include/linux/smp.h
++++ b/include/linux/smp.h
+@@ -74,15 +74,10 @@ void __smp_call_function_single(int cpui
+ #ifdef CONFIG_USE_GENERIC_SMP_HELPERS
+ void generic_smp_call_function_single_interrupt(void);
+ void generic_smp_call_function_interrupt(void);
+-void init_call_single_data(void);
+ void ipi_call_lock(void);
+ void ipi_call_unlock(void);
+ void ipi_call_lock_irq(void);
+ void ipi_call_unlock_irq(void);
+-#else
+-static inline void init_call_single_data(void)
+-{
+-}
+ #endif
+ 
+ /*
 
 
--- 
-Best regards,
-Dmitry Adamushko
+
+
