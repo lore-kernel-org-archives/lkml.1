@@ -1,80 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754670AbYGLVmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755243AbYGLWIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754670AbYGLVmb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 17:42:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbYGLVmW
+	id S1755243AbYGLWIc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 18:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbYGLWIY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 17:42:22 -0400
-Received: from mail.atlantis.sk ([80.94.52.35]:49829 "EHLO mail.atlantis.sk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751582AbYGLVmV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 17:42:21 -0400
-From: Ondrej Zary <linux@rainbow-software.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: pata_it821x completely broken
-Date: Sat, 12 Jul 2008 23:42:10 +0200
-User-Agent: KMail/1.9.9
-Cc: Alan Cox <alan@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-References: <200807042153.56644.linux@rainbow-software.org> <200807112043.36772.linux@rainbow-software.org> <20080711211409.2eef4ddb@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080711211409.2eef4ddb@lxorguk.ukuu.org.uk>
+	Sat, 12 Jul 2008 18:08:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54473 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752314AbYGLWIY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jul 2008 18:08:24 -0400
+Date: Sat, 12 Jul 2008 15:07:35 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+cc: Vegard Nossum <vegard.nossum@gmail.com>, Paul Menage <menage@google.com>,
+       Max Krasnyansky <maxk@qualcomm.com>, Paul Jackson <pj@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, miaox@cn.fujitsu.com,
+       rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: current linux-2.6.git: cpusets completely broken
+In-Reply-To: <alpine.LFD.1.10.0807121411350.2875@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0807121504010.2959@woody.linux-foundation.org>
+References: <20080712031736.GA3040@damson.getinternet.no>  <alpine.LFD.1.10.0807112026390.2875@woody.linux-foundation.org> <b647ffbd0807120304o7a500dc9oce761e51c9dce908@mail.gmail.com> <alpine.LFD.1.10.0807121254490.2875@woody.linux-foundation.org>
+ <alpine.LFD.1.10.0807121411350.2875@woody.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807122342.12841.linux@rainbow-software.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 11 July 2008 22:14:09 Alan Cox wrote:
-> > > commenting out the error check after ata_dev_init_params() call in
-> > > ata_dev_read_id() function (libata-core.c), I got at least the device
-> > > name. The capacity is 0 so it doesn't work, obviously:
->
-> If you don't read the ID then it wouldn't.
->
-> > I captured the IDENTIFY data from the virtual device. I'm not ATA guru
-> > but looking at the data, there are zeros at many places where something
-> > should be. That number starting at 0x78 looks like size of the array in
-> > sectors (0x4C726C or 0x4C6C72 - the array is built from 2.5GB and 6.4GB
-> > drives).
->
-> The Ident data for the virtual device is fairly sparse but the specs
-> don't require a lot of the field are filled in and only the LBA really
-> matters.
-
-The problem is that ata_id_n_sectors() function:
-
-static u64 ata_id_n_sectors(const u16 *id)
-{
-        if (ata_id_has_lba(id)) {
-                if (ata_id_has_lba48(id))
-                        return ata_id_u64(id, 100);
-                else
-                        return ata_id_u32(id, 60);
-        } else {
-                if (ata_id_current_chs_valid(id))
-                        return ata_id_u32(id, 57);
-                else
-                        return id[1] * id[3] * id[6];
-        }
-}
-
-fails to retrieve the LBA48 value.
 
 
-This is because the ata_id_has_lba() test
+On Sat, 12 Jul 2008, Linus Torvalds wrote:
+> 
+> This patch almost certainly doesn't work, but let me explain:
 
-#define ata_id_has_lba(id)      ((id)[49] & (1 << 9))
+Well, I decided to just take the plunge and test it. It WorksForMe(tm), so 
+it's no _totally_ broken. But I really didn't test it except to see that 
+it still booted, and I don't use cpusets and never saw the original bug, 
+of course.
 
-fails as the identify data contains only zeros at word 49 (byte 0x62). 
+But considering how simple it is, if it works for people as a way to work 
+around stupid CPU migration issues due to subtle wakeup calls, I'd almost 
+prefer to really solve this whole issue with that cpu_active_map thing. 
 
-Another problem is that ata_id_has_lba48() would fail too - that will break 
-array over 2TB (if the controller BIOS and firmware can do it).
+It's so simple it should be really _robust_ in the presense of problems 
+elsewhere (like the whole cpusets scheduling domain mess).
 
-Looks like this needs to force LBA48 with these virtual drives.
+Assuming I didn't do anythign stupid, of course, which is why it would 
+definitely need much more testing. And especially if Vegard can test it 
+with the case that oopsed for him due to the bad migration..
 
--- 
-Ondrej Zary
+		Linus
