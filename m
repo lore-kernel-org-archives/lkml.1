@@ -1,31 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753493AbYGLFze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753548AbYGLGF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753493AbYGLFze (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 01:55:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795AbYGLFzY
+	id S1753548AbYGLGF0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 02:05:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750896AbYGLGFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 01:55:24 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49490 "EHLO mx2.mail.elte.hu"
+	Sat, 12 Jul 2008 02:05:18 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40821 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751730AbYGLFzX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 01:55:23 -0400
-Date: Sat, 12 Jul 2008 07:54:44 +0200
+	id S1751381AbYGLGFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jul 2008 02:05:17 -0400
+Date: Sat, 12 Jul 2008 08:05:04 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       grundler@parisc-linux.org, tglx@linutronix.de, jgarzik@pobox.com,
-       linux-ide@vger.kernel.org, suresh.b.siddha@intel.com,
-       benh@kernel.crashing.org, jbarnes@virtuousgeek.org,
-       rdunlap@xenotime.net, mtk.manpages@gmail.com, ebiederm@xmission.com,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH 6/6] x86-64: Support for multiple MSIs
-Message-ID: <20080712055444.GA13420@elte.hu>
-References: <20080711211559.GV14894@parisc-linux.org> <1215811018-15270-6-git-send-email-matthew@wil.cx>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] x86: apic LVTT - use APIC_DIVISOR on 64bit mode
+Message-ID: <20080712060504.GB14714@elte.hu>
+References: <20080709190237.GA21423@asus>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1215811018-15270-6-git-send-email-matthew@wil.cx>
+In-Reply-To: <20080709190237.GA21423@asus>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,24 +36,31 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Matthew Wilcox <matthew@wil.cx> wrote:
+* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
 
-> Add support for allocating an aligned block of interrupt vectors. 
-> Allow interrupts to have up to 32 subchannels. Implement the 
-> arch_setup_msi_irqs() and arch_teardown_msi_irqs() interfaces.
+> We use APIC_TDR_DIV_16 while setting APIC_TDCR (divisor) it happened 
+> this moment is hidden from __setup_APIC_LVTT caller. So we better 
+> increment caller 'clocks' value to not change current behaviour and 
+> use APIC_DIVISOR (as already done in 32bit version).
 > 
-> Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
-> ---
->  arch/x86/kernel/io_apic_64.c |  221 +++++++++++++++++++++++++++++++++++------
->  arch/x86/kernel/irq_64.c     |    2 +-
->  include/asm-x86/irq_64.h     |    2 +
->  3 files changed, 191 insertions(+), 34 deletions(-)
+> The main benefit - unified procedure code for 32/64bit modes.
 
-hm, please implement this symmetrically on 64-bit and 32-bit as well. 
-That will need more IRQ infrastructure changes but that should be OK as 
-it will reduce the gap between the 32-bit and 64-bit side instead of 
-widening it. A good starting point would be to unify/generalize the IRQ 
-vector allocators. (and that would get most of what you need for 
-multi-vector MSI)
+> Please review carefully. Any comments are welcome.
+> I'm _not_ 100% sure if this patch is safe.
+
+hm, how about the other caller to __setup_APIC_LVTT(), 
+lapic_timer_setup():
+
+        case CLOCK_EVT_MODE_ONESHOT:
+                __setup_APIC_LVTT(calibration_result,
+                                  mode != CLOCK_EVT_MODE_PERIODIC, 1);
+                break;
+
+that will affect high-res timers. Wont calibration_result have the same 
+value after your patch as well, but only a 16th of it will be used in 
+__setup_APIC_LVTT(), causing 16 times shorter timeouts than intended?
+
+I.e. are we fixing a bug, are we changing nothing, or are we introducing 
+a bug? :-)
 
 	Ingo
