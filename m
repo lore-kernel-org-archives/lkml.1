@@ -1,105 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631AbYGLTTa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754900AbYGLTVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754631AbYGLTTa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 15:19:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbYGLTTW
+	id S1754900AbYGLTVy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 15:21:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbYGLTVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 15:19:22 -0400
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:58948 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751120AbYGLTTV (ORCPT
+	Sat, 12 Jul 2008 15:21:43 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:25226 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751120AbYGLTVl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 15:19:21 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5337"; a="4492401"
-Message-ID: <487903BA.9050103@qualcomm.com>
-Date: Sat, 12 Jul 2008 12:19:22 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sat, 12 Jul 2008 15:21:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=DuLTltqVWdtncp94ELZrm5tQZwy2ztyYjRLkUQWBpywiWRomI7mD7YTny4GzG3uadN
+         JeErVGxVRGaABXUZJSw1NjkygzKmFuChal9RzcayoWDddW0FooOz/2QPzeDlZtfInLJt
+         q1goiOrDVPIxE63GyzDORm+0yiU1vZfAx6UHQ=
+Message-ID: <19f34abd0807121221n75fd7bb8x24fa484239773201@mail.gmail.com>
+Date: Sat, 12 Jul 2008 21:21:38 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: linux-next: Tree for July 11
+Cc: "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
+       netdev@vger.kernel.org, "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       "Jens Axboe" <jens.axboe@oracle.com>
+In-Reply-To: <200807122051.50909.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Paul Menage <menage@google.com>, Paul Jackson <pj@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, miaox@cn.fujitsu.com,
-       rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: current linux-2.6.git: cpusets completely broken
-References: <20080712031736.GA3040@damson.getinternet.no>	 <alpine.LFD.1.10.0807112026390.2875@woody.linux-foundation.org> <b647ffbd0807120304o7a500dc9oce761e51c9dce908@mail.gmail.com>
-In-Reply-To: <b647ffbd0807120304o7a500dc9oce761e51c9dce908@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080711182557.9b24df1f.sfr@canb.auug.org.au>
+	 <200807122051.50909.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Adamushko wrote:
-> 2008/7/12 Linus Torvalds <torvalds@linux-foundation.org>:
->>
->> On Sat, 12 Jul 2008, Vegard Nossum wrote:
->>> Can somebody else please test/ack/review it too? This should eventually
->>> go into 2.6.26 if it doesn't break anything else.
->> And Dmitry, _please_ also explain what was going on. Why did things break
->> from calling common_cpu_mem_hotplug_unplug() too much? That function is
->> called pretty randomly anyway (for just about any random CPU event), so
->> why did it fail in some circumstances?
-> 
-> Upon CPU_DOWN_PREPARE, update_sched_domains() ->
-> detach_destroy_domains(&cpu_online_map) ;
-> does the following:
-> 
-> /*
->  * Force a reinitialization of the sched domains hierarchy. The domains
->  * and groups cannot be updated in place without racing with the balancing
->  * code, so we temporarily attach all running cpus to the NULL domain
->  * which will prevent rebalancing while the sched domains are recalculated.
->  */
-> 
-> The sched-domains should be rebuilt when a CPU_DOWN ops. is completed,
-> effectivelly either upon CPU_DEAD{_FROZEN} (upon success) or
-> CPU_DOWN_FAILED{_FROZEN} (upon failure -- restore the things to their
-> initial state). That's what update_sched_domains() also does but only
-> for !CPUSETS case.
-> 
-> With Max's patch, sched-domains' reinitialization is delegated to CPUSETS code:
-> 
-> cpuset_handle_cpuhp() -> common_cpu_mem_hotplug_unplug() ->
-> rebuild_sched_domains()
-> 
-> which as you've said "called pretty randomly anyway", e.g. for CPU_UP_PREPARE.
-> 
-> [ ah, then rebuild_sched_domains() should not be there. It should be
-> nop for MEMPLUG events I presume - should make another patch. ]
-> 
-> Being called for CPU_UP_PREPARE (and if its callback is called after
-> update_sched_domains()), it just negates all the work done by
-> update_sched_domains() -- i.e. a soon-to-be-offline cpu is included in
-> the sched-domains and that makes it visible for the load-balancer
-> while the CPU_DOWN ops. is in progress.
-> 
-> __migrate_live_tasks() moves the tasks off a 'dead' cpu (it's already
-> "offline" when this function is called).
-> 
-> try_to_wake_up() is called for one of these tasks from another CPU ->
-> the load-balancer (wake_idle()) picks up a "dead" CPU and places the
-> task on it. Then e.g. BUG_ON(rq->nr_running) detects this a bit later
-> -> oops.
-Ah, makes sense. Thanx for the explanation.
+On Sat, Jul 12, 2008 at 8:51 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> and the second one is the following:
+>
+> WARNING: at /home/rafael/src/linux-next/include/linux/blkdev.h:447 blk_plug_device+0x9b/0xb0()
+> Modules linked in: snd_hda_intel ohci1394 ieee1394 snd_pcm rtc_cmos sr_mod rtc_core floppy snd_timer wmi button cdrom rtc_lib serio_raw sky2 snd_page_alloc snd_hwdep snd evdev joydev sg soundcore raid456 async_xor async_memcpy async_tx xor raid0 usbhid ff_memless ehci_hcd ohci_hcd sd_mod edd raid1 ext3 jbd fan pata_marvell pata_atiixp thermal processor
+> Pid: 2244, comm: kjournald Not tainted 2.6.26-rc9-next #44
+>
+> Call Trace:
+>  [<ffffffff8023d37f>] warn_on_slowpath+0x5f/0x80
+>  [<ffffffff80220030>] ? hpet_unregister_irq_handler+0x0/0x30
+>  [<ffffffff8022a8ae>] ? kmemcheck_mark_initialized+0xe/0x10
+>  [<ffffffff802b97fb>] ? kmemcheck_slab_alloc+0x2b/0x50
+>  [<ffffffff802b8610>] ? kmem_cache_alloc+0xc0/0x140
+>  [<ffffffff80291921>] ? mempool_alloc_slab+0x11/0x20
+>  [<ffffffff80291a8b>] ? mempool_alloc+0x5b/0x140
+>  [<ffffffff803575db>] blk_plug_device+0x9b/0xb0
+>  [<ffffffff80453d9f>] bitmap_startwrite+0xbf/0x1b0
+>  [<ffffffff802e87e4>] ? bio_alloc_bioset+0x54/0xb0
+>  [<ffffffffa004eafa>] make_request+0x39a/0x810 [raid1]
+>  [<ffffffff80291a8b>] ? mempool_alloc+0x5b/0x140
+>  [<ffffffff80291a8b>] ? mempool_alloc+0x5b/0x140
+>  [<ffffffff8035682d>] generic_make_request+0x17d/0x2b0
+>  [<ffffffff803581dc>] submit_bio+0x6c/0xf0
+>  [<ffffffff802e3c60>] submit_bh+0xf0/0x130
+>  [<ffffffffa001cce0>] journal_commit_transaction+0xa40/0x1000 [jbd]
+>  [<ffffffff80248504>] ? try_to_del_timer_sync+0x44/0x90
+>  [<ffffffffa0020967>] kjournald+0xe7/0x250 [jbd]
+>  [<ffffffff80254350>] ? autoremove_wake_function+0x0/0x40
+>  [<ffffffffa0020880>] ? kjournald+0x0/0x250 [jbd]
+>  [<ffffffff80253efd>] kthread+0x4d/0x80
+>  [<ffffffff8020c6d9>] child_rip+0xa/0x11
+>  [<ffffffff80500f9b>] ? _spin_unlock_irq+0x2b/0x40
+>  [<ffffffff8020bd0f>] ? restore_args+0x0/0x30
+>  [<ffffffff80254052>] ? kthreadd+0x122/0x1a0
+>  [<ffffffff80253eb0>] ? kthread+0x0/0x80
+>  [<ffffffff8020c6cf>] ? child_rip+0x0/0x11
 
-> Now another funny thing is that we probably have a memory leak with
-> common_cpu_mem_hotplug_unplug() "randomly" calling
-> rebuild_sched_domains() and sometimes re-allocating domains when they
-> already exist.
-I beleive that part is ok. We used to have a leak in the scheduler code where
-arch_init_sched_domains() just allocated new masks without freeing the old
-ones. I fixed that. rebuild_sched_domains() -> partition_sched_domains() is
-clean (I think). partition_sched_domains() first does the cleanup and then
-takes ownership of the domain masks.
+Hm, even though there's kmemcheck in the stacktrace, I think it's
+unrelated. Probably it's just a call that returned and the addresses
+were left on the stack. You can also see that the warning clearly
+comes from blkdev.h, and since kmemcheck does *not* call into any
+blkdev stuff, those stacktrace entries must be just left-overs, as is
+also indicated by the unreliable mark, so although those are wrong in
+certain circumstances, I don't think they are in this case.
 
-btw It's perfectly ok (or at least it has be ok) to call
-rebuild_sched_domains() randomly because it's need to run every time
-sched_load_balance flags in the cpuset change, and on any other even that
-affects domains. As Paul J explained currently that's the only sane way to
-reconstruct the domains based on the cpuset settings.
+The warning comes from here:
 
-Max
+static inline int queue_flag_test_and_set(unsigned int flag,
+                                          struct request_queue *q)
+{
+        WARN_ON_ONCE(!queue_is_locked(q));
+
+I'll add Jens Axboe to Cc.
+
+Thanks for the heads-up!
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
