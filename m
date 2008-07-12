@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755618AbYGLXAj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755863AbYGLXCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755618AbYGLXAj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 19:00:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbYGLXAc
+	id S1755863AbYGLXCR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 19:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbYGLXCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 19:00:32 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:45019 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752370AbYGLXAb (ORCPT
+	Sat, 12 Jul 2008 19:02:08 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57025 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753442AbYGLXCH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 19:00:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=OZ0w8Kuaaozv4QcsSlpHPODlkxLkLH+jKZhxWjTIRRFMnFNUHTS3pru4xxYfpWIdxd
-         O4LX3ukXJenptKwNfY3oNzF8eCB0XHrfRnmdrghCcbDpbFnvAQsQOMRaQuOeygqUriCd
-         AIz59HMxRxG83WGm5F6Ubne3oGXmT4NWpSCVE=
-Message-ID: <19f34abd0807121600l653e28bfwb5cce2d880b7f2cd@mail.gmail.com>
-Date: Sun, 13 Jul 2008 01:00:30 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
+	Sat, 12 Jul 2008 19:02:07 -0400
+Date: Sat, 12 Jul 2008 16:01:26 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Max Krasnyansky <maxk@qualcomm.com>
+cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Paul Menage <menage@google.com>, Paul Jackson <pj@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, miaox@cn.fujitsu.com,
+       rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
 Subject: Re: current linux-2.6.git: cpusets completely broken
-Cc: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>,
-       "Paul Menage" <menage@google.com>,
-       "Max Krasnyansky" <maxk@qualcomm.com>, "Paul Jackson" <pj@sgi.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>, miaox@cn.fujitsu.com,
-       rostedt@goodmis.org, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.1.10.0807121504010.2959@woody.linux-foundation.org>
+In-Reply-To: <48793375.30607@qualcomm.com>
+Message-ID: <alpine.LFD.1.10.0807121556290.2959@woody.linux-foundation.org>
+References: <20080712031736.GA3040@damson.getinternet.no>  <alpine.LFD.1.10.0807112026390.2875@woody.linux-foundation.org> <b647ffbd0807120304o7a500dc9oce761e51c9dce908@mail.gmail.com> <alpine.LFD.1.10.0807121254490.2875@woody.linux-foundation.org>
+ <alpine.LFD.1.10.0807121411350.2875@woody.linux-foundation.org> <alpine.LFD.1.10.0807121504010.2959@woody.linux-foundation.org> <48793375.30607@qualcomm.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080712031736.GA3040@damson.getinternet.no>
-	 <alpine.LFD.1.10.0807112026390.2875@woody.linux-foundation.org>
-	 <b647ffbd0807120304o7a500dc9oce761e51c9dce908@mail.gmail.com>
-	 <alpine.LFD.1.10.0807121254490.2875@woody.linux-foundation.org>
-	 <alpine.LFD.1.10.0807121411350.2875@woody.linux-foundation.org>
-	 <alpine.LFD.1.10.0807121504010.2959@woody.linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-O Master Penguin,
-
-On Sun, Jul 13, 2008 at 12:07 AM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
-> Assuming I didn't do anythign stupid, of course, which is why it would
-> definitely need much more testing. And especially if Vegard can test it
-> with the case that oopsed for him due to the bad migration..
-
-Your patch has been tested and found to be working!
-
-It was applied on top of latest linux-2.6.git with the right config
-and passed all my tests, including the bad test-case.
-
-(A little pet horse for the occasion: Testing can show the presence of
-errors, but not their absence. But that's a different story.)
 
 
-Vegard
+On Sat, 12 Jul 2008, Max Krasnyansky wrote:
+> 
+> My vote goes for Dmitry's patch. The one with the full switch() statement.
+> Your simplified version with if() is correct (I think) but the switch() is
+> more explicit about what events are being processed.
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Well, I still haven't seen a combined patch+signoff+good explanation, so I 
+can't really commit it.
+
+> The cpu_active_map thing seems like an overkill. In a sense that we should not
+> try to add a new map for every such case. Granter this migration case may be
+> special enough to warrant the new map but in general I think it's not the
+> right way to go.
+
+Note how cpu_active_map has nothing to do with cpusets per se, and 
+everything to do with the fact that CPU migration currently seems to be 
+fundamentally flawed in the presense of a CPU hotunplug.
+
+Can somebody tell me why some _other_ random wakeup cannot cause the same 
+kind of migration at an inopportune time?
+
+The fact is, Dmitry's patch fixed _one_ particular wakeup from happening 
+(that just happened to be *guaranteed* to happen when it shouldn't!), but 
+as far as I can tell, it's a totally generic problem, with any
+
+	try_to_wake_up() -> load-balancer
+
+chain being able to trigger it by causing a migration to a CPU that we 
+are in the process of turning off.
+
+IOW, I don't think that my patch is overkill at all. I think it fixes the 
+real bug there.
+
+(It's also true that the cpusets code calls rebuild_sched_domains() way 
+too much, but that's a _stupidity_ issue, not the cause of the bug per se, 
+if I follow the code!)
+
+			Linus
