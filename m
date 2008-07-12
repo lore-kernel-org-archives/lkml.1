@@ -1,74 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753783AbYGLJwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753888AbYGLKDI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753783AbYGLJwS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 05:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbYGLJwI
+	id S1753888AbYGLKDI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 06:03:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbYGLKC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 05:52:08 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:56487 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752025AbYGLJwH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 05:52:07 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Suresh Siddha" <suresh.b.siddha@intel.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "steiner@sgi.com" <steiner@sgi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jeremy@goop.org" <jeremy@goop.org>
-References: <20080710181634.764954000@linux-os.sc.intel.com>
-	<20080711204521.GA15689@elte.hu>
-	<20080711212418.GV1678@linux-os.sc.intel.com>
-	<86802c440807111502n9835b5fybd99ed388bb71b7d@mail.gmail.com>
-	<86802c440807112016k38c8161aq143463ee57b24c35@mail.gmail.com>
-	<m163rb4v3j.fsf@frodo.ebiederm.org>
-	<86802c440807112317h23118e29j51113a052720d8db@mail.gmail.com>
-	<m1y7471t5t.fsf@frodo.ebiederm.org>
-	<86802c440807120049t2aaec131l4c735712f2befb2@mail.gmail.com>
-	<m1tzev1pyy.fsf@frodo.ebiederm.org>
-	<86802c440807120137l186864a3s5046ecbee6c63531@mail.gmail.com>
-Date: Sat, 12 Jul 2008 02:46:44 -0700
-In-Reply-To: <86802c440807120137l186864a3s5046ecbee6c63531@mail.gmail.com>
-	(Yinghai Lu's message of "Sat, 12 Jul 2008 01:37:01 -0700")
-Message-ID: <m1prpj1lkr.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sat, 12 Jul 2008 06:02:56 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:54457 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751555AbYGLKCz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jul 2008 06:02:55 -0400
+Message-ID: <487880D7.1040608@cn.fujitsu.com>
+Date: Sat, 12 Jul 2008 18:00:55 +0800
+From: Miao Xie <miaox@cn.fujitsu.com>
+Reply-To: miaox@cn.fujitsu.com
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;"Yinghai Lu" <yhlu.kernel@gmail.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0015]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.5 XM_Body_Dirty_Words Contains a dirty word
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [patch 00/26] x64, x2apic/intr-remap: Interrupt-remapping and x2apic support
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Vegard Nossum <vegard.nossum@gmail.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Paul Menage <menage@google.com>, Max Krasnyansky <maxk@qualcomm.com>,
+       Paul Jackson <pj@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: current linux-2.6.git: cpusets completely broken
+References: <20080712031736.GA3040@damson.getinternet.no> <alpine.LFD.1.10.0807112026390.2875@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807112026390.2875@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+on 2008-7-12 11:28 Linus Torvalds wrote:
+> 
+> On Sat, 12 Jul 2008, Vegard Nossum wrote:
+>> Can somebody else please test/ack/review it too? This should eventually
+>> go into 2.6.26 if it doesn't break anything else.
+> 
+> And Dmitry, _please_ also explain what was going on. Why did things break 
+> from calling common_cpu_mem_hotplug_unplug() too much? That function is 
+> called pretty randomly anyway (for just about any random CPU event), so 
+> why did it fail in some circumstances?
+> 
+> 		Linus
+> 
 
->> So in practice if you have 2 sockets you have a cluster id of 1.
->> Which means physical apic ids over 16 and logical apicids over 65536.
-> is it like
-> 0x0001, 0x0002, 0x0004, 0x0008, ...., 0x8000 in one cluster? so every
-> cluster only have 16
+My explanation:
+	http://lkml.org/lkml/2008/7/7/75
+this bug occurred on the kernel compiled with CONFIG_CPUSETS=y.
 
-Yes.  At least that is how I read the x2apic documentation.  
+As Dmitry said in the following mail, modifying try_to_wake_up() to fix this bug
+is not perfect. Maybe we need update the sched domain before migrating tasks.
+	http://lkml.org/lkml/2008/7/7/94
 
-Eric
+So I remake a patch to fix this bug by updating the sched domain when a cpu is in
+CPU_DOWN_PREPARE state.
+
+I think Vegard Nossum's patch is not so good because it is not necessary to detach
+all the sched domains when making a cpu offline.
+
+Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+
+---
+ include/linux/sched.h |    1 +
+ kernel/cpuset.c       |   30 +++++++++++++++++++++++++-----
+ kernel/sched.c        |   28 +++++++++++++++++++++++++++-
+ 3 files changed, 53 insertions(+), 6 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index c5d3f84..cf40eae 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -817,6 +817,7 @@ struct sched_domain {
+ #endif
+ };
+ 
++extern void detach_sched_domains(int cpu);
+ extern void partition_sched_domains(int ndoms_new, cpumask_t *doms_new,
+ 				    struct sched_domain_attr *dattr_new);
+ extern int arch_reinit_sched_domains(void);
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index 9fceb97..64fa742 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -1910,13 +1910,33 @@ static void common_cpu_mem_hotplug_unplug(void)
+  */
+ 
+ static int cpuset_handle_cpuhp(struct notifier_block *unused_nb,
+-				unsigned long phase, void *unused_cpu)
++				unsigned long phase, void *hcpu)
+ {
+-	if (phase == CPU_DYING || phase == CPU_DYING_FROZEN)
+-		return NOTIFY_DONE;
++	int cpu = (long)hcpu;
+ 
+-	common_cpu_mem_hotplug_unplug();
+-	return 0;
++	switch (phase) {
++	case CPU_DOWN_PREPARE:
++	case CPU_DOWN_PREPARE_FROZEN:
++		cgroup_lock();
++		get_online_cpus();
++		detach_sched_domains(cpu);
++		put_online_cpus();
++		cgroup_unlock();
++		break;
++
++	case CPU_DOWN_FAILED:
++	case CPU_DOWN_FAILED_FROZEN:
++	case CPU_DEAD:
++	case CPU_DEAD_FROZEN:
++	case CPU_ONLINE:
++	case CPU_ONLINE_FROZEN:
++		common_cpu_mem_hotplug_unplug();
++		break;
++
++	default:
++		return NOTIFY_DONE;
++	}
++	return NOTIFY_OK;
+ }
+ 
+ #ifdef CONFIG_MEMORY_HOTPLUG
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 4e2f603..73e0026 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -7315,6 +7315,32 @@ static int dattrs_equal(struct sched_domain_attr *cur, int idx_cur,
+ 			sizeof(struct sched_domain_attr));
+ }
+ 
++
++/*
++ * Detach sched domains from a group of cpus which are in the same domain with
++ * the specified cpu. These cpus will now be attach to the NULL domain.
++ *
++ * Call with hotplug lock and cgroup lock held
++ */
++void detach_sched_domains(int cpu)
++{
++	int i;
++
++	unregister_sched_domain_sysctl();
++
++	mutex_lock(&sched_domains_mutex);
++
++	for (i = 0; i < ndoms_cur; i++) {
++		if (cpu_isset(cpu, doms_cur[i])) {
++			detach_destroy_domains(doms_cur + i);
++			cpus_clear(doms_cur[i]);
++			break;
++		}
++	}
++
++	mutex_unlock(&sched_domains_mutex);
++}
++
+ /*
+  * Partition sched domains as specified by the 'ndoms_new'
+  * cpumasks in the array doms_new[] of cpumasks. This compares
+@@ -7481,6 +7507,7 @@ int sched_create_sysfs_power_savings_entries(struct sysdev_class *cls)
+ static int update_sched_domains(struct notifier_block *nfb,
+ 				unsigned long action, void *hcpu)
+ {
++#ifndef CONFIG_CPUSETS
+ 	switch (action) {
+ 	case CPU_UP_PREPARE:
+ 	case CPU_UP_PREPARE_FROZEN:
+@@ -7506,7 +7533,6 @@ static int update_sched_domains(struct notifier_block *nfb,
+ 		return NOTIFY_DONE;
+ 	}
+ 
+-#ifndef CONFIG_CPUSETS
+ 	/*
+ 	 * Create default domain partitioning if cpusets are disabled.
+ 	 * Otherwise we let cpusets rebuild the domains based on the
+-- 
+1.5.4.rc3
+
 
