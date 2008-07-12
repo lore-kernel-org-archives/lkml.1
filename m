@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751854AbYGLHZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754247AbYGLH0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751854AbYGLHZA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 03:25:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbYGLHYw
+	id S1754247AbYGLH0Y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 03:26:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbYGLH0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 03:24:52 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52428 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751813AbYGLHYv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 03:24:51 -0400
-Date: Sat, 12 Jul 2008 16:15:55 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [BUG] 2.6.26-rc8-mm1 - sleeping function called from invalid context at include/linux/pagemap.h:291
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       kernel-testers@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-In-Reply-To: <48737CBE.4010301@linux.vnet.ibm.com>
-References: <20080703020236.adaa51fa.akpm@linux-foundation.org> <48737CBE.4010301@linux.vnet.ibm.com>
-Message-Id: <20080712161058.F6A5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+	Sat, 12 Jul 2008 03:26:14 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:42932 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751829AbYGLH0N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jul 2008 03:26:13 -0400
+Date: Sat, 12 Jul 2008 11:26:10 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Pavel Machek <pavel@suse.cz>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [2/3] POHMELFS: Documentation.
+Message-ID: <20080712072610.GA8675@2ka.mipt.ru>
+References: <20080707180736.GA15687@2ka.mipt.ru> <20080707181019.GC15687@2ka.mipt.ru> <20080712070150.GD13483@ucw.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080712070150.GD13483@ucw.cz>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kamalesh,
+Hi.
 
-> Hi Andrew,
+On Sat, Jul 12, 2008 at 09:01:51AM +0200, Pavel Machek (pavel@suse.cz) wrote:
+> > + * Completely async processing of all events (hard, symlinks and rename are the
+> > + 	only exceptions) including object creation and data reading and writing.
 > 
-> While booting up and shutting down, x86 machine with 2.6.26-rc8-mm1 kernel,
-> kernel bug call trace is shows up in the logs
+> Hmm... this is little funny.
+> 
+> 	Async processing of most events (only exceptions are ...) ?
 
-That is known bug.
-please turn off CONFIG_UNEVICTABLE_LRU.
+There are people who belive that most with exceptions is still all :)
+Actually I think that if there are exceptions, than it is not 'all'.
+ 
+> > +POHMELFS network protocol.
+> > +
+> > +Basic structure used in network communication is following command:
+> > +
+> > +struct netfs_cmd
+> > +{
+> > +	__u16			cmd;	/* Command number */
+> > +	__u16			csize;	/* Attached crypto information size */
+> > +	__u16			cpad;	/* Attached padding size */
+> > +	__u16			ext;	/* External flags */
+> > +	__u32			size;	/* Size of the attached data */
+> > +	__u32			trans;	/* Transaction id */
+> > +	__u64			id;	/* Object ID to operate on. Used for feedback.*/
+> > +	__u64			start;	/* Start of the object. */
+> > +	__u64			iv;	/* IV sequence */
+> > +	__u8			data[0];
+> > +};
+> 
+> Which endianity?
 
-and see below thread.
+Big endian in the network. CPU endian on both ends.
 
-	[-mm] BUG: sleeping function called from invalid context at include/linux/pagemap.h:290
-
-
-
-
-
+-- 
+	Evgeniy Polyakov
