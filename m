@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755128AbYGLVPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754395AbYGLVUJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755128AbYGLVPp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 17:15:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbYGLVPf
+	id S1754395AbYGLVUJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 17:20:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbYGLVT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 17:15:35 -0400
-Received: from mercury.realtime.net ([205.238.132.86]:59508 "EHLO
-	ruth.realtime.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751904AbYGLVPe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 17:15:34 -0400
-X-Greylist: delayed 555 seconds by postgrey-1.27 at vger.kernel.org; Sat, 12 Jul 2008 17:15:34 EDT
-In-Reply-To: <20080712201703.GA12900@suse.de>
-References: <for-27-patch9@bga.com> <for-27-patch9-fix@bga.com> <20080712201703.GA12900@suse.de>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <6f3f3a9548ab981f04d3e3dd63cc1180@bga.com>
+	Sat, 12 Jul 2008 17:19:58 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:40295 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751982AbYGLVT5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jul 2008 17:19:57 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:Content-Type:Content-Transfer-Encoding;
+	b=kVCiXnylHOFDjxr+hL0nCzVLXU+vrgbD/D5u23YvZwYgzy6yQsK7OrumDbSRa+8Vm2Up8ITKZXkhMZIbSDrcbz8URBUkZg//8MRaDn6KE8SCsZsdnTQi7CWiTXGVWI8w;
+Message-ID: <48791FF4.2080503@simon.arlott.org.uk>
+Date: Sat, 12 Jul 2008 22:19:48 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080706)
+MIME-Version: 1.0
+To: Greg Kroah-Hartman <gregkh@suse.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] cxacru: Fix printk format flag in error message
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Cc: linux-pci@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org,
-       Michael Ellerman <michael@ellerman.id.au>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jean Delvare <khali@linux-fr.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Brian King <brking@us.ibm.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH/RESEND] pci: dynids.use_driver_data considered harmful
-Date: Sat, 12 Jul 2008 16:17:12 -0500
-To: Greg KH <gregkh@suse.de>
-X-Mailer: Apple Mail (2.624)
-X-Originating-IP: 216.126.174.49
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+"#%x" should have been "%#x"
 
-On Jul 12, 2008, at 3:17 PM, Greg KH wrote:
+Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+---
+ drivers/usb/atm/cxacru.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> On Sat, Jul 12, 2008 at 03:02:22PM -0500, Milton Miller wrote:
->
-> Milton, if you wish to ignore my response, well, that's up to you :(
->
+diff --git a/drivers/usb/atm/cxacru.c b/drivers/usb/atm/cxacru.c
+index 5ea3093..2ba43c4 100644
+--- a/drivers/usb/atm/cxacru.c
++++ b/drivers/usb/atm/cxacru.c
+@@ -602,7 +602,7 @@ static int cxacru_cm_get_array(struct cxacru_data *instance, enum cxacru_cm_requ
+ 			offd = le32_to_cpu(buf[offb++]);
+ 			if (offd >= size) {
+ 				if (printk_ratelimit())
+-					usb_err(instance->usbatm, "wrong index #%x in response to cm #%x\n",
++					usb_err(instance->usbatm, "wrong index %#x in response to cm %#x\n",
+ 						offd, cm);
+ 				ret = -EIO;
+ 				goto cleanup;
+-- 
+1.5.6.1
 
-I did not find your response until after I had done the resend,
-which was triggererd by the typo to linux-kernel.
-
-I have now replied to your NAK and hope you reconsider.
-
-milton
-
+-- 
+Simon Arlott
