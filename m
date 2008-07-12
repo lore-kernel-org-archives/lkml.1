@@ -1,79 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541AbYGLUvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbYGLU5r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755541AbYGLUvU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 16:51:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbYGLUvL
+	id S1754898AbYGLU5r (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 16:57:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbYGLU5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 16:51:11 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36069 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751925AbYGLUvJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 16:51:09 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andy Lutomirski <luto@myrealbox.com>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
-Date: Sat, 12 Jul 2008 22:53:31 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       kernel-testers-u79uwXL29TY76Z2rM5mHXA@public.gmane.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>
-References: <200807010148.02135.rjw@sisk.pl> <200807122051.25634.rjw@sisk.pl> <48791675.6060805@myrealbox.com>
-In-Reply-To: <48791675.6060805@myrealbox.com>
+	Sat, 12 Jul 2008 16:57:40 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:36060 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751982AbYGLU5j convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jul 2008 16:57:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=fxw4izEkoQUsyB0W6ANTbFDGFQ+CP0siD8xNO/bp2pt6RF6ZYKikVz9qjYUmKukKN6
+         6df4ljLJvqn5rA3Yd7l3Z2kVCZzhSZdxU5IlJ4d9dSHE63CcXxAyD1LFly9C4hqxHUO6
+         w5UiRg80IB/Shmp065cXvuvm9FogBsc3oLSfo=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: =?iso-8859-1?q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
+Subject: Re: [PATCH] x86_64: fix delayed signals
+Date: Sat, 12 Jul 2008 22:57:59 +0200
+User-Agent: KMail/1.8.2
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Elias Oltmanns <eo@nebensachen.de>,
+       Arjan van de Ven <arjan@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>
+References: <20080710215039.2A143154218@magilla.localdomain> <alpine.LFD.1.10.0807121011470.2875@woody.linux-foundation.org> <48791393.1020107@gmail.com>
+In-Reply-To: <48791393.1020107@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200807122253.32382.rjw@sisk.pl>
+Message-Id: <200807122257.59047.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 12 of July 2008, Andy Lutomirski wrote:
-> Rafael J. Wysocki wrote:
-> > On Saturday, 12 of July 2008, Andy Lutomirski wrote:
-> >> My Lenovo X61s fails to resume if I suspend it from within X, on both 
-> >> 2.6.26-rc9 and recent wireless-testing.  2.6.26-rc8 is fine, as is 
-> >> wireless-testing with 4b4f7280 reverted.  My in-progress bisect between 
-> >> -rc8 and -rc9 is also consistent with this being the problem.
-> >>
-> >> The symptom is that, when I push the power button to resume, the hard 
-> >> drive light turns on, the fan turns on, then the hard drive light turns 
-> >> off, the sleep light stays on, and the fan keeps running.  Sometimes the 
-> >> battery light will blink off very briefly (1/4 sec, maybe) every few 
-> >> seconds.  The system is locked hard at this point.
-> >>
-> >> I'm using Ubuntu Hardy userspace.
-> > 
-> > Well, that's bad.
-> > 
-> > There is the bugzilla entry at http://bugzilla.kernel.org/show_bug.cgi?id=11064
-> > for this bug and you've just confirmed my suspicion that this particular
-> > commit is to blame.
-> > 
-> > Can you please see if the appended patch changes anything?
-> 
-> More correctly:
-> 
-> If I suspend by typing pm-suspend or echo mem >/sys/power/state, then it 
-> resumes just fine.  If I log in to Gnome and push the suspend button, 
-> then it does not resume.  This seems to be the case with or without your 
-> patch.
+On Saturday 12 July 2008 22:26, Török Edwin wrote:
+> A bit off-topic, but something I noticed during the tests:
+> In my original test I have rm-ed the files right after launching dd in
+> the background, yet it still continued to write to the disk.
+> I can understand that if the file is opened O_RDWR, you might seek back
+> and read what you wrote, so Linux needs to actually do the write,
+> but why does it insist on writing to the disk, on a file opened with
+> O_WRONLY, after the file itself got unlinked?
 
-Is there an Intel graphics in your box?
+Because process can do 
 
-> -rc8 and -rc9 with the original patch 4b4f7280 resume fine no matter how 
-> I suspend.
+fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_RDWR)
 
-That's _really_ strange.
-
-In fact I have only one explanation, which is that the Gnome suspend button
-causes some user-space quirks to be applied, which are harmful and break the
-resume.  Also, without commit 4b4f7280 those quirks might have not been really
-executed.  Peter, does it sound reasonable?
-
-Thanks,
-Rafael
+at any time.
+--
+vda
