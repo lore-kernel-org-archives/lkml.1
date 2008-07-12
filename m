@@ -1,47 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755238AbYGLNaR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755397AbYGLNdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755238AbYGLNaR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 09:30:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbYGLNaF
+	id S1755397AbYGLNdi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 09:33:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbYGLNdb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 09:30:05 -0400
-Received: from [194.117.236.238] ([194.117.236.238]:38783 "EHLO
-	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1752545AbYGLNaE (ORCPT
+	Sat, 12 Jul 2008 09:33:31 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:35282 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750921AbYGLNda (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 09:30:04 -0400
-Date: Sat, 12 Jul 2008 16:28:36 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [RFC PATCH 4/5] kmemtrace: SLUB hooks.
-Message-ID: <20080712162836.6ea00830@linux360.ro>
-In-Reply-To: <487772A3.5040701@linux-foundation.org>
-References: <1215712946-23572-1-git-send-email-eduard.munteanu@linux360.ro>
-	<1215712946-23572-2-git-send-email-eduard.munteanu@linux360.ro>
-	<1215712946-23572-3-git-send-email-eduard.munteanu@linux360.ro>
-	<1215712946-23572-4-git-send-email-eduard.munteanu@linux360.ro>
-	<20080710210617.70975aed@linux360.ro>
-	<84144f020807110135w19cb9b5erff143912e5beb78c@mail.gmail.com>
-	<487772A3.5040701@linux-foundation.org>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
+	Sat, 12 Jul 2008 09:33:30 -0400
+Subject: Re: [PATCH v2] regulator: TI bq24022 Li-Ion Charger driver
+From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+To: Philipp Zabel <philipp.zabel@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <1215790087.16329.6.camel@localhost.localdomain>
+References: <1215790087.16329.6.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Sat, 12 Jul 2008 14:33:28 +0100
+Message-Id: <1215869608.6634.62.camel@odin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Jul 2008 09:48:03 -0500
-Christoph Lameter <cl@linux-foundation.org> wrote:
-
-> Pekka Enberg wrote:
->  
-> > Christoph, can you please take a look at this?
+On Fri, 2008-07-11 at 17:28 +0200, Philipp Zabel wrote:
+> This adds a regulator driver for the TI bq24022 Single-Chip
+> Li-Ion Charger with its nCE and ISET2 pins connected to GPIOs.
 > 
-> Yeah. I saw it. Is there some high level description as to how this
-> is going to be used?
+> Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
 
-Here is the userspace application's git tree:
-http://repo.or.cz/w/kmemtrace-user.git
+Applied.
+
+Thanks
+
+Liam
+
