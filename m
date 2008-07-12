@@ -1,76 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755250AbYGLVeH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754670AbYGLVmb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755250AbYGLVeH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 17:34:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753422AbYGLVda
+	id S1754670AbYGLVmb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 17:42:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbYGLVmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 17:33:30 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:45306 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753298AbYGLVd2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 17:33:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=Y/2eHHf/w+Zqm13S6/qiRvMNre0PrEr5pU+wfvCN6TbBZ+ZRROytOrq0ZwJTcVyVSz
-         fCR4sLq2PZs9Tv711ZoyJjA1jIXltHFf75WfNQPXxEMa/2fUWzG7oWj4LLl1hxWrhewb
-         vjNPc2Q7KELlBDmiIavDRggdv3L16g/r1LZ04=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [PATCH] x86: max_low_pfn_mapped fix #3
-Date: Sat, 12 Jul 2008 14:32:45 -0700
+	Sat, 12 Jul 2008 17:42:22 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:49829 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751582AbYGLVmV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jul 2008 17:42:21 -0400
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: pata_it821x completely broken
+Date: Sat, 12 Jul 2008 23:42:10 +0200
 User-Agent: KMail/1.9.9
-Cc: LKML <linux-kernel@vger.kernel.org>
-References: <200807080141.05436.yhlu.kernel@gmail.com> <200807092017.51004.yhlu.kernel@gmail.com> <200807102038.26591.yhlu.kernel@gmail.com>
-In-Reply-To: <200807102038.26591.yhlu.kernel@gmail.com>
+Cc: Alan Cox <alan@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+References: <200807042153.56644.linux@rainbow-software.org> <200807112043.36772.linux@rainbow-software.org> <20080711211409.2eef4ddb@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080711211409.2eef4ddb@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807121432.45759.yhlu.kernel@gmail.com>
+Message-Id: <200807122342.12841.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 11 July 2008 22:14:09 Alan Cox wrote:
+> > > commenting out the error check after ata_dev_init_params() call in
+> > > ata_dev_read_id() function (libata-core.c), I got at least the device
+> > > name. The capacity is 0 so it doesn't work, obviously:
+>
+> If you don't read the ID then it wouldn't.
+>
+> > I captured the IDENTIFY data from the virtual device. I'm not ATA guru
+> > but looking at the data, there are zeros at many places where something
+> > should be. That number starting at 0x78 looks like size of the array in
+> > sectors (0x4C726C or 0x4C6C72 - the array is built from 2.5GB and 6.4GB
+> > drives).
+>
+> The Ident data for the virtual device is fairly sparse but the specs
+> don't require a lot of the field are filled in and only the LBA really
+> matters.
 
-try to merge the range with same page size in init_memory_mapping
+The problem is that ata_id_n_sectors() function:
 
-so when GBpages is not there, we could do 2M pages at same time.
+static u64 ata_id_n_sectors(const u16 *id)
+{
+        if (ata_id_has_lba(id)) {
+                if (ata_id_has_lba48(id))
+                        return ata_id_u64(id, 100);
+                else
+                        return ata_id_u32(id, 60);
+        } else {
+                if (ata_id_current_chs_valid(id))
+                        return ata_id_u32(id, 57);
+                else
+                        return id[1] * id[3] * id[6];
+        }
+}
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+fails to retrieve the LBA48 value.
 
----
- arch/x86/mm/init_64.c |   14 ++++++++++++++
- 1 file changed, 14 insertions(+)
 
-Index: linux-2.6/arch/x86/mm/init_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/init_64.c
-+++ linux-2.6/arch/x86/mm/init_64.c
-@@ -763,6 +763,20 @@ unsigned long __init_refok init_memory_m
- 	end_pfn = end>>PAGE_SHIFT;
- 	nr_range = save_mr(mr, nr_range, start_pfn, end_pfn, 0);
- 
-+	/* try to merge same page size and continuous */
-+	for (i = 0; nr_range > 1 && i < nr_range - 1; i++) {
-+		unsigned long old_start;
-+		if (mr[i].end != mr[i+1].start ||
-+		    mr[i].page_size_mask != mr[i+1].page_size_mask)
-+			continue;
-+		/* move it */
-+		old_start = mr[i].start;
-+		memmove(&mr[i], &mr[i+1],
-+			 (nr_range - 1 - i) * sizeof (struct map_range));
-+		mr[i].start = old_start;
-+		nr_range--;
-+	}
-+
- 	for (i = 0; i < nr_range; i++)
- 		printk(KERN_DEBUG " %010lx - %010lx page %s\n",
- 				mr[i].start, mr[i].end,
+This is because the ata_id_has_lba() test
+
+#define ata_id_has_lba(id)      ((id)[49] & (1 << 9))
+
+fails as the identify data contains only zeros at word 49 (byte 0x62). 
+
+Another problem is that ata_id_has_lba48() would fail too - that will break 
+array over 2TB (if the controller BIOS and firmware can do it).
+
+Looks like this needs to force LBA48 with these virtual drives.
+
+-- 
+Ondrej Zary
