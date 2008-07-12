@@ -1,113 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754268AbYGLIa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbYGLIhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754268AbYGLIa4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 04:30:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbYGLIaq
+	id S1754489AbYGLIhR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 04:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751157AbYGLIhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 04:30:46 -0400
-Received: from chello212186124096.11.vie.surfer.at ([212.186.124.96]:38222
-	"EHLO wiesinger.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750902AbYGLIao (ORCPT
+	Sat, 12 Jul 2008 04:37:05 -0400
+Received: from rv-out-0506.google.com ([209.85.198.225]:7134 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751018AbYGLIhC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 04:30:44 -0400
-Date: Sat, 12 Jul 2008 10:29:59 +0200 (CEST)
-From: Gerhard Wiesinger <lists@wiesinger.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: Lots of con-current I/O = resets SATA link? (2.6.25.10)
-In-Reply-To: <alpine.LFD.1.10.0807090726200.686@bbs.intern>
-Message-ID: <alpine.LFD.1.10.0807121025310.10748@bbs.intern>
-References: <alpine.DEB.1.10.0807051252200.12562@p34.internal.lan> <alpine.LFD.1.10.0807071649340.1160@bbs.intern> <alpine.LFD.1.10.0807071705490.2997@bbs.intern> <alpine.DEB.1.10.0807071149530.32508@p34.internal.lan> <alpine.LFD.1.10.0807080811560.5439@bbs.intern>
- <alpine.DEB.1.10.0807080433550.17980@p34.internal.lan> <alpine.LFD.1.10.0807081232350.32659@bbs.intern> <alpine.DEB.1.10.0807080915040.23688@p34.internal.lan> <alpine.LFD.1.10.0807090726200.686@bbs.intern>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sat, 12 Jul 2008 04:37:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=niMVlOWb0QErVYgHHwW1cUtLvQ236Q/JD8fXQ21Bx/g8gaLBO5aaTi7R7ebC+qBi9H
+         slnj8OOoKsWiGgMeGu3eSfyDaML4Y/SN2rRgvrRDxUkGbXu6J/poE6ul6cABF/YID7KR
+         C/9BH2D1heGfbUyXlyXvOWVzP9jw0kdJ5zsX4=
+Message-ID: <86802c440807120137l186864a3s5046ecbee6c63531@mail.gmail.com>
+Date: Sat, 12 Jul 2008 01:37:01 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [patch 00/26] x64, x2apic/intr-remap: Interrupt-remapping and x2apic support
+Cc: "Suresh Siddha" <suresh.b.siddha@intel.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "steiner@sgi.com" <steiner@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jeremy@goop.org" <jeremy@goop.org>
+In-Reply-To: <m1tzev1pyy.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-MailScanner-Information-wiesinger.com: Please contact the ISP for more information
-X-MailScanner-wiesinger.com: Found to be clean
-X-MailScanner-SpamCheck-wiesinger.com: not spam, SpamAssassin (score=-4.399,
-	required 4.5, autolearn=not spam, ALL_TRUSTED -1.80, BAYES_00 -2.60)
-X-MailScanner-From: lists@wiesinger.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080710181634.764954000@linux-os.sc.intel.com>
+	 <20080711204521.GA15689@elte.hu>
+	 <20080711212418.GV1678@linux-os.sc.intel.com>
+	 <86802c440807111502n9835b5fybd99ed388bb71b7d@mail.gmail.com>
+	 <86802c440807112016k38c8161aq143463ee57b24c35@mail.gmail.com>
+	 <m163rb4v3j.fsf@frodo.ebiederm.org>
+	 <86802c440807112317h23118e29j51113a052720d8db@mail.gmail.com>
+	 <m1y7471t5t.fsf@frodo.ebiederm.org>
+	 <86802c440807120049t2aaec131l4c735712f2befb2@mail.gmail.com>
+	 <m1tzev1pyy.fsf@frodo.ebiederm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Jul 12, 2008 at 1:11 AM, Eric W. Biederman
+<ebiederm@xmission.com> wrote:
+> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+>
+>>>> also read the x2APIC spec pdf, it doesn't say anything about interrupt
+>>>> remapping...need to be used with x2apic...
+>>>
+>>> Clustered logical mode won't work as it requires > 16 bits of apicid.
+>>> So only flat physical mode will work.
+>>
+>> current read_apic_id in genx2apic_cluster and genx2apic_phys is the same...
+>
+> There is a fixed defined mapping between logical & physical mappings,
+> so that may not be an issue.
+>
+> A logical cluster apicid is encoded with the high 16bits being the
+> cluster number, and the low 16bits being a bitmap of which core
+> in the cluster to send the irq to.  It sounded like a single
+> cluster can not span multiple sockets.
+>
+> So in practice if you have 2 sockets you have a cluster id of 1.
+> Which means physical apic ids over 16 and logical apicids over 65536.
+is it like
+0x0001, 0x0002, 0x0004, 0x0008, ...., 0x8000 in one cluster? so every
+cluster only have 16
 
-
-On Wed, 9 Jul 2008, Gerhard Wiesinger wrote:
-
-> On Tue, 8 Jul 2008, Justin Piszcz wrote:
->
->>>>>> Hi Gerhard,
->>>> 
->>>> Please run:
->>>> 
->>>> smartctl -t short /dev/sdc
->>>> sleep 300
->>>> smartctl -t long /dev/sdc
->>>> 
->>>> Wait 2-3 hours or more and:
->>>> 
->>>> smartctl -a /dev/sdc
->>> 
->>> 
->>> I'm changing the disk one more time ...
->> 
->> Once you replace the disk please re-run the tests shown above and show us 
->> the output please.
->> 
->> How many SAMSUNG disks have you gone through, do they really fail that 
->> often?
->> 
->
-> Hello Justin!
->
-> Setup Power suppply:
-> sda-sdd are on the same power supply cable, sde, sdf are on a second one.
->
-> I changed the disk to a new SAMSUNG disk and the first raid resync did NOT 
-> work and I had 1 reallocated sector ...
->
-> Also the RMA guy at our very good computer store (http://www.ditech.at/) were 
-> helpfull in changing the disks and he hates the SAMSUNG disks because of high 
-> RMA rates ...
->
-> But:
-> smart checks were ok (details see below). The smart checks are shown as 
-> aborted, but before running the next tests they were at "Completed without 
-> error" (strange).
->
-> Now sdc has it's own power cable and I'm running a raid resync now.
->
-> Power supply is:
-> ATX 385 Watt, ENERMAX PRO82+
->
-> Load on power supply measured on 220V side with a true RMS Wattmeter:
-> Power off: 6,5W
-> Max seen at power up: 196W
-> BIOS: 114,1W
-> Linux idle: 92,0W
-> 100% Disk I/O, 100% CPU load: 149,6W
-> => Everything fine and as expected.
->
-> I'll keep you up to date ...
->
-
-Hello!
-
-It looks like it works now without any problems:
-*) Serveral RAID checks (once a day)
-*) smartctl checks were fine
-*) Only one reallocated sector
-*) Writing the disk full with random data
-
-So the possibilities for the fault are:
-*) SATA power connector (most likely I would guess)
-*) 4th disk is now ok
-*) Other 220V power cable connector through the Wattmeter
-
-Ciao,
-Gerhard
-
---
-http://www.wiesinger.com/
+YH
