@@ -1,126 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759000AbYGLAvw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757817AbYGLBKF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759000AbYGLAvw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 20:51:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756025AbYGLAvp
+	id S1757817AbYGLBKF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 21:10:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756009AbYGLBJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 20:51:45 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:43726 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755933AbYGLAvo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 20:51:44 -0400
-Subject: Re: [patch 13/17] Use WARN() in drivers/base/
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu
-In-Reply-To: <1215817836.10052.2.camel@johannes.berg>
-References: <20080708093800.274504ba@infradead.org>
-	 <20080708095307.6423cb6f@infradead.org>
-	 <20080711122011.7ddf42ef.akpm@linux-foundation.org>
-	 <20080711135409.6638498d@infradead.org>
-	 <20080711151110.ab2b5401.akpm@linux-foundation.org>
-	 <1215817836.10052.2.camel@johannes.berg>
+	Fri, 11 Jul 2008 21:09:55 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:54735 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755365AbYGLBJy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 21:09:54 -0400
+X-Greylist: delayed 451 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Jul 2008 21:09:54 EDT
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [PATCH -mm 1/2] kexec jump -v12: kexec jump
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Huang Ying <ying.huang@intel.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       Horms <horms@verge.net.au>
+In-Reply-To: <20080711201149.GB3298@redhat.com>
+References: <1215401122.4660.4.camel@caritas-dev.intel.com>
+	 <20080708145051.GA14745@redhat.com>
+	 <20080711122131.b6461ab1.akpm@linux-foundation.org>
+	 <20080711201149.GB3298@redhat.com>
 Content-Type: text/plain
-Date: Sat, 12 Jul 2008 02:51:22 +0200
-Message-Id: <1215823882.10052.5.camel@johannes.berg>
+Date: Sat, 12 Jul 2008 11:02:17 +1000
+Message-Id: <1215824537.7319.7.camel@nigel-laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi.
 
-> #define WARN_ON(test, fmt...)           	\
->   do {                                  	\
->       if (test) {                       	\
->           warn_on_slowpath(cnt(fmt) , ## fmt);	\
->           printf("WARN\n");             	\
->       }                                 	\
->   } while (0)
+On Fri, 2008-07-11 at 16:11 -0400, Vivek Goyal wrote:
+> Hi Andrew,
+> 
+> We can use this patchset for hibernation, but can it be a better way of doing
+> things than what we already have, I don't know. Last time I had raised
+> this question and power people had various views. In the end, Pavel wanted
+> this patchset to be in.  Pavel, can tell more here...
+> 
+> To me this patchset looks interesting for couple of reasons.
+> 
+> - Looks like an interesting feature where one can have a separate kernel
+>   in memory and one can switch between the kernels on the fly. It can
+>   be modified to have more than one kernel in memory at a time.
 
-That doesn't play well with the bugtrap stuff, obviously. This one is a
-bit better, but still has more overhead than the bugtrap stuff, but
-avoids the overhead in the no-argument case.
+I'm not sure how useful that would be, though. I already have
+functionality in TuxOnIce which allows you to resume a different image
+instead of powering off (roughly the same thing when combined with not
+removing the image after resuming). It was neat when testing to be able
+to switch back and forth, and I developed the code because I imagined
+that it could form part of the foundation for switching between a login
+screen and users' stored sessions. Is this what you're imagining?
 
+> - So far kexec was one directional. One can only kexec to new kernel and
+>   old kernel was gone. Now this patchset makes kexec functionality kind
+>   of bidirectional and this looks like logical extension and can lead
+>   to intersting use cases in future.
 
-#include <stdarg.h>
-#include <stdio.h>
+Ah. You mean keeping both kernels in memory at the same time? In the
+above, I was replacing one image with another.
 
-#define unlikely(x) (x)
+> Huang also talks of using this feature for snapshotting kernel and
+> invoking some BIOS code in protected mode. I am not very sure how exactly
+> are they planning to use it. Huang, do you have more details on this?
 
-#define hasargs(...) _hasargs( , ## __VA_ARGS__)
-#define _hasargs(...) __hasargs(__VA_ARGS__,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0)
-#define __hasargs(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,x17,x18,x19,n,ys...) n
+As Rafael wrote, snapshotting is a completely different beast.
 
-static void warn_slowpath(int count, ...)
-{
-	va_list args;
-	char *fmt;
+Regards,
 
-	printf("WARNING: <<\n");
-
-	if (count) {
-		va_start(args, count);
-		fmt = va_arg(args, char *);
-		vprintf(fmt, args);
-		va_end(args);
-	}
-	printf(">>\n");
-}
-
-/*
- * This is the original arch WARN_ON that just emits
- * a trap instruction and a bugtrap section entry for
- * example on powerpc.
- *
- * Obviously this isn't, but it could be.
- */
-#define BUGTRAP_WARN_ON(test) ({			\
-	if (unlikely(test))				\
-		printf("WARNING: %s\n", #test);		\
-	unlikely(test);					\
-})
-
-/*
- * This is a WARN_ON for some other architectures that don't
- * use the bugtrap section, it calls the slowpath function
- * which leads to more code size. But when you've added
- * parameters to your WARN_ON those need to be calculated
- * as well so you've already increased code size.
- */
-#define OUT_OF_LINE_WARN_ON(test, fmt...) ({		\
-	if (unlikely(test))				\
-		warn_slowpath(hasargs(fmt) , ## fmt);	\
-	unlikely(test);					\
-})
-
-/*
- * This new version determines whether to do a bugtrap
- * entry or not depending on whether there were any extra
- * arguments given.
- */
-#define CONFIG_BUG_EXTRA_VERBOSE
-#ifdef CONFIG_BUG_EXTRA_VERBOSE
-#define WARN_ON(test, fmt...) ({			\
-	if (!hasargs(fmt))				\
-		BUGTRAP_WARN_ON(test);			\
-	else						\
-		OUT_OF_LINE_WARN_ON(test , ## fmt);	\
-})
-#else
-#define WARN_ON(test, fmt...) BUGTRAP_WARN_ON(test)
-#endif
-
-int main(void)
-{
-	WARN_ON(1);
-	WARN_ON(2, "asdf %d %d\n", 7, 8);
-	WARN_ON(3, "asdf\n");
-
-	return 0;
-}
-
+Nigel
 
