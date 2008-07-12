@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754667AbYGLPIF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273AbYGLPIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754667AbYGLPIF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 11:08:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbYGLPHz
+	id S1755273AbYGLPIY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 11:08:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754837AbYGLPII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 11:07:55 -0400
-Received: from bruhost-2.ispvds.com ([82.146.33.243]:60531 "EHLO
-	bruhost-2.ispvds.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752317AbYGLPHy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 11:07:54 -0400
-Message-ID: <4878C8B7.2030400@r000n.net>
-Date: Sat, 12 Jul 2008 19:07:35 +0400
-From: Roman Mindalev <lists@r000n.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
+	Sat, 12 Jul 2008 11:08:08 -0400
+Received: from THAUM.MIT.EDU ([18.95.3.27]:42414 "EHLO luto.stanford.edu"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754684AbYGLPIG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jul 2008 11:08:06 -0400
+Message-ID: <4878C8D5.9030707@myrealbox.com>
+Date: Sat, 12 Jul 2008 11:08:05 -0400
+From: Andy Lutomirski <luto@myrealbox.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #11035] System hangs on 2.6.26-rc8
-References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik>	<uBi7uNfg81L.A.xt.SzLcIB@albercik>	<487600B3.2010008@r000n.net> <20080710150841.139c2a71@doriath.conectiva>
-In-Reply-To: <20080710150841.139c2a71@doriath.conectiva>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andi Kleen <andi@firstfloor.org>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, kernel-testers@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
+References: <200807010148.02135.rjw@sisk.pl> <20080701063133.GC16642@elte.hu> <4869D4A3.3020000@zytor.com> <200807012239.44105.rjw@sisk.pl> <486A96C1.2020106@firstfloor.org> <48784F51.1010407@myrealbox.com> <48789EC3.2070701@firstfloor.org>
+In-Reply-To: <48789EC3.2070701@firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (bruhost-2.ispvds.com [82.146.33.243]); Sat, 12 Jul 2008 17:07:44 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luiz Fernando N. Capitulino wrote:
-> Em Thu, 10 Jul 2008 16:29:39 +0400
-> Roman Mindalev <lists@r000n.net> escreveu:
+Andi Kleen wrote:
+> Andy Lutomirski wrote:
+>> My Lenovo X61s fails to resume if I suspend it from within X, on both
+>> 2.6.26-rc9 and recent wireless-testing.  2.6.26-rc8 is fine, as is
+>> wireless-testing with 4b4f7280 reverted.  My in-progress bisect between
+>> -rc8 and -rc9 is also consistent with this being the problem.
 > 
-> | Rafael J. Wysocki wrote:
-> | > This message has been generated automatically as a part of a report
-> | > of recent regressions.
-> | > 
-> | > The following bug entry is on the current list of known regressions
-> | > from 2.6.25.  Please verify if it still should be listed.
-> | > 
-> | > 
-> | > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11035
-> | > Subject		: System hangs on 2.6.26-rc8
-> | > Submitter	: Roman Mindalev <lists@r000n.net>
-> | > Date		: 2008-07-02 14:25 (5 days old)
-> | > References	: http://marc.info/?l=linux-kernel&m=121500871414995&w=4
-> | > 
-> | > 
-> | > 
-> | I have this problem with 2.6.25 too.
-> | Unfortunately, I can't check 2.6.24. With config from 2.6.26-rc8 I got
-> | error of compiling:
-> | 
-> |   LD      .tmp_vmlinux1
-> | kernel/built-in.o: In function `timespec_add_ns':
-> | /usr/src/kernels/linux-2.6.24/include/linux/time.h:179: undefined
-> | reference to `__umoddi3'
+> With "this" do you mean the patch being applied or not applied?
 > 
->  [...]
+> As in does it fail with the patch applied?
 > 
->  You're trying to compile with gcc 4.3, right? 
-Yes, GCC 4.3.1. With time.patch kernel compiled successfully. Thanks for
-help!
+> You can confirm that by only applying the patch and testing.
+
+The tree as of 4b4f2780 (the title patch of this thread) fails to 
+resume.  Its parent works fine.  Which makes this patch the culprit.  (I 
+just tried both.)
+
+--Andy
