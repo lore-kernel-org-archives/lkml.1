@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755108AbYGLLPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754728AbYGLLbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755108AbYGLLPV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 07:15:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbYGLLOw
+	id S1754728AbYGLLbq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 07:31:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbYGLLbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 07:14:52 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50523 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752192AbYGLLOv (ORCPT
+	Sat, 12 Jul 2008 07:31:37 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:4358 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751469AbYGLLbg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 07:14:51 -0400
-Date: Sat, 12 Jul 2008 20:14:21 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Tom Zanussi <tzanussi@gmail.com>
-Subject: [mmotm] relay: fix build error
-Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20080712201206.F6B0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-2022-JP"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+	Sat, 12 Jul 2008 07:31:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=RCdZbrp9WiClpBkuwfA5pvXXHu6qYsm2t0wK5cF25rhjlPUMLzIm9EHBQHp+mBzguR
+         4fjOrqZRRfjYrxzxi80naSxsHMe8RIztK9STkHHDVgiq0FcOmG8HuQ9ZAIeKqSg1JEUv
+         IWKHmPnkf3pXX1dgcwX1KokaeCbZ1SpTIQwrg=
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
+       akpm@linux-foundation.org
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Carl Henrik Lunde <chlunde@ping.uio.no>,
+       axboe@kernel.dk, matt@bluehost.com, roberto@unbit.it,
+       randy.dunlap@oracle.com, Divyesh Shah <dpshah@google.com>,
+       subrata@linux.vnet.ibm.com, eric.rannaud@gmail.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [PATCH -mm 0/3] cgroup: block device i/o bandwidth controller (v5)
+Date: Sat, 12 Jul 2008 13:31:28 +0200
+Message-Id: <1215862291-26719-1-git-send-email-righi.andrea@gmail.com>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <>
+References: <>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-against: mmotm
-patchname: relay-add-buffer-only-channels-useful-for-early-logging-fix.patch
-applies after: relay-add-buffer-only-channels-useful-for-early-logging.patch
 
-recently, smp_call_function remove retry argument.
-it cause following build error on mmotm.
+The objective of the i/o bandwidth controller is to improve i/o performance
+predictability of different cgroups sharing the same block devices.
 
-	kernel/relay.c: In function ‘relay_late_setup_files’:
-	kernel/relay.c:754: error: too many arguments to function ‘smp_call_function_single’
-	make[1]: *** [kernel/relay.o] error 1
+Respect to other priority/weight-based solutions the approach used by this
+controller is to explicitly choke applications' requests that directly (or
+indirectly) generate i/o activity in the system.
 
+The direct bandwidth limiting method has the advantage of improving the
+performance predictability at the cost of reducing, in general, the overall
+performance of the system (in terms of throughput).
 
+Detailed informations about design, its goal and usage are described in the
+documentation.
 
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: Tom Zanussi <tzanussi@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>
+Tested against 2.6.26-rc8-mm1.
 
----
- kernel/relay.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+The all-in-one patch (and previous versions) can be found at:
+http://download.systemimager.org/~arighi/linux/patches/io-throttle/
 
-Index: b/kernel/relay.c
-===================================================================
---- a/kernel/relay.c
-+++ b/kernel/relay.c
-@@ -751,7 +751,7 @@ int relay_late_setup_files(struct rchan 
- 			/* relay_channels_mutex must be held, so wait. */
- 			err = smp_call_function_single(i,
- 						       __relay_set_buf_dentry,
--						       &disp, 0, 1);
-+						       &disp, 1);
- 		}
- 		if (unlikely(err))
- 			break;
+Thanks to Li Zefan for reviewing.
 
+Changelog: (v4 -> v5)
+  - rebase to 2.6.26-rc8-mm1
+  - handle AIO opportunely: return -EAGAIN from sys_io_submit(), instead of
+    making to sleep tasks doing AIO
+  - userspace=>kernel interface now accepts the following syntaxes:
+    * dev:0                       <- to delete a limiting rule
+    * dev:bw-limit:0              <- define a leaky bucket throttling rule
+    * dev:bw-limit:1:bucket-size  <- define a token bucket throttling rule
+  - use .write_string and .read_seq_string to simplify iothrottle_read() and
+    iothrottle_write() functions
+  - use a enum structure to enumerate the various throttling algorithms
 
+TODO:
+  - see documentation
+
+-Andrea
