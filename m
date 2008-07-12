@@ -1,81 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757817AbYGLBKF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757716AbYGLBpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757817AbYGLBKF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jul 2008 21:10:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756009AbYGLBJz
+	id S1757716AbYGLBpA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jul 2008 21:45:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755983AbYGLBow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jul 2008 21:09:55 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:54735 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755365AbYGLBJy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jul 2008 21:09:54 -0400
-X-Greylist: delayed 451 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Jul 2008 21:09:54 EDT
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [PATCH -mm 1/2] kexec jump -v12: kexec jump
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Huang Ying <ying.huang@intel.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       Horms <horms@verge.net.au>
-In-Reply-To: <20080711201149.GB3298@redhat.com>
-References: <1215401122.4660.4.camel@caritas-dev.intel.com>
-	 <20080708145051.GA14745@redhat.com>
-	 <20080711122131.b6461ab1.akpm@linux-foundation.org>
-	 <20080711201149.GB3298@redhat.com>
-Content-Type: text/plain
-Date: Sat, 12 Jul 2008 11:02:17 +1000
-Message-Id: <1215824537.7319.7.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Fri, 11 Jul 2008 21:44:52 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:20719 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751337AbYGLBov (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jul 2008 21:44:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=L6Pbd5RKrx7EptCmV/q1EdTxaw2dVCpkO46lVuHf7RQfFaCvDg7SSDLwcsx1sfUnU3
+         ZpMOwO6dddaY2KDeSCbiY0wYd1Mv4FjU9QxCL7r5kbZfv4AzV9WiRKjdRrWO7trIs2uh
+         c8vKKS6lR+qDMRX9njjUVf7QMfMdhzQlCBZK0=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: [PATCH] x86: let 32bit use apic_ops too
+Date: Fri, 11 Jul 2008 18:41:54 -0700
+User-Agent: KMail/1.9.9
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <200807080141.05436.yhlu.kernel@gmail.com> <200807092017.51004.yhlu.kernel@gmail.com> <200807102038.26591.yhlu.kernel@gmail.com>
+In-Reply-To: <200807102038.26591.yhlu.kernel@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807111841.55403.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
 
-On Fri, 2008-07-11 at 16:11 -0400, Vivek Goyal wrote:
-> Hi Andrew,
-> 
-> We can use this patchset for hibernation, but can it be a better way of doing
-> things than what we already have, I don't know. Last time I had raised
-> this question and power people had various views. In the end, Pavel wanted
-> this patchset to be in.  Pavel, can tell more here...
-> 
-> To me this patchset looks interesting for couple of reasons.
-> 
-> - Looks like an interesting feature where one can have a separate kernel
->   in memory and one can switch between the kernels on the fly. It can
->   be modified to have more than one kernel in memory at a time.
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-I'm not sure how useful that would be, though. I already have
-functionality in TuxOnIce which allows you to resume a different image
-instead of powering off (roughly the same thing when combined with not
-removing the image after resuming). It was neat when testing to be able
-to switch back and forth, and I developed the code because I imagined
-that it could form part of the foundation for switching between a login
-screen and users' stored sessions. Is this what you're imagining?
+---
+ arch/x86/kernel/apic_32.c |   39 +++++++++++++++++++++++++++++++--------
+ include/asm-x86/apic.h    |   13 ++-----------
+ 2 files changed, 33 insertions(+), 19 deletions(-)
 
-> - So far kexec was one directional. One can only kexec to new kernel and
->   old kernel was gone. Now this patchset makes kexec functionality kind
->   of bidirectional and this looks like logical extension and can lead
->   to intersting use cases in future.
-
-Ah. You mean keeping both kernels in memory at the same time? In the
-above, I was replacing one image with another.
-
-> Huang also talks of using this feature for snapshotting kernel and
-> invoking some BIOS code in protected mode. I am not very sure how exactly
-> are they planning to use it. Huang, do you have more details on this?
-
-As Rafael wrote, snapshotting is a completely different beast.
-
-Regards,
-
-Nigel
-
+Index: linux-2.6/arch/x86/kernel/apic_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic_32.c
++++ linux-2.6/arch/x86/kernel/apic_32.c
+@@ -145,19 +145,13 @@ static int modern_apic(void)
+ 	return lapic_get_version() >= 0x14;
+ }
+ 
+-void apic_icr_write(u32 low, u32 id)
+-{
+-	apic_write_around(APIC_ICR2, SET_APIC_DEST_FIELD(id));
+-	apic_write_around(APIC_ICR, low);
+-}
+-
+-void apic_wait_icr_idle(void)
++void xapic_wait_icr_idle(void)
+ {
+ 	while (apic_read(APIC_ICR) & APIC_ICR_BUSY)
+ 		cpu_relax();
+ }
+ 
+-u32 safe_apic_wait_icr_idle(void)
++u32 safe_xapic_wait_icr_idle(void)
+ {
+ 	u32 send_status;
+ 	int timeout;
+@@ -173,6 +167,35 @@ u32 safe_apic_wait_icr_idle(void)
+ 	return send_status;
+ }
+ 
++void xapic_icr_write(u32 low, u32 id)
++{
++	apic_write_around(APIC_ICR2, SET_APIC_DEST_FIELD(id));
++	apic_write_around(APIC_ICR, low);
++}
++
++u64 xapic_icr_read(void)
++{
++	u32 icr1, icr2;
++
++	icr2 = apic_read(APIC_ICR2);
++	icr1 = apic_read(APIC_ICR);
++
++	return icr1 | ((u64)icr2 << 32);
++}
++
++static struct apic_ops xapic_ops = {
++	.read = native_apic_mem_read,
++	.write = native_apic_mem_write,
++	.write_atomic = native_apic_mem_write_atomic,
++	.icr_read = xapic_icr_read,
++	.icr_write = xapic_icr_write,
++	.wait_icr_idle = xapic_wait_icr_idle,
++	.safe_wait_icr_idle = safe_xapic_wait_icr_idle,
++};
++
++struct apic_ops __read_mostly *apic_ops = &xapic_ops;
++EXPORT_SYMBOL_GPL(apic_ops);
++
+ /**
+  * enable_NMI_through_LVT0 - enable NMI through local vector table 0
+  */
+Index: linux-2.6/include/asm-x86/apic.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/apic.h
++++ linux-2.6/include/asm-x86/apic.h
+@@ -49,11 +49,6 @@ extern int disable_apic;
+ #ifdef CONFIG_PARAVIRT
+ #include <asm/paravirt.h>
+ #else
+-#ifndef CONFIG_X86_64
+-#define apic_write native_apic_mem_write
+-#define apic_write_atomic native_apic_mem_write_atomic
+-#define apic_read native_apic_mem_read
+-#endif
+ #define setup_boot_clock setup_boot_APIC_clock
+ #define setup_secondary_clock setup_secondary_APIC_clock
+ #endif
+@@ -95,16 +90,13 @@ static inline u32 native_apic_msr_read(u
+ 	return low;
+ }
+ 
+-#ifdef CONFIG_X86_32
+-extern void apic_wait_icr_idle(void);
+-extern u32 safe_apic_wait_icr_idle(void);
+-extern void apic_icr_write(u32 low, u32 id);
+-#else
++#ifndef CONFIG_X86_32
+ extern int x2apic, x2apic_preenabled;
+ extern void check_x2apic(void);
+ extern void enable_x2apic(void);
+ extern void enable_IR_x2apic(void);
+ extern void x2apic_icr_write(u32 low, u32 id);
++#endif
+ 
+ struct apic_ops {
+ 	u32 (*read)(u32 reg);
+@@ -125,7 +117,6 @@ extern struct apic_ops *apic_ops;
+ #define apic_icr_write (apic_ops->icr_write)
+ #define apic_wait_icr_idle (apic_ops->wait_icr_idle)
+ #define safe_apic_wait_icr_idle (apic_ops->safe_wait_icr_idle)
+-#endif
+ 
+ extern int get_physical_broadcast(void);
