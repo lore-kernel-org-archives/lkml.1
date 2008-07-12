@@ -1,109 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753589AbYGLG2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753658AbYGLGgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753589AbYGLG2g (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 02:28:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbYGLG21
+	id S1753658AbYGLGgQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 02:36:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795AbYGLGf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 02:28:27 -0400
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:26424 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751653AbYGLG21 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 02:28:27 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:To:Subject:Cc:Content-Disposition:From:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=6fcaw3J6gy1Fi6IhOEyVN9agHoeQWNlQqaUyHpYYqZbibx/5KMdO/zaKpbdtWifrUWrXHBUzzxZnSKL/zJcN9BMKGu7m/jdnibmA9+vUtnx3Ew5gAVnxdmv2bX7RwIO+OASvxdYOw9Uzf7zBgMUAQHwaVKMmqCuRjpjqr8terRc=  ;
-X-YMail-OSG: RTCsyV8VM1nOWTbYXo7EZ0nIPxN4pi1VT4v4us1BmnGENoS6iX1iIRIHq5fXuouEs5gFERNcIqhJgUcwUB4qdfmCHFR6yvL3VJwfrEgWMHKcQx9V5JHrtn.aQKSd84MSi1A-
-X-Yahoo-Newman-Property: ymail-3
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2.6.26-mm-latest] gpio: linux-next fixes for sysfs support
-Cc: Michael Buesch <mb@bu3sch.de>, sfr@canb.auug.org.au,
-       linux-kernel@vger.kernel.org
-Content-Disposition: inline
-From: David Brownell <david-b@pacbell.net>
-Date: Fri, 11 Jul 2008 23:28:20 -0700
+	Sat, 12 Jul 2008 02:35:59 -0400
+Received: from THAUM.MIT.EDU ([18.95.3.27]:42917 "EHLO luto.stanford.edu"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751653AbYGLGf6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jul 2008 02:35:58 -0400
+X-Greylist: delayed 379 seconds by postgrey-1.27 at vger.kernel.org; Sat, 12 Jul 2008 02:35:57 EDT
+Message-ID: <48784F51.1010407@myrealbox.com>
+Date: Sat, 12 Jul 2008 02:29:37 -0400
+From: Andy Lutomirski <luto@myrealbox.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andi Kleen <andi@firstfloor.org>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, kernel-testers@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
+References: <200807010148.02135.rjw@sisk.pl> <20080701063133.GC16642@elte.hu> <4869D4A3.3020000@zytor.com> <200807012239.44105.rjw@sisk.pl> <486A96C1.2020106@firstfloor.org>
+In-Reply-To: <486A96C1.2020106@firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200807112328.20376.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cope with some backwards-incompatible driver model API changes
-now in the linux-next tree:
+My Lenovo X61s fails to resume if I suspend it from within X, on both 
+2.6.26-rc9 and recent wireless-testing.  2.6.26-rc8 is fine, as is 
+wireless-testing with 4b4f7280 reverted.  My in-progress bisect between 
+-rc8 and -rc9 is also consistent with this being the problem.
 
- - device_create() is going away, even for drivers using it safely,
-   in favor of device_create_drvdata().
- - class->devices is gone, but testing class->p serves the same
-   purpose (non-null when class is usable with driver model calls).
- - class_find_device() needs a new argument #2 (NULL)
+The symptom is that, when I push the power button to resume, the hard 
+drive light turns on, the fan turns on, then the hard drive light turns 
+off, the sleep light stays on, and the fan keeps running.  Sometimes the 
+battery light will blink off very briefly (1/4 sec, maybe) every few 
+seconds.  The system is locked hard at this point.
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
- drivers/gpio/gpiolib.c |   16 +++++++---------
- 1 file changed, 7 insertions(+), 9 deletions(-)
+I'm using Ubuntu Hardy userspace.
 
---- a/drivers/gpio/gpiolib.c	2008-07-02 23:29:58.000000000 -0700
-+++ b/drivers/gpio/gpiolib.c	2008-07-03 00:04:57.000000000 -0700
-@@ -429,7 +429,7 @@ int gpio_export(unsigned gpio, bool dire
- 	int			status = -EINVAL;
- 
- 	/* can't export until sysfs is available ... */
--	if (!gpio_class.devices.next) {
-+	if (!gpio_class.p) {
- 		pr_debug("%s: called too early!\n", __func__);
- 		return -ENOENT;
- 	}
-@@ -453,10 +453,9 @@ int gpio_export(unsigned gpio, bool dire
- 	if (status == 0) {
- 		struct device	*dev;
- 
--		dev = device_create(&gpio_class, desc->chip->dev, 0,
--				"gpio%d", gpio);
-+		dev = device_create_drvdata(&gpio_class, desc->chip->dev, 0,
-+				desc, "gpio%d", gpio);
- 		if (dev) {
--			dev_set_drvdata(dev, desc);
- 			if (direction_may_change)
- 				status = sysfs_create_group(&dev->kobj,
- 						&gpio_attr_group);
-@@ -506,7 +505,7 @@ void gpio_unexport(unsigned gpio)
- 	if (test_bit(FLAG_EXPORT, &desc->flags)) {
- 		struct device	*dev = NULL;
- 
--		dev = class_find_device(&gpio_class, desc, match_export);
-+		dev = class_find_device(&gpio_class, NULL, desc, match_export);
- 		if (dev) {
- 			clear_bit(FLAG_EXPORT, &desc->flags);
- 			put_device(dev);
-@@ -533,15 +532,14 @@ static int gpiochip_export(struct gpio_c
- 	 * export this later, in gpiolib_sysfs_init() ... here we just
- 	 * verify that _some_ field of gpio_class got initialized.
- 	 */
--	if (!gpio_class.devices.next)
-+	if (!gpio_class.p)
- 		return 0;
- 
- 	/* use chip->base for the ID; it's already known to be unique */
- 	mutex_lock(&sysfs_lock);
--	dev = device_create(&gpio_class, chip->dev, 0,
-+	dev = device_create_drvdata(&gpio_class, chip->dev, 0, chip,
- 			"gpiochip%d", chip->base);
- 	if (dev) {
--		dev_set_drvdata(dev, chip);
- 		status = sysfs_create_group(&dev->kobj,
- 				&gpiochip_attr_group);
- 	} else
-@@ -572,7 +570,7 @@ static void gpiochip_unexport(struct gpi
- 	struct device		*dev;
- 
- 	mutex_lock(&sysfs_lock);
--	dev = class_find_device(&gpio_class, chip, match_export);
-+	dev = class_find_device(&gpio_class, NULL, chip, match_export);
- 	if (dev) {
- 		put_device(dev);
- 		device_unregister(dev);
+--Andy
+
+Andi Kleen wrote:
+>> I have tested it on the nx6325 (64-bit) on top of the today's linux-next.  It
+>> works fine for me.
+> 
+> Could a few more people with different laptops please test too?
+> 
+> -Andi
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
