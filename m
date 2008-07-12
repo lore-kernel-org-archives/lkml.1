@@ -1,225 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755321AbYGLWbK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755387AbYGLWkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755321AbYGLWbK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 18:31:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbYGLWa5
+	id S1755387AbYGLWkZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 18:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753422AbYGLWkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 18:30:57 -0400
-Received: from mercury.realtime.net ([205.238.132.86]:33387 "EHLO
-	ruth.realtime.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751759AbYGLWa5 (ORCPT
+	Sat, 12 Jul 2008 18:40:12 -0400
+Received: from relay2.mail.vrmd.de ([81.28.224.28]:40663 "EHLO
+	relay2.mail.vrmd.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752493AbYGLWkL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 18:30:57 -0400
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <7b8dd1f1421b1f52ebc76565986fd2a9@bga.com>
-Content-Transfer-Encoding: 7bit
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Michael Ellerman <michael@ellerman.id.au>,
-       Paul Mackerras <paulus@samba.org>, Sam Ravnborg <sam@ravnborg.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: linux-next: kbuild tree build failure
-Date: Sat, 12 Jul 2008 17:32:28 -0500
-To: Roman Zippel <zippel@linux-m68k.org>
-X-Mailer: Apple Mail (2.624)
-X-Originating-IP: 216.126.174.49
+	Sat, 12 Jul 2008 18:40:11 -0400
+X-Greylist: delayed 1474 seconds by postgrey-1.27 at vger.kernel.org; Sat, 12 Jul 2008 18:40:11 EDT
+From: Bernhard Walle <bernhard.walle@gmx.de>
+To: x86@kernel.org
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       kexec@lists.infradead.org, Bernhard Walle <bernhard.walle@gmx.de>,
+       Bernhard Walle <bwalle@suse.de>
+Subject: [PATCH 2/2] firmware/memmap: Move kobject initialisation before kobject_add()
+Date: Sun, 13 Jul 2008 00:15:33 +0200
+Message-Id: <1215900933-27592-3-git-send-email-bernhard.walle@gmx.de>
+X-Mailer: git-send-email 1.5.6.2
+In-Reply-To: <20080711173609.8310504d.akpm@linux-foundation.org>
+References: <20080711173609.8310504d.akpm@linux-foundation.org>
+X-Relay-User: bernhard@bwalle.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In-Reply-To: <Pine.LNX.4.64.0807101654080.6791@localhost.localdomain>
+Because kobject_init() call could be done from firmware_map_add_entry()
+which is called before kmalloc() can be used (we use the early bootmem allocator
+here), move that call to memmap_init() which is a late_initcall.
 
-On Fri Jul 11 00:59:25 EST 2008, Roman Zippel wrote:
-> On Thu, 10 Jul 2008, Michael Ellerman wrote:
->
-> > Well yes :)  But I think that's because you're thinking of
-> > "end-users" and I'm thinking of "users" like myself - ie. _I_ use
-> > Kconfig and I do expect myself to be able to type a 64-bit address.
->
-> That doesn't really answer my question, why you need this.
->
-> > > > --- .config.orig  2008-07-08 09:30:00.000000000 +1000
-> > > > +++ .config       2008-07-08 09:30:43.000000000 +1000
-> > > > @@ -370,9 +370,8 @@
-> > > >  CONFIG_HOTPLUG_PCI_RPA=m
-> > > >  CONFIG_HOTPLUG_PCI_RPA_DLPAR=m
-> > > >  # CONFIG_HAS_RAPIDIO is not set
-> > > > -CONFIG_PAGE_OFFSET=0xc000000000000000
-> > > > -CONFIG_KERNEL_START=0xc000000002000000
-> > > > -CONFIG_PHYSICAL_START=0x02000000
-> > > > +CONFIG_PAGE_OFFSET=0xc0000000
-> > > > +CONFIG_PHYSICAL_START=0x2000000
-> > >
-> > > Why is this worse? These are constants, you're not supposed to 
-> change them
-> > > anyway.
-> > > The remaining values are generated in page.h and should be the 
-> same as
-> > > before. If that isn't the case and this patch produces a nonworking
-> > > kernel, I'd like to hear about it.
-> >
-> > You're right the built kernel is fine. So it's not a bug,
->
+This fixes following regression in linux-next tree:
 
-But its horrible code.
-
-> Good, could someone please ack whether the powerpc changes are 
-> acceptable?
->
-
-Well, since no one else has said it,
-NAK
-
-The primary reason I object is this:
->>>> Index: linux-2.6/include/asm-powerpc/page.h
->>>> ===================================================================
->>>> --- linux-2.6.orig/include/asm-powerpc/page.h
->>>> +++ linux-2.6/include/asm-powerpc/page.h
->>>> @@ -67,9 +67,15 @@
->>>>   * If you want to test if something's a kernel address, use 
->>>> is_kernel_addr().
->>>>   */
->>>>
->>>> -#define KERNELBASE      ASM_CONST(CONFIG_KERNEL_START)
->>>> +#ifdef CONFIG_PPC64
->>>> +#define PAGE_OFFSET    (ASM_CONST(CONFIG_PAGE_OFFSET) << 32)
->>>> +#define KERNELBASE     
->>>> (PAGE_OFFSET+ASM_CONST(CONFIG_PHYSICAL_START))
->>>> +#define LOAD_OFFSET    PAGE_OFFSET
->>>> +#else
->>>> +#define KERNELBASE     ASM_CONST(CONFIG_KERNEL_START)
->>>>  #define PAGE_OFFSET    ASM_CONST(CONFIG_PAGE_OFFSET)
->>>> -#define LOAD_OFFSET    
->>>> ASM_CONST((CONFIG_KERNEL_START-CONFIG_PHYSICAL_START))
->>>> +#define LOAD_OFFSET    
->>>> (ASM_CONST(CONFIG_KERNEL_START)-ASM_CONST(CONFIG_PHYSICAL_START))
->>>> +#endif
->>>>
->>>>  #if defined(CONFIG_RELOCATABLE) && defined(CONFIG_FLATMEM)
->>>>  #ifndef __ASSEMBLY__
-
-(1) #define PAGE_OFFSET    (ASM_CONST(CONFIG_PAGE_OFFSET) << 32)
-
-It creates unreadable code, where two defines with almost the same name 
-(the only difference being
-the CONFIG_ prefix, which is often ignored when scanning) contains 
-radically different values.
-
-(2)  #define PAGE_OFFSET    ASM_CONST(CONFIG_PAGE_OFFSET)
-
-It creates config variables that mean different things depending on 
-other config variables
-The 32 and 64 bit powerpc kernel share a common source, a config 
-variable should be used for
-only one purpose.
+    BUG: Int 14: CR2 b004254c
+         EDI 00000000  ESI 00000082  EBP c0725ed8  ESP c0725eb4
+         EBX f0002800  EDX 0000000e  ECX c071e070  EAX f000ff53
+         err 00000000  EIP c0278e3f   CS 00000060  flg 00010086
+    Stack: 000080d0 c071e070 c000e1dc c000e1c0 c06e1bf8 c0725eec c0313d59 c000e1d4
+           c000e1c0 00000000 c0725f08 c074c7b8 00000000 0009cbff 00000000 c077b400
+           00000001 c0725f34 c0732e06 0009cbff 00000000 c063af02 01000000 00000000
+    Pid: 0, comm: swapper Not tainted 2.6.26-rc9-next-20080711 #4
+     [<c0234266>] ? up+0x2b/0x2f
+     [<c0278e3f>] ? kmem_cache_alloc+0x2e/0x7d
+     [<c0313d59>] ? kobject_init+0x46/0xd0
+     [<c074c7b8>] ? firmware_map_add_early+0x83/0xa3
+     [<c0732e06>] ? e820_reserve_resources+0x10b/0x11e
+     [<c07314d5>] ? setup_arch+0x871/0x8d7
+     [<c0220f63>] ? release_console_sem+0x177/0x17f
+     [<c07331ca>] ? __reserve_early+0xe4/0xf8
+     [<c055e14e>] ? printk+0xf/0x11
+     [<c072b67a>] ? start_kernel+0x5b/0x2d1
+     [<c072b080>] ? __init_begin+0x80/0x88
+     =======================
 
 
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
+Signed-off-by: Bernhard Walle <bernhard.walle@gmx.de>
+---
+ drivers/firmware/memmap.c |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
 
-> > but I think it is nicer to have the real values in the .config.
->
-> Why?
-
-Mostly consistency between the different portions of the archticture.
-
-As I remember, this code was adjusted and some of the defines moved 
-from page.h
-as part of the 32 bit relocatable kernel for 85xx booke ASMP support.
-
-The 32 bit kernel has advanced options to change the VMA split, which 
-enable
-direct user input when explicitly defined.  That allows us to not need 
-patches
-for the embedded boards who need some other split than 3G/1G.  So there
-is the reason that we have this directly specified in Kconfig at all.
-
-While the 64 bit kernel doesn't need to actually change the page 
-offset, as we
-don't support the full 64 bits of the real address anyways (in fact, the
-archtiecture prevents us from doing so) and therefore don't need to 
-adjust
-the effective address spilt between user and kernel.
-
-But introducing config variables that mean different things is 
-UNMAINTAINABLE.
-
-Also, I remember, CONFIG_PAGE_OFFSET is used by the linker script and 
-previously
-page.h was conditionally included.   Does it always include page.h now?
-
-
-
-On a seperate note,
->>>>  config PINT3_ASSIGN
->>>>         hex "PINT3_ASSIGN"
->>>>         depends on PINTx_REASSIGN
->>>> -       default 0x02020303
->>>> +       default 0x2020303
-
-is harder to read.   The value is a list of 4 1 byte values, but you 
-have hidden the first nibble making parsing the rest of the value hard.
-
->>>>
->>>>  config IRAM_SIZE
->>>>         hex "Internal memory size (hex)"
->>>>         depends on (CHIP_M32700 || CHIP_M32102 || CHIP_VDEC2 || 
->>>> CHIP_OPSP || CHIP_M32104) && DISCONTIGMEM
->>>> -       default "00080000" if CHIP_M32700
->>>> -       default "00010000" if CHIP_M32102 || CHIP_OPSP || 
->>>> CHIP_M32104
->>>> -       default "00008000" if CHIP_VDEC2
->>>> +       default "0x80000" if CHIP_M32700
->>>> +       default "0x10000" if CHIP_M32102 || CHIP_OPSP || CHIP_M32104
->>>> +       default "0x8000" if CHIP_VDEC2
-
-Likewize, I find it easier to mentally check the order of magnitude and 
-compare sizes when they have
-leading zeros and are right aligned.
-
-
-Going to another email in the thread,
-
-On Fri Jul 11 00:52:25 EST 2008, Roman Zippel wrpte:
-> On Tue, 8 Jul 2008, Sam Ravnborg wrote:
-> > We use Kconfig for a mixture of user editable values and fixed
-> > configuration values.
-> > And I agree that asking the user to input a 64 bit number is not 
-> usefull.
-> >
-> > But keeping support for 64 bit values is what I would consider
-> > expected functionality.
-...
-> > > This would also ease on any portability issues
-> > > (kconfig is compiled with the host compiler not the target 
-> compiler).
-> >
-> > We use strtol() in a few places in symbol.c already where we do an
-> > implicit conversion to int. Why did this not cause us problems 
-> before?
-> >
-> > Is it because these code paths are only triggered when we deal with 
-> ranges?
-> > If so we could 'fix' strdup_type() to not use strto{,u}l() so it
-> > is 64 bit clean and we are back to old behaviour.
->
-> Ranges are the primary reason I made it consistent with this.
-> If we really wanted to support 64bit numbers, it would create only more
-> problems. First you have to make sure that on every build host (i.e 
-> also
-> non-Linux) strtoll() is available. Then how it should these numbers be
-> represented? On 32bit these may need a 'll' postfix, but the powerpc
-> example already shows, that there are different requirements, so they 
-> use
-> ASM_CONST for that. How should this postprecessing be integrated into
-> kconfig?
-
-I think the architectures will already do something like ASM_CONST in
-their C code when its needed.  This should not be the responsibility of
-kbuild.
-
-If you are worried about users tring to set values that are too high,
-then make the types be hex8, hex16, hex32, and hex64.
-
-milton
+diff --git a/drivers/firmware/memmap.c b/drivers/firmware/memmap.c
+index 73b7c1d..4788476 100644
+--- a/drivers/firmware/memmap.c
++++ b/drivers/firmware/memmap.c
+@@ -111,7 +111,12 @@ static int firmware_map_add_entry(resource_size_t start, resource_size_t end,
+ 	entry->end = end;
+ 	entry->type = type;
+ 	INIT_LIST_HEAD(&entry->list);
+-	kobject_init(&entry->kobj, &memmap_ktype);
++	/*
++	 * don't init the kobject here since it calls kmalloc() internally
++	 * which we are not ready to do in firmware_map_add_early() case
++	 * Instead, do that before kobject_add() in memmap_init()
++	 */
++	memset(&entry->kobj, 0, sizeof(struct kobject));
+ 
+ 	list_add_tail(&entry->list, &map_entries);
+ 
+@@ -219,6 +224,7 @@ static int __init memmap_init(void)
+ 		return -ENOMEM;
+ 
+ 	list_for_each_entry(entry, &map_entries, list) {
++		kobject_init(&entry->kobj, &memmap_ktype);
+ 		entry->kobj.kset = memmap_kset;
+ 		if (kobject_add(&entry->kobj, NULL, "%d", i++))
+ 			kobject_put(&entry->kobj);
+-- 
+1.5.6.2
 
