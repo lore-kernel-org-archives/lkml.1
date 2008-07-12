@@ -1,66 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753548AbYGLGF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753892AbYGLGGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753548AbYGLGF0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 02:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750896AbYGLGFS
+	id S1753892AbYGLGGw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 02:06:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbYGLGGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 02:05:18 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40821 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751381AbYGLGFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 02:05:17 -0400
-Date: Sat, 12 Jul 2008 08:05:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip] x86: apic LVTT - use APIC_DIVISOR on 64bit mode
-Message-ID: <20080712060504.GB14714@elte.hu>
-References: <20080709190237.GA21423@asus>
+	Sat, 12 Jul 2008 02:06:45 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:51974 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750896AbYGLGGo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jul 2008 02:06:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=TjUdFc+Td4DTREHQrFGWz1UJDqaVQa7WuyV5VAZyhLrJT+gGf21C1CQSDdHCd6ce84
+         CoVrm7pKZ2714wPWPcH5KYdg7JdpQAHP9f2ybxEcYs7R/pnQ/EkhKHrUo/wX4fB3Gk1m
+         TXFaj3BtLH2QhCyiN5UoQYo0NzZIUnZ6nml40=
+Message-ID: <86802c440807112306h6b396cd3ycf6bf490d6c2ccf9@mail.gmail.com>
+Date: Fri, 11 Jul 2008 23:06:41 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [patch 00/26] x64, x2apic/intr-remap: Interrupt-remapping and x2apic support
+Cc: "Suresh Siddha" <suresh.b.siddha@intel.com>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "ebiederm@xmission.com" <ebiederm@xmission.com>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "steiner@sgi.com" <steiner@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jeremy@goop.org" <jeremy@goop.org>
+In-Reply-To: <20080712053713.GA341@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080709190237.GA21423@asus>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20080710181634.764954000@linux-os.sc.intel.com>
+	 <20080710215617.GM1678@linux-os.sc.intel.com>
+	 <20080711102814.GA17938@elte.hu> <20080711200957.GA8173@elte.hu>
+	 <20080711203151.GU1678@linux-os.sc.intel.com>
+	 <86802c440807111342j5fbf21e1ibd5129718cde4e43@mail.gmail.com>
+	 <20080711204521.GA15689@elte.hu>
+	 <20080711212418.GV1678@linux-os.sc.intel.com>
+	 <86802c440807111502n9835b5fybd99ed388bb71b7d@mail.gmail.com>
+	 <20080712053713.GA341@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jul 11, 2008 at 10:37 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>
+>> > Yinghai, Can you please try the appended patch to see if it fixes
+>> > your problem?
+>
+>> works. it should be merged into the patch that introduce new
+>> read_apic_id
+>
+> ok, that came from the x86/uv branch - but in that form it was not
+> affected, only tip/x2apic exposed the problem, right?
 
-* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+because of new read_apic_id()
 
-> We use APIC_TDR_DIV_16 while setting APIC_TDCR (divisor) it happened 
-> this moment is hidden from __setup_APIC_LVTT caller. So we better 
-> increment caller 'clocks' value to not change current behaviour and 
-> use APIC_DIVISOR (as already done in 32bit version).
-> 
-> The main benefit - unified procedure code for 32/64bit modes.
+>
+> So i've rebased tip/x86/x2apic and moved Suresh's fix in front of the
+> other patches, to make it all bisectable.
 
-> Please review carefully. Any comments are welcome.
-> I'm _not_ 100% sure if this patch is safe.
+should incorperate that fix into the patch that introduce new read_apic_id()
 
-hm, how about the other caller to __setup_APIC_LVTT(), 
-lapic_timer_setup():
+commit df8cc50cc9357ba5a5d6a07744fa36b16a81121c
+Author: Suresh Siddha <suresh.b.siddha@intel.com>
+Date:   Thu Jul 10 11:16:48 2008 -0700
 
-        case CLOCK_EVT_MODE_ONESHOT:
-                __setup_APIC_LVTT(calibration_result,
-                                  mode != CLOCK_EVT_MODE_PERIODIC, 1);
-                break;
+    x64, x2apic/intr-remap: introduce read_apic_id() to genapic routines
 
-that will affect high-res timers. Wont calibration_result have the same 
-value after your patch as well, but only a 16th of it will be used in 
-__setup_APIC_LVTT(), causing 16 times shorter timeouts than intended?
+    Move the read_apic_id()  to genapic routines.
 
-I.e. are we fixing a bug, are we changing nothing, or are we introducing 
-a bug? :-)
-
-	Ingo
+YH
