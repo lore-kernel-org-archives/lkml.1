@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755387AbYGLWkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755855AbYGLWki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755387AbYGLWkZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 18:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753422AbYGLWkM
+	id S1755855AbYGLWki (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 18:40:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754199AbYGLWkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 18:40:12 -0400
-Received: from relay2.mail.vrmd.de ([81.28.224.28]:40663 "EHLO
+	Sat, 12 Jul 2008 18:40:20 -0400
+Received: from relay2.mail.vrmd.de ([81.28.224.28]:49070 "EHLO
 	relay2.mail.vrmd.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752493AbYGLWkL (ORCPT
+	with ESMTP id S1753777AbYGLWkS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 18:40:11 -0400
-X-Greylist: delayed 1474 seconds by postgrey-1.27 at vger.kernel.org; Sat, 12 Jul 2008 18:40:11 EDT
+	Sat, 12 Jul 2008 18:40:18 -0400
 From: Bernhard Walle <bernhard.walle@gmx.de>
 To: x86@kernel.org
 Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        kexec@lists.infradead.org, Bernhard Walle <bernhard.walle@gmx.de>,
        Bernhard Walle <bwalle@suse.de>
-Subject: [PATCH 2/2] firmware/memmap: Move kobject initialisation before kobject_add()
-Date: Sun, 13 Jul 2008 00:15:33 +0200
-Message-Id: <1215900933-27592-3-git-send-email-bernhard.walle@gmx.de>
+Subject: [PATCH 1/2] firmware/memmap: Cleanup
+Date: Sun, 13 Jul 2008 00:15:32 +0200
+Message-Id: <1215900933-27592-2-git-send-email-bernhard.walle@gmx.de>
 X-Mailer: git-send-email 1.5.6.2
 In-Reply-To: <20080711173609.8310504d.akpm@linux-foundation.org>
 References: <20080711173609.8310504d.akpm@linux-foundation.org>
@@ -27,66 +26,189 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Because kobject_init() call could be done from firmware_map_add_entry()
-which is called before kmalloc() can be used (we use the early bootmem allocator
-here), move that call to memmap_init() which is a late_initcall.
+Various cleanup the drivers/firmware/memmap (after review by AKPM):
 
-This fixes following regression in linux-next tree:
-
-    BUG: Int 14: CR2 b004254c
-         EDI 00000000  ESI 00000082  EBP c0725ed8  ESP c0725eb4
-         EBX f0002800  EDX 0000000e  ECX c071e070  EAX f000ff53
-         err 00000000  EIP c0278e3f   CS 00000060  flg 00010086
-    Stack: 000080d0 c071e070 c000e1dc c000e1c0 c06e1bf8 c0725eec c0313d59 c000e1d4
-           c000e1c0 00000000 c0725f08 c074c7b8 00000000 0009cbff 00000000 c077b400
-           00000001 c0725f34 c0732e06 0009cbff 00000000 c063af02 01000000 00000000
-    Pid: 0, comm: swapper Not tainted 2.6.26-rc9-next-20080711 #4
-     [<c0234266>] ? up+0x2b/0x2f
-     [<c0278e3f>] ? kmem_cache_alloc+0x2e/0x7d
-     [<c0313d59>] ? kobject_init+0x46/0xd0
-     [<c074c7b8>] ? firmware_map_add_early+0x83/0xa3
-     [<c0732e06>] ? e820_reserve_resources+0x10b/0x11e
-     [<c07314d5>] ? setup_arch+0x871/0x8d7
-     [<c0220f63>] ? release_console_sem+0x177/0x17f
-     [<c07331ca>] ? __reserve_early+0xe4/0xf8
-     [<c055e14e>] ? printk+0xf/0x11
-     [<c072b67a>] ? start_kernel+0x5b/0x2d1
-     [<c072b080>] ? __init_begin+0x80/0x88
-     =======================
+    - fix kdoc to conform to the standard
+    - move kdoc from header to implementation files
+    - remove superfluous WARN_ON() after kmalloc()
+    - WARN_ON(x); if (!x) -> if(!WARN_ON(x))
+    - improve some comments
 
 
 Signed-off-by: Bernhard Walle <bwalle@suse.de>
 Signed-off-by: Bernhard Walle <bernhard.walle@gmx.de>
 ---
- drivers/firmware/memmap.c |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
+ drivers/firmware/memmap.c        |   61 ++++++++++++++++++++++++++-----------
+ include/linux/firmware-map.h     |   26 ----------------
+ 2 files changed, 43 insertions(+), 44 deletions(-)
+ create mode 100644 include/config/firmware/memmap.h
 
 diff --git a/drivers/firmware/memmap.c b/drivers/firmware/memmap.c
-index 73b7c1d..4788476 100644
+index e23399c..73b7c1d 100644
 --- a/drivers/firmware/memmap.c
 +++ b/drivers/firmware/memmap.c
-@@ -111,7 +111,12 @@ static int firmware_map_add_entry(resource_size_t start, resource_size_t end,
- 	entry->end = end;
- 	entry->type = type;
- 	INIT_LIST_HEAD(&entry->list);
--	kobject_init(&entry->kobj, &memmap_ktype);
-+	/*
-+	 * don't init the kobject here since it calls kmalloc() internally
-+	 * which we are not ready to do in firmware_map_add_early() case
-+	 * Instead, do that before kobject_add() in memmap_init()
-+	 */
-+	memset(&entry->kobj, 0, sizeof(struct kobject));
+@@ -84,20 +84,23 @@ static struct kobj_type memmap_ktype = {
+  */
  
- 	list_add_tail(&entry->list, &map_entries);
+ /*
+- * Firmware memory map entries
++ * Firmware memory map entries. No locking is needed because the
++ * firmware_map_add() and firmware_map_add_early() functions are called
++ * in firmware initialisation code in one single thread of execution.
+  */
+ static LIST_HEAD(map_entries);
  
-@@ -219,6 +224,7 @@ static int __init memmap_init(void)
+ /**
+- * Common implementation of firmware_map_add() and firmware_map_add_early()
+- * which expects a pre-allocated struct firmware_map_entry.
+- *
++ * firmware_map_add_entry() - Does the real work to add a firmware memmap entry.
+  * @start: Start of the memory range.
+  * @end:   End of the memory range (inclusive).
+  * @type:  Type of the memory range.
+  * @entry: Pre-allocated (either kmalloc() or bootmem allocator), uninitialised
+  *         entry.
+- */
++ *
++ * Common implementation of firmware_map_add() and firmware_map_add_early()
++ * which expects a pre-allocated struct firmware_map_entry.
++ **/
+ static int firmware_map_add_entry(resource_size_t start, resource_size_t end,
+ 				  const char *type,
+ 				  struct firmware_map_entry *entry)
+@@ -115,33 +118,52 @@ static int firmware_map_add_entry(resource_size_t start, resource_size_t end,
+ 	return 0;
+ }
+ 
+-/*
+- * See <linux/firmware-map.h> for documentation.
+- */
++/**
++ * firmware_map_add() - Adds a firmware mapping entry.
++ * @start: Start of the memory range.
++ * @end:   End of the memory range (inclusive).
++ * @type:  Type of the memory range.
++ *
++ * This function uses kmalloc() for memory
++ * allocation. Use firmware_map_add_early() if you want to use the bootmem
++ * allocator.
++ *
++ * That function must be called before late_initcall.
++ *
++ * Returns 0 on success, or -ENOMEM if no memory could be allocated.
++ **/
+ int firmware_map_add(resource_size_t start, resource_size_t end,
+ 		     const char *type)
+ {
+ 	struct firmware_map_entry *entry;
+ 
+ 	entry = kmalloc(sizeof(struct firmware_map_entry), GFP_ATOMIC);
+-	WARN_ON(!entry);
+ 	if (!entry)
+ 		return -ENOMEM;
+ 
+ 	return firmware_map_add_entry(start, end, type, entry);
+ }
+ 
+-/*
+- * See <linux/firmware-map.h> for documentation.
+- */
++/**
++ * firmware_map_add_early() - Adds a firmware mapping entry.
++ * @start: Start of the memory range.
++ * @end:   End of the memory range (inclusive).
++ * @type:  Type of the memory range.
++ *
++ * Adds a firmware mapping entry. This function uses the bootmem allocator
++ * for memory allocation. Use firmware_map_add() if you want to use kmalloc().
++ *
++ * That function must be called before late_initcall.
++ *
++ * Returns 0 on success, or -ENOMEM if no memory could be allocated.
++ **/
+ int __init firmware_map_add_early(resource_size_t start, resource_size_t end,
+ 				  const char *type)
+ {
+ 	struct firmware_map_entry *entry;
+ 
+ 	entry = alloc_bootmem_low(sizeof(struct firmware_map_entry));
+-	WARN_ON(!entry);
+-	if (!entry)
++	if (WARN_ON(!entry))
+ 		return -ENOMEM;
+ 
+ 	return firmware_map_add_entry(start, end, type, entry);
+@@ -181,7 +203,10 @@ static ssize_t memmap_attr_show(struct kobject *kobj,
+ /*
+  * Initialises stuff and adds the entries in the map_entries list to
+  * sysfs. Important is that firmware_map_add() and firmware_map_add_early()
+- * must be called before late_initcall.
++ * must be called before late_initcall. That's just because that function
++ * is called as late_initcall() function, which means that if you call
++ * firmware_map_add() or firmware_map_add_early() afterwards, the entries
++ * are not added to sysfs.
+  */
+ static int __init memmap_init(void)
+ {
+@@ -190,13 +215,13 @@ static int __init memmap_init(void)
+ 	struct kset *memmap_kset;
+ 
+ 	memmap_kset = kset_create_and_add("memmap", NULL, firmware_kobj);
+-	WARN_ON(!memmap_kset);
+-	if (!memmap_kset)
++	if (WARN_ON(!memmap_kset))
  		return -ENOMEM;
  
  	list_for_each_entry(entry, &map_entries, list) {
-+		kobject_init(&entry->kobj, &memmap_ktype);
  		entry->kobj.kset = memmap_kset;
- 		if (kobject_add(&entry->kobj, NULL, "%d", i++))
- 			kobject_put(&entry->kobj);
+-		kobject_add(&entry->kobj, NULL, "%d", i++);
++		if (kobject_add(&entry->kobj, NULL, "%d", i++))
++			kobject_put(&entry->kobj);
+ 	}
+ 
+ 	return 0;
+diff --git a/include/config/firmware/memmap.h b/include/config/firmware/memmap.h
+new file mode 100644
+index 0000000..e69de29
+diff --git a/include/linux/firmware-map.h b/include/linux/firmware-map.h
+index acbdbcc..6e199c8 100644
+--- a/include/linux/firmware-map.h
++++ b/include/linux/firmware-map.h
+@@ -24,34 +24,8 @@
+  */
+ #ifdef CONFIG_FIRMWARE_MEMMAP
+ 
+-/**
+- * Adds a firmware mapping entry. This function uses kmalloc() for memory
+- * allocation. Use firmware_map_add_early() if you want to use the bootmem
+- * allocator.
+- *
+- * That function must be called before late_initcall.
+- *
+- * @start: Start of the memory range.
+- * @end:   End of the memory range (inclusive).
+- * @type:  Type of the memory range.
+- *
+- * Returns 0 on success, or -ENOMEM if no memory could be allocated.
+- */
+ int firmware_map_add(resource_size_t start, resource_size_t end,
+ 		     const char *type);
+-
+-/**
+- * Adds a firmware mapping entry. This function uses the bootmem allocator
+- * for memory allocation. Use firmware_map_add() if you want to use kmalloc().
+- *
+- * That function must be called before late_initcall.
+- *
+- * @start: Start of the memory range.
+- * @end:   End of the memory range (inclusive).
+- * @type:  Type of the memory range.
+- *
+- * Returns 0 on success, or -ENOMEM if no memory could be allocated.
+- */
+ int firmware_map_add_early(resource_size_t start, resource_size_t end,
+ 			   const char *type);
+ 
 -- 
 1.5.6.2
 
