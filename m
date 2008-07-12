@@ -1,94 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753552AbYGLGRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753589AbYGLG2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753552AbYGLGRS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 02:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbYGLGRG
+	id S1753589AbYGLG2g (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 02:28:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbYGLG21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 02:17:06 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:57401 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751643AbYGLGRD (ORCPT
+	Sat, 12 Jul 2008 02:28:27 -0400
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:26424 "HELO
+	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751653AbYGLG21 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 02:17:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=buGhTDriMZPD8QIpoizxyi6N+14ryUUohV9TYJdZeZMo09VehXJdvEvzBWYTak21zZ
-         db1MHsR11etHrn0d6xWiCX4KCs8FwzYnwGXs9MGS5tsMCzBehXJqtfPbyKjWfp+LepJC
-         NHSkLflOSD99Ew59vaIR/Z6Q0HBFTT3NLIbvk=
-Message-ID: <86802c440807112317h23118e29j51113a052720d8db@mail.gmail.com>
-Date: Fri, 11 Jul 2008 23:17:02 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [patch 00/26] x64, x2apic/intr-remap: Interrupt-remapping and x2apic support
-Cc: "Suresh Siddha" <suresh.b.siddha@intel.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "steiner@sgi.com" <steiner@sgi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jeremy@goop.org" <jeremy@goop.org>
-In-Reply-To: <m163rb4v3j.fsf@frodo.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 12 Jul 2008 02:28:27 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:To:Subject:Cc:Content-Disposition:From:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=6fcaw3J6gy1Fi6IhOEyVN9agHoeQWNlQqaUyHpYYqZbibx/5KMdO/zaKpbdtWifrUWrXHBUzzxZnSKL/zJcN9BMKGu7m/jdnibmA9+vUtnx3Ew5gAVnxdmv2bX7RwIO+OASvxdYOw9Uzf7zBgMUAQHwaVKMmqCuRjpjqr8terRc=  ;
+X-YMail-OSG: RTCsyV8VM1nOWTbYXo7EZ0nIPxN4pi1VT4v4us1BmnGENoS6iX1iIRIHq5fXuouEs5gFERNcIqhJgUcwUB4qdfmCHFR6yvL3VJwfrEgWMHKcQx9V5JHrtn.aQKSd84MSi1A-
+X-Yahoo-Newman-Property: ymail-3
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 2.6.26-mm-latest] gpio: linux-next fixes for sysfs support
+Cc: Michael Buesch <mb@bu3sch.de>, sfr@canb.auug.org.au,
+       linux-kernel@vger.kernel.org
 Content-Disposition: inline
-References: <20080710181634.764954000@linux-os.sc.intel.com>
-	 <20080711102814.GA17938@elte.hu> <20080711200957.GA8173@elte.hu>
-	 <20080711203151.GU1678@linux-os.sc.intel.com>
-	 <86802c440807111342j5fbf21e1ibd5129718cde4e43@mail.gmail.com>
-	 <20080711204521.GA15689@elte.hu>
-	 <20080711212418.GV1678@linux-os.sc.intel.com>
-	 <86802c440807111502n9835b5fybd99ed388bb71b7d@mail.gmail.com>
-	 <86802c440807112016k38c8161aq143463ee57b24c35@mail.gmail.com>
-	 <m163rb4v3j.fsf@frodo.ebiederm.org>
+From: David Brownell <david-b@pacbell.net>
+Date: Fri, 11 Jul 2008 23:28:20 -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200807112328.20376.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 11, 2008 at 8:52 PM, Eric W. Biederman
-<ebiederm@xmission.com> wrote:
-> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
->
->> 1. wonder if x2apic can be use with uniprocessor.
->>
->> in APIC_init_uniprocessor, it will try to enable x2apic, but later
->>
->> apic_write(APIC_ID, SET_APIC_ID(boot_cpu_physical_apicid));
->>
->> but SET_APIC_ID is still for xapic version. so need to GET_APIC_ID,
->> SET_APIC_ID for different
->> genapic like 32bit.
->>
->> 2 check_x2apic is called in setup_arch, but it only set apic_ops,
->> and genapic still not changed, aka apic_flat...
->> wonder if you need to call setup_apic_routing to set genapic.
->>
->> otherwise read_apic_id could have use the one from apic_flat....need
->> to shift......
->>
->> 3.or move read_apic_id to apic_ops intead...together with GET_APIC_ID too.
->> but 32bit version seems like to put GET_APIC_ID with genapic...
->>
->> which one is better? 2 or 3
->
-> Z finish untangle SMP support from apic initialization and move the apic
-> initialization up into init_IRQ.
->
-> That is better but is likely the wrong short term approach.
+Cope with some backwards-incompatible driver model API changes
+now in the linux-next tree:
 
-plan to add get_apic_id(x) into 64bit genapic, and will use
-#define GET_APIC_ID(x) genapic->get_apic_id(x)
-#define read_apic_id() GET_APIC_ID(apic_read(APIC_ID))
+ - device_create() is going away, even for drivers using it safely,
+   in favor of device_create_drvdata().
+ - class->devices is gone, but testing class->p serves the same
+   purpose (non-null when class is usable with driver model calls).
+ - class_find_device() needs a new argument #2 (NULL)
 
-so it is identical to 32bit, and we smooth the merging of 32/64 apic code
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+ drivers/gpio/gpiolib.c |   16 +++++++---------
+ 1 file changed, 7 insertions(+), 9 deletions(-)
 
-also read the x2APIC spec pdf, it doesn't say anything about interrupt
-remapping...need to be used with x2apic...
+--- a/drivers/gpio/gpiolib.c	2008-07-02 23:29:58.000000000 -0700
++++ b/drivers/gpio/gpiolib.c	2008-07-03 00:04:57.000000000 -0700
+@@ -429,7 +429,7 @@ int gpio_export(unsigned gpio, bool dire
+ 	int			status = -EINVAL;
+ 
+ 	/* can't export until sysfs is available ... */
+-	if (!gpio_class.devices.next) {
++	if (!gpio_class.p) {
+ 		pr_debug("%s: called too early!\n", __func__);
+ 		return -ENOENT;
+ 	}
+@@ -453,10 +453,9 @@ int gpio_export(unsigned gpio, bool dire
+ 	if (status == 0) {
+ 		struct device	*dev;
+ 
+-		dev = device_create(&gpio_class, desc->chip->dev, 0,
+-				"gpio%d", gpio);
++		dev = device_create_drvdata(&gpio_class, desc->chip->dev, 0,
++				desc, "gpio%d", gpio);
+ 		if (dev) {
+-			dev_set_drvdata(dev, desc);
+ 			if (direction_may_change)
+ 				status = sysfs_create_group(&dev->kobj,
+ 						&gpio_attr_group);
+@@ -506,7 +505,7 @@ void gpio_unexport(unsigned gpio)
+ 	if (test_bit(FLAG_EXPORT, &desc->flags)) {
+ 		struct device	*dev = NULL;
+ 
+-		dev = class_find_device(&gpio_class, desc, match_export);
++		dev = class_find_device(&gpio_class, NULL, desc, match_export);
+ 		if (dev) {
+ 			clear_bit(FLAG_EXPORT, &desc->flags);
+ 			put_device(dev);
+@@ -533,15 +532,14 @@ static int gpiochip_export(struct gpio_c
+ 	 * export this later, in gpiolib_sysfs_init() ... here we just
+ 	 * verify that _some_ field of gpio_class got initialized.
+ 	 */
+-	if (!gpio_class.devices.next)
++	if (!gpio_class.p)
+ 		return 0;
+ 
+ 	/* use chip->base for the ID; it's already known to be unique */
+ 	mutex_lock(&sysfs_lock);
+-	dev = device_create(&gpio_class, chip->dev, 0,
++	dev = device_create_drvdata(&gpio_class, chip->dev, 0, chip,
+ 			"gpiochip%d", chip->base);
+ 	if (dev) {
+-		dev_set_drvdata(dev, chip);
+ 		status = sysfs_create_group(&dev->kobj,
+ 				&gpiochip_attr_group);
+ 	} else
+@@ -572,7 +570,7 @@ static void gpiochip_unexport(struct gpi
+ 	struct device		*dev;
+ 
+ 	mutex_lock(&sysfs_lock);
+-	dev = class_find_device(&gpio_class, chip, match_export);
++	dev = class_find_device(&gpio_class, NULL, chip, match_export);
+ 	if (dev) {
+ 		put_device(dev);
+ 		device_unregister(dev);
 
-YH
