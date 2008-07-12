@@ -1,177 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbYGLU1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbYGLUbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755319AbYGLU1S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 16:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbYGLU1H
+	id S1755239AbYGLUbS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 16:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbYGLUbD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 16:27:07 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:4658 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752880AbYGLU1E convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 16:27:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=oAeeEogdEKUJDM1ntVYeIUT5PxTNWC6dniCM51C+xCPbFRI7/Cyyj+e+YwYlb+wify
-         03VNJI0hutNJW6/y9rfKAml685W0TsKpxBTsMiw+jb2sgnwlkgdRfe/+A7VXlyfSdXtL
-         S1dio/Js+hDXIKocUlot1VEMkaLLm32S3uIXM=
-Message-ID: <48791393.1020107@gmail.com>
-Date: Sat, 12 Jul 2008 23:26:59 +0300
-From: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
+	Sat, 12 Jul 2008 16:31:03 -0400
+Received: from THAUM.MIT.EDU ([18.95.3.27]:49133 "EHLO luto.stanford.edu"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751925AbYGLUbB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jul 2008 16:31:01 -0400
+Message-ID: <48791484.4010408@myrealbox.com>
+Date: Sat, 12 Jul 2008 16:31:00 -0400
+From: Andy Lutomirski <luto@myrealbox.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Elias Oltmanns <eo@nebensachen.de>,
-       Arjan van de Ven <arjan@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [PATCH] x86_64: fix delayed signals
-References: <20080710215039.2A143154218@magilla.localdomain> <20080711054605.GA17851@elte.hu> <alpine.LFD.1.10.0807111031310.2936@woody.linux-foundation.org> <alpine.LFD.1.10.0807111102450.2936@woody.linux-foundation.org> <alpine.LFD.1.10.0807111337060.2873@woody.linux-foundation.org> <alpine.LFD.1.10.0807111617470.3459@woody.linux-foundation.org> <4878883F.10004@gmail.com> <alpine.LFD.1.10.0807121011470.2875@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807121011470.2875@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: luto@myrealbox.com, Andi Kleen <andi@firstfloor.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       kernel-testers-u79uwXL29TY76Z2rM5mHXA@public.gmane.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
+References: <200807010148.02135.rjw@sisk.pl> <486A96C1.2020106@firstfloor.org> <48784F51.1010407@myrealbox.com> <200807122051.25634.rjw@sisk.pl>
+In-Reply-To: <200807122051.25634.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008-07-12 20:29, Linus Torvalds wrote:
-> On Sat, 12 Jul 2008, Török Edwin wrote:
->   
->> On my 32-bit box (slow disks, SMP, XFS filesystem) 2.6.26-rc9 behaves
->> the same as 2.6.26-rc8, I can reliably reproduce a 2-3 second latency
->> [1] between pressing ^C the first time, and the shell returning (on the
->> text console too).
->> Using ftrace available from tip/master, I see up to 3 seconds of delay
->> between kill_pgrp and detach_pid (and during that time I can press ^C
->> again, leading to 2-3 kill_pgrp calls)
->>     
->
-> The thing is, it's important to see what happens in between. 
->
-> In particular, 2-3 second latencies can be entirely _normal_ (although 
-> obviously very annoying) with most log-based filesystems when they decide 
-> they have to flush the log.
-
-A bit off-topic, but something I noticed during the tests:
-In my original test I have rm-ed the files right after launching dd in
-the background, yet it still continued to write to the disk.
-I can understand that if the file is opened O_RDWR, you might seek back
-and read what you wrote, so Linux needs to actually do the write,
-but why does it insist on writing to the disk, on a file opened with
-O_WRONLY, after the file itself got unlinked?
-
->  A lot of filesystems are not designed for 
-> latency - every single filesystem test I have ever seen has always been 
-> either a throughput test, or a "average random-seek latency" kind of test.
->
-> The exact behavior will depend on the filesystem, for example. It will 
-> also easily depend on things like whether you update 'atime' or not. Many 
-> ostensibly read-only loads end up writing some data, especially inode 
-> atimes, and that's when they can get caught up in having to wait for a log 
-> to flush (to make up for that atime thing).
->   
-
-I have my filesystems mounted as noatime already.
-But yes, I am using different filesystems, the x86-64 box has reiserfs,
-and the x86-32 box has xfs.
-
-> You can try to limit the amount of dirty data in flight by tweaking 
-> /proc/sys/vm/dirty*ratio
-
-I have these in my /etc/rc.local:
-echo 5 > /proc/sys/vm/dirty_background_ratio
-echo 10 >/proc/sys/vm/dirty_ratio
-
-
-> , but from a latency standpoint the thing that 
-> actually matters more is often not the amount of dirty data, but the size 
-> of the requests queues - because you often care about read latency, but if 
-> you have big requests and especially if you have a load that does lots of 
-> big _contiguous_ writes (like your 'dd's would do), then what can easily 
-> happen is that the read ends up being behind a really big write in the 
-> request queues. 
->   
-
-I will try tweaking these (and /sys/block/sda/queue/nr_requests that
-Arjan suggested).
-
-> And 2-3 second latencies by no means means that each individual IO is 2-3 
-> seconds long. No - it just means that you ended up having to do multiple 
-> reads synchronously, and since the reads depended on each other (think a 
-> pathname lookup - reading each directory entry -> inode -> data), you can 
-> easily have a single system call causing 5-10 reads (bad cases are _much_ 
-> more, but 5-10 are perfectly normal for even well-behaved things), and now 
-> if each of those reads end up being behind a fairly big write...
->   
-
-I'll try blktrace tomorrow, it should tell me when I/Os are queued /
-completed.
-
->   
->> On my 64-bit box (2 disks in raid-0, UP, reiserfs filesystem) 2.6.25 and
->> 2.6.26-rc9 behave the same, and most of the time (10-20 times in a row)
->> find responds to ^C instantly.
+Rafael J. Wysocki wrote:
+> On Saturday, 12 of July 2008, Andy Lutomirski wrote:
+>> My Lenovo X61s fails to resume if I suspend it from within X, on both 
+>> 2.6.26-rc9 and recent wireless-testing.  2.6.26-rc8 is fine, as is 
+>> wireless-testing with 4b4f7280 reverted.  My in-progress bisect between 
+>> -rc8 and -rc9 is also consistent with this being the problem.
 >>
->> However in _some_ cases find doesn't respond to ^C for a very long time 
->> (~30 seconds), and when this happens I can't do anything else but switch 
->> consoles, starting another process (latencytop -d) hangs, and so does 
->> any other external command.
->>     
->
-> Ok, that is definitel not related to signals at all. You're simply stuck 
-> waiting for IO - or perhaps some fundamental filesystem semaphore which is 
-> held while some IO needs to be flushed.
+>> The symptom is that, when I push the power button to resume, the hard 
+>> drive light turns on, the fan turns on, then the hard drive light turns 
+>> off, the sleep light stays on, and the fan keeps running.  Sometimes the 
+>> battery light will blink off very briefly (1/4 sec, maybe) every few 
+>> seconds.  The system is locked hard at this point.
+>>
+>> I'm using Ubuntu Hardy userspace.
+> 
+> Well, that's bad.
+> 
+> There is the bugzilla entry at http://bugzilla.kernel.org/show_bug.cgi?id=11064
+> for this bug and you've just confirmed my suspicion that this particular
+> commit is to blame.
+> 
+> Can you please see if the appended patch changes anything?
 
-AFAICT reiserfs still uses the BKL, could that explain why one I/O
-delays another?
+I suspended and resumed OK.  Then I rebooted and tried again, and it failed.
 
->  That's why _unrelated_ processes 
-> hang: they're all waiting for a global resource.
->
-> And it may be worse on your other box for any number of reasons: raid 
-> means, for example, that you have two different levels of queueing, and 
-> thus effectively your queues are longer. And while raid-0 is better for 
-> throughput, it's not necessarily at all better for latency. The filesystem 
-> also makes a difference, as does the amount of dirty data under write-back 
-> (do you also have more memory in your x86-64 box, for example? That makes 
-> the kernel do bigger writeback buffers by default)
->
->   
+--Andy
 
-Yes, I have more memory on x86-64 (2G), and x86-32 has 1G.
->> I haven't yet tried ftrace on this box, and neither did I try Roland's
->> patch yet. I will try that now, and hopefuly come back with some numbers
->> shortly.
->>     
->
-> Trust me, roland's patch will make no difference what-so-ever. It's purely 
-> a per-thread thing, and your behaviour is clearly not per-thread.
->   
-
-Indeed.
-[Roland's patch is included in tip/master so I actually tried it even if
-I didn't know I did]
-
-> Signals are _always_ delayed until non-blocking system calls are done, and 
-> that means until the end of IO. 
->
-> This is also why your trace on just 'kill_pgrp' and 'detach_pid' is not 
-> interesting. It's _normal_ to have a delay between them. It can happen 
-> because the process blocks (or catches) signals, but it will also happen 
-> if some system call waits for disk.
->   
-
-Is there a way to trace what happens between those 2 functions?
-Maybe if I don't use the trace filter (and thus trace all functions),
-and modify the kernel sources to start tracing on kill_pgrp, and stop
-tracing on detach_pid.
-Would that provide useful info?
-
-
-Best regards,
---Edwin
+> 
+> Thanks,
+> Rafael
+> 
+> ---
+> From: H. Peter Anvin <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>
+> Date: Mon, 30 Jun 2008 23:48:35 -0700
+> Subject: [PATCH] x86 acpi: on wakeup, ljmp directly after writing CR0.PE
+> 
+> Impact: possible resume failures on AMD Elan, others?
+> 
+> Intel documents that writing cr0 should be immediately followed by a
+> ljmp, and that "failures are readily seen" if the processor enters SMM
+> at this point.  We believe this has been observed on the AMD Elan, so
+> stick strictly to the script and do an ljmp immediately after a change
+> to CR0.PE in all circumstances.
+> 
+> Signed-off-by: H. Peter Anvin <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>
+> ---
+>  arch/x86/kernel/acpi/realmode/wakeup.S |   11 ++++-------
+>  arch/x86/kernel/acpi/realmode/wakeup.h |    6 ++----
+>  arch/x86/kernel/acpi/sleep.c           |    4 +++-
+>  3 files changed, 9 insertions(+), 12 deletions(-)
+> 
+> Index: linux-next/arch/x86/kernel/acpi/realmode/wakeup.S
+> ===================================================================
+> --- linux-next.orig/arch/x86/kernel/acpi/realmode/wakeup.S
+> +++ linux-next/arch/x86/kernel/acpi/realmode/wakeup.S
+> @@ -25,10 +25,8 @@ pmode_gdt:	.quad	0
+>  realmode_flags:	.long	0
+>  real_magic:	.long	0
+>  trampoline_segment:	.word 0
+> -_pad1:		.byte	0
+> -wakeup_jmp:	.byte	0xea	/* ljmpw */
+> -wakeup_jmp_off:	.word	3f
+> -wakeup_jmp_seg:	.word	0
+> +wakeup_seg_ptr:	.word	3f-2	/* the segment in the ljmpw */
+> +_pad:		.long	0
+>  wakeup_gdt:	.quad	0, 0, 0
+>  signature:	.long	0x51ee1111
+>  
+> @@ -49,8 +47,7 @@ _start:
+>  	movl	%cr0, %eax
+>  	orb	$X86_CR0_PE, %al
+>  	movl	%eax, %cr0
+> -	jmp	1f
+> -1:	ljmpw	$8, $2f
+> +	ljmpw	$8, $2f
+>  2:
+>  	movw	%cx, %ds
+>  	movw	%cx, %es
+> @@ -60,7 +57,7 @@ _start:
+>  
+>  	andb	$~X86_CR0_PE, %al
+>  	movl	%eax, %cr0
+> -	jmp	wakeup_jmp
+> +	ljmpw	$0, $3f
+>  3:
+>  	/* Set up segments */
+>  	movw	%cs, %ax
+> Index: linux-next/arch/x86/kernel/acpi/realmode/wakeup.h
+> ===================================================================
+> --- linux-next.orig/arch/x86/kernel/acpi/realmode/wakeup.h
+> +++ linux-next/arch/x86/kernel/acpi/realmode/wakeup.h
+> @@ -24,10 +24,8 @@ struct wakeup_header {
+>  	u32 realmode_flags;
+>  	u32 real_magic;
+>  	u16 trampoline_segment;	/* segment with trampoline code, 64-bit only */
+> -	u8  _pad1;
+> -	u8  wakeup_jmp;
+> -	u16 wakeup_jmp_off;
+> -	u16 wakeup_jmp_seg;
+> +	u16 wakeup_seg_ptr;
+> +	u32 _pad;
+>  	u64 wakeup_gdt[3];
+>  	u32 signature;		/* To check we have correct structure */
+>  } __attribute__((__packed__));
+> Index: linux-next/arch/x86/kernel/acpi/sleep.c
+> ===================================================================
+> --- linux-next.orig/arch/x86/kernel/acpi/sleep.c
+> +++ linux-next/arch/x86/kernel/acpi/sleep.c
+> @@ -34,6 +34,7 @@ static char temp_stack[10240];
+>  int acpi_save_state_mem(void)
+>  {
+>  	struct wakeup_header *header;
+> +	u16 *wakeup_seg;
+>  
+>  	if (!acpi_realmode) {
+>  		printk(KERN_ERR "Could not allocate memory during boot, "
+> @@ -43,6 +44,7 @@ int acpi_save_state_mem(void)
+>  	memcpy((void *)acpi_realmode, &wakeup_code_start, WAKEUP_SIZE);
+>  
+>  	header = (struct wakeup_header *)(acpi_realmode + HEADER_OFFSET);
+> +	wakeup_seg = (u16 *)(acpi_realmode + header->wakeup_seg_ptr);
+>  	if (header->signature != 0x51ee1111) {
+>  		printk(KERN_ERR "wakeup header does not match\n");
+>  		return -EINVAL;
+> @@ -50,7 +52,7 @@ int acpi_save_state_mem(void)
+>  
+>  	header->video_mode = saved_video_mode;
+>  
+> -	header->wakeup_jmp_seg = acpi_wakeup_address >> 4;
+> +	*wakeup_seg = acpi_wakeup_address >> 4;
+>  	/* GDT[0]: GDT self-pointer */
+>  	header->wakeup_gdt[0] =
+>  		(u64)(sizeof(header->wakeup_gdt) - 1) +
 
