@@ -1,72 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754979AbYGLQ3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755373AbYGLQag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754979AbYGLQ3d (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 12:29:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbYGLQ3Y
+	id S1755373AbYGLQag (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 12:30:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbYGLQa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 12:29:24 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:37983 "EHLO
+	Sat, 12 Jul 2008 12:30:27 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:58682 "EHLO
 	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751370AbYGLQ3X (ORCPT
+	with ESMTP id S1751731AbYGLQa0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 12:29:23 -0400
-Date: Sat, 12 Jul 2008 10:29:21 -0600
+	Sat, 12 Jul 2008 12:30:26 -0400
+Date: Sat, 12 Jul 2008 10:30:25 -0600
 From: Matthew Wilcox <matthew@wil.cx>
-To: Jaswinder Singh <jaswinder@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       kernel-janitors <kernel-janitors@vger.kernel.org>,
-       kernelnewbies <kernelnewbies@nl.linux.org>, linux-scsi@vger.kernel.org,
-       hch@infradead.org
-Subject: Re: [PATCH] advansys: use request_firmware
-Message-ID: <20080712162921.GZ14894@parisc-linux.org>
-References: <1215770322.2733.12.camel@jaswinder.satnam>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       grundler@parisc-linux.org, tglx@linutronix.de, jgarzik@pobox.com,
+       linux-ide@vger.kernel.org, suresh.b.siddha@intel.com,
+       benh@kernel.crashing.org, jbarnes@virtuousgeek.org,
+       rdunlap@xenotime.net, mtk.manpages@gmail.com, ebiederm@xmission.com,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH 6/6] x86-64: Support for multiple MSIs
+Message-ID: <20080712163024.GA14894@parisc-linux.org>
+References: <20080711211559.GV14894@parisc-linux.org> <1215811018-15270-6-git-send-email-matthew@wil.cx> <20080712055444.GA13420@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1215770322.2733.12.camel@jaswinder.satnam>
+In-Reply-To: <20080712055444.GA13420@elte.hu>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 11, 2008 at 03:28:42PM +0530, Jaswinder Singh wrote:
-> ???this is a first draft; please be kind :)
+On Sat, Jul 12, 2008 at 07:54:44AM +0200, Ingo Molnar wrote:
+> hm, please implement this symmetrically on 64-bit and 32-bit as well. 
+> That will need more IRQ infrastructure changes but that should be OK as 
+> it will reduce the gap between the 32-bit and 64-bit side instead of 
+> widening it. A good starting point would be to unify/generalize the IRQ 
+> vector allocators. (and that would get most of what you need for 
+> multi-vector MSI)
 
-Hi Jaswinder, I wondered when you were going to get around to advansys
-;-)  My concern is:
-
-> -/* Microcode buffer is kept after initialization for error recovery. */
-[...]
-> +	err = request_firmware(&fw, fwname, asc_dvc->drv_ptr->dev);
-> +	if (err) {
-> +		printk(KERN_ERR "Failed to load image \"%s\" err %d\n",
-> +		       fwname, err);
-> +		return err;
-> +	}
-> +	if (fw->size < 4) {
-> +		printk(KERN_ERR "Bogus length %d in image \"%s\"\n",
-> +		       fw->size, fwname);
-> +		release_firmware(fw);
-> +		return -EINVAL;
-> +	}
-> +	chksum = (fw->data[3] << 24) | (fw->data[2] << 16) |
-> +		 (fw->data[1] << 8) | fw->data[0];
-> +	ASC_DBG(1, "_asc_mcode_chksum 0x%lx\n", (ulong)chksum);
-> +	if (AscLoadMicroCode(iop_base, 0, &fw->data[4],
-> +			     fw->size - 4) != chksum) {
->  		asc_dvc->err_code |= ASC_IERR_MCODE_CHKSUM;
->  		return warn_code;
->  	}
-> +	release_firmware(fw);
-
-You're calling release_firmware() here.  I don't know if that actually
-frees the firmware when it's built-in, but if it does, then freeing the
-firmware could cause the chip to stop working if it gets reset before
-userspace is up.
-
-If it is OK to call release_firmware here, then the error path is
-missing a release_firmware() call.
+OK, I'll look into unifying them on Monday.  Thanks for the review.
 
 -- 
 Intel are signing my paycheques ... these opinions are still mine
