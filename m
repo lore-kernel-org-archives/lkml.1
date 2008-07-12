@@ -1,90 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631AbYGLRrF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbYGLSBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754631AbYGLRrF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 13:47:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbYGLRqz
+	id S1754590AbYGLSBX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 14:01:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbYGLSBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 13:46:55 -0400
-Received: from igw2.br.ibm.com ([32.104.18.25]:60419 "EHLO igw2.br.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751994AbYGLRqy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 13:46:54 -0400
-Subject: Re: [tpmdd-devel] Patch for Broadcom TPM TIS device HID
-From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: eledisez <eledisez@grounation.org>, tpmdd-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080711121646.cafaef2c.akpm@linux-foundation.org>
-References: <2d97a3960807050312w76bde4c7hadeebb8a36aae761@mail.gmail.com>
-	 <1215640191.25273.45.camel@blackbox>
-	 <379cac7442a57a702f75cb2194dee9eb@localhost>
-	 <1215650063.25273.77.camel@blackbox>
-	 <20080711121646.cafaef2c.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Sat, 12 Jul 2008 14:44:14 -0300
-Message-Id: <1215884655.16230.42.camel@blackbox>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+	Sat, 12 Jul 2008 14:01:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43961 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752573AbYGLSBP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jul 2008 14:01:15 -0400
+Date: Sat, 12 Jul 2008 11:00:06 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Arjan van de Ven <arjan@infradead.org>
+cc: =?ISO-8859-15?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Elias Oltmanns <eo@nebensachen.de>, Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [PATCH] x86_64: fix delayed signals
+In-Reply-To: <20080712075532.13483b21@infradead.org>
+Message-ID: <alpine.LFD.1.10.0807121044000.2875@woody.linux-foundation.org>
+References: <20080710215039.2A143154218@magilla.localdomain> <20080711054605.GA17851@elte.hu> <alpine.LFD.1.10.0807111031310.2936@woody.linux-foundation.org> <alpine.LFD.1.10.0807111102450.2936@woody.linux-foundation.org> <alpine.LFD.1.10.0807111337060.2873@woody.linux-foundation.org>
+ <alpine.LFD.1.10.0807111617470.3459@woody.linux-foundation.org> <4878883F.10004@gmail.com> <4878B4B5.5060007@gmail.com> <20080712075532.13483b21@infradead.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 2008-07-11 at 12:16 -0700, Andrew Morton wrote: 
-> On Wed, 09 Jul 2008 21:34:23 -0300 Rajiv Andrade <srajiv@linux.vnet.ibm.com> wrote:
-> 
-> > This depends on patch posted with "[PATCH] tpm: add Intel TPM TIS device HID" subject.
-> > 
-> > From: LE DISEZ Erwan <eledisez@grounation.org>
-> > Subject: add Broadcom TPM TIS device HID
-> > 
-> > 	Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-> > ---
-> >  drivers/char/tpm/tpm_tis.c |    1 +
-> >  1 files changed, 1 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
-> > index c7a977b..ed1879c 100644
-> > --- a/drivers/char/tpm/tpm_tis.c
-> > +++ b/drivers/char/tpm/tpm_tis.c
-> > @@ -622,6 +622,7 @@ static struct pnp_device_id tpm_pnp_tbl[] __devinitdata = {
-> >  	{"ATM1200", 0},		/* Atmel */
-> >  	{"IFX0102", 0},		/* Infineon */
-> >  	{"BCM0101", 0},		/* Broadcom */
-> > +	{"BCM0102", 0},		/* Broadcom */
-> >  	{"NSC1200", 0},		/* National */
-> >  	{"ICO0102", 0},		/* Intel */
-> >  	/* Add new here */
-> 
-> Thanks.  I'll see if we can squeeze this into 2.6.26.
-> 
-> I'm a bit confused over who wrote the patch?  Your changelog implies it
-> was LE DISEZ Erwan <eledisez@grounation.org>.  Is that correct?
 
-﻿Yes, it was him, I just added the Signed-off-by that he didn't and made it apply
-cleanly after "[PATCH] tpm: add Intel TPM TIS device HID".
-
+On Sat, 12 Jul 2008, Arjan van de Ven wrote:
 > 
-> Also: Debora and Rajiv, could we please get your email addresses
-> into ./MAINTAINERS?  At present all we have is
-> 
-> TPM DEVICE DRIVER
-> P:     Debora Velarde
-> P:     Rajiv Andrade
-> M:      tpmdd-devel@lists.sourceforge.net
-> W:      http://tpmdd.sourceforge.net
-> P:      Marcel Selhorst
-> M:      tpm@selhorst.net
-> W:      http://www.prosec.rub.de/tpm/
-> L:      tpmdd-devel@lists.sourceforge.net
-> S:      Maintained
+> I see really bad delays on 32 bit as well, but they go away for me if I
+> do
+> echo 4096 > /sys/block/sda/queue/nr_requests
 
-Sure! 
-> 
-> (pls fix the whitespace there too!)
+Hmm. I think the default is 128, and in many cases latencies should 
+actually go up with bigger requests queues - especially if it means that 
+you can have a lot more writes in front of the read. You see the opposite 
+behaviour.
 
-My fault. I'd already submitted a patch correcting this, but I'm going to submit a new one with both fixes.
+That could easily happen if the scheduler is crazy and lets writes use up 
+all of the request queue, or if the limited queue means that it cannot 
+effectively merge requests. But request merging should happen trivially 
+for the contiguous 'dd' case almost regardless of queue size, so I wonder 
+if something else is going on.
 
-Thanks
+Ahh.. I see something _very_ suspicious.
 
+Look at block/blk-core.c: get_request(). It starts throttling and batching 
+requests when it gets
+
+	if (rl->count[rw]+1 >= queue_congestion_on_threshold(q)) {
+
+and notice how this is independent of whether it's a read or a write (but 
+it does count them separately). But on the wakeup path, it uses different 
+limits for reads than for writes.
+
+That batching looks pretty bogus for reads to begin with, and then 
+behaving similarly on throttling but differently on wakup sounds bogus.
+
+The blk_alloc_request() also ends up allocating all requests from one 
+mempool, so if that mempool runs out (due to writes having used them all 
+up), then those writes will block reads too, even though reads should have 
+much higher priority.
+
+I dunno. But there _has_ been a lot of churn in the different block queues 
+over the last few months. I wouldn't be surprised at all if something got 
+broken in the process. And as with filesystems, almost all performance 
+tests are for throughput, not "bad latency" in the presense of other 
+heavy IO.
+
+		Linus
