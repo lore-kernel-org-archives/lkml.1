@@ -1,129 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755222AbYGLUYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbYGLU1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755222AbYGLUYa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 16:24:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752806AbYGLUYU
+	id S1755319AbYGLU1S (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 16:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbYGLU1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 16:24:20 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35989 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752671AbYGLUYS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 16:24:18 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Subject: Re: linux-next: Tree for July 11
-Date: Sat, 12 Jul 2008 22:26:09 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
-       netdev@vger.kernel.org, "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       "Jens Axboe" <jens.axboe@oracle.com>
-References: <20080711182557.9b24df1f.sfr@canb.auug.org.au> <200807122051.50909.rjw@sisk.pl> <19f34abd0807121221n75fd7bb8x24fa484239773201@mail.gmail.com>
-In-Reply-To: <19f34abd0807121221n75fd7bb8x24fa484239773201@mail.gmail.com>
+	Sat, 12 Jul 2008 16:27:07 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:4658 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752880AbYGLU1E convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jul 2008 16:27:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=oAeeEogdEKUJDM1ntVYeIUT5PxTNWC6dniCM51C+xCPbFRI7/Cyyj+e+YwYlb+wify
+         03VNJI0hutNJW6/y9rfKAml685W0TsKpxBTsMiw+jb2sgnwlkgdRfe/+A7VXlyfSdXtL
+         S1dio/Js+hDXIKocUlot1VEMkaLLm32S3uIXM=
+Message-ID: <48791393.1020107@gmail.com>
+Date: Sat, 12 Jul 2008 23:26:59 +0300
+From: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807122226.10699.rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Elias Oltmanns <eo@nebensachen.de>,
+       Arjan van de Ven <arjan@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [PATCH] x86_64: fix delayed signals
+References: <20080710215039.2A143154218@magilla.localdomain> <20080711054605.GA17851@elte.hu> <alpine.LFD.1.10.0807111031310.2936@woody.linux-foundation.org> <alpine.LFD.1.10.0807111102450.2936@woody.linux-foundation.org> <alpine.LFD.1.10.0807111337060.2873@woody.linux-foundation.org> <alpine.LFD.1.10.0807111617470.3459@woody.linux-foundation.org> <4878883F.10004@gmail.com> <alpine.LFD.1.10.0807121011470.2875@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807121011470.2875@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 12 of July 2008, Vegard Nossum wrote:
-> On Sat, Jul 12, 2008 at 8:51 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > and the second one is the following:
-> >
-> > WARNING: at /home/rafael/src/linux-next/include/linux/blkdev.h:447 blk_plug_device+0x9b/0xb0()
-> > Modules linked in: snd_hda_intel ohci1394 ieee1394 snd_pcm rtc_cmos sr_mod rtc_core floppy snd_timer wmi button cdrom rtc_lib serio_raw sky2 snd_page_alloc snd_hwdep snd evdev joydev sg soundcore raid456 async_xor async_memcpy async_tx xor raid0 usbhid ff_memless ehci_hcd ohci_hcd sd_mod edd raid1 ext3 jbd fan pata_marvell pata_atiixp thermal processor
-> > Pid: 2244, comm: kjournald Not tainted 2.6.26-rc9-next #44
-> >
-> > Call Trace:
-> >  [<ffffffff8023d37f>] warn_on_slowpath+0x5f/0x80
-> >  [<ffffffff80220030>] ? hpet_unregister_irq_handler+0x0/0x30
-> >  [<ffffffff8022a8ae>] ? kmemcheck_mark_initialized+0xe/0x10
-> >  [<ffffffff802b97fb>] ? kmemcheck_slab_alloc+0x2b/0x50
-> >  [<ffffffff802b8610>] ? kmem_cache_alloc+0xc0/0x140
-> >  [<ffffffff80291921>] ? mempool_alloc_slab+0x11/0x20
-> >  [<ffffffff80291a8b>] ? mempool_alloc+0x5b/0x140
-> >  [<ffffffff803575db>] blk_plug_device+0x9b/0xb0
-> >  [<ffffffff80453d9f>] bitmap_startwrite+0xbf/0x1b0
-> >  [<ffffffff802e87e4>] ? bio_alloc_bioset+0x54/0xb0
-> >  [<ffffffffa004eafa>] make_request+0x39a/0x810 [raid1]
-> >  [<ffffffff80291a8b>] ? mempool_alloc+0x5b/0x140
-> >  [<ffffffff80291a8b>] ? mempool_alloc+0x5b/0x140
-> >  [<ffffffff8035682d>] generic_make_request+0x17d/0x2b0
-> >  [<ffffffff803581dc>] submit_bio+0x6c/0xf0
-> >  [<ffffffff802e3c60>] submit_bh+0xf0/0x130
-> >  [<ffffffffa001cce0>] journal_commit_transaction+0xa40/0x1000 [jbd]
-> >  [<ffffffff80248504>] ? try_to_del_timer_sync+0x44/0x90
-> >  [<ffffffffa0020967>] kjournald+0xe7/0x250 [jbd]
-> >  [<ffffffff80254350>] ? autoremove_wake_function+0x0/0x40
-> >  [<ffffffffa0020880>] ? kjournald+0x0/0x250 [jbd]
-> >  [<ffffffff80253efd>] kthread+0x4d/0x80
-> >  [<ffffffff8020c6d9>] child_rip+0xa/0x11
-> >  [<ffffffff80500f9b>] ? _spin_unlock_irq+0x2b/0x40
-> >  [<ffffffff8020bd0f>] ? restore_args+0x0/0x30
-> >  [<ffffffff80254052>] ? kthreadd+0x122/0x1a0
-> >  [<ffffffff80253eb0>] ? kthread+0x0/0x80
-> >  [<ffffffff8020c6cf>] ? child_rip+0x0/0x11
-> 
-> Hm, even though there's kmemcheck in the stacktrace, I think it's
-> unrelated. Probably it's just a call that returned and the addresses
-> were left on the stack. You can also see that the warning clearly
-> comes from blkdev.h, and since kmemcheck does *not* call into any
-> blkdev stuff, those stacktrace entries must be just left-overs, as is
-> also indicated by the unreliable mark, so although those are wrong in
-> certain circumstances, I don't think they are in this case.
-> 
-> The warning comes from here:
-> 
-> static inline int queue_flag_test_and_set(unsigned int flag,
->                                           struct request_queue *q)
-> {
->         WARN_ON_ONCE(!queue_is_locked(q));
-> 
-> I'll add Jens Axboe to Cc.
+On 2008-07-12 20:29, Linus Torvalds wrote:
+> On Sat, 12 Jul 2008, Török Edwin wrote:
+>   
+>> On my 32-bit box (slow disks, SMP, XFS filesystem) 2.6.26-rc9 behaves
+>> the same as 2.6.26-rc8, I can reliably reproduce a 2-3 second latency
+>> [1] between pressing ^C the first time, and the shell returning (on the
+>> text console too).
+>> Using ftrace available from tip/master, I see up to 3 seconds of delay
+>> between kill_pgrp and detach_pid (and during that time I can press ^C
+>> again, leading to 2-3 kill_pgrp calls)
+>>     
+>
+> The thing is, it's important to see what happens in between. 
+>
+> In particular, 2-3 second latencies can be entirely _normal_ (although 
+> obviously very annoying) with most log-based filesystems when they decide 
+> they have to flush the log.
 
-Yeah, good idea. :-)
+A bit off-topic, but something I noticed during the tests:
+In my original test I have rm-ed the files right after launching dd in
+the background, yet it still continued to write to the disk.
+I can understand that if the file is opened O_RDWR, you might seek back
+and read what you wrote, so Linux needs to actually do the write,
+but why does it insist on writing to the disk, on a file opened with
+O_WRONLY, after the file itself got unlinked?
 
-It turns out that this happened before, but I've been overlooking it.  This is
-a trace from the Friday's linux-next:
+>  A lot of filesystems are not designed for 
+> latency - every single filesystem test I have ever seen has always been 
+> either a throughput test, or a "average random-seek latency" kind of test.
+>
+> The exact behavior will depend on the filesystem, for example. It will 
+> also easily depend on things like whether you update 'atime' or not. Many 
+> ostensibly read-only loads end up writing some data, especially inode 
+> atimes, and that's when they can get caught up in having to wait for a log 
+> to flush (to make up for that atime thing).
+>   
 
-------------[ cut here ]------------
-WARNING: at /home/rafael/src/linux-next/include/linux/blkdev.h:447 blk_plug_device+0x9b/0xb0()
-Modules linked in: rtc_cmos snd_hda_intel rtc_core snd_pcm sr_mod floppy snd_timer snd_page_alloc rtc_lib ohci1394 serio_raw cdrom ieee1394 snd_hwdep snd soundcore sky2 button wmi joydev evdev sg raid456 async_xor async_memcpy async_tx xor raid0 usbhid ff_memless ehci_hcd sd_mod ohci_hcd edd raid1 ext3 jbd fan pata_marvell pata_atiixp thermal processor
-Pid: 2275, comm: kjournald Not tainted 2.6.26-rc9-next #40
+I have my filesystems mounted as noatime already.
+But yes, I am using different filesystems, the x86-64 box has reiserfs,
+and the x86-32 box has xfs.
 
-Call Trace:
- [<ffffffff8023cf9f>] warn_on_slowpath+0x5f/0x80
- [<ffffffff80220030>] ? hpet_rtc_interrupt+0x100/0x380
- [<ffffffff80263327>] ? __lock_acquire+0x8b7/0x1280
- [<ffffffff80291461>] ? mempool_alloc_slab+0x11/0x20
- [<ffffffff8035735b>] blk_plug_device+0x9b/0xb0
- [<ffffffff8045377f>] bitmap_startwrite+0xbf/0x1b0
- [<ffffffff802e8254>] ? bio_alloc_bioset+0x54/0xb0
- [<ffffffffa004eafa>] make_request+0x39a/0x810 [raid1]
- [<ffffffff802915cb>] ? mempool_alloc+0x5b/0x140
- [<ffffffff802915cb>] ? mempool_alloc+0x5b/0x140
- [<ffffffff803565ad>] generic_make_request+0x17d/0x2b0
- [<ffffffff80357f5c>] submit_bio+0x6c/0xf0
- [<ffffffff802e36d0>] submit_bh+0xf0/0x130
- [<ffffffffa001cce0>] journal_commit_transaction+0xa40/0x1000 [jbd]
- [<ffffffff802480d4>] ? try_to_del_timer_sync+0x44/0x90
- [<ffffffffa0020967>] kjournald+0xe7/0x250 [jbd]
- [<ffffffff80253ef0>] ? autoremove_wake_function+0x0/0x40
- [<ffffffffa0020880>] ? kjournald+0x0/0x250 [jbd]
- [<ffffffff80253a9d>] kthread+0x4d/0x80
- [<ffffffff8020c6b9>] child_rip+0xa/0x11
- [<ffffffff8020bcef>] ? restore_args+0x0/0x30
- [<ffffffff80253a50>] ? kthread+0x0/0x80
- [<ffffffff8020c6af>] ? child_rip+0x0/0x11
+> You can try to limit the amount of dirty data in flight by tweaking 
+> /proc/sys/vm/dirty*ratio
 
----[ end trace bd85cedf792d0f08 ]---
+I have these in my /etc/rc.local:
+echo 5 > /proc/sys/vm/dirty_background_ratio
+echo 10 >/proc/sys/vm/dirty_ratio
 
-and the full dmesg is here: http://www.sisk.pl/kernel/debug/20080709/dmesg-1.log
 
-Thanks,
-Rafael
+> , but from a latency standpoint the thing that 
+> actually matters more is often not the amount of dirty data, but the size 
+> of the requests queues - because you often care about read latency, but if 
+> you have big requests and especially if you have a load that does lots of 
+> big _contiguous_ writes (like your 'dd's would do), then what can easily 
+> happen is that the read ends up being behind a really big write in the 
+> request queues. 
+>   
+
+I will try tweaking these (and /sys/block/sda/queue/nr_requests that
+Arjan suggested).
+
+> And 2-3 second latencies by no means means that each individual IO is 2-3 
+> seconds long. No - it just means that you ended up having to do multiple 
+> reads synchronously, and since the reads depended on each other (think a 
+> pathname lookup - reading each directory entry -> inode -> data), you can 
+> easily have a single system call causing 5-10 reads (bad cases are _much_ 
+> more, but 5-10 are perfectly normal for even well-behaved things), and now 
+> if each of those reads end up being behind a fairly big write...
+>   
+
+I'll try blktrace tomorrow, it should tell me when I/Os are queued /
+completed.
+
+>   
+>> On my 64-bit box (2 disks in raid-0, UP, reiserfs filesystem) 2.6.25 and
+>> 2.6.26-rc9 behave the same, and most of the time (10-20 times in a row)
+>> find responds to ^C instantly.
+>>
+>> However in _some_ cases find doesn't respond to ^C for a very long time 
+>> (~30 seconds), and when this happens I can't do anything else but switch 
+>> consoles, starting another process (latencytop -d) hangs, and so does 
+>> any other external command.
+>>     
+>
+> Ok, that is definitel not related to signals at all. You're simply stuck 
+> waiting for IO - or perhaps some fundamental filesystem semaphore which is 
+> held while some IO needs to be flushed.
+
+AFAICT reiserfs still uses the BKL, could that explain why one I/O
+delays another?
+
+>  That's why _unrelated_ processes 
+> hang: they're all waiting for a global resource.
+>
+> And it may be worse on your other box for any number of reasons: raid 
+> means, for example, that you have two different levels of queueing, and 
+> thus effectively your queues are longer. And while raid-0 is better for 
+> throughput, it's not necessarily at all better for latency. The filesystem 
+> also makes a difference, as does the amount of dirty data under write-back 
+> (do you also have more memory in your x86-64 box, for example? That makes 
+> the kernel do bigger writeback buffers by default)
+>
+>   
+
+Yes, I have more memory on x86-64 (2G), and x86-32 has 1G.
+>> I haven't yet tried ftrace on this box, and neither did I try Roland's
+>> patch yet. I will try that now, and hopefuly come back with some numbers
+>> shortly.
+>>     
+>
+> Trust me, roland's patch will make no difference what-so-ever. It's purely 
+> a per-thread thing, and your behaviour is clearly not per-thread.
+>   
+
+Indeed.
+[Roland's patch is included in tip/master so I actually tried it even if
+I didn't know I did]
+
+> Signals are _always_ delayed until non-blocking system calls are done, and 
+> that means until the end of IO. 
+>
+> This is also why your trace on just 'kill_pgrp' and 'detach_pid' is not 
+> interesting. It's _normal_ to have a delay between them. It can happen 
+> because the process blocks (or catches) signals, but it will also happen 
+> if some system call waits for disk.
+>   
+
+Is there a way to trace what happens between those 2 functions?
+Maybe if I don't use the trace filter (and thus trace all functions),
+and modify the kernel sources to start tracing on kill_pgrp, and stop
+tracing on detach_pid.
+Would that provide useful info?
+
+
+Best regards,
+--Edwin
+
