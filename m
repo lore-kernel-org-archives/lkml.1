@@ -1,281 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199AbYGLTFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbYGLTPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754199AbYGLTFj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 15:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbYGLTFb
+	id S1754590AbYGLTPy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 15:15:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbYGLTPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 15:05:31 -0400
-Received: from ti-out-0910.google.com ([209.85.142.186]:9802 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751622AbYGLTFb (ORCPT
+	Sat, 12 Jul 2008 15:15:46 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56659 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751120AbYGLTPp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 15:05:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
-         :sender;
-        b=AkMpvKvJi6On+j3Pwk8ddnsTkTxNACP+d/4M00Q2ayZi66kEmmycTl5Go8SSOBIz57
-         U90WU2tjgNPIJ0aImJAhFu53zHZmXjJUZ4mUP6HV9enPM0vtEkrHdAkl7/yx9c+n7c4i
-         30d9wzQ7oDaUODEoUDN9HpU22OX+i2gm6wv2s=
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: penberg@cs.helsinki.fi
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, cl@linux-foundation.org
-Subject: [PATCH] kmemtrace: SLAB hooks.
-Date: Sat, 12 Jul 2008 22:04:31 +0300
-Message-Id: <1215889471-5734-1-git-send-email-eduard.munteanu@linux360.ro>
-X-Mailer: git-send-email 1.5.6.1
-In-Reply-To: <84144f020807110149v4806404fjdb9c3e4af3cfdb70@mail.gmail.com>
-References: <84144f020807110149v4806404fjdb9c3e4af3cfdb70@mail.gmail.com>
+	Sat, 12 Jul 2008 15:15:45 -0400
+Date: Sat, 12 Jul 2008 12:15:06 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Miao Xie <miaox@cn.fujitsu.com>
+cc: Vegard Nossum <vegard.nossum@gmail.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Paul Menage <menage@google.com>, Max Krasnyansky <maxk@qualcomm.com>,
+       Paul Jackson <pj@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: current linux-2.6.git: cpusets completely broken
+In-Reply-To: <487880D7.1040608@cn.fujitsu.com>
+Message-ID: <alpine.LFD.1.10.0807121201220.2875@woody.linux-foundation.org>
+References: <20080712031736.GA3040@damson.getinternet.no> <alpine.LFD.1.10.0807112026390.2875@woody.linux-foundation.org> <487880D7.1040608@cn.fujitsu.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds hooks for the SLAB allocator, to allow tracing with kmemtrace.
 
-Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
----
 
-Dropped the __GFP_NOTRACE thing. Also fixed NUMA tracing and some whitespace
-errors.
+On Sat, 12 Jul 2008, Miao Xie wrote:
+> 
+> I think Vegard Nossum's patch is not so good because it is not necessary to detach
+> all the sched domains when making a cpu offline.
 
-What do you think?
+Well, short-term, I'd like to have a minimal fix.
 
- include/linux/slab_def.h |   56 +++++++++++++++++++++++++++++++++++++-----
- mm/slab.c                |   61 +++++++++++++++++++++++++++++++++++++++++----
- 2 files changed, 104 insertions(+), 13 deletions(-)
+Long-term, I really think that whole CPU notifier thing needs to be 
+*fixed*.
 
-diff --git a/include/linux/slab_def.h b/include/linux/slab_def.h
-index 39c3a5e..040fe72 100644
---- a/include/linux/slab_def.h
-+++ b/include/linux/slab_def.h
-@@ -14,6 +14,7 @@
- #include <asm/page.h>		/* kmalloc_sizes.h needs PAGE_SIZE */
- #include <asm/cache.h>		/* kmalloc_sizes.h needs L1_CACHE_BYTES */
- #include <linux/compiler.h>
-+#include <linux/kmemtrace.h>
- 
- /* Size description struct for general caches. */
- struct cache_sizes {
-@@ -28,8 +29,20 @@ extern struct cache_sizes malloc_sizes[];
- void *kmem_cache_alloc(struct kmem_cache *, gfp_t);
- void *__kmalloc(size_t size, gfp_t flags);
- 
-+#ifdef CONFIG_KMEMTRACE
-+extern void *__kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags);
-+#else
-+static inline void *__kmem_cache_alloc(struct kmem_cache *cachep,
-+				       gfp_t flags)
-+{
-+	return __kmem_cache_alloc(cachep, flags);
-+}
-+#endif
-+
- static inline void *kmalloc(size_t size, gfp_t flags)
- {
-+	void *ret;
-+
- 	if (__builtin_constant_p(size)) {
- 		int i = 0;
- 
-@@ -50,10 +63,17 @@ static inline void *kmalloc(size_t size, gfp_t flags)
- found:
- #ifdef CONFIG_ZONE_DMA
- 		if (flags & GFP_DMA)
--			return kmem_cache_alloc(malloc_sizes[i].cs_dmacachep,
--						flags);
-+			ret = __kmem_cache_alloc(malloc_sizes[i].cs_dmacachep,
-+						 flags);
-+		else
- #endif
--		return kmem_cache_alloc(malloc_sizes[i].cs_cachep, flags);
-+			ret = __kmem_cache_alloc(malloc_sizes[i].cs_cachep,
-+						 flags);
-+
-+		kmemtrace_mark_alloc(KMEMTRACE_KIND_KERNEL, _THIS_IP_, ret,
-+				     size, malloc_sizes[i].cs_size, flags);
-+
-+		return ret;
- 	}
- 	return __kmalloc(size, flags);
- }
-@@ -62,8 +82,23 @@ found:
- extern void *__kmalloc_node(size_t size, gfp_t flags, int node);
- extern void *kmem_cache_alloc_node(struct kmem_cache *, gfp_t flags, int node);
- 
-+#ifdef CONFIG_KMEMTRACE
-+extern void *__kmem_cache_alloc_node(struct kmem_cache *cachep,
-+				     gfp_t flags,
-+				     int nodeid);
-+#else
-+static inline void *__kmem_cache_alloc_node(struct kmem_cache *cachep,
-+					    gfp_t flags,
-+					    int nodeid)
-+{
-+	return kmem_cache_alloc_node(cachep, flags, nodeid);
-+}
-+#endif
-+
- static inline void *kmalloc_node(size_t size, gfp_t flags, int node)
- {
-+	void *ret;
-+
- 	if (__builtin_constant_p(size)) {
- 		int i = 0;
- 
-@@ -84,11 +119,18 @@ static inline void *kmalloc_node(size_t size, gfp_t flags, int node)
- found:
- #ifdef CONFIG_ZONE_DMA
- 		if (flags & GFP_DMA)
--			return kmem_cache_alloc_node(malloc_sizes[i].cs_dmacachep,
--						flags, node);
-+			ret = __kmem_cache_alloc_node(malloc_sizes[i].cs_dmacachep,
-+						      flags, node);
-+		else
- #endif
--		return kmem_cache_alloc_node(malloc_sizes[i].cs_cachep,
--						flags, node);
-+			ret =  __kmem_cache_alloc_node(malloc_sizes[i].cs_cachep,
-+						       flags, node);
-+
-+		kmemtrace_mark_alloc_node(KMEMTRACE_KIND_KERNEL, _THIS_IP_,
-+					  ret, size, malloc_sizes[i].cs_size,
-+					  flags, node);
-+
-+		return ret;
- 	}
- 	return __kmalloc_node(size, flags, node);
- }
-diff --git a/mm/slab.c b/mm/slab.c
-index 046607f..f07e022 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -111,6 +111,7 @@
- #include	<linux/rtmutex.h>
- #include	<linux/reciprocal_div.h>
- #include	<linux/debugobjects.h>
-+#include	<linux/kmemtrace.h>
- 
- #include	<asm/cacheflush.h>
- #include	<asm/tlbflush.h>
-@@ -3621,10 +3622,23 @@ static inline void __cache_free(struct kmem_cache *cachep, void *objp)
-  */
- void *kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
- {
--	return __cache_alloc(cachep, flags, __builtin_return_address(0));
-+	void *ret = __cache_alloc(cachep, flags, __builtin_return_address(0));
-+
-+	kmemtrace_mark_alloc(KMEMTRACE_KIND_CACHE, _RET_IP_, ret,
-+			     obj_size(cachep), obj_size(cachep), flags);
-+
-+	return ret;
- }
- EXPORT_SYMBOL(kmem_cache_alloc);
- 
-+#ifdef CONFIG_KMEMTRACE
-+void *__kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
-+{
-+	return __cache_alloc(cachep, flags, __builtin_return_address(0));
-+}
-+EXPORT_SYMBOL(__kmem_cache_alloc);
-+#endif
-+
- /**
-  * kmem_ptr_validate - check if an untrusted pointer might be a slab entry.
-  * @cachep: the cache we're checking against
-@@ -3669,20 +3683,44 @@ out:
- #ifdef CONFIG_NUMA
- void *kmem_cache_alloc_node(struct kmem_cache *cachep, gfp_t flags, int nodeid)
- {
--	return __cache_alloc_node(cachep, flags, nodeid,
--			__builtin_return_address(0));
-+	void *ret = __cache_alloc_node(cachep, flags, nodeid,
-+				       __builtin_return_address(0));
-+
-+	kmemtrace_mark_alloc_node(KMEMTRACE_KIND_CACHE, _RET_IP_, ret,
-+				  obj_size(cachep), obj_size(cachep),
-+				  flags, nodeid);
-+
-+	return ret;
- }
- EXPORT_SYMBOL(kmem_cache_alloc_node);
- 
-+#ifdef CONFIG_KMEMTRACE
-+void *__kmem_cache_alloc_node(struct kmem_cache *cachep,
-+			      gfp_t flags,
-+			      int nodeid)
-+{
-+	return __cache_alloc_node(cachep, flags, nodeid,
-+				  __builtin_return_address(0));
-+}
-+EXPORT_SYMBOL(__kmem_cache_alloc_node);
-+#endif
-+
- static __always_inline void *
- __do_kmalloc_node(size_t size, gfp_t flags, int node, void *caller)
- {
- 	struct kmem_cache *cachep;
-+	void *ret;
- 
- 	cachep = kmem_find_general_cachep(size, flags);
- 	if (unlikely(ZERO_OR_NULL_PTR(cachep)))
- 		return cachep;
--	return kmem_cache_alloc_node(cachep, flags, node);
-+	ret = __kmem_cache_alloc_node(cachep, flags, node);
-+
-+	kmemtrace_mark_alloc_node(KMEMTRACE_KIND_KERNEL,
-+				  (unsigned long) caller, ret,
-+				  size, cachep->buffer_size, flags, node);
-+
-+	return ret;
- }
- 
- #ifdef CONFIG_DEBUG_SLAB
-@@ -3718,6 +3756,7 @@ static __always_inline void *__do_kmalloc(size_t size, gfp_t flags,
- 					  void *caller)
- {
- 	struct kmem_cache *cachep;
-+	void *ret;
- 
- 	/* If you want to save a few bytes .text space: replace
- 	 * __ with kmem_.
-@@ -3727,11 +3766,17 @@ static __always_inline void *__do_kmalloc(size_t size, gfp_t flags,
- 	cachep = __find_general_cachep(size, flags);
- 	if (unlikely(ZERO_OR_NULL_PTR(cachep)))
- 		return cachep;
--	return __cache_alloc(cachep, flags, caller);
-+	ret = __cache_alloc(cachep, flags, caller);
-+
-+	kmemtrace_mark_alloc(KMEMTRACE_KIND_KERNEL,
-+			     (unsigned long) caller, ret,
-+			     size, cachep->buffer_size, flags);
-+
-+	return ret;
- }
- 
- 
--#ifdef CONFIG_DEBUG_SLAB
-+#if defined(CONFIG_DEBUG_SLAB) || defined(CONFIG_KMEMTRACE)
- void *__kmalloc(size_t size, gfp_t flags)
- {
- 	return __do_kmalloc(size, flags, __builtin_return_address(0));
-@@ -3770,6 +3815,8 @@ void kmem_cache_free(struct kmem_cache *cachep, void *objp)
- 		debug_check_no_obj_freed(objp, obj_size(cachep));
- 	__cache_free(cachep, objp);
- 	local_irq_restore(flags);
-+
-+	kmemtrace_mark_free(KMEMTRACE_KIND_CACHE, _RET_IP_, objp);
- }
- EXPORT_SYMBOL(kmem_cache_free);
- 
-@@ -3796,6 +3843,8 @@ void kfree(const void *objp)
- 	debug_check_no_obj_freed(objp, obj_size(c));
- 	__cache_free(c, (void *)objp);
- 	local_irq_restore(flags);
-+
-+	kmemtrace_mark_free(KMEMTRACE_KIND_KERNEL, _RET_IP_, objp);
- }
- EXPORT_SYMBOL(kfree);
- 
--- 
-1.5.6.1
+It's totally broken to have single callback functions with "flags" 
+parameters telling people what to do. I don't understand why people keep 
+doing it. It's *always* broken, and the fix is *always* to a structure 
+with multiple function pointers - separate functions for separate events.
 
+In the case of those CPU hotplug notifiers, the "freeze" thing could 
+probably have been a flag, but CPU_DOWN_PREPARE/DEAD/DYING/UP/xyz should 
+likely just be different function callbacks. That way, when we add a 
+callback type, it doesn't require changing all existing callbacks that 
+don't want to care about the new case. And we wouldn't have these stupid 
+and fragile and ugly "switch()" statements with tons of cases all over.
+
+Sadly, people have latched onto a model (that piece-of-sh*t "notifier" 
+infrastructure) that encourages - and almost requires - this kind of pure 
+crap.
+
+But the CPU hotplug stuff _could_ just use separate notifier chains for 
+the different kinds of events. It wouldn't be perfect, but it would be 
+better than the mess we have now. Instead of doing
+
+	register_cpu_notifier(..);
+
+and having a single thing that has to handle all cases, we could have
+
+	/* current "ONLINE/ONLINE_FROZEN" cases */
+	online = register_cpu_notifier(CPU_ONLINE, online_fn);
+	dead = register_cpu_nofitier(CPU_DEAD, dead_fn);
+
+which would allocate the "struct notifier_block" an fill it in, and have 
+_separate_ queues for all those cases. That way, *if* you want to share 
+the code for multiple cases, you just register the same function. And if 
+you only cared about one case, you'd only be called for that one case!
+
+I dunno. Maybe the conversion would be painful. And maybe the end result 
+isn't wonderful either. But the current setup for CPU notifiers is just a 
+damn disgrace.
+
+			Linus
