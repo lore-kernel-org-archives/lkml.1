@@ -1,105 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbYGMRdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754886AbYGMRn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755209AbYGMRdT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 13:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbYGMRdI
+	id S1754886AbYGMRn0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 13:43:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbYGMRnT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 13:33:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45059 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752704AbYGMRdH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 13:33:07 -0400
-Date: Sun, 13 Jul 2008 10:32:09 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-cc: Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
+	Sun, 13 Jul 2008 13:43:19 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40164 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752887AbYGMRnS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 13:43:18 -0400
+Date: Sun, 13 Jul 2008 19:42:52 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Paul Menage <menage@google.com>, Max Krasnyansky <maxk@qualcomm.com>,
+       Paul Jackson <pj@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       miaox@cn.fujitsu.com, rostedt@goodmis.org,
        Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Elias Oltmanns <eo@nebensachen.de>,
-       =?ISO-8859-15?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH] x86_64: fix delayed signals
-In-Reply-To: <4879CCFD.70208@firstfloor.org>
-Message-ID: <alpine.LFD.1.10.0807131017180.2959@woody.linux-foundation.org>
-References: <20080710215039.2A143154218@magilla.localdomain> <20080711054605.GA17851@elte.hu> <alpine.LFD.1.10.0807111031310.2936@woody.linux-foundation.org> <87mykn2sos.fsf@basil.nowhere.org> <alpine.LFD.1.10.0807121030260.2875@woody.linux-foundation.org>
- <4879CCFD.70208@firstfloor.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: current linux-2.6.git: cpusets completely broken
+Message-ID: <20080713174252.GA13115@elte.hu>
+References: <alpine.LFD.1.10.0807112026390.2875@woody.linux-foundation.org> <b647ffbd0807120304o7a500dc9oce761e51c9dce908@mail.gmail.com> <alpine.LFD.1.10.0807121254490.2875@woody.linux-foundation.org> <alpine.LFD.1.10.0807121411350.2875@woody.linux-foundation.org> <alpine.LFD.1.10.0807121504010.2959@woody.linux-foundation.org> <19f34abd0807121600l653e28bfwb5cce2d880b7f2cd@mail.gmail.com> <b647ffbd0807121605y5caa4023v6578cfb17de103e3@mail.gmail.com> <alpine.LFD.1.10.0807121607160.2959@woody.linux-foundation.org> <b647ffbd0807130253t32904430x5ca942783d01ce99@mail.gmail.com> <alpine.LFD.1.10.0807130943530.2959@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0807130943530.2959@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-On Sun, 13 Jul 2008, Andi Kleen wrote:
-> 
-> At least the original report was about Ctrl-C only versus Ctrl-Z.
+> The thing is, we should fix the top level code to never even 
+> _consider_ an invalid CPU as a target, and that in turn should mean 
+> that all the other code should be able to just totally ignore CPU 
+> hotplug events.
 
-Yes, and I explained why.
+agreed. We thought we could get away by hiding the "is the CPU dead" 
+information in existing data structures (by shaping sched domains to 
+never lead to a dead CPU) - but this method has proven itself fragile 
+via a series of bugs.
 
-> I see the problem regularly myself that Ctrl-C doesn't work,
-> but Ctrl-Z+kill does (although I unfortunately cannot
-> reproduce it on demand).
+It was one micro-optimization one too many. We should just accept the 
+fact that the current model is not maintainable and add your extra (and 
+trivial) cpu_active_map layer that protects against migrating to CPUs 
+that are going down. [we'll basically introduce a "going down" state 
+inbetween 'online' and 'offline']
 
-There's no way you _can_ reproduce it.
+And this will get rid of some other fragile trickery - because from that 
+point on we dont have to be super-careful about the whole sequence of 
+manipulating sched domains anymore. Cpusets can do whatever it wants, it 
+wont be able to break hotplug+scheduling - and that's important for any 
+functionality that is not used by default.
 
-> But it was with programs who shouldn't catch Ctrl-C, like find.
+[ I dont think Dmitry will disagree with this notion all that much, it's
+  just that his personal limit for calling an algorithm unmaintainable
+  is probably a lot higher than normal :-) ]
 
-No, it was not. I think you misread it.
-
-Two facts:
-
- - ^Z and ^C are both going to be equally fast if they aren't blocked.
-
-   This is just how things are. They are handled by the same codepaths.
-
- - the report you point to does mention 'find', but *not* in the place 
-   where it talks about "^Z+kill". There it's much less specific, and I 
-   bet that Edwin _had_ seen the "^Z works" behavior, and knew it to be 
-   true, but hadn't realized that it depended on the command, so when he 
-   gave an example of something where disk IO makes signals slow, he 
-   happened to pick one where ^Z and ^C were equally slow.
-
-In other words, I can pretty much _guarantee_ that if ^Z+kill is faster 
-than ^C, then it's because the process blocked or caught ^C.
-
-And I can pretty much also guarantee that when Edwin talked about 'find' 
-and did that ^C cut-and-paste, he didn't try the ^Z thing (that had 
-happened with _other_ programs), or if he did, it was just happenstance 
-(because the latency isn't _always_ 10-30 seconds - that's just the worst 
-case).
-
-So yes, ^C often works slower. If the process catches it and removes 
-temporary files as a result (for example - it's what things like gcc do), 
-then of _course_ it's going to be slower. It's going to be very noticeably 
-slower, especially since removing a temp-file is going to be even more 
-likely to hit a filesystem lock if the write-queues are full than just a 
-normal read is.
-
-But ^C isn't always slower, and if 'find' doesn't block/ignore it (and I 
-certainly believe you when you say that it doesn't), then for the case of 
-'find', it won't be true that ^Z+kill is any faster.
-
-In fact, Edwin later in this thread reported:
-
-  "Also I wasn't able to reproduce the  'Ctrl+Z works faster than Ctrl+C'
-   symptom, perhaps it is just a coincidence: by the time I press Ctrl+Z to
-   interrupt, enough time has passed (30+ secs), that the same effect would
-   have been obtained by another Ctrl+C, or by just waiting."
-
-and I bet that is exactly because now he's been testing programs that 
-don't block ^C (ie maybe he's now testing _just_ that "find /" thing).
-
-So before, Edwin was probably doing random things when doing "normal 
-work", and noticed that ^Z was sometimes faster. Now, he's trying to chase 
-things down, and he creates this specific test-case, and for that 
-particular test-case, ^Z _isn't_ faster. He just didn't pick up on the 
-pattern that it depends on which particular command he works on.
-
-Try "yum list", and you'll certainly see that ^Z works a *lot* faster than 
-^C (and the latter often needs multiple ^C's even when there is no load 
-at all)
-
-			Linus
+	Ingo
