@@ -1,92 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755523AbYGMWUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755648AbYGMWc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755523AbYGMWUT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 18:20:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754011AbYGMWUH
+	id S1755648AbYGMWc3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 18:32:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754121AbYGMWcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 18:20:07 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:57209 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753745AbYGMWUG (ORCPT
+	Sun, 13 Jul 2008 18:32:20 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:44409 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753029AbYGMWcS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 18:20:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=JMs0S671QSY10pwUS8418QhQPta9fI951cpYtLRaoYMRtBQ1Q1fM0ngfZDansIPAyT
-         h2IJH5HcH9d8WSSlGtt1+LF+esC3JSfOWHGVtsvkMjKe5IQy4GugAVo3i8mOcJEVVC5/
-         CQd3LdA9CsUjbCsvsCRRQ0Id+CkO4xkA7mIdU=
-Message-ID: <86802c440807131520g56cf1327g99eab24afbc6da06@mail.gmail.com>
-Date: Sun, 13 Jul 2008 15:20:05 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: per-cpu related?
-Cc: "Vegard Nossum" <vegard.nossum@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Mike Travis" <travis@sgi.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Steven Rostedt" <rostedt@goodmis.org>
-In-Reply-To: <20080713210413.GB12362@elte.hu>
+	Sun, 13 Jul 2008 18:32:18 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: benh@kernel.crashing.org
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>, Matthew Wilcox <matthew@wil.cx>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "jgarzik@pobox.com" <jgarzik@pobox.com>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "rdunlap@xenotime.net" <rdunlap@xenotime.net>,
+       "mtk.manpages@gmail.com" <mtk.manpages@gmail.com>
+References: <20080711005719.GO14894@parisc-linux.org>
+	<m1iqvc91li.fsf@frodo.ebiederm.org>
+	<20080711215943.GW1678@linux-os.sc.intel.com>
+	<m1d4lkauxc.fsf@frodo.ebiederm.org>
+	<1215834720.7549.154.camel@pasglop>
+	<m13amf3eak.fsf@frodo.ebiederm.org>
+	<1215848161.7549.166.camel@pasglop>
+Date: Sun, 13 Jul 2008 15:30:43 -0700
+In-Reply-To: <1215848161.7549.166.camel@pasglop> (Benjamin Herrenschmidt's
+	message of "Sat, 12 Jul 2008 17:36:01 +1000")
+Message-ID: <m1iqv9a030.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <86802c440807130116u3b850485jec220bc15892873e@mail.gmail.com>
-	 <19f34abd0807130455w516d73cfi80161c345564464@mail.gmail.com>
-	 <86802c440807131134i351f967dh3a2b94d687c767ee@mail.gmail.com>
-	 <20080713185502.GA17644@elte.hu>
-	 <86802c440807131401o21d016d0i37e6e4f9cad6bc2@mail.gmail.com>
-	 <20080713210413.GB12362@elte.hu>
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;benh@kernel.crashing.org
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
+	*      [score: 0.4926]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: Multiple MSI, take 3
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 13, 2008 at 2:04 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
->> On Sun, Jul 13, 2008 at 11:55 AM, Ingo Molnar <mingo@elte.hu> wrote:
->> >
->> > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->> >
->> >> thanks
->> >>
->> >> could be caused by max_low_pfn_mapped patch...because hpet still use
->> >> fixmap address that is cleared by others.
->>
->> still got
->>
->> calling  __stack_chk_test+0x0/0x89
->> Testing -fstack-protector-all feature
->> -fstack-protector-all test failed
->> ------------[ cut here ]------------
->> WARNING: at kernel/panic.c:393 __stack_chk_test+0x61/0x89()
->> Modules linked in:
->> Pid: 1, comm: swapper Not tainted 2.6.26-rc9-tip-01873-ga9827e7-dirty #359
->>
->> Call Trace:
->>  [<ffffffff8026615e>] warn_on_slowpath+0x6c/0xa7
->>  [<ffffffff80266199>] ? __stack_chk_test+0x0/0x89
->>  [<ffffffff80266199>] ? __stack_chk_test+0x0/0x89
->>  [<ffffffff8022a4f4>] ? mcount_call+0x5/0x31
->>  [<ffffffff80266199>] ? __stack_chk_test+0x0/0x89
->>  [<ffffffff802661fa>] __stack_chk_test+0x61/0x89
->>  [<ffffffff80e729e4>] kernel_init+0x1de/0x346
->>  [<ffffffff8022a4f4>] ? mcount_call+0x5/0x31
->>  [<ffffffff80262df7>] ? finish_task_switch+0x14/0xe3
->>  [<ffffffff8022b589>] child_rip+0xa/0x11
->>  [<ffffffff80e72806>] ? kernel_init+0x0/0x346
->>  [<ffffffff8022b57f>] ? child_rip+0x0/0x11
->>
->> ---[ end trace 0f276ea63a4e83de ]---
->
-> please try latest tip/master - the self-test had to be removed. (gcc
-> will treat the stackprotector-failure function as ((noreturn)) attribute
-> and will optimize out the return path, making a reliable self-test
-> impossible in the way we tried to)
->
-ok, you fixed it...
-that warning is gone.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-YH
+> I still mostly dislike the new approach, I prefer Matthew's original one
+> with SW masking of the MSIs. For example, if you have the MSIs be 'one'
+> interrupt, then you hit all of the logic in the IRQ core to make sure
+> only one happens at once. Might not be what you want, and -will- cause
+> some to be dropped... not nice.
+
+You are correct.  Using the existing irq handling logic will cause us
+to drop irqs and to loose information if two messages are sent close
+to each other.  Which is very nasty.
+
+With a little care we can avoid that problem by having a 32 bit bitmap
+of which sub irqs have fired so we can make all of them pending
+without loosing information.  That does requires a new handle_irq method.
+
+One of the primary purposes of masking irqs in hardware is to prevent
+them from screaming.  Unlikely with edge triggered irqs but not a capability
+I would like to give up.
+
+Multi-msi has the problem that cpu affinity can not be changed on a
+per message basis without an iommu.  Which is a portability problem
+and a problem on common architectures.
+
+Therefore to support multi-msi it must be handled as a special case, we can not
+treat the individual messages like normal irqs.
+
+Eric
