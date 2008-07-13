@@ -1,75 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756161AbYGMU0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756402AbYGMU1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756161AbYGMU0y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 16:26:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974AbYGMU0q
+	id S1756402AbYGMU1p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 16:27:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755090AbYGMU1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 16:26:46 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:34278 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753834AbYGMU0p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 16:26:45 -0400
-Date: Sun, 13 Jul 2008 21:27:10 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Vegard Nossum <vegard.nossum@gmail.com>
-cc: Justin Mattock <justinmattock@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>
-Subject: Re: [Bug #10724] ACPI: EC: GPE storm detected, disabling EC GPE
-In-Reply-To: <19f34abd0807131252k5499e6e2sc93f8cd70f488b7e@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0807132122001.16625@blonde.site>
-References: <Y1jK9GMA8kJ.A.qOH.7GleIB@albercik>  <c6ZRbn0adb.A.LgB.aKleIB@albercik>
-  <dd18b0c30807131234n5edf3e1dt93022a45d427b1fd@mail.gmail.com>
- <19f34abd0807131252k5499e6e2sc93f8cd70f488b7e@mail.gmail.com>
+	Sun, 13 Jul 2008 16:27:36 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40046 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754889AbYGMU1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 16:27:35 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
+Date: Sun, 13 Jul 2008 22:29:41 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Andy Lutomirski <luto@myrealbox.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       public-kernel-testers-u79uwXL29TY76Z2rM5mHXA@lo.gmane.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>
+References: <200807010148.02135.rjw@sisk.pl> <200807132115.08230.rjw@sisk.pl> <487A617B.80707@firstfloor.org>
+In-Reply-To: <487A617B.80707@firstfloor.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807132229.43140.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 Jul 2008, Vegard Nossum wrote:
-> On Sun, Jul 13, 2008 at 9:34 PM, Justin Mattock <justinmattock@gmail.com> wrote:
-> > On Sun, Jul 13, 2008 at 6:00 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> This message has been generated automatically as a part of a report
-> >> of recent regressions.
-> >>
-> >> The following bug entry is on the current list of known regressions
-> >> from 2.6.25.  Please verify if it still should be listed.
-> >>
-> >>
-> >> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10724
-> >> Subject         : ACPI: EC: GPE storm detected, disabling EC GPE
-> >> Submitter       : Justin Mattock <justinmattock@gmail.com>
-> >> Date            : 2008-05-16 6:17 (59 days old)
-> >> References      : http://marc.info/?l=linux-kernel&m=121091875711824&w=4
-> >>                  http://lkml.org/lkml/2008/5/18/168
-> >>                  http://lkml.org/lkml/2008/5/25/195
-> >> Patch           : http://bugzilla.kernel.org/attachment.cgi?id=16364&action=view
-> >>                  http://bugzilla.kernel.org/attachment.cgi?id=16365&action=view
+On Sunday, 13 of July 2008, Andi Kleen wrote:
+> Rafael J. Wysocki wrote:
+> > On Sunday, 13 of July 2008, Andi Kleen wrote:
+> >> Andy Lutomirski wrote:
+> >>> Matthew Garrett wrote:
+> >>>> On Sun, Jul 13, 2008 at 11:15:24AM +0200, Ingo Molnar wrote:
+> >>>>
+> >>>>> we still need to find the HAL quirk and disable it, right?
+> >>>> Not without understanding what the cause is. If the video BIOS calls
+> >>>> are generically broken, then we have a problem.
+> >>>>
+> >>> The HAL quirk is the very first one here:
+> >>>
+> >>> http://gitweb.freedesktop.org/?p=hal-info.git;a=blob;f=fdi/information/10freedesktop/20-video-quirk-pm-lenovo.fdi
+> >>>
+> >>>
+> >>> I removed it from the HAL config and suspending w/ the hardware button
+> >>> works fine now with -rc9-wl and on Ubuntu's stock .24 kernel.
+> >> Hmm, but the change was not supposed to break the s3 bios. Something
+> >> fishy is going on. It sounds like the s3 bios relies on some earlier
+> >> segment register setup.
+> > 
+> > Well, we changed the (visible) parts of the segment registers before anyway.
+> > 
+> > This means that it could only depend on the hidden parts.  However, in that
+> > case if it depended on the hidden part of SS, our stack would be broken,
 > 
-> I didn't follow the discussion, but I may contribute the following information:
+> We're in real mode for now nd should not care about the hidden state.
+
+That's the point of commit 4b4f7280.
+
+Without that commit we used to reset segment registers, but there were
+some post-protected mode garbage in the hidden part of SS on some systems, so
+things broke.
+
+We now make sure the hidden parts of all segment registers are reset.
+If anything fails as a result of that, it's broken beyond repair IMO.
+
+> > so the quirk wouldn't work (it uses 'call' to run a BIOS routine).  In turn, if it
+> > depended on the hidden part of DS, our data register would be broken, so the
+> > resume code itself wouldn't work.
+> > 
+> > This means it could only depend on the hidden part of ES.
+> >  
+> >> If true this means the segment register reset would need to be moved
+> >> later after S3 bios ran.
+> > 
+> > We can't do that.  If SS contains garbage, the BIOS call itself will reboot
+> > the box and if DS contains garbage, well ...
 > 
-> This message first appears in my logs on May 16. That was with kernel
-> version 2.6.24.5-85.fc8. The kernel I used before that was
-> 2.6.24.4-64.fc8 (May 3). My logs go back to November 8
-> (2.6.23.1-42.fc8). So we can hardly consider this a regression since
-> 2.6.25, but rather one since 2.6.24?
-> 
-> (I'll also note that this message appears quite infrequently here.
-> Only 42 times in 219 boot-ups. So it would be hard to bisect, but I'm
-> guessing the error was introduced somewhere between 2.6.24.4 and
-> 2.6.24.5.)
+> But it's apparently not garbage for the s3 bios. So somehow the "garbage"
+> needs to be kept impact until the S3 BIOS ran.
 
-You're comparing against Fedora kernels, which often contain
-patches which haven't got into mainline yet.  As in this case.
-Unless it used to be assembled from separate pieces, there was
-no "GPE storm detected" message in 2.6.24.N or 2.6.25.N: it was
-added in 2.6.26-rc1.
+We can't do that on all systems, because some (I'd say many) of them don't
+work if we do.
 
-I sometimes see it too, on a Fujitsu-Siemens laptop.
+If s3_bios depends on the (invalid) contents of the hidden part of any segment
+register, it's just terminally broken.
 
-Hugh
+But.
+
+We didn't modify %cx before - may that matter?
+
+Thanks,
+Rafael
