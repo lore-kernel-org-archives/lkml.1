@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754307AbYGMNvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754427AbYGMOZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754307AbYGMNvS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 09:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753277AbYGMNvF
+	id S1754427AbYGMOZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 10:25:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753466AbYGMOZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 09:51:05 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:42458 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752526AbYGMNvE (ORCPT
+	Sun, 13 Jul 2008 10:25:49 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56610 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753454AbYGMOZs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 09:51:04 -0400
-Message-ID: <487A083F.9010301@firstfloor.org>
-Date: Sun, 13 Jul 2008 15:50:55 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
-MIME-Version: 1.0
-To: Mikulas Patocka <mpatocka@redhat.com>
-CC: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [SUGGESTION]: drop virtual merge accounting in I/O requests
-References: <Pine.LNX.4.64.0807101702090.19775@engineering.redhat.com> <87iqvb2skz.fsf@basil.nowhere.org> <Pine.LNX.4.64.0807130933120.24489@devserv.devel.redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0807130933120.24489@devserv.devel.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 13 Jul 2008 10:25:48 -0400
+Date: Sun, 13 Jul 2008 15:08:00 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ondrej Zary <linux@rainbow-software.org>
+Cc: Alan Cox <alan@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: pata_it821x completely broken
+Message-ID: <20080713150800.664ef076@lxorguk.ukuu.org.uk>
+In-Reply-To: <200807131410.16521.linux@rainbow-software.org>
+References: <200807042153.56644.linux@rainbow-software.org>
+	<200807131347.14045.linux@rainbow-software.org>
+	<20080713123510.6f47ffdc@lxorguk.ukuu.org.uk>
+	<200807131410.16521.linux@rainbow-software.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikulas Patocka wrote:
->> Mikulas Patocka <mpatocka@redhat.com> writes:
->>
->>> I'm getting crashes with InitIO A100u2w controller on Sparc64 (I had
->>> to fix the endianity issues in the driver, but that's unrelated).
->>
->> x86-64 (and powerpc) solved this a long time ago by only doing
->> opportunistic merging: as in don't announce to the block layer
->> that you can merge, but try to merge anyways. This way SG lists
->> are not necessarily filled completely, but it's still better
->> than overflowing them in some rare cases.
->>
->> -Andi
+On Sun, 13 Jul 2008 14:10:14 +0200
+Ondrej Zary <linux@rainbow-software.org> wrote:
+
+> On Sunday 13 July 2008 13:35:10 Alan Cox wrote:
+> > > The patch below fixes the IDENTIFY problem for me and makes the RAID
+> > > array accessible. Is it OK or is there a better way to do it?
+> >
+> > Probably better to fix it in driver. Right now we don't have a way to
+> > override the identify reading or post process it cleanly at it821x hacks
+> > around that but if that was fixed then the special cases can all hide in
+> > the driver where they belong.
 > 
-> There's option "biomerge" that enables that feature. I'm wondering, if
-> there's some situation when it should be used.
+> That would be great but it requires some deeper libata and kernel programming 
+> knowledge.
 
-It would only help if your SG hardware is slower at processing merges
-than the IOMMU.
-
-We found some long ago that was (old MPT Fusion) that gained
-a few percent on some benchmarks, but that might be quite different
-depending on the particular IO controller and chipset.
-
-Also biomerge was used for the AMD K8 GART "IOMMU" which is
-relatively slow, the situation on more modern x86 IOMMUs might be
-different. Also the GART IOMMU is small and fragmentation is more
-likely.
-
-The situation on the more modern real x86 IOMMU (like in newer Intel or IBM
-chipsets) might be also different.
-
-Still I would expect that modern IO controllers are typically fast
-enough at processing SG lists that it shouldn't matter much.
-
--Andi
+Not a lot I think so I've added it to my todo list if nobody else does it.
