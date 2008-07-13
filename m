@@ -1,62 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755143AbYGMBpT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754765AbYGMBtg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755143AbYGMBpT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 21:45:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbYGMBpH
+	id S1754765AbYGMBtg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 21:49:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752811AbYGMBt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 21:45:07 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:15743 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752671AbYGMBpF (ORCPT
+	Sat, 12 Jul 2008 21:49:29 -0400
+Received: from casper.infradead.org ([85.118.1.10]:42261 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752671AbYGMBt2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 21:45:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=O6x4s63gds/qc5srQGL8sjyo76jKqRxBK/2VaL7Ge3UI0Aq8ezTeMuDdzdajhBq+gM
-         jMJewQXpE+PPJ61I5ZtJ/BsO5d+q2LT1vYQ1jm63gKmCK7yMyfPHlL+FgBFBaDgp2le1
-         hG2kYPhGaAVqjS2V1OvjEyKTKxNQgT9VKBZUU=
-Message-ID: <86802c440807121845u3a51b239h95fa46cfb6f7c770@mail.gmail.com>
-Date: Sat, 12 Jul 2008 18:45:04 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH] x86: let 32bit use apic_ops too
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Suresh Siddha" <suresh.b.siddha@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.55.0807130241390.4128@cliff.in.clinika.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 12 Jul 2008 21:49:28 -0400
+Subject: [PATCH] x86-rest: fix sparse warnings
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: LKML <linux-kernel@vger.kernel.org>,
+       kernelnewbies <kernelnewbies@nl.linux.org>,
+       kernel-janitors <kernel-janitors@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Content-Type: text/plain
+Date: Sun, 13 Jul 2008 07:18:50 +0530
+Message-Id: <1215913730.2711.1.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200807080141.05436.yhlu.kernel@gmail.com>
-	 <200807092017.51004.yhlu.kernel@gmail.com>
-	 <200807102038.26591.yhlu.kernel@gmail.com>
-	 <200807111841.55403.yhlu.kernel@gmail.com>
-	 <Pine.LNX.4.55.0807130241390.4128@cliff.in.clinika.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 12, 2008 at 6:43 PM, Maciej W. Rozycki <macro@linux-mips.org> wrote:
-> On Fri, 11 Jul 2008, Yinghai Lu wrote:
->
->> -void apic_wait_icr_idle(void)
->> +void xapic_wait_icr_idle(void)
->>  {
->>       while (apic_read(APIC_ICR) & APIC_ICR_BUSY)
->>               cpu_relax();
->>  }
->>
->> -u32 safe_apic_wait_icr_idle(void)
->> +u32 safe_xapic_wait_icr_idle(void)
->
->  Etc...  Why are you changing names of these functions?  Are they meant
-> not to apply to older APIC implementations anymore?
 
-because 64bit has that name.
+CHECK   arch/x86/mm/init_32.c
+arch/x86/mm/init_32.c:290:13: warning: symbol 'add_one_highpage_init' was not declared. Should it be static?
+arch/x86/mm/init_32.c:437:6: warning: symbol 'zap_low_mappings' was not declared. Should it be static?
+arch/x86/mm/init_32.c:774:6: warning: symbol 'free_initmem' was not declared. Should it be static?
 
-YH
+CHECK   arch/x86/mm/fault.c
+arch/x86/mm/fault.c:581:16: warning: symbol 'do_page_fault' was not declared. Should it be static?
+
+CHECK   arch/x86/mm/pat.c
+arch/x86/mm/pat.c:566:6: warning: symbol 'map_devmem' was not declared. Should it be static?
+arch/x86/mm/pat.c:583:6: warning: symbol 'unmap_devmem' was not declared. Should it be static?
+
+CHECK   arch/x86/mm/pgtable_32.c
+arch/x86/mm/pgtable_32.c:115:6: warning: symbol 'set_pmd_pfn' was not declared. Should it be static?
+
+CHECK   arch/x86/mach-default/setup.c
+arch/x86/mach-default/setup.c:19:5: warning: symbol 'no_broadcast' was not declared. Should it be static?
+
+Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
+---
+ arch/x86/mach-default/setup.c |    2 +-
+ include/asm-x86/pat.h         |    3 +++
+ include/asm-x86/pgtable_32.h  |    6 ++++++
+ include/asm-x86/setup.h       |    1 +
+ 4 files changed, 11 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/mach-default/setup.c b/arch/x86/mach-default/setup.c
+index 0c28a07..dac2bd9 100644
+--- a/arch/x86/mach-default/setup.c
++++ b/arch/x86/mach-default/setup.c
+@@ -16,7 +16,7 @@
+ #define DEFAULT_SEND_IPI	(0)
+ #endif
+ 
+-int no_broadcast=DEFAULT_SEND_IPI;
++int no_broadcast = DEFAULT_SEND_IPI;
+ 
+ /**
+  * pre_intr_init_hook - initialisation prior to setting up interrupt vectors
+diff --git a/include/asm-x86/pat.h b/include/asm-x86/pat.h
+index 88f60cc..e17830e 100644
+--- a/include/asm-x86/pat.h
++++ b/include/asm-x86/pat.h
+@@ -20,5 +20,8 @@ extern int free_memtype(u64 start, u64 end);
+ 
+ extern void pat_disable(char *reason);
+ 
++extern void map_devmem(unsigned long, unsigned long, pgprot_t);
++extern void unmap_devmem(unsigned long, unsigned long, pgprot_t);
++
+ #endif
+ 
+diff --git a/include/asm-x86/pgtable_32.h b/include/asm-x86/pgtable_32.h
+index 32ca031..2f3322c 100644
+--- a/include/asm-x86/pgtable_32.h
++++ b/include/asm-x86/pgtable_32.h
+@@ -31,6 +31,12 @@ static inline void pgtable_cache_init(void) { }
+ static inline void check_pgt_cache(void) { }
+ void paging_init(void);
+ 
++void __init add_one_highpage_init(struct page *, int pfn, int);
++void zap_low_mappings(void);
++void free_initmem(void);
++void do_page_fault(struct pt_regs *regs, unsigned long error_code);
++
++void set_pmd_pfn(unsigned long, unsigned long, pgprot_t);
+ 
+ /*
+  * The Linux x86 paging architecture is 'compile-time dual-mode', it
+diff --git a/include/asm-x86/setup.h b/include/asm-x86/setup.h
+index b9b6494..1997ee6 100644
+--- a/include/asm-x86/setup.h
++++ b/include/asm-x86/setup.h
+@@ -8,6 +8,7 @@
+ /* Interrupt control for vSMPowered x86_64 systems */
+ void vsmp_init(void);
+ 
++extern int no_broadcast;
+ char *machine_specific_memory_setup(void);
+ 
+ extern unsigned long saved_video_mode;
+-- 
+1.5.5.1
+
+
+
