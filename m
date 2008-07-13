@@ -1,51 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756169AbYGMT5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756101AbYGMT7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756169AbYGMT5d (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 15:57:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754911AbYGMT5Z
+	id S1756101AbYGMT7T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 15:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbYGMT7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 15:57:25 -0400
-Received: from wasp.net.au ([203.190.192.17]:33289 "EHLO wasp.net.au"
+	Sun, 13 Jul 2008 15:59:07 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39902 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753958AbYGMT5Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 15:57:24 -0400
-Message-ID: <487A5E1C.6080101@wasp.net.au>
-Date: Sun, 13 Jul 2008 23:57:16 +0400
-From: Brad Campbell <brad@wasp.net.au>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	id S1752564AbYGMT7G convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 15:59:06 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.26-rc9-git12: Reported regressions from 2.6.25
+Date: Sun, 13 Jul 2008 22:00:58 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>
+References: <Y1jK9GMA8kJ.A.qOH.7GleIB@albercik> <alpine.LFD.1.10.0807131230130.2959@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807131230130.2959@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #11039] 2.6.28-rc8-git3 forcedeth WARNING (kills the interface)
-References: <Y1jK9GMA8kJ.A.qOH.7GleIB@albercik> <c6ZRbn0adb.A.dyH.bHleIB@albercik>
-In-Reply-To: <c6ZRbn0adb.A.dyH.bHleIB@albercik>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200807132200.59826.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+On Sunday, 13 of July 2008, Linus Torvalds wrote:
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.25.  Please verify if it still should be listed.
+> On Sun, 13 Jul 2008, Rafael J. Wysocki wrote:
+> > 
+> > Regressions with patches
+> > ------------------------
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11072
+> > Subject		: scsi-layer crash after usb storage device unplug
+> > Submitter	: Johannes Berg <johannes@sipsolutions.net>
+> > Date		: 2008-07-12 01:50 (2 days old)
+> > Handled-By	: Alan Stern <stern@rowland.harvard.edu>
+> > Patch		: http://bugzilla.kernel.org/show_bug.cgi?id=11072#c3
 > 
+> Alan, Greg?
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11039
-> Subject		: 2.6.28-rc8-git3 forcedeth WARNING (kills the interface)
-> Submitter	: Brad Campbell <brad@wasp.net.au>
-> Date		: 2008-07-03 10:07 (11 days old)
-> References	: http://marc.info/?l=linux-netdev&m=121508714430752&w=4
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11057
+> > Subject		: vbetest fails on 2.6.26-rc9
+> > Submitter	: PaX Team <pageexec@freemail.hu>
+> > Date		: 2008-07-08 19:46 (6 days old)
+> > Handled-By	: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> > Patch		: http://bugzilla.kernel.org/attachment.cgi?id=16792&action=view
+> 
+> Merged as commit a361ee5cb8011763ece7b4add393e206439db8b3.
 
-I tested a 2.6.26-rc kernel with forcedeth.c from 2.6.25 and it failed in the same way, so I don't 
-think its a regression as such. In any case, with the -rc9 it still fails regularly.
+Closed.
 
-Regards,
-Brad
--- 
-Dolphins are so intelligent that within a few weeks they can
-train Americans to stand at the edge of the pool and throw them
-fish.
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11024
+> > Subject		: 2.6.25 to 2.6.26-rc8 regression (related to ahci and acpi _GTF)
+> > Submitter	: Mathieu Bérard <Mathieu.Berard@crans.org>
+> > Date		: 2008-07-01 9:39 (13 days old)
+> > References	: http://marc.info/?t=121490593600001&r=1&w=4
+> > Handled-By	: Tejun Heo <htejun@gmail.com>
+> > Patch		: http://marc.info/?l=linux-kernel&m=121514631317343&w=4
+> 
+> Merged as commit b344991ace21896a83694c86d132b8494a29f3be.
+
+Closed.
+ 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10957
+> > Subject		: pata_pcmcia with Sandisk Extreme III 8GB
+> > Submitter	: Komuro <komurojun-mbn@nifty.com>
+> > Date		: 2008-06-07 13:37 (37 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=121284627119861&w=4
+> > Handled-By	: Tejun Heo <htejun@gmail.com>
+> > 		  Dominik Brodowski <linux@dominikbrodowski.net>
+> > 		  Komuro <komurojun-mbn@nifty.com>
+> > Patch		: http://marc.info/?l=linux-kernel&m=121530861605673&w=4
+> 
+> This patch is disputed. See the rest of the thread. Maybe some subtle 
+> timing detail?
+
+The patch won't be listed in future.
+
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10862
+> > Subject		: forcedeth: lockdep warning on ethtool -s
+> > Submitter	: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+> > Date		: 2008-06-01 8:37 (43 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=121230964032247&w=4
+> > Handled-By	: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+> > Patch		: http://lkml.org/lkml/2008/6/15/120
+> 
+> Commit 97bff0953dd45a633fa69e1a650d612f5610a60b.
+
+Closed.
+
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10725
+> > Subject		: USB Mass storage mount fails: Write protect on
+> > Submitter	: Maciej Rutecki <maciej.rutecki@gmail.com>
+> > Date		: 2008-05-16 14:55 (59 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=121095168003572&w=4
+> > Handled-By	: Alan Stern <stern@rowland.harvard.edu>
+> > Patch		: http://marc.info/?l=linux-scsi&m=121433068314568&w=2
+> 
+> Commit bdb2b8cab4392ce41ddfbd6773a3da3334daf836.
+
+Closed.
+
+Thanks,
+Rafael
