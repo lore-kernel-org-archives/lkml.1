@@ -1,85 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbYGMGjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754301AbYGMGrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754196AbYGMGjn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 02:39:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbYGMGjf
+	id S1754301AbYGMGrT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 02:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbYGMGrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 02:39:35 -0400
-Received: from mail.dunaweb.hu ([81.17.184.3]:47639 "EHLO mail.dunaweb.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752475AbYGMGjf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 02:39:35 -0400
-Message-ID: <4879A325.4040501@dunaweb.hu>
-Date: Sun, 13 Jul 2008 08:39:33 +0200
-From: Zoltan Boszormenyi <zboszor@dunaweb.hu>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Mickey mouse voices on snd-intel8x0
-References: <486677F7.6080004@dunaweb.hu> <s5hskurs5nw.wl%tiwai@suse.de>
-In-Reply-To: <s5hskurs5nw.wl%tiwai@suse.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Sun, 13 Jul 2008 02:47:11 -0400
+Received: from imsc1.euromail.se ([217.174.79.93]:35048 "HELO
+	garland.euromail.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752342AbYGMGrK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 02:47:10 -0400
+Subject: [PATCH] input: wellspring device quirks
+From: Henrik Rydberg <rydberg@euromail.se>
+To: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dmitry.torokhov@gmail.com, robfitz@273k.net, akpm@osdl.org,
+       jikos@jikos.cz, vojtech@suse.cz, dmonakhov@openvz.org
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
+Date: Sun, 13 Jul 2008 08:47:02 +0200
+Message-Id: <1215931622.15888.0.camel@alnilam>
+Mime-Version: 1.0
+X-OriginalArrivalTime: 13 Jul 2008 06:46:56.0353 (UTC) FILETIME=[3DE20D10:01C8E4B4]
+X-NAI-Spam-Score: 0
+X-NAI-Spam-Report: 3 Rules triggered
+	*  0 -- HAS_X_HELO -- Mail contains HAS_X-HELO header
+	*  0 -- RV3058 -- BODY: Version number
+	*  0 -- XH_GE5 -- Mail contains X-HELO header
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Takashi Iwai írta:
-> At Sat, 28 Jun 2008 19:42:15 +0200,
-> Zoltan Boszormenyi wrote:
->   
->> Hi,
->>
->> I have a Compaq Deskpro EN with PIII/866 recycled as a thin client.
->> The problem was that sound on the thin client was played faster than it
->> should.
->> I have Fedora 9/x86-64 on the main machine, so the thin client is LTSP5
->> that comes with F9.
->> I tried everything (acpi=off, etc) but the strange voice didn't get better.
->> I discovered this in the dmesg:
->>     
->
-> Did this problem exist on the earlier kernel?
->   
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Sat, 12 Jul 2008 18:15:15 +0200
+Message-Id: <1215879315.13937.0.camel@alnilam>
 
-IIRC, yes.
-When I have set up LTSP5, both the client and the host had a 2.6.24.x
-kernel.
-Don't ask the exact version, though.
+From: Henrik Rydberg <rydberg@euromail.se>
 
->> intel8x0_measure_ac97_clock: measured 50895 usecs
->> intel8x0: measured clock 78 rejected
->>     
->
-> This value is way too small than normal.  It means that either the
-> clocking or the calculation of the position in
-> intel8x0_measure_ac97_clock() is wrong.  Could you check what is the
-> value if ichdev->position in that function?
->   
+This patch adds usbhid-quirks for the Apple USB multitouch devices
+based on BCM5974, aka Wellspring. Quirks for these devices have already
+been submitted by others; this patch adds the HID_QUIRK_IGNORE_MOUSE,
+anticipating the trackpad to be picked up by the bcm5974 driver.
 
-How? Is there a module option for such debug info?
+Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
+---
 
->> intel8x0: clocking to 48000
->>
->> I looked at the current kernel sources and found the solution for that.
->> I had to provide this for the thin client in
->> /opt/ltsp/i386/etc/modprobe.conf :
->>
->> options snd-intel8x0 ac97_clock=44100
->>     
->
-> Usually it's a bit slower than that.  See
-> Documentation/sound/alsa/ALSA-Configuration.txt.
->   
+diff --git a/drivers/hid/usbhid/hid-quirks.c b/drivers/hid/usbhid/hid-quirks.c
+index 1df832a..4dd11f4 100644
+--- a/drivers/hid/usbhid/hid-quirks.c
++++ b/drivers/hid/usbhid/hid-quirks.c
+@@ -75,6 +75,12 @@
+ #define USB_DEVICE_ID_APPLE_ALU_WIRELESS_ANSI  0x022c
+ #define USB_DEVICE_ID_APPLE_ALU_WIRELESS_ISO   0x022d
+ #define USB_DEVICE_ID_APPLE_ALU_WIRELESS_JIS   0x022e
++#define USB_DEVICE_ID_APPLE_WELLSPRING_ANSI    0x0223
++#define USB_DEVICE_ID_APPLE_WELLSPRING_ISO     0x0224
++#define USB_DEVICE_ID_APPLE_WELLSPRING_JIS     0x0225
++#define USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI   0x0230
++#define USB_DEVICE_ID_APPLE_WELLSPRING2_ISO    0x0231
++#define USB_DEVICE_ID_APPLE_WELLSPRING2_JIS    0x0232
+ #define USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY	0x030a
+ #define USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY	0x030b
+ #define USB_DEVICE_ID_APPLE_IRCONTROL4	0x8242
+@@ -642,6 +648,12 @@ static const struct hid_blacklist {
+ 	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ANSI, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN },
+ 	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ISO, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_APPLE_ISO_KEYBOARD },
+ 	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_JIS, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN },
++	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ANSI, HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_IGNORE_MOUSE },
++	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ISO, HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_APPLE_ISO_KEYBOARD | HID_QUIRK_IGNORE_MOUSE},
++	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_JIS, HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_IGNORE_MOUSE},
++	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI, HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_IGNORE_MOUSE},
++	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_ISO, HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_APPLE_ISO_KEYBOARD | HID_QUIRK_IGNORE_MOUSE },
++	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_JIS, HID_QUIRK_APPLE_HAS_FN  | HID_QUIRK_IGNORE_MOUSE },
+ 	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_IGNORE_MOUSE },
+ 	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_IGNORE_MOUSE },
 
-Thanks.
 
->
-> thanks,
->
-> Takashi
->
->   
 
