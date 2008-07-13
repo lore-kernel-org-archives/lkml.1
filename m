@@ -1,68 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755261AbYGMGu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbYGMG7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755261AbYGMGu3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 02:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbYGMGuV
+	id S1754004AbYGMG7i (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 02:59:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbYGMG7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 02:50:21 -0400
-Received: from smtp2.versatel.nl ([62.58.50.89]:41204 "EHLO smtp2.versatel.nl"
+	Sun, 13 Jul 2008 02:59:30 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34731 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752542AbYGMGuU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 02:50:20 -0400
-Message-ID: <4879A144.8060203@hhs.nl>
-Date: Sun, 13 Jul 2008 08:31:32 +0200
-From: Hans de Goede <j.w.r.degoede@hhs.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070926)
+	id S1751304AbYGMG7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 02:59:30 -0400
+Date: Sun, 13 Jul 2008 08:59:17 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: make 64bit have get_apic_id
+Message-ID: <20080713065917.GA29634@elte.hu>
+References: <200807080141.05436.yhlu.kernel@gmail.com> <200807111843.11157.yhlu.kernel@gmail.com> <200807111844.17084.yhlu.kernel@gmail.com> <200807120101.20554.yhlu.kernel@gmail.com> <20080713062802.GC2534@elte.hu>
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: Milton Miller <miltonm@bga.com>, linuxppc-dev@ozlabs.org,
-       Samuel Ortiz <samuel@sortiz.org>, linux-kernel@vger.kernel.org,
-       lm-sensors@lm-sensors.org
-Subject: Re: [RFC] (almost) booting allyesconfig -- please  don't poke super-io
-  without request_region
-References: <for-27-patch1-0@bga.com>	<48768018.2070704@hhs.nl>	<acca8e14e769b2feadee19f1f7448438@bga.com>	<20080711085246.1ead773b@hyperion.delvare>	<48770B5E.7000308@hhs.nl> <20080711093650.4b98e3b7@hyperion.delvare>
-In-Reply-To: <20080711093650.4b98e3b7@hyperion.delvare>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080713062802.GC2534@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0001]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean Delvare wrote:
-> On Fri, 11 Jul 2008 09:27:26 +0200, Hans de Goede wrote:
->> Jean Delvare wrote:
->>> Hi Hans, hi Milton,
->>>
->> <snip>
->>
->>>> One could make a superio driver, and create sub-devices for the IR, 
->>>> I2C, floppy, parallel, etc
->>>> nodes.
->>> There have been proposals to do this, and this would indeed be a very
->>> good idea, but unfortunately nobody took the time to implement this
->>> properly, push it upstream and volunteer to maintain it. The problem is
->>> that you don't need just a "driver", but a new subsystem, that needs to
->>> be designed and maintained.
->> Well, I believe there have been some lightweight superio locking coordinator 
->> patches been floating around on the lm_sensors list, and I have reviewed them 
->> and then a new version was done with my issues fixed.
->>
->> I kinda liked the proposed solution there, it was quite simple, moved all the 
->> generic superio stuff into generic superio code, and added locking for super io 
->> access from multiple drivers, what ever happened to those patches?
+
+> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 > 
-> As far as I know, nothing, and this is the problem. Somebody needs to
-> step up and call him/herself the maintainer of the new code, and push
-> it upstream and convert all the drivers (hwmon, watchdog, parallel
-> port...) to make use of it. And I am not the one to do this, I am busy
-> enough as is with i2c and hwmon.
->
+> > and read_apic_id become macro
+> > GET_APIC_ID(apic_read(APIC_ID))
 
-Ok, I've mailed Jim Cromie, the author of the superio access patches 
-from end 2007 and told him we're still interested in this and asked him 
-if he is willing to drive this forward.
+Yinghai, you had that x86/x2apic crash - do you think we can now try it 
+again in tip/master?
 
-Regards,
-
-Hans
-
+	Ingo
