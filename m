@@ -1,82 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541AbYGMVEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756652AbYGMVLg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755541AbYGMVEp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 17:04:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755957AbYGMVE2
+	id S1756652AbYGMVLg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 17:11:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755496AbYGMVL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 17:04:28 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33211 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755887AbYGMVE2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 17:04:28 -0400
-Date: Sun, 13 Jul 2008 23:04:13 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Mike Travis <travis@sgi.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: per-cpu related?
-Message-ID: <20080713210413.GB12362@elte.hu>
-References: <86802c440807130116u3b850485jec220bc15892873e@mail.gmail.com> <19f34abd0807130455w516d73cfi80161c345564464@mail.gmail.com> <86802c440807131134i351f967dh3a2b94d687c767ee@mail.gmail.com> <20080713185502.GA17644@elte.hu> <86802c440807131401o21d016d0i37e6e4f9cad6bc2@mail.gmail.com>
+	Sun, 13 Jul 2008 17:11:28 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:29799 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755479AbYGMVL1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 17:11:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=U3tbpVPHrDoJhxnrqDTJZ0atE7bvDFu6WZHl3EirA5q0F3imtjQ3R9LN3oJAqEp602
+         dBHcFOzZUaWrSRWCJcstms3meWXtcr/JVQpS94fpLp4q1ARtBmUe9Byi4G4HyQoFGCne
+         /vK0wl6Km1Loxti5kmcxjbmBAnAZZXmie4vLg=
+Message-ID: <4dfa50520807131411ied883cgcb20eb6bd94f761@mail.gmail.com>
+Date: Sun, 13 Jul 2008 15:11:24 -0600
+From: "David Hubbard" <david.c.hubbard@gmail.com>
+To: "Hans de Goede" <j.w.r.degoede@hhs.nl>
+Subject: Re: [lm-sensors] [RFC] (almost) booting allyesconfig -- please don't poke super-io without request_region
+Cc: "Jean Delvare" <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
+       "Samuel Ortiz" <samuel@sortiz.org>, linux-kernel@vger.kernel.org,
+       "Milton Miller" <miltonm@bga.com>, lm-sensors@lm-sensors.org
+In-Reply-To: <4879A144.8060203@hhs.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <86802c440807131401o21d016d0i37e6e4f9cad6bc2@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <for-27-patch1-0@bga.com> <48768018.2070704@hhs.nl>
+	 <acca8e14e769b2feadee19f1f7448438@bga.com>
+	 <20080711085246.1ead773b@hyperion.delvare> <48770B5E.7000308@hhs.nl>
+	 <20080711093650.4b98e3b7@hyperion.delvare> <4879A144.8060203@hhs.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Hans, Milton, Jean,
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+On Sun, Jul 13, 2008 at 12:31 AM, Hans de Goede <j.w.r.degoede@hhs.nl> wrote:
+> Jean Delvare wrote:
+>> On Fri, 11 Jul 2008 09:27:26 +0200, Hans de Goede wrote:
+>>> Jean Delvare wrote:
+>>>> Hi Hans, hi Milton,
+>>>>
+>>> <snip>
+>>>
+>>>>> One could make a superio driver, and create sub-devices for the IR,
+>>>>> I2C, floppy, parallel, etc
+>>>>> nodes.
+>>>> There have been proposals to do this, and this would indeed be a very
+>>>> good idea, but unfortunately nobody took the time to implement this
+>>>> properly, push it upstream and volunteer to maintain it. The problem is
+>>>> that you don't need just a "driver", but a new subsystem, that needs to
+>>>> be designed and maintained.
+>>> Well, I believe there have been some lightweight superio locking coordinator
+>>> patches been floating around on the lm_sensors list, and I have reviewed them
+>>> and then a new version was done with my issues fixed.
+>>>
+>>> I kinda liked the proposed solution there, it was quite simple, moved all the
+>>> generic superio stuff into generic superio code, and added locking for super io
+>>> access from multiple drivers, what ever happened to those patches?
+>>
+>> As far as I know, nothing, and this is the problem. Somebody needs to
+>> step up and call him/herself the maintainer of the new code, and push
+>> it upstream and convert all the drivers (hwmon, watchdog, parallel
+>> port...) to make use of it. And I am not the one to do this, I am busy
+>> enough as is with i2c and hwmon.
+>>
+>
+> Ok, I've mailed Jim Cromie, the author of the superio access patches
+> from end 2007 and told him we're still interested in this and asked him
+> if he is willing to drive this forward.
 
-> On Sun, Jul 13, 2008 at 11:55 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> >
-> >> thanks
-> >>
-> >> could be caused by max_low_pfn_mapped patch...because hpet still use
-> >> fixmap address that is cleared by others.
-> 
-> still got
-> 
-> calling  __stack_chk_test+0x0/0x89
-> Testing -fstack-protector-all feature
-> -fstack-protector-all test failed
-> ------------[ cut here ]------------
-> WARNING: at kernel/panic.c:393 __stack_chk_test+0x61/0x89()
-> Modules linked in:
-> Pid: 1, comm: swapper Not tainted 2.6.26-rc9-tip-01873-ga9827e7-dirty #359
-> 
-> Call Trace:
->  [<ffffffff8026615e>] warn_on_slowpath+0x6c/0xa7
->  [<ffffffff80266199>] ? __stack_chk_test+0x0/0x89
->  [<ffffffff80266199>] ? __stack_chk_test+0x0/0x89
->  [<ffffffff8022a4f4>] ? mcount_call+0x5/0x31
->  [<ffffffff80266199>] ? __stack_chk_test+0x0/0x89
->  [<ffffffff802661fa>] __stack_chk_test+0x61/0x89
->  [<ffffffff80e729e4>] kernel_init+0x1de/0x346
->  [<ffffffff8022a4f4>] ? mcount_call+0x5/0x31
->  [<ffffffff80262df7>] ? finish_task_switch+0x14/0xe3
->  [<ffffffff8022b589>] child_rip+0xa/0x11
->  [<ffffffff80e72806>] ? kernel_init+0x0/0x346
->  [<ffffffff8022b57f>] ? child_rip+0x0/0x11
-> 
-> ---[ end trace 0f276ea63a4e83de ]---
+I propose writing a subsystem driver. (Is that properly called "The
+SuperIO Bus Driver"?) If no one thinks it's a really bad idea I will
+put together some code and submit it for review, and maintain it.
 
-please try latest tip/master - the self-test had to be removed. (gcc 
-will treat the stackprotector-failure function as ((noreturn)) attribute 
-and will optimize out the return path, making a reliable self-test 
-impossible in the way we tried to)
+Some hwmon chips have odd / unique probe sequences. IMHO this is where
+the design needs to be inspected. One of those is the w83627ehf, which
+Jean and Hans are familiar enough with to check my work.
 
-	Ingo
+Thoughts?
+David
