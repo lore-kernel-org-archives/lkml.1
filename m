@@ -1,46 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755348AbYGMBzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbYGMCEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755348AbYGMBzl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 21:55:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbYGMBze
+	id S1754708AbYGMCEx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 22:04:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751648AbYGMCEp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 21:55:34 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:62807 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752839AbYGMBzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 21:55:33 -0400
-Date: Sun, 13 Jul 2008 02:54:53 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
+	Sat, 12 Jul 2008 22:04:45 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:26957 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751854AbYGMCEo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jul 2008 22:04:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=jHjBiaG/gekl0HRmlNj1BZlVbYoMkoDMge/vOsGGIYcue0HqFovUK9OTz/zYLf7dH5
+         8brQ8fRIIvZ3L09gtoCNnTihquevqr0t2LYd9sLibcyNOAhY6AQ0JdItjqc25G8L13Cv
+         AwQrvz7xwG8i0seyKLKatNTNgbjgakqercnNQ=
+Message-ID: <86802c440807121904m1516b47am22a384a1e5868f68@mail.gmail.com>
+Date: Sat, 12 Jul 2008 19:04:44 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Suresh Siddha" <suresh.b.siddha@intel.com>
 Subject: Re: [PATCH] x86: let 32bit use apic_ops too
-In-Reply-To: <86802c440807121845u3a51b239h95fa46cfb6f7c770@mail.gmail.com>
-Message-ID: <Pine.LNX.4.55.0807130246560.4128@cliff.in.clinika.pl>
-References: <200807080141.05436.yhlu.kernel@gmail.com> 
- <200807092017.51004.yhlu.kernel@gmail.com>  <200807102038.26591.yhlu.kernel@gmail.com>
-  <200807111841.55403.yhlu.kernel@gmail.com>  <Pine.LNX.4.55.0807130241390.4128@cliff.in.clinika.pl>
- <86802c440807121845u3a51b239h95fa46cfb6f7c770@mail.gmail.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080713010843.GD1678@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200807080141.05436.yhlu.kernel@gmail.com>
+	 <200807092017.51004.yhlu.kernel@gmail.com>
+	 <200807102038.26591.yhlu.kernel@gmail.com>
+	 <200807111841.55403.yhlu.kernel@gmail.com>
+	 <20080713010843.GD1678@linux-os.sc.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 12 Jul 2008, Yinghai Lu wrote:
+On Sat, Jul 12, 2008 at 6:08 PM, Suresh Siddha
+<suresh.b.siddha@intel.com> wrote:
+> Yinghai,
+>
+> We can now cleanup ack_APIC_irq() to use the native_apic_mem_write()
+> for both 32bit and 64bit
 
-> >  Etc...  Why are you changing names of these functions?  Are they meant
-> > not to apply to older APIC implementations anymore?
-> 
-> because 64bit has that name.
+apic_write_around(), in case 32bit not have CONFIG_X86_GOOD_APIC?
+or let 64 bit use that apic_write_around()?
 
- Shouldn't it be the other way round then?  Our 32-bit code is the
-original one and supports more APIC variations than the 64-bit one.  So at
-the point of unification 64-bit xAPIC-only functions will become universal
-ones making the naming counter-intuitive: apic_ -> any APIC, xapic_ ->
-xAPIC only.  I think only functions specific to the xAPIC should have the
-xapic_ prefix.
+>
+> And also arch/x86/kernel/ipi.c can also use native_apic_mem_write()
+> similar to include/asm-x86/ipi.h
 
-  Maciej
+should remove duplicated functions in ipi.c
+
+YH
