@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbYGMVMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756819AbYGMVNk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756757AbYGMVMo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 17:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755515AbYGMVMg
+	id S1756819AbYGMVNk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 17:13:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755516AbYGMVNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 17:12:36 -0400
-Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:37235 "HELO
-	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752909AbYGMVMg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 17:12:36 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=TL0CmPw87Q6RZF76FGMWJrd0cLnvXQRQEdaA5EQrHDbpzAEVop2gOmMyQapXjYIAUevn6/307JxVonlickT3pc9nocPjkBs6oSyx2e9594rPbBTmdsQIZLbdZJ5okPxLi5+fHL9h50eS5AtAN5IJId/A8qGHVeUE8upnMyabimc=  ;
-X-YMail-OSG: WuMs8ogVM1kc4THwj9JYwb6M0NdQw3G7cPQgXgI23n5XgEwtz1JBVD9dsQ4qCFGN2EO.scbog_U4.eylojJZxPLOiKjQT3LS6fGqU_2BUg--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Dmitry Baryshkov <dbaryshkov@gmail.com>
-Subject: Re: [PATCH 1/3] genclk: add generic framework for managing clocks.
-Date: Sun, 13 Jul 2008 14:12:32 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Paul Mundt <lethal@linux-sh.org>,
-       pHilipp Zabel <philipp.zabel@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       tony@atomide.com, paul@pwsan.com,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>, ian <spyro@f2s.com>
-References: <20080708134242.GA6176@doriath.ww600.siemens.net> <20080708134336.GA6240@doriath.ww600.siemens.net> <20080712234823.e632c7f9.akpm@linux-foundation.org>
-In-Reply-To: <20080712234823.e632c7f9.akpm@linux-foundation.org>
+	Sun, 13 Jul 2008 17:13:33 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42464 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755515AbYGMVNc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 17:13:32 -0400
+Date: Sun, 13 Jul 2008 23:13:15 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH]rcu classic: update qlen when cpu offline
+Message-ID: <20080713211315.GA17442@elte.hu>
+References: <4862F9B3.5030300@cn.fujitsu.com> <20080626141324.GA10859@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807131412.32961.david-b@pacbell.net>
+In-Reply-To: <20080626141324.GA10859@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 12 July 2008, Andrew Morton wrote:
-> > +EXPORT_SYMBOL(clk_get_parent);
+
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+
+> On Thu, Jun 26, 2008 at 10:06:43AM +0800, Lai Jiangshan wrote:
+> > 
+> > When callbacks are moved from offline cpu to this cpu,
+> > the qlen field of this rdp should be updated.
 > 
-> As this is a new kernel-wide utility library, it is appropriate that
-> all of its public interfaces (at least) be documented.  An appropriate
-> way of doing that is via kerneldoc annotation.  Please don't forget to
-> document return values and call environment prerequisites (eg: requires
-> foo_lock, may be called from interrupt context, etc, etc).
+> Good catch!!!
+> 
+> The effect of this bug would be for force_quiescent_state() to be invoked
+> when it should not and vice versa -- wasting cycles in the first case
+> and letting RCU callbacks remain piled up in the second case.  The bug
+> is thus "benign" in that it does not result in premature grace-period
+> termination, but should of course be fixed nonetheless.
+> 
+> Preemption is disabled by the caller's get_cpu_var(), so we are guaranteed
+> to remain on the same CPU, as required.  The local_irq_disable() is indeed
+> needed, otherwise, an interrupt might invoke call_rcu() or call_rcu_bh(),
+> which could cause that interrupt's increment of ->qlen to be lost.
+> 
+> So this patch looks correct to me.  Good job, Jiangshan!!!
+> 
+> Ingo, would you be willing to add this patch to tip/core/rcu?
+> 
+> Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-That is, the stuff that's not already documented in <linux/clk.h>;
-that's where clk_get_parent() is documented, for example.
+thanks, applied to tip/core/rcu. (sorry about the delay!)
 
-I'd suggest a separate (for review!) doc patch to add this to the
-stuff that's at the end of Documentation/DocBook/kernel-api.tmpl 
-in 2.6.26 ... possibly the existing clk.h interface stuff should
-become a <sect1> and the new implementation glue should become
-a sibling <sect1>, that will cleanly separate the two.
-
-- Dave
+	Ingo
