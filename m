@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754521AbYGMOqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754500AbYGMO6D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754521AbYGMOqh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 10:46:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbYGMOq2
+	id S1754500AbYGMO6D (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 10:58:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbYGMO5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 10:46:28 -0400
-Received: from smtp-01.mandic.com.br ([200.225.81.132]:38131 "EHLO
-	smtp-01.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753544AbYGMOq2 (ORCPT
+	Sun, 13 Jul 2008 10:57:55 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:64856 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752629AbYGMO5z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 10:46:28 -0400
-Message-ID: <487A1534.3000307@diamondcut.com.br>
-Date: Sun, 13 Jul 2008 11:46:12 -0300
-From: "Renato S. Yamane" <yamane@diamondcut.com.br>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Sun, 13 Jul 2008 10:57:55 -0400
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCh] x86: overmapped fix when 4K pages on tail - 64bit
+From: Andi Kleen <andi@firstfloor.org>
+References: <200807080141.05436.yhlu.kernel@gmail.com>
+	<200807080143.27997.yhlu.kernel@gmail.com>
+	<200807092015.03004.yhlu.kernel@gmail.com>
+	<20080710071640.5035cd70@infradead.org>
+Date: Sun, 13 Jul 2008 16:57:50 +0200
+In-Reply-To: <20080710071640.5035cd70@infradead.org> (Arjan van de Ven's message of "Thu, 10 Jul 2008 07:16:40 -0700")
+Message-ID: <874p6t25n5.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-To: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
-CC: Greg KH <greg@kroah.com>, linux-acpi@vger.kernel.org, pavel@suse.cz,
-       linux-kernel@vger.kernel.org
-Subject: Re: Toshiba - Documentation for Linux Developers
-References: <4855971D.90004@diamondcut.com.br> <20080616221443.GA760@kroah.com> <b170af450807130654m2f800b10ybcba4b2c5c7cf329@mail.gmail.com>
-In-Reply-To: <b170af450807130654m2f800b10ybcba4b2c5c7cf329@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 13 Jul 2008 14:50:23.0798 (UTC) FILETIME=[C7AAE560:01C8E4F7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafał Miłecki wrote:
-> 2008/6/17, Greg KH <greg@kroah.com>:
->> Are there any known drivers for Toshiba hardware that you need for Linux
->>  that we should be contacting them about?
->> <http://linux.toshiba-dme.co.jp/linux/eng/develop.htm>
-> 
-> I have Toshiba A100 with Phoenix BIOS. This means toshiba_acpi doesn't
-> work for me and I can change LCD brightness.
-> 
-> On page http://www.buzzard.me.uk/toshiba/docs.html there is also link
-> to pdf with registers info:
-> http://www.buzzard.me.uk/toshiba/downloads/hci.pdf
-> 
-> However I am not programmer and I have no idea if this is some
-> interesging info for developrs.
+Arjan van de Ven <arjan@infradead.org> writes:
 
-Rafal, try use omnibook driver.
-Get it with subversion:
-$ svn co
-https://omnibook.svn.sourceforge.net/svnroot/omnibook/omnibook/trunk
+> On Wed, 9 Jul 2008 20:15:02 -0700
+> Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>
+>> 
+>> 
+>> fix phys_pmd_init to make sure not to return big value than end.
+>> 
+>> also print out range split:1G/2M/4K
+>> 
+>> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+>
+>
+> Making an accurate mapping solves a lot of potentially nasty/tricky
+> corner cases, so I like the approach
 
-Use "make install" and "make load".
+It also means that e.g. on a 1GB system the direct mapping will 
+never use 1GB pages.
 
-After this, maybe is possible change brightness writing in
-/proc/omnibook/lcd (0 is minimun and 7 is max brightness)
+And the CPU has to handle this anyways because all the old 
+kernels overmap and no x86 CPU can drop support for all old
+kernels.
 
-Best regards,
-Renato S. Yamane
+In the end it means only large systems will benefit from 1GB
+pages, which seems wrong to me.
+
+-Andi
