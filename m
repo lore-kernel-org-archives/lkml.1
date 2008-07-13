@@ -1,56 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753774AbYGMQQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbYGMQXs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753774AbYGMQQZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 12:16:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbYGMQQR
+	id S1754585AbYGMQXs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 12:23:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbYGMQXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 12:16:17 -0400
-Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:48224 "EHLO
-	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752200AbYGMQQP (ORCPT
+	Sun, 13 Jul 2008 12:23:40 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:27601 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752063AbYGMQXj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 12:16:15 -0400
-Subject: [PATCH] hid: apple_fn_keys F5 and F6
-From: Henrik Rydberg <rydberg@euromail.se>
-To: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dmitry.torokhov@gmail.com, robfitz@273k.net, akpm@osdl.org,
-       jikos@jikos.cz, vojtech@suse.cz, dmonakhov@openvz.org
-Date: Sun, 13 Jul 2008 18:12:55 +0200
-Content-Type: text/plain
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
-Message-Id: <1215965784.20146.0.camel@alnilam>
-Mime-Version: 1.0
-X-Originating-IP: 83.248.35.11
-X-Scan-Result: No virus found in message 1KI4FC-0005gw-6q.
-X-Scan-Signature: ch-smtp02.sth.basefarm.net 1KI4FC-0005gw-6q c9485c952ca35b1802b9b13ba6f0bdcf
+	Sun, 13 Jul 2008 12:23:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=HtTaxEu4xCXSMyLCf5BGxIrt37oFlDHE15qGjAReWCixSYDocRoUYafpgUeiv25taV
+         zE9TT5n5kI/kK/BQyTsVmE17Q0D/EAzMiwKJwrJG4JJVt5MFt41uF7qbrzw4eMa0Gs4s
+         lLYF8eisT4X8qGMxj5IanLOurFael3MV/iRCc=
+Date: Sun, 13 Jul 2008 20:23:37 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] lapic calibration results fix
+Message-ID: <20080713162337.GC7459@asus>
+References: <20080713113734.GB7459@asus>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080713113734.GB7459@asus>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Henrik Rydberg <rydberg@euromail.se>
+[Cyrill Gorcunov - Sun, Jul 13, 2008 at 03:37:34PM +0400]
+| Ingo, Maciej,
+| 
+| it seems I found a bit strange code snippet in apic_32.c:setup_boot_APIC_clock.
+| We set local_apic_timer_verify_ok = 1 before checking the results. I think
+| the following patch make sense. Please take a look on.
+| 
+| ---
+| We set lapic flag that clocksource calibration is
+| fine too early. Fix it.
+| 
+| Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+| ---
+| 
+| Index: linux-2.6.git/arch/x86/kernel/apic_32.c
+| ===================================================================
+| --- linux-2.6.git.orig/arch/x86/kernel/apic_32.c	2008-07-13 15:25:20.000000000 +0400
+| +++ linux-2.6.git/arch/x86/kernel/apic_32.c	2008-07-13 15:31:03.000000000 +0400
+| @@ -489,8 +489,6 @@ void __init setup_boot_APIC_clock(void)
+|  		    calibration_result / (1000000 / HZ),
+|  		    calibration_result % (1000000 / HZ));
+|  
+| -	local_apic_timer_verify_ok = 1;
+| -
+|  	/*
+|  	 * Do a sanity check on the APIC calibration result
+|  	 */
+| @@ -504,6 +502,8 @@ void __init setup_boot_APIC_clock(void)
+|  		return;
+|  	}
+|  
+| +	local_apic_timer_verify_ok = 1;
+| +
+|  	/* We trust the pm timer based calibration */
+|  	if (!pm_referenced) {
+|  		apic_printk(APIC_VERBOSE, "... verify APIC timer\n");
 
-In drivers/hid/hid-input.c, the apple_fn_keys translation table
-contains no entries for the F5 and F6 keys. This patch maps the F5 and
-F6 keys to KBDILLUMDOWN and KBDILLUMUP, respektively, which make them
-work as keyboard backlight control keys.
+Letme clarify a bit situation why I propose this path (it's not that
+clear from its description).
 
-Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
----
+While calibrating apic timer we use different 'flags' signaling if it
+was success/fail. On 64bit platform lapic_timer_setup() does check
+for CLOCK_EVT_FEAT_DUMMY bit which is set by default and cleared on
+successfully calibrated timer. So 64bit is fine now. On 32bit we
+use a different approach - local_apic_timer_verify_ok flag _BUT_
+as I see it being set too early _before_ calibration result is checked
+so we could have the following - kernel reports user that APIC timer
+is too slow and disabled but local_apic_timer_verify_ok remains set
+to 1 instead of 0.
 
-This patch is against the linux-next tree: v2.6.26-rc9-7639-g60392c2
-
-diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
-index 0ef778a..1b2e8dc 100644
---- a/drivers/hid/hid-input.c
-+++ b/drivers/hid/hid-input.c
-@@ -100,6 +100,8 @@ static struct hidinput_key_translation apple_fn_keys[] = {
-        { KEY_F2,       KEY_BRIGHTNESSUP,   APPLE_FLAG_FKEY },
-        { KEY_F3,       KEY_FN_F5,          APPLE_FLAG_FKEY }, /* Expos<E9> */
-        { KEY_F4,       KEY_FN_F4,          APPLE_FLAG_FKEY }, /* Dashboard */
-+       { KEY_F5,       KEY_KBDILLUMDOWN,   APPLE_FLAG_FKEY },
-+       { KEY_F6,       KEY_KBDILLUMUP,     APPLE_FLAG_FKEY },
-        { KEY_F7,       KEY_PREVIOUSSONG,   APPLE_FLAG_FKEY },
-        { KEY_F8,       KEY_PLAYPAUSE,      APPLE_FLAG_FKEY },
-        { KEY_F9,       KEY_NEXTSONG,       APPLE_FLAG_FKEY },
-
+		- Cyrill -
