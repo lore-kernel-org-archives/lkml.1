@@ -1,146 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbYGMQ0N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754784AbYGMQ2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754693AbYGMQ0N (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 12:26:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbYGMQZ5
+	id S1754784AbYGMQ2R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 12:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYGMQ2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 12:25:57 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:64465 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752123AbYGMQZz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 12:25:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:references;
-        b=SCRgf06Gr3RhwdMZZHoTr975NLEL54XlJbCT3X5r639yv9ia6pUSNQ2QVEQd1YoSAk
-         Hsky1pmpjsTnEVyDFt2KgNeMpvUvMpSGWQzt4MPIL3ud7D/YG8a5SO5eqmbvlFERkX+h
-         3vNAPu00yPG8ea8cYy6zbcVqnJyz49QV2B3cw=
-Message-ID: <19f34abd0807130925g3001109cm6bdee9baad701960@mail.gmail.com>
-Date: Sun, 13 Jul 2008 18:25:54 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Soeren Sonnenburg" <kernel@nn7.de>
-Subject: Re: 2.6.26rc9+git bluetooth/rfcomm oops
-Cc: "Dave Young" <hidave.darkstar@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-In-Reply-To: <1215945125.4842.13.camel@localhost>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_21806_19432089.1215966354630"
-References: <1215945125.4842.13.camel@localhost>
+	Sun, 13 Jul 2008 12:28:07 -0400
+Received: from mga11.intel.com ([192.55.52.93]:55185 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752531AbYGMQ2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 12:28:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.30,354,1212390000"; 
+   d="scan'208";a="595648057"
+Date: Sun, 13 Jul 2008 09:28:05 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: let 32bit use apic_ops too
+Message-ID: <20080713162804.GI1678@linux-os.sc.intel.com>
+References: <200807080141.05436.yhlu.kernel@gmail.com> <200807092017.51004.yhlu.kernel@gmail.com> <200807102038.26591.yhlu.kernel@gmail.com> <200807111841.55403.yhlu.kernel@gmail.com> <20080713010843.GD1678@linux-os.sc.intel.com> <86802c440807121904m1516b47am22a384a1e5868f68@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440807121904m1516b47am22a384a1e5868f68@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_21806_19432089.1215966354630
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Sat, Jul 12, 2008 at 07:04:44PM -0700, Yinghai Lu wrote:
+> On Sat, Jul 12, 2008 at 6:08 PM, Suresh Siddha
+> <suresh.b.siddha@intel.com> wrote:
+> > Yinghai,
+> >
+> > We can now cleanup ack_APIC_irq() to use the native_apic_mem_write()
+> > for both 32bit and 64bit
+> 
+> apic_write_around(), in case 32bit not have CONFIG_X86_GOOD_APIC?
+> or let 64 bit use that apic_write_around()?
 
-On Sun, Jul 13, 2008 at 12:32 PM, Soeren Sonnenburg <kernel@nn7.de> wrote:
-> Hi,
->
-> this oops happened after a couple of s2ram cycles so it might be very
-> well crap. However I somehow triggered it by /etc/init.d/bluetooth
-> stop/start's which also call hid2hci maybe even a connection was about
-> to be established at that time. As I remember having seen a problem like
-> this before I thought I report it (even though I have a madwifi tainted
-> kernel).
->
-> [drm] Num pipes: 1
-> kobject_add_internal failed for rfcomm0 with -EEXIST, don't try to register things with the same name in the same directory.
+hmm, yes this gets complicated.
 
-Hi,
+Reason why I used native_apic_mem_write() in 64bit is, ack_APIC_irq()
+is in the fast path (intr) and we are already sure (through irq_chip's) that
+this ack is indeed for xapic. So instead of using function pointer, I directly
+used the native access.
 
-Thanks for the report.
+As we are now implementing apic ops for 32bit aswell, I though we should
+also use the native access for perf reason. 
 
-I was able to reproduce your Oops:
+So we should probably have native_apic_mem_write_around() and use that
+in ack_APIC_irq() and for good apic it is native_apic_mem_write()
+and for !CONFIG_X86_GOOD_APIC, it is native_apic_mem_write_atomic()
 
-kobject_add_internal failed for rfcomm0 with -EEXIST, don't try to
-register things with the same name in the same directory.
-Pid: 2534, comm: a.out Not tainted 2.6.26-rc9-00132-g9df2fe9 #24
- [<c0210161>] kobject_add_internal+0x108/0x13e
- [<c0210478>] kobject_add+0x4a/0x4e
- [<c026e258>] device_add+0x62/0x446
- [<c020feb9>] kobject_init+0x32/0x53
- [<c026e6c4>] device_create_vargs+0x78/0x99
- [<c026e707>] device_create+0x22/0x26
- [<c02521be>] tty_register_device+0x97/0xa2
- [<c0110000>] __cpu_disable+0x10b/0x130
- [<c03721c8>] sk_prot_alloc+0x1c/0x61
- [<c03ea86e>] rfcomm_dev_ioctl+0x213/0x582
- [<c03e9342>] rfcomm_sock_ioctl+0x1e/0x2d
- [<c03715c5>] sock_ioctl+0x152/0x175
- [<c0371473>] sock_ioctl+0x0/0x175
- [<c0166538>] vfs_ioctl+0x1c/0x5d
- [<c01667b6>] do_vfs_ioctl+0x23d/0x254
- [<c037119d>] sys_socketcall+0x51/0x181
- [<c01667f9>] sys_ioctl+0x2c/0x43
- [<c0103569>] sysenter_past_esp+0x6a/0x91
- =======================
+> 
+> >
+> > And also arch/x86/kernel/ipi.c can also use native_apic_mem_write()
+> > similar to include/asm-x86/ipi.h
+> 
+> should remove duplicated functions in ipi.c
 
-This is because the device may be unregistered even though a reference
-to it is held. When we try to register it again, the kobject layer
-burps because the tty parts have not been unregistered yet. (This only
-happens when the device is finally destroyed, i.e. no references.)
+yes, if there are no differences.
 
-I don't know how to fix this, but I've attached a reproducer and added
-a couple of Ccs.
+BTW, as I mentioned in another thread, we need to take care of the paravirt
+(lguest, vmi, xen etc) cases aswell.
 
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
-
-------=_Part_21806_19432089.1215966354630
-Content-Type: text/x-csrc; name=rfcomm.c
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_filutq0c0
-Content-Disposition: attachment; filename=rfcomm.c
-
-I2luY2x1ZGUgPHN5cy9pb2N0bC5oPgojaW5jbHVkZSA8c3lzL3NvY2tldC5oPgojaW5jbHVkZSA8
-c3lzL3R5cGVzLmg+CiNpbmNsdWRlIDxzeXMvd2FpdC5oPgoKI2luY2x1ZGUgPGVycm5vLmg+CiNp
-bmNsdWRlIDxmY250bC5oPgojaW5jbHVkZSA8c3RkaW8uaD4KI2luY2x1ZGUgPHN0ZGludC5oPgoj
-aW5jbHVkZSA8c3RkbGliLmg+CiNpbmNsdWRlIDxzdHJpbmcuaD4KI2luY2x1ZGUgPHVuaXN0ZC5o
-PgoKI2RlZmluZSBSRkNPTU1DUkVBVEVERVYJCV9JT1coJ1InLCAyMDAsIGludCkKI2RlZmluZSBS
-RkNPTU1SRUxFQVNFREVWCV9JT1coJ1InLCAyMDEsIGludCkKI2RlZmluZSBCVFBST1RPX1JGQ09N
-TSAgMwoKdHlwZWRlZiB1aW50OF90IHU4Owp0eXBlZGVmIHVpbnQzMl90IHUzMjsKdHlwZWRlZiBp
-bnQxNl90IHMxNjsKdHlwZWRlZiB1aW50OF90IF9fdTg7CgovKiBCRCBBZGRyZXNzICovCnR5cGVk
-ZWYgc3RydWN0IHsKCV9fdTggYls2XTsKfSBfX2F0dHJpYnV0ZV9fKChwYWNrZWQpKSBiZGFkZHJf
-dDsKCnN0cnVjdCByZmNvbW1fZGV2X3JlcSB7CglzMTYgICAgICBkZXZfaWQ7Cgl1MzIgICAgICBm
-bGFnczsKCWJkYWRkcl90IHNyYzsKCWJkYWRkcl90IGRzdDsKCXU4ICAgICAgIGNoYW5uZWw7Cn07
-Cgp2b2lkIHJmY29tbShpbnQgcmVxdWVzdCwgaW50IGRldl9pZCkKewoJaW50IGZkID0gc29ja2V0
-KFBGX0JMVUVUT09USCwgU09DS19TVFJFQU0sIEJUUFJPVE9fUkZDT01NKTsKCWlmIChmZCA9PSAt
-MSkgewoJCWZwcmludGYoc3RkZXJyLCAic29ja2V0OiBlcnJvcjogJXNcbiIsIHN0cmVycm9yKGVy
-cm5vKSk7CgkJZXhpdChFWElUX0ZBSUxVUkUpOwoJfQoKCXN0cnVjdCByZmNvbW1fZGV2X3JlcSBy
-ZXE7CgltZW1zZXQoJnJlcSwgMCwgc2l6ZW9mKHJlcSkpOwoJcmVxLmRldl9pZCA9IGRldl9pZDsK
-CXJlcS5jaGFubmVsID0gMTsKCglpZiAoaW9jdGwoZmQsIHJlcXVlc3QsICZyZXEpID09IC0xKSB7
-CgkJZnByaW50ZihzdGRlcnIsICJpb2N0bDogZXJyb3I6ICVzXG4iLCBzdHJlcnJvcihlcnJubykp
-OwoJCWV4aXQoRVhJVF9GQUlMVVJFKTsKCX0KCgl3aGlsZSAoY2xvc2UoZmQpID09IC0xICYmIGVy
-cm5vID09IEVJTlRSKTsKfQoKaW50Cm1haW4oaW50IGFyZ2MsIGNoYXIgKmFyZ3ZbXSkKewoJcGlk
-X3QgY2hpbGQ7CgoJY2hpbGQgPSBmb3JrKCk7CglpZiAoY2hpbGQgPT0gLTEpIHsKCQlmcHJpbnRm
-KHN0ZGVyciwgImZvcms6IGVycm9yOiAlc1xuIiwgc3RyZXJyb3IoZXJybm8pKTsKCQlleGl0KEVY
-SVRfRkFJTFVSRSk7Cgl9CgoJaWYgKGNoaWxkID09IDApIHsKCQlwcmludGYoIkNyZWF0aW5nXG4i
-KTsKCQlyZmNvbW0oUkZDT01NQ1JFQVRFREVWLCAwKTsKCgkJcHJpbnRmKCJPcGVuaW5nIC9kZXYv
-cmZjb21tMC4uLlxuIik7CgoJCWludCBmZCA9IG9wZW4oIi9kZXYvcmZjb21tMCIsIE9fUkRXUiB8
-IE9fTk9DVFRZKTsKCQlpZiAoZmQgPT0gLTEpIHsKCQkJZnByaW50ZihzdGRlcnIsICJvcGVuOiBl
-cnJvcjogJXNcbiIsIHN0cmVycm9yKGVycm5vKSk7CgkJCXJmY29tbShSRkNPTU1SRUxFQVNFREVW
-LCAwKTsKCQkJZXhpdChFWElUX0ZBSUxVUkUpOwoJCX0KCgkJZXhpdChFWElUX1NVQ0NFU1MpOwoJ
-fQoKCXNsZWVwKDEpOwoKCS8qIFRoaXMgd2lsbCBkZWxldGUgdGhlIGRldmljZSwgYnV0IHNpbmNl
-IHdlIHN0aWxsIGhvbGQgYSByZWZlcmVuY2UKCSAqIHRvIGl0IGluICJmZCIsIHRoZSB0dHkgd29u
-J3QgYmUgdW5yZWdpc3RlcmVkIHlldC4uLiAqLwoJcHJpbnRmKCJSZWxlYXNpbmdcbiIpOwoJcmZj
-b21tKFJGQ09NTVJFTEVBU0VERVYsIDApOwoKCS8qIEFuZCBub3cgd2UgdHJ5IHRvIHJlZ2lzdGVy
-IHRoZSBzYW1lIHR0eSBkZXZpY2UuLi4gKi8KCXByaW50ZigiUmVjcmVhdGluZ1xuIik7CglyZmNv
-bW0oUkZDT01NQ1JFQVRFREVWLCAwKTsKCgkvKiBDbGVhbnVwICovCglwcmludGYoIlJlbGVhc2lu
-Z1xuIik7CglyZmNvbW0oUkZDT01NUkVMRUFTRURFViwgMCk7CgoJd2hpbGUgKDEpIHsKCQlpbnQg
-c3RhdHVzOwoKCQlpZiAod2FpdCgmc3RhdHVzKSA9PSAtMSkgewoJCQlpZiAoZXJybm8gPT0gRUNI
-SUxEKQoJCQkJYnJlYWs7CgoJCQlmcHJpbnRmKHN0ZGVyciwgIndhaXQ6IGVycm9yOiAlc1xuIiwg
-c3RyZXJyb3IoZXJybm8pKTsKCQkJZXhpdChFWElUX0ZBSUxVUkUpOwoJCX0KCX0KCglyZXR1cm4g
-RVhJVF9TVUNDRVNTOwp9Cg==
-------=_Part_21806_19432089.1215966354630--
+thanks,
+suresh
