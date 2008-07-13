@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754886AbYGMRn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755124AbYGMRqu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754886AbYGMRn0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 13:43:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbYGMRnT
+	id S1755124AbYGMRqu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 13:46:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbYGMRqm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 13:43:19 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40164 "EHLO mx3.mail.elte.hu"
+	Sun, 13 Jul 2008 13:46:42 -0400
+Received: from gw.goop.org ([64.81.55.164]:48855 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752887AbYGMRnS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 13:43:18 -0400
-Date: Sun, 13 Jul 2008 19:42:52 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Paul Menage <menage@google.com>, Max Krasnyansky <maxk@qualcomm.com>,
-       Paul Jackson <pj@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       miaox@cn.fujitsu.com, rostedt@goodmis.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: current linux-2.6.git: cpusets completely broken
-Message-ID: <20080713174252.GA13115@elte.hu>
-References: <alpine.LFD.1.10.0807112026390.2875@woody.linux-foundation.org> <b647ffbd0807120304o7a500dc9oce761e51c9dce908@mail.gmail.com> <alpine.LFD.1.10.0807121254490.2875@woody.linux-foundation.org> <alpine.LFD.1.10.0807121411350.2875@woody.linux-foundation.org> <alpine.LFD.1.10.0807121504010.2959@woody.linux-foundation.org> <19f34abd0807121600l653e28bfwb5cce2d880b7f2cd@mail.gmail.com> <b647ffbd0807121605y5caa4023v6578cfb17de103e3@mail.gmail.com> <alpine.LFD.1.10.0807121607160.2959@woody.linux-foundation.org> <b647ffbd0807130253t32904430x5ca942783d01ce99@mail.gmail.com> <alpine.LFD.1.10.0807130943530.2959@woody.linux-foundation.org>
+	id S1752960AbYGMRqm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 13:46:42 -0400
+Message-ID: <487A3F75.5010405@goop.org>
+Date: Sun, 13 Jul 2008 10:46:29 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807130943530.2959@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "Jakub W. Jozwicki" <jozwicki@aster.pl>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, tglx@timesys.com
+Subject: Re: [PATCH 2.6.25.10 1/2] libata: fix locking for kmap_atomic
+References: <200807130127.36706.jozwicki@aster.pl> <20080713012630.d5e522f7.akpm@linux-foundation.org> <200807131517.51795.jozwicki@aster.pl>
+In-Reply-To: <200807131517.51795.jozwicki@aster.pl>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jakub W. Jozwicki wrote:
+>
+> Sorry, this was for -rt only.
+>
+> [   17.012011] BUG: sleeping function called from invalid context IRQ-14(5732) 
+> at arch/x86/mm/highmem_32.c:8
+> [   17.012011] in_atomic():0 [00000000], irqs_disabled():1
+> [   17.012011] Pid: 5732, comm: IRQ-14 Not tainted 2.6.25.10-rtXXX #11
+> [   17.012011]  [<c0120fc4>] __might_sleep+0xf1/0xf8
+> [   17.012011]  [<c011c035>] kmap+0x47/0x5a
+>   
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+The subject says kmap_atomic, but this is kmap.  It definitely makes no 
+sense to call kmap in an IRQ, regardless of the locking.  There seems to 
+be a larger structural problem here.
 
-> The thing is, we should fix the top level code to never even 
-> _consider_ an invalid CPU as a target, and that in turn should mean 
-> that all the other code should be able to just totally ignore CPU 
-> hotplug events.
+> [   17.012011]  [<c033e728>] ata_hsm_move+0x3d7/0x657
+> [   17.012011]  [<c0342fd6>] ata_interrupt+0x14e/0x1cb
+> [   17.012011]  [<c015c72c>] handle_IRQ_event+0x4e/0xd1
+> [   17.012011]  [<c015d266>] do_irqd+0x126/0x224
+> [   17.012011]  [<c015d140>] ? do_irqd+0x0/0x224
+> [   17.012011]  [<c013ae9d>] kthread+0x3b/0x62
+> [   17.012011]  [<c013ae62>] ? kthread+0x0/0x62
+> [   17.012011]  [<c0108287>] kernel_thread_helper+0x7/0x10
+> [   17.012011]  =======================
+>   
 
-agreed. We thought we could get away by hiding the "is the CPU dead" 
-information in existing data structures (by shaping sched domains to 
-never lead to a dead CPU) - but this method has proven itself fragile 
-via a series of bugs.
-
-It was one micro-optimization one too many. We should just accept the 
-fact that the current model is not maintainable and add your extra (and 
-trivial) cpu_active_map layer that protects against migrating to CPUs 
-that are going down. [we'll basically introduce a "going down" state 
-inbetween 'online' and 'offline']
-
-And this will get rid of some other fragile trickery - because from that 
-point on we dont have to be super-careful about the whole sequence of 
-manipulating sched domains anymore. Cpusets can do whatever it wants, it 
-wont be able to break hotplug+scheduling - and that's important for any 
-functionality that is not used by default.
-
-[ I dont think Dmitry will disagree with this notion all that much, it's
-  just that his personal limit for calling an algorithm unmaintainable
-  is probably a lot higher than normal :-) ]
-
-	Ingo
+    J
