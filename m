@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756434AbYGMVBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756633AbYGMVB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756434AbYGMVBR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 17:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbYGMVBG
+	id S1756633AbYGMVB7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 17:01:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755040AbYGMVBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 17:01:06 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:12794 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750861AbYGMVBE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 17:01:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=hkYb+hFkay95CZSyE/xqUU/XP1Vj67arQOKdxlJoaE0PlY/mvpKHgUTq7uwW2nzmrP
-         9x1ROfAswgy7P1GmsHnFvq7vO8sz3zYHM4n6x67dbmkcvRKbCxm215LnQjA4CQr/udST
-         kAoRpWcwAUu/WP8548lH9jseMZruehvGH8WZQ=
-Message-ID: <86802c440807131401o21d016d0i37e6e4f9cad6bc2@mail.gmail.com>
-Date: Sun, 13 Jul 2008 14:01:03 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: per-cpu related?
-Cc: "Vegard Nossum" <vegard.nossum@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Mike Travis" <travis@sgi.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Steven Rostedt" <rostedt@goodmis.org>
-In-Reply-To: <20080713185502.GA17644@elte.hu>
+	Sun, 13 Jul 2008 17:01:51 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34513 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752909AbYGMVBu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 17:01:50 -0400
+Date: Sun, 13 Jul 2008 23:01:33 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Olaf Dabrunz <od@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Stefan Assmann <sassmann@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       Ihno Krumreich <ihno@suse.de>, Sven Dietrich <sdietrich@suse.de>,
+       Daniel Gollub <dgollub@suse.de>, Felix Foerster <ffoerster@suse.de>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH 0/3] Boot IRQ quirks for Broadcom and AMD/ATI
+Message-ID: <20080713210133.GA12362@elte.hu>
+References: <12155255883170-git-send-email-od@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <86802c440807130116u3b850485jec220bc15892873e@mail.gmail.com>
-	 <19f34abd0807130455w516d73cfi80161c345564464@mail.gmail.com>
-	 <86802c440807131134i351f967dh3a2b94d687c767ee@mail.gmail.com>
-	 <20080713185502.GA17644@elte.hu>
+In-Reply-To: <12155255883170-git-send-email-od@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 13, 2008 at 11:55 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
->> thanks
->>
->> could be caused by max_low_pfn_mapped patch...because hpet still use
->> fixmap address that is cleared by others.
 
-still got
+* Olaf Dabrunz <od@suse.de> wrote:
 
-calling  __stack_chk_test+0x0/0x89
-Testing -fstack-protector-all feature
--fstack-protector-all test failed
-------------[ cut here ]------------
-WARNING: at kernel/panic.c:393 __stack_chk_test+0x61/0x89()
-Modules linked in:
-Pid: 1, comm: swapper Not tainted 2.6.26-rc9-tip-01873-ga9827e7-dirty #359
+> This is against linux-2.6-tip, branch pci-ioapic-boot-irq-quirks.
+> 
+> The corrected versions of the Broadcom and AMD/ATI boot IRQ quirks, 
+> and a patch that uses DECLARE_PCI_FIXUP_FINAL instead of *_EARLY, and 
+> adds *_RESUME.
+> 
+> The AMD/ATI SB700S does not need a quirk. The boot IRQs here are 
+> active even when the IO-APIC lines are not masked. So even for 
+> traditional IRQ handling that does not use masking, the boot IRQs need 
+> to be disabled by the BIOS. If there are actual cases of BIOSes that 
+> do not disable these boot IRQs in APIC mode, we could consider 
+> including an SB700S patch. But I doubt this will be needed, as this 
+> problem would quickly surface during testing with any general-purpose 
+> OS.
+> 
+> The quirk for the AMD 8131 and AMD 8132 takes identical action as an 
+> existing quirk for the AMD 8131 rev. A0 and B0. The existing quirk is 
+> due to an AMD erratum to fix IO-APIC mode. Our patch now deletes the 
+> older quirk and adds a comment to the new one that describes the two 
+> purposes of the quirk.
 
-Call Trace:
- [<ffffffff8026615e>] warn_on_slowpath+0x6c/0xa7
- [<ffffffff80266199>] ? __stack_chk_test+0x0/0x89
- [<ffffffff80266199>] ? __stack_chk_test+0x0/0x89
- [<ffffffff8022a4f4>] ? mcount_call+0x5/0x31
- [<ffffffff80266199>] ? __stack_chk_test+0x0/0x89
- [<ffffffff802661fa>] __stack_chk_test+0x61/0x89
- [<ffffffff80e729e4>] kernel_init+0x1de/0x346
- [<ffffffff8022a4f4>] ? mcount_call+0x5/0x31
- [<ffffffff80262df7>] ? finish_task_switch+0x14/0xe3
- [<ffffffff8022b589>] child_rip+0xa/0x11
- [<ffffffff80e72806>] ? kernel_init+0x0/0x346
- [<ffffffff8022b57f>] ? child_rip+0x0/0x11
+applied to tip/x86/pci-ioapic-boot-irq-quirks, thanks Olaf.
 
----[ end trace 0f276ea63a4e83de ]---
+Jesse, what do you think about this topic? We are keeping it separate 
+for the time being. They are not particularly pretty, but being able to 
+mask/unmask irqs (without generating those legacy IRQs and creating an 
+IRQ storm) is essential to -rt.
+
+	Ingo
