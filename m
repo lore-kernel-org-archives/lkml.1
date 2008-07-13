@@ -1,155 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273AbYGMRXh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbYGMRdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755273AbYGMRXh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 13:23:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbYGMRX1
+	id S1755209AbYGMRdT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 13:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbYGMRdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 13:23:27 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:12610 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752155AbYGMRX0 (ORCPT
+	Sun, 13 Jul 2008 13:33:08 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45059 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752704AbYGMRdH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 13:23:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent:from;
-        b=sVd//lkDDFjPDByeYraKDQZBPT08UExaTj99kBp1uP6MXnuBBE08aKKD3nquS3bb0H
-         hHo711WGIFWk9RgiVTuPoZrlQqCrP6PPQmNSpt4qb7ZezoUpq4272OY84xg2SM7DGkgF
-         COykmSXnqCaJAcg4lIHISGBGYZ11+sPzG1TDI=
-Date: Sun, 13 Jul 2008 19:23:18 +0200
-To: Soeren Sonnenburg <kernel@nn7.de>, Marcel Holtmann <marcel@holtmann.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Dave Young <hidave.darkstar@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: [RFC][-rc9 PATCH] Bluetooth: fix oops in rfcomm
-Message-ID: <20080713172318.GA6180@damson.getinternet.no>
+	Sun, 13 Jul 2008 13:33:07 -0400
+Date: Sun, 13 Jul 2008 10:32:09 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+cc: Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Elias Oltmanns <eo@nebensachen.de>,
+       =?ISO-8859-15?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH] x86_64: fix delayed signals
+In-Reply-To: <4879CCFD.70208@firstfloor.org>
+Message-ID: <alpine.LFD.1.10.0807131017180.2959@woody.linux-foundation.org>
+References: <20080710215039.2A143154218@magilla.localdomain> <20080711054605.GA17851@elte.hu> <alpine.LFD.1.10.0807111031310.2936@woody.linux-foundation.org> <87mykn2sos.fsf@basil.nowhere.org> <alpine.LFD.1.10.0807121030260.2875@woody.linux-foundation.org>
+ <4879CCFD.70208@firstfloor.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-Disclaimer: This is just an RFC as I don't really know the code in
-question. But I did try to do it correctly and yes, it DOES fix the
-oops for me. But I'd be really happy if somebody who uses Bluetooth
-in the first place could test & review.
-
-(In other words, you may use this patch for inspiration, etc. if you
- decide to give it a try yourself.)
 
 
-Vegard
+On Sun, 13 Jul 2008, Andi Kleen wrote:
+> 
+> At least the original report was about Ctrl-C only versus Ctrl-Z.
 
+Yes, and I explained why.
 
->From 675b50291f0af40974074590e2fd16ae0546ecde Mon Sep 17 00:00:00 2001
-From: Vegard Nossum <vegard.nossum@gmail.com>
-Date: Sun, 13 Jul 2008 19:02:11 +0200
-Subject: [PATCH] Bluetooth: fix race between rfcomm and tty
+> I see the problem regularly myself that Ctrl-C doesn't work,
+> but Ctrl-Z+kill does (although I unfortunately cannot
+> reproduce it on demand).
 
-Soeren Sonnenburg reported:
-> this oops happened after a couple of s2ram cycles so it might be very
-> well crap. However I somehow triggered it by /etc/init.d/bluetooth
-> stop/start's which also call hid2hci maybe even a connection was about
-> to be established at that time. As I remember having seen a problem like
-> this before I thought I report it (even though I have a madwifi tainted
-> kernel).
->
-> kobject_add_internal failed for rfcomm0 with -EEXIST, don't try to register things with the same name in the same directory.
+There's no way you _can_ reproduce it.
 
-It turns out that the following sequence of actions will reproduce the
-oops:
+> But it was with programs who shouldn't catch Ctrl-C, like find.
 
-  1. Create a new rfcomm device (using RFCOMMCREATEDEV ioctl)
-  2. (Try to) open the device
-  3. Release the rfcomm device (using RFCOMMRELEASEDEV ioctl)
+No, it was not. I think you misread it.
 
-At this point, the "rfcomm?" tty is still in use, but the device is gone
-from the internal rfcomm list, so the device id can be reused.
+Two facts:
 
-  4. Create a new rfcomm device with the same device id as before
+ - ^Z and ^C are both going to be equally fast if they aren't blocked.
 
-And now kobject will complain that the tty already exists.
+   This is just how things are. They are handled by the same codepaths.
 
-This patch attempts to correct this by only removing the device from the
-internal rfcomm list of devices at the final unregister, so that the id
-won't get reused until the device has been completely destructed.
+ - the report you point to does mention 'find', but *not* in the place 
+   where it talks about "^Z+kill". There it's much less specific, and I 
+   bet that Edwin _had_ seen the "^Z works" behavior, and knew it to be 
+   true, but hadn't realized that it depended on the command, so when he 
+   gave an example of something where disk IO makes signals slow, he 
+   happened to pick one where ^Z and ^C were equally slow.
 
-This should be safe as the RFCOMM_TTY_RELEASED bit will be set for the
-device and prevent the device from being reopened after it has been
-released.
+In other words, I can pretty much _guarantee_ that if ^Z+kill is faster 
+than ^C, then it's because the process blocked or caught ^C.
 
-We also fix a race at the same time by including the call to
-tty_unregister_device inside the rfcomm_dev_lock (the lock protecting
-the list of devices).
+And I can pretty much also guarantee that when Edwin talked about 'find' 
+and did that ^C cut-and-paste, he didn't try the ^Z thing (that had 
+happened with _other_ programs), or if he did, it was just happenstance 
+(because the latency isn't _always_ 10-30 seconds - that's just the worst 
+case).
 
-Reported-by: Soeren Sonnenburg <kernel@nn7.de>
-Cc: Marcel Holtmann <marcel@holtmann.org>
-Cc: David Woodhouse <dwmw2@infradead.org>
-Cc: Dave Young <hidave.darkstar@gmail.com>
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
----
- net/bluetooth/rfcomm/tty.c |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
+So yes, ^C often works slower. If the process catches it and removes 
+temporary files as a result (for example - it's what things like gcc do), 
+then of _course_ it's going to be slower. It's going to be very noticeably 
+slower, especially since removing a temp-file is going to be even more 
+likely to hit a filesystem lock if the write-queues are full than just a 
+normal read is.
 
-diff --git a/net/bluetooth/rfcomm/tty.c b/net/bluetooth/rfcomm/tty.c
-index c919187..e289568 100644
---- a/net/bluetooth/rfcomm/tty.c
-+++ b/net/bluetooth/rfcomm/tty.c
-@@ -95,6 +95,8 @@ static void rfcomm_dev_destruct(struct rfcomm_dev *dev)
- 
- 	BT_DBG("dev %p dlc %p", dev, dlc);
- 
-+	write_lock_bh(&rfcomm_dev_lock);
-+
- 	/* Refcount should only hit zero when called from rfcomm_dev_del()
- 	   which will have taken us off the list. Everything else are
- 	   refcounting bugs. */
-@@ -108,8 +110,11 @@ static void rfcomm_dev_destruct(struct rfcomm_dev *dev)
- 
- 	rfcomm_dlc_put(dlc);
- 
-+	list_del_init(&dev->list);
- 	tty_unregister_device(rfcomm_tty_driver, dev->id);
- 
-+	write_unlock_bh(&rfcomm_dev_lock);
-+
- 	kfree(dev);
- 
- 	/* It's safe to call module_put() here because socket still
-@@ -278,14 +283,14 @@ static int rfcomm_dev_add(struct rfcomm_dev_req *req, struct rfcomm_dlc *dlc)
- 	__module_get(THIS_MODULE);
- 
- out:
--	write_unlock_bh(&rfcomm_dev_lock);
--
- 	if (err < 0) {
-+		write_unlock_bh(&rfcomm_dev_lock);
- 		kfree(dev);
- 		return err;
- 	}
- 
- 	dev->tty_dev = tty_register_device(rfcomm_tty_driver, dev->id, NULL);
-+	write_unlock_bh(&rfcomm_dev_lock);
- 
- 	if (IS_ERR(dev->tty_dev)) {
- 		err = PTR_ERR(dev->tty_dev);
-@@ -314,10 +319,6 @@ static void rfcomm_dev_del(struct rfcomm_dev *dev)
- 	else
- 		set_bit(RFCOMM_TTY_RELEASED, &dev->flags);
- 
--	write_lock_bh(&rfcomm_dev_lock);
--	list_del_init(&dev->list);
--	write_unlock_bh(&rfcomm_dev_lock);
--
- 	rfcomm_dev_put(dev);
- }
- 
--- 
-1.5.4.1
+But ^C isn't always slower, and if 'find' doesn't block/ignore it (and I 
+certainly believe you when you say that it doesn't), then for the case of 
+'find', it won't be true that ^Z+kill is any faster.
 
+In fact, Edwin later in this thread reported:
+
+  "Also I wasn't able to reproduce the  'Ctrl+Z works faster than Ctrl+C'
+   symptom, perhaps it is just a coincidence: by the time I press Ctrl+Z to
+   interrupt, enough time has passed (30+ secs), that the same effect would
+   have been obtained by another Ctrl+C, or by just waiting."
+
+and I bet that is exactly because now he's been testing programs that 
+don't block ^C (ie maybe he's now testing _just_ that "find /" thing).
+
+So before, Edwin was probably doing random things when doing "normal 
+work", and noticed that ^Z was sometimes faster. Now, he's trying to chase 
+things down, and he creates this specific test-case, and for that 
+particular test-case, ^Z _isn't_ faster. He just didn't pick up on the 
+pattern that it depends on which particular command he works on.
+
+Try "yum list", and you'll certainly see that ^Z works a *lot* faster than 
+^C (and the latter often needs multiple ^C's even when there is no load 
+at all)
+
+			Linus
