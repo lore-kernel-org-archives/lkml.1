@@ -1,115 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756101AbYGMT7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755879AbYGMUH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756101AbYGMT7T (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 15:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbYGMT7H
+	id S1755879AbYGMUH2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 16:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbYGMUHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 15:59:07 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39902 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752564AbYGMT7G convert rfc822-to-8bit (ORCPT
+	Sun, 13 Jul 2008 16:07:17 -0400
+Received: from hs-out-0708.google.com ([64.233.178.248]:53282 "EHLO
+	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752564AbYGMUHQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 15:59:06 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.26-rc9-git12: Reported regressions from 2.6.25
-Date: Sun, 13 Jul 2008 22:00:58 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>
-References: <Y1jK9GMA8kJ.A.qOH.7GleIB@albercik> <alpine.LFD.1.10.0807131230130.2959@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807131230130.2959@woody.linux-foundation.org>
+	Sun, 13 Jul 2008 16:07:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=J8DkTKMfox1taHxxpztL7hdJzN9FdvSSAwqYwpbOJy9/iS+teyY/9/7xnfR6jNi23e
+         sudj7lZypRD68NLaOqlsQMXJJWUEV1+iu9lUCDEG3hIjrd9V0xUU75KHG0jnkWQZE0Xo
+         Vj0TuEZCalbyfBJy/+zdtngH5ScbgjN6LGcHQ=
+Message-ID: <487A606E.5040202@gmail.com>
+Date: Sun, 13 Jul 2008 17:07:10 -0300
+From: "Rafael C. de Almeida" <almeidaraf@gmail.com>
+User-Agent: Icedove 1.5.0.14eol (X11/20080509)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200807132200.59826.rjw@sisk.pl>
+To: linux-kernel@vger.kernel.org
+Subject: /proc/data information
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 13 of July 2008, Linus Torvalds wrote:
-> 
-> On Sun, 13 Jul 2008, Rafael J. Wysocki wrote:
-> > 
-> > Regressions with patches
-> > ------------------------
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11072
-> > Subject		: scsi-layer crash after usb storage device unplug
-> > Submitter	: Johannes Berg <johannes@sipsolutions.net>
-> > Date		: 2008-07-12 01:50 (2 days old)
-> > Handled-By	: Alan Stern <stern@rowland.harvard.edu>
-> > Patch		: http://bugzilla.kernel.org/show_bug.cgi?id=11072#c3
-> 
-> Alan, Greg?
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11057
-> > Subject		: vbetest fails on 2.6.26-rc9
-> > Submitter	: PaX Team <pageexec@freemail.hu>
-> > Date		: 2008-07-08 19:46 (6 days old)
-> > Handled-By	: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> > Patch		: http://bugzilla.kernel.org/attachment.cgi?id=16792&action=view
-> 
-> Merged as commit a361ee5cb8011763ece7b4add393e206439db8b3.
+Hello,
 
-Closed.
+I'm interested in knowing how the cpu data from /proc/stat is gathered.
+Following my way from this function:
 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11024
-> > Subject		: 2.6.25 to 2.6.26-rc8 regression (related to ahci and acpi _GTF)
-> > Submitter	: Mathieu Bérard <Mathieu.Berard@crans.org>
-> > Date		: 2008-07-01 9:39 (13 days old)
-> > References	: http://marc.info/?t=121490593600001&r=1&w=4
-> > Handled-By	: Tejun Heo <htejun@gmail.com>
-> > Patch		: http://marc.info/?l=linux-kernel&m=121514631317343&w=4
-> 
-> Merged as commit b344991ace21896a83694c86d132b8494a29f3be.
+	http://lxr.linux.no/linux+v2.6.25.10/fs/proc/proc_misc.c#L459
 
-Closed.
- 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10957
-> > Subject		: pata_pcmcia with Sandisk Extreme III 8GB
-> > Submitter	: Komuro <komurojun-mbn@nifty.com>
-> > Date		: 2008-06-07 13:37 (37 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=121284627119861&w=4
-> > Handled-By	: Tejun Heo <htejun@gmail.com>
-> > 		  Dominik Brodowski <linux@dominikbrodowski.net>
-> > 		  Komuro <komurojun-mbn@nifty.com>
-> > Patch		: http://marc.info/?l=linux-kernel&m=121530861605673&w=4
-> 
-> This patch is disputed. See the rest of the thread. Maybe some subtle 
-> timing detail?
+I've figured that the time is probably gathered using those
+account_*_time on sched.c. I'm not sure where the times are read from,
+though.
 
-The patch won't be listed in future.
+Anyhow, I thought I'd do a little test. I expected that if I added
+together all the values on the cpu line of /proc/stat, waited 1 second
+and added together all the values again, then their difference would be
+a constant value. That is, the value should be the same any time I would
+repeat the experiment. My reasoning was that those values accounted for
+some unit of time and that the amount of time units between seconds
+should always be the same. I expected a small variation due to the
+kernel not always being able to wake the process that was doing the
+measurement in exactly one second.
 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10862
-> > Subject		: forcedeth: lockdep warning on ethtool -s
-> > Submitter	: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-> > Date		: 2008-06-01 8:37 (43 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=121230964032247&w=4
-> > Handled-By	: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-> > Patch		: http://lkml.org/lkml/2008/6/15/120
-> 
-> Commit 97bff0953dd45a633fa69e1a650d612f5610a60b.
+What I noticed, though, was that sometimes there's a very big variation.
+For this experiment I used the following bash code:
 
-Closed.
+t=`head -n1 /proc/stat |
+   awk '{ print $2 + $3 + $4 + $5 + $6 + $7 + $8 + $9 }'`
+sleep 1
+for (( i=0; i < 1800; i=i+1 )); do
+        nt=`head -n1 /proc/stat |
+            awk '{ print $2 + $3 + $4 + $5 + $6 + $7 + $8 + $9 }'`
+        echo $(( $nt - $t )) >> /tmp/values
+        t=$nt
+        sleep 1
+done
 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10725
-> > Subject		: USB Mass storage mount fails: Write protect on
-> > Submitter	: Maciej Rutecki <maciej.rutecki@gmail.com>
-> > Date		: 2008-05-16 14:55 (59 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=121095168003572&w=4
-> > Handled-By	: Alan Stern <stern@rowland.harvard.edu>
-> > Patch		: http://marc.info/?l=linux-scsi&m=121433068314568&w=2
-> 
-> Commit bdb2b8cab4392ce41ddfbd6773a3da3334daf836.
+The file with all the values can be reached at:
+	http://homepages.dcc.ufmg.br/~rafaelc/values
 
-Closed.
+The mean of the numbers in the values file was: 109.85
+The standard deviation was: 29.47
+The maximum was: 589
+The minimum was: 99
 
-Thanks,
+I found those values rather odd. They were gathered while I was using
+the system like I usually do. There were 40 values above 200 and 7
+above 300. I didn't expect those big values to show up. Why does it happen?
+
+It looks like that when I run:
+
+	% dd if=/dev/zero of=/tmp/foo
+
+things get more variable. I'm not sure why that would happen. Running
+CPU-bound process added for some variation, but not nearly as much as if
+I used the dd command (remembert that my computer is rather old).
+
+A little info about my system (Debian etch):
+$ uname  -a
+Linux gaz 2.6.18-6-686 #1 SMP Fri Jun 6 22:22:11 UTC 2008 i686 GNU/Linux
+$ cat /proc/cpuinfo
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 8
+model name	: Pentium III (Coppermine)
+stepping	: 10
+cpu MHz		: 898.087
+cache size	: 256 KB
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 2
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca cmov pat
+pse36 mmx fxsr sse up
+bogomips	: 1797.57
+
+$
+
+[]'s
 Rafael
