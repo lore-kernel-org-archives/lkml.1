@@ -1,197 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754854AbYGMAKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753764AbYGMA22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754854AbYGMAKp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 20:10:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752417AbYGMAKi
+	id S1753764AbYGMA22 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 20:28:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbYGMA2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 20:10:38 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:28604 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752131AbYGMAKh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 20:10:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=jS2Y9UIda6KLq2+TJQLVwYtg6cNfxN8dkIf5/O8QPrMOlOvw2UUjeHjIxFnQ+RUw1M
-         MQ+1amiSFalQhzwayL12Pndg19Z/1ktJ1KGkCXavHVQpkajoP1ogxDiAYOylSm17nQdQ
-         e7AooRNyAoYviDQbtQxn0XTLQvEZ4wci565Eo=
-Subject: Re: current linux-2.6.git: cpusets completely broken
-From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Vegard Nossum <vegard.nossum@gmail.com>,
-       Paul Menage <menage@google.com>, Max Krasnyansky <maxk@qualcomm.com>,
-       Paul Jackson <pj@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       miaox@cn.fujitsu.com, rostedt@goodmis.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1215861285.5405.6.camel@earth>
-References: <1215859526.5405.3.camel@earth>  <1215861285.5405.6.camel@earth>
-Content-Type: text/plain
-Date: Sun, 13 Jul 2008 02:10:29 +0200
-Message-Id: <1215907829.8998.23.camel@earth>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 12 Jul 2008 20:28:17 -0400
+Received: from OSB1387.piap.pl ([195.187.100.11]:41640 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751616AbYGMA2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jul 2008 20:28:16 -0400
+To: <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: [bisected] kernel panic 2.6.22 -> 2.6.26-rc9+
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Sun, 13 Jul 2008 02:28:13 +0200
+Message-ID: <m3d4lisk4i.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-Linus,
+Bisected the panic. It seems it occurs on my ARM IXP4xx big-endian
+system with USB ADSL PPP over ATM connection (Thomson/Alcatel
+Speedtouch). It doesn't seem to occur on the same IXP4xx with Ethernet
+or V.35 WAN, and it doesn't occur on i386 + the same Speedtouch ADSL.
+The kernel is basically unpatched, the only extra patch applied is the
+platform support (nothing magic).
 
+Generally to trigger the panic one has to request a TCP data stream
+over that PPPoATM connection.
 
-(just that we have it all together in one place, ready for testing and
-further consideration).
+Reverting the commit on top of 2.6.25.10 fixes the problem.
 
-below is the patch and explanation.
+Now what's wrong with that?
 
-Basically the fix below just emulates the 'old' behavior
-of update_sched_domains(). We call rebuild_sched_domains() for the same hotplug-events
-as it was called (and is still called for !CPUSETS case) in update_sched_domains().
-The aim is to keep sched-domain consistent wrt cpu-down/up.
+7e58886b45bc4a309aeaa8178ef89ff767daaf7f:
+author Stephen Hemminger <shemminger@linux-foundation.org>
+[TCP]: cubic optimization
 
-This should be a minimal change. Effectively, the change is against
-f18f982abf183e91f435990d337164c7a43d1e6d. So the logic of this patch should be easily visible comparing it to
-what the aforementioned commit does.
+Use willy's work in optimizing cube root by having table for small values.
 
-Ingo, could also please comment on this issue? TIA.
-
-
-Subject: fix cpuset_handle_cpuhp()
-
-The following commit
-
----
-commit f18f982abf183e91f435990d337164c7a43d1e6d
-Author: Max Krasnyansky <maxk@qualcomm.com>
-Date:   Thu May 29 11:17:01 2008 -0700
-
-sched: CPU hotplug events must not destroy scheduler domains created by
-the cpusets
----
-
-[ Note, with this commit arch_update_cpu_topology is not called any more for CPUSETS. But it's just a nop.
-The whole scheme should be probably reworked later. ]
-
-
-introduced a hotplug-related problem as described below:
-
-[ Basically the fix below just emulates the 'old' behavior of update_sched_domains().
-We call rebuild_sched_domains() for the same hotplug-events as it was called (and is still called
-for !CPUSETS case) in update_sched_domains(). ]
-
-
-Upon CPU_DOWN_PREPARE, update_sched_domains() -> detach_destroy_domains(&cpu_online_map)
-does the following:
-
-/*
- * Force a reinitialization of the sched domains hierarchy. The domains
- * and groups cannot be updated in place without racing with the
-balancing
- * code, so we temporarily attach all running cpus to the NULL domain
- * which will prevent rebalancing while the sched domains are
-recalculated.
- */
-
-The sched-domains should be rebuilt when a CPU_DOWN ops. has been
-completed, effectively either upon CPU_DEAD{_FROZEN} (upon success) or
-CPU_DOWN_FAILED{_FROZEN} (upon failure -- restore the things to their
-initial state). That's what update_sched_domains() also does but only
-for !CPUSETS case.
-
-With Max's patch, sched-domains' reinitialization is delegated to
-CPUSETS code:
-
-cpuset_handle_cpuhp() -> common_cpu_mem_hotplug_unplug() ->
-rebuild_sched_domains()
-
-Being called for CPU_UP_PREPARE and if its callback is called after
-update_sched_domains()), it just negates all the work done by
-update_sched_domains() -- i.e. a soon-to-be-offline cpu is included in
-the sched-domains and that makes it visible for the load-balancer
-while the CPU_DOWN ops. is in progress.
-
-__migrate_live_tasks() moves the tasks off a 'dead' cpu (it's already
-"offline" when this function is called).
-
-try_to_wake_up() is called for one of these tasks from another CPU ->
-the load-balancer (wake_idle()) picks up a "dead" CPU and places the
-task on it. Then e.g. BUG_ON(rq->nr_running) detects this a bit later
--> oops.
-
-
-Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: Vegard Nossum <vegard.nossum@gmail.com>
-CC: Paul Menage <menage@google.com>
-CC: Max Krasnyansky <maxk@qualcomm.com>
-CC: Paul Jackson <pj@sgi.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: miaox@cn.fujitsu.com
-CC: rostedt@goodmis.org
-CC: Thomas Gleixner <tglx@linutronix.de>
-
----
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-index 9fceb97..798b3ab 100644
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -1882,7 +1882,7 @@ static void scan_for_empty_cpusets(const struct cpuset *root)
-  * in order to minimize text size.
+--- a/net/ipv4/tcp_cubic.c
++++ b/net/ipv4/tcp_cubic.c
+@@ -91,23 +91,51 @@ static void bictcp_init(struct sock *sk)
+ 		tcp_sk(sk)->snd_ssthresh = initial_ssthresh;
+ }
+ 
+-/*
+- * calculate the cubic root of x using Newton-Raphson
++/* calculate the cubic root of x using a table lookup followed by one
++ * Newton-Raphson iteration.
++ * Avg err ~= 0.195%
   */
- 
--static void common_cpu_mem_hotplug_unplug(void)
-+static void common_cpu_mem_hotplug_unplug(int rebuild_sd)
+ static u32 cubic_root(u64 a)
  {
- 	cgroup_lock();
- 
-@@ -1894,7 +1894,8 @@ static void common_cpu_mem_hotplug_unplug(void)
- 	 * Scheduler destroys domains on hotplug events.
- 	 * Rebuild them based on the current settings.
+-	u32 x;
+-
+-	/* Initial estimate is based on:
+-	 * cbrt(x) = exp(log(x) / 3)
++	u32 x, b, shift;
++	/*
++	 * cbrt(x) MSB values for x MSB values in [0..63].
++	 * Precomputed then refined by hand - Willy Tarreau
++	 *
++	 * For x in [0..63],
++	 *   v = cbrt(x << 18) - 1
++	 *   cbrt(x) = (v[x] + 10) >> 6
  	 */
--	rebuild_sched_domains();
-+	if (rebuild_sd)
-+		rebuild_sched_domains();
- 
- 	cgroup_unlock();
- }
-@@ -1912,11 +1913,22 @@ static void common_cpu_mem_hotplug_unplug(void)
- static int cpuset_handle_cpuhp(struct notifier_block *unused_nb,
- 				unsigned long phase, void *unused_cpu)
- {
--	if (phase == CPU_DYING || phase == CPU_DYING_FROZEN)
-+	switch (phase) {
-+	case CPU_UP_CANCELED:
-+	case CPU_UP_CANCELED_FROZEN:
-+	case CPU_DOWN_FAILED:
-+	case CPU_DOWN_FAILED_FROZEN:
-+	case CPU_ONLINE:
-+	case CPU_ONLINE_FROZEN:
-+	case CPU_DEAD:
-+	case CPU_DEAD_FROZEN:
-+		common_cpu_mem_hotplug_unplug(1);
-+		break;
-+	default:
- 		return NOTIFY_DONE;
+-	x = 1u << (fls64(a)/3);
++	static const u8 v[] = {
++		/* 0x00 */    0,   54,   54,   54,  118,  118,  118,  118,
++		/* 0x08 */  123,  129,  134,  138,  143,  147,  151,  156,
++		/* 0x10 */  157,  161,  164,  168,  170,  173,  176,  179,
++		/* 0x18 */  181,  185,  187,  190,  192,  194,  197,  199,
++		/* 0x20 */  200,  202,  204,  206,  209,  211,  213,  215,
++		/* 0x28 */  217,  219,  221,  222,  224,  225,  227,  229,
++		/* 0x30 */  231,  232,  234,  236,  237,  239,  240,  242,
++		/* 0x38 */  244,  245,  246,  248,  250,  251,  252,  254,
++	};
++
++	b = fls64(a);
++	if (b < 7) {
++		/* a in [0..63] */
++		return ((u32)v[(u32)a] + 35) >> 6;
 +	}
++
++	b = ((b * 84) >> 8) - 1;
++	shift = (a >> (b * 3));
  
--	common_cpu_mem_hotplug_unplug();
--	return 0;
-+	return NOTIFY_OK;
+-	/* converges to 32 bits in 3 iterations */
+-	x = (2 * x + (u32)div64_64(a, (u64)x*(u64)x)) / 3;
+-	x = (2 * x + (u32)div64_64(a, (u64)x*(u64)x)) / 3;
+-	x = (2 * x + (u32)div64_64(a, (u64)x*(u64)x)) / 3;
++	x = ((u32)(((u32)v[shift] + 10) << b)) >> 6;
+ 
++	/*
++	 * Newton-Raphson iteration
++	 *                         2
++	 * x    = ( 2 * x  +  a / x  ) / 3
++	 *  k+1          k         k
++	 */
++	x = (2 * x + (u32)div64_64(a, (u64)x * (u64)(x - 1)));
++	x = ((x * 341) >> 10);
+ 	return x;
  }
  
- #ifdef CONFIG_MEMORY_HOTPLUG
-@@ -1929,7 +1941,7 @@ static int cpuset_handle_cpuhp(struct notifier_block *unused_nb,
- 
- void cpuset_track_online_nodes(void)
- {
--	common_cpu_mem_hotplug_unplug();
-+	common_cpu_mem_hotplug_unplug(0);
- }
- #endif
- 
+PC is at bictcp_cong_avoid+0x33c/0x454
 
----
+Backtrace:
 
+bictcp_cong_avoid+0x0/0x454		from tcp_cong_avoid+0x1c/0x30
+tcp_cong_avoid+0x0/0x30			from tcp_ack+0x156c/0x1c6c
+	r4:00000000
+tcp_ack+0x0/0x1c6c			from tcp_rcv_established+0x4a8/0x76c
+tcp_rcv_established+0x0/0x76c		from tcp_v4_do_rcv+0x25c/0x458
+tcp_v4_do_rcv+0x0/0x458			from tcp_v4_rcv+0x6c4/0x7ec
+tcp_v4_rcv+0x0/0x7ec			from ip_local_deliver_finish+0xe4/0x24c
+ip_local_deliver_finish+0x0/0x24c	from ip_local_deliver+0x4c/0xac
+	r7:c043817c r6:c6818612 r5:c6a6a3c0 r4:c6a6a3c0
+ip_local_deliver+0x0/0xac		from ip_rcv_finish+0x114/0x378
+	r4:80000000
+ip_rcv_finish+0x0/0x378			from ip_rcv+0x1f8/0x2a8
+ip_rcv+0x0/0x2a8			from netif_receive_skb+0x36c/0x4a4
+	r7:00000800 r6:c0405e80 r5:c6a6a3c0 r4:c0436d54
+netif_receive_skb+0x0/0x4a4		from process_backlog+0x88/0x14c
+	r8:00000040 r7:c0436d24 r6:00000000 r5:c0436d0c r4:c6912c00
+process_backlog+0x0/0x14c		from net_rx_action+0xb4/0x1c4
+net_rx_action+0x0/0x1c4			from __do_softirq+0x68/0xe0
+_do_softirq+0x0/0xe0			from irq_exit+0x48/0x50
+	r7:00000000 r6:c04344d0 r5:c040ae24 r4:00000014
+irq_exit+0x0/0x50			from asm_do_IRQ+0x48/0x5c
+asm_do_IRQ+0x0/0x5c			from __irq_svc+0x24/0x60
+...
+-- 
+Krzysztof Halasa
