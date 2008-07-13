@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbYGMUY3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756161AbYGMU0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756128AbYGMUY3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 16:24:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbYGMUYV
+	id S1756161AbYGMU0y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 16:26:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974AbYGMU0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 16:24:21 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:45216 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754599AbYGMUYU (ORCPT
+	Sun, 13 Jul 2008 16:26:46 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:34278 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753834AbYGMU0p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 16:24:20 -0400
-Message-ID: <487A62B3.8010207@zytor.com>
-Date: Sun, 13 Jul 2008 13:16:51 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Andy Lutomirski <luto@myrealbox.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>,
+	Sun, 13 Jul 2008 16:26:45 -0400
+Date: Sun, 13 Jul 2008 21:27:10 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Vegard Nossum <vegard.nossum@gmail.com>
+cc: Justin Mattock <justinmattock@gmail.com>,
        "Rafael J. Wysocki" <rjw@sisk.pl>,
-       public-kernel-testers-u79uwXL29TY76Z2rM5mHXA@lo.gmane.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
-References: <200807010148.02135.rjw@sisk.pl> <200807122253.32382.rjw@sisk.pl> <48793A0E.3050803@myrealbox.com> <200807130133.12324.rjw@sisk.pl> <20080713091524.GA29907@elte.hu> <20080713120253.GA27582@srcf.ucam.org> <487A2431.2050103@myrealbox.com> <487A4CB7.1080001@firstfloor.org>
-In-Reply-To: <487A4CB7.1080001@firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>
+Subject: Re: [Bug #10724] ACPI: EC: GPE storm detected, disabling EC GPE
+In-Reply-To: <19f34abd0807131252k5499e6e2sc93f8cd70f488b7e@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0807132122001.16625@blonde.site>
+References: <Y1jK9GMA8kJ.A.qOH.7GleIB@albercik>  <c6ZRbn0adb.A.LgB.aKleIB@albercik>
+  <dd18b0c30807131234n5edf3e1dt93022a45d427b1fd@mail.gmail.com>
+ <19f34abd0807131252k5499e6e2sc93f8cd70f488b7e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
+On Sun, 13 Jul 2008, Vegard Nossum wrote:
+> On Sun, Jul 13, 2008 at 9:34 PM, Justin Mattock <justinmattock@gmail.com> wrote:
+> > On Sun, Jul 13, 2008 at 6:00 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> This message has been generated automatically as a part of a report
+> >> of recent regressions.
+> >>
+> >> The following bug entry is on the current list of known regressions
+> >> from 2.6.25.  Please verify if it still should be listed.
+> >>
+> >>
+> >> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10724
+> >> Subject         : ACPI: EC: GPE storm detected, disabling EC GPE
+> >> Submitter       : Justin Mattock <justinmattock@gmail.com>
+> >> Date            : 2008-05-16 6:17 (59 days old)
+> >> References      : http://marc.info/?l=linux-kernel&m=121091875711824&w=4
+> >>                  http://lkml.org/lkml/2008/5/18/168
+> >>                  http://lkml.org/lkml/2008/5/25/195
+> >> Patch           : http://bugzilla.kernel.org/attachment.cgi?id=16364&action=view
+> >>                  http://bugzilla.kernel.org/attachment.cgi?id=16365&action=view
 > 
-> Hmm, but the change was not supposed to break the s3 bios. Something
-> fishy is going on. It sounds like the s3 bios relies on some earlier
-> segment register setup.
+> I didn't follow the discussion, but I may contribute the following information:
 > 
-> If true this means the segment register reset would need to be moved
-> later after S3 bios ran. Saving/restoring is unfortunately not possible
-> because we cannot save/restore the hidden state loaded from the GDT earlier.
+> This message first appears in my logs on May 16. That was with kernel
+> version 2.6.24.5-85.fc8. The kernel I used before that was
+> 2.6.24.4-64.fc8 (May 3). My logs go back to November 8
+> (2.6.23.1-42.fc8). So we can hardly consider this a regression since
+> 2.6.25, but rather one since 2.6.24?
 > 
+> (I'll also note that this message appears quite infrequently here.
+> Only 42 times in 219 boot-ups. So it would be hard to bisect, but I'm
+> guessing the error was introduced somewhere between 2.6.24.4 and
+> 2.6.24.5.)
 
-That really doesn't make sense, though.  The VESA BIOS has to be entered 
-in clean real mode; it's designed to be entered from reset, after all. 
-There is definitely something fishy going on, but I don't think this 
-particular aspect is it.
+You're comparing against Fedora kernels, which often contain
+patches which haven't got into mainline yet.  As in this case.
+Unless it used to be assembled from separate pieces, there was
+no "GPE storm detected" message in 2.6.24.N or 2.6.25.N: it was
+added in 2.6.26-rc1.
 
-What's *really* odd is that this was required with the old code but 
-doesn't work at all with the new code.  The former is understandable, 
-the latter is not.
+I sometimes see it too, on a Fujitsu-Siemens laptop.
 
-	-hpa
+Hugh
