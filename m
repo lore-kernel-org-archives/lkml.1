@@ -1,112 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbYGNATY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbYGNAby@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756159AbYGNATY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 20:19:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754499AbYGNATQ
+	id S1754846AbYGNAby (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 20:31:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753422AbYGNAbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 20:19:16 -0400
-Received: from gate.crashing.org ([63.228.1.57]:40015 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752352AbYGNATP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 20:19:15 -0400
-Subject: Re: Multiple MSI, take 3
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>, Matthew Wilcox <matthew@wil.cx>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "jgarzik@pobox.com" <jgarzik@pobox.com>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "rdunlap@xenotime.net" <rdunlap@xenotime.net>,
-       "mtk.manpages@gmail.com" <mtk.manpages@gmail.com>
-In-Reply-To: <m1tzet2wie.fsf@frodo.ebiederm.org>
-References: <20080711005719.GO14894@parisc-linux.org>
-	 <m1iqvc91li.fsf@frodo.ebiederm.org>
-	 <20080711215943.GW1678@linux-os.sc.intel.com>
-	 <m1d4lkauxc.fsf@frodo.ebiederm.org> <1215834720.7549.154.camel@pasglop>
-	 <m13amf3eak.fsf@frodo.ebiederm.org> <1215848161.7549.166.camel@pasglop>
-	 <m1iqv9a030.fsf@frodo.ebiederm.org> <1215989044.7549.219.camel@pasglop>
-	 <m1tzet2wie.fsf@frodo.ebiederm.org>
-Content-Type: text/plain
-Date: Mon, 14 Jul 2008 10:17:39 +1000
-Message-Id: <1215994659.7549.227.camel@pasglop>
+	Sun, 13 Jul 2008 20:31:45 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:51162 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753068AbYGNAbo (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 20:31:44 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: 26-rc9-mmotm lockdep warning initializing loopback interface
+From: Valdis.Kletnieks@vt.edu
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+Content-Type: multipart/signed; boundary="==_Exmh_1215943203_3043P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Sun, 13 Jul 2008 06:00:03 -0400
+Message-ID: <4171.1215943203@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-07-13 at 16:29 -0700, Eric W. Biederman wrote:
-> Ben.  Multi-MSI is a crap hardware design.  Why do you think we have
-> MSI-X?  
+--==_Exmh_1215943203_3043P
+Content-Type: text/plain; charset=us-ascii
 
-I know and I agree. Which is why I'd rather keep the SW crap totally
-local to the MSI support code and not add new concepts to the generic
-IRQ API such as sub-channels, for which it's really not ready for imho.
+I wonder if it's this chunk in linux-next.patch:
 
-They -are- separate IRQs, just badly implemented. Besides, a large part
-of the problem is purely due to the typical x86 implementation of them,
-since for example, on most PowerPC's (and possibly other archs), they
-tend to land in the PIC as normal sources, and as such benefit from all
-the "features" of such interrupts like HW masking, affinity control,
-etc... at the PIC level.
+ void qdisc_lock_tree(struct net_device *dev)
+-       __acquires(dev->queue_lock)
+-       __acquires(dev->ingress_lock)
++       __acquires(dev->tx_queue.lock)
++       __acquires(dev->rx_queue.lock)
+ {
+-       spin_lock_bh(&dev->queue_lock);
+-       spin_lock(&dev->ingress_lock);
++       spin_lock_bh(&dev->tx_queue.lock);
++       spin_lock(&dev->rx_queue.lock);
+ }
 
-In any case, SW masking will work just fine, and affinity can be dealt
-with without too much harm neither.
+For loopback, is tx_queue the same as rx_queue? That would explain this..
 
-> MSI-X as specced is a properly operating irq controller that
-> we don't need kludges to support.  Multi-MSI with a full set of
-> kludges almost work but not quite fits the linux irq model.
+Found this in the dmesg:
 
-And you want to change the model for it ? I say no :-) Just make them
-fit with a hammer. In fact, it's not even a big hammer. The only thing
-that doesn't really fit is the affinity bits, which can be dealt with.
+[    0.418581] system 00:0b: iomem range 0xfed00000-0xfed003ff has been reserved
+[    0.421109]
+[    0.421110] =============================================
+[    0.421123] [ INFO: possible recursive locking detected ]
+[    0.421132] 2.6.26-rc9-mm1 #2
+[    0.421138] ---------------------------------------------
+[    0.421147] swapper/1 is trying to acquire lock:
+[    0.421154]  (&queue->lock){-...}, at: [<ffffffff804b81d5>] qdisc_lock_tree+0x27/0x2c
+[    0.421176]
+[    0.421177] but task is already holding lock:
+[    0.421186]  (&queue->lock){-...}, at: [<ffffffff804b81cd>] qdisc_lock_tree+0x1f/0x2c
+[    0.421205]
+[    0.421205] other info that might help us debug this:
+[    0.421216] 3 locks held by swapper/1:
+[    0.421221]  #0:  (net_mutex){--..}, at: [<ffffffff804a5557>] register_pernet_device+0x1a/0x5a
+[    0.421245]  #1:  (rtnl_mutex){--..}, at: [<ffffffff804b1fe0>] rtnl_lock+0x12/0x14
+[    0.421256]  #2:  (&queue->lock){-...}, at: [<ffffffff804b81cd>] qdisc_lock_tree+0x1f/0x2c
+[    0.421256]
+[    0.421256] stack backtrace:
+[    0.421256] Pid: 1, comm: swapper Not tainted 2.6.26-rc9-mm1 #2
+[    0.421256]
+[    0.421256] Call Trace:
+[    0.421256]  [<ffffffff8025b65c>] __lock_acquire+0xd70/0x1131
+[    0.421256]  [<ffffffff804b81d5>] ? qdisc_lock_tree+0x27/0x2c
+[    0.421256]  [<ffffffff8025bac2>] lock_acquire+0xa5/0xc9
+[    0.421256]  [<ffffffff804b81d5>] ? qdisc_lock_tree+0x27/0x2c
+[    0.421256]  [<ffffffff8055e61c>] _spin_lock+0x2f/0x3b
+[    0.421256]  [<ffffffff804b81d5>] qdisc_lock_tree+0x27/0x2c
+[    0.421256]  [<ffffffff804b8217>] dev_init_scheduler+0x11/0x94
+[    0.421256]  [<ffffffff804a992e>] register_netdevice+0x2e5/0x455
+[    0.421256]  [<ffffffff804a9ad8>] register_netdev+0x3a/0x48
+[    0.421256]  [<ffffffff807a2189>] loopback_net_init+0x40/0x7a
+[    0.421256]  [<ffffffff807a2137>] ? loopback_init+0x0/0x12
+[    0.421256]  [<ffffffff804a556a>] register_pernet_device+0x2d/0x5a
+[    0.421256]  [<ffffffff807a2147>] loopback_init+0x10/0x12
+[    0.421256]  [<ffffffff80781563>] do_one_initcall+0x47/0x141
+[    0.421256]  [<ffffffff802770e8>] ? register_irq_proc+0xd3/0xef
+[    0.421256]  [<ffffffff802f0000>] ? check_idq+0xff/0x197
+[    0.421270]  [<ffffffff80781784>] kernel_init+0x127/0x17b
+[    0.421270]  [<ffffffff8055debb>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+[    0.421270]  [<ffffffff8020d349>] child_rip+0xa/0x11
+[    0.421270]  [<ffffffff8025a2de>] ? trace_hardirqs_on+0xd/0xf
+[    0.421270]  [<ffffffff8020c953>] ? restore_args+0x0/0x30
+[    0.421270]  [<ffffffff8078165d>] ? kernel_init+0x0/0x17b
+[    0.421270]  [<ffffffff8020d33f>] ? child_rip+0x0/0x11
+[    0.421270]
+[    0.421358] pci 0000:03:01.0: BAR 9 too large: 0x00000000000000-0x00000003ffffff
+[    0.421379] pci 0000:00:01.0: PCI bridge, secondary bus 0000:01
+[    0.421389] pci 0000:00:01.0:   IO window: disabled
+[    0.421402] pci 0000:00:01.0:   MEM window: 0xed000000-0xefefffff
+[    0.421414] pci 0000:00:01.0:   PREFETCH window: 0x000000d0000000-0x000000dfffffff
 
-> Any hardware designer who choose to implement Multi-MSI instead of
-> MSI-X was not really concerned about having a high performance device.
 
-Agreed.
 
-> If we can find a way to model the portable capabilities of Multi-MSI
-> cleanly then we can support it, and our drivers and our users and our
-> intermediate layers won't get surprised.
+--==_Exmh_1215943203_3043P
+Content-Type: application/pgp-signature
 
-Our existing model works just fine imho.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-> So far we have too close fits but neither model really works.
+iD8DBQFIedIjcC3lWbTT17ARAtUcAKDxVoyRptlyBn8VxLQ6WtxPuVBiXQCdGeMN
+BK4zXxc3mRWkzcg6vr/1Blo=
+=5Y7g
+-----END PGP SIGNATURE-----
 
-I think Willy's initial model can work with SW masking. All of the
-latching & re-emission stuff is already in the core. The only problem is
-affinity which can be hacked around, by either requiring all irqs to
-change affinity or bouncing them all on one change, or only exposing
-affinity control on the first one, whatever.
- 
-> Further this is all about driver optimization, so none of this is
-> necessary to have working hardware.  Which makes kludges much less
-> appropriate.  Modelling Multi-MSI irqs as normal irqs requires a lot
-> of nasty kludges.
-
-No. Not a lot. And those kludge are mostly local to the MSI support core
-and don't expose new semantics to the existing IRQ model. 
-
-> One of the kludges is allocating a continuous chunk of irq targets,
-> and the resulting fragmentation issues that you get when you start
-> allowing different sized allocations.
-
-This is purely a backend issue and isn't a big deal imho.
-
-> Overall if Multi-MSI was to become common I think we would really
-> regret it.
-
-I agree. But in the meantime, if we want to support it, I prefer the
-option of making it fit in the existing model.
-
-Cheers,
-Ben.
-
+--==_Exmh_1215943203_3043P--
