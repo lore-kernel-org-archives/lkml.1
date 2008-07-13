@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbYGMMF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752839AbYGMMKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754290AbYGMMF2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 08:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752837AbYGMMFS
+	id S1752839AbYGMMKd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 08:10:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbYGMMKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 08:05:18 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:41705 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752291AbYGMMFR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 08:05:17 -0400
-Date: Sun, 13 Jul 2008 14:06:02 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: jim owens <jowens@hp.com>
-Cc: linux-fsdevel@vger.kernel.org, Dave Chinner <david@fromorbit.com>,
-       Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>,
-       Miklos Szeredi <miklos@szeredi.hu>, hch@infradead.org,
-       t-sato@yk.jp.nec.com, akpm@linux-foundation.org,
-       viro@ZenIV.linux.org.uk, linux-ext4@vger.kernel.org, xfs@oss.sgi.com,
-       dm-devel@redhat.com, linux-kernel@vger.kernel.org, axboe@kernel.dk,
-       mtk.manpages@googlemail.com
-Subject: Re: [PATCH 3/3] Add timeout feature
-Message-ID: <20080713120602.GC7517@elf.ucw.cz>
-References: <E1KGSvZ-0006dB-53@pomaz-ex.szeredi.hu> <20080709061621.GA5260@infradead.org> <E1KGT4q-0006fD-Jb@pomaz-ex.szeredi.hu> <20080708234120.5072111f@infradead.org> <E1KGTTm-0006ke-Jh@pomaz-ex.szeredi.hu> <20080708235502.1c52a586@infradead.org> <20080709071346.GS11558@disturbed> <20080709110900.GI9957@mit.edu> <20080709114958.GV11558@disturbed> <4874C3E8.20804@hp.com>
+	Sun, 13 Jul 2008 08:10:24 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:59583 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752828AbYGMMKX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 08:10:23 -0400
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: pata_it821x completely broken
+Date: Sun, 13 Jul 2008 14:10:14 +0200
+User-Agent: KMail/1.9.9
+Cc: Alan Cox <alan@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+References: <200807042153.56644.linux@rainbow-software.org> <200807131347.14045.linux@rainbow-software.org> <20080713123510.6f47ffdc@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080713123510.6f47ffdc@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4874C3E8.20804@hp.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200807131410.16521.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Sunday 13 July 2008 13:35:10 Alan Cox wrote:
+> > The patch below fixes the IDENTIFY problem for me and makes the RAID
+> > array accessible. Is it OK or is there a better way to do it?
+>
+> Probably better to fix it in driver. Right now we don't have a way to
+> override the identify reading or post process it cleanly at it821x hacks
+> around that but if that was fixed then the special cases can all hide in
+> the driver where they belong.
 
-> NEED - provide way for SAN and hardware raid storage to do
-> its snapshot/copy function while the system was in-use and
-> get an image that could mount cleanly.  Without freeze, at
-> a minimum we usually needed filesystem metadata recovery
-> to run, worst case is completely unusable snapshits :)
->
-> freezefs() is single-level:
->
->    ENOTSUPPOTED - by any other fs
->    EOK - done
->    EINPROGRESS
->    EALREADY
->
-> As implemented, freezefs only ensures the metadata is
-> consistent so the filesystem copy can mount anywhere.
->
-> This means ONLY SOME metadata (or no metadata) is flushed and
-> then all metadata updates are stopped.  User/kernel writes
-> to already allocated file pages WILL go to a frozen disk.
+That would be great but it requires some deeper libata and kernel programming 
+knowledge.
 
-That's the difference here. They do write file data, and thus avoid
-mmap()-writes problem.
+>
+> > +	/* Has LBA48 but advertises neither LBA nor LBA48 */
+> > +	{ "Integrated Technology Express Inc", NULL, ATA_HORKAGE_LBA48_FORCE,
+> > },
+>
+> That depends on the firmware revision it seems. Mine are fine
 
-...and they _still_ provide auto-thaw.
-								Pavel
+Too bad it doesn't report any firmware revision :( I think that this should 
+not harm a working IT8212 controller.
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Ondrej Zary
