@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754028AbYGMJ2q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754026AbYGMJiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754028AbYGMJ2q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 05:28:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbYGMJ2j
+	id S1754026AbYGMJiY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 05:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbYGMJiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 05:28:39 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54648 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752475AbYGMJ2i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 05:28:38 -0400
-Date: Sun, 13 Jul 2008 11:28:23 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: make 64bit have get_apic_id
-Message-ID: <20080713092823.GA21306@elte.hu>
-References: <200807080141.05436.yhlu.kernel@gmail.com> <200807111843.11157.yhlu.kernel@gmail.com> <200807111844.17084.yhlu.kernel@gmail.com> <200807120101.20554.yhlu.kernel@gmail.com> <20080713062802.GC2534@elte.hu> <20080713065917.GA29634@elte.hu> <86802c440807130005x721b781dy6d4b569f4c736a22@mail.gmail.com> <20080713092324.GA12749@elte.hu>
+	Sun, 13 Jul 2008 05:38:16 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:54314 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751528AbYGMJiP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 05:38:15 -0400
+Message-ID: <4879CCFD.70208@firstfloor.org>
+Date: Sun, 13 Jul 2008 11:38:05 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080713092324.GA12749@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Elias Oltmanns <eo@nebensachen.de>,
+       =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH] x86_64: fix delayed signals
+References: <20080710215039.2A143154218@magilla.localdomain> <20080711054605.GA17851@elte.hu> <alpine.LFD.1.10.0807111031310.2936@woody.linux-foundation.org> <87mykn2sos.fsf@basil.nowhere.org> <alpine.LFD.1.10.0807121030260.2875@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807121030260.2875@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> > > Yinghai, you had that x86/x2apic crash - do you think we can now 
-> > > try it again in tip/master?
-> > 
-> > Yes. it looks good now. I test it for two days already. no problem 
-> > found.
+Linus Torvalds wrote:
 > 
-> ok, thanks - i've merged it into tip/master and will do some more 
-> testing myself as well.
+> On Sat, 12 Jul 2008, Andi Kleen wrote:
+>> Linus, the fact that is not explained by your theory is why
+>> Ctrl-Z+kill works but Ctrl-C doesn't.
+> 
+> Umm. Read the reports more carefully. Many of the complaints are about ^Z 
+> too.
 
-the paravirt build is still broken:
+At least the original report was about Ctrl-C only versus Ctrl-Z.
 
- arch/x86/kernel/paravirt.c:377: error: expected identifier before ‘(' token
- arch/x86/kernel/paravirt.c:378: error: expected ‘}' before ‘.' token
+I see the problem regularly myself that Ctrl-C doesn't work,
+but Ctrl-Z+kill does (although I unfortunately cannot
+reproduce it on demand). But it was with programs who shouldn't catch Ctrl-C,
+like find. I confirmed with ltrace that at least my version of find doesn't
+catch any signals.
 
-with:
+Take the original report for example:
 
-  http://redhat.com/~mingo/misc/config-Sun_Jul_13_11_25_20_CEST_2008.bad
+http://marc.info/?l=linux-kernel&m=121464952615807&w=2
 
-	Ingo
+It also had trouble interrupting find:
+
+$ find / >/dev/null
+find: `/boot/lost+found': Permission denied
+^C^C^C^C^C^C^C^C^C^C^C^C^C^C^C^C^C^C^C^C^C^C^C^C^C^C^C^C^C^C^C
+
+but Ctrl-Z+kill worked immediately.
+
+> The reason? It's quite common to catch ^C in order to do cleanup.
+
+Yes I understand that, but I don't think it's the case here.
+
+I'm afraid it's more a "has a simple explanation that is wrong"
+case here.
+
+Or we might be talking about multiple different bugs.
+
+-Andi
