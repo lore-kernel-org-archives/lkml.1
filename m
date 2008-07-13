@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755271AbYGMVnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570AbYGMVvV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755271AbYGMVnU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 17:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbYGMVnM
+	id S1755570AbYGMVvV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 17:51:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004AbYGMVvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 17:43:12 -0400
-Received: from sycorax.lbl.gov ([128.3.11.121]:40374 "EHLO sycorax.lbl.gov"
+	Sun, 13 Jul 2008 17:51:09 -0400
+Received: from khc.piap.pl ([195.187.100.11]:57379 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753857AbYGMVnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 17:43:11 -0400
-From: Alex Romosan <romosan@sycorax.lbl.gov>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #10865] Oops trying to mount an ntfs partition on thinkpad
-References: <Y1jK9GMA8kJ.A.qOH.7GleIB@albercik>
-	<c6ZRbn0adb.A.D3.1IleIB@albercik>
-Date: Sun, 13 Jul 2008 14:42:49 -0700
-In-Reply-To: <c6ZRbn0adb.A.D3.1IleIB@albercik> (rjw@sisk.pl)
-Message-ID: <877ibp31gm.fsf@sycorax.lbl.gov>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.2 (gnu/linux)
+	id S1753949AbYGMVvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 17:51:08 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [bisected] kernel panic 2.6.22 -> 2.6.26-rc9+
+References: <m3d4lisk4i.fsf@maximus.localdomain>
+	<20080713013107.23f060f2.akpm@linux-foundation.org>
+	<m3abgmcb68.fsf@maximus.localdomain>
+	<20080713112230.e86ba9ae.akpm@linux-foundation.org>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Sun, 13 Jul 2008 23:51:06 +0200
+In-Reply-To: <20080713112230.e86ba9ae.akpm@linux-foundation.org> (Andrew Morton's message of "Sun\, 13 Jul 2008 11\:22\:30 -0700")
+Message-ID: <m3lk05jvw5.fsf@maximus.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.25.  Please verify if it still should be listed.
->
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10865
-> Subject		: Oops trying to mount an ntfs partition on thinkpad
-> Submitter	: Alex Romosan <romosan@sycorax.lbl.gov>
-> Date		: 2008-06-05 14:47 (39 days old)
-> References	: http://marc.info/?l=linux-kernel&m=121267834421414&w=4
->
+> --- a/include/asm-arm/bitops.h~a
+> +++ a/include/asm-arm/bitops.h
+> @@ -277,9 +277,16 @@ static inline int constant_fls(int x)
+>   * the clz instruction for much better code efficiency.
+>   */
+>  
+> -#define fls(x) \
+> +#define __fls(x) \
+>  	( __builtin_constant_p(x) ? constant_fls(x) : \
+>  	  ({ int __r; asm("clz\t%0, %1" : "=r"(__r) : "r"(x) : "cc"); 32-__r; }) )
+> +
+> +/* Implement fls() in C so that 64-bit args are suitably truncated */
+> +static inline int fls(int x)
+> +{
+> +	return __fls(x);
+> +}
+> +
 
-just tried it with rc9-git12 and now it seems to work but i get a
-warning:
+Well, I like it more as it fixes all possible places instead of only
+fls64().
 
-  NTFS volume version 3.1.
-  NTFS-fs warning (device sda1): load_system_files(): Unsupported volume flags 0x4000 encountered.
-  NTFS-fs error (device sda1): load_system_files(): Volume has unsupported flags set.  Mounting read-only.  Run chkdsk and mount in Windows.
+But... can't we just move the #define body into the inline fls(x)?
+Will there be other users of __fls(x)? It seems the
+__builtin_constant_p(x) works for inline functions.
 
-i'll try to boot into windows and run chkdsk to see if it makes the
-warning go away.
-
---alex--
-
+The above patch fixes the kernel panic, too.
 -- 
-| I believe the moment is at hand when, by a paranoiac and active |
-|  advance of the mind, it will be possible (simultaneously with  |
-|  automatism and other passive states) to systematize confusion  |
-|  and thus to help to discredit completely the world of reality. |
+Krzysztof Halasa
