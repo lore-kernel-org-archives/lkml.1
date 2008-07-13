@@ -1,138 +1,231 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753764AbYGMA22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078AbYGMA3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753764AbYGMA22 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jul 2008 20:28:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbYGMA2R
+	id S1754078AbYGMA3k (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jul 2008 20:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbYGMA3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jul 2008 20:28:17 -0400
-Received: from OSB1387.piap.pl ([195.187.100.11]:41640 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751616AbYGMA2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jul 2008 20:28:16 -0400
-To: <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: [bisected] kernel panic 2.6.22 -> 2.6.26-rc9+
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Sun, 13 Jul 2008 02:28:13 +0200
-Message-ID: <m3d4lisk4i.fsf@maximus.localdomain>
+	Sat, 12 Jul 2008 20:29:33 -0400
+Received: from smtp.flash.net.br ([201.46.240.48]:37880 "EHLO
+	smtp.gru.flash.tv.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752082AbYGMA3c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jul 2008 20:29:32 -0400
+X-Greylist: delayed 550 seconds by postgrey-1.27 at vger.kernel.org; Sat, 12 Jul 2008 20:29:31 EDT
+Date: Sat, 12 Jul 2008 21:20:07 -0300
+From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
+To: Ivo van Doorn <ivdoorn@gmail.com>
+Cc: "John W. Linville" <linville@tuxdriver.com>, linux-kernel@vger.kernel.org,
+       rt2400-devel@lists.sourceforge.net,
+       Linus Torvalds <torvalds@linux-foundation.org>, rbrito@ime.usp.br
+Subject: Re: [2.6.26-rc4] Problems with rt2x00 USB interface on powerpc
+	(fwd)
+Message-ID: <20080713002006.GA2831@ime.usp.br>
+References: <20080620175729.GA3151@ime.usp.br> <200806292051.56596.IvDoorn@gmail.com> <20080708035512.GA550@ime.usp.br> <200807081558.20365.IvDoorn@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="NzB8fVQJ5HfG6fxh"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200807081558.20365.IvDoorn@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Bisected the panic. It seems it occurs on my ARM IXP4xx big-endian
-system with USB ADSL PPP over ATM connection (Thomson/Alcatel
-Speedtouch). It doesn't seem to occur on the same IXP4xx with Ethernet
-or V.35 WAN, and it doesn't occur on i386 + the same Speedtouch ADSL.
-The kernel is basically unpatched, the only extra patch applied is the
-platform support (nothing magic).
+--NzB8fVQJ5HfG6fxh
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 
-Generally to trigger the panic one has to request a TCP data stream
-over that PPPoATM connection.
+Hi, Ivo, John, Linus and all the people at the mailing lists.
 
-Reverting the commit on top of 2.6.25.10 fixes the problem.
+It seems that I'm flooded with bad luck. :-( I tried the modifications
+in the script attached (progressively uncommenting the commands, as you
+asked me), but it seems that I had the bad luck that nothing worked with
+kernel 2.6.26-rc5. I also tried with kernel 2.6.26-rc9, but again,
+nothing worked [*].
 
-Now what's wrong with that?
+The only thing that gave a signal of life was when I imitated what you
+did and set the led register to the value that was present on the
+2.6.25.x kernel. Then, a "iwconfig wlan0 ap any" gave me blinks on the
+"Act" led each time that I issued the command.
 
-7e58886b45bc4a309aeaa8178ef89ff767daaf7f:
-author Stephen Hemminger <shemminger@linux-foundation.org>
-[TCP]: cubic optimization
+Attached also is the "meat" of the dmesg of my system. You may notice
+that after some time, I tried simply "ifdown wlan0" and "ifup wlan0" in
+my Debian system. These commands are responsible, as you should guess,
+for bringing an interface down and up.
 
-Use willy's work in optimizing cube root by having table for small values.
+I have not checked closely, but it seems that the modifications to the
+registers are lost when you bring the interface down---is that right?
+>From the dmesg logs, this seems to be the case.
 
---- a/net/ipv4/tcp_cubic.c
-+++ b/net/ipv4/tcp_cubic.c
-@@ -91,23 +91,51 @@ static void bictcp_init(struct sock *sk)
- 		tcp_sk(sk)->snd_ssthresh = initial_ssthresh;
- }
- 
--/*
-- * calculate the cubic root of x using Newton-Raphson
-+/* calculate the cubic root of x using a table lookup followed by one
-+ * Newton-Raphson iteration.
-+ * Avg err ~= 0.195%
-  */
- static u32 cubic_root(u64 a)
- {
--	u32 x;
--
--	/* Initial estimate is based on:
--	 * cbrt(x) = exp(log(x) / 3)
-+	u32 x, b, shift;
-+	/*
-+	 * cbrt(x) MSB values for x MSB values in [0..63].
-+	 * Precomputed then refined by hand - Willy Tarreau
-+	 *
-+	 * For x in [0..63],
-+	 *   v = cbrt(x << 18) - 1
-+	 *   cbrt(x) = (v[x] + 10) >> 6
- 	 */
--	x = 1u << (fls64(a)/3);
-+	static const u8 v[] = {
-+		/* 0x00 */    0,   54,   54,   54,  118,  118,  118,  118,
-+		/* 0x08 */  123,  129,  134,  138,  143,  147,  151,  156,
-+		/* 0x10 */  157,  161,  164,  168,  170,  173,  176,  179,
-+		/* 0x18 */  181,  185,  187,  190,  192,  194,  197,  199,
-+		/* 0x20 */  200,  202,  204,  206,  209,  211,  213,  215,
-+		/* 0x28 */  217,  219,  221,  222,  224,  225,  227,  229,
-+		/* 0x30 */  231,  232,  234,  236,  237,  239,  240,  242,
-+		/* 0x38 */  244,  245,  246,  248,  250,  251,  252,  254,
-+	};
-+
-+	b = fls64(a);
-+	if (b < 7) {
-+		/* a in [0..63] */
-+		return ((u32)v[(u32)a] + 35) >> 6;
-+	}
-+
-+	b = ((b * 84) >> 8) - 1;
-+	shift = (a >> (b * 3));
- 
--	/* converges to 32 bits in 3 iterations */
--	x = (2 * x + (u32)div64_64(a, (u64)x*(u64)x)) / 3;
--	x = (2 * x + (u32)div64_64(a, (u64)x*(u64)x)) / 3;
--	x = (2 * x + (u32)div64_64(a, (u64)x*(u64)x)) / 3;
-+	x = ((u32)(((u32)v[shift] + 10) << b)) >> 6;
- 
-+	/*
-+	 * Newton-Raphson iteration
-+	 *                         2
-+	 * x    = ( 2 * x  +  a / x  ) / 3
-+	 *  k+1          k         k
-+	 */
-+	x = (2 * x + (u32)div64_64(a, (u64)x * (u64)(x - 1)));
-+	x = ((x * 341) >> 10);
- 	return x;
- }
- 
-PC is at bictcp_cong_avoid+0x33c/0x454
+On Jul 08 2008, Ivo van Doorn wrote:
+> Hi,
+> 
+> Could you try some of the following tests to control the registers:
+> I have grouped each test together, please don't do them all in one single shot,
+> since that will not help narrowing down the exact register which
+> breaks everything.
 
-Backtrace:
+Again, I didn't do everything in one single shot. I tested your
+directions one at a time (first the 1st one, then, the 1st set and the
+2nd set, then the 1st, 2nd, and 3rd set etc).
 
-bictcp_cong_avoid+0x0/0x454		from tcp_cong_avoid+0x1c/0x30
-tcp_cong_avoid+0x0/0x30			from tcp_ack+0x156c/0x1c6c
-	r4:00000000
-tcp_ack+0x0/0x1c6c			from tcp_rcv_established+0x4a8/0x76c
-tcp_rcv_established+0x0/0x76c		from tcp_v4_do_rcv+0x25c/0x458
-tcp_v4_do_rcv+0x0/0x458			from tcp_v4_rcv+0x6c4/0x7ec
-tcp_v4_rcv+0x0/0x7ec			from ip_local_deliver_finish+0xe4/0x24c
-ip_local_deliver_finish+0x0/0x24c	from ip_local_deliver+0x4c/0xac
-	r7:c043817c r6:c6818612 r5:c6a6a3c0 r4:c6a6a3c0
-ip_local_deliver+0x0/0xac		from ip_rcv_finish+0x114/0x378
-	r4:80000000
-ip_rcv_finish+0x0/0x378			from ip_rcv+0x1f8/0x2a8
-ip_rcv+0x0/0x2a8			from netif_receive_skb+0x36c/0x4a4
-	r7:00000800 r6:c0405e80 r5:c6a6a3c0 r4:c0436d54
-netif_receive_skb+0x0/0x4a4		from process_backlog+0x88/0x14c
-	r8:00000040 r7:c0436d24 r6:00000000 r5:c0436d0c r4:c6912c00
-process_backlog+0x0/0x14c		from net_rx_action+0xb4/0x1c4
-net_rx_action+0x0/0x1c4			from __do_softirq+0x68/0xe0
-_do_softirq+0x0/0xe0			from irq_exit+0x48/0x50
-	r7:00000000 r6:c04344d0 r5:c040ae24 r4:00000014
-irq_exit+0x0/0x50			from asm_do_IRQ+0x48/0x5c
-asm_do_IRQ+0x0/0x5c			from __irq_svc+0x24/0x60
-...
+> > > 11 :0x0005                                                    | 11 :0x000a	MAC_CSR11: SIFS.
+> > > 12 :0x016c                                                    | 12 :0x013a	MAC_CSR12: EIFS.
+> 
+> echo 11 > /<debugfsroot>/<mac80211>/rt2500usb/register/csr_offset
+> echo 5 > /<debugfsroot>/<mac80211>/rt2500usb/register/csr_value
+> echo 12 > /<debugfsroot>/<mac80211>/rt2500usb/register/csr_offset
+> echo 364 > /<debugfsroot>/<mac80211>/rt2500usb/register/csr_value
+> 
+> ---
+> 
+> > > 33 :0xb11a                                                    | 33 :0xb162	TXRX_CSR1: TX configuration.
+> 
+> echo 33 > /<debugfsroot>/<mac80211>/rt2500usb/register/csr_offset
+> echo 45338 > /<debugfsroot>/<mac80211>/rt2500usb/register/csr_value
+> 
+> ---
+> 
+> > > 42 :0x000e                                                    | 42 :0x000a	TXRX_CSR10: Auto responder control.
+> > > 43 :0x015f                                                    | 43 :0x0000	TXRX_CSR11: Auto responder basic rate.
+> 
+> echo 42 > /<debugfsroot>/<mac80211>/rt2500usb/register/csr_offset
+> echo 14 > /<debugfsroot>/<mac80211>/rt2500usb/register/csr_value
+> echo 43 > /<debugfsroot>/<mac80211>/rt2500usb/register/csr_offset
+> echo 351 > /<debugfsroot>/<mac80211>/rt2500usb/register/csr_value
+> 
+> ---
+> 
+> > > 2 :0x1e                                                       | 2 :0x06	R2: TX antenna control
+> 
+> echo 2 > /<debugfsroot>/<mac80211>/rt2500usb/register/bbp_offset
+> echo 30 > /<debugfsroot>/<mac80211>/rt2500usb/register/bbp_value
+
+I attach to this message the commands that I used. As you can see, I
+tried some which seemed to me (as a layman) that would make some
+difference, but they did nothing. :-( My commands were based on some of
+the differences that you narrowed down in the last message.
+
+
+Thank you very much, Rogério Brito.
+
+[*] Actually, I got it once to work/authenticate with kernel 2.6.26-rc9,
+but I couldn't reproduce the steps to that. I tried loading all the
+registers this time with the script that I attach here, and I was so sad
+that it didn't work a second time (and a third, etc) that I was running
+a script that did:
+
+"ifconfig wlan0 up; iwconfig wlan0 key s:xxx; iwconfig wlan0 essid
+default" && iwconfig wlan0
+
+Not even once it showed that it was associated with the ap, but once in
+a while (not every time) that I run the line above the "act" led blinked
+and the messages generated on the dmesg were slightly different from one
+time to another (compressed, the log is quite small).
 -- 
-Krzysztof Halasa
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+
+--NzB8fVQJ5HfG6fxh
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: attachment; filename="rtusb2500-try04.txt"
+
+#!/bin/sh
+
+echo 11 > /debug/ieee80211/phy0/rt2500usb/register/csr_offset
+echo 5 > /debug/ieee80211/phy0/rt2500usb/register/csr_value
+echo 12 > /debug/ieee80211/phy0/rt2500usb/register/csr_offset
+echo 364 > /debug/ieee80211/phy0/rt2500usb/register/csr_value
+
+echo 33 > /debug/ieee80211/phy0/rt2500usb/register/csr_offset
+echo 45338 > /debug/ieee80211/phy0/rt2500usb/register/csr_value
+
+echo 42 > /debug/ieee80211/phy0/rt2500usb/register/csr_offset
+echo 14 > /debug/ieee80211/phy0/rt2500usb/register/csr_value
+echo 43 > /debug/ieee80211/phy0/rt2500usb/register/csr_offset
+echo 351 > /debug/ieee80211/phy0/rt2500usb/register/csr_value
+
+echo 2 > /debug/ieee80211/phy0/rt2500usb/register/bbp_offset
+echo 30 > /debug/ieee80211/phy0/rt2500usb/register/bbp_value
+
+# My modifications
+echo 20 > /debug/ieee80211/phy0/rt2500usb/register/csr_offset
+echo 3 > /debug/ieee80211/phy0/rt2500usb/register/csr_value
+
+echo 103 > /debug/ieee80211/phy0/rt2500usb/register/csr_offset
+echo 37216 > /debug/ieee80211/phy0/rt2500usb/register/csr_value
+
+
+echo 51 > /debug/ieee80211/phy0/rt2500usb/register/csr_offset
+echo 3 > /debug/ieee80211/phy0/rt2500usb/register/csr_value
+
+echo 3 > /debug/ieee80211/phy0/rt2500usb/register/rf_offset
+echo 407313 > /debug/ieee80211/phy0/rt2500usb/register/rf_value
+
+--NzB8fVQJ5HfG6fxh
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: attachment; filename="dmesg-with-2.6.25.txt"
+
+phy0 -> rt2500usb_init_bbp: Debug - Start initialization from EEPROM...
+phy0 -> rt2500usb_init_bbp: Debug - BBP: 0x11, value: 0x2c.
+phy0 -> rt2500usb_init_bbp: Debug - BBP: 0x15, value: 0x18.
+phy0 -> rt2500usb_init_bbp: Debug - BBP: 0x16, value: 0x18.
+phy0 -> rt2500usb_init_bbp: Debug - BBP: 0x3e, value: 0x00.
+phy0 -> rt2500usb_init_bbp: Debug - ...End initialization from EEPROM.
+HW CONFIG: channel=1 freq=2412 phymode=2
+phy0 -> rt2x00mac_conf_tx: Info - Configured TX ring 0 - CWmin: 4, CWmax: 10, Aifs: 2.
+phy0 -> rt2x00mac_conf_tx: Info - Configured TX ring 1 - CWmin: 4, CWmax: 10, Aifs: 2.
+phy0 -> rt2x00mac_conf_tx: Info - Configured TX ring 7 - CWmin: 5, CWmax: 10, Aifs: 2.
+HW CONFIG: channel=1 freq=2412 phymode=2
+HW CONFIG: channel=2 freq=2417 phymode=2
+HW CONFIG: channel=3 freq=2422 phymode=2
+HW CONFIG: channel=4 freq=2427 phymode=2
+HW CONFIG: channel=5 freq=2432 phymode=2
+HW CONFIG: channel=6 freq=2437 phymode=2
+HW CONFIG: channel=7 freq=2442 phymode=2
+HW CONFIG: channel=8 freq=2447 phymode=2
+HW CONFIG: channel=9 freq=2452 phymode=2
+HW CONFIG: channel=10 freq=2457 phymode=2
+HW CONFIG: channel=11 freq=2462 phymode=2
+HW CONFIG: channel=1 freq=2412 phymode=2
+HW CONFIG: channel=6 freq=2437 phymode=2
+wlan0: Initial auth_alg=0
+wlan0: authenticate with AP 00:13:46:51:10:65
+wlan0: RX authentication from 00:13:46:51:10:65 (alg=0 transaction=2 status=0)
+wlan0: authenticated
+wlan0: associate with AP 00:13:46:51:10:65
+wlan0: RX AssocResp from 00:13:46:51:10:65 (capab=0x431 status=0 aid=1)
+wlan0: associated
+wlan0: switched to short barker preamble (BSSID=00:13:46:51:10:65)
+phy0: Added STA 00:13:46:51:10:65
+
+--NzB8fVQJ5HfG6fxh
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename="dmesg-2.6.26-rc9.txt.gz"
+Content-Transfer-Encoding: base64
+
+H4sICJdFeUgCA2RtZXNnLTIuNi4yNi1yYzkudHh0AO2dXWvjRhSG7/MrDvRiW7DDSLHTInDB
+Dds20HhDtm32zkykkTVgS97RKMn++x55vevstuo2ppRePAaDPs6H5jkz74yMkLv2TqbjJJPa
+PUjlV5W0W+cK+e31D1K4e5876Vpfr8RVuV9WeSG21m9RBNe2kp50H/zzpi79qgs2+qaWrxLJ
+q6Z1tZSh2chuT2MdzBea7kmOsunqYiS++N3VRRNmqTFJv3sdmqLL4+wsN2bQuY1Br7DN5KoM
+M3X74JSO5LUL3q4X3ebOhdmTCHuTTL4z6WmSrOT2l/lC5oXdRhdEPwfTK1t3pc1jF1zIZL64
+lJNt9c7I+HsJMZ0ao5bLe7v2hY1u6dxWG5zJy5fXN6+uJLi8uXfhnYxlcXmRiXksy9I8DfBo
+zLJ1cZlXfpvJZV02anuhO3pQGxhdHrUcYzXNJEl7KqHUOMZMdcvd7zb7z/R0FzXTJq/f+2gp
+XF+WGJq12PWqCT5WG3mx9cWLkxu38q22Ve3W+n1PMju0aLwLFmzhmx5F3oT+7MGp7y6+1m1F
+46QIXlt58N5fys+3cvFq8ePlT5l2A/d2lk6S9KhT3w6eSoe90mGvs2Gvs2GvybDXZNhrOuw1
+HfY6PwrU/uIPXWtj82U/Mpfx8dC59iNVq/jrG3nbuc6J6Y/fbnydyWTUb1m1T8xI5r7UgZWe
+Hhk3+WLch7WtTR/DRx2pYrtYLbWz6mDdn+mPuDr6vO/OD9qFZX6tnT5LzrLJeTZNssRk59P/
+2LrXuEF7iX6jEJouUqhBmDdvPue5myn+DPPrXRKJwdatyrBazlKVfBu7dma++avkxceDbdvk
+/pjalsFuXK/eToWtGLi0kdx1UeomqhJ+2vr+8pwS9atahbMgyf84yTP6yPNN0QkEHUFH0EmC
+oKMT6ARJSEISZiFmIW4rKBSFolAUikJRKApFoSgUhaJQ/EhEEpLwgwRT079gDe5/0nGPGHAf
+R8gXRhvh/17v6OooC7jBDW5wgxvc4GYRziqZRTjKAm5wgxvc4AY3q0KWbYRnTYsu8kwEz0SQ
+hMcVnvu4AqqCqjAWSYJ0IV1IF0lQFVSFu1pwgxvc4AY3uFmAs2wlCQtwRBzc4AY3uMENbnCD
+G9y8rYV3F1AoCoWAgRvc4AY3uMENbnCDG9zg5n6U+1EKRaEoFDMNuMENbnCDG9zgBje4wQ1u
+cIMb3OAGNy+cIzzheV0eqg5ucIMb3OBmiUh4whOe8Kz+mbDBDW5wgxvc4AY3uMENbnCDG9zg
+Bje4wQ1ucIMb3OAGN7jBzfMAhCc8OoDsghvc4ObvdPg7HZLwTzfoK7i5aSM894S8vI237D27
+UH8AyOQiKhzKAAA=
+
+--NzB8fVQJ5HfG6fxh--
