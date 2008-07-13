@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757671AbYGMT1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757152AbYGMT27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757671AbYGMT1c (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 15:27:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756175AbYGMTSm
+	id S1757152AbYGMT27 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 15:28:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbYGMT2u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 15:18:42 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39550 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755015AbYGMTSA convert rfc822-to-8bit (ORCPT
+	Sun, 13 Jul 2008 15:28:50 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2406 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754644AbYGMT2t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 15:18:00 -0400
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Frans Pop" <elendil@planet.nl>
-References: <Y1jK9GMA8kJ.A.qOH.7GleIB@albercik>
-In-Reply-To: <Y1jK9GMA8kJ.A.qOH.7GleIB@albercik>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Sun, 13 Jul 2008 15:28:49 -0400
+Date: Sun, 13 Jul 2008 15:28:46 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>
+Subject: Re: [Bug #10725] USB Mass storage mount fails: Write protect on
+In-Reply-To: <c6ZRbn0adb.A.BVB.VKleIB@albercik>
+Message-ID: <Pine.LNX.4.44L0.0807131528180.4671-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <c6ZRbn0adb.A.7BB.DJleIB@albercik>
-Subject: [Bug #10843] Display artifacts on XOrg logout with PAT kernel and VESA framebuffer
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun, 13 Jul 2008 20:00:46 +0200 (CEST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of recent regressions.
+On Sun, 13 Jul 2008, Rafael J. Wysocki wrote:
 
-The following bug entry is on the current list of known regressions
-from 2.6.25.  Please verify if it still should be listed.
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10725
+> Subject		: USB Mass storage mount fails: Write protect on
+> Submitter	: Maciej Rutecki <maciej.rutecki@gmail.com>
+> Date		: 2008-05-16 14:55 (59 days old)
+> References	: http://marc.info/?l=linux-kernel&m=121095168003572&w=4
+> Handled-By	: Alan Stern <stern@rowland.harvard.edu>
+> Patch		: http://marc.info/?l=linux-scsi&m=121433068314568&w=2
 
+This can be removed.  It was fixed by commit 
+bdb2b8cab4392ce41ddfbd6773a3da3334daf836.
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10843
-Subject		: Display artifacts on XOrg logout with PAT kernel and VESA framebuffer
-Submitter	: Frans Pop <elendil@planet.nl>
-Date		: 2008-05-31 14:04 (44 days old)
-References	: http://lkml.org/lkml/2008/6/7/206
-		  http://lkml.org/lkml/2008/6/15/119
-		  http://lkml.org/lkml/2008/6/23/160
-
+Alan Stern
 
