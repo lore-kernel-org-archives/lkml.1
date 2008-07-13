@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753373AbYGMF5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754137AbYGMF6I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753373AbYGMF5w (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 01:57:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbYGMF5o
+	id S1754137AbYGMF6I (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 01:58:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbYGMF5p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 01:57:44 -0400
+	Sun, 13 Jul 2008 01:57:45 -0400
 Received: from rv-out-0506.google.com ([209.85.198.231]:22724 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751528AbYGMF5n (ORCPT
+	with ESMTP id S1751621AbYGMF5o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 01:57:43 -0400
+	Sun, 13 Jul 2008 01:57:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:mime-version:content-type
          :content-transfer-encoding:content-disposition:message-id;
-        b=vToL6OetzAibWwvEKjrh1Kpi1wllqLkHkXIWPMVtpg6dMriKYSGrNG/g7amTMNEsd/
-         SPpl9ZXCZ0RAI/581OjPBWQB/uhT/lUhUeozceN0XuUSgndQ34D3WRIa12QkljJJ6dNb
-         rq7If9ej15zzXKBUi+0lt8kKbBhb5KCOUGfCo=
+        b=kxLOUf59KK0++qIksPwln+gbnftqQ7sGS+ZCmBH8fHd1XLqKSXGtT5urx/qFPtvdcC
+         joBkK/jMqV7ka5Uu6pgDbRYuj2x5DBe6Dre8jJ1rowHbQy1NFo7XdB7bwfjIQKbdijda
+         Duh/Tks27lH1zjgL18vrqsDrJPQJSEKPuZDH4=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86: fix numaq_tsc_disable calling
-Date: Sat, 12 Jul 2008 22:52:55 -0700
+Subject: [PATCH] x86: remove end_user_pfn
+Date: Sat, 12 Jul 2008 22:57:07 -0700
 User-Agent: KMail/1.9.9
 Cc: LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
@@ -29,96 +29,76 @@ Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807122252.55436.yhlu.kernel@gmail.com>
+Message-Id: <200807122257.07454.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-got
-calling  numaq_tsc_disable+0x0/0x39
-NUMAQ: disabling TSC
-initcall numaq_tsc_disable+0x0/0x39 returned 0 after 0 msecs
-
-we can not use arch_initcall to call it.
-
-need to call it in setup_arch before time_init()/tsc_init()
-and call it init_intel to make cpu feature right.
+e820 map already get updated, so don't need to keep that anymore
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
 ---
- arch/x86/kernel/cpu/intel.c |    4 ++++
- arch/x86/kernel/numaq_32.c  |    7 ++++---
- arch/x86/kernel/setup.c     |    8 ++++++++
- include/asm-x86/numaq.h     |    2 ++
- 4 files changed, 18 insertions(+), 3 deletions(-)
+ arch/x86/kernel/e820.c |   19 ++-----------------
+ 1 file changed, 2 insertions(+), 17 deletions(-)
 
-Index: linux-2.6/arch/x86/kernel/cpu/intel.c
+Index: linux-2.6/arch/x86/kernel/e820.c
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/intel.c
-+++ linux-2.6/arch/x86/kernel/cpu/intel.c
-@@ -227,6 +227,10 @@ static void __cpuinit init_intel(struct
+--- linux-2.6.orig/arch/x86/kernel/e820.c
++++ linux-2.6/arch/x86/kernel/e820.c
+@@ -1049,11 +1049,6 @@ u64 __init early_reserve_e820(u64 startt
+ #endif
  
- 	if (cpu_has_bts)
- 		ptrace_bts_init_intel(c);
-+
-+#ifdef CONFIG_X86_NUMAQ
-+	numaq_tsc_disable();
-+#endif
- }
+ /*
+- * Last pfn which the user wants to use.
+- */
+-unsigned long __initdata end_user_pfn = MAX_ARCH_PFN;
+-
+-/*
+  * Find the highest page frame number we have available
+  */
+ static unsigned long __init e820_end_pfn(unsigned long limit_pfn, unsigned type)
+@@ -1085,8 +1080,6 @@ static unsigned long __init e820_end_pfn
  
- static unsigned int __cpuinit intel_size_cache(struct cpuinfo_x86 *c, unsigned int size)
-Index: linux-2.6/arch/x86/kernel/numaq_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/numaq_32.c
-+++ linux-2.6/arch/x86/kernel/numaq_32.c
-@@ -93,12 +93,13 @@ int __init get_memcfg_numaq(void)
+ 	if (last_pfn > max_arch_pfn)
+ 		last_pfn = max_arch_pfn;
+-	if (last_pfn > end_user_pfn)
+-		last_pfn = end_user_pfn;
+ 
+ 	printk(KERN_INFO "last_pfn = %#lx max_arch_pfn = %#lx\n",
+ 			 last_pfn, max_arch_pfn);
+@@ -1131,12 +1124,6 @@ int __init e820_find_active_region(const
+ 	if (*ei_endpfn > last_pfn)
+ 		*ei_endpfn = last_pfn;
+ 
+-	/* Obey end_user_pfn to save on memmap */
+-	if (*ei_startpfn >= end_user_pfn)
+-		return 0;
+-	if (*ei_endpfn > end_user_pfn)
+-		*ei_endpfn = end_user_pfn;
+-
  	return 1;
  }
  
--static int __init numaq_tsc_disable(void)
-+void __init numaq_tsc_disable(void)
- {
-+	if (!found_numaq)
-+		return -1;
+@@ -1201,7 +1188,6 @@ static int __init parse_memopt(char *p)
+ 
+ 	userdef = 1;
+ 	mem_size = memparse(p, &p);
+-	end_user_pfn = mem_size>>PAGE_SHIFT;
+ 	e820_remove_range(mem_size, ULLONG_MAX - mem_size, E820_RAM, 1);
+ 
+ 	return 0;
+@@ -1245,10 +1231,9 @@ static int __init parse_memmap_opt(char
+ 	} else if (*p == '$') {
+ 		start_at = memparse(p+1, &p);
+ 		e820_add_region(start_at, mem_size, E820_RESERVED);
+-	} else {
+-		end_user_pfn = (mem_size >> PAGE_SHIFT);
++	} else
+ 		e820_remove_range(mem_size, ULLONG_MAX - mem_size, E820_RAM, 1);
+-	}
 +
- 	if (num_online_nodes() > 1) {
- 		printk(KERN_DEBUG "NUMAQ: disabling TSC\n");
- 		setup_clear_cpu_cap(X86_FEATURE_TSC);
- 	}
--	return 0;
+ 	return *p == '\0' ? 0 : -EINVAL;
  }
--arch_initcall(numaq_tsc_disable);
-Index: linux-2.6/arch/x86/kernel/setup.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup.c
-+++ linux-2.6/arch/x86/kernel/setup.c
-@@ -859,6 +859,14 @@ void __init setup_arch(char **cmdline_p)
- 	init_cpu_to_node();
- #endif
- 
-+#ifdef CONFIG_X86_NUMAQ
-+	/*
-+	 * need to check online nodes num, call it
-+	 * here before time_init/tsc_init
-+	 */
-+	numaq_tsc_disable();
-+#endif
-+
- 	init_apic_mappings();
- 	ioapic_init_mappings();
- 
-Index: linux-2.6/include/asm-x86/numaq.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/numaq.h
-+++ linux-2.6/include/asm-x86/numaq.h
-@@ -157,6 +157,8 @@ struct sys_cfg_data {
- 	struct		eachquadmem eq[MAX_NUMNODES];	/* indexed by quad id */
- };
- 
-+void numaq_tsc_disable(void);
-+
- #else
- static inline int get_memcfg_numaq(void)
- {
+ early_param("memmap", parse_memmap_opt);
