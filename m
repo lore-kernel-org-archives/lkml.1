@@ -1,74 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbYGMSnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755606AbYGMSqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755486AbYGMSnU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 14:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbYGMSnI
+	id S1755606AbYGMSqQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 14:46:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbYGMSqB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 14:43:08 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:58701 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753790AbYGMSnH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 14:43:07 -0400
-Message-ID: <487A4CB7.1080001@firstfloor.org>
-Date: Sun, 13 Jul 2008 20:43:03 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
-MIME-Version: 1.0
-To: Andy Lutomirski <luto@myrealbox.com>
-CC: Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, "H. Peter Anvin" <hpa@zytor.com>,
-       public-kernel-testers-u79uwXL29TY76Z2rM5mHXA@lo.gmane.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>, hpa@zytor.com
-Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
-References: <200807010148.02135.rjw@sisk.pl> <200807122253.32382.rjw@sisk.pl> <48793A0E.3050803@myrealbox.com> <200807130133.12324.rjw@sisk.pl> <20080713091524.GA29907@elte.hu> <20080713120253.GA27582@srcf.ucam.org> <487A2431.2050103@myrealbox.com>
-In-Reply-To: <487A2431.2050103@myrealbox.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 13 Jul 2008 14:46:01 -0400
+Received: from smtp01.uc3m.es ([163.117.176.131]:48405 "EHLO smtp01.uc3m.es"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753542AbYGMSqA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 14:46:00 -0400
+Date: Sun, 13 Jul 2008 20:45:53 +0200
+Message-Id: <200807131845.m6DIjrX03598@inv.it.uc3m.es>
+From: "Peter T. Breuer" <ptb@inv.it.uc3m.es>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86_64: fix delayed signals
+X-Newsgroups: gmane.linux.kernel
+In-Reply-To: <alpine.LFD.1.10.0807131121430.2959@woody.linux-foundation.org>
+User-Agent: tin/1.4.4-20000803 ("Vet for the Insane") (UNIX) (Linux/2.2.15 
+	(i686))
+X-imss-version: 2.051
+X-imss-result: Passed
+X-imss-scanInfo: M:B L:E SM:2
+X-imss-tmaseResult: TT:1 TS:-11.6970 TC:1F TRN:24 TV:5.5.1026(16030.001)
+X-imss-scores: Clean:100.00000 C:0 M:0 S:0 R:0
+X-imss-settings: Baseline:1 C:1 M:1 S:1 R:1 (0.0000 0.0000)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy Lutomirski wrote:
-> Matthew Garrett wrote:
->> On Sun, Jul 13, 2008 at 11:15:24AM +0200, Ingo Molnar wrote:
->>
->>> we still need to find the HAL quirk and disable it, right?
->>
->> Not without understanding what the cause is. If the video BIOS calls
->> are generically broken, then we have a problem.
->>
-> 
-> The HAL quirk is the very first one here:
-> 
-> http://gitweb.freedesktop.org/?p=hal-info.git;a=blob;f=fdi/information/10freedesktop/20-video-quirk-pm-lenovo.fdi
-> 
-> 
-> I removed it from the HAL config and suspending w/ the hardware button
-> works fine now with -rc9-wl and on Ubuntu's stock .24 kernel.
+In article <alpine.LFD.1.10.0807131121430.2959@woody.linux-foundation.org> you wrote:
+> Anyway, I misunderstood Edwins idea to actually throw away the writes if 
+> the file isn't linked anywhere and is only open for writing. I guess we 
 
-Hmm, but the change was not supposed to break the s3 bios. Something
-fishy is going on. It sounds like the s3 bios relies on some earlier
-segment register setup.
+I don't understand it.  The process can still clone itself and its
+children may want to look at what it has written (maybe there's too much
+file to fit in an mmap all at once) via the same file descriptor.  Come
+to that, the process itself may want to look at what it's written!
 
-If true this means the segment register reset would need to be moved
-later after S3 bios ran. Saving/restoring is unfortunately not possible
-because we cannot save/restore the hidden state loaded from the GDT earlier.
+Saving memory is the idea behind writing to disk sometimes. Unlinking
+your target is sensible if you want to keep your thoughts private ..
 
-This is unfortunately a little tricky with the new C wakeup code.
-
-> I'll file the obvious bug report against HAL, but it might annoy users
-> if new kernel + old HAL = broken system, 
-
-It's the bad side effect of HAL effectively being an out of tree kernel
-driver (that just by chance happens to run in user space). Really
-all these s3 quirks at least should be in the kernel.
-
-We can't really do much about that now, but longer term it might be useful
-to invent some mechanism to tell HAL to disable specific quirks from
-the kernel.
-
--Andi
+Peter
