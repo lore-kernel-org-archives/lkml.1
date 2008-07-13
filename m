@@ -1,76 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072AbYGMNeK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbYGMNe2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754072AbYGMNeK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 09:34:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbYGMNd5
+	id S1754559AbYGMNe2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 09:34:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbYGMNeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 09:33:57 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:35414 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750895AbYGMNd4 (ORCPT
+	Sun, 13 Jul 2008 09:34:13 -0400
+Received: from mail4.aster.pl ([212.76.33.58]:15995 "EHLO mail4.aster.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754084AbYGMNeL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 09:33:56 -0400
-Subject: Re: [Cbe-oss-dev] [regression/bisected] corrupt CD data after
-	media change and delay
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Alessandro Suardi <alessandro.suardi@gmail.com>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       linux-scsi@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Maarten Bressers <mbres@gentoo.org>, Daniel Drake <dsd@gentoo.org>,
-       Cell Broadband Engine OSS Development 
-	<cbe-oss-dev@ozlabs.org>
-In-Reply-To: <5a4c581d0807120508m758df950i76fabdb70dfa2d07@mail.gmail.com>
-References: <Pine.LNX.4.64.0806061458300.6228@vixen.sonytel.be>
-	 <Pine.LNX.4.64.0806131932350.30730@vixen.sonytel.be>
-	 <5a4c581d0806180147qf8fc731y527c79bfb73401b2@mail.gmail.com>
-	 <Pine.LNX.4.64.0806181156460.13297@vixen.sonytel.be>
-	 <5a4c581d0806180515g5f24e9d9m85369bfa0a5f2228@mail.gmail.com>
-	 <5a4c581d0806210718m77be63c9l444d8d7d7a5266bd@mail.gmail.com>
-	 <Pine.LNX.4.64.0806221018220.9736@vixen.sonytel.be>
-	 <5a4c581d0806220614seab6598ufa798d8642295495@mail.gmail.com>
-	 <5a4c581d0807111425r72e39528w841e24a9b956c245@mail.gmail.com>
-	 <5a4c581d0807120508m758df950i76fabdb70dfa2d07@mail.gmail.com>
-Content-Type: text/plain
-Date: Sun, 13 Jul 2008 08:33:51 -0500
-Message-Id: <1215956031.4326.4.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Sun, 13 Jul 2008 09:34:11 -0400
+From: "Jakub W. Jozwicki" <jozwicki@aster.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2.6.25.10] pm_qos_params: change spinlock to rwlock
+Date: Sun, 13 Jul 2008 15:05:25 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, mgross@linux.intel.com, mingo@elte.hu,
+       tglx@timesys.com
+References: <200807130119.19663.jozwicki@aster.pl> <20080713012816.8c136efa.akpm@linux-foundation.org>
+In-Reply-To: <20080713012816.8c136efa.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200807131505.25990.jozwicki@aster.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-07-12 at 14:08 +0200, Alessandro Suardi wrote:
-> On Fri, Jul 11, 2008 at 11:25 PM, Alessandro Suardi
-> sr0: rw=0, want=3291928, limit=2097151
-> [asuardi@sandman sdlmame0126]$ h | grep siz
->   958  cat /sys/block/sr0/size
->  1031  h | grep siz
-> [asuardi@sandman sdlmame0126]$ !958
-> cat /sys/block/sr0/size
-> 6993536
-> 
-> <eject, remount DVD>
-> 
-> [asuardi@sandman sdlmame0126]$ !mount
-> mount -r /cdrom
-> [asuardi@sandman sdlmame0126]$ cat /sys/block/sr0/size
-> 6993536
-> 
-> <now everything works fine>
-> 
-> Possibly a new bug then - since size is always the same ?
+Sunday, 13 of July 2008 10:28:16 Andrew Morton napisał(a):
+> On Sun, 13 Jul 2008 01:19:19 +0200 "Jakub W. Jozwicki" <jozwicki@aster.pl> 
+wrote:
+> > Concurrent calls to pm_qos_requirement shouldn't block each other. This
+> > patch changes spinlock to rwlock and fixes issues with PREEMPT_RT.
+>
+> "fixes issues" is nowhere near an adequate description.
+>
+> Please provide complete descriptions for kernel patches.  That includes
+> describing the mysterious "issue" in full!
+>
+> Thanks.
 
-It looks like a re-manifestation of Geert's bug.
-
-You said everything worked in -rc7, and there actually have been no sr
-changes at all between then and now, so I'm a bit confused as to how it
-could reappear.  Could you try a bisection search for it (first
-re-verify -rc7 is OK, just in case that's a false negative).
-
-Thanks,
-
-James
-
+[  114.647010] BUG: sleeping function called from invalid context swapper(0) 
+at kernel/rtmutex.c:742
+[  114.647010] in_atomic():1 [00000001], irqs_disabled():0
+[  114.647010] Pid: 0, comm: swapper Not tainted 2.6.25.10-rtXXX #10
+[  114.647010]  [<c0120fc4>] __might_sleep+0xf1/0xf8
+[  114.647010]  [<c045499c>] __rt_spin_lock+0x24/0x61
+[  114.647010]  [<c04549e1>] rt_spin_lock+0x8/0xa
+[  114.647010]  [<c013ec8d>] pm_qos_requirement+0x10/0x29
+[  114.647010]  [<c038ef36>] menu_select+0x5d/0x7f
+[  114.647010]  [<c038e4d8>] cpuidle_idle_call+0x47/0x9b
+[  114.647010]  [<c038e491>] ? cpuidle_idle_call+0x0/0x9b
+[  114.647010]  [<c01060ff>] cpu_idle+0xaf/0x106
+[  114.647010]  [<c0441c87>] rest_init+0x67/0x69
+[  114.647010]  =======================
+[  115.649517] BUG: sleeping function called from invalid context swapper(0) 
+at kernel/rtmutex.c:742
+[  115.649517] in_atomic():1 [00000001], irqs_disabled():0
+[  115.649517] Pid: 0, comm: swapper Not tainted 2.6.25.10-rtXXX #10
+[  115.649517]  [<c0120fc4>] __might_sleep+0xf1/0xf8
+[  115.649517]  [<c045499c>] __rt_spin_lock+0x24/0x61
+[  115.649517]  [<c04549e1>] rt_spin_lock+0x8/0xa
+[  115.649517]  [<c013ec8d>] pm_qos_requirement+0x10/0x29
+[  115.649517]  [<c038ef36>] menu_select+0x5d/0x7f
+[  115.649517]  [<c038e4d8>] cpuidle_idle_call+0x47/0x9b
+[  115.649517]  [<c038e491>] ? cpuidle_idle_call+0x0/0x9b
+[  115.649517]  [<c01060ff>] cpu_idle+0xaf/0x106
+[  115.649517]  [<c0441c87>] rest_init+0x67/0x69
+[  115.649517]  =======================
+[  116.650040] BUG: sleeping function called from invalid context swapper(0) 
+at kernel/rtmutex.c:742
+[  116.650040] in_atomic():1 [00000001], irqs_disabled():0
+[  116.650040] Pid: 0, comm: swapper Not tainted 2.6.25.10-rtXXX #10
+[  116.650040]  [<c0120fc4>] __might_sleep+0xf1/0xf8
+[  116.650040]  [<c045499c>] __rt_spin_lock+0x24/0x61
+[  116.650040]  [<c04549e1>] rt_spin_lock+0x8/0xa
+[  116.650040]  [<c013ec8d>] pm_qos_requirement+0x10/0x29
+[  116.650040]  [<c038ef36>] menu_select+0x5d/0x7f
+[  116.650040]  [<c038e4d8>] cpuidle_idle_call+0x47/0x9b
+[  116.650040]  [<c038e491>] ? cpuidle_idle_call+0x0/0x9b
+[  116.650040]  [<c01060ff>] cpu_idle+0xaf/0x106
+[  116.650040]  [<c0441c87>] rest_init+0x67/0x69
+[  116.650040]  =======================
 
