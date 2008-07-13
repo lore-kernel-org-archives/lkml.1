@@ -1,79 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754301AbYGMGrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbYGMGsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754301AbYGMGrT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 02:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbYGMGrL
+	id S1754843AbYGMGsX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 02:48:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbYGMGsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 02:47:11 -0400
-Received: from imsc1.euromail.se ([217.174.79.93]:35048 "HELO
-	garland.euromail.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752342AbYGMGrK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 02:47:10 -0400
-Subject: [PATCH] input: wellspring device quirks
-From: Henrik Rydberg <rydberg@euromail.se>
-To: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dmitry.torokhov@gmail.com, robfitz@273k.net, akpm@osdl.org,
-       jikos@jikos.cz, vojtech@suse.cz, dmonakhov@openvz.org
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
-Date: Sun, 13 Jul 2008 08:47:02 +0200
-Message-Id: <1215931622.15888.0.camel@alnilam>
-Mime-Version: 1.0
-X-OriginalArrivalTime: 13 Jul 2008 06:46:56.0353 (UTC) FILETIME=[3DE20D10:01C8E4B4]
-X-NAI-Spam-Score: 0
-X-NAI-Spam-Report: 3 Rules triggered
-	*  0 -- HAS_X_HELO -- Mail contains HAS_X-HELO header
-	*  0 -- RV3058 -- BODY: Version number
-	*  0 -- XH_GE5 -- Mail contains X-HELO header
+	Sun, 13 Jul 2008 02:48:16 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42217 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752475AbYGMGsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 02:48:14 -0400
+Date: Sun, 13 Jul 2008 08:48:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: fix numaq_tsc_disable calling
+Message-ID: <20080713064803.GB13949@elte.hu>
+References: <200807122252.55436.yhlu.kernel@gmail.com> <20080713062537.GB2534@elte.hu> <86802c440807122331t60ff315dn698e6c04bce2599@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440807122331t60ff315dn698e6c04bce2599@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Sat, 12 Jul 2008 18:15:15 +0200
-Message-Id: <1215879315.13937.0.camel@alnilam>
 
-From: Henrik Rydberg <rydberg@euromail.se>
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-This patch adds usbhid-quirks for the Apple USB multitouch devices
-based on BCM5974, aka Wellspring. Quirks for these devices have already
-been submitted by others; this patch adds the HID_QUIRK_IGNORE_MOUSE,
-anticipating the trackpad to be picked up by the bcm5974 driver.
+> On Sat, Jul 12, 2008 at 11:25 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> >
+> >>       if (cpu_has_bts)
+> >>               ptrace_bts_init_intel(c);
+> >> +
+> >> +#ifdef CONFIG_X86_NUMAQ
+> >> +     numaq_tsc_disable();
+> >> +#endif
+> >
+> > could you please one more cleanup and hide the CONFIG_X86_NUMAQ in the
+> > header file, so that we can just call numaq_tsc_disable() without an
+> > #ifdef?
+> >
+> > also, that TSC quirk should probably be turned into an explicit quirk
+> > function pointer initialized by the early-init NUMAQ code and left NULL
+> > by everything else - like we it on visws. See include/asm-x86/setup.h:
+> >
+> >  /*
+> >  * Any setup quirks to be performed?
+> >  */
+> >  extern int (*arch_time_init_quirk)(void);
+> >  extern int (*arch_pre_intr_init_quirk)(void);
+> >  extern int (*arch_intr_init_quirk)(void);
+> >  extern int (*arch_trap_init_quirk)(void);
+> >  extern char * (*arch_memory_setup_quirk)(void);
+> >  extern int (*mach_get_smp_config_quirk)(unsigned int early);
+> >  extern int (*mach_find_smp_config_quirk)(unsigned int reserve);
+> >
+> > the goal is to offload all non-standard setup that is not a reasonable
+> > deviation of some of the major vendors to such a quirk handler. Quirks
+> > are a lot easier to maintain and a lot easier to think about - they can
+> > be just by-line functionality to the main body of default behavior.
+> 
+> looks neat.
+> 
+> can we use one big arch_mach_quicks struct..?
 
-Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
----
+yeah, good idea.
 
-diff --git a/drivers/hid/usbhid/hid-quirks.c b/drivers/hid/usbhid/hid-quirks.c
-index 1df832a..4dd11f4 100644
---- a/drivers/hid/usbhid/hid-quirks.c
-+++ b/drivers/hid/usbhid/hid-quirks.c
-@@ -75,6 +75,12 @@
- #define USB_DEVICE_ID_APPLE_ALU_WIRELESS_ANSI  0x022c
- #define USB_DEVICE_ID_APPLE_ALU_WIRELESS_ISO   0x022d
- #define USB_DEVICE_ID_APPLE_ALU_WIRELESS_JIS   0x022e
-+#define USB_DEVICE_ID_APPLE_WELLSPRING_ANSI    0x0223
-+#define USB_DEVICE_ID_APPLE_WELLSPRING_ISO     0x0224
-+#define USB_DEVICE_ID_APPLE_WELLSPRING_JIS     0x0225
-+#define USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI   0x0230
-+#define USB_DEVICE_ID_APPLE_WELLSPRING2_ISO    0x0231
-+#define USB_DEVICE_ID_APPLE_WELLSPRING2_JIS    0x0232
- #define USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY	0x030a
- #define USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY	0x030b
- #define USB_DEVICE_ID_APPLE_IRCONTROL4	0x8242
-@@ -642,6 +648,12 @@ static const struct hid_blacklist {
- 	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ANSI, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN },
- 	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ISO, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_APPLE_ISO_KEYBOARD },
- 	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_JIS, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN },
-+	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ANSI, HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_IGNORE_MOUSE },
-+	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ISO, HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_APPLE_ISO_KEYBOARD | HID_QUIRK_IGNORE_MOUSE},
-+	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_JIS, HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_IGNORE_MOUSE},
-+	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI, HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_IGNORE_MOUSE},
-+	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_ISO, HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_APPLE_ISO_KEYBOARD | HID_QUIRK_IGNORE_MOUSE },
-+	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_JIS, HID_QUIRK_APPLE_HAS_FN  | HID_QUIRK_IGNORE_MOUSE },
- 	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_IGNORE_MOUSE },
- 	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_IGNORE_MOUSE },
+Perhaps name it x86_quirks to make it really short to check it. Then 
+consolidate all of our scattered quirks into it. I bet we could get some 
+of the paravirt details into this as well.
 
+So something like:
 
+        if (arch_time_init_quirk) {
+                /*
+                 * A nonzero return code does not mean failure, it means
+                 * that the architecture quirk does not want any
+                 * generic (timer) setup to be performed after this:
+                 */
+                if (arch_time_init_quirk())
+                        return;
+        }
 
+Would turn into:
+
+	if (x86_quirks.time_init) {
+		if (x86_quirks.time_init())
+			return;
+	}
+	[ ... regular init ...]
+
+So that the return code of x86_quirks.time_init() can be used to signal 
+whether a quirk wants the regular init to run or not. In the VisWS case 
+this allowed further consolidation.
+
+We dont want any chaining (i.e. dont use notifiers or anything) as these 
+quirks are all exclusive anyway.
+
+	Ingo
