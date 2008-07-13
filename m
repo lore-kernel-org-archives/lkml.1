@@ -1,102 +1,60 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753218AbYGMPeU (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sun, 13 Jul 2008 11:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbYGMPdu
+	id S1756957AbYGMVPi (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sun, 13 Jul 2008 17:15:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755670AbYGMVPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 11:33:50 -0400
-Received: from unallocated.dg.net.ua ([213.186.218.211]:41064 "EHLO
-	mail.connect.com.ua" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752354AbYGMPdt (ORCPT
+	Sun, 13 Jul 2008 17:15:23 -0400
+Received: from smtp.sprintpcs.com ([68.28.27.84]:50654 "EHLO
+	mta02.smtp.sprintpcs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755176AbYGMVPW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 11:33:49 -0400
-X-Greylist: delayed 462 seconds by postgrey-1.27 at vger.kernel.org; Sun, 13 Jul 2008 11:33:49 EDT
-To: linux-kernel@vger.kernel.org
-Subject: =?UTF-8?B?0JrQvtC90L3QtdC60YIgfCDQl9C80ZbQvdC4INC30LAg0L7RgdGC0LDQvdC9?=  =?UTF-8?B?0ZbQuSDRgtC40LbQtNC10L3RjA==?=
-Date: Sun, 13 Jul 2008 18:26:02 +0300
-From: =?UTF-8?B?0JrQvtC80LDQvdC00LAg0JrQvtC90L3QtdC60YLQsA==?= 
-	<donotreply@connect.com.ua>
-Reply-to: Connect <donotreply@connect.com.ua>
-Message-ID: <6012a4e2953a6509d33b5f5cdb6ac926@localhost.localdomain>
-X-Priority: 3
-X-Mailer: PHPMailer (phpmailer.sourceforge.net) [version 2.0.0 rc1]
-MIME-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Content-Type: text/plain; charset=UTF-8
+	Sun, 13 Jul 2008 17:15:22 -0400
+Date: Sun, 13 Jul 2008 14:15:09 -0700
+From: MIRANDA14@sprintpcs.com
+Subject: Private Business Proposal
+Reply-to: patrick_200chan@yahoo.com.hk
+Message-id: <1291912110.1211012919@sprintpcs.com>
+MIME-version: 1.0
+X-Mailer: iPlanet Messenger Express 5.2 HotFix 2.06 (built Mar 28 2005)
+Content-type: multipart/mixed; boundary="Boundary_(ID_4XJLXZPdpqTbFzW+MS9Xqw)"
+Content-language: en
+X-Accept-Language: en
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753218AbYGMPeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1756957AbYGMVPi@vger.kernel.org>
 
-=D0=92=D1=96=D1=82=D0=B0=D1=94=D0=BC=D0=BE, =D0=92=D0=BB=D0=B0=D0=B4=D0=
-=B8=D0=BC=D0=B8=D1=80 =D0=9A=D0=B8=D1=80=D0=B8=D0=BB=D0=BE=D0=B2!
+This is a multi-part message in MIME format.
 
-=D0=9F=D1=80=D0=BE=D0=BF=D0=BE=D0=BD=D1=83=D1=94=D0=BC=D0=BE =D0=B4=D0=BE=
- =D0=B2=D0=B0=D1=88=D0=BE=D1=97 =D1=83=D0=B2=D0=B0=D0=B3=D0=B8 =D0=BF=D0=
-=B5=D1=80=D0=B5=D0=BB=D1=96=D0=BA =D0=BD=D0=B0=D0=B9=D0=B1=D1=96=D0=BB=D1=
-=8C=D1=88 =D1=86=D1=96=D0=BA=D0=B0=D0=B2=D0=B8=D1=85 =D0=BF=D0=BE=D0=B4=
-=D1=96=D0=B9 =D0=BD=D0=B0 =D0=9A=D0=BE=D0=BD=D0=BD=D0=B5=D0=BA=D1=82=D1=
-=96 =D0=B7=D0=B0 =D0=BE=D1=81=D1=82=D0=B0=D0=BD=D0=BD=D1=96=D0=B9 =D1=87=
-=D0=B0=D1=81:
-
-=D0=9A=D0=BE=D0=BD=D0=BA=D1=83=D1=80=D1=81 =D0=B2=D1=96=D0=B4=D0=B5=D0=BE=
-=D0=BC=D0=B0=D0=BD=D1=96=D1=8F:
-20 =D0=BF=D1=80=D0=B8=D0=B7=D1=96=D0=B2 =D0=BE=D1=82=D1=80=D0=B8=D0=BC=D0=
-=B0=D1=8E=D1=82=D1=8C =D0=BA=D0=BE=D1=80=D0=B8=D1=81=D1=82=D1=83=D0=B2=D0=
-=B0=D1=87=D1=96 =D1=81=D0=B0=D0=B9=D1=82=D1=83, =D1=8F=D0=BA=D1=96 =D0=B7=
-=D0=B0=D0=B2=D0=B0=D0=BD=D1=82=D0=B0=D0=B6=D0=B0=D1=82=D1=8C =D0=BD=D0=B0=
-=D0=B9=D0=B1=D1=96=D0=BB=D1=8C=D1=88=D1=83 =D0=BA=D1=96=D0=BB=D1=8C=D0=BA=
-=D1=96=D1=81=D1=82=D1=8C =D0=BF=D0=BE=D0=BF=D1=83=D0=BB=D1=8F=D1=80=D0=BD=
-=D0=BE=D0=B3=D0=BE =D0=B2=D1=96=D0=B4=D0=B5=D0=BE =D0=B7 4 =D0=BF=D0=BE=
- 14 =D0=BB=D0=B8=D0=BF=D0=BD=D1=8F. =D0=94=D0=B5=D1=82=D0=B0=D0=BB=D1=96=
- =D0=BA=D0=BE=D0=BD=D0=BA=D1=83=D1=80=D1=81e: http://connect.ua/contest=
-/video_views.php
+--Boundary_(ID_4XJLXZPdpqTbFzW+MS9Xqw)
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
 
 
-=D0=9D=D0=BE=D0=B2=D0=B5 =D0=B2i=D0=B4=D0=B5=D0=BE:
-=D0=BF=D1=80=D0=B8=D0=BA=D0=BE=D0=BB=D1=8C=D0=BD=D0=B0=D1=8F =D1=80=D0=B5=
-=D0=BA=D0=BB=D0=B0=D0=BC=D0=B0 iPhone :), 2301 =D0=BF=D0=B5=D1=80=D0=B5=
-=D0=B3=D0=BB=D1=8F=D0=B4: http://connect.ua/video/view?id=3D37872
-Pixar(birds), 1006 =D0=BF=D0=B5=D1=80=D0=B5=D0=B3=D0=BB=D1=8F=D0=B4i=D0=
-=B2: http://connect.ua/video/view?id=3D39103
-=D0=A1=D1=82=D0=BE=D0=B8=D1=82 =D0=BF=D0=BE=D1=81=D0=BC=D0=BE=D1=82=D1=80=
-=D0=B5=D1=82=D1=8C, 1912 =D0=BF=D0=B5=D1=80=D0=B5=D0=B3=D0=BB=D1=8F=D0=B4=
-i=D0=B2: http://connect.ua/video/view?id=3D34575
-=D0=92=D1=81i =D0=B2i=D0=B4=D0=B5=D0=BE http://connect.ua/video
 
-=D0=AF=D0=BA=D1=89=D0=BE =D0=B2=D0=BA=D0=B0=D0=B7=D0=B0=D0=BD=D0=B5 =D0=
-=B2=D0=B8=D1=89=D0=B5 =D0=BF=D0=BE=D1=81=D0=B8=D0=BB=D0=B0=D0=BD=D0=BD=D1=
-=8F =D0=BD=D0=B5 =D0=B2=D1=96=D0=B4=D0=BA=D1=80=D0=B8=D0=B2=D0=B0=D1=94=
-=D1=82=D1=8C=D1=81=D1=8F, =D0=B7=D0=BA=D0=BE=D0=BF=D1=96=D1=8E=D0=B9=D1=
-=82=D0=B5 =D0=B9=D0=BE=D0=B3=D0=BE =D0=B2 =D0=B1=D1=83=D1=84=D0=B5=D1=80=
- =D0=BE=D0=B1=D0=BC=D1=96=D0=BD=D1=83, =D0=B2=D1=81=D1=82=D0=B0=D0=B2=D1=
-=82=D0=B5 =D0=B2 =D0=B0=D0=B4=D1=80=D0=B5=D1=81=D0=BD=D1=83 =D1=81=D1=82=
-=D1=80=D0=BE=D0=BA=D1=83 =D0=B1=D1=80=D0=B0=D1=83=D0=B7=D0=B5=D1=80=D1=83=
- =D1=82=D0=B0 =D0=BD=D0=B0=D1=82=D0=B8=D1=81=D0=BD=D1=96=D1=82=D1=8C En=
-ter.
 
-=D0=92=D0=B8 =D0=BE=D1=82=D1=80=D0=B8=D0=BC=D0=B0=D0=BB=D0=B8 =D1=86=D0=
-=B5=D0=B9 =D0=BB=D0=B8=D1=81=D1=82, =D1=82=D0=BE=D0=BC=D1=83 =D1=89=D0=BE=
- =D0=B7=D0=B0=D1=80=D0=B5=D1=94=D1=81=D1=82=D1=80=D0=BE=D0=B2=D0=B0=D0=BD=
-=D1=96 =D0=BD=D0=B0 =D1=81=D0=B0=D0=B9=D1=82=D1=96 =D0=BD=D0=B0=D1=86=D1=
-=96=D0=BE=D0=BD=D0=B0=D0=BB=D1=8C=D0=BD=D0=BE=D1=97 =D1=83=D0=BA=D1=80=D0=
-=B0=D1=97=D0=BD=D1=81=D1=8C=D0=BA=D0=BE=D1=97 =D1=81=D0=BE=D1=86=D1=96=D0=
-=B0=D0=BB=D1=8C=D0=BD=D0=BE=D1=97 =D0=BC=D0=B5=D1=80=D0=B5=D0=B6=D1=96 =
-Connect.ua
 
-=D0=92=D0=B8 =D0=BC=D0=BE=D0=B6=D0=B5=D1=82=D0=B5 =D0=B7=D0=BC=D1=96=D0=
-=BD=D0=B8=D1=82=D0=B8 =D0=BF=D0=B0=D1=80=D0=B0=D0=BC=D0=B5=D1=82=D1=80=D0=
-=B8 =D0=B2=D1=96=D0=B4=D0=BF=D1=80=D0=B0=D0=B2=D0=BA=D0=B8 =D0=BF=D0=BE=
-=D0=B2=D1=96=D0=B4=D0=BE=D0=BC=D0=BB=D0=B5=D0=BD=D1=8C =D0=B2 =D0=BE=D0=
-=BF=D1=86=D1=96=D1=8F=D1=85 =D0=B0=D0=BD=D0=BA=D0=B5=D1=82=D0=B8.
+ 
+Hello friend,
+I have a Business offer of $24,500,000.00 for you.If interested please 
+send me your full Contact Details  and after that I shall provide you 
+with more information of this business.
+Regrads,
+patrick chan
 
-=D0=9E=D0=B1`=D1=94=D0=B4=D0=BD=D1=83=D1=94=D0=BC=D0=BE =D0=A3=D0=BA=D1=
-=80=D0=B0=D1=97=D0=BD=D1=83!
-=D0=9A=D0=BE=D0=BC=D0=B0=D0=BD=D0=B4=D0=B0 =D0=9A=D0=BE=D0=BD=D0=BD=D0=B5=
-=D0=BA=D1=82=D1=83
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+--Boundary_(ID_4XJLXZPdpqTbFzW+MS9Xqw)
+Content-type: text/x-vcard; name=MIRANDA14.vcf; charset=windows-1252
+Content-transfer-encoding: 7BIT
+Content-disposition: attachment; filename=MIRANDA14.vcf
+Content-description: Card for <MIRANDA14@sprintpcs.com>
+
+begin:vcard
+
+version:2.1
+end:vcard
+
+
+--Boundary_(ID_4XJLXZPdpqTbFzW+MS9Xqw)--
