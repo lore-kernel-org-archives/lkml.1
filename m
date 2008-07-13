@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbYGMPdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659AbYGMPgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754196AbYGMPdz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 11:33:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751547AbYGMPdr
+	id S1754659AbYGMPgS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 11:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbYGMPgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 11:33:47 -0400
-Received: from casper.infradead.org ([85.118.1.10]:43501 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751298AbYGMPdq (ORCPT
+	Sun, 13 Jul 2008 11:36:09 -0400
+Received: from mga05.intel.com ([192.55.52.89]:51465 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751482AbYGMPgI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 11:33:46 -0400
-Date: Sun, 13 Jul 2008 08:33:22 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCh] x86: overmapped fix when 4K pages on tail - 64bit
-Message-ID: <20080713083322.16ebe80c@infradead.org>
-In-Reply-To: <874p6t25n5.fsf@basil.nowhere.org>
-References: <200807080141.05436.yhlu.kernel@gmail.com>
-	<200807080143.27997.yhlu.kernel@gmail.com>
-	<200807092015.03004.yhlu.kernel@gmail.com>
-	<20080710071640.5035cd70@infradead.org>
-	<874p6t25n5.fsf@basil.nowhere.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 13 Jul 2008 11:36:08 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.30,354,1212390000"; 
+   d="scan'208";a="595557961"
+Message-ID: <487A20DF.7060701@linux.intel.com>
+Date: Sun, 13 Jul 2008 08:35:59 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@suse.cz>
+CC: Vegard Nossum <vegard.nossum@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: v2.6.26-rc7: Negative powertop values
+References: <19f34abd0806211216y4695c532ndb4935082bd8ea1@mail.gmail.com> <20080621141615.51f7100c@linux.intel.com> <20080706194845.GA5617@ucw.cz> <20080708065251.1d7d681f@linux.intel.com> <20080713115818.GA7517@elf.ucw.cz>
+In-Reply-To: <20080713115818.GA7517@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 Jul 2008 16:57:50 +0200
-Andi Kleen <andi@firstfloor.org> wrote:
+Pavel Machek wrote:
+> On Tue 2008-07-08 06:52:51, Arjan van de Ven wrote:
+>> On Sun, 6 Jul 2008 21:48:45 +0200
+>> Pavel Machek <pavel@suse.cz> wrote:
+>>
+>>>> [I assume you know that doing a software unplug you burn more power
+>>>> than by leaving the cpu idle]
+>>> We should really fix that one day...
+>> yeah but it's incredibly hard to get right (in the light of the bios
+>> constantly changing what our allowed C-states are)... and the best case
+> 
+> What can happen there? So BIOS decides C4 may no longer be cool idea
+> because we have AC power now, but that does not mean C4 stops working,
+> right?
 
-> Arjan van de Ven <arjan@infradead.org> writes:
-> 
-> > On Wed, 9 Jul 2008 20:15:02 -0700
-> > Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> >
-> >> 
-> >> 
-> >> fix phys_pmd_init to make sure not to return big value than end.
-> >> 
-> >> also print out range split:1G/2M/4K
-> >> 
-> >> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> >
-> >
-> > Making an accurate mapping solves a lot of potentially nasty/tricky
-> > corner cases, so I like the approach
-> 
-> It also means that e.g. on a 1GB system the direct mapping will 
-> never use 1GB pages.
-> 
-> And the CPU has to handle this anyways because all the old 
-> kernels overmap and no x86 CPU can drop support for all old
-> kernels.
+or it decides that your voltage regulator needs to operate in a certain mode and the voltage for C4 is no longer
+available. or .. or ...
 
-for the 2mb case.. please find me a dimm which isn't a multiple of
-2Mb ;-)
+> 
+> How is changing allowed C-states list supposed to work, anyway? I
+> mean, we may be in one of those on other CPU when BIOS decides to
+> change the list...
+
+you get an interrupt to notify you of the change ;-)
 
