@@ -1,76 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755663AbYGMVcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757049AbYGMVd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755663AbYGMVcq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 17:32:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755654AbYGMVc0
+	id S1757049AbYGMVd1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 17:33:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755496AbYGMVdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 17:32:26 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:54342 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755591AbYGMVcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 17:32:25 -0400
-Date: Sun, 13 Jul 2008 17:32:22 -0400
-To: richard@rsk.demon.co.uk
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: +
-	file-lock-reorder-struct-file_lock-to-save-space-on-64-bit-builds.pa
-	tch added to -mm tree
-Message-ID: <20080713213222.GD2810@fieldses.org>
-References: <200807120020.m6C0KnBx012130@imap1.linux-foundation.org>
+	Sun, 13 Jul 2008 17:33:17 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:30421 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755297AbYGMVdQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 17:33:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=nnQuaGl+YB+0pt7VR7Ze7+V4h5qyXgA5B5EQqzg8J8P7hK/1ijO/1ibo0ZBUu5vvgW
+         i0xrlLQBCZ27ZcFxRoBLtyYPHv3g/XJCOYn1CBd8JsuaVaLLPNzE2NMp6jdTEMgZ35+2
+         aXNVslJBFcbV0H6a8SQ9ynRJr6mhv/m8JCvPY=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: [PATCH] x86: max_low_pfn_mapped fix #4
+Date: Sun, 13 Jul 2008 14:29:41 -0700
+User-Agent: KMail/1.9.9
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <200807080141.05436.yhlu.kernel@gmail.com> <200807102038.26591.yhlu.kernel@gmail.com> <200807121432.45759.yhlu.kernel@gmail.com>
+In-Reply-To: <200807121432.45759.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200807120020.m6C0KnBx012130@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Message-Id: <200807131429.42193.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks, applied to my queue of nfsd and locks stuff for 2.6.27 at:
 
-	git://linux-nfs.org/~bfields/linux.git for-2.6.27
+	only add direct mapping for aperture
 
---b.
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-On Fri, Jul 11, 2008 at 05:20:49PM -0700, akpm@linux-foundation.org wrote:
-> Subject: file lock: reorder struct file_lock to save space on 64 bit builds
-> From: Richard Kennedy <richard@rsk.demon.co.uk>
-> 
-> Reduce sizeof struct file_lock by 8 on 64 bit builds allowing +1 objects
-> per slab in the file_lock_cache
-> 
-> Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
-> Cc: "J. Bruce Fields" <bfields@fieldses.org>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  include/linux/fs.h |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff -puN include/linux/fs.h~file-lock-reorder-struct-file_lock-to-save-space-on-64-bit-builds include/linux/fs.h
-> --- a/include/linux/fs.h~file-lock-reorder-struct-file_lock-to-save-space-on-64-bit-builds
-> +++ a/include/linux/fs.h
-> @@ -952,12 +952,12 @@ struct file_lock {
->  	struct list_head fl_link;	/* doubly linked list of all locks */
->  	struct list_head fl_block;	/* circular list of blocked processes */
->  	fl_owner_t fl_owner;
-> +	unsigned char fl_flags;
-> +	unsigned char fl_type;
->  	unsigned int fl_pid;
->  	struct pid *fl_nspid;
->  	wait_queue_head_t fl_wait;
->  	struct file *fl_file;
-> -	unsigned char fl_flags;
-> -	unsigned char fl_type;
->  	loff_t fl_start;
->  	loff_t fl_end;
->  
-> _
-> 
-> Patches currently in -mm which might be from richard@rsk.demon.co.uk are
-> 
-> linux-next.patch
-> shrink-struct-pid-by-removing-padding-on-64-bit-builds.patch
-> file-lock-reorder-struct-file_lock-to-save-space-on-64-bit-builds.patch
-> 
+---
+ arch/x86/kernel/pci-gart_64.c |    7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/pci-gart_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/pci-gart_64.c
++++ linux-2.6/arch/x86/kernel/pci-gart_64.c
+@@ -680,11 +680,8 @@ static __init int init_k8_gatt(struct ag
+ 	/* need to map that range */
+ 	end_pfn = (aper_base>>PAGE_SHIFT) + (aper_size>>PAGE_SHIFT);
+ 	if (end_pfn > max_low_pfn_mapped) {
+-		start_pfn = max_low_pfn_mapped;
+-		max_low_pfn_mapped = init_memory_mapping(start_pfn<<PAGE_SHIFT,
+-							 end_pfn<<PAGE_SHIFT);
+-		if (max_pfn_mapped < max_low_pfn_mapped)
+-			max_pfn_mapped = max_low_pfn_mapped;
++		start_pfn = (aper_base>>PAGE_SHIFT);
++		init_memory_mapping(start_pfn<<PAGE_SHIFT, end_pfn<<PAGE_SHIFT);
+ 	}
+ 	return 0;
+ 
