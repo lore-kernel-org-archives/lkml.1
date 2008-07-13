@@ -1,45 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754479AbYGMOeP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754521AbYGMOqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754479AbYGMOeP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 10:34:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbYGMOd7
+	id S1754521AbYGMOqh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 10:46:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbYGMOq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 10:33:59 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:32848 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753466AbYGMOd7 (ORCPT
+	Sun, 13 Jul 2008 10:46:28 -0400
+Received: from smtp-01.mandic.com.br ([200.225.81.132]:38131 "EHLO
+	smtp-01.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753544AbYGMOq2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 10:33:59 -0400
-Date: Sun, 13 Jul 2008 15:15:56 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Jakub W. Jozwicki" <jozwicki@aster.pl>
-Cc: linux-kernel@vger.kernel.org, jgarzik@redhat.com, mingo@elte.hu,
-       tglx@timesys.com
-Subject: Re: [PATCH 2.6.25.10 1/2] libata: fix locking for kmap_atomic
-Message-ID: <20080713151556.79f23215@lxorguk.ukuu.org.uk>
-In-Reply-To: <200807131530.03402.jozwicki@aster.pl>
-References: <200807130127.36706.jozwicki@aster.pl>
-	<20080713112543.2dc9d6f7@lxorguk.ukuu.org.uk>
-	<200807131530.03402.jozwicki@aster.pl>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 13 Jul 2008 10:46:28 -0400
+Message-ID: <487A1534.3000307@diamondcut.com.br>
+Date: Sun, 13 Jul 2008 11:46:12 -0300
+From: "Renato S. Yamane" <yamane@diamondcut.com.br>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
+CC: Greg KH <greg@kroah.com>, linux-acpi@vger.kernel.org, pavel@suse.cz,
+       linux-kernel@vger.kernel.org
+Subject: Re: Toshiba - Documentation for Linux Developers
+References: <4855971D.90004@diamondcut.com.br> <20080616221443.GA760@kroah.com> <b170af450807130654m2f800b10ybcba4b2c5c7cf329@mail.gmail.com>
+In-Reply-To: <b170af450807130654m2f800b10ybcba4b2c5c7cf329@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Sent patch was for:
+Rafał Miłecki wrote:
+> 2008/6/17, Greg KH <greg@kroah.com>:
+>> Are there any known drivers for Toshiba hardware that you need for Linux
+>>  that we should be contacting them about?
+>> <http://linux.toshiba-dme.co.jp/linux/eng/develop.htm>
 > 
-> [   16.787021] BUG: sleeping function called from invalid context IRQ-14(5730) 
-> at arch/x86/mm/highmem_32.c:8
+> I have Toshiba A100 with Phoenix BIOS. This means toshiba_acpi doesn't
+> work for me and I can change LCD brightness.
+> 
+> On page http://www.buzzard.me.uk/toshiba/docs.html there is also link
+> to pdf with registers info:
+> http://www.buzzard.me.uk/toshiba/downloads/hci.pdf
+> 
+> However I am not programmer and I have no idea if this is some
+> interesging info for developrs.
 
-Fine - but the right fix is still to apply the patches that use a bounce
-buffer, otherwise you might paper over the warning but you'll trash rt
-performance. It needs fixing anyway especially with Tejun's changes to
-the ATAPI logic to use PIO more often
+Rafal, try use omnibook driver.
+Get it with subversion:
+$ svn co
+https://omnibook.svn.sourceforge.net/svnroot/omnibook/omnibook/trunk
 
-Alan
+Use "make install" and "make load".
+
+After this, maybe is possible change brightness writing in
+/proc/omnibook/lcd (0 is minimun and 7 is max brightness)
+
+Best regards,
+Renato S. Yamane
