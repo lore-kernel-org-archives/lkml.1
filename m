@@ -1,111 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755544AbYGMRUv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273AbYGMRXh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755544AbYGMRUv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 13:20:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753586AbYGMRTt
+	id S1755273AbYGMRXh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 13:23:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbYGMRX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 13:19:49 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:51480 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752310AbYGMRTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 13:19:47 -0400
-Date: Sun, 13 Jul 2008 21:22:57 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Howells <dhowells@redhat.com>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 2/4] coredump: construct the list of coredumping threads at startup time
-Message-ID: <20080713172257.GA28767@tv-sign.ru>
-Mime-Version: 1.0
+	Sun, 13 Jul 2008 13:23:27 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:12610 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752155AbYGMRX0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 13:23:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent:from;
+        b=sVd//lkDDFjPDByeYraKDQZBPT08UExaTj99kBp1uP6MXnuBBE08aKKD3nquS3bb0H
+         hHo711WGIFWk9RgiVTuPoZrlQqCrP6PPQmNSpt4qb7ZezoUpq4272OY84xg2SM7DGkgF
+         COykmSXnqCaJAcg4lIHISGBGYZ11+sPzG1TDI=
+Date: Sun, 13 Jul 2008 19:23:18 +0200
+To: Soeren Sonnenburg <kernel@nn7.de>, Marcel Holtmann <marcel@holtmann.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Dave Young <hidave.darkstar@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: [RFC][-rc9 PATCH] Bluetooth: fix oops in rfcomm
+Message-ID: <20080713172318.GA6180@damson.getinternet.no>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-binfmt->core_dump() has to iterate over the all threads in system in order
-to find the coredumping threads and construct the list using the GFP_ATOMIC
-allocations.
+Hi,
 
-With this patch each thread allocates the list node on exit_mm()'s stack and
-adds itself to the list.
+Disclaimer: This is just an RFC as I don't really know the code in
+question. But I did try to do it correctly and yes, it DOES fix the
+oops for me. But I'd be really happy if somebody who uses Bluetooth
+in the first place could test & review.
 
-This allows us to do further changes:
+(In other words, you may use this patch for inspiration, etc. if you
+ decide to give it a try yourself.)
 
-	- simplify ->core_dump()
 
-	- change exit_mm() to clear ->mm first, then wait for ->core_done.
-	  this makes the coredumping process visible to oom_kill
+Vegard
 
-	- kill mm->core_done
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+>From 675b50291f0af40974074590e2fd16ae0546ecde Mon Sep 17 00:00:00 2001
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Date: Sun, 13 Jul 2008 19:02:11 +0200
+Subject: [PATCH] Bluetooth: fix race between rfcomm and tty
 
- include/linux/mm_types.h |    6 ++++++
- fs/exec.c                |    2 ++
- kernel/exit.c            |   15 ++++++++++++---
- 3 files changed, 20 insertions(+), 3 deletions(-)
+Soeren Sonnenburg reported:
+> this oops happened after a couple of s2ram cycles so it might be very
+> well crap. However I somehow triggered it by /etc/init.d/bluetooth
+> stop/start's which also call hid2hci maybe even a connection was about
+> to be established at that time. As I remember having seen a problem like
+> this before I thought I report it (even though I have a madwifi tainted
+> kernel).
+>
+> kobject_add_internal failed for rfcomm0 with -EEXIST, don't try to register things with the same name in the same directory.
 
---- 26-rc2/include/linux/mm_types.h~2_CORE_THREAD	2008-06-16 18:00:08.000000000 +0400
-+++ 26-rc2/include/linux/mm_types.h	2008-07-13 18:28:36.000000000 +0400
-@@ -159,8 +159,14 @@ struct vm_area_struct {
- #endif
- };
+It turns out that the following sequence of actions will reproduce the
+oops:
+
+  1. Create a new rfcomm device (using RFCOMMCREATEDEV ioctl)
+  2. (Try to) open the device
+  3. Release the rfcomm device (using RFCOMMRELEASEDEV ioctl)
+
+At this point, the "rfcomm?" tty is still in use, but the device is gone
+from the internal rfcomm list, so the device id can be reused.
+
+  4. Create a new rfcomm device with the same device id as before
+
+And now kobject will complain that the tty already exists.
+
+This patch attempts to correct this by only removing the device from the
+internal rfcomm list of devices at the final unregister, so that the id
+won't get reused until the device has been completely destructed.
+
+This should be safe as the RFCOMM_TTY_RELEASED bit will be set for the
+device and prevent the device from being reopened after it has been
+released.
+
+We also fix a race at the same time by including the call to
+tty_unregister_device inside the rfcomm_dev_lock (the lock protecting
+the list of devices).
+
+Reported-by: Soeren Sonnenburg <kernel@nn7.de>
+Cc: Marcel Holtmann <marcel@holtmann.org>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: Dave Young <hidave.darkstar@gmail.com>
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+---
+ net/bluetooth/rfcomm/tty.c |   13 +++++++------
+ 1 files changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/net/bluetooth/rfcomm/tty.c b/net/bluetooth/rfcomm/tty.c
+index c919187..e289568 100644
+--- a/net/bluetooth/rfcomm/tty.c
++++ b/net/bluetooth/rfcomm/tty.c
+@@ -95,6 +95,8 @@ static void rfcomm_dev_destruct(struct rfcomm_dev *dev)
  
-+struct core_thread {
-+	struct task_struct *task;
-+	struct core_thread *next;
-+};
+ 	BT_DBG("dev %p dlc %p", dev, dlc);
+ 
++	write_lock_bh(&rfcomm_dev_lock);
 +
- struct core_state {
- 	atomic_t nr_threads;
-+	struct core_thread dumper;
- 	struct completion startup;
- };
+ 	/* Refcount should only hit zero when called from rfcomm_dev_del()
+ 	   which will have taken us off the list. Everything else are
+ 	   refcounting bugs. */
+@@ -108,8 +110,11 @@ static void rfcomm_dev_destruct(struct rfcomm_dev *dev)
  
---- 26-rc2/fs/exec.c~2_CORE_THREAD	2008-07-13 17:47:28.000000000 +0400
-+++ 26-rc2/fs/exec.c	2008-07-13 18:43:39.000000000 +0400
-@@ -1599,6 +1599,8 @@ static int coredump_wait(int exit_code, 
+ 	rfcomm_dlc_put(dlc);
  
- 	init_completion(&mm->core_done);
- 	init_completion(&core_state->startup);
-+	core_state->dumper.task = tsk;
-+	core_state->dumper.next = NULL;
- 	core_waiters = zap_threads(tsk, mm, core_state, exit_code);
- 	up_write(&mm->mmap_sem);
++	list_del_init(&dev->list);
+ 	tty_unregister_device(rfcomm_tty_driver, dev->id);
  
---- 26-rc2/kernel/exit.c~2_CORE_THREAD	2008-07-06 18:10:12.000000000 +0400
-+++ 26-rc2/kernel/exit.c	2008-07-13 19:58:19.000000000 +0400
-@@ -653,6 +653,7 @@ assign_new_owner:
- static void exit_mm(struct task_struct * tsk)
- {
- 	struct mm_struct *mm = tsk->mm;
-+	struct core_state *core_state;
++	write_unlock_bh(&rfcomm_dev_lock);
++
+ 	kfree(dev);
  
- 	mm_release(tsk, mm);
- 	if (!mm)
-@@ -665,11 +666,19 @@ static void exit_mm(struct task_struct *
- 	 * group with ->mm != NULL.
- 	 */
- 	down_read(&mm->mmap_sem);
--	if (mm->core_state) {
-+	core_state = mm->core_state;
-+	if (core_state) {
-+		struct core_thread self;
- 		up_read(&mm->mmap_sem);
+ 	/* It's safe to call module_put() here because socket still
+@@ -278,14 +283,14 @@ static int rfcomm_dev_add(struct rfcomm_dev_req *req, struct rfcomm_dlc *dlc)
+ 	__module_get(THIS_MODULE);
  
--		if (atomic_dec_and_test(&mm->core_state->nr_threads))
--			complete(&mm->core_state->startup);
-+		self.task = tsk;
-+		self.next = xchg(&core_state->dumper.next, &self);
-+		/*
-+		 * Implies mb(), the result of xchg() must be visible
-+		 * to core_state->dumper.
-+		 */
-+		if (atomic_dec_and_test(&core_state->nr_threads))
-+			complete(&core_state->startup);
+ out:
+-	write_unlock_bh(&rfcomm_dev_lock);
+-
+ 	if (err < 0) {
++		write_unlock_bh(&rfcomm_dev_lock);
+ 		kfree(dev);
+ 		return err;
+ 	}
  
- 		wait_for_completion(&mm->core_done);
- 		down_read(&mm->mmap_sem);
+ 	dev->tty_dev = tty_register_device(rfcomm_tty_driver, dev->id, NULL);
++	write_unlock_bh(&rfcomm_dev_lock);
+ 
+ 	if (IS_ERR(dev->tty_dev)) {
+ 		err = PTR_ERR(dev->tty_dev);
+@@ -314,10 +319,6 @@ static void rfcomm_dev_del(struct rfcomm_dev *dev)
+ 	else
+ 		set_bit(RFCOMM_TTY_RELEASED, &dev->flags);
+ 
+-	write_lock_bh(&rfcomm_dev_lock);
+-	list_del_init(&dev->list);
+-	write_unlock_bh(&rfcomm_dev_lock);
+-
+ 	rfcomm_dev_put(dev);
+ }
+ 
+-- 
+1.5.4.1
 
