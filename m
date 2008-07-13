@@ -1,112 +1,303 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbYGMGsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbYGMGtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754843AbYGMGsX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 02:48:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbYGMGsQ
+	id S1755169AbYGMGtT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 02:49:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbYGMGtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 02:48:16 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42217 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752475AbYGMGsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 02:48:14 -0400
-Date: Sun, 13 Jul 2008 08:48:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: fix numaq_tsc_disable calling
-Message-ID: <20080713064803.GB13949@elte.hu>
-References: <200807122252.55436.yhlu.kernel@gmail.com> <20080713062537.GB2534@elte.hu> <86802c440807122331t60ff315dn698e6c04bce2599@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440807122331t60ff315dn698e6c04bce2599@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sun, 13 Jul 2008 02:49:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51292 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752564AbYGMGtL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 02:49:11 -0400
+Date: Sat, 12 Jul 2008 23:48:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Paul Mundt <lethal@linux-sh.org>,
+       pHilipp Zabel <philipp.zabel@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       tony@atomide.com, paul@pwsan.com, David Brownell <david-b@pacbell.net>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>, ian <spyro@f2s.com>
+Subject: Re: [PATCH 1/3] genclk: add generic framework for managing clocks.
+Message-Id: <20080712234823.e632c7f9.akpm@linux-foundation.org>
+In-Reply-To: <20080708134336.GA6240@doriath.ww600.siemens.net>
+References: <20080708134242.GA6176@doriath.ww600.siemens.net>
+	<20080708134336.GA6240@doriath.ww600.siemens.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 8 Jul 2008 17:43:36 +0400 Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-
-> On Sat, Jul 12, 2008 at 11:25 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> >
-> >>       if (cpu_has_bts)
-> >>               ptrace_bts_init_intel(c);
-> >> +
-> >> +#ifdef CONFIG_X86_NUMAQ
-> >> +     numaq_tsc_disable();
-> >> +#endif
-> >
-> > could you please one more cleanup and hide the CONFIG_X86_NUMAQ in the
-> > header file, so that we can just call numaq_tsc_disable() without an
-> > #ifdef?
-> >
-> > also, that TSC quirk should probably be turned into an explicit quirk
-> > function pointer initialized by the early-init NUMAQ code and left NULL
-> > by everything else - like we it on visws. See include/asm-x86/setup.h:
-> >
-> >  /*
-> >  * Any setup quirks to be performed?
-> >  */
-> >  extern int (*arch_time_init_quirk)(void);
-> >  extern int (*arch_pre_intr_init_quirk)(void);
-> >  extern int (*arch_intr_init_quirk)(void);
-> >  extern int (*arch_trap_init_quirk)(void);
-> >  extern char * (*arch_memory_setup_quirk)(void);
-> >  extern int (*mach_get_smp_config_quirk)(unsigned int early);
-> >  extern int (*mach_find_smp_config_quirk)(unsigned int reserve);
-> >
-> > the goal is to offload all non-standard setup that is not a reasonable
-> > deviation of some of the major vendors to such a quirk handler. Quirks
-> > are a lot easier to maintain and a lot easier to think about - they can
-> > be just by-line functionality to the main body of default behavior.
+> Provide a generic framework that platform may choose
+> to support clocks api. In particular this provides
+> platform-independant struct clk definition, a full
+> implementation of clocks api and a set of functions
+> for registering and unregistering clocks in a safe way.
 > 
-> looks neat.
-> 
-> can we use one big arch_mach_quicks struct..?
 
-yeah, good idea.
+So I'll merge this into -mm and, unless there be suitably-serious
+objections, into 2.6.27.
 
-Perhaps name it x86_quirks to make it really short to check it. Then 
-consolidate all of our scattered quirks into it. I bet we could get some 
-of the paravirt details into this as well.
+The other two patches got rejects all over the place - so many that I
+didn't even attempt to fix them.  Perhaps you were developing againt
+Linus's tree, which really is not a successful strategy late in the
+-rc's.
 
-So something like:
+>
+> ...
+>
+> +struct clk_priv {
+> +	struct list_head node;
+> +#ifdef CONFIG_DEBUG_SPINLOCK
+> +	struct lock_class_key lock_key;
+> +#endif
 
-        if (arch_time_init_quirk) {
-                /*
-                 * A nonzero return code does not mean failure, it means
-                 * that the architecture quirk does not want any
-                 * generic (timer) setup to be performed after this:
-                 */
-                if (arch_time_init_quirk())
-                        return;
-        }
+hm, what's this unusual-but-uncommented code doing in here?  Please
+always comment unusual code.
 
-Would turn into:
+There is already a zero-byte version of `struct lock_class_key' in
+include/linux/lockdep.h, dependent upon CONFIG_LOCKDEP.
 
-	if (x86_quirks.time_init) {
-		if (x86_quirks.time_init())
-			return;
-	}
-	[ ... regular init ...]
+Methinks some explanation and fixing is needed here.
 
-So that the return code of x86_quirks.time_init() can be used to signal 
-whether a quirk wants the regular init to run or not. In the VisWS case 
-this allowed further consolidation.
+>
+> ...
+>
+> +#include "genclk.h"
+> +
+> +LIST_HEAD(clocks);
 
-We dont want any chaining (i.e. dont use notifiers or anything) as these 
-quirks are all exclusive anyway.
+whoa.  We have a kernel-wide symbol called "locks"?
 
-	Ingo
+afaict that won't cause any linkage errors, but those compilation units
+which already have static variables called "clocks" will explode if
+they deliberately or accidentally include your header file.
+
+I suggest that this be renamed to something more subsystem-specific. 
+genclk_clocks?
+
+Or, better, refactor the code a bit and make it static.  Do other
+compilation units _really_ need to go poking into genclk's internals? 
+Would it be better to always access this data structure via API calls?
+
+> +DEFINE_SPINLOCK(clocks_lock);
+
+genclk_clocks_lock.
+
+> +static int clk_can_get_def(struct clk *clk, struct device *dev)
+> +{
+> +	return 1;
+> +}
+> +
+> +static unsigned long clk_get_rate_def(struct clk *clk)
+> +{
+> +	return 0;
+> +}
+> +
+> +static long clk_round_rate_def(struct clk *clk, unsigned long hz, bool apply)
+> +{
+> +	long rate = clk->ops->get_rate(clk);
+> +
+> +	if (apply && hz != rate)
+> +		return -EINVAL;
+> +
+> +	return rate;
+> +}
+> +
+> +static void clk_release(struct kref *ref)
+> +{
+> +	struct clk *clk = container_of(ref, struct clk, priv.ref);
+> +
+> +	BUG_ON(!clk->release);
+> +
+> +	if (clk->parent)
+> +		kref_get(&clk->parent->priv.ref);
+> +
+> +	clk->release(clk);
+> +}
+> +EXPORT_SYMBOL(clk_round_rate);
+
+This export is in the wrong place.
+
+> +struct clk* clk_get_parent(struct clk *clk)
+
+checkpatch.pl, please.
+
+> +{
+> +	struct clk *parent;
+> +
+> +	spin_lock(&clk->priv.lock);
+> +
+> +	parent = clk->parent;
+> +	kref_get(&parent->priv.ref);
+> +
+> +	spin_unlock(&clk->priv.lock);
+> +
+> +	return parent;
+> +}
+> +EXPORT_SYMBOL(clk_get_parent);
+
+As this is a new kernel-wide utility library, it is appropriate that
+all of its public interfaces (at least) be documented.  An appropriate
+way of doing that is via kerneldoc annotation.  Please don't forget to
+document return values and call environment prerequisites (eg: requires
+foo_lock, may be called from interrupt context, etc, etc).
+
+> +int clk_set_parent(struct clk *clk, struct clk *parent)
+> +{
+> +	int rc = -EINVAL;
+> +	struct clk *old;
+> +
+> +	spin_lock(&clk->priv.lock);
+> +
+> +	if (!clk->ops->set_parent)
+> +		goto out;
+> +
+> +	old = clk->parent;
+> +
+> +	rc = clk->ops->set_parent(clk, parent);
+> +	if (rc)
+> +		goto out;
+> +
+> +	kref_get(&parent->priv.ref);
+> +	clk->parent = parent;
+> +
+> +	clk_debugfs_reparent(clk, old, parent);
+> +
+> +	kref_put(&old->priv.ref, clk_release);
+> +
+> +out:
+> +	spin_unlock(&clk->priv.lock);
+> +
+> +	return rc;
+> +}
+> +EXPORT_SYMBOL(clk_set_parent);
+> +
+> +int clk_register(struct clk *clk)
+> +{
+> +	int rc;
+> +
+> +	BUG_ON(!clk->ops);
+> +	BUG_ON(!clk->ops->enable || !clk->ops->disable);
+> +
+> +	if (!clk->ops->can_get)
+> +		clk->ops->can_get = clk_can_get_def;
+> +	if (!clk->ops->get_rate)
+> +		clk->ops->get_rate = clk_get_rate_def;
+> +	if (!clk->ops->round_rate)
+> +		clk->ops->round_rate = clk_round_rate_def;
+> +
+> +	kref_init(&clk->priv.ref);
+> +#ifdef CONFIG_DEBUG_SPINLOCK
+> +	__spin_lock_init(&clk->priv.lock, "&clk->priv.lock", &clk->priv.lock_key);
+> +#else
+> +	spin_lock_init(&clk->priv.lock);
+> +#endif
+
+Something's wrong here, I suspect.
+
+> +	spin_lock(&clocks_lock);
+> +	if (clk->parent)
+> +		kref_get(&clk->parent->priv.ref);
+> +	list_add_tail(&clk->priv.node, &clocks);
+> +
+> +	rc = clk_debugfs_init(clk);
+> +	if (rc) {
+> +		list_del(&clk->priv.node);
+> +		kref_put(&clk->priv.ref, clk_release);
+> +	}
+> +
+> +	spin_unlock(&clocks_lock);
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL(clk_register);
+> +
+> +void clk_unregister(struct clk *clk)
+> +{
+> +	spin_lock(&clocks_lock);
+> +	clk_debugfs_clean(clk);
+
+can't call debugfs_remove() under spinlock.
+
+> +	list_del(&clk->priv.node);
+> +	kref_put(&clk->priv.ref, clk_release);
+
+Might not be able to call kref_put(), either.
+
+> +	spin_unlock(&clocks_lock);
+> +}
+> +EXPORT_SYMBOL(clk_unregister);
+
+Please always test code with all kernel debug options enabled.  See
+Documentation/SubmitChecklist.
+
+>
+> ...
+>
+> +int clk_debugfs_init(struct clk *clk)
+> +{
+> +	struct dentry *dir;
+> +	struct dentry *info;
+> +
+> +	/*
+> +	 * We initialise it here, because this call can be executed from within arch code,
+> +	 * so specifyint correct initialisation place is a bit tricky
+> +	 */
+> +	if (!clkdir)
+> +		clkdir = debugfs_create_dir("clocks", NULL);
+
+Missed a check for debugfs_create_dir() failure.
+
+> +	dir = debugfs_create_dir(clk->name,
+> +			clk->parent ? clk->parent->dir : clkdir);
+> +
+> +	if (IS_ERR(dir))
+> +		return PTR_ERR(dir);
+> +
+> +	info = debugfs_create_file("info", S_IFREG | S_IRUGO,
+> +			dir, clk, &genclk_operations);
+> +
+> +	if (IS_ERR(info)) {
+> +		debugfs_remove(dir);
+> +		return PTR_ERR(info);
+> +	}
+> +
+> +	clk->dir = dir;
+> +	clk->priv.info = info;
+> +
+> +	return 0;
+> +}
+> +
+>
+> ...
+>
+> +void clk_debugfs_reparent(struct clk *clk, struct clk *old, struct clk *new)
+> +{
+> +	struct dentry *oldd = old ? old->dir : clkdir;
+> +	struct dentry *newd = new ? new->dir : clkdir;
+> +	struct dentry *dir = debugfs_rename(oldd, clk->dir, newd, clk->name);
+> +
+> +	if (IS_ERR(dir))
+> +		WARN_ON(1);
+> +	else
+> +		clk->dir = dir;
+> +}
+
+Could do
+
+	if (!WARN_ON(IS_ERR(dir)))
+		clk->dir = dir;
+
+Or not.  What you have there is clearer.
+
+Quite a bit of rework is needed here and it needs to be fully retested. 
+I won't apply it after all.
+
