@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754168AbYGMKnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753914AbYGMKrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754168AbYGMKnp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 06:43:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbYGMKnf
+	id S1753914AbYGMKrA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 06:47:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbYGMKqw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 06:43:35 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52492 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753919AbYGMKne (ORCPT
+	Sun, 13 Jul 2008 06:46:52 -0400
+Received: from ti-out-0910.google.com ([209.85.142.185]:32193 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751565AbYGMKqv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 06:43:34 -0400
-Date: Sun, 13 Jul 2008 11:25:43 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Jakub W. Jozwicki" <jozwicki@aster.pl>
-Cc: linux-kernel@vger.kernel.org, jgarzik@redhat.com
-Subject: Re: [PATCH 2.6.25.10 1/2] libata: fix locking for kmap_atomic
-Message-ID: <20080713112543.2dc9d6f7@lxorguk.ukuu.org.uk>
-In-Reply-To: <200807130127.36706.jozwicki@aster.pl>
-References: <200807130127.36706.jozwicki@aster.pl>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 13 Jul 2008 06:46:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=WRgtPixqPllKNjUfWlnA9eX9yS1Nc0Oq8mvlIexJnOGjUTXud37O9RYmYYO6Hhz6Vu
+         5oKBzeWFssPzFAzXghh7Kncv08jaRPxR8/FPcrrgtvRkLr7lquzhXr1/qe0fjxA4JrSe
+         kx/HGI55jKtbHlI318tnjfHOD6mv6UG9rLs58=
+From: tom.leiming@gmail.com
+To: jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       Ming Lei <tom.leiming@gmail.com>
+Subject: [PATCH] PCI:pciehp:remove unnecessary volatile in struct controller
+Date: Sun, 13 Jul 2008 18:46:42 +0800
+Message-Id: <1215946002-4775-1-git-send-email-tom.leiming@gmail.com>
+X-Mailer: git-send-email 1.5.6.rc2.45.gdc92c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 Jul 2008 01:27:36 +0200
-"Jakub W. Jozwicki" <jozwicki@aster.pl> wrote:
+From: Ming Lei <tom.leiming@gmail.com>
 
-> Change locking surrounding kmap_atomic from local_irqsave to 
-> local_irqsave_nort. This fixes issues with PREEMPT_RT.
->  
-> Signed-off-by:  Jakub Jozwicki <jozwicki@aster.pl>
+Proper memory barriers have been added to order accesses
+to ->cmd_busy, so volatile declaration for cmd_busy can
+be removed.
 
-The right way to fix this is to use a bounce buffer. I sent Jeff patches
-to do that a couple of times. I'm not sure what has happened to them
-since ? So NAK this, we should apply the patch to actually fix the bug
-instead.
+Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+---
+ drivers/pci/hotplug/pciehp.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Jeff ?
+diff --git a/drivers/pci/hotplug/pciehp.h b/drivers/pci/hotplug/pciehp.h
+index 79c9dda..5e2becd 100644
+--- a/drivers/pci/hotplug/pciehp.h
++++ b/drivers/pci/hotplug/pciehp.h
+@@ -96,7 +96,7 @@ struct controller {
+ 	u32 slot_cap;
+ 	u8 cap_base;
+ 	struct timer_list poll_timer;
+-	volatile int cmd_busy;
++	int cmd_busy;
+ 	unsigned int no_cmd_complete:1;
+ };
+ 
+-- 
+1.5.6.rc2.45.gdc92c
 
-Alan
