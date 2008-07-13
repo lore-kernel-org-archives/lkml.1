@@ -1,115 +1,370 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756529AbYGMUyB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756658AbYGMUyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756529AbYGMUyB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 16:54:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755368AbYGMUxw
+	id S1756658AbYGMUyV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 16:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755504AbYGMUxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 16:53:52 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:46797 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755035AbYGMUxu (ORCPT
+	Sun, 13 Jul 2008 16:53:54 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:8512 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755040AbYGMUxw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 16:53:50 -0400
+	Sun, 13 Jul 2008 16:53:52 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=tm3gvBHf/Hg4Z0zMMgA2JzMK49yFU2SoS1nDHKHZ3dYCDmCfZZ67Qve4TcDYPmLTE4
-         oIVAeoqzD/K3+tMwi+ak5/Iwyqn+mZ/yfazumL9BGfoKu8M6/L3whH0G3nE1Fy2z1L6f
-         5VnSzKu34JFhq0sug+PAjdDyE99QyvKTzwYy0=
-Message-ID: <dd18b0c30807131353l3608ab5l248ae799994cc58d@mail.gmail.com>
-Date: Sun, 13 Jul 2008 20:53:49 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Hugh Dickins" <hugh@veritas.com>
-Subject: Re: [Bug #10724] ACPI: EC: GPE storm detected, disabling EC GPE
-Cc: "Vegard Nossum" <vegard.nossum@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
-       "Alexey Starikovskiy" <astarikovskiy@suse.de>
-In-Reply-To: <Pine.LNX.4.64.0807132122001.16625@blonde.site>
+        b=lUF3qxjN4LB2WMU24oOfYweoF+hqkykM79IkCFZB9IcC8IOhLY4XmOFXMwkcFzrrL7
+         mc9vln8DSOhGLAu9+thpd7tMds0nPR78a75wM/leVML7en53LM4hyBquIjKC0r1vAadA
+         rKUKhNvkvedBFU3yjUh9VCGwsIADp2et62x0A=
+Message-ID: <bc64b4640807131353j32487b90o645d2040e26ff6f0@mail.gmail.com>
+Date: Mon, 14 Jul 2008 00:53:51 +0400
+From: Dmitry <dbaryshkov@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/3] genclk: add generic framework for managing clocks.
+Cc: linux-kernel@vger.kernel.org,
+       "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>,
+       "Russell King" <rmk+lkml@arm.linux.org.uk>,
+       "Paul Mundt" <lethal@linux-sh.org>,
+       "pHilipp Zabel" <philipp.zabel@gmail.com>,
+       "Pavel Machek" <pavel@ucw.cz>, tony@atomide.com, paul@pwsan.com,
+       "David Brownell" <david-b@pacbell.net>,
+       "Mark Brown" <broonie@opensource.wolfsonmicro.com>, ian <spyro@f2s.com>
+In-Reply-To: <20080712234823.e632c7f9.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Y1jK9GMA8kJ.A.qOH.7GleIB@albercik>
-	 <c6ZRbn0adb.A.LgB.aKleIB@albercik>
-	 <dd18b0c30807131234n5edf3e1dt93022a45d427b1fd@mail.gmail.com>
-	 <19f34abd0807131252k5499e6e2sc93f8cd70f488b7e@mail.gmail.com>
-	 <Pine.LNX.4.64.0807132122001.16625@blonde.site>
+References: <20080708134242.GA6176@doriath.ww600.siemens.net>
+	 <20080708134336.GA6240@doriath.ww600.siemens.net>
+	 <20080712234823.e632c7f9.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 13, 2008 at 8:27 PM, Hugh Dickins <hugh@veritas.com> wrote:
-> On Sun, 13 Jul 2008, Vegard Nossum wrote:
->> On Sun, Jul 13, 2008 at 9:34 PM, Justin Mattock <justinmattock@gmail.com> wrote:
->> > On Sun, Jul 13, 2008 at 6:00 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> >> This message has been generated automatically as a part of a report
->> >> of recent regressions.
->> >>
->> >> The following bug entry is on the current list of known regressions
->> >> from 2.6.25.  Please verify if it still should be listed.
->> >>
->> >>
->> >> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10724
->> >> Subject         : ACPI: EC: GPE storm detected, disabling EC GPE
->> >> Submitter       : Justin Mattock <justinmattock@gmail.com>
->> >> Date            : 2008-05-16 6:17 (59 days old)
->> >> References      : http://marc.info/?l=linux-kernel&m=121091875711824&w=4
->> >>                  http://lkml.org/lkml/2008/5/18/168
->> >>                  http://lkml.org/lkml/2008/5/25/195
->> >> Patch           : http://bugzilla.kernel.org/attachment.cgi?id=16364&action=view
->> >>                  http://bugzilla.kernel.org/attachment.cgi?id=16365&action=view
->>
->> I didn't follow the discussion, but I may contribute the following information:
->>
->> This message first appears in my logs on May 16. That was with kernel
->> version 2.6.24.5-85.fc8. The kernel I used before that was
->> 2.6.24.4-64.fc8 (May 3). My logs go back to November 8
->> (2.6.23.1-42.fc8). So we can hardly consider this a regression since
->> 2.6.25, but rather one since 2.6.24?
->>
->> (I'll also note that this message appears quite infrequently here.
->> Only 42 times in 219 boot-ups. So it would be hard to bisect, but I'm
->> guessing the error was introduced somewhere between 2.6.24.4 and
->> 2.6.24.5.)
+2008/7/13, Andrew Morton <akpm@linux-foundation.org>:
+> On Tue, 8 Jul 2008 17:43:36 +0400 Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
 >
-> You're comparing against Fedora kernels, which often contain
-> patches which haven't got into mainline yet.  As in this case.
-> Unless it used to be assembled from separate pieces, there was
-> no "GPE storm detected" message in 2.6.24.N or 2.6.25.N: it was
-> added in 2.6.26-rc1.
+>  > Provide a generic framework that platform may choose
+>  > to support clocks api. In particular this provides
+>  > platform-independant struct clk definition, a full
+>  > implementation of clocks api and a set of functions
+>  > for registering and unregistering clocks in a safe way.
+>  >
 >
-> I sometimes see it too, on a Fujitsu-Siemens laptop.
 >
-> Hugh
+> So I'll merge this into -mm and, unless there be suitably-serious
+>  objections, into 2.6.27.
 >
+>  The other two patches got rejects all over the place - so many that I
+>  didn't even attempt to fix them.  Perhaps you were developing againt
+>  Linus's tree, which really is not a successful strategy late in the
+>  -rc's.
 
-Hello;
-What I've been using is acpi_osi=Darwin so I don't have to take the
-gpe storm detector mechanism out of ec.c
-The two areas of interest are when not setting a boot option this
-message is triggered by too many
-interrupts with BAT0 i.g. /sys/firmware/acpi/interrupts "gpe17 on a
-macbook2,2",
-Now when using the Darwin option, the interrupts are very little, but
-at the cost of loosing any battery info
-but I am receiving a reaction with pommed i.g. unplugging the A/C
-adapter does dim the screen.
-Also I'm not sure if the smart battery was designed for the macbook,
-but when using Darwin option, my system will
-freeze upon booting(as a note alexy gave me some patches to test on
-monday, but still was unable to load the module)
-overall from my perspective; trying to tweak the BAT0 mechanism with
-it's interrupts could fix this, and/or
-port the sbs module to be used with the Darwin option with interrupts
-under control, could also be another option,
-or have all two working this way the user can decide what they prefferer.
- Personally tweaking the interrupts with BAT0 seems to be more of an
-easier solution,
-but then again could cause other problems elsewhere.
+Strange. They were developed against Russell's arm:devel. Please check
+against that tree.
+
+>
+>  >
+>  > ...
+>
+> >
+>  > +struct clk_priv {
+>  > +     struct list_head node;
+>  > +#ifdef CONFIG_DEBUG_SPINLOCK
+>  > +     struct lock_class_key lock_key;
+>  > +#endif
+>
+>
+> hm, what's this unusual-but-uncommented code doing in here?  Please
+>  always comment unusual code.
+>
+>  There is already a zero-byte version of `struct lock_class_key' in
+>  include/linux/lockdep.h, dependent upon CONFIG_LOCKDEP.
+>
+>  Methinks some explanation and fixing is needed here.
+
+Fine, I'll drop that conditional compilation and always use struct
+lock_class_key.
+The whole thing is required to make lockdep work with clocklib.
+Otherwise it thinks that all locks inside struct clk belong to the
+same class and "detects" deadlock when code tries to lock a clock,
+when already holding the lock for the other one.
+
+>
+>  >
+>  > ...
+>
+> >
+>  > +#include "genclk.h"
+>  > +
+>  > +LIST_HEAD(clocks);
+>
+>
+> whoa.  We have a kernel-wide symbol called "locks"?
+>
+>  afaict that won't cause any linkage errors, but those compilation units
+>  which already have static variables called "clocks" will explode if
+>  they deliberately or accidentally include your header file.
+
+The header file defining the "clocks" and clocks_lock is for private
+use only, e.g. the debugfs code. I will change that to
+genclk-namespace those.
+
+>  I suggest that this be renamed to something more subsystem-specific.
+>  genclk_clocks?
+>
+>  Or, better, refactor the code a bit and make it static.  Do other
+>  compilation units _really_ need to go poking into genclk's internals?
+>  Would it be better to always access this data structure via API calls?
+>
+>  > +DEFINE_SPINLOCK(clocks_lock);
+>
+>  genclk_clocks_lock.
+>
+>
+>  > +static int clk_can_get_def(struct clk *clk, struct device *dev)
+>  > +{
+>  > +     return 1;
+>  > +}
+>  > +
+>  > +static unsigned long clk_get_rate_def(struct clk *clk)
+>  > +{
+>  > +     return 0;
+>  > +}
+>  > +
+>  > +static long clk_round_rate_def(struct clk *clk, unsigned long hz, bool apply)
+>  > +{
+>  > +     long rate = clk->ops->get_rate(clk);
+>  > +
+>  > +     if (apply && hz != rate)
+>  > +             return -EINVAL;
+>  > +
+>  > +     return rate;
+>  > +}
+>  > +
+>  > +static void clk_release(struct kref *ref)
+>  > +{
+>  > +     struct clk *clk = container_of(ref, struct clk, priv.ref);
+>  > +
+>  > +     BUG_ON(!clk->release);
+>  > +
+>  > +     if (clk->parent)
+>  > +             kref_get(&clk->parent->priv.ref);
+>  > +
+>  > +     clk->release(clk);
+>  > +}
+>  > +EXPORT_SYMBOL(clk_round_rate);
+>
+>
+> This export is in the wrong place.
+>
+>
+>  > +struct clk* clk_get_parent(struct clk *clk)
+>
+>
+> checkpatch.pl, please.
+>
+>
+>  > +{
+>  > +     struct clk *parent;
+>  > +
+>  > +     spin_lock(&clk->priv.lock);
+>  > +
+>  > +     parent = clk->parent;
+>  > +     kref_get(&parent->priv.ref);
+>  > +
+>  > +     spin_unlock(&clk->priv.lock);
+>  > +
+>  > +     return parent;
+>  > +}
+>  > +EXPORT_SYMBOL(clk_get_parent);
+>
+>
+> As this is a new kernel-wide utility library, it is appropriate that
+>  all of its public interfaces (at least) be documented.  An appropriate
+>  way of doing that is via kerneldoc annotation.  Please don't forget to
+>  document return values and call environment prerequisites (eg: requires
+>  foo_lock, may be called from interrupt context, etc, etc).
+>
+>
+>  > +int clk_set_parent(struct clk *clk, struct clk *parent)
+>  > +{
+>  > +     int rc = -EINVAL;
+>  > +     struct clk *old;
+>  > +
+>  > +     spin_lock(&clk->priv.lock);
+>  > +
+>  > +     if (!clk->ops->set_parent)
+>  > +             goto out;
+>  > +
+>  > +     old = clk->parent;
+>  > +
+>  > +     rc = clk->ops->set_parent(clk, parent);
+>  > +     if (rc)
+>  > +             goto out;
+>  > +
+>  > +     kref_get(&parent->priv.ref);
+>  > +     clk->parent = parent;
+>  > +
+>  > +     clk_debugfs_reparent(clk, old, parent);
+>  > +
+>  > +     kref_put(&old->priv.ref, clk_release);
+>  > +
+>  > +out:
+>  > +     spin_unlock(&clk->priv.lock);
+>  > +
+>  > +     return rc;
+>  > +}
+>  > +EXPORT_SYMBOL(clk_set_parent);
+>  > +
+>  > +int clk_register(struct clk *clk)
+>  > +{
+>  > +     int rc;
+>  > +
+>  > +     BUG_ON(!clk->ops);
+>  > +     BUG_ON(!clk->ops->enable || !clk->ops->disable);
+>  > +
+>  > +     if (!clk->ops->can_get)
+>  > +             clk->ops->can_get = clk_can_get_def;
+>  > +     if (!clk->ops->get_rate)
+>  > +             clk->ops->get_rate = clk_get_rate_def;
+>  > +     if (!clk->ops->round_rate)
+>  > +             clk->ops->round_rate = clk_round_rate_def;
+>  > +
+>  > +     kref_init(&clk->priv.ref);
+>  > +#ifdef CONFIG_DEBUG_SPINLOCK
+>  > +     __spin_lock_init(&clk->priv.lock, "&clk->priv.lock", &clk->priv.lock_key);
+>  > +#else
+>  > +     spin_lock_init(&clk->priv.lock);
+>  > +#endif
+>
+>
+> Something's wrong here, I suspect.
+
+See above. That was IMO the most clean way to make this code work with lockdep.
+
+>  > +     spin_lock(&clocks_lock);
+>  > +     if (clk->parent)
+>  > +             kref_get(&clk->parent->priv.ref);
+>  > +     list_add_tail(&clk->priv.node, &clocks);
+>  > +
+>  > +     rc = clk_debugfs_init(clk);
+>  > +     if (rc) {
+>  > +             list_del(&clk->priv.node);
+>  > +             kref_put(&clk->priv.ref, clk_release);
+>  > +     }
+>  > +
+>  > +     spin_unlock(&clocks_lock);
+>  > +
+>  > +     return 0;
+>  > +}
+>  > +EXPORT_SYMBOL(clk_register);
+>  > +
+>  > +void clk_unregister(struct clk *clk)
+>  > +{
+>  > +     spin_lock(&clocks_lock);
+>  > +     clk_debugfs_clean(clk);
+>
+>
+> can't call debugfs_remove() under spinlock.
+
+Because of mutex usage? I'll move it outside of the lock.
+
+>  > +     list_del(&clk->priv.node);
+>  > +     kref_put(&clk->priv.ref, clk_release);
+>
+>
+> Might not be able to call kref_put(), either.
+
+I'll move it outside of the spinlock. But tell me please, why?
+
+>
+>
+>  > +     spin_unlock(&clocks_lock);
+>  > +}
+>  > +EXPORT_SYMBOL(clk_unregister);
+>
+>
+> Please always test code with all kernel debug options enabled.  See
+>  Documentation/SubmitChecklist.
+
+Usually I do build code with all debugs enabled...
+
+>
+>  >
+>  > ...
+>
+> >
+>  > +int clk_debugfs_init(struct clk *clk)
+>  > +{
+>  > +     struct dentry *dir;
+>  > +     struct dentry *info;
+>  > +
+>  > +     /*
+>  > +      * We initialise it here, because this call can be executed from within arch code,
+>  > +      * so specifyint correct initialisation place is a bit tricky
+>  > +      */
+>  > +     if (!clkdir)
+>  > +             clkdir = debugfs_create_dir("clocks", NULL);
+>
+>
+> Missed a check for debugfs_create_dir() failure
+
+>  > +     dir = debugfs_create_dir(clk->name,
+>  > +                     clk->parent ? clk->parent->dir : clkdir);
+>  > +
+>  > +     if (IS_ERR(dir))
+>  > +             return PTR_ERR(dir);
+>  > +
+>  > +     info = debugfs_create_file("info", S_IFREG | S_IRUGO,
+>  > +                     dir, clk, &genclk_operations);
+>  > +
+>  > +     if (IS_ERR(info)) {
+>  > +             debugfs_remove(dir);
+>  > +             return PTR_ERR(info);
+>  > +     }
+>  > +
+>  > +     clk->dir = dir;
+>  > +     clk->priv.info = info;
+>  > +
+>  > +     return 0;
+>  > +}
+>  > +
+>  >
+>  > ...
+>  >
+>
+> > +void clk_debugfs_reparent(struct clk *clk, struct clk *old, struct clk *new)
+>  > +{
+>  > +     struct dentry *oldd = old ? old->dir : clkdir;
+>  > +     struct dentry *newd = new ? new->dir : clkdir;
+>  > +     struct dentry *dir = debugfs_rename(oldd, clk->dir, newd, clk->name);
+>  > +
+>  > +     if (IS_ERR(dir))
+>  > +             WARN_ON(1);
+>  > +     else
+>  > +             clk->dir = dir;
+>  > +}
+>
+>
+> Could do
+>
+>         if (!WARN_ON(IS_ERR(dir)))
+>                 clk->dir = dir;
+>
+>  Or not.  What you have there is clearer.
+
+I'll leave my version, as it's really more clean.
+
+>
+>  Quite a bit of rework is needed here and it needs to be fully retested.
+>  I won't apply it after all.
+
+The updated patch will be posted few hours later.
+
 
 -- 
-Justin P. Mattock
+With best wishes
+Dmitry
