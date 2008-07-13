@@ -1,86 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbYGMQXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbYGMQ0N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754585AbYGMQXs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 12:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbYGMQXk
+	id S1754693AbYGMQ0N (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 12:26:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbYGMQZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 12:23:40 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:27601 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752063AbYGMQXj (ORCPT
+	Sun, 13 Jul 2008 12:25:57 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:64465 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752123AbYGMQZz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 12:23:39 -0400
+	Sun, 13 Jul 2008 12:25:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=HtTaxEu4xCXSMyLCf5BGxIrt37oFlDHE15qGjAReWCixSYDocRoUYafpgUeiv25taV
-         zE9TT5n5kI/kK/BQyTsVmE17Q0D/EAzMiwKJwrJG4JJVt5MFt41uF7qbrzw4eMa0Gs4s
-         lLYF8eisT4X8qGMxj5IanLOurFael3MV/iRCc=
-Date: Sun, 13 Jul 2008 20:23:37 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] lapic calibration results fix
-Message-ID: <20080713162337.GC7459@asus>
-References: <20080713113734.GB7459@asus>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:references;
+        b=SCRgf06Gr3RhwdMZZHoTr975NLEL54XlJbCT3X5r639yv9ia6pUSNQ2QVEQd1YoSAk
+         Hsky1pmpjsTnEVyDFt2KgNeMpvUvMpSGWQzt4MPIL3ud7D/YG8a5SO5eqmbvlFERkX+h
+         3vNAPu00yPG8ea8cYy6zbcVqnJyz49QV2B3cw=
+Message-ID: <19f34abd0807130925g3001109cm6bdee9baad701960@mail.gmail.com>
+Date: Sun, 13 Jul 2008 18:25:54 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Soeren Sonnenburg" <kernel@nn7.de>
+Subject: Re: 2.6.26rc9+git bluetooth/rfcomm oops
+Cc: "Dave Young" <hidave.darkstar@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+In-Reply-To: <1215945125.4842.13.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080713113734.GB7459@asus>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_21806_19432089.1215966354630"
+References: <1215945125.4842.13.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Sun, Jul 13, 2008 at 03:37:34PM +0400]
-| Ingo, Maciej,
-| 
-| it seems I found a bit strange code snippet in apic_32.c:setup_boot_APIC_clock.
-| We set local_apic_timer_verify_ok = 1 before checking the results. I think
-| the following patch make sense. Please take a look on.
-| 
-| ---
-| We set lapic flag that clocksource calibration is
-| fine too early. Fix it.
-| 
-| Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-| ---
-| 
-| Index: linux-2.6.git/arch/x86/kernel/apic_32.c
-| ===================================================================
-| --- linux-2.6.git.orig/arch/x86/kernel/apic_32.c	2008-07-13 15:25:20.000000000 +0400
-| +++ linux-2.6.git/arch/x86/kernel/apic_32.c	2008-07-13 15:31:03.000000000 +0400
-| @@ -489,8 +489,6 @@ void __init setup_boot_APIC_clock(void)
-|  		    calibration_result / (1000000 / HZ),
-|  		    calibration_result % (1000000 / HZ));
-|  
-| -	local_apic_timer_verify_ok = 1;
-| -
-|  	/*
-|  	 * Do a sanity check on the APIC calibration result
-|  	 */
-| @@ -504,6 +502,8 @@ void __init setup_boot_APIC_clock(void)
-|  		return;
-|  	}
-|  
-| +	local_apic_timer_verify_ok = 1;
-| +
-|  	/* We trust the pm timer based calibration */
-|  	if (!pm_referenced) {
-|  		apic_printk(APIC_VERBOSE, "... verify APIC timer\n");
+------=_Part_21806_19432089.1215966354630
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Letme clarify a bit situation why I propose this path (it's not that
-clear from its description).
+On Sun, Jul 13, 2008 at 12:32 PM, Soeren Sonnenburg <kernel@nn7.de> wrote:
+> Hi,
+>
+> this oops happened after a couple of s2ram cycles so it might be very
+> well crap. However I somehow triggered it by /etc/init.d/bluetooth
+> stop/start's which also call hid2hci maybe even a connection was about
+> to be established at that time. As I remember having seen a problem like
+> this before I thought I report it (even though I have a madwifi tainted
+> kernel).
+>
+> [drm] Num pipes: 1
+> kobject_add_internal failed for rfcomm0 with -EEXIST, don't try to register things with the same name in the same directory.
 
-While calibrating apic timer we use different 'flags' signaling if it
-was success/fail. On 64bit platform lapic_timer_setup() does check
-for CLOCK_EVT_FEAT_DUMMY bit which is set by default and cleared on
-successfully calibrated timer. So 64bit is fine now. On 32bit we
-use a different approach - local_apic_timer_verify_ok flag _BUT_
-as I see it being set too early _before_ calibration result is checked
-so we could have the following - kernel reports user that APIC timer
-is too slow and disabled but local_apic_timer_verify_ok remains set
-to 1 instead of 0.
+Hi,
 
-		- Cyrill -
+Thanks for the report.
+
+I was able to reproduce your Oops:
+
+kobject_add_internal failed for rfcomm0 with -EEXIST, don't try to
+register things with the same name in the same directory.
+Pid: 2534, comm: a.out Not tainted 2.6.26-rc9-00132-g9df2fe9 #24
+ [<c0210161>] kobject_add_internal+0x108/0x13e
+ [<c0210478>] kobject_add+0x4a/0x4e
+ [<c026e258>] device_add+0x62/0x446
+ [<c020feb9>] kobject_init+0x32/0x53
+ [<c026e6c4>] device_create_vargs+0x78/0x99
+ [<c026e707>] device_create+0x22/0x26
+ [<c02521be>] tty_register_device+0x97/0xa2
+ [<c0110000>] __cpu_disable+0x10b/0x130
+ [<c03721c8>] sk_prot_alloc+0x1c/0x61
+ [<c03ea86e>] rfcomm_dev_ioctl+0x213/0x582
+ [<c03e9342>] rfcomm_sock_ioctl+0x1e/0x2d
+ [<c03715c5>] sock_ioctl+0x152/0x175
+ [<c0371473>] sock_ioctl+0x0/0x175
+ [<c0166538>] vfs_ioctl+0x1c/0x5d
+ [<c01667b6>] do_vfs_ioctl+0x23d/0x254
+ [<c037119d>] sys_socketcall+0x51/0x181
+ [<c01667f9>] sys_ioctl+0x2c/0x43
+ [<c0103569>] sysenter_past_esp+0x6a/0x91
+ =======================
+
+This is because the device may be unregistered even though a reference
+to it is held. When we try to register it again, the kobject layer
+burps because the tty parts have not been unregistered yet. (This only
+happens when the device is finally destroyed, i.e. no references.)
+
+I don't know how to fix this, but I've attached a reproducer and added
+a couple of Ccs.
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
+
+------=_Part_21806_19432089.1215966354630
+Content-Type: text/x-csrc; name=rfcomm.c
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_filutq0c0
+Content-Disposition: attachment; filename=rfcomm.c
+
+I2luY2x1ZGUgPHN5cy9pb2N0bC5oPgojaW5jbHVkZSA8c3lzL3NvY2tldC5oPgojaW5jbHVkZSA8
+c3lzL3R5cGVzLmg+CiNpbmNsdWRlIDxzeXMvd2FpdC5oPgoKI2luY2x1ZGUgPGVycm5vLmg+CiNp
+bmNsdWRlIDxmY250bC5oPgojaW5jbHVkZSA8c3RkaW8uaD4KI2luY2x1ZGUgPHN0ZGludC5oPgoj
+aW5jbHVkZSA8c3RkbGliLmg+CiNpbmNsdWRlIDxzdHJpbmcuaD4KI2luY2x1ZGUgPHVuaXN0ZC5o
+PgoKI2RlZmluZSBSRkNPTU1DUkVBVEVERVYJCV9JT1coJ1InLCAyMDAsIGludCkKI2RlZmluZSBS
+RkNPTU1SRUxFQVNFREVWCV9JT1coJ1InLCAyMDEsIGludCkKI2RlZmluZSBCVFBST1RPX1JGQ09N
+TSAgMwoKdHlwZWRlZiB1aW50OF90IHU4Owp0eXBlZGVmIHVpbnQzMl90IHUzMjsKdHlwZWRlZiBp
+bnQxNl90IHMxNjsKdHlwZWRlZiB1aW50OF90IF9fdTg7CgovKiBCRCBBZGRyZXNzICovCnR5cGVk
+ZWYgc3RydWN0IHsKCV9fdTggYls2XTsKfSBfX2F0dHJpYnV0ZV9fKChwYWNrZWQpKSBiZGFkZHJf
+dDsKCnN0cnVjdCByZmNvbW1fZGV2X3JlcSB7CglzMTYgICAgICBkZXZfaWQ7Cgl1MzIgICAgICBm
+bGFnczsKCWJkYWRkcl90IHNyYzsKCWJkYWRkcl90IGRzdDsKCXU4ICAgICAgIGNoYW5uZWw7Cn07
+Cgp2b2lkIHJmY29tbShpbnQgcmVxdWVzdCwgaW50IGRldl9pZCkKewoJaW50IGZkID0gc29ja2V0
+KFBGX0JMVUVUT09USCwgU09DS19TVFJFQU0sIEJUUFJPVE9fUkZDT01NKTsKCWlmIChmZCA9PSAt
+MSkgewoJCWZwcmludGYoc3RkZXJyLCAic29ja2V0OiBlcnJvcjogJXNcbiIsIHN0cmVycm9yKGVy
+cm5vKSk7CgkJZXhpdChFWElUX0ZBSUxVUkUpOwoJfQoKCXN0cnVjdCByZmNvbW1fZGV2X3JlcSBy
+ZXE7CgltZW1zZXQoJnJlcSwgMCwgc2l6ZW9mKHJlcSkpOwoJcmVxLmRldl9pZCA9IGRldl9pZDsK
+CXJlcS5jaGFubmVsID0gMTsKCglpZiAoaW9jdGwoZmQsIHJlcXVlc3QsICZyZXEpID09IC0xKSB7
+CgkJZnByaW50ZihzdGRlcnIsICJpb2N0bDogZXJyb3I6ICVzXG4iLCBzdHJlcnJvcihlcnJubykp
+OwoJCWV4aXQoRVhJVF9GQUlMVVJFKTsKCX0KCgl3aGlsZSAoY2xvc2UoZmQpID09IC0xICYmIGVy
+cm5vID09IEVJTlRSKTsKfQoKaW50Cm1haW4oaW50IGFyZ2MsIGNoYXIgKmFyZ3ZbXSkKewoJcGlk
+X3QgY2hpbGQ7CgoJY2hpbGQgPSBmb3JrKCk7CglpZiAoY2hpbGQgPT0gLTEpIHsKCQlmcHJpbnRm
+KHN0ZGVyciwgImZvcms6IGVycm9yOiAlc1xuIiwgc3RyZXJyb3IoZXJybm8pKTsKCQlleGl0KEVY
+SVRfRkFJTFVSRSk7Cgl9CgoJaWYgKGNoaWxkID09IDApIHsKCQlwcmludGYoIkNyZWF0aW5nXG4i
+KTsKCQlyZmNvbW0oUkZDT01NQ1JFQVRFREVWLCAwKTsKCgkJcHJpbnRmKCJPcGVuaW5nIC9kZXYv
+cmZjb21tMC4uLlxuIik7CgoJCWludCBmZCA9IG9wZW4oIi9kZXYvcmZjb21tMCIsIE9fUkRXUiB8
+IE9fTk9DVFRZKTsKCQlpZiAoZmQgPT0gLTEpIHsKCQkJZnByaW50ZihzdGRlcnIsICJvcGVuOiBl
+cnJvcjogJXNcbiIsIHN0cmVycm9yKGVycm5vKSk7CgkJCXJmY29tbShSRkNPTU1SRUxFQVNFREVW
+LCAwKTsKCQkJZXhpdChFWElUX0ZBSUxVUkUpOwoJCX0KCgkJZXhpdChFWElUX1NVQ0NFU1MpOwoJ
+fQoKCXNsZWVwKDEpOwoKCS8qIFRoaXMgd2lsbCBkZWxldGUgdGhlIGRldmljZSwgYnV0IHNpbmNl
+IHdlIHN0aWxsIGhvbGQgYSByZWZlcmVuY2UKCSAqIHRvIGl0IGluICJmZCIsIHRoZSB0dHkgd29u
+J3QgYmUgdW5yZWdpc3RlcmVkIHlldC4uLiAqLwoJcHJpbnRmKCJSZWxlYXNpbmdcbiIpOwoJcmZj
+b21tKFJGQ09NTVJFTEVBU0VERVYsIDApOwoKCS8qIEFuZCBub3cgd2UgdHJ5IHRvIHJlZ2lzdGVy
+IHRoZSBzYW1lIHR0eSBkZXZpY2UuLi4gKi8KCXByaW50ZigiUmVjcmVhdGluZ1xuIik7CglyZmNv
+bW0oUkZDT01NQ1JFQVRFREVWLCAwKTsKCgkvKiBDbGVhbnVwICovCglwcmludGYoIlJlbGVhc2lu
+Z1xuIik7CglyZmNvbW0oUkZDT01NUkVMRUFTRURFViwgMCk7CgoJd2hpbGUgKDEpIHsKCQlpbnQg
+c3RhdHVzOwoKCQlpZiAod2FpdCgmc3RhdHVzKSA9PSAtMSkgewoJCQlpZiAoZXJybm8gPT0gRUNI
+SUxEKQoJCQkJYnJlYWs7CgoJCQlmcHJpbnRmKHN0ZGVyciwgIndhaXQ6IGVycm9yOiAlc1xuIiwg
+c3RyZXJyb3IoZXJybm8pKTsKCQkJZXhpdChFWElUX0ZBSUxVUkUpOwoJCX0KCX0KCglyZXR1cm4g
+RVhJVF9TVUNDRVNTOwp9Cg==
+------=_Part_21806_19432089.1215966354630--
