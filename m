@@ -1,88 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756652AbYGMVLg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbYGMVMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756652AbYGMVLg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 17:11:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755496AbYGMVL2
+	id S1756757AbYGMVMo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 17:12:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755515AbYGMVMg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 17:11:28 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:29799 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755479AbYGMVL1 (ORCPT
+	Sun, 13 Jul 2008 17:12:36 -0400
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:37235 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752909AbYGMVMg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 17:11:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=U3tbpVPHrDoJhxnrqDTJZ0atE7bvDFu6WZHl3EirA5q0F3imtjQ3R9LN3oJAqEp602
-         dBHcFOzZUaWrSRWCJcstms3meWXtcr/JVQpS94fpLp4q1ARtBmUe9Byi4G4HyQoFGCne
-         /vK0wl6Km1Loxti5kmcxjbmBAnAZZXmie4vLg=
-Message-ID: <4dfa50520807131411ied883cgcb20eb6bd94f761@mail.gmail.com>
-Date: Sun, 13 Jul 2008 15:11:24 -0600
-From: "David Hubbard" <david.c.hubbard@gmail.com>
-To: "Hans de Goede" <j.w.r.degoede@hhs.nl>
-Subject: Re: [lm-sensors] [RFC] (almost) booting allyesconfig -- please don't poke super-io without request_region
-Cc: "Jean Delvare" <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
-       "Samuel Ortiz" <samuel@sortiz.org>, linux-kernel@vger.kernel.org,
-       "Milton Miller" <miltonm@bga.com>, lm-sensors@lm-sensors.org
-In-Reply-To: <4879A144.8060203@hhs.nl>
+	Sun, 13 Jul 2008 17:12:36 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=TL0CmPw87Q6RZF76FGMWJrd0cLnvXQRQEdaA5EQrHDbpzAEVop2gOmMyQapXjYIAUevn6/307JxVonlickT3pc9nocPjkBs6oSyx2e9594rPbBTmdsQIZLbdZJ5okPxLi5+fHL9h50eS5AtAN5IJId/A8qGHVeUE8upnMyabimc=  ;
+X-YMail-OSG: WuMs8ogVM1kc4THwj9JYwb6M0NdQw3G7cPQgXgI23n5XgEwtz1JBVD9dsQ4qCFGN2EO.scbog_U4.eylojJZxPLOiKjQT3LS6fGqU_2BUg--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Dmitry Baryshkov <dbaryshkov@gmail.com>
+Subject: Re: [PATCH 1/3] genclk: add generic framework for managing clocks.
+Date: Sun, 13 Jul 2008 14:12:32 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Paul Mundt <lethal@linux-sh.org>,
+       pHilipp Zabel <philipp.zabel@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       tony@atomide.com, paul@pwsan.com,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>, ian <spyro@f2s.com>
+References: <20080708134242.GA6176@doriath.ww600.siemens.net> <20080708134336.GA6240@doriath.ww600.siemens.net> <20080712234823.e632c7f9.akpm@linux-foundation.org>
+In-Reply-To: <20080712234823.e632c7f9.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-References: <for-27-patch1-0@bga.com> <48768018.2070704@hhs.nl>
-	 <acca8e14e769b2feadee19f1f7448438@bga.com>
-	 <20080711085246.1ead773b@hyperion.delvare> <48770B5E.7000308@hhs.nl>
-	 <20080711093650.4b98e3b7@hyperion.delvare> <4879A144.8060203@hhs.nl>
+Message-Id: <200807131412.32961.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hans, Milton, Jean,
+On Saturday 12 July 2008, Andrew Morton wrote:
+> > +EXPORT_SYMBOL(clk_get_parent);
+> 
+> As this is a new kernel-wide utility library, it is appropriate that
+> all of its public interfaces (at least) be documented.  An appropriate
+> way of doing that is via kerneldoc annotation.  Please don't forget to
+> document return values and call environment prerequisites (eg: requires
+> foo_lock, may be called from interrupt context, etc, etc).
 
-On Sun, Jul 13, 2008 at 12:31 AM, Hans de Goede <j.w.r.degoede@hhs.nl> wrote:
-> Jean Delvare wrote:
->> On Fri, 11 Jul 2008 09:27:26 +0200, Hans de Goede wrote:
->>> Jean Delvare wrote:
->>>> Hi Hans, hi Milton,
->>>>
->>> <snip>
->>>
->>>>> One could make a superio driver, and create sub-devices for the IR,
->>>>> I2C, floppy, parallel, etc
->>>>> nodes.
->>>> There have been proposals to do this, and this would indeed be a very
->>>> good idea, but unfortunately nobody took the time to implement this
->>>> properly, push it upstream and volunteer to maintain it. The problem is
->>>> that you don't need just a "driver", but a new subsystem, that needs to
->>>> be designed and maintained.
->>> Well, I believe there have been some lightweight superio locking coordinator
->>> patches been floating around on the lm_sensors list, and I have reviewed them
->>> and then a new version was done with my issues fixed.
->>>
->>> I kinda liked the proposed solution there, it was quite simple, moved all the
->>> generic superio stuff into generic superio code, and added locking for super io
->>> access from multiple drivers, what ever happened to those patches?
->>
->> As far as I know, nothing, and this is the problem. Somebody needs to
->> step up and call him/herself the maintainer of the new code, and push
->> it upstream and convert all the drivers (hwmon, watchdog, parallel
->> port...) to make use of it. And I am not the one to do this, I am busy
->> enough as is with i2c and hwmon.
->>
->
-> Ok, I've mailed Jim Cromie, the author of the superio access patches
-> from end 2007 and told him we're still interested in this and asked him
-> if he is willing to drive this forward.
+That is, the stuff that's not already documented in <linux/clk.h>;
+that's where clk_get_parent() is documented, for example.
 
-I propose writing a subsystem driver. (Is that properly called "The
-SuperIO Bus Driver"?) If no one thinks it's a really bad idea I will
-put together some code and submit it for review, and maintain it.
+I'd suggest a separate (for review!) doc patch to add this to the
+stuff that's at the end of Documentation/DocBook/kernel-api.tmpl 
+in 2.6.26 ... possibly the existing clk.h interface stuff should
+become a <sect1> and the new implementation glue should become
+a sibling <sect1>, that will cleanly separate the two.
 
-Some hwmon chips have odd / unique probe sequences. IMHO this is where
-the design needs to be inspected. One of those is the w83627ehf, which
-Jean and Hans are familiar enough with to check my work.
-
-Thoughts?
-David
+- Dave
