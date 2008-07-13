@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804AbYGMPhd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753580AbYGMPht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754804AbYGMPhd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 11:37:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027AbYGMPh0
+	id S1753580AbYGMPht (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 11:37:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbYGMPhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 11:37:26 -0400
-Received: from mga05.intel.com ([192.55.52.89]:19784 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751973AbYGMPhZ (ORCPT
+	Sun, 13 Jul 2008 11:37:39 -0400
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:34219 "EHLO
+	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754865AbYGMPhi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 11:37:25 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.30,354,1212390000"; 
-   d="scan'208";a="359095300"
-Message-ID: <487A212E.1080505@linux.intel.com>
-Date: Sun, 13 Jul 2008 08:37:18 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-CC: Vegard Nossum <vegard.nossum@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: v2.6.26-rc7: Negative powertop values
-References: <19f34abd0806211216y4695c532ndb4935082bd8ea1@mail.gmail.com> <20080621141615.51f7100c@linux.intel.com> <20080706194845.GA5617@ucw.cz> <20080708065251.1d7d681f@linux.intel.com> <20080713115818.GA7517@elf.ucw.cz>
-In-Reply-To: <20080713115818.GA7517@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 13 Jul 2008 11:37:38 -0400
+Subject: [PATCH] hid: wellspring device quirks
+From: Henrik Rydberg <rydberg@euromail.se>
+To: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dmitry.torokhov@gmail.com, robfitz@273k.net, akpm@osdl.org,
+       jikos@jikos.cz, vojtech@suse.cz, dmonakhov@openvz.org
+Content-Type: text/plain
+Date: Sun, 13 Jul 2008 17:34:36 +0200
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
+Message-Id: <1215963466.12757.0.camel@alnilam>
+Mime-Version: 1.0
+X-Originating-IP: 83.248.35.11
+X-Scan-Result: No virus found in message 1KI3do-0006kD-5E.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1KI3do-0006kD-5E 9800a798e34d7d1f010fabe18317e448
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Tue 2008-07-08 06:52:51, Arjan van de Ven wrote:
->> On Sun, 6 Jul 2008 21:48:45 +0200
->> Pavel Machek <pavel@suse.cz> wrote:
->>
->>>> [I assume you know that doing a software unplug you burn more power
->>>> than by leaving the cpu idle]
->>> We should really fix that one day...
->> yeah but it's incredibly hard to get right (in the light of the bios
->> constantly changing what our allowed C-states are)... and the best case
-> 
-> What can happen there? So BIOS decides C4 may no longer be cool idea
-> because we have AC power now, but that does not mean C4 stops working,
-> right?
+From: Henrik Rydberg <rydberg@euromail.se>
 
-it's also the other way around; you put the sleepy core in C4 because C6 is not available;
-then C6 becomes available and the sleepy core is wasting power;
+This patch adds the HID_QUIRK_IGNORE_MOUSE quirk for the Apple USB
+multitouch devices based on BCM5974, aka Wellspring. These devices
+will instead be picked up by the new bcm5974 driver.
 
-Either way, the *best* case you get is to be equal to being idle.....
+Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
+---
+
+The bcm5974 driver is currently in Andrew Morton's mm tree:
+input-bcm5974-055-smoother-motion-irq-simplification.patch
+
+This patch is against the linux-next tree: v2.6.26-rc9-7639-g60392c2
+
+diff --git a/drivers/hid/usbhid/hid-quirks.c b/drivers/hid/usbhid/hid-quirks.c
+index 61e78a4..b15f882 100644
+--- a/drivers/hid/usbhid/hid-quirks.c
++++ b/drivers/hid/usbhid/hid-quirks.c
+@@ -654,12 +654,12 @@ static const struct hid_blacklist {
+ 	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ANSI, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN },
+ 	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ISO, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_APPLE_ISO_KEYBOARD },
+ 	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_JIS, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN },
+-	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ANSI, HID_QUIRK_APPLE_HAS_FN },
+-	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ISO, HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_APPLE_ISO_KEYBOARD },
+-	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_JIS, HID_QUIRK_APPLE_HAS_FN },
+-	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI, HID_QUIRK_APPLE_HAS_FN },
+-	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_ISO, HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_APPLE_ISO_KEYBOARD },
+-	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_JIS, HID_QUIRK_APPLE_HAS_FN },
++	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ANSI, HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_IGNORE_MOUSE },
++	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ISO, HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_APPLE_ISO_KEYBOARD | HID_QUIRK_IGNORE_MOUSE},
++	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_JIS, HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_IGNORE_MOUSE},
++	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI, HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_IGNORE_MOUSE},
++	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_ISO, HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_APPLE_ISO_KEYBOARD | HID_QUIRK_IGNORE_MOUSE },
++	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_JIS, HID_QUIRK_APPLE_HAS_FN  | HID_QUIRK_IGNORE_MOUSE },
+ 	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_IGNORE_MOUSE },
+ 	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_IGNORE_MOUSE },
+ 
 
