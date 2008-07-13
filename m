@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbYGMGZ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbYGMG2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753884AbYGMGZ7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 02:25:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752453AbYGMGZw
+	id S1754206AbYGMG2k (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 02:28:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbYGMG2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 02:25:52 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39817 "EHLO mx3.mail.elte.hu"
+	Sun, 13 Jul 2008 02:28:32 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42866 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752430AbYGMGZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 02:25:51 -0400
-Date: Sun, 13 Jul 2008 08:25:37 +0200
+	id S1752526AbYGMG2c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 02:28:32 -0400
+Date: Sun, 13 Jul 2008 08:28:02 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Yinghai Lu <yhlu.kernel@gmail.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: fix numaq_tsc_disable calling
-Message-ID: <20080713062537.GB2534@elte.hu>
-References: <200807122252.55436.yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] x86: make 64bit have get_apic_id
+Message-ID: <20080713062802.GC2534@elte.hu>
+References: <200807080141.05436.yhlu.kernel@gmail.com> <200807111843.11157.yhlu.kernel@gmail.com> <200807111844.17084.yhlu.kernel@gmail.com> <200807120101.20554.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200807122252.55436.yhlu.kernel@gmail.com>
+In-Reply-To: <200807120101.20554.yhlu.kernel@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,35 +38,9 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
->  	if (cpu_has_bts)
->  		ptrace_bts_init_intel(c);
-> +
-> +#ifdef CONFIG_X86_NUMAQ
-> +	numaq_tsc_disable();
-> +#endif
+> and read_apic_id become macro
+> GET_APIC_ID(apic_read(APIC_ID))
 
-could you please one more cleanup and hide the CONFIG_X86_NUMAQ in the 
-header file, so that we can just call numaq_tsc_disable() without an
-#ifdef?
-
-also, that TSC quirk should probably be turned into an explicit quirk 
-function pointer initialized by the early-init NUMAQ code and left NULL 
-by everything else - like we it on visws. See include/asm-x86/setup.h:
-
- /*
-  * Any setup quirks to be performed?
-  */
- extern int (*arch_time_init_quirk)(void);
- extern int (*arch_pre_intr_init_quirk)(void);
- extern int (*arch_intr_init_quirk)(void);
- extern int (*arch_trap_init_quirk)(void);
- extern char * (*arch_memory_setup_quirk)(void);
- extern int (*mach_get_smp_config_quirk)(unsigned int early);
- extern int (*mach_find_smp_config_quirk)(unsigned int reserve);
-
-the goal is to offload all non-standard setup that is not a reasonable 
-deviation of some of the major vendors to such a quirk handler. Quirks 
-are a lot easier to maintain and a lot easier to think about - they can 
-be just by-line functionality to the main body of default behavior.
+applied to tip/x86/x2apic, thanks Yinghai.
 
 	Ingo
