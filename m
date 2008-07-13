@@ -1,98 +1,327 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbYGMTNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755695AbYGMTRD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755952AbYGMTNh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 15:13:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754771AbYGMTNQ
+	id S1755695AbYGMTRD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 15:17:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbYGMTQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 15:13:16 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39489 "EHLO ogre.sisk.pl"
+	Sun, 13 Jul 2008 15:16:53 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39510 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754025AbYGMTNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 15:13:15 -0400
+	id S1752516AbYGMTQv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 15:16:51 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
-Date: Sun, 13 Jul 2008 21:15:07 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Andy Lutomirski <luto@myrealbox.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       public-kernel-testers-u79uwXL29TY76Z2rM5mHXA@lo.gmane.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>
-References: <200807010148.02135.rjw@sisk.pl> <487A2431.2050103@myrealbox.com> <487A4CB7.1080001@firstfloor.org>
-In-Reply-To: <487A4CB7.1080001@firstfloor.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: 2.6.26-rc9-git12: Reported regressions from 2.6.25
+Cc: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807132115.08230.rjw@sisk.pl>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <Y1jK9GMA8kJ.A.qOH.7GleIB@albercik>
+Date: Sun, 13 Jul 2008 19:59:35 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 13 of July 2008, Andi Kleen wrote:
-> Andy Lutomirski wrote:
-> > Matthew Garrett wrote:
-> >> On Sun, Jul 13, 2008 at 11:15:24AM +0200, Ingo Molnar wrote:
-> >>
-> >>> we still need to find the HAL quirk and disable it, right?
-> >>
-> >> Not without understanding what the cause is. If the video BIOS calls
-> >> are generically broken, then we have a problem.
-> >>
-> > 
-> > The HAL quirk is the very first one here:
-> > 
-> > http://gitweb.freedesktop.org/?p=hal-info.git;a=blob;f=fdi/information/10freedesktop/20-video-quirk-pm-lenovo.fdi
-> > 
-> > 
-> > I removed it from the HAL config and suspending w/ the hardware button
-> > works fine now with -rc9-wl and on Ubuntu's stock .24 kernel.
-> 
-> Hmm, but the change was not supposed to break the s3 bios. Something
-> fishy is going on. It sounds like the s3 bios relies on some earlier
-> segment register setup.
+This message contains a list of some regressions from 2.6.25, for which there
+are no fixes in the mainline I know of.  If any of them have been fixed already,
+please let me know.
 
-Well, we changed the (visible) parts of the segment registers before anyway.
+If you know of any other unresolved regressions from 2.6.25, please let me know
+either and I'll add them to the list.  Also, please let me know if any of the
+entries below are invalid.
 
-This means that it could only depend on the hidden parts.  However, in that
-case if it depended on the hidden part of SS, our stack would be broken, so
-the quirk wouldn't work (it uses 'call' to run a BIOS routine).  In turn, if it
-depended on the hidden part of DS, our data register would be broken, so the
-resume code itself wouldn't work.
+Each entry from the list will be sent additionally in an automatic reply to
+this message with CCs to the people involved in reporting and handling the
+issue.
 
-This means it could only depend on the hidden part of ES.
- 
-> If true this means the segment register reset would need to be moved
-> later after S3 bios ran.
 
-We can't do that.  If SS contains garbage, the BIOS call itself will reboot
-the box and if DS contains garbage, well ...
+Listed regressions statistics:
 
-> Saving/restoring is unfortunately not possible because we cannot save/restore
-> the hidden state loaded from the GDT earlier. 
-> 
-> This is unfortunately a little tricky with the new C wakeup code.
-> 
-> > I'll file the obvious bug report against HAL, but it might annoy users
-> > if new kernel + old HAL = broken system, 
-> 
-> It's the bad side effect of HAL effectively being an out of tree kernel
-> driver (that just by chance happens to run in user space). Really
-> all these s3 quirks at least should be in the kernel.
-> 
-> We can't really do much about that now, but longer term it might be useful
-> to invent some mechanism to tell HAL to disable specific quirks from
-> the kernel.
+  Date          Total  Pending  Unresolved
+  ----------------------------------------
+  2008-07-13      170       30          20
+  2008-07-09      167       30          21
+  2008-07-06      166       38          26
+  2008-06-29      158       43          31
+  2008-06-22      148       39          28
+  2008-06-14      130       37          28
+  2008-06-07      125       48          33
+  2008-05-31      115       52          31
+  2008-05-24       94       47          28
+  2008-05-18       80       51          37
+  2008-05-11       53       46          34
 
-They are in the kernel.  In fact, there's a sysctl to switch them on/off and
-that's what HAL uses, AFAICS.
 
-Apparently, you can tell HAL not to do that by editing one of its files.
+Unresolved regressions
+----------------------
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11069
+Subject		: ACPI Error under 2.6.26-rc*
+Submitter	: Andre Prendel <andre_prendel@gmx.de>
+Date		: 2008-07-10 20:55 (4 days old)
+References	: http://marc.info/?l=linux-kernel&m=121572339107954&w=4
+Handled-By	: Zhang Rui <rui.zhang@intel.com>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11065
+Subject		: WARNING: at drivers/ata/libata-sff.c:1321 ata_sff_hsm_move+0x8f/0x661()
+Submitter	: Greg Fitzgerald <netzdamon@gmail.com>
+Date		: 2008-07-09 19:36 (5 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11064
+Subject		: resume failure on thinkpad x61s
+Submitter	: maximilian attems <max@stro.at>
+Date		: 2008-07-09 13:24 (5 days old)
+References	: http://marc.info/?l=linux-kernel&m=121584459809675&w=4
+Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11055
+Subject		: iwl4965 - connection doesn't work more than 10 seconds
+Submitter	: François Valenduc <francois.valenduc@tvcablenet.be>
+Date		: 2008-07-08 13:29 (6 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11045
+Subject		: Bug in MPT Fusion 2.6.26-rc7 unbootable
+Submitter	: Kurk <kurk@shiftmail.org>
+Date		: 2008-07-06 11:22 (8 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11040
+Subject		: 2.6.26-rc: host can not shutdown: ata problem
+Submitter	: Alexander Beregalov <a.beregalov@gmail.com>
+Date		: 2008-07-03 21:43 (11 days old)
+References	: http://marc.info/?l=linux-kernel&m=121512197225068&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11039
+Subject		: 2.6.28-rc8-git3 forcedeth WARNING (kills the interface)
+Submitter	: Brad Campbell <brad@wasp.net.au>
+Date		: 2008-07-03 10:07 (11 days old)
+References	: http://marc.info/?l=linux-netdev&m=121508714430752&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11023
+Subject		: 2.6.26-rc8-git2 - kernel BUG at mm/page_alloc.c:585
+Submitter	: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Date		: 2008-07-02 11:55 (12 days old)
+References	: http://lkml.org/lkml/2008/7/2/32
+Handled-By	: Andrew Morton <akpm@linux-foundation.org>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11009
+Subject		: No console on Riva TNT since 2.6.26-0.rc4
+Submitter	: Quel Qun <kelk1@comcast.net>
+Date		: 2008-06-26 20:04 (18 days old)
+References	: http://marc.info/?l=linux-kernel&m=121451344229718&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10989
+Subject		: kernel oopses when wiggling the mouse to make it known to hidd
+Submitter	: Daniel Vetter <daniel@ffwll.ch>
+Date		: 2008-06-26 10:32 (18 days old)
+Handled-By	: Marcel Holtmann <marcel@holtmann.org>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10960
+Subject		: 2.6.26-rc: SPARC: Sun Ultra 10 can not boot
+Submitter	: Alexander Beregalov <a.beregalov@gmail.com>
+Date		: 2008-06-19 14:07 (25 days old)
+References	: http://marc.info/?l=linux-kernel&m=121388456519637&w=4
+Handled-By	: David Miller <davem@davemloft.net>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10955
+Subject		: v2.6.26-rc7: BUG task_struct: Poison overwritten
+Submitter	: Vegard Nossum <vegard.nossum@gmail.com>
+Date		: 2008-06-21 19:24 (23 days old)
+References	: http://marc.info/?l=linux-kernel&m=121407641925121&w=4
+Handled-By	: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10954
+Subject		: hda_intel: azx_get_response timeout, switching to polling mode: last cmd=0x011f000c
+Submitter	: Justin Mattock <justinmattock@gmail.com>
+Date		: 2008-06-21 2:05 (23 days old)
+References	: http://marc.info/?l=linux-kernel&m=121401399622190&w=4
+		  http://marc.info/?t=121416231700010&r=1&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10919
+Subject		: [regression] display dimming is slow and laggy - Acer Travelmate 661lci
+Submitter	: Maximilian Engelhardt <maxi@daemonizer.de>
+Date		: 2008-06-14 22:31 (30 days old)
+References	: http://marc.info/?l=linux-kernel&m=121348428828320&w=4
+Handled-By	: Alexey Starikovskiy <astarikovskiy@suse.de>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10906
+Subject		: repeatable slab corruption with LTP msgctl08
+Submitter	: Andrew Morton <akpm@linux-foundation.org>
+Date		: 2008-06-12 5:13 (32 days old)
+References	: http://marc.info/?l=linux-kernel&m=121324775927704&w=4
+Handled-By	: Pekka J Enberg <penberg@cs.helsinki.fi>
+		  Christoph Lameter <clameter@sgi.com>
+		  Manfred Spraul <manfred@colorfullife.com>
+		  Andi Kleen <andi@firstfloor.org>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10865
+Subject		: Oops trying to mount an ntfs partition on thinkpad
+Submitter	: Alex Romosan <romosan@sycorax.lbl.gov>
+Date		: 2008-06-05 14:47 (39 days old)
+References	: http://marc.info/?l=linux-kernel&m=121267834421414&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10843
+Subject		: Display artifacts on XOrg logout with PAT kernel and VESA framebuffer
+Submitter	: Frans Pop <elendil@planet.nl>
+Date		: 2008-05-31 14:04 (44 days old)
+References	: http://lkml.org/lkml/2008/6/7/206
+		  http://lkml.org/lkml/2008/6/15/119
+		  http://lkml.org/lkml/2008/6/23/160
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10821
+Subject		: rt25xx: lock dependency warning, association failure, and kmalloc corruption
+Submitter	: Christian Casteyde <casteyde.christian@free.fr>
+Date		: 2008-05-29 14:30 (46 days old)
+Handled-By	: Ivo van Doorn <IvDoorn@gmail.com>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10741
+Subject		: bug in `tty: BKL pushdown'?
+Submitter	: Johannes Weiner <hannes@saeurebad.de>
+Date		: 2008-05-18 2:16 (57 days old)
+References	: http://marc.info/?l=linux-kernel&m=121107706506181&w=4
+		  http://lkml.org/lkml/2008/6/16/104
+Handled-By	: Alan Cox <alan@lxorguk.ukuu.org.uk>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10714
+Subject		: powerpc: Badness seen on 2.6.26-rc2 with lockdep enabled
+Submitter	: Balbir Singh <balbir@linux.vnet.ibm.com>
+Date		: 2008-05-14 12:57 (61 days old)
+References	: http://marc.info/?l=linux-kernel&m=121076917429133&w=4
+Handled-By	: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+
+Regressions with patches
+------------------------
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11072
+Subject		: scsi-layer crash after usb storage device unplug
+Submitter	: Johannes Berg <johannes@sipsolutions.net>
+Date		: 2008-07-12 01:50 (2 days old)
+Handled-By	: Alan Stern <stern@rowland.harvard.edu>
+Patch		: http://bugzilla.kernel.org/show_bug.cgi?id=11072#c3
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11057
+Subject		: vbetest fails on 2.6.26-rc9
+Submitter	: PaX Team <pageexec@freemail.hu>
+Date		: 2008-07-08 19:46 (6 days old)
+Handled-By	: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Patch		: http://bugzilla.kernel.org/attachment.cgi?id=16792&action=view
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11042
+Subject		: build issue #477 for v2.6.26-rc8-290-gb8a0b6c : input_event" [drivers/media/dvb/ttpci/dvb-ttpci.ko] undefined!
+Submitter	: Toralf Förster <toralf.foerster@gmx.de>
+Date		: 2008-07-05 15:25 (9 days old)
+References	: http://marc.info/?l=linux-kernel&m=121527158632563&w=4
+Handled-By	: Oliver Endriss <o.endriss@gmx.de>
+Patch		: http://marc.info/?l=linux-kernel&m=121529790229531&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11024
+Subject		: 2.6.25 to 2.6.26-rc8 regression (related to ahci and acpi _GTF)
+Submitter	: Mathieu Bérard <Mathieu.Berard@crans.org>
+Date		: 2008-07-01 9:39 (13 days old)
+References	: http://marc.info/?t=121490593600001&r=1&w=4
+Handled-By	: Tejun Heo <htejun@gmail.com>
+Patch		: http://marc.info/?l=linux-kernel&m=121514631317343&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10957
+Subject		: pata_pcmcia with Sandisk Extreme III 8GB
+Submitter	: Komuro <komurojun-mbn@nifty.com>
+Date		: 2008-06-07 13:37 (37 days old)
+References	: http://marc.info/?l=linux-kernel&m=121284627119861&w=4
+Handled-By	: Tejun Heo <htejun@gmail.com>
+		  Dominik Brodowski <linux@dominikbrodowski.net>
+		  Komuro <komurojun-mbn@nifty.com>
+Patch		: http://marc.info/?l=linux-kernel&m=121530861605673&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10862
+Subject		: forcedeth: lockdep warning on ethtool -s
+Submitter	: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+Date		: 2008-06-01 8:37 (43 days old)
+References	: http://marc.info/?l=linux-kernel&m=121230964032247&w=4
+Handled-By	: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+Patch		: http://lkml.org/lkml/2008/6/15/120
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10725
+Subject		: USB Mass storage mount fails: Write protect on
+Submitter	: Maciej Rutecki <maciej.rutecki@gmail.com>
+Date		: 2008-05-16 14:55 (59 days old)
+References	: http://marc.info/?l=linux-kernel&m=121095168003572&w=4
+Handled-By	: Alan Stern <stern@rowland.harvard.edu>
+Patch		: http://marc.info/?l=linux-scsi&m=121433068314568&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10724
+Subject		: ACPI: EC: GPE storm detected, disabling EC GPE
+Submitter	: Justin Mattock <justinmattock@gmail.com>
+Date		: 2008-05-16 6:17 (59 days old)
+References	: http://marc.info/?l=linux-kernel&m=121091875711824&w=4
+		  http://lkml.org/lkml/2008/5/18/168
+		  http://lkml.org/lkml/2008/5/25/195
+Patch		: http://bugzilla.kernel.org/attachment.cgi?id=16364&action=view
+		  http://bugzilla.kernel.org/attachment.cgi?id=16365&action=view
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10493
+Subject		: mips BCM47XX compile error
+Submitter	: Adrian Bunk <adrian.bunk@movial.fi>
+Date		: 2008-04-20 17:07 (85 days old)
+References	: http://lkml.org/lkml/2008/4/20/34
+		  http://lkml.org/lkml/2008/5/12/30
+		  http://lkml.org/lkml/2008/5/18/131
+		  http://lkml.org/lkml/2008/5/31/202
+		  http://lkml.org/lkml/2008/6/7/154
+Patch		: http://marc.info/?l=linux-kernel&m=120876451216558&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9791
+Subject		: Clock is running too fast^Wslow using acpi_pm clocksource
+Submitter	: tosn00j02@sneakemail.com
+Date		: 2008-05-03 05:09 (72 days old)
+Handled-By	: Maciej W. Rozycki <macro@linux-mips.org>
+Patch		: http://bugzilla.kernel.org/attachment.cgi?id=16180
+
+
+For details, please visit the bug entries and follow the links given in
+references.
+
+As you can see, there is a Bugzilla entry for each of the listed regressions.
+There also is a Bugzilla entry used for tracking the regressions from 2.6.25,
+unresolved as well as resolved, at:
+
+http://bugzilla.kernel.org/show_bug.cgi?id=10492
+
+Please let me know if there are any Bugzilla entries that should be added to
+the list in there.
 
 Thanks,
 Rafael
+
