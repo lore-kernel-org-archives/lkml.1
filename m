@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664AbYGMSjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbYGMSnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755664AbYGMSjj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 14:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753757AbYGMSjb
+	id S1755486AbYGMSnU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 14:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbYGMSnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 14:39:31 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51362 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752310AbYGMSjb (ORCPT
+	Sun, 13 Jul 2008 14:43:08 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:58701 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753790AbYGMSnH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 14:39:31 -0400
-Date: Sun, 13 Jul 2008 11:38:22 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Paul Menage <menage@google.com>, Max Krasnyansky <maxk@qualcomm.com>,
-       Paul Jackson <pj@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       miaox@cn.fujitsu.com, rostedt@goodmis.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: current linux-2.6.git: cpusets completely broken
-In-Reply-To: <20080713181910.GA22052@elte.hu>
-Message-ID: <alpine.LFD.1.10.0807131136350.2959@woody.linux-foundation.org>
-References: <alpine.LFD.1.10.0807121254490.2875@woody.linux-foundation.org> <alpine.LFD.1.10.0807121411350.2875@woody.linux-foundation.org> <alpine.LFD.1.10.0807121504010.2959@woody.linux-foundation.org> <19f34abd0807121600l653e28bfwb5cce2d880b7f2cd@mail.gmail.com>
- <b647ffbd0807121605y5caa4023v6578cfb17de103e3@mail.gmail.com> <alpine.LFD.1.10.0807121607160.2959@woody.linux-foundation.org> <b647ffbd0807130253t32904430x5ca942783d01ce99@mail.gmail.com> <alpine.LFD.1.10.0807130943530.2959@woody.linux-foundation.org>
- <alpine.LFD.1.10.0807131041240.2959@woody.linux-foundation.org> <b647ffbd0807131113o7103215u823e71fb4aa92e17@mail.gmail.com> <20080713181910.GA22052@elte.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sun, 13 Jul 2008 14:43:07 -0400
+Message-ID: <487A4CB7.1080001@firstfloor.org>
+Date: Sun, 13 Jul 2008 20:43:03 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andy Lutomirski <luto@myrealbox.com>
+CC: Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "H. Peter Anvin" <hpa@zytor.com>,
+       public-kernel-testers-u79uwXL29TY76Z2rM5mHXA@lo.gmane.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>, hpa@zytor.com
+Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
+References: <200807010148.02135.rjw@sisk.pl> <200807122253.32382.rjw@sisk.pl> <48793A0E.3050803@myrealbox.com> <200807130133.12324.rjw@sisk.pl> <20080713091524.GA29907@elte.hu> <20080713120253.GA27582@srcf.ucam.org> <487A2431.2050103@myrealbox.com>
+In-Reply-To: <487A2431.2050103@myrealbox.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sun, 13 Jul 2008, Ingo Molnar wrote:
+Andy Lutomirski wrote:
+> Matthew Garrett wrote:
+>> On Sun, Jul 13, 2008 at 11:15:24AM +0200, Ingo Molnar wrote:
+>>
+>>> we still need to find the HAL quirk and disable it, right?
+>>
+>> Not without understanding what the cause is. If the video BIOS calls
+>> are generically broken, then we have a problem.
+>>
 > 
-> mind sending Linus's patch as a completed patchset against tip/master 
-> (or tip/sched/devel) so that we can do it in early v2.6.27?
+> The HAL quirk is the very first one here:
+> 
+> http://gitweb.freedesktop.org/?p=hal-info.git;a=blob;f=fdi/information/10freedesktop/20-video-quirk-pm-lenovo.fdi
+> 
+> 
+> I removed it from the HAL config and suspending w/ the hardware button
+> works fine now with -rc9-wl and on Ubuntu's stock .24 kernel.
 
-Note that my patch does need lots more eyes and more testing, since it 
-needs to make sure that anything that depended on online_map and/or just 
-on the scheduling domains now checks active_map instead (or in addition 
-to).
+Hmm, but the change was not supposed to break the s3 bios. Something
+fishy is going on. It sounds like the s3 bios relies on some earlier
+segment register setup.
 
-> i still think your cpusets.c fix is what we should do for v2.6.26, given 
-> that there's agreement about how to fix it for real and thus in terms of 
-> regression/bug risk your patch is lower-impact and CPU hotplug has been 
-> broken for such a long time.
+If true this means the segment register reset would need to be moved
+later after S3 bios ran. Saving/restoring is unfortunately not possible
+because we cannot save/restore the hidden state loaded from the GDT earlier.
 
-Agreed. I've pulled it from your tree.
+This is unfortunately a little tricky with the new C wakeup code.
 
-		Linus
+> I'll file the obvious bug report against HAL, but it might annoy users
+> if new kernel + old HAL = broken system, 
+
+It's the bad side effect of HAL effectively being an out of tree kernel
+driver (that just by chance happens to run in user space). Really
+all these s3 quirks at least should be in the kernel.
+
+We can't really do much about that now, but longer term it might be useful
+to invent some mechanism to tell HAL to disable specific quirks from
+the kernel.
+
+-Andi
