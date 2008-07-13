@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754500AbYGMO6D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597AbYGMPDg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754500AbYGMO6D (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 10:58:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbYGMO5z
+	id S1754597AbYGMPDg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 11:03:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753586AbYGMPDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 10:57:55 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:64856 "EHLO
+	Sun, 13 Jul 2008 11:03:30 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:65327 "EHLO
 	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752629AbYGMO5z (ORCPT
+	with ESMTP id S1753552AbYGMPD3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 10:57:55 -0400
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCh] x86: overmapped fix when 4K pages on tail - 64bit
+	Sun, 13 Jul 2008 11:03:29 -0400
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -next 00/11] remove CONFIG_KMOD
 From: Andi Kleen <andi@firstfloor.org>
-References: <200807080141.05436.yhlu.kernel@gmail.com>
-	<200807080143.27997.yhlu.kernel@gmail.com>
-	<200807092015.03004.yhlu.kernel@gmail.com>
-	<20080710071640.5035cd70@infradead.org>
-Date: Sun, 13 Jul 2008 16:57:50 +0200
-In-Reply-To: <20080710071640.5035cd70@infradead.org> (Arjan van de Ven's message of "Thu, 10 Jul 2008 07:16:40 -0700")
-Message-ID: <874p6t25n5.fsf@basil.nowhere.org>
+References: <20080709082834.942992000@sipsolutions.net>
+Date: Sun, 13 Jul 2008 17:03:02 +0200
+In-Reply-To: <20080709082834.942992000@sipsolutions.net> (Johannes Berg's message of "Wed, 09 Jul 2008 10:28:34 +0200")
+Message-ID: <87zlolzv15.fsf@basil.nowhere.org>
 User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 13 Jul 2008 14:50:23.0798 (UTC) FILETIME=[C7AAE560:01C8E4F7]
+X-OriginalArrivalTime: 13 Jul 2008 14:55:36.0275 (UTC) FILETIME=[81EB1A30:01C8E4F8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven <arjan@infradead.org> writes:
+Johannes Berg <johannes@sipsolutions.net> writes:
 
-> On Wed, 9 Jul 2008 20:15:02 -0700
-> Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
->> 
->> 
->> fix phys_pmd_init to make sure not to return big value than end.
->> 
->> also print out range split:1G/2M/4K
->> 
->> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
->
->
-> Making an accurate mapping solves a lot of potentially nasty/tricky
-> corner cases, so I like the approach
+> I've rebased this patch series against -next-20080708 (one conflict
+> against ftrace, another against BKL pushdown) and fixed the things
+> Adrian Bunk pointed out.
 
-It also means that e.g. on a 1GB system the direct mapping will 
-never use 1GB pages.
+You forgot to say why you want to remove that?
+ 
+I personally like to not set CONFIG_KMOD because the auto loader
+tends to load way too many modules. e.g. currently when someone requests
+aes on x86 you get three different aes modules (including VIA PadLock
+aes and an unoptimized C version), and keeping those around
+is just a waste. 
 
-And the CPU has to handle this anyways because all the old 
-kernels overmap and no x86 CPU can drop support for all old
-kernels.
+Also if I didn't load a driver I prefer if it's not loaded at all.
+This is also useful for power saving for example where it's better
+to keep modules not loaded that you don't need and it's hard to
+control who accesses the respective devices.
 
-In the end it means only large systems will benefit from 1GB
-pages, which seems wrong to me.
+Please keep the option.
+
+Thanks.
 
 -Andi
+
