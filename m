@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753711AbYGMKnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754168AbYGMKnp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753711AbYGMKnZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 06:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbYGMKnS
+	id S1754168AbYGMKnp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 06:43:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbYGMKnf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 06:43:18 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:55201 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752008AbYGMKnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 06:43:17 -0400
-Date: Sun, 13 Jul 2008 14:46:17 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: T?r?k Edwin <edwintorok@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Elias Oltmanns <eo@nebensachen.de>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH] x86_64: fix delayed signals
-Message-ID: <20080713104617.GA79@tv-sign.ru>
-References: <20080710215039.2A143154218@magilla.localdomain> <alpine.LFD.1.10.0807121011470.2875@woody.linux-foundation.org> <48791393.1020107@gmail.com> <200807122257.59047.vda.linux@googlemail.com>
+	Sun, 13 Jul 2008 06:43:35 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52492 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753919AbYGMKne (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 06:43:34 -0400
+Date: Sun, 13 Jul 2008 11:25:43 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Jakub W. Jozwicki" <jozwicki@aster.pl>
+Cc: linux-kernel@vger.kernel.org, jgarzik@redhat.com
+Subject: Re: [PATCH 2.6.25.10 1/2] libata: fix locking for kmap_atomic
+Message-ID: <20080713112543.2dc9d6f7@lxorguk.ukuu.org.uk>
+In-Reply-To: <200807130127.36706.jozwicki@aster.pl>
+References: <200807130127.36706.jozwicki@aster.pl>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200807122257.59047.vda.linux@googlemail.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/12, Denys Vlasenko wrote:
->
-> On Saturday 12 July 2008 22:26, T?r?k Edwin wrote:
-> > A bit off-topic, but something I noticed during the tests:
-> > In my original test I have rm-ed the files right after launching dd in
-> > the background, yet it still continued to write to the disk.
-> > I can understand that if the file is opened O_RDWR, you might seek back
-> > and read what you wrote, so Linux needs to actually do the write,
-> > but why does it insist on writing to the disk, on a file opened with
-> > O_WRONLY, after the file itself got unlinked?
->
-> Because process can do
->
-> fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_RDWR)
+On Sun, 13 Jul 2008 01:27:36 +0200
+"Jakub W. Jozwicki" <jozwicki@aster.pl> wrote:
 
-Is it?
+> Change locking surrounding kmap_atomic from local_irqsave to 
+> local_irqsave_nort. This fixes issues with PREEMPT_RT.
+>  
+> Signed-off-by:  Jakub Jozwicki <jozwicki@aster.pl>
 
-SETFL_MASK doesn't have O_RDWR, and in any case setfl() changes ->f_flags,
-not ->f_mode.
+The right way to fix this is to use a bounce buffer. I sent Jeff patches
+to do that a couple of times. I'm not sure what has happened to them
+since ? So NAK this, we should apply the patch to actually fix the bug
+instead.
 
-Oleg.
+Jeff ?
 
+Alan
