@@ -1,87 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbYGMNe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754777AbYGMNek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754559AbYGMNe2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 09:34:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbYGMNeN
+	id S1754777AbYGMNek (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 09:34:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbYGMNeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 09:34:13 -0400
-Received: from mail4.aster.pl ([212.76.33.58]:15995 "EHLO mail4.aster.pl"
+	Sun, 13 Jul 2008 09:34:15 -0400
+Received: from mail4.aster.pl ([212.76.33.58]:15996 "EHLO mail4.aster.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754084AbYGMNeL convert rfc822-to-8bit (ORCPT
+	id S1754085AbYGMNeL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 13 Jul 2008 09:34:11 -0400
 From: "Jakub W. Jozwicki" <jozwicki@aster.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2.6.25.10] pm_qos_params: change spinlock to rwlock
-Date: Sun, 13 Jul 2008 15:05:25 +0200
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 2.6.25.10 1/2] libata: fix locking for kmap_atomic
+Date: Sun, 13 Jul 2008 15:30:02 +0200
 User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, mgross@linux.intel.com, mingo@elte.hu,
+Cc: linux-kernel@vger.kernel.org, jgarzik@redhat.com, mingo@elte.hu,
        tglx@timesys.com
-References: <200807130119.19663.jozwicki@aster.pl> <20080713012816.8c136efa.akpm@linux-foundation.org>
-In-Reply-To: <20080713012816.8c136efa.akpm@linux-foundation.org>
+References: <200807130127.36706.jozwicki@aster.pl> <20080713112543.2dc9d6f7@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080713112543.2dc9d6f7@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200807131505.25990.jozwicki@aster.pl>
+Message-Id: <200807131530.03402.jozwicki@aster.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sunday, 13 of July 2008 10:28:16 Andrew Morton napisał(a):
-> On Sun, 13 Jul 2008 01:19:19 +0200 "Jakub W. Jozwicki" <jozwicki@aster.pl> 
-wrote:
-> > Concurrent calls to pm_qos_requirement shouldn't block each other. This
-> > patch changes spinlock to rwlock and fixes issues with PREEMPT_RT.
+Sunday, 13 of July 2008 12:25:43 Alan Cox napisał(a):
+> On Sun, 13 Jul 2008 01:27:36 +0200
 >
-> "fixes issues" is nowhere near an adequate description.
+> "Jakub W. Jozwicki" <jozwicki@aster.pl> wrote:
+> > Change locking surrounding kmap_atomic from local_irqsave to
+> > local_irqsave_nort. This fixes issues with PREEMPT_RT.
+> >
+> > Signed-off-by:  Jakub Jozwicki <jozwicki@aster.pl>
 >
-> Please provide complete descriptions for kernel patches.  That includes
-> describing the mysterious "issue" in full!
+> The right way to fix this is to use a bounce buffer. I sent Jeff patches
+> to do that a couple of times. I'm not sure what has happened to them
+> since ? So NAK this, we should apply the patch to actually fix the bug
+> instead.
 >
-> Thanks.
+> Jeff ?
+>
+> Alan
 
-[  114.647010] BUG: sleeping function called from invalid context swapper(0) 
-at kernel/rtmutex.c:742
-[  114.647010] in_atomic():1 [00000001], irqs_disabled():0
-[  114.647010] Pid: 0, comm: swapper Not tainted 2.6.25.10-rtXXX #10
-[  114.647010]  [<c0120fc4>] __might_sleep+0xf1/0xf8
-[  114.647010]  [<c045499c>] __rt_spin_lock+0x24/0x61
-[  114.647010]  [<c04549e1>] rt_spin_lock+0x8/0xa
-[  114.647010]  [<c013ec8d>] pm_qos_requirement+0x10/0x29
-[  114.647010]  [<c038ef36>] menu_select+0x5d/0x7f
-[  114.647010]  [<c038e4d8>] cpuidle_idle_call+0x47/0x9b
-[  114.647010]  [<c038e491>] ? cpuidle_idle_call+0x0/0x9b
-[  114.647010]  [<c01060ff>] cpu_idle+0xaf/0x106
-[  114.647010]  [<c0441c87>] rest_init+0x67/0x69
-[  114.647010]  =======================
-[  115.649517] BUG: sleeping function called from invalid context swapper(0) 
-at kernel/rtmutex.c:742
-[  115.649517] in_atomic():1 [00000001], irqs_disabled():0
-[  115.649517] Pid: 0, comm: swapper Not tainted 2.6.25.10-rtXXX #10
-[  115.649517]  [<c0120fc4>] __might_sleep+0xf1/0xf8
-[  115.649517]  [<c045499c>] __rt_spin_lock+0x24/0x61
-[  115.649517]  [<c04549e1>] rt_spin_lock+0x8/0xa
-[  115.649517]  [<c013ec8d>] pm_qos_requirement+0x10/0x29
-[  115.649517]  [<c038ef36>] menu_select+0x5d/0x7f
-[  115.649517]  [<c038e4d8>] cpuidle_idle_call+0x47/0x9b
-[  115.649517]  [<c038e491>] ? cpuidle_idle_call+0x0/0x9b
-[  115.649517]  [<c01060ff>] cpu_idle+0xaf/0x106
-[  115.649517]  [<c0441c87>] rest_init+0x67/0x69
-[  115.649517]  =======================
-[  116.650040] BUG: sleeping function called from invalid context swapper(0) 
-at kernel/rtmutex.c:742
-[  116.650040] in_atomic():1 [00000001], irqs_disabled():0
-[  116.650040] Pid: 0, comm: swapper Not tainted 2.6.25.10-rtXXX #10
-[  116.650040]  [<c0120fc4>] __might_sleep+0xf1/0xf8
-[  116.650040]  [<c045499c>] __rt_spin_lock+0x24/0x61
-[  116.650040]  [<c04549e1>] rt_spin_lock+0x8/0xa
-[  116.650040]  [<c013ec8d>] pm_qos_requirement+0x10/0x29
-[  116.650040]  [<c038ef36>] menu_select+0x5d/0x7f
-[  116.650040]  [<c038e4d8>] cpuidle_idle_call+0x47/0x9b
-[  116.650040]  [<c038e491>] ? cpuidle_idle_call+0x0/0x9b
-[  116.650040]  [<c01060ff>] cpu_idle+0xaf/0x106
-[  116.650040]  [<c0441c87>] rest_init+0x67/0x69
-[  116.650040]  =======================
+Sent patch was for:
+
+[   16.787021] BUG: sleeping function called from invalid context IRQ-14(5730) 
+at arch/x86/mm/highmem_32.c:8
+[   16.787021] in_atomic():0 [00000000], irqs_disabled():1
+[   16.787021] Pid: 5730, comm: IRQ-14 Not tainted 2.6.25.10-rtXXX #12
+[   16.787021]  [<c0120fc4>] __might_sleep+0xf1/0xf8
+[   16.787021]  [<c011c035>] kmap+0x47/0x5a
+[   16.787021]  [<c03442b2>] ata_scsi_rbuf_get+0x23/0x31
+[   16.787021]  [<c0345975>] atapi_qc_complete+0x252/0x2c5
+[   16.787021]  [<c012edee>] ? irq_exit+0x7b/0x7e
+[   16.787021]  [<c0109727>] ? do_IRQ+0x6e/0x87
+[   16.787021]  [<c033d041>] __ata_qc_complete+0x8e/0x93
+[   16.787021]  [<c033ddfb>] ata_qc_complete+0x182/0x188
+[   16.787021]  [<c033e188>] ata_hsm_qc_complete+0xa1/0xa5
+[   16.787021]  [<c033e8fd>] ata_hsm_move+0x5dd/0x628
+[   16.787021]  [<c0342f76>] ata_interrupt+0x14e/0x1cb
+[   16.787021]  [<c015c72c>] handle_IRQ_event+0x4e/0xd1
+[   16.787021]  [<c015d266>] do_irqd+0x126/0x224
+[   16.787021]  [<c015d140>] ? do_irqd+0x0/0x224
+[   16.787021]  [<c013ae9d>] kthread+0x3b/0x62
+[   16.787021]  [<c013ae62>] ? kthread+0x0/0x62
+[   16.787021]  [<c0108287>] kernel_thread_helper+0x7/0x10
+[   16.787021]  =======================
 
