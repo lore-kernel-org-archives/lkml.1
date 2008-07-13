@@ -1,61 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570AbYGMVvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756172AbYGMVvm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755570AbYGMVvV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 17:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004AbYGMVvJ
+	id S1756172AbYGMVvm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 17:51:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbYGMVvd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 17:51:09 -0400
-Received: from khc.piap.pl ([195.187.100.11]:57379 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753949AbYGMVvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 17:51:08 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [bisected] kernel panic 2.6.22 -> 2.6.26-rc9+
-References: <m3d4lisk4i.fsf@maximus.localdomain>
-	<20080713013107.23f060f2.akpm@linux-foundation.org>
-	<m3abgmcb68.fsf@maximus.localdomain>
-	<20080713112230.e86ba9ae.akpm@linux-foundation.org>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Sun, 13 Jul 2008 23:51:06 +0200
-In-Reply-To: <20080713112230.e86ba9ae.akpm@linux-foundation.org> (Andrew Morton's message of "Sun\, 13 Jul 2008 11\:22\:30 -0700")
-Message-ID: <m3lk05jvw5.fsf@maximus.localdomain>
+	Sun, 13 Jul 2008 17:51:33 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:40556 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753833AbYGMVvc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 17:51:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=NeQwvXG82hIC/MKRV1g1rMT8X0p+RBYVvPFap3KE5eb96HHYQVrnQMHNFSYt7CeMOt
+         Os3yRQ4N2Q7Q6aiI0P8gDKCguViznXCVhZdPM9r8cz/zaIROndxqVFAuKQUOz/jRZYj3
+         yBOd9F1Qrbr3gsyF599dHoPYkxsIsLoLRPqJ0=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] x86: make 64bit hpet_set_mapping to use ioremap too v2
+Date: Sun, 13 Jul 2008 14:50:56 -0700
+User-Agent: KMail/1.9.9
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <200807080141.05436.yhlu.kernel@gmail.com> <200807121432.45759.yhlu.kernel@gmail.com> <200807131432.37642.yhlu.kernel@gmail.com>
+In-Reply-To: <200807131432.37642.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807131450.57286.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
 
-> --- a/include/asm-arm/bitops.h~a
-> +++ a/include/asm-arm/bitops.h
-> @@ -277,9 +277,16 @@ static inline int constant_fls(int x)
->   * the clz instruction for much better code efficiency.
->   */
->  
-> -#define fls(x) \
-> +#define __fls(x) \
->  	( __builtin_constant_p(x) ? constant_fls(x) : \
->  	  ({ int __r; asm("clz\t%0, %1" : "=r"(__r) : "r"(x) : "cc"); 32-__r; }) )
-> +
-> +/* Implement fls() in C so that 64-bit args are suitably truncated */
-> +static inline int fls(int x)
-> +{
-> +	return __fls(x);
-> +}
-> +
+need to apply after
+	[PATCH] x86: get x86_phys_bits early
 
-Well, I like it more as it fixes all possible places instead of only
-fls64().
+keep the one for VSYSCALL_HPET
 
-But... can't we just move the #define body into the inline fls(x)?
-Will there be other users of __fls(x)? It seems the
-__builtin_constant_p(x) works for inline functions.
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-The above patch fixes the kernel panic, too.
--- 
-Krzysztof Halasa
+---
+ arch/x86/kernel/hpet.c      |   20 ++++----------------
+ include/asm-x86/fixmap_64.h |    1 -
+ 2 files changed, 4 insertions(+), 17 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/hpet.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/hpet.c
++++ linux-2.6/arch/x86/kernel/hpet.c
+@@ -36,26 +36,15 @@ static inline void hpet_writel(unsigned
+ }
+ 
+ #ifdef CONFIG_X86_64
+-
+ #include <asm/pgtable.h>
+-
+-static inline void hpet_set_mapping(void)
+-{
+-	set_fixmap_nocache(FIX_HPET_BASE, hpet_address);
+-	__set_fixmap(VSYSCALL_HPET, hpet_address, PAGE_KERNEL_VSYSCALL_NOCACHE);
+-	hpet_virt_address = (void __iomem *)fix_to_virt(FIX_HPET_BASE);
+-}
+-
+-static inline void hpet_clear_mapping(void)
+-{
+-	hpet_virt_address = NULL;
+-}
+-
+-#else
++#endif
+ 
+ static inline void hpet_set_mapping(void)
+ {
+ 	hpet_virt_address = ioremap_nocache(hpet_address, HPET_MMAP_SIZE);
++#ifdef CONFIG_X86_64
++	__set_fixmap(VSYSCALL_HPET, hpet_address, PAGE_KERNEL_VSYSCALL_NOCACHE);
++#endif
+ }
+ 
+ static inline void hpet_clear_mapping(void)
+@@ -63,7 +52,6 @@ static inline void hpet_clear_mapping(vo
+ 	iounmap(hpet_virt_address);
+ 	hpet_virt_address = NULL;
+ }
+-#endif
+ 
+ /*
+  * HPET command line enable / disable
+Index: linux-2.6/include/asm-x86/fixmap_64.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/fixmap_64.h
++++ linux-2.6/include/asm-x86/fixmap_64.h
+@@ -40,7 +40,6 @@ enum fixed_addresses {
+ 	VSYSCALL_HPET,
+ 	FIX_DBGP_BASE,
+ 	FIX_EARLYCON_MEM_BASE,
+-	FIX_HPET_BASE,
+ 	FIX_APIC_BASE,	/* local (CPU) APIC) -- required for SMP or not */
+ 	FIX_IO_APIC_BASE_0,
+ 	FIX_IO_APIC_BASE_END = FIX_IO_APIC_BASE_0 + MAX_IO_APICS - 1,
