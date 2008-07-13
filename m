@@ -1,57 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755124AbYGMRqu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755297AbYGMRro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755124AbYGMRqu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 13:46:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbYGMRqm
+	id S1755297AbYGMRro (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 13:47:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbYGMRrg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 13:46:42 -0400
-Received: from gw.goop.org ([64.81.55.164]:48855 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752960AbYGMRqm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 13:46:42 -0400
-Message-ID: <487A3F75.5010405@goop.org>
-Date: Sun, 13 Jul 2008 10:46:29 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sun, 13 Jul 2008 13:47:36 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57001 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753440AbYGMRrf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 13:47:35 -0400
+Date: Sun, 13 Jul 2008 10:46:59 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+cc: Vegard Nossum <vegard.nossum@gmail.com>, Paul Menage <menage@google.com>,
+       Max Krasnyansky <maxk@qualcomm.com>, Paul Jackson <pj@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, miaox@cn.fujitsu.com,
+       rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: current linux-2.6.git: cpusets completely broken
+In-Reply-To: <alpine.LFD.1.10.0807130943530.2959@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0807131041240.2959@woody.linux-foundation.org>
+References: <20080712031736.GA3040@damson.getinternet.no>  <alpine.LFD.1.10.0807112026390.2875@woody.linux-foundation.org>  <b647ffbd0807120304o7a500dc9oce761e51c9dce908@mail.gmail.com>  <alpine.LFD.1.10.0807121254490.2875@woody.linux-foundation.org> 
+ <alpine.LFD.1.10.0807121411350.2875@woody.linux-foundation.org>  <alpine.LFD.1.10.0807121504010.2959@woody.linux-foundation.org>  <19f34abd0807121600l653e28bfwb5cce2d880b7f2cd@mail.gmail.com>  <b647ffbd0807121605y5caa4023v6578cfb17de103e3@mail.gmail.com> 
+ <alpine.LFD.1.10.0807121607160.2959@woody.linux-foundation.org> <b647ffbd0807130253t32904430x5ca942783d01ce99@mail.gmail.com> <alpine.LFD.1.10.0807130943530.2959@woody.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: "Jakub W. Jozwicki" <jozwicki@aster.pl>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, tglx@timesys.com
-Subject: Re: [PATCH 2.6.25.10 1/2] libata: fix locking for kmap_atomic
-References: <200807130127.36706.jozwicki@aster.pl> <20080713012630.d5e522f7.akpm@linux-foundation.org> <200807131517.51795.jozwicki@aster.pl>
-In-Reply-To: <200807131517.51795.jozwicki@aster.pl>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jakub W. Jozwicki wrote:
->
-> Sorry, this was for -rt only.
->
-> [   17.012011] BUG: sleeping function called from invalid context IRQ-14(5732) 
-> at arch/x86/mm/highmem_32.c:8
-> [   17.012011] in_atomic():0 [00000000], irqs_disabled():1
-> [   17.012011] Pid: 5732, comm: IRQ-14 Not tainted 2.6.25.10-rtXXX #11
-> [   17.012011]  [<c0120fc4>] __might_sleep+0xf1/0xf8
-> [   17.012011]  [<c011c035>] kmap+0x47/0x5a
->   
 
-The subject says kmap_atomic, but this is kmap.  It definitely makes no 
-sense to call kmap in an IRQ, regardless of the locking.  There seems to 
-be a larger structural problem here.
 
-> [   17.012011]  [<c033e728>] ata_hsm_move+0x3d7/0x657
-> [   17.012011]  [<c0342fd6>] ata_interrupt+0x14e/0x1cb
-> [   17.012011]  [<c015c72c>] handle_IRQ_event+0x4e/0xd1
-> [   17.012011]  [<c015d266>] do_irqd+0x126/0x224
-> [   17.012011]  [<c015d140>] ? do_irqd+0x0/0x224
-> [   17.012011]  [<c013ae9d>] kthread+0x3b/0x62
-> [   17.012011]  [<c013ae62>] ? kthread+0x0/0x62
-> [   17.012011]  [<c0108287>] kernel_thread_helper+0x7/0x10
-> [   17.012011]  =======================
->   
+On Sun, 13 Jul 2008, Linus Torvalds wrote:
+> 
+> The thing is, we should fix the top level code to never even _consider_ an 
+> invalid CPU as a target, and that in turn should mean that all the other 
+> code should be able to just totally ignore CPU hotplug events.
 
-    J
+IOW, I think we should totally remove the whole "update_sched_domains()" 
+thing too. Any logic that needs it is broken. We shouldn't detach the 
+scheduler domains in DOWN_PREPARE (much less UP_PREPARE), we should just 
+leave them damn well alone.
+
+As the comment says, "The domains and groups cannot be updated in place 
+without racing with the balancing code". The thing is, we shouldn't even 
+try. The correct way to handle all this is to make the balancing code use 
+the domains regardless, but protect against CPU's going down with 
+_another_ data structure that is much easier to update.
+
+Namely something like 'cpu_active_map'.
+
+Then we just get rid of all the crap in update_sched_domains() entirely, 
+and then we can make the cpusets code do the *sane* thing, which is to 
+rebuild the scheduler domains only when the CPU up/down has completed.
+
+So instead of this illogical and crazy mess:
+
+	+       switch (phase) {
+	+       case CPU_UP_CANCELED:
+	+       case CPU_UP_CANCELED_FROZEN:
+	+       case CPU_DOWN_FAILED:
+	+       case CPU_DOWN_FAILED_FROZEN:
+	+       case CPU_ONLINE:
+	+       case CPU_ONLINE_FROZEN:
+	+       case CPU_DEAD:
+	+       case CPU_DEAD_FROZEN:
+	+               common_cpu_mem_hotplug_unplug(1);
+
+it should just say
+
+	+       switch (phase) {
+	+       case CPU_ONLINE:
+	+       case CPU_ONLINE_FROZEN:
+	+       case CPU_DEAD:
+	+       case CPU_DEAD_FROZEN:
+	+               common_cpu_mem_hotplug_unplug(1);
+
+because it only makes sense to rebuild the scheduler domains when the 
+thing SUCCEEDS. 
+
+See? By having a sane design, the code is not just more robust and easy to 
+follow, you can also simplify it and make it more logical.
+
+The current design is not sane.
+
+			Linus
