@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754102AbYGMKs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753753AbYGMLFE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754102AbYGMKs2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 06:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752673AbYGMKsS
+	id S1753753AbYGMLFE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 07:05:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbYGMLEy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 06:48:18 -0400
-Received: from OSB1387.piap.pl ([195.187.100.11]:53124 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752242AbYGMKsR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 06:48:17 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [bisected] kernel panic 2.6.22 -> 2.6.26-rc9+
-References: <m3d4lisk4i.fsf@maximus.localdomain>
-	<20080713013107.23f060f2.akpm@linux-foundation.org>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Sun, 13 Jul 2008 12:48:15 +0200
-In-Reply-To: <20080713013107.23f060f2.akpm@linux-foundation.org> (Andrew Morton's message of "Sun\, 13 Jul 2008 01\:31\:07 -0700")
-Message-ID: <m3abgmcb68.fsf@maximus.localdomain>
+	Sun, 13 Jul 2008 07:04:54 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:57207 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751565AbYGMLEy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 07:04:54 -0400
+Date: Sun, 13 Jul 2008 13:02:22 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Alex Samad <alex@samad.com.au>
+Cc: linux-kernel@vger.kernel.org, Edward Hsu <edward_hsu@realtek.com.tw>
+Subject: Re: Page swap allocation failure 2.6.25
+Message-ID: <20080713110222.GA16817@electric-eye.fr.zoreil.com>
+References: <20080713093047.GB661@samad.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080713093047.GB661@samad.com.au>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+Alex Samad <alex@samad.com.au> :
+[...]
+> For a while now I have been receiving page swap allocation failures
+> 
+> 
+> Similar to http://lkml.org/lkml/2008/6/10/3 and
 
-> (cc's added)
+Order 0 failure. Your is an order 2 one.
 
-(cc added) :-)
+> http://lkml.org/lkml/2008/2/19/298
 
-> I guess you're referring to this:
-> http://linux.derkeiler.com/Mailing-Lists/Kernel/2008-07/msg04754.html
+Order 3 failure which was fixed with the e1000e driver.
 
-Right.
+> and I have filed a bug with debian (Bug#486300)
+> 
+> 
+> It seems like any time I put the system under load, transferring large
+> files across the network  (1G nic, a r8186 and forcedeth and a
+> broadcom).  I keep getting these errors
 
->> PPP over ATM connection (Thomson/Alcatel
->> Speedtouch). It doesn't seem to occur on the same IXP4xx with Ethernet
->> or V.35 WAN, and it doesn't occur on i386 + the same Speedtouch ADSL.
->> The kernel is basically unpatched, the only extra patch applied is the
->> platform support (nothing magic).
->> 
->> Generally to trigger the panic one has to request a TCP data stream
->> over that PPPoATM connection.
+May I assume that you are working with a MTU greater than 1500 bytes on
+each interface ? If so plese add netdev@vger.kernel.org to the Cc: and
+remove linux-kernel@ from the Cc:.
 
-I see what's wrong now: that's the ARM fls() problem, the call in
-fls64() to be precise. It seems it was already discussed: the patch in
-http://lkml.org/lkml/2008/5/4/233 makes the problem disappear.
+[...]
+> Jul 13 13:28:30 nas kernel: [  648.120756]  [<ffffffff881b525f>]
+> :r8168:rtl8168_rx_fill+0x64/0x106
 
-Perhaps it's time to fix it definitely?
+It looks more like Realtek's out-of-tree driver than like the in-kernel
+one. Is it a customised kernel ?
+
+[...]
+> Help
+
+Don't panic.
+
 -- 
-Krzysztof Halasa
+Ueimor
