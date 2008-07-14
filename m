@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbYGNOmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbYGNOnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755530AbYGNOmW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 10:42:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753823AbYGNOmO
+	id S1756516AbYGNOnQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 10:43:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753823AbYGNOnA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 10:42:14 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36074 "EHLO mx3.mail.elte.hu"
+	Mon, 14 Jul 2008 10:43:00 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54336 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753733AbYGNOmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 10:42:13 -0400
-Date: Mon, 14 Jul 2008 16:41:56 +0200
+	id S1753846AbYGNOm7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 10:42:59 -0400
+Date: Mon, 14 Jul 2008 16:42:43 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [git pull] core/rodata change for v2.6.27
-Message-ID: <20080714144156.GA20420@elte.hu>
+Subject: [git pull] core/softirq for v2.6.27
+Message-ID: <20080714144243.GA21079@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,191 +34,259 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest core/rodata git tree from:
+Please pull the latest core/softirq changes git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core/rodata
-
-moves BUG_TABLE into RODATA where it belongs.
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core/softirq
 
 Thanks,
 
 	Ingo
 
 ------------------>
-Jan Beulich (1):
-      move BUG_TABLE into RODATA
+Carlos R. Mafra (1):
+      Remove argument from open_softirq which is always NULL
+
+Johannes Berg (1):
+      softirq: remove irqs_disabled warning from local_bh_enable
+
+Vegard Nossum (1):
+      softirq: remove initialization of static per-cpu variable
 
 
- arch/avr32/kernel/vmlinux.lds.S   |    2 --
- arch/parisc/kernel/vmlinux.lds.S  |    1 -
- arch/powerpc/kernel/vmlinux.lds.S |    2 --
- arch/s390/kernel/vmlinux.lds.S    |    1 -
- arch/sh/kernel/vmlinux_32.lds.S   |    1 -
- arch/sh/kernel/vmlinux_64.lds.S   |    1 -
- arch/x86/kernel/vmlinux_32.lds.S  |    8 +++-----
- arch/x86/kernel/vmlinux_64.lds.S  |   10 ++++------
- include/asm-generic/vmlinux.lds.h |    6 ++++++
- 9 files changed, 13 insertions(+), 19 deletions(-)
+ block/blk-core.c          |    2 +-
+ include/linux/interrupt.h |    3 +-
+ kernel/hrtimer.c          |    2 +-
+ kernel/rcuclassic.c       |    2 +-
+ kernel/rcupreempt.c       |    2 +-
+ kernel/sched.c            |    2 +-
+ kernel/softirq.c          |   61 ++++++++++++---------------------------------
+ kernel/timer.c            |    2 +-
+ net/core/dev.c            |    4 +-
+ 9 files changed, 25 insertions(+), 55 deletions(-)
 
-diff --git a/arch/avr32/kernel/vmlinux.lds.S b/arch/avr32/kernel/vmlinux.lds.S
-index 481cfd4..bc932c9 100644
---- a/arch/avr32/kernel/vmlinux.lds.S
-+++ b/arch/avr32/kernel/vmlinux.lds.S
-@@ -93,8 +93,6 @@ SECTIONS
- 		__stop___ex_table = .;
- 	}
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 1905aab..af094ff 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -2045,7 +2045,7 @@ int __init blk_dev_init(void)
+ 	for_each_possible_cpu(i)
+ 		INIT_LIST_HEAD(&per_cpu(blk_cpu_done, i));
  
--	BUG_TABLE
--
- 	RODATA
+-	open_softirq(BLOCK_SOFTIRQ, blk_done_softirq, NULL);
++	open_softirq(BLOCK_SOFTIRQ, blk_done_softirq);
+ 	register_hotcpu_notifier(&blk_cpu_notifier);
  
- 	. = ALIGN(THREAD_SIZE);
-diff --git a/arch/parisc/kernel/vmlinux.lds.S b/arch/parisc/kernel/vmlinux.lds.S
-index 2e516b8..1a3b6cc 100644
---- a/arch/parisc/kernel/vmlinux.lds.S
-+++ b/arch/parisc/kernel/vmlinux.lds.S
-@@ -67,7 +67,6 @@ SECTIONS
- 	_etext = .;
- 
- 	RODATA
--	BUG_TABLE
- 
- 	/* writeable */
- 	/* Make sure this is page aligned so
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 0c3000b..53d57d1 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -64,8 +64,6 @@ SECTIONS
- 
- 	NOTES
- 
--	BUG_TABLE
--
- /*
-  * Init sections discarded at runtime
-  */
-diff --git a/arch/s390/kernel/vmlinux.lds.S b/arch/s390/kernel/vmlinux.lds.S
-index b460715..76c1e60 100644
---- a/arch/s390/kernel/vmlinux.lds.S
-+++ b/arch/s390/kernel/vmlinux.lds.S
-@@ -40,7 +40,6 @@ SECTIONS
- 	_etext = .;		/* End of text section */
- 
- 	NOTES :text :note
--	BUG_TABLE :text
- 
- 	RODATA
- 
-diff --git a/arch/sh/kernel/vmlinux_32.lds.S b/arch/sh/kernel/vmlinux_32.lds.S
-index c711378..7b4b82b 100644
---- a/arch/sh/kernel/vmlinux_32.lds.S
-+++ b/arch/sh/kernel/vmlinux_32.lds.S
-@@ -44,7 +44,6 @@ SECTIONS
- 
- 	_etext = .;			/* End of text section */
- 
--	BUG_TABLE
- 	NOTES
- 	RO_DATA(PAGE_SIZE)
- 
-diff --git a/arch/sh/kernel/vmlinux_64.lds.S b/arch/sh/kernel/vmlinux_64.lds.S
-index d1e1770..33fa464 100644
---- a/arch/sh/kernel/vmlinux_64.lds.S
-+++ b/arch/sh/kernel/vmlinux_64.lds.S
-@@ -65,7 +65,6 @@ SECTIONS
- 
- 	_etext = .;			/* End of text section */
- 
--	BUG_TABLE
- 	NOTES 
- 	RO_DATA(PAGE_SIZE)
- 
-diff --git a/arch/x86/kernel/vmlinux_32.lds.S b/arch/x86/kernel/vmlinux_32.lds.S
-index ce5ed08..aa08554 100644
---- a/arch/x86/kernel/vmlinux_32.lds.S
-+++ b/arch/x86/kernel/vmlinux_32.lds.S
-@@ -49,16 +49,14 @@ SECTIONS
-   	_etext = .;			/* End of text section */
-   } :text = 0x9090
- 
-+  NOTES :text :note
-+
-   . = ALIGN(16);		/* Exception table */
-   __ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) {
-   	__start___ex_table = .;
- 	 *(__ex_table)
-   	__stop___ex_table = .;
--  }
--
--  NOTES :text :note
--
--  BUG_TABLE :text
-+  } :text = 0x9090
- 
-   . = ALIGN(4);
-   .tracedata : AT(ADDR(.tracedata) - LOAD_OFFSET) {
-diff --git a/arch/x86/kernel/vmlinux_64.lds.S b/arch/x86/kernel/vmlinux_64.lds.S
-index fad3674..d123747 100644
---- a/arch/x86/kernel/vmlinux_64.lds.S
-+++ b/arch/x86/kernel/vmlinux_64.lds.S
-@@ -19,7 +19,7 @@ PHDRS {
- 	data PT_LOAD FLAGS(7);	/* RWE */
- 	user PT_LOAD FLAGS(7);	/* RWE */
- 	data.init PT_LOAD FLAGS(7);	/* RWE */
--	note PT_NOTE FLAGS(4);	/* R__ */
-+	note PT_NOTE FLAGS(0);	/* ___ */
- }
- SECTIONS
+ 	return 0;
+diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+index f1fc747..a86186d 100644
+--- a/include/linux/interrupt.h
++++ b/include/linux/interrupt.h
+@@ -285,12 +285,11 @@ enum
+ struct softirq_action
  {
-@@ -40,16 +40,14 @@ SECTIONS
- 	_etext = .;		/* End of text section */
-   } :text = 0x9090
+ 	void	(*action)(struct softirq_action *);
+-	void	*data;
+ };
  
-+  NOTES :text :note
+ asmlinkage void do_softirq(void);
+ asmlinkage void __do_softirq(void);
+-extern void open_softirq(int nr, void (*action)(struct softirq_action*), void *data);
++extern void open_softirq(int nr, void (*action)(struct softirq_action *));
+ extern void softirq_init(void);
+ #define __raise_softirq_irqoff(nr) do { or_softirq_pending(1UL << (nr)); } while (0)
+ extern void raise_softirq_irqoff(unsigned int nr);
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index 421be5f..861b408 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -1669,7 +1669,7 @@ void __init hrtimers_init(void)
+ 			  (void *)(long)smp_processor_id());
+ 	register_cpu_notifier(&hrtimers_nb);
+ #ifdef CONFIG_HIGH_RES_TIMERS
+-	open_softirq(HRTIMER_SOFTIRQ, run_hrtimer_softirq, NULL);
++	open_softirq(HRTIMER_SOFTIRQ, run_hrtimer_softirq);
+ #endif
+ }
+ 
+diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
+index f4ffbd0..f6e01f3 100644
+--- a/kernel/rcuclassic.c
++++ b/kernel/rcuclassic.c
+@@ -529,7 +529,7 @@ static void __cpuinit rcu_online_cpu(int cpu)
+ 
+ 	rcu_init_percpu_data(cpu, &rcu_ctrlblk, rdp);
+ 	rcu_init_percpu_data(cpu, &rcu_bh_ctrlblk, bh_rdp);
+-	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks, NULL);
++	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
+ }
+ 
+ static int __cpuinit rcu_cpu_notify(struct notifier_block *self,
+diff --git a/kernel/rcupreempt.c b/kernel/rcupreempt.c
+index 5e02b77..902dce2 100644
+--- a/kernel/rcupreempt.c
++++ b/kernel/rcupreempt.c
+@@ -1123,7 +1123,7 @@ void __init __rcu_init(void)
+ 	for_each_online_cpu(cpu)
+ 		rcu_cpu_notify(&rcu_nb, CPU_UP_PREPARE,	(void *)(long) cpu);
+ 
+-	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks, NULL);
++	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
+ }
+ 
+ /*
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 3aaa5c8..5695835 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -7832,7 +7832,7 @@ void __init sched_init(void)
+ #endif
+ 
+ #ifdef CONFIG_SMP
+-	open_softirq(SCHED_SOFTIRQ, run_rebalance_domains, NULL);
++	open_softirq(SCHED_SOFTIRQ, run_rebalance_domains);
+ #endif
+ 
+ #ifdef CONFIG_RT_MUTEXES
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index 36e0617..2cf2502 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -131,23 +131,17 @@ void _local_bh_enable(void)
+ 
+ EXPORT_SYMBOL(_local_bh_enable);
+ 
+-void local_bh_enable(void)
++static inline void _local_bh_enable_ip(unsigned long ip)
+ {
++	WARN_ON_ONCE(in_irq() || irqs_disabled());
+ #ifdef CONFIG_TRACE_IRQFLAGS
+-	unsigned long flags;
+-
+-	WARN_ON_ONCE(in_irq());
+-#endif
+-	WARN_ON_ONCE(irqs_disabled());
+-
+-#ifdef CONFIG_TRACE_IRQFLAGS
+-	local_irq_save(flags);
++	local_irq_disable();
+ #endif
+ 	/*
+ 	 * Are softirqs going to be turned on now:
+ 	 */
+ 	if (softirq_count() == SOFTIRQ_OFFSET)
+-		trace_softirqs_on((unsigned long)__builtin_return_address(0));
++		trace_softirqs_on(ip);
+ 	/*
+ 	 * Keep preemption disabled until we are done with
+ 	 * softirq processing:
+@@ -159,40 +153,20 @@ void local_bh_enable(void)
+ 
+ 	dec_preempt_count();
+ #ifdef CONFIG_TRACE_IRQFLAGS
+-	local_irq_restore(flags);
++	local_irq_enable();
+ #endif
+ 	preempt_check_resched();
+ }
 +
-   . = ALIGN(16);		/* Exception table */
-   __ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) {
-   	__start___ex_table = .;
- 	 *(__ex_table)
-   	__stop___ex_table = .;
--  }
++void local_bh_enable(void)
++{
++	_local_bh_enable_ip((unsigned long)__builtin_return_address(0));
++}
+ EXPORT_SYMBOL(local_bh_enable);
+ 
+ void local_bh_enable_ip(unsigned long ip)
+ {
+-#ifdef CONFIG_TRACE_IRQFLAGS
+-	unsigned long flags;
 -
--  NOTES :text :note
+-	WARN_ON_ONCE(in_irq());
 -
--  BUG_TABLE :text
-+  } :text = 0x9090
+-	local_irq_save(flags);
+-#endif
+-	/*
+-	 * Are softirqs going to be turned on now:
+-	 */
+-	if (softirq_count() == SOFTIRQ_OFFSET)
+-		trace_softirqs_on(ip);
+-	/*
+-	 * Keep preemption disabled until we are done with
+-	 * softirq processing:
+- 	 */
+- 	sub_preempt_count(SOFTIRQ_OFFSET - 1);
+-
+-	if (unlikely(!in_interrupt() && local_softirq_pending()))
+-		do_softirq();
+-
+-	dec_preempt_count();
+-#ifdef CONFIG_TRACE_IRQFLAGS
+-	local_irq_restore(flags);
+-#endif
+-	preempt_check_resched();
++	_local_bh_enable_ip(ip);
+ }
+ EXPORT_SYMBOL(local_bh_enable_ip);
  
-   RODATA
+@@ -347,9 +321,8 @@ void raise_softirq(unsigned int nr)
+ 	local_irq_restore(flags);
+ }
  
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index f054778..dd2cc81 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -67,6 +67,8 @@
- 		*(.rodata1)						\
- 	}								\
- 									\
-+	BUG_TABLE							\
-+									\
- 	/* PCI quirks */						\
- 	.pci_fixup        : AT(ADDR(.pci_fixup) - LOAD_OFFSET) {	\
- 		VMLINUX_SYMBOL(__start_pci_fixups_early) = .;		\
-@@ -310,6 +312,7 @@
- 		.stab.indexstr 0 : { *(.stab.indexstr) }		\
- 		.comment 0 : { *(.comment) }
+-void open_softirq(int nr, void (*action)(struct softirq_action*), void *data)
++void open_softirq(int nr, void (*action)(struct softirq_action *))
+ {
+-	softirq_vec[nr].data = data;
+ 	softirq_vec[nr].action = action;
+ }
  
-+#ifdef CONFIG_GENERIC_BUG
- #define BUG_TABLE							\
- 	. = ALIGN(8);							\
- 	__bug_table : AT(ADDR(__bug_table) - LOAD_OFFSET) {		\
-@@ -317,6 +320,9 @@
- 		*(__bug_table)						\
- 		__stop___bug_table = .;					\
+@@ -360,10 +333,8 @@ struct tasklet_head
+ 	struct tasklet_struct **tail;
+ };
+ 
+-/* Some compilers disobey section attribute on statics when not
+-   initialized -- RR */
+-static DEFINE_PER_CPU(struct tasklet_head, tasklet_vec) = { NULL };
+-static DEFINE_PER_CPU(struct tasklet_head, tasklet_hi_vec) = { NULL };
++static DEFINE_PER_CPU(struct tasklet_head, tasklet_vec);
++static DEFINE_PER_CPU(struct tasklet_head, tasklet_hi_vec);
+ 
+ void __tasklet_schedule(struct tasklet_struct *t)
+ {
+@@ -503,8 +474,8 @@ void __init softirq_init(void)
+ 			&per_cpu(tasklet_hi_vec, cpu).head;
  	}
-+#else
-+#define BUG_TABLE
-+#endif
  
- #define NOTES								\
- 	.notes : AT(ADDR(.notes) - LOAD_OFFSET) {			\
+-	open_softirq(TASKLET_SOFTIRQ, tasklet_action, NULL);
+-	open_softirq(HI_SOFTIRQ, tasklet_hi_action, NULL);
++	open_softirq(TASKLET_SOFTIRQ, tasklet_action);
++	open_softirq(HI_SOFTIRQ, tasklet_hi_action);
+ }
+ 
+ static int ksoftirqd(void * __bind_cpu)
+diff --git a/kernel/timer.c b/kernel/timer.c
+index ceacc66..b4da888 100644
+--- a/kernel/timer.c
++++ b/kernel/timer.c
+@@ -1502,7 +1502,7 @@ void __init init_timers(void)
+ 
+ 	BUG_ON(err == NOTIFY_BAD);
+ 	register_cpu_notifier(&timers_nb);
+-	open_softirq(TIMER_SOFTIRQ, run_timer_softirq, NULL);
++	open_softirq(TIMER_SOFTIRQ, run_timer_softirq);
+ }
+ 
+ /**
+diff --git a/net/core/dev.c b/net/core/dev.c
+index c421a1f..48f1e04 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -4585,8 +4585,8 @@ static int __init net_dev_init(void)
+ 
+ 	dev_boot_phase = 0;
+ 
+-	open_softirq(NET_TX_SOFTIRQ, net_tx_action, NULL);
+-	open_softirq(NET_RX_SOFTIRQ, net_rx_action, NULL);
++	open_softirq(NET_TX_SOFTIRQ, net_tx_action);
++	open_softirq(NET_RX_SOFTIRQ, net_rx_action);
+ 
+ 	hotcpu_notifier(dev_cpu_callback, 0);
+ 	dst_init();
