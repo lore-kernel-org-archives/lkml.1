@@ -1,143 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756906AbYGNV0d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758272AbYGNV1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756906AbYGNV0d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 17:26:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758036AbYGNV0I
+	id S1758272AbYGNV1Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 17:27:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756706AbYGNV06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 17:26:08 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:55141 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758026AbYGNV0G (ORCPT
+	Mon, 14 Jul 2008 17:26:58 -0400
+Received: from mu-out-0910.google.com ([209.85.134.186]:61524 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756632AbYGNV05 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 17:26:06 -0400
-Date: Mon, 14 Jul 2008 14:24:47 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Clark Williams <clark.williams@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Elias Oltmanns <eo@nebensachen.de>
-Subject: Re: [PATCH] ftrace: document updates
-Message-Id: <20080714142447.538d282d.randy.dunlap@oracle.com>
-In-Reply-To: <Pine.LNX.4.58.0807141637460.30575@gandalf.stny.rr.com>
-References: <Pine.LNX.4.58.0807141637460.30575@gandalf.stny.rr.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 14 Jul 2008 17:26:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=I33vMK3k8RcPoW4E4FXMMhoWELo2jfbk+tHwBEZqUmNiGMBDebEFdPcaRyJZl6s+Vs
+         e6j6fBH9Lhnqigbb0kkRrabiJr+adCyoqLlsw9NaUeuvs7Vnw/CSsaGxJr0MOxNDchvm
+         vHwBQtdbYbxq8NFN1b2U5Hu8/dHvgkcp+1nu4=
+Message-ID: <487BC49B.7080105@gmail.com>
+Date: Mon, 14 Jul 2008 23:26:51 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Swiftdove 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: Li Zefan <lizf@cn.fujitsu.com>
+CC: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
+       akpm@linux-foundation.org, Carl Henrik Lunde <chlunde@ping.uio.no>,
+       axboe@kernel.dk, matt@bluehost.com, roberto@unbit.it,
+       randy.dunlap@oracle.com, Divyesh Shah <dpshah@google.com>,
+       subrata@linux.vnet.ibm.com, eric.rannaud@gmail.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 2/3] i/o bandwidth controller infrastructure
+References: <> <1215862291-26719-3-git-send-email-righi.andrea@gmail.com> <487AB912.9090908@cn.fujitsu.com>
+In-Reply-To: <487AB912.9090908@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Jul 2008 16:41:12 -0400 (EDT) Steven Rostedt wrote:
+Li Zefan wrote:
+>> +/* The various types of throttling algorithms */
+>> +enum iothrottle_strategy {
+>> +	IOTHROTTLE_LEAKY_BUCKET,
+> 
+> It's better to explicitly assigned 0 to IOTHROTTLE_LEAKY_BUCKET.
 
-a few more...
+OK.
 
-> The following updates were recommended by Elias Oltmanns and Randy Dunlap.
 > 
-> [ updates based on Andrew Morton's comments are still to come. ]
+>> +	IOTHROTTLE_TOKEN_BUCKET,
+>> +};
 > 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> ---
->  Documentation/ftrace.txt |  134 ++++++++++++++++++++++++-----------------------
->  1 file changed, 71 insertions(+), 63 deletions(-)
+>> +static int iothrottle_parse_args(char *buf, size_t nbytes, dev_t *dev,
+>> +					u64 *iorate,
+>> +					enum iothrottle_strategy *strategy,
+>> +					s64 *bucket_size)
+>> +{
+>> +	char *p = buf;
+>> +	int count = 0;
+>> +	char *s[3];
+>> +	unsigned long strategy_val;
+>> +	int ret;
+>> +
+>> +	/* split the colon-delimited input string into its elements */
+>> +	memset(s, 0, sizeof(s));
+>> +	while (count < ARRAY_SIZE(s)) {
+>> +		p = memchr(p, ':', buf + nbytes - p);
+>> +		if (!p)
+>> +			break;
+>> +		*p++ = '\0';
+>> +		if (p >= buf + nbytes)
+>> +			break;
+>> +		s[count++] = p;
+>> +	}
 > 
-> Index: linus.git/Documentation/ftrace.txt
-> ===================================================================
-> --- linus.git.orig/Documentation/ftrace.txt	2008-07-14 11:22:26.000000000 -0400
-> +++ linus.git/Documentation/ftrace.txt	2008-07-14 16:07:13.000000000 -0400
-> @@ -2,8 +2,11 @@
->  		========================
-> 
->  Copyright 2008 Red Hat Inc.
-> -Author: Steven Rostedt <srostedt@redhat.com>
-> +   Author:   Steven Rostedt <srostedt@redhat.com>
-> +  License:   The GNU Free Documentation License, Version 1.2
-> +Reviewers:   Elias Oltmanns and Randy Dunlap
-> 
-> +Writen for: 2.6.26-rc8 linux-2.6-tip.git tip/tracing/ftrace branch
-> 
->  Introduction
->  ------------
-> @@ -297,13 +302,13 @@ explains which is which.
-> 
->  The above is mostly meaningful for kernel developers.
-> 
-> -  time: This differs from the trace output where as the trace output
-> -	contained a absolute timestamp. This timestamp is relative
-> -	to the start of the first entry in the the trace.
-> +  time: This differs from the trace file output. The trace file output
-> +	included an absolute timestamp. The timestamp used by the
+> use strsep()
 
-	includes
+OK.
 
-> +	latency_trace file is relative to the start of the trace.
 > 
->    delay: This is just to help catch your eye a bit better. And
->  	needs to be fixed to be only relative to the same CPU.
-> -	The marks is determined by the difference between this
-> +	The marks are determined by the difference between this
->  	current trace and the next trace.
->  	 '!' - greater than preempt_mark_thresh (default 100)
->  	 '+' - greater than 1 microsecond
-> @@ -570,21 +575,21 @@ vim:ft=help
+>> +
+>> +	/* i/o bandwidth limit */
+>> +	if (!s[0])
+>> +		return -EINVAL;
+>> +	ret = strict_strtoull(s[0], 10, iorate);
+>> +	if (ret < 0)
+>> +		return ret;
+>> +	if (!*iorate) {
+>> +		/*
+>> +		 * we're deleting a limiting rule, so just ignore the other
+>> +		 * parameters
+>> +		 */
+>> +		*strategy = 0;
+>> +		*bucket_size = 0;
+>> +		goto out;
+>> +	}
+>> +	*iorate = ALIGN(*iorate, 1024);
+>> +
+>> +	/* throttling strategy */
+>> +	if (!s[1])
+>> +		return -EINVAL;
+>> +	ret = strict_strtoul(s[1], 10, &strategy_val);
+>> +	if (ret < 0)
+>> +		return ret;
+>> +	*strategy = (enum iothrottle_strategy)strategy_val;
+>> +	switch (*strategy) {
+>> +	case IOTHROTTLE_LEAKY_BUCKET:
+>> +		/* leaky bucket ignores bucket size */
+>> +		*bucket_size = 0;
+>> +		goto out;
+>> +	case IOTHROTTLE_TOKEN_BUCKET:
+>> +		break;
+>> +	default:
+>> +		return -EINVAL;
+>> +	}
+>> +
+>> +	/* bucket size */
+>> +	if (!s[2])
+>> +		return -EINVAL;
+>> +	ret = strict_strtoll(s[2], 10, bucket_size);
+>> +	if (ret < 0)
+>> +		return ret;
+>> +	if (*bucket_size < 0)
+>> +		return -EINVAL;
+>> +	*bucket_size = ALIGN(*bucket_size, 1024);
+>> +out:
+>> +
+>> +	/* block device number */
+>> +	*dev = devname2dev_t(buf);
 > 
-> 
->  preemptoff
->  ----------
-> 
-> -When preemption is disabled we may be able to receive interrupts but
-> -the task can not be preempted and a higher priority task must wait
-> +When preemption is disabled, we may be able to receive interrupts but
-> +the task cannot be preempted and a higher priority task must wait
->  for preemption to be enabled again before it can preempt a lower
->  priority task.
-> 
-> -The preemptoff tracer traces the places that disables preemption.
-> +The preemptoff tracer traces the places that disable preemption.
->  Like the irqsoff, it records the maximum latency that preemption
+> why not parse dev before parse bandwidth limit ?
 
-   Like the irqsoff tracer,
+Well... due to the filesystem lookup in devname2dev_t() this option is
+the most expensive to be parsed. For this reason I put it at the end, so
+if any other parameter is wrong we can skip the lookup_bdev(). Does it
+make sense?
 
->  was disabled. The control of preemptoff is much like the irqsoff.
 > 
-> @@ -992,12 +997,15 @@ ksoftirq-7     1d..4   50us : schedule (
+>> +	return *dev ? 0 : -EINVAL;
+>> +}
+>> +
+>> +static int iothrottle_write(struct cgroup *cgrp, struct cftype *cft,
+>> +				const char *buffer)
+>> +{
+>> +	struct iothrottle *iot;
+>> +	struct iothrottle_node *n, *newn = NULL;
+>> +	dev_t dev;
+>> +	u64 iorate;
+>> +	enum iothrottle_strategy strategy;
+>> +	s64 bucket_size;
+>> +	char *buf;
+>> +	size_t nbytes = strlen(buffer);
+>> +	int ret = 0;
+>> +
+>> +	buf = kmalloc(nbytes + 1, GFP_KERNEL);
+>> +	if (!buf)
+>> +		return -ENOMEM;
+>> +	memcpy(buf, buffer, nbytes + 1);
+>> +
 > 
->  The interrupt went off while running ksoftirqd. This task runs at
->  SCHED_OTHER. Why didn't we see the 'N' set early? This may be
-> -a harmless bug with x86_32 and 4K stacks. The need_reched() function
-> -that tests if we need to reschedule looks on the actual stack.
-> -Where as the setting of the NEED_RESCHED bit happens on the
-> -task's stack. But because we are in a hard interrupt, the test
-> -is with the interrupts stack which has that to be false. We don't
-> -see the 'N' until we switch back to the task's stack.
-> +a harmless bug with x86_32 and 4K stacks. On x86_32 with 4K stacks
-> +configured, the interrupt and softirq runs with their own stack.
+> redundant kmalloc, just use buffer, and ...
 
-                                         run
 
-> +Some information is held on the top of the task's stack (need_resched
-> +and preempt_count are both stored there). The setting of the NEED_RESCHED
-> +bit is done directly to the task's stack, but the reading of the
-> +NEED_RESCHED is done by looking at the current stack, which in this case
-> +is the stack for the hard interrupt. This hides the fact that NEED_RESCHED
-> +has been set. We don't see the 'N' until we switch back to the task's
-> +assigned stack.
+uhmm... I would apply strsep() directly to buffer in this way, that is
+a const char *.
+
 > 
->  ftrace
->  ------
+>> +	ret = iothrottle_parse_args(buf, nbytes, &dev, &iorate,
+>> +					&strategy, &bucket_size);
+>> +	if (ret)
+>> +		goto out1;
+>> +	if (iorate) {
+>> +		newn = kmalloc(sizeof(*newn), GFP_KERNEL);
+>> +		if (!newn) {
+>> +			ret = -ENOMEM;
+>> +			goto out1;
+>> +		}
+>> +		newn->dev = dev;
+>> +		newn->iorate = iorate;
+>> +		newn->strategy = strategy;
+>> +		newn->bucket_size = bucket_size;
+>> +		newn->timestamp = jiffies;
+>> +		atomic_long_set(&newn->stat, 0);
+>> +		atomic_long_set(&newn->token, 0);
+>> +	}
+>> +	if (!cgroup_lock_live_group(cgrp)) {
+>> +		kfree(newn);
+>> +		ret = -ENODEV;
+>> +		goto out1;
+>> +	}
+>> +	iot = cgroup_to_iothrottle(cgrp);
+>> +
+>> +	spin_lock(&iot->lock);
+>> +	if (!iorate) {
+>> +		/* Delete a block device limiting rule */
+>> +		n = iothrottle_delete_node(iot, dev);
+>> +		goto out2;
+>> +	}
+>> +	n = iothrottle_search_node(iot, dev);
+>> +	if (n) {
+>> +		/* Update a block device limiting rule */
+>> +		iothrottle_replace_node(iot, n, newn);
+>> +		goto out2;
+>> +	}
+>> +	/* Add a new block device limiting rule */
+>> +	iothrottle_insert_node(iot, newn);
+>> +out2:
+>> +	spin_unlock(&iot->lock);
+>> +	cgroup_unlock();
+>> +	if (n) {
+>> +		synchronize_rcu();
+>> +		kfree(n);
+>> +	}
+>> +out1:
+>> +	kfree(buf);
+>> +	return ret;
+>> +}
+>> +
+>> +static struct cftype files[] = {
+>> +	{
+>> +		.name = "bandwidth",
+>> +		.read_seq_string = iothrottle_read,
+>> +		.write_string = iothrottle_write,
+> 
+> and you should specify .max_write_len = XXX unless XXX <= 64.
+> You use 1024 in v4.
 
+OK. Anyway, probably something like 256 would be enough.
 
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+Thanks again for the detailed revision Li! I'll include your fixes in
+a new patchset version.
+
+-Andrea
