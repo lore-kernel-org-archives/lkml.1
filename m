@@ -1,39 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756962AbYGNIQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757013AbYGNISf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756962AbYGNIQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 04:16:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755486AbYGNIQV
+	id S1757013AbYGNISf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 04:18:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755654AbYGNIS2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 04:16:21 -0400
-Received: from swm.pp.se ([212.247.200.143]:58931 "EHLO uplift.swm.pp.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755012AbYGNIQV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 04:16:21 -0400
-Date: Mon, 14 Jul 2008 10:16:19 +0200 (CEST)
-From: Mikael Abrahamsson <swmike@swm.pp.se>
-To: Dave Chinner <david@fromorbit.com>
-cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: xfs bug in 2.6.26-rc9
-In-Reply-To: <20080714073035.GV29319@disturbed>
-Message-ID: <alpine.DEB.1.10.0807141015010.30192@uplift.swm.pp.se>
-References: <alpine.DEB.1.10.0807110939520.30192@uplift.swm.pp.se> <20080711084248.GU29319@disturbed> <alpine.DEB.1.10.0807111215040.30192@uplift.swm.pp.se> <20080714073035.GV29319@disturbed>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-Organization: People's Front Against WWW
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Mon, 14 Jul 2008 04:18:28 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44144 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755639AbYGNIS1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 04:18:27 -0400
+Date: Mon, 14 Jul 2008 17:15:22 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/2][-mm][resend] memcg limit change shrink usage.
+Message-Id: <20080714171522.d1cd50e9.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080714171154.e1cc9943.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080714171154.e1cc9943.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Jul 2008, Dave Chinner wrote:
+Shrinking memory usage at limit change.
 
-> Can you find the file it is failing on and run 'xfs_bmap -vvp <file>' to 
-> just extract the extent map outside the context of xfs_fsr?
+This is an enhancement (in TODO list).
+based on res_counter-limit-change-ebusy.patch
 
-It's run twice without any errors now, so I guess I can't reproduce it 
-anymore. If it happens again, how can I find out which file is causing the 
-problem? I looked at the xfs_fsr man page and it didn't say much, would it 
-help if I ran it in "-v" mode?
+Changelog: v2 -> v3
+  - supported interrupt by signal. (A user can stop limit change by Ctrl-C.)
+Changelog: v1 -> v2
+  - adjusted to be based on write_string() patch set
+  - removed backword goto.
+  - removed unneccesary cond_resched().
 
--- 
-Mikael Abrahamsson    email: swmike@swm.pp.se
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+Acked-by: Pavel Emelyanov <xemul@openvz.org>
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+ Documentation/controllers/memory.txt |    3 --
+ mm/memcontrol.c                      |   48 ++++++++++++++++++++++++++++++++---
+ 2 files changed, 45 insertions(+), 6 deletions(-)
+
+Index: linux-2.6.26-rc8-mm1/mm/memcontrol.c
+===================================================================
+--- linux-2.6.26-rc8-mm1.orig/mm/memcontrol.c
++++ linux-2.6.26-rc8-mm1/mm/memcontrol.c
+@@ -836,6 +836,30 @@ int mem_cgroup_shrink_usage(struct mm_st
+ 	return 0;
+ }
+ 
++int mem_cgroup_resize_limit(struct mem_cgroup *memcg, unsigned long long val)
++{
++
++	int retry_count = MEM_CGROUP_RECLAIM_RETRIES;
++	int progress;
++	int ret = 0;
++
++	while (res_counter_set_limit(&memcg->res, val)) {
++		if (signal_pending(current)) {
++			ret = -EINTR;
++			break;
++		}
++		if (!retry_count) {
++			ret = -EBUSY;
++			break;
++		}
++		progress = try_to_free_mem_cgroup_pages(memcg, GFP_KERNEL);
++		if (!progress)
++			retry_count--;
++	}
++	return ret;
++}
++
++
+ /*
+  * This routine traverse page_cgroup in given list and drop them all.
+  * *And* this routine doesn't reclaim page itself, just removes page_cgroup.
+@@ -916,13 +940,29 @@ static u64 mem_cgroup_read(struct cgroup
+ 	return res_counter_read_u64(&mem_cgroup_from_cont(cont)->res,
+ 				    cft->private);
+ }
+-
++/*
++ * The user of this function is...
++ * RES_LIMIT.
++ */
+ static int mem_cgroup_write(struct cgroup *cont, struct cftype *cft,
+ 			    const char *buffer)
+ {
+-	return res_counter_write(&mem_cgroup_from_cont(cont)->res,
+-				 cft->private, buffer,
+-				 res_counter_memparse_write_strategy);
++	struct mem_cgroup *memcg = mem_cgroup_from_cont(cont);
++	unsigned long long val;
++	int ret;
++
++        switch (cft->private) {
++	case RES_LIMIT:
++		/* This function does all necessary parse...reuse it */
++		ret = res_counter_memparse_write_strategy(buffer, &val);
++		if (!ret)
++			ret = mem_cgroup_resize_limit(memcg, val);
++		break;
++	default:
++		ret = -EINVAL; /* should be BUG() ? */
++		break;
++	}
++	return ret;
+ }
+ 
+ static int mem_cgroup_reset(struct cgroup *cont, unsigned int event)
+Index: linux-2.6.26-rc8-mm1/Documentation/controllers/memory.txt
+===================================================================
+--- linux-2.6.26-rc8-mm1.orig/Documentation/controllers/memory.txt
++++ linux-2.6.26-rc8-mm1/Documentation/controllers/memory.txt
+@@ -242,8 +242,7 @@ rmdir() if there are no tasks.
+ 1. Add support for accounting huge pages (as a separate controller)
+ 2. Make per-cgroup scanner reclaim not-shared pages first
+ 3. Teach controller to account for shared-pages
+-4. Start reclamation when the limit is lowered
+-5. Start reclamation in the background when the limit is
++4. Start reclamation in the background when the limit is
+    not yet hit but the usage is getting closer
+ 
+ Summary
+
