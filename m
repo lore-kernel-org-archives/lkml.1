@@ -1,113 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757441AbYGNKNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757320AbYGNKSQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757441AbYGNKNP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 06:13:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757300AbYGNKM5
+	id S1757320AbYGNKSQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 06:18:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756441AbYGNKSB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 06:12:57 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:47633 "EHLO smtps.tip.net.au"
+	Mon, 14 Jul 2008 06:18:01 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:39832 "EHLO bagnes.atmel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756330AbYGNKM4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 06:12:56 -0400
-Date: Mon, 14 Jul 2008 20:12:49 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for July 14
-Message-Id: <20080714201249.947400d0.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	id S1753367AbYGNKSA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 06:18:00 -0400
+Date: Mon, 14 Jul 2008 12:17:34 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, kernel@avr32linux.org
+Subject: [GIT PULL] avr32 updates for 2.6.27
+Message-ID: <20080714121734.453f5045@siona.local>
+Organization: Atmel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__14_Jul_2008_20_12_49_+1000_S1ZLOHLNdXvcP3Jg"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Jul 2008 10:17:37.0763 (UTC) FILETIME=[D729E330:01C8E59A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__14_Jul_2008_20_12_49_+1000_S1ZLOHLNdXvcP3Jg
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Linus,
 
-Hi all,
+Please pull the 'master' branch of
 
-With the opening of the merge window, I am hoping my job becomes easier
-again ... :-)
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git master
 
-Changes since next-20080711:
+Among other things, this includes standby and suspend-to-ram support
+for avr32, which I originally aimed at the previous merge window but
+found myself way too busy with other stuff to be able to actually
+finish it up properly. So at this point, it already has more than three
+months of exposure through our vendor tree.
 
-Changed tree: powerpc (I am now fetching Ben's version)
+The rtc, net and serial driver changes are related to power management.
+Without them, power management acts a bit funny on avr32 (and I would
+have thought at91 power management acts a bit strange too without the
+macb change). I didn't get any response from the relevant maintainers,
+so I took them myself.
 
-The sched tree lost a conflict.
+There are also a few small changes in here needed for out-of-tree
+boards that I'm hoping will find their way into mainline in the near
+future.
 
-The x86 tree gained a conflict against the stackprotector tree.
+Alex (1):
+      avr32: Allow board to define oscillator rates
 
-The v4l-dvb tree lost a conflict.
+David Brownell (3):
+      avr32: minor GPIO handling updates
+      avr32: improve NGW100 I2C/PMBus setup
+      at32ap700x spi: enable pullups on MISO
 
-The powerpc tree gained a conflict against the ftrace tree and required a
-couple of build fix patches (see below) but lost a previous build fix
-patch.
+Haavard Skinnemoen (22):
+      avr32: Provide PCI DMA mapping API
+      avr32: export empty_zero_page
+      avr32: Fix wrong I/O access size in __raw_readsb
+      avr32: Clean up time.c #includes
+      avr32: Kill unneeded #include <asm/pgalloc.h> from asm/mmu_context.h
+      avr32: Kill special exception handler sections
+      avr32: Move setup_platform() into chip-specific file
+      avr32: Rename at32ap.c -> pdc.c
+      avr32: Clean up and optimize the TLB operations
+      avr32: Remove useless zeroing of swapper_pg_dir at startup
+      avr32: Store virtual addresses in the PGD
+      avr32: Cover the kernel page tables in the user PGDs
+      avr32: Use a quicklist for PGD allocation
+      avr32: Use a quicklist for PTE allocation as well
+      atmel_serial: Fix build on avr32 with CONFIG_PM enabled
+      atmel_serial: Drain console TX shifter before suspending
+      macb: Basic suspend/resume support
+      rtc-at32ap700x: Enable wakeup
+      avr32: Enable SDRAMC clock at startup
+      avr32: Add simple SRAM allocator
+      avr32: Add system device for the internal interrupt controller (intc)
+      avr32: Power Management support ("standby" and "mem" modes)
 
-The rr tree gained a conflict against the ftrace tree but lost a build
-fix patch.
+Hans-Christian Egtvedt (3):
+      avr32: Add pin configuration choice to LCDC peripheral
+      avr32: Add PSIF platform devices
+      avr32: Fix typo of IFSR in a comment in the PIO header file
 
-I have also applied the following patches for known problems:
+Martin Koegler (1):
+      avr32: Fix sigaltstack behaviour
 
-	sparc64: sysdev API change fallout
-	s390: fix compile error due to smp_call_function
-	powerpc: mman.h export fixups
-	powerpc/stacktrace: EXPORT SYMBOL_GPL needs module.h
+Sedji Gaouaou (1):
+      atmel_pwm: Rename the "mck" clock to "pwm_clk"
 
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups, it is also built with powerpc allnoconfig,
-44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
-
-Below is a summary of the state of the merge.
-
-We are up to 106 trees (counting Linus' and 14 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__14_Jul_2008_20_12_49_+1000_S1ZLOHLNdXvcP3Jg
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkh7JqEACgkQjjKRsyhoI8wgCACdFXESstCaUozjhK8aEf7J5FtP
-cGAAnRAi0Ng0ashzv/4YZCFdrlTcl2Cu
-=S+40
------END PGP SIGNATURE-----
-
---Signature=_Mon__14_Jul_2008_20_12_49_+1000_S1ZLOHLNdXvcP3Jg--
+ arch/avr32/Kconfig                         |    9 +
+ arch/avr32/boards/atngw100/setup.c         |   29 ++++
+ arch/avr32/boards/atstk1000/atstk1002.c    |    8 +-
+ arch/avr32/boards/atstk1000/atstk1003.c    |    7 +
+ arch/avr32/boards/atstk1000/atstk1004.c    |    9 +-
+ arch/avr32/kernel/entry-avr32b.S           |   88 ++++++----
+ arch/avr32/kernel/signal.c                 |    3 +
+ arch/avr32/kernel/time.c                   |   14 +--
+ arch/avr32/kernel/vmlinux.lds.S            |   12 +-
+ arch/avr32/lib/io-readsb.S                 |    2 +-
+ arch/avr32/mach-at32ap/Makefile            |    7 +-
+ arch/avr32/mach-at32ap/at32ap700x.c        |  252 ++++++++++++++++++++++------
+ arch/avr32/mach-at32ap/intc.c              |   80 +++++++++-
+ arch/avr32/mach-at32ap/{at32ap.c => pdc.c} |    8 -
+ arch/avr32/mach-at32ap/pio.c               |    2 +
+ arch/avr32/mach-at32ap/pio.h               |    2 +-
+ arch/avr32/mach-at32ap/pm-at32ap700x.S     |  108 ++++++++++++
+ arch/avr32/mach-at32ap/pm.c                |  245 +++++++++++++++++++++++++++
+ arch/avr32/mach-at32ap/sdramc.h            |   76 +++++++++
+ arch/avr32/mm/init.c                       |   22 +--
+ arch/avr32/mm/tlb.c                        |  175 ++++++++++----------
+ drivers/misc/atmel_pwm.c                   |    2 +-
+ drivers/net/macb.c                         |   37 ++++
+ drivers/rtc/rtc-at32ap700x.c               |    3 +
+ drivers/serial/atmel_serial.c              |   17 ++-
+ include/asm-avr32/arch-at32ap/board.h      |   10 +-
+ include/asm-avr32/arch-at32ap/init.h       |    4 -
+ include/asm-avr32/arch-at32ap/pm.h         |    3 +
+ include/asm-avr32/arch-at32ap/sram.h       |   30 ++++
+ include/asm-avr32/mmu_context.h            |    1 -
+ include/asm-avr32/pci.h                    |    2 +
+ include/asm-avr32/pgalloc.h                |   68 +++++---
+ include/asm-avr32/pgtable.h                |   34 ++---
+ include/asm-avr32/thread_info.h            |    1 +
+ include/asm-avr32/tlbflush.h               |    1 -
+ mm/Kconfig                                 |    2 +-
+ 36 files changed, 1093 insertions(+), 280 deletions(-)
+ rename arch/avr32/mach-at32ap/{at32ap.c => pdc.c} (90%)
+ create mode 100644 arch/avr32/mach-at32ap/pm.c
+ create mode 100644 arch/avr32/mach-at32ap/sdramc.h
+ create mode 100644 include/asm-avr32/arch-at32ap/sram.h
