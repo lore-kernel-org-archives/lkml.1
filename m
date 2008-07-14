@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757310AbYGNHRQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757198AbYGNHRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757310AbYGNHRQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 03:17:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755580AbYGNHQH
+	id S1757198AbYGNHRt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 03:17:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757135AbYGNHQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 03:16:07 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47850 "EHLO hera.kernel.org"
+	Mon, 14 Jul 2008 03:16:26 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47865 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757032AbYGNHQE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 03:16:04 -0400
+	id S1756543AbYGNHQX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 03:16:23 -0400
 From: Tejun Heo <tj@kernel.org>
 To: jens.axboe@oracle.com, James.Bottomley@HansenPartnership.com,
        bharrosh@panasas.com, greg.freemyer@gmail.com,
@@ -16,157 +16,328 @@ To: jens.axboe@oracle.com, James.Bottomley@HansenPartnership.com,
        viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org,
        linux-ide@vger.kernel.org
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 01/10] block: misc updates
-Date: Mon, 14 Jul 2008 16:12:05 +0900
-Message-Id: <1216019534-29977-2-git-send-email-tj@kernel.org>
+Subject: [PATCH 07/10] block: implement extended dev numbers
+Date: Mon, 14 Jul 2008 16:12:11 +0900
+Message-Id: <1216019534-29977-8-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1216019534-29977-1-git-send-email-tj@kernel.org>
 References: <1216019534-29977-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 14 Jul 2008 07:12:54 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 14 Jul 2008 07:13:03 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the following misc updates in preparation for
-disk->part dereference fix and extended block devt support.
+Implement extended device numbers.  A block driver can tell block
+layer that it wants to use extended device numbers.  After the usual
+minor space is used up, block layer automatically allocates devt's
+from EXT_BLOCK_MAJOR.
 
-* implment part_to_disk()
+Currently only one major number is allocated for this but as the
+allocation is strictly on-demand, ~1mil minor space under it should
+suffice unless the system actually has more than ~1mil partitions and
+if that ever happens adding more majors to the extended devt area is
+easy.
 
-* fix comment about gendisk->part indexing
-
-* rename get_part() to disk_map_sector()
-
-* don't use n which is always zero while printing disk information in
-  diskstats_show()
+Due to internal implementation issues, the first partition can't be
+allocated on the extended area.  In other words, genhd->minors should
+at least be 1.  This limitation will be lifted by later changes.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- block/blk-core.c           |    7 ++++---
- block/blk-merge.c          |    4 ++--
- block/genhd.c              |    4 ++--
- drivers/block/aoe/aoecmd.c |    2 +-
- include/linux/genhd.h      |   13 ++++++++++---
- 5 files changed, 19 insertions(+), 11 deletions(-)
+ block/genhd.c         |  119 ++++++++++++++++++++++++++++++++++++++++++++++--
+ fs/partitions/check.c |   10 ++++-
+ include/linux/genhd.h |   13 ++++-
+ include/linux/major.h |    2 +
+ 4 files changed, 135 insertions(+), 9 deletions(-)
 
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 1905aab..bc832aa 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -60,7 +60,7 @@ static void drive_stat_acct(struct request *rq, int new_io)
- 	if (!blk_fs_request(rq) || !rq->rq_disk)
- 		return;
- 
--	part = get_part(rq->rq_disk, rq->sector);
-+	part = disk_map_sector(rq->rq_disk, rq->sector);
- 	if (!new_io)
- 		__all_stat_inc(rq->rq_disk, part, merges[rw], rq->sector);
- 	else {
-@@ -1535,7 +1535,8 @@ static int __end_that_request_first(struct request *req, int error,
- 	}
- 
- 	if (blk_fs_request(req) && req->rq_disk) {
--		struct hd_struct *part = get_part(req->rq_disk, req->sector);
-+		struct hd_struct *part =
-+			disk_map_sector(req->rq_disk, req->sector);
- 		const int rw = rq_data_dir(req);
- 
- 		all_stat_add(req->rq_disk, part, sectors[rw],
-@@ -1723,7 +1724,7 @@ static void end_that_request_last(struct request *req, int error)
- 	if (disk && blk_fs_request(req) && req != &req->q->bar_rq) {
- 		unsigned long duration = jiffies - req->start_time;
- 		const int rw = rq_data_dir(req);
--		struct hd_struct *part = get_part(disk, req->sector);
-+		struct hd_struct *part = disk_map_sector(disk, req->sector);
- 
- 		__all_stat_inc(disk, part, ios[rw], req->sector);
- 		__all_stat_add(disk, part, ticks[rw], duration, req->sector);
-diff --git a/block/blk-merge.c b/block/blk-merge.c
-index 651136a..e96d87d 100644
---- a/block/blk-merge.c
-+++ b/block/blk-merge.c
-@@ -467,8 +467,8 @@ static int attempt_merge(struct request_queue *q, struct request *req,
- 	elv_merge_requests(q, req, next);
- 
- 	if (req->rq_disk) {
--		struct hd_struct *part
--			= get_part(req->rq_disk, req->sector);
-+		struct hd_struct *part =
-+			disk_map_sector(req->rq_disk, req->sector);
- 		disk_round_stats(req->rq_disk);
- 		req->rq_disk->in_flight--;
- 		if (part) {
 diff --git a/block/genhd.c b/block/genhd.c
-index b646e7e..432c358 100644
+index 76961be..2511694 100644
 --- a/block/genhd.c
 +++ b/block/genhd.c
-@@ -567,7 +567,7 @@ static int diskstats_show(struct seq_file *s, void *v)
- {
- 	struct gendisk *gp = v;
- 	char buf[BDEVNAME_SIZE];
--	int n = 0;
-+	int n;
+@@ -16,6 +16,7 @@
+ #include <linux/kobj_map.h>
+ #include <linux/buffer_head.h>
+ #include <linux/mutex.h>
++#include <linux/idr.h>
  
- 	/*
- 	if (&gp->dev.kobj.entry == block_class.devices.next)
-@@ -581,7 +581,7 @@ static int diskstats_show(struct seq_file *s, void *v)
- 	disk_round_stats(gp);
- 	preempt_enable();
- 	seq_printf(s, "%4d %4d %s %lu %lu %llu %u %lu %lu %llu %u %u %u %u\n",
--		gp->major, n + gp->first_minor, disk_name(gp, n, buf),
-+		gp->major, gp->first_minor, disk_name(gp, 0, buf),
- 		disk_stat_read(gp, ios[0]), disk_stat_read(gp, merges[0]),
- 		(unsigned long long)disk_stat_read(gp, sectors[0]),
- 		jiffies_to_msecs(disk_stat_read(gp, ticks[0])),
-diff --git a/drivers/block/aoe/aoecmd.c b/drivers/block/aoe/aoecmd.c
-index 41f818b..ba40473 100644
---- a/drivers/block/aoe/aoecmd.c
-+++ b/drivers/block/aoe/aoecmd.c
-@@ -757,7 +757,7 @@ diskstats(struct gendisk *disk, struct bio *bio, ulong duration, sector_t sector
- 	const int rw = bio_data_dir(bio);
- 	struct hd_struct *part;
+ #include "blk.h"
  
--	part = get_part(disk, sector);
-+	part = disk_map_sector(disk, sector);
- 	all_stat_inc(disk, part, ios[rw], sector);
- 	all_stat_add(disk, part, ticks[rw], duration, sector);
- 	all_stat_add(disk, part, sectors[rw], n_sect, sector);
-diff --git a/include/linux/genhd.h b/include/linux/genhd.h
-index e485cf0..68d50a2 100644
---- a/include/linux/genhd.h
-+++ b/include/linux/genhd.h
-@@ -117,7 +117,7 @@ struct gendisk {
- 	int minors;                     /* maximum number of minors, =1 for
-                                          * disks that can't be partitioned. */
- 	char disk_name[32];		/* name of major driver */
--	struct hd_struct **part;	/* [indexed by minor] */
-+	struct hd_struct **part;	/* [indexed by minor - 1] */
- 	struct block_device_operations *fops;
- 	struct request_queue *queue;
- 	void *private_data;
-@@ -143,14 +143,21 @@ struct gendisk {
- 	struct work_struct async_notify;
- };
+@@ -24,6 +25,15 @@ static DEFINE_MUTEX(block_class_lock);
+ struct kobject *block_depr;
+ #endif
  
-+static inline struct gendisk *part_to_disk(struct hd_struct *part)
++/* for extended dynamic devt allocation, currently only one major is used */
++#define MAX_EXT_DEVT		(1 << MINORBITS)
++
++/* For extended devt allocation.  ext_devt_mutex prevents look up
++ * results from going away underneath its user.
++ */
++static DEFINE_MUTEX(ext_devt_mutex);
++static DEFINE_IDR(ext_devt_idr);
++
+ static struct device_type disk_type;
+ 
+ /**
+@@ -288,6 +298,73 @@ EXPORT_SYMBOL(unregister_blkdev);
+ 
+ static struct kobj_map *bdev_map;
+ 
++/**
++ * blk_alloc_devt - allocate a dev_t for a partition
++ * @part: partition to allocate dev_t for
++ * @gfp_mask: memory allocation flag
++ * @devt: out parameter for resulting dev_t
++ *
++ * Allocate a dev_t for block device.
++ *
++ * RETURNS:
++ * 0 on success, allocated dev_t is returned in *@devt.  -errno on
++ * failure.
++ *
++ * CONTEXT:
++ * Might sleep.
++ */
++int blk_alloc_devt(struct hd_struct *part, dev_t *devt)
 +{
-+	if (likely(part))
-+		return dev_to_disk((part)->dev.parent);
-+	return NULL;
++	int idx, rc;
++
++	/* in consecutive minor range? */
++	if (part->partno < part_to_disk(part)->minors) {
++		*devt = MKDEV(part_to_disk(part)->major, part->partno);
++		return 0;
++	}
++
++	/* allocate ext devt */
++	do {
++		if (!idr_pre_get(&ext_devt_idr, GFP_KERNEL))
++			return -ENOMEM;
++		rc = idr_get_new(&ext_devt_idr, part, &idx);
++	} while (rc == -EAGAIN);
++
++	if (rc)
++		return rc;
++
++	if (idx > MAX_EXT_DEVT) {
++		idr_remove(&ext_devt_idr, idx);
++		return -EBUSY;
++	}
++
++	*devt = MKDEV(BLOCK_EXT_MAJOR, idx);
++	return 0;
 +}
 +
- /* 
-  * Macros to operate on percpu disk statistics:
-  *
-  * The __ variants should only be called in critical sections. The full
-  * variants disable/enable preemption.
++/**
++ * blk_free_devt - free a dev_t
++ * @devt: dev_t to free
++ *
++ * Free @devt which was allocated using blk_alloc_devt().
++ *
++ * CONTEXT:
++ * Might sleep.
++ */
++void blk_free_devt(dev_t devt)
++{
++	might_sleep();
++
++	if (devt == MKDEV(0, 0))
++		return;
++
++	if (MAJOR(devt) == BLOCK_EXT_MAJOR) {
++		mutex_lock(&ext_devt_mutex);
++		idr_remove(&ext_devt_idr, MINOR(devt));
++		mutex_unlock(&ext_devt_mutex);
++	}
++}
++
+ /*
+  * Register device numbers dev..(dev+range-1)
+  * range must be nonzero
+@@ -368,10 +445,27 @@ void unlink_gendisk(struct gendisk *disk)
   */
--static inline struct hd_struct *get_part(struct gendisk *gendiskp,
--					 sector_t sector)
-+static inline struct hd_struct *disk_map_sector(struct gendisk *gendiskp,
-+						sector_t sector)
+ struct gendisk *get_gendisk(dev_t devt, int *partno)
  {
- 	struct hd_struct *part;
- 	int i;
+-	struct kobject *kobj = kobj_lookup(bdev_map, devt, partno);
+-	struct device *dev = kobj_to_dev(kobj);
++	struct gendisk *disk = NULL;
++
++	if (MAJOR(devt) != BLOCK_EXT_MAJOR) {
++		struct kobject *kobj;
++
++		kobj = kobj_lookup(bdev_map, devt, partno);
++		if (kobj)
++			disk = dev_to_disk(kobj_to_dev(kobj));
++	} else {
++		struct hd_struct *part;
++
++		mutex_lock(&ext_devt_mutex);
++		part = idr_find(&ext_devt_idr, MINOR(devt));
++		if (part && get_disk(part_to_disk(part))) {
++			*partno = part->partno;
++			disk = part_to_disk(part);
++		}
++		mutex_unlock(&ext_devt_mutex);
++	}
+ 
+-	return  kobj ? dev_to_disk(dev) : NULL;
++	return disk;
+ }
+ 
+ /**
+@@ -880,17 +974,29 @@ struct gendisk *alloc_disk(int minors)
+ 
+ struct gendisk *alloc_disk_node(int minors, int node_id)
+ {
++	return alloc_disk_ext_node(minors, 0, node_id);
++}
++
++struct gendisk *alloc_disk_ext(int minors, int ext_minors)
++{
++	return alloc_disk_ext_node(minors, ext_minors, -1);
++}
++
++struct gendisk *alloc_disk_ext_node(int minors, int ext_minors, int node_id)
++{
+ 	struct gendisk *disk;
+ 
+ 	disk = kmalloc_node(sizeof(struct gendisk),
+ 				GFP_KERNEL | __GFP_ZERO, node_id);
+ 	if (disk) {
++		int tot_minors = minors + ext_minors;
++
+ 		if (!init_disk_stats(disk)) {
+ 			kfree(disk);
+ 			return NULL;
+ 		}
+-		if (minors > 1) {
+-			int size = (minors - 1) * sizeof(struct hd_struct *);
++		if (tot_minors > 1) {
++			int size = (tot_minors - 1) * sizeof(struct hd_struct *);
+ 			disk->__part = kmalloc_node(size,
+ 				GFP_KERNEL | __GFP_ZERO, node_id);
+ 			if (!disk->__part) {
+@@ -900,6 +1006,7 @@ struct gendisk *alloc_disk_node(int minors, int node_id)
+ 			}
+ 		}
+ 		disk->minors = minors;
++		disk->ext_minors = ext_minors;
+ 		rand_initialize_disk(disk);
+ 		disk->dev.class = &block_class;
+ 		disk->dev.type = &disk_type;
+@@ -912,6 +1019,8 @@ struct gendisk *alloc_disk_node(int minors, int node_id)
+ 
+ EXPORT_SYMBOL(alloc_disk);
+ EXPORT_SYMBOL(alloc_disk_node);
++EXPORT_SYMBOL(alloc_disk_ext);
++EXPORT_SYMBOL(alloc_disk_ext_node);
+ 
+ struct kobject *get_disk(struct gendisk *disk)
+ {
+diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+index 87c23e3..78be967 100644
+--- a/fs/partitions/check.c
++++ b/fs/partitions/check.c
+@@ -342,6 +342,7 @@ void delete_partition(struct gendisk *disk, int partno)
+ 	if (!part)
+ 		return;
+ 
++	blk_free_devt(part_devt(part));
+ 	rcu_assign_pointer(disk->__part[partno-1], NULL);
+ 	kobject_put(part->holder_dir);
+ 	device_del(&part->dev);
+@@ -361,6 +362,7 @@ int add_partition(struct gendisk *disk, int partno,
+ 		  sector_t start, sector_t len, int flags)
+ {
+ 	struct hd_struct *p = NULL;
++	dev_t devt = MKDEV(0, 0);
+ 	int err;
+ 
+ 	if (disk->__part[partno - 1]) {
+@@ -388,10 +390,15 @@ int add_partition(struct gendisk *disk, int partno,
+ 			 "%s%d", disk->dev.bus_id, partno);
+ 
+ 	device_initialize(&p->dev);
+-	p->dev.devt = MKDEV(disk->major, disk->first_minor + partno);
+ 	p->dev.class = &block_class;
+ 	p->dev.type = &part_type;
+ 	p->dev.parent = &disk->dev;
++
++	err = blk_alloc_devt(p, &devt);
++	if (err)
++		goto fail;
++	p->dev.devt = devt;
++
+ 	INIT_RCU_HEAD(&p->rcu_head);
+ 	rcu_assign_pointer(disk->__part[partno-1], p);
+ 
+@@ -416,6 +423,7 @@ int add_partition(struct gendisk *disk, int partno,
+ 	return 0;
+ 
+  fail:
++	blk_free_devt(devt);
+ 	if (p)
+ 		free_part_stats(p);
+ 	kfree(p);
+diff --git a/include/linux/genhd.h b/include/linux/genhd.h
+index 7737468..cb6d9a7 100644
+--- a/include/linux/genhd.h
++++ b/include/linux/genhd.h
+@@ -114,13 +114,15 @@ struct hd_struct {
+ 
+ 
+ struct gendisk {
+-	/* major, first_minor and minors are input parameters only,
+-	 * don't use directly.  Use disk_devt() and disk_max_parts().
++	/* major, first_minor, minors and ext_minors are input
++	 * parameters only, don't use directly.  Use disk_devt() and
++	 * disk_max_parts().
+ 	 */
+ 	int major;			/* major number of driver */
+ 	int first_minor;
+ 	int minors;                     /* maximum number of minors, =1 for
+                                          * disks that can't be partitioned. */
++	int ext_minors;			/* number of extended dynamic minors */
+ 
+ 	char disk_name[32];		/* name of major driver */
+ 
+@@ -165,7 +167,7 @@ static inline struct gendisk *part_to_disk(struct hd_struct *part)
+ 
+ static inline int disk_max_parts(struct gendisk *disk)
+ {
+-	return disk->minors - 1;
++	return disk->minors + disk->ext_minors - 1;
+ }
+ 
+ static inline dev_t disk_devt(struct gendisk *disk)
+@@ -540,6 +542,8 @@ struct unixware_disklabel {
+ #define ADDPART_FLAG_RAID	1
+ #define ADDPART_FLAG_WHOLEDISK	2
+ 
++extern int blk_alloc_devt(struct hd_struct *part, dev_t *devt);
++extern void blk_free_devt(dev_t devt);
+ extern dev_t blk_lookup_devt(const char *name, int partno);
+ extern char *disk_name (struct gendisk *hd, int partno, char *buf);
+ 
+@@ -550,6 +554,9 @@ extern void printk_all_partitions(void);
+ 
+ extern struct gendisk *alloc_disk_node(int minors, int node_id);
+ extern struct gendisk *alloc_disk(int minors);
++extern struct gendisk *alloc_disk_ext_node(int minors, int ext_minrs,
++					   int node_id);
++extern struct gendisk *alloc_disk_ext(int minors, int ext_minors);
+ extern struct kobject *get_disk(struct gendisk *disk);
+ extern void put_disk(struct gendisk *disk);
+ extern void blk_register_region(dev_t devt, unsigned long range,
+diff --git a/include/linux/major.h b/include/linux/major.h
+index 0cb9805..d62fd67 100644
+--- a/include/linux/major.h
++++ b/include/linux/major.h
+@@ -170,4 +170,6 @@
+ 
+ #define VIOTAPE_MAJOR		230
+ 
++#define BLOCK_EXT_MAJOR		259
++
+ #endif
 -- 
 1.5.4.5
 
