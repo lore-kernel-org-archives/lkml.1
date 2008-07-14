@@ -1,71 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757444AbYGNTwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757526AbYGNTyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757444AbYGNTwc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 15:52:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756047AbYGNTwW
+	id S1757526AbYGNTyR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 15:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756114AbYGNTyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 15:52:22 -0400
-Received: from gw.goop.org ([64.81.55.164]:58263 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755947AbYGNTwV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 15:52:21 -0400
-Message-ID: <487BAE68.6040403@goop.org>
-Date: Mon, 14 Jul 2008 12:52:08 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 14 Jul 2008 15:54:08 -0400
+Received: from 206-248-169-182.dsl.ncf.ca ([206.248.169.182]:42709 "EHLO
+	phobos.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755985AbYGNTyI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 15:54:08 -0400
+Date: Mon, 14 Jul 2008 15:54:05 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Christian Kujau <lists@nerdbynature.de>
+Cc: johnpol@2ka.mipt.ru, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: hifn_795x in a MacMini?
+Message-ID: <20080714195405.GA28938@phobos.i.cabal.ca>
+References: <alpine.DEB.1.10.0807142056190.4469@sheep.housecafe.de>
 MIME-Version: 1.0
-To: "John W. Linville" <linville@tuxdriver.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>
-Subject: [PATCH] mac80211: return correct error return from ieee80211_wep_init
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0807142056190.4469@sheep.housecafe.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Return the proper error code rather than a hard-coded ENOMEM from
-ieee80211_wep_init.  Also, print the error code on failure.
+On Mon, Jul 14, 2008 at 09:18:09PM +0200, Christian Kujau wrote:
+> and after loading the module, dmesg shows:
+>
+>   Driver for HIFN 795x crypto accelerator chip has been successfully registered.
+>
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@goop.org>
----
- net/mac80211/main.c |    4 ++--
- net/mac80211/wep.c  |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+The message is printing by the "module loading" function, which just
+registers the pci driver, not the function that actually probes a
+device. See hifn_init versus hifn_probe, in drivers/crypto/hifn_795x.c.
 
-===================================================================
---- a/net/mac80211/main.c
-+++ b/net/mac80211/main.c
-@@ -1741,8 +1741,8 @@
- 	result = ieee80211_wep_init(local);
- 
- 	if (result < 0) {
--		printk(KERN_DEBUG "%s: Failed to initialize wep\n",
--		       wiphy_name(local->hw.wiphy));
-+		printk(KERN_DEBUG "%s: Failed to initialize wep: %d\n",
-+		       wiphy_name(local->hw.wiphy), result);
- 		goto fail_wep;
- 	}
- 
-===================================================================
---- a/net/mac80211/wep.c
-+++ b/net/mac80211/wep.c
-@@ -31,13 +31,13 @@
- 	local->wep_tx_tfm = crypto_alloc_blkcipher("ecb(arc4)", 0,
- 						CRYPTO_ALG_ASYNC);
- 	if (IS_ERR(local->wep_tx_tfm))
--		return -ENOMEM;
-+		return PTR_ERR(local->wep_tx_tfm);
- 
- 	local->wep_rx_tfm = crypto_alloc_blkcipher("ecb(arc4)", 0,
- 						CRYPTO_ALG_ASYNC);
- 	if (IS_ERR(local->wep_rx_tfm)) {
- 		crypto_free_blkcipher(local->wep_tx_tfm);
--		return -ENOMEM;
-+		return PTR_ERR(local->wep_rx_tfm);
- 	}
- 
- 	return 0;
-
-
+r, Kyle
