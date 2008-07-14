@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756998AbYGNWDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758663AbYGNWDl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756998AbYGNWDX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 18:03:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757362AbYGNWCC
+	id S1758663AbYGNWDl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 18:03:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758066AbYGNWCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 18:02:02 -0400
-Received: from mx2.suse.de ([195.135.220.15]:33192 "EHLO mx2.suse.de"
+	Mon, 14 Jul 2008 18:02:04 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:33198 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757254AbYGNWCA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 18:02:00 -0400
+	id S1758116AbYGNWCD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 18:02:03 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: Mark Fasheh <mfasheh@suse.com>, ocfs2-devel@oss.oracle.com,
        Joel Becker <joel.becker@oracle.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: [PATCH 03/17] ocfs2: fix printk format warnings with OCFS2_FS_STATS=n
-Date: Mon, 14 Jul 2008 15:01:36 -0700
-Message-Id: <1216072910-27226-4-git-send-email-mfasheh@suse.com>
+       Akinobu Mita <akinobu.mita@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 04/17] ocfs2: use simple_read_from_buffer()
+Date: Mon, 14 Jul 2008 15:01:37 -0700
+Message-Id: <1216072910-27226-5-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1216072910-27226-1-git-send-email-mfasheh@suse.com>
 References: <1216072910-27226-1-git-send-email-mfasheh@suse.com>
@@ -24,43 +25,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+From: Akinobu Mita <akinobu.mita@gmail.com>
 
-Fix printk format warnings when OCFS2_FS_STATS=n:
-
-linux-next-20080528/fs/ocfs2/dlmglue.c: In function 'ocfs2_dlm_seq_show':
-linux-next-20080528/fs/ocfs2/dlmglue.c:2623: warning: format '%llu' expects type 'long long unsigned int', but argument 3 has type 'int'
-linux-next-20080528/fs/ocfs2/dlmglue.c:2623: warning: format '%llu' expects type 'long long unsigned int', but argument 4 has type 'int'
-linux-next-20080528/fs/ocfs2/dlmglue.c:2623: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'int'
-linux-next-20080528/fs/ocfs2/dlmglue.c:2623: warning: format '%llu' expects type 'long long unsigned int', but argument 8 has type 'int'
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Acked-by: Joel Becker <joel.becker@oracle.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/dlmglue.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ fs/ocfs2/stack_user.c |   19 +++++--------------
+ 1 files changed, 5 insertions(+), 14 deletions(-)
 
-diff --git a/fs/ocfs2/dlmglue.c b/fs/ocfs2/dlmglue.c
-index 80537b7..eae3d64 100644
---- a/fs/ocfs2/dlmglue.c
-+++ b/fs/ocfs2/dlmglue.c
-@@ -2592,12 +2592,12 @@ static int ocfs2_dlm_seq_show(struct seq_file *m, void *v)
- # define lock_max_exmode(_l)		(_l)->l_lock_max_exmode
- # define lock_refresh(_l)		(_l)->l_lock_refresh
- #else
--# define lock_num_prmode(_l)		(0)
--# define lock_num_exmode(_l)		(0)
-+# define lock_num_prmode(_l)		(0ULL)
-+# define lock_num_exmode(_l)		(0ULL)
- # define lock_num_prmode_failed(_l)	(0)
- # define lock_num_exmode_failed(_l)	(0)
--# define lock_total_prmode(_l)		(0)
--# define lock_total_exmode(_l)		(0)
-+# define lock_total_prmode(_l)		(0ULL)
-+# define lock_total_exmode(_l)		(0ULL)
- # define lock_max_prmode(_l)		(0)
- # define lock_max_exmode(_l)		(0)
- # define lock_refresh(_l)		(0)
+diff --git a/fs/ocfs2/stack_user.c b/fs/ocfs2/stack_user.c
+index c021280..24e0b19 100644
+--- a/fs/ocfs2/stack_user.c
++++ b/fs/ocfs2/stack_user.c
+@@ -549,26 +549,17 @@ static ssize_t ocfs2_control_read(struct file *file,
+ 				  size_t count,
+ 				  loff_t *ppos)
+ {
+-	char *proto_string = OCFS2_CONTROL_PROTO;
+-	size_t to_write = 0;
+-
+-	if (*ppos >= OCFS2_CONTROL_PROTO_LEN)
+-		return 0;
+-
+-	to_write = OCFS2_CONTROL_PROTO_LEN - *ppos;
+-	if (to_write > count)
+-		to_write = count;
+-	if (copy_to_user(buf, proto_string + *ppos, to_write))
+-		return -EFAULT;
++	ssize_t ret;
+ 
+-	*ppos += to_write;
++	ret = simple_read_from_buffer(buf, count, ppos,
++			OCFS2_CONTROL_PROTO, OCFS2_CONTROL_PROTO_LEN);
+ 
+ 	/* Have we read the whole protocol list? */
+-	if (*ppos >= OCFS2_CONTROL_PROTO_LEN)
++	if (ret > 0 && *ppos >= OCFS2_CONTROL_PROTO_LEN)
+ 		ocfs2_control_set_handshake_state(file,
+ 						  OCFS2_CONTROL_HANDSHAKE_READ);
+ 
+-	return to_write;
++	return ret;
+ }
+ 
+ static int ocfs2_control_release(struct inode *inode, struct file *file)
 -- 
 1.5.4.1
 
