@@ -1,78 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754262AbYGNMQ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754071AbYGNMYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754262AbYGNMQ4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 08:16:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbYGNMQr
+	id S1754071AbYGNMYn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 08:24:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbYGNMYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 08:16:47 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33075 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752450AbYGNMQq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 08:16:46 -0400
-Date: Mon, 14 Jul 2008 08:16:13 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@devserv.devel.redhat.com
-To: David Miller <davem@davemloft.net>
-cc: andi@firstfloor.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: [SUGGESTION]: drop virtual merge accounting in I/O requests
-In-Reply-To: <20080713.174855.234796356.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0807140805380.10106@devserv.devel.redhat.com>
-References: <20080713.124610.193703496.davem@davemloft.net>
- <487A61DD.6090304@firstfloor.org> <Pine.LNX.4.64.0807131947090.7803@devserv.devel.redhat.com>
- <20080713.174855.234796356.davem@davemloft.net>
+	Mon, 14 Jul 2008 08:24:36 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51108 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751698AbYGNMYf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 08:24:35 -0400
+Date: Mon, 14 Jul 2008 21:23:18 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Hugh Dickins <hugh@veritas.com>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       Jeff Garzik <jgarzik@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [mmotm] ahci: fix incompatible type warnings
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20080714212159.F6E4.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 Jul 2008, David Miller wrote:
 
-> From: Mikulas Patocka <mpatocka@redhat.com>
-> Date: Sun, 13 Jul 2008 19:53:01 -0400 (EDT)
->
->> There is no need to turn BIO merge off --- the problem is caused by
->> accounting of BIO merging in block layer, not by BIO merging itself.
->>
->> Just do #define BIO_VMERGE_BOUNDARY 0, and that disables the accounting,
->> but leaves merging as it is.
->
-> For the thousanth time, the BIO_VMERGE_BOUNDARY code is useful
-> and worked perfectly fine before segment boundary handling was
-> added to the block layer.
->
-> It's a regression, and as such should be fixed or the guilty
-> code reverted.
->
-> Since when do we say "sorry that got broken, turn it off, thanks"
-> ?
+Patch title: fix-ahci-flags-incompatible-type.patch
+Against: mmotm Jul 14
+Applies after: linux-next.patch
 
-And which was the supposed "working" kernel version?
 
-In current kernel there are three conditions that can cause merge failure 
-(and possible crash as a result):
-1. dma_addr != dma_next --- skipping over an allocated entry
-2. outs->dma_length + s->length > max_seg_size --- max segment size, this 
-is what I was hitting
-3. is_span_boundary(out_entry, base_shift, seg_boundary_size, outs, s) --- 
-a devices that have special dma_get_seg_boundary(dev)
+spin_lock_irqsave() require unsined long.
 
-So, show me a sparc64 kernel where none of these conditions existed and 
-where merge-accounting was bug-free.
+  drivers/ata/ahci.c: In function 'ahci_transmit_led_message':
+  drivers/ata/ahci.c:1287: warning: comparison of distinct pointer types lacks a cast
+  drivers/ata/ahci.c:1295: warning: comparison of distinct pointer types lacks a cast
+  drivers/ata/ahci.c:1320: warning: comparison of distinct pointer types lacks a cast
 
-I suppose that before condition (2) was added, the conditions (1) and (3) 
-still existed, making crashes still possible, although not as common as 
-with condition (2). But if you want to show me otherwise --- a bug-free 
-implementation of merge accounting --- just do it.
 
-> For the thousanth time, the BIO_VMERGE_BOUNDARY code is useful
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+CC:  Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+CC: Jeff Garzik <jgarzik@redhat.com>
 
-Where? BIO_VMERGE_BOUNDARY has nothing to do with actual merging (the 
-merging happens with or without it BIO_VMERGE_BOUNDARY).
+---
+ drivers/ata/ahci.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-As you mentioned ESP driver, it declares .sg_tablesize = SG_ALL, so 
-BIO_VMERGE_BOUNDARY has no effect on the operation of this driver. Any 
-other driver where BIO_VMERGE_BOUNDARY does matter?
+Index: b/drivers/ata/ahci.c
+===================================================================
+--- a/drivers/ata/ahci.c
++++ b/drivers/ata/ahci.c
+@@ -1270,7 +1270,7 @@ static ssize_t ahci_transmit_led_message
+ 	void __iomem *mmio = ap->host->iomap[AHCI_PCI_BAR];
+ 	u32 em_ctl;
+ 	u32 message[] = {0, 0};
+-	unsigned int flags;
++	unsigned long flags;
+ 	int pmp;
+ 	struct ahci_em_priv *emp;
+ 
 
-Mikulas
+
+
