@@ -1,105 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760241AbYGRSy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759998AbYGRS4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760241AbYGRSy0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 14:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756031AbYGRSyQ
+	id S1759998AbYGRS4X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 14:56:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756005AbYGRS4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 14:54:16 -0400
-Received: from mga14.intel.com ([143.182.124.37]:32126 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755644AbYGRSyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 14:54:15 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,211,1215414000"; 
-   d="scan'208";a="22097386"
-Subject: Re: [PATCH v2 3/4] I/OAT: tcp_dma_copybreak default value
-	dependant onI/OAT version
-From: Dan Williams <dan.j.williams@intel.com>
-To: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-Cc: "Nelson, Shannon" <shannon.nelson@intel.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <20080718152838.21235.78883.stgit@linux.site>
-References: <20080718152541.21235.85961.stgit@linux.site>
-	 <20080718152838.21235.78883.stgit@linux.site>
-Content-Type: text/plain
-Date: Fri, 18 Jul 2008 11:54:14 -0700
-Message-Id: <1216407254.18755.4.camel@dwillia2-linux.ch.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Jul 2008 14:56:09 -0400
+Received: from casper.infradead.org ([85.118.1.10]:40610 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755386AbYGRS4I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 14:56:08 -0400
+Date: Sun, 13 Jul 2008 19:56:40 -0700
+From: Greg KH <greg@kroah.com>
+To: Jike Song <albcamus@gmail.com>
+Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org,
+       kernel-janitors@vger.kernel.org, linux-next@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [ANNOUNCE] linux-staging tree created
+Message-ID: <20080714025640.GA3964@kroah.com>
+References: <20080610190540.GA25066@kroah.com> <df9815e70807131950u64f75d67n28484ea8ddddb212@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <df9815e70807131950u64f75d67n28484ea8ddddb212@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 2008-07-18 at 08:29 -0700, Sosnowski, Maciej wrote:
-> I/OAT DMA performance tuning showed different optimal values
-> of tcp_dma_copybreak for different I/OAT versions
-> (4096 for 1.2 and 2048 for 2.0).
-> This patch lets ioatdma driver set tcp_dma_copybreak value
-> according to these results.
+On Mon, Jul 14, 2008 at 10:50:49AM +0800, Jike Song wrote:
+> Hi Greg,
 > 
-> Signed-off-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
+> Is there a separate mailing-list for staging?
 
-Let's kill some ifdef's... how about the following instead?
+Nope, lkml is fine for now, just be sure to cc: me so I notice it.
 
-diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
-index 171cad6..1c0dafc 100644
---- a/drivers/dma/ioat_dma.c
-+++ b/drivers/dma/ioat_dma.c
-@@ -1330,6 +1330,8 @@ struct ioatdma_device *ioat_dma_probe(struct pci_dev *pdev,
- 	if (err)
- 		goto err_self_test;
- 
-+	ioat_set_tcp_copy_break(device);
-+
- 	dma_async_device_register(&device->common);
- 
- 	return device;
-diff --git a/drivers/dma/ioatdma.h b/drivers/dma/ioatdma.h
-index f2c7fed..23e3196 100644
---- a/drivers/dma/ioatdma.h
-+++ b/drivers/dma/ioatdma.h
-@@ -27,6 +27,7 @@
- #include <linux/dmapool.h>
- #include <linux/cache.h>
- #include <linux/pci_ids.h>
-+#include <net/tcp.h>
- 
- #define IOAT_DMA_VERSION  "2.04"
- 
-@@ -121,6 +122,20 @@ struct ioat_desc_sw {
- 	struct dma_async_tx_descriptor async_tx;
- };
- 
-+static inline void ioat_set_tcp_copy_break(struct ioatdma_device *dev)
-+{
-+	#ifdef CONFIG_NET_DMA
-+	switch (dev->version) {
-+	case IOAT_VER_1_2:
-+		sysctl_tcp_dma_copybreak = 4096;
-+		break;
-+	case IOAT_VER_2_0:
-+		sysctl_tcp_dma_copybreak = 2048;
-+		break;
-+	}
-+	#endif
-+}
-+
- #if defined(CONFIG_INTEL_IOATDMA) || defined(CONFIG_INTEL_IOATDMA_MODULE)
- struct ioatdma_device *ioat_dma_probe(struct pci_dev *pdev,
- 				      void __iomem *iobase);
-diff --git a/net/core/user_dma.c b/net/core/user_dma.c
-index 0ad1cd5..de76050 100644
---- a/net/core/user_dma.c
-+++ b/net/core/user_dma.c
-@@ -34,6 +34,7 @@
- #define NET_DMA_DEFAULT_COPYBREAK 4096
- 
- int sysctl_tcp_dma_copybreak = NET_DMA_DEFAULT_COPYBREAK;
-+EXPORT_SYMBOL(sysctl_tcp_dma_copybreak);
- 
- /**
-  *	dma_skb_copy_datagram_iovec - Copy a datagram to an iovec.
+thanks,
 
-
+greg k-h
