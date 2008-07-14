@@ -1,68 +1,504 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755671AbYGNCM0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755634AbYGNCSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755671AbYGNCM0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 22:12:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754038AbYGNCMR
+	id S1755634AbYGNCSS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 22:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbYGNCSK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 22:12:17 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:52646 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753685AbYGNCMQ (ORCPT
+	Sun, 13 Jul 2008 22:18:10 -0400
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:28923 "HELO
+	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754323AbYGNCSJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 22:12:16 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: David Miller <davem@davemloft.net>
-Cc: benh@kernel.crashing.org, suresh.b.siddha@intel.com, matthew@wil.cx,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       grundler@parisc-linux.org, mingo@elte.hu, tglx@linutronix.de,
-       jgarzik@pobox.com, linux-ide@vger.kernel.org, jbarnes@virtuousgeek.org,
-       rdunlap@xenotime.net, mtk.manpages@gmail.com
-References: <1215989044.7549.219.camel@pasglop>
-	<m1tzet2wie.fsf@frodo.ebiederm.org>
-	<1215994659.7549.227.camel@pasglop>
-	<20080713.174457.82768245.davem@davemloft.net>
-Date: Sun, 13 Jul 2008 19:03:52 -0700
-In-Reply-To: <20080713.174457.82768245.davem@davemloft.net> (David Miller's
-	message of "Sun, 13 Jul 2008 17:44:57 -0700 (PDT)")
-Message-ID: <m1ej5x1at3.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sun, 13 Jul 2008 22:18:09 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=PBEp7Bylbc6+o33WMNbnqp7ggZ3onT3z/US+BQqBFjI5DHD5/tUNkJod1iyOEKdlWiZNWVCH6tIr6fSonbrQv7Olavy4XphA9sger6zRji6EgspJ2UrYYSB3YC+Ks2Yq9lVul0k2o7bpMJhyZkxM+nh7PtjGyltAaEoBuH1y3Es=  ;
+X-YMail-OSG: XXEDDIIVM1kBn6OjdQlx8SM4lRnMLX95j6xjB1W7nZYS6NY7LuWg.rxwCLOwgyNYvGyt5wMRlVD50Q8dU8dKEeRKaTM7fLf33iu79PR97jVTPWdEbU4rGoX_7dBnhpqdIfU-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch 2.6.26-rc-mm] gpio: max732x driver
+Date: Sun, 13 Jul 2008 19:18:06 -0700
+User-Agent: KMail/1.9.9
+Cc: lkml <linux-kernel@vger.kernel.org>, Eric Miao <eric.y.miao@gmail.com>,
+       Jean Delvare <khali@linux-fr.org>, Jack Ren <jack.ren@marvell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;David Miller <davem@davemloft.net>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
-	*      [score: 0.0154]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: Multiple MSI, take 3
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807131918.06377.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller <davem@davemloft.net> writes:
+From: Eric Miao <eric.miao@marvell.com>
 
-> The x86 system designers decided to implement multi-MSI in an
-> inconvenient way, it is not a "crap hardware design", merely
-> some (unfortunately common) implementations of it happen to be.
+This adds a driver supporting a family of I2C port expanders from
+Maxim, which includes the MAX7319 and MAX7320-7327 chips.
 
-To be clear I was referring to the PCI spec that describes multi-MSI
-as a crap hardware design.
+Signed-off-by: Jack Ren <jack.ren@marvell.com>
+Signed-off-by: Eric Miao <eric.miao@marvell.com>
+Acked-by: Jean Delvare <khali@linux-fr.org>
+[ dbrownell@users.sourceforge.net: minor fixes ]
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+We're growing quite the collection of dedicated GPIO expander drivers!
+And the multi-function chip support is growing too.  This applies after
+the patch adding support for max7301 chips.
 
-At the very least you are left with the problem of allocating multiple
-contiguous destinations.  Which has the potential to create
-fragmentation on all supported platforms.
+ drivers/gpio/Kconfig        |   19 ++
+ drivers/gpio/Makefile       |    1 
+ drivers/gpio/max732x.c      |  385 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/i2c/max732x.h |   19 ++
+ 4 files changed, 424 insertions(+)
 
-Optional mask bits are also nasty.
-
-My honest opinion is that the should have deprecated multi-msi after the
-introduction of the msi-x specification.
-
-Eric
+--- a/drivers/gpio/Kconfig	2008-07-13 01:33:06.000000000 -0700
++++ b/drivers/gpio/Kconfig	2008-07-13 13:42:29.000000000 -0700
+@@ -42,6 +42,25 @@ config GPIO_SYSFS
+ 
+ comment "I2C GPIO expanders:"
+ 
++config GPIO_MAX732X
++	tristate "MAX7319, MAX7320-7327 I2C Port Expanders"
++	depends on I2C
++	help
++	  Say yes here to support the MAX7319, MAX7320-7327 series of I2C
++	  Port Expanders. Each IO port on these chips has a fixed role of
++	  Input (designated by 'I'), Push-Pull Output ('O'), or Open-Drain
++	  Input and Output (designed by 'P'). The combinations are listed
++	  below:
++
++	  8 bits:	max7319 (8I), max7320 (8O), max7321 (8P),
++		  	max7322 (4I4O), max7323 (4P4O)
++
++	  16 bits:	max7324 (8I8O), max7325 (8P8O),
++		  	max7326 (4I12O), max7327 (4P12O)
++
++	  Board setup code must specify the model to use, and the start
++	  number for these GPIOs.
++
+ config GPIO_PCA953X
+ 	tristate "PCA953x, PCA955x, and MAX7310 I/O ports"
+ 	depends on I2C
+--- a/drivers/gpio/Makefile	2008-07-13 01:33:06.000000000 -0700
++++ b/drivers/gpio/Makefile	2008-07-13 08:57:46.000000000 -0700
+@@ -5,6 +5,7 @@ ccflags-$(CONFIG_DEBUG_GPIO)	+= -DDEBUG
+ obj-$(CONFIG_HAVE_GPIO_LIB)	+= gpiolib.o
+ 
+ obj-$(CONFIG_GPIO_MAX7301)	+= max7301.o
++obj-$(CONFIG_GPIO_MAX732X)	+= max732x.o
+ obj-$(CONFIG_GPIO_MCP23S08)	+= mcp23s08.o
+ obj-$(CONFIG_GPIO_PCA953X)	+= pca953x.o
+ obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x.o
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ b/drivers/gpio/max732x.c	2008-07-13 13:49:00.000000000 -0700
+@@ -0,0 +1,385 @@
++/*
++ *  max732x.c - I2C Port Expander with 8/16 I/O
++ *
++ *  Copyright (C) 2007 Marvell International Ltd.
++ *  Copyright (C) 2008 Jack Ren <jack.ren@marvell.com>
++ *  Copyright (C) 2008 Eric Miao <eric.miao@marvell.com>
++ *
++ *  Derived from drivers/gpio/pca953x.c
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
++ */
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/slab.h>
++#include <linux/string.h>
++#include <linux/gpio.h>
++
++#include <linux/i2c.h>
++#include <linux/i2c/max732x.h>
++
++
++/*
++ * Each port of MAX732x (including MAX7319) falls into one of the
++ * following three types:
++ *
++ *   - Push Pull Output
++ *   - Input
++ *   - Open Drain I/O
++ *
++ * designated by 'O', 'I' and 'P' individually according to MAXIM's
++ * datasheets.
++ *
++ * There are two groups of I/O ports, each group usually includes
++ * up to 8 I/O ports, and is accessed by a specific I2C address:
++ *
++ *   - Group A : by I2C address 0b'110xxxx
++ *   - Group B : by I2C address 0b'101xxxx
++ *
++ * where 'xxxx' is decided by the connections of pin AD2/AD0.  The
++ * address used also affects the initial state of output signals.
++ *
++ * Within each group of ports, there are five known combinations of
++ * I/O ports: 4I4O, 4P4O, 8I, 8P, 8O, see the definitions below for
++ * the detailed organization of these ports.
++ *
++ * GPIO numbers start from 'gpio_base + 0' to 'gpio_base + 8/16',
++ * and GPIOs from GROUP_A are numbered before those from GROUP_B
++ * (if there are two groups).
++ *
++ * NOTE: MAX7328/MAX7329 are drop-in replacements for PCF8574/a, so
++ * they are not supported by this driver.
++ */
++
++#define PORT_NONE	0x0	/* '/' No Port */
++#define PORT_OUTPUT	0x1	/* 'O' Push-Pull, Output Only */
++#define PORT_INPUT	0x2	/* 'I' Input Only */
++#define PORT_OPENDRAIN	0x3	/* 'P' Open-Drain, I/O */
++
++#define IO_4I4O		0x5AA5	/* O7 O6 I5 I4 I3 I2 O1 O0 */
++#define IO_4P4O		0x5FF5	/* O7 O6 P5 P4 P3 P2 O1 O0 */
++#define IO_8I		0xAAAA	/* I7 I6 I5 I4 I3 I2 I1 I0 */
++#define IO_8P		0xFFFF	/* P7 P6 P5 P4 P3 P2 P1 P0 */
++#define IO_8O		0x5555	/* O7 O6 O5 O4 O3 O2 O1 O0 */
++
++#define GROUP_A(x)	((x) & 0xffff)	/* I2C Addr: 0b'110xxxx */
++#define GROUP_B(x)	((x) << 16)	/* I2C Addr: 0b'101xxxx */
++
++static const struct i2c_device_id max732x_id[] = {
++	{ "max7319", GROUP_A(IO_8I) },
++	{ "max7320", GROUP_B(IO_8O) },
++	{ "max7321", GROUP_A(IO_8P) },
++	{ "max7322", GROUP_A(IO_4I4O) },
++	{ "max7323", GROUP_A(IO_4P4O) },
++	{ "max7324", GROUP_A(IO_8I) | GROUP_B(IO_8O) },
++	{ "max7325", GROUP_A(IO_8P) | GROUP_B(IO_8O) },
++	{ "max7326", GROUP_A(IO_4I4O) | GROUP_B(IO_8O) },
++	{ "max7327", GROUP_A(IO_4P4O) | GROUP_B(IO_8O) },
++	{ },
++};
++MODULE_DEVICE_TABLE(i2c, max732x_id);
++
++struct max732x_chip {
++	struct gpio_chip gpio_chip;
++
++	struct i2c_client *client;	/* "main" client */
++	struct i2c_client *client_dummy;
++	struct i2c_client *client_group_a;
++	struct i2c_client *client_group_b;
++
++	unsigned int	mask_group_a;
++	unsigned int	dir_input;
++	unsigned int	dir_output;
++
++	struct mutex	lock;
++	uint8_t		reg_out[2];
++};
++
++static int max732x_write(struct max732x_chip *chip, int group_a, uint8_t val)
++{
++	struct i2c_client *client;
++	int ret;
++
++	client = group_a ? chip->client_group_a : chip->client_group_b;
++	ret = i2c_smbus_write_byte(client, val);
++	if (ret < 0) {
++		dev_err(&client->dev, "failed writing\n");
++		return ret;
++	}
++
++	return 0;
++}
++
++static int max732x_read(struct max732x_chip *chip, int group_a, uint8_t *val)
++{
++	struct i2c_client *client;
++	int ret;
++
++	client = group_a ? chip->client_group_a : chip->client_group_b;
++	ret = i2c_smbus_read_byte(client);
++	if (ret < 0) {
++		dev_err(&client->dev, "failed reading\n");
++		return ret;
++	}
++
++	*val = (uint8_t)ret;
++	return 0;
++}
++
++static inline int is_group_a(struct max732x_chip *chip, unsigned off)
++{
++	return (1u << off) & chip->mask_group_a;
++}
++
++static int max732x_gpio_get_value(struct gpio_chip *gc, unsigned off)
++{
++	struct max732x_chip *chip;
++	uint8_t reg_val;
++	int ret;
++
++	chip = container_of(gc, struct max732x_chip, gpio_chip);
++
++	ret = max732x_read(chip, is_group_a(chip, off), &reg_val);
++	if (ret < 0)
++		return 0;
++
++	return reg_val & (1u << (off & 0x7));
++}
++
++static void max732x_gpio_set_value(struct gpio_chip *gc, unsigned off, int val)
++{
++	struct max732x_chip *chip;
++	uint8_t reg_out, mask = 1u << (off & 0x7);
++	int ret;
++
++	chip = container_of(gc, struct max732x_chip, gpio_chip);
++
++	mutex_lock(&chip->lock);
++
++	reg_out = (off > 7) ? chip->reg_out[1] : chip->reg_out[0];
++	reg_out = (val) ? reg_out | mask : reg_out & ~mask;
++
++	ret = max732x_write(chip, is_group_a(chip, off), reg_out);
++	if (ret < 0)
++		goto out;
++
++	/* update the shadow register then */
++	if (off > 7)
++		chip->reg_out[1] = reg_out;
++	else
++		chip->reg_out[0] = reg_out;
++out:
++	mutex_unlock(&chip->lock);
++}
++
++static int max732x_gpio_direction_input(struct gpio_chip *gc, unsigned off)
++{
++	struct max732x_chip *chip;
++	unsigned int mask = 1u << off;
++
++	chip = container_of(gc, struct max732x_chip, gpio_chip);
++
++	if ((mask & chip->dir_input) == 0) {
++		dev_dbg(&chip->client->dev, "%s port %d is output only\n",
++			chip->client->name, off);
++		return -EACCES;
++	}
++
++	return 0;
++}
++
++static int max732x_gpio_direction_output(struct gpio_chip *gc,
++		unsigned off, int val)
++{
++	struct max732x_chip *chip;
++	unsigned int mask = 1u << off;
++
++	chip = container_of(gc, struct max732x_chip, gpio_chip);
++
++	if ((mask & chip->dir_output) == 0) {
++		dev_dbg(&chip->client->dev, "%s port %d is input only\n",
++			chip->client->name, off);
++		return -EACCES;
++	}
++
++	max732x_gpio_set_value(gc, off, val);
++	return 0;
++}
++
++static int __devinit max732x_setup_gpio(struct max732x_chip *chip,
++					const struct i2c_device_id *id,
++					unsigned gpio_start)
++{
++	struct gpio_chip *gc = &chip->gpio_chip;
++	uint32_t id_data = id->driver_data;
++	int i, port = 0;
++
++	for (i = 0; i < 16; i++, id_data >>= 2) {
++		unsigned int mask = 1 << port;
++
++		switch (id_data & 0x3) {
++		case PORT_OUTPUT:
++			chip->dir_output |= mask;
++			break;
++		case PORT_INPUT:
++			chip->dir_input |= mask;
++			break;
++		case PORT_OPENDRAIN:
++			chip->dir_output |= mask;
++			chip->dir_input |= mask;
++			break;
++		default:
++			continue;
++		}
++
++		if (i < 8)
++			chip->mask_group_a |= mask;
++		port++;
++	}
++
++	if (chip->dir_input)
++		gc->direction_input = max732x_gpio_direction_input;
++	if (chip->dir_output) {
++		gc->direction_output = max732x_gpio_direction_output;
++		gc->set = max732x_gpio_set_value;
++	}
++	gc->get = max732x_gpio_get_value;
++	gc->can_sleep = 1;
++
++	gc->base = gpio_start;
++	gc->ngpio = port;
++	gc->label = chip->client->name;
++	gc->owner = THIS_MODULE;
++
++	return port;
++}
++
++static int __devinit max732x_probe(struct i2c_client *client,
++				   const struct i2c_device_id *id)
++{
++	struct max732x_platform_data *pdata;
++	struct max732x_chip *chip;
++	struct i2c_client *c;
++	uint16_t addr_a, addr_b;
++	int ret, nr_port;
++
++	pdata = client->dev.platform_data;
++	if (pdata == NULL)
++		return -ENODEV;
++
++	chip = kzalloc(sizeof(struct max732x_chip), GFP_KERNEL);
++	if (chip == NULL)
++		return -ENOMEM;
++	chip->client = client;
++
++	nr_port = max732x_setup_gpio(chip, id, pdata->gpio_base);
++
++	addr_a = (client->addr & 0x0f) | 0x60;
++	addr_b = (client->addr & 0x0f) | 0x50;
++
++	switch (client->addr & 0x70) {
++	case 0x60:
++		chip->client_group_a = client;
++		if (nr_port > 7) {
++			c = i2c_new_dummy(client->adapter, addr_b);
++			chip->client_group_b = chip->client_dummy = c;
++		}
++		break;
++	case 0x50:
++		chip->client_group_b = client;
++		if (nr_port > 7) {
++			c = i2c_new_dummy(client->adapter, addr_a);
++			chip->client_group_a = chip->client_dummy = c;
++		}
++		break;
++	default:
++		dev_err(&client->dev, "invalid I2C address specified %02x\n",
++				client->addr);
++		ret = -EINVAL;
++		goto out_failed;
++	}
++
++	mutex_init(&chip->lock);
++
++	max732x_read(chip, is_group_a(chip, 0), &chip->reg_out[0]);
++	if (nr_port > 7)
++		max732x_read(chip, is_group_a(chip, 8), &chip->reg_out[1]);
++
++	ret = gpiochip_add(&chip->gpio_chip);
++	if (ret)
++		goto out_failed;
++
++	if (pdata->setup) {
++		ret = pdata->setup(client, chip->gpio_chip.base,
++				chip->gpio_chip.ngpio, pdata->context);
++		if (ret < 0)
++			dev_warn(&client->dev, "setup failed, %d\n", ret);
++	}
++
++	i2c_set_clientdata(client, chip);
++	return 0;
++
++out_failed:
++	kfree(chip);
++	return ret;
++}
++
++static int __devexit max732x_remove(struct i2c_client *client)
++{
++	struct max732x_platform_data *pdata = client->dev.platform_data;
++	struct max732x_chip *chip = i2c_get_clientdata(client);
++	int ret;
++
++	if (pdata->teardown) {
++		ret = pdata->teardown(client, chip->gpio_chip.base,
++				chip->gpio_chip.ngpio, pdata->context);
++		if (ret < 0) {
++			dev_err(&client->dev, "%s failed, %d\n",
++					"teardown", ret);
++			return ret;
++		}
++	}
++
++	ret = gpiochip_remove(&chip->gpio_chip);
++	if (ret) {
++		dev_err(&client->dev, "%s failed, %d\n",
++				"gpiochip_remove()", ret);
++		return ret;
++	}
++
++	/* unregister any dummy i2c_client */
++	if (chip->client_dummy)
++		i2c_unregister_device(chip->client_dummy);
++
++	kfree(chip);
++	return 0;
++}
++
++static struct i2c_driver max732x_driver = {
++	.driver = {
++		.name	= "max732x",
++		.owner	= THIS_MODULE,
++	},
++	.probe		= max732x_probe,
++	.remove		= __devexit_p(max732x_remove),
++	.id_table	= max732x_id,
++};
++
++static int __init max732x_init(void)
++{
++	return i2c_add_driver(&max732x_driver);
++}
++module_init(max732x_init);
++
++static void __exit max732x_exit(void)
++{
++	i2c_del_driver(&max732x_driver);
++}
++module_exit(max732x_exit);
++
++MODULE_AUTHOR("Eric Miao <eric.miao@marvell.com>");
++MODULE_DESCRIPTION("GPIO expander driver for MAX732X");
++MODULE_LICENSE("GPL");
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ b/include/linux/i2c/max732x.h	2008-07-13 08:57:18.000000000 -0700
+@@ -0,0 +1,19 @@
++#ifndef __LINUX_I2C_MAX732X_H
++#define __LINUX_I2C_MAX732X_H
++
++/* platform data for the MAX732x 8/16-bit I/O expander driver */
++
++struct max732x_platform_data {
++	/* number of the first GPIO */
++	unsigned	gpio_base;
++
++	void		*context;	/* param to setup/teardown */
++
++	int		(*setup)(struct i2c_client *client,
++				unsigned gpio, unsigned ngpio,
++				void *context);
++	int		(*teardown)(struct i2c_client *client,
++				unsigned gpio, unsigned ngpio,
++				void *context);
++};
++#endif /* __LINUX_I2C_MAX732X_H */
