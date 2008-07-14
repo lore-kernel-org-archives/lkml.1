@@ -1,82 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756820AbYGNHde@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756552AbYGNHii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756820AbYGNHde (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 03:33:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754829AbYGNHd1
+	id S1756552AbYGNHii (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 03:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754956AbYGNHi3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 03:33:27 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52003 "EHLO
+	Mon, 14 Jul 2008 03:38:29 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:54284 "EHLO
 	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754596AbYGNHd0 (ORCPT
+	with ESMTP id S1754829AbYGNHi3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 03:33:26 -0400
-Date: Mon, 14 Jul 2008 09:34:14 +0200
+	Mon, 14 Jul 2008 03:38:29 -0400
+Date: Mon, 14 Jul 2008 09:39:16 +0200
 From: Pavel Machek <pavel@suse.cz>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Rus <harbour@sfinx.od.ua>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [mmotm] pm: fix build error
-Message-ID: <20080714073414.GB1796@elf.ucw.cz>
-References: <20080714162102.F6D1.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andy Lutomirski <luto@myrealbox.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>,
+       public-kernel-testers-u79uwXL29TY76Z2rM5mHXA@lo.gmane.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
+Message-ID: <20080714073916.GC1796@elf.ucw.cz>
+References: <200807010148.02135.rjw@sisk.pl> <487A2431.2050103@myrealbox.com> <487A4CB7.1080001@firstfloor.org> <200807132115.08230.rjw@sisk.pl> <487A617B.80707@firstfloor.org> <487A67C3.50000@zytor.com> <487AD37A.2050903@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080714162102.F6D1.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <487AD37A.2050903@zytor.com>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Sun 2008-07-13 21:18:02, H. Peter Anvin wrote:
+> H. Peter Anvin wrote:
+>>
+>> The most likely explanation for this is that the VESA BIOS expects to be 
+>> entered in Big Real Mode (*.limit = 0xffffffff) instead of ordinary Real 
+>> Mode.  Here is a completely untested patch which changes the segment 
+>> descriptors to Big Real Mode instead.  It would be worth testing out.
+>>
+>
+> ... and here is one that actually has a prayer of actually working.
 
-> My IA64 machine can't build on today's mmotm(Jul 13).
-> So, below patch is necessary, I think.
-> 
-> ----------------------------------------------------
-> Against: mmotm, Jul 13
-> Applies after: pm-schedule-sysrq-poweroff-on-boot-cpu.patch
-> 
-> Now, handle_poweroff() use cpu_online_map variable.
-> So cpumask.h sould be included.
-> Otherwise it cause following build error on ia64 (I guess also sevaral othor platfom).
-> 
-> 	kernel/power/poweroff.c: In function 'handle_poweroff':
-> 	kernel/power/poweroff.c:29: error: implicit declaration of function 'first_cpu'
-> 	kernel/power/poweroff.c:29: error: 'cpu_online_map' undeclared (first use in this function)
-> 	kernel/power/poweroff.c:29: error: (Each undeclared identifier is reported only once
-> 	kernel/power/poweroff.c:29: error: for each function it appears in.)
-> 	make[2]: *** [kernel/power/poweroff.o] Error 1
-> 	make[1]: *** [kernel/power] Error 2
-> 
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: Zhang Rui <rui.zhang@intel.com>
-> CC: Rus <harbour@sfinx.od.ua>
-> CC: Rafael J. Wysocki <rjw@sisk.pl>
-> CC: Pavel Machek <pavel@ucw.cz>
+I tried 2.6.26, but it does not seem to be broken here :-(. Thinkpad
+x60. So it does not seem _all_ thinkpads have this problem... 
 
-ACK.
+									Pavel
 
-> ---
->  kernel/power/poweroff.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> Index: b/kernel/power/poweroff.c
-> ===================================================================
-> --- a/kernel/power/poweroff.c
-> +++ b/kernel/power/poweroff.c
-> @@ -10,6 +10,7 @@
->  #include <linux/pm.h>
->  #include <linux/workqueue.h>
->  #include <linux/reboot.h>
-> +#include <linux/cpumask.h>
->  
->  /*
->   * When the user hits Sys-Rq o to power down the machine this is the
-> 
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
