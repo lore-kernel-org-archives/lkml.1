@@ -1,103 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbYGNQfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756670AbYGNQjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757596AbYGNQfa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 12:35:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754847AbYGNQfW
+	id S1756670AbYGNQjQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 12:39:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754369AbYGNQjD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 12:35:22 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:34270 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754359AbYGNQfV (ORCPT
+	Mon, 14 Jul 2008 12:39:03 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:1865 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753833AbYGNQjC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 12:35:21 -0400
-Date: Mon, 14 Jul 2008 12:35:18 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ftrace memory barriers
-In-Reply-To: <20080714162518.GA3027@Krystal>
-Message-ID: <Pine.LNX.4.58.0807141232130.29493@gandalf.stny.rr.com>
-References: <20080709145929.352201601@polymtl.ca> <20080709150045.025136754@polymtl.ca>
- <20080709153434.GA9186@Krystal> <20080709162158.GB10601@Krystal>
- <20080709190957.GA16779@Krystal> <20080711143709.GB11500@Krystal>
- <Pine.LNX.4.58.0807141112540.30484@gandalf.stny.rr.com> <20080714153334.GA651@Krystal>
- <Pine.LNX.4.58.0807141153250.29493@gandalf.stny.rr.com> <20080714162518.GA3027@Krystal>
+	Mon, 14 Jul 2008 12:39:02 -0400
+To: "Rafael C. de Almeida" <almeidaraf@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: /proc/data information
+From: Andi Kleen <andi@firstfloor.org>
+References: <487A606E.5040202@gmail.com>
+Date: Mon, 14 Jul 2008 18:38:58 +0200
+In-Reply-To: <487A606E.5040202@gmail.com> (Rafael C. de Almeida's message of "Sun, 13 Jul 2008 17:07:10 -0300")
+Message-ID: <87ej5wzahp.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 14 Jul 2008 16:38:57.0564 (UTC) FILETIME=[1C9675C0:01C8E5D0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+"Rafael C. de Almeida" <almeidaraf@gmail.com> writes:
 
-On Mon, 14 Jul 2008, Mathieu Desnoyers wrote:
-
+> I'm interested in knowing how the cpu data from /proc/stat is gathered.
+> Following my way from this function:
 >
-> (CC'ed LKML)
+> 	http://lxr.linux.no/linux+v2.6.25.10/fs/proc/proc_misc.c#L459
 >
-> * Steven Rostedt (rostedt@goodmis.org) wrote:
-> >
-> > On Mon, 14 Jul 2008, Mathieu Desnoyers wrote:
-> > >
-> > > Thanks a lot Steve! By the way, you might be interested in looking at
-> > > the extra tracing enable/disabled tests you have in ftrace : it should
-> > > be enough to register/unregister the probes to activate/deactivate
-> > > tracing. I don't see why you would need if() checks in the probe itself.
-> > >
-> >
-> > That was actually one of the causes of the bugs I had. We had two markers,
-> > one tracing schedule switches, the other wake ups. As soon as one is
-> > enabled, tracing starts, and you will miss the tracing of the other one.
-> >
-> > The result was a strange trace were things were waking up then the waker
-> > was being scheduled in??
-> >
-> > I need to enable all markers at the same time, which can be done with the
-> > if () check. Not to mention, I like to be able to shut of tracing on oops
-> > without needing to do anyting drastic (like deactivating probes).
-> >
-> > -- Steve
-> >
->
-> I see the reason why you need this, but beware that the activation
-> boolean you are using in your check won't be seen as active at the same
-> time by all CPUs because of out-of-order read/writes. So while the
-> update is per se atomic, the replication of the updated value to all
-> processors isn't. However, when one CPU sees the new version, this
-> version will stay valid.
+> I've figured that the time is probably gathered using those
+> account_*_time on sched.c. I'm not sure where the times are read from,
+> though.
 
-Yep, I understand that. It was that the same CPU trace provided funny
-output. It it were a trace over separate CPUS then that is something
-people would accept.
+They are normally (some architectures do it differently to cope with
+virtualized environments) sampled by a regular timer interrupt, which
+runs HZ times per second on each CPU. Common values for HZ is 250
+(2.5ms interval), but you can compile with others too.
 
->
-> This is one of the reasons why I don't aim to provide atomic activation
-> of multiple markers : thinking that the state will be atomically changed
-> on all CPUs without using the proper memory barriers is a bit bogus
-> anyway. Does ftrace expect such atomic propagation of the change across
-> all CPUs or does it deal with the information it receives on a per-cpu
-> basis ?
+I suspect the effects you're seeing all come from sampling error.
+The interval is also not fully stable because the kernel sometimes
+disables interrupts and that will delay the timer interrupt of course.
+How often this happens depends on the workload.
 
-All the buffers and traces are per-cpu. We sort out the rest on output,
-and we use the clock as the interleaver. Doing that doesn't guarantee that
-events actually do happen in the order that appear, but it gives one a
-good idea of where to look.
+Then there are architectures like s390 who do "microstate accounting": 
+they keep track instead on every kernel entry/exit and every interrupt.
+That can be more accurate, but is also more costly.
 
->
-> In any case, you should also make sure that you call synchronize_sched()
-> after the probe registration to make sure the quiescent state is reached
-> and that all probes are connected (so that no marker still see the old
-> data structures). This should be done before you activate your boolean
-> in the probes.
-
-Good to know, thanks. Hmm, I'm not sure that code can schedule :-/ Maybe
-it can. I'll have to take a look.
-
->
-> I agree that the extra check is very well suited to the OOPS case.
-
-
-Thanks,
-
--- Steve
-
+-Andi
