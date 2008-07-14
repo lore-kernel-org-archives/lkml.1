@@ -1,87 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758211AbYGNVVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757952AbYGNVZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758211AbYGNVVy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 17:21:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758036AbYGNVVd
+	id S1757952AbYGNVZt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 17:25:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756445AbYGNVZl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 17:21:33 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:9548 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758021AbYGNVVc (ORCPT
+	Mon, 14 Jul 2008 17:25:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51780 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756071AbYGNVZl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 17:21:32 -0400
-Date: Mon, 14 Jul 2008 23:20:26 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       Zachary Amsden <zach@vmware.com>
-Subject: Re: [PATCH] stopmachine: add stopmachine_timeout
-Message-ID: <20080714212026.GA6705@osiris.boeblingen.de.ibm.com>
-References: <487B05CE.1050508@jp.fujitsu.com> <200807141351.25092.borntraeger@de.ibm.com> <200807142234.40700.rusty@rustcorp.com.au> <487BA152.1070102@goop.org>
+	Mon, 14 Jul 2008 17:25:41 -0400
+Date: Mon, 14 Jul 2008 14:25:19 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [git pull] x86 changes for v2.6.27
+In-Reply-To: <alpine.LFD.1.10.0807141359450.3305@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0807141422200.14679@woody.linux-foundation.org>
+References: <20080714135034.GA7013@elte.hu> <alpine.LFD.1.10.0807141346170.3305@woody.linux-foundation.org> <487BBDCB.7050303@zytor.com> <alpine.LFD.1.10.0807141359450.3305@woody.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <487BA152.1070102@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 14, 2008 at 11:56:18AM -0700, Jeremy Fitzhardinge wrote:
-> Rusty Russell wrote:
-> > On Monday 14 July 2008 21:51:25 Christian Borntraeger wrote:
-> >> Am Montag, 14. Juli 2008 schrieb Hidetoshi Seto:
-> >>     
-> >>> +	/* Wait all others come to life */
-> >>> +	while (cpus_weight(prepared_cpus) != num_online_cpus() - 1) {
-> >>> +		if (time_is_before_jiffies(limit))
-> >>> +			goto timeout;
-> >>> +		cpu_relax();
-> >>> +	}
-> >>> +
-> >>>       
-> >> Hmm. I think this could become interesting on virtual machines. The
-> >> hypervisor might be to busy to schedule a specific cpu at certain load
-> >> scenarios. This would cause a failure even if the cpu is not really locked
-> >> up. We had similar problems with the soft lockup daemon on s390.
-> > 5 seconds is a fairly long time.  If all else fails we could have a config 
-> > option to simply disable this code.
 
-Hmm.. probably a stupid question: but what could happen that a real cpu
-(not virtual) becomes unresponsive so that it won't schedule a MAX_RT_PRIO-1
-prioritized task for 5 seconds?
 
-> >> It would be good to not-use wall-clock time, but really used cpu time
-> >> instead. Unfortunately I have no idea, if that is possible in a generic
-> >> way. Heiko, any ideas?
-> >
-> > Ah, cpu time comes up again.  Perhaps we should actually dig that up again; 
-> > Zach and Jeremy CC'd.
+On Mon, 14 Jul 2008, Linus Torvalds wrote:
 > 
-> Hm, yeah. But in this case, it's tricky. CPU time is an inherently
-> per-cpu quantity. If cpu A is waiting for cpu B, and wants to do the
-> timeout in cpu-seconds, then it has to be in *B*s cpu-seconds (and if A
-> is waiting on B,C,D,E,F... it needs to measure separate timeouts with
-> separate timebases for each other CPU). It also means that if B is
-> unresponsive but also not consuming any time (blocked in IO,
-> administratively paused, etc), then the timeout will never trigger.
-> 
-> So I think monotonic wallclock time actually makes the most sense here.
+> Bloat is bloat. Just because it's conditional is not an excuse.
 
-This is asking for trouble... a config option to disable this would be
-nice. But as I don't know which problem this patch originally addresses
-it might be that this is needed anyway. So lets see why we need it first.
+Btw, the reason I reacted was that that wasn't even the only one.
 
-> The other issue is whether cpu_relax() is the right thing to put in the
-> busywait. We don't hook it in pvops, so it's just an x86 "pause"
-> instruction, so from the hypervisor's perspective it just looks like a
-> spinning CPU. We could either hook cpu_relax() into a hypervisor yield,
-> or come up with a heavier-weight cpu_snooze() (cpu_relax() is often used
-> in loops which are expected to have a short duration, where doing a
-> hypercall+yield would be overkill).
+It was followed by that MTRR "cleanup" question, which also defaulted to 
+'y', despite:
 
-cpu_relax() translates to a hypervisor yield on s390. Probably makes sense
-if other architectures would do the same.
+ - having a help message that warned about oopses and problems
+
+ - answering 'y' then caused a follow-up of totally incomprehensible and 
+   meaningless options with no help message what-so-ever.
+
+Dammit, if _I_ find the option to be badly named, confusing, unnecessary 
+and undocumented, maybe it should be a clue to somebody that it probably 
+shouldn't exist, much less default to 'sure, do that crazy thing'.
+
+(I think there was something else, but by then I didn't care any more, and 
+just said no without even looking at the insane crap)
+
+			Linus
