@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757938AbYGNU6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757874AbYGNVBN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757938AbYGNU6V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 16:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756103AbYGNU6O
+	id S1757874AbYGNVBN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 17:01:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756574AbYGNVA7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 16:58:14 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:58157 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754348AbYGNU6O (ORCPT
+	Mon, 14 Jul 2008 17:00:59 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:26653 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756004AbYGNVA6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 16:58:14 -0400
-Message-ID: <487BBDCB.7050303@zytor.com>
-Date: Mon, 14 Jul 2008 13:57:47 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 14 Jul 2008 17:00:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=G5vZSzzobfz8LvloDSmFPSaCG6+/Cau9Yb/Wd6JS8jYHzV45zvzoNEtTWoQZ9o2Rz7
+         ZJ7ZMjv1MQL+Hjv4XwqwzIs6SBMDi1KNkSvMXwo5qD29ICNiTtaw08TtMuH/J8kXe44O
+         qYzuJsSsYLtveEBifYUnTirlocsmEJS+oL4qQ=
+Date: Tue, 15 Jul 2008 01:00:48 +0400
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Paul Mundt <lethal@linux-sh.org>,
+       pHilipp Zabel <philipp.zabel@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       tony@atomide.com, paul@pwsan.com, David Brownell <david-b@pacbell.net>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>, ian <spyro@f2s.com>
+Subject: Re: [PATCH 1/3] genclk: add generic framework for managing clocks.
+Message-ID: <20080714210048.GA14889@doriath.ww600.siemens.net>
+References: <20080708134242.GA6176@doriath.ww600.siemens.net> <20080708134336.GA6240@doriath.ww600.siemens.net> <20080712234823.e632c7f9.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [git pull] x86 changes for v2.6.27
-References: <20080714135034.GA7013@elte.hu> <alpine.LFD.1.10.0807141346170.3305@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807141346170.3305@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080712234823.e632c7f9.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> Things like this _really_ irritate me:
-> 
-> 	Memtest (MEMTEST) [Y/n/?] (NEW) ?
-> 
-> why the hell is that defaulting to "on"?
-> 
-> The rule of thumb should be:
-> 
-> 	NO NEW FEATURES SHOULD _EVER_ DEFAULT TO 'ON'!
-> 
-> I do realize that developers always think that _their_ particular cool new 
-> feature is so important that it should default to 'on', but that's always 
-> the case, and it's _always_ wrong.
-> 
+Please consider this version of patch.
 
-I'm a bit surprised that you'd say that for something that is a 
-hardware-testing feature that needs a command-line option to be enabled 
-at runtime.  I have always presumed that the default value is the 
-recommended value, and I would think that that is what most people would 
-assume.
+I've:
+* cleaned up the points you have pointed at:
+* * moved locks and list to genclk_ namespace
+* * made them static
+* * provided documentation for new API and a link to linux/clk.h
+    as a doc for implemented API
+* reworked lockdep handling to be more clean and error-prone
+* some small fixes
 
-	-hpa
+
+-- 
+With best wishes
+Dmitry
+
