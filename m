@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756849AbYGNQI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbYGNQK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756849AbYGNQI6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 12:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754278AbYGNQIu
+	id S1756516AbYGNQK6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 12:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbYGNQKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 12:08:50 -0400
-Received: from il.qumranet.com ([212.179.150.194]:58592 "EHLO il.qumranet.com"
+	Mon, 14 Jul 2008 12:10:46 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44834 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753351AbYGNQIt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 12:08:49 -0400
-Message-ID: <487B7A10.9050104@qumranet.com>
-Date: Mon, 14 Jul 2008 19:08:48 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1753787AbYGNQKp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 12:10:45 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: James Le Cuirot <chewi@aura-online.co.uk>
+Subject: Re: [Suspend-devel] TAP (and TUN?) devices not working after resume
+Date: Mon, 14 Jul 2008 18:12:44 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: suspend-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>, netdev@vger.kernel.org
+References: <20080714154720.791f6640@symphony>
+In-Reply-To: <20080714154720.791f6640@symphony>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [git pull] core, x86: make LIST_POISON less deadly
-References: <20080714144828.GA22666@elte.hu> <alpine.LFD.1.10.0807140758100.3305@woody.linux-foundation.org> <20080714151247.GA27145@elte.hu> <alpine.LFD.1.10.0807140856130.3305@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807140856130.3305@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807141812.45264.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
->> We dont do any instruction decoding in #GP handlers to figure out what 
->> happened, while in the pagefault case we know which address faulted, 
->> etc.
->>     
->
-> Why would we care? It would be very obvious from the instruction 
-> disassembly plus the register contents. No need to decode instructions.
->   
+On Monday, 14 of July 2008, James Le Cuirot wrote:
+> Hi,
 
-We could add a printk to the #GP handler that alerts the reader that a 
-poisoned list is suspected, if we find the address pattern in one of the 
-registers.
+Hi,
 
--- 
-error compiling committee.c: too many arguments to function
+> uswsusp works great on my machine except for one thing. I use a TAP
+> device for QEMU and after resuming from suspend, it doesn't work
+> anymore until I delete it and recreate it. This is rather annoying
+> because if I have QEMU open, it means I have to close it before
+> recreating the interface and then boot Windows up again. I use OpenVPN
+> to create/delete the interface but I think that's all it does. The rest
+> is done by the kernel. So I'm guessing something's up with the TUN/TAP
+> driver or uswsusp itself. I'm using version 0.8. Sorry if this has
+> already been fixed.
 
+This is a kernel problem, adding kernel-related CCs.
+
+Thanks,
+Rafael
