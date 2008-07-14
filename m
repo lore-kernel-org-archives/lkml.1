@@ -1,101 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610AbYGNWLX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755213AbYGNWUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754610AbYGNWLX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 18:11:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbYGNWLM
+	id S1755213AbYGNWUT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 18:20:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754645AbYGNWUD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 18:11:12 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:42142 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752531AbYGNWLL (ORCPT
+	Mon, 14 Jul 2008 18:20:03 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:9622 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754642AbYGNWUC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 18:11:11 -0400
-Date: Mon, 14 Jul 2008 15:07:31 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Daniel Guilak <guilak@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       daniel@danielguilak.com
-Subject: Re: [PATCH] init/version.c: Define version_string only if
- CONFIG_KALLSYMS is not defined.
-Message-Id: <20080714150731.e86295b2.randy.dunlap@oracle.com>
-In-Reply-To: <1216070438.6497.27.camel@dguilak-desk>
-References: <1215552069.10304.6.camel@dguilak-desk>
-	<1216062286.6497.18.camel@dguilak-desk>
-	<20080714123858.2c42227f.randy.dunlap@oracle.com>
-	<1216070438.6497.27.camel@dguilak-desk>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 14 Jul 2008 18:20:02 -0400
+Message-ID: <487BD10F.2060408@ct.jp.nec.com>
+Date: Mon, 14 Jul 2008 15:19:59 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86_64: ia32_signal.c: use macro instead of immediate
+References: <487BC1B9.1090400@ct.jp.nec.com> <487BCD9C.4030003@zytor.com>
+In-Reply-To: <487BCD9C.4030003@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Jul 2008 14:20:38 -0700 Daniel Guilak wrote:
-
-> On Mon, 2008-07-14 at 12:38 -0700, Randy Dunlap wrote:
-> > On Mon, 14 Jul 2008 12:04:46 -0700 Daniel Guilak wrote:
-> > 
-> > > int Version_* is only used with ksymoops, which is only needed (according to
-> > > README and Documentation/Changes) if CONFIG_KALLSYMS is NOT defined.  Therefore
-> > > this patch defines version_string only if CONFIG_KALLSYMS is not defined.
-> > > 
-> > > Signed-off-by: Daniel Guilak <daniel@danielguilak.com>
-> > > ---
-> > >  init/version.c |    2 ++
-> > >  1 files changed, 2 insertions(+), 0 deletions(-)
-> > > 
-> > > Depends on "[PATCH] init/version.c: Silenced sparse warning by declaring the version string."
-> > > 
-> > > diff --git a/init/version.c b/init/version.c
-> > > index 041fd82..52a8b98 100644
-> > > --- a/init/version.c
-> > > +++ b/init/version.c
-> > > @@ -13,11 +13,13 @@
-> > >  #include <linux/utsrelease.h>
-> > >  #include <linux/version.h>
-> > >  
-> > > +#ifndef CONFIG_KALLSYMS
-> > >  #define version(a) Version_ ## a
-> > >  #define version_string(a) version(a)
-> > >  
-> > >  extern int version_string(LINUX_VERSION_CODE);
-> > >  int version_string(LINUX_VERSION_CODE);
-> > > +#endif
-> > >  
-> > >  struct uts_namespace init_uts_ns = {
-> > >  	.kref = {
-> > > -- 
-> > 
-> > Does not apply cleanly to linux-2.6.26, linux-next-20080714, or Linus-git-head.
-> > 
+H. Peter Anvin wrote:
+> Hiroshi Shimamoto wrote:
+>> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>>
+>> Make and use macro FIX_EFLAGS, instead of immediate value 0x40DD5 in
+>> ia32_restore_sigcontext().
+>>
+>> +
+>> +#ifdef CONFIG_X86_32
+>> +# define FIX_EFLAGS	(__FIX_EFLAGS | X86_EFLAGS_RF)
+>> +#else
+>> +# define FIX_EFLAGS	__FIX_EFLAGS
+>> +#endif
+>> +
 > 
-> Did you apply "[PATCH] init/version.c: Silenced sparse warning by
-> declaring the version string." beforehand? I just applied it on the most
-> recent tree and I didn't have any issues.
+> Where did this come from?  First of all, this is in a 64-bit-only file, 
+> so CONFIG_X86_32 will never be set; second of all, it seems a bit fishy 
+> that these should be different.
 
-Clearly I didn't apply that patch.  I missed anything saying that this was
-patch 2/2 in a dependent series.
+It came from arch/x86/kernel/signal_64.c. (And signal_32.c has the same one.)
+And yes, CONFIG_X86_32 is not set, I compiled and compare the results,
+the macro was replaced by 0x40dd5, no RF.
+I guess, someone made it same on signal_32.c and signal_64.c.
 
-> > and why do we ned both extern int version_string()
-> > and int version_string() ?
-> Because sparse was complaining that it wasn't prototyped or static.
-> There isn't a header file to put it in since it only exists to be a
-> kernel.
-
-so the extern makes it be published in the symbol table, whereas a static
-would keep it private.  Is that correct?
-
-and the second line (int version_string(LINUX_VERSION_CODE)) actually
-defines it.
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+Thanks,
+Hiroshi Shimamoto
