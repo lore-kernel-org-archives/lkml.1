@@ -1,59 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbYGNBrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919AbYGNBwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754708AbYGNBrw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 21:47:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbYGNBrp
+	id S1754919AbYGNBwn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 21:52:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303AbYGNBwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 21:47:45 -0400
-Received: from ozlabs.org ([203.10.76.45]:50892 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753008AbYGNBro (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 21:47:44 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH -next 00/11] remove CONFIG_KMOD
-Date: Mon, 14 Jul 2008 10:38:49 +1000
-User-Agent: KMail/1.9.9
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org
-References: <20080709082834.942992000@sipsolutions.net> <87zlolzv15.fsf@basil.nowhere.org>
-In-Reply-To: <87zlolzv15.fsf@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807141038.49652.rusty@rustcorp.com.au>
+	Sun, 13 Jul 2008 21:52:35 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:47727 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753008AbYGNBwe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 21:52:34 -0400
+To: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: New ext4 patchset 2.6.26-ext4-1
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1KIDEu-0004am-Bo@closure.thunk.org>
+Date: Sun, 13 Jul 2008 21:52:32 -0400
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 July 2008 01:03:02 Andi Kleen wrote:
-> Johannes Berg <johannes@sipsolutions.net> writes:
-> > I've rebased this patch series against -next-20080708 (one conflict
-> > against ftrace, another against BKL pushdown) and fixed the things
-> > Adrian Bunk pointed out.
->
-> You forgot to say why you want to remove that?
->
-> I personally like to not set CONFIG_KMOD because the auto loader
-> tends to load way too many modules. e.g. currently when someone requests
-> aes on x86 you get three different aes modules (including VIA PadLock
-> aes and an unoptimized C version), and keeping those around
-> is just a waste.
 
-Well, if you're building your own kernel anyway, don't build modules you don't 
-want.
+As a git tree:
 
-> Also if I didn't load a driver I prefer if it's not loaded at all.
-> This is also useful for power saving for example where it's better
-> to keep modules not loaded that you don't need and it's hard to
-> control who accesses the respective devices.
->
-> Please keep the option.
+git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git 2.6.26-ext4-1
+http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=shortlog;h=2.6.26-ext4-1
 
-"echo /bin/true > /proc/sys/kernel/modprobe".
+As a patchset:
 
-Given that, I don't think the config option is useful any more.
+ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.26-ext4-1
 
-Rusty.
+Patches marked with a (*) will shortly be pushed to Linus during
+just-opened merge window.
+
+					- Ted
+
+Akinobu Mita (1):
+    * ext4: fix ext4_init_block_bitmap() for metablock block group
+
+Akira Fujita (7):
+      ext4: online defrag-- Main function of defrag and ioctl implementation
+      ext4: online defrag-- Allocate new contiguous blocks with mballoc
+      ext4: online defrag-- Read and write file data with memory page
+      ext4: online defrag-- Exchange the blocks between two inodes
+      ext4: online defrag-- Defragmentation for the relevant files (-r mode)
+      ext4: online defrag-- Check the free space fragmentation (-f mode)
+      ext4: online defrag-- Move victim files for the target file (-f mode)
+
+Alex Tomas (2):
+    * vfs: add hooks for ext4's delayed allocation support
+    * ext4: Add delayed allocation support in data=writeback mode
+
+Alexey Dobriyan (1):
+    * ext4: switch to seq_files
+
+Aneesh Kumar K.V (13):
+    * ext4: Fix mb_find_next_bit not to return larger than max
+    * ext4: start searching for the right extent from the goal group.
+    * ext4: Update i_disksize properly when allocating from fallocate area.
+    * ext4: Fix sparse warning
+    * ext4: Use inode preallocation with -o noextents
+    * ext4: cleanup block allocator
+    * ext4: Use page_mkwrite vma_operations to get mmap write notification.
+    * mm: Add range_cont mode for writeback
+    * ext4: Add ordered mode support for delalloc
+    * ext4: Handle page without buffers in ext4_*_writepage()
+    * ext4: Enable delalloc by default.
+    * ext4: Don't allow nonextenst mount option for large filesystem
+      ext4: undo the stable boundary patch changes
+
+Duane Griffin (3):
+    * ext4: handle corrupted orphan list at mount
+    * ext4: handle deleting corrupted indirect blocks
+    * ext4: validate directory entry data before use
+
+Eric Sandeen (6):
+    * ext4: call blkdev_issue_flush on fsync
+    * ext4: use atomic functions to set bh_state
+    * ext4: do not set extents feature from the kernel
+      vfs: vfs-level fiemap interface
+      ext4: reinstate ext4_ext_walk_space()
+      ext4: fiemap implementation
+
+Frederic Bohe (1):
+    * ext4: fix online resize with mballoc
+
+Jan Kara (8):
+    * ext4: Set journal pointer to NULL when journal is released
+    * vfs: Move mark_inode_dirty() from under page lock in generic_write_end()
+    * ext4: Invert the locking order of page_lock and transaction start
+    * ext4: Fix lock inversion in ext4_ext_truncate()
+    * vfs: export filemap_fdatawrite_range()
+    * jbd2: Implement data=ordered mode handling via inodes
+    * ext4: Use new framework for data=ordered mode in JBD2
+    * jbd2: Remove data=ordered mode support using jbd buffer heads
+
+Jose R. Santos (2):
+    * ext4: New inode allocation for FLEX_BG meta-data groups.
+    * ext4: Documentation updates.
+
+Julia Lawall (1):
+    * ext4: Use BUG_ON() instead of BUG()
+
+Li Zefan (3):
+    * ext4: fix build failure if DX_DEBUG is enabled
+    * ext4: remove redundant code in ext4_fill_super()
+    * ext4: cleanup never-used magic numbers from htree code
+
+Mingming Cao (9):
+    * ext4: Fix ext4_mb_init_cache return error
+    * jbd2: fix race between jbd2_journal_try_to_free_buffers() and jbd2 commit transaction
+    * ext4: mballoc avoid use root reserved blocks for non root allocation
+    * percpu_counter: new function percpu_counter_sum_and_set
+    * ext4: delayed allocation ENOSPC handling
+    * ext4: Invert lock ordering of page_lock and transaction start in delalloc
+    * ext4: fix delalloc i_disksize early update issue
+    * ext4: delayed allocation i_blocks fix for stat
+    * ext4: Documention update for new ordered mode and delayed allocation
+
+Shen Feng (11):
+    * ext4: fix comments to say "ext4"
+    * ext4: improve some code in rb tree part of dir.c
+    * ext4: add error processing when calling ext4_mb_init_cache in mballoc
+    * ext4: miscellaneous error checks and coding cleanups for mballoc
+    * ext4: remove double definitions of xattr macros
+    * ext4: error proc entry creation when the fs/ext4 is not correctly created
+    * ext4: fix error processing in mb_free_blocks
+    * ext4: remove quota allocation when ext4_mb_new_blocks fails
+    * ext4: return error when calling ext4_ext_split failed
+    * ext4: Make ext4_ext_find_extent fills ext_path completely
+    * ext4: Fix ext4_ext_journal_restart() to reflect errors up to the caller
+
+Stoyan Gaydarov (1):
+    * ext4: replace __FUNCTION__ occurrences
+
+Theodore Ts'o (4):
+    * ext4: Rename read_block_bitmap() to ext4_read_block_bitmap()
+    * ext4: Remove unused variable from ext4_show_options
+    * jbd2: Add commit time into the commit block
+      ext4: Stable/Unstable boundary
+
