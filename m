@@ -1,68 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757388AbYGNUkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757602AbYGNUlL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757388AbYGNUkZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 16:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754348AbYGNUkO
+	id S1757602AbYGNUlL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 16:41:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755960AbYGNUk5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 16:40:14 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:35518 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753431AbYGNUkN (ORCPT
+	Mon, 14 Jul 2008 16:40:57 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:40243 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754348AbYGNUk4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 16:40:13 -0400
-From: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-Organization: Mandriva
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Fix typos from signal_32/64.h merge
-Date: Mon, 14 Jul 2008 17:40:23 -0300
-User-Agent: KMail/1.9.9
-Cc: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Roland McGrath <roland@redhat.com>, stable@kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Mon, 14 Jul 2008 16:40:56 -0400
+Date: Mon, 14 Jul 2008 13:40:02 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       David Fries <david@fries.net>
+Subject: Re: [PATCH 29/30] W1: Documentation/w1/masters/ds2490 update
+Message-Id: <20080714134002.e5dfaaae.randy.dunlap@oracle.com>
+In-Reply-To: <12157843071043-git-send-email-johnpol@2ka.mipt.ru>
+References: <12157843054074-git-send-email-johnpol@2ka.mipt.ru>
+	<12157843071043-git-send-email-johnpol@2ka.mipt.ru>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807141740.23750.herton@mandriva.com.br>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fallout from commit 33185c504f8e521b398536b5a8d415779a24593c ("x86:
-merge signal_32/64.h")
+On Fri, 11 Jul 2008 17:51:44 +0400 Evgeniy Polyakov wrote:
 
-Thanks to Dick Streefland who provided an useful testcase on
-http://lkml.org/lkml/2008/3/17/205 (only applicable to 2.6.24.x), that
-helped a lot as a deterministic way to bisect an issue that leaded to
-this fix.
+> Provide some additional details about the status of the driver and the
+> ds2490 hardware.
+> 
+> Signed-off-by: David Fries <david@fries.net>
+> Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+> 
+> ---
+>  Documentation/w1/masters/ds2490 |   62 +++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 62 insertions(+), 0 deletions(-)
+> 
+> diff --git a/Documentation/w1/masters/ds2490 b/Documentation/w1/masters/ds2490
+> index 239f9ae..f70b8dc 100644
+> --- a/Documentation/w1/masters/ds2490
+> +++ b/Documentation/w1/masters/ds2490
+> @@ -16,3 +16,65 @@ which allows to build USB <-> W1 bridges.
+>  DS9490(R) is a USB <-> W1 bus master device
+>  which has 0x81 family ID integrated chip and DS2490
+>  low-level operational chip.
+> +
+> +Notes and limitations.
+> +- The weak pullup current is a minimum of 0.9mA and maximum of 6.0mA.
+> +- The 5V strong pullup is supported with a minimum of 5.9mA and a
+> +  maximum of 30.4 mA.  (From DS2490.pdf)
+> +- While the ds2490 supports a hardware search the code doesn't take
+> +  advantage of it (in tested case it only returned first device).
+> +- The hardware will detect when devices are attached to the bus on the
+> +  next bus (reset?) operation, however only a message is printed as
+> +  the core w1 code doesn't make use of the information.  Connecting
+> +  one device tends to give multiple new device notifications.
+> +- The number of USB bus transactions could be reduced if w1_reset_send
+> +  was added to the API.  The name is just a suggestion.  It would take
+> +  a write buffer and a read buffer (along with sizes) as arguments.
+> +  It would add match rom and rom to the send buffer, reset the bus,
+                  ~~~~~~~~~~~~~~~~~
+Can you clarify above?
 
-Signed-off-by: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-Signed-off-by: Luiz Fernando N. Capitulino <lcapitulino@mandriva.com.br>
+> +  and read the result.  The ds2490 block I/O command supports reset,
+> +  write, read, and strong pullup all in one command.  That would
+> +  reduce the time and overhead for a set of commands.
+> +
+> +  The core w1 functions required to do a temperature conversion are,
+
+                                                                   are:
+                                            or (no comma)          are
+
+> +  w1_reset_select_slave, w1_next_pullup, and w1_write_8, which turn
+> +  around and execute the master functions, reset_bus, write_block,
+> +  set_pullup, write_byte, set_pullup.  Each ds2490 function will have
+> +  multiple USB bus transactions, except set_pullup where it only
+> +  requires transactions if the if the time value is different.  The
+                           ~~~~~~~~~~~~~
+                           (duplicated)
+
+> +  conversion could be reduced to w1_next_pullup, w1_reset_send which
+> +  would call set_pullup, reset_send. The reset_send would enable reset
+> +  and strong pullup (if enabled), write the data buffer, execute the
+> +  block I/O command, read status, and get data.  Currently I count 11
+> +  transactions required, this would reduce it to 4.
+> +- The hardware supports normal, flexable, and overdrive bus
+
+                                   flexible,
+
+> +  communication speeds, but only the normal is supported.
+> +- The registered w1_bus_master functions don't define error
+> +  conditions.  If a bus search is in progress and the ds2490 is
+> +  removed it can produce a good amount of error output before the bus
+> +  search finishes.
+> +- The hardware supports detecting some error conditions, such as
+> +  short, alarming presence on reset, and no presence on reset, but the
+> +  driver doesn't query those values.
+> +- The ds2490 specification doesn't cover short bulk in reads in
+> +  detail, but my observation is if fewer bytes are requested than are
+> +  available, the bulk read will return an error and the hardware will
+> +  clear the entire bulk in buffer.  It would be possible to read the
+> +  maximum buffer size to not run into this error condition, only extra
+> +  bytes in the buffer is a logic error in the driver.  The code should
+> +  should match reads and writes as well as data sizes.  Reads and
+> +  writes are serialized and the status verifies that the chip is idle
+> +  (and data is available) before the read is executed, so it should
+> +  not happen.
+> +- Running x86_64 2.6.24 UHCI under qemu 0.9.0 under x86_64 2.6.22-rc6
+> +  with a OHCI controller, ds2490 running in the guest would operate
+> +  normally the first time the module was loaded after qemu attached
+> +  the ds2490 hardware, but if the module was unloaded, then reloaded
+> +  most of the time one of the bulk out or in, and usually the bulk in
+> +  would fail.  qemu sets a 50ms timeout and the bulk in would timeout
+> +  even when the status shows data available.  A bulk out write would
+> +  show a successful completion, but the ds2490 status register would
+> +  show 0 bytes written.  Detaching qemu from the ds2490 hardware and
+> +  reattaching would clear the problem.  usbmon output in the guest and
+> +  host did not explain the problem.  My guess is a bug in either qemu
+> +  or the host OS and more likely the host OS.
+> +-- 03-06-2008 David Fries <David@Fries.net>
+> -- 
+
+
 ---
- include/asm-x86/signal.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/include/asm-x86/signal.h b/include/asm-x86/signal.h
-index f15186d..6dac493 100644
---- a/include/asm-x86/signal.h
-+++ b/include/asm-x86/signal.h
-@@ -181,12 +181,12 @@ typedef struct sigaltstack {
- #ifdef __KERNEL__
- #include <asm/sigcontext.h>
- 
--#ifdef __386__
-+#ifdef __i386__
- 
- #define __HAVE_ARCH_SIG_BITOPS
- 
- #define sigaddset(set,sig)		    \
--	(__builtin_constantp(sig)	    \
-+	(__builtin_constant_p(sig)	    \
- 	 ? __const_sigaddset((set), (sig))  \
- 	 : __gen_sigaddset((set), (sig)))
- 
--- 
-1.5.6
-
-
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
