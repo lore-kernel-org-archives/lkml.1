@@ -1,89 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757405AbYGNROV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757695AbYGNROe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757405AbYGNROV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 13:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbYGNROE
+	id S1757695AbYGNROe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 13:14:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754404AbYGNROJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 13:14:04 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41048 "EHLO
+	Mon, 14 Jul 2008 13:14:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56153 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753725AbYGNROC (ORCPT
+	by vger.kernel.org with ESMTP id S1754175AbYGNROF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 13:14:02 -0400
-Date: Mon, 14 Jul 2008 10:13:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Vivek Dasmohapatra <vivek@etla.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: Re: 2.6.24 ipw2200 driver can't be reset after firmware explodes
-Message-Id: <20080714101349.38079048.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0807141240020.6889@localhost>
-References: <Pine.LNX.4.64.0807141240020.6889@localhost>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Jul 2008 13:14:05 -0400
+Date: Mon, 14 Jul 2008 10:13:33 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [git pull] core/softirq for v2.6.27
+In-Reply-To: <20080714164838.GA28765@elte.hu>
+Message-ID: <alpine.LFD.1.10.0807141011260.3305@woody.linux-foundation.org>
+References: <20080714144243.GA21079@elte.hu> <20080714092215.0efd7fa3.akpm@linux-foundation.org> <20080714163141.GA21068@elte.hu> <20080714094422.e7ae255a.akpm@linux-foundation.org> <20080714164838.GA28765@elte.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc linux-wireless)
 
-On Mon, 14 Jul 2008 13:27:51 +0100 (BST) Vivek Dasmohapatra <vivek@etla.org> wrote:
 
-> Hi: I have a thinkpad t43p with an ipw2200 driven piece of hardware in it.
+On Mon, 14 Jul 2008, Ingo Molnar wrote:
 > 
-> 04:02.0 Network controller [0280]:
->   Intel Corporation PRO/Wireless 2915ABG Network Connection [8086:4224] (rev 05)
->          Kernel driver in use: ipw2200
->          Kernel modules: ipw2200
-> 
-> >From time to time, the firmware flakes out, and I get messages like this:
-> [ I'm not sure which version of the firmware I have, I can't see anything
->    obvious in dmesg when the ipw2200 module loads: I have files like
->    ipw-2.4-bss.fw in /lib/firmware if that helps ]
-> 
-> Jul 14 03:42:25 neko kernel: 
-> ipw2200: Failed to send SCAN_ABORT: Command timed out.
-> Jul 14 03:42:26 neko kernel: 
-> ipw2200: Failed to send CARD_DISABLE: Command timed out.
-> Jul 14 03:42:32 neko kernel: 
-> ipw2200: Failed to send SCAN_ABORT: Command timed out.
-> Jul 14 03:42:33 neko kernel: 
-> ipw2200: Failed to send CARD_DISABLE: Command timed out.
-> Jul 14 03:42:39 neko kernel: 
-> ipw2200: Failed to send SCAN_ABORT: Command timed out.
-> 
-> repeated again and again.
-> 
-> There's usually a "firmware error detected, restarting" message buried
-> somewhere in the logs before that happens.
-> 
-> Under kernel 2.6.16, I was able to fix this as follows:
-> 
-> echo -n 3 > /sys/class/net/$IFACE/device/power/state
-> sleep 1
-> echo -n 0 > /sys/class/net/$IFACE/device/power/state
-> 
-> ( removing and reloading the module has no effect here, under
->    either kernel 2.6.16 or 2.6.24: taking the interface down and
->    bringing it up again is likewise ineffective )
-> 
-> However, I note that under 2.6.24 said /sys interface is no
-> longer present, so once the firmware dies, I am forced to either
-> hunt down a network cable with something useful on the other end,
-> or live without networking, or reboot.
-> 
-> Is there a new way to achieve the same effect in 2.6.24? If there's not,
-> is there likely to be in the future? Or should I just revert to 2.6.16
-> until such time as I replace my laptop and (hopefully) don't have to
-> struggle with the intel wifi hardware any more?
-> 
-> The firmware bug is covered here: 
-> http://www.intellinuxwireless.org/bugzilla/show_bug.cgi?id=875
-> if that's helpful/relevant.
-> 
-> [ CCd to netdev as I was told it would be of interest there too,
->    apologies if this is not the case ]
-> 
+> /me suggests git-log-addendum feature to amend commit logs after the
+>     fact, without changing any of the code :-)
 
+It's called "git commit --amend".
+
+But it obviously also changes the SHA1 of the commit - it generates a 
+totally new one. You cannot do it after-the-fact or deep in history (well, 
+you can, with the normal "rebase" op, but it literally is no different 
+from changing the patch itself too).
+
+BK used to be able to change the logs after-the-fact, but that meant that 
+the logs were not trustworthy, and any changes also didn't distribute 
+right (they'd only be changed locally and in any subsequent distributions)
+
+		Linus
