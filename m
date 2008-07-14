@@ -1,137 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757013AbYGNISf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757266AbYGNITg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757013AbYGNISf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 04:18:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755654AbYGNIS2
+	id S1757266AbYGNITg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 04:19:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755588AbYGNIT1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 04:18:28 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44144 "EHLO
+	Mon, 14 Jul 2008 04:19:27 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44210 "EHLO
 	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755639AbYGNIS1 (ORCPT
+	with ESMTP id S1755012AbYGNIT1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 04:18:27 -0400
-Date: Mon, 14 Jul 2008 17:15:22 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+	Mon, 14 Jul 2008 04:19:27 -0400
+Date: Mon, 14 Jul 2008 17:18:16 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2][-mm][resend] memcg limit change shrink usage.
-Message-Id: <20080714171522.d1cd50e9.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080714171154.e1cc9943.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080714171154.e1cc9943.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: Re: [-mm][PATCH][resend] split-lru-memcg page reclaim active anon fix v2
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "riel@redhat.com" <riel@redhat.com>
+In-Reply-To: <20080714170359.31198aef.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080714170359.31198aef.kamezawa.hiroyu@jp.fujitsu.com>
+Message-Id: <20080714171731.F6D6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shrinking memory usage at limit change.
+> Index: linux-2.6.26-rc8-mm1/mm/vmscan.c
+> ===================================================================
+> --- linux-2.6.26-rc8-mm1.orig/mm/vmscan.c
+> +++ linux-2.6.26-rc8-mm1/mm/vmscan.c
+> @@ -1499,7 +1499,7 @@ static unsigned long shrink_zone(int pri
+>  	 * Even if we did not try to evict anon pages at all, we want to
+>  	 * rebalance the anon lru active/inactive ratio.
+>  	 */
+> -	if (scan_global_lru(sc) && inactive_anon_is_low(zone))
+> +	if (!scan_global_lru(sc) || inactive_anon_is_low(zone))
+>  		shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
+>  
+>  	throttle_vm_writeout(sc->gfp_mask);
 
-This is an enhancement (in TODO list).
-based on res_counter-limit-change-ebusy.patch
+	Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-Changelog: v2 -> v3
-  - supported interrupt by signal. (A user can stop limit change by Ctrl-C.)
-Changelog: v1 -> v2
-  - adjusted to be based on write_string() patch set
-  - removed backword goto.
-  - removed unneccesary cond_resched().
 
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-Acked-by: Pavel Emelyanov <xemul@openvz.org>
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
- Documentation/controllers/memory.txt |    3 --
- mm/memcontrol.c                      |   48 ++++++++++++++++++++++++++++++++---
- 2 files changed, 45 insertions(+), 6 deletions(-)
-
-Index: linux-2.6.26-rc8-mm1/mm/memcontrol.c
-===================================================================
---- linux-2.6.26-rc8-mm1.orig/mm/memcontrol.c
-+++ linux-2.6.26-rc8-mm1/mm/memcontrol.c
-@@ -836,6 +836,30 @@ int mem_cgroup_shrink_usage(struct mm_st
- 	return 0;
- }
- 
-+int mem_cgroup_resize_limit(struct mem_cgroup *memcg, unsigned long long val)
-+{
-+
-+	int retry_count = MEM_CGROUP_RECLAIM_RETRIES;
-+	int progress;
-+	int ret = 0;
-+
-+	while (res_counter_set_limit(&memcg->res, val)) {
-+		if (signal_pending(current)) {
-+			ret = -EINTR;
-+			break;
-+		}
-+		if (!retry_count) {
-+			ret = -EBUSY;
-+			break;
-+		}
-+		progress = try_to_free_mem_cgroup_pages(memcg, GFP_KERNEL);
-+		if (!progress)
-+			retry_count--;
-+	}
-+	return ret;
-+}
-+
-+
- /*
-  * This routine traverse page_cgroup in given list and drop them all.
-  * *And* this routine doesn't reclaim page itself, just removes page_cgroup.
-@@ -916,13 +940,29 @@ static u64 mem_cgroup_read(struct cgroup
- 	return res_counter_read_u64(&mem_cgroup_from_cont(cont)->res,
- 				    cft->private);
- }
--
-+/*
-+ * The user of this function is...
-+ * RES_LIMIT.
-+ */
- static int mem_cgroup_write(struct cgroup *cont, struct cftype *cft,
- 			    const char *buffer)
- {
--	return res_counter_write(&mem_cgroup_from_cont(cont)->res,
--				 cft->private, buffer,
--				 res_counter_memparse_write_strategy);
-+	struct mem_cgroup *memcg = mem_cgroup_from_cont(cont);
-+	unsigned long long val;
-+	int ret;
-+
-+        switch (cft->private) {
-+	case RES_LIMIT:
-+		/* This function does all necessary parse...reuse it */
-+		ret = res_counter_memparse_write_strategy(buffer, &val);
-+		if (!ret)
-+			ret = mem_cgroup_resize_limit(memcg, val);
-+		break;
-+	default:
-+		ret = -EINVAL; /* should be BUG() ? */
-+		break;
-+	}
-+	return ret;
- }
- 
- static int mem_cgroup_reset(struct cgroup *cont, unsigned int event)
-Index: linux-2.6.26-rc8-mm1/Documentation/controllers/memory.txt
-===================================================================
---- linux-2.6.26-rc8-mm1.orig/Documentation/controllers/memory.txt
-+++ linux-2.6.26-rc8-mm1/Documentation/controllers/memory.txt
-@@ -242,8 +242,7 @@ rmdir() if there are no tasks.
- 1. Add support for accounting huge pages (as a separate controller)
- 2. Make per-cgroup scanner reclaim not-shared pages first
- 3. Teach controller to account for shared-pages
--4. Start reclamation when the limit is lowered
--5. Start reclamation in the background when the limit is
-+4. Start reclamation in the background when the limit is
-    not yet hit but the usage is getting closer
- 
- Summary
 
