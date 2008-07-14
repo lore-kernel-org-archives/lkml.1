@@ -1,86 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758107AbYGNVVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758211AbYGNVVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758107AbYGNVVj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 17:21:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757143AbYGNVV3
+	id S1758211AbYGNVVy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 17:21:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758036AbYGNVVd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 17:21:29 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:45754 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757822AbYGNVV2 (ORCPT
+	Mon, 14 Jul 2008 17:21:33 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:9548 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758021AbYGNVVc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 17:21:28 -0400
-Subject: Re: [PATCH] init/version.c: Define version_string only if
-	CONFIG_KALLSYMS is not defined.
-From: Daniel Guilak <guilak@linux.vnet.ibm.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       daniel@danielguilak.com
-In-Reply-To: <20080714123858.2c42227f.randy.dunlap@oracle.com>
-References: <1215552069.10304.6.camel@dguilak-desk>
-	 <1216062286.6497.18.camel@dguilak-desk>
-	 <20080714123858.2c42227f.randy.dunlap@oracle.com>
-Content-Type: text/plain
-Date: Mon, 14 Jul 2008 14:20:38 -0700
-Message-Id: <1216070438.6497.27.camel@dguilak-desk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Jul 2008 17:21:32 -0400
+Date: Mon, 14 Jul 2008 23:20:26 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       Zachary Amsden <zach@vmware.com>
+Subject: Re: [PATCH] stopmachine: add stopmachine_timeout
+Message-ID: <20080714212026.GA6705@osiris.boeblingen.de.ibm.com>
+References: <487B05CE.1050508@jp.fujitsu.com> <200807141351.25092.borntraeger@de.ibm.com> <200807142234.40700.rusty@rustcorp.com.au> <487BA152.1070102@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <487BA152.1070102@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-07-14 at 12:38 -0700, Randy Dunlap wrote:
-> On Mon, 14 Jul 2008 12:04:46 -0700 Daniel Guilak wrote:
+On Mon, Jul 14, 2008 at 11:56:18AM -0700, Jeremy Fitzhardinge wrote:
+> Rusty Russell wrote:
+> > On Monday 14 July 2008 21:51:25 Christian Borntraeger wrote:
+> >> Am Montag, 14. Juli 2008 schrieb Hidetoshi Seto:
+> >>     
+> >>> +	/* Wait all others come to life */
+> >>> +	while (cpus_weight(prepared_cpus) != num_online_cpus() - 1) {
+> >>> +		if (time_is_before_jiffies(limit))
+> >>> +			goto timeout;
+> >>> +		cpu_relax();
+> >>> +	}
+> >>> +
+> >>>       
+> >> Hmm. I think this could become interesting on virtual machines. The
+> >> hypervisor might be to busy to schedule a specific cpu at certain load
+> >> scenarios. This would cause a failure even if the cpu is not really locked
+> >> up. We had similar problems with the soft lockup daemon on s390.
+> > 5 seconds is a fairly long time.  If all else fails we could have a config 
+> > option to simply disable this code.
+
+Hmm.. probably a stupid question: but what could happen that a real cpu
+(not virtual) becomes unresponsive so that it won't schedule a MAX_RT_PRIO-1
+prioritized task for 5 seconds?
+
+> >> It would be good to not-use wall-clock time, but really used cpu time
+> >> instead. Unfortunately I have no idea, if that is possible in a generic
+> >> way. Heiko, any ideas?
+> >
+> > Ah, cpu time comes up again.  Perhaps we should actually dig that up again; 
+> > Zach and Jeremy CC'd.
 > 
-> > int Version_* is only used with ksymoops, which is only needed (according to
-> > README and Documentation/Changes) if CONFIG_KALLSYMS is NOT defined.  Therefore
-> > this patch defines version_string only if CONFIG_KALLSYMS is not defined.
-> > 
-> > Signed-off-by: Daniel Guilak <daniel@danielguilak.com>
-> > ---
-> >  init/version.c |    2 ++
-> >  1 files changed, 2 insertions(+), 0 deletions(-)
-> > 
-> > Depends on "[PATCH] init/version.c: Silenced sparse warning by declaring the version string."
-> > 
-> > diff --git a/init/version.c b/init/version.c
-> > index 041fd82..52a8b98 100644
-> > --- a/init/version.c
-> > +++ b/init/version.c
-> > @@ -13,11 +13,13 @@
-> >  #include <linux/utsrelease.h>
-> >  #include <linux/version.h>
-> >  
-> > +#ifndef CONFIG_KALLSYMS
-> >  #define version(a) Version_ ## a
-> >  #define version_string(a) version(a)
-> >  
-> >  extern int version_string(LINUX_VERSION_CODE);
-> >  int version_string(LINUX_VERSION_CODE);
-> > +#endif
-> >  
-> >  struct uts_namespace init_uts_ns = {
-> >  	.kref = {
-> > -- 
+> Hm, yeah. But in this case, it's tricky. CPU time is an inherently
+> per-cpu quantity. If cpu A is waiting for cpu B, and wants to do the
+> timeout in cpu-seconds, then it has to be in *B*s cpu-seconds (and if A
+> is waiting on B,C,D,E,F... it needs to measure separate timeouts with
+> separate timebases for each other CPU). It also means that if B is
+> unresponsive but also not consuming any time (blocked in IO,
+> administratively paused, etc), then the timeout will never trigger.
 > 
-> Does not apply cleanly to linux-2.6.26, linux-next-20080714, or Linus-git-head.
-> 
+> So I think monotonic wallclock time actually makes the most sense here.
 
-Did you apply "[PATCH] init/version.c: Silenced sparse warning by
-declaring the version string." beforehand? I just applied it on the most
-recent tree and I didn't have any issues.
+This is asking for trouble... a config option to disable this would be
+nice. But as I don't know which problem this patch originally addresses
+it might be that this is needed anyway. So lets see why we need it first.
 
-> and why do we ned both extern int version_string()
-> and int version_string() ?
-Because sparse was complaining that it wasn't prototyped or static.
-There isn't a header file to put it in since it only exists to be a
-kernel.
-> ---
-> ~Randy
-> Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-> http://linuxplumbersconf.org/
+> The other issue is whether cpu_relax() is the right thing to put in the
+> busywait. We don't hook it in pvops, so it's just an x86 "pause"
+> instruction, so from the hypervisor's perspective it just looks like a
+> spinning CPU. We could either hook cpu_relax() into a hypervisor yield,
+> or come up with a heavier-weight cpu_snooze() (cpu_relax() is often used
+> in loops which are expected to have a short duration, where doing a
+> hypercall+yield would be overkill).
 
---Daniel
-
+cpu_relax() translates to a hypervisor yield on s390. Probably makes sense
+if other architectures would do the same.
