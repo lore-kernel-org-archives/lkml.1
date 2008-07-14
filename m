@@ -1,49 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbYGNQK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752686AbYGNQNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756516AbYGNQK6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 12:10:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbYGNQKq
+	id S1752686AbYGNQNq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 12:13:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbYGNQNi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 12:10:46 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44834 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753787AbYGNQKp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 12:10:45 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: James Le Cuirot <chewi@aura-online.co.uk>
-Subject: Re: [Suspend-devel] TAP (and TUN?) devices not working after resume
-Date: Mon, 14 Jul 2008 18:12:44 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: suspend-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>, netdev@vger.kernel.org
-References: <20080714154720.791f6640@symphony>
-In-Reply-To: <20080714154720.791f6640@symphony>
+	Mon, 14 Jul 2008 12:13:38 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54974 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753260AbYGNQNh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 12:13:37 -0400
+Date: Tue, 15 Jul 2008 01:12:19 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Alan Cox <alan@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [mmotm] adapt ia64/hp/sim/simserial.c to new tty framework
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20080715010813.F6E9.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807141812.45264.rjw@sisk.pl>
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 14 of July 2008, James Le Cuirot wrote:
-> Hi,
 
-Hi,
+Patch title: adapt-ia64-hp-simserial-to-new-tty-ldisc.patch
+Against: mmotm Jul 14
+Applies after: linux-next.patch
 
-> uswsusp works great on my machine except for one thing. I use a TAP
-> device for QEMU and after resuming from suspend, it doesn't work
-> anymore until I delete it and recreate it. This is rather annoying
-> because if I have QEMU open, it means I have to close it before
-> recreating the interface and then boot Windows up again. I use OpenVPN
-> to create/delete the interface but I think that's all it does. The rest
-> is done by the kernel. So I'm guessing something's up with the TUN/TAP
-> driver or uswsusp itself. I'm using version 0.8. Sorry if this has
-> already been fixed.
+Recently, Alan Cox made cleanup tty widely.
+But unfortunately it cause simserial build error.
+This patch fixes it.
 
-This is a kernel problem, adding kernel-related CCs.
+  arch/ia64/hp/sim/simserial.c: In function 'rs_flush_buffer':
+  arch/ia64/hp/sim/simserial.c:357: error: 'struct tty_ldisc' has no member named 'write_wakeup'
+  arch/ia64/hp/sim/simserial.c:358: error: 'struct tty_ldisc' has no member named 'write_wakeup'
+  arch/ia64/hp/sim/simserial.c: In function 'rs_close':
+  arch/ia64/hp/sim/simserial.c:628: error: 'struct tty_ldisc' has no member named 'flush_buffer'
+  arch/ia64/hp/sim/simserial.c:628: error: 'struct tty_ldisc' has no member named 'flush_buffer'
+  arch/ia64/hp/sim/simserial.c: At top level:
+  arch/ia64/hp/sim/simserial.c:958: warning: initialization from incompatible pointer type
 
-Thanks,
-Rafael
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Alan Cox <alan@redhat.com>
+CC: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ arch/ia64/hp/sim/simserial.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+Index: b/arch/ia64/hp/sim/simserial.c
+===================================================================
+--- a/arch/ia64/hp/sim/simserial.c
++++ b/arch/ia64/hp/sim/simserial.c
+@@ -354,8 +354,8 @@ static void rs_flush_buffer(struct tty_s
+ 	wake_up_interruptible(&tty->write_wait);
+ 
+ 	if ((tty->flags & (1 << TTY_DO_WRITE_WAKEUP)) &&
+-	    tty->ldisc.write_wakeup)
+-		(tty->ldisc.write_wakeup)(tty);
++	    tty->ldisc.ops->write_wakeup)
++		(tty->ldisc.ops->write_wakeup)(tty);
+ }
+ 
+ /*
+@@ -407,8 +407,9 @@ static void rs_unthrottle(struct tty_str
+ /*
+  * rs_break() --- routine which turns the break handling on or off
+  */
+-static void rs_break(struct tty_struct *tty, int break_state)
++static int rs_break(struct tty_struct *tty, int break_state)
+ {
++	return 0;
+ }
+ 
+ static int rs_ioctl(struct tty_struct *tty, struct file * file,
+@@ -625,7 +626,8 @@ static void rs_close(struct tty_struct *
+ 	shutdown(info);
+ 	if (tty->ops->flush_buffer)
+ 		tty->ops->flush_buffer(tty);
+-	if (tty->ldisc.flush_buffer) tty->ldisc.flush_buffer(tty);
++	if (tty->ldisc.ops->flush_buffer)
++		tty->ldisc.ops->flush_buffer(tty);
+ 	info->event = 0;
+ 	info->tty = NULL;
+ 	if (info->blocked_open) {
+
+
