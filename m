@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758008AbYGNHxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757628AbYGNHym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758008AbYGNHxx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 03:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757151AbYGNHuU
+	id S1757628AbYGNHym (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 03:54:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756866AbYGNHvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 03:50:20 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38046 "EHLO hera.kernel.org"
+	Mon, 14 Jul 2008 03:51:40 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38117 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756252AbYGNHuN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 03:50:13 -0400
+	id S1757165AbYGNHvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 03:51:38 -0400
 From: Tejun Heo <tj@kernel.org>
 To: jens.axboe@oracle.com, James.Bottomley@HansenPartnership.com,
        bharrosh@panasas.com, greg.freemyer@gmail.com,
@@ -16,84 +16,135 @@ To: jens.axboe@oracle.com, James.Bottomley@HansenPartnership.com,
        viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org,
        linux-ide@vger.kernel.org
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 05/13] block: unify sysfs size node handling
-Date: Mon, 14 Jul 2008 16:48:05 +0900
-Message-Id: <1216021693-483-6-git-send-email-tj@kernel.org>
+Subject: [PATCH 04/13] block: move __dev from disk to part0
+Date: Mon, 14 Jul 2008 16:48:04 +0900
+Message-Id: <1216021693-483-5-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1216021693-483-1-git-send-email-tj@kernel.org>
 References: <1216021693-483-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 14 Jul 2008 07:49:02 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 14 Jul 2008 07:48:58 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that capacity and __dev are moved to part0, part0 and others can
-share the same method.
+Move disk->__dev to part0->__dev.  This simplifies bdget_disk() and
+lookup_devt() and allows common sysfs attributes to be unified.
+part_to_disk() is updated to handle part0 -> disk.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- block/genhd.c         |   10 +---------
- fs/partitions/check.c |    4 ++--
- include/linux/genhd.h |    3 +++
- 3 files changed, 6 insertions(+), 11 deletions(-)
+ block/genhd.c         |   40 ++++++++++++----------------------------
+ include/linux/genhd.h |   13 ++++++++-----
+ 2 files changed, 20 insertions(+), 33 deletions(-)
 
 diff --git a/block/genhd.c b/block/genhd.c
-index 25f76d5..c5b45e9 100644
+index 07f1597..25f76d5 100644
 --- a/block/genhd.c
 +++ b/block/genhd.c
-@@ -728,14 +728,6 @@ static ssize_t disk_removable_show(struct device *dev,
- 		       (disk->flags & GENHD_FL_REMOVABLE ? 1 : 0));
- }
- 
--static ssize_t disk_size_show(struct device *dev,
--			      struct device_attribute *attr, char *buf)
--{
--	struct gendisk *disk = dev_to_disk(dev);
--
--	return sprintf(buf, "%llu\n", (unsigned long long)get_capacity(disk));
--}
--
- static ssize_t disk_capability_show(struct device *dev,
- 				    struct device_attribute *attr, char *buf)
+@@ -532,22 +532,15 @@ struct gendisk *get_gendisk(dev_t devt, int *partno)
+  */
+ extern struct block_device *bdget_disk(struct gendisk *disk, int partno)
  {
-@@ -801,7 +793,7 @@ static ssize_t disk_fail_store(struct device *dev,
- static DEVICE_ATTR(range, S_IRUGO, disk_range_show, NULL);
- static DEVICE_ATTR(ext_range, S_IRUGO, disk_ext_range_show, NULL);
- static DEVICE_ATTR(removable, S_IRUGO, disk_removable_show, NULL);
--static DEVICE_ATTR(size, S_IRUGO, disk_size_show, NULL);
-+static DEVICE_ATTR(size, S_IRUGO, part_size_show, NULL);
- static DEVICE_ATTR(capability, S_IRUGO, disk_capability_show, NULL);
- static DEVICE_ATTR(stat, S_IRUGO, disk_stat_show, NULL);
- #ifdef CONFIG_FAIL_MAKE_REQUEST
-diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index d504c1a..bc4453a 100644
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -208,8 +208,8 @@ static ssize_t part_start_show(struct device *dev,
- 	return sprintf(buf, "%llu\n",(unsigned long long)p->start_sect);
- }
+-	dev_t devt = MKDEV(0, 0);
++	struct hd_struct *part;
++	struct block_device *bdev = NULL;
  
--static ssize_t part_size_show(struct device *dev,
--			      struct device_attribute *attr, char *buf)
-+ssize_t part_size_show(struct device *dev,
-+		       struct device_attribute *attr, char *buf)
- {
- 	struct hd_struct *p = dev_to_part(dev);
- 	return sprintf(buf, "%llu\n",(unsigned long long)p->nr_sects);
+-	if (partno == 0)
+-		devt = disk_devt(disk);
+-	else {
+-		struct hd_struct *part;
++	part = disk_get_part(disk, partno);
++	if (part && part->nr_sects)
++		bdev = bdget(part_devt(part));
++	disk_put_part(part);
+ 
+-		part = disk_get_part(disk, partno);
+-		if (part && part->nr_sects)
+-			devt = part_devt(part);
+-		disk_put_part(part);
+-	}
+-
+-	if (likely(devt != MKDEV(0, 0)))
+-		return bdget(devt);
+-	return NULL;
++	return bdev;
+ }
+ EXPORT_SYMBOL(bdget_disk);
+ 
+@@ -997,29 +990,20 @@ dev_t blk_lookup_devt(const char *name, int partno)
+ 	down(&block_class.sem);
+ 	list_for_each_entry(dev, &block_class.devices, node) {
+ 		struct gendisk *disk = dev_to_disk(dev);
++		struct hd_struct *part;
+ 
+ 		if (dev->type != &disk_type)
+ 			continue;
+ 		if (strcmp(dev->bus_id, name))
+ 			continue;
+-		if (partno < 0 || partno >= disk_max_parts(disk))
+-			continue;
+-
+-		if (partno == 0)
+-			devt = disk_devt(disk);
+-		else {
+-			struct hd_struct *part;
+-
+-			part = disk_get_part(disk, partno);
+-			if (!part || !part->nr_sects) {
+-				disk_put_part(part);
+-				continue;
+-			}
+ 
++		part = disk_get_part(disk, partno);
++		if (part && part->nr_sects) {
+ 			devt = part_devt(part);
+ 			disk_put_part(part);
++			break;
+ 		}
+-		break;
++		disk_put_part(part);
+ 	}
+ 	up(&block_class.sem);
+ 
 diff --git a/include/linux/genhd.h b/include/linux/genhd.h
-index c677bae..8933ba8 100644
+index 0c15733..c677bae 100644
 --- a/include/linux/genhd.h
 +++ b/include/linux/genhd.h
-@@ -577,6 +577,9 @@ extern void blk_register_region(dev_t devt, unsigned long range,
- 			void *data);
- extern void blk_unregister_region(dev_t devt, unsigned long range);
+@@ -16,9 +16,9 @@
+ #ifdef CONFIG_BLOCK
  
-+extern ssize_t part_size_show(struct device *dev,
-+			      struct device_attribute *attr, char *buf);
-+
- #else /* CONFIG_BLOCK */
+ #define kobj_to_dev(k)		container_of((k), struct device, kobj)
+-#define dev_to_disk(device)	container_of((device), struct gendisk, __dev)
++#define dev_to_disk(device)	container_of((device), struct gendisk, part0.__dev)
+ #define dev_to_part(device)	container_of((device), struct hd_struct, __dev)
+-#define disk_to_dev(disk)	(&((disk)->__dev))
++#define disk_to_dev(disk)	(&(disk)->part0.__dev)
+ #define part_to_dev(part)	(&((part)->__dev))
  
- static inline void printk_all_partitions(void) { }
+ extern struct device_type part_type;
+@@ -142,7 +142,6 @@ struct gendisk {
+ 
+ 	int flags;
+ 	struct device *driverfs_dev;  // FIXME: remove
+-	struct device __dev;
+ 	struct kobject *holder_dir;
+ 	struct kobject *slave_dir;
+ 
+@@ -162,8 +161,12 @@ struct gendisk {
+ 
+ static inline struct gendisk *part_to_disk(struct hd_struct *part)
+ {
+-	if (likely(part))
+-		return dev_to_disk(part_to_dev(part)->parent);
++	if (likely(part)) {
++		if (part->partno)
++			return dev_to_disk(part_to_dev(part)->parent);
++		else
++			return dev_to_disk(part_to_dev(part));
++	}
+ 	return NULL;
+ }
+ 
 -- 
 1.5.4.5
 
