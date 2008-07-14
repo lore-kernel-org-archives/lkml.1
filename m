@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757392AbYGNV70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758003AbYGNWB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757392AbYGNV70 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 17:59:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752453AbYGNV7Q
+	id S1758003AbYGNWB2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 18:01:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbYGNWBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 17:59:16 -0400
-Received: from gw.goop.org ([64.81.55.164]:34380 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752321AbYGNV7P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 17:59:15 -0400
-Message-ID: <487BCC25.9030204@goop.org>
-Date: Mon, 14 Jul 2008 14:59:01 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 14 Jul 2008 18:01:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39878 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753546AbYGNWBT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 18:01:19 -0400
+Date: Mon, 14 Jul 2008 15:00:57 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [git pull] x86 changes for v2.6.27
+In-Reply-To: <alpine.LFD.1.10.0807141346170.3305@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0807141459440.2944@woody.linux-foundation.org>
+References: <20080714135034.GA7013@elte.hu> <alpine.LFD.1.10.0807141346170.3305@woody.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH 1/3] x86_64: further cleanup of 32-bit compat syscall
- mechanisms
-References: <487877B8.8010505@goop.org> <487A963E.6040307@kernel.org>
-In-Reply-To: <487A963E.6040307@kernel.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Jeremy Fitzhardinge wrote:
->> AMD only supports "syscall" from 32-bit compat usermode.
->> Intel and Centaur(?) only support "sysenter" from 32-bit compat 
->> usermode.
->>
->> Set the X86 feature bits accordingly, and set up the vdso in
->> accordance with those bits.  On the offchance we run on in a 64-bit
->> environment which supports neither syscall nor sysenter from 32-bit
->> mode, then fall back to the int $0x80 vdso.
->>
->> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
->
-> Acked-by: H. Peter Anvin <hpa@zytor.com> 
 
-Have these been applied to anything yet?
 
-    J
+On Mon, 14 Jul 2008, Linus Torvalds wrote:
+> 
+> Things like this _really_ irritate me:
+> 
+> 	Memtest (MEMTEST) [Y/n/?] (NEW) ?
+
+.. and now I get all the FTRACE stuff _individually_, with MMIOTRACE 
+(which is likely the _least_ interesting one for any normal person) being 
+turned on by default.
+
+Ingo, you _really_ need to look at those Kconfig options. They're insane.
+
+		Linus
