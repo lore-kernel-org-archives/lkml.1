@@ -1,79 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757951AbYGNUGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757817AbYGNUIN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757951AbYGNUGA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 16:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756148AbYGNUFw
+	id S1757817AbYGNUIN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 16:08:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756367AbYGNUH6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 16:05:52 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:57275 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756077AbYGNUFv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 16:05:51 -0400
-Date: Mon, 14 Jul 2008 12:38:58 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Daniel Guilak <guilak@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       daniel@danielguilak.com
-Subject: Re: [PATCH] init/version.c: Define version_string only if
- CONFIG_KALLSYMS is not defined.
-Message-Id: <20080714123858.2c42227f.randy.dunlap@oracle.com>
-In-Reply-To: <1216062286.6497.18.camel@dguilak-desk>
-References: <1215552069.10304.6.camel@dguilak-desk>
-	<1216062286.6497.18.camel@dguilak-desk>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 14 Jul 2008 16:07:58 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45903 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756319AbYGNUH5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 16:07:57 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
+Date: Mon, 14 Jul 2008 22:09:53 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Andi Kleen <andi@firstfloor.org>, Andy Lutomirski <luto@myrealbox.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>,
+       public-kernel-testers-u79uwXL29TY76Z2rM5mHXA@lo.gmane.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>
+References: <200807010148.02135.rjw@sisk.pl> <487A67C3.50000@zytor.com> <487AD37A.2050903@zytor.com>
+In-Reply-To: <487AD37A.2050903@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200807142209.54841.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Jul 2008 12:04:46 -0700 Daniel Guilak wrote:
-
-> int Version_* is only used with ksymoops, which is only needed (according to
-> README and Documentation/Changes) if CONFIG_KALLSYMS is NOT defined.  Therefore
-> this patch defines version_string only if CONFIG_KALLSYMS is not defined.
+On Monday, 14 of July 2008, H. Peter Anvin wrote:
+> H. Peter Anvin wrote:
+> > 
+> > The most likely explanation for this is that the VESA BIOS expects to be 
+> > entered in Big Real Mode (*.limit = 0xffffffff) instead of ordinary Real 
+> > Mode.  Here is a completely untested patch which changes the segment 
+> > descriptors to Big Real Mode instead.  It would be worth testing out.
+> > 
 > 
-> Signed-off-by: Daniel Guilak <daniel@danielguilak.com>
-> ---
->  init/version.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> Depends on "[PATCH] init/version.c: Silenced sparse warning by declaring the version string."
-> 
-> diff --git a/init/version.c b/init/version.c
-> index 041fd82..52a8b98 100644
-> --- a/init/version.c
-> +++ b/init/version.c
-> @@ -13,11 +13,13 @@
->  #include <linux/utsrelease.h>
->  #include <linux/version.h>
->  
-> +#ifndef CONFIG_KALLSYMS
->  #define version(a) Version_ ## a
->  #define version_string(a) version(a)
->  
->  extern int version_string(LINUX_VERSION_CODE);
->  int version_string(LINUX_VERSION_CODE);
-> +#endif
->  
->  struct uts_namespace init_uts_ns = {
->  	.kref = {
-> -- 
+> ... and here is one that actually has a prayer of actually working.
 
-Does not apply cleanly to linux-2.6.26, linux-next-20080714, or Linus-git-head.
+It works on my box and if that's the same as the one you attached to the
+Bugzilla entry, it has also been reported to work on an X61s.
 
-and why do we ned both extern int version_string()
-and int version_string() ?
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+Thanks,
+Rafael
