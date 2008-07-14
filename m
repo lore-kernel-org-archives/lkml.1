@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757504AbYGNSdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757493AbYGNSeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757504AbYGNSdW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 14:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756281AbYGNSdA
+	id S1757493AbYGNSeT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 14:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753803AbYGNSeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 14:33:00 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:20360 "EHLO
-	viefep13-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755183AbYGNSc7 (ORCPT
+	Mon, 14 Jul 2008 14:34:09 -0400
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:4114 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752189AbYGNSeI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 14:32:59 -0400
-Message-ID: <006801c8e5df$c5a0b310$0e66970a@ds.mot.com>
-From: "Aryanto Rachmad" <aryanto.rachmad@chello.at>
-To: <linux-kernel@vger.kernel.org>
-Subject: Kernel 2.6.26 - *pde = 00003067 <0>Kernel panic
-Date: Mon, 14 Jul 2008 20:31:02 +0200
+	Mon, 14 Jul 2008 14:34:08 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Avi Kivity <avi@qumranet.com>
+Subject: Re: [git pull] core, x86: make LIST_POISON less deadly
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080714144828.GA22666@elte.hu>
+	<alpine.LFD.1.10.0807140758100.3305@woody.linux-foundation.org>
+	<20080714151247.GA27145@elte.hu>
+	<alpine.LFD.1.10.0807140856130.3305@woody.linux-foundation.org>
+Date: Mon, 14 Jul 2008 20:33:23 +0200
+In-Reply-To: <alpine.LFD.1.10.0807140856130.3305@woody.linux-foundation.org> (Linus Torvalds's message of "Mon, 14 Jul 2008 08:59:44 -0700 (PDT)")
+Message-ID: <8763r8z570.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 14 Jul 2008 18:33:22.0809 (UTC) FILETIME=[1897B690:01C8E5E0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everybody,
+Linus Torvalds <torvalds@linux-foundation.org> writes:
+>
+>> We dont do any instruction decoding in #GP handlers to figure out what 
+>> happened, while in the pagefault case we know which address faulted, 
+>> etc.
+>
+> Why would we care? It would be very obvious from the instruction 
+> disassembly plus the register contents. No need to decode instructions.
 
-I am not sure if I could post this question in this mailing list, so please 
-forgive me and tell me the appropriate mailing list. And I am not sure 
-whether this is a bug or my silly mistake, so I decided not to file in the 
-bug report.
+The issue is that the kernel cannot detect it (short of running the
+KVM x86 emulator on #GP, but surely you're not suggesting that), so it
+cannot print something out.
 
-I am trying to use kernel 2.6.26 on my D945GCLF Intel Atom board using 
-Debian distro and I got the kernel panic as below:
+You would always need someone skilled in x86 assembler code
+[a lot of kernel developers actually aren't]
+to look at the oops and say: ok it was a bad list poison.
 
-[    0.000000] Initializing CPU#0
-[    0.000000] PID hash table entries: 4096 (order: 12, 16384 bytes)
-[    0.000000] Detected 1596.137 MHz processor.
-[    0.010000] Console: colour VGA+ 80x25
-[    0.010000] console [tty0] enabled
-[    0.010000] console [ttyS0] enabled
-[    0.010000] BUG: unable to handle kernel paging request at ffffffa0
-[    0.010000] IP: [<c0135318>] zap_other_threads+0x38/0x70
-[    0.010000] *pde = 00003067 <0>Kernel panic - not syncing: Attempted to 
-kill the idle task!
+Currently it is very obvious because the fault address is printed
+even if you don't know any x86 assembler.
 
-Could you please suggest me what to change in my .config?
+I would consider that a regression.
 
-I don't want to waste everybody's bandwidth, so I don't post the whole log. 
-If logs would be needed, I would be glad to provide them. But please tell me 
-how collect them as I am quite new to kernel debugging :(
+That is why I suggested using a canonical address.
 
-Cheers,
+Also BTW if a CPU ever supports more than 40 bits virtual there
+will be so many kernel changes needed (5 level page tables) that 
+changing the poison too is the smallest of your worries.
 
-Anto 
-
+-Andi
