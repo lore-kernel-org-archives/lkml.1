@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757188AbYGNJTw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757127AbYGNJXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757188AbYGNJTw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 05:19:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755637AbYGNJTo
+	id S1757127AbYGNJXc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 05:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755637AbYGNJXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 05:19:44 -0400
-Received: from mxl.seznam.cz ([77.75.72.44]:56744 "EHLO mxl.seznam.cz"
+	Mon, 14 Jul 2008 05:23:24 -0400
+Received: from ns.suse.de ([195.135.220.2]:37626 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750862AbYGNJTo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 05:19:44 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=beta; d=seznam.cz;
-	h=Received:Message-ID:Date:From:Reply-To:User-Agent:MIME-Version:To:Subject:Content-Type:Content-Transfer-Encoding:X-Smtpd:X-Seznam-User:X-QM-Mark;
-	b=bvsSZWn8HgcGFDRY6z2nDNYJ80ZrHhPZU+9czjVOaouHbr+k7v4v6qtq4Nyo2aDSW
-	LO9nBiXmTbLEHoRCvC781EsvYLGVxNojOfqbJ540VVdB+4gcRkM3OEs89+/8eoeHH7M
-	O5yWCgbqNB6XHp7+rsngHAZrv4HlBjdqxc29XC0=
-Message-ID: <487B19E0.3030301@seznam.cz>
-Date: Mon, 14 Jul 2008 11:18:24 +0200
-From: Michal Simek <monstr@seznam.cz>
-Reply-To: linux-arch@vger.kernel.org
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       torvalds@linux-foundation.org,
-       John Williams <john.williams@petalogix.com>,
-       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-       John Linn <John.Linn@xilinx.com>, Jon Loeliger <jdl@jdl.com>,
-       David Gibson <david@gibson.dropbear.id.au>,
-       Arnd Bergmann <arnd@arndb.de>, Sam Ravnborg <sam@ravnborg.org>
-Subject: Microblaze architecture - ACK
-Content-Type: text/plain; charset=ISO-8859-2
+	id S1750862AbYGNJXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 05:23:24 -0400
+Date: Mon, 14 Jul 2008 11:24:04 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Vivek Goyal" <vgoyal@redhat.com>, kexec@lists.infradead.org,
+       x86@kernel.org, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] x86: Find offset for crashkernel reservation
+ automatically
+Message-ID: <20080714112404.36783df5@halley.suse.de>
+In-Reply-To: <86802c440807140011v728cc35fy2540b537ddca9844@mail.gmail.com>
+References: <1214510048-21215-1-git-send-email-bwalle@suse.de>
+	<20080627133256.GB5801@redhat.com>
+	<86802c440807140011v728cc35fy2540b537ddca9844@mail.gmail.com>
+Organization: SUSE Linux Products GmbH
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
+ D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
+ vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
+ pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Smtpd: 1.1.2@13384
-X-Seznam-User: monstr@seznam.cz
-X-QM-Mark: email-qm2<199205027>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+* Yinghai Lu [2008-07-14 00:11]:
+>
+> should use min_t(u64, 1ULL<<32, max_low_pfn<<PAGE_SHIFT) replace ULONG_MAX
 
-as you know I do linux for Microblaze and this is the right time to got some
-ACK from community. I looked at Linus tree and 2.6.26 has been released and it
-is the right time for Microblaze.
-
-I have got ACK from John Williams (Petalogix.com) who starts with linux for
-microblaze and Steve Neuendorffer from Xilinx (Xilinx is manufacturer of
-Microblaze CPU).
-
-I would like to got some ACK from people which are not directly connected with
-Microblaze and who are interested in parts of linux.
-
-I have sent some request to people who I know:
-Jon Loeliger and David Gibson for ACK on generic DTS structure
-Sam Ravnborg for Kconfig and Makefile ACK
-
-Arnd: I hope you know much about microblaze. Could you help me with the last
-stage of merging?
-
-Could you recommend me people who can give me valuable ACK? (I'll send patches
-to them and then full pack to LKML too).
-
-Thanks for your help,
-Michal Simek
+Shouldn't we use  min_t(u64, ULLONG_MAX, max_low_pfn<<PAGE_SHIFT), i.e.
+should we really limit the crashkernel to a 32 bit address on a 64 bit
+system?
 
 
+
+Bernhard
+-- 
+Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
