@@ -1,48 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756102AbYGNCnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756000AbYGNCuN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756102AbYGNCnS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 22:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754315AbYGNCnG
+	id S1756000AbYGNCuN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 22:50:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbYGNCuB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 22:43:06 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:47273 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754299AbYGNCnF (ORCPT
+	Sun, 13 Jul 2008 22:50:01 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:14449 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753902AbYGNCuA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 22:43:05 -0400
-Message-ID: <487ABB81.8020100@zytor.com>
-Date: Sun, 13 Jul 2008 19:35:45 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sun, 13 Jul 2008 22:50:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=a2DpGt/DZpxUlpYsUy+GYmH32RY9hVPZgNfyaHIZzg4p7uO0DrIIH7x03iYxu0Eorn
+         7q/zpfo9Ai1vDBJU+7R9UhdciTA1zOmy6ByiJneCA7BnzbKP6ejVnk3lTeL3cLXQe9YV
+         a7kk6gaY8fxA0s5oXMjrAnLwd4pqXI31wVS6c=
+Date: Mon, 14 Jul 2008 11:49:55 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: "Michael H. Warfield" <mhw@wittsend.com>
+Subject: [PATCH] ip2: avoid add_timer() with pending timer
+Message-ID: <20080714024955.GB30952@sssvn.sssvn>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Andi Kleen <andi@firstfloor.org>, Andy Lutomirski <luto@myrealbox.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>,
-       public-kernel-testers-u79uwXL29TY76Z2rM5mHXA@lo.gmane.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
-References: <200807010148.02135.rjw@sisk.pl> <200807132115.08230.rjw@sisk.pl> <487A617B.80707@firstfloor.org> <200807132229.43140.rjw@sisk.pl>
-In-Reply-To: <200807132229.43140.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> 
-> If s3_bios depends on the (invalid) contents of the hidden part of any segment
-> register, it's just terminally broken.
-> 
+add_timer() is not suppose to be called when the timer is pending.
+ip2 driver attempts to avoid that condition by setting and resetting
+a flag (TimerOn) in timer function. But there is some gap between
+add_timer() and setting TimerOn.
 
-Depending on it being in Big Real Mode isn't all that broken, however, 
-especially on laptops where the vendor has control over the system 
-BIOS/video BIOS.
+This patch fix this problem by using mod_timer() and remove TimerOn
+which has been unnecessary by this change.
 
-Enabling BRM by default *shouldn't* break anything, so it might be what 
-we want to do anyway.
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: Michael H. Warfield <mhw@wittsend.com>
+---
+ drivers/char/ip2/ip2main.c |   18 ++++--------------
+ 1 file changed, 4 insertions(+), 14 deletions(-)
 
-	-hpa
+Index: 2.6-mmotm/drivers/char/ip2/ip2main.c
+===================================================================
+--- 2.6-mmotm.orig/drivers/char/ip2/ip2main.c
++++ 2.6-mmotm/drivers/char/ip2/ip2main.c
+@@ -252,7 +252,6 @@ static unsigned long bh_counter = 0;
+  */
+ #define  POLL_TIMEOUT   (jiffies + 1)
+ static DEFINE_TIMER(PollTimer, ip2_poll, 0, 0);
+-static char  TimerOn;
+ 
+ #ifdef IP2DEBUG_TRACE
+ /* Trace (debug) buffer data */
+@@ -372,10 +371,7 @@ ip2_cleanup_module(void)
+ 	printk (KERN_DEBUG "Unloading %s: version %s\n", pcName, pcVersion );
+ #endif
+ 	/* Stop poll timer if we had one. */
+-	if ( TimerOn ) {
+-		del_timer ( &PollTimer );
+-		TimerOn = 0;
+-	}
++	del_timer_sync(&PollTimer);
+ 
+ 	/* Reset the boards we have. */
+ 	for( i = 0; i < IP2_MAX_BOARDS; ++i ) {
+@@ -746,10 +742,8 @@ ip2_loadmain(int *iop, int *irqp)
+ 			}
+ 			if ( ip2config.irq[i] == CIR_POLL ) {
+ retry:
+-				if (!TimerOn) {
+-					PollTimer.expires = POLL_TIMEOUT;
+-					add_timer ( &PollTimer );
+-					TimerOn = 1;
++				if (!timer_pending(&PollTimer)) {
++					mod_timer(&PollTimer, POLL_TIMEOUT);
+ 					printk( KERN_INFO "IP2: polling\n");
+ 				}
+ 			} else {
+@@ -1250,16 +1244,12 @@ ip2_poll(unsigned long arg)
+ {
+ 	ip2trace (ITRC_NO_PORT, ITRC_INTR, 100, 0 );
+ 
+-	TimerOn = 0; // it's the truth but not checked in service
+-
+ 	// Just polled boards, IRQ = 0 will hit all non-interrupt boards.
+ 	// It will NOT poll boards handled by hard interrupts.
+ 	// The issue of queued BH interrupts is handled in ip2_interrupt().
+ 	ip2_polled_interrupt();
+ 
+-	PollTimer.expires = POLL_TIMEOUT;
+-	add_timer( &PollTimer );
+-	TimerOn = 1;
++	mod_timer(&PollTimer, POLL_TIMEOUT);
+ 
+ 	ip2trace (ITRC_NO_PORT, ITRC_INTR, ITRC_RETURN, 0 );
+ }
