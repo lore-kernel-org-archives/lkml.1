@@ -1,137 +1,415 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757602AbYGNUlL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757938AbYGNUl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757602AbYGNUlL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 16:41:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755960AbYGNUk5
+	id S1757938AbYGNUl1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 16:41:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755960AbYGNUlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 16:40:57 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:40243 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754348AbYGNUk4 (ORCPT
+	Mon, 14 Jul 2008 16:41:17 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:41625 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757737AbYGNUlP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 16:40:56 -0400
-Date: Mon, 14 Jul 2008 13:40:02 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Fries <david@fries.net>
-Subject: Re: [PATCH 29/30] W1: Documentation/w1/masters/ds2490 update
-Message-Id: <20080714134002.e5dfaaae.randy.dunlap@oracle.com>
-In-Reply-To: <12157843071043-git-send-email-johnpol@2ka.mipt.ru>
-References: <12157843054074-git-send-email-johnpol@2ka.mipt.ru>
-	<12157843071043-git-send-email-johnpol@2ka.mipt.ru>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 14 Jul 2008 16:41:15 -0400
+Date: Mon, 14 Jul 2008 16:41:12 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Clark Williams <clark.williams@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Elias Oltmanns <eo@nebensachen.de>
+Subject: [PATCH] ftrace: document updates
+Message-ID: <Pine.LNX.4.58.0807141637460.30575@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Jul 2008 17:51:44 +0400 Evgeniy Polyakov wrote:
 
-> Provide some additional details about the status of the driver and the
-> ds2490 hardware.
-> 
-> Signed-off-by: David Fries <david@fries.net>
-> Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-> 
-> ---
->  Documentation/w1/masters/ds2490 |   62 +++++++++++++++++++++++++++++++++++++++
->  1 files changed, 62 insertions(+), 0 deletions(-)
-> 
-> diff --git a/Documentation/w1/masters/ds2490 b/Documentation/w1/masters/ds2490
-> index 239f9ae..f70b8dc 100644
-> --- a/Documentation/w1/masters/ds2490
-> +++ b/Documentation/w1/masters/ds2490
-> @@ -16,3 +16,65 @@ which allows to build USB <-> W1 bridges.
->  DS9490(R) is a USB <-> W1 bus master device
->  which has 0x81 family ID integrated chip and DS2490
->  low-level operational chip.
-> +
-> +Notes and limitations.
-> +- The weak pullup current is a minimum of 0.9mA and maximum of 6.0mA.
-> +- The 5V strong pullup is supported with a minimum of 5.9mA and a
-> +  maximum of 30.4 mA.  (From DS2490.pdf)
-> +- While the ds2490 supports a hardware search the code doesn't take
-> +  advantage of it (in tested case it only returned first device).
-> +- The hardware will detect when devices are attached to the bus on the
-> +  next bus (reset?) operation, however only a message is printed as
-> +  the core w1 code doesn't make use of the information.  Connecting
-> +  one device tends to give multiple new device notifications.
-> +- The number of USB bus transactions could be reduced if w1_reset_send
-> +  was added to the API.  The name is just a suggestion.  It would take
-> +  a write buffer and a read buffer (along with sizes) as arguments.
-> +  It would add match rom and rom to the send buffer, reset the bus,
-                  ~~~~~~~~~~~~~~~~~
-Can you clarify above?
+The following updates were recommended by Elias Oltmanns and Randy Dunlap.
 
-> +  and read the result.  The ds2490 block I/O command supports reset,
-> +  write, read, and strong pullup all in one command.  That would
-> +  reduce the time and overhead for a set of commands.
-> +
-> +  The core w1 functions required to do a temperature conversion are,
+[ updates based on Andrew Morton's comments are still to come. ]
 
-                                                                   are:
-                                            or (no comma)          are
-
-> +  w1_reset_select_slave, w1_next_pullup, and w1_write_8, which turn
-> +  around and execute the master functions, reset_bus, write_block,
-> +  set_pullup, write_byte, set_pullup.  Each ds2490 function will have
-> +  multiple USB bus transactions, except set_pullup where it only
-> +  requires transactions if the if the time value is different.  The
-                           ~~~~~~~~~~~~~
-                           (duplicated)
-
-> +  conversion could be reduced to w1_next_pullup, w1_reset_send which
-> +  would call set_pullup, reset_send. The reset_send would enable reset
-> +  and strong pullup (if enabled), write the data buffer, execute the
-> +  block I/O command, read status, and get data.  Currently I count 11
-> +  transactions required, this would reduce it to 4.
-> +- The hardware supports normal, flexable, and overdrive bus
-
-                                   flexible,
-
-> +  communication speeds, but only the normal is supported.
-> +- The registered w1_bus_master functions don't define error
-> +  conditions.  If a bus search is in progress and the ds2490 is
-> +  removed it can produce a good amount of error output before the bus
-> +  search finishes.
-> +- The hardware supports detecting some error conditions, such as
-> +  short, alarming presence on reset, and no presence on reset, but the
-> +  driver doesn't query those values.
-> +- The ds2490 specification doesn't cover short bulk in reads in
-> +  detail, but my observation is if fewer bytes are requested than are
-> +  available, the bulk read will return an error and the hardware will
-> +  clear the entire bulk in buffer.  It would be possible to read the
-> +  maximum buffer size to not run into this error condition, only extra
-> +  bytes in the buffer is a logic error in the driver.  The code should
-> +  should match reads and writes as well as data sizes.  Reads and
-> +  writes are serialized and the status verifies that the chip is idle
-> +  (and data is available) before the read is executed, so it should
-> +  not happen.
-> +- Running x86_64 2.6.24 UHCI under qemu 0.9.0 under x86_64 2.6.22-rc6
-> +  with a OHCI controller, ds2490 running in the guest would operate
-> +  normally the first time the module was loaded after qemu attached
-> +  the ds2490 hardware, but if the module was unloaded, then reloaded
-> +  most of the time one of the bulk out or in, and usually the bulk in
-> +  would fail.  qemu sets a 50ms timeout and the bulk in would timeout
-> +  even when the status shows data available.  A bulk out write would
-> +  show a successful completion, but the ds2490 status register would
-> +  show 0 bytes written.  Detaching qemu from the ds2490 hardware and
-> +  reattaching would clear the problem.  usbmon output in the guest and
-> +  host did not explain the problem.  My guess is a bug in either qemu
-> +  or the host OS and more likely the host OS.
-> +-- 03-06-2008 David Fries <David@Fries.net>
-> -- 
-
-
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+ Documentation/ftrace.txt |  134 ++++++++++++++++++++++++-----------------------
+ 1 file changed, 71 insertions(+), 63 deletions(-)
+
+Index: linus.git/Documentation/ftrace.txt
+===================================================================
+--- linus.git.orig/Documentation/ftrace.txt	2008-07-14 11:22:26.000000000 -0400
++++ linus.git/Documentation/ftrace.txt	2008-07-14 16:07:13.000000000 -0400
+@@ -2,8 +2,11 @@
+ 		========================
+
+ Copyright 2008 Red Hat Inc.
+-Author: Steven Rostedt <srostedt@redhat.com>
++   Author:   Steven Rostedt <srostedt@redhat.com>
++  License:   The GNU Free Documentation License, Version 1.2
++Reviewers:   Elias Oltmanns and Randy Dunlap
+
++Writen for: 2.6.26-rc8 linux-2.6-tip.git tip/tracing/ftrace branch
+
+ Introduction
+ ------------
+@@ -46,7 +49,7 @@ of ftrace. Here is a list of some of the
+ 		that is configured.
+
+   available_tracers : This holds the different types of tracers that
+-		has been compiled into the kernel. The tracers
++		have been compiled into the kernel. The tracers
+ 		listed here can be configured by echoing in their
+ 		name into current_tracer.
+
+@@ -90,11 +93,13 @@ of ftrace. Here is a list of some of the
+   trace_entries : This sets or displays the number of trace
+ 		entries each CPU buffer can hold. The tracer buffers
+ 		are the same size for each CPU, so care must be
+-		taken when modifying the trace_entries. The number
+-		of actually entries will be the number given
+-		times the number of possible CPUS. The buffers
+-		are saved as individual pages, and the actual entries
+-		will always be rounded up to entries per page.
++		taken when modifying the trace_entries. The trace
++		buffers are allocated in pages (blocks of memory that
++		the kernel uses for allocation, usually 4 KB in size).
++		Since each entry is smaller than a page, if the last
++		allocated page has room for more entries than were
++		requested, the rest of the page is used to allocate
++		entries.
+
+ 		This can only be updated when the current_tracer
+ 		is set to "none".
+@@ -114,13 +119,13 @@ of ftrace. Here is a list of some of the
+ 		in performance.  This also has a side effect of
+ 		enabling or disabling specific functions to be
+ 		traced.  Echoing in names of functions into this
+-		file will limit the trace to only those files.
++		file will limit the trace to only these functions.
+
+   set_ftrace_notrace: This has the opposite effect that
+ 		set_ftrace_filter has. Any function that is added
+ 		here will not be traced. If a function exists
+-		in both set_ftrace_filter and set_ftrace_notrace
+-		the function will _not_ bet traced.
++		in both set_ftrace_filter and set_ftrace_notrace,
++		the function will _not_ be traced.
+
+   available_filter_functions : When a function is encountered the first
+ 		time by the dynamic tracer, it is recorded and
+@@ -138,7 +143,7 @@ Here are the list of current tracers tha
+
+   ftrace - function tracer that uses mcount to trace all functions.
+ 		It is possible to filter out which functions that are
+-		traced when dynamic ftrace is configured in.
++		to be traced when dynamic ftrace is configured in.
+
+   sched_switch - traces the context switches between tasks.
+
+@@ -297,13 +302,13 @@ explains which is which.
+
+ The above is mostly meaningful for kernel developers.
+
+-  time: This differs from the trace output where as the trace output
+-	contained a absolute timestamp. This timestamp is relative
+-	to the start of the first entry in the the trace.
++  time: This differs from the trace file output. The trace file output
++	included an absolute timestamp. The timestamp used by the
++	latency_trace file is relative to the start of the trace.
+
+   delay: This is just to help catch your eye a bit better. And
+ 	needs to be fixed to be only relative to the same CPU.
+-	The marks is determined by the difference between this
++	The marks are determined by the difference between this
+ 	current trace and the next trace.
+ 	 '!' - greater than preempt_mark_thresh (default 100)
+ 	 '+' - greater than 1 microsecond
+@@ -322,13 +327,13 @@ output. To see what is available, simply
+   print-parent nosym-offset nosym-addr noverbose noraw nohex nobin \
+  noblock nostacktrace nosched-tree
+
+-To disable one of the options, echo in the option appended with "no".
++To disable one of the options, echo in the option prepended with "no".
+
+   echo noprint-parent > /debug/tracing/iter_ctrl
+
+ To enable an option, leave off the "no".
+
+-  echo sym-offest > /debug/tracing/iter_ctrl
++  echo sym-offset > /debug/tracing/iter_ctrl
+
+ Here are the available options:
+
+@@ -344,7 +349,7 @@ Here are the available options:
+
+   sym-offset - Display not only the function name, but also the offset
+ 		in the function. For example, instead of seeing just
+-		"ktime_get" you will see "ktime_get+0xb/0x20"
++		"ktime_get", you will see "ktime_get+0xb/0x20".
+
+   sym-offset:
+    bash-4000  [01]  1477.606694: simple_strtoul+0x6/0xa0
+@@ -364,7 +369,7 @@ Here are the available options:
+ 	user applications that can translate the raw numbers better than
+ 	having it done in the kernel.
+
+-  hex - similar to raw, but the numbers will be in a hexadecimal format.
++  hex - Similar to raw, but the numbers will be in a hexadecimal format.
+
+   bin - This will print out the formats in raw binary.
+
+@@ -381,7 +386,7 @@ sched_switch
+ ------------
+
+ This tracer simply records schedule switches. Here's an example
+-on how to implement it.
++of how to use it.
+
+  # echo sched_switch > /debug/tracing/current_tracer
+  # echo 1 > /debug/tracing/tracing_enabled
+@@ -470,7 +475,7 @@ interrupt from triggering or the mouse i
+ kernel know of a new mouse event. The result is a latency with the
+ reaction time.
+
+-The irqsoff tracer tracks the time interrupts are disabled and when
++The irqsoff tracer tracks the time interrupts are disabled to the time
+ they are re-enabled. When a new maximum latency is hit, it saves off
+ the trace so that it may be retrieved at a later time. Every time a
+ new maximum in reached, the old saved trace is discarded and the new
+@@ -519,7 +524,7 @@ The difference between the 6 and the dis
+ because the clock must have incremented between the time of recording
+ the max latency and recording the function that had that latency.
+
+-Note the above had ftrace_enabled not set. If we set the ftrace_enabled
++Note the above had ftrace_enabled not set. If we set the ftrace_enabled,
+ we get a much larger output:
+
+ # tracer: irqsoff
+@@ -570,21 +575,21 @@ vim:ft=help
+
+
+ Here we traced a 50 microsecond latency. But we also see all the
+-functions that were called during that time. Note that enabling
+-function tracing we endure an added overhead. This overhead may
+-extend the latency times. But never the less, this trace has provided
+-some very helpful debugging.
++functions that were called during that time. Note that by enabling
++function tracing, we endure an added overhead. This overhead may
++extend the latency times. But nevertheless, this trace has provided
++some very helpful debugging information.
+
+
+ preemptoff
+ ----------
+
+-When preemption is disabled we may be able to receive interrupts but
+-the task can not be preempted and a higher priority task must wait
++When preemption is disabled, we may be able to receive interrupts but
++the task cannot be preempted and a higher priority task must wait
+ for preemption to be enabled again before it can preempt a lower
+ priority task.
+
+-The preemptoff tracer traces the places that disables preemption.
++The preemptoff tracer traces the places that disable preemption.
+ Like the irqsoff, it records the maximum latency that preemption
+ was disabled. The control of preemptoff is much like the irqsoff.
+
+@@ -696,7 +701,7 @@ Notice that the __do_softirq when called
+ It may seem that we missed a preempt enabled. What really happened
+ is that the preempt count is held on the threads stack and we
+ switched to the softirq stack (4K stacks in effect). The code
+-does not copy the preempt count, but because interrupts are disabled
++does not copy the preempt count, but because interrupts are disabled,
+ we don't need to worry about it. Having a tracer like this is good
+ to let people know what really happens inside the kernel.
+
+@@ -732,7 +737,7 @@ To record this time, use the preemptirqs
+
+ Again, using this trace is much like the irqsoff and preemptoff tracers.
+
+- # echo preemptoff > /debug/tracing/current_tracer
++ # echo preemptirqsoff > /debug/tracing/current_tracer
+  # echo 0 > /debug/tracing/tracing_max_latency
+  # echo 1 > /debug/tracing/tracing_enabled
+  # ls -ltr
+@@ -862,9 +867,9 @@ This is a very interesting trace. It sta
+ the ls task. We see that the task had the "need_resched" bit set
+ with the 'N' in the trace.  Interrupts are disabled in the spin_lock
+ and the trace started. We see that a schedule took place to run
+-sshd.  When the interrupts were enabled we took an interrupt.
+-On return of the interrupt the softirq ran. We took another interrupt
+-while running the softirq as we see with the capital 'H'.
++sshd.  When the interrupts were enabled, we took an interrupt.
++On return from the interrupt handler, the softirq ran. We took another
++interrupt while running the softirq as we see with the capital 'H'.
+
+
+ wakeup
+@@ -876,9 +881,9 @@ time it executes. This is also known as
+ I stress the point that this is about RT tasks. It is also important
+ to know the scheduling latency of non-RT tasks, but the average
+ schedule latency is better for non-RT tasks. Tools like
+-LatencyTop is more appropriate for such measurements.
++LatencyTop are more appropriate for such measurements.
+
+-Real-Time environments is interested in the worst case latency.
++Real-Time environments are interested in the worst case latency.
+ That is the longest latency it takes for something to happen, and
+ not the average. We can have a very fast scheduler that may only
+ have a large latency once in a while, but that would not work well
+@@ -889,8 +894,8 @@ tasks that are unpredictable will overwr
+ of RT tasks.
+
+ Since this tracer only deals with RT tasks, we will run this slightly
+-different than we did with the previous tracers. Instead of performing
+-an 'ls' we will run 'sleep 1' under 'chrt' which changes the
++differently than we did with the previous tracers. Instead of performing
++an 'ls', we will run 'sleep 1' under 'chrt' which changes the
+ priority of the task.
+
+  # echo wakeup > /debug/tracing/current_tracer
+@@ -924,9 +929,9 @@ wakeup latency trace v1.1.5 on 2.6.26-rc
+ vim:ft=help
+
+
+-Running this on an idle system we see that it only took 4 microseconds
++Running this on an idle system, we see that it only took 4 microseconds
+ to perform the task switch.  Note, since the trace marker in the
+-schedule is before the actual "switch" we stop the tracing when
++schedule is before the actual "switch", we stop the tracing when
+ the recorded task is about to schedule in. This may change if
+ we add a new marker at the end of the scheduler.
+
+@@ -992,12 +997,15 @@ ksoftirq-7     1d..4   50us : schedule (
+
+ The interrupt went off while running ksoftirqd. This task runs at
+ SCHED_OTHER. Why didn't we see the 'N' set early? This may be
+-a harmless bug with x86_32 and 4K stacks. The need_reched() function
+-that tests if we need to reschedule looks on the actual stack.
+-Where as the setting of the NEED_RESCHED bit happens on the
+-task's stack. But because we are in a hard interrupt, the test
+-is with the interrupts stack which has that to be false. We don't
+-see the 'N' until we switch back to the task's stack.
++a harmless bug with x86_32 and 4K stacks. On x86_32 with 4K stacks
++configured, the interrupt and softirq runs with their own stack.
++Some information is held on the top of the task's stack (need_resched
++and preempt_count are both stored there). The setting of the NEED_RESCHED
++bit is done directly to the task's stack, but the reading of the
++NEED_RESCHED is done by looking at the current stack, which in this case
++is the stack for the hard interrupt. This hides the fact that NEED_RESCHED
++has been set. We don't see the 'N' until we switch back to the task's
++assigned stack.
+
+ ftrace
+ ------
+@@ -1067,10 +1075,10 @@ this works is the mcount function call (
+ every kernel function, produced by the -pg switch in gcc), starts
+ of pointing to a simple return.
+
+-When dynamic ftrace is initialized, it calls kstop_machine to make it
+-act like a uniprocessor so that it can freely modify code without
+-worrying about other processors executing that same code.  At
+-initialization, the mcount calls are change to call a "record_ip"
++When dynamic ftrace is initialized, it calls kstop_machine to make
++the machine act like a uniprocessor so that it can freely modify code
++without worrying about other processors executing that same code.  At
++initialization, the mcount calls are changed to call a "record_ip"
+ function.  After this, the first time a kernel function is called,
+ it has the calling address saved in a hash table.
+
+@@ -1085,8 +1093,8 @@ traced, is that we can now selectively c
+ want to trace and which ones we want the mcount calls to remain as
+ nops.
+
+-Two files that contain to the enabling and disabling of recorded
+-functions are:
++Two files are used, one for enabling and one for disabling the tracing
++of recorded functions. They are:
+
+   set_ftrace_filter
+
+@@ -1094,7 +1102,7 @@ and
+
+   set_ftrace_notrace
+
+-A list of available functions that you can add to this files is listed
++A list of available functions that you can add to these files is listed
+ in:
+
+    available_filter_functions
+@@ -1133,9 +1141,9 @@ sys_nanosleep
+
+
+ Perhaps this isn't enough. The filters also allow simple wild cards.
+-Only the following is currently available
++Only the following are currently available
+
+-  <match>*  - will match functions that begins with <match>
++  <match>*  - will match functions that begin with <match>
+   *<match>  - will match functions that end with <match>
+   *<match>* - will match functions that have <match> in it
+
+@@ -1187,7 +1195,7 @@ This is because the '>' and '>>' act jus
+ To rewrite the filters, use '>'
+ To append to the filters, use '>>'
+
+-To clear out a filter so that all functions will be recorded again.
++To clear out a filter so that all functions will be recorded again:
+
+  # echo > /debug/tracing/set_ftrace_filter
+  # cat /debug/tracing/set_ftrace_filter
+@@ -1246,8 +1254,8 @@ ftraced
+
+ As mentioned above, when dynamic ftrace is configured in, a kernel
+ thread wakes up once a second and checks to see if there are mcount
+-calls that need to be converted into nops. If there is not, then
+-it simply goes back to sleep. But if there is, it will call
++calls that need to be converted into nops. If there are not any, then
++it simply goes back to sleep. But if there are some, it will call
+ kstop_machine to convert the calls to nops.
+
+ There may be a case that you do not want this added latency.
+@@ -1262,8 +1270,8 @@ mcount calls to nops. Remember that ther
+ to calling mcount. Without this kernel thread, that overhead will
+ exist.
+
+-Any write to the ftraced_enabled file will cause the kstop_machine
+-to run if there are recorded calls to mcount. This means that a
++If there are recorded calls to mcount, any write to the ftraced_enabled
++file will cause the kstop_machine to run. This means that a
+ user can manually perform the updates when they want to by simply
+ echoing a '0' into the ftraced_enabled file.
+
+@@ -1315,7 +1323,7 @@ trace entries
+
+ Having too much or not enough data can be troublesome in diagnosing
+ some issue in the kernel. The file trace_entries is used to modify
+-the size of the internal trace buffers. The numbers listed
++the size of the internal trace buffers. The number listed
+ is the number of entries that can be recorded per CPU. To know
+ the full size, multiply the number of possible CPUS with the
+ number of entries.
+@@ -1323,7 +1331,7 @@ number of entries.
+  # cat /debug/tracing/trace_entries
+ 65620
+
+-Note, to modify this you must have tracing fulling disabled. To do that,
++Note, to modify this, you must have tracing completely disabled. To do that,
+ echo "none" into the current_tracer.
+
+  # echo none > /debug/tracing/current_tracer
+@@ -1344,7 +1352,7 @@ it will add them.
+ This shows us that 85 entries can fit on a single page.
+
+ The number of pages that will be allocated is a percentage of available
+-memory. Allocating too much will produces an error.
++memory. Allocating too much will produce an error.
+
+  # echo 1000000000000 > /debug/tracing/trace_entries
+ -bash: echo: write error: Cannot allocate memory
+
