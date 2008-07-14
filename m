@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757205AbYGNHu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbYGNHuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757205AbYGNHu3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 03:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756816AbYGNHth
+	id S1757304AbYGNHuu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 03:50:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756056AbYGNHti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 03:49:37 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36865 "EHLO hera.kernel.org"
+	Mon, 14 Jul 2008 03:49:38 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36873 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755707AbYGNHtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 03:49:31 -0400
+	id S1755932AbYGNHtc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 03:49:32 -0400
 From: Tejun Heo <tj@kernel.org>
 To: jens.axboe@oracle.com, James.Bottomley@HansenPartnership.com,
        bharrosh@panasas.com, greg.freemyer@gmail.com,
@@ -16,146 +16,117 @@ To: jens.axboe@oracle.com, James.Bottomley@HansenPartnership.com,
        viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org,
        linux-ide@vger.kernel.org
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 09/13] block: kill GENHD_FL_FAIL and use part0->make_it_fail
-Date: Mon, 14 Jul 2008 16:48:09 +0900
-Message-Id: <1216021693-483-10-git-send-email-tj@kernel.org>
+Subject: [PATCH 03/13] block: move capacity from disk to part0
+Date: Mon, 14 Jul 2008 16:48:03 +0900
+Message-Id: <1216021693-483-4-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1216021693-483-1-git-send-email-tj@kernel.org>
 References: <1216021693-483-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 14 Jul 2008 07:49:04 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 14 Jul 2008 07:48:56 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-GENHD_FL_FAIL for disk is what make_it_fail is for parts.  Kill it and
-use part0->make_it_fail.  Sysfs node handling is unified too.
+Move disk->capacity to part0->nr_sects and convert all users who
+directly accessed the field to use {get|set}_capacity().  This is done
+early to allow the __dev field to be moved.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- block/blk-core.c      |    5 +++--
- block/genhd.c         |   30 +-----------------------------
- fs/partitions/check.c |   10 +++++-----
- include/linux/genhd.h |    9 +++++++--
- 4 files changed, 16 insertions(+), 38 deletions(-)
+ drivers/block/aoe/aoeblk.c |    2 +-
+ drivers/block/aoe/aoecmd.c |    4 ++--
+ drivers/block/aoe/aoedev.c |    2 +-
+ fs/partitions/check.c      |    2 +-
+ include/linux/genhd.h      |    5 ++---
+ 5 files changed, 7 insertions(+), 8 deletions(-)
 
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 511b8c7..332d695 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -1262,8 +1262,9 @@ __setup("fail_make_request=", setup_fail_make_request);
+diff --git a/drivers/block/aoe/aoeblk.c b/drivers/block/aoe/aoeblk.c
+index 3edb6cb..aa69556 100644
+--- a/drivers/block/aoe/aoeblk.c
++++ b/drivers/block/aoe/aoeblk.c
+@@ -276,7 +276,7 @@ aoeblk_gdalloc(void *vp)
+ 	gd->first_minor = d->sysminor * AOE_PARTITIONS;
+ 	gd->fops = &aoe_bdops;
+ 	gd->private_data = d;
+-	gd->capacity = d->ssize;
++	set_capacity(gd, d->ssize);
+ 	snprintf(gd->disk_name, sizeof gd->disk_name, "etherd/e%ld.%d",
+ 		d->aoemajor, d->aoeminor);
  
- static int should_fail_request(struct bio *bio)
- {
--	if ((bio->bi_bdev->bd_disk->flags & GENHD_FL_FAIL) ||
--	    bio->bi_bdev->bd_part->make_it_fail)
-+	struct hd_struct *part = bio->bi_bdev->bd_part;
-+
-+	if (part_to_disk(part)->part0.make_it_fail || part->make_it_fail)
- 		return should_fail(&fail_make_request, bio->bi_size);
+diff --git a/drivers/block/aoe/aoecmd.c b/drivers/block/aoe/aoecmd.c
+index 6710df3..b13e0b7 100644
+--- a/drivers/block/aoe/aoecmd.c
++++ b/drivers/block/aoe/aoecmd.c
+@@ -645,7 +645,7 @@ aoecmd_sleepwork(struct work_struct *work)
+ 		unsigned long flags;
+ 		u64 ssize;
  
- 	return 0;
-diff --git a/block/genhd.c b/block/genhd.c
-index ff33b8c..21b8535 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -762,34 +762,6 @@ static ssize_t disk_stat_show(struct device *dev,
- 		jiffies_to_msecs(disk_stat_read(disk, time_in_queue)));
+-		ssize = d->gd->capacity;
++		ssize = get_capacity(d->gd);
+ 		bd = bdget_disk(d->gd, 0);
+ 
+ 		if (bd) {
+@@ -707,7 +707,7 @@ ataid_complete(struct aoedev *d, struct aoetgt *t, unsigned char *id)
+ 	if (d->flags & (DEVFL_GDALLOC|DEVFL_NEWSIZE))
+ 		return;
+ 	if (d->gd != NULL) {
+-		d->gd->capacity = ssize;
++		set_capacity(d->gd, ssize);
+ 		d->flags |= DEVFL_NEWSIZE;
+ 	} else
+ 		d->flags |= DEVFL_GDALLOC;
+diff --git a/drivers/block/aoe/aoedev.c b/drivers/block/aoe/aoedev.c
+index a1d813a..6a8038d 100644
+--- a/drivers/block/aoe/aoedev.c
++++ b/drivers/block/aoe/aoedev.c
+@@ -91,7 +91,7 @@ aoedev_downdev(struct aoedev *d)
+ 	}
+ 
+ 	if (d->gd)
+-		d->gd->capacity = 0;
++		set_capacity(d->gd, 0);
+ 
+ 	d->flags &= ~DEVFL_UP;
  }
- 
--#ifdef CONFIG_FAIL_MAKE_REQUEST
--static ssize_t disk_fail_show(struct device *dev,
--			      struct device_attribute *attr, char *buf)
--{
--	struct gendisk *disk = dev_to_disk(dev);
--
--	return sprintf(buf, "%d\n", disk->flags & GENHD_FL_FAIL ? 1 : 0);
--}
--
--static ssize_t disk_fail_store(struct device *dev,
--			       struct device_attribute *attr,
--			       const char *buf, size_t count)
--{
--	struct gendisk *disk = dev_to_disk(dev);
--	int i;
--
--	if (count > 0 && sscanf(buf, "%d", &i) > 0) {
--		if (i == 0)
--			disk->flags &= ~GENHD_FL_FAIL;
--		else
--			disk->flags |= GENHD_FL_FAIL;
--	}
--
--	return count;
--}
--
--#endif
--
- static DEVICE_ATTR(range, S_IRUGO, disk_range_show, NULL);
- static DEVICE_ATTR(ext_range, S_IRUGO, disk_ext_range_show, NULL);
- static DEVICE_ATTR(removable, S_IRUGO, disk_removable_show, NULL);
-@@ -798,7 +770,7 @@ static DEVICE_ATTR(capability, S_IRUGO, disk_capability_show, NULL);
- static DEVICE_ATTR(stat, S_IRUGO, disk_stat_show, NULL);
- #ifdef CONFIG_FAIL_MAKE_REQUEST
- static struct device_attribute dev_attr_fail =
--	__ATTR(make-it-fail, S_IRUGO|S_IWUSR, disk_fail_show, disk_fail_store);
-+	__ATTR(make-it-fail, S_IRUGO|S_IWUSR, part_fail_show, part_fail_store);
- #endif
- 
- static struct attribute *disk_attrs[] = {
 diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index 931d366..ddd0258 100644
+index d4e677d..d504c1a 100644
 --- a/fs/partitions/check.c
 +++ b/fs/partitions/check.c
-@@ -237,17 +237,17 @@ static ssize_t part_stat_show(struct device *dev,
- }
- 
- #ifdef CONFIG_FAIL_MAKE_REQUEST
--static ssize_t part_fail_show(struct device *dev,
--			      struct device_attribute *attr, char *buf)
-+ssize_t part_fail_show(struct device *dev,
-+		       struct device_attribute *attr, char *buf)
- {
- 	struct hd_struct *p = dev_to_part(dev);
- 
- 	return sprintf(buf, "%d\n", p->make_it_fail);
- }
- 
--static ssize_t part_fail_store(struct device *dev,
--			       struct device_attribute *attr,
--			       const char *buf, size_t count)
-+ssize_t part_fail_store(struct device *dev,
-+			struct device_attribute *attr,
-+			const char *buf, size_t count)
- {
- 	struct hd_struct *p = dev_to_part(dev);
- 	int i;
+@@ -582,7 +582,7 @@ void del_gendisk(struct gendisk *disk)
+ 		delete_partition(disk, part->partno);
+ 	}
+ 	invalidate_partition(disk, 0);
+-	disk->capacity = 0;
++	set_capacity(disk, 0);
+ 	disk->flags &= ~GENHD_FL_UP;
+ 	unlink_gendisk(disk);
+ 	disk_stat_set_all(disk, 0);
 diff --git a/include/linux/genhd.h b/include/linux/genhd.h
-index 8c94f17..61448a9 100644
+index 9018b11..0c15733 100644
 --- a/include/linux/genhd.h
 +++ b/include/linux/genhd.h
-@@ -112,8 +112,6 @@ struct hd_struct {
- #define GENHD_FL_CD				8
- #define GENHD_FL_UP				16
- #define GENHD_FL_SUPPRESS_PARTITION_INFO	32
--#define GENHD_FL_FAIL				64
--
+@@ -139,7 +139,6 @@ struct gendisk {
+ 	struct block_device_operations *fops;
+ 	struct request_queue *queue;
+ 	void *private_data;
+-	sector_t capacity;
  
- struct gendisk {
- 	/* major, first_minor, minors and ext_minors are input
-@@ -582,6 +580,13 @@ extern void blk_unregister_region(dev_t devt, unsigned long range);
+ 	int flags;
+ 	struct device *driverfs_dev;  // FIXME: remove
+@@ -397,11 +396,11 @@ static inline sector_t get_start_sect(struct block_device *bdev)
+ }
+ static inline sector_t get_capacity(struct gendisk *disk)
+ {
+-	return disk->capacity;
++	return disk->part0.nr_sects;
+ }
+ static inline void set_capacity(struct gendisk *disk, sector_t size)
+ {
+-	disk->capacity = size;
++	disk->part0.nr_sects = size;
+ }
  
- extern ssize_t part_size_show(struct device *dev,
- 			      struct device_attribute *attr, char *buf);
-+#ifdef CONFIG_FAIL_MAKE_REQUEST
-+extern ssize_t part_fail_show(struct device *dev,
-+			      struct device_attribute *attr, char *buf);
-+extern ssize_t part_fail_store(struct device *dev,
-+			       struct device_attribute *attr,
-+			       const char *buf, size_t count);
-+#endif /* CONFIG_FAIL_MAKE_REQUEST */
- 
- #else /* CONFIG_BLOCK */
- 
+ #ifdef CONFIG_SOLARIS_X86_PARTITION
 -- 
 1.5.4.5
 
