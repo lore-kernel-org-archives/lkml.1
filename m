@@ -1,66 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756047AbYGNAI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbYGNATY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756047AbYGNAI3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 20:08:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbYGNAIW
+	id S1756159AbYGNATY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 20:19:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754499AbYGNATQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 20:08:22 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:57811 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754505AbYGNAIV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 20:08:21 -0400
-Message-ID: <487A9804.8090307@zytor.com>
-Date: Sun, 13 Jul 2008 17:04:20 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCh] x86: overmapped fix when 4K pages on tail - 64bit
-References: <200807080141.05436.yhlu.kernel@gmail.com> <200807080143.27997.yhlu.kernel@gmail.com> <200807092015.03004.yhlu.kernel@gmail.com> <20080710071640.5035cd70@infradead.org> <874p6t25n5.fsf@basil.nowhere.org> <86802c440807131117g3ba9e61chea61af81b7537bb0@mail.gmail.com> <487A4DFC.5090701@firstfloor.org> <20080713203250.GA6925@elte.hu> <487A6AD0.5000506@firstfloor.org>
-In-Reply-To: <487A6AD0.5000506@firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 13 Jul 2008 20:19:16 -0400
+Received: from gate.crashing.org ([63.228.1.57]:40015 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752352AbYGNATP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 20:19:15 -0400
+Subject: Re: Multiple MSI, take 3
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>, Matthew Wilcox <matthew@wil.cx>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "jgarzik@pobox.com" <jgarzik@pobox.com>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "rdunlap@xenotime.net" <rdunlap@xenotime.net>,
+       "mtk.manpages@gmail.com" <mtk.manpages@gmail.com>
+In-Reply-To: <m1tzet2wie.fsf@frodo.ebiederm.org>
+References: <20080711005719.GO14894@parisc-linux.org>
+	 <m1iqvc91li.fsf@frodo.ebiederm.org>
+	 <20080711215943.GW1678@linux-os.sc.intel.com>
+	 <m1d4lkauxc.fsf@frodo.ebiederm.org> <1215834720.7549.154.camel@pasglop>
+	 <m13amf3eak.fsf@frodo.ebiederm.org> <1215848161.7549.166.camel@pasglop>
+	 <m1iqv9a030.fsf@frodo.ebiederm.org> <1215989044.7549.219.camel@pasglop>
+	 <m1tzet2wie.fsf@frodo.ebiederm.org>
+Content-Type: text/plain
+Date: Mon, 14 Jul 2008 10:17:39 +1000
+Message-Id: <1215994659.7549.227.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> 
-> First I was only commenting on one specific patch, nothing more.
-> 
-> My point is full rounding to 4K on all corners is wasteful because the
-> CPUs have to handle that case anyways and every split costs precious
-> TLB entries in direct mapping accesses.
->
+On Sun, 2008-07-13 at 16:29 -0700, Eric W. Biederman wrote:
+> Ben.  Multi-MSI is a crap hardware design.  Why do you think we have
+> MSI-X?  
 
-Well, the CPU *does* handle them... by splitting the larger pages into 
-smaller pages.  They still end up in the small-page TLB, so there is no 
-real difference if done in the CPU or in software.
+I know and I agree. Which is why I'd rather keep the SW crap totally
+local to the MSI support code and not add new concepts to the generic
+IRQ API such as sub-channels, for which it's really not ready for imho.
 
-> And I might be old fashioned, but I still think minimizing TLB misses
-> in the kernel is still quite important since the TLBs of modern x86
-> CPUs are still comparatively small.
-> 
-> btw that is why I was  also quite disappointed that the new cpa eliminated
-> reassembly. It means that on a long uptime system even with moderate
-> traffic of CPA page allocation/free eventually the completely direct mapping
-> will be all 4K. And there will be TLB miss galore on each system call
-> when user space is TLB intensive.
-> 
-> Ok in that light Yinghai's patch is perhaps not so bad after longer
-> uptime in that scenario. Still performance directly after boot up is
-> also something that shouldn't be ignored and I'm still hopefully that
-> reassembly will be readded at some point anyways.
+They -are- separate IRQs, just badly implemented. Besides, a large part
+of the problem is purely due to the typical x86 implementation of them,
+since for example, on most PowerPC's (and possibly other archs), they
+tend to land in the PIC as normal sources, and as such benefit from all
+the "features" of such interrupts like HW masking, affinity control,
+etc... at the PIC level.
 
-Memory state transitions are (fortunately) relatively rare and 
-long-lived, but of course having reassembly is a nice thing to have in 
-the long run.  Such reassembly also would rather naturally handle any 
-small-page effects of boundary cases.
+In any case, SW masking will work just fine, and affinity can be dealt
+with without too much harm neither.
 
-	-hpa
+> MSI-X as specced is a properly operating irq controller that
+> we don't need kludges to support.  Multi-MSI with a full set of
+> kludges almost work but not quite fits the linux irq model.
+
+And you want to change the model for it ? I say no :-) Just make them
+fit with a hammer. In fact, it's not even a big hammer. The only thing
+that doesn't really fit is the affinity bits, which can be dealt with.
+
+> Any hardware designer who choose to implement Multi-MSI instead of
+> MSI-X was not really concerned about having a high performance device.
+
+Agreed.
+
+> If we can find a way to model the portable capabilities of Multi-MSI
+> cleanly then we can support it, and our drivers and our users and our
+> intermediate layers won't get surprised.
+
+Our existing model works just fine imho.
+
+> So far we have too close fits but neither model really works.
+
+I think Willy's initial model can work with SW masking. All of the
+latching & re-emission stuff is already in the core. The only problem is
+affinity which can be hacked around, by either requiring all irqs to
+change affinity or bouncing them all on one change, or only exposing
+affinity control on the first one, whatever.
+ 
+> Further this is all about driver optimization, so none of this is
+> necessary to have working hardware.  Which makes kludges much less
+> appropriate.  Modelling Multi-MSI irqs as normal irqs requires a lot
+> of nasty kludges.
+
+No. Not a lot. And those kludge are mostly local to the MSI support core
+and don't expose new semantics to the existing IRQ model. 
+
+> One of the kludges is allocating a continuous chunk of irq targets,
+> and the resulting fragmentation issues that you get when you start
+> allowing different sized allocations.
+
+This is purely a backend issue and isn't a big deal imho.
+
+> Overall if Multi-MSI was to become common I think we would really
+> regret it.
+
+I agree. But in the meantime, if we want to support it, I prefer the
+option of making it fit in the existing model.
+
+Cheers,
+Ben.
+
