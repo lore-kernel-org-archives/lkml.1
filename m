@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478AbYGSKYJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755443AbYGSKY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754478AbYGSKYJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 06:24:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbYGSKXK
+	id S1755443AbYGSKY0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 06:24:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbYGSKXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 06:23:10 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:23975 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752937AbYGSKXI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 06:23:08 -0400
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Simon Arlott <simon@fire.lp0.eu>, linux-kernel@vger.kernel.org,
-       dwalker@mvista.com
-Subject: Re: [patch 0/3] fastboot patches series 1
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080718151524.5ef9e29b@infradead.org>
-	<488172E0.6050502@simon.arlott.org.uk>
-	<20080718221630.2809abbd@infradead.org>
-Date: Sat, 19 Jul 2008 12:22:43 +0200
-In-Reply-To: <20080718221630.2809abbd@infradead.org> (Arjan van de Ven's message of "Fri, 18 Jul 2008 22:16:30 -0700")
-Message-ID: <87tzem8970.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Sat, 19 Jul 2008 06:23:33 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51497 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755771AbYGSKXc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jul 2008 06:23:32 -0400
+Message-ID: <487B3DA1.7010906@kernel.org>
+Date: Mon, 14 Jul 2008 20:50:57 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 19 Jul 2008 10:22:41.0051 (UTC) FILETIME=[6000B6B0:01C8E989]
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Greg K-H <greg@kroah.com>
+Subject: Re: [PATCH] block: fix block_class iteration locking
+References: <487AECD0.5010602@kernel.org> <20080714134228.1079c6f7@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20080714134228.1079c6f7@gondolin.boeblingen.de.ibm.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 19 Jul 2008 10:21:49 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven <arjan@infradead.org> writes:
->
-> One possible theory is that we now run on both cpus and if they're out
-> of sync timewise, things like delays suddenly are shorter than expected
-> if time jumps around....
+Cornelia Huck wrote:
+> Greg has some patches sitting in his tree that convert those functions
+> to use class_{for_each,find}_device() instead - and that looks like the
+> clean solution, especially since the class implementation details will
+> be moved into a private structure. One worry though...
 
-On systems with non synchronized TSC the clocksource watchdog tends
-to disable the TSC time source only quite late in boot (on my systems
-typically even after kernel boot). So yes this could be a problem.
+Yeah, that sounds nice.
 
-However he has a AMD QC system where the TSCs are synchronized on the
-hardware level and there's also no message from the watchdog disabling
-TSC, so this isn't the problem causing this issue. Must be something else.
+> With your patch, you protect against adding/removing devices to/from
+> the class between _start and _stop. This wasn't done previously, and
+> won't be done with Greg's patches (which leaves in the
+> locking/unlocking of block_class_lock). Not sure if I'm missing
+> something here...
 
--Andi
+That's mostly the point of this patch.  It wasn't protected properly
+before.  It would be best if there's a safe iterator (maybe use klist?).
 
+Thanks.
+
+-- 
+tejun
