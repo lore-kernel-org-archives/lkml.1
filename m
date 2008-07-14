@@ -1,80 +1,287 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756648AbYGNRfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755165AbYGNRnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756648AbYGNRfb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 13:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753888AbYGNRfW
+	id S1755165AbYGNRnl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 13:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753626AbYGNRnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 13:35:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35674 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753226AbYGNRfV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 13:35:21 -0400
-Date: Mon, 14 Jul 2008 13:28:34 -0400
-From: Dave Jones <davej@redhat.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org,
-       gregkh@suse.de
-Subject: Re: usb-storage: quirk around v1.11 firmware on Nikon D4
-Message-ID: <20080714172834.GA23016@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	linux-usb@vger.kernel.org, gregkh@suse.de
-References: <20080704195940.GA17510@redhat.com> <Pine.LNX.4.44L0.0807041808100.17654-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0807041808100.17654-100000@netrider.rowland.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 14 Jul 2008 13:43:33 -0400
+Received: from ag-out-0708.google.com ([72.14.246.251]:21680 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752542AbYGNRnc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 13:43:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
+         :sender;
+        b=Migng9X7Sznr6N3Sv/H/1YZJYVGpMd4SpHICGpuY7XypDeqyucy3/xoW/gGnUsZUGr
+         q5GYwdraNl7Ix7KlPkIrmF6lGMoUUbyidnZWzJCwsYEZ0zkDm0lOk6EVqnP705MfjtUB
+         LvgxRFsLXuYB4UIqfAcWwlREZ9Gv65eldpwww=
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: cl@linux-foundation.org
+Cc: penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [RESEND PATCH] kmemtrace: SLAB hooks.
+Date: Mon, 14 Jul 2008 20:42:14 +0300
+Message-Id: <1216057334-27239-1-git-send-email-eduard.munteanu@linux360.ro>
+X-Mailer: git-send-email 1.5.6.1
+In-Reply-To: <487B7F99.4060004@linux-foundation.org>
+References: <487B7F99.4060004@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 04, 2008 at 06:09:25PM -0400, Alan Stern wrote:
- > On Fri, 4 Jul 2008, Dave Jones wrote:
- > 
- > > usb-storage: quirk around v1.11 firmware on Nikon D40
- > ...
- > > -UNUSUAL_DEV(  0x04b0, 0x0411, 0x0100, 0x0110,
- > > +UNUSUAL_DEV(  0x04b0, 0x0411, 0x0100, 0x0111,
- > >  		"NIKON",
- > >  		"NIKON DSC D80",
- > 
- > You updated the entry for the D80, not the D40.  Maybe they both need 
- > to be updated?
+This adds hooks for the SLAB allocator, to allow tracing with kmemtrace.
 
-usb-storage: quirk around v1.11 firmware on Nikon D40
+Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+---
 
-https://bugzilla.redhat.com/show_bug.cgi?id=454028
-Just as in earlier firmware versions, we need to perform this
-quirk for the latest version too.
+Okay, the rationale is this:
+1. When CONFIG_KMEMTRACE is set, __kmem_cache_alloc is defined in mm/slab.c,
+where it does not call tracers.
+2. When CONFIG_KMEMTRACE is _not_ set, __kmem_cache_alloc goes through
+the usual kmem_cache_alloc, which contains tracers, but are no-ops because
+CONFIG_KMEMTRACE is not set.
 
-Speculatively do the entry for the D80 too, as they seem to
-have the same firmware problems historically.
+Therefore, in any case, __kmem_cache_alloc does not do tracing.
 
-Signed-off-by: Dave Jones <davej@redhat.com>
+Hope this makes sense.
 
-diff --git a/drivers/usb/storage/unusual_devs.h b/drivers/usb/storage/unusual_devs.h
-index 39a7c11..c0b9d10 100644
---- a/drivers/usb/storage/unusual_devs.h
-+++ b/drivers/usb/storage/unusual_devs.h
-@@ -358,14 +358,14 @@ UNUSUAL_DEV(  0x04b0, 0x040f, 0x0100, 0x0200,
- 		US_FL_FIX_CAPACITY),
+ include/linux/slab_def.h |   56 +++++++++++++++++++++++++++++++++++++-----
+ mm/slab.c                |   61 +++++++++++++++++++++++++++++++++++++++++----
+ 2 files changed, 104 insertions(+), 13 deletions(-)
+
+diff --git a/include/linux/slab_def.h b/include/linux/slab_def.h
+index 39c3a5e..758803f 100644
+--- a/include/linux/slab_def.h
++++ b/include/linux/slab_def.h
+@@ -14,6 +14,7 @@
+ #include <asm/page.h>		/* kmalloc_sizes.h needs PAGE_SIZE */
+ #include <asm/cache.h>		/* kmalloc_sizes.h needs L1_CACHE_BYTES */
+ #include <linux/compiler.h>
++#include <linux/kmemtrace.h>
  
- /* Reported by Emil Larsson <emil@swip.net> */
--UNUSUAL_DEV(  0x04b0, 0x0411, 0x0100, 0x0110,
-+UNUSUAL_DEV(  0x04b0, 0x0411, 0x0100, 0x0111,
- 		"NIKON",
- 		"NIKON DSC D80",
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		US_FL_FIX_CAPACITY),
+ /* Size description struct for general caches. */
+ struct cache_sizes {
+@@ -28,8 +29,20 @@ extern struct cache_sizes malloc_sizes[];
+ void *kmem_cache_alloc(struct kmem_cache *, gfp_t);
+ void *__kmalloc(size_t size, gfp_t flags);
  
- /* Reported by Ortwin Glueck <odi@odi.ch> */
--UNUSUAL_DEV(  0x04b0, 0x0413, 0x0110, 0x0110,
-+UNUSUAL_DEV(  0x04b0, 0x0413, 0x0110, 0x0111,
- 		"NIKON",
- 		"NIKON DSC D40",
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
-
++#ifdef CONFIG_KMEMTRACE
++extern void *__kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags);
++#else
++static inline void *__kmem_cache_alloc(struct kmem_cache *cachep,
++				       gfp_t flags)
++{
++	return kmem_cache_alloc(cachep, flags);
++}
++#endif
++
+ static inline void *kmalloc(size_t size, gfp_t flags)
+ {
++	void *ret;
++
+ 	if (__builtin_constant_p(size)) {
+ 		int i = 0;
+ 
+@@ -50,10 +63,17 @@ static inline void *kmalloc(size_t size, gfp_t flags)
+ found:
+ #ifdef CONFIG_ZONE_DMA
+ 		if (flags & GFP_DMA)
+-			return kmem_cache_alloc(malloc_sizes[i].cs_dmacachep,
+-						flags);
++			ret = __kmem_cache_alloc(malloc_sizes[i].cs_dmacachep,
++						 flags);
++		else
+ #endif
+-		return kmem_cache_alloc(malloc_sizes[i].cs_cachep, flags);
++			ret = __kmem_cache_alloc(malloc_sizes[i].cs_cachep,
++						 flags);
++
++		kmemtrace_mark_alloc(KMEMTRACE_KIND_KERNEL, _THIS_IP_, ret,
++				     size, malloc_sizes[i].cs_size, flags);
++
++		return ret;
+ 	}
+ 	return __kmalloc(size, flags);
+ }
+@@ -62,8 +82,23 @@ found:
+ extern void *__kmalloc_node(size_t size, gfp_t flags, int node);
+ extern void *kmem_cache_alloc_node(struct kmem_cache *, gfp_t flags, int node);
+ 
++#ifdef CONFIG_KMEMTRACE
++extern void *__kmem_cache_alloc_node(struct kmem_cache *cachep,
++				     gfp_t flags,
++				     int nodeid);
++#else
++static inline void *__kmem_cache_alloc_node(struct kmem_cache *cachep,
++					    gfp_t flags,
++					    int nodeid)
++{
++	return kmem_cache_alloc_node(cachep, flags, nodeid);
++}
++#endif
++
+ static inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+ {
++	void *ret;
++
+ 	if (__builtin_constant_p(size)) {
+ 		int i = 0;
+ 
+@@ -84,11 +119,18 @@ static inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+ found:
+ #ifdef CONFIG_ZONE_DMA
+ 		if (flags & GFP_DMA)
+-			return kmem_cache_alloc_node(malloc_sizes[i].cs_dmacachep,
+-						flags, node);
++			ret = __kmem_cache_alloc_node(malloc_sizes[i].cs_dmacachep,
++						      flags, node);
++		else
+ #endif
+-		return kmem_cache_alloc_node(malloc_sizes[i].cs_cachep,
+-						flags, node);
++			ret =  __kmem_cache_alloc_node(malloc_sizes[i].cs_cachep,
++						       flags, node);
++
++		kmemtrace_mark_alloc_node(KMEMTRACE_KIND_KERNEL, _THIS_IP_,
++					  ret, size, malloc_sizes[i].cs_size,
++					  flags, node);
++
++		return ret;
+ 	}
+ 	return __kmalloc_node(size, flags, node);
+ }
+diff --git a/mm/slab.c b/mm/slab.c
+index 046607f..f07e022 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -111,6 +111,7 @@
+ #include	<linux/rtmutex.h>
+ #include	<linux/reciprocal_div.h>
+ #include	<linux/debugobjects.h>
++#include	<linux/kmemtrace.h>
+ 
+ #include	<asm/cacheflush.h>
+ #include	<asm/tlbflush.h>
+@@ -3621,10 +3622,23 @@ static inline void __cache_free(struct kmem_cache *cachep, void *objp)
+  */
+ void *kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
+ {
+-	return __cache_alloc(cachep, flags, __builtin_return_address(0));
++	void *ret = __cache_alloc(cachep, flags, __builtin_return_address(0));
++
++	kmemtrace_mark_alloc(KMEMTRACE_KIND_CACHE, _RET_IP_, ret,
++			     obj_size(cachep), obj_size(cachep), flags);
++
++	return ret;
+ }
+ EXPORT_SYMBOL(kmem_cache_alloc);
+ 
++#ifdef CONFIG_KMEMTRACE
++void *__kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
++{
++	return __cache_alloc(cachep, flags, __builtin_return_address(0));
++}
++EXPORT_SYMBOL(__kmem_cache_alloc);
++#endif
++
+ /**
+  * kmem_ptr_validate - check if an untrusted pointer might be a slab entry.
+  * @cachep: the cache we're checking against
+@@ -3669,20 +3683,44 @@ out:
+ #ifdef CONFIG_NUMA
+ void *kmem_cache_alloc_node(struct kmem_cache *cachep, gfp_t flags, int nodeid)
+ {
+-	return __cache_alloc_node(cachep, flags, nodeid,
+-			__builtin_return_address(0));
++	void *ret = __cache_alloc_node(cachep, flags, nodeid,
++				       __builtin_return_address(0));
++
++	kmemtrace_mark_alloc_node(KMEMTRACE_KIND_CACHE, _RET_IP_, ret,
++				  obj_size(cachep), obj_size(cachep),
++				  flags, nodeid);
++
++	return ret;
+ }
+ EXPORT_SYMBOL(kmem_cache_alloc_node);
+ 
++#ifdef CONFIG_KMEMTRACE
++void *__kmem_cache_alloc_node(struct kmem_cache *cachep,
++			      gfp_t flags,
++			      int nodeid)
++{
++	return __cache_alloc_node(cachep, flags, nodeid,
++				  __builtin_return_address(0));
++}
++EXPORT_SYMBOL(__kmem_cache_alloc_node);
++#endif
++
+ static __always_inline void *
+ __do_kmalloc_node(size_t size, gfp_t flags, int node, void *caller)
+ {
+ 	struct kmem_cache *cachep;
++	void *ret;
+ 
+ 	cachep = kmem_find_general_cachep(size, flags);
+ 	if (unlikely(ZERO_OR_NULL_PTR(cachep)))
+ 		return cachep;
+-	return kmem_cache_alloc_node(cachep, flags, node);
++	ret = __kmem_cache_alloc_node(cachep, flags, node);
++
++	kmemtrace_mark_alloc_node(KMEMTRACE_KIND_KERNEL,
++				  (unsigned long) caller, ret,
++				  size, cachep->buffer_size, flags, node);
++
++	return ret;
+ }
+ 
+ #ifdef CONFIG_DEBUG_SLAB
+@@ -3718,6 +3756,7 @@ static __always_inline void *__do_kmalloc(size_t size, gfp_t flags,
+ 					  void *caller)
+ {
+ 	struct kmem_cache *cachep;
++	void *ret;
+ 
+ 	/* If you want to save a few bytes .text space: replace
+ 	 * __ with kmem_.
+@@ -3727,11 +3766,17 @@ static __always_inline void *__do_kmalloc(size_t size, gfp_t flags,
+ 	cachep = __find_general_cachep(size, flags);
+ 	if (unlikely(ZERO_OR_NULL_PTR(cachep)))
+ 		return cachep;
+-	return __cache_alloc(cachep, flags, caller);
++	ret = __cache_alloc(cachep, flags, caller);
++
++	kmemtrace_mark_alloc(KMEMTRACE_KIND_KERNEL,
++			     (unsigned long) caller, ret,
++			     size, cachep->buffer_size, flags);
++
++	return ret;
+ }
+ 
+ 
+-#ifdef CONFIG_DEBUG_SLAB
++#if defined(CONFIG_DEBUG_SLAB) || defined(CONFIG_KMEMTRACE)
+ void *__kmalloc(size_t size, gfp_t flags)
+ {
+ 	return __do_kmalloc(size, flags, __builtin_return_address(0));
+@@ -3770,6 +3815,8 @@ void kmem_cache_free(struct kmem_cache *cachep, void *objp)
+ 		debug_check_no_obj_freed(objp, obj_size(cachep));
+ 	__cache_free(cachep, objp);
+ 	local_irq_restore(flags);
++
++	kmemtrace_mark_free(KMEMTRACE_KIND_CACHE, _RET_IP_, objp);
+ }
+ EXPORT_SYMBOL(kmem_cache_free);
+ 
+@@ -3796,6 +3843,8 @@ void kfree(const void *objp)
+ 	debug_check_no_obj_freed(objp, obj_size(c));
+ 	__cache_free(c, (void *)objp);
+ 	local_irq_restore(flags);
++
++	kmemtrace_mark_free(KMEMTRACE_KIND_KERNEL, _RET_IP_, objp);
+ }
+ EXPORT_SYMBOL(kfree);
+ 
 -- 
-http://www.codemonkey.org.uk
+1.5.6.1
+
