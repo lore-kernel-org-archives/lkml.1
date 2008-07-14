@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756345AbYGNOoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbYGNOpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756345AbYGNOoj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 10:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbYGNOob
+	id S1756630AbYGNOpk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 10:45:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754071AbYGNOpc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 10:44:31 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34182 "EHLO mx2.mail.elte.hu"
+	Mon, 14 Jul 2008 10:45:32 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36472 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753823AbYGNOoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 10:44:30 -0400
-Date: Mon, 14 Jul 2008 16:44:20 +0200
+	id S1753975AbYGNOpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 10:45:31 -0400
+Date: Mon, 14 Jul 2008 16:45:19 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [git pull] core/stacktrace changes for v2.6.27
-Message-ID: <20080714144420.GA21632@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [git pull] core/topology changes for v2.6.27
+Message-ID: <20080714144519.GA21975@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -33,282 +34,143 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest core/stacktrace git tree from:
+Please pull the latest core/topology git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core/stacktrace
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core/topology
 
 Thanks,
 
 	Ingo
 
 ------------------>
-Ingo Molnar (3):
-      debugging: make stacktrace independent from DEBUG_KERNEL
-      stacktrace: fix modular build, export print_stack_trace and save_stack_trace
-      stacktrace: export save_stack_trace[_tsk]
-
-Johannes Berg (1):
-      stacktrace: don't crash on invalid stack trace structs
-
-Stephen Rothwell (1):
-      stacktrace: fix build failure on sparc64
-
-Vegard Nossum (3):
-      stacktrace: print_stack_trace() cleanup
-      stacktrace: add saved stack traces to backtrace self-test
-      backtrace: replace timer with tasklet + completions
+Ben Hutchings (2):
+      cpu topology: always define CPU topology information
+      cputopology: always define CPU topology information, clean up
 
 
- arch/arm/kernel/stacktrace.c     |    1 +
- arch/avr32/kernel/stacktrace.c   |    1 +
- arch/mips/kernel/stacktrace.c    |    1 +
- arch/powerpc/kernel/stacktrace.c |    1 +
- arch/s390/kernel/stacktrace.c    |    2 +
- arch/sh/kernel/stacktrace.c      |    1 +
- arch/sparc64/kernel/stacktrace.c |    2 +
- arch/x86/kernel/stacktrace.c     |    2 +
- kernel/backtracetest.c           |   65 +++++++++++++++++++++++++++++++------
- kernel/stacktrace.c              |   14 +++++---
- lib/Kconfig.debug                |    4 ++-
- 11 files changed, 76 insertions(+), 18 deletions(-)
+ Documentation/cputopology.txt |   26 +++++++++-----------------
+ drivers/base/topology.c       |   32 ++++++--------------------------
+ include/linux/topology.h      |   13 +++++++++++++
+ 3 files changed, 28 insertions(+), 43 deletions(-)
 
-diff --git a/arch/arm/kernel/stacktrace.c b/arch/arm/kernel/stacktrace.c
-index ae31deb..6b3ffde 100644
---- a/arch/arm/kernel/stacktrace.c
-+++ b/arch/arm/kernel/stacktrace.c
-@@ -66,4 +66,5 @@ void save_stack_trace(struct stack_trace *trace)
+diff --git a/Documentation/cputopology.txt b/Documentation/cputopology.txt
+index b61cb95..bd699da 100644
+--- a/Documentation/cputopology.txt
++++ b/Documentation/cputopology.txt
+@@ -14,9 +14,8 @@ represent the thread siblings to cpu X in the same physical package;
+ To implement it in an architecture-neutral way, a new source file,
+ drivers/base/topology.c, is to export the 4 attributes.
  
- 	walk_stackframe(fp, base, base + THREAD_SIZE, save_trace, &data);
- }
-+EXPORT_SYMBOL_GPL(save_stack_trace);
+-If one architecture wants to support this feature, it just needs to
+-implement 4 defines, typically in file include/asm-XXX/topology.h.
+-The 4 defines are:
++For an architecture to support this feature, it must define some of
++these macros in include/asm-XXX/topology.h:
+ #define topology_physical_package_id(cpu)
+ #define topology_core_id(cpu)
+ #define topology_thread_siblings(cpu)
+@@ -25,17 +24,10 @@ The 4 defines are:
+ The type of **_id is int.
+ The type of siblings is cpumask_t.
+ 
+-To be consistent on all architectures, the 4 attributes should have
+-default values if their values are unavailable. Below is the rule.
+-1) physical_package_id: If cpu has no physical package id, -1 is the
+-default value.
+-2) core_id: If cpu doesn't support multi-core, its core id is 0.
+-3) thread_siblings: Just include itself, if the cpu doesn't support
+-HT/multi-thread.
+-4) core_siblings: Just include itself, if the cpu doesn't support
+-multi-core and HT/Multi-thread.
+-
+-So be careful when declaring the 4 defines in include/asm-XXX/topology.h.
+-
+-If an attribute isn't defined on an architecture, it won't be exported.
+-
++To be consistent on all architectures, include/linux/topology.h
++provides default definitions for any of the above macros that are
++not defined by include/asm-XXX/topology.h:
++1) physical_package_id: -1
++2) core_id: 0
++3) thread_siblings: just the given CPU
++4) core_siblings: just the given CPU
+diff --git a/drivers/base/topology.c b/drivers/base/topology.c
+index fdf4044..f0cb270 100644
+--- a/drivers/base/topology.c
++++ b/drivers/base/topology.c
+@@ -72,47 +72,27 @@ static inline ssize_t show_##name##_list(struct sys_device *dev, char *buf) \
+ #define define_siblings_show_func(name)		\
+ 	define_siblings_show_map(name); define_siblings_show_list(name)
+ 
+-#ifdef	topology_physical_package_id
+ define_id_show_func(physical_package_id);
+ define_one_ro(physical_package_id);
+-#define ref_physical_package_id_attr	&attr_physical_package_id.attr,
+-#else
+-#define ref_physical_package_id_attr
+-#endif
+ 
+-#ifdef topology_core_id
+ define_id_show_func(core_id);
+ define_one_ro(core_id);
+-#define ref_core_id_attr		&attr_core_id.attr,
+-#else
+-#define ref_core_id_attr
+-#endif
+ 
+-#ifdef topology_thread_siblings
+ define_siblings_show_func(thread_siblings);
+ define_one_ro(thread_siblings);
+ define_one_ro(thread_siblings_list);
+-#define ref_thread_siblings_attr	\
+-		&attr_thread_siblings.attr, &attr_thread_siblings_list.attr,
+-#else
+-#define ref_thread_siblings_attr
+-#endif
+ 
+-#ifdef topology_core_siblings
+ define_siblings_show_func(core_siblings);
+ define_one_ro(core_siblings);
+ define_one_ro(core_siblings_list);
+-#define ref_core_siblings_attr		\
+-		&attr_core_siblings.attr, &attr_core_siblings_list.attr,
+-#else
+-#define ref_core_siblings_attr
+-#endif
+ 
+ static struct attribute *default_attrs[] = {
+-	ref_physical_package_id_attr
+-	ref_core_id_attr
+-	ref_thread_siblings_attr
+-	ref_core_siblings_attr
++	&attr_physical_package_id.attr,
++	&attr_core_id.attr,
++	&attr_thread_siblings.attr,
++	&attr_thread_siblings_list.attr,
++	&attr_core_siblings.attr,
++	&attr_core_siblings_list.attr,
+ 	NULL
+ };
+ 
+diff --git a/include/linux/topology.h b/include/linux/topology.h
+index 24f3d22..2158fc0 100644
+--- a/include/linux/topology.h
++++ b/include/linux/topology.h
+@@ -179,4 +179,17 @@ void arch_update_cpu_topology(void);
  #endif
-diff --git a/arch/avr32/kernel/stacktrace.c b/arch/avr32/kernel/stacktrace.c
-index 9a68190..f4bdb44 100644
---- a/arch/avr32/kernel/stacktrace.c
-+++ b/arch/avr32/kernel/stacktrace.c
-@@ -51,3 +51,4 @@ void save_stack_trace(struct stack_trace *trace)
- 		fp = frame->fp;
- 	}
- }
-+EXPORT_SYMBOL_GPL(save_stack_trace);
-diff --git a/arch/mips/kernel/stacktrace.c b/arch/mips/kernel/stacktrace.c
-index ebd9db8..5eb4681 100644
---- a/arch/mips/kernel/stacktrace.c
-+++ b/arch/mips/kernel/stacktrace.c
-@@ -73,3 +73,4 @@ void save_stack_trace(struct stack_trace *trace)
- 	prepare_frametrace(regs);
- 	save_context_stack(trace, regs);
- }
-+EXPORT_SYMBOL_GPL(save_stack_trace);
-diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
-index 9629440..9861f17 100644
---- a/arch/powerpc/kernel/stacktrace.c
-+++ b/arch/powerpc/kernel/stacktrace.c
-@@ -44,3 +44,4 @@ void save_stack_trace(struct stack_trace *trace)
- 		sp = newsp;
- 	}
- }
-+EXPORT_SYMBOL_GPL(save_stack_trace);
-diff --git a/arch/s390/kernel/stacktrace.c b/arch/s390/kernel/stacktrace.c
-index 85e46a5..57571f1 100644
---- a/arch/s390/kernel/stacktrace.c
-+++ b/arch/s390/kernel/stacktrace.c
-@@ -81,6 +81,7 @@ void save_stack_trace(struct stack_trace *trace)
- 			   S390_lowcore.thread_info,
- 			   S390_lowcore.thread_info + THREAD_SIZE, 1);
- }
-+EXPORT_SYMBOL_GPL(save_stack_trace);
+ #endif /* CONFIG_NUMA */
  
- void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
- {
-@@ -93,3 +94,4 @@ void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
- 	if (trace->nr_entries < trace->max_entries)
- 		trace->entries[trace->nr_entries++] = ULONG_MAX;
- }
-+EXPORT_SYMBOL_GPL(save_stack_trace_tsk);
-diff --git a/arch/sh/kernel/stacktrace.c b/arch/sh/kernel/stacktrace.c
-index d41e561..1b2ae35 100644
---- a/arch/sh/kernel/stacktrace.c
-+++ b/arch/sh/kernel/stacktrace.c
-@@ -34,3 +34,4 @@ void save_stack_trace(struct stack_trace *trace)
- 		}
- 	}
- }
-+EXPORT_SYMBOL_GPL(save_stack_trace);
-diff --git a/arch/sparc64/kernel/stacktrace.c b/arch/sparc64/kernel/stacktrace.c
-index c73ce3f..b3e3737 100644
---- a/arch/sparc64/kernel/stacktrace.c
-+++ b/arch/sparc64/kernel/stacktrace.c
-@@ -1,6 +1,7 @@
- #include <linux/sched.h>
- #include <linux/stacktrace.h>
- #include <linux/thread_info.h>
-+#include <linux/module.h>
- #include <asm/ptrace.h>
- #include <asm/stacktrace.h>
- 
-@@ -47,3 +48,4 @@ void save_stack_trace(struct stack_trace *trace)
- 			trace->entries[trace->nr_entries++] = pc;
- 	} while (trace->nr_entries < trace->max_entries);
- }
-+EXPORT_SYMBOL_GPL(save_stack_trace);
-diff --git a/arch/x86/kernel/stacktrace.c b/arch/x86/kernel/stacktrace.c
-index c28c342..a03e7f6 100644
---- a/arch/x86/kernel/stacktrace.c
-+++ b/arch/x86/kernel/stacktrace.c
-@@ -74,6 +74,7 @@ void save_stack_trace(struct stack_trace *trace)
- 	if (trace->nr_entries < trace->max_entries)
- 		trace->entries[trace->nr_entries++] = ULONG_MAX;
- }
-+EXPORT_SYMBOL_GPL(save_stack_trace);
- 
- void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
- {
-@@ -81,3 +82,4 @@ void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
- 	if (trace->nr_entries < trace->max_entries)
- 		trace->entries[trace->nr_entries++] = ULONG_MAX;
- }
-+EXPORT_SYMBOL_GPL(save_stack_trace_tsk);
-diff --git a/kernel/backtracetest.c b/kernel/backtracetest.c
-index d1a7605..a5e026b 100644
---- a/kernel/backtracetest.c
-+++ b/kernel/backtracetest.c
-@@ -10,30 +10,73 @@
-  * of the License.
-  */
- 
-+#include <linux/completion.h>
-+#include <linux/delay.h>
-+#include <linux/interrupt.h>
- #include <linux/module.h>
- #include <linux/sched.h>
--#include <linux/delay.h>
-+#include <linux/stacktrace.h>
-+
-+static void backtrace_test_normal(void)
-+{
-+	printk("Testing a backtrace from process context.\n");
-+	printk("The following trace is a kernel self test and not a bug!\n");
- 
--static struct timer_list backtrace_timer;
-+	dump_stack();
-+}
- 
--static void backtrace_test_timer(unsigned long data)
-+static DECLARE_COMPLETION(backtrace_work);
-+
-+static void backtrace_test_irq_callback(unsigned long data)
-+{
-+	dump_stack();
-+	complete(&backtrace_work);
-+}
-+
-+static DECLARE_TASKLET(backtrace_tasklet, &backtrace_test_irq_callback, 0);
-+
-+static void backtrace_test_irq(void)
- {
- 	printk("Testing a backtrace from irq context.\n");
- 	printk("The following trace is a kernel self test and not a bug!\n");
--	dump_stack();
-+
-+	init_completion(&backtrace_work);
-+	tasklet_schedule(&backtrace_tasklet);
-+	wait_for_completion(&backtrace_work);
-+}
-+
-+#ifdef CONFIG_STACKTRACE
-+static void backtrace_test_saved(void)
-+{
-+	struct stack_trace trace;
-+	unsigned long entries[8];
-+
-+	printk("Testing a saved backtrace.\n");
-+	printk("The following trace is a kernel self test and not a bug!\n");
-+
-+	trace.nr_entries = 0;
-+	trace.max_entries = ARRAY_SIZE(entries);
-+	trace.entries = entries;
-+	trace.skip = 0;
-+
-+	save_stack_trace(&trace);
-+	print_stack_trace(&trace, 0);
-+}
-+#else
-+static void backtrace_test_saved(void)
-+{
-+	printk("Saved backtrace test skipped.\n");
- }
++#ifndef topology_physical_package_id
++#define topology_physical_package_id(cpu)	((void)(cpu), -1)
++#endif
++#ifndef topology_core_id
++#define topology_core_id(cpu)			((void)(cpu), 0)
++#endif
++#ifndef topology_thread_siblings
++#define topology_thread_siblings(cpu)		cpumask_of_cpu(cpu)
++#endif
++#ifndef topology_core_siblings
++#define topology_core_siblings(cpu)		cpumask_of_cpu(cpu)
 +#endif
 +
- static int backtrace_regression_test(void)
- {
- 	printk("====[ backtrace testing ]===========\n");
--	printk("Testing a backtrace from process context.\n");
--	printk("The following trace is a kernel self test and not a bug!\n");
--	dump_stack();
- 
--	init_timer(&backtrace_timer);
--	backtrace_timer.function = backtrace_test_timer;
--	mod_timer(&backtrace_timer, jiffies + 10);
-+	backtrace_test_normal();
-+	backtrace_test_irq();
-+	backtrace_test_saved();
- 
--	msleep(10);
- 	printk("====[ end of backtrace testing ]====\n");
- 	return 0;
- }
-diff --git a/kernel/stacktrace.c b/kernel/stacktrace.c
-index b71816e..94b527e 100644
---- a/kernel/stacktrace.c
-+++ b/kernel/stacktrace.c
-@@ -6,19 +6,21 @@
-  *  Copyright (C) 2006 Red Hat, Inc., Ingo Molnar <mingo@redhat.com>
-  */
- #include <linux/sched.h>
-+#include <linux/module.h>
- #include <linux/kallsyms.h>
- #include <linux/stacktrace.h>
- 
- void print_stack_trace(struct stack_trace *trace, int spaces)
- {
--	int i, j;
-+	int i;
- 
--	for (i = 0; i < trace->nr_entries; i++) {
--		unsigned long ip = trace->entries[i];
-+	if (WARN_ON(!trace->entries))
-+		return;
- 
--		for (j = 0; j < spaces + 1; j++)
--			printk(" ");
--		print_ip_sym(ip);
-+	for (i = 0; i < trace->nr_entries; i++) {
-+		printk("%*c", 1 + spaces, ' ');
-+		print_ip_sym(trace->entries[i]);
- 	}
- }
-+EXPORT_SYMBOL_GPL(print_stack_trace);
- 
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index d2099f4..6263e2d 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -419,7 +419,6 @@ config DEBUG_LOCKING_API_SELFTESTS
- 
- config STACKTRACE
- 	bool
--	depends on DEBUG_KERNEL
- 	depends on STACKTRACE_SUPPORT
- 
- config DEBUG_KOBJECT
-@@ -563,6 +562,9 @@ config BACKTRACE_SELF_TEST
- 	  for distributions or general kernels, but only for kernel
- 	  developers working on architecture code.
- 
-+	  Note that if you want to also test saved backtraces, you will
-+	  have to enable STACKTRACE as well.
-+
- 	  Say N if you are unsure.
- 
- config LKDTM
+ #endif /* _LINUX_TOPOLOGY_H */
