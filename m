@@ -1,235 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758272AbYGNV1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758234AbYGNV2N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758272AbYGNV1Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 17:27:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756706AbYGNV06
+	id S1758234AbYGNV2N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 17:28:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756383AbYGNV16
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 17:26:58 -0400
-Received: from mu-out-0910.google.com ([209.85.134.186]:61524 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756632AbYGNV05 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 17:26:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=I33vMK3k8RcPoW4E4FXMMhoWELo2jfbk+tHwBEZqUmNiGMBDebEFdPcaRyJZl6s+Vs
-         e6j6fBH9Lhnqigbb0kkRrabiJr+adCyoqLlsw9NaUeuvs7Vnw/CSsaGxJr0MOxNDchvm
-         vHwBQtdbYbxq8NFN1b2U5Hu8/dHvgkcp+1nu4=
-Message-ID: <487BC49B.7080105@gmail.com>
-Date: Mon, 14 Jul 2008 23:26:51 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Swiftdove 2.0.0.14 (X11/20080505)
+	Mon, 14 Jul 2008 17:27:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54539 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753325AbYGNV15 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 17:27:57 -0400
+Date: Mon, 14 Jul 2008 17:26:38 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@devserv.devel.redhat.com
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+cc: davem@davemloft.net, andi@firstfloor.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+Subject: Re: [SUGGESTION]: drop virtual merge accounting in I/O requests
+In-Reply-To: <20080715024424R.fujita.tomonori@lab.ntt.co.jp>
+Message-ID: <Pine.LNX.4.64.0807141720350.30981@devserv.devel.redhat.com>
+References: <20080713.174119.71992292.davem@davemloft.net>
+ <20080714111917S.fujita.tomonori@lab.ntt.co.jp> <20080713.202035.172246136.davem@davemloft.net>
+ <20080715024424R.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
-       akpm@linux-foundation.org, Carl Henrik Lunde <chlunde@ping.uio.no>,
-       axboe@kernel.dk, matt@bluehost.com, roberto@unbit.it,
-       randy.dunlap@oracle.com, Divyesh Shah <dpshah@google.com>,
-       subrata@linux.vnet.ibm.com, eric.rannaud@gmail.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 2/3] i/o bandwidth controller infrastructure
-References: <> <1215862291-26719-3-git-send-email-righi.andrea@gmail.com> <487AB912.9090908@cn.fujitsu.com>
-In-Reply-To: <487AB912.9090908@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
->> +/* The various types of throttling algorithms */
->> +enum iothrottle_strategy {
->> +	IOTHROTTLE_LEAKY_BUCKET,
-> 
-> It's better to explicitly assigned 0 to IOTHROTTLE_LEAKY_BUCKET.
+On Tue, 15 Jul 2008, FUJITA Tomonori wrote:
 
-OK.
+> On Sun, 13 Jul 2008 20:20:35 -0700 (PDT)
+> David Miller <davem@davemloft.net> wrote:
+>
+>> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+>> Date: Mon, 14 Jul 2008 11:19:02 +0900
+>>
+>>> Now IOMMUs don't ignore the max_segment_size. We hit this problem.
+>>
+>> It seems simply that max_segment_size needs to propagate
+>> down into the block layer VMERGE code so that it can
+>> act accordingly.
+>
+> Yeah, I think so. I'll take care of that.
+>
+> But I think that even with the fix, SPARC64 IOMMU still hits the
+> problem.
+>
+> With the VMERGE accounting enabled,
+>
+> - an IOMMU must merge segments that the block layer expects the IOMMU
+> to merge.
+>
+> - an IOMMU must return an error if it can't merge such segments.
+>
+> But the current SPARC64 IOMMU code doesn't return an error if it can't
+> merge such segments (as POWER's IOMMU does, as you know).
 
-> 
->> +	IOTHROTTLE_TOKEN_BUCKET,
->> +};
-> 
->> +static int iothrottle_parse_args(char *buf, size_t nbytes, dev_t *dev,
->> +					u64 *iorate,
->> +					enum iothrottle_strategy *strategy,
->> +					s64 *bucket_size)
->> +{
->> +	char *p = buf;
->> +	int count = 0;
->> +	char *s[3];
->> +	unsigned long strategy_val;
->> +	int ret;
->> +
->> +	/* split the colon-delimited input string into its elements */
->> +	memset(s, 0, sizeof(s));
->> +	while (count < ARRAY_SIZE(s)) {
->> +		p = memchr(p, ':', buf + nbytes - p);
->> +		if (!p)
->> +			break;
->> +		*p++ = '\0';
->> +		if (p >= buf + nbytes)
->> +			break;
->> +		s[count++] = p;
->> +	}
-> 
-> use strsep()
+BTW. what should the block device driver do when it receives a mapping 
+error? (if it aborts the request and it was write request, there will be 
+data corruption). Is it even legal to return IOMMU error in case where no 
+real hardware error or overflow happened?
 
-OK.
-
-> 
->> +
->> +	/* i/o bandwidth limit */
->> +	if (!s[0])
->> +		return -EINVAL;
->> +	ret = strict_strtoull(s[0], 10, iorate);
->> +	if (ret < 0)
->> +		return ret;
->> +	if (!*iorate) {
->> +		/*
->> +		 * we're deleting a limiting rule, so just ignore the other
->> +		 * parameters
->> +		 */
->> +		*strategy = 0;
->> +		*bucket_size = 0;
->> +		goto out;
->> +	}
->> +	*iorate = ALIGN(*iorate, 1024);
->> +
->> +	/* throttling strategy */
->> +	if (!s[1])
->> +		return -EINVAL;
->> +	ret = strict_strtoul(s[1], 10, &strategy_val);
->> +	if (ret < 0)
->> +		return ret;
->> +	*strategy = (enum iothrottle_strategy)strategy_val;
->> +	switch (*strategy) {
->> +	case IOTHROTTLE_LEAKY_BUCKET:
->> +		/* leaky bucket ignores bucket size */
->> +		*bucket_size = 0;
->> +		goto out;
->> +	case IOTHROTTLE_TOKEN_BUCKET:
->> +		break;
->> +	default:
->> +		return -EINVAL;
->> +	}
->> +
->> +	/* bucket size */
->> +	if (!s[2])
->> +		return -EINVAL;
->> +	ret = strict_strtoll(s[2], 10, bucket_size);
->> +	if (ret < 0)
->> +		return ret;
->> +	if (*bucket_size < 0)
->> +		return -EINVAL;
->> +	*bucket_size = ALIGN(*bucket_size, 1024);
->> +out:
->> +
->> +	/* block device number */
->> +	*dev = devname2dev_t(buf);
-> 
-> why not parse dev before parse bandwidth limit ?
-
-Well... due to the filesystem lookup in devname2dev_t() this option is
-the most expensive to be parsed. For this reason I put it at the end, so
-if any other parameter is wrong we can skip the lookup_bdev(). Does it
-make sense?
-
-> 
->> +	return *dev ? 0 : -EINVAL;
->> +}
->> +
->> +static int iothrottle_write(struct cgroup *cgrp, struct cftype *cft,
->> +				const char *buffer)
->> +{
->> +	struct iothrottle *iot;
->> +	struct iothrottle_node *n, *newn = NULL;
->> +	dev_t dev;
->> +	u64 iorate;
->> +	enum iothrottle_strategy strategy;
->> +	s64 bucket_size;
->> +	char *buf;
->> +	size_t nbytes = strlen(buffer);
->> +	int ret = 0;
->> +
->> +	buf = kmalloc(nbytes + 1, GFP_KERNEL);
->> +	if (!buf)
->> +		return -ENOMEM;
->> +	memcpy(buf, buffer, nbytes + 1);
->> +
-> 
-> redundant kmalloc, just use buffer, and ...
-
-
-uhmm... I would apply strsep() directly to buffer in this way, that is
-a const char *.
-
-> 
->> +	ret = iothrottle_parse_args(buf, nbytes, &dev, &iorate,
->> +					&strategy, &bucket_size);
->> +	if (ret)
->> +		goto out1;
->> +	if (iorate) {
->> +		newn = kmalloc(sizeof(*newn), GFP_KERNEL);
->> +		if (!newn) {
->> +			ret = -ENOMEM;
->> +			goto out1;
->> +		}
->> +		newn->dev = dev;
->> +		newn->iorate = iorate;
->> +		newn->strategy = strategy;
->> +		newn->bucket_size = bucket_size;
->> +		newn->timestamp = jiffies;
->> +		atomic_long_set(&newn->stat, 0);
->> +		atomic_long_set(&newn->token, 0);
->> +	}
->> +	if (!cgroup_lock_live_group(cgrp)) {
->> +		kfree(newn);
->> +		ret = -ENODEV;
->> +		goto out1;
->> +	}
->> +	iot = cgroup_to_iothrottle(cgrp);
->> +
->> +	spin_lock(&iot->lock);
->> +	if (!iorate) {
->> +		/* Delete a block device limiting rule */
->> +		n = iothrottle_delete_node(iot, dev);
->> +		goto out2;
->> +	}
->> +	n = iothrottle_search_node(iot, dev);
->> +	if (n) {
->> +		/* Update a block device limiting rule */
->> +		iothrottle_replace_node(iot, n, newn);
->> +		goto out2;
->> +	}
->> +	/* Add a new block device limiting rule */
->> +	iothrottle_insert_node(iot, newn);
->> +out2:
->> +	spin_unlock(&iot->lock);
->> +	cgroup_unlock();
->> +	if (n) {
->> +		synchronize_rcu();
->> +		kfree(n);
->> +	}
->> +out1:
->> +	kfree(buf);
->> +	return ret;
->> +}
->> +
->> +static struct cftype files[] = {
->> +	{
->> +		.name = "bandwidth",
->> +		.read_seq_string = iothrottle_read,
->> +		.write_string = iothrottle_write,
-> 
-> and you should specify .max_write_len = XXX unless XXX <= 64.
-> You use 1024 in v4.
-
-OK. Anyway, probably something like 256 would be enough.
-
-Thanks again for the detailed revision Li! I'll include your fixes in
-a new patchset version.
-
--Andrea
+Mikulas
