@@ -1,89 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754246AbYGNNTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754108AbYGNNaq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754246AbYGNNTU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 09:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbYGNNTH
+	id S1754108AbYGNNaq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 09:30:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753417AbYGNNai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 09:19:07 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:11930 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752673AbYGNNTF (ORCPT
+	Mon, 14 Jul 2008 09:30:38 -0400
+Received: from ti-out-0910.google.com ([209.85.142.190]:31682 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753346AbYGNNah (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 09:19:05 -0400
-Message-ID: <487B51DD.2080206@hp.com>
-Date: Mon, 14 Jul 2008 09:17:17 -0400
-From: jim owens <jowens@hp.com>
-User-Agent: Mozilla/5.0 (X11; U; OSF1 alpha; en-US; rv:1.7.13) Gecko/20060421
-X-Accept-Language: en-us, en
+	Mon, 14 Jul 2008 09:30:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=nleu7aAx71QiThGNY+k3u7eHkBMUZd/Ws2zSoEoO74/PXmUppEa1Rq0t/cK/V8Egtj
+         cicSEhmYzKmYCGLD0FsHgOlQChu2hSDI34oYdbfahLnnH8emCNT6tu7J1mg0m/cfXRwH
+         +9XnJ1Se+bo5K2/9fDxowS+k43GHFMyg2uM0k=
+Message-ID: <851fc09e0807140630w6edfa613oc176c6479808a6bd@mail.gmail.com>
+Date: Mon, 14 Jul 2008 21:30:31 +0800
+From: "huang ying" <huang.ying.caritas@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH -mm 1/2] kexec jump -v12: kexec jump
+Cc: "Vivek Goyal" <vgoyal@redhat.com>, "Huang Ying" <ying.huang@intel.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Pavel Machek" <pavel@ucw.cz>, nigel@nigel.suspend2.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       "Kexec Mailing List" <kexec@lists.infradead.org>
+In-Reply-To: <20080711122131.b6461ab1.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-CC: linux-fsdevel@vger.kernel.org, Dave Chinner <david@fromorbit.com>,
-       Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>,
-       Miklos Szeredi <miklos@szeredi.hu>, hch@infradead.org,
-       t-sato@yk.jp.nec.com, akpm@linux-foundation.org,
-       viro@ZenIV.linux.org.uk, linux-ext4@vger.kernel.org, xfs@oss.sgi.com,
-       dm-devel@redhat.com, linux-kernel@vger.kernel.org, axboe@kernel.dk,
-       mtk.manpages@googlemail.com
-Subject: Re: [PATCH 3/3] Add timeout feature
-References: <E1KGT4q-0006fD-Jb@pomaz-ex.szeredi.hu> <20080708234120.5072111f@infradead.org> <E1KGTTm-0006ke-Jh@pomaz-ex.szeredi.hu> <20080708235502.1c52a586@infradead.org> <20080709071346.GS11558@disturbed> <20080709110900.GI9957@mit.edu> <20080709114958.GV11558@disturbed> <4874C3E8.20804@hp.com> <20080713120602.GC7517@elf.ucw.cz> <487A383F.50600@hp.com> <20080714063617.GF31949@elf.ucw.cz>
-In-Reply-To: <20080714063617.GF31949@elf.ucw.cz>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <1215401122.4660.4.camel@caritas-dev.intel.com>
+	 <20080708145051.GA14745@redhat.com>
+	 <20080711122131.b6461ab1.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
+On Sat, Jul 12, 2008 at 3:21 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Tue, 8 Jul 2008 10:50:51 -0400 Vivek Goyal <vgoyal@redhat.com> wrote:
+>
+>> On Mon, Jul 07, 2008 at 11:25:22AM +0800, Huang Ying wrote:
+>> > This patch provides an enhancement to kexec/kdump. It implements
+>> > the following features:
+>> >
+>> > - Backup/restore memory used by the original kernel before/after
+>> >   kexec.
+>> >
+>> > - Save/restore CPU state before/after kexec.
+>> >
+>>
+>> Hi Huang,
+>>
+>> In general this patch set looks good enough to live in -mm and
+>> get some testing going.
+>>
+>> To me, adding capability to return back to original kernel looks
+>> like a logical extension to kexec functionality.
+>
+> Exciting ;)  It's much less code than I expected.
+>
+> I don't think I understand the feature any more.  Once upon a time we
+> thought that this might become a new and better (or at least
+> better-code-sharing) way of doing suspend-to-disk.  How far are we from
+> that?
 
-> If you also freeze data writes, at least snapshot is not worse than
-> _unexpected_ shutdown.
+At least there are still issues as follow:
 
-True.  But the key point is also that stopping file writes is
-__no better__ than an unexpected shutdown for applications.
+- We need a mechanism to pass some information (such as backup pages
+map) from hibernated kernel to hibernating kernel. Maybe in C calling
+convention.
+- To load hibernation image via /sbin/kexec, the segment number
+constraint of sys_kexec_load needs to be extended (maybe via
+multi-stage loading).
+- Make kexec based hibernation compatible with ACPI S4.
+- Extend makedumpfile utility for kexec based hibernation.
 
-Once kernel people accept that it is identical to an unknown
-shutdown state, they realize that as you said...
+> What are the prospects of supporting other architectures?
 
-> And apps should already be ready for unexpected shutdowns (using fsync
-> etc).
+I will work on x86_64 supporting.
 
-The people writing the code outside the kernel are the ones
-responsible for the logic of handling "we don't know what
-application writes made it to disk".
+> Who maintains kexec-tools, and are they OK with merging up the
+> corresponding changes?
 
-Remember that immediately after fsync(), the next write
-can make the file inconsistent.  For example, look at this
-simple sales processing database type sequence:
+I will work with kexec-tools mailing list for corresponding kexec-tools patches.
 
-    write(sale_last_name_file, "Mackek"
-    write(sale_first_name_file, "Pavel")
-    fsync(sale_last_name_file)
-    fsync(sale_first_name_file)
-       ...
-    write(sale_last_name_file, "Owens")
-    write(sale_first_name_file, "Jim")
-    fsync(sale_last_name_file)
-
-FREEZEFS [defined to NOT allow file data writes]
-
-So if we restart from that snapshot, the sales order
-thinks the customer is "Pavel Owens"... unless there
-is some mechanism such as seqence numbers that tie
-the files together.  And if they have such a mechanism
-then it doesn't matter if we allow even more writes
-such as:
-
-    write(sale_first_name_file, "Ted")
-
-There just is no way inside the kernel to know a
-freeze was triggered at a stable application point
-such that data before the freeze must be on disk
-and data after the freez must not go to disk.
-
-This issue is not unique to freeze, it is also
-present with filesystems that have snapshots and
-cow/versioning built in.
-
-jim
+Best Regards,
+Huang Ying
