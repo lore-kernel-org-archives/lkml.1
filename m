@@ -1,89 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755003AbYGNOP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755189AbYGNOR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755003AbYGNOP4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 10:15:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753433AbYGNOPr
+	id S1755189AbYGNOR4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 10:17:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbYGNORs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 10:15:47 -0400
-Received: from bu3sch.de ([62.75.166.246]:53864 "EHLO vs166246.vserver.de"
+	Mon, 14 Jul 2008 10:17:48 -0400
+Received: from smtp3-g19.free.fr ([212.27.42.29]:59340 "EHLO smtp3-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753427AbYGNOPq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 10:15:46 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Dave Young <hidave.darkstar@gmail.com>
-Subject: Re: mac80211 : WARN at net/mac80211/rate.h:153
-Date: Mon, 14 Jul 2008 16:14:51 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Stefano Brivio <stefano.brivio@polimi.it>,
-       Mattias Nissler <mattias.nissler@gmx.de>
-References: <20080714075010.GA3559@darkstar>
-In-Reply-To: <20080714075010.GA3559@darkstar>
+	id S1753487AbYGNORs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 10:17:48 -0400
+Message-ID: <487B6004.6090801@inria.fr>
+Date: Mon, 14 Jul 2008 16:17:40 +0200
+From: Brice Goglin <Brice.Goglin@inria.fr>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Maciej Sosnowski <maciej.sosnowski@intel.com>
+CC: dan.j.williams@intel.com, shannon.nelson@intel.com,
+       linux-kernel@vger.kernel.org, net-dev@vger.kernel.org
+Subject: Re: [PATCH 1/2] I/OAT: Add watchdog/reset functionality to ioatdma
+ driver
+References: <20080714132215.26830.90819.stgit@linux.site> <20080714132349.26830.22215.stgit@linux.site>
+In-Reply-To: <20080714132349.26830.22215.stgit@linux.site>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807141614.51628.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CCing PID guys.
-I've seen several people hitting this. What's the meaning of this warning?
+Maciej Sosnowski wrote:
+> Due to occasional DMA channel hangs observed for I/OAT versions 1.2 and 2.0
+> a watchdog has been introduced to check every 2 seconds
+> if all channels progress normally.
+> If stuck channel is detected, driver resets it.
+> The reset is done in two parts. The second part is scheduled 
+> by the first one to reinitialize the channel after the restart.
+>   
 
-On Monday 14 July 2008 09:50:10 Dave Young wrote:
-> Hi,
-> I get warnings when I run
-> dhcpcd wlan0
-> The driver using is ath5k
-> 
-> warnings like following:
-> 
-> ------------[ cut here ]------------
-> WARNING: at net/mac80211/rate.h:153 rate_control_pid_rate_init+0x7a/0xa0 [mac80211]()
-> Modules linked in: radeon drm snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss rfcomm l2cap bluetooth vfat fuse snd_hda_intel ath5k mac80211 rtc_cmos rtc_core rtc_lib psmouse snd_pcm snd_timer snd_page_alloc snd_hwdep 3c59x intel_agp snd e100 cfg80211 i2c_i801 serio_raw mii soundcore agpgart thermal processor button thermal_sys evdev sg
-> Pid: 0, comm: swapper Tainted: G        W 2.6.26-smp #1
->  [<c0127954>] warn_on_slowpath+0x54/0x70
->  [<c0177000>] ? print_trailer+0xa0/0xf0
->  [<c0177071>] ? check_bytes_and_report+0x21/0xc0
->  [<c0177452>] ? check_object+0xe2/0x1e0
->  [<c0178117>] ? __slab_alloc+0x3a7/0x4c0
->  [<f8d6a196>] ? rate_control_pid_alloc_sta+0x16/0x50 [mac80211]
->  [<f8d6a2ba>] rate_control_pid_rate_init+0x7a/0xa0 [mac80211]
->  [<f8d4fcf7>] ieee80211_ibss_add_sta+0xc7/0x110 [mac80211]
->  [<f8d5a377>] __ieee80211_rx_handle_packet+0x417/0x7b0 [mac80211]
->  [<c0177071>] ? check_bytes_and_report+0x21/0xc0
->  [<f8d5c845>] __ieee80211_rx+0x185/0x560 [mac80211]
->  [<c0109769>] ? read_tsc+0x9/0x30
->  [<f89199dc>] ? ath5k_hw_get_tsf64+0x4c/0x90 [ath5k]
->  [<f89161e3>] ath5k_tasklet_rx+0xf3/0x710 [ath5k]
->  [<c0141f1d>] ? clocksource_get_next+0x3d/0x50
->  [<c01408ad>] ? update_wall_time+0x28d/0x800
->  [<f8919712>] ? ath5k_hw_is_intr_pending+0x22/0x50 [ath5k]
->  [<c012d019>] tasklet_action+0x49/0xb0
->  [<c012cae6>] __do_softirq+0x76/0xf0
->  [<c012cb9b>] do_softirq+0x3b/0x50
->  [<c012cf5c>] irq_exit+0x5c/0x70
->  [<c0106995>] do_IRQ+0x45/0x80
->  [<c012cf55>] ? irq_exit+0x55/0x70
->  [<c011288b>] ? smp_apic_timer_interrupt+0x5b/0x90
->  [<c010a220>] ? mwait_idle+0x0/0x40
->  [<c0104623>] common_interrupt+0x23/0x28
->  [<c010a220>] ? mwait_idle+0x0/0x40
->  [<c010a252>] ? mwait_idle+0x32/0x40
->  [<c01026db>] cpu_idle+0x5b/0xc0
->  [<c042054e>] rest_init+0x4e/0x60
->  =======================
-> ---[ end trace de545485c8f84982 ]---
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
+Is all this transparent to the caller? Are you reposting all copies to
+the hardware after the reset? Or are we going to get some DMA_ERROR
+return values ?
 
+> Sleep time in self_test has been increased to 10ms
+> since in some cases 1ms appeared not to be enough
 
+Thanks Maciej, this helps a lot here.
 
--- 
-Greetings Michael.
+Brice
+
