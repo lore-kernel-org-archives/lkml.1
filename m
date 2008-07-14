@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756791AbYGNTf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756902AbYGNTnB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756791AbYGNTf7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 15:35:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755028AbYGNTfp
+	id S1756902AbYGNTnB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 15:43:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755316AbYGNTmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 15:35:45 -0400
-Received: from delay-av.club-internet.fr ([194.158.96.170]:60270 "EHLO
-	delay-av.club-internet.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755142AbYGNTfo (ORCPT
+	Mon, 14 Jul 2008 15:42:53 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:51209 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754643AbYGNTmx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 15:35:44 -0400
-X-Greylist: delayed 1449 seconds by postgrey-1.27 at vger.kernel.org; Mon, 14 Jul 2008 15:35:44 EDT
-Date: Mon, 14 Jul 2008 21:11:33 +0200
-From: Dimitri Gorokhovik <dimitri.gorokhovik@free.fr>
-To: linux-ide@vger.kernel.org, bzolnier@gmail.com
-Cc: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: [PATCH] ide: it821x in pass-through mode segfaults in 2.6.26-stable
-Message-ID: <20080714211133.514936a4@laphroaig>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 14 Jul 2008 15:42:53 -0400
+Message-ID: <487BAC38.4060601@firstfloor.org>
+Date: Mon, 14 Jul 2008 21:42:48 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Avi Kivity <avi@qumranet.com>
+Subject: Re: [git pull] core, x86: make LIST_POISON less deadly
+References: <20080714144828.GA22666@elte.hu> <alpine.LFD.1.10.0807140758100.3305@woody.linux-foundation.org> <20080714151247.GA27145@elte.hu> <alpine.LFD.1.10.0807140856130.3305@woody.linux-foundation.org> <8763r8z570.fsf@basil.nowhere.org> <alpine.LFD.1.10.0807141139120.3305@woody.linux-foundation.org> <487BA4CF.6060905@firstfloor.org> <alpine.LFD.1.10.0807141214180.3305@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807141214180.3305@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Let me know if you need the kernel config for this.) 
----
-The driver of ITE8212 in pass-through mode (it8212.noraid=1 on cmndline)
-attempts to use the field `.dma_host_set' of the struct ide_dma_ops in
-`ide_config_drive_speed' which is set to NULL by default.
+Linus Torvalds wrote:
+> 
+> On Mon, 14 Jul 2008, Andi Kleen wrote:
+>> How about if the page fault handler checks for the value and prints
+>> a obvious string? It could do this reliably, unlike the "grep
+>> all registers for poison on #GP" method that was earlier proposed.
+> 
+> The GP handler, you mean.
 
-So give a value to all fields of the struct ide_dma_ops.
+No i meant #PF because #PF can do it reliably (sorry wasn't fully
+convinced by you earlier)
 
----
-diff --git a/drivers/ide/pci/it821x.c b/drivers/ide/pci/it821x.c
-index 6ab0411..cbf6472 100644
---- a/drivers/ide/pci/it821x.c
-+++ b/drivers/ide/pci/it821x.c
-@@ -512,8 +512,14 @@ static void __devinit it821x_quirkproc(ide_drive_t *drive)
- }
- 
- static struct ide_dma_ops it821x_pass_through_dma_ops = {
-+	.dma_host_set		= ide_dma_host_set,
-+	.dma_setup		= ide_dma_setup,
-+	.dma_exec_cmd		= ide_dma_exec_cmd,
- 	.dma_start		= it821x_dma_start,
- 	.dma_end		= it821x_dma_end,
-+	.dma_test_irq		= ide_dma_test_irq,
-+	.dma_timeout		= ide_dma_timeout,
-+	.dma_lost_irq		= ide_dma_lost_irq,
- };
- 
- /**
-	
+But ok doing it a little unreliably in #GP is better than nothing.
+
+It would be cool if that function knew about the various poisons
+in poison.h and printed them out by name.
+
+That would indeed improve newbie friendliness of oopses significantly
+I believe. Kind of like a mini AI in the oops printer.
+
+I can look at that later if nobody beats me to it.
+
+-Andi
