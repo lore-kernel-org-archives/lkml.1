@@ -1,62 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756331AbYGNGOD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755896AbYGNGXu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756331AbYGNGOD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 02:14:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbYGNGNx
+	id S1755896AbYGNGXu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 02:23:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbYGNGXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 02:13:53 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35396 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752446AbYGNGNx (ORCPT
+	Mon, 14 Jul 2008 02:23:43 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:55288 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752305AbYGNGXm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 02:13:53 -0400
-Date: Mon, 14 Jul 2008 08:14:30 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andy Lutomirski <luto@myrealbox.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       public-kernel-testers-u79uwXL29TY76Z2rM5mHXA@lo.gmane.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
-Message-ID: <20080714061429.GF20258@elf.ucw.cz>
-References: <200807122253.32382.rjw@sisk.pl> <48793A0E.3050803@myrealbox.com> <200807130133.12324.rjw@sisk.pl> <20080713091524.GA29907@elte.hu> <20080713120253.GA27582@srcf.ucam.org> <487A2431.2050103@myrealbox.com> <487A4CB7.1080001@firstfloor.org> <487A62B3.8010207@zytor.com> <487A63D2.9040006@firstfloor.org> <20080714012206.GA11882@khazad-dum.debian.net>
+	Mon, 14 Jul 2008 02:23:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=kQ6K2b43pNq+xCc+47mGpTjy4u7Q36GTUjDOwq6t9F3emqNqRRnxxYsF4vOeZ45XEB
+         QTIKSYyQOp+YrS1jRpR3eEe+aSc4zlTKI8KhRGu4b9B5eA1bfbRPESFUu1mG2CnuEm6p
+         paszVe088SgNIjkWBS42wWknWMIU5TwV825fM=
+Message-ID: <19f34abd0807132323r3c919aq88ecaf572da765cb@mail.gmail.com>
+Date: Mon, 14 Jul 2008 08:23:40 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Dave Young" <hidave.darkstar@gmail.com>
+Subject: Re: [RFC][-rc9 PATCH] Bluetooth: fix oops in rfcomm
+Cc: "Soeren Sonnenburg" <kernel@nn7.de>,
+       "Marcel Holtmann" <marcel@holtmann.org>,
+       "David Woodhouse" <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <a8e1da0807131941n4697cb14g1cfbb0bb3ad74f50@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080714012206.GA11882@khazad-dum.debian.net>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20080713172318.GA6180@damson.getinternet.no>
+	 <a8e1da0807131941n4697cb14g1cfbb0bb3ad74f50@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2008-07-13 22:22:06, Henrique de Moraes Holschuh wrote:
-> On Sun, 13 Jul 2008, Andi Kleen wrote:
-> > It probably switches to protected mode. I noticed this on my old
-> > Fujitsu laptop when I tried to make the S3 wakeup run in the s2ram x86 emulator
-> > and found it entered protected mode at some point, which x86emu
-> > didn't support.
-> > 
-> > I guess Lenovo is doing the same.
-> > 
-> > And that protected mode code relies on some GDT values that have been
-> > loaded earlier when the BIOS also went into protected mode.
-> > 
-> > It seems the BIOS programmers really don't like real mode anymore.
-> > Somehow understandable.
-> 
-> If it were just Lenovo, it shouldn't be too difficult to get them to fix the
-> BIOS.  But since other vendors have the same problem, that won't fly as a
-> solution.
+On Mon, Jul 14, 2008 at 4:41 AM, Dave Young <hidave.darkstar@gmail.com> wrote:
+>> This patch attempts to correct this by only removing the device from the
+>> internal rfcomm list of devices at the final unregister, so that the id
+>> won't get reused until the device has been completely destructed.
+>
+> It looks good, I agree with your change.
 
-With all the BIOSes in field, practically impossible to update? (My
-x60 has no CDrom..) No, I don't think we can expect fix from BIOS vendors.
+Thanks for looking!
 
-									Pavel
+>        if (IS_ERR(dev->tty_dev)) {
+>                err = PTR_ERR(dev->tty_dev);
+>                list_del(&dev->list);
+>                kfree(dev);
+>                return err;
+>        }
+>
+> The list_del need to be protected as well.
+
+After looking at the code once again I wonder if we should not extend
+the protection even a bit further. Just below, we have this:
+
+        if (device_create_file(dev->tty_dev, &dev_attr_address) < 0)
+
+..which means that we could theoretically get here, be preempted by
+another process which 1. releases the device id, and 2. recreates the
+same device id. When we resume execution of the first task,
+device_create_file() would be called for a file that already exists.
+
+Should the rfcomm_dev_lock be extended to include protecting these
+things as well? It seems somehow wrong, but I am not sure how it
+should be done correctly either.
+
+
+Vegard
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
