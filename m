@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757544AbYGNUoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757431AbYGNUtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757544AbYGNUoY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 16:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755337AbYGNUoR
+	id S1757431AbYGNUtm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 16:49:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755337AbYGNUte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 16:44:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41422 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753505AbYGNUoQ (ORCPT
+	Mon, 14 Jul 2008 16:49:34 -0400
+Received: from perninha.conectiva.com.br ([200.140.247.100]:59923 "EHLO
+	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754464AbYGNUte (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 16:44:16 -0400
-Date: Mon, 14 Jul 2008 13:43:45 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, david-b@pacbell.net,
-       piotr.skamruk@gmail.com, openwrt-devel@lists.openwrt.org
-Subject: Re: [PATCH] Add SPI over GPIO driver
-Message-Id: <20080714134345.a2287c6c.akpm@linux-foundation.org>
-In-Reply-To: <200807142109.13243.mb@bu3sch.de>
-References: <200807142109.13243.mb@bu3sch.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 14 Jul 2008 16:49:34 -0400
+Date: Mon, 14 Jul 2008 17:49:04 -0300
+From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+To: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Roland McGrath <roland@redhat.com>, stable@kernel.org
+Subject: Re: [PATCH] Fix typos from signal_32/64.h merge
+Message-ID: <20080714174904.732299d1@doriath.conectiva>
+In-Reply-To: <200807141740.23750.herton@mandriva.com.br>
+References: <200807141740.23750.herton@mandriva.com.br>
+Organization: Mandriva
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.4; i586-mandriva-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -27,23 +29,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Jul 2008 21:09:12 +0200
-Michael Buesch <mb@bu3sch.de> wrote:
+Em Mon, 14 Jul 2008 17:40:23 -0300
+Herton Ronaldo Krzesinski <herton@mandriva.com.br> escreveu:
 
-> +static inline void do_spidelay(struct spi_device *dev, unsigned nsecs)
-> +{
-> +	struct spi_gpio *sp = spidev_to_sg(dev);
-> +
-> +	if (!sp->info->no_spi_delay)
-> +		ndelay(nsecs);
-> +}
-> +
-> +#define spidelay(nsecs) do {					\
-> +	/* Steal the spi_device pointer from our caller.	\
-> +	 * The bitbang-API should probably get fixed here... */	\
-> +	do_spidelay(spi, nsecs);				\
-> +  } while (0)
+| Fallout from commit 33185c504f8e521b398536b5a8d415779a24593c ("x86:
+| merge signal_32/64.h")
+| 
+| Thanks to Dick Streefland who provided an useful testcase on
+| http://lkml.org/lkml/2008/3/17/205 (only applicable to 2.6.24.x), that
+| helped a lot as a deterministic way to bisect an issue that leaded to
+| this fix.
 
-A macro which requires that its caller have a particular local variable
-is a bit nasty.  Could we plan to add the spi_device* to spidelay()
-please? 
+ Just a small note. On 2.6.24.x this causes gdb to get unexpected
+SIGTRAPs, which (for some reason) is easy to reproduce when debugging
+C++/QT programs.
+
+ And I have no idea on what kind of bug this is causing in latest
+2.6.26 kernel.
+
+-- 
+Luiz Fernando N. Capitulino
