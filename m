@@ -1,123 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbYGNRAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756762AbYGNRCk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755973AbYGNRAh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 13:00:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753068AbYGNRAa
+	id S1756762AbYGNRCk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 13:02:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753068AbYGNRCc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 13:00:30 -0400
-Received: from wx-out-0506.google.com ([66.249.82.231]:9147 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751845AbYGNRA3 (ORCPT
+	Mon, 14 Jul 2008 13:02:32 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:49058 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751845AbYGNRCc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 13:00:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=UMA7U6mXJdP44KT/3rfVOTfFtt0XzqYZfOfXAgc2qgNHh5DeRDezn/BE1rpRURJf1x
-         eFHUQSv3pR3QnOJiT0AKZfZoocH4/aIc+gIQWzkk8cMmegL3QFvuE1M+8C6j4eYDCasF
-         RNR+6cdfeWYs5LBu5/gJTCAnrevUkfL+dQ2P4=
-Message-ID: <86802c440807141000x106cf885s6de0aad9804112bf@mail.gmail.com>
-Date: Mon, 14 Jul 2008 10:00:28 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Suresh Siddha" <suresh.b.siddha@intel.com>
-Subject: Re: [PATCH] x86: let 32bit use apic_ops too - fix
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080714164913.GK1678@linux-os.sc.intel.com>
+	Mon, 14 Jul 2008 13:02:32 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Mon, 14 Jul 2008 19:02:15 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
+To: Jack Howarth <howarth@bromo.msbb.uc.edu>
+cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080714135108.GA9197@bromo.msbb.uc.edu>
+Message-ID: <tkrat.392407daaf07e315@s5r6.in-berlin.de>
+References: <20080714135108.GA9197@bromo.msbb.uc.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200807080141.05436.yhlu.kernel@gmail.com>
-	 <200807102038.26591.yhlu.kernel@gmail.com>
-	 <200807111841.55403.yhlu.kernel@gmail.com>
-	 <200807132219.35814.yhlu.kernel@gmail.com>
-	 <20080714071207.GB17077@elte.hu>
-	 <20080714164913.GK1678@linux-os.sc.intel.com>
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 14, 2008 at 9:49 AM, Suresh Siddha
-<suresh.b.siddha@intel.com> wrote:
-> On Mon, Jul 14, 2008 at 12:12:07AM -0700, Ingo Molnar wrote:
->>
->> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->>
->> > fix for pv.
->> >
->> > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
->>
->> applied to tip/x86/x2apic - thanks Yinghai.
->
-> Ingo, before you try for the third attempt ;) we need one more lguest apic_ops
-> fix. Patch appended. Thanks.
->
-> ---
-> [patch] x86: apic_ops for lguest
->
-> apic_ops for lguest.
->
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> Cc: Yinghai Lu <yhlu.kernel@gmail.com>
-> ---
->
-> Index: x86.git/arch/x86/lguest/boot.c
-> ===================================================================
-> --- x86.git.orig/arch/x86/lguest/boot.c 2008-07-14 09:44:31.000000000 -0700
-> +++ x86.git/arch/x86/lguest/boot.c      2008-07-14 09:45:12.000000000 -0700
-> @@ -791,6 +791,37 @@
->  {
->        return 0;
->  }
-> +
-> +static u64 lguest_apic_icr_read(void)
-> +{
-> +       return 0;
-> +}
-> +
-> +static void lguest_apic_icr_write(u32 low, u32 id)
-> +{
-> +       /* Warn to see if there's any stray references */
-> +       WARN_ON(1);
-> +}
-> +
-> +static void lguest_apic_wait_icr_idle(void)
-> +{
-> +       return;
-> +}
-> +
-> +static u32 lguest_apic_safe_wait_icr_idle(void)
-> +{
-> +       return 0;
-> +}
-> +
-> +static struct apic_ops lguest_basic_apic_ops = {
-> +       .read = lguest_apic_read,
-> +       .write = lguest_apic_write,
-> +       .write_atomic = lguest_apic_write,
-> +       .icr_read = lguest_apic_icr_read,
-> +       .icr_write = lguest_apic_icr_write,
-> +       .wait_icr_idle = lguest_apic_wait_icr_idle,
-> +       .safe_wait_icr_idle = lguest_apic_safe_wait_icr_idle,
-> +};
->  #endif
->
->  /* STOP!  Until an interrupt comes in. */
-> @@ -990,9 +1021,7 @@
->
->  #ifdef CONFIG_X86_LOCAL_APIC
->        /* apic read/write intercepts */
-> -       pv_apic_ops.apic_write = lguest_apic_write;
-> -       pv_apic_ops.apic_write_atomic = lguest_apic_write;
-> -       pv_apic_ops.apic_read = lguest_apic_read;
-> +       apic_ops = &lguest_basic_apic_ops;
->  #endif
->
->        /* time operations */
+Jack Howarth wrote:
+>    Is anyone able to boot the 2.6.26rc9git9 or 2.6.26rc9git12
+> kernels on a Macintel machine? On my MacBook Pro (second gen with
+> rEFIt installed for dual booting), I find that MMCONFIG doesn't
+> seem to be in use under the 2.6.26 kernels. I get the following
+> hang when booting rc9git9 or rc9git12...
+> 
+> ACPI: bus type pci registered
+> PCI: MCFG configuration 0: base f0000000 segment 0 buses 0 - 255
+> PCI: Not using MMCONFIG
+> PCI: Using configuration type 1 for base access
+> ACPI: EC: EC description table is found, configuring boot EC
+> ACPI: EC: non-query interrupt received switching to interrupt mode
+> ACPI: BIOS_OSI (Linux) query ignored via DMI
+> ACPI: Interpreter enabled
+> ACPI: (supports S0 S3 S4 S5)
+> ACPI: Using IOAPIC for interrupt routing
+> PCI: MCFG configuration 0: base f0000000 segment 0 buses 0 - 255
+> PCI: BIOS Bug: MCFG area at f0000000 is not reserved in ACPI motherboard resources
+> PCI: Not using MMCONFIG
+> ACPI: EC:GPE=0x17, I/O: command/status=0x66, data=0x62
+> ACPI: EC: driver started in interrupt mode
+> ACPI: PCI Root Bridge [PCI0] (0000:00)
+> pci 0000:00:1f.0: quirk: region 0400-047f claimed by ICH6 ACPI/GPIO/TCO
+> pci 0000:00:1f.0: quirk: region 0500-053f claimed by ICH6 GPIO
+> 
+> This compares to the same section in a normal boot of 2.6.25.10...
+> 
+> ACPI: bus type pci registered
+> PCI: Using MMCONFIG at f0000000 - ffffffff
+> PCI: Using configuration type 1
+> ACPI: EC: EC description table is found, configuring boot EC
+> ACPI: EC: non-query interrupt received, switching to interrupt mode
+> ACPI: BIOS _OSI(Linux) query ignored via DMI
+> ACPI: Interpreter enabled
+> ACPI: (supports S0 S3 S4 S5)
+> ACPI: Using IOAPIC for interrupt routing
+> ACPI: EC: GPE = 0x17, I/O: command/status = 0x66, data = 0x62
+> ACPI: EC: driver started in poll mode
+> ACPI: PCI Root Bridge [PCI0] (0000:00)
+> pci 0000:00:1f.0: quirk: region 0400-047f claimed by ICH6 ACPI/GPIO/TCO
+> pci 0000:00:1f.0: quirk: region 0500-053f claimed by ICH6 GPIO
+> PCI: Transparent bridge - 0000:00:1e.0
+> ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
+[...]
+> ..etc. My understanding is that the EFI in use on Macintel requires the
+> use of MMCONFIG so the boot failure isn't surprising but the absence of
+> MMCONFIG is.
 
-do we need one for KVM pv?
+I have no idea...  Here is a Mac mini which just booted 2.6.26 x86-64:
 
-YH
+ACPI: bus type pci registered
+PCI: MCFG configuration 0: base e0000000 segment 0 buses 0 - 255
+PCI: MCFG area at e0000000 reserved in E820
+PCI: Using MMCONFIG at e0000000 - efffffff
+PCI: Using configuration type 1 for base access
+ACPI: EC: EC description table is found, configuring boot EC
+ACPI: BIOS _OSI(Linux) query ignored via DMI
+ACPI: Interpreter enabled
+ACPI: (supports S0 S3 S4 S5)
+ACPI: Using IOAPIC for interrupt routing
+ACPI: EC: GPE = 0x17, I/O: command/status = 0x66, data = 0x62
+ACPI: EC: driver started in poll mode
+ACPI: PCI Root Bridge [PCI0] (0000:00)
+pci 0000:00:1f.0: quirk: region 0400-047f claimed by ICH6 ACPI/GPIO/TCO
+pci 0000:00:1f.0: quirk: region 0500-053f claimed by ICH6 GPIO
+PCI: Transparent bridge - 0000:00:1e.0
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
+[...]
+
+There is a CONFIG_PCI_MMCONFIG=y in its .config, FWIW.  I too have rEFIt
+installed on this mini.  dmidecode says it is a Macmini1,1.
+-- 
+Stefan Richter
+-=====-==--- -=== -===-
+http://arcgraph.de/sr/
+
