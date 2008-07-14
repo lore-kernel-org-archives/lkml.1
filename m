@@ -1,107 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbYGNOK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbYGNOMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755249AbYGNOK6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 10:10:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbYGNOKt
+	id S1755603AbYGNOMs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 10:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbYGNOMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 10:10:49 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:21348 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753427AbYGNOKs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 10:10:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=n/n2wbAS8m7RY9BGl+kQaC/F6nryjjvXpKk2i2bQcZ6KJkS5F3KJ+ARx75wm/dtRi/
-         xYaUT+A8D3gcfFmwphSo1MDQZbWjN2U5rKxT2zN44R0TREW526G3IZHRh12Ah7ah6Md8
-         53xQTZ0tcErDOrbg6xdVvQuyn+vunkXz9fOyE=
-Message-ID: <170fa0d20807140710o29af31b5q7a0b268e3c6494b1@mail.gmail.com>
-Date: Mon, 14 Jul 2008 10:10:44 -0400
-From: "Mike Snitzer" <snitzer@gmail.com>
-To: "Hidehiro Kawai" <hidehiro.kawai.ez@hitachi.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: - jbd-strictly-check-for-write-errors-on-data-buffers.patch removed from -mm tree
-Cc: jack@suse.cz, linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Satoshi OSHIMA" <satoshi.oshima.fk@hitachi.com>,
-       sugita <yumiko.sugita.yf@hitachi.com>
-In-Reply-To: <170fa0d20807140708k46f86ac1tfee50d3fa14e3e41@mail.gmail.com>
+	Mon, 14 Jul 2008 10:12:40 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54816 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753552AbYGNOMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 10:12:39 -0400
+Date: Mon, 14 Jul 2008 09:57:19 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Rik van Riel <riel@redhat.com>, Paul Menage <menage@google.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Libcg Devel Mailing List <libcg-devel@lists.sourceforge.net>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Peter Zijlstra <pzijlstr@redhat.com>,
+       Kazunaga Ikeno <k-ikeno@ak.jp.nec.com>,
+       Morton Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Graf <tgraf@redhat.com>, Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [RFC] How to handle the rules engine for cgroups
+Message-ID: <20080714135719.GE16673@redhat.com>
+References: <20080701191126.GA17376@redhat.com> <20080703101957.b3856904.kamezawa.hiroyu@jp.fujitsu.com> <20080703155446.GB9275@redhat.com> <6599ad830807100223m2453963cwcfbe6eb1ad54d517@mail.gmail.com> <20080710104852.797fe79c@cuia.bos.redhat.com> <20080710154035.GA12043@redhat.com> <20080711095501.cefff6df.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200806092212.m59MC553010889@imap1.linux-foundation.org>
-	 <484E4097.2010204@hitachi.com>
-	 <20080610021746.51e5cfa8.akpm@linux-foundation.org>
-	 <170fa0d20807140708k46f86ac1tfee50d3fa14e3e41@mail.gmail.com>
+In-Reply-To: <20080711095501.cefff6df.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-gah, I had html enabled... resend.
+On Fri, Jul 11, 2008 at 09:55:01AM +0900, KAMEZAWA Hiroyuki wrote:
+> On Thu, 10 Jul 2008 11:40:35 -0400
+> Vivek Goyal <vgoyal@redhat.com> wrote:
+> 
+> > On Thu, Jul 10, 2008 at 10:48:52AM -0400, Rik van Riel wrote:
+> > > On Thu, 10 Jul 2008 02:23:52 -0700
+> > > "Paul Menage" <menage@google.com> wrote:
+> > > 
+> > > > I don't see the rule-based approach being all that useful for our needs.
+> > > 
+> > > Agreed, there really is no need for a rule-based approach in kernel space.
+> > > 
+> > > There are basically three different cases:
+> > > 
+> > > 1) daemons get started up in their own process groups, this can
+> > >    be handled by the initscripts
+> > > 
+> > > 2) user sessions (ssh, etc) start in their own process groups,
+> > >    this can be handled by PAM
+> > > 
+> > > 3) users fork processes that should go into special process
+> > >    groups - this could be handled by having a small ruleset
+> > >    in userspace handle things, right before calling exec(),
+> > 
+> > That means application launcher (ex, shell) is aware of the right cgroup
+> > targeted application should go in and then move forked pid to right
+> > cgroup and call exec? Or you had something else in mind?
+> >  
+> > >    it can even be hidden from the application by hooking into
+> > >    the exec() call
+> > > 
+> > 
+> > This means hooking into libc. So libc will parse rules file, determine
+> > the right cgroup, place application there and then call exec?
+> > 
+> 
+> Hmm, as I wrote, the rule that the child inherits its own parent't is very
+> strong rule. (Most of case can be handle by this.) So, what I think of is
+> 
+> 1. support a new command (in libcg.)
+>   - /bin/change_group_exec ..... read to /etc/cgroup/config and move cgroup
+>                                  and call exec.
+> 2. and libc function
+>   - if necessary.
+> 
+> 1. is enough because admin/user can write a wrapper script for their
+> applications if "child inherits parent's" isn't suitable.
+> 
+> no ?
+> 
 
-On Mon, Jul 14, 2008 at 10:08 AM, Mike Snitzer <snitzer@gmail.com> wrote:
->
->
-> On Tue, Jun 10, 2008 at 5:17 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
->>
->> On Tue, 10 Jun 2008 17:51:35 +0900 Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com> wrote:
->>
->> > Hello Andrew,
->> >
->> > akpm@linux-foundation.org wrote:
->> >
->> > > The patch titled
->> > >      jbd: strictly check for write errors on data buffers
->> > > has been removed from the -mm tree.  Its filename was
->> > >      jbd-strictly-check-for-write-errors-on-data-buffers.patch
->> > >
->> > > This patch was dropped because I don't think we want to go read-only on file data write errors
->> > >
->> > > The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
->> > >
->> > > ------------------------------------------------------
->> > > Subject: jbd: strictly check for write errors on data buffers
->> > > From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
->> >
->> > This patch series doesn't change the behavior on file data write
->> > errors as I stated before, but we found that the current behavior has
->> > been made accidentally.  So yesterday I sent an additional patch(*)
->> > which removes the invocation of journal_abort() and thus stop making
->> > the fs read-only on file data write errors, but it seems to be late
->> > for the -mm release preparation.
->> >
->> >   Patch(*) can be found at:
->> >   http://marc.info/?l=linux-kernel&m=121300618614453&w=2
->> >
->> > Anyway, as this patch series was dropped from -mm, I'm going to
->> > send a revised version.
->> >
->> > I plan to separate these pathces into three patche set.
->> > The first patch (set) corrects the current behavior in ordered
->> > writes, it means it removes the invocation of journal_abort() on file
->> > data write errors.  It is the almost same as the patch(*).
->> > The second patch set fixes error handlings for metadata writes and
->> > checkpointing.  It should be applied independently of the first
->> > patch set, and it is the same as PATCH 3/5 to 5/5.
->> > The third patch set makes "abort the journal on file data write errors"
->> > tunable for mission critical users.  Of course, this feature depends
->> > on the first patch set.
->> >
->>
->> That sounds like a good plan, thanks.
->
-> Hidehiro and Andrew,
->
-> The first patch(set) has been in -mm with the following patches:
-> jbd-dont-abort-if-flushing-file-data-failed.patch
-> jbd-dont-abort-if-flushing-file-data-failed-fix.patch
->
-> "PATCH 3/5 to 5/5" haven't made their way into -mm; nor has the tunable "abort the journal on file data write errors".  Where do things stand on this work?
->
-> Given the potential for corruption and the fact that -mm's series file justifiably has a place-holder comment of "jbd write-error stuff: scary" I'm wondering: how soon will all associated fixes be included in -mm?
->
-> regards,
-> Mike
+If admin has decided to group applications and has written the rules for
+it then applications should not know anything about grouping. So I think
+application writing an script for being placed into the right group should
+be out of question. Now how does an admin write a wrapper around existing
+application without breaking anything else.
+
+One thing could be creating soft links where admin created alias points
+to wrapper and wrapper inturn invokes the executable. But this will not
+solve the problem if some user decides to invoke the application
+executable directly and not use admin created alias. 
+
+Did you have something else in mind when it came to creating wrappers
+around applications?
+
+Thanks
+Vivek
