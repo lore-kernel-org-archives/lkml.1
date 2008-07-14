@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758891AbYGNWEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758333AbYGNWFN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758891AbYGNWEs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 18:04:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758218AbYGNWCJ
+	id S1758333AbYGNWFN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 18:05:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758225AbYGNWCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 18:02:09 -0400
-Received: from mx1.suse.de ([195.135.220.2]:49941 "EHLO mx1.suse.de"
+	Mon, 14 Jul 2008 18:02:11 -0400
+Received: from mail.suse.de ([195.135.220.2]:49944 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757034AbYGNWCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 18:02:08 -0400
+	id S1758049AbYGNWCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 18:02:09 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: Mark Fasheh <mfasheh@suse.com>, ocfs2-devel@oss.oracle.com,
-       Joel Becker <joel.becker@oracle.com>,
-       Sunil Mushran <sunil.mushran@oracle.com>
-Subject: [PATCH 07/17] ocfs2/net: Silence build warnings on sparc64
-Date: Mon, 14 Jul 2008 15:01:40 -0700
-Message-Id: <1216072910-27226-8-git-send-email-mfasheh@suse.com>
+       Joel Becker <joel.becker@oracle.com>
+Subject: [PATCH 08/17] ocfs2: Fix CONFIG_OCFS2_DEBUG_FS #ifdefs
+Date: Mon, 14 Jul 2008 15:01:41 -0700
+Message-Id: <1216072910-27226-9-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1216072910-27226-1-git-send-email-mfasheh@suse.com>
 References: <1216072910-27226-1-git-send-email-mfasheh@suse.com>
@@ -24,56 +23,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sunil Mushran <sunil.mushran@oracle.com>
+From: Joel Becker <joel.becker@oracle.com>
 
-suseconds_t is type long on most arches except sparc64 where it is type int.
-This patch silences the following warnings that are generated when building
-on it.
+A couple places use OCFS2_DEBUG_FS where they really mean
+CONFIG_OCFS2_DEBUG_FS.
 
-netdebug.c: In function 'nst_seq_show':
-netdebug.c:152: warning: format '%lu' expects type 'long unsigned int', but argument 13 has type 'suseconds_t'
-netdebug.c:152: warning: format '%lu' expects type 'long unsigned int', but argument 15 has type 'suseconds_t'
-netdebug.c:152: warning: format '%lu' expects type 'long unsigned int', but argument 17 has type 'suseconds_t'
-netdebug.c: In function 'sc_seq_show':
-netdebug.c:332: warning: format '%lu' expects type 'long unsigned int', but argument 19 has type 'suseconds_t'
-netdebug.c:332: warning: format '%lu' expects type 'long unsigned int', but argument 21 has type 'suseconds_t'
-netdebug.c:332: warning: format '%lu' expects type 'long unsigned int', but argument 23 has type 'suseconds_t'
-netdebug.c:332: warning: format '%lu' expects type 'long unsigned int', but argument 25 has type 'suseconds_t'
-netdebug.c:332: warning: format '%lu' expects type 'long unsigned int', but argument 27 has type 'suseconds_t'
-netdebug.c:332: warning: format '%lu' expects type 'long unsigned int', but argument 29 has type 'suseconds_t'
-
-Signed-off-by: Sunil Mushran <sunil.mushran@oracle.com>
-Signed-off-by: Mark Fasheh <mfasheh@suse.com>
+Reported-by: Robert P. J. Day <rpjday@crashcourse.ca>
+Signed-off-by: Joel Becker <joel.becker@oracle.com>
 ---
- fs/ocfs2/cluster/netdebug.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+ fs/ocfs2/journal.c    |    2 +-
+ fs/ocfs2/localalloc.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/fs/ocfs2/cluster/netdebug.c b/fs/ocfs2/cluster/netdebug.c
-index 7bf3c0e..d8bfa0e 100644
---- a/fs/ocfs2/cluster/netdebug.c
-+++ b/fs/ocfs2/cluster/netdebug.c
-@@ -146,8 +146,10 @@ static int nst_seq_show(struct seq_file *seq, void *v)
- 			   nst->st_task->comm, nst->st_node,
- 			   nst->st_sc, nst->st_id, nst->st_msg_type,
- 			   nst->st_msg_key,
--			   nst->st_sock_time.tv_sec, nst->st_sock_time.tv_usec,
--			   nst->st_send_time.tv_sec, nst->st_send_time.tv_usec,
-+			   nst->st_sock_time.tv_sec,
-+			   (unsigned long)nst->st_sock_time.tv_usec,
-+			   nst->st_send_time.tv_sec,
-+			   (unsigned long)nst->st_send_time.tv_usec,
- 			   nst->st_status_time.tv_sec,
- 			   nst->st_status_time.tv_usec);
- 	}
-@@ -274,7 +276,7 @@ static void *sc_seq_next(struct seq_file *seq, void *v, loff_t *pos)
- 	return sc; /* unused, just needs to be null when done */
- }
+diff --git a/fs/ocfs2/journal.c b/fs/ocfs2/journal.c
+index 9698338..a8c19cb 100644
+--- a/fs/ocfs2/journal.c
++++ b/fs/ocfs2/journal.c
+@@ -329,7 +329,7 @@ int ocfs2_extend_trans(handle_t *handle, int nblocks)
  
--#define TV_SEC_USEC(TV) TV.tv_sec, TV.tv_usec
-+#define TV_SEC_USEC(TV) TV.tv_sec, (unsigned long)TV.tv_usec
+ 	mlog(0, "Trying to extend transaction by %d blocks\n", nblocks);
  
- static int sc_seq_show(struct seq_file *seq, void *v)
- {
+-#ifdef OCFS2_DEBUG_FS
++#ifdef CONFIG_OCFS2_DEBUG_FS
+ 	status = 1;
+ #else
+ 	status = journal_extend(handle, nblocks);
+diff --git a/fs/ocfs2/localalloc.c b/fs/ocfs2/localalloc.c
+index be774bd..28e492e 100644
+--- a/fs/ocfs2/localalloc.c
++++ b/fs/ocfs2/localalloc.c
+@@ -498,7 +498,7 @@ int ocfs2_reserve_local_alloc_bits(struct ocfs2_super *osb,
+ 
+ 	alloc = (struct ocfs2_dinode *) osb->local_alloc_bh->b_data;
+ 
+-#ifdef OCFS2_DEBUG_FS
++#ifdef CONFIG_OCFS2_DEBUG_FS
+ 	if (le32_to_cpu(alloc->id1.bitmap1.i_used) !=
+ 	    ocfs2_local_alloc_count_bits(alloc)) {
+ 		ocfs2_error(osb->sb, "local alloc inode %llu says it has "
 -- 
 1.5.4.1
 
