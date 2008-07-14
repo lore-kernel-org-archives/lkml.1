@@ -1,63 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757307AbYGNHRf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757310AbYGNHRQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757307AbYGNHRf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 03:17:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757130AbYGNHQQ
+	id S1757310AbYGNHRQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 03:17:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755580AbYGNHQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 03:16:16 -0400
-Received: from ti-out-0910.google.com ([209.85.142.191]:52578 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755656AbYGNHQM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 03:16:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references
-         :in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=nF/Phn9Op5DXWuKvBCVQoqI1CndrI0zrY9a4+Ij+sc6JNCFjoFRmJcWiC7E8kz7lAu
-         53jPiCDdTGNvW2uA9cgmswh6D92K/J1YWhNR2B4AIRIRBeb/L3JShktgl9JwLN83Yusi
-         6UZtbLfTpcW2Oy/VVjvQQ4PRdYk6dT/ppr6SA=
-Message-ID: <487AFD2E.7070400@gmail.com>
-Date: Mon, 14 Jul 2008 16:15:58 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
+	Mon, 14 Jul 2008 03:16:07 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47850 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757032AbYGNHQE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 03:16:04 -0400
+From: Tejun Heo <tj@kernel.org>
 To: jens.axboe@oracle.com, James.Bottomley@HansenPartnership.com,
        bharrosh@panasas.com, greg.freemyer@gmail.com,
        linux-scsi@vger.kernel.org, brking@linux.vnet.ibm.com, liml@rtr.ca,
        viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org,
        linux-ide@vger.kernel.org
-Subject: Re: [PATCHSET 2.6.26] block: implement extended devt, take #2
-References: <1216019534-29977-1-git-send-email-tj@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 01/10] block: misc updates
+Date: Mon, 14 Jul 2008 16:12:05 +0900
+Message-Id: <1216019534-29977-2-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1216019534-29977-1-git-send-email-tj@kernel.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <1216019534-29977-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 14 Jul 2008 07:12:54 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oops, missed one prerequisite patch.
+This patch makes the following misc updates in preparation for
+disk->part dereference fix and extended block devt support.
 
-Tejun Heo wrote:
->   v2.6.26 (bce7f793daec3e65ec5c5705d2457b81fe7b5725)
-> + [1] RCU-implement-rcu_read_[un]lock_preempt
-> + [2] block-fix-block_class-iteration-locking
-> + [3] block-allow-deleting-zero-lenght-partition
-> + [4] block-update-add_partition-error-handling
-+ [5] sd-update-index-allocation-and-use-ida
+* implment part_to_disk()
 
-> [L] http://thread.gmane.org/gmane.linux.kernel/701825
-> [1] http://article.gmane.org/gmane.linux.kernel/706149
-> [2] http://article.gmane.org/gmane.linux.kernel/706152
-> [3] http://article.gmane.org/gmane.linux.kernel/706153
-> [4] http://article.gmane.org/gmane.linux.kernel/706154
-[5] http://article.gmane.org/gmane.linux.scsi/43109
+* fix comment about gendisk->part indexing
 
-The git tree has everything included.
+* rename get_part() to disk_map_sector()
 
-Thanks.
+* don't use n which is always zero while printing disk information in
+  diskstats_show()
 
+Signed-off-by: Tejun Heo <tj@kernel.org>
+---
+ block/blk-core.c           |    7 ++++---
+ block/blk-merge.c          |    4 ++--
+ block/genhd.c              |    4 ++--
+ drivers/block/aoe/aoecmd.c |    2 +-
+ include/linux/genhd.h      |   13 ++++++++++---
+ 5 files changed, 19 insertions(+), 11 deletions(-)
+
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 1905aab..bc832aa 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -60,7 +60,7 @@ static void drive_stat_acct(struct request *rq, int new_io)
+ 	if (!blk_fs_request(rq) || !rq->rq_disk)
+ 		return;
+ 
+-	part = get_part(rq->rq_disk, rq->sector);
++	part = disk_map_sector(rq->rq_disk, rq->sector);
+ 	if (!new_io)
+ 		__all_stat_inc(rq->rq_disk, part, merges[rw], rq->sector);
+ 	else {
+@@ -1535,7 +1535,8 @@ static int __end_that_request_first(struct request *req, int error,
+ 	}
+ 
+ 	if (blk_fs_request(req) && req->rq_disk) {
+-		struct hd_struct *part = get_part(req->rq_disk, req->sector);
++		struct hd_struct *part =
++			disk_map_sector(req->rq_disk, req->sector);
+ 		const int rw = rq_data_dir(req);
+ 
+ 		all_stat_add(req->rq_disk, part, sectors[rw],
+@@ -1723,7 +1724,7 @@ static void end_that_request_last(struct request *req, int error)
+ 	if (disk && blk_fs_request(req) && req != &req->q->bar_rq) {
+ 		unsigned long duration = jiffies - req->start_time;
+ 		const int rw = rq_data_dir(req);
+-		struct hd_struct *part = get_part(disk, req->sector);
++		struct hd_struct *part = disk_map_sector(disk, req->sector);
+ 
+ 		__all_stat_inc(disk, part, ios[rw], req->sector);
+ 		__all_stat_add(disk, part, ticks[rw], duration, req->sector);
+diff --git a/block/blk-merge.c b/block/blk-merge.c
+index 651136a..e96d87d 100644
+--- a/block/blk-merge.c
++++ b/block/blk-merge.c
+@@ -467,8 +467,8 @@ static int attempt_merge(struct request_queue *q, struct request *req,
+ 	elv_merge_requests(q, req, next);
+ 
+ 	if (req->rq_disk) {
+-		struct hd_struct *part
+-			= get_part(req->rq_disk, req->sector);
++		struct hd_struct *part =
++			disk_map_sector(req->rq_disk, req->sector);
+ 		disk_round_stats(req->rq_disk);
+ 		req->rq_disk->in_flight--;
+ 		if (part) {
+diff --git a/block/genhd.c b/block/genhd.c
+index b646e7e..432c358 100644
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -567,7 +567,7 @@ static int diskstats_show(struct seq_file *s, void *v)
+ {
+ 	struct gendisk *gp = v;
+ 	char buf[BDEVNAME_SIZE];
+-	int n = 0;
++	int n;
+ 
+ 	/*
+ 	if (&gp->dev.kobj.entry == block_class.devices.next)
+@@ -581,7 +581,7 @@ static int diskstats_show(struct seq_file *s, void *v)
+ 	disk_round_stats(gp);
+ 	preempt_enable();
+ 	seq_printf(s, "%4d %4d %s %lu %lu %llu %u %lu %lu %llu %u %u %u %u\n",
+-		gp->major, n + gp->first_minor, disk_name(gp, n, buf),
++		gp->major, gp->first_minor, disk_name(gp, 0, buf),
+ 		disk_stat_read(gp, ios[0]), disk_stat_read(gp, merges[0]),
+ 		(unsigned long long)disk_stat_read(gp, sectors[0]),
+ 		jiffies_to_msecs(disk_stat_read(gp, ticks[0])),
+diff --git a/drivers/block/aoe/aoecmd.c b/drivers/block/aoe/aoecmd.c
+index 41f818b..ba40473 100644
+--- a/drivers/block/aoe/aoecmd.c
++++ b/drivers/block/aoe/aoecmd.c
+@@ -757,7 +757,7 @@ diskstats(struct gendisk *disk, struct bio *bio, ulong duration, sector_t sector
+ 	const int rw = bio_data_dir(bio);
+ 	struct hd_struct *part;
+ 
+-	part = get_part(disk, sector);
++	part = disk_map_sector(disk, sector);
+ 	all_stat_inc(disk, part, ios[rw], sector);
+ 	all_stat_add(disk, part, ticks[rw], duration, sector);
+ 	all_stat_add(disk, part, sectors[rw], n_sect, sector);
+diff --git a/include/linux/genhd.h b/include/linux/genhd.h
+index e485cf0..68d50a2 100644
+--- a/include/linux/genhd.h
++++ b/include/linux/genhd.h
+@@ -117,7 +117,7 @@ struct gendisk {
+ 	int minors;                     /* maximum number of minors, =1 for
+                                          * disks that can't be partitioned. */
+ 	char disk_name[32];		/* name of major driver */
+-	struct hd_struct **part;	/* [indexed by minor] */
++	struct hd_struct **part;	/* [indexed by minor - 1] */
+ 	struct block_device_operations *fops;
+ 	struct request_queue *queue;
+ 	void *private_data;
+@@ -143,14 +143,21 @@ struct gendisk {
+ 	struct work_struct async_notify;
+ };
+ 
++static inline struct gendisk *part_to_disk(struct hd_struct *part)
++{
++	if (likely(part))
++		return dev_to_disk((part)->dev.parent);
++	return NULL;
++}
++
+ /* 
+  * Macros to operate on percpu disk statistics:
+  *
+  * The __ variants should only be called in critical sections. The full
+  * variants disable/enable preemption.
+  */
+-static inline struct hd_struct *get_part(struct gendisk *gendiskp,
+-					 sector_t sector)
++static inline struct hd_struct *disk_map_sector(struct gendisk *gendiskp,
++						sector_t sector)
+ {
+ 	struct hd_struct *part;
+ 	int i;
 -- 
-tejun
+1.5.4.5
+
