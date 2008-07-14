@@ -1,185 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756212AbYGNOik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbYGNOmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756212AbYGNOik (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 10:38:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbYGNOid
+	id S1755530AbYGNOmW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 10:42:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753823AbYGNOmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 10:38:33 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56288 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753470AbYGNOic (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 10:38:32 -0400
-From: kamezawa.hiroyu@jp.fujitsu.com
-Message-ID: <23745889.1216046304861.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Mon, 14 Jul 2008 23:38:24 +0900 (JST)
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Re: [PATCH][RFC] dirty balancing for cgroups
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, linux-mm@kvack.org,
-       menage@google.com, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1216043344.12595.89.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-2022-jp"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: @nifty Webmail 2.0
-References: <1216043344.12595.89.camel@twins>
- <20080711141511.515e69a5.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20080711055926.9AF4F5A03@siro.lan>
-	 <20080711161349.c5831081.kamezawa.hiroyu@jp.fujitsu.com>
+	Mon, 14 Jul 2008 10:42:14 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36074 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753733AbYGNOmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 10:42:13 -0400
+Date: Mon, 14 Jul 2008 16:41:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [git pull] core/rodata change for v2.6.27
+Message-ID: <20080714144156.GA20420@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message -----
->> See comments in fs/page-writeback.c:: determin_dirtyable_memory()
->> ==
->> /*
->>  * Work out the current dirty-memory clamping and background writeout
->>  * thresholds.
->>  *
->>  * The main aim here is to lower them aggressively if there is a lot of map
-ped
->>  * memory around.  To avoid stressing page reclaim with lots of unreclaimab
-le
->>  * pages.  It is better to clamp down on writers than to start swapping, an
-d
->>  * performing lots of scanning.
->>  *
->>  * We only allow 1/2 of the currently-unmapped memory to be dirtied.
->>  *
->>  * We don't permit the clamping level to fall below 5% - that is getting ra
-ther
->>  * excessive.
->>  *
->>  * We make sure that the background writeout level is below the adjusted
->>  * clamping level.
->> ==
->> 
->> "To avoid stressing page reclaim with lots of unreclaimable pages"
->> 
->> Then, I think memcg should support this for helping relcaim under memcg.
->
->That comment is unclear at best.
->
->The dirty page limit avoids deadlocks under certain situations, the per
->BDI dirty limit avoids even mode deadlocks by providing isolation
->between BDIs.
->
->
->The fundamental deadlock solved by the dirty page limit is the typical
->reclaim deadlock - needing memory to free memory. It does this by
->ensuring only some part of the total memory used for the page-cache can
->be dirty, thus we always have clean pages around that can be reclaimed
->so we can launder the dirty pages.
->
->This on its own generates a new deadlock for stacked devices, imagine
->device A on top of B. When A generates loads of dirty pages it will
->eventually hit the dirty limit and we'd start to launder them. However
->in order to launder A's dirty pages we'd need to dirty pages for B, but
->we can't since we're at the global limit.
->
->This problem is solved by introducing a per BDI dirty limit, by
->assigning each BDI an individual dirty limit (whoes sum is the total
->dirty limit) we avoid that deadlock. Take the previous example; A would
->start laundering its pages when it hits its own limit, B's operation
->isn't hampered by that.
->
->[ even when B's limit is 0 we're able to make progress, since we'll only
->  wait for B's dirty page count to decrease - effectively reducing to
->  sync writes. ]
->
->Of course this raises the question how to assign the various dirty
->limits - any fixed distribution is hard to maintain and suboptimial for
->most workloads.
->
->We solve this by assigning each BDI a fraction proportional to its
->current launder speed. That is to say, if A launders pages twice as fast
->as B does, then A will get 2/3-rd of the total dirty page limit, versus
->1/3-rd for B.
->
->
->Then there is the task dirty stuff - this is basically a 'fix' for the
->problem where a slow writer gets starved by a fast reader. Imagine two
->tasks competing for bandwidth, 1 the fast writer and 2 the slow writer.
->
->1 will dirty loads of pages but all things being equal 2 will have to
->wait for 1's dirty pages.
->
->So what we do is lower the dirty limit for fast writers - so these get
->to wait sooner and slow writers have a little room to make progress
->before they too have to wait.
->
->To properly solve this we'd need to track p_{bdi,task}. However that's
->intracktable. Therefore we approximate that with p_bdi * p_task. This
->approximation looses detail.
->
->Imagine two tasks: 1 and 2, and two BDIs A and B (independent this
->time). If 1 is a (fast) writer to A and 2 is a (slow) writer to B, we
->need not throttle 2 sooner as there is no actual competition.
->
->The full proportional tensor p_{bdi,task} can express this, but the
->simple approximation p_bdi * p_task can not.
->
->The approximation will reduce 1's bandwidth a little even though there
->is no actual competition.
->
->
->Now the problem this patch tries to address...
->
->As you can see you'd need p_{bdi,cgroup,task} for it to work, and the
->obvious approximation p_bdi * p_cgroup * p_task will get even more
->coarse.
->
->You could possibly attempt to do p_{bdi,cgroup} * p_task since the bdi
->and cgroup set are pretty static, but still that would be painful.
->
->So, could you please give some more justification for this work, I'm not
->seeing the value in complicating all this just yet.
->
->
->Thanks for reading this far,
->
-Thank you for explanation. Maybe I misunderstood something.
+Linus,
 
-What I thought was to keep some amount of clean pages under memcg
-for smooth reclaiming. But after reading your explanation, I'm now
-considering again...
+Please pull the latest core/rodata git tree from:
 
-about DEADLOCK:
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core/rodata
 
-memory cgroup's reclaim path is working as following now.
-==
-mem_cgroup_charge() or others.
-  -> try_to_free_mem_cgroup_pages()
-      -> shrink_zone()...
-          -> subsystem may call alloc_pages()
-               -> ....(*)
-
-Unlike global LRU, memory_cgroup does not affect (*) because add_tp_page_cache
-() is called here and maybe no deadlock.
-
-about Memory Reclaim's  health:
-
-It doesn't seem good to allow users to make all pages under memcg
-to be dirty without penalty(throttling).
- 
-Dirty/Written-backed pages are not to be reclaimed by first lru scan because
-it has to be written out (and rolated to the tail of LRU.) and clean pages,
-which are easy to be dropped, are dropped soon.
-
-Under following situation
- - large file copy under memcg.
- - big coredump under memcg.
-
-I think too much (clean) pages are swapped out by memcg's LRU because
-of tons of dirty pages. (but I don't have enough data now. just my concern.)
-
-What can I do against this ? Could you give me a hint ?
+moves BUG_TABLE into RODATA where it belongs.
 
 Thanks,
--Kame
 
+	Ingo
+
+------------------>
+Jan Beulich (1):
+      move BUG_TABLE into RODATA
+
+
+ arch/avr32/kernel/vmlinux.lds.S   |    2 --
+ arch/parisc/kernel/vmlinux.lds.S  |    1 -
+ arch/powerpc/kernel/vmlinux.lds.S |    2 --
+ arch/s390/kernel/vmlinux.lds.S    |    1 -
+ arch/sh/kernel/vmlinux_32.lds.S   |    1 -
+ arch/sh/kernel/vmlinux_64.lds.S   |    1 -
+ arch/x86/kernel/vmlinux_32.lds.S  |    8 +++-----
+ arch/x86/kernel/vmlinux_64.lds.S  |   10 ++++------
+ include/asm-generic/vmlinux.lds.h |    6 ++++++
+ 9 files changed, 13 insertions(+), 19 deletions(-)
+
+diff --git a/arch/avr32/kernel/vmlinux.lds.S b/arch/avr32/kernel/vmlinux.lds.S
+index 481cfd4..bc932c9 100644
+--- a/arch/avr32/kernel/vmlinux.lds.S
++++ b/arch/avr32/kernel/vmlinux.lds.S
+@@ -93,8 +93,6 @@ SECTIONS
+ 		__stop___ex_table = .;
+ 	}
+ 
+-	BUG_TABLE
+-
+ 	RODATA
+ 
+ 	. = ALIGN(THREAD_SIZE);
+diff --git a/arch/parisc/kernel/vmlinux.lds.S b/arch/parisc/kernel/vmlinux.lds.S
+index 2e516b8..1a3b6cc 100644
+--- a/arch/parisc/kernel/vmlinux.lds.S
++++ b/arch/parisc/kernel/vmlinux.lds.S
+@@ -67,7 +67,6 @@ SECTIONS
+ 	_etext = .;
+ 
+ 	RODATA
+-	BUG_TABLE
+ 
+ 	/* writeable */
+ 	/* Make sure this is page aligned so
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 0c3000b..53d57d1 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -64,8 +64,6 @@ SECTIONS
+ 
+ 	NOTES
+ 
+-	BUG_TABLE
+-
+ /*
+  * Init sections discarded at runtime
+  */
+diff --git a/arch/s390/kernel/vmlinux.lds.S b/arch/s390/kernel/vmlinux.lds.S
+index b460715..76c1e60 100644
+--- a/arch/s390/kernel/vmlinux.lds.S
++++ b/arch/s390/kernel/vmlinux.lds.S
+@@ -40,7 +40,6 @@ SECTIONS
+ 	_etext = .;		/* End of text section */
+ 
+ 	NOTES :text :note
+-	BUG_TABLE :text
+ 
+ 	RODATA
+ 
+diff --git a/arch/sh/kernel/vmlinux_32.lds.S b/arch/sh/kernel/vmlinux_32.lds.S
+index c711378..7b4b82b 100644
+--- a/arch/sh/kernel/vmlinux_32.lds.S
++++ b/arch/sh/kernel/vmlinux_32.lds.S
+@@ -44,7 +44,6 @@ SECTIONS
+ 
+ 	_etext = .;			/* End of text section */
+ 
+-	BUG_TABLE
+ 	NOTES
+ 	RO_DATA(PAGE_SIZE)
+ 
+diff --git a/arch/sh/kernel/vmlinux_64.lds.S b/arch/sh/kernel/vmlinux_64.lds.S
+index d1e1770..33fa464 100644
+--- a/arch/sh/kernel/vmlinux_64.lds.S
++++ b/arch/sh/kernel/vmlinux_64.lds.S
+@@ -65,7 +65,6 @@ SECTIONS
+ 
+ 	_etext = .;			/* End of text section */
+ 
+-	BUG_TABLE
+ 	NOTES 
+ 	RO_DATA(PAGE_SIZE)
+ 
+diff --git a/arch/x86/kernel/vmlinux_32.lds.S b/arch/x86/kernel/vmlinux_32.lds.S
+index ce5ed08..aa08554 100644
+--- a/arch/x86/kernel/vmlinux_32.lds.S
++++ b/arch/x86/kernel/vmlinux_32.lds.S
+@@ -49,16 +49,14 @@ SECTIONS
+   	_etext = .;			/* End of text section */
+   } :text = 0x9090
+ 
++  NOTES :text :note
++
+   . = ALIGN(16);		/* Exception table */
+   __ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) {
+   	__start___ex_table = .;
+ 	 *(__ex_table)
+   	__stop___ex_table = .;
+-  }
+-
+-  NOTES :text :note
+-
+-  BUG_TABLE :text
++  } :text = 0x9090
+ 
+   . = ALIGN(4);
+   .tracedata : AT(ADDR(.tracedata) - LOAD_OFFSET) {
+diff --git a/arch/x86/kernel/vmlinux_64.lds.S b/arch/x86/kernel/vmlinux_64.lds.S
+index fad3674..d123747 100644
+--- a/arch/x86/kernel/vmlinux_64.lds.S
++++ b/arch/x86/kernel/vmlinux_64.lds.S
+@@ -19,7 +19,7 @@ PHDRS {
+ 	data PT_LOAD FLAGS(7);	/* RWE */
+ 	user PT_LOAD FLAGS(7);	/* RWE */
+ 	data.init PT_LOAD FLAGS(7);	/* RWE */
+-	note PT_NOTE FLAGS(4);	/* R__ */
++	note PT_NOTE FLAGS(0);	/* ___ */
+ }
+ SECTIONS
+ {
+@@ -40,16 +40,14 @@ SECTIONS
+ 	_etext = .;		/* End of text section */
+   } :text = 0x9090
+ 
++  NOTES :text :note
++
+   . = ALIGN(16);		/* Exception table */
+   __ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) {
+   	__start___ex_table = .;
+ 	 *(__ex_table)
+   	__stop___ex_table = .;
+-  }
+-
+-  NOTES :text :note
+-
+-  BUG_TABLE :text
++  } :text = 0x9090
+ 
+   RODATA
+ 
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index f054778..dd2cc81 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -67,6 +67,8 @@
+ 		*(.rodata1)						\
+ 	}								\
+ 									\
++	BUG_TABLE							\
++									\
+ 	/* PCI quirks */						\
+ 	.pci_fixup        : AT(ADDR(.pci_fixup) - LOAD_OFFSET) {	\
+ 		VMLINUX_SYMBOL(__start_pci_fixups_early) = .;		\
+@@ -310,6 +312,7 @@
+ 		.stab.indexstr 0 : { *(.stab.indexstr) }		\
+ 		.comment 0 : { *(.comment) }
+ 
++#ifdef CONFIG_GENERIC_BUG
+ #define BUG_TABLE							\
+ 	. = ALIGN(8);							\
+ 	__bug_table : AT(ADDR(__bug_table) - LOAD_OFFSET) {		\
+@@ -317,6 +320,9 @@
+ 		*(__bug_table)						\
+ 		__stop___bug_table = .;					\
+ 	}
++#else
++#define BUG_TABLE
++#endif
+ 
+ #define NOTES								\
+ 	.notes : AT(ADDR(.notes) - LOAD_OFFSET) {			\
