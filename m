@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756134AbYGNW0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755785AbYGNW0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756134AbYGNW0Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 18:26:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754840AbYGNW0O
+	id S1755785AbYGNW0q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 18:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756289AbYGNW0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 18:26:14 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:22165 "EHLO
-	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755488AbYGNW0N (ORCPT
+	Mon, 14 Jul 2008 18:26:32 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:14856 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756231AbYGNW0c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 18:26:13 -0400
-X-BigFish: VPS-18(z10d1kz1432R98dR62a3L7efV1805Mzz10d3izzz32i6bh87il64h)
-X-Spam-TCS-SCL: 3:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0K40OYN-02-2D6-01
-Date: Tue, 15 Jul 2008 00:25:38 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: David Howells <dhowells@redhat.com>, akpm@linux-foundation.org,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix pci_subsys_init() to have a return value
-Message-ID: <20080714222538.GO7963@erda.amd.com>
-References: <20080711094636.18199.94804.stgit@warthog.procyon.org.uk> <200807141421.03305.jbarnes@virtuousgeek.org>
+	Mon, 14 Jul 2008 18:26:32 -0400
+Message-ID: <487BD297.4070802@ct.jp.nec.com>
+Date: Mon, 14 Jul 2008 15:26:31 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <200807141421.03305.jbarnes@virtuousgeek.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 14 Jul 2008 22:25:42.0176 (UTC) FILETIME=[8D1A5200:01C8E600]
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86_64: ia32_signal.c: use macro instead of immediate
+References: <487BC1B9.1090400@ct.jp.nec.com> <487BCD9C.4030003@zytor.com> <487BD10F.2060408@ct.jp.nec.com> <487BD1DD.9040008@zytor.com>
+In-Reply-To: <487BD1DD.9040008@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 14.07.08 14:21:03, Jesse Barnes wrote:
-> On Friday, July 11, 2008 2:46 am David Howells wrote:
-> > Fix pci_subsys_init() to return a value (0) when it has finished.  All the
-> > functions it calls currently return 0, so returning 0 here unconditionally
-> > rather than gathering the results of its callees would seem reasonable.
-> >
-> > Signed-off-by: David Howells <dhowells@redhat.com>
-> > ---
-> >
-> >  arch/x86/pci/legacy.c |    1 +
-> >  1 files changed, 1 insertions(+), 0 deletions(-)
-> >
-> >
-> > diff --git a/arch/x86/pci/legacy.c b/arch/x86/pci/legacy.c
-> > index 3c1d795..00e29c8 100644
-> > --- a/arch/x86/pci/legacy.c
-> > +++ b/arch/x86/pci/legacy.c
-> > @@ -63,5 +63,6 @@ int __init pci_subsys_init(void)
-> >  	pci_legacy_init();
-> >  	pcibios_irq_init();
-> >  	pcibios_init();
-> > +	return 0;
-> >  }
-> >  subsys_initcall(pci_subsys_init);
+H. Peter Anvin wrote:
+> Hiroshi Shimamoto wrote:
+>> H. Peter Anvin wrote:
+>>> Hiroshi Shimamoto wrote:
+>>>> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>>>>
+>>>> Make and use macro FIX_EFLAGS, instead of immediate value 0x40DD5 in
+>>>> ia32_restore_sigcontext().
+>>>>
+>>>> +
+>>>> +#ifdef CONFIG_X86_32
+>>>> +# define FIX_EFLAGS	(__FIX_EFLAGS | X86_EFLAGS_RF)
+>>>> +#else
+>>>> +# define FIX_EFLAGS	__FIX_EFLAGS
+>>>> +#endif
+>>>> +
+>>> Where did this come from?  First of all, this is in a 64-bit-only file, 
+>>> so CONFIG_X86_32 will never be set; second of all, it seems a bit fishy 
+>>> that these should be different.
+>> It came from arch/x86/kernel/signal_64.c. (And signal_32.c has the same one.)
+>> And yes, CONFIG_X86_32 is not set, I compiled and compare the results,
+>> the macro was replaced by 0x40dd5, no RF.
+>> I guess, someone made it same on signal_32.c and signal_64.c.
+>>
 > 
-> Looks like Robert already pushed a patch like this via the x86 tree, but at 
-> least it's been fixed.
+> Yes, it's working toward unification (and ia32signal.c is obviously also 
+> a candidate for unification.)  However, please make that a separate patch.
 
-Right, there was also another location to fix.
+OK. Will do.
 
--Robert
-
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+Thanks,
+Hiroshi Shimamoto
 
