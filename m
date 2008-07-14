@@ -1,91 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbYGNH2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756809AbYGNHaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756653AbYGNH2T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 03:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754596AbYGNH2F
+	id S1756809AbYGNHaR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 03:30:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755108AbYGNHaE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 03:28:05 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45348 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754562AbYGNH2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 03:28:04 -0400
-Date: Mon, 14 Jul 2008 09:27:22 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Joe Jin <joe.jin@oracle.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <andi@firstfloor.org>, greg.marsden@oracle.com,
-       tao.ma@oracle.com, linux-kernel@vger.kernel.org, stable@kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH] x86_64: reserve crashkernel bootmem before reserve
-	dma32 bootmem
-Message-ID: <20080714072722.GB19116@elte.hu>
-References: <20080710123446.GA1595@joejin-pc.cn.oracle.com> <86802c440807101032h6fc6cf16l829e4932477f43b3@mail.gmail.com> <86802c440807140014y6f0b67e7r6414b686fdbaf012@mail.gmail.com>
+	Mon, 14 Jul 2008 03:30:04 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:37375 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755071AbYGNHaD (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 03:30:03 -0400
+Message-ID: <487B019B.9090401@sgi.com>
+Date: Mon, 14 Jul 2008 17:34:51 +1000
+From: Lachlan McIlroy <lachlan@sgi.com>
+Reply-To: lachlan@sgi.com
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440807140014y6f0b67e7r6414b686fdbaf012@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Mikael Abrahamsson <swmike@swm.pp.se>
+CC: Dave Chinner <david@fromorbit.com>, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com
+Subject: Re: xfs bug in 2.6.26-rc9
+References: <alpine.DEB.1.10.0807110939520.30192@uplift.swm.pp.se> <20080711084248.GU29319@disturbed> <alpine.DEB.1.10.0807111215040.30192@uplift.swm.pp.se>
+In-Reply-To: <alpine.DEB.1.10.0807111215040.30192@uplift.swm.pp.se>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-
-> On Thu, Jul 10, 2008 at 10:32 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> > On Thu, Jul 10, 2008 at 5:34 AM, Joe Jin <joe.jin@oracle.com> wrote:
-> >> Before reserve_crashkernel, dma32_reserve_bootmem would reserve 128M memory.
-> >> this cuased crashkernel end address must less than 64M or start address must
-> >> more than 192M except crashkernel memory reserved before dma32 memory reserved.
-> >>
-> >> This patch against 2.6.26-rc9
-> >>
-> >> Signed-off-by: Joe Jin <joe.jin@oracle.com>
-> >> ---
-> >>  setup_64.c |    4 ++--
-> >>  1 file changed, 2 insertions(+), 2 deletions(-)
-> >>
-> >> --- linux-2.6.26-rc9/arch/x86/kernel/setup_64.c.orig    2008-07-10 16:34:12.000000000 +0800
-> >> +++ linux-2.6.26-rc9/arch/x86/kernel/setup_64.c 2008-07-10 16:35:00.000000000 +0800
-> >> @@ -444,8 +444,6 @@ void __init setup_arch(char **cmdline_p)
-> >>        contig_initmem_init(0, end_pfn);
-> >>  #endif
-> >>
-> >> -       dma32_reserve_bootmem();
-> >> -
-> >>  #ifdef CONFIG_ACPI_SLEEP
-> >>        /*
-> >>         * Reserve low memory region for sleep support.
-> >> @@ -486,6 +484,8 @@ void __init setup_arch(char **cmdline_p)
-> >>  #endif
-> >>        reserve_crashkernel();
-> >>
-> >> +       dma32_reserve_bootmem();
-> >> +
-> >>        reserve_ibft_region();
-> >>
-> >>        paging_init();
-> >
-> > Acked-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> >
+Mikael Abrahamsson wrote:
+> On Fri, 11 Jul 2008, Dave Chinner wrote:
 > 
-> Ingo,
+>> That aside, what was the assert failure reported prior to the oops? 
+>> i.e. paste the lines in the log before the ---[ cut here ]--- line? 
+>> One of them will start with 'Assertion failed:', I think....
 > 
-> it seems you missed this patch..., it should get into 
-> 2.6.26..stable..too
+> These ones?
+> 
+> Jul  8 04:44:56 via kernel: [554197.888008] Assertion failed: whichfork 
+> == XFS_ATTR_FORK || ip->i_delayed_blks == 0, file: fs/xfs/xfs_bmap.c, 
+> line: 5879
+> Jul  9 03:25:21 via kernel: [42940.748007] Assertion failed: whichfork 
+> == XFS_ATTR_FORK || ip->i_delayed_blks == 0, file: fs/xfs/xfs_bmap.c, 
+> line: 5879
 
-no, i didnt miss it - but it was too late for v2.6.26 and it was in a 
-common x86 codepath and the code in -tip there is very different. The 
-fix is a proper candidate for v2.6.26.1 though - stable team Cc:-ed.
+	xfs_ilock(ip, XFS_IOLOCK_SHARED);
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+	if (whichfork == XFS_DATA_FORK &&
+		(ip->i_delayed_blks || ip->i_size > ip->i_d.di_size)) {
+		/* xfs_fsize_t last_byte = xfs_file_last_byte(ip); */
+		error = xfs_flush_pages(ip, (xfs_off_t)0,
+					       -1, 0, FI_REMAPF);
+		if (error) {
+			xfs_iunlock(ip, XFS_IOLOCK_SHARED);
+		return error;
+		}
+	}
 
-	Ingo
+	ASSERT(whichfork == XFS_ATTR_FORK || ip->i_delayed_blks == 0);
+
+This is a race between xfs_fsr and a mmap write.  xfs_fsr acquires the
+iolock and then flushes the file and because it has the iolock it doesn't
+expect any new delayed allocations to occur.  A mmap write can allocate
+delayed allocations without acquiring the iolock so is able to get in
+after the flush but before the ASSERT.
+
+> 
+> I'll happily rebuild the kernel without the debug option and do 
+> xfs_check to weed out any possible logical problem with the volume, if 
+> you don't need any further information from the current state of my volume.
+> 
+> I should also say that this assert failue happened two nights in a row 
+> so I guess it's fairly reproducible (didn't happen on the 10th, and 
+> today, the 11th it seems to have panic:ed around 03:30 (I start the 
+> defragmentation via cron at 03:00) which I think is related.
+> 
