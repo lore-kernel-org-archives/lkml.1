@@ -1,100 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbYGNCUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755628AbYGNC1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755975AbYGNCUe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 22:20:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbYGNCU0
+	id S1755628AbYGNC1V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 22:27:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754062AbYGNC1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 22:20:26 -0400
-Received: from sh.osrg.net ([192.16.179.4]:41411 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754064AbYGNCUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 22:20:25 -0400
-Date: Mon, 14 Jul 2008 11:19:02 +0900
-To: davem@davemloft.net
-Cc: andi@firstfloor.org, mpatocka@redhat.com, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: [SUGGESTION]: drop virtual merge accounting in I/O requests
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080713.174119.71992292.davem@davemloft.net>
-References: <20080713.124610.193703496.davem@davemloft.net>
-	<487A61DD.6090304@firstfloor.org>
-	<20080713.174119.71992292.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 13 Jul 2008 22:27:12 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63320 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754064AbYGNC1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jul 2008 22:27:11 -0400
+Message-ID: <487AB912.9090908@cn.fujitsu.com>
+Date: Mon, 14 Jul 2008 10:25:22 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Andrea Righi <righi.andrea@gmail.com>
+CC: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
+       akpm@linux-foundation.org, Carl Henrik Lunde <chlunde@ping.uio.no>,
+       axboe@kernel.dk, matt@bluehost.com, roberto@unbit.it,
+       randy.dunlap@oracle.com, Divyesh Shah <dpshah@google.com>,
+       subrata@linux.vnet.ibm.com, eric.rannaud@gmail.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 2/3] i/o bandwidth controller infrastructure
+References: <> <1215862291-26719-3-git-send-email-righi.andrea@gmail.com>
+In-Reply-To: <1215862291-26719-3-git-send-email-righi.andrea@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080714111917S.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 Jul 2008 17:41:19 -0700 (PDT)
-David Miller <davem@davemloft.net> wrote:
+> +/* The various types of throttling algorithms */
+> +enum iothrottle_strategy {
+> +	IOTHROTTLE_LEAKY_BUCKET,
 
-> From: Andi Kleen <andi@firstfloor.org>
-> Date: Sun, 13 Jul 2008 22:13:17 +0200
-> 
-> > David Miller wrote:
-> > > From: Andi Kleen <andi@firstfloor.org>
-> > > Date: Sun, 13 Jul 2008 15:50:55 +0200
-> > > 
-> > >> Still I would expect that modern IO controllers are typically fast
-> > >> enough at processing SG lists that it shouldn't matter much.
-> > > 
-> > > I know it matters a lot on sparc64 ESP scsi controllers.
-> > > 
-> > > You can only have one address/len pair DMA'ing at a time and you have
-> > > to service an interrupt to load in the the next DMA sg elements into
-> > > the chips registers.
-> > > 
-> > > Merging is essentially a must for performance on those cards.
-> > 
-> > Well right now your setup breaks all controllers with "weird requirements"
-> > like 64k DMA or similar. You'll need to find some way to turn off BIO
-> > merge for those at least.
-> > 
-> > Perhaps this needs to be really a block queue attribute instead of a global?
-> 
-> Like I said, that code was written at a time when none of the block
-> segment check stuff existed, and therefore worked perfectly fine in
-> the environment in which it was created.
-> 
-> Someone added the segmenting code, but didn't bother to add proper
-> checking to the merging bits.
-> 
-> Usually we revert code that breaks things like that, right?
-> 
-> So I find it unusual for people to talk about turning off the
-> code that was working perfectly fine previously in situations
-> like this.
+It's better to explicitly assigned 0 to IOTHROTTLE_LEAKY_BUCKET.
 
-Seems that there are some confusion.
+> +	IOTHROTTLE_TOKEN_BUCKET,
+> +};
 
-It's not likely that the DMA boundary restriction causes this issue
-because we set it to 4G by default.
+> +static int iothrottle_parse_args(char *buf, size_t nbytes, dev_t *dev,
+> +					u64 *iorate,
+> +					enum iothrottle_strategy *strategy,
+> +					s64 *bucket_size)
+> +{
+> +	char *p = buf;
+> +	int count = 0;
+> +	char *s[3];
+> +	unsigned long strategy_val;
+> +	int ret;
+> +
+> +	/* split the colon-delimited input string into its elements */
+> +	memset(s, 0, sizeof(s));
+> +	while (count < ARRAY_SIZE(s)) {
+> +		p = memchr(p, ':', buf + nbytes - p);
+> +		if (!p)
+> +			break;
+> +		*p++ = '\0';
+> +		if (p >= buf + nbytes)
+> +			break;
+> +		s[count++] = p;
+> +	}
 
-As Mikulas pointed out, before my IOMMU work, this problem existed in
-SPARC64 (and other architectures that set BIO_VMERGE_BOUNDARY to non
-zero) because IOMMUs can't guarantee that they merge sg segments.
+use strsep()
 
-I think that now we hit this problems due to the max_segment_size.
+> +
+> +	/* i/o bandwidth limit */
+> +	if (!s[0])
+> +		return -EINVAL;
+> +	ret = strict_strtoull(s[0], 10, iorate);
+> +	if (ret < 0)
+> +		return ret;
+> +	if (!*iorate) {
+> +		/*
+> +		 * we're deleting a limiting rule, so just ignore the other
+> +		 * parameters
+> +		 */
+> +		*strategy = 0;
+> +		*bucket_size = 0;
+> +		goto out;
+> +	}
+> +	*iorate = ALIGN(*iorate, 1024);
+> +
+> +	/* throttling strategy */
+> +	if (!s[1])
+> +		return -EINVAL;
+> +	ret = strict_strtoul(s[1], 10, &strategy_val);
+> +	if (ret < 0)
+> +		return ret;
+> +	*strategy = (enum iothrottle_strategy)strategy_val;
+> +	switch (*strategy) {
+> +	case IOTHROTTLE_LEAKY_BUCKET:
+> +		/* leaky bucket ignores bucket size */
+> +		*bucket_size = 0;
+> +		goto out;
+> +	case IOTHROTTLE_TOKEN_BUCKET:
+> +		break;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +
+> +	/* bucket size */
+> +	if (!s[2])
+> +		return -EINVAL;
+> +	ret = strict_strtoll(s[2], 10, bucket_size);
+> +	if (ret < 0)
+> +		return ret;
+> +	if (*bucket_size < 0)
+> +		return -EINVAL;
+> +	*bucket_size = ALIGN(*bucket_size, 1024);
+> +out:
+> +
+> +	/* block device number */
+> +	*dev = devname2dev_t(buf);
 
-In the past, IOMMUs aggressively merged sg entries. IOMMUs ignored the
-block layer's max_segment_size (64K by default), merge sg segments,
-and create a large segment. But most of LLDs can handle a segment size
-larger than 64K. So everything was fine.
+why not parse dev before parse bandwidth limit ?
 
-Now IOMMUs don't ignore the max_segment_size. We hit this problem.
+> +	return *dev ? 0 : -EINVAL;
+> +}
+> +
+> +static int iothrottle_write(struct cgroup *cgrp, struct cftype *cft,
+> +				const char *buffer)
+> +{
+> +	struct iothrottle *iot;
+> +	struct iothrottle_node *n, *newn = NULL;
+> +	dev_t dev;
+> +	u64 iorate;
+> +	enum iothrottle_strategy strategy;
+> +	s64 bucket_size;
+> +	char *buf;
+> +	size_t nbytes = strlen(buffer);
+> +	int ret = 0;
+> +
+> +	buf = kmalloc(nbytes + 1, GFP_KERNEL);
+> +	if (!buf)
+> +		return -ENOMEM;
+> +	memcpy(buf, buffer, nbytes + 1);
+> +
 
-It's the right thing that IOMMUs don't ignore the max_segment_size. I
-guess that if the A100u2w driver sets a max_segment_size to a larger
-value, the problem will be fixed. However, as we discussed, IOMMUs
-can't guarantee that they merge sg segments. It's possible that we
-still hit this problem.
+redundant kmalloc, just use buffer, and ...
 
-We tell SCSI driver developers that the drivers don't get the larger
-number of segments than they tell the SCSI subsystem. If we keep the
-virtual merge concept, we need to fix this first.
+> +	ret = iothrottle_parse_args(buf, nbytes, &dev, &iorate,
+> +					&strategy, &bucket_size);
+> +	if (ret)
+> +		goto out1;
+> +	if (iorate) {
+> +		newn = kmalloc(sizeof(*newn), GFP_KERNEL);
+> +		if (!newn) {
+> +			ret = -ENOMEM;
+> +			goto out1;
+> +		}
+> +		newn->dev = dev;
+> +		newn->iorate = iorate;
+> +		newn->strategy = strategy;
+> +		newn->bucket_size = bucket_size;
+> +		newn->timestamp = jiffies;
+> +		atomic_long_set(&newn->stat, 0);
+> +		atomic_long_set(&newn->token, 0);
+> +	}
+> +	if (!cgroup_lock_live_group(cgrp)) {
+> +		kfree(newn);
+> +		ret = -ENODEV;
+> +		goto out1;
+> +	}
+> +	iot = cgroup_to_iothrottle(cgrp);
+> +
+> +	spin_lock(&iot->lock);
+> +	if (!iorate) {
+> +		/* Delete a block device limiting rule */
+> +		n = iothrottle_delete_node(iot, dev);
+> +		goto out2;
+> +	}
+> +	n = iothrottle_search_node(iot, dev);
+> +	if (n) {
+> +		/* Update a block device limiting rule */
+> +		iothrottle_replace_node(iot, n, newn);
+> +		goto out2;
+> +	}
+> +	/* Add a new block device limiting rule */
+> +	iothrottle_insert_node(iot, newn);
+> +out2:
+> +	spin_unlock(&iot->lock);
+> +	cgroup_unlock();
+> +	if (n) {
+> +		synchronize_rcu();
+> +		kfree(n);
+> +	}
+> +out1:
+> +	kfree(buf);
+> +	return ret;
+> +}
+> +
+> +static struct cftype files[] = {
+> +	{
+> +		.name = "bandwidth",
+> +		.read_seq_string = iothrottle_read,
+> +		.write_string = iothrottle_write,
 
+and you should specify .max_write_len = XXX unless XXX <= 64.
+You use 1024 in v4.
 
-Sorry about this problem. As I said, this problem existed before my
-IOMMU work, but I should have taken care about this.
+> +	},
+> +};
+> +
