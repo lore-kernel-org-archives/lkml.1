@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756208AbYGNSXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757266AbYGNSYz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756208AbYGNSXs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 14:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbYGNSXk
+	id S1757266AbYGNSYz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 14:24:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754121AbYGNSYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 14:23:40 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38166 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754109AbYGNSXk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 14:23:40 -0400
-Date: Mon, 14 Jul 2008 20:23:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [git pull] core/softirq for v2.6.27
-Message-ID: <20080714182326.GA15243@elte.hu>
-References: <20080714144243.GA21079@elte.hu> <20080714092215.0efd7fa3.akpm@linux-foundation.org> <20080714163141.GA21068@elte.hu> <20080714094422.e7ae255a.akpm@linux-foundation.org> <20080714164838.GA28765@elte.hu> <alpine.LFD.1.10.0807141011260.3305@woody.linux-foundation.org>
+	Mon, 14 Jul 2008 14:24:47 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:64194 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751692AbYGNSYr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 14:24:47 -0400
+Date: Mon, 14 Jul 2008 19:24:15 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: let 32bit use apic_ops too
+In-Reply-To: <20080714180908.GB6986@asus>
+Message-ID: <Pine.LNX.4.55.0807141919540.17431@cliff.in.clinika.pl>
+References: <200807102038.26591.yhlu.kernel@gmail.com>
+ <200807111841.55403.yhlu.kernel@gmail.com> <20080713010843.GD1678@linux-os.sc.intel.com>
+ <86802c440807121904m1516b47am22a384a1e5868f68@mail.gmail.com>
+ <20080713162804.GI1678@linux-os.sc.intel.com> <Pine.LNX.4.55.0807131737240.10630@cliff.in.clinika.pl>
+ <20080713171634.GD7459@asus> <Pine.LNX.4.55.0807140016140.10630@cliff.in.clinika.pl>
+ <20080714164809.GA6986@asus> <Pine.LNX.4.55.0807141805500.16334@cliff.in.clinika.pl>
+ <20080714180908.GB6986@asus>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807141011260.3305@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 14 Jul 2008, Cyrill Gorcunov wrote:
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> On Mon, 14 Jul 2008, Ingo Molnar wrote:
-> > 
-> > /me suggests git-log-addendum feature to amend commit logs after the
-> >     fact, without changing any of the code :-)
+>   Maciej, check me please (it's a bit shame but I don't understand the problem
+> that deep) - we have only two errata here 3AP and 11AP. 3AP says - "Writes to
+> error register clears register" so we don't care about locking there since
+> our mostly task is to read error number or clear it (well we're recommened
+> to write before read - but that is different and not related to the hw
+> error).
 > 
-> It's called "git commit --amend".
+>   The second problem - 11AP says the following: "Back to back assertions of
+> HOLD or BOFF# may cause lost APIC write cycle". For this case we use LOCK#
+> since - HOLD is not recognized during LOCK cycles (as Intel docs says).
+> 
+>   Did I miss something? Or maybe it's completely out-of-topic? :)
 
-yeah - and i use that for general development meanwhile: i just 
-commit the draft code in small steps (appending it to the commit via
-git commit --amend), then i test it and amend it with a final commit
-log in the end.
+ Check the text of the 11AP erratum -- we simply use one of the Intel's
+recommended workarounds, which says that an APIC read instruction before
+every APIC write instruction will avoid the problem.
 
-I use that method instead of doing development via uncommitted changes 
-in the git index, because that way:
-
- - I see the under-development change in a form close to how other
-   people see it (as a commit)
-
- - I can switch branches during development
-
- - It's sure that changes are not lost
-
- - I can distribute my half-done commits to my testboxes (internally i
-   use a hierarchy of Git repos on testboxes to automatically propagate
-   changes)
-
-Once it's pushed out publicly into a persistent branch it cannot be 
-touched anymore.
-
-	Ingo
+  Maciej
