@@ -1,65 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757444AbYGNVVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758107AbYGNVVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757444AbYGNVVX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 17:21:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756123AbYGNVVN
+	id S1758107AbYGNVVj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 17:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757143AbYGNVV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 17:21:13 -0400
-Received: from outbound-mail-128.bluehost.com ([67.222.38.28]:49818 "HELO
-	outbound-mail-128.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755887AbYGNVVL (ORCPT
+	Mon, 14 Jul 2008 17:21:29 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:45754 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757822AbYGNVV2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 17:21:11 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User:DomainKey-Status;
-	b=SMpl0QXKD7jQppPJOaSNnWmFchv+Dn+H8g0pPxtg2Kyg+ZZPonjXKxz0ykIvf50Vh7ubGRLofinhBKmkgDAiWNj7uV7+Aoi56eqN3d9WdJHzPnAZtSkYdSPxI9b7SJa3;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH] Fix pci_subsys_init() to have a return value
-Date: Mon, 14 Jul 2008 14:21:03 -0700
-User-Agent: KMail/1.9.9
-Cc: akpm@linux-foundation.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20080711094636.18199.94804.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20080711094636.18199.94804.stgit@warthog.procyon.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Mon, 14 Jul 2008 17:21:28 -0400
+Subject: Re: [PATCH] init/version.c: Define version_string only if
+	CONFIG_KALLSYMS is not defined.
+From: Daniel Guilak <guilak@linux.vnet.ibm.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       daniel@danielguilak.com
+In-Reply-To: <20080714123858.2c42227f.randy.dunlap@oracle.com>
+References: <1215552069.10304.6.camel@dguilak-desk>
+	 <1216062286.6497.18.camel@dguilak-desk>
+	 <20080714123858.2c42227f.randy.dunlap@oracle.com>
+Content-Type: text/plain
+Date: Mon, 14 Jul 2008 14:20:38 -0700
+Message-Id: <1216070438.6497.27.camel@dguilak-desk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807141421.03305.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, July 11, 2008 2:46 am David Howells wrote:
-> Fix pci_subsys_init() to return a value (0) when it has finished.  All the
-> functions it calls currently return 0, so returning 0 here unconditionally
-> rather than gathering the results of its callees would seem reasonable.
->
-> Signed-off-by: David Howells <dhowells@redhat.com>
+On Mon, 2008-07-14 at 12:38 -0700, Randy Dunlap wrote:
+> On Mon, 14 Jul 2008 12:04:46 -0700 Daniel Guilak wrote:
+> 
+> > int Version_* is only used with ksymoops, which is only needed (according to
+> > README and Documentation/Changes) if CONFIG_KALLSYMS is NOT defined.  Therefore
+> > this patch defines version_string only if CONFIG_KALLSYMS is not defined.
+> > 
+> > Signed-off-by: Daniel Guilak <daniel@danielguilak.com>
+> > ---
+> >  init/version.c |    2 ++
+> >  1 files changed, 2 insertions(+), 0 deletions(-)
+> > 
+> > Depends on "[PATCH] init/version.c: Silenced sparse warning by declaring the version string."
+> > 
+> > diff --git a/init/version.c b/init/version.c
+> > index 041fd82..52a8b98 100644
+> > --- a/init/version.c
+> > +++ b/init/version.c
+> > @@ -13,11 +13,13 @@
+> >  #include <linux/utsrelease.h>
+> >  #include <linux/version.h>
+> >  
+> > +#ifndef CONFIG_KALLSYMS
+> >  #define version(a) Version_ ## a
+> >  #define version_string(a) version(a)
+> >  
+> >  extern int version_string(LINUX_VERSION_CODE);
+> >  int version_string(LINUX_VERSION_CODE);
+> > +#endif
+> >  
+> >  struct uts_namespace init_uts_ns = {
+> >  	.kref = {
+> > -- 
+> 
+> Does not apply cleanly to linux-2.6.26, linux-next-20080714, or Linus-git-head.
+> 
+
+Did you apply "[PATCH] init/version.c: Silenced sparse warning by
+declaring the version string." beforehand? I just applied it on the most
+recent tree and I didn't have any issues.
+
+> and why do we ned both extern int version_string()
+> and int version_string() ?
+Because sparse was complaining that it wasn't prototyped or static.
+There isn't a header file to put it in since it only exists to be a
+kernel.
 > ---
->
->  arch/x86/pci/legacy.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
->
->
-> diff --git a/arch/x86/pci/legacy.c b/arch/x86/pci/legacy.c
-> index 3c1d795..00e29c8 100644
-> --- a/arch/x86/pci/legacy.c
-> +++ b/arch/x86/pci/legacy.c
-> @@ -63,5 +63,6 @@ int __init pci_subsys_init(void)
->  	pci_legacy_init();
->  	pcibios_irq_init();
->  	pcibios_init();
-> +	return 0;
->  }
->  subsys_initcall(pci_subsys_init);
+> ~Randy
+> Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+> http://linuxplumbersconf.org/
 
-Looks like Robert already pushed a patch like this via the x86 tree, but at 
-least it's been fixed.
+--Daniel
 
-Thanks,
-Jesse
