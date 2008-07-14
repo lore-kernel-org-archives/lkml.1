@@ -1,74 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756358AbYGNSmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757767AbYGNSmf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756358AbYGNSmV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 14:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbYGNSmO
+	id S1757767AbYGNSmf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 14:42:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757262AbYGNSm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 14:42:14 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:42063 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752631AbYGNSmN (ORCPT
+	Mon, 14 Jul 2008 14:42:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36420 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757261AbYGNSmZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 14:42:13 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Bernhard Walle" <bwalle@suse.de>, "Vivek Goyal" <vgoyal@redhat.com>,
-       kexec@lists.infradead.org, x86@kernel.org, linux-kernel@vger.kernel.org
-References: <1214510048-21215-1-git-send-email-bwalle@suse.de>
-	<20080627133256.GB5801@redhat.com>
-	<86802c440807140011v728cc35fy2540b537ddca9844@mail.gmail.com>
-	<20080714112404.36783df5@halley.suse.de>
-	<m1od50ztoa.fsf@frodo.ebiederm.org>
-	<86802c440807141006o98afac8t66b0933d8acd2746@mail.gmail.com>
-	<m17iboz83v.fsf@frodo.ebiederm.org>
-	<86802c440807141117q218fdd61w1216dc6ded72252a@mail.gmail.com>
-Date: Mon, 14 Jul 2008 11:41:36 -0700
-In-Reply-To: <86802c440807141117q218fdd61w1216dc6ded72252a@mail.gmail.com>
-	(Yinghai Lu's message of "Mon, 14 Jul 2008 11:17:16 -0700")
-Message-ID: <m1r69wxq8v.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 14 Jul 2008 14:42:25 -0400
+Date: Mon, 14 Jul 2008 11:42:01 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Avi Kivity <avi@qumranet.com>
+Subject: Re: [git pull] core, x86: make LIST_POISON less deadly
+In-Reply-To: <8763r8z570.fsf@basil.nowhere.org>
+Message-ID: <alpine.LFD.1.10.0807141139120.3305@woody.linux-foundation.org>
+References: <20080714144828.GA22666@elte.hu> <alpine.LFD.1.10.0807140758100.3305@woody.linux-foundation.org> <20080714151247.GA27145@elte.hu> <alpine.LFD.1.10.0807140856130.3305@woody.linux-foundation.org> <8763r8z570.fsf@basil.nowhere.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;"Yinghai Lu" <yhlu.kernel@gmail.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
-	*      [score: 0.4302]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH] x86: Find offset for crashkernel reservation automatically
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
 
-> On Mon, Jul 14, 2008 at 10:30 AM, Eric W. Biederman
-> <ebiederm@xmission.com> wrote:
->> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
->>
->>> for 64bit, kdump can start from address above 4g with bzImage?
->>
->> I think the boot protocol was properly updated for that, it was in the
->> original drafts.  A relocatable kernel with a 64bit entry point.
->>
->> I do know that the 64bit code is ready to do that.
->
-> but bzImage for 64bit still use 32bit entries, except kexec could
-> uncompress the bzImage like xen domain builder.
 
->From the standpoint of the crashdump option it doesn't matter.
-As the vmlinux supports it, and bzImage could easily support it,
-the decompresser is 64bit code.
+On Mon, 14 Jul 2008, Andi Kleen wrote:
+> 
+> The issue is that the kernel cannot detect it (short of running the
+> KVM x86 emulator on #GP, but surely you're not suggesting that), so it
+> cannot print something out.
 
-If bzImage doesn't support it that is a bug we will have to
-correct one of these years when it actually matters.
+Don't be silly. It prints out the oops message.
 
-Eric
+People who cannot see where that oops is, and cannot be bothered to look 
+at the register state aren't going to help _anyway_.
+
+In fact, with the 0xdead... sequence, it's going to be *more* obvious than 
+with some almost-kernel 0xffffc.. address, even if it's not showing up in 
+the first line.
+
+In other words, your whole argument is pure and utter sh*t. The page fault 
+is _less_ readable than the GP fault.
+
+> That is why I suggested using a canonical address.
+
+And I disagree. Violently. 
+
+The whole and ONLY point of poisoning is to get the fault.
+
+With the canonical address, you won't get it reliably, and when you do get 
+it, it's not obvious to decode.
+
+End of discussion.
+
+			Linus
