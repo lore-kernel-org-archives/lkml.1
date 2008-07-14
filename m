@@ -1,379 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbYGNVnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757486AbYGNVw4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758166AbYGNVnr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 17:43:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756842AbYGNVni
+	id S1757486AbYGNVw4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 17:52:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752453AbYGNVwr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 17:43:38 -0400
-Received: from vena.lwn.net ([206.168.112.25]:57597 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752054AbYGNVnh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 17:43:37 -0400
-Date: Mon, 14 Jul 2008 15:43:35 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PULL] bkl-removal tree
-Message-ID: <20080714154335.100afd6b@bike.lwn.net>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.4; x86_64-unknown-linux-gnu)
+	Mon, 14 Jul 2008 17:52:47 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:53355 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751972AbYGNVwr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 17:52:47 -0400
+Date: Mon, 14 Jul 2008 16:52:38 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: Hugh Dickins <hugh@veritas.com>, nickpiggin@yahoo.com.au
+Cc: Robin Holt <holt@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH] - GRU virtual -> physical translation
+Message-ID: <20080714215238.GA6503@sgi.com>
+References: <20080709191439.GA7307@sgi.com> <20080711121736.18687570.akpm@linux-foundation.org> <20080714145255.GA23173@sgi.com> <20080714092451.2c81a472.akpm@linux-foundation.org> <20080714163107.GA936@sgi.com> <20080714195018.GD8534@sgi.com> <Pine.LNX.4.64.0807142057060.22604@blonde.site>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0807142057060.22604@blonde.site>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Linus,
+> > Maybe I missed part of the discussion, but I thought follow_page() would
+> > not work because you need this to function in the interrupt context and
+> > locks would then need to be made irqsave/irqrestore.
+> 
+> Exactly, that seems to have gone missing from the patch explanation.
+> 
+> > This, of course does not in any way answer the question about why
+> > follow_page() can not be exported.
+> 
+> I can't answer that either, and like Andrew I would have preferred
+> to export follow_page, but for this locking issue: on the face of it,
+> you cannot safely pte_offset_map_lock from interrupt context.
 
-Please consider pulling from the bkl-removal tree:
+Agree. But there were flaws that you pointed out, I forgot, & Robin reminded
+me.
 
-  git://git.lwn.net/linux-2.6.git bkl-removal
 
-Most of these patches have been in linux-next since May with no ill
-effect.  
+> 
+> But I do now wonder whether it was just my kneejerk reaction on seeing
+> Jack's comment that it was needed in interrupt context.  After glancing
+> through the GRU patches, I'm left wondering whether gru_intr is an
+> asynchronous interrupt - in which case follow_page cannot be used,
+> and it's not obvious to me that the version in this patch is safe -
+> or whether it's more akin to a trap, coming in the context of the
+> current mm, in which case using follow_page may be okay.
 
-Andi Kleen (1):
-      Remove BKL from remote_llseek v2
+gru_intr() is truly an asynchronous interrupt.
 
-Arnd Bergmann (68):
-      agp-frontend: BKL pushdown
-      ans-lcd: BKL pushdown
-      apm-emulation: BKL pushdown
-      apm_32: BKL pushdown
-      basler-excite: BKL pushdown
-      bf561-coreb: BKL pushdown
-      block-dasd_eer: BKL pushdown
-      bluetooth-vhci: BKL pushdown
-      briq_panel: BKL pushdown
-      bvme6000-rtc: BKL pushdown
-      cpwatchdog: BKL pushdown
-      crypto-prng: BKL pushdown
-      crypto-zcrypt_api: BKL pushdown
-      display7seg: BKL pushdown
-      dlm-user: BKL pushdown
-      ds1286: BKL pushdown
-      ds1620: BKL pushdown
-      efirtc: BKL pushdown
-      envctrl: BKL pushdown
-      flash: BKL pushdown
-      genrtc: BKL pushdown
-      hdpu_cpustate: BKL pushdown
-      hp_sdc_rtc: BKL pushdown
-      hpet: BKL pushdown
-      hw-random: BKL pushdown
-      infiniband-ucma: BKL pushdown
-      ip27-rtc: BKL pushdown
-      ipmi-watchdog: BKL pushdown
-      irnet_ppp: BKL pushdown
-      jsflash: BKL pushdown
-      lcd: BKL pushdown
-      macintosh-smu: BKL pushdown
-      media-radio-miropcm20-rds: BKL pushdown
-      megaraid: BKL pushdown
-      message-i2o-i2o_config: BKL pushdown
-      microcode: BKL pushdown
-      monreader: BKL pushdown
-      monwriter: BKL pushdown
-      mousedev: BKL pushdown
-      mvme16x-rtc: BKL pushdown
-      mwave-mwavedd: BKL pushdown
-      net-tun: BKL pushdown
-      nvram: BKL pushdown
-      ocfs2-stack_user: BKL pushdown
-      openprom: BKL pushdown
-      parisc-eisa_eeprom: BKL pushdown
-      parisc-kernel-perf: BKL pushdown
-      pm_qos_params: BKL pushdown
-      riowatchdog: BKL pushdown
-      rtc: BKL pushdown
-      rtc-rtc-m41t80: BKL pushdown
-      sbus-rtc: BKL pushdown
-      scsi-tgt: BKL pushdown
-      serio: BKL pushdown
-      sony-laptop: BKL pushdown
-      sonypi: BKL pushdown
-      sparc-apc: BKL pushdown
-      sparc64-rtc: BKL pushdown
-      tpm-tpm: BKL pushdown
-      uctrl: BKL pushdown
-      uinput: BKL pushdown
-      uml-harddog: BKL pushdown
-      uml-mmapper: BKL pushdown
-      uml-random: BKL pushdown
-      via-pmu: BKL pushdown
-      vmcp: BKL pushdown
-      vmwatchdog: BKL pushdown
-      x86-mce: BKL pushdown
+The function that actually does the TLB dropin can be called thru two
+different paths. One is from user context & should be safe for using
+follow_page(). However, the other path really is via an async interrupt.
+The GRU needs to do a lookup using something similar to the
+get_user_pages_fast() function from Nick.
 
-Jonathan Corbet (74):
-      bsg: cdev lock_kernel() pushdown
-      cris: cdev lock_kernel() pushdown
-      mips: cdev lock_kernel() pushdown
-      sh: cdev lock_kernel() pushdown
-      x86: cdev lock_kernel() pushdown
-      i2c: cdev lock_kernel() pushdown
-      cosa: cdev lock_kernel() pushdown
-      pcmcia: cdev lock_kernel() pushdown
-      rtc: cdev lock_kernel() pushdown
-      drivers/s390: cdev lock_kernel() pushdown
-      AoE: cdev lock_kernel() pushdown
-      paride: cdev lock_kernel() pushdown
-      mtdchar: cdev lock_kernel() pushdown
-      UBI: cdev lock_kernel() pushdown
-      HID: cdev lock_kernel() pushdown
-      Input: cdev lock_kernel() pushdown
-      UIO: cdev lock_kernel() pushdown
-      ipmi: cdev lock_kernel() pushdown
-      mem: cdev lock_kernel() pushdown
-      misc: cdev lock_kernel() pushdown
-      viotape: cdev lock_kernel pushdown ()
-      mbcs: cdev lock_kernel() pushdown
-      lp: cdev lock_kernel() pushdown
-      drm: cdev lock_kernel() pushdown
-      phonedev: cdev lock_kernel() pushdown
-      ide-tape: cdev lock_kernel() pushdown
-      sg: cdev lock_kernel() pushdown
-      osst: cdev lock_kernel() pushdown.
-      aacraid: cdev lock_kernel() pushdown
-      st: cdev lock_kernel() pushdown
-      gdth: cdev lock_kernel() pushdown
-      isdn: cdev lock_kernel() pushdown
-      usbcore: cdev lock_kernel() pushdown
-      dvb: cdev lock_kernel() pushdown
-      fbmem: cdev lock_kernel() pushdown
-      sound: cdev lock_kernel() pushdown
-      snsc: cdev lock_kernel() pushdown
-      tty: cdev lock_kernel() pushdown
-      Add "no BKL needed" comments to several drivers
-      spidev: BKL pushdown
-      vcs: BKL pushdown
-      xilinx icap: BKL pushdown
-      tlckl: BKL pushdown
-      raw: BKL pushdown
-      dsp56k: BKL pushdown
-      infiniband: more BKL pushdown
-      phantom: BKL pushdown
-      bpp: bkl pushdown
-      videopix: BKL pushdown
-      dpt_i20: BKL pushdown
-      changer: BKL pushdown
-      CAPI: BKL pushdown
-      divamnt: BKL pushdown
-      adb: BKL pushdown
-      printer gadget: BKL pushdown
-      USB Monitor: BKL pushdown
-      usbdev: BKL pushdown
-      videodev: BKL pushdown
-      Add cycle_kernel_lock()
-      Add a bunch of cycle_kernel_lock() calls
-      Add a comment in chrdev_open()
-      Remove the lock_kernel() call from chrdev_open()
-      Make FAT users happier by not deadlocking
-      mpt: fasync BKL pushdown
-      i2o: fasync BKL pushdown
-      tun: fasync BKL pushdown
-      tty_io: fasync BKL pushdown
-      Bluetooth VHCI: fasync BKL pushdown
-      ecryptfs: fasync BKL pushdown
-      ipmi: fasync BKL pushdown
-      snd/PCM: fasync BKL pushdown
-      Call fasync() functions without the BKL
-      bf561-coreb: BKL unneeded for open()
-      Merge commit 'v2.6.26' into bkl-removal
 
-Linus Torvalds (1):
-      Replace BKL with superblock lock in fat/msdos/vfat
+> I say it's not obvious to me that the version in this patch is safe,
+> because I was wondering about the local_irq_disable there.  That's
+> copied from Nick's fast GUP patches, but its function here is less
+> obvious.  gru_intr already did down_read_trylock(&gts->ts->mmap_sem),
+> which seems to give more guarantees than Nick relies upon; but is
+> gts->ts_mm necessarily the same as current->mm or not?
+> 
+> If not, then you don't have quite the TLB flushing guarantees that
+> Nick relies upon: you won't be sent an IPI to flush TLB if swapping
+> or truncation suddenly frees the page, which that local_irq_disable
+> is designed to keep at bay (if I understand fast GUP correctly)
+> while we get a reference to the page to rescue it from freeing.
 
-Roland Dreier (2):
-      IB/uverbs: BKL is not needed for ib_uverbs_open()
-      IB/umad: BKL is not needed for ib_umad_open()
+I think the GRU is ok but the reason is very specific to the GRU (but please
+check me on this). In fact, maybe for this reason alone, I should open-code
+the lookup. Otherwise the new lookup routine potentially could be misused by
+other drivers.
 
-Stephen Rothwell (1):
-      bkl-removal viotape fixup
+The control structions used to manage the GRU & GRU TLB reside in normal
+cacheable writeback memory. The GRU memory resides in the GRU chip - not
+normal RAM. Aside from that, the GRU space appears to the cpu as RAM but
+with a few special properties & side-effects.
 
- arch/blackfin/mach-bf561/coreb.c             |    1 +
- arch/cris/arch-v10/drivers/eeprom.c          |    4 +-
- arch/cris/arch-v10/drivers/gpio.c            |    3 ++
- arch/cris/arch-v10/drivers/i2c.c             |    2 +
- arch/cris/arch-v10/drivers/sync_serial.c     |   34 +++++++++++++--------
- arch/cris/arch-v32/drivers/cryptocop.c       |    3 +-
- arch/cris/arch-v32/drivers/i2c.c             |    2 +
- arch/cris/arch-v32/drivers/mach-a3/gpio.c    |    4 ++
- arch/cris/arch-v32/drivers/mach-fs/gpio.c    |    5 ++-
- arch/cris/arch-v32/drivers/sync_serial.c     |   33 ++++++++++++--------
- arch/m68k/bvme6000/rtc.c                     |    7 ++++-
- arch/m68k/mvme16x/rtc.c                      |    4 ++
- arch/mips/basler/excite/excite_iodev.c       |    9 +++++-
- arch/mips/kernel/rtlx.c                      |    7 ++++-
- arch/mips/kernel/vpe.c                       |   12 ++++++--
- arch/mips/sibyte/common/sb_tbprof.c          |   25 +++++++++++----
- arch/parisc/kernel/perf.c                    |    4 ++
- arch/s390/crypto/prng.c                      |    2 +
- arch/sh/boards/landisk/gio.c                 |   10 ++++--
- arch/sparc/kernel/apc.c                      |    2 +
- arch/sparc64/kernel/time.c                   |    7 ++++-
- arch/um/drivers/harddog_kern.c               |    3 ++
- arch/um/drivers/mmapper_kern.c               |    2 +
- arch/um/drivers/random.c                     |    3 ++
- arch/x86/kernel/apm_32.c                     |    4 ++
- arch/x86/kernel/cpu/mcheck/mce_64.c          |    4 ++
- arch/x86/kernel/cpuid.c                      |   25 +++++++++++-----
- arch/x86/kernel/microcode.c                  |    2 +
- arch/x86/kernel/msr.c                        |   16 +++++++--
- block/bsg.c                                  |    7 ++++-
- drivers/block/aoe/aoechr.c                   |    7 ++++-
- drivers/block/paride/pg.c                    |   22 ++++++++++----
- drivers/block/paride/pt.c                    |    8 ++++-
- drivers/bluetooth/hci_vhci.c                 |   14 +++++++--
- drivers/char/agp/frontend.c                  |    4 ++
- drivers/char/apm-emulation.c                 |    3 ++
- drivers/char/briq_panel.c                    |    9 ++++-
- drivers/char/cs5535_gpio.c                   |    2 +
- drivers/char/drm/drm_fops.c                  |    9 ++++-
- drivers/char/ds1286.c                        |    4 ++
- drivers/char/ds1620.c                        |    9 +++++-
- drivers/char/dsp56k.c                        |   16 +++++++---
- drivers/char/dtlk.c                          |    3 ++
- drivers/char/efirtc.c                        |    2 +
- drivers/char/genrtc.c                        |    7 ++++-
- drivers/char/hpet.c                          |    4 ++
- drivers/char/hw_random/core.c                |    2 +
- drivers/char/ip2/ip2main.c                   |   34 +--------------------
- drivers/char/ip27-rtc.c                      |    4 ++
- drivers/char/ipmi/ipmi_devintf.c             |   10 +++++-
- drivers/char/ipmi/ipmi_watchdog.c            |    3 ++
- drivers/char/lcd.c                           |    3 ++
- drivers/char/lp.c                            |   38 ++++++++++++++++-------
- drivers/char/mbcs.c                          |    5 +++
- drivers/char/mem.c                           |   10 +++++-
- drivers/char/misc.c                          |    3 ++
- drivers/char/mwave/mwavedd.c                 |    2 +
- drivers/char/nvram.c                         |    4 ++
- drivers/char/pc8736x_gpio.c                  |    2 +
- drivers/char/ppdev.c                         |    2 +
- drivers/char/raw.c                           |    3 ++
- drivers/char/rtc.c                           |    4 ++
- drivers/char/scx200_gpio.c                   |    2 +
- drivers/char/snsc.c                          |    5 ++-
- drivers/char/sonypi.c                        |    3 ++
- drivers/char/tb0219.c                        |    2 +
- drivers/char/tlclk.c                         |   19 +++++++----
- drivers/char/tpm/tpm.c                       |    5 +++
- drivers/char/tty_io.c                        |   41 +++++++++++++++++++++----
- drivers/char/vc_screen.c                     |    9 ++++-
- drivers/char/viotape.c                       |    3 ++
- drivers/char/vr41xx_giu.c                    |    2 +
- drivers/char/xilinx_hwicap/xilinx_hwicap.c   |    6 +++-
- drivers/hid/hidraw.c                         |    3 ++
- drivers/i2c/i2c-dev.c                        |   22 ++++++++++----
- drivers/ide/ide-tape.c                       |    7 ++++-
- drivers/infiniband/core/ucm.c                |    2 +
- drivers/infiniband/core/ucma.c               |    3 ++
- drivers/infiniband/core/user_mad.c           |   13 ++++++++
- drivers/infiniband/core/uverbs_main.c        |   13 +++++++-
- drivers/infiniband/hw/ipath/ipath_file_ops.c |    2 +
- drivers/input/input.c                        |   16 +++++++--
- drivers/input/misc/hp_sdc_rtc.c              |    2 +
- drivers/input/misc/uinput.c                  |    3 ++
- drivers/input/mousedev.c                     |   12 ++++++-
- drivers/input/serio/serio_raw.c              |    6 +++-
- drivers/isdn/capi/capi.c                     |   17 +++++++----
- drivers/isdn/hardware/eicon/divamnt.c        |   16 +++++++---
- drivers/isdn/hardware/eicon/divasi.c         |    2 +
- drivers/isdn/hardware/eicon/divasmain.c      |    2 +
- drivers/isdn/i4l/isdn_common.c               |    3 +-
- drivers/macintosh/adb.c                      |   18 ++++++++---
- drivers/macintosh/ans-lcd.c                  |    2 +
- drivers/macintosh/smu.c                      |    3 ++
- drivers/macintosh/via-pmu.c                  |    3 ++
- drivers/media/dvb/dvb-core/dvbdev.c          |    4 ++
- drivers/media/radio/miropcm20-rds.c          |    4 ++
- drivers/media/video/videodev.c               |    4 ++
- drivers/message/fusion/mptctl.c              |    6 +++-
- drivers/message/i2o/i2o_config.c             |   12 +++++--
- drivers/misc/hdpuftrs/hdpu_cpustate.c        |    9 +++++-
- drivers/misc/phantom.c                       |    9 ++++-
- drivers/misc/sony-laptop.c                   |    3 ++
- drivers/mtd/mtdchar.c                        |   22 ++++++++++----
- drivers/mtd/ubi/cdev.c                       |    7 ++++-
- drivers/net/ppp_generic.c                    |    2 +
- drivers/net/tun.c                            |   13 ++++++--
- drivers/net/wan/cosa.c                       |   22 ++++++++++----
- drivers/parisc/eisa_eeprom.c                 |    3 ++
- drivers/pcmcia/pcmcia_ioctl.c                |   25 +++++++++++----
- drivers/rtc/rtc-dev.c                        |   12 ++++++--
- drivers/rtc/rtc-m41t80.c                     |    7 ++++-
- drivers/s390/block/dasd_eer.c                |    6 ++++
- drivers/s390/char/fs3270.c                   |   23 ++++++++++----
- drivers/s390/char/monreader.c                |    4 ++
- drivers/s390/char/monwriter.c                |    3 ++
- drivers/s390/char/tape_char.c                |   12 ++++++--
- drivers/s390/char/vmcp.c                     |    4 ++
- drivers/s390/char/vmlogrdr.c                 |    8 ++++-
- drivers/s390/char/vmur.c                     |   12 ++++++--
- drivers/s390/char/vmwatchdog.c               |    7 ++++-
- drivers/s390/crypto/zcrypt_api.c             |    3 ++
- drivers/sbus/char/bpp.c                      |    3 ++
- drivers/sbus/char/cpwatchdog.c               |    4 ++
- drivers/sbus/char/display7seg.c              |    1 +
- drivers/sbus/char/envctrl.c                  |    2 +
- drivers/sbus/char/flash.c                    |    6 +++-
- drivers/sbus/char/jsflash.c                  |   13 ++++++--
- drivers/sbus/char/openprom.c                 |    3 ++
- drivers/sbus/char/riowatchdog.c              |    2 +
- drivers/sbus/char/rtc.c                      |    3 ++
- drivers/sbus/char/uctrl.c                    |    3 ++
- drivers/sbus/char/vfc_dev.c                  |    5 +++
- drivers/scsi/3w-9xxx.c                       |    3 ++
- drivers/scsi/3w-xxxx.c                       |    3 ++
- drivers/scsi/aacraid/linit.c                 |    3 ++
- drivers/scsi/ch.c                            |    4 ++
- drivers/scsi/dpt_i2o.c                       |    5 +++
- drivers/scsi/gdth.c                          |    3 ++
- drivers/scsi/megaraid.c                      |    5 ++-
- drivers/scsi/megaraid/megaraid_mm.c          |    2 +
- drivers/scsi/megaraid/megaraid_sas.c         |    2 +
- drivers/scsi/osst.c                          |   15 +++++++++-
- drivers/scsi/scsi_tgt_if.c                   |    2 +
- drivers/scsi/sg.c                            |   16 ++++++++--
- drivers/scsi/st.c                            |   11 ++++++-
- drivers/spi/spidev.c                         |    3 ++
- drivers/telephony/phonedev.c                 |    3 ++
- drivers/uio/uio.c                            |   17 +++++++---
- drivers/usb/core/devio.c                     |    2 +
- drivers/usb/core/file.c                      |    3 ++
- drivers/usb/gadget/printer.c                 |    3 +-
- drivers/usb/mon/mon_bin.c                    |    6 ++++
- drivers/video/fbmem.c                        |   15 +++++++--
- fs/char_dev.c                                |    7 ++--
- fs/cifs/cifsfs.c                             |    2 +-
- fs/dlm/user.c                                |    9 +++++-
- fs/ecryptfs/file.c                           |    3 ++
- fs/fat/cache.c                               |    2 +-
- fs/fat/dir.c                                 |    4 +-
- fs/fat/file.c                                |    6 ----
- fs/fat/inode.c                               |   26 ++++++++++------
- fs/fcntl.c                                   |    3 --
- fs/gfs2/ops_file.c                           |    4 +-
- fs/msdos/namei.c                             |   35 ++++++++++++----------
- fs/ncpfs/file.c                              |   12 +++++++-
- fs/nfs/file.c                                |    6 +++-
- fs/ocfs2/stack_user.c                        |    3 ++
- fs/read_write.c                              |   38 +++++++-----------------
- fs/smbfs/file.c                              |   11 ++++++-
- fs/vfat/namei.c                              |   35 ++++++++++++----------
- include/linux/fs.h                           |    3 +-
- include/linux/smp_lock.h                     |   13 ++++++++
- kernel/pm_qos_params.c                       |    7 ++++-
- net/irda/irnet/irnet.h                       |    1 +
- net/irda/irnet/irnet_ppp.c                   |    3 ++
- sound/core/pcm_native.c                      |    8 ++++-
- sound/core/sound.c                           |   15 +++++++++-
- sound/sound_core.c                           |    5 +++
- 179 files changed, 1093 insertions(+), 350 deletions(-)
+The GRU is a home agent for all of the GRU space & tracks ownership of cache
+lines that belong to the GRU.  At all times, the GRU is aware of whether a
+cache line belonging to the GRU is unowned OR if a copy of the cacheline is
+potentially held by a cpu.
 
-Thanks,
 
-jon
+A GRU TLB dropin consists of the following steps by a cpu:
+
+	- read the TLB-related cacheline (referred to as a TFH) from the GRU.
+	  This cacheline contains the vaddr that caused the miss.
+	- convert the vaddr into a physical address
+	- store the paddr into the TFH cacheline that contains the vaddr
+	- issue a flush-cache to write the TFH cacheline back to the GRU.
+
+If another cpu is flushing the same entry, there is a race that must be
+resolved. For example cpu1 could be in the middle of a TLB dropin while
+another cpu is purging the entry that is about to be dropped in. This is the
+race that you refer to above. The timing could be something like:
+
+	cpu 1					cpu 2
+	-----					-----
+	read TFH
+	look up pte
+						0 -> pte
+						flush TLB 
+						flush GRU TLB via MMUOPS callback
+	extract paddr from pte
+	store paddr -> TFH
+	writeback TFH to GRU
+
+
+The GRU has special hardware that eliminates the need for locks to resolve
+this race.  If a TLB flush is issued AND the GRU does not own the TFH, the
+subsequent TLB dropin is ignored. I think this solves the race shown above.
+
+
+> But perhaps the MMU notification mechanism, or the GRU's
+> "magic hardware", keeps it all safe.
+
+The above is a very brief description of the "magic" hardware.
+
+
+So.... How should I proceed?  It looks like 2 approaches:
+
+1) add a get_user_pte_fast() as discussed in mail with Nick. This function
+   would resides in gup.c and be exported to drivers can can handle the
+   necessary races dealing with TLB flushes/dropin
+
+2) Open code a fast pte walker in the GRU. This has the advantage that it
+   does not add a difficult-to-use-correctly API to the kernel. The downside
+   is that pte lookup functions are questionable in drivers. (Not sure if it
+   is possible to implement the API on all arches. Might be restricted to
+   arches that implement CONFIG_HAVE_GET_USER_PAGES_FAST. Other arches would always
+   return "fail" but this is permitted by the API.
+
+
+ 
+----
+> (Personally, I dislike the other patch, adding zap_vma_ptes:
+> to me it's just minor bloat and obscurity on top of the familiar
+> zap_page_range; but I may be in a minority of one on that.)
+
+I can live with either. The original zap_page_range() was NACKed with no
+explanation. I looked at possible objections to exporting zap_page_range()
+& the main one that I could find was that it far more powerful than
+what a normal driver would need. I can understand this objection - it
+makes sense to me. I floated the idea of a restricted form of a zap & got no
+objections. But like I said - either works for me & I don't see an
+obvious reason to chose one over the other.
+
+
+
