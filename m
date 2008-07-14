@@ -1,70 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023AbYGNQnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756280AbYGNQot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756023AbYGNQnS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 12:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbYGNQnH
+	id S1756280AbYGNQot (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 12:44:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbYGNQom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 12:43:07 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:40360 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751845AbYGNQnF (ORCPT
+	Mon, 14 Jul 2008 12:44:42 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38292 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752536AbYGNQol (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 12:43:05 -0400
-Message-ID: <487B820E.4020002@mellanox.co.il>
-Date: Mon, 14 Jul 2008 19:42:54 +0300
-Reply-To: tziporet@dev.mellanox.co.il
-Organization: Mellanox Technologies
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
-Subject: Re: [ofa-general] ***SPAM*** InfiniBand/RDMA merge plans for 2.6.27
-References: <ada8ww5jbaf.fsf@cisco.com>
-In-Reply-To: <ada8ww5jbaf.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 14 Jul 2008 12:44:41 -0400
+Date: Mon, 14 Jul 2008 09:44:22 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [git pull] core/softirq for v2.6.27
+Message-Id: <20080714094422.e7ae255a.akpm@linux-foundation.org>
+In-Reply-To: <20080714163141.GA21068@elte.hu>
+References: <20080714144243.GA21079@elte.hu>
+	<20080714092215.0efd7fa3.akpm@linux-foundation.org>
+	<20080714163141.GA21068@elte.hu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Tziporet Koren <tziporet@dev.mellanox.co.il>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
-> Core:
->
->  - I'm waiting to merge the RDMA_CM_EVENT_ADDR_CHANGE changes that
->    depend on core networking changes until such changes are upstream.
->    Or, please remind me when that happens.
->
->  - Jack's XRC patch set.  I think we're getting closer to converging
->    here, and I hope to get this merged but we're getting down to the
->    wire, so we'll see.
->   
-I hope we can get those in
-> HW specific:
->
->  - Yevgeny's mlx4 changes.  We'll see how much time is left after I
->    get done with XRC (which is before this on my list) but to be
->    honest I'm not sure how mergeable a lot of this is without the
->    mlx4_en patches that actually use it.
->   
-We just posted the mlx4_en patches, and we need to coordinate the merge 
-of them together
->  - I've been working on memory management extensions support for mlx4,
->    but I'm not sure if it will be ready in time.  Firmware for this
->    may not be released for a while so it ain't urgent anyway.
->   
-We are testing the patches and we already have FW that enable them.
-I agree its not urgent but it would be good to have it, so ULPs that are 
-interested can be tested over IB too.
-> Here are a few topics that I believe will not be ready in time for the
-> 2.6.27 window and will need to wait for 2.6.28 at least:
->
->  - Multiple CQ event vector support.  No one has convinced me that we
->    know how ULPs or userspace apps should decide which vector to use,
->    and hence little progress has been made since we deferred this
->    during the 2.6.23 merge window.
->   
-We should progress this one even if we missed 2.6.27, especially we need 
-it for RSS, and I know also RDS can gain from it.
+On Mon, 14 Jul 2008 18:31:41 +0200 Ingo Molnar <mingo@elte.hu> wrote:
 
-Tziporet
+> 
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Mon, 14 Jul 2008 16:42:43 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+> > >
+> > 
+> > It would be nice if these short-form summaries were to include the
+> > commit IDs.  eg:
+> > 
+> > Carlos R. Mafra (1):
+> >       Remove argument from open_softirq which is always NULL (962cf36)
+> 
+> yeah, but not sure whether git-shortlog
+
+This was a git-shortlog feature request ;)
+
+> can do that and this shortlog is 
+> the Preferred Way of getting pull requests.
+> 
+> I'm using the sha1's myself for non-shortlog formats, like:
+> 
+>   earth4:~/tip> git-log-line linus..core/softirq
+>   0f476b6: softirq: remove irqs_disabled warning from local_bh_enable
+>   4620b49: softirq: remove initialization of static per-cpu variable
+>   962cf36: Remove argument from open_softirq which is always NULL
+> 
+> where git-log-line does the obvious single-line shortcut:
+> 
+>   git log --no-merges --pretty=format:"%h: %s" $@
+> 
+> > > Carlos R. Mafra (1):
+> > >       Remove argument from open_softirq which is always NULL
+> > > 
+> > > Johannes Berg (1):
+> > >       softirq: remove irqs_disabled warning from local_bh_enable
+> > 
+> > This doesn't remove the warning?  (Nor should it)
+> > 
+> > +static inline void _local_bh_enable_ip(unsigned long ip)
+> >  {
+> > +       WARN_ON_ONCE(in_irq() || irqs_disabled());
+> > -       WARN_ON_ONCE(in_irq());
+> > -       WARN_ON_ONCE(irqs_disabled());
+> > 
+> > It just makes it a bit less useful.
+> 
+> hm, it does more than that
+
+Yes, but it does what I said:
+
+- Doesn't do something which the changelog said it did.  I brought this up
+  because if the patch _did_ do what it said it did, davem would cry.
+
+- Makes the warning less useful.  The reason for the warning can still
+  probably be worked out from the backtrace, but it'll take more work.
+
+> - this commit (0f476b6d9) actually caught a 
+> real bug/lockup on one of my testboxes, see this (in v2.6.26) fix:
+> 
+> | commit c5643cab7bf663ae049b11be43de8819683176dd
+> | Author: Ingo Molnar <mingo@elte.hu>
+> | Date:   Mon Jun 23 10:41:23 2008 +0200
+> |
+> |    [netdrvr] 3c59x: remove irqs_disabled warning from local_bh_enable
+
+OK, that title kinda makes sense.
+
+> |    Original Author: Michael Buesch <mb@bu3sch.de>
+> |
+> |    net, vortex: fix lockup
+
+Although that would be a better title for the 3c59x.c fix.
+
+> [ i didnt send it to v2.6.26 because it came relatively late, it touches 
+>   a sensitive, #ifdef laden piece of code and it was unknown how many 
+>   false positives it would trigger. But it's perfect for v2.6.27. ]
+> 
+
+It's a small issue - it's just that the title of
+0f476b6d91a1395bda6464e653ce66ea9bea7167 ("softirq: remove
+irqs_disabled warning from local_bh_enable") appears to be quite
+wrong.
