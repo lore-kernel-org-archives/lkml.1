@@ -1,176 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbYGNOpk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755969AbYGNOrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756630AbYGNOpk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 10:45:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754071AbYGNOpc
+	id S1755969AbYGNOrl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 10:47:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753542AbYGNOrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 10:45:32 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36472 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753975AbYGNOpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 10:45:31 -0400
-Date: Mon, 14 Jul 2008 16:45:19 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [git pull] core/topology changes for v2.6.27
-Message-ID: <20080714144519.GA21975@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 14 Jul 2008 10:47:33 -0400
+Received: from brmea-mail-1.Sun.COM ([192.18.98.31]:43900 "EHLO
+	brmea-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753470AbYGNOrc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 10:47:32 -0400
+Date: Mon, 14 Jul 2008 10:44:43 -0400
+From: David Collier-Brown <davecb@sun.com>
+Subject: Re: [RFC] How to handle the rules engine for cgroups
+In-reply-to: <20080714135719.GE16673@redhat.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, Paul Menage <menage@google.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Libcg Devel Mailing List <libcg-devel@lists.sourceforge.net>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Peter Zijlstra <pzijlstr@redhat.com>,
+       Kazunaga Ikeno <k-ikeno@ak.jp.nec.com>,
+       Morton Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Graf <tgraf@redhat.com>, Ulrich Drepper <drepper@redhat.com>
+Reply-to: davecb@sun.com
+Message-id: <487B665B.9080205@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=us-ascii
+Content-transfer-encoding: 7BIT
+X-Accept-Language: en-us, en
+References: <20080701191126.GA17376@redhat.com>
+ <20080703101957.b3856904.kamezawa.hiroyu@jp.fujitsu.com>
+ <20080703155446.GB9275@redhat.com>
+ <6599ad830807100223m2453963cwcfbe6eb1ad54d517@mail.gmail.com>
+ <20080710104852.797fe79c@cuia.bos.redhat.com>
+ <20080710154035.GA12043@redhat.com>
+ <20080711095501.cefff6df.kamezawa.hiroyu@jp.fujitsu.com>
+ <20080714135719.GE16673@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; SunOS sun4u; en-US; rv:1.7) Gecko/20041221
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Vivek Goyal wrote:
+> If admin has decided to group applications and has written the rules for
+> it then applications should not know anything about grouping. So I think
+> application writing an script for being placed into the right group should
+> be out of question. Now how does an admin write a wrapper around existing
+> application without breaking anything else.
 
-Please pull the latest core/topology git tree from:
+In the Solaris world, processes are placed into cgroups (projects) by
+one of two mechanisms:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core/topology
+1) inheritance, with everything I create in my existing project.
+   To get this started, there is a mechanism under login/getty/whatever 
+   reading the /etc/projects file and, for example, tossing user davecb 
+   into a "user.davecb" project.
 
-Thanks,
+2) explicit placement with newtask, which starts a program or moves
+   a process into a project/cgroup
 
-	Ingo
+I have a "bg" project which I use for limiting resource consumption of
+background jobs, and a background command which either starts or moves
+jobs, thusly:
 
------------------->
-Ben Hutchings (2):
-      cpu topology: always define CPU topology information
-      cputopology: always define CPU topology information, clean up
+ case "$1" in
+ [0-9]*) # It's a pid
+         newtask -p bg -c $1
+         ;;
+  *) # It's a command-line
+         newtask -p bg "$@" &
+         ;;
+  esac
 
+A rules engine would be more useful for managing workloads once
+they're assigned, as IBM does on the mainframe with WLM and goal-directed
+resource management. (They're brilliant in this area, by the way, so
+I'd be inclined to steal ideas from them  (;-))
 
- Documentation/cputopology.txt |   26 +++++++++-----------------
- drivers/base/topology.c       |   32 ++++++--------------------------
- include/linux/topology.h      |   13 +++++++++++++
- 3 files changed, 28 insertions(+), 43 deletions(-)
-
-diff --git a/Documentation/cputopology.txt b/Documentation/cputopology.txt
-index b61cb95..bd699da 100644
---- a/Documentation/cputopology.txt
-+++ b/Documentation/cputopology.txt
-@@ -14,9 +14,8 @@ represent the thread siblings to cpu X in the same physical package;
- To implement it in an architecture-neutral way, a new source file,
- drivers/base/topology.c, is to export the 4 attributes.
- 
--If one architecture wants to support this feature, it just needs to
--implement 4 defines, typically in file include/asm-XXX/topology.h.
--The 4 defines are:
-+For an architecture to support this feature, it must define some of
-+these macros in include/asm-XXX/topology.h:
- #define topology_physical_package_id(cpu)
- #define topology_core_id(cpu)
- #define topology_thread_siblings(cpu)
-@@ -25,17 +24,10 @@ The 4 defines are:
- The type of **_id is int.
- The type of siblings is cpumask_t.
- 
--To be consistent on all architectures, the 4 attributes should have
--default values if their values are unavailable. Below is the rule.
--1) physical_package_id: If cpu has no physical package id, -1 is the
--default value.
--2) core_id: If cpu doesn't support multi-core, its core id is 0.
--3) thread_siblings: Just include itself, if the cpu doesn't support
--HT/multi-thread.
--4) core_siblings: Just include itself, if the cpu doesn't support
--multi-core and HT/Multi-thread.
--
--So be careful when declaring the 4 defines in include/asm-XXX/topology.h.
--
--If an attribute isn't defined on an architecture, it won't be exported.
--
-+To be consistent on all architectures, include/linux/topology.h
-+provides default definitions for any of the above macros that are
-+not defined by include/asm-XXX/topology.h:
-+1) physical_package_id: -1
-+2) core_id: 0
-+3) thread_siblings: just the given CPU
-+4) core_siblings: just the given CPU
-diff --git a/drivers/base/topology.c b/drivers/base/topology.c
-index fdf4044..f0cb270 100644
---- a/drivers/base/topology.c
-+++ b/drivers/base/topology.c
-@@ -72,47 +72,27 @@ static inline ssize_t show_##name##_list(struct sys_device *dev, char *buf) \
- #define define_siblings_show_func(name)		\
- 	define_siblings_show_map(name); define_siblings_show_list(name)
- 
--#ifdef	topology_physical_package_id
- define_id_show_func(physical_package_id);
- define_one_ro(physical_package_id);
--#define ref_physical_package_id_attr	&attr_physical_package_id.attr,
--#else
--#define ref_physical_package_id_attr
--#endif
- 
--#ifdef topology_core_id
- define_id_show_func(core_id);
- define_one_ro(core_id);
--#define ref_core_id_attr		&attr_core_id.attr,
--#else
--#define ref_core_id_attr
--#endif
- 
--#ifdef topology_thread_siblings
- define_siblings_show_func(thread_siblings);
- define_one_ro(thread_siblings);
- define_one_ro(thread_siblings_list);
--#define ref_thread_siblings_attr	\
--		&attr_thread_siblings.attr, &attr_thread_siblings_list.attr,
--#else
--#define ref_thread_siblings_attr
--#endif
- 
--#ifdef topology_core_siblings
- define_siblings_show_func(core_siblings);
- define_one_ro(core_siblings);
- define_one_ro(core_siblings_list);
--#define ref_core_siblings_attr		\
--		&attr_core_siblings.attr, &attr_core_siblings_list.attr,
--#else
--#define ref_core_siblings_attr
--#endif
- 
- static struct attribute *default_attrs[] = {
--	ref_physical_package_id_attr
--	ref_core_id_attr
--	ref_thread_siblings_attr
--	ref_core_siblings_attr
-+	&attr_physical_package_id.attr,
-+	&attr_core_id.attr,
-+	&attr_thread_siblings.attr,
-+	&attr_thread_siblings_list.attr,
-+	&attr_core_siblings.attr,
-+	&attr_core_siblings_list.attr,
- 	NULL
- };
- 
-diff --git a/include/linux/topology.h b/include/linux/topology.h
-index 24f3d22..2158fc0 100644
---- a/include/linux/topology.h
-+++ b/include/linux/topology.h
-@@ -179,4 +179,17 @@ void arch_update_cpu_topology(void);
- #endif
- #endif /* CONFIG_NUMA */
- 
-+#ifndef topology_physical_package_id
-+#define topology_physical_package_id(cpu)	((void)(cpu), -1)
-+#endif
-+#ifndef topology_core_id
-+#define topology_core_id(cpu)			((void)(cpu), 0)
-+#endif
-+#ifndef topology_thread_siblings
-+#define topology_thread_siblings(cpu)		cpumask_of_cpu(cpu)
-+#endif
-+#ifndef topology_core_siblings
-+#define topology_core_siblings(cpu)		cpumask_of_cpu(cpu)
-+#endif
-+
- #endif /* _LINUX_TOPOLOGY_H */
+--dave
+-- 
+David Collier-Brown            | Always do right. This will gratify
+Sun Microsystems, Toronto      | some people and astonish the rest
+davecb@sun.com                 |                      -- Mark Twain
+(905) 943-1983, cell: (647) 833-9377, (800) 555-9786 x56583
+bridge: (877) 385-4099 code: 506 9191#
