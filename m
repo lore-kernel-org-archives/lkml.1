@@ -1,82 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755810AbYGNOEz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755838AbYGNOGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755810AbYGNOEz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 10:04:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbYGNOEo
+	id S1755838AbYGNOGV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 10:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbYGNOGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 10:04:44 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:26026 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753492AbYGNOEn (ORCPT
+	Mon, 14 Jul 2008 10:06:10 -0400
+Received: from batfish.pepperfish.net ([87.237.62.180]:53666 "EHLO
+	flounder.pepperfish.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753346AbYGNOGJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 10:04:43 -0400
-Message-ID: <487B5CEE.90404@hp.com>
-Date: Mon, 14 Jul 2008 10:04:30 -0400
-From: jim owens <jowens@hp.com>
-User-Agent: Mozilla/5.0 (X11; U; OSF1 alpha; en-US; rv:1.7.13) Gecko/20060421
-X-Accept-Language: en-us, en
+	Mon, 14 Jul 2008 10:06:09 -0400
+X-Greylist: delayed 5887 seconds by postgrey-1.27 at vger.kernel.org; Mon, 14 Jul 2008 10:06:08 EDT
+Date: Mon, 14 Jul 2008 13:27:51 +0100 (BST)
+From: Vivek Dasmohapatra <vivek@etla.org>
+X-X-Sender: vivek@localhost
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: netdev@vger.kernel.org
+Subject: 2.6.24 ipw2200 driver can't be reset after firmware explodes
+Message-ID: <Pine.LNX.4.64.0807141240020.6889@localhost>
 MIME-Version: 1.0
-To: Takashi Sato <t-sato@yk.jp.nec.com>
-CC: mtk.manpages@googlemail.com, axboe@kernel.dk, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, xfs@oss.sgi.com, linux-ext4@vger.kernel.org,
-       viro@ZenIV.linux.org.uk, akpm@linux-foundation.org, pavel@suse.cz,
-       linux-fsdevel@vger.kernel.org, hch@infradead.org,
-       Miklos Szeredi <miklos@szeredi.hu>,
-       Arjan van de Ven <arjan@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Dave Chinner <david@fromorbit.com>
-Subject: Re: [PATCH 3/3] Add timeout feature
-References: <20080709005254.GQ11558@disturbed> <20080709010922.GE9957@mit.edu> <E1KGSvZ-0006dB-53@pomaz-ex.szeredi.hu> <20080709061621.GA5260@infradead.org> <E1KGT4q-0006fD-Jb@pomaz-ex.szeredi.hu> <20080708234120.5072111f@infradead.org> <E1KGTTm-0006ke-Jh@pomaz-ex.szeredi.hu> <20080708235502.1c52a586@infradead.org> <20080709071346.GS11558@disturbed> <20080709110900.GI9957@mit.edu> <20080709114958.GV11558@disturbed> <4874C3E8.20804@hp.com> <88E7CDF01964465CB9F33DE11298271D@nsl.ad.nec.co.jp>
-In-Reply-To: <88E7CDF01964465CB9F33DE11298271D@nsl.ad.nec.co.jp>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Takashi Sato wrote:
+Hi: I have a thinkpad t43p with an ipw2200 driven piece of hardware in it.
 
-> What is the difference between the timeout and AUTO-THAW?
-> When the kernel detects a deadlock, does it occur to solve it?
+04:02.0 Network controller [0280]:
+  Intel Corporation PRO/Wireless 2915ABG Network Connection [8086:4224] (rev 05)
+         Kernel driver in use: ipw2200
+         Kernel modules: ipw2200
 
-TIMEOUT is a user-specified limit for the freeze.  It is
-not a deadlock preventer or deadlock breaker.  The reason
-it exists is:
+>From time to time, the firmware flakes out, and I get messages like this:
+[ I'm not sure which version of the firmware I have, I can't see anything
+   obvious in dmesg when the ipw2200 module loads: I have files like
+   ipw-2.4-bss.fw in /lib/firmware if that helps ]
 
-    - middle of the night (low but not zero users)
-    - cron triggers freeze and hardware snapshot
-    - san is overloaded by tape copy traffic so
-      hardware will take 2 hours to ack snapshot done
-    - user "company president" tries to create a report
-      needed for an AM meeting with bankers
-    - with so few users, system will just patiently
-      wait for hardware to finish
-    - after 10 minutes "company president" pages
-      admin, admin's boss, and "IT vice president"
-      in a real unhappy mood
+Jul 14 03:42:25 neko kernel: 
+ipw2200: Failed to send SCAN_ABORT: Command timed out.
+Jul 14 03:42:26 neko kernel: 
+ipw2200: Failed to send CARD_DISABLE: Command timed out.
+Jul 14 03:42:32 neko kernel: 
+ipw2200: Failed to send SCAN_ABORT: Command timed out.
+Jul 14 03:42:33 neko kernel: 
+ipw2200: Failed to send CARD_DISABLE: Command timed out.
+Jul 14 03:42:39 neko kernel: 
+ipw2200: Failed to send SCAN_ABORT: Command timed out.
 
-AUTO-THAW is simply a name for the effect of all deadlock
-preventer and deadlock breaker code that the kernel has
-in the freeze implementation paths... if that code would
-unfreeze the filesystem.  We also implemented deadlock
-preventer code that does not thaw the freeze.
+repeated again and again.
 
-None of the AUTO-THAW code is there to stop a stupid
-userspace program caller of freeze.  It handles things
-like "a system in our cluster is going down so we
-must have this filesystem unfrozen or the whole
-cluster will crash".   In places where there could be
-a kernel deadlock we made it "lock-only-if-non-blocking"
-and if we could not wait to retry later, the failure
-to lock would trigger an immediate unfreeze.
+There's usually a "firmware error detected, restarting" message buried
+somewhere in the logs before that happens.
 
-Deadlock prevention needs code in critical paths in more
-than just filesystems.  Sometimes this is as simple as
-an "I can't wait on freeze" flag added to a vm-filesystem
-interface.
+Under kernel 2.6.16, I was able to fix this as follows:
 
-Timers just don't work for keeping the kernel alive
-because they don't trigger on resource exhaustion.
+echo -n 3 > /sys/class/net/$IFACE/device/power/state
+sleep 1
+echo -n 0 > /sys/class/net/$IFACE/device/power/state
 
-jim
+( removing and reloading the module has no effect here, under
+   either kernel 2.6.16 or 2.6.24: taking the interface down and
+   bringing it up again is likewise ineffective )
+
+However, I note that under 2.6.24 said /sys interface is no
+longer present, so once the firmware dies, I am forced to either
+hunt down a network cable with something useful on the other end,
+or live without networking, or reboot.
+
+Is there a new way to achieve the same effect in 2.6.24? If there's not,
+is there likely to be in the future? Or should I just revert to 2.6.16
+until such time as I replace my laptop and (hopefully) don't have to
+struggle with the intel wifi hardware any more?
+
+The firmware bug is covered here: 
+http://www.intellinuxwireless.org/bugzilla/show_bug.cgi?id=875
+if that's helpful/relevant.
+
+[ CCd to netdev as I was told it would be of interest there too,
+   apologies if this is not the case ]
+
+-- 
+Vivek
