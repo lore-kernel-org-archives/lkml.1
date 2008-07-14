@@ -1,269 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757031AbYGNHvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757557AbYGNHv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757031AbYGNHvT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 03:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756891AbYGNHtq
+	id S1757557AbYGNHv5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 03:51:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756809AbYGNHte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 03:49:46 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37992 "EHLO hera.kernel.org"
+	Mon, 14 Jul 2008 03:49:34 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36872 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755707AbYGNHti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 03:49:38 -0400
+	id S1755896AbYGNHtc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 03:49:32 -0400
 From: Tejun Heo <tj@kernel.org>
 To: jens.axboe@oracle.com, James.Bottomley@HansenPartnership.com,
        bharrosh@panasas.com, greg.freemyer@gmail.com,
        linux-scsi@vger.kernel.org, brking@linux.vnet.ibm.com, liml@rtr.ca,
        viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org,
        linux-ide@vger.kernel.org
-Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 12/13] block: replace @ext_minors with GENHD_FL_EXT_DEVT
-Date: Mon, 14 Jul 2008 16:48:12 +0900
-Message-Id: <1216021693-483-13-git-send-email-tj@kernel.org>
+Subject: [PATCHSET 2.6.26] block: unify disk/part handling and improve ext devt
+Date: Mon, 14 Jul 2008 16:48:00 +0900
+Message-Id: <1216021693-483-1-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1216021693-483-1-git-send-email-tj@kernel.org>
-References: <1216021693-483-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 14 Jul 2008 07:49:05 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 14 Jul 2008 07:48:54 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With previous changes, it's meaningless to limit the number of
-partitions.  Replace @ext_minors with GENHD_FL_EXT_DEVT such that
-setting the flag allows the disk to have maximum number of allowed
-partitions (only limited by the number of entries in parsed_partitions
-as determined by MAX_PART constant).
+Hello, again.
 
-This kills not-too-pretty alloc_disk_ext[_node]() functions and makes
-@minors parameter to alloc_disk[_node]() unnecessary.  The parameter
-is left alone to avoid disturbing the users.
+This is the first take of unify-disk-part-handling patchset.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
----
- block/genhd.c          |   16 +---------------
- drivers/ide/ide-disk.c |   14 +++++---------
- drivers/scsi/sd.c      |    9 ++-------
- fs/partitions/check.h  |    4 +---
- include/linux/genhd.h  |   16 ++++++++--------
- 5 files changed, 17 insertions(+), 42 deletions(-)
+The block code represented a disk with struct genhd and a partition
+with struct hd_struct.  The whole disk (a.k.a partition 0) has a lot
+in common with other partitions but genhd and hd_struct had their own
+versions for the same things.  This led to good number of duplicate
+similar code paths and branches to deal with them separately.  Also,
+the partition array disk->part[] is indexed by partno - 1 which gets
+quite confusing at times.
 
-diff --git a/block/genhd.c b/block/genhd.c
-index 72aef36..b38c235 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -1025,19 +1025,10 @@ struct gendisk *alloc_disk(int minors)
- {
- 	return alloc_disk_node(minors, -1);
- }
-+EXPORT_SYMBOL(alloc_disk);
- 
- struct gendisk *alloc_disk_node(int minors, int node_id)
- {
--	return alloc_disk_ext_node(minors, 0, node_id);
--}
--
--struct gendisk *alloc_disk_ext(int minors, int ext_minors)
--{
--	return alloc_disk_ext_node(minors, ext_minors, -1);
--}
--
--struct gendisk *alloc_disk_ext_node(int minors, int ext_minors, int node_id)
--{
- 	struct gendisk *disk;
- 
- 	disk = kmalloc_node(sizeof(struct gendisk),
-@@ -1055,7 +1046,6 @@ struct gendisk *alloc_disk_ext_node(int minors, int ext_minors, int node_id)
- 		disk->part_tbl->part[0] = &disk->part0;
- 
- 		disk->minors = minors;
--		disk->ext_minors = ext_minors;
- 		rand_initialize_disk(disk);
- 		disk_to_dev(disk)->class = &block_class;
- 		disk_to_dev(disk)->type = &disk_type;
-@@ -1066,11 +1056,7 @@ struct gendisk *alloc_disk_ext_node(int minors, int ext_minors, int node_id)
- 	}
- 	return disk;
- }
--
--EXPORT_SYMBOL(alloc_disk);
- EXPORT_SYMBOL(alloc_disk_node);
--EXPORT_SYMBOL(alloc_disk_ext);
--EXPORT_SYMBOL(alloc_disk_ext_node);
- 
- struct kobject *get_disk(struct gendisk *disk)
- {
-diff --git a/drivers/ide/ide-disk.c b/drivers/ide/ide-disk.c
-index 3c6f0fa..6d7cf15 100644
---- a/drivers/ide/ide-disk.c
-+++ b/drivers/ide/ide-disk.c
-@@ -41,16 +41,12 @@
- #include <asm/io.h>
- #include <asm/div64.h>
- 
--#define IDE_DISK_PARTS		(1 << PARTN_BITS)
--
- #if !defined(CONFIG_DEBUG_BLOCK_EXT_DEVT)
--#define IDE_DISK_MINORS		IDE_DISK_PARTS
-+#define IDE_DISK_MINORS		(1 << PARTN_BITS)
- #else
- #define IDE_DISK_MINORS		1
- #endif
- 
--#define IDE_DISK_EXT_MINORS	(IDE_DISK_PARTS - IDE_DISK_MINORS)
--
- struct ide_disk_obj {
- 	ide_drive_t	*drive;
- 	ide_driver_t	*driver;
-@@ -1168,8 +1164,7 @@ static int ide_disk_probe(ide_drive_t *drive)
- 	if (!idkp)
- 		goto failed;
- 
--	g = alloc_disk_ext_node(IDE_DISK_MINORS, IDE_DISK_EXT_MINORS,
--				hwif_to_node(drive->hwif));
-+	g = alloc_disk_node(IDE_DISK_MINORS, hwif_to_node(drive->hwif));
- 	if (!g)
- 		goto out_free_idkp;
- 
-@@ -1196,9 +1191,10 @@ static int ide_disk_probe(ide_drive_t *drive)
- 		drive->attach = 1;
- 
- 	g->minors = IDE_DISK_MINORS;
--	g->ext_minors = IDE_DISK_EXT_MINORS;
- 	g->driverfs_dev = &drive->gendev;
--	g->flags = drive->removable ? GENHD_FL_REMOVABLE : 0;
-+	g->flags |= GENHD_FL_EXT_DEVT;
-+	if (drive->removable)
-+		g->flags |= GENHD_FL_REMOVABLE;
- 	set_capacity(g, idedisk_capacity(drive));
- 	g->fops = &idedisk_ops;
- 	add_disk(g);
-diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-index f355a39..1f41e3d 100644
---- a/drivers/scsi/sd.c
-+++ b/drivers/scsi/sd.c
-@@ -86,16 +86,12 @@ MODULE_ALIAS_SCSI_DEVICE(TYPE_DISK);
- MODULE_ALIAS_SCSI_DEVICE(TYPE_MOD);
- MODULE_ALIAS_SCSI_DEVICE(TYPE_RBC);
- 
--#define SD_PARTS	64
--
- #if !defined(CONFIG_DEBUG_BLOCK_EXT_DEVT)
- #define SD_MINORS	16
- #else
- #define SD_MINORS	1
- #endif
- 
--#define SD_EXT_MINORS	(SD_PARTS - SD_MINORS)
--
- static int  sd_revalidate_disk(struct gendisk *);
- static int  sd_probe(struct device *);
- static int  sd_remove(struct device *);
-@@ -1651,7 +1647,7 @@ static int sd_probe(struct device *dev)
- 	if (!sdkp)
- 		goto out;
- 
--	gd = alloc_disk_ext(SD_MINORS, SD_EXT_MINORS);
-+	gd = alloc_disk(SD_MINORS);
- 	if (!gd)
- 		goto out_free;
- 
-@@ -1696,7 +1692,6 @@ static int sd_probe(struct device *dev)
- 	gd->major = sd_major((index & 0xf0) >> 4);
- 	gd->first_minor = ((index & 0xf) << 4) | (index & 0xfff00);
- 	gd->minors = SD_MINORS;
--	gd->ext_minors = SD_EXT_MINORS;
- 	gd->fops = &sd_fops;
- 
- 	if (index < 26) {
-@@ -1720,7 +1715,7 @@ static int sd_probe(struct device *dev)
- 	blk_queue_prep_rq(sdp->request_queue, sd_prep_fn);
- 
- 	gd->driverfs_dev = &sdp->sdev_gendev;
--	gd->flags = GENHD_FL_DRIVERFS;
-+	gd->flags = GENHD_FL_EXT_DEVT | GENHD_FL_DRIVERFS;
- 	if (sdp->removable)
- 		gd->flags |= GENHD_FL_REMOVABLE;
- 
-diff --git a/fs/partitions/check.h b/fs/partitions/check.h
-index 17ae8ec..98dbe1a 100644
---- a/fs/partitions/check.h
-+++ b/fs/partitions/check.h
-@@ -5,15 +5,13 @@
-  * add_gd_partition adds a partitions details to the devices partition
-  * description.
-  */
--enum { MAX_PART = 256 };
--
- struct parsed_partitions {
- 	char name[BDEVNAME_SIZE];
- 	struct {
- 		sector_t from;
- 		sector_t size;
- 		int flags;
--	} parts[MAX_PART];
-+	} parts[DISK_MAX_PARTS];
- 	int next;
- 	int limit;
- };
-diff --git a/include/linux/genhd.h b/include/linux/genhd.h
-index c7d9251..a48f350 100644
---- a/include/linux/genhd.h
-+++ b/include/linux/genhd.h
-@@ -58,6 +58,8 @@ enum {
- 	UNIXWARE_PARTITION = 0x63,	/* Same as GNU_HURD and SCO Unix */
- };
- 
-+#define DISK_MAX_PARTS			256
-+
- #include <linux/major.h>
- #include <linux/device.h>
- #include <linux/smp.h>
-@@ -112,6 +114,7 @@ struct hd_struct {
- #define GENHD_FL_CD				8
- #define GENHD_FL_UP				16
- #define GENHD_FL_SUPPRESS_PARTITION_INFO	32
-+#define GENHD_FL_EXT_DEVT			64 /* allow extended devt */
- 
- struct disk_part_tbl {
- 	struct rcu_head rcu_head;
-@@ -120,15 +123,13 @@ struct disk_part_tbl {
- };
- 
- struct gendisk {
--	/* major, first_minor, minors and ext_minors are input
--	 * parameters only, don't use directly.  Use disk_devt() and
--	 * disk_max_parts().
-+	/* major, first_minor and minors are input parameters only,
-+	 * don't use directly.  Use disk_devt() and disk_max_parts().
- 	 */
- 	int major;			/* major number of driver */
- 	int first_minor;
- 	int minors;                     /* maximum number of minors, =1 for
-                                          * disks that can't be partitioned. */
--	int ext_minors;			/* number of extended dynamic minors */
- 
- 	char disk_name[32];		/* name of major driver */
- 
-@@ -169,7 +170,9 @@ static inline struct gendisk *part_to_disk(struct hd_struct *part)
- 
- static inline int disk_max_parts(struct gendisk *disk)
- {
--	return disk->minors + disk->ext_minors;
-+	if (disk->flags & GENHD_FL_EXT_DEVT)
-+		return DISK_MAX_PARTS;
-+	return disk->minors;
- }
- 
- static inline bool disk_partitionable(struct gendisk *disk)
-@@ -507,9 +510,6 @@ extern void printk_all_partitions(void);
- 
- extern struct gendisk *alloc_disk_node(int minors, int node_id);
- extern struct gendisk *alloc_disk(int minors);
--extern struct gendisk *alloc_disk_ext_node(int minors, int ext_minrs,
--					   int node_id);
--extern struct gendisk *alloc_disk_ext(int minors, int ext_minors);
- extern struct kobject *get_disk(struct gendisk *disk);
- extern void put_disk(struct gendisk *disk);
- extern void blk_register_region(dev_t devt, unsigned long range,
--- 
-1.5.4.5
+This patchset introduces partition 0 and unifies handling of the whole
+disk and other partitions and, on top of those changes, improves ext
+devt handling such that increasing the number of allowed partitions
+can be done without much overhead and the disk device itself can be
+allocated an extended devt.
 
+This patchset contains the following 13 patches.
+
+  0001-block-implement-and-use-disk-part-_to_dev.patch
+  0002-block-introduce-partition-0.patch
+  0003-block-move-capacity-from-disk-to-part0.patch
+  0004-block-move-__dev-from-disk-to-part0.patch
+  0005-block-unify-sysfs-size-node-handling.patch
+  0006-block-move-policy-from-disk-to-part0.patch
+  0007-block-move-holder_dir-from-disk-to-part0.patch
+  0008-block-always-set-bdev-bd_part.patch
+  0009-block-kill-GENHD_FL_FAIL-and-use-part0-make_it_fai.patch
+  0010-block-move-stats-from-disk-to-part0.patch
+  0011-block-make-partition-array-dynamic.patch
+  0012-block-replace-ext_minors-with-GENHD_FL_EXT_DEVT.patch
+  0013-block-allow-disk-to-have-extended-device-number.patch
+
+0001-0002: preps and introduces part0
+0003-0009: moves what's common from disk to part0 and unifies code
+	   paths
+0010     : simplifies stats handling
+0011	 : make partition array dynamic
+0012	 : ext_minors restriction isn't necessary anymore.  simplify
+           ext devt interface
+0013     : allow disk (part0) to have extended devt
+
+After this patchset, partition number is only limited by the number of
+entries in struct parsed_partitions which is used by actual partition
+scan code.  The limit is currently 256 but it can be increased by
+changing MAX_PART.
+
+A block driver now can simply set GENHD_FL_EXT_DEVT and skip
+specifying disk->minors to tell block layer to use extended devt for
+the disk and its partitions.  There's no need to allocate fixed
+regions and worry about the device number availability.
+
+If CONFIG_DEBUG_BLOCK_EXT_DEVT is turned on, sd and ide-disk use ext
+devt for everything.
+
+This patchset is on top of
+
+  v2.6.26 (bce7f793daec3e65ec5c5705d2457b81fe7b5725)
++ [1] RCU-implement-rcu_read_[un]lock_preempt
++ [2] block-fix-block_class-iteration-locking
++ [3] block-allow-deleting-zero-lenght-partition
++ [4] block-update-add_partition-error-handling
++ [5] sd-update-index-allocation-and-use-ida
++ [6] block-extended-devt patchset, take #2
+
+and available in the following git tree.
+
+  http://git.kernel.org/?p=linux/kernel/git/tj/misc.git;a=shortlog;h=block-unify-disk-part
+  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git block-unify-disk-part
+
+Even with the added feature and comments, this patchset reduces code
+by 40 lines.  ;-)
+
+ block/blk-core.c           |   84 +++------
+ block/blk-merge.c          |    8 
+ block/blk-sysfs.c          |    4 
+ block/genhd.c              |  402 ++++++++++++++++++++++-----------------------
+ block/ioctl.c              |    4 
+ drivers/block/aoe/aoeblk.c |    6 
+ drivers/block/aoe/aoecmd.c |   12 -
+ drivers/block/aoe/aoedev.c |    2 
+ drivers/block/nbd.c        |    4 
+ drivers/ide/ide-cd.c       |    2 
+ drivers/ide/ide-disk.c     |   16 -
+ drivers/ide/ide-probe.c    |    2 
+ drivers/md/dm-ioctl.c      |    2 
+ drivers/md/dm.c            |   19 +-
+ drivers/md/linear.c        |    4 
+ drivers/md/md.c            |   15 -
+ drivers/md/multipath.c     |    4 
+ drivers/md/raid0.c         |    4 
+ drivers/md/raid1.c         |    4 
+ drivers/md/raid10.c        |    4 
+ drivers/md/raid5.c         |    4 
+ drivers/scsi/sd.c          |   83 ++++++---
+ fs/block_dev.c             |   79 +++-----
+ fs/partitions/check.c      |  160 +++++++++--------
+ fs/partitions/check.h      |    4 
+ include/linux/genhd.h      |  238 +++++++++++---------------
+ 26 files changed, 565 insertions(+), 605 deletions(-)
+
+--
+tejun
+
+[1] http://article.gmane.org/gmane.linux.kernel/706149
+[2] http://article.gmane.org/gmane.linux.kernel/706152
+[3] http://article.gmane.org/gmane.linux.kernel/706153
+[4] http://article.gmane.org/gmane.linux.kernel/706154
+[5] http://article.gmane.org/gmane.linux.scsi/43109
+[6] http://thread.gmane.org/gmane.linux.kernel/706175
