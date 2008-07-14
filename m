@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755569AbYGNApO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755064AbYGNAtJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755569AbYGNApO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 20:45:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753916AbYGNApA
+	id S1755064AbYGNAtJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 20:49:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753598AbYGNAs4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 20:45:00 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45833
+	Sun, 13 Jul 2008 20:48:56 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45847
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752241AbYGNAo7 (ORCPT
+	by vger.kernel.org with ESMTP id S1753422AbYGNAsz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 20:44:59 -0400
-Date: Sun, 13 Jul 2008 17:44:57 -0700 (PDT)
-Message-Id: <20080713.174457.82768245.davem@davemloft.net>
-To: benh@kernel.crashing.org
-Cc: ebiederm@xmission.com, suresh.b.siddha@intel.com, matthew@wil.cx,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       grundler@parisc-linux.org, mingo@elte.hu, tglx@linutronix.de,
-       jgarzik@pobox.com, linux-ide@vger.kernel.org, jbarnes@virtuousgeek.org,
-       rdunlap@xenotime.net, mtk.manpages@gmail.com
-Subject: Re: Multiple MSI, take 3
+	Sun, 13 Jul 2008 20:48:55 -0400
+Date: Sun, 13 Jul 2008 17:48:55 -0700 (PDT)
+Message-Id: <20080713.174855.234796356.davem@davemloft.net>
+To: mpatocka@redhat.com
+Cc: andi@firstfloor.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+Subject: Re: [SUGGESTION]: drop virtual merge accounting in I/O requests
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1215994659.7549.227.camel@pasglop>
-References: <1215989044.7549.219.camel@pasglop>
-	<m1tzet2wie.fsf@frodo.ebiederm.org>
-	<1215994659.7549.227.camel@pasglop>
+In-Reply-To: <Pine.LNX.4.64.0807131947090.7803@devserv.devel.redhat.com>
+References: <20080713.124610.193703496.davem@davemloft.net>
+	<487A61DD.6090304@firstfloor.org>
+	<Pine.LNX.4.64.0807131947090.7803@devserv.devel.redhat.com>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -32,27 +29,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 14 Jul 2008 10:17:39 +1000
+From: Mikulas Patocka <mpatocka@redhat.com>
+Date: Sun, 13 Jul 2008 19:53:01 -0400 (EDT)
 
-> On Sun, 2008-07-13 at 16:29 -0700, Eric W. Biederman wrote:
-> > Ben.  Multi-MSI is a crap hardware design.  Why do you think we have
-> > MSI-X?  
+> There is no need to turn BIO merge off --- the problem is caused by 
+> accounting of BIO merging in block layer, not by BIO merging itself.
 > 
-> I know and I agree. Which is why I'd rather keep the SW crap totally
-> local to the MSI support code and not add new concepts to the generic
-> IRQ API such as sub-channels, for which it's really not ready for imho.
-> 
-> They -are- separate IRQs, just badly implemented. Besides, a large part
-> of the problem is purely due to the typical x86 implementation of them,
-> since for example, on most PowerPC's (and possibly other archs), they
-> tend to land in the PIC as normal sources, and as such benefit from all
-> the "features" of such interrupts like HW masking, affinity control,
-> etc... at the PIC level.
+> Just do #define BIO_VMERGE_BOUNDARY 0, and that disables the accounting, 
+> but leaves merging as it is.
 
-This is how it works on sparc64 too.
+For the thousanth time, the BIO_VMERGE_BOUNDARY code is useful
+and worked perfectly fine before segment boundary handling was
+added to the block layer.
 
-The x86 system designers decided to implement multi-MSI in an
-inconvenient way, it is not a "crap hardware design", merely
-some (unfortunately common) implementations of it happen to be.
+It's a regression, and as such should be fixed or the guilty
+code reverted.
 
+Since when do we say "sorry that got broken, turn it off, thanks"
+?
