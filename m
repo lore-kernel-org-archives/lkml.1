@@ -1,137 +1,411 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757557AbYGNHv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757456AbYGNHvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757557AbYGNHv5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 03:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756809AbYGNHte
+	id S1757456AbYGNHvo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 03:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756861AbYGNHtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 03:49:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36872 "EHLO hera.kernel.org"
+	Mon, 14 Jul 2008 03:49:45 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37990 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755896AbYGNHtc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 03:49:32 -0400
+	id S1756034AbYGNHtf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 03:49:35 -0400
 From: Tejun Heo <tj@kernel.org>
 To: jens.axboe@oracle.com, James.Bottomley@HansenPartnership.com,
        bharrosh@panasas.com, greg.freemyer@gmail.com,
        linux-scsi@vger.kernel.org, brking@linux.vnet.ibm.com, liml@rtr.ca,
        viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org,
        linux-ide@vger.kernel.org
-Subject: [PATCHSET 2.6.26] block: unify disk/part handling and improve ext devt
-Date: Mon, 14 Jul 2008 16:48:00 +0900
-Message-Id: <1216021693-483-1-git-send-email-tj@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 11/13] block: make partition array dynamic
+Date: Mon, 14 Jul 2008 16:48:11 +0900
+Message-Id: <1216021693-483-12-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.5.4.5
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 14 Jul 2008 07:48:54 +0000 (UTC)
+In-Reply-To: <1216021693-483-1-git-send-email-tj@kernel.org>
+References: <1216021693-483-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 14 Jul 2008 07:49:06 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, again.
+disk->__part used to be statically allocated to the maximum possible
+number of partitions.  This patch makes partition array allocation
+dynamic.  The added overhead is minimal as only real change is one
+memory dereference changed to RCU one.  This saves both a bit of
+memory and cpu cycles iterating through unoccupied slots and makes
+increasing partition limit easier.
 
-This is the first take of unify-disk-part-handling patchset.
+Signed-off-by: Tejun Heo <tj@kernel.org>
+---
+ block/genhd.c         |  129 +++++++++++++++++++++++++++++++++++++++++--------
+ block/ioctl.c         |    2 +-
+ fs/partitions/check.c |   31 ++++++++++--
+ include/linux/genhd.h |   11 ++++-
+ 4 files changed, 146 insertions(+), 27 deletions(-)
 
-The block code represented a disk with struct genhd and a partition
-with struct hd_struct.  The whole disk (a.k.a partition 0) has a lot
-in common with other partitions but genhd and hd_struct had their own
-versions for the same things.  This led to good number of duplicate
-similar code paths and branches to deal with them separately.  Also,
-the partition array disk->part[] is indexed by partno - 1 which gets
-quite confusing at times.
+diff --git a/block/genhd.c b/block/genhd.c
+index 5d0f5d1..72aef36 100644
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -52,14 +52,21 @@ static struct device_type disk_type;
+  */
+ struct hd_struct *disk_get_part(struct gendisk *disk, int partno)
+ {
+-	struct hd_struct *part;
++	struct hd_struct *part = NULL;
++	struct disk_part_tbl *ptbl;
+ 
+-	if (unlikely(partno < 0 || partno >= disk_max_parts(disk)))
++	if (unlikely(partno < 0))
+ 		return NULL;
++
+ 	rcu_read_lock();
+-	part = rcu_dereference(disk->__part[partno]);
+-	if (part)
+-		get_device(part_to_dev(part));
++
++	ptbl = rcu_dereference(disk->part_tbl);
++	if (likely(partno < ptbl->len)) {
++		part = rcu_dereference(ptbl->part[partno]);
++		if (part)
++			get_device(part_to_dev(part));
++	}
++
+ 	rcu_read_unlock();
+ 
+ 	return part;
+@@ -80,17 +87,24 @@ EXPORT_SYMBOL_GPL(disk_get_part);
+ void disk_part_iter_start(struct disk_part_iter *piter, struct gendisk *disk,
+ 			  unsigned int flags)
+ {
++	struct disk_part_tbl *ptbl;
++
++	rcu_read_lock();
++	ptbl = rcu_dereference(disk->part_tbl);
++
+ 	piter->disk = disk;
+ 	piter->part = NULL;
+ 
+ 	if (flags & DISK_PITER_REVERSE)
+-		piter->idx = disk_max_parts(piter->disk) - 1;
++		piter->idx = ptbl->len - 1;
+ 	else if (flags & DISK_PITER_INCL_PART0)
+ 		piter->idx = 0;
+ 	else
+ 		piter->idx = 1;
+ 
+ 	piter->flags = flags;
++
++	rcu_read_unlock();
+ }
+ EXPORT_SYMBOL_GPL(disk_part_iter_start);
+ 
+@@ -105,13 +119,16 @@ EXPORT_SYMBOL_GPL(disk_part_iter_start);
+  */
+ struct hd_struct *disk_part_iter_next(struct disk_part_iter *piter)
+ {
++	struct disk_part_tbl *ptbl;
+ 	int inc, end;
+ 
+ 	/* put the last partition */
+ 	disk_put_part(piter->part);
+ 	piter->part = NULL;
+ 
++	/* get part_tbl */
+ 	rcu_read_lock();
++	ptbl = rcu_dereference(piter->disk->part_tbl);
+ 
+ 	/* determine iteration parameters */
+ 	if (piter->flags & DISK_PITER_REVERSE) {
+@@ -122,14 +139,14 @@ struct hd_struct *disk_part_iter_next(struct disk_part_iter *piter)
+ 			end = 0;
+ 	} else {
+ 		inc = 1;
+-		end = disk_max_parts(piter->disk);
++		end = ptbl->len;
+ 	}
+ 
+ 	/* iterate to the next partition */
+ 	for (; piter->idx != end; piter->idx += inc) {
+ 		struct hd_struct *part;
+ 
+-		part = rcu_dereference(piter->disk->__part[piter->idx]);
++		part = rcu_dereference(ptbl->part[piter->idx]);
+ 		if (!part)
+ 			continue;
+ 		if (!(piter->flags & DISK_PITER_INCL_EMPTY) && !part->nr_sects)
+@@ -180,10 +197,13 @@ EXPORT_SYMBOL_GPL(disk_part_iter_stop);
+  */
+ struct hd_struct *disk_map_sector_rcu(struct gendisk *disk, sector_t sector)
+ {
++	struct disk_part_tbl *ptbl;
+ 	int i;
+ 
+-	for (i = 1; i < disk_max_parts(disk); i++) {
+-		struct hd_struct *part = rcu_dereference(disk->__part[i]);
++	ptbl = rcu_dereference(disk->part_tbl);
++
++	for (i = 1; i < ptbl->len; i++) {
++		struct hd_struct *part = rcu_dereference(ptbl->part[i]);
+ 
+ 		if (part && part->start_sect <= sector &&
+ 		    sector < part->start_sect + part->nr_sects)
+@@ -763,12 +783,86 @@ static struct attribute_group *disk_attr_groups[] = {
+ 	NULL
+ };
+ 
++static void disk_free_ptbl_rcu_cb(struct rcu_head *head)
++{
++	struct disk_part_tbl *ptbl =
++		container_of(head, struct disk_part_tbl, rcu_head);
++
++	kfree(ptbl);
++}
++
++/**
++ * disk_replace_part_tbl - replace disk->part_tbl in RCU-safe way
++ * @disk: disk to replace part_tbl for
++ * @new_ptbl: new part_tbl to install
++ *
++ * Replace disk->part_tbl with @new_ptbl in RCU-safe way.  The
++ * original ptbl is freed using RCU callback.
++ *
++ * LOCKING:
++ * Matching bd_mutx locked.
++ */
++static void disk_replace_part_tbl(struct gendisk *disk,
++				  struct disk_part_tbl *new_ptbl)
++{
++	struct disk_part_tbl *old_ptbl = disk->part_tbl;
++
++	rcu_assign_pointer(disk->part_tbl, new_ptbl);
++	if (old_ptbl)
++		call_rcu(&old_ptbl->rcu_head, disk_free_ptbl_rcu_cb);
++}
++
++/**
++ * disk_expand_part_tbl - expand disk->part_tbl
++ * @disk: disk to expand part_tbl for
++ * @partno: expand such that this partno can fit in
++ *
++ * Expand disk->part_tbl such that @partno can fit in.  disk->part_tbl
++ * uses RCU to allow unlocked dereferencing for stats and other stuff.
++ *
++ * LOCKING:
++ * Matching bd_mutex locked, might sleep.
++ *
++ * RETURNS:
++ * 0 on success, -errno on failure.
++ */
++int disk_expand_part_tbl(struct gendisk *disk, int partno)
++{
++	struct disk_part_tbl *old_ptbl = disk->part_tbl;
++	struct disk_part_tbl *new_ptbl;
++	int len = old_ptbl ? old_ptbl->len : 0;
++	int target = partno + 1;
++	size_t size;
++	int i;
++
++	/* disk_max_parts() is zero during initialization, ignore if so */
++	if (disk_max_parts(disk) && target > disk_max_parts(disk))
++		return -EINVAL;
++
++	if (target <= len)
++		return 0;
++
++	size = sizeof(*new_ptbl) + target * sizeof(new_ptbl->part[0]);
++	new_ptbl = kzalloc_node(size, GFP_KERNEL, disk->node_id);
++	if (!new_ptbl)
++		return -ENOMEM;
++
++	INIT_RCU_HEAD(&new_ptbl->rcu_head);
++	new_ptbl->len = target;
++
++	for (i = 0; i < len; i++)
++		rcu_assign_pointer(new_ptbl->part[i], old_ptbl->part[i]);
++
++	disk_replace_part_tbl(disk, new_ptbl);
++	return 0;
++}
++
+ static void disk_release(struct device *dev)
+ {
+ 	struct gendisk *disk = dev_to_disk(dev);
+ 
+ 	kfree(disk->random);
+-	kfree(disk->__part);
++	disk_replace_part_tbl(disk, NULL);
+ 	free_part_stats(&disk->part0);
+ 	kfree(disk);
+ }
+@@ -949,22 +1043,16 @@ struct gendisk *alloc_disk_ext_node(int minors, int ext_minors, int node_id)
+ 	disk = kmalloc_node(sizeof(struct gendisk),
+ 				GFP_KERNEL | __GFP_ZERO, node_id);
+ 	if (disk) {
+-		int tot_minors = minors + ext_minors;
+-		int size = tot_minors * sizeof(struct hd_struct *);
+-
+ 		if (!init_part_stats(&disk->part0)) {
+ 			kfree(disk);
+ 			return NULL;
+ 		}
+-
+-		disk->__part = kmalloc_node(size, GFP_KERNEL | __GFP_ZERO,
+-					    node_id);
+-		if (!disk->__part) {
+-				free_part_stats(&disk->part0);
++		if (disk_expand_part_tbl(disk, 0)) {
++			free_part_stats(&disk->part0);
+ 			kfree(disk);
+ 			return NULL;
+ 		}
+-		disk->__part[0] = &disk->part0;
++		disk->part_tbl->part[0] = &disk->part0;
+ 
+ 		disk->minors = minors;
+ 		disk->ext_minors = ext_minors;
+@@ -974,6 +1062,7 @@ struct gendisk *alloc_disk_ext_node(int minors, int ext_minors, int node_id)
+ 		device_initialize(disk_to_dev(disk));
+ 		INIT_WORK(&disk->async_notify,
+ 			media_change_notify_thread);
++		disk->node_id = node_id;
+ 	}
+ 	return disk;
+ }
+diff --git a/block/ioctl.c b/block/ioctl.c
+index 67d2813..a933656 100644
+--- a/block/ioctl.c
++++ b/block/ioctl.c
+@@ -30,7 +30,7 @@ static int blkpg_ioctl(struct block_device *bdev, struct blkpg_ioctl_arg __user
+ 	if (bdev != bdev->bd_contains)
+ 		return -EINVAL;
+ 	partno = p.pno;
+-	if (partno <= 0 || partno >= disk_max_parts(disk))
++	if (partno <= 0)
+ 		return -EINVAL;
+ 	switch (a.op) {
+ 		case BLKPG_ADD_PARTITION:
+diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+index e4d4d5c..825da63 100644
+--- a/fs/partitions/check.c
++++ b/fs/partitions/check.c
+@@ -325,14 +325,18 @@ static void delete_partition_rcu_cb(struct rcu_head *head)
+ 
+ void delete_partition(struct gendisk *disk, int partno)
+ {
++	struct disk_part_tbl *ptbl = disk->part_tbl;
+ 	struct hd_struct *part;
+ 
+-	part = disk->__part[partno];
++	if (partno >= ptbl->len)
++		return;
++
++	part = ptbl->part[partno];
+ 	if (!part)
+ 		return;
+ 
+ 	blk_free_devt(part_devt(part));
+-	rcu_assign_pointer(disk->__part[partno], NULL);
++	rcu_assign_pointer(ptbl->part[partno], NULL);
+ 	kobject_put(part->holder_dir);
+ 	device_del(part_to_dev(part));
+ 
+@@ -354,10 +358,16 @@ int add_partition(struct gendisk *disk, int partno,
+ 	dev_t devt = MKDEV(0, 0);
+ 	struct device *ddev = disk_to_dev(disk);
+ 	struct device *pdev;
++	struct disk_part_tbl *ptbl;
+ 	const char *dname;
+ 	int err;
+ 
+-	if (disk->__part[partno]) {
++	err = disk_expand_part_tbl(disk, partno);
++	if (err)
++		return err;
++	ptbl = disk->part_tbl;
++
++	if (ptbl->part[partno]) {
+ 		err = -EBUSY;
+ 		goto fail;
+ 	}
+@@ -392,7 +402,7 @@ int add_partition(struct gendisk *disk, int partno,
+ 	pdev->devt = devt;
+ 
+ 	INIT_RCU_HEAD(&p->rcu_head);
+-	rcu_assign_pointer(disk->__part[partno], p);
++	rcu_assign_pointer(ptbl->part[partno], p);
+ 
+ 	/* delay uevent until 'holders' subdir is created */
+ 	pdev->uevent_suppress = 1;
+@@ -489,7 +499,7 @@ int rescan_partitions(struct gendisk *disk, struct block_device *bdev)
+ 	struct disk_part_iter piter;
+ 	struct hd_struct *part;
+ 	struct parsed_partitions *state;
+-	int p, res;
++	int p, highest, res;
+ 
+ 	if (bdev->bd_part_count)
+ 		return -EBUSY;
+@@ -513,6 +523,17 @@ int rescan_partitions(struct gendisk *disk, struct block_device *bdev)
+ 	/* tell userspace that the media / partition table may have changed */
+ 	kobject_uevent(&disk_to_dev(disk)->kobj, KOBJ_CHANGE);
+ 
++	/* Detect the highest partition number and preallocate
++	 * disk->part_tbl.  This is an optimization and not strictly
++	 * necessary.
++	 */
++	for (p = 1, highest = 0; p < state->limit; p++)
++		if (state->parts[p].size)
++			highest = p;
++
++	disk_expand_part_tbl(disk, highest);
++
++	/* add partitions */
+ 	for (p = 1; p < state->limit; p++) {
+ 		sector_t size = state->parts[p].size;
+ 		sector_t from = state->parts[p].from;
+diff --git a/include/linux/genhd.h b/include/linux/genhd.h
+index d5d2ef9..c7d9251 100644
+--- a/include/linux/genhd.h
++++ b/include/linux/genhd.h
+@@ -113,6 +113,12 @@ struct hd_struct {
+ #define GENHD_FL_UP				16
+ #define GENHD_FL_SUPPRESS_PARTITION_INFO	32
+ 
++struct disk_part_tbl {
++	struct rcu_head rcu_head;
++	int len;
++	struct hd_struct *part[];
++};
++
+ struct gendisk {
+ 	/* major, first_minor, minors and ext_minors are input
+ 	 * parameters only, don't use directly.  Use disk_devt() and
+@@ -131,7 +137,7 @@ struct gendisk {
+ 	 * non-critical accesses use RCU.  Always access through
+ 	 * helpers.
+ 	 */
+-	struct hd_struct **__part;
++	struct disk_part_tbl *part_tbl;
+ 	struct hd_struct part0;
+ 
+ 	struct block_device_operations *fops;
+@@ -146,6 +152,8 @@ struct gendisk {
+ 
+ 	atomic_t sync_io;		/* RAID */
+ 	struct work_struct async_notify;
++
++	int node_id;
+ };
+ 
+ static inline struct gendisk *part_to_disk(struct hd_struct *part)
+@@ -491,6 +499,7 @@ extern void blk_free_devt(dev_t devt);
+ extern dev_t blk_lookup_devt(const char *name, int partno);
+ extern char *disk_name (struct gendisk *hd, int partno, char *buf);
+ 
++extern int disk_expand_part_tbl(struct gendisk *disk, int target);
+ extern int rescan_partitions(struct gendisk *disk, struct block_device *bdev);
+ extern int add_partition(struct gendisk *, int, sector_t, sector_t, int);
+ extern void delete_partition(struct gendisk *, int);
+-- 
+1.5.4.5
 
-This patchset introduces partition 0 and unifies handling of the whole
-disk and other partitions and, on top of those changes, improves ext
-devt handling such that increasing the number of allowed partitions
-can be done without much overhead and the disk device itself can be
-allocated an extended devt.
-
-This patchset contains the following 13 patches.
-
-  0001-block-implement-and-use-disk-part-_to_dev.patch
-  0002-block-introduce-partition-0.patch
-  0003-block-move-capacity-from-disk-to-part0.patch
-  0004-block-move-__dev-from-disk-to-part0.patch
-  0005-block-unify-sysfs-size-node-handling.patch
-  0006-block-move-policy-from-disk-to-part0.patch
-  0007-block-move-holder_dir-from-disk-to-part0.patch
-  0008-block-always-set-bdev-bd_part.patch
-  0009-block-kill-GENHD_FL_FAIL-and-use-part0-make_it_fai.patch
-  0010-block-move-stats-from-disk-to-part0.patch
-  0011-block-make-partition-array-dynamic.patch
-  0012-block-replace-ext_minors-with-GENHD_FL_EXT_DEVT.patch
-  0013-block-allow-disk-to-have-extended-device-number.patch
-
-0001-0002: preps and introduces part0
-0003-0009: moves what's common from disk to part0 and unifies code
-	   paths
-0010     : simplifies stats handling
-0011	 : make partition array dynamic
-0012	 : ext_minors restriction isn't necessary anymore.  simplify
-           ext devt interface
-0013     : allow disk (part0) to have extended devt
-
-After this patchset, partition number is only limited by the number of
-entries in struct parsed_partitions which is used by actual partition
-scan code.  The limit is currently 256 but it can be increased by
-changing MAX_PART.
-
-A block driver now can simply set GENHD_FL_EXT_DEVT and skip
-specifying disk->minors to tell block layer to use extended devt for
-the disk and its partitions.  There's no need to allocate fixed
-regions and worry about the device number availability.
-
-If CONFIG_DEBUG_BLOCK_EXT_DEVT is turned on, sd and ide-disk use ext
-devt for everything.
-
-This patchset is on top of
-
-  v2.6.26 (bce7f793daec3e65ec5c5705d2457b81fe7b5725)
-+ [1] RCU-implement-rcu_read_[un]lock_preempt
-+ [2] block-fix-block_class-iteration-locking
-+ [3] block-allow-deleting-zero-lenght-partition
-+ [4] block-update-add_partition-error-handling
-+ [5] sd-update-index-allocation-and-use-ida
-+ [6] block-extended-devt patchset, take #2
-
-and available in the following git tree.
-
-  http://git.kernel.org/?p=linux/kernel/git/tj/misc.git;a=shortlog;h=block-unify-disk-part
-  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git block-unify-disk-part
-
-Even with the added feature and comments, this patchset reduces code
-by 40 lines.  ;-)
-
- block/blk-core.c           |   84 +++------
- block/blk-merge.c          |    8 
- block/blk-sysfs.c          |    4 
- block/genhd.c              |  402 ++++++++++++++++++++++-----------------------
- block/ioctl.c              |    4 
- drivers/block/aoe/aoeblk.c |    6 
- drivers/block/aoe/aoecmd.c |   12 -
- drivers/block/aoe/aoedev.c |    2 
- drivers/block/nbd.c        |    4 
- drivers/ide/ide-cd.c       |    2 
- drivers/ide/ide-disk.c     |   16 -
- drivers/ide/ide-probe.c    |    2 
- drivers/md/dm-ioctl.c      |    2 
- drivers/md/dm.c            |   19 +-
- drivers/md/linear.c        |    4 
- drivers/md/md.c            |   15 -
- drivers/md/multipath.c     |    4 
- drivers/md/raid0.c         |    4 
- drivers/md/raid1.c         |    4 
- drivers/md/raid10.c        |    4 
- drivers/md/raid5.c         |    4 
- drivers/scsi/sd.c          |   83 ++++++---
- fs/block_dev.c             |   79 +++-----
- fs/partitions/check.c      |  160 +++++++++--------
- fs/partitions/check.h      |    4 
- include/linux/genhd.h      |  238 +++++++++++---------------
- 26 files changed, 565 insertions(+), 605 deletions(-)
-
---
-tejun
-
-[1] http://article.gmane.org/gmane.linux.kernel/706149
-[2] http://article.gmane.org/gmane.linux.kernel/706152
-[3] http://article.gmane.org/gmane.linux.kernel/706153
-[4] http://article.gmane.org/gmane.linux.kernel/706154
-[5] http://article.gmane.org/gmane.linux.scsi/43109
-[6] http://thread.gmane.org/gmane.linux.kernel/706175
