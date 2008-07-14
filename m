@@ -1,48 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757266AbYGNITg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757185AbYGNITr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757266AbYGNITg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 04:19:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755588AbYGNIT1
+	id S1757185AbYGNITr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 04:19:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756509AbYGNITb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 04:19:27 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44210 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755012AbYGNIT1 (ORCPT
+	Mon, 14 Jul 2008 04:19:31 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38743 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756390AbYGNITa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 04:19:27 -0400
-Date: Mon, 14 Jul 2008 17:18:16 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [-mm][PATCH][resend] split-lru-memcg page reclaim active anon fix v2
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "riel@redhat.com" <riel@redhat.com>
-In-Reply-To: <20080714170359.31198aef.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080714170359.31198aef.kamezawa.hiroyu@jp.fujitsu.com>
-Message-Id: <20080714171731.F6D6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Mon, 14 Jul 2008 04:19:30 -0400
+Message-ID: <487B0BFD.109@jp.fujitsu.com>
+Date: Mon, 14 Jul 2008 17:19:09 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: linux-kernel@vger.kernel.org
+CC: Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] stopmachine: add stopmachine_timeout
+References: <487B05CE.1050508@jp.fujitsu.com>
+In-Reply-To: <487B05CE.1050508@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Index: linux-2.6.26-rc8-mm1/mm/vmscan.c
-> ===================================================================
-> --- linux-2.6.26-rc8-mm1.orig/mm/vmscan.c
-> +++ linux-2.6.26-rc8-mm1/mm/vmscan.c
-> @@ -1499,7 +1499,7 @@ static unsigned long shrink_zone(int pri
->  	 * Even if we did not try to evict anon pages at all, we want to
->  	 * rebalance the anon lru active/inactive ratio.
->  	 */
-> -	if (scan_global_lru(sc) && inactive_anon_is_low(zone))
-> +	if (!scan_global_lru(sc) || inactive_anon_is_low(zone))
->  		shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
->  
->  	throttle_vm_writeout(sc->gfp_mask);
+p.s.
+Before applying this patch, you need to apply Rusty's patches:
 
-	Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> From: Rusty Russell <rusty@rustcorp.com.au>
+> To: linux-kernel@vger.kernel.org
+> Subject: [PATCH 0/3] stop_machine enhancements and simplifications
+> Date: 	Tue, 8 Jul 2008 17:50:55 +1000
 
-
-
+Thanks,
+H.Seto
