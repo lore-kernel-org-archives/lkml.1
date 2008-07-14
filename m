@@ -1,70 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbYGNQeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbYGNQfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757596AbYGNQeY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 12:34:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbYGNQeP
+	id S1757596AbYGNQfa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 12:35:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754847AbYGNQfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 12:34:15 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35905 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751153AbYGNQeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 12:34:14 -0400
-Date: Mon, 14 Jul 2008 18:34:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Avi Kivity <avi@qumranet.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [git pull] core, x86: make LIST_POISON less deadly
-Message-ID: <20080714163402.GB21068@elte.hu>
-References: <20080714144828.GA22666@elte.hu> <alpine.LFD.1.10.0807140758100.3305@woody.linux-foundation.org> <20080714151247.GA27145@elte.hu> <alpine.LFD.1.10.0807140856130.3305@woody.linux-foundation.org> <487B7A10.9050104@qumranet.com> <alpine.LFD.1.10.0807140917050.3305@woody.linux-foundation.org>
+	Mon, 14 Jul 2008 12:35:22 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:34270 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754359AbYGNQfV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 12:35:21 -0400
+Date: Mon, 14 Jul 2008 12:35:18 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ftrace memory barriers
+In-Reply-To: <20080714162518.GA3027@Krystal>
+Message-ID: <Pine.LNX.4.58.0807141232130.29493@gandalf.stny.rr.com>
+References: <20080709145929.352201601@polymtl.ca> <20080709150045.025136754@polymtl.ca>
+ <20080709153434.GA9186@Krystal> <20080709162158.GB10601@Krystal>
+ <20080709190957.GA16779@Krystal> <20080711143709.GB11500@Krystal>
+ <Pine.LNX.4.58.0807141112540.30484@gandalf.stny.rr.com> <20080714153334.GA651@Krystal>
+ <Pine.LNX.4.58.0807141153250.29493@gandalf.stny.rr.com> <20080714162518.GA3027@Krystal>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807140917050.3305@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Mon, 14 Jul 2008, Mathieu Desnoyers wrote:
 
-> On Mon, 14 Jul 2008, Avi Kivity wrote:
-> > 
-> > We could add a printk to the #GP handler that alerts the reader that a
-> > poisoned list is suspected, if we find the address pattern in one of the
-> > registers.
-> 
-> I wouldn't worry too much - it's going to be pretty visible anyway.
-> 
-> The only thing I _would_ worry about is the AMD prefetch bug - some AMD 
-> cores raise a spurious page fault for prefetch instructions, and we ignore 
-> it.
-> 
-> I _think_ that bug is a pure TLB issue and would never trigger for an 
-> address that doesn't do page fault handling at all because it gets caught 
-> in the "is the address valid" code, but it does make me go "Hmm".
-> 
-> See
-> 
-> 	http://lkml.org/lkml/2003/9/10/397
-> 
-> from Rich Brunner. The AMD errata listing does say just page fault, 
-> and does talk about speculative TLB reloads, so I think we're all 
-> good.
+>
+> (CC'ed LKML)
+>
+> * Steven Rostedt (rostedt@goodmis.org) wrote:
+> >
+> > On Mon, 14 Jul 2008, Mathieu Desnoyers wrote:
+> > >
+> > > Thanks a lot Steve! By the way, you might be interested in looking at
+> > > the extra tracing enable/disabled tests you have in ftrace : it should
+> > > be enough to register/unregister the probes to activate/deactivate
+> > > tracing. I don't see why you would need if() checks in the probe itself.
+> > >
+> >
+> > That was actually one of the causes of the bugs I had. We had two markers,
+> > one tracing schedule switches, the other wake ups. As soon as one is
+> > enabled, tracing starts, and you will miss the tracing of the other one.
+> >
+> > The result was a strange trace were things were waking up then the waker
+> > was being scheduled in??
+> >
+> > I need to enable all markers at the same time, which can be done with the
+> > if () check. Not to mention, I like to be able to shut of tracing on oops
+> > without needing to do anyting drastic (like deactivating probes).
+> >
+> > -- Steve
+> >
+>
+> I see the reason why you need this, but beware that the activation
+> boolean you are using in your check won't be seen as active at the same
+> time by all CPUs because of out-of-order read/writes. So while the
+> update is per se atomic, the replication of the updated value to all
+> processors isn't. However, when one CPU sees the new version, this
+> version will stay valid.
 
-one of my testboxes has this erratum and i saw related bugs in the past 
-during stress-tests so it will show up if the non-canonical address 
-causes any problems. So i think 0xdead000000000000 will be fine, and 
-even if it isnt, we'll catch any problems fast enough.
+Yep, I understand that. It was that the same CPU trace provided funny
+output. It it were a trace over separate CPUS then that is something
+people would accept.
 
-	Ingo
+>
+> This is one of the reasons why I don't aim to provide atomic activation
+> of multiple markers : thinking that the state will be atomically changed
+> on all CPUs without using the proper memory barriers is a bit bogus
+> anyway. Does ftrace expect such atomic propagation of the change across
+> all CPUs or does it deal with the information it receives on a per-cpu
+> basis ?
+
+All the buffers and traces are per-cpu. We sort out the rest on output,
+and we use the clock as the interleaver. Doing that doesn't guarantee that
+events actually do happen in the order that appear, but it gives one a
+good idea of where to look.
+
+>
+> In any case, you should also make sure that you call synchronize_sched()
+> after the probe registration to make sure the quiescent state is reached
+> and that all probes are connected (so that no marker still see the old
+> data structures). This should be done before you activate your boolean
+> in the probes.
+
+Good to know, thanks. Hmm, I'm not sure that code can schedule :-/ Maybe
+it can. I'll have to take a look.
+
+>
+> I agree that the extra check is very well suited to the OOPS case.
+
+
+Thanks,
+
+-- Steve
+
