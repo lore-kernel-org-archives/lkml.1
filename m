@@ -1,78 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757030AbYGNJtE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757292AbYGNJwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757030AbYGNJtE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 05:49:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756311AbYGNJsy
+	id S1757292AbYGNJwT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 05:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756415AbYGNJwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 05:48:54 -0400
-Received: from mail164.messagelabs.com ([216.82.253.131]:62058 "EHLO
-	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756297AbYGNJsx (ORCPT
+	Mon, 14 Jul 2008 05:52:11 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:41576 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756330AbYGNJwK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 05:48:53 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-5.tower-164.messagelabs.com!1216028932!17847471!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.13]
-Date: Mon, 14 Jul 2008 11:48:47 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH, RFC] use hrtimer in sched_clock
-Message-ID: <20080714094847.GA7478@digi.com>
-References: <1215809727-28598-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <alpine.LFD.1.10.0807141123450.3283@apollo.tec.linutronix.de>
+	Mon, 14 Jul 2008 05:52:10 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Bernhard Walle <bwalle@suse.de>
+Cc: "Yinghai Lu" <yhlu.kernel@gmail.com>, "Vivek Goyal" <vgoyal@redhat.com>,
+       kexec@lists.infradead.org, x86@kernel.org, linux-kernel@vger.kernel.org
+References: <1214510048-21215-1-git-send-email-bwalle@suse.de>
+	<20080627133256.GB5801@redhat.com>
+	<86802c440807140011v728cc35fy2540b537ddca9844@mail.gmail.com>
+	<20080714112404.36783df5@halley.suse.de>
+Date: Mon, 14 Jul 2008 02:44:37 -0700
+In-Reply-To: <20080714112404.36783df5@halley.suse.de> (Bernhard Walle's
+	message of "Mon, 14 Jul 2008 11:24:04 +0200")
+Message-ID: <m1od50ztoa.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LFD.1.10.0807141123450.3283@apollo.tec.linutronix.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 14 Jul 2008 09:48:49.0250 (UTC) FILETIME=[D0E3BC20:01C8E596]
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Bernhard Walle <bwalle@suse.de>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
+	*      [score: 0.4694]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH] x86: Find offset for crashkernel reservation automatically
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Thomas,
+Bernhard Walle <bwalle@suse.de> writes:
 
-Thomas Gleixner wrote:
-> On Fri, 11 Jul 2008, Uwe Kleine-König wrote:
-> > This should make it unnecessary to overwrite sched_clock for a higher
-> > precision.
-> > With this patch I get sub-jiffie timing with CONFIG_PRINTK_TIME=y.
-> >
-> > Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
-> > Cc: Thomas Gleixner <tglx@linutronix.de>
-> > Cc: Ingo Molnar <mingo@elte.hu>
-> > ---
-> > Hello,
-> >
-> > I tested the patch on arch-arm/mach-ns9xxx and it seem seams to work.
-> > But I admit I didn't test it deeply and I didn't measure if there is any
-> > overhead.
-> 
-> There is lots of overhead and your approach is simply wrong.
-I expected to have some overhead, but can you please elaborate on
-"simply wrong"?
-I will try to measure the actual overhead but cannot promise to find
-time for that in the near future.
- 
-> >  unsigned long long __attribute__((weak)) sched_clock(void)
-> 
-> The correct way to solve it is to override sched_clock() with a high
-> resolution implementation for your hardware platform. sched_clock is a
-> weak function to provide a default implementation based on jiffies.
-> 
-> If you do a grep -r sched_clock arch/arm you'll find a couple of
-> examples how to override sched_clock().
-I new that and my purpose was to make this unneeded.  Would be nice,
-wouldn't it?
+> * Yinghai Lu [2008-07-14 00:11]:
+>>
+>> should use min_t(u64, 1ULL<<32, max_low_pfn<<PAGE_SHIFT) replace ULONG_MAX
+>
+> Shouldn't we use  min_t(u64, ULLONG_MAX, max_low_pfn<<PAGE_SHIFT), i.e.
+> should we really limit the crashkernel to a 32 bit address on a 64 bit
+> system?
 
-Thanks and best regards,
-Uwe
+We should use the lowest physical address that meets our size and
+alignment constraints.  However there is no reason to make this be <
+4G or even < 1G.  The worst case is that we reserve an area the kdump
+kernel can't run out of.  However /sbin/kexec should check for that as
+the kexec on panic code is not necessarily a linux kernel.
 
--- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+Eric
