@@ -1,35 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757874AbYGNUwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757877AbYGNUzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757874AbYGNUwR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 16:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756180AbYGNUwI
+	id S1757877AbYGNUzo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 16:55:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756180AbYGNUzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 16:52:08 -0400
-Received: from xenotime.net ([66.160.160.81]:38161 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756067AbYGNUwG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 16:52:06 -0400
-Date: Mon, 14 Jul 2008 13:52:03 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: swhiteho@redhat.com
-Cc: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Subject: Re: [PATCH 11/18] [GFS2] Glock documentation
-Message-Id: <20080714135203.55f66a51.rdunlap@xenotime.net>
-In-Reply-To: <1215771106247-git-send-email-swhiteho@redhat.com>
-References: <121577107950-git-send-email-swhiteho@redhat.com>
-	<12157710872782-git-send-email-swhiteho@redhat.com>
-	<1215771089769-git-send-email-swhiteho@redhat.com>
-	<1215771091790-git-send-email-swhiteho@redhat.com>
-	<12157710931623-git-send-email-swhiteho@redhat.com>
-	<12157710954145-git-send-email-swhiteho@redhat.com>
-	<12157710973601-git-send-email-swhiteho@redhat.com>
-	<12157710983282-git-send-email-swhiteho@redhat.com>
-	<12157711013356-git-send-email-swhiteho@redhat.com>
-	<12157711023743-git-send-email-swhiteho@redhat.com>
-	<12157711041157-git-send-email-swhiteho@redhat.com>
-	<1215771106247-git-send-email-swhiteho@redhat.com>
-Organization: YPO4
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Mon, 14 Jul 2008 16:55:35 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48486 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755891AbYGNUze (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 16:55:34 -0400
+Date: Mon, 14 Jul 2008 13:54:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, david-b@pacbell.net,
+       piotr.skamruk@gmail.com, drzeus-mmc@drzeus.cx,
+       openwrt-devel@lists.openwrt.org
+Subject: Re: [PATCH] Add dynamic MMC-over-SPI-GPIO driver
+Message-Id: <20080714135441.e3ef9b0b.akpm@linux-foundation.org>
+In-Reply-To: <200807142109.19360.mb@bu3sch.de>
+References: <200807142109.19360.mb@bu3sch.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -37,147 +28,190 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Jul 2008 11:11:12 +0100 swhiteho@redhat.com wrote:
+On Mon, 14 Jul 2008 21:09:18 +0200
+Michael Buesch <mb@bu3sch.de> wrote:
 
-> From: Steven Whitehouse <swhiteho@redhat.com>
+> This driver provides a sysfs interface to dynamically create
+> and destroy GPIO-based MMC/SD card interfaces.
+> So an MMC or SD card can be connected to generic GPIO pins
+> and be configured dynamically from userspace.
 > 
-> This patch adds a file describing the internals of GFS2's glock
-> abstraction.
+> Signed-off-by: Michael Buesch <mb@bu3sch.de>
 > 
-> Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+> ---
 > 
-> diff --git a/Documentation/filesystems/gfs2-glocks.txt b/Documentation/filesystems/gfs2-glocks.txt
-> new file mode 100644
-> index 0000000..4dae9a3
-> --- /dev/null
-> +++ b/Documentation/filesystems/gfs2-glocks.txt
-> @@ -0,0 +1,114 @@
-> +                   Glock internal locking rules
-> +                  ------------------------------
+> This driver is used in OpenWrt since quite some time, so please
+> consider for inclusion in mainline.
+> 
+> See the attached OpenWrt initscript for an example on how to use
+> the sysfs interface. Documentation should also be added. I'll submit
+> a patch for that, later.
+> 
+> ...
+>
+> +static int gpiommc_probe(struct platform_device *pdev)
+> +{
+> +	static int instance;
+> +	struct gpiommc_device *d = platform_get_drvdata(pdev);
+> +	struct spi_gpio_platform_data pdata;
+> +	int err = -ENOMEM;
 > +
-> +This documents the basic principles of the glock state machine
-> +internals. Each glock (struct gfs2_glock in fs/gfs2/incore.h)
-> +has two main (internal) locks:
-> +
-> + 1. A spinlock (gl_spin) which protects the internal state such
-> +    as gl_state, gl_target and the list of holders (gl_holders)
-> + 2. A non-blocking bit lock, GLF_LOCK, which is used to prevent other
-> +    threads from making calls to the DLM, etc. at the same time. If a
-> +    thread takes this lock, it must then call run_queue (usually via the
-> +    workqueue) when it releases it in order to ensure any pending tasks
-> +    are completed.
-> +
-> +The gl_holders list contains all the queued lock requests (not
-> +just the holders) associated with the glock. If there are any
-> +held locks, then they will be contiguous entries at the head
-> +of the list. Locks are granted in strictly the order that they
-> +are queued, except for those marked LM_FLAG_PRIORITY which are
-> +used only during recovery, and even then only for journal locks.
-> +
-> +There are three lock states that users of the glock layer can request,
-> +namely shared (SH), deferred (DF) and exclusive (EX). Those translate
-> +to the following DLM lock modes:
-> +
-> +Glock mode    | DLM lock mode
-> +------------------------------
-> +    UN        |    IV/NL  Unlocked (no DLM lock associated with glock) or NL
-> +    SH        |    PR     (Protected read)
-> +    DF        |    CW     (Concurrent write)
-> +    EX        |    EX     (Exclusive)
-> +
-> +Thus DF is basically a shared mode which is incompatible with the "normal"
-> +shared lock mode, SH. In GFS2 the DF mode is used exclusively for direct I/O
-> +operations. The glocks are basically a lock plus some routines which deal
-> +with cache management. The following rules apply for the cache:
-> +
-> +Glock mode   |  Cache data | Cache Metadata | Dirty Data | Dirty Metadata
-> +--------------------------------------------------------------------------
-> +    UN       |     No      |       No       |     No     |      No
-> +    SH       |     Yes     |       Yes      |     No     |      No
-> +    DF       |     No      |       Yes      |     No     |      No
-> +    EX       |     Yes     |       Yes      |     Yes    |      Yes
-> +
-> +These rules are implemented using the various glock operations which
-> +are defined for each type of glock. Not all types of glocks use
-> +all the modes. Only inode glocks use the DF mode for example.
-> +
-> +Table of glock operations and per type constants:
-> +
-> +Field            | Purpose
-> +----------------------------------------------------------------------------
-> +go_xmote_th      | Called before remote state change (e.g. to sync dirty data)
-> +go_xmote_bh      | Called after remote state change (e.g. to refill cache)
-> +go_inval         | Called if remote state change requires invalidating the cache
-> +go_demote_ok     | Returns boolean value of whether its ok to demote a glock
+> +	d->spi_pdev = platform_device_alloc("spi-gpio", instance++);
+> +	if (!d->spi_pdev)
+> +		goto out;
 
-                                                       it's
+I guess that incrementing `instance' even if the allocation failed is
+somewhat wrong.
 
-> +                 | (e.g. checks timeout, and that there is no cached data)
-> +go_lock          | Called for the first local holder of a lock
-> +go_unlock        | Called on the final local unlock of a lock
-> +go_dump          | Called to print content of object for debugfs file, or on
-> +                 | error to dump glock to the log.
-> +go_type;         | The type of the glock, LM_TYPE_.....
+> +	memset(&pdata, 0, sizeof(pdata));
+> +	pdata.pin_clk = d->pins.gpio_clk;
+> +	pdata.pin_miso = d->pins.gpio_do;
+> +	pdata.pin_mosi = d->pins.gpio_di;
+> +	pdata.pin_cs = d->pins.gpio_cs;
+> +	pdata.cs_activelow = 1;
+> +	pdata.no_spi_delay = 1;
+> +	pdata.boardinfo_setup = gpiommc_boardinfo_setup;
+> +	pdata.boardinfo_setup_data = d;
+> +
+> +	err = platform_device_add_data(d->spi_pdev, &pdata, sizeof(pdata));
+> +	if (err)
+> +		goto err_free_pdev;
+> +	err = platform_device_register(d->spi_pdev);
+> +	if (err)
+> +		goto err_free_pdata;
+> +
+> +	printk(KERN_INFO PFX "MMC-Card \"%s\" "
+> +	       "attached to GPIO pins %u,%u,%u,%u\n",
+> +	       d->name, d->pins.gpio_di, d->pins.gpio_do,
+> +	       d->pins.gpio_clk, d->pins.gpio_cs);
+> +out:
+> +	return err;
+> +
+> +err_free_pdata:
+> +	kfree(d->spi_pdev->dev.platform_data);
+> +	d->spi_pdev->dev.platform_data = NULL;
+> +err_free_pdev:
+> +	platform_device_put(d->spi_pdev);
+> +	return err;
+> +}
+> +
+> 
+> ...
+>
+> +static struct gpiommc_device *gpiommc_alloc(struct platform_device *pdev,
+> +					    const char *name,
+> +					    const struct gpiommc_pins *pins,
+> +					    u8 mode)
+> +{
+> +	struct gpiommc_device *d;
+> +
+> +	d = kmalloc(sizeof(*d), GFP_KERNEL);
+> +	if (!d)
+> +		return NULL;
+> +
+> +	strcpy(d->name, name);
 
-          ^drop ';'
+No check for overruns?
 
-> +go_min_hold_time | The minimum hold time
-> +
-> +The minimum hold time for each lock is the time after a remote lock
-> +grant for which we ignore remote demote requests. This is in order to
-> +prevent a situation where locks are being bounced around the cluster
-> +from node to node with none of the nodes making any progress. This
-> +tends to show up most with shared mmaped files which are being written
-> +to by multiple nodes. By delaying the demotion in response to a
-> +remote callback, that gives the userspace program time to make
-> +some progress before the pages are unmapped.
-> +
-> +There is a plan to try and remove the go_lock and go_unlock callbacks
-> +if possible, in order to try and speed up the fast path though the locking.
-> +Also, eventually we hope to make the glock "EX" mode locally shared
-> +such that any local locking will be done with the i_mutex as required
-> +rather than via the glock.
-> +
-> +Locking rules for glock operations:
-> +
-> +Operation     |  GLF_LOCK bit lock held |  gl_spin spinlock held
-> +-----------------------------------------------------------------
-> +go_xmote_th   |       Yes               |       No
-> +go_xmote_bh   |       Yes               |       No
-> +go_inval      |       Yes               |       No
-> +go_demote_ok  |       Sometimes         |       Yes
-> +go_lock       |       Yes               |       No
-> +go_unlock     |       Yes               |       No
-> +go_dump       |       Sometimes         |       Yes
-> +
-> +N.B. Operations must not drop either the bit lock or the spinlock
-> +if its held on entry. go_dump and do_demote_ok must never block.
+> +	memcpy(&d->pins, pins, sizeof(d->pins));
 
-      it's
+If this had used the typesafe
 
-> +Note that go_dump will only be called if the glock's state
-> +indicates that it is caching uptodate data.
-> +
-> +Glock locking order within GFS2:
-> +
-> + 1. i_mutex (if required)
-> + 2. Rename glock (for rename only)
-> + 3. Inode glock(s)
-> +    (Parents before children, inodes at "same level" with same parent in
-> +     lock number order)
-> + 4. Rgrp glock(s) (for (de)allocation operations)
-> + 5. Transaction glock (via gfs2_trans_begin) for non-read operations
-> + 6. Page lock  (always last, very important!)
-> +
-> +There are two glocks per inode. One deals with access to the inode
-> +itself (locking order as above), and the other, known as the iopen
-> +glock is used in conjunction with the i_nlink field in the inode to
-> +determine the lifetime of the inode in question. Locking of inodes
-> +is on a per-inode basis. Locking of rgrps is on a per rgrp basis.
-> +
-> -- 
+	d->pins = *pins;
 
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+I wouldn't have needed to run all around the place working out if
+overflow/underflow checks were needed here.
+
+> +	d->mode = mode;
+> +	INIT_LIST_HEAD(&d->list);
+> +
+> +	return d;
+> +}
+> +
+> 
+> ...
+>
+> +static ssize_t gpiommc_add_store(struct device_driver *drv,
+> +				 const char *buf, size_t count)
+> +{
+> +	int res, err;
+> +	char name[GPIOMMC_MAX_NAMELEN + 1];
+> +	struct gpiommc_pins pins;
+> +	unsigned int mode;
+> +
+> +	res = sscanf(buf, "%" GPIOMMC_MAX_NAMELEN_STR "s %u,%u,%u,%u %u",
+> +		     name, &pins.gpio_di, &pins.gpio_do,
+> +		     &pins.gpio_clk, &pins.gpio_cs, &mode);
+
+What's going on here?  So new kernel/userspace ABI.  Not documented in
+changelog, not documented in code comments, not documented in
+Documentation/ABI.  This forces reviewers to reverse-engineer the
+interface design from the implementation and then attempt to review
+that design.  Reviewers not happy!
+
+Userspace interfaces are the things which we care about most, because
+they are the things which we can never change.  Please document them
+prominently.
+
+> +	if (res == 5)
+> +		mode = 0;
+> +	else if (res != 6)
+> +		return -EINVAL;
+> +	switch (mode) {
+> +	case 0:
+> +		mode = SPI_MODE_0;
+> +		break;
+> +	case 1:
+> +		mode = SPI_MODE_1;
+> +		break;
+> +	case 2:
+> +		mode = SPI_MODE_2;
+> +		break;
+> +	case 3:
+> +		mode = SPI_MODE_3;
+> +		break;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +	err = gpiommc_create_device(name, &pins, mode);
+> +
+> +	return err ? err : count;
+> +}
+> +
+> +static ssize_t gpiommc_remove_show(struct device_driver *drv,
+> +				   char *buf)
+> +{
+> +	return snprintf(buf, PAGE_SIZE, "write device-name to remove the device\n");
+> +}
+
+Now that is one weird way in which to document the interface!  What a
+waste of kernel text :(
+
+> +static ssize_t gpiommc_remove_store(struct device_driver *drv,
+> +				    const char *buf, size_t count)
+> +{
+> +	int err;
+> +
+> +	err = gpiommc_destroy_device(buf);
+> +
+> +	return err ? err : count;
+> +}
+> +
+> +static DRIVER_ATTR(add, 0600,
+> +		   gpiommc_add_show, gpiommc_add_store);
+> +static DRIVER_ATTR(remove, 0600,
+> +		   gpiommc_remove_show, gpiommc_remove_store);
+> +
+> +static struct platform_driver gpiommc_plat_driver = {
+> +	.probe	= gpiommc_probe,
+> +	.remove	= gpiommc_remove,
+> +	.driver	= {
+> +		.name	= DRIVER_NAME,
+> +		.owner	= THIS_MODULE,
+> +	},
+> +};
+> +
+
+I'll skip this, pending suitable documentation of the proposed
+interface design, and review of that design.
+
