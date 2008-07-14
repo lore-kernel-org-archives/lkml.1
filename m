@@ -1,157 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbYGNCIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755671AbYGNCM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755609AbYGNCIT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 22:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbYGNCII
+	id S1755671AbYGNCM0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 22:12:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754038AbYGNCMR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 22:08:08 -0400
-Received: from fk-out-0910.google.com ([209.85.128.188]:54801 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753685AbYGNCIG (ORCPT
+	Sun, 13 Jul 2008 22:12:17 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:52646 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753685AbYGNCMQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 22:08:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=HNqe637vMySqlo1xzPotJ9SOX2SxzIoaSX4coq2Ot0k4okqgGKNcw4jIR0CwAyM5xe
-         MkPvkhCsTXnZVSo86zoJxd1CSGESDoGYH1iemhKRRCzte4pkceaeuesyn6HKIyRpq3sw
-         vy1LPnoPhI9WiKNFEI7dQ2HoLWPJ/BDx4vnUM=
-Message-ID: <30353c3d0807131908l6c700b49xc63ffaeae1369601@mail.gmail.com>
-Date: Sun, 13 Jul 2008 22:08:04 -0400
-From: "David Ellingsworth" <david@identd.dyndns.org>
-To: linux-kernel@vger.kernel.org
-Subject: char_dev inquiry
+	Sun, 13 Jul 2008 22:12:16 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: David Miller <davem@davemloft.net>
+Cc: benh@kernel.crashing.org, suresh.b.siddha@intel.com, matthew@wil.cx,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       grundler@parisc-linux.org, mingo@elte.hu, tglx@linutronix.de,
+       jgarzik@pobox.com, linux-ide@vger.kernel.org, jbarnes@virtuousgeek.org,
+       rdunlap@xenotime.net, mtk.manpages@gmail.com
+References: <1215989044.7549.219.camel@pasglop>
+	<m1tzet2wie.fsf@frodo.ebiederm.org>
+	<1215994659.7549.227.camel@pasglop>
+	<20080713.174457.82768245.davem@davemloft.net>
+Date: Sun, 13 Jul 2008 19:03:52 -0700
+In-Reply-To: <20080713.174457.82768245.davem@davemloft.net> (David Miller's
+	message of "Sun, 13 Jul 2008 17:44:57 -0700 (PDT)")
+Message-ID: <m1ej5x1at3.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Google-Sender-Auth: d9f779a3974be9fd
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;David Miller <davem@davemloft.net>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
+	*      [score: 0.0154]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: Multiple MSI, take 3
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After reviewing several character device drivers over the past few
-weeks, I have a few concerns concerning the current state of char_dev.
+David Miller <davem@davemloft.net> writes:
 
-Currently, cdev has a kobject which is initialized in either cdev_init
-or cdev_alloc. The reference count for this kobject is incremented
-during chrdev_open, and decremented by cdev_del and __fput(in
-file_table.c). When the reference count reaches 0,
-cdev_dynamic_release or cdev_default_release is called, depending on
-how the kobject was initialized, to free cdev related memory. The
-strategic manipulation of the kobject reference count in cdev ensures
-that cdev is not freed while fops releases are still pending.
+> The x86 system designers decided to implement multi-MSI in an
+> inconvenient way, it is not a "crap hardware design", merely
+> some (unfortunately common) implementations of it happen to be.
 
-Typically however cdev is embedded within another structure and
-initialized using cdev_init. This allows easy access to the containing
-structure during fops callbacks via container_of. Freeing the
-containing structure however is somewhat problematic. Since cdev
-maintains a reference count that determines when it is freed, the
-containing structure must not be freed before cdev's kobject release
-callback has been called. Currently the only way to ensure this
-behavior is to call cdev_del after the final fops release has been
-called.
+To be clear I was referring to the PCI spec that describes multi-MSI
+as a crap hardware design.
 
-For a moment, lets presume we reference count the containing structure
-with a kref. We'll manipulate the kref similar to how cdev manipulates
-its kobject. Thus, when cdev_init is called, we call kref_init on our
-kref. When we receive an fops open callback we increment our reference
-counter, and decrement it when we receive an fops release callback.
-Finally, we decrement it after we call cdev_del. Consider the
-following usb driver layout:
+At the very least you are left with the problem of allocating multiple
+contiguous destinations.  Which has the potential to create
+fragmentation on all supported platforms.
 
-1) module_init
-    a) register_chrdev_region - alloc some minor numbers
-    b) register with usb subsystem
-2) usb probe
-    a) alloc containing structure
-    b) initialize internal cdev structure using cdev_init
-    c) kref_init internal kref object
-    d) cdev_add
-3) fops open (take lock)
-    a) if disconnected return error
-    b) kref_get internal kref object
-4) fops close (take lock)
-    a) kref_put internal kref object
-5) usb disconnect (take lock)
-    a) set disconnected flag
-    b) cdev_del
-    c) kref_put internal kref object
-6) module_exit
-    a) unregister with usb subsystem
-    b) unregister_chrdev_region - free minor numbers
-7) release via kref
-    a) free containing structure
+Optional mask bits are also nasty.
 
-While the above appears to be right, usb disconnect may occur before
-the final call to fops close. In this case, the containing structure
-will be freed before the kobject release function of the internal cdev
-structure has been called. This will result in a crash.
+My honest opinion is that the should have deprecated multi-msi after the
+introduction of the msi-x specification.
 
-The only way around this is to delay the call to cdev_del until our
-release method is called. Doing so however means we must continue to
-process and expect calls to fops open since we are unable to remove
-the character device. The resulting layout would be as follow:
-
-1) module_init
-    a) register_chrdev_region - alloc some minor numbers
-    b) register with usb subsystem
-2) usb probe
-    a) alloc containing structure
-    b) initialize internal cdev structure using cdev_init
-    c) kref_init internal kref object
-    d) cdev_add
-3) fops open (take lock)
-    a) if disconnected return error
-    b) kref_get internal kref object
-4) fops close (take lock)
-    a) kref_put internal kref object
-5) usb disconnect (take lock)
-    a) set disconnected flag
-    b) kref_put internal kref object
-6) module_exit
-    a) unregister with usb subsystem
-    b) unregister_chrdev_region - free minor numbers
-7) release via kref
-    a) cdev_del
-    b) free containing structure
-
-A better solution would be to introduce a release callback in the cdev
-structure that is called during cdev's kobject release callback. By
-doing so we no longer have to maintain a reference count on containing
-structure, nor do we have to delay the call to cdev_del until after
-the final fops release has occurred in order to remove the character
-device. The disconnected flag is still used due to concurrency issues
-on SMP and pre-emptable systems, but the number of fops open calls
-affected by it should be greatly reduced since the character device is
-no longer present. The resulting layout would be as follows:
-
-1) module_init
-    a) register_chrdev_region - alloc some minor numbers
-    b) register with usb subsystem
-2) usb probe
-    a) alloc containing structure
-    b) initialize internal cdev structure using cdev_init
-    c) set cdev release callback
-    d) cdev_add
-3) fops open (take lock)
-    a) if disconnected return error
-4) fops close (take lock)
-5) usb disconnect (take lock)
-    a) set disconnected flag
-    b) cdev_del
-6) module_exit
-    a) unregister with usb subsystem
-    b) unregister_chrdev_region - free minor numbers
-7) release from cdev
-    b) free containing structure
-
-While I have only examined usb and pci character devices, this
-information may apply to other subsystems as well.
-
-What are your thoughts about introducing a release callback into cdev?
-
-Regards,
-
-David Ellingsworth
+Eric
