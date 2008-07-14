@@ -1,74 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756149AbYGNEsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752178AbYGNEvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756149AbYGNEsl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 00:48:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbYGNEsd
+	id S1752178AbYGNEvS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 00:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbYGNEvL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 00:48:33 -0400
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:35855 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751661AbYGNEsd (ORCPT
+	Mon, 14 Jul 2008 00:51:11 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:22491 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751692AbYGNEvK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 00:48:33 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=2tWr9PbOeWg8RyCJv8TmD2AfpWE/b5o1do1t2D86D6VkV02VKIkLXIhe4NORmrv2KVKQ2HZSRJtDtslwmBEAHDImjO1OViwi+Ah8iVgq4n6Y7b7fLbylmSMc8HL4w7vSQSm4xWDToHslIlTF8d20r44Xha68D4NMQ547HvTTs+0=  ;
-X-YMail-OSG: tTVGGHwVM1m36v.BI54hT.oliUIB8LXBudTR5mfRvq7TUpjFg..XZXz_.trbwK7vR1ecnRJPGzxpw5Qs2apdbIi.EaV4_2rSyFUByKTaZkQ9bzbHFLOYQAeQrAJiOOPWauI-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Jon Tollefson <kniht@linux.vnet.ibm.com>
-Subject: Re: SL*B: drop kmem cache argument from constructor
-Date: Mon, 14 Jul 2008 14:48:21 +1000
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, penberg@cs.helsinki.fi,
-       mpm@selenic.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       cl@linux-foundation.org
-References: <20080710011132.GA8327@martell.zuzino.mipt.ru> <20080711122228.eb40247f.akpm@linux-foundation.org> <4877D35E.8080209@linux.vnet.ibm.com>
-In-Reply-To: <4877D35E.8080209@linux.vnet.ibm.com>
+	Mon, 14 Jul 2008 00:51:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=QiytAwVu6gV3fOJxHrx7awHIcrzDaEJAnaK0wERgvgCswQKEFM2pRhOJlhdik5QMDw
+         0jsqlURRzjE+KPZ9kzKfSd/62LyJZjUbZULTuJM0UDavX9GK7wwNz7yEw6USLtG/zV3L
+         I+/6l/1w2fipGb+pduh8G6UmVAKg/UyhpCHCc=
+Message-ID: <48f7fe350807132151udc3a462g688336a9fab7b768@mail.gmail.com>
+Date: Mon, 14 Jul 2008 00:51:09 -0400
+From: "Ryan Hope" <rmh3093@gmail.com>
+To: "Eduard - Gabriel Munteanu" <eduard.munteanu@linux360.ro>
+Subject: Re: Performance Question: BUG_ON vs. WARN_ON_ONCE
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>
+In-Reply-To: <20080714073636.6c84be12@linux360.ro>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807141448.22233.nickpiggin@yahoo.com.au>
+References: <48f7fe350807131657v4b95340ajfaaacbb04eefa21f@mail.gmail.com>
+	 <20080714063657.6d1fda18@linux360.ro>
+	 <48f7fe350807132110k4cd90e9j6907674ea7668f5b@mail.gmail.com>
+	 <20080714073636.6c84be12@linux360.ro>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 12 July 2008 07:40, Jon Tollefson wrote:
-> Andrew Morton wrote:
+radeon drm/dri is opensource, i use the radeonhd driver for xorg
 
-> > btw, Nick, what's with that dopey
-> >
-> > 	huge_pgtable_cache(psize) = kmem_cache_create(...
-> >
-> > trick?  The result of a function call is not an lvalue, and writing a
-> > macro which pretends to be a function and then using it in some manner
-> > in which a function cannot be used is seven ways silly :(
-
-I agree it isn't nice.
-
-
-> That silliness came from me.
-> It came from my simplistic translation of the existing code to handle
-> multiple huge page sizes.  I would agree it would be easier to read and
-> more straight forward to just have the indexed array directly on the
-> left side instead of a macro.  I can send out a patch that makes that
-> change if desired.
-> Something such as
+On Mon, Jul 14, 2008 at 12:36 AM, Eduard - Gabriel Munteanu
+<eduard.munteanu@linux360.ro> wrote:
+> On Mon, 14 Jul 2008 00:10:50 -0400
+> "Ryan Hope" <rmh3093@gmail.com> wrote:
 >
-> +#define HUGE_PGTABLE_INDEX(psize) (HUGEPTE_CACHE_NUM + psize - 1)
+>> well the bug I recieved looked like it had to do with highmem and this
+>> was the only code relating to mem that got touched, as for the other
+>> person, their crash was reproducible and it definitely was an oops,
+>> numlock led started to blink and system was unresponsive, for both of
+>> us
+>> reverting this change seems fix the issue, my dmesg log is attached to
+>> this message
 >
-> -huge_pgtable_cache(psize) = kmem_cache_create(...
-> +pgtable_cache[HUGE_PGTABLE_INDEX(psize)] = kmem_cache_create(...
+> There are a few things you should take into account before anything else:
+> 1. The bug does not occur there, but in other code.
+> 2. The kernel is tainted.
+> 3. The oopses start occuring just after you load that tainted module,
+> or at least something related (that drm stuff is linked to the radeon
+> module, I presume, which is proprietary AFAIK)
+>
+> So you should retest after eliminating all these possible noise and
+> error sources. Test both if your fix (revert) is correct and if it
+> crashes without your fix.
+>
+> My guess is that would've happened sooner or later and your fix just
+> moved stuff around enough to mask it. That static int from WARN_ON_ONCE
+> means another 4 or 8 bytes in the kernel image, which might set things
+> off in an already unstable environment.
 >
 >
-> or if there is a more accepted way of handling this situation I can
-> amend it differently.
-
-If it is a once off initialization (which it is), that's probably fine
-like that. Otherwise, the convention is to have a set_huge_pgtable_cache
-function as well. But whatever you prefer. Yes if you can send a patch,
-that would be good, thanks.
+>        Eduard
+>
