@@ -1,385 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757759AbYGNTMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbYGNTUK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757759AbYGNTMd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 15:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754584AbYGNTMN
+	id S1756090AbYGNTUK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 15:20:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753647AbYGNTT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 15:12:13 -0400
-Received: from bu3sch.de ([62.75.166.246]:34118 "EHLO vs166246.vserver.de"
+	Mon, 14 Jul 2008 15:19:58 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:50775 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754064AbYGNTML (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 15:12:11 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: [PATCH] Add SPI over GPIO driver
-Date: Mon, 14 Jul 2008 21:09:12 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       David Brownell <david-b@pacbell.net>,
-       Piot Skamruk <piotr.skamruk@gmail.com>, openwrt-devel@lists.openwrt.org
+	id S1753118AbYGNTT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 15:19:58 -0400
+Date: Mon, 14 Jul 2008 22:18:30 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.6.16.61-rc1
+Message-ID: <20080714191830.GD31553@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200807142109.13243.mb@bu3sch.de>
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds a driver that lets you drive an SPI bus over
-generic GPIO pins.
+I was recently busy with other things and failed to regularly
+update 2.6.16 - sorry for this.
 
-Signed-off-by: Michael Buesch <mb@bu3sch.de>
-
----
-
-This driver is used in OpenWrt since quite some time, so please
-consider for inclusion in mainline.
+This is just the first batch, there's more backlog and there will 
+additional updates with the pending stuff during the next weeks.
 
 
-Index: linux-next/include/linux/spi/spi_gpio.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-next/include/linux/spi/spi_gpio.h	2008-07-14 20:52:48.000000000 +0200
-@@ -0,0 +1,53 @@
-+/*
-+ * spi_gpio interface to platform code
-+ *
-+ * Copyright (c) 2008 Piotr Skamruk
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+#ifndef _LINUX_SPI_SPI_GPIO
-+#define _LINUX_SPI_SPI_GPIO
-+
-+#include <linux/types.h>
-+#include <linux/spi/spi.h>
-+
-+
-+/** struct spi_gpio_platform_data - Data definitions for a SPI-GPIO device.
-+ * This structure holds information about a GPIO-based SPI device.
-+ *
-+ * @pin_clk: The GPIO pin number of the CLOCK pin.
-+ *
-+ * @pin_miso: The GPIO pin number of the MISO pin.
-+ *
-+ * @pin_mosi: The GPIO pin number of the MOSI pin.
-+ *
-+ * @pin_cs: The GPIO pin number of the CHIPSELECT pin.
-+ *
-+ * @cs_activelow: If true, the chip is selected when the CS line is low.
-+ *
-+ * @no_spi_delay: If true, no delay is done in the lowlevel bitbanging.
-+ *                Note that doing no delay is not standards compliant,
-+ *                but it might be needed to speed up transfers on some
-+ *                slow embedded machines.
-+ *
-+ * @boardinfo_setup: This callback is called after the
-+ *                   SPI master device was registered, but before the
-+ *                   device is registered.
-+ * @boardinfo_setup_data: Data argument passed to boardinfo_setup().
-+ */
-+struct spi_gpio_platform_data {
-+	unsigned int pin_clk;
-+	unsigned int pin_miso;
-+	unsigned int pin_mosi;
-+	unsigned int pin_cs;
-+	bool cs_activelow;
-+	bool no_spi_delay;
-+	int (*boardinfo_setup)(struct spi_board_info *bi,
-+			       struct spi_master *master,
-+			       void *data);
-+	void *boardinfo_setup_data;
-+};
-+
-+#endif /* _LINUX_SPI_SPI_GPIO */
-Index: linux-next/drivers/spi/spi_gpio.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-next/drivers/spi/spi_gpio.c	2008-07-14 21:03:40.000000000 +0200
-@@ -0,0 +1,242 @@
-+/*
-+ * Bitbanging SPI bus driver using GPIO API
-+ *
-+ * Copyright (c) 2008 Piotr Skamruk
-+ * Copyright (c) 2008 Michael Buesch
-+ *
-+ * based on spi_s3c2410_gpio.c
-+ *   Copyright (c) 2006 Ben Dooks
-+ *   Copyright (c) 2006 Simtec Electronics
-+ * and on i2c-gpio.c
-+ *   Copyright (C) 2007 Atmel Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/delay.h>
-+#include <linux/spinlock.h>
-+#include <linux/workqueue.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/spi/spi.h>
-+#include <linux/spi/spi_bitbang.h>
-+#include <linux/spi/spi_gpio.h>
-+#include <linux/gpio.h>
-+
-+
-+struct spi_gpio {
-+	struct spi_bitbang bitbang;
-+	struct spi_gpio_platform_data *info;
-+	struct platform_device *pdev;
-+	struct spi_board_info bi;
-+};
-+
-+
-+static inline struct spi_gpio *spidev_to_sg(struct spi_device *dev)
-+{
-+	return dev->controller_data;
-+}
-+
-+static inline void setsck(struct spi_device *dev, int val)
-+{
-+	struct spi_gpio *sp = spidev_to_sg(dev);
-+	gpio_set_value(sp->info->pin_clk, val ? 1 : 0);
-+}
-+
-+static inline void setmosi(struct spi_device *dev, int val)
-+{
-+	struct spi_gpio *sp = spidev_to_sg(dev);
-+	gpio_set_value(sp->info->pin_mosi, val ? 1 : 0);
-+}
-+
-+static inline u32 getmiso(struct spi_device *dev)
-+{
-+	struct spi_gpio *sp = spidev_to_sg(dev);
-+	return gpio_get_value(sp->info->pin_miso) ? 1 : 0;
-+}
-+
-+static inline void do_spidelay(struct spi_device *dev, unsigned nsecs)
-+{
-+	struct spi_gpio *sp = spidev_to_sg(dev);
-+
-+	if (!sp->info->no_spi_delay)
-+		ndelay(nsecs);
-+}
-+
-+#define spidelay(nsecs) do {					\
-+	/* Steal the spi_device pointer from our caller.	\
-+	 * The bitbang-API should probably get fixed here... */	\
-+	do_spidelay(spi, nsecs);				\
-+  } while (0)
-+
-+#define EXPAND_BITBANG_TXRX
-+#include <linux/spi/spi_bitbang.h>
-+
-+static u32 spi_gpio_txrx_mode0(struct spi_device *spi,
-+			       unsigned nsecs, u32 word, u8 bits)
-+{
-+	return bitbang_txrx_be_cpha0(spi, nsecs, 0, word, bits);
-+}
-+
-+static u32 spi_gpio_txrx_mode1(struct spi_device *spi,
-+			       unsigned nsecs, u32 word, u8 bits)
-+{
-+	return bitbang_txrx_be_cpha1(spi, nsecs, 0, word, bits);
-+}
-+
-+static u32 spi_gpio_txrx_mode2(struct spi_device *spi,
-+			       unsigned nsecs, u32 word, u8 bits)
-+{
-+	return bitbang_txrx_be_cpha0(spi, nsecs, 1, word, bits);
-+}
-+
-+static u32 spi_gpio_txrx_mode3(struct spi_device *spi,
-+			       unsigned nsecs, u32 word, u8 bits)
-+{
-+	return bitbang_txrx_be_cpha1(spi, nsecs, 1, word, bits);
-+}
-+
-+static void spi_gpio_chipselect(struct spi_device *dev, int on)
-+{
-+	struct spi_gpio *sp = spidev_to_sg(dev);
-+
-+	if (sp->info->cs_activelow)
-+		on = !on;
-+	gpio_set_value(sp->info->pin_cs, on ? 1 : 0);
-+}
-+
-+static int spi_gpio_probe(struct platform_device *pdev)
-+{
-+	struct spi_master *master;
-+	struct spi_gpio_platform_data *pdata;
-+	struct spi_gpio *sp;
-+	struct spi_device *spidev;
-+	int err;
-+
-+	pdata = pdev->dev.platform_data;
-+	if (!pdata)
-+		return -ENXIO;
-+
-+	err = -ENOMEM;
-+	master = spi_alloc_master(&pdev->dev, sizeof(struct spi_gpio));
-+	if (!master)
-+		goto err_alloc_master;
-+
-+	sp = spi_master_get_devdata(master);
-+	platform_set_drvdata(pdev, sp);
-+	sp->info = pdata;
-+
-+	err = gpio_request(pdata->pin_clk, "spi_clock");
-+	if (err)
-+		goto err_request_clk;
-+	err = gpio_request(pdata->pin_mosi, "spi_mosi");
-+	if (err)
-+		goto err_request_mosi;
-+	err = gpio_request(pdata->pin_miso, "spi_miso");
-+	if (err)
-+		goto err_request_miso;
-+	err = gpio_request(pdata->pin_cs, "spi_cs");
-+	if (err)
-+		goto err_request_cs;
-+
-+	sp->bitbang.master = spi_master_get(master);
-+	sp->bitbang.master->bus_num = -1;
-+	sp->bitbang.master->num_chipselect = 1;
-+	sp->bitbang.chipselect = spi_gpio_chipselect;
-+	sp->bitbang.txrx_word[SPI_MODE_0] = spi_gpio_txrx_mode0;
-+	sp->bitbang.txrx_word[SPI_MODE_1] = spi_gpio_txrx_mode1;
-+	sp->bitbang.txrx_word[SPI_MODE_2] = spi_gpio_txrx_mode2;
-+	sp->bitbang.txrx_word[SPI_MODE_3] = spi_gpio_txrx_mode3;
-+
-+	gpio_direction_output(pdata->pin_clk, 0);
-+	gpio_direction_output(pdata->pin_mosi, 0);
-+	gpio_direction_output(pdata->pin_cs,
-+			      pdata->cs_activelow ? 1 : 0);
-+	gpio_direction_input(pdata->pin_miso);
-+
-+	err = spi_bitbang_start(&sp->bitbang);
-+	if (err)
-+		goto err_no_bitbang;
-+	err = pdata->boardinfo_setup(&sp->bi, master,
-+				     pdata->boardinfo_setup_data);
-+	if (err)
-+		goto err_bi_setup;
-+	sp->bi.controller_data = sp;
-+	spidev = spi_new_device(master, &sp->bi);
-+	if (!spidev)
-+		goto err_new_dev;
-+
-+	return 0;
-+
-+err_new_dev:
-+err_bi_setup:
-+	spi_bitbang_stop(&sp->bitbang);
-+err_no_bitbang:
-+	spi_master_put(sp->bitbang.master);
-+	gpio_free(pdata->pin_cs);
-+err_request_cs:
-+	gpio_free(pdata->pin_miso);
-+err_request_miso:
-+	gpio_free(pdata->pin_mosi);
-+err_request_mosi:
-+	gpio_free(pdata->pin_clk);
-+err_request_clk:
-+	kfree(master);
-+
-+err_alloc_master:
-+	return err;
-+}
-+
-+static int __devexit spi_gpio_remove(struct platform_device *pdev)
-+{
-+	struct spi_gpio *sp;
-+	struct spi_gpio_platform_data *pdata;
-+
-+	pdata = pdev->dev.platform_data;
-+	sp = platform_get_drvdata(pdev);
-+
-+	gpio_free(pdata->pin_clk);
-+	gpio_free(pdata->pin_mosi);
-+	gpio_free(pdata->pin_miso);
-+	gpio_free(pdata->pin_cs);
-+	spi_bitbang_stop(&sp->bitbang);
-+	spi_master_put(sp->bitbang.master);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver spi_gpio_driver = {
-+	.driver		= {
-+		.name	= "spi-gpio",
-+		.owner	= THIS_MODULE,
-+	},
-+	.probe		= spi_gpio_probe,
-+	.remove		= __devexit_p(spi_gpio_remove),
-+};
-+
-+static int __init spi_gpio_init(void)
-+{
-+	int err;
-+
-+	err = platform_driver_register(&spi_gpio_driver);
-+	if (err)
-+		printk(KERN_ERR "spi-gpio: register failed: %d\n", err);
-+
-+	return err;
-+}
-+module_init(spi_gpio_init);
-+
-+static void __exit spi_gpio_exit(void)
-+{
-+	platform_driver_unregister(&spi_gpio_driver);
-+}
-+module_exit(spi_gpio_exit);
-+
-+MODULE_AUTHOR("Piot Skamruk <piotr.skamruk at gmail.com>");
-+MODULE_AUTHOR("Michael Buesch");
-+MODULE_DESCRIPTION("Platform independent GPIO bitbanging SPI driver");
-+MODULE_LICENSE("GPL v2");
-Index: linux-next/drivers/spi/Kconfig
-===================================================================
---- linux-next.orig/drivers/spi/Kconfig	2008-07-14 20:52:44.000000000 +0200
-+++ linux-next/drivers/spi/Kconfig	2008-07-14 20:52:48.000000000 +0200
-@@ -100,6 +100,19 @@ config SPI_BUTTERFLY
- 	  inexpensive battery powered microcontroller evaluation board.
- 	  This same cable can be used to flash new firmware.
- 
-+config SPI_GPIO
-+	tristate "GPIO API based bitbanging SPI controller"
-+	depends on SPI_MASTER && GENERIC_GPIO
-+	select SPI_BITBANG
-+	help
-+	  This is a platform driver that can be used for bitbanging
-+	  an SPI bus over GPIO pins.
-+	  Select this, if you have any SPI device that is connected via
-+	  GPIO pins.
-+	  The module will be called spi_gpio.
-+
-+	  If unsure, say N.
-+
- config SPI_IMX
- 	tristate "Freescale iMX SPI controller"
- 	depends on SPI_MASTER && ARCH_IMX && EXPERIMENTAL
-Index: linux-next/drivers/spi/Makefile
-===================================================================
---- linux-next.orig/drivers/spi/Makefile	2008-07-14 20:52:44.000000000 +0200
-+++ linux-next/drivers/spi/Makefile	2008-07-14 20:52:48.000000000 +0200
-@@ -16,6 +16,7 @@ obj-$(CONFIG_SPI_BFIN)			+= spi_bfin5xx.
- obj-$(CONFIG_SPI_BITBANG)		+= spi_bitbang.o
- obj-$(CONFIG_SPI_AU1550)		+= au1550_spi.o
- obj-$(CONFIG_SPI_BUTTERFLY)		+= spi_butterfly.o
-+obj-$(CONFIG_SPI_GPIO)			+= spi_gpio.o
- obj-$(CONFIG_SPI_IMX)			+= spi_imx.o
- obj-$(CONFIG_SPI_LM70_LLP)		+= spi_lm70llp.o
- obj-$(CONFIG_SPI_PXA2XX)		+= pxa2xx_spi.o
+Security fixes since 2.6.16.60:
+- CVE-2008-1669: fix SMP ordering hole in fcntl_setlk()
+- CVE-2008-1673: asn1: additional sanity checking during BER decoding
+- CVE-2008-2136: sit: Add missing kfree_skb() on pskb_may_pull() failure.
 
--- 
-Greetings Michael.
+
+Location:
+ftp://ftp.kernel.org/pub/linux/kernel/people/bunk/linux-2.6.16.y/testing/
+
+git tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
+
+RSS feed of the git tree:
+http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
+
+
+Changes since 2.6.16.60:
+
+3ware Inc (1):
+      3w-xxxx: Prevent data corruption
+
+Adrian Bunk (2):
+      gcc >= 4.3 is not supported
+      Linux 2.6.16.61
+
+Al Viro (1):
+      fix SMP ordering hole in fcntl_setlk() (CVE-2008-1669)
+
+Chris Wright (1):
+      asn1: additional sanity checking during BER decoding 
+(CVE-2008-1673)
+
+David S. Miller (2):
+      [NETFILTER]: Fix warnings in ip_nat_snmp_basic.c
+      sit: Add missing kfree_skb() on pskb_may_pull() failure. 
+(CVE-2008-2136)
+
+Heiko Carstens (1):
+      Disable DETECT_SOFTLOCKUP for s390
+
+Juergen Beisert (1):
+      x86: Replace NSC/Cyrix specific chipset access macros by inlined 
+functions.
+
+Oliver Neukum (1):
+      USB: race on disconnect in mdc800
+
+Patrick McHardy (1):
+      TCP: Fix shrinking windows with window scaling
+
+Thomas Graf (1):
+      [DECNet] fib: Fix out of bound access of dn_fib_props[]
+
+
+ Makefile                                  |    2 -
+ arch/i386/kernel/cpu/cpufreq/gx-suspmod.c |    1 
+ arch/i386/kernel/cpu/cyrix.c              |    2 -
+ arch/i386/kernel/cpu/mtrr/cyrix.c         |    1 
+ arch/i386/kernel/cpu/mtrr/state.c         |    1 
+ drivers/scsi/3w-xxxx.c                    |    8 ++---
+ drivers/usb/image/mdc800.c                |    4 ++
+ fs/cifs/asn1.c                            |   14 ++++++++++
+ fs/locks.c                                |   17 +++++++++++-
+ include/asm-i386/processor-cyrix.h        |   30 ++++++++++++++++++++++
+ include/asm-i386/processor.h              |   11 --------
+ include/asm-x86_64/processor-cyrix.h      |    2 +
+ include/asm-x86_64/processor.h            |   11 --------
+ include/linux/compiler.h                  |    4 ++
+ lib/Kconfig.debug                         |    2 -
+ net/decnet/dn_fib.c                       |    5 ++-
+ net/ipv4/netfilter/ip_nat_snmp_basic.c    |   19 +++++++++++++
+ net/ipv4/tcp_output.c                     |    2 -
+ net/ipv6/sit.c                            |    2 -
+ 19 files changed, 103 insertions(+), 35 deletions(-)
+
