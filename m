@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757266AbYGNSYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755641AbYGNSaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757266AbYGNSYz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 14:24:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754121AbYGNSYr
+	id S1755641AbYGNSaV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 14:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbYGNSaE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 14:24:47 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:64194 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751692AbYGNSYr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 14:24:47 -0400
-Date: Mon, 14 Jul 2008 19:24:15 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+	Mon, 14 Jul 2008 14:30:04 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57172 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752005AbYGNSaD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 14:30:03 -0400
+Date: Mon, 14 Jul 2008 20:29:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>,
        Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: let 32bit use apic_ops too
-In-Reply-To: <20080714180908.GB6986@asus>
-Message-ID: <Pine.LNX.4.55.0807141919540.17431@cliff.in.clinika.pl>
-References: <200807102038.26591.yhlu.kernel@gmail.com>
- <200807111841.55403.yhlu.kernel@gmail.com> <20080713010843.GD1678@linux-os.sc.intel.com>
- <86802c440807121904m1516b47am22a384a1e5868f68@mail.gmail.com>
- <20080713162804.GI1678@linux-os.sc.intel.com> <Pine.LNX.4.55.0807131737240.10630@cliff.in.clinika.pl>
- <20080713171634.GD7459@asus> <Pine.LNX.4.55.0807140016140.10630@cliff.in.clinika.pl>
- <20080714164809.GA6986@asus> <Pine.LNX.4.55.0807141805500.16334@cliff.in.clinika.pl>
- <20080714180908.GB6986@asus>
+       Jon Masters <jonathan@jonmasters.org>,
+       Stefan Assmann <sassmann@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       Ihno Krumreich <ihno@suse.de>, Sven Dietrich <sdietrich@suse.de>,
+       Daniel Gollub <dgollub@suse.de>, Felix Foerster <ffoerster@suse.de>
+Subject: Re: [PATCH 0/3] Boot IRQ quirks for Broadcom and AMD/ATI
+Message-ID: <20080714182946.GA30754@elte.hu>
+References: <12155255883170-git-send-email-od@suse.de> <20080713210133.GA12362@elte.hu> <200807140924.59023.jbarnes@virtuousgeek.org> <20080714164548.GA28499@elte.hu> <20080714164948.GA15153@suse.de> <20080714165823.GB15153@suse.de> <20080714175137.GA2297@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080714175137.GA2297@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Jul 2008, Cyrill Gorcunov wrote:
 
->   Maciej, check me please (it's a bit shame but I don't understand the problem
-> that deep) - we have only two errata here 3AP and 11AP. 3AP says - "Writes to
-> error register clears register" so we don't care about locking there since
-> our mostly task is to read error number or clear it (well we're recommened
-> to write before read - but that is different and not related to the hw
-> error).
+* Olaf Dabrunz <od@suse.de> wrote:
+
+> On 14-Jul-08, Olaf Dabrunz wrote:
+> > I am working on a consolidated patch set for AKMP. It integrates all
+> > fixes and adds a config option CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS
+> > (prepared by Stefan Assmann), which can default to off for vanilla and to
+> > on for RT / threaded IRQ handling. This means that the whole patchset
+> > can (in principle) be applied to vanilla and RT without change. Also
+> > CONFIG_PREEMPT_HARDIRQ can "select CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS".
+> > 
+> > If you don't mind, I will send the full set out today.
 > 
->   The second problem - 11AP says the following: "Back to back assertions of
-> HOLD or BOFF# may cause lost APIC write cycle". For this case we use LOCK#
-> since - HOLD is not recognized during LOCK cycles (as Intel docs says).
-> 
->   Did I miss something? Or maybe it's completely out-of-topic? :)
+> On second thought and after talking to Stefan, as you think the 
+> patches can go into 2.6.27 as they are, there is not much benefit in 
+> integrating the fixes and the config option patch. Stefan will commit 
+> the config option patch to tip tomorrow.
 
- Check the text of the 11AP erratum -- we simply use one of the Intel's
-recommended workarounds, which says that an APIC read instruction before
-every APIC write instruction will avoid the problem.
+please do not rebase the patchset, that causes us lose the testing 
+status, we lose the sha1's of the commits, etc. Lets keep what we have 
+in tip/x86/pci-ioapic-boot-irq-quirks and do append-only fixlets to it.
 
-  Maciej
+	Ingo
