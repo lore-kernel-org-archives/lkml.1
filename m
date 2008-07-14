@@ -1,106 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757522AbYGNQsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757745AbYGNQtE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757522AbYGNQsi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 12:48:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756018AbYGNQsX
+	id S1757745AbYGNQtE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 12:49:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754605AbYGNQsw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 12:48:23 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:43028 "EHLO e4.ny.us.ibm.com"
+	Mon, 14 Jul 2008 12:48:52 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59750 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755335AbYGNQsW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 12:48:22 -0400
-To: torvalds@linux-foundation.org
-Subject: [git pull] jfs update
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Message-Id: <20080714164819.054924CB672@norville.austin.ibm.com>
-Date: Mon, 14 Jul 2008 11:48:19 -0500 (CDT)
-From: shaggy@linux.vnet.ibm.com
+	id S1754461AbYGNQsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 12:48:51 -0400
+Date: Mon, 14 Jul 2008 18:48:38 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [git pull] core/softirq for v2.6.27
+Message-ID: <20080714164838.GA28765@elte.hu>
+References: <20080714144243.GA21079@elte.hu> <20080714092215.0efd7fa3.akpm@linux-foundation.org> <20080714163141.GA21068@elte.hu> <20080714094422.e7ae255a.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080714094422.e7ae255a.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
 
-git://git.kernel.org/pub/scm/linux/kernel/git/shaggy/jfs-2.6.git for-linus
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-This will update the following files:
+> On Mon, 14 Jul 2008 18:31:41 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > On Mon, 14 Jul 2008 16:42:43 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+> > > >
+> > > 
+> > > It would be nice if these short-form summaries were to include the
+> > > commit IDs.  eg:
+> > > 
+> > > Carlos R. Mafra (1):
+> > >       Remove argument from open_softirq which is always NULL (962cf36)
+> > 
+> > yeah, but not sure whether git-shortlog
+> 
+> This was a git-shortlog feature request ;)
+> 
+> > can do that and this shortlog is 
+> > the Preferred Way of getting pull requests.
+> > 
+> > I'm using the sha1's myself for non-shortlog formats, like:
+> > 
+> >   earth4:~/tip> git-log-line linus..core/softirq
+> >   0f476b6: softirq: remove irqs_disabled warning from local_bh_enable
+> >   4620b49: softirq: remove initialization of static per-cpu variable
+> >   962cf36: Remove argument from open_softirq which is always NULL
+> > 
+> > where git-log-line does the obvious single-line shortcut:
+> > 
+> >   git log --no-merges --pretty=format:"%h: %s" $@
+> > 
+> > > > Carlos R. Mafra (1):
+> > > >       Remove argument from open_softirq which is always NULL
+> > > > 
+> > > > Johannes Berg (1):
+> > > >       softirq: remove irqs_disabled warning from local_bh_enable
+> > > 
+> > > This doesn't remove the warning?  (Nor should it)
+> > > 
+> > > +static inline void _local_bh_enable_ip(unsigned long ip)
+> > >  {
+> > > +       WARN_ON_ONCE(in_irq() || irqs_disabled());
+> > > -       WARN_ON_ONCE(in_irq());
+> > > -       WARN_ON_ONCE(irqs_disabled());
+> > > 
+> > > It just makes it a bit less useful.
+> > 
+> > hm, it does more than that
+> 
+> Yes, but it does what I said:
+> 
+> - Doesn't do something which the changelog said it did.  I brought this up
+>   because if the patch _did_ do what it said it did, davem would cry.
+> 
+> - Makes the warning less useful.  The reason for the warning can still
+>   probably be worked out from the backtrace, but it'll take more work.
+> 
+> > - this commit (0f476b6d9) actually caught a 
+> > real bug/lockup on one of my testboxes, see this (in v2.6.26) fix:
+> > 
+> > | commit c5643cab7bf663ae049b11be43de8819683176dd
+> > | Author: Ingo Molnar <mingo@elte.hu>
+> > | Date:   Mon Jun 23 10:41:23 2008 +0200
+> > |
+> > |    [netdrvr] 3c59x: remove irqs_disabled warning from local_bh_enable
+> 
+> OK, that title kinda makes sense.
+> 
+> > |    Original Author: Michael Buesch <mb@bu3sch.de>
+> > |
+> > |    net, vortex: fix lockup
+> 
+> Although that would be a better title for the 3c59x.c fix.
+> 
+> > [ i didnt send it to v2.6.26 because it came relatively late, it touches 
+> >   a sensitive, #ifdef laden piece of code and it was unknown how many 
+> >   false positives it would trigger. But it's perfect for v2.6.27. ]
+> > 
+> 
+> It's a small issue - it's just that the title of 
+> 0f476b6d91a1395bda6464e653ce66ea9bea7167 ("softirq: remove 
+> irqs_disabled warning from local_bh_enable") appears to be quite 
+> wrong.
 
- fs/jfs/jfs_debug.c    |   62 ++++++++++++++++++++------------------------
- fs/jfs/jfs_debug.h    |   10 +++---
- fs/jfs/jfs_dtree.h    |    3 --
- fs/jfs/jfs_imap.c     |    2 +-
- fs/jfs/jfs_logmgr.c   |   35 +++++++++++-------------
- fs/jfs/jfs_metapage.c |   36 ++++++++++++-------------
- fs/jfs/jfs_txnmgr.c   |   68 ++++++++++++++++++++++--------------------------
- fs/jfs/jfs_xtree.c    |   36 ++++++++++++-------------
- fs/jfs/namei.c        |    2 +-
- fs/jfs/super.c        |    7 ++---
- 10 files changed, 119 insertions(+), 142 deletions(-)
+ok, agreed.
 
-through these ChangeSets:
+/me suggests git-log-addendum feature to amend commit logs after the
+    fact, without changing any of the code :-)
 
-commit ec1aef33668448718fcba79e4e981592bfd7e0a3
-Author: Adrian Bunk <bunk@kernel.org>
-Date:   Tue Jun 10 15:12:58 2008 -0500
-
-    jfs: remove DIRENTSIZ
-    
-    After fat gets fixed the unused DIRENTSIZ macro was the last user of
-    struct dirent we should get rid of since the kernel and userspace
-    versions differed.
-    
-    Signed-off-by: Adrian Bunk <bunk@kernel.org>
-    Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-
-commit 3c65e8743bf8b5cf0f90e8d767bf1d8b50c14c76
-Author: Li Zefan <lizf@cn.fujitsu.com>
-Date:   Wed May 28 08:58:56 2008 -0500
-
-    JFS: diAlloc() should return -EIO rather than EIO
-    
-    The comment above the function says one of its return value is -EIO,
-    and also the caller of diAlloc() checks for -EIO:
-    
-    struct inode *ialloc(struct inode *parent, umode_t mode)
-    {
-    	...
-    	rc = diAlloc(parent, S_ISDIR(mode), inode);
-    	if (rc) {
-    		jfs_warn("ialloc: diAlloc returned %d!", rc);
-    		if (rc == -EIO)
-    			make_bad_inode(inode);
-    	...
-    
-    Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-    Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-
-commit 6536d2891ba2c4e837ba8478dc13bb173ed24a23
-Author: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Date:   Wed May 21 10:45:16 2008 -0500
-
-    JFS: skip bad iput() call in error path
-    
-    If jfs_iget() fails, we can't call iput() on the returned error.
-    Thanks to Eric Sesterhenn's fuzzer testing for reporting the problem.
-    
-    Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-
-commit b2e03ca7485cac033a0667d9e45e28d32fdee9a5
-Author: Alexey Dobriyan <adobriyan@gmail.com>
-Date:   Tue May 13 08:22:10 2008 -0500
-
-    JFS: switch to seq_files
-    
-    Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-    Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-
-commit 88f85a55c0645c2b7e03bf34d2a90eddf6de34fa
-Author: Marcin Slusarz <marcin.slusarz@gmail.com>
-Date:   Mon May 12 16:42:43 2008 -0500
-
-    JFS: 0 is not valid errno value so return NULL from jfs_lookup
-    
-    Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-    Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-    Cc: jfs-discussion@lists.sourceforge.net
-    Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+	Ingo
