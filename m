@@ -1,53 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757952AbYGNVZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758149AbYGNV0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757952AbYGNVZt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 17:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756445AbYGNVZl
+	id S1758149AbYGNV0S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 17:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756450AbYGNV0E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 17:25:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51780 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756071AbYGNVZl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 17:25:41 -0400
-Date: Mon, 14 Jul 2008 14:25:19 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [git pull] x86 changes for v2.6.27
-In-Reply-To: <alpine.LFD.1.10.0807141359450.3305@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0807141422200.14679@woody.linux-foundation.org>
-References: <20080714135034.GA7013@elte.hu> <alpine.LFD.1.10.0807141346170.3305@woody.linux-foundation.org> <487BBDCB.7050303@zytor.com> <alpine.LFD.1.10.0807141359450.3305@woody.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 14 Jul 2008 17:26:04 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:55200 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756367AbYGNV0C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 17:26:02 -0400
+Subject: Re: [PATCH] init/version.c: Define version_string only if
+	CONFIG_KALLSYMS is not defined.
+From: Daniel Guilak <guilak@linux.vnet.ibm.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       daniel@danielguilak.com
+In-Reply-To: <1216070438.6497.27.camel@dguilak-desk>
+References: <1215552069.10304.6.camel@dguilak-desk>
+	 <1216062286.6497.18.camel@dguilak-desk>
+	 <20080714123858.2c42227f.randy.dunlap@oracle.com>
+	 <1216070438.6497.27.camel@dguilak-desk>
+Content-Type: text/plain
+Date: Mon, 14 Jul 2008 14:25:03 -0700
+Message-Id: <1216070703.6497.29.camel@dguilak-desk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 14 Jul 2008, Linus Torvalds wrote:
+On Mon, 2008-07-14 at 14:20 -0700, Daniel Guilak wrote:
+> On Mon, 2008-07-14 at 12:38 -0700, Randy Dunlap wrote:
+> > On Mon, 14 Jul 2008 12:04:46 -0700 Daniel Guilak wrote:
+> > 
+> > > int Version_* is only used with ksymoops, which is only needed (according to
+> > > README and Documentation/Changes) if CONFIG_KALLSYMS is NOT defined.  Therefore
+> > > this patch defines version_string only if CONFIG_KALLSYMS is not defined.
+> > > 
+> > > Signed-off-by: Daniel Guilak <daniel@danielguilak.com>
+> > > ---
+> > >  init/version.c |    2 ++
+> > >  1 files changed, 2 insertions(+), 0 deletions(-)
+> > > 
+> > > Depends on "[PATCH] init/version.c: Silenced sparse warning by declaring the version string."
+> > > 
+> > > diff --git a/init/version.c b/init/version.c
+> > > index 041fd82..52a8b98 100644
+> > > --- a/init/version.c
+> > > +++ b/init/version.c
+> > > @@ -13,11 +13,13 @@
+> > >  #include <linux/utsrelease.h>
+> > >  #include <linux/version.h>
+> > >  
+> > > +#ifndef CONFIG_KALLSYMS
+> > >  #define version(a) Version_ ## a
+> > >  #define version_string(a) version(a)
+> > >  
+> > >  extern int version_string(LINUX_VERSION_CODE);
+> > >  int version_string(LINUX_VERSION_CODE);
+> > > +#endif
+> > >  
+> > >  struct uts_namespace init_uts_ns = {
+> > >  	.kref = {
+> > > -- 
+> > 
+> > Does not apply cleanly to linux-2.6.26, linux-next-20080714, or Linus-git-head.
+> > 
 > 
-> Bloat is bloat. Just because it's conditional is not an excuse.
+> Did you apply "[PATCH] init/version.c: Silenced sparse warning by
+> declaring the version string." beforehand? I just applied it on the most
+> recent tree and I didn't have any issues.
+> 
+> > and why do we ned both extern int version_string()
+> > and int version_string() ?
+> Because sparse was complaining that it wasn't prototyped or static.
+> There isn't a header file to put it in since it only exists to be a
+> kernel.
 
-Btw, the reason I reacted was that that wasn't even the only one.
+"Symbol", not "kernel", sorry.
 
-It was followed by that MTRR "cleanup" question, which also defaulted to 
-'y', despite:
+> > ---
+> > ~Randy
+> > Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+> > http://linuxplumbersconf.org/
+> 
+> --Daniel
 
- - having a help message that warned about oopses and problems
-
- - answering 'y' then caused a follow-up of totally incomprehensible and 
-   meaningless options with no help message what-so-ever.
-
-Dammit, if _I_ find the option to be badly named, confusing, unnecessary 
-and undocumented, maybe it should be a clue to somebody that it probably 
-shouldn't exist, much less default to 'sure, do that crazy thing'.
-
-(I think there was something else, but by then I didn't care any more, and 
-just said no without even looking at the insane crap)
-
-			Linus
