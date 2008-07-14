@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756937AbYGNP5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756318AbYGNQAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756937AbYGNP5o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 11:57:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbYGNP5f
+	id S1756318AbYGNQAY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 12:00:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787AbYGNQAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 11:57:35 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:34346 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753386AbYGNP5e (ORCPT
+	Mon, 14 Jul 2008 12:00:11 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37657 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753647AbYGNQAK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 11:57:34 -0400
-Date: Mon, 14 Jul 2008 11:57:33 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Johannes Berg <johannes@sipsolutions.net>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
+	Mon, 14 Jul 2008 12:00:10 -0400
+Date: Mon, 14 Jul 2008 08:59:44 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Greg KH <greg@kroah.com>
-Subject: Re: 2.6.26-rc9-git12: Reported regressions from 2.6.25
-In-Reply-To: <1216044398.23746.10.camel@johannes.berg>
-Message-ID: <Pine.LNX.4.44L0.0807141153110.2566-100000@iolanthe.rowland.org>
+       Avi Kivity <avi@qumranet.com>
+Subject: Re: [git pull] core, x86: make LIST_POISON less deadly
+In-Reply-To: <20080714151247.GA27145@elte.hu>
+Message-ID: <alpine.LFD.1.10.0807140856130.3305@woody.linux-foundation.org>
+References: <20080714144828.GA22666@elte.hu> <alpine.LFD.1.10.0807140758100.3305@woody.linux-foundation.org> <20080714151247.GA27145@elte.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Jul 2008, Johannes Berg wrote:
 
-> > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11072
-> > > > Subject		: scsi-layer crash after usb storage device unplug
-> > > > Submitter	: Johannes Berg <johannes@sipsolutions.net>
-> > > > Date		: 2008-07-12 01:50 (2 days old)
-> > > > Handled-By	: Alan Stern <stern@rowland.harvard.edu>
-> > > > Patch		: http://bugzilla.kernel.org/show_bug.cgi?id=11072#c3
-> > > 
-> > > Alan, Greg?
+
+On Mon, 14 Jul 2008, Ingo Molnar wrote:
 > > 
-> > We haven't heard back yet from Johannes to confirm that the fix really
-> > works.  If it does, IMO the patch should go into 2.6.26.1.
-> > 
-> > (In fact it might not be so easy to tell, since the failure is caused 
-> > be a race.  Perhaps it would be best to submit the patch in any case.)
+> > Why not use something sane like 0xdead000000000000, which has the high 
+> > bit set but very fundamentally isn't a valid pointer, and never will 
+> > be? And which is a *lot* more visually obvious too!
 > 
-> I haven't had a chance to apply the patch, but given that to cause the
-> oops to happen I had to unplug/replug the device at random intervals for
-> probably 10 minutes (yes, it took me that long to figure out I had put
-> an SDHC card into an SD reader) I suppose it really won't be easy to
-> tell.
+> initially i suggested that too - but such addresses raise a #GP instead 
+> of a page fault so their decoding is a bit harder.
 
-Add
+But raising a GP is exactly what you want: a PF is an indication that the 
+address was actually half-way valid, and will not fault at all on some 
+(possibly future) machine.
 
-	printk(KERN_ALERT "Unplug now!\n");
-	ssleep(10);
+> We dont do any instruction decoding in #GP handlers to figure out what 
+> happened, while in the pagefault case we know which address faulted, 
+> etc.
 
-to the start of slave_configure() in drivers/usb/storage/scsiglue.c.  
-Then it should be very easy to trigger the failure.  :-)
+Why would we care? It would be very obvious from the instruction 
+disassembly plus the register contents. No need to decode instructions.
 
-Assuming the failure does occur without the patch, see if it still 
-occurs once the patch is in place.
+> Perhaps we could try to make #GP handlers a bit more informative - 
+> although decoding instructions will make things a bit more fragile 
+> inevitably.
+> 
+> Perhaps make it 0xffffcdead0000000 ?
 
-Alan Stern
+I'm really not seeing the reason for not just doing it right.
 
+			Linus
