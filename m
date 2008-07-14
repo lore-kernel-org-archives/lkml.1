@@ -1,102 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbYGNLWp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757368AbYGNLZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757213AbYGNLWp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 07:22:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbYGNLWh
+	id S1757368AbYGNLZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 07:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbYGNLZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 07:22:37 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:54369 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753636AbYGNLWg (ORCPT
+	Mon, 14 Jul 2008 07:25:19 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:65230 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752652AbYGNLZR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 07:22:36 -0400
-X-Sasl-enc: uJpJ6o/qeQHnQMXWojddXx+Fau2UsNlRlpzB2vb/vR7S 1216034554
-Date: Mon, 14 Jul 2008 08:22:29 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andy Lutomirski <luto@myrealbox.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       public-kernel-testers-u79uwXL29TY76Z2rM5mHXA@lo.gmane.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
-Message-ID: <20080714112229.GA20593@khazad-dum.debian.net>
-References: <48793A0E.3050803@myrealbox.com> <200807130133.12324.rjw@sisk.pl> <20080713091524.GA29907@elte.hu> <20080713120253.GA27582@srcf.ucam.org> <487A2431.2050103@myrealbox.com> <487A4CB7.1080001@firstfloor.org> <487A62B3.8010207@zytor.com> <487A63D2.9040006@firstfloor.org> <20080714012206.GA11882@khazad-dum.debian.net> <20080714061429.GF20258@elf.ucw.cz>
+	Mon, 14 Jul 2008 07:25:17 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: linux-arch@vger.kernel.org
+Subject: Re: Microblaze architecture - ACK
+Date: Mon, 14 Jul 2008 13:24:56 +0200
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       torvalds@linux-foundation.org,
+       John Williams <john.williams@petalogix.com>,
+       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
+       John Linn <John.Linn@xilinx.com>, Jon Loeliger <jdl@jdl.com>,
+       David Gibson <david@gibson.dropbear.id.au>,
+       Sam Ravnborg <sam@ravnborg.org>
+References: <487B19E0.3030301@seznam.cz>
+In-Reply-To: <487B19E0.3030301@seznam.cz>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080714061429.GF20258@elf.ucw.cz>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200807141324.56731.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/EXEcM3pcJtFweTac3doC5fsQervXipxTZ99B
+ BLQMsvG/Ed3R05ppNyMquMFqVZZzXpCRoCG9fZvYf6/CTP/FrY
+ /wG8i4YwQ15nYnjEe6EDg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Jul 2008, Pavel Machek wrote:
-> On Sun 2008-07-13 22:22:06, Henrique de Moraes Holschuh wrote:
-> > On Sun, 13 Jul 2008, Andi Kleen wrote:
-> > > It probably switches to protected mode. I noticed this on my old
-> > > Fujitsu laptop when I tried to make the S3 wakeup run in the s2ram x86 emulator
-> > > and found it entered protected mode at some point, which x86emu
-> > > didn't support.
-> > > 
-> > > I guess Lenovo is doing the same.
-> > > 
-> > > And that protected mode code relies on some GDT values that have been
-> > > loaded earlier when the BIOS also went into protected mode.
-> > > 
-> > > It seems the BIOS programmers really don't like real mode anymore.
-> > > Somehow understandable.
-> > 
-> > If it were just Lenovo, it shouldn't be too difficult to get them to fix the
-> > BIOS.  But since other vendors have the same problem, that won't fly as a
-> > solution.
+On Monday 14 July 2008, Michal Simek wrote:
+> Arnd: I hope you know much about microblaze. Could you help me with the last
+> stage of merging?
 > 
-> With all the BIOSes in field, practically impossible to update? (My
-> x60 has no CDrom..) No, I don't think we can expect fix from BIOS vendors.
+> Could you recommend me people who can give me valuable ACK? (I'll send patches
+> to them and then full pack to LKML too).
+> 
 
-I explicitly said it wouldn't fly as a solution, because I doubt we could
-expect a fix from EVERY BIOS vendor that has such problems.  That sort of
-account for machines that have not been updated, too.
+I think most of it is fine by now, but I haven't received any reply from you
+on my lenghy mail "Re: Microblaze init port v4" sent at 26.06.2008 19:51 MEST
+or the other one "Re: [PATCH 59/60] microblaze_v4: syscall_table.S and
+unistd.h" at 26.06.2008 18:31 CEST.
 
-But I do think "your BIOS is broken and there is an update available from
-the vendor, apply it" *IS* a valid response if a workaround is not
-desireable for some reason (e.g. it is too complex, or it would make the
-kernel worse for a lot of others that did things right and don't have the
-bug).  I don't think we need to fear that happening on this particular
-issue, but still...
+I think I raised some important issues regarding your syscall interface in
+these, and the same problems persisted in version 5. If you address my
+comments there (either by changing the code or convincing me that no change
+is needed), you have my full Ack on the port.
 
-As for your X60, you can use a USB mass storage device like a pendrive.
-Someone already did all the hard work:
-http://thinkwiki.org/wiki/BIOS_Upgrade/X_Series
-
-In fact, as I rule, I cannot recommend using anything but the latest BIOS
-and EC releases on a ThinkPad.  That thing is too complex to live without
-updates, just like the kernel (even if, just like the kernel, upgrading the
-BIOS and EC can cause new bugs).  Look at the changelog for your X60 BIOS
-and EC firmware at
-http://www-307.ibm.com/pc/support/site.wss/MIGR-65345.html.  It has some
-scary stuff fixed, and that's just what Lenovo decided to disclose, those
-changelogs are NOT complete and often fail to list changes that are of
-interest to Linux (such as fixes to the ACPI tables).
-
-In fact, look at this interesting entry on the X60 BIOS changelog:
-Version 7BETD3WW (2.14):
-	(Fix) Memory address more than 4GB can't be accessed under Vista
-	WindowsPE. (BIOS)
-
-It is also listed for the X61 and the tablets on their BIOS updates.  Maybe
-that 4GB change could be related to the issue at hand?
-
-It would be nice to get a report on the Big Realmote patch, and also know
-the BIOS version of ThinkPads that have (and don't have) the bug.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+	Arnd <><
