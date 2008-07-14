@@ -1,43 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757871AbYGNUEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757951AbYGNUGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757871AbYGNUEW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 16:04:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756259AbYGNUEP
+	id S1757951AbYGNUGA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 16:06:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756148AbYGNUFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 16:04:15 -0400
-Received: from moutng.kundenserver.de ([212.227.126.179]:54681 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756077AbYGNUEO (ORCPT
+	Mon, 14 Jul 2008 16:05:52 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:57275 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756077AbYGNUFv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 16:04:14 -0400
-Date: Mon, 14 Jul 2008 22:04:06 +0200 (CEST)
-From: Christian Kujau <lists@nerdbynature.de>
-X-X-Sender: evil@sheep.housecafe.de
-To: Kyle McMartin <kyle@mcmartin.ca>
-cc: johnpol@2ka.mipt.ru, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: hifn_795x in a MacMini?
-In-Reply-To: <20080714195405.GA28938@phobos.i.cabal.ca>
-Message-ID: <alpine.DEB.1.10.0807142203090.4469@sheep.housecafe.de>
-References: <alpine.DEB.1.10.0807142056190.4469@sheep.housecafe.de> <20080714195405.GA28938@phobos.i.cabal.ca>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Provags-ID: V01U2FsdGVkX19UyZjL3E2G6Alt+zzA2Ek3j4A3qAyMsjDGEXr
- I+SEeEjR4at8/vXbVwofCmw/I4TmgHFVNeRDQbS7yp5VuB4ARH
- 8MZ9G3kr1h7EItFjk16tw==
+	Mon, 14 Jul 2008 16:05:51 -0400
+Date: Mon, 14 Jul 2008 12:38:58 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Daniel Guilak <guilak@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       daniel@danielguilak.com
+Subject: Re: [PATCH] init/version.c: Define version_string only if
+ CONFIG_KALLSYMS is not defined.
+Message-Id: <20080714123858.2c42227f.randy.dunlap@oracle.com>
+In-Reply-To: <1216062286.6497.18.camel@dguilak-desk>
+References: <1215552069.10304.6.camel@dguilak-desk>
+	<1216062286.6497.18.camel@dguilak-desk>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Jul 2008, Kyle McMartin wrote:
-> The message is printing by the "module loading" function, which just
-> registers the pci driver, not the function that actually probes a
-> device. See hifn_init versus hifn_probe, in drivers/crypto/hifn_795x.c.
+On Mon, 14 Jul 2008 12:04:46 -0700 Daniel Guilak wrote:
 
-OK, understood now. Thanks for pointing that out!
+> int Version_* is only used with ksymoops, which is only needed (according to
+> README and Documentation/Changes) if CONFIG_KALLSYMS is NOT defined.  Therefore
+> this patch defines version_string only if CONFIG_KALLSYMS is not defined.
+> 
+> Signed-off-by: Daniel Guilak <daniel@danielguilak.com>
+> ---
+>  init/version.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> Depends on "[PATCH] init/version.c: Silenced sparse warning by declaring the version string."
+> 
+> diff --git a/init/version.c b/init/version.c
+> index 041fd82..52a8b98 100644
+> --- a/init/version.c
+> +++ b/init/version.c
+> @@ -13,11 +13,13 @@
+>  #include <linux/utsrelease.h>
+>  #include <linux/version.h>
+>  
+> +#ifndef CONFIG_KALLSYMS
+>  #define version(a) Version_ ## a
+>  #define version_string(a) version(a)
+>  
+>  extern int version_string(LINUX_VERSION_CODE);
+>  int version_string(LINUX_VERSION_CODE);
+> +#endif
+>  
+>  struct uts_namespace init_uts_ns = {
+>  	.kref = {
+> -- 
 
-Christian.
--- 
-BOFH excuse #45:
+Does not apply cleanly to linux-2.6.26, linux-next-20080714, or Linus-git-head.
 
-virus attack, luser responsible
+and why do we ned both extern int version_string()
+and int version_string() ?
+
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
