@@ -1,133 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbYGNDN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbYGNDTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756128AbYGNDN0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 23:13:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbYGNDNP
+	id S1756192AbYGNDTV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 23:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754454AbYGNDTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 23:13:15 -0400
-Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:48886 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752415AbYGNDNO (ORCPT
+	Sun, 13 Jul 2008 23:19:12 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50037
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752613AbYGNDTK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 23:13:14 -0400
-From: Junio C Hamano <gitster@pobox.com>
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] GIT 1.5.6.3
-References: <7vy74fo9t4.fsf@gitster.siamese.dyndns.org>
-cc: linux-kernel@vger.kernel.org
-Date: Sun, 13 Jul 2008 20:13:05 -0700
-Message-ID: <7v1w1xma4e.fsf@gitster.siamese.dyndns.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Pobox-Relay-ID: CBB5D3F0-5152-11DD-AE06-3113EBD4C077-77302942!a-sasl-quonix.pobox.com
+	Sun, 13 Jul 2008 23:19:10 -0400
+Date: Sun, 13 Jul 2008 20:19:06 -0700 (PDT)
+Message-Id: <20080713.201906.60811176.davem@davemloft.net>
+To: ebiederm@xmission.com
+Cc: benh@kernel.crashing.org, suresh.b.siddha@intel.com, matthew@wil.cx,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       grundler@parisc-linux.org, mingo@elte.hu, tglx@linutronix.de,
+       jgarzik@pobox.com, linux-ide@vger.kernel.org, jbarnes@virtuousgeek.org,
+       rdunlap@xenotime.net, mtk.manpages@gmail.com
+Subject: Re: Multiple MSI, take 3
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <m1ej5x1at3.fsf@frodo.ebiederm.org>
+References: <1215994659.7549.227.camel@pasglop>
+	<20080713.174457.82768245.davem@davemloft.net>
+	<m1ej5x1at3.fsf@frodo.ebiederm.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latest maintenance release GIT 1.5.6.3 is available at the
-usual places:
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Sun, 13 Jul 2008 19:03:52 -0700
 
-  http://www.kernel.org/pub/software/scm/git/
+> At the very least you are left with the problem of allocating multiple
+> contiguous destinations.  Which has the potential to create
+> fragmentation on all supported platforms.
 
-  git-1.5.6.3.tar.{gz,bz2}			(source tarball)
-  git-htmldocs-1.5.6.3.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.5.6.3.tar.{gz,bz2}		(preformatted docs)
+I don't think this is a very real concern.  With 256 MSI slots
+available per domain, at least on sparc64, no real case can cause
+problems.
 
-The RPM binary packages for a few architectures are also provided
-as courtesy.  As the machine I cut them at kernel.org has been updated to FC9
-recently, their filenames now have "fc9" in them.
+And even so, drivers can and should fall back when allocations fail
+anyways.
 
-  RPMS/$arch/git-*-1.5.6.3-1.fc9.$arch.rpm	(RPM)
+That's what drivers, at least the ones I have written, do even for
+MSI-X.  For example, the NIU driver scales back the number of
+MSI-X vectors it askes for if the original request cannot be
+satisfied.
 
-The changes since the previous maintenance release is getting smaller.
-About half the diff is in Documentation/ section.
+> My honest opinion is that the should have deprecated multi-msi after
+> the introduction of the msi-x specification.
 
- Documentation/RelNotes-1.5.6.3.txt     |   52 ++++++++++++++++++++++++++++++++
- Documentation/git-cvsimport.txt        |    6 ++++
- Documentation/git-cvsserver.txt        |    3 ++
- Documentation/git-mailinfo.txt         |    5 ++-
- Documentation/git-rev-parse.txt        |    4 +-
- Documentation/git.txt                  |    3 +-
- Documentation/gitattributes.txt        |   33 ++++++++++----------
- Documentation/gitcvs-migration.txt     |    5 +++
- Documentation/pretty-formats.txt       |    8 ++--
- RelNotes                               |    2 +-
- builtin-clone.c                        |    8 +++--
- builtin-commit.c                       |   11 ++----
- builtin-log.c                          |   16 ++-------
- builtin-mailinfo.c                     |    3 +-
- builtin-send-pack.c                    |    3 +-
- builtin-tag.c                          |    2 +-
- contrib/completion/git-completion.bash |   30 ++++++++++++++++++
- convert.c                              |   25 +++++----------
- diff.c                                 |    8 +----
- git-am.sh                              |    3 +-
- git-submodule.sh                       |    3 +-
- git-svn.perl                           |    2 +
- http.c                                 |   36 +++++++--------------
- path.c                                 |    2 +-
- read-cache.c                           |   16 ++++++++++
- refs.c                                 |    2 +-
- run-command.c                          |    2 +
- t/t0004-unwritable.sh                  |   19 ++++++-----
- t/t1301-shared-repo.sh                 |   23 ++++++++++++++
- t/t5404-tracking-branches.sh           |    7 ++++
- t/t5601-clone.sh                       |   20 +++++++++++-
- transport.c                            |    4 ++-
- 32 files changed, 253 insertions(+), 113 deletions(-)
-
-----------------------------------------------------------------
-
-GIT v1.5.6.3 Release Notes
-==========================
-
-Fixes since v1.5.6.2
---------------------
-
-* Setting core.sharerepository to traditional "true" value was supposed to make
-  the repository group writable but should not affect permission for others.
-  However, since 1.5.6, it was broken to drop permission for others when umask is
-  022, making the repository unreadable by others.
-
-* Setting GIT_TRACE will report spawning of external process via run_command().
-
-* Using an object with very deep delta chain pinned memory needed for extracting
-  intermediate base objects unnecessarily long, leading to excess memory usage.
-
-* Bash completion script did not notice '--' marker on the command
-  line and tried the relatively slow "ref completion" even when
-  completing arguments after one.
-
-* Registering a non-empty blob racily and then truncating the working
-  tree file for it confused "racy-git avoidance" logic into thinking
-  that the path is now unchanged.
-
-* The section that describes attributes related to git-archive were placed
-  in a wrong place in the gitattributes(5) manual page.
-
-* "git am" was not helpful to the users when it detected that the committer
-  information is not set up properly yet.
-
-* "git clone" had a leftover debugging fprintf().
-
-* "git clone -q" was not quiet enough as it used to and gave object count
-  and progress reports.
-
-* "git clone" marked downloaded packfile with .keep; this could be a
-  good thing if the remote side is well packed but otherwise not,
-  especially for a project that is not really big.
-
-* "git daemon" used to call syslog() from a signal handler, which
-  could raise signals of its own but generally is not reentrant.  This
-  was fixed by restructuring the code to report syslog() after the handler
-  returns.
-
-* When "git push" tries to remove a remote ref, and corresponding
-  tracking ref is missing, we used to report error (i.e. failure to
-  remove something that does not exist).
-
-* "git mailinfo" (hence "git am") did not handle commit log messages in a
-  MIME multipart mail correctly.
-
-Contains other various documentation fixes.
+I don't think this would have materially influenced what happened with
+AHCI at all.
