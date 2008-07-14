@@ -1,89 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756812AbYGNQZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbYGNQZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756812AbYGNQZi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 12:25:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757166AbYGNQZX
+	id S1757471AbYGNQZw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 12:25:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754647AbYGNQZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 12:25:23 -0400
-Received: from tomts5.bellnexxia.net ([209.226.175.25]:61586 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757104AbYGNQZV (ORCPT
+	Mon, 14 Jul 2008 12:25:34 -0400
+Received: from outbound-mail-18.bluehost.com ([69.89.20.233]:55037 "HELO
+	outbound-mail-18.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757290AbYGNQZd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 12:25:21 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhgFAKIVe0hMRKxB/2dsb2JhbACBWqkk
-Date: Mon, 14 Jul 2008 12:25:18 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ftrace memory barriers
-Message-ID: <20080714162518.GA3027@Krystal>
-References: <20080709145929.352201601@polymtl.ca> <20080709150045.025136754@polymtl.ca> <20080709153434.GA9186@Krystal> <20080709162158.GB10601@Krystal> <20080709190957.GA16779@Krystal> <20080711143709.GB11500@Krystal> <Pine.LNX.4.58.0807141112540.30484@gandalf.stny.rr.com> <20080714153334.GA651@Krystal> <Pine.LNX.4.58.0807141153250.29493@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 14 Jul 2008 12:25:33 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User:DomainKey-Status;
+	b=lbTl+F5bAezrDfRcuHQSK76iW/wbSvDRro1+MIrwBlEpPDI3nt2KVEr1LbXNGxGiU4bHBUzVhIUiYIAVKLt6kd41RvHSP0Xj69D2W4jGU5Hry2400M/YRaG56R/DNCvr;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 0/3] Boot IRQ quirks for Broadcom and AMD/ATI
+Date: Mon, 14 Jul 2008 09:24:58 -0700
+User-Agent: KMail/1.9.9
+Cc: Olaf Dabrunz <od@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jon Masters <jonathan@jonmasters.org>,
+       Stefan Assmann <sassmann@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       Ihno Krumreich <ihno@suse.de>, Sven Dietrich <sdietrich@suse.de>,
+       Daniel Gollub <dgollub@suse.de>, Felix Foerster <ffoerster@suse.de>
+References: <12155255883170-git-send-email-od@suse.de> <20080713210133.GA12362@elte.hu>
+In-Reply-To: <20080713210133.GA12362@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0807141153250.29493@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:06:34 up 39 days, 20:47,  5 users,  load average: 1.33, 0.98,
-	0.85
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200807140924.59023.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(CC'ed LKML)
-
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> 
-> On Mon, 14 Jul 2008, Mathieu Desnoyers wrote:
+On Sunday, July 13, 2008 2:01 pm Ingo Molnar wrote:
+> * Olaf Dabrunz <od@suse.de> wrote:
+> > This is against linux-2.6-tip, branch pci-ioapic-boot-irq-quirks.
 > >
-> > Thanks a lot Steve! By the way, you might be interested in looking at
-> > the extra tracing enable/disabled tests you have in ftrace : it should
-> > be enough to register/unregister the probes to activate/deactivate
-> > tracing. I don't see why you would need if() checks in the probe itself.
+> > The corrected versions of the Broadcom and AMD/ATI boot IRQ quirks,
+> > and a patch that uses DECLARE_PCI_FIXUP_FINAL instead of *_EARLY, and
+> > adds *_RESUME.
 > >
-> 
-> That was actually one of the causes of the bugs I had. We had two markers,
-> one tracing schedule switches, the other wake ups. As soon as one is
-> enabled, tracing starts, and you will miss the tracing of the other one.
-> 
-> The result was a strange trace were things were waking up then the waker
-> was being scheduled in??
-> 
-> I need to enable all markers at the same time, which can be done with the
-> if () check. Not to mention, I like to be able to shut of tracing on oops
-> without needing to do anyting drastic (like deactivating probes).
-> 
-> -- Steve
-> 
+> > The AMD/ATI SB700S does not need a quirk. The boot IRQs here are
+> > active even when the IO-APIC lines are not masked. So even for
+> > traditional IRQ handling that does not use masking, the boot IRQs need
+> > to be disabled by the BIOS. If there are actual cases of BIOSes that
+> > do not disable these boot IRQs in APIC mode, we could consider
+> > including an SB700S patch. But I doubt this will be needed, as this
+> > problem would quickly surface during testing with any general-purpose
+> > OS.
+> >
+> > The quirk for the AMD 8131 and AMD 8132 takes identical action as an
+> > existing quirk for the AMD 8131 rev. A0 and B0. The existing quirk is
+> > due to an AMD erratum to fix IO-APIC mode. Our patch now deletes the
+> > older quirk and adds a comment to the new one that describes the two
+> > purposes of the quirk.
+>
+> applied to tip/x86/pci-ioapic-boot-irq-quirks, thanks Olaf.
+>
+> Jesse, what do you think about this topic? We are keeping it separate
+> for the time being. They are not particularly pretty, but being able to
+> mask/unmask irqs (without generating those legacy IRQs and creating an
+> IRQ storm) is essential to -rt.
 
-I see the reason why you need this, but beware that the activation
-boolean you are using in your check won't be seen as active at the same
-time by all CPUs because of out-of-order read/writes. So while the
-update is per se atomic, the replication of the updated value to all
-processors isn't. However, when one CPU sees the new version, this
-version will stay valid.
+See my other reply; the branch looks good.  I agree that making sure -rt can 
+work is an important feature.  My only concern is that this is touching so 
+much hardware specific code that *something* is likely to break.  But as long 
+as Olaf & co. can help track down any issues, I'm ok with it.
 
-This is one of the reasons why I don't aim to provide atomic activation
-of multiple markers : thinking that the state will be atomically changed
-on all CPUs without using the proper memory barriers is a bit bogus
-anyway. Does ftrace expect such atomic propagation of the change across
-all CPUs or does it deal with the information it receives on a per-cpu
-basis ?
-
-In any case, you should also make sure that you call synchronize_sched()
-after the probe registration to make sure the quiescent state is reached
-and that all probes are connected (so that no marker still see the old
-data structures). This should be done before you activate your boolean
-in the probes.
-
-I agree that the extra check is very well suited to the OOPS case.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Thanks,
+Jesse
