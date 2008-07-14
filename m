@@ -1,97 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757046AbYGNUiF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757388AbYGNUkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757046AbYGNUiF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 16:38:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755960AbYGNUhz
+	id S1757388AbYGNUkZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 16:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754348AbYGNUkO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 16:37:55 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:33203 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755871AbYGNUhy (ORCPT
+	Mon, 14 Jul 2008 16:40:14 -0400
+Received: from perninha.conectiva.com.br ([200.140.247.100]:35518 "EHLO
+	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753431AbYGNUkN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 16:37:54 -0400
-Date: Mon, 14 Jul 2008 21:37:48 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Robin Holt <holt@sgi.com>
-cc: Jack Steiner <steiner@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Christoph Hellwig <hch@lst.de>, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH] - GRU virtual -> physical translation
-In-Reply-To: <20080714195018.GD8534@sgi.com>
-Message-ID: <Pine.LNX.4.64.0807142057060.22604@blonde.site>
-References: <20080709191439.GA7307@sgi.com> <20080711121736.18687570.akpm@linux-foundation.org>
- <20080714145255.GA23173@sgi.com> <20080714092451.2c81a472.akpm@linux-foundation.org>
- <20080714163107.GA936@sgi.com> <20080714195018.GD8534@sgi.com>
+	Mon, 14 Jul 2008 16:40:13 -0400
+From: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
+Organization: Mandriva
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Fix typos from signal_32/64.h merge
+Date: Mon, 14 Jul 2008 17:40:23 -0300
+User-Agent: KMail/1.9.9
+Cc: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Roland McGrath <roland@redhat.com>, stable@kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807141740.23750.herton@mandriva.com.br>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Jul 2008, Robin Holt wrote:
-> On Mon, Jul 14, 2008 at 11:31:07AM -0500, Jack Steiner wrote:
-> > On Mon, Jul 14, 2008 at 09:24:51AM -0700, Andrew Morton wrote:
-> > > On Mon, 14 Jul 2008 09:52:55 -0500 Jack Steiner <steiner@sgi.com> wrote:
-> > > > On Fri, Jul 11, 2008 at 12:17:36PM -0700, Andrew Morton wrote:
-> > > > > On Wed, 9 Jul 2008 14:14:39 -0500 Jack Steiner <steiner@sgi.com> wrote:
-> > > > > 
-> > > > > > Open code the equivalent to follow_page(). This eliminates the
-> > > > > > requirement for an EXPORT of follow_page().
-> > > > > 
-> > > > > I'd prefer to export follow_page() - copying-n-pasting just to avoid
-> > > > > exporting the darn thing is silly.
-> > > > 
-> > > > If follow_page() can be EXPORTed, I think that may make the most sense for
-> > > > now.
-> > > 
-> > > What was Christoph's reason for objecting to the export?
-> > 
-> > No clue. Just a NACK.
-> > 
-> > Christoph???
-> 
-> Maybe I missed part of the discussion, but I thought follow_page() would
-> not work because you need this to function in the interrupt context and
-> locks would then need to be made irqsave/irqrestore.
+Fallout from commit 33185c504f8e521b398536b5a8d415779a24593c ("x86:
+merge signal_32/64.h")
 
-Exactly, that seems to have gone missing from the patch explanation.
+Thanks to Dick Streefland who provided an useful testcase on
+http://lkml.org/lkml/2008/3/17/205 (only applicable to 2.6.24.x), that
+helped a lot as a deterministic way to bisect an issue that leaded to
+this fix.
 
-> This, of course does not in any way answer the question about why
-> follow_page() can not be exported.
+Signed-off-by: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
+Signed-off-by: Luiz Fernando N. Capitulino <lcapitulino@mandriva.com.br>
+---
+ include/asm-x86/signal.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-I can't answer that either, and like Andrew I would have preferred
-to export follow_page, but for this locking issue: on the face of it,
-you cannot safely pte_offset_map_lock from interrupt context.
+diff --git a/include/asm-x86/signal.h b/include/asm-x86/signal.h
+index f15186d..6dac493 100644
+--- a/include/asm-x86/signal.h
++++ b/include/asm-x86/signal.h
+@@ -181,12 +181,12 @@ typedef struct sigaltstack {
+ #ifdef __KERNEL__
+ #include <asm/sigcontext.h>
+ 
+-#ifdef __386__
++#ifdef __i386__
+ 
+ #define __HAVE_ARCH_SIG_BITOPS
+ 
+ #define sigaddset(set,sig)		    \
+-	(__builtin_constantp(sig)	    \
++	(__builtin_constant_p(sig)	    \
+ 	 ? __const_sigaddset((set), (sig))  \
+ 	 : __gen_sigaddset((set), (sig)))
+ 
+-- 
+1.5.6
 
-But I do now wonder whether it was just my kneejerk reaction on seeing
-Jack's comment that it was needed in interrupt context.  After glancing
-through the GRU patches, I'm left wondering whether gru_intr is an
-asynchronous interrupt - in which case follow_page cannot be used,
-and it's not obvious to me that the version in this patch is safe -
-or whether it's more akin to a trap, coming in the context of the
-current mm, in which case using follow_page may be okay.
 
-I say it's not obvious to me that the version in this patch is safe,
-because I was wondering about the local_irq_disable there.  That's
-copied from Nick's fast GUP patches, but its function here is less
-obvious.  gru_intr already did down_read_trylock(&gts->ts->mmap_sem),
-which seems to give more guarantees than Nick relies upon; but is
-gts->ts_mm necessarily the same as current->mm or not?
-
-If not, then you don't have quite the TLB flushing guarantees that
-Nick relies upon: you won't be sent an IPI to flush TLB if swapping
-or truncation suddenly frees the page, which that local_irq_disable
-is designed to keep at bay (if I understand fast GUP correctly)
-while we get a reference to the page to rescue it from freeing.
-
-In Jack's patch I see no get_page within the irq_disabled area,
-so it's not clear to me what the local_irq_disable achieves.
-But perhaps the MMU notification mechanism, or the GRU's
-"magic hardware", keeps it all safe.
-
-(Personally, I dislike the other patch, adding zap_vma_ptes:
-to me it's just minor bloat and obscurity on top of the familiar
-zap_page_range; but I may be in a minority of one on that.)
-
-Hugh
