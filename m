@@ -1,125 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756520AbYGNGAF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756310AbYGNGEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756520AbYGNGAF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 02:00:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752305AbYGNF7w
+	id S1756310AbYGNGEu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 02:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752390AbYGNGEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 01:59:52 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33629 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752178AbYGNF7u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 01:59:50 -0400
-Message-ID: <487AEB42.8020209@kernel.org>
-Date: Mon, 14 Jul 2008 14:59:30 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Mon, 14 Jul 2008 02:04:39 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:42206 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752178AbYGNGEi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 02:04:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent;
+        b=gQhNG/EVL0iobdVKMUBs/ODWUBg5k5OuBh/eTIzgo/7VlOArhQqfrnnkhgsJosb1Zl
+         2hga4sZGZtdBJRf95NMgU/K1L2cRzo0Q5tpw6jy43OgLxuwb5Av8BhTrvPOzKkjVFnag
+         mBIQNFnyk0GNJXG51+HU8Y34Psdvfr+InK9DM=
+Date: Mon, 14 Jul 2008 06:09:33 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+       Alexander Beregalov <a.beregalov@gmail.com>
+Subject: Re: 26-rc9-mmotm lockdep warning initializing loopback interface
+Message-ID: <20080714060933.GA4034@ff.dom.local>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH] sd: update index allocation and use ida instead of idr
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 14 Jul 2008 05:59:39 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080713210755.ed9257aa.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update index allocation as follows.
+On 14-07-2008 06:07, Andrew Morton wrote:
+> On Sun, 13 Jul 2008 06:00:03 -0400 Valdis.Kletnieks@vt.edu wrote:
+...
+>> Found this in the dmesg:
+>>
+>> [    0.418581] system 00:0b: iomem range 0xfed00000-0xfed003ff has been reserved
+>> [    0.421109]
+>> [    0.421110] =============================================
+>> [    0.421123] [ INFO: possible recursive locking detected ]
+>> [    0.421132] 2.6.26-rc9-mm1 #2
+>> [    0.421138] ---------------------------------------------
+>> [    0.421147] swapper/1 is trying to acquire lock:
+>> [    0.421154]  (&queue->lock){-...}, at: [<ffffffff804b81d5>] qdisc_lock_tree+0x27/0x2c
+>> [    0.421176]
+>> [    0.421177] but task is already holding lock:
+>> [    0.421186]  (&queue->lock){-...}, at: [<ffffffff804b81cd>] qdisc_lock_tree+0x1f/0x2c
+...
+> (otoh, many of these problems are also in linux-next.  Who's testing
+> that?  Hopefully it's a weekend*summer thing.)
 
-* sd_index_idr is used only for ID allocation and mapping
-  functionality is not used.  Use more memory efficient ida instead.
+http://permalink.gmane.org/gmane.linux.kernel.next/1514
 
-* idr and ida have their own locks inside them and don't need them for
-  operation.  Drop it.
+Jarek P.
 
-* index wasn't freed if probing failed after index allocation.  fix
-  it.
-
-* ida allocation should be repeated if it fails with -EAGAIN.
-
-Signed-off-by: Tejun Heo <tj@kernel.org>
----
-This patch will be depended on by later block layer updates.  If the
-block layer changes get acked.  I think it'll be best to route this
-patch through blk tree.  Thanks.
-
- drivers/scsi/sd.c |   27 ++++++++++++++-------------
- 1 files changed, 14 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-index 01cefbb..c330f16 100644
---- a/drivers/scsi/sd.c
-+++ b/drivers/scsi/sd.c
-@@ -99,8 +99,7 @@ static void scsi_disk_release(struct device *cdev);
- static void sd_print_sense_hdr(struct scsi_disk *, struct scsi_sense_hdr *);
- static void sd_print_result(struct scsi_disk *, int);
- 
--static DEFINE_IDR(sd_index_idr);
--static DEFINE_SPINLOCK(sd_index_lock);
-+static DEFINE_IDA(sd_index_ida);
- 
- /* This semaphore is used to mediate the 0->1 reference get in the
-  * face of object destruction (i.e. we can't allow a get on an
-@@ -1646,18 +1645,20 @@ static int sd_probe(struct device *dev)
- 	if (!gd)
- 		goto out_free;
- 
--	if (!idr_pre_get(&sd_index_idr, GFP_KERNEL))
--		goto out_put;
-+	do {
-+		if (!ida_pre_get(&sd_index_ida, GFP_KERNEL))
-+			goto out_put;
- 
--	spin_lock(&sd_index_lock);
--	error = idr_get_new(&sd_index_idr, NULL, &index);
--	spin_unlock(&sd_index_lock);
-+		error = ida_get_new(&sd_index_ida, &index);
-+	} while (error == -EAGAIN);
- 
--	if (index >= SD_MAX_DISKS)
--		error = -EBUSY;
- 	if (error)
- 		goto out_put;
- 
-+	error = -EBUSY;
-+	if (index >= SD_MAX_DISKS)
-+		goto out_free_index;
-+
- 	sdkp->device = sdp;
- 	sdkp->driver = &sd_template;
- 	sdkp->disk = gd;
-@@ -1678,7 +1679,7 @@ static int sd_probe(struct device *dev)
- 	strncpy(sdkp->dev.bus_id, sdp->sdev_gendev.bus_id, BUS_ID_SIZE);
- 
- 	if (device_add(&sdkp->dev))
--		goto out_put;
-+		goto out_free_index;
- 
- 	get_device(&sdp->sdev_gendev);
- 
-@@ -1720,6 +1721,8 @@ static int sd_probe(struct device *dev)
- 
- 	return 0;
- 
-+ out_free_index:
-+	ida_remove(&sd_index_ida, index);
-  out_put:
- 	put_disk(gd);
-  out_free:
-@@ -1769,9 +1772,7 @@ static void scsi_disk_release(struct device *dev)
- 	struct scsi_disk *sdkp = to_scsi_disk(dev);
- 	struct gendisk *disk = sdkp->disk;
- 	
--	spin_lock(&sd_index_lock);
--	idr_remove(&sd_index_idr, sdkp->index);
--	spin_unlock(&sd_index_lock);
-+	ida_remove(&sd_index_ida, sdkp->index);
- 
- 	disk->private_data = NULL;
- 	put_disk(disk);
--- 
-1.5.4.5
-
+PS: it's only about lockdep annotation, and could be fixed with
+other way finally.
