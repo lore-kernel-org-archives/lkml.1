@@ -1,83 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755838AbYGNOGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755433AbYGNOHV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755838AbYGNOGV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 10:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbYGNOGK
+	id S1755433AbYGNOHV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 10:07:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753889AbYGNOHH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 10:06:10 -0400
-Received: from batfish.pepperfish.net ([87.237.62.180]:53666 "EHLO
-	flounder.pepperfish.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753346AbYGNOGJ (ORCPT
+	Mon, 14 Jul 2008 10:07:07 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:59747 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753472AbYGNOHF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 10:06:09 -0400
-X-Greylist: delayed 5887 seconds by postgrey-1.27 at vger.kernel.org; Mon, 14 Jul 2008 10:06:08 EDT
-Date: Mon, 14 Jul 2008 13:27:51 +0100 (BST)
-From: Vivek Dasmohapatra <vivek@etla.org>
-X-X-Sender: vivek@localhost
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: netdev@vger.kernel.org
-Subject: 2.6.24 ipw2200 driver can't be reset after firmware explodes
-Message-ID: <Pine.LNX.4.64.0807141240020.6889@localhost>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Mon, 14 Jul 2008 10:07:05 -0400
+Subject: Re: 2.6.26-rc9-git12: Reported regressions from 2.6.25
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Greg KH <greg@kroah.com>
+In-Reply-To: <Pine.LNX.4.44L0.0807140955020.2566-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0807140955020.2566-100000@iolanthe.rowland.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-NtqE1GeviUS5bNnqjzEZ"
+Date: Mon, 14 Jul 2008 16:06:38 +0200
+Message-Id: <1216044398.23746.10.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi: I have a thinkpad t43p with an ipw2200 driven piece of hardware in it.
 
-04:02.0 Network controller [0280]:
-  Intel Corporation PRO/Wireless 2915ABG Network Connection [8086:4224] (rev 05)
-         Kernel driver in use: ipw2200
-         Kernel modules: ipw2200
+--=-NtqE1GeviUS5bNnqjzEZ
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
->From time to time, the firmware flakes out, and I get messages like this:
-[ I'm not sure which version of the firmware I have, I can't see anything
-   obvious in dmesg when the ipw2200 module loads: I have files like
-   ipw-2.4-bss.fw in /lib/firmware if that helps ]
 
-Jul 14 03:42:25 neko kernel: 
-ipw2200: Failed to send SCAN_ABORT: Command timed out.
-Jul 14 03:42:26 neko kernel: 
-ipw2200: Failed to send CARD_DISABLE: Command timed out.
-Jul 14 03:42:32 neko kernel: 
-ipw2200: Failed to send SCAN_ABORT: Command timed out.
-Jul 14 03:42:33 neko kernel: 
-ipw2200: Failed to send CARD_DISABLE: Command timed out.
-Jul 14 03:42:39 neko kernel: 
-ipw2200: Failed to send SCAN_ABORT: Command timed out.
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D11072
+> > > Subject		: scsi-layer crash after usb storage device unplug
+> > > Submitter	: Johannes Berg <johannes@sipsolutions.net>
+> > > Date		: 2008-07-12 01:50 (2 days old)
+> > > Handled-By	: Alan Stern <stern@rowland.harvard.edu>
+> > > Patch		: http://bugzilla.kernel.org/show_bug.cgi?id=3D11072#c3
+> >=20
+> > Alan, Greg?
+>=20
+> We haven't heard back yet from Johannes to confirm that the fix really
+> works.  If it does, IMO the patch should go into 2.6.26.1.
+>=20
+> (In fact it might not be so easy to tell, since the failure is caused=20
+> be a race.  Perhaps it would be best to submit the patch in any case.)
 
-repeated again and again.
+I haven't had a chance to apply the patch, but given that to cause the
+oops to happen I had to unplug/replug the device at random intervals for
+probably 10 minutes (yes, it took me that long to figure out I had put
+an SDHC card into an SD reader) I suppose it really won't be easy to
+tell.
 
-There's usually a "firmware error detected, restarting" message buried
-somewhere in the logs before that happens.
+johannes
 
-Under kernel 2.6.16, I was able to fix this as follows:
+--=-NtqE1GeviUS5bNnqjzEZ
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-echo -n 3 > /sys/class/net/$IFACE/device/power/state
-sleep 1
-echo -n 0 > /sys/class/net/$IFACE/device/power/state
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-( removing and reloading the module has no effect here, under
-   either kernel 2.6.16 or 2.6.24: taking the interface down and
-   bringing it up again is likewise ineffective )
+iQIcBAABAgAGBQJIe11rAAoJEKVg1VMiehFYoJAQAKgRQ38FD2mq1TLWWRy/XZzm
+aTJ+CEIJpaYKeKvoRJsvIGDZQSrmRXscRRUoNuxzjBWHWsUzZ05AtnKvM1l8w2Iy
+Aa/qxDoGi1FxIrVc/ztO2ORM+kDaDZAcdIJ1kVwLc8qagNpct5Ygvr12Ff0k3F5r
+cX4P+fX0t4CTg4L7ncZOlY6s4KhLOfRy1WvWnoOJ9oKRlqO+oI9PEjr/e52bFo4l
+ZCfMGPGOihP+o+Nz7UGwJFmJTkY76DqWxMM+AJnbZQ9DpKWrikZyh88kE7tNe+gT
+hD7aKcYHgCFz1xeS8rBQsvZbieccBQ85NbJEk6F1aMbMKVQD1Lvc0PRilIs5hScl
+FfVANU41Y+wc1lG1HcSZB5BiRdn+Y0wMJUwCrh/pAa9dlumzv0jYckzGkFpMmnkr
+cvMM+1SAHYqRLGPmVI5co4mSTzurtC81wJX8jx9snXLOsPX10apeGplN3Ya76q7T
+k+fLAmT3+NiP+kaji84mkpHo1Icvd4+Hw/cb3Kq8pme4q3Ae2puY9jN01p6rs2jg
+zThdzqUwYKilpj86tzJh9aPYRQREcQftu2RVVk4o9zy3n0V8eFICFzjOqyAscCqt
+FHJBHMFr2NhLtvuAGC2ju+9QQT6kdDJrPszDFkY27dk2C0Kvl/CMov90fjZZHHL/
+YVk2JQ53UuyQGt6qAk9s
+=ynW0
+-----END PGP SIGNATURE-----
 
-However, I note that under 2.6.24 said /sys interface is no
-longer present, so once the firmware dies, I am forced to either
-hunt down a network cable with something useful on the other end,
-or live without networking, or reboot.
+--=-NtqE1GeviUS5bNnqjzEZ--
 
-Is there a new way to achieve the same effect in 2.6.24? If there's not,
-is there likely to be in the future? Or should I just revert to 2.6.16
-until such time as I replace my laptop and (hopefully) don't have to
-struggle with the intel wifi hardware any more?
-
-The firmware bug is covered here: 
-http://www.intellinuxwireless.org/bugzilla/show_bug.cgi?id=875
-if that's helpful/relevant.
-
-[ CCd to netdev as I was told it would be of interest there too,
-   apologies if this is not the case ]
-
--- 
-Vivek
