@@ -1,121 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756058AbYGNNit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754712AbYGNNr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756058AbYGNNit (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 09:38:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755578AbYGNNig
+	id S1754712AbYGNNr5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 09:47:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753454AbYGNNrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 09:38:36 -0400
-Received: from mga09.intel.com ([134.134.136.24]:9873 "EHLO mga09.intel.com"
+	Mon, 14 Jul 2008 09:47:49 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:46586 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755526AbYGNNif (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 09:38:35 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.30,359,1212390000"; 
-   d="scan'208";a="314829309"
-From: Maciej Sosnowski <maciej.sosnowski@intel.com>
-Subject: [PATCH 2/2] I/OAT: tcp_dma_copybreak default value dependant on I/OAT
-	version
-To: dan.j.williams@intel.com
-Cc: shannon.nelson@intel.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Date: Mon, 14 Jul 2008 15:28:39 +0200
-Message-ID: <20080714132834.26941.89982.stgit@linux.site>
-In-Reply-To: <20080714132645.26941.64737.stgit@linux.site>
-References: <20080714132645.26941.64737.stgit@linux.site>
-User-Agent: StGIT/0.13
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	id S1752516AbYGNNrt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 09:47:49 -0400
+Date: Mon, 14 Jul 2008 23:47:37 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Gabriel C" <nix.or.die@googlemail.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Michael Krufky <mkrufky@linuxtv.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: Re: linux-next: Tree for July 14
+Message-Id: <20080714234737.8e301eb4.sfr@canb.auug.org.au>
+In-Reply-To: <1820d69d0807140443x1c4ba0b3p46072164ea2fe48b@mail.gmail.com>
+References: <20080714201249.947400d0.sfr@canb.auug.org.au>
+	<1820d69d0807140443x1c4ba0b3p46072164ea2fe48b@mail.gmail.com>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__14_Jul_2008_23_47_37_+1000_LTPB7DKbAO/AVAmj"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I/OAT DMA performance tuning showed different optimal values 
-of tcp_dma_copybreak for different I/OAT versions
-(4096 for 1.2 and 2048 for 2.0).
-This patch lets ioatdma driver set tcp_dma_copybreak value 
-according to these results.
+--Signature=_Mon__14_Jul_2008_23_47_37_+1000_LTPB7DKbAO/AVAmj
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
----
+On Mon, 14 Jul 2008 13:43:17 +0200 "Gabriel C" <nix.or.die@googlemail.com> =
+wrote:
+>
+> make clean / mrproper is broken , I'm not sure when it broken , I'm
+> updating from
+> 2.6.26-rc8-next-20080630.
+>=20
+> ...
+>=20
+> crazy@thor:/work/crazy/linux/linux-next/git/linux-2.6$ LC_ALL=3DC make cl=
+ean
+> scripts/Makefile.clean:17:
+> /work/crazy/linux/linux-next/git/linux-2.6/drivers/media/mdtv/Makefile:
+> No such file or directory
+> make[3]: *** No rule to make target
+> `/work/crazy/linux/linux-next/git/linux-2.6/drivers/media/mdtv/Makefile'.
+>  Stop.
+> make[2]: *** [drivers/media/mdtv] Error 2
+> make[1]: *** [drivers/media] Error 2
+> make: *** [_clean_drivers] Error 2
+>=20
+> ...
+>=20
+> drivers/media/Makefile has 'obj-$(CONFIG_MDTV_ADAPTERS)  +=3D mdtv/' but
+> I cannot see such a folder under drivers/media =3D). Removing mdtv from
+> Makefile fixes the problem.
 
- drivers/dma/dmaengine.c   |    3 +++
- drivers/dma/ioat_dma.c    |   15 +++++++++++++++
- include/linux/dmaengine.h |    2 ++
- 3 files changed, 20 insertions(+), 0 deletions(-)
+Commit 0fdb296d34c14520f061828d69a6e537e7dd78a4 ("V4L/DVB (8272):
+sms1xxx: move driver from media/mdtv/ to media/dvb/siano/") moved all of
+drivers/media/mdtv, but didn;t remove the reference from
+drivers/media/Makefile.
 
-diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-index 97b329e..d57365a 100644
---- a/drivers/dma/dmaengine.c
-+++ b/drivers/dma/dmaengine.c
-@@ -70,6 +70,7 @@ #include <linux/percpu.h>
- #include <linux/rcupdate.h>
- #include <linux/mutex.h>
- #include <linux/jiffies.h>
-+#include <net/tcp.h>
- 
- static DEFINE_MUTEX(dma_list_mutex);
- static LIST_HEAD(dma_device_list);
-@@ -402,6 +403,8 @@ int dma_async_device_register(struct dma
- 	list_add_tail(&device->global_node, &dma_device_list);
- 	mutex_unlock(&dma_list_mutex);
- 
-+	sysctl_tcp_dma_copybreak = device->tcp_dma_copybreak;
-+
- 	dma_clients_notify_available();
- 
- 	return 0;
-diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
-index 9c0b90a..42e5bfb 100644
---- a/drivers/dma/ioat_dma.c
-+++ b/drivers/dma/ioat_dma.c
-@@ -53,6 +53,12 @@ #define WATCHDOG_DELAY  round_jiffies(ms
- static void ioat_dma_chan_reset_part2(struct work_struct *work);
- static void ioat_dma_chan_watchdog(struct work_struct *work);
- 
-+/*
-+ * default tcp_dma_copybreak values for different IOAT versions
-+ */
-+#define IOAT1_DEFAULT_TCP_DMA_COPYBREAK 4096
-+#define IOAT2_DEFAULT_TCP_DMA_COPYBREAK 2048
-+
- /* internal functions */
- static void ioat_dma_start_null_desc(struct ioat_dma_chan *ioat_chan);
- static void ioat_dma_memcpy_cleanup(struct ioat_dma_chan *ioat_chan);
-@@ -1571,6 +1577,15 @@ struct ioatdma_device *ioat_dma_probe(st
- 	if (err)
- 		goto err_self_test;
- 
-+	switch (device->version) {
-+	case IOAT_VER_1_2:
-+		device->common.tcp_dma_copybreak = IOAT1_DEFAULT_TCP_DMA_COPYBREAK;
-+		break;
-+	case IOAT_VER_2_0:
-+		device->common.tcp_dma_copybreak = IOAT2_DEFAULT_TCP_DMA_COPYBREAK;
-+		break;
-+	}
-+
- 	dma_async_device_register(&device->common);
- 
- 	INIT_DELAYED_WORK(&device->work, ioat_dma_chan_watchdog);
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index d08a5c5..c09128e 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -251,6 +251,7 @@ struct dma_async_tx_descriptor {
-  * @global_node: list_head for global dma_device_list
-  * @cap_mask: one or more dma_capability flags
-  * @max_xor: maximum number of xor sources, 0 if no capability
-+ * @tcp_dma_copybreak: lower limit of TCP socket reads size offloaded by DMA 
-  * @refcount: reference count
-  * @done: IO completion struct
-  * @dev_id: unique device ID
-@@ -272,6 +273,7 @@ struct dma_device {
- 	struct list_head global_node;
- 	dma_cap_mask_t  cap_mask;
- 	int max_xor;
-+	int tcp_dma_copybreak;
- 
- 	struct kref refcount;
- 	struct completion done;
+Added some cc's
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Mon__14_Jul_2008_23_47_37_+1000_LTPB7DKbAO/AVAmj
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkh7WPkACgkQjjKRsyhoI8xC+ACdHyGOkzTYHADd9QjBTwnqsuw+
++dIAn0eh+vdb4RbO/gduzqL7b9gDsOIk
+=kuyh
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__14_Jul_2008_23_47_37_+1000_LTPB7DKbAO/AVAmj--
