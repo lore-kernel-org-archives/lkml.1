@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755601AbYGNOdQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756212AbYGNOem@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755601AbYGNOdQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 10:33:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbYGNOdD
+	id S1756212AbYGNOem (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 10:34:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbYGNOee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 10:33:03 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35198 "EHLO mx2.mail.elte.hu"
+	Mon, 14 Jul 2008 10:34:34 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42521 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753583AbYGNOdA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 10:33:00 -0400
-Date: Mon, 14 Jul 2008 16:32:40 +0200
+	id S1753470AbYGNOee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 10:34:34 -0400
+Date: Mon, 14 Jul 2008 16:34:13 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [git pull] core/locking for v2.6.27
-Message-ID: <20080714143240.GA19002@elte.hu>
+Subject: [git pull] core/percpu for v2.6.27
+Message-ID: <20080714143413.GA19134@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,363 +35,344 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest core/locking git tree from:
+Please pull the latest core/percpu git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core/locking
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core/percpu
 
 Thanks,
 
 	Ingo
 
 ------------------>
-Huang, Ying (3):
-      lockdep: output lock_class key instead of address for forward dependency output
-      lockdep: add lock_class information to lock_chain and output it
-      lockdep: add lock_class information to lock_chain and output it
+Eric Dumazet (1):
+      percpu: introduce DEFINE_PER_CPU_PAGE_ALIGNED() macro
 
-Ingo Molnar (2):
-      lockdep: fix ftrace irq tracing false positive
-      lockdep: fix kernel/fork.c warning
+Heiko Carstens (1):
+      percpu: zero based percpu build error on s390
 
-Jeremy Kerr (1):
-      mutex-debug: check mutex magic before owner
-
-Li Zefan (1):
-      lockdep: remove duplicate definition of STATIC_LOCKDEP_MAP_INIT
-
-Oleg Nesterov (1):
-      __mutex_lock_common: use signal_pending_state()
+Mike Travis (2):
+      x86: extend percpu ops to 64 bit
+      Zero based percpu: infrastructure to rebase the per cpu area to zero
 
 
- include/linux/lockdep.h    |   11 +----
- kernel/fork.c              |    2 +-
- kernel/lockdep.c           |   47 +++++++++++++++++++--
- kernel/lockdep_internals.h |    6 +++
- kernel/lockdep_proc.c      |   97 +++++++++++++++++++++++++++++++++++++++++++-
- kernel/mutex-debug.c       |    2 +-
- kernel/mutex.c             |    5 +--
- 7 files changed, 151 insertions(+), 19 deletions(-)
+ arch/x86/kernel/cpu/common.c      |    2 +-
+ arch/x86/kernel/vmlinux_32.lds.S  |    1 +
+ include/asm-generic/percpu.h      |   11 ++++-
+ include/asm-generic/sections.h    |   10 ++++
+ include/asm-generic/vmlinux.lds.h |   17 ++++++++
+ include/asm-x86/percpu.h          |   83 ++++++++++++++++++++++++++++++++++--
+ include/linux/percpu.h            |   24 ++++++++++-
+ kernel/lockdep.c                  |    4 +-
+ kernel/module.c                   |    7 ++-
+ 9 files changed, 146 insertions(+), 13 deletions(-)
 
-diff --git a/include/linux/lockdep.h b/include/linux/lockdep.h
-index 4c4d236..2486eb4 100644
---- a/include/linux/lockdep.h
-+++ b/include/linux/lockdep.h
-@@ -182,6 +182,9 @@ struct lock_list {
-  * We record lock dependency chains, so that we can cache them:
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index d0463a9..b2f54fa 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -21,7 +21,7 @@
+ 
+ #include "cpu.h"
+ 
+-DEFINE_PER_CPU(struct gdt_page, gdt_page) = { .gdt = {
++DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
+ 	[GDT_ENTRY_KERNEL_CS] = { { { 0x0000ffff, 0x00cf9a00 } } },
+ 	[GDT_ENTRY_KERNEL_DS] = { { { 0x0000ffff, 0x00cf9200 } } },
+ 	[GDT_ENTRY_DEFAULT_USER_CS] = { { { 0x0000ffff, 0x00cffa00 } } },
+diff --git a/arch/x86/kernel/vmlinux_32.lds.S b/arch/x86/kernel/vmlinux_32.lds.S
+index ce5ed08..0f7c29a 100644
+--- a/arch/x86/kernel/vmlinux_32.lds.S
++++ b/arch/x86/kernel/vmlinux_32.lds.S
+@@ -189,6 +189,7 @@ SECTIONS
+   . = ALIGN(PAGE_SIZE);
+   .data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) {
+ 	__per_cpu_start = .;
++	*(.data.percpu.page_aligned)
+ 	*(.data.percpu)
+ 	*(.data.percpu.shared_aligned)
+ 	__per_cpu_end = .;
+diff --git a/include/asm-generic/percpu.h b/include/asm-generic/percpu.h
+index b0e63c6..1c02250 100644
+--- a/include/asm-generic/percpu.h
++++ b/include/asm-generic/percpu.h
+@@ -45,7 +45,12 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
+  * Only S390 provides its own means of moving the pointer.
   */
- struct lock_chain {
-+	u8				irq_context;
-+	u8				depth;
-+	u16				base;
- 	struct list_head		entry;
- 	u64				chain_key;
- };
-@@ -276,14 +279,6 @@ extern void lockdep_init_map(struct lockdep_map *lock, const char *name,
- 				 (lock)->dep_map.key, sub)
+ #ifndef SHIFT_PERCPU_PTR
+-#define SHIFT_PERCPU_PTR(__p, __offset)	RELOC_HIDE((__p), (__offset))
++# ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
++#  define SHIFT_PERCPU_PTR(__p, __offset) \
++	((__typeof(__p))(((void *)(__p)) + (__offset)))
++# else
++#  define SHIFT_PERCPU_PTR(__p, __offset)	RELOC_HIDE((__p), (__offset))
++# endif /* CONFIG_HAVE_ZERO_BASED_PER_CPU */
+ #endif
  
  /*
-- * To initialize a lockdep_map statically use this macro.
-- * Note that _name must not be NULL.
-- */
--#define STATIC_LOCKDEP_MAP_INIT(_name, _key) \
--	{ .name = (_name), .key = (void *)(_key), }
--
--
--/*
-  * Acquire a lock.
-  *
-  * Values for "read":
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 19908b2..cdb1f82 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -909,7 +909,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+@@ -70,6 +75,10 @@ extern void setup_per_cpu_areas(void);
+ #define per_cpu(var, cpu)			(*((void)(cpu), &per_cpu_var(var)))
+ #define __get_cpu_var(var)			per_cpu_var(var)
+ #define __raw_get_cpu_var(var)			per_cpu_var(var)
++#ifndef SHIFT_PERCPU_PTR
++# define SHIFT_PERCPU_PTR(__p, __offset)		(__p)
++#endif
++#define per_cpu_offset(x)			0L
  
- 	rt_mutex_init_task(p);
+ #endif	/* SMP */
  
--#ifdef CONFIG_TRACE_IRQFLAGS
-+#ifdef CONFIG_PROVE_LOCKING
- 	DEBUG_LOCKS_WARN_ON(!p->hardirqs_enabled);
- 	DEBUG_LOCKS_WARN_ON(!p->softirqs_enabled);
- #endif
+diff --git a/include/asm-generic/sections.h b/include/asm-generic/sections.h
+index 8feeae1..f697620 100644
+--- a/include/asm-generic/sections.h
++++ b/include/asm-generic/sections.h
+@@ -9,7 +9,17 @@ extern char __bss_start[], __bss_stop[];
+ extern char __init_begin[], __init_end[];
+ extern char _sinittext[], _einittext[];
+ extern char _end[];
++#ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
++extern char __per_cpu_load[];
++extern char ____per_cpu_size[];
++#define __per_cpu_size ((unsigned long)&____per_cpu_size)
++#define __per_cpu_start ((char *)0)
++#define __per_cpu_end ((char *)__per_cpu_size)
++#else
+ extern char __per_cpu_start[], __per_cpu_end[];
++#define __per_cpu_load __per_cpu_start
++#define __per_cpu_size (__per_cpu_end - __per_cpu_start)
++#endif
+ extern char __kprobes_text_start[], __kprobes_text_end[];
+ extern char __initdata_begin[], __initdata_end[];
+ extern char __start_rodata[], __end_rodata[];
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index f054778..465a97a 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -344,11 +344,28 @@
+   	*(.initcall7.init)						\
+   	*(.initcall7s.init)
+ 
++#ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
++#define PERCPU(align)							\
++	. = ALIGN(align);						\
++	percpu : { } :percpu						\
++	__per_cpu_load = .;						\
++	.data.percpu 0 : AT(__per_cpu_load - LOAD_OFFSET) {		\
++		*(.data.percpu.first)					\
++		*(.data.percpu.shared_aligned)				\
++		*(.data.percpu)						\
++		*(.data.percpu.page_aligned)				\
++		____per_cpu_size = .;					\
++	}								\
++	. = __per_cpu_load + ____per_cpu_size;				\
++	data : { } :data
++#else
+ #define PERCPU(align)							\
+ 	. = ALIGN(align);						\
+ 	__per_cpu_start = .;						\
+ 	.data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) {		\
++		*(.data.percpu.page_aligned)				\
+ 		*(.data.percpu)						\
+ 		*(.data.percpu.shared_aligned)				\
+ 	}								\
+ 	__per_cpu_end = .;
++#endif
+diff --git a/include/asm-x86/percpu.h b/include/asm-x86/percpu.h
+index 736fc3b..d85e5aa 100644
+--- a/include/asm-x86/percpu.h
++++ b/include/asm-x86/percpu.h
+@@ -108,6 +108,11 @@ do {							\
+ 		    : "+m" (var)			\
+ 		    : "ri" ((T__)val));			\
+ 		break;					\
++	case 8:						\
++		asm(op "q %1,"__percpu_seg"%0"		\
++		    : "+m" (var)			\
++		    : "ri" ((T__)val));			\
++		break;					\
+ 	default: __bad_percpu_size();			\
+ 	}						\
+ } while (0)
+@@ -131,16 +136,84 @@ do {							\
+ 		    : "=r" (ret__)			\
+ 		    : "m" (var));			\
+ 		break;					\
++	case 8:						\
++		asm(op "q "__percpu_seg"%1,%0"		\
++		    : "=r" (ret__)			\
++		    : "m" (var));			\
++		break;					\
+ 	default: __bad_percpu_size();			\
+ 	}						\
+ 	ret__;						\
+ })
+ 
+-#define x86_read_percpu(var) percpu_from_op("mov", per_cpu__##var)
+-#define x86_write_percpu(var, val) percpu_to_op("mov", per_cpu__##var, val)
+-#define x86_add_percpu(var, val) percpu_to_op("add", per_cpu__##var, val)
+-#define x86_sub_percpu(var, val) percpu_to_op("sub", per_cpu__##var, val)
+-#define x86_or_percpu(var, val) percpu_to_op("or", per_cpu__##var, val)
++#define percpu_addr_op(op, var)				\
++({							\
++	switch (sizeof(var)) {				\
++	case 1:						\
++		asm(op "b "__percpu_seg"%0"		\
++				: : "m"(var));		\
++		break;					\
++	case 2:						\
++		asm(op "w "__percpu_seg"%0"		\
++				: : "m"(var));		\
++		break;					\
++	case 4:						\
++		asm(op "l "__percpu_seg"%0"		\
++				: : "m"(var));		\
++		break;					\
++	case 8:						\
++		asm(op "q "__percpu_seg"%0"		\
++				: : "m"(var));		\
++		break;					\
++	default: __bad_percpu_size();			\
++	}						\
++})
++
++#define percpu_cmpxchg_op(var, old, new)				\
++({									\
++	typeof(var) prev;						\
++	switch (sizeof(var)) {						\
++	case 1:								\
++		asm("cmpxchgb %b1, "__percpu_seg"%2"			\
++				     : "=a"(prev)			\
++				     : "q"(new), "m"(var), "0"(old)	\
++				     : "memory");			\
++		break;							\
++	case 2:								\
++		asm("cmpxchgw %w1, "__percpu_seg"%2"			\
++				     : "=a"(prev)			\
++				     : "r"(new), "m"(var), "0"(old)	\
++				     : "memory");			\
++		break;							\
++	case 4:								\
++		asm("cmpxchgl %k1, "__percpu_seg"%2"			\
++				     : "=a"(prev)			\
++				     : "r"(new), "m"(var), "0"(old)	\
++				     : "memory");			\
++		break;							\
++	case 8:								\
++		asm("cmpxchgq %1, "__percpu_seg"%2"			\
++				     : "=a"(prev)			\
++				     : "r"(new), "m"(var), "0"(old)	\
++				     : "memory");			\
++		break;							\
++	default:							\
++		__bad_percpu_size();					\
++	}								\
++	return prev;							\
++})
++
++#define x86_read_percpu(var) percpu_from_op("mov", per_cpu_var(var))
++#define x86_write_percpu(var, val) percpu_to_op("mov", per_cpu_var(var), val)
++#define x86_add_percpu(var, val) percpu_to_op("add", per_cpu_var(var), val)
++#define x86_sub_percpu(var, val) percpu_to_op("sub", per_cpu_var(var), val)
++#define x86_inc_percpu(var) percpu_addr_op("inc", per_cpu_var(var))
++#define x86_dec_percpu(var) percpu_addr_op("dec", per_cpu_var(var))
++#define x86_or_percpu(var, val) percpu_to_op("or", per_cpu_var(var), val)
++#define x86_xchg_percpu(var, val) percpu_to_op("xchg", per_cpu_var(var), val)
++#define x86_cmpxchg_percpu(var, old, new) \
++				percpu_cmpxchg_op(per_cpu_var(var), old, new)
++
+ #endif /* !__ASSEMBLY__ */
+ #endif /* !CONFIG_X86_64 */
+ #endif /* _ASM_X86_PERCPU_H_ */
+diff --git a/include/linux/percpu.h b/include/linux/percpu.h
+index 4cdd393..3d1a7f6 100644
+--- a/include/linux/percpu.h
++++ b/include/linux/percpu.h
+@@ -23,13 +23,35 @@
+ 	__attribute__((__section__(SHARED_ALIGNED_SECTION)))		\
+ 	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name		\
+ 	____cacheline_aligned_in_smp
++
++#define DEFINE_PER_CPU_PAGE_ALIGNED(type, name)			\
++	__attribute__((__section__(".data.percpu.page_aligned")))	\
++	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
++
++#ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
++#define DEFINE_PER_CPU_FIRST(type, name)				\
++	__attribute__((__section__(".data.percpu.first")))		\
++	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
+ #else
++#define DEFINE_PER_CPU_FIRST(type, name)				\
++	DEFINE_PER_CPU(type, name)
++#endif
++
++#else /* !CONFIG_SMP */
++
+ #define DEFINE_PER_CPU(type, name)					\
+ 	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
+ 
+ #define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)		      \
+ 	DEFINE_PER_CPU(type, name)
+-#endif
++
++#define DEFINE_PER_CPU_PAGE_ALIGNED(type, name)		      \
++	DEFINE_PER_CPU(type, name)
++
++#define DEFINE_PER_CPU_FIRST(type, name)				\
++	DEFINE_PER_CPU(type, name)
++
++#endif /* !CONFIG_SMP */
+ 
+ #define EXPORT_PER_CPU_SYMBOL(var) EXPORT_SYMBOL(per_cpu__##var)
+ #define EXPORT_PER_CPU_SYMBOL_GPL(var) EXPORT_SYMBOL_GPL(per_cpu__##var)
 diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index 81a4e4a..fc5d5aa 100644
+index 81a4e4a..965b9c7 100644
 --- a/kernel/lockdep.c
 +++ b/kernel/lockdep.c
-@@ -1458,7 +1458,14 @@ out_bug:
- }
- 
- unsigned long nr_lock_chains;
--static struct lock_chain lock_chains[MAX_LOCKDEP_CHAINS];
-+struct lock_chain lock_chains[MAX_LOCKDEP_CHAINS];
-+int nr_chain_hlocks;
-+static u16 chain_hlocks[MAX_LOCKDEP_CHAIN_HLOCKS];
-+
-+struct lock_class *lock_chain_get_class(struct lock_chain *chain, int i)
-+{
-+	return lock_classes + chain_hlocks[chain->base + i];
-+}
- 
- /*
-  * Look up a dependency chain. If the key is not present yet then
-@@ -1466,10 +1473,15 @@ static struct lock_chain lock_chains[MAX_LOCKDEP_CHAINS];
-  * validated. If the key is already hashed, return 0.
-  * (On return with 1 graph_lock is held.)
-  */
--static inline int lookup_chain_cache(u64 chain_key, struct lock_class *class)
-+static inline int lookup_chain_cache(struct task_struct *curr,
-+				     struct held_lock *hlock,
-+				     u64 chain_key)
- {
-+	struct lock_class *class = hlock->class;
- 	struct list_head *hash_head = chainhashentry(chain_key);
- 	struct lock_chain *chain;
-+	struct held_lock *hlock_curr, *hlock_next;
-+	int i, j, n, cn;
- 
- 	if (DEBUG_LOCKS_WARN_ON(!irqs_disabled()))
- 		return 0;
-@@ -1517,6 +1529,32 @@ cache_hit:
- 	}
- 	chain = lock_chains + nr_lock_chains++;
- 	chain->chain_key = chain_key;
-+	chain->irq_context = hlock->irq_context;
-+	/* Find the first held_lock of current chain */
-+	hlock_next = hlock;
-+	for (i = curr->lockdep_depth - 1; i >= 0; i--) {
-+		hlock_curr = curr->held_locks + i;
-+		if (hlock_curr->irq_context != hlock_next->irq_context)
-+			break;
-+		hlock_next = hlock;
-+	}
-+	i++;
-+	chain->depth = curr->lockdep_depth + 1 - i;
-+	cn = nr_chain_hlocks;
-+	while (cn + chain->depth <= MAX_LOCKDEP_CHAIN_HLOCKS) {
-+		n = cmpxchg(&nr_chain_hlocks, cn, cn + chain->depth);
-+		if (n == cn)
-+			break;
-+		cn = n;
-+	}
-+	if (likely(cn + chain->depth <= MAX_LOCKDEP_CHAIN_HLOCKS)) {
-+		chain->base = cn;
-+		for (j = 0; j < chain->depth - 1; j++, i++) {
-+			int lock_id = curr->held_locks[i].class - lock_classes;
-+			chain_hlocks[chain->base + j] = lock_id;
-+		}
-+		chain_hlocks[chain->base + j] = class - lock_classes;
-+	}
- 	list_add_tail_rcu(&chain->entry, hash_head);
- 	debug_atomic_inc(&chain_lookup_misses);
- 	inc_chains();
-@@ -1538,7 +1576,7 @@ static int validate_chain(struct task_struct *curr, struct lockdep_map *lock,
- 	 * graph_lock for us)
+@@ -609,8 +609,8 @@ static int static_obj(void *obj)
+ 	 * percpu var?
  	 */
- 	if (!hlock->trylock && (hlock->check == 2) &&
--			lookup_chain_cache(chain_key, hlock->class)) {
-+	    lookup_chain_cache(curr, hlock, chain_key)) {
- 		/*
- 		 * Check whether last held lock:
- 		 *
-@@ -2650,7 +2688,8 @@ __lock_release(struct lockdep_map *lock, int nested, unsigned long ip)
-  */
- static void check_flags(unsigned long flags)
+ 	for_each_possible_cpu(i) {
+-		start = (unsigned long) &__per_cpu_start + per_cpu_offset(i);
+-		end   = (unsigned long) &__per_cpu_start + PERCPU_ENOUGH_ROOM
++		start = (unsigned long) __per_cpu_start + per_cpu_offset(i);
++		end   = (unsigned long) __per_cpu_start + PERCPU_ENOUGH_ROOM
+ 					+ per_cpu_offset(i);
+ 
+ 		if ((addr >= start) && (addr < end))
+diff --git a/kernel/module.c b/kernel/module.c
+index 5f80478..f525015 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -44,6 +44,7 @@
+ #include <linux/unwind.h>
+ #include <asm/uaccess.h>
+ #include <asm/cacheflush.h>
++#include <asm/sections.h>
+ #include <linux/license.h>
+ #include <asm/sections.h>
+ 
+@@ -365,7 +366,7 @@ static void *percpu_modalloc(unsigned long size, unsigned long align,
+ 		align = PAGE_SIZE;
+ 	}
+ 
+-	ptr = __per_cpu_start;
++	ptr = __per_cpu_load;
+ 	for (i = 0; i < pcpu_num_used; ptr += block_size(pcpu_size[i]), i++) {
+ 		/* Extra for alignment requirement. */
+ 		extra = ALIGN((unsigned long)ptr, align) - (unsigned long)ptr;
+@@ -400,7 +401,7 @@ static void *percpu_modalloc(unsigned long size, unsigned long align,
+ static void percpu_modfree(void *freeme)
  {
--#if defined(CONFIG_DEBUG_LOCKDEP) && defined(CONFIG_TRACE_IRQFLAGS)
-+#if defined(CONFIG_PROVE_LOCKING) && defined(CONFIG_DEBUG_LOCKDEP) && \
-+    defined(CONFIG_TRACE_IRQFLAGS)
- 	if (!debug_locks)
- 		return;
+ 	unsigned int i;
+-	void *ptr = __per_cpu_start + block_size(pcpu_size[0]);
++	void *ptr = __per_cpu_load + block_size(pcpu_size[0]);
  
-diff --git a/kernel/lockdep_internals.h b/kernel/lockdep_internals.h
-index 8ce09bc..c3600a0 100644
---- a/kernel/lockdep_internals.h
-+++ b/kernel/lockdep_internals.h
-@@ -23,6 +23,8 @@
- #define MAX_LOCKDEP_CHAINS_BITS	14
- #define MAX_LOCKDEP_CHAINS	(1UL << MAX_LOCKDEP_CHAINS_BITS)
- 
-+#define MAX_LOCKDEP_CHAIN_HLOCKS (MAX_LOCKDEP_CHAINS*5)
-+
- /*
-  * Stack-trace: tightly packed array of stack backtrace
-  * addresses. Protected by the hash_lock.
-@@ -30,15 +32,19 @@
- #define MAX_STACK_TRACE_ENTRIES	262144UL
- 
- extern struct list_head all_lock_classes;
-+extern struct lock_chain lock_chains[];
- 
- extern void
- get_usage_chars(struct lock_class *class, char *c1, char *c2, char *c3, char *c4);
- 
- extern const char * __get_key_name(struct lockdep_subclass_key *key, char *str);
- 
-+struct lock_class *lock_chain_get_class(struct lock_chain *chain, int i);
-+
- extern unsigned long nr_lock_classes;
- extern unsigned long nr_list_entries;
- extern unsigned long nr_lock_chains;
-+extern int nr_chain_hlocks;
- extern unsigned long nr_stack_trace_entries;
- 
- extern unsigned int nr_hardirq_chains;
-diff --git a/kernel/lockdep_proc.c b/kernel/lockdep_proc.c
-index dc5d296..9b0e940 100644
---- a/kernel/lockdep_proc.c
-+++ b/kernel/lockdep_proc.c
-@@ -139,7 +139,7 @@ static int l_show(struct seq_file *m, void *v)
- 
- 	list_for_each_entry(entry, &class->locks_after, entry) {
- 		if (entry->distance == 1) {
--			seq_printf(m, " -> [%p] ", entry->class);
-+			seq_printf(m, " -> [%p] ", entry->class->key);
- 			print_name(m, entry->class);
- 			seq_puts(m, "\n");
- 		}
-@@ -178,6 +178,95 @@ static const struct file_operations proc_lockdep_operations = {
- 	.release	= seq_release,
- };
- 
-+#ifdef CONFIG_PROVE_LOCKING
-+static void *lc_next(struct seq_file *m, void *v, loff_t *pos)
-+{
-+	struct lock_chain *chain;
-+
-+	(*pos)++;
-+
-+	if (v == SEQ_START_TOKEN)
-+		chain = m->private;
-+	else {
-+		chain = v;
-+
-+		if (*pos < nr_lock_chains)
-+			chain = lock_chains + *pos;
-+		else
-+			chain = NULL;
-+	}
-+
-+	return chain;
-+}
-+
-+static void *lc_start(struct seq_file *m, loff_t *pos)
-+{
-+	if (*pos == 0)
-+		return SEQ_START_TOKEN;
-+
-+	if (*pos < nr_lock_chains)
-+		return lock_chains + *pos;
-+
-+	return NULL;
-+}
-+
-+static void lc_stop(struct seq_file *m, void *v)
-+{
-+}
-+
-+static int lc_show(struct seq_file *m, void *v)
-+{
-+	struct lock_chain *chain = v;
-+	struct lock_class *class;
-+	int i;
-+
-+	if (v == SEQ_START_TOKEN) {
-+		seq_printf(m, "all lock chains:\n");
-+		return 0;
-+	}
-+
-+	seq_printf(m, "irq_context: %d\n", chain->irq_context);
-+
-+	for (i = 0; i < chain->depth; i++) {
-+		class = lock_chain_get_class(chain, i);
-+		seq_printf(m, "[%p] ", class->key);
-+		print_name(m, class);
-+		seq_puts(m, "\n");
-+	}
-+	seq_puts(m, "\n");
-+
-+	return 0;
-+}
-+
-+static const struct seq_operations lockdep_chains_ops = {
-+	.start	= lc_start,
-+	.next	= lc_next,
-+	.stop	= lc_stop,
-+	.show	= lc_show,
-+};
-+
-+static int lockdep_chains_open(struct inode *inode, struct file *file)
-+{
-+	int res = seq_open(file, &lockdep_chains_ops);
-+	if (!res) {
-+		struct seq_file *m = file->private_data;
-+
-+		if (nr_lock_chains)
-+			m->private = lock_chains;
-+		else
-+			m->private = NULL;
-+	}
-+	return res;
-+}
-+
-+static const struct file_operations proc_lockdep_chains_operations = {
-+	.open		= lockdep_chains_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= seq_release,
-+};
-+#endif /* CONFIG_PROVE_LOCKING */
-+
- static void lockdep_stats_debug_show(struct seq_file *m)
- {
- #ifdef CONFIG_DEBUG_LOCKDEP
-@@ -294,6 +383,8 @@ static int lockdep_stats_show(struct seq_file *m, void *v)
- #ifdef CONFIG_PROVE_LOCKING
- 	seq_printf(m, " dependency chains:             %11lu [max: %lu]\n",
- 			nr_lock_chains, MAX_LOCKDEP_CHAINS);
-+	seq_printf(m, " dependency chain hlocks:       %11d [max: %lu]\n",
-+			nr_chain_hlocks, MAX_LOCKDEP_CHAIN_HLOCKS);
- #endif
- 
- #ifdef CONFIG_TRACE_IRQFLAGS
-@@ -661,6 +752,10 @@ static const struct file_operations proc_lock_stat_operations = {
- static int __init lockdep_proc_init(void)
- {
- 	proc_create("lockdep", S_IRUSR, NULL, &proc_lockdep_operations);
-+#ifdef CONFIG_PROVE_LOCKING
-+	proc_create("lockdep_chains", S_IRUSR, NULL,
-+		    &proc_lockdep_chains_operations);
-+#endif
- 	proc_create("lockdep_stats", S_IRUSR, NULL,
- 		    &proc_lockdep_stats_operations);
- 
-diff --git a/kernel/mutex-debug.c b/kernel/mutex-debug.c
-index 3aaa06c..1d94160 100644
---- a/kernel/mutex-debug.c
-+++ b/kernel/mutex-debug.c
-@@ -79,8 +79,8 @@ void debug_mutex_unlock(struct mutex *lock)
- 	if (unlikely(!debug_locks))
- 		return;
- 
--	DEBUG_LOCKS_WARN_ON(lock->owner != current_thread_info());
- 	DEBUG_LOCKS_WARN_ON(lock->magic != lock);
-+	DEBUG_LOCKS_WARN_ON(lock->owner != current_thread_info());
- 	DEBUG_LOCKS_WARN_ON(!lock->wait_list.prev && !lock->wait_list.next);
- 	DEBUG_LOCKS_WARN_ON(lock->owner != current_thread_info());
- }
-diff --git a/kernel/mutex.c b/kernel/mutex.c
-index d046a34..bcdc9ac 100644
---- a/kernel/mutex.c
-+++ b/kernel/mutex.c
-@@ -165,10 +165,7 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
- 		 * got a signal? (This code gets eliminated in the
- 		 * TASK_UNINTERRUPTIBLE case.)
- 		 */
--		if (unlikely((state == TASK_INTERRUPTIBLE &&
--					signal_pending(task)) ||
--			      (state == TASK_KILLABLE &&
--					fatal_signal_pending(task)))) {
-+		if (unlikely(signal_pending_state(state, task))) {
- 			mutex_remove_waiter(lock, &waiter,
- 					    task_thread_info(task));
- 			mutex_release(&lock->dep_map, 1, ip);
+ 	/* First entry is core kernel percpu data. */
+ 	for (i = 1; i < pcpu_num_used; ptr += block_size(pcpu_size[i]), i++) {
+@@ -451,7 +452,7 @@ static int percpu_modinit(void)
+ 	pcpu_size = kmalloc(sizeof(pcpu_size[0]) * pcpu_num_allocated,
+ 			    GFP_KERNEL);
+ 	/* Static in-kernel percpu data (used). */
+-	pcpu_size[0] = -(__per_cpu_end-__per_cpu_start);
++	pcpu_size[0] = -__per_cpu_size;
+ 	/* Free room. */
+ 	pcpu_size[1] = PERCPU_ENOUGH_ROOM + pcpu_size[0];
+ 	if (pcpu_size[1] < 0) {
