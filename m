@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758234AbYGNV2N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758432AbYGNV22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758234AbYGNV2N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 17:28:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756383AbYGNV16
+	id S1758432AbYGNV22 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 17:28:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758257AbYGNV2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 17:27:58 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54539 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753325AbYGNV15 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 17:27:57 -0400
-Date: Mon, 14 Jul 2008 17:26:38 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@devserv.devel.redhat.com
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-cc: davem@davemloft.net, andi@firstfloor.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: [SUGGESTION]: drop virtual merge accounting in I/O requests
-In-Reply-To: <20080715024424R.fujita.tomonori@lab.ntt.co.jp>
-Message-ID: <Pine.LNX.4.64.0807141720350.30981@devserv.devel.redhat.com>
-References: <20080713.174119.71992292.davem@davemloft.net>
- <20080714111917S.fujita.tomonori@lab.ntt.co.jp> <20080713.202035.172246136.davem@davemloft.net>
- <20080715024424R.fujita.tomonori@lab.ntt.co.jp>
+	Mon, 14 Jul 2008 17:28:16 -0400
+Received: from outbound-mail-146.bluehost.com ([67.222.38.36]:38439 "HELO
+	outbound-mail-146.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758243AbYGNV2P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 17:28:15 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User:DomainKey-Status;
+	b=K1rmk7QN8jNOHzK9fHTy96lI4CEzaTBauQXWn5+fgBSZPpsLps8GHSpzFFGxvcwgOXqmLGFRwWZFfA0bXfgenXSek6vnPwHeBowRO4wKMWooYpN04GA6GP1P6HQTvcmK;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Subject: Re: x86: PCI multi domain/segment config access
+Date: Mon, 14 Jul 2008 14:28:10 -0700
+User-Agent: KMail/1.9.9
+Cc: John Keller <jpk@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+References: <20080711211347.6461.68923.91734@attica.americas.sgi.com> <20080711212117.GW14894@parisc-linux.org>
+In-Reply-To: <20080711212117.GW14894@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807141428.11022.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jul 2008, FUJITA Tomonori wrote:
+On Friday, July 11, 2008 2:21 pm Matthew Wilcox wrote:
+> On Fri, Jul 11, 2008 at 04:13:47PM -0500, John Keller wrote:
+> > On x86 PCI Config space access to domains/segments > 0 appears to be
+> > broken. The noted patch related to PCI ext config space has all config
+> > accesses to offsets < 256 using conf1 if available, which is most likely
+> > the case.
+> >
+> > This would force usage of conf1 for non-extended config access (< 256) on
+> > PCI domains > 0.
+> >
+> > Am I missing something, or how would a conf1 access reference a domain
+> > other than zero?
+>
+> You're correct.  Sorry about that, I wasn't thinking about domains at
+> the time I wrote the patch.  Try this:
+>
+> [X86] Fix PCI config space for domains > 0
+>
+> John Keller reports that PCI config space access is broken on machines
+> with more than one domain.  conf1 accesses only work for domain 0.
+>
+> Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
 
-> On Sun, 13 Jul 2008 20:20:35 -0700 (PDT)
-> David Miller <davem@davemloft.net> wrote:
->
->> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
->> Date: Mon, 14 Jul 2008 11:19:02 +0900
->>
->>> Now IOMMUs don't ignore the max_segment_size. We hit this problem.
->>
->> It seems simply that max_segment_size needs to propagate
->> down into the block layer VMERGE code so that it can
->> act accordingly.
->
-> Yeah, I think so. I'll take care of that.
->
-> But I think that even with the fix, SPARC64 IOMMU still hits the
-> problem.
->
-> With the VMERGE accounting enabled,
->
-> - an IOMMU must merge segments that the block layer expects the IOMMU
-> to merge.
->
-> - an IOMMU must return an error if it can't merge such segments.
->
-> But the current SPARC64 IOMMU code doesn't return an error if it can't
-> merge such segments (as POWER's IOMMU does, as you know).
+Oops, yeah, good catch.  Thanks for fixing this up, Matthew.  Just applied it 
+to my linux-next branch.
 
-BTW. what should the block device driver do when it receives a mapping 
-error? (if it aborts the request and it was write request, there will be 
-data corruption). Is it even legal to return IOMMU error in case where no 
-real hardware error or overflow happened?
-
-Mikulas
+Thanks,
+Jesse
