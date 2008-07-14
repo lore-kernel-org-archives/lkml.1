@@ -1,95 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756503AbYGNGZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756686AbYGNG0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756503AbYGNGZm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 02:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbYGNGZd
+	id S1756686AbYGNG0R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 02:26:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbYGNG0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 02:25:33 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:38652 "EHLO
+	Mon, 14 Jul 2008 02:26:06 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:38658 "EHLO
 	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752798AbYGNGZc (ORCPT
+	with ESMTP id S1752734AbYGNG0F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 02:25:32 -0400
-Date: Mon, 14 Jul 2008 08:26:09 +0200
+	Mon, 14 Jul 2008 02:26:05 -0400
+Date: Mon, 14 Jul 2008 08:26:44 +0200
 From: Pavel Machek <pavel@suse.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Zhang Rui <rui.zhang@intel.com>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] [RFC PATCH 0/4] save and restore ACPI NVS memory
-	during hibernation
-Message-ID: <20080714062609.GD31949@elf.ucw.cz>
-References: <1215051868.5628.32.camel@rzhang-dt.sh.intel.com> <200807112259.56263.rjw@sisk.pl> <86802c440807111456k5d46a46co18bee343541fed8c@mail.gmail.com> <200807120240.21477.rjw@sisk.pl>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: v2.6.26-rc7: Negative powertop values
+Message-ID: <20080714062644.GE31949@elf.ucw.cz>
+References: <19f34abd0806211216y4695c532ndb4935082bd8ea1@mail.gmail.com> <20080621141615.51f7100c@linux.intel.com> <20080706194845.GA5617@ucw.cz> <20080708065251.1d7d681f@linux.intel.com> <20080713115818.GA7517@elf.ucw.cz> <487A20DF.7060701@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200807120240.21477.rjw@sisk.pl>
+In-Reply-To: <487A20DF.7060701@linux.intel.com>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 2008-07-12 02:40:20, Rafael J. Wysocki wrote:
-> On Friday, 11 of July 2008, Yinghai Lu wrote:
-> > On Fri, Jul 11, 2008 at 1:59 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > On Friday, 11 of July 2008, Pavel Machek wrote:
-> > >> On Fri 2008-07-11 21:18:34, Rafael J. Wysocki wrote:
-> > >> > On Friday, 11 of July 2008, Pavel Machek wrote:
-> > >> > > On Wed 2008-07-09 21:37:18, Rafael J. Wysocki wrote:
-> > >> > > > On Tuesday, 8 of July 2008, Pavel Machek wrote:
-> > >> > > > > Hi!
-> > >> > > > >
-> > >> > > > > > According to the ACPI spec, ACPI NVS memory region is required to
-> > >> > > > > > be saved/restored by OS during hibernation.
-> > >> > > > > >
-> > >> > > > > > Section 15.3.2 ACPI Spec 3.0b,
-> > >> > > > > > "OSPM will call the _PTS control method some time before entering
-> > >> > > > > > a sleeping state, to allow the platform???s AML code to update
-> > >> > > > > > this memory image before entering the sleeping state.
-> > >> > > > > > After the system awakes from an S4 state, OSPM will restore this
-> > >> > > > > > memory area and call the _WAK control method to enable the BIOS
-> > >> > > > > > to reclaim its memory image."
-> > >> > > > > >
-> > >> > > > > > This patch set add the mechanism to save/restore ACPI NVS memory
-> > >> > > > > > during hibernation.
-> > >> > > > > >
-> > >> > > > > > Patch 01: call platform_begin before swsusp_shrink_memory.
-> > >> > > > > >     So that we can allocate enough pages for ACPI NVS memory
-> > >> > > > > >     before shrink the memory.
-> > >> > > > >
-> > >> > > > > Why is it neccessary to allocate memory for a copy? We should be able
-> > >> > > > > to save ACPI NVS area same way we are saving kernel pages, no?
-> > >> > > >
-> > >> > > > Because we want to restore it from the hibernated kernel (when it gets control
-> > >> > > > back again).
-> > >> > >
-> > >> > > Why is that important? So we can run some ACPI methods from hibernated
-> > >> > > kernel before restoring it?
-> > >> >
-> > >> > We're supposed to restore it right prior to executing _WAK, which is after
-> > >> > we've executed _BFS.  This is a bit theoretical, because no one seems to
-> > >> > actaully implement _BFS, but well.
-> > >>
-> > >> Could we just call _BFS from the "loading" kernel, instead? That would
-> > >> save us that copying code...
-> > >
-> > > I'd prefer not to, because that would require the boot kernel to support ACPI,
-> > > which need not (and in fact should not IMO) be the case at present.
-> > >
-> > > Anyway, we'd have to either copy the NVS data into memory which is mapped and
-> > > can be saved, or to map the NVS area in order to save/restore it, which I
-> > > wouldn't like to do.
-> > 
-> > io_remap doesn't work at that time?
-> 
-> Yes, it does, but to use it, we would have to add extra information to the
-> image header describing the location of the NVS data within the image.
-> I prefer the Zhang Rui's approach to this.
+On Sun 2008-07-13 08:35:59, Arjan van de Ven wrote:
+> Pavel Machek wrote:
+>> On Tue 2008-07-08 06:52:51, Arjan van de Ven wrote:
+>>> On Sun, 6 Jul 2008 21:48:45 +0200
+>>> Pavel Machek <pavel@suse.cz> wrote:
+>>>
+>>>>> [I assume you know that doing a software unplug you burn more power
+>>>>> than by leaving the cpu idle]
+>>>> We should really fix that one day...
+>>> yeah but it's incredibly hard to get right (in the light of the bios
+>>> constantly changing what our allowed C-states are)... and the best case
+>>
+>> What can happen there? So BIOS decides C4 may no longer be cool idea
+>> because we have AC power now, but that does not mean C4 stops working,
+>> right?
+>
+> or it decides that your voltage regulator needs to operate in a certain mode and the voltage for C4 is no longer
+> available. or .. or ...
+>
+>>
+>> How is changing allowed C-states list supposed to work, anyway? I
+>> mean, we may be in one of those on other CPU when BIOS decides to
+>> change the list...
+>
+> you get an interrupt to notify you of the change ;-)
 
-Ok, I guess I prefer it now, too. Feel free to add ACK on the series.
+But that's too late, right? You may be actively using that Cstate on
+another CPU...
 									Pavel
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
