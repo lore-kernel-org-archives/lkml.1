@@ -1,51 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756058AbYGNOET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755810AbYGNOEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756058AbYGNOET (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 10:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753492AbYGNOEA
+	id S1755810AbYGNOEz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 10:04:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbYGNOEo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 10:04:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46350 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753454AbYGNOD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 10:03:59 -0400
-Date: Mon, 14 Jul 2008 10:03:29 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@devserv.devel.redhat.com
-To: David Miller <davem@davemloft.net>
-cc: andi@firstfloor.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: [SUGGESTION]: drop virtual merge accounting in I/O requests
-In-Reply-To: <20080714.052859.88212003.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0807141000340.24718@devserv.devel.redhat.com>
-References: <Pine.LNX.4.64.0807131947090.7803@devserv.devel.redhat.com>
- <20080713.174855.234796356.davem@davemloft.net>
- <Pine.LNX.4.64.0807140805380.10106@devserv.devel.redhat.com>
- <20080714.052859.88212003.davem@davemloft.net>
+	Mon, 14 Jul 2008 10:04:44 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:26026 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753492AbYGNOEn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 10:04:43 -0400
+Message-ID: <487B5CEE.90404@hp.com>
+Date: Mon, 14 Jul 2008 10:04:30 -0400
+From: jim owens <jowens@hp.com>
+User-Agent: Mozilla/5.0 (X11; U; OSF1 alpha; en-US; rv:1.7.13) Gecko/20060421
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Takashi Sato <t-sato@yk.jp.nec.com>
+CC: mtk.manpages@googlemail.com, axboe@kernel.dk, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, xfs@oss.sgi.com, linux-ext4@vger.kernel.org,
+       viro@ZenIV.linux.org.uk, akpm@linux-foundation.org, pavel@suse.cz,
+       linux-fsdevel@vger.kernel.org, hch@infradead.org,
+       Miklos Szeredi <miklos@szeredi.hu>,
+       Arjan van de Ven <arjan@infradead.org>, Theodore Tso <tytso@mit.edu>,
+       Dave Chinner <david@fromorbit.com>
+Subject: Re: [PATCH 3/3] Add timeout feature
+References: <20080709005254.GQ11558@disturbed> <20080709010922.GE9957@mit.edu> <E1KGSvZ-0006dB-53@pomaz-ex.szeredi.hu> <20080709061621.GA5260@infradead.org> <E1KGT4q-0006fD-Jb@pomaz-ex.szeredi.hu> <20080708234120.5072111f@infradead.org> <E1KGTTm-0006ke-Jh@pomaz-ex.szeredi.hu> <20080708235502.1c52a586@infradead.org> <20080709071346.GS11558@disturbed> <20080709110900.GI9957@mit.edu> <20080709114958.GV11558@disturbed> <4874C3E8.20804@hp.com> <88E7CDF01964465CB9F33DE11298271D@nsl.ad.nec.co.jp>
+In-Reply-To: <88E7CDF01964465CB9F33DE11298271D@nsl.ad.nec.co.jp>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Jul 2008, David Miller wrote:
+Takashi Sato wrote:
 
-> From: Mikulas Patocka <mpatocka@redhat.com>
-> Date: Mon, 14 Jul 2008 08:16:13 -0400 (EDT)
->
->> As you mentioned ESP driver, it declares .sg_tablesize = SG_ALL, so
->> BIO_VMERGE_BOUNDARY has no effect on the operation of this driver. Any
->> other driver where BIO_VMERGE_BOUNDARY does matter?
->
-> When BIO_VMERGE_BOUNDARY is turned on, requests that would not
-> otherwise fit into the device's limits, can.
+> What is the difference between the timeout and AUTO-THAW?
+> When the kernel detects a deadlock, does it occur to solve it?
 
-Why would someone want to overshoot SG_ALL? ... and, shouldn't the 
-constant be increased then --- instead of making buggy BIO_VMERGE_BOUNDARY 
-expectations?
+TIMEOUT is a user-specified limit for the freeze.  It is
+not a deadlock preventer or deadlock breaker.  The reason
+it exists is:
 
-Mikulas
+    - middle of the night (low but not zero users)
+    - cron triggers freeze and hardware snapshot
+    - san is overloaded by tape copy traffic so
+      hardware will take 2 hours to ack snapshot done
+    - user "company president" tries to create a report
+      needed for an AM meeting with bankers
+    - with so few users, system will just patiently
+      wait for hardware to finish
+    - after 10 minutes "company president" pages
+      admin, admin's boss, and "IT vice president"
+      in a real unhappy mood
 
-> It's the only way to know ahead of time that the IOMMU is going
-> to merge things for us.
+AUTO-THAW is simply a name for the effect of all deadlock
+preventer and deadlock breaker code that the kernel has
+in the freeze implementation paths... if that code would
+unfreeze the filesystem.  We also implemented deadlock
+preventer code that does not thaw the freeze.
 
+None of the AUTO-THAW code is there to stop a stupid
+userspace program caller of freeze.  It handles things
+like "a system in our cluster is going down so we
+must have this filesystem unfrozen or the whole
+cluster will crash".   In places where there could be
+a kernel deadlock we made it "lock-only-if-non-blocking"
+and if we could not wait to retry later, the failure
+to lock would trigger an immediate unfreeze.
+
+Deadlock prevention needs code in critical paths in more
+than just filesystems.  Sometimes this is as simple as
+an "I can't wait on freeze" flag added to a vm-filesystem
+interface.
+
+Timers just don't work for keeping the kernel alive
+because they don't trigger on resource exhaustion.
+
+jim
