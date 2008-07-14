@@ -1,180 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbYGNCle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756102AbYGNCnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755988AbYGNCle (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 22:41:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754381AbYGNClX
+	id S1756102AbYGNCnS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 22:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754315AbYGNCnG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 22:41:23 -0400
-Received: from ti-out-0910.google.com ([209.85.142.185]:2703 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753902AbYGNClW (ORCPT
+	Sun, 13 Jul 2008 22:43:06 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:47273 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754299AbYGNCnF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 22:41:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Cp01A4zrQi+S1nLcYYBZ3ap4hYDw2NTuGMQVBSEZX75YSE52yfK6xk+yoF8ZnpBrTZ
-         0mqt5lSsSCNXp91a+7N0WVaoBAbUYrF8WQvHzPJtLH1eB3hQFmRmmvqs/4NPX094Ud5E
-         WNouAKcmnkCn0yNfK6YUkw1PWAleKoWS/Ihsc=
-Message-ID: <a8e1da0807131941n4697cb14g1cfbb0bb3ad74f50@mail.gmail.com>
-Date: Mon, 14 Jul 2008 10:41:17 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Subject: Re: [RFC][-rc9 PATCH] Bluetooth: fix oops in rfcomm
-Cc: "Soeren Sonnenburg" <kernel@nn7.de>,
-       "Marcel Holtmann" <marcel@holtmann.org>,
-       "David Woodhouse" <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <20080713172318.GA6180@damson.getinternet.no>
+	Sun, 13 Jul 2008 22:43:05 -0400
+Message-ID: <487ABB81.8020100@zytor.com>
+Date: Sun, 13 Jul 2008 19:35:45 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Andi Kleen <andi@firstfloor.org>, Andy Lutomirski <luto@myrealbox.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>,
+       public-kernel-testers-u79uwXL29TY76Z2rM5mHXA@lo.gmane.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
+References: <200807010148.02135.rjw@sisk.pl> <200807132115.08230.rjw@sisk.pl> <487A617B.80707@firstfloor.org> <200807132229.43140.rjw@sisk.pl>
+In-Reply-To: <200807132229.43140.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080713172318.GA6180@damson.getinternet.no>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 14, 2008 at 1:23 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> Hi,
->
-> Disclaimer: This is just an RFC as I don't really know the code in
-> question. But I did try to do it correctly and yes, it DOES fix the
-> oops for me. But I'd be really happy if somebody who uses Bluetooth
-> in the first place could test & review.
->
-> (In other words, you may use this patch for inspiration, etc. if you
->  decide to give it a try yourself.)
->
->
-> Vegard
->
->
-> From 675b50291f0af40974074590e2fd16ae0546ecde Mon Sep 17 00:00:00 2001
-> From: Vegard Nossum <vegard.nossum@gmail.com>
-> Date: Sun, 13 Jul 2008 19:02:11 +0200
-> Subject: [PATCH] Bluetooth: fix race between rfcomm and tty
->
-> Soeren Sonnenburg reported:
->> this oops happened after a couple of s2ram cycles so it might be very
->> well crap. However I somehow triggered it by /etc/init.d/bluetooth
->> stop/start's which also call hid2hci maybe even a connection was about
->> to be established at that time. As I remember having seen a problem like
->> this before I thought I report it (even though I have a madwifi tainted
->> kernel).
->>
->> kobject_add_internal failed for rfcomm0 with -EEXIST, don't try to register things with the same name in the same directory.
->
-> It turns out that the following sequence of actions will reproduce the
-> oops:
->
->  1. Create a new rfcomm device (using RFCOMMCREATEDEV ioctl)
->  2. (Try to) open the device
->  3. Release the rfcomm device (using RFCOMMRELEASEDEV ioctl)
->
-> At this point, the "rfcomm?" tty is still in use, but the device is gone
-> from the internal rfcomm list, so the device id can be reused.
->
->  4. Create a new rfcomm device with the same device id as before
->
-> And now kobject will complain that the tty already exists.
->
-> This patch attempts to correct this by only removing the device from the
-> internal rfcomm list of devices at the final unregister, so that the id
-> won't get reused until the device has been completely destructed.
+Rafael J. Wysocki wrote:
+> 
+> If s3_bios depends on the (invalid) contents of the hidden part of any segment
+> register, it's just terminally broken.
+> 
 
-It looks good, I agree with your change.
+Depending on it being in Big Real Mode isn't all that broken, however, 
+especially on laptops where the vendor has control over the system 
+BIOS/video BIOS.
 
->
-> This should be safe as the RFCOMM_TTY_RELEASED bit will be set for the
-> device and prevent the device from being reopened after it has been
-> released.
->
-> We also fix a race at the same time by including the call to
-> tty_unregister_device inside the rfcomm_dev_lock (the lock protecting
-> the list of devices).
->
-> Reported-by: Soeren Sonnenburg <kernel@nn7.de>
-> Cc: Marcel Holtmann <marcel@holtmann.org>
-> Cc: David Woodhouse <dwmw2@infradead.org>
-> Cc: Dave Young <hidave.darkstar@gmail.com>
-> Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
-> ---
->  net/bluetooth/rfcomm/tty.c |   13 +++++++------
->  1 files changed, 7 insertions(+), 6 deletions(-)
->
-> diff --git a/net/bluetooth/rfcomm/tty.c b/net/bluetooth/rfcomm/tty.c
-> index c919187..e289568 100644
-> --- a/net/bluetooth/rfcomm/tty.c
-> +++ b/net/bluetooth/rfcomm/tty.c
-> @@ -95,6 +95,8 @@ static void rfcomm_dev_destruct(struct rfcomm_dev *dev)
->
->        BT_DBG("dev %p dlc %p", dev, dlc);
->
-> +       write_lock_bh(&rfcomm_dev_lock);
-> +
->        /* Refcount should only hit zero when called from rfcomm_dev_del()
->           which will have taken us off the list. Everything else are
->           refcounting bugs. */
-> @@ -108,8 +110,11 @@ static void rfcomm_dev_destruct(struct rfcomm_dev *dev)
->
->        rfcomm_dlc_put(dlc);
->
-> +       list_del_init(&dev->list);
->        tty_unregister_device(rfcomm_tty_driver, dev->id);
+Enabling BRM by default *shouldn't* break anything, so it might be what 
+we want to do anyway.
 
-        if (IS_ERR(dev->tty_dev)) {
-                err = PTR_ERR(dev->tty_dev);
-                list_del(&dev->list);
-                kfree(dev);
-                return err;
-        }
-
-The list_del need to be protected as well.
-
->
-> +       write_unlock_bh(&rfcomm_dev_lock);
-> +
->        kfree(dev);
->
->        /* It's safe to call module_put() here because socket still
-> @@ -278,14 +283,14 @@ static int rfcomm_dev_add(struct rfcomm_dev_req *req, struct rfcomm_dlc *dlc)
->        __module_get(THIS_MODULE);
->
->  out:
-> -       write_unlock_bh(&rfcomm_dev_lock);
-> -
->        if (err < 0) {
-> +               write_unlock_bh(&rfcomm_dev_lock);
->                kfree(dev);
->                return err;
->        }
->
->        dev->tty_dev = tty_register_device(rfcomm_tty_driver, dev->id, NULL);
-> +       write_unlock_bh(&rfcomm_dev_lock);
->
->        if (IS_ERR(dev->tty_dev)) {
->                err = PTR_ERR(dev->tty_dev);
-> @@ -314,10 +319,6 @@ static void rfcomm_dev_del(struct rfcomm_dev *dev)
->        else
->                set_bit(RFCOMM_TTY_RELEASED, &dev->flags);
->
-> -       write_lock_bh(&rfcomm_dev_lock);
-> -       list_del_init(&dev->list);
-> -       write_unlock_bh(&rfcomm_dev_lock);
-> -
->        rfcomm_dev_put(dev);
->  }
->
-> --
-> 1.5.4.1
->
->
-
-
-
--- 
-Regards
-dave
+	-hpa
