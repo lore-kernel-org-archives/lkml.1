@@ -1,83 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755932AbYGNHQG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755395AbYGNHQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755932AbYGNHQG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 03:16:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756328AbYGNHOS
+	id S1755395AbYGNHQf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 03:16:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756365AbYGNHOV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 03:14:18 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:50867 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756264AbYGNHOQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 03:14:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=UKd+pjiGUEUesJnYNKCYjoay9OSi+WHOGw4vbLj5IxeeTGqv95jqLxj3ADnLJydo+b
-         lmlcHzEgCksriZbWGINi22TwZgN3kO5K1Lmn1BqxvZdC9TP2FwYcdbgsayIU625lHeNL
-         6fkbN59UnQA5Hde5C08Rl9rIQMXRzbW5pgnYk=
-Message-ID: <86802c440807140014y6f0b67e7r6414b686fdbaf012@mail.gmail.com>
-Date: Mon, 14 Jul 2008 00:14:14 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Joe Jin" <joe.jin@oracle.com>, "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86_64: reserve crashkernel bootmem before reserve dma32 bootmem
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Andi Kleen" <andi@firstfloor.org>,
-       greg.marsden@oracle.com, tao.ma@oracle.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <86802c440807101032h6fc6cf16l829e4932477f43b3@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080710123446.GA1595@joejin-pc.cn.oracle.com>
-	 <86802c440807101032h6fc6cf16l829e4932477f43b3@mail.gmail.com>
+	Mon, 14 Jul 2008 03:14:21 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60140 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755908AbYGNHOT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 03:14:19 -0400
+From: Tejun Heo <tj@kernel.org>
+To: jens.axboe@oracle.com, James.Bottomley@HansenPartnership.com,
+       bharrosh@panasas.com, greg.freemyer@gmail.com,
+       linux-scsi@vger.kernel.org, brking@linux.vnet.ibm.com, liml@rtr.ca,
+       viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 09/10] sd/ide-disk: apply extended minors to sd and ide
+Date: Mon, 14 Jul 2008 16:12:13 +0900
+Message-Id: <1216019534-29977-10-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.5.4.5
+In-Reply-To: <1216019534-29977-1-git-send-email-tj@kernel.org>
+References: <1216019534-29977-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 14 Jul 2008 07:13:03 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 10, 2008 at 10:32 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> On Thu, Jul 10, 2008 at 5:34 AM, Joe Jin <joe.jin@oracle.com> wrote:
->> Before reserve_crashkernel, dma32_reserve_bootmem would reserve 128M memory.
->> this cuased crashkernel end address must less than 64M or start address must
->> more than 192M except crashkernel memory reserved before dma32 memory reserved.
->>
->> This patch against 2.6.26-rc9
->>
->> Signed-off-by: Joe Jin <joe.jin@oracle.com>
->> ---
->>  setup_64.c |    4 ++--
->>  1 file changed, 2 insertions(+), 2 deletions(-)
->>
->> --- linux-2.6.26-rc9/arch/x86/kernel/setup_64.c.orig    2008-07-10 16:34:12.000000000 +0800
->> +++ linux-2.6.26-rc9/arch/x86/kernel/setup_64.c 2008-07-10 16:35:00.000000000 +0800
->> @@ -444,8 +444,6 @@ void __init setup_arch(char **cmdline_p)
->>        contig_initmem_init(0, end_pfn);
->>  #endif
->>
->> -       dma32_reserve_bootmem();
->> -
->>  #ifdef CONFIG_ACPI_SLEEP
->>        /*
->>         * Reserve low memory region for sleep support.
->> @@ -486,6 +484,8 @@ void __init setup_arch(char **cmdline_p)
->>  #endif
->>        reserve_crashkernel();
->>
->> +       dma32_reserve_bootmem();
->> +
->>        reserve_ibft_region();
->>
->>        paging_init();
->
-> Acked-by: Yinghai Lu <yhlu.kernel@gmail.com>
->
+Update sd and ide-disk such that they can take advantage of extended
+minors.
 
-Ingo,
+ide-disk already has 64 minors per device and currently doesn't use
+extended minors although after this patch it can be turned on by
+simply tweaking constants.
 
-it seems you missed this patch..., it should get into 2.6.26..stable..too
+sd only had 16 minors per device causing problems on certain peculiar
+configurations.  This patch lifts the restriction and enables it to
+use upto 64 minors.
 
-YH
+Signed-off-by: Tejun Heo <tj@kernel.org>
+---
+ drivers/ide/ide-disk.c |   11 ++++++++---
+ drivers/scsi/sd.c      |    9 +++++++--
+ 2 files changed, 15 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/ide/ide-disk.c b/drivers/ide/ide-disk.c
+index 8e08d08..f8b091a 100644
+--- a/drivers/ide/ide-disk.c
++++ b/drivers/ide/ide-disk.c
+@@ -41,6 +41,10 @@
+ #include <asm/io.h>
+ #include <asm/div64.h>
+ 
++#define IDE_DISK_PARTS		(1 << PARTN_BITS)
++#define IDE_DISK_MINORS		IDE_DISK_PARTS
++#define IDE_DISK_EXT_MINORS	(IDE_DISK_PARTS - IDE_DISK_MINORS)
++
+ struct ide_disk_obj {
+ 	ide_drive_t	*drive;
+ 	ide_driver_t	*driver;
+@@ -1158,8 +1162,8 @@ static int ide_disk_probe(ide_drive_t *drive)
+ 	if (!idkp)
+ 		goto failed;
+ 
+-	g = alloc_disk_node(1 << PARTN_BITS,
+-			hwif_to_node(drive->hwif));
++	g = alloc_disk_ext_node(IDE_DISK_MINORS, IDE_DISK_EXT_MINORS,
++				hwif_to_node(drive->hwif));
+ 	if (!g)
+ 		goto out_free_idkp;
+ 
+@@ -1185,7 +1189,8 @@ static int ide_disk_probe(ide_drive_t *drive)
+ 	} else
+ 		drive->attach = 1;
+ 
+-	g->minors = 1 << PARTN_BITS;
++	g->minors = IDE_DISK_MINORS;
++	g->ext_minors = IDE_DISK_EXT_MINORS;
+ 	g->driverfs_dev = &drive->gendev;
+ 	g->flags = drive->removable ? GENHD_FL_REMOVABLE : 0;
+ 	set_capacity(g, idedisk_capacity(drive));
+diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
+index c330f16..0a8b559 100644
+--- a/drivers/scsi/sd.c
++++ b/drivers/scsi/sd.c
+@@ -86,6 +86,10 @@ MODULE_ALIAS_SCSI_DEVICE(TYPE_DISK);
+ MODULE_ALIAS_SCSI_DEVICE(TYPE_MOD);
+ MODULE_ALIAS_SCSI_DEVICE(TYPE_RBC);
+ 
++#define SD_PARTS	64
++#define SD_MINORS	16
++#define SD_EXT_MINORS	(SD_PARTS - SD_MINORS)
++
+ static int  sd_revalidate_disk(struct gendisk *);
+ static int  sd_probe(struct device *);
+ static int  sd_remove(struct device *);
+@@ -1641,7 +1645,7 @@ static int sd_probe(struct device *dev)
+ 	if (!sdkp)
+ 		goto out;
+ 
+-	gd = alloc_disk(16);
++	gd = alloc_disk_ext(SD_MINORS, SD_EXT_MINORS);
+ 	if (!gd)
+ 		goto out_free;
+ 
+@@ -1685,7 +1689,8 @@ static int sd_probe(struct device *dev)
+ 
+ 	gd->major = sd_major((index & 0xf0) >> 4);
+ 	gd->first_minor = ((index & 0xf) << 4) | (index & 0xfff00);
+-	gd->minors = 16;
++	gd->minors = SD_MINORS;
++	gd->ext_minors = SD_EXT_MINORS;
+ 	gd->fops = &sd_fops;
+ 
+ 	if (index < 26) {
+-- 
+1.5.4.5
+
