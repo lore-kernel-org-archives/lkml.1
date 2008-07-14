@@ -1,63 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757493AbYGNSeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818AbYGNShK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757493AbYGNSeT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 14:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753803AbYGNSeJ
+	id S1756818AbYGNShK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 14:37:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbYGNSg5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 14:34:09 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:4114 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752189AbYGNSeI (ORCPT
+	Mon, 14 Jul 2008 14:36:57 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:57336 "EHLO
+	VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752005AbYGNSg5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 14:34:08 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Avi Kivity <avi@qumranet.com>
-Subject: Re: [git pull] core, x86: make LIST_POISON less deadly
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080714144828.GA22666@elte.hu>
-	<alpine.LFD.1.10.0807140758100.3305@woody.linux-foundation.org>
-	<20080714151247.GA27145@elte.hu>
-	<alpine.LFD.1.10.0807140856130.3305@woody.linux-foundation.org>
-Date: Mon, 14 Jul 2008 20:33:23 +0200
-In-Reply-To: <alpine.LFD.1.10.0807140856130.3305@woody.linux-foundation.org> (Linus Torvalds's message of "Mon, 14 Jul 2008 08:59:44 -0700 (PDT)")
-Message-ID: <8763r8z570.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Mon, 14 Jul 2008 14:36:57 -0400
+X-BigFish: VPS4(zzzz10d3izzz32i43j65h)
+X-Spam-TCS-SCL: 4:0
+X-WSS-ID: 0K40ECV-03-9LU-01
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Avi Kivity <avi@qumranet.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH] allow enabling/disabling NPT by reloading only the architecture module
+Date: Mon, 14 Jul 2008 20:36:36 +0200
+Message-ID: <1216060596-6224-1-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.5.3.7
+X-OriginalArrivalTime: 14 Jul 2008 18:36:36.0914 (UTC) FILETIME=[8C49C920:01C8E5E0]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 14 Jul 2008 18:33:22.0809 (UTC) FILETIME=[1897B690:01C8E5E0]
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
->
->> We dont do any instruction decoding in #GP handlers to figure out what 
->> happened, while in the pagefault case we know which address faulted, 
->> etc.
->
-> Why would we care? It would be very obvious from the instruction 
-> disassembly plus the register contents. No need to decode instructions.
+If NPT is enabled after loading both KVM modules on AMD and it should be
+disabled, both KVM modules must be reloaded. If only the architecture module is
+reloaded the behavior is undefined. With this patch it is possible to disable
+NPT only by reloading the kvm_amd module.
 
-The issue is that the kernel cannot detect it (short of running the
-KVM x86 emulator on #GP, but surely you're not suggesting that), so it
-cannot print something out.
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/kvm/mmu.c         |    6 ++++++
+ arch/x86/kvm/svm.c         |    3 ++-
+ include/asm-x86/kvm_host.h |    1 +
+ 3 files changed, 9 insertions(+), 1 deletions(-)
 
-You would always need someone skilled in x86 assembler code
-[a lot of kernel developers actually aren't]
-to look at the oops and say: ok it was a bad list poison.
+diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+index bcd0adb..6376e50 100644
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -1874,6 +1874,12 @@ void kvm_enable_tdp(void)
+ }
+ EXPORT_SYMBOL_GPL(kvm_enable_tdp);
+ 
++void kvm_disable_tdp(void)
++{
++	tdp_enabled = false;
++}
++EXPORT_SYMBOL_GPL(kvm_disable_tdp);
++
+ static void free_mmu_pages(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvm_mmu_page *sp;
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index 0c3320e..09e753f 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -452,7 +452,8 @@ static __init int svm_hardware_setup(void)
+ 	if (npt_enabled) {
+ 		printk(KERN_INFO "kvm: Nested Paging enabled\n");
+ 		kvm_enable_tdp();
+-	}
++	} else
++		kvm_disable_tdp();
+ 
+ 	return 0;
+ 
+diff --git a/include/asm-x86/kvm_host.h b/include/asm-x86/kvm_host.h
+index b893a85..f760749 100644
+--- a/include/asm-x86/kvm_host.h
++++ b/include/asm-x86/kvm_host.h
+@@ -567,6 +567,7 @@ int kvm_fix_hypercall(struct kvm_vcpu *vcpu);
+ int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gva_t gva, u32 error_code);
+ 
+ void kvm_enable_tdp(void);
++void kvm_disable_tdp(void);
+ 
+ int load_pdptrs(struct kvm_vcpu *vcpu, unsigned long cr3);
+ int complete_pio(struct kvm_vcpu *vcpu);
+-- 
+1.5.3.7
 
-Currently it is very obvious because the fault address is printed
-even if you don't know any x86 assembler.
 
-I would consider that a regression.
-
-That is why I suggested using a canonical address.
-
-Also BTW if a CPU ever supports more than 40 bits virtual there
-will be so many kernel changes needed (5 level page tables) that 
-changing the poison too is the smallest of your worries.
-
--Andi
