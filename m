@@ -1,22 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756212AbYGNOem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbYGNOhX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756212AbYGNOem (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 10:34:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbYGNOee
+	id S1755449AbYGNOhX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 10:37:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbYGNOhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 10:34:34 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42521 "EHLO mx2.mail.elte.hu"
+	Mon, 14 Jul 2008 10:37:11 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43726 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753470AbYGNOee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 10:34:34 -0400
-Date: Mon, 14 Jul 2008 16:34:13 +0200
+	id S1753466AbYGNOhK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 10:37:10 -0400
+Date: Mon, 14 Jul 2008 16:36:54 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [git pull] core/percpu for v2.6.27
-Message-ID: <20080714143413.GA19134@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [git pull] core/printk for v2.6.27
+Message-ID: <20080714143654.GA19518@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -35,344 +33,283 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest core/percpu git tree from:
+Please pull the core/printk git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core/percpu
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core/printk
 
 Thanks,
 
 	Ingo
 
 ------------------>
-Eric Dumazet (1):
-      percpu: introduce DEFINE_PER_CPU_PAGE_ALIGNED() macro
+Ingo Molnar (1):
+      printk: export console_drivers
 
-Heiko Carstens (1):
-      percpu: zero based percpu build error on s390
+Jan Kiszka (1):
+      printk: don't prefer unsuited consoles on registration
 
-Mike Travis (2):
-      x86: extend percpu ops to 64 bit
-      Zero based percpu: infrastructure to rebase the per cpu area to zero
+Jiri Slaby (1):
+      x86, generic: mark early_printk as asmlinkage
+
+Nick Andrew (2):
+      printk: refactor processing of line severity tokens
+      printk: remember the message level for multi-line output
+
+Tejun Heo (1):
+      printk: clean up recursion check related static variables
+
+Thomas Gleixner (2):
+      namespacecheck: fix kernel printk.c
+      namespacecheck: more kernel/printk.c fixes
 
 
- arch/x86/kernel/cpu/common.c      |    2 +-
- arch/x86/kernel/vmlinux_32.lds.S  |    1 +
- include/asm-generic/percpu.h      |   11 ++++-
- include/asm-generic/sections.h    |   10 ++++
- include/asm-generic/vmlinux.lds.h |   17 ++++++++
- include/asm-x86/percpu.h          |   83 ++++++++++++++++++++++++++++++++++--
- include/linux/percpu.h            |   24 ++++++++++-
- kernel/lockdep.c                  |    4 +-
- kernel/module.c                   |    7 ++-
- 9 files changed, 146 insertions(+), 13 deletions(-)
+ arch/x86/kernel/early_printk.c |    2 +-
+ include/linux/kernel.h         |    8 +---
+ kernel/printk.c                |  107 +++++++++++++++++-----------------------
+ 3 files changed, 47 insertions(+), 70 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index d0463a9..b2f54fa 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -21,7 +21,7 @@
+diff --git a/arch/x86/kernel/early_printk.c b/arch/x86/kernel/early_printk.c
+index 643fd86..ff9e735 100644
+--- a/arch/x86/kernel/early_printk.c
++++ b/arch/x86/kernel/early_printk.c
+@@ -196,7 +196,7 @@ static struct console simnow_console = {
+ static struct console *early_console = &early_vga_console;
+ static int early_console_initialized;
  
- #include "cpu.h"
+-void early_printk(const char *fmt, ...)
++asmlinkage void early_printk(const char *fmt, ...)
+ {
+ 	char buf[512];
+ 	int n;
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 2e70006..f9cd7a5 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -187,9 +187,6 @@ asmlinkage int vprintk(const char *fmt, va_list args)
+ 	__attribute__ ((format (printf, 1, 0)));
+ asmlinkage int printk(const char * fmt, ...)
+ 	__attribute__ ((format (printf, 1, 2))) __cold;
+-extern int log_buf_get_len(void);
+-extern int log_buf_read(int idx);
+-extern int log_buf_copy(char *dest, int idx, int len);
  
--DEFINE_PER_CPU(struct gdt_page, gdt_page) = { .gdt = {
-+DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
- 	[GDT_ENTRY_KERNEL_CS] = { { { 0x0000ffff, 0x00cf9a00 } } },
- 	[GDT_ENTRY_KERNEL_DS] = { { { 0x0000ffff, 0x00cf9200 } } },
- 	[GDT_ENTRY_DEFAULT_USER_CS] = { { { 0x0000ffff, 0x00cffa00 } } },
-diff --git a/arch/x86/kernel/vmlinux_32.lds.S b/arch/x86/kernel/vmlinux_32.lds.S
-index ce5ed08..0f7c29a 100644
---- a/arch/x86/kernel/vmlinux_32.lds.S
-+++ b/arch/x86/kernel/vmlinux_32.lds.S
-@@ -189,6 +189,7 @@ SECTIONS
-   . = ALIGN(PAGE_SIZE);
-   .data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) {
- 	__per_cpu_start = .;
-+	*(.data.percpu.page_aligned)
- 	*(.data.percpu)
- 	*(.data.percpu.shared_aligned)
- 	__per_cpu_end = .;
-diff --git a/include/asm-generic/percpu.h b/include/asm-generic/percpu.h
-index b0e63c6..1c02250 100644
---- a/include/asm-generic/percpu.h
-+++ b/include/asm-generic/percpu.h
-@@ -45,7 +45,12 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
-  * Only S390 provides its own means of moving the pointer.
-  */
- #ifndef SHIFT_PERCPU_PTR
--#define SHIFT_PERCPU_PTR(__p, __offset)	RELOC_HIDE((__p), (__offset))
-+# ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
-+#  define SHIFT_PERCPU_PTR(__p, __offset) \
-+	((__typeof(__p))(((void *)(__p)) + (__offset)))
-+# else
-+#  define SHIFT_PERCPU_PTR(__p, __offset)	RELOC_HIDE((__p), (__offset))
-+# endif /* CONFIG_HAVE_ZERO_BASED_PER_CPU */
+ extern int printk_ratelimit_jiffies;
+ extern int printk_ratelimit_burst;
+@@ -205,9 +202,6 @@ static inline int vprintk(const char *s, va_list args) { return 0; }
+ static inline int printk(const char *s, ...)
+ 	__attribute__ ((format (printf, 1, 2)));
+ static inline int __cold printk(const char *s, ...) { return 0; }
+-static inline int log_buf_get_len(void) { return 0; }
+-static inline int log_buf_read(int idx) { return 0; }
+-static inline int log_buf_copy(char *dest, int idx, int len) { return 0; }
+ static inline int printk_ratelimit(void) { return 0; }
+ static inline int __printk_ratelimit(int ratelimit_jiffies, \
+ 				     int ratelimit_burst) { return 0; }
+@@ -216,7 +210,7 @@ static inline bool printk_timed_ratelimit(unsigned long *caller_jiffies, \
+ 		{ return false; }
  #endif
  
+-extern void __attribute__((format(printf, 1, 2)))
++extern void asmlinkage __attribute__((format(printf, 1, 2)))
+ 	early_printk(const char *fmt, ...);
+ 
+ unsigned long int_sqrt(unsigned long);
+diff --git a/kernel/printk.c b/kernel/printk.c
+index e2129e8..de1a4f4 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -38,7 +38,7 @@
  /*
-@@ -70,6 +75,10 @@ extern void setup_per_cpu_areas(void);
- #define per_cpu(var, cpu)			(*((void)(cpu), &per_cpu_var(var)))
- #define __get_cpu_var(var)			per_cpu_var(var)
- #define __raw_get_cpu_var(var)			per_cpu_var(var)
-+#ifndef SHIFT_PERCPU_PTR
-+# define SHIFT_PERCPU_PTR(__p, __offset)		(__p)
-+#endif
-+#define per_cpu_offset(x)			0L
+  * Architectures can override it:
+  */
+-void __attribute__((weak)) early_printk(const char *fmt, ...)
++void asmlinkage __attribute__((weak)) early_printk(const char *fmt, ...)
+ {
+ }
  
- #endif	/* SMP */
+@@ -75,6 +75,8 @@ EXPORT_SYMBOL(oops_in_progress);
+ static DECLARE_MUTEX(console_sem);
+ static DECLARE_MUTEX(secondary_console_sem);
+ struct console *console_drivers;
++EXPORT_SYMBOL_GPL(console_drivers);
++
+ /*
+  * This is used for debugging the mess that is the VT code by
+  * keeping track if we have the console semaphore held. It's
+@@ -231,7 +233,7 @@ static inline void boot_delay_msec(void)
+ /*
+  * Return the number of unread characters in the log buffer.
+  */
+-int log_buf_get_len(void)
++static int log_buf_get_len(void)
+ {
+ 	return logged_chars;
+ }
+@@ -268,19 +270,6 @@ int log_buf_copy(char *dest, int idx, int len)
+ }
  
-diff --git a/include/asm-generic/sections.h b/include/asm-generic/sections.h
-index 8feeae1..f697620 100644
---- a/include/asm-generic/sections.h
-+++ b/include/asm-generic/sections.h
-@@ -9,7 +9,17 @@ extern char __bss_start[], __bss_stop[];
- extern char __init_begin[], __init_end[];
- extern char _sinittext[], _einittext[];
- extern char _end[];
-+#ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
-+extern char __per_cpu_load[];
-+extern char ____per_cpu_size[];
-+#define __per_cpu_size ((unsigned long)&____per_cpu_size)
-+#define __per_cpu_start ((char *)0)
-+#define __per_cpu_end ((char *)__per_cpu_size)
-+#else
- extern char __per_cpu_start[], __per_cpu_end[];
-+#define __per_cpu_load __per_cpu_start
-+#define __per_cpu_size (__per_cpu_end - __per_cpu_start)
-+#endif
- extern char __kprobes_text_start[], __kprobes_text_end[];
- extern char __initdata_begin[], __initdata_end[];
- extern char __start_rodata[], __end_rodata[];
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index f054778..465a97a 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -344,11 +344,28 @@
-   	*(.initcall7.init)						\
-   	*(.initcall7s.init)
+ /*
+- * Extract a single character from the log buffer.
+- */
+-int log_buf_read(int idx)
+-{
+-	char ret;
+-
+-	if (log_buf_copy(&ret, idx, 1) == 1)
+-		return ret;
+-	else
+-		return -1;
+-}
+-
+-/*
+  * Commands to do_syslog:
+  *
+  * 	0 -- Close the log.  Currently a NOP.
+@@ -665,18 +654,17 @@ static int acquire_console_semaphore_for_printk(unsigned int cpu)
+ 	spin_unlock(&logbuf_lock);
+ 	return retval;
+ }
+-
+-static const char printk_recursion_bug_msg [] =
+-			KERN_CRIT "BUG: recent printk recursion!\n";
+-static int printk_recursion_bug;
++static const char recursion_bug_msg [] =
++		KERN_CRIT "BUG: recent printk recursion!\n";
++static int recursion_bug;
++	static int new_text_line = 1;
++static char printk_buf[1024];
  
-+#ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
-+#define PERCPU(align)							\
-+	. = ALIGN(align);						\
-+	percpu : { } :percpu						\
-+	__per_cpu_load = .;						\
-+	.data.percpu 0 : AT(__per_cpu_load - LOAD_OFFSET) {		\
-+		*(.data.percpu.first)					\
-+		*(.data.percpu.shared_aligned)				\
-+		*(.data.percpu)						\
-+		*(.data.percpu.page_aligned)				\
-+		____per_cpu_size = .;					\
-+	}								\
-+	. = __per_cpu_load + ____per_cpu_size;				\
-+	data : { } :data
-+#else
- #define PERCPU(align)							\
- 	. = ALIGN(align);						\
- 	__per_cpu_start = .;						\
- 	.data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) {		\
-+		*(.data.percpu.page_aligned)				\
- 		*(.data.percpu)						\
- 		*(.data.percpu.shared_aligned)				\
- 	}								\
- 	__per_cpu_end = .;
-+#endif
-diff --git a/include/asm-x86/percpu.h b/include/asm-x86/percpu.h
-index 736fc3b..d85e5aa 100644
---- a/include/asm-x86/percpu.h
-+++ b/include/asm-x86/percpu.h
-@@ -108,6 +108,11 @@ do {							\
- 		    : "+m" (var)			\
- 		    : "ri" ((T__)val));			\
- 		break;					\
-+	case 8:						\
-+		asm(op "q %1,"__percpu_seg"%0"		\
-+		    : "+m" (var)			\
-+		    : "ri" ((T__)val));			\
-+		break;					\
- 	default: __bad_percpu_size();			\
- 	}						\
- } while (0)
-@@ -131,16 +136,84 @@ do {							\
- 		    : "=r" (ret__)			\
- 		    : "m" (var));			\
- 		break;					\
-+	case 8:						\
-+		asm(op "q "__percpu_seg"%1,%0"		\
-+		    : "=r" (ret__)			\
-+		    : "m" (var));			\
-+		break;					\
- 	default: __bad_percpu_size();			\
- 	}						\
- 	ret__;						\
- })
+ asmlinkage int vprintk(const char *fmt, va_list args)
+ {
+-	static int log_level_unknown = 1;
+-	static char printk_buf[1024];
+-
+-	unsigned long flags;
+ 	int printed_len = 0;
++	int current_log_level = default_message_loglevel;
++	unsigned long flags;
+ 	int this_cpu;
+ 	char *p;
  
--#define x86_read_percpu(var) percpu_from_op("mov", per_cpu__##var)
--#define x86_write_percpu(var, val) percpu_to_op("mov", per_cpu__##var, val)
--#define x86_add_percpu(var, val) percpu_to_op("add", per_cpu__##var, val)
--#define x86_sub_percpu(var, val) percpu_to_op("sub", per_cpu__##var, val)
--#define x86_or_percpu(var, val) percpu_to_op("or", per_cpu__##var, val)
-+#define percpu_addr_op(op, var)				\
-+({							\
-+	switch (sizeof(var)) {				\
-+	case 1:						\
-+		asm(op "b "__percpu_seg"%0"		\
-+				: : "m"(var));		\
-+		break;					\
-+	case 2:						\
-+		asm(op "w "__percpu_seg"%0"		\
-+				: : "m"(var));		\
-+		break;					\
-+	case 4:						\
-+		asm(op "l "__percpu_seg"%0"		\
-+				: : "m"(var));		\
-+		break;					\
-+	case 8:						\
-+		asm(op "q "__percpu_seg"%0"		\
-+				: : "m"(var));		\
-+		break;					\
-+	default: __bad_percpu_size();			\
-+	}						\
-+})
-+
-+#define percpu_cmpxchg_op(var, old, new)				\
-+({									\
-+	typeof(var) prev;						\
-+	switch (sizeof(var)) {						\
-+	case 1:								\
-+		asm("cmpxchgb %b1, "__percpu_seg"%2"			\
-+				     : "=a"(prev)			\
-+				     : "q"(new), "m"(var), "0"(old)	\
-+				     : "memory");			\
-+		break;							\
-+	case 2:								\
-+		asm("cmpxchgw %w1, "__percpu_seg"%2"			\
-+				     : "=a"(prev)			\
-+				     : "r"(new), "m"(var), "0"(old)	\
-+				     : "memory");			\
-+		break;							\
-+	case 4:								\
-+		asm("cmpxchgl %k1, "__percpu_seg"%2"			\
-+				     : "=a"(prev)			\
-+				     : "r"(new), "m"(var), "0"(old)	\
-+				     : "memory");			\
-+		break;							\
-+	case 8:								\
-+		asm("cmpxchgq %1, "__percpu_seg"%2"			\
-+				     : "=a"(prev)			\
-+				     : "r"(new), "m"(var), "0"(old)	\
-+				     : "memory");			\
-+		break;							\
-+	default:							\
-+		__bad_percpu_size();					\
-+	}								\
-+	return prev;							\
-+})
-+
-+#define x86_read_percpu(var) percpu_from_op("mov", per_cpu_var(var))
-+#define x86_write_percpu(var, val) percpu_to_op("mov", per_cpu_var(var), val)
-+#define x86_add_percpu(var, val) percpu_to_op("add", per_cpu_var(var), val)
-+#define x86_sub_percpu(var, val) percpu_to_op("sub", per_cpu_var(var), val)
-+#define x86_inc_percpu(var) percpu_addr_op("inc", per_cpu_var(var))
-+#define x86_dec_percpu(var) percpu_addr_op("dec", per_cpu_var(var))
-+#define x86_or_percpu(var, val) percpu_to_op("or", per_cpu_var(var), val)
-+#define x86_xchg_percpu(var, val) percpu_to_op("xchg", per_cpu_var(var), val)
-+#define x86_cmpxchg_percpu(var, old, new) \
-+				percpu_cmpxchg_op(per_cpu_var(var), old, new)
-+
- #endif /* !__ASSEMBLY__ */
- #endif /* !CONFIG_X86_64 */
- #endif /* _ASM_X86_PERCPU_H_ */
-diff --git a/include/linux/percpu.h b/include/linux/percpu.h
-index 4cdd393..3d1a7f6 100644
---- a/include/linux/percpu.h
-+++ b/include/linux/percpu.h
-@@ -23,13 +23,35 @@
- 	__attribute__((__section__(SHARED_ALIGNED_SECTION)))		\
- 	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name		\
- 	____cacheline_aligned_in_smp
-+
-+#define DEFINE_PER_CPU_PAGE_ALIGNED(type, name)			\
-+	__attribute__((__section__(".data.percpu.page_aligned")))	\
-+	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
-+
-+#ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
-+#define DEFINE_PER_CPU_FIRST(type, name)				\
-+	__attribute__((__section__(".data.percpu.first")))		\
-+	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
- #else
-+#define DEFINE_PER_CPU_FIRST(type, name)				\
-+	DEFINE_PER_CPU(type, name)
-+#endif
-+
-+#else /* !CONFIG_SMP */
-+
- #define DEFINE_PER_CPU(type, name)					\
- 	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
+@@ -699,7 +687,7 @@ asmlinkage int vprintk(const char *fmt, va_list args)
+ 		 * it can be printed at the next appropriate moment:
+ 		 */
+ 		if (!oops_in_progress) {
+-			printk_recursion_bug = 1;
++			recursion_bug = 1;
+ 			goto out_restore_irqs;
+ 		}
+ 		zap_locks();
+@@ -709,70 +697,62 @@ asmlinkage int vprintk(const char *fmt, va_list args)
+ 	spin_lock(&logbuf_lock);
+ 	printk_cpu = this_cpu;
  
- #define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)		      \
- 	DEFINE_PER_CPU(type, name)
--#endif
-+
-+#define DEFINE_PER_CPU_PAGE_ALIGNED(type, name)		      \
-+	DEFINE_PER_CPU(type, name)
-+
-+#define DEFINE_PER_CPU_FIRST(type, name)				\
-+	DEFINE_PER_CPU(type, name)
-+
-+#endif /* !CONFIG_SMP */
+-	if (printk_recursion_bug) {
+-		printk_recursion_bug = 0;
+-		strcpy(printk_buf, printk_recursion_bug_msg);
+-		printed_len = sizeof(printk_recursion_bug_msg);
++	if (recursion_bug) {
++		recursion_bug = 0;
++		strcpy(printk_buf, recursion_bug_msg);
++		printed_len = sizeof(recursion_bug_msg);
+ 	}
+ 	/* Emit the output into the temporary buffer */
+ 	printed_len += vscnprintf(printk_buf + printed_len,
+ 				  sizeof(printk_buf) - printed_len, fmt, args);
  
- #define EXPORT_PER_CPU_SYMBOL(var) EXPORT_SYMBOL(per_cpu__##var)
- #define EXPORT_PER_CPU_SYMBOL_GPL(var) EXPORT_SYMBOL_GPL(per_cpu__##var)
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index 81a4e4a..965b9c7 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -609,8 +609,8 @@ static int static_obj(void *obj)
- 	 * percpu var?
++
+ 	/*
+ 	 * Copy the output into log_buf.  If the caller didn't provide
+ 	 * appropriate log level tags, we insert them here
  	 */
- 	for_each_possible_cpu(i) {
--		start = (unsigned long) &__per_cpu_start + per_cpu_offset(i);
--		end   = (unsigned long) &__per_cpu_start + PERCPU_ENOUGH_ROOM
-+		start = (unsigned long) __per_cpu_start + per_cpu_offset(i);
-+		end   = (unsigned long) __per_cpu_start + PERCPU_ENOUGH_ROOM
- 					+ per_cpu_offset(i);
+ 	for (p = printk_buf; *p; p++) {
+-		if (log_level_unknown) {
+-                        /* log_level_unknown signals the start of a new line */
++		if (new_text_line) {
++			/* If a token, set current_log_level and skip over */
++			if (p[0] == '<' && p[1] >= '0' && p[1] <= '7' &&
++			    p[2] == '>') {
++				current_log_level = p[1] - '0';
++				p += 3;
++				printed_len -= 3;
++			}
++
++			/* Always output the token */
++			emit_log_char('<');
++			emit_log_char(current_log_level + '0');
++			emit_log_char('>');
++			printed_len += 3;
++			new_text_line = 0;
++
+ 			if (printk_time) {
+-				int loglev_char;
++				/* Follow the token with the time */
+ 				char tbuf[50], *tp;
+ 				unsigned tlen;
+ 				unsigned long long t;
+ 				unsigned long nanosec_rem;
  
- 		if ((addr >= start) && (addr < end))
-diff --git a/kernel/module.c b/kernel/module.c
-index 5f80478..f525015 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -44,6 +44,7 @@
- #include <linux/unwind.h>
- #include <asm/uaccess.h>
- #include <asm/cacheflush.h>
-+#include <asm/sections.h>
- #include <linux/license.h>
- #include <asm/sections.h>
+-				/*
+-				 * force the log level token to be
+-				 * before the time output.
+-				 */
+-				if (p[0] == '<' && p[1] >='0' &&
+-				   p[1] <= '7' && p[2] == '>') {
+-					loglev_char = p[1];
+-					p += 3;
+-					printed_len -= 3;
+-				} else {
+-					loglev_char = default_message_loglevel
+-						+ '0';
+-				}
+ 				t = cpu_clock(printk_cpu);
+ 				nanosec_rem = do_div(t, 1000000000);
+-				tlen = sprintf(tbuf,
+-						"<%c>[%5lu.%06lu] ",
+-						loglev_char,
+-						(unsigned long)t,
+-						nanosec_rem/1000);
++				tlen = sprintf(tbuf, "[%5lu.%06lu] ",
++						(unsigned long) t,
++						nanosec_rem / 1000);
  
-@@ -365,7 +366,7 @@ static void *percpu_modalloc(unsigned long size, unsigned long align,
- 		align = PAGE_SIZE;
+ 				for (tp = tbuf; tp < tbuf + tlen; tp++)
+ 					emit_log_char(*tp);
+ 				printed_len += tlen;
+-			} else {
+-				if (p[0] != '<' || p[1] < '0' ||
+-				   p[1] > '7' || p[2] != '>') {
+-					emit_log_char('<');
+-					emit_log_char(default_message_loglevel
+-						+ '0');
+-					emit_log_char('>');
+-					printed_len += 3;
+-				}
+ 			}
+-			log_level_unknown = 0;
++
+ 			if (!*p)
+ 				break;
+ 		}
++
+ 		emit_log_char(*p);
+ 		if (*p == '\n')
+-			log_level_unknown = 1;
++			new_text_line = 1;
  	}
  
--	ptr = __per_cpu_start;
-+	ptr = __per_cpu_load;
- 	for (i = 0; i < pcpu_num_used; ptr += block_size(pcpu_size[i]), i++) {
- 		/* Extra for alignment requirement. */
- 		extra = ALIGN((unsigned long)ptr, align) - (unsigned long)ptr;
-@@ -400,7 +401,7 @@ static void *percpu_modalloc(unsigned long size, unsigned long align,
- static void percpu_modfree(void *freeme)
- {
- 	unsigned int i;
--	void *ptr = __per_cpu_start + block_size(pcpu_size[0]);
-+	void *ptr = __per_cpu_load + block_size(pcpu_size[0]);
+ 	/*
+@@ -1172,8 +1152,11 @@ void register_console(struct console *console)
+ 			console->index = 0;
+ 		if (console->setup == NULL ||
+ 		    console->setup(console, NULL) == 0) {
+-			console->flags |= CON_ENABLED | CON_CONSDEV;
+-			preferred_console = 0;
++			console->flags |= CON_ENABLED;
++			if (console->device) {
++				console->flags |= CON_CONSDEV;
++				preferred_console = 0;
++			}
+ 		}
+ 	}
  
- 	/* First entry is core kernel percpu data. */
- 	for (i = 1; i < pcpu_num_used; ptr += block_size(pcpu_size[i]), i++) {
-@@ -451,7 +452,7 @@ static int percpu_modinit(void)
- 	pcpu_size = kmalloc(sizeof(pcpu_size[0]) * pcpu_num_allocated,
- 			    GFP_KERNEL);
- 	/* Static in-kernel percpu data (used). */
--	pcpu_size[0] = -(__per_cpu_end-__per_cpu_start);
-+	pcpu_size[0] = -__per_cpu_size;
- 	/* Free room. */
- 	pcpu_size[1] = PERCPU_ENOUGH_ROOM + pcpu_size[0];
- 	if (pcpu_size[1] < 0) {
