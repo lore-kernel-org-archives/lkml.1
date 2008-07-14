@@ -1,114 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755816AbYGNQFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756318AbYGNQIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755816AbYGNQFW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 12:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754465AbYGNQFK
+	id S1756318AbYGNQIR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 12:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753869AbYGNQID
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 12:05:10 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60480 "EHLO mx1.redhat.com"
+	Mon, 14 Jul 2008 12:08:03 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57803 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753873AbYGNQFI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 12:05:08 -0400
-Subject: [GFS2] Pull request
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: torvalds@linux-foundation.org
-Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
-	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
-	Street, Windsor, Berkshire, SL4 ITE
-Date: Mon, 14 Jul 2008 17:03:39 +0100
-Message-Id: <1216051419.4011.267.camel@quoit>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	id S1753491AbYGNQIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 12:08:01 -0400
+Date: Mon, 14 Jul 2008 18:07:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Avi Kivity <avi@qumranet.com>
+Subject: Re: [git pull] core, x86: make LIST_POISON less deadly
+Message-ID: <20080714160748.GA10684@elte.hu>
+References: <20080714144828.GA22666@elte.hu> <alpine.LFD.1.10.0807140758100.3305@woody.linux-foundation.org> <20080714151247.GA27145@elte.hu> <alpine.LFD.1.10.0807140856130.3305@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0807140856130.3305@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Please consider pulling the following patches. The only difference since the
-recent posting is David Howells' patch to fix a warning (a one-liner),
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Steve.
+> On Mon, 14 Jul 2008, Ingo Molnar wrote:
+> > > 
+> > > Why not use something sane like 0xdead000000000000, which has the high 
+> > > bit set but very fundamentally isn't a valid pointer, and never will 
+> > > be? And which is a *lot* more visually obvious too!
+> > 
+> > initially i suggested that too - but such addresses raise a #GP instead 
+> > of a page fault so their decoding is a bit harder.
+> 
+> But raising a GP is exactly what you want: a PF is an indication that the 
+> address was actually half-way valid, and will not fault at all on some 
+> (possibly future) machine.
+> 
+> > We dont do any instruction decoding in #GP handlers to figure out what 
+> > happened, while in the pagefault case we know which address faulted, 
+> > etc.
+> 
+> Why would we care? It would be very obvious from the instruction 
+> disassembly plus the register contents. No need to decode instructions.
+> 
+> > Perhaps we could try to make #GP handlers a bit more informative - 
+> > although decoding instructions will make things a bit more fragile 
+> > inevitably.
+> > 
+> > Perhaps make it 0xffffcdead0000000 ?
+> 
+> I'm really not seeing the reason for not just doing it right.
 
-The following changes since commit 543cf4cb3fe6f6cae3651ba918b9c56200b257d0:
-  Linus Torvalds (1):
-        Linux 2.6.26-rc8
+ok. Find the updated pull request below. I've added your Acked-by to the 
+last commit.
 
-are found in the git repository at:
+Please pull the latest safe-poison-pointers git tree from:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/steve/gfs2-2.6-nmw.git
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git safe-poison-pointers
 
-Bob Peterson (1):
-      [GFS2] kernel panic mounting volume
+Thanks,
 
-David Howells (1):
-      [GFS2] Fix GFS2's use of do_div() in its quota calculations
+	Ingo
 
-Harvey Harrison (1):
-      [GFS2] trivial sparse lock annotations
+------------------>
+Avi Kivity (1):
+      core, x86: make LIST_POISON less deadly
 
-Li Xiaodong (1):
-      [GFS2] Remove unused declaration
-
-Miklos Szeredi (1):
-      [GFS2] don't call permission()
-
-Steven Whitehouse (14):
-      [GFS2] Clean up the glock core
-      [GFS2] Fix ordering bug in lock_dlm
-      [GFS2] No lock_nolock
-      [GFS2] Fix ordering of args for list_add
-      [GFS2] Revise readpage locking
-      [GFS2] Remove remote lock dropping code
-      [GFS2] Remove obsolete conversion deadlock avoidance code
-      [GFS2] Remove all_list from lock_dlm
-      [GFS2] Glock documentation
-      [GFS2] Fix module building
-      [GFS2] Fix delayed demote race
-      [GFS2] Allow local DF locks when holding a cached EX glock
-      [GFS2] Replace rgrp "recent list" with mru list
-      [GFS2] Remove support for unused and pointless flag
-
- Documentation/filesystems/gfs2-glocks.txt |  114 ++
- fs/gfs2/Kconfig                           |   18 +-
- fs/gfs2/Makefile                          |    1 -
- fs/gfs2/gfs2.h                            |    5 -
- fs/gfs2/glock.c                           | 1643 ++++++++++++-----------------
- fs/gfs2/glock.h                           |   11 +-
- fs/gfs2/glops.c                           |   70 +-
- fs/gfs2/incore.h                          |   38 +-
- fs/gfs2/inode.c                           |   11 +-
- fs/gfs2/inode.h                           |    2 +-
- fs/gfs2/locking.c                         |   52 +-
- fs/gfs2/locking/dlm/lock.c                |  368 +++++--
- fs/gfs2/locking/dlm/lock_dlm.h            |   18 +-
- fs/gfs2/locking/dlm/mount.c               |   14 +-
- fs/gfs2/locking/dlm/sysfs.c               |   13 -
- fs/gfs2/locking/dlm/thread.c              |  331 +------
- fs/gfs2/locking/nolock/Makefile           |    3 -
- fs/gfs2/locking/nolock/main.c             |  238 -----
- fs/gfs2/log.c                             |    2 +
- fs/gfs2/log.h                             |    2 +
- fs/gfs2/main.c                            |    2 -
- fs/gfs2/meta_io.c                         |   14 +-
- fs/gfs2/meta_io.h                         |    1 +
- fs/gfs2/ops_address.c                     |   40 +-
- fs/gfs2/ops_file.c                        |   38 +-
- fs/gfs2/ops_fstype.c                      |    8 +-
- fs/gfs2/ops_inode.c                       |   25 +-
- fs/gfs2/ops_super.c                       |    4 +-
- fs/gfs2/quota.c                           |    2 +-
- fs/gfs2/recovery.c                        |    5 +-
- fs/gfs2/rgrp.c                            |  108 +--
- fs/gfs2/super.c                           |    4 +-
- fs/gfs2/sys.c                             |   16 -
- include/linux/lm_interface.h              |    6 -
- 34 files changed, 1275 insertions(+), 1952 deletions(-)
- create mode 100644 Documentation/filesystems/gfs2-glocks.txt
- delete mode 100644 fs/gfs2/locking/nolock/Makefile
- delete mode 100644 fs/gfs2/locking/nolock/main.c
+Ingo Molnar (1):
+      x86: change LIST_POISON to 0xdead000000000000
 
 
+ arch/x86/Kconfig       |    5 +++++
+ include/linux/poison.h |   10 ++++++++--
+ 2 files changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index e0edaaa..0dbd040 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -1019,6 +1019,11 @@ config ARCH_MEMORY_PROBE
+ 	def_bool X86_64
+ 	depends on MEMORY_HOTPLUG
+ 
++config ILLEGAL_POINTER_VALUE
++       hex
++       default 0 if X86_32
++       default 0xdead000000000000 if X86_64
++
+ source "mm/Kconfig"
+ 
+ config HIGHPTE
+diff --git a/include/linux/poison.h b/include/linux/poison.h
+index 9f31683..0d105a5 100644
+--- a/include/linux/poison.h
++++ b/include/linux/poison.h
+@@ -1,14 +1,20 @@
+ #ifndef _LINUX_POISON_H
+ #define _LINUX_POISON_H
+ 
++#ifdef CONFIG_ILLEGAL_POINTER_VALUE
++#define POISON_POINTER_DELTA CONFIG_ILLEGAL_POINTER_VALUE
++#else
++#define POISON_POINTER_DELTA 0L
++#endif
++
+ /********** include/linux/list.h **********/
+ /*
+  * These are non-NULL pointers that will result in page faults
+  * under normal circumstances, used to verify that nobody uses
+  * non-initialized list entries.
+  */
+-#define LIST_POISON1  ((void *) 0x00100100)
+-#define LIST_POISON2  ((void *) 0x00200200)
++#define LIST_POISON1  ((void *) 0x00100100 + POISON_POINTER_DELTA)
++#define LIST_POISON2  ((void *) 0x00200200 + POISON_POINTER_DELTA)
+ 
+ /********** include/linux/timer.h **********/
+ /*
