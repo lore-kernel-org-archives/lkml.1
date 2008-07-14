@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756552AbYGNHii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756684AbYGNHnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756552AbYGNHii (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 03:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754956AbYGNHi3
+	id S1756684AbYGNHnS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 03:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754596AbYGNHnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 03:38:29 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:54284 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754829AbYGNHi3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 03:38:29 -0400
-Date: Mon, 14 Jul 2008 09:39:16 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andy Lutomirski <luto@myrealbox.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>,
-       public-kernel-testers-u79uwXL29TY76Z2rM5mHXA@lo.gmane.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
-Message-ID: <20080714073916.GC1796@elf.ucw.cz>
-References: <200807010148.02135.rjw@sisk.pl> <487A2431.2050103@myrealbox.com> <487A4CB7.1080001@firstfloor.org> <200807132115.08230.rjw@sisk.pl> <487A617B.80707@firstfloor.org> <487A67C3.50000@zytor.com> <487AD37A.2050903@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <487AD37A.2050903@zytor.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 14 Jul 2008 03:43:08 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:53498 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753505AbYGNHnH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 03:43:07 -0400
+X-Greylist: delayed 1914 seconds by postgrey-1.27 at vger.kernel.org; Mon, 14 Jul 2008 03:43:06 EDT
+Subject: Re: [PATCH 1/1] LCD backlight driver using Atmel PWM driver
+From: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080711121752.56db3d83.akpm@linux-foundation.org>
+References: <1215608886-26792-1-git-send-email-hans-christian.egtvedt@atmel.com>
+	 <20080711121752.56db3d83.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 14 Jul 2008 09:11:02 +0200
+Message-Id: <1216019462.7672.6.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2008-07-13 21:18:02, H. Peter Anvin wrote:
-> H. Peter Anvin wrote:
->>
->> The most likely explanation for this is that the VESA BIOS expects to be 
->> entered in Big Real Mode (*.limit = 0xffffffff) instead of ordinary Real 
->> Mode.  Here is a completely untested patch which changes the segment 
->> descriptors to Big Real Mode instead.  It would be worth testing out.
->>
->
-> ... and here is one that actually has a prayer of actually working.
+On Fri, 2008-07-11 at 12:17 -0700, Andrew Morton wrote:
+> On Wed,  9 Jul 2008 15:08:06 +0200 Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com> wrote:
+> 
+> > +	if (bd->props.power != FB_BLANK_UNBLANK)
+> > +		intensity = 0;
+> > +	if (bd->props.fb_blank != FB_BLANK_UNBLANK)
+> > +		intensity = 0;
+> 
+> hm, is that correct?  It is strange that two different fields can validly
+> be compared with the same enumeration like this.
+> 
 
-I tried 2.6.26, but it does not seem to be broken here :-(. Thinkpad
-x60. So it does not seem _all_ thinkpads have this problem... 
+I also found it a bit weird having two fields indicating the same, but
+the header file has the following documentation:
 
-									Pavel
+/* Current FB Power mode (0: full on, 1..3: power saving
+   modes; 4: full off), see FB_BLANK_XXX */
+int power;
+/* FB Blanking active? (values as for power) */
+int fb_blank;
 
+So, AFAIK, my assumptions are correct to get proper blanking?
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+With kind regards,
+Hans-Christian Egtvedt, Applications Engineer
+
