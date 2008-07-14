@@ -1,22 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757387AbYGNKy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbYGNLFS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757387AbYGNKy5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 06:54:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbYGNKyt
+	id S1757213AbYGNLFS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 07:05:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbYGNLFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 06:54:49 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48547 "EHLO
+	Mon, 14 Jul 2008 07:05:05 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48928 "EHLO
 	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751311AbYGNKyt (ORCPT
+	with ESMTP id S1751749AbYGNLFE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 06:54:49 -0400
-Date: Mon, 14 Jul 2008 19:54:35 +0900
+	Mon, 14 Jul 2008 07:05:04 -0400
+Date: Mon, 14 Jul 2008 20:03:44 +0900
 From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>,
+To: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [mmotm] kill devcgroup-code-cleanup.patch warning 
+Subject: [mmotm] adapt drivers/base/topology.c to new sysfs API
 Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20080714185856.F6DA.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Message-Id: <20080714200201.F6E0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
@@ -25,54 +28,55 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch titile: devcgroup-code-cleanup-fix-fix.patch
-Patch against: mmotm Jul 13
-Applies after: devcgroup-code-cleanup-fix.patch
 
-devcgroup-code-cleanup.patch made following warnings because b is const.
+Patch title: fix-driver-topology-type-incompatible.patch
+Against: mmotm Jul 14
+Applies after: linux-next.patch
 
-  security/device_cgroup.c: In function 'devcgroup_update_access':
-  security/device_cgroup.c:397: warning: passing argument 2 of 'simple_strtoul' from incompatible pointer type
-  security/device_cgroup.c:410: warning: passing argument 2 of 'simple_strtoul' from incompatible pointer type
+if arch_provides_topology_pointers is not defined, topology.c output following warnings.
+because sysfs function parameter was changed recently.
+
+  drivers/base/topology.c:106: warning: initialization from incompatible pointer type
+  drivers/base/topology.c:107: warning: initialization from incompatible pointer type
+  drivers/base/topology.c:110: warning: initialization from incompatible pointer type
+  drivers/base/topology.c:111: warning: initialization from incompatible pointer type
+
 
 Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Li Zefan <lizf@cn.fujitsu.com>
+CC: Mike Travis <travis@sgi.com>
+CC: Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>
+CC: Andi Kleen <ak@linux.intel.com>
+CC: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- security/device_cgroup.c |    7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/base/topology.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-Index: b/security/device_cgroup.c
+Index: b/drivers/base/topology.c
 ===================================================================
---- a/security/device_cgroup.c
-+++ b/security/device_cgroup.c
-@@ -359,6 +359,7 @@ static int devcgroup_update_access(struc
- {
- 	struct dev_cgroup *cur_devcgroup;
- 	const char *b;
-+	char *endp;
- 	int retval = 0, count;
- 	struct dev_whitelist_item wh;
+--- a/drivers/base/topology.c
++++ b/drivers/base/topology.c
+@@ -77,7 +77,8 @@ static ssize_t show_##name##_list(struct
  
-@@ -394,7 +395,8 @@ static int devcgroup_update_access(struc
- 		wh.major = ~0;
- 		b++;
- 	} else if (isdigit(*b)) {
--		wh.major = simple_strtoul(b, &b, 10);
-+		wh.major = simple_strtoul(b, &endp, 10);
-+		b = endp;
- 	} else {
- 		return -EINVAL;
- 	}
-@@ -407,7 +409,8 @@ static int devcgroup_update_access(struc
- 		wh.minor = ~0;
- 		b++;
- 	} else if (isdigit(*b)) {
--		wh.minor = simple_strtoul(b, &b, 10);
-+		wh.minor = simple_strtoul(b, &endp, 10);
-+		b = endp;
- 	} else {
- 		return -EINVAL;
- 	}
+ #else
+ #define define_siblings_show_map(name)					\
+-static ssize_t show_##name(struct sys_device *dev, char *buf)	\
++static ssize_t show_##name(struct sys_device *dev,                      \
++			   struct sysdev_attribute *attr, char *buf)	\
+ {									\
+ 	unsigned int cpu = dev->id;					\
+ 	cpumask_t mask = topology_##name(cpu);				\
+@@ -85,7 +86,8 @@ static ssize_t show_##name(struct sys_de
+ }
+ 
+ #define define_siblings_show_list(name)					\
+-static ssize_t show_##name##_list(struct sys_device *dev, char *buf) \
++static ssize_t show_##name##_list(struct sys_device *dev,               \
++			      struct sysdev_attribute *attr, char *buf) \
+ {									\
+ 	unsigned int cpu = dev->id;					\
+ 	cpumask_t mask = topology_##name(cpu);				\
+
 
 
