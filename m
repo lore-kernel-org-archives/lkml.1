@@ -1,96 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757924AbYGNQcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757608AbYGNQcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757924AbYGNQcR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 12:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbYGNQb6
+	id S1757608AbYGNQcf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 12:32:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754920AbYGNQcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 12:31:58 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35721 "EHLO mx3.mail.elte.hu"
+	Mon, 14 Jul 2008 12:32:17 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:52246 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754463AbYGNQb5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 12:31:57 -0400
-Date: Mon, 14 Jul 2008 18:31:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [git pull] core/softirq for v2.6.27
-Message-ID: <20080714163141.GA21068@elte.hu>
-References: <20080714144243.GA21079@elte.hu> <20080714092215.0efd7fa3.akpm@linux-foundation.org>
+	id S1757394AbYGNQcP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 12:32:15 -0400
+Message-ID: <487B7F96.70305@linux.vnet.ibm.com>
+Date: Mon, 14 Jul 2008 11:32:22 -0500
+From: Jon Tollefson <kniht@linux.vnet.ibm.com>
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080714092215.0efd7fa3.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: npiggin@suse.de
+CC: akpm@linux-foundation.org, Alexey Dobriyan <adobriyan@gmail.com>,
+       penberg@cs.helsinki.fi, mpm@selenic.com,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       cl@linux-foundation.org
+Subject: [patch] powerpc: hugetlb pgtable cache access cleanup
+References: <20080604112939.789444496@amd.local0.net> <20080604113113.648031825@amd.local0.net>
+In-Reply-To: <20080604113113.648031825@amd.local0.net>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Cleaned up use of macro.  We now reference the pgtable_cache array directly instead of using a macro.
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> On Mon, 14 Jul 2008 16:42:43 +0200 Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> 
-> It would be nice if these short-form summaries were to include the
-> commit IDs.  eg:
-> 
-> Carlos R. Mafra (1):
->       Remove argument from open_softirq which is always NULL (962cf36)
+Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
+---
 
-yeah, but not sure whether git-shortlog can do that and this shortlog is 
-the Preferred Way of getting pull requests.
+ arch/powerpc/mm/hugetlbpage.c |   22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
-I'm using the sha1's myself for non-shortlog formats, like:
 
-  earth4:~/tip> git-log-line linus..core/softirq
-  0f476b6: softirq: remove irqs_disabled warning from local_bh_enable
-  4620b49: softirq: remove initialization of static per-cpu variable
-  962cf36: Remove argument from open_softirq which is always NULL
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index fb42c4d..2184fc0 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -53,8 +53,7 @@ unsigned int mmu_huge_psizes[MMU_PAGE_COUNT] = { }; /* initialize all to 0 */
+ 
+ /* Subtract one from array size because we don't need a cache for 4K since
+  * is not a huge page size */
+-#define huge_pgtable_cache(psize)	(pgtable_cache[HUGEPTE_CACHE_NUM \
+-							+ psize-1])
++#define HUGE_PGTABLE_INDEX(psize)	(HUGEPTE_CACHE_NUM + psize - 1)
+ #define HUGEPTE_CACHE_NAME(psize)	(huge_pgtable_cache_name[psize])
+ 
+ static const char *huge_pgtable_cache_name[MMU_PAGE_COUNT] = {
+@@ -113,7 +112,7 @@ static inline pte_t *hugepte_offset(hugepd_t *hpdp, unsigned long addr,
+ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
+ 			   unsigned long address, unsigned int psize)
+ {
+-	pte_t *new = kmem_cache_alloc(huge_pgtable_cache(psize),
++	pte_t *new = kmem_cache_alloc(pgtable_cache[HUGE_PGTABLE_INDEX(psize)],
+ 				      GFP_KERNEL|__GFP_REPEAT);
+ 
+ 	if (! new)
+@@ -121,7 +120,7 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
+ 
+ 	spin_lock(&mm->page_table_lock);
+ 	if (!hugepd_none(*hpdp))
+-		kmem_cache_free(huge_pgtable_cache(psize), new);
++		kmem_cache_free(pgtable_cache[HUGE_PGTABLE_INDEX(psize)], new);
+ 	else
+ 		hpdp->pd = (unsigned long)new | HUGEPD_OK;
+ 	spin_unlock(&mm->page_table_lock);
+@@ -751,13 +750,14 @@ static int __init hugetlbpage_init(void)
+ 
+ 	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
+ 		if (mmu_huge_psizes[psize]) {
+-			huge_pgtable_cache(psize) = kmem_cache_create(
+-						HUGEPTE_CACHE_NAME(psize),
+-						HUGEPTE_TABLE_SIZE(psize),
+-						HUGEPTE_TABLE_SIZE(psize),
+-						0,
+-						zero_ctor);
+-			if (!huge_pgtable_cache(psize))
++			pgtable_cache[HUGE_PGTABLE_INDEX(psize)] =
++				kmem_cache_create(
++					HUGEPTE_CACHE_NAME(psize),
++					HUGEPTE_TABLE_SIZE(psize),
++					HUGEPTE_TABLE_SIZE(psize),
++					0,
++					zero_ctor);
++			if (!pgtable_cache[HUGE_PGTABLE_INDEX(psize)])
+ 				panic("hugetlbpage_init(): could not create %s"\
+ 				      "\n", HUGEPTE_CACHE_NAME(psize));
+ 		}
 
-where git-log-line does the obvious single-line shortcut:
 
-  git log --no-merges --pretty=format:"%h: %s" $@
 
-> > Carlos R. Mafra (1):
-> >       Remove argument from open_softirq which is always NULL
-> > 
-> > Johannes Berg (1):
-> >       softirq: remove irqs_disabled warning from local_bh_enable
-> 
-> This doesn't remove the warning?  (Nor should it)
-> 
-> +static inline void _local_bh_enable_ip(unsigned long ip)
->  {
-> +       WARN_ON_ONCE(in_irq() || irqs_disabled());
-> -       WARN_ON_ONCE(in_irq());
-> -       WARN_ON_ONCE(irqs_disabled());
-> 
-> It just makes it a bit less useful.
-
-hm, it does more than that - this commit (0f476b6d9) actually caught a 
-real bug/lockup on one of my testboxes, see this (in v2.6.26) fix:
-
-| commit c5643cab7bf663ae049b11be43de8819683176dd
-| Author: Ingo Molnar <mingo@elte.hu>
-| Date:   Mon Jun 23 10:41:23 2008 +0200
-|
-|    [netdrvr] 3c59x: remove irqs_disabled warning from local_bh_enable
-|
-|    Original Author: Michael Buesch <mb@bu3sch.de>
-|
-|    net, vortex: fix lockup
-
-[ i didnt send it to v2.6.26 because it came relatively late, it touches 
-  a sensitive, #ifdef laden piece of code and it was unknown how many 
-  false positives it would trigger. But it's perfect for v2.6.27. ]
-
-	Ingo
