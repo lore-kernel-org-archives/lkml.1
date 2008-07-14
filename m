@@ -1,61 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756179AbYGNRdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756648AbYGNRfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756179AbYGNRdu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 13:33:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbYGNRdn
+	id S1756648AbYGNRfb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 13:35:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753888AbYGNRfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 13:33:43 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:44398 "EHLO mx2.suse.de"
+	Mon, 14 Jul 2008 13:35:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35674 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752542AbYGNRdm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 13:33:42 -0400
-Date: Mon, 14 Jul 2008 19:51:37 +0200
-From: Olaf Dabrunz <od@suse.de>
-To: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Stefan Assmann <sassmann@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Ihno Krumreich <ihno@suse.de>, Sven Dietrich <sdietrich@suse.de>,
-       Daniel Gollub <dgollub@suse.de>, Felix Foerster <ffoerster@suse.de>
-Subject: Re: [PATCH 0/3] Boot IRQ quirks for Broadcom and AMD/ATI
-Message-ID: <20080714175137.GA2297@suse.de>
-Mail-Followup-To: Ingo Molnar <mingo@elte.hu>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Jon Masters <jonathan@jonmasters.org>,
-	Stefan Assmann <sassmann@suse.de>,
-	LKML <linux-kernel@vger.kernel.org>, Ihno Krumreich <ihno@suse.de>,
-	Sven Dietrich <sdietrich@suse.de>, Daniel Gollub <dgollub@suse.de>,
-	Felix Foerster <ffoerster@suse.de>
-References: <12155255883170-git-send-email-od@suse.de> <20080713210133.GA12362@elte.hu> <200807140924.59023.jbarnes@virtuousgeek.org> <20080714164548.GA28499@elte.hu> <20080714164948.GA15153@suse.de> <20080714165823.GB15153@suse.de>
+	id S1753226AbYGNRfV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 13:35:21 -0400
+Date: Mon, 14 Jul 2008 13:28:34 -0400
+From: Dave Jones <davej@redhat.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org,
+       gregkh@suse.de
+Subject: Re: usb-storage: quirk around v1.11 firmware on Nikon D4
+Message-ID: <20080714172834.GA23016@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	linux-usb@vger.kernel.org, gregkh@suse.de
+References: <20080704195940.GA17510@redhat.com> <Pine.LNX.4.44L0.0807041808100.17654-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080714165823.GB15153@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <Pine.LNX.4.44L0.0807041808100.17654-100000@netrider.rowland.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 14-Jul-08, Olaf Dabrunz wrote:
-> I am working on a consolidated patch set for AKMP. It integrates all
-> fixes and adds a config option CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS
-> (prepared by Stefan Assmann), which can default to off for vanilla and to
-> on for RT / threaded IRQ handling. This means that the whole patchset
-> can (in principle) be applied to vanilla and RT without change. Also
-> CONFIG_PREEMPT_HARDIRQ can "select CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS".
-> 
-> If you don't mind, I will send the full set out today.
+On Fri, Jul 04, 2008 at 06:09:25PM -0400, Alan Stern wrote:
+ > On Fri, 4 Jul 2008, Dave Jones wrote:
+ > 
+ > > usb-storage: quirk around v1.11 firmware on Nikon D40
+ > ...
+ > > -UNUSUAL_DEV(  0x04b0, 0x0411, 0x0100, 0x0110,
+ > > +UNUSUAL_DEV(  0x04b0, 0x0411, 0x0100, 0x0111,
+ > >  		"NIKON",
+ > >  		"NIKON DSC D80",
+ > 
+ > You updated the entry for the D80, not the D40.  Maybe they both need 
+ > to be updated?
 
-On second thought and after talking to Stefan, as you think the patches
-can go into 2.6.27 as they are, there is not much benefit in integrating
-the fixes and the config option patch. Stefan will commit the config
-option patch to tip tomorrow.
+usb-storage: quirk around v1.11 firmware on Nikon D40
 
-Thanks,
+https://bugzilla.redhat.com/show_bug.cgi?id=454028
+Just as in earlier firmware versions, we need to perform this
+quirk for the latest version too.
+
+Speculatively do the entry for the D80 too, as they seem to
+have the same firmware problems historically.
+
+Signed-off-by: Dave Jones <davej@redhat.com>
+
+diff --git a/drivers/usb/storage/unusual_devs.h b/drivers/usb/storage/unusual_devs.h
+index 39a7c11..c0b9d10 100644
+--- a/drivers/usb/storage/unusual_devs.h
++++ b/drivers/usb/storage/unusual_devs.h
+@@ -358,14 +358,14 @@ UNUSUAL_DEV(  0x04b0, 0x040f, 0x0100, 0x0200,
+ 		US_FL_FIX_CAPACITY),
+ 
+ /* Reported by Emil Larsson <emil@swip.net> */
+-UNUSUAL_DEV(  0x04b0, 0x0411, 0x0100, 0x0110,
++UNUSUAL_DEV(  0x04b0, 0x0411, 0x0100, 0x0111,
+ 		"NIKON",
+ 		"NIKON DSC D80",
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+ 		US_FL_FIX_CAPACITY),
+ 
+ /* Reported by Ortwin Glueck <odi@odi.ch> */
+-UNUSUAL_DEV(  0x04b0, 0x0413, 0x0110, 0x0110,
++UNUSUAL_DEV(  0x04b0, 0x0413, 0x0110, 0x0111,
+ 		"NIKON",
+ 		"NIKON DSC D40",
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
 
 -- 
-Olaf Dabrunz (od/odabrunz), SUSE Linux Products GmbH, Nürnberg
-
+http://www.codemonkey.org.uk
