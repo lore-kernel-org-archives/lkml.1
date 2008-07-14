@@ -1,188 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756752AbYGNGHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756331AbYGNGOD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756752AbYGNGHj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 02:07:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbYGNGHa
+	id S1756331AbYGNGOD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 02:14:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbYGNGNx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 02:07:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60207 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753561AbYGNGH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 02:07:29 -0400
-Message-ID: <487AED0F.5050507@kernel.org>
-Date: Mon, 14 Jul 2008 15:07:11 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Mon, 14 Jul 2008 02:13:53 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35396 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752446AbYGNGNx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 02:13:53 -0400
+Date: Mon, 14 Jul 2008 08:14:30 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andy Lutomirski <luto@myrealbox.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       public-kernel-testers-u79uwXL29TY76Z2rM5mHXA@lo.gmane.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
+Message-ID: <20080714061429.GF20258@elf.ucw.cz>
+References: <200807122253.32382.rjw@sisk.pl> <48793A0E.3050803@myrealbox.com> <200807130133.12324.rjw@sisk.pl> <20080713091524.GA29907@elte.hu> <20080713120253.GA27582@srcf.ucam.org> <487A2431.2050103@myrealbox.com> <487A4CB7.1080001@firstfloor.org> <487A62B3.8010207@zytor.com> <487A63D2.9040006@firstfloor.org> <20080714012206.GA11882@khazad-dum.debian.net>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] block: update add_partition() error handling
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 14 Jul 2008 06:07:20 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080714012206.GA11882@khazad-dum.debian.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-add_partition() had some number of holes in the error handling path.
-Update it.
+On Sun 2008-07-13 22:22:06, Henrique de Moraes Holschuh wrote:
+> On Sun, 13 Jul 2008, Andi Kleen wrote:
+> > It probably switches to protected mode. I noticed this on my old
+> > Fujitsu laptop when I tried to make the S3 wakeup run in the s2ram x86 emulator
+> > and found it entered protected mode at some point, which x86emu
+> > didn't support.
+> > 
+> > I guess Lenovo is doing the same.
+> > 
+> > And that protected mode code relies on some GDT values that have been
+> > loaded earlier when the BIOS also went into protected mode.
+> > 
+> > It seems the BIOS programmers really don't like real mode anymore.
+> > Somehow understandable.
+> 
+> If it were just Lenovo, it shouldn't be too difficult to get them to fix the
+> BIOS.  But since other vendors have the same problem, that won't fly as a
+> solution.
 
-* make add_partition() return error code on failure and report failure
-  from caller
+With all the BIOSes in field, practically impossible to update? (My
+x60 has no CDrom..) No, I don't think we can expect fix from BIOS vendors.
 
-* make add_partition() check whether the specified slot is already
-  occupied instead of doing that in caller
-
-* make add_partition() check error return from device_add()
-
-Signed-off-by: Tejun Heo <tj@kernel.org>
----
- block/ioctl.c         |   17 +++++++++--------
- fs/partitions/check.c |   44 ++++++++++++++++++++++++++++++++++----------
- include/linux/genhd.h |    2 +-
- 3 files changed, 44 insertions(+), 19 deletions(-)
-
-diff --git a/block/ioctl.c b/block/ioctl.c
-index f0178c4..ecbdd74 100644
---- a/block/ioctl.c
-+++ b/block/ioctl.c
-@@ -16,7 +16,7 @@ static int blkpg_ioctl(struct block_device *bdev, struct blkpg_ioctl_arg __user
- 	struct blkpg_partition p;
- 	long long start, length;
- 	int part;
--	int i;
-+	int i, rc;
- 
- 	if (!capable(CAP_SYS_ADMIN))
- 		return -EACCES;
-@@ -42,12 +42,9 @@ static int blkpg_ioctl(struct block_device *bdev, struct blkpg_ioctl_arg __user
- 				    || pstart < 0 || plength < 0)
- 					return -EINVAL;
- 			}
--			/* partition number in use? */
-+
- 			mutex_lock(&bdev->bd_mutex);
--			if (disk->part[part - 1]) {
--				mutex_unlock(&bdev->bd_mutex);
--				return -EBUSY;
--			}
-+
- 			/* overlap? */
- 			for (i = 0; i < disk->minors - 1; i++) {
- 				struct hd_struct *s = disk->part[i];
-@@ -60,10 +57,14 @@ static int blkpg_ioctl(struct block_device *bdev, struct blkpg_ioctl_arg __user
- 					return -EBUSY;
- 				}
- 			}
-+
- 			/* all seems OK */
--			add_partition(disk, part, start, length, ADDPART_FLAG_NONE);
-+			rc = add_partition(disk, part, start, length,
-+					   ADDPART_FLAG_NONE);
-+
- 			mutex_unlock(&bdev->bd_mutex);
--			return 0;
-+			return rc;
-+
- 		case BLKPG_DEL_PARTITION:
- 			if (!disk->part[part-1])
- 				return -ENXIO;
-diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index 3e0bf3f..b75ca08 100644
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -342,19 +342,24 @@ static ssize_t whole_disk_show(struct device *dev,
- static DEVICE_ATTR(whole_disk, S_IRUSR | S_IRGRP | S_IROTH,
- 		   whole_disk_show, NULL);
- 
--void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len, int flags)
-+int add_partition(struct gendisk *disk, int part,
-+		  sector_t start, sector_t len, int flags)
- {
--	struct hd_struct *p;
-+	struct hd_struct *p = NULL;
- 	int err;
- 
-+	if (disk->part[part - 1]) {
-+		err = -EBUSY;
-+		goto fail;
-+	}
-+
-+	err = -ENOMEM;
- 	p = kzalloc(sizeof(*p), GFP_KERNEL);
- 	if (!p)
--		return;
-+		goto fail;
-+	if (!init_part_stats(p))
-+		goto fail;
- 
--	if (!init_part_stats(p)) {
--		kfree(p);
--		return;
--	}
- 	p->start_sect = start;
- 	p->nr_sects = len;
- 	p->partno = part;
-@@ -376,15 +381,29 @@ void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len,
- 
- 	/* delay uevent until 'holders' subdir is created */
- 	p->dev.uevent_suppress = 1;
--	device_add(&p->dev);
-+	err = device_add(&p->dev);
-+	if (err)
-+		goto fail;
-+
- 	partition_sysfs_add_subdir(p);
- 	p->dev.uevent_suppress = 0;
--	if (flags & ADDPART_FLAG_WHOLEDISK)
-+	if (flags & ADDPART_FLAG_WHOLEDISK) {
- 		err = device_create_file(&p->dev, &dev_attr_whole_disk);
-+		printk(" %s: failed to create sysfs attrs (%d)\n",
-+		       dev_name(&p->dev), err);
-+	}
- 
- 	/* suppress uevent if the disk supresses it */
- 	if (!disk->dev.uevent_suppress)
- 		kobject_uevent(&p->dev.kobj, KOBJ_ADD);
-+
-+	return 0;
-+
-+ fail:
-+	if (p)
-+		free_part_stats(p);
-+	kfree(p);
-+	return err;
- }
- 
- /* Not exported, helper to add_disk(). */
-@@ -484,7 +503,12 @@ int rescan_partitions(struct gendisk *disk, struct block_device *bdev)
- 			printk(" %s: p%d exceeds device capacity\n",
- 				disk->disk_name, p);
- 		}
--		add_partition(disk, p, from, size, state->parts[p].flags);
-+		res = add_partition(disk, p, from, size, state->parts[p].flags);
-+		if (res) {
-+			printk(" %s: failed to add p%d (%d)\n",
-+			       disk->disk_name, p, res);
-+			continue;
-+		}
- #ifdef CONFIG_BLK_DEV_MD
- 		if (state->parts[p].flags & ADDPART_FLAG_RAID)
- 			md_autodetect_dev(bdev->bd_dev+p);
-diff --git a/include/linux/genhd.h b/include/linux/genhd.h
-index ae7aec3..e485cf0 100644
---- a/include/linux/genhd.h
-+++ b/include/linux/genhd.h
-@@ -529,7 +529,7 @@ extern dev_t blk_lookup_devt(const char *name, int part);
- extern char *disk_name (struct gendisk *hd, int part, char *buf);
- 
- extern int rescan_partitions(struct gendisk *disk, struct block_device *bdev);
--extern void add_partition(struct gendisk *, int, sector_t, sector_t, int);
-+extern int add_partition(struct gendisk *, int, sector_t, sector_t, int);
- extern void delete_partition(struct gendisk *, int);
- extern void printk_all_partitions(void);
- 
+									Pavel
 -- 
-1.5.4.5
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
