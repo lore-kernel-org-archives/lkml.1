@@ -1,52 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbYGNCvD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756222AbYGNCxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754865AbYGNCvD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jul 2008 22:51:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562AbYGNCux
+	id S1756222AbYGNCxf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jul 2008 22:53:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754553AbYGNCx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jul 2008 22:50:53 -0400
-Received: from ti-out-0910.google.com ([209.85.142.187]:1297 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754323AbYGNCuv (ORCPT
+	Sun, 13 Jul 2008 22:53:27 -0400
+Received: from mail-in-05.arcor-online.net ([151.189.21.45]:51420 "EHLO
+	mail-in-05.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754550AbYGNCx0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jul 2008 22:50:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Eqoev6So2jc1fZbcXlTjLGvGIosIW53vwzKS+5ng41+KJ7kKkVGBFoPNlq2iOfMO1j
-         G/SrQdDDgnD7g9PoK3X/sQfJ+ecWbKraVjlOvB4iw5jM4uJ7FoyLc8YgUkuSoYKauQ0e
-         ouAZFkEu5ORqv6ob5n6Az6sFr6z6FC6kCU5o8=
-Message-ID: <df9815e70807131950u64f75d67n28484ea8ddddb212@mail.gmail.com>
-Date: Mon, 14 Jul 2008 10:50:49 +0800
-From: "Jike Song" <albcamus@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: [ANNOUNCE] linux-staging tree created
-Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org,
-       kernel-janitors@vger.kernel.org, linux-next@vger.kernel.org,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>
-In-Reply-To: <20080610190540.GA25066@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Sun, 13 Jul 2008 22:53:26 -0400
+Subject: Re: [PATCH] V4L: Link tuner before saa7134
+From: hermann pitton <hermann-pitton@arcor.de>
+To: Simon Arlott <simon@fire.lp0.eu>
+Cc: v4l-dvb-maintainer@linuxtv.org, Linux DVB <linux-dvb@linuxtv.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <487A4A3D.9040809@simon.arlott.org.uk>
+References: <4878F314.6090608@simon.arlott.org.uk>
+	 <1215919227.2662.3.camel@pc10.localdom.local>
+	 <487A4A3D.9040809@simon.arlott.org.uk>
+Content-Type: text/plain
+Date: Mon, 14 Jul 2008 04:48:30 +0200
+Message-Id: <1216003710.2649.24.camel@pc10.localdom.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080610190540.GA25066@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
 
-Is there a separate mailing-list for staging?
+Am Sonntag, den 13.07.2008, 19:32 +0100 schrieb Simon Arlott:
+> >From cde790c56ffe76f3d0bf6f38d89f4e671a5218c6 Mon Sep 17 00:00:00 2001
+> From: Simon Arlott <simon@redrum.invalid>
+> Date: Sun, 13 Jul 2008 19:24:53 +0100
+> Subject: [PATCH] V4L: Link tuner before saa7134
+> 
+> If saa7134_init is run before v4l2_i2c_drv_init (tuner),
+> then saa7134_board_init2 will try to set the tuner type
+> for devices that don't exist yet. This moves tuner to
+> before all of the device-specific drivers so that it's
+> loaded early enough on boot.
+> 
+> Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+> ---
+>  drivers/media/video/Makefile |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/media/video/Makefile b/drivers/media/video/Makefile
+> index ecbbfaa..6b0af12 100644
+> --- a/drivers/media/video/Makefile
+> +++ b/drivers/media/video/Makefile
+> @@ -18,6 +18,8 @@ ifeq ($(CONFIG_VIDEO_V4L1_COMPAT),y)
+>    obj-$(CONFIG_VIDEO_DEV) += v4l1-compat.o
+>  endif
+>  
+> +obj-$(CONFIG_VIDEO_TUNER) += tuner.o
+> +
+>  obj-$(CONFIG_VIDEO_BT848) += bt8xx/
+>  obj-$(CONFIG_VIDEO_IR_I2C)  += ir-kbd-i2c.o
+>  obj-$(CONFIG_VIDEO_TVAUDIO) += tvaudio.o
+> @@ -84,8 +86,6 @@ obj-$(CONFIG_VIDEO_HEXIUM_GEMINI) += hexium_gemini.o
+>  obj-$(CONFIG_VIDEO_DPC) += dpc7146.o
+>  obj-$(CONFIG_TUNER_3036) += tuner-3036.o
+>  
+> -obj-$(CONFIG_VIDEO_TUNER) += tuner.o
+> -
+>  obj-$(CONFIG_VIDEOBUF_GEN) += videobuf-core.o
+>  obj-$(CONFIG_VIDEOBUF_DMA_SG) += videobuf-dma-sg.o
+>  obj-$(CONFIG_VIDEOBUF_VMALLOC) += videobuf-vmalloc.o
+> -- 
+> 1.5.6.2
+> 
 
--- 
-Thanks and Regards,
-Jike
+Thanks a lot for working on it!
 
-On Wed, Jun 11, 2008 at 3:05 AM, Greg KH <greg@kroah.com> wrote:
-> Oh great, not yet-another-kernel-tree, just what the world needs...
->
-> Yes, this is an announcement of a new kernel tree, linux-staging.  It is
-> a quilt series of patches that can be found at:
->        git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/staging.git
+I must admit that I have not tested it yet.
+
+Remaining issues are.
+
+#1 users can't set the tuner type anymore,
+   but the few cases of tuner detection from eeprom we have should
+   work again for that price.
+
+#2 We still don't have any sufficient HDTV support in the kernel ;)
+
+#0 On 2.6.25, without dedicated TV subnorm selection possible anymore
+   and known auto detection flaws, fixed now, folks should have 
+   complained about it.
+
+   Interestingly nothing like that happened.
+ 
+   What could that mean?
+
+Cheers,
+Hermann
+
+
