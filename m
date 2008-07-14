@@ -1,101 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757130AbYGNOvL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756826AbYGNOxL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757130AbYGNOvL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 10:51:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756774AbYGNOuw
+	id S1756826AbYGNOxL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 10:53:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbYGNOw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 10:50:52 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:60773 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756222AbYGNOuu (ORCPT
+	Mon, 14 Jul 2008 10:52:58 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48670 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753583AbYGNOw5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 10:50:50 -0400
-Date: Mon, 14 Jul 2008 08:50:34 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Jaswinder Singh <jaswinder@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       kernel-janitors <kernel-janitors@vger.kernel.org>,
-       kernelnewbies <kernelnewbies@nl.linux.org>, linux-scsi@vger.kernel.org,
-       hch@infradead.org
-Subject: Re: [PATCH] advansys: use request_firmware
-Message-ID: <20080714145033.GD14894@parisc-linux.org>
-References: <1215770322.2733.12.camel@jaswinder.satnam> <20080712162921.GZ14894@parisc-linux.org> <1215882548.19076.57.camel@jaswinder.satnam>
-MIME-Version: 1.0
+	Mon, 14 Jul 2008 10:52:57 -0400
+Date: Mon, 14 Jul 2008 09:52:55 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] - GRU virtual -> physical translation
+Message-ID: <20080714145255.GA23173@sgi.com>
+References: <20080709191439.GA7307@sgi.com> <20080711121736.18687570.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1215882548.19076.57.camel@jaswinder.satnam>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080711121736.18687570.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 12, 2008 at 10:39:08PM +0530, Jaswinder Singh wrote:
-> Sorry, It should be :-
-> +       if (AscLoadMicroCode(iop_base, 0, &fw->data[4],
-> +                            fw->size - 4) != chksum) {
->                 asc_dvc->err_code |= ASC_IERR_MCODE_CHKSUM;
-> +               release_firmware(fw);
->                 return warn_code;
->         }
-> +       release_firmware(fw);
->         warn_code |= AscInitMicroCodeVar(asc_dvc);
-
-OK, makes sense.
-
-> > You're calling release_firmware() here.  I don't know if that actually
-> > frees the firmware when it's built-in, but if it does, then freeing the
-> > firmware could cause the chip to stop working if it gets reset before
-> > userspace is up.
+On Fri, Jul 11, 2008 at 12:17:36PM -0700, Andrew Morton wrote:
+> On Wed, 9 Jul 2008 14:14:39 -0500 Jack Steiner <steiner@sgi.com> wrote:
 > 
-> Normally release_firmware will be called after loading microcode.
+> > Open code the equivalent to follow_page(). This eliminates the
+> > requirement for an EXPORT of follow_page().
 > 
-> Even it gets reset then It will again call request_firmware and load
-> firmware and then frees after loading microcode.
+> I'd prefer to export follow_page() - copying-n-pasting just to avoid
+> exporting the darn thing is silly.
+
+If follow_page() can be EXPORTed, I think that may make the most sense for
+now.
+
 > 
-> Logically it will work same as microcode_buffer say _adv_asc3550_buf[]
-> when you need to load microcode you just read from ???_adv_asc3550_buf[]
-> and load it. And if reset occurs you again read from ???_adv_asc3550_buf[]
-> and then load microcode, but you keep ???_adv_asc3550_buf[] all the time
-> in memory.
-> In our case we just request_firmware when need to load microcode and
-> release_firmware after loading. So we frees the memory after loading
-> microcode.
+> > In addition, the code
+> > is optimized for the specific case that is needed by the GRU and only
+> > supports architectures supported by the GRU (ia64 & x86_64).
 > 
-> So it will not stop the chip from working.
+> Unless you think that this alone justifies the patch?
 
-I'm not quite sure whether my question was answered ...
+No, at least not now. We don't have enough data yet to know if the additional
+performance is worth having an optimized lookup routine. Currently the
+focus is in making the driver functionally correct. Performance optimization
+will be done later when we have a better understanding of the user apps that
+will use the GRU.
 
-When firmware is built in, does
-1) request_firmware() make a copy of it and then release_firmware free
-   that copy?
-2) request_firmware() return a pointer to the built-in firmware with
-   release_firmware() being a no-op?
-3) request_firmware() return a pointer to the built-in firmware with
-   release_firmware() freeing the original?
+_IF_ we agree to the export, what is the best way to send you the patches.
+Incremental or an entirely new GRU V3 patch with all issues resolved?
 
-Cases 1 and 2 are fine, case 3 is a problem.
 
-By the way:
-
-+Driver: SCSI_ADVANSYS - AdvanSys SCSI
-+
-+File: advansys/mcode.bin 
-+File: advansys/3550.bin 
-+File: advansys/38C0800.bin 
-+File: advansys/38C1600.bin 
-+
-+Licence: Allegedly GPLv2+, but no source visible.
-+
-+Found in hex form in kernel source.
-
-I haven't modified the firmware at all (how could I?  ;-) since the
-version in, say, 2.6.20 which was licensed under GPL or BSD.  You could
-take the firmware from there under the BSD license without any legal
-trouble from me.  IANAL, but this seems correct to me.
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+--- jack
