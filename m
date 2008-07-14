@@ -1,48 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573AbYGNPuC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755770AbYGNPxo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755573AbYGNPuC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 11:50:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbYGNPty
+	id S1755770AbYGNPxo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 11:53:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbYGNPxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 11:49:54 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:39316 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753986AbYGNPtx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 11:49:53 -0400
-Message-ID: <487B759B.40700@sgi.com>
-Date: Mon, 14 Jul 2008 08:49:47 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 14 Jul 2008 11:53:37 -0400
+Received: from il.qumranet.com ([212.179.150.194]:55130 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754141AbYGNPxg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 11:53:36 -0400
+Message-ID: <487B767D.2020202@qumranet.com>
+Date: Mon, 14 Jul 2008 18:53:33 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
 CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Paul Menage <menage@google.com>, Max Krasnyansky <maxk@qualcomm.com>,
-       Paul Jackson <pj@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       miaox@cn.fujitsu.com, rostedt@goodmis.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: current linux-2.6.git: cpusets completely broken
-References: <20080712031736.GA3040@damson.getinternet.no>	<alpine.LFD.1.10.0807112026390.2875@woody.linux-foundation.org>	<b647ffbd0807120304o7a500dc9oce761e51c9dce908@mail.gmail.com>	<alpine.LFD.1.10.0807121254490.2875@woody.linux-foundation.org>	<alpine.LFD.1.10.0807121411350.2875@woody.linux-foundation.org> <87vdz9ztt5.fsf@basil.nowhere.org>
-In-Reply-To: <87vdz9ztt5.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [git pull] core, x86: make LIST_POISON less deadly
+References: <20080714144828.GA22666@elte.hu> <alpine.LFD.1.10.0807140758100.3305@woody.linux-foundation.org> <20080714151247.GA27145@elte.hu>
+In-Reply-To: <20080714151247.GA27145@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Linus Torvalds <torvalds@linux-foundation.org> writes:
->> Btw - the way to avoid this whole problem might be to make CPU migration 
->> use a *different* CPU map than "online".
-> 
-> In general I think we need more such masks. Some time ago I had
-> a patch to introduce cpu_ever_online_mask, which prevented some
-> problems with accessing uninitialized per cpu data.
+Ingo Molnar wrote:
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>
+>   
+>> On Mon, 14 Jul 2008, Ingo Molnar wrote:
+>>     
+>>>  
+>>> +config ILLEGAL_POINTER_VALUE
+>>> +       hex
+>>> +       default 0 if X86_32
+>>> +       default 0xffffc10000000000 if X86_64
+>>>       
+>> This looks like a singularly bad pointer value on x86-64.
+>>
+>> Why not pick something that is *guaranteed* to fault? The above looks 
+>> like any future setup that supports 41 bits of addressing and has 
+>> extended the page tables (yes, it will happen eventually) will find 
+>> that to be a perfectly valid address?
+>>
+>> It's also visually confusing, since it's visually very close to a real 
+>> kernel pointer too.
+>>
+>> Grr.
+>>
+>> Why not use something sane like 0xdead000000000000, which has the high 
+>> bit set but very fundamentally isn't a valid pointer, and never will 
+>> be? And which is a *lot* more visually obvious too!
+>>     
+>
+> initially i suggested that too - but such addresses raise a #GP instead 
+> of a page fault so their decoding is a bit harder.
+>
+> We dont do any instruction decoding in #GP handlers to figure out what 
+> happened, while in the pagefault case we know which address faulted, 
+> etc.
+>
+> Perhaps we could try to make #GP handlers a bit more informative - 
+> although decoding instructions will make things a bit more fragile 
+> inevitably.
+>
+> Perhaps make it 0xffffcdead0000000 ?
+>   
 
-Not to divert the conversation too much but I would like to see these
-maps allocated based on the real number of cpus and not NR_CPUS.
+We could have the oops handler detect this address range, and point out 
+the problem in plain English.
 
-Thanks,
-Mike
+-- 
+error compiling committee.c: too many arguments to function
+
