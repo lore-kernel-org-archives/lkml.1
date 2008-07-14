@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbYGNOnQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756345AbYGNOoj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756516AbYGNOnQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 10:43:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753823AbYGNOnA
+	id S1756345AbYGNOoj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 10:44:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbYGNOob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 10:43:00 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54336 "EHLO mx2.mail.elte.hu"
+	Mon, 14 Jul 2008 10:44:31 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34182 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753846AbYGNOm7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 10:42:59 -0400
-Date: Mon, 14 Jul 2008 16:42:43 +0200
+	id S1753823AbYGNOoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 10:44:30 -0400
+Date: Mon, 14 Jul 2008 16:44:20 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [git pull] core/softirq for v2.6.27
-Message-ID: <20080714144243.GA21079@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [git pull] core/stacktrace changes for v2.6.27
+Message-ID: <20080714144420.GA21632@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,259 +33,282 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest core/softirq changes git tree from:
+Please pull the latest core/stacktrace git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core/softirq
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core/stacktrace
 
 Thanks,
 
 	Ingo
 
 ------------------>
-Carlos R. Mafra (1):
-      Remove argument from open_softirq which is always NULL
+Ingo Molnar (3):
+      debugging: make stacktrace independent from DEBUG_KERNEL
+      stacktrace: fix modular build, export print_stack_trace and save_stack_trace
+      stacktrace: export save_stack_trace[_tsk]
 
 Johannes Berg (1):
-      softirq: remove irqs_disabled warning from local_bh_enable
+      stacktrace: don't crash on invalid stack trace structs
 
-Vegard Nossum (1):
-      softirq: remove initialization of static per-cpu variable
+Stephen Rothwell (1):
+      stacktrace: fix build failure on sparc64
+
+Vegard Nossum (3):
+      stacktrace: print_stack_trace() cleanup
+      stacktrace: add saved stack traces to backtrace self-test
+      backtrace: replace timer with tasklet + completions
 
 
- block/blk-core.c          |    2 +-
- include/linux/interrupt.h |    3 +-
- kernel/hrtimer.c          |    2 +-
- kernel/rcuclassic.c       |    2 +-
- kernel/rcupreempt.c       |    2 +-
- kernel/sched.c            |    2 +-
- kernel/softirq.c          |   61 ++++++++++++---------------------------------
- kernel/timer.c            |    2 +-
- net/core/dev.c            |    4 +-
- 9 files changed, 25 insertions(+), 55 deletions(-)
+ arch/arm/kernel/stacktrace.c     |    1 +
+ arch/avr32/kernel/stacktrace.c   |    1 +
+ arch/mips/kernel/stacktrace.c    |    1 +
+ arch/powerpc/kernel/stacktrace.c |    1 +
+ arch/s390/kernel/stacktrace.c    |    2 +
+ arch/sh/kernel/stacktrace.c      |    1 +
+ arch/sparc64/kernel/stacktrace.c |    2 +
+ arch/x86/kernel/stacktrace.c     |    2 +
+ kernel/backtracetest.c           |   65 +++++++++++++++++++++++++++++++------
+ kernel/stacktrace.c              |   14 +++++---
+ lib/Kconfig.debug                |    4 ++-
+ 11 files changed, 76 insertions(+), 18 deletions(-)
 
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 1905aab..af094ff 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -2045,7 +2045,7 @@ int __init blk_dev_init(void)
- 	for_each_possible_cpu(i)
- 		INIT_LIST_HEAD(&per_cpu(blk_cpu_done, i));
+diff --git a/arch/arm/kernel/stacktrace.c b/arch/arm/kernel/stacktrace.c
+index ae31deb..6b3ffde 100644
+--- a/arch/arm/kernel/stacktrace.c
++++ b/arch/arm/kernel/stacktrace.c
+@@ -66,4 +66,5 @@ void save_stack_trace(struct stack_trace *trace)
  
--	open_softirq(BLOCK_SOFTIRQ, blk_done_softirq, NULL);
-+	open_softirq(BLOCK_SOFTIRQ, blk_done_softirq);
- 	register_hotcpu_notifier(&blk_cpu_notifier);
- 
- 	return 0;
-diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-index f1fc747..a86186d 100644
---- a/include/linux/interrupt.h
-+++ b/include/linux/interrupt.h
-@@ -285,12 +285,11 @@ enum
- struct softirq_action
- {
- 	void	(*action)(struct softirq_action *);
--	void	*data;
- };
- 
- asmlinkage void do_softirq(void);
- asmlinkage void __do_softirq(void);
--extern void open_softirq(int nr, void (*action)(struct softirq_action*), void *data);
-+extern void open_softirq(int nr, void (*action)(struct softirq_action *));
- extern void softirq_init(void);
- #define __raise_softirq_irqoff(nr) do { or_softirq_pending(1UL << (nr)); } while (0)
- extern void raise_softirq_irqoff(unsigned int nr);
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index 421be5f..861b408 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -1669,7 +1669,7 @@ void __init hrtimers_init(void)
- 			  (void *)(long)smp_processor_id());
- 	register_cpu_notifier(&hrtimers_nb);
- #ifdef CONFIG_HIGH_RES_TIMERS
--	open_softirq(HRTIMER_SOFTIRQ, run_hrtimer_softirq, NULL);
-+	open_softirq(HRTIMER_SOFTIRQ, run_hrtimer_softirq);
+ 	walk_stackframe(fp, base, base + THREAD_SIZE, save_trace, &data);
+ }
++EXPORT_SYMBOL_GPL(save_stack_trace);
  #endif
- }
- 
-diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
-index f4ffbd0..f6e01f3 100644
---- a/kernel/rcuclassic.c
-+++ b/kernel/rcuclassic.c
-@@ -529,7 +529,7 @@ static void __cpuinit rcu_online_cpu(int cpu)
- 
- 	rcu_init_percpu_data(cpu, &rcu_ctrlblk, rdp);
- 	rcu_init_percpu_data(cpu, &rcu_bh_ctrlblk, bh_rdp);
--	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks, NULL);
-+	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
- }
- 
- static int __cpuinit rcu_cpu_notify(struct notifier_block *self,
-diff --git a/kernel/rcupreempt.c b/kernel/rcupreempt.c
-index 5e02b77..902dce2 100644
---- a/kernel/rcupreempt.c
-+++ b/kernel/rcupreempt.c
-@@ -1123,7 +1123,7 @@ void __init __rcu_init(void)
- 	for_each_online_cpu(cpu)
- 		rcu_cpu_notify(&rcu_nb, CPU_UP_PREPARE,	(void *)(long) cpu);
- 
--	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks, NULL);
-+	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
- }
- 
- /*
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 3aaa5c8..5695835 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -7832,7 +7832,7 @@ void __init sched_init(void)
- #endif
- 
- #ifdef CONFIG_SMP
--	open_softirq(SCHED_SOFTIRQ, run_rebalance_domains, NULL);
-+	open_softirq(SCHED_SOFTIRQ, run_rebalance_domains);
- #endif
- 
- #ifdef CONFIG_RT_MUTEXES
-diff --git a/kernel/softirq.c b/kernel/softirq.c
-index 36e0617..2cf2502 100644
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -131,23 +131,17 @@ void _local_bh_enable(void)
- 
- EXPORT_SYMBOL(_local_bh_enable);
- 
--void local_bh_enable(void)
-+static inline void _local_bh_enable_ip(unsigned long ip)
- {
-+	WARN_ON_ONCE(in_irq() || irqs_disabled());
- #ifdef CONFIG_TRACE_IRQFLAGS
--	unsigned long flags;
--
--	WARN_ON_ONCE(in_irq());
--#endif
--	WARN_ON_ONCE(irqs_disabled());
--
--#ifdef CONFIG_TRACE_IRQFLAGS
--	local_irq_save(flags);
-+	local_irq_disable();
- #endif
- 	/*
- 	 * Are softirqs going to be turned on now:
- 	 */
- 	if (softirq_count() == SOFTIRQ_OFFSET)
--		trace_softirqs_on((unsigned long)__builtin_return_address(0));
-+		trace_softirqs_on(ip);
- 	/*
- 	 * Keep preemption disabled until we are done with
- 	 * softirq processing:
-@@ -159,40 +153,20 @@ void local_bh_enable(void)
- 
- 	dec_preempt_count();
- #ifdef CONFIG_TRACE_IRQFLAGS
--	local_irq_restore(flags);
-+	local_irq_enable();
- #endif
- 	preempt_check_resched();
- }
-+
-+void local_bh_enable(void)
-+{
-+	_local_bh_enable_ip((unsigned long)__builtin_return_address(0));
-+}
- EXPORT_SYMBOL(local_bh_enable);
- 
- void local_bh_enable_ip(unsigned long ip)
- {
--#ifdef CONFIG_TRACE_IRQFLAGS
--	unsigned long flags;
--
--	WARN_ON_ONCE(in_irq());
--
--	local_irq_save(flags);
--#endif
--	/*
--	 * Are softirqs going to be turned on now:
--	 */
--	if (softirq_count() == SOFTIRQ_OFFSET)
--		trace_softirqs_on(ip);
--	/*
--	 * Keep preemption disabled until we are done with
--	 * softirq processing:
-- 	 */
-- 	sub_preempt_count(SOFTIRQ_OFFSET - 1);
--
--	if (unlikely(!in_interrupt() && local_softirq_pending()))
--		do_softirq();
--
--	dec_preempt_count();
--#ifdef CONFIG_TRACE_IRQFLAGS
--	local_irq_restore(flags);
--#endif
--	preempt_check_resched();
-+	_local_bh_enable_ip(ip);
- }
- EXPORT_SYMBOL(local_bh_enable_ip);
- 
-@@ -347,9 +321,8 @@ void raise_softirq(unsigned int nr)
- 	local_irq_restore(flags);
- }
- 
--void open_softirq(int nr, void (*action)(struct softirq_action*), void *data)
-+void open_softirq(int nr, void (*action)(struct softirq_action *))
- {
--	softirq_vec[nr].data = data;
- 	softirq_vec[nr].action = action;
- }
- 
-@@ -360,10 +333,8 @@ struct tasklet_head
- 	struct tasklet_struct **tail;
- };
- 
--/* Some compilers disobey section attribute on statics when not
--   initialized -- RR */
--static DEFINE_PER_CPU(struct tasklet_head, tasklet_vec) = { NULL };
--static DEFINE_PER_CPU(struct tasklet_head, tasklet_hi_vec) = { NULL };
-+static DEFINE_PER_CPU(struct tasklet_head, tasklet_vec);
-+static DEFINE_PER_CPU(struct tasklet_head, tasklet_hi_vec);
- 
- void __tasklet_schedule(struct tasklet_struct *t)
- {
-@@ -503,8 +474,8 @@ void __init softirq_init(void)
- 			&per_cpu(tasklet_hi_vec, cpu).head;
+diff --git a/arch/avr32/kernel/stacktrace.c b/arch/avr32/kernel/stacktrace.c
+index 9a68190..f4bdb44 100644
+--- a/arch/avr32/kernel/stacktrace.c
++++ b/arch/avr32/kernel/stacktrace.c
+@@ -51,3 +51,4 @@ void save_stack_trace(struct stack_trace *trace)
+ 		fp = frame->fp;
  	}
- 
--	open_softirq(TASKLET_SOFTIRQ, tasklet_action, NULL);
--	open_softirq(HI_SOFTIRQ, tasklet_hi_action, NULL);
-+	open_softirq(TASKLET_SOFTIRQ, tasklet_action);
-+	open_softirq(HI_SOFTIRQ, tasklet_hi_action);
  }
- 
- static int ksoftirqd(void * __bind_cpu)
-diff --git a/kernel/timer.c b/kernel/timer.c
-index ceacc66..b4da888 100644
---- a/kernel/timer.c
-+++ b/kernel/timer.c
-@@ -1502,7 +1502,7 @@ void __init init_timers(void)
- 
- 	BUG_ON(err == NOTIFY_BAD);
- 	register_cpu_notifier(&timers_nb);
--	open_softirq(TIMER_SOFTIRQ, run_timer_softirq, NULL);
-+	open_softirq(TIMER_SOFTIRQ, run_timer_softirq);
++EXPORT_SYMBOL_GPL(save_stack_trace);
+diff --git a/arch/mips/kernel/stacktrace.c b/arch/mips/kernel/stacktrace.c
+index ebd9db8..5eb4681 100644
+--- a/arch/mips/kernel/stacktrace.c
++++ b/arch/mips/kernel/stacktrace.c
+@@ -73,3 +73,4 @@ void save_stack_trace(struct stack_trace *trace)
+ 	prepare_frametrace(regs);
+ 	save_context_stack(trace, regs);
  }
++EXPORT_SYMBOL_GPL(save_stack_trace);
+diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
+index 9629440..9861f17 100644
+--- a/arch/powerpc/kernel/stacktrace.c
++++ b/arch/powerpc/kernel/stacktrace.c
+@@ -44,3 +44,4 @@ void save_stack_trace(struct stack_trace *trace)
+ 		sp = newsp;
+ 	}
+ }
++EXPORT_SYMBOL_GPL(save_stack_trace);
+diff --git a/arch/s390/kernel/stacktrace.c b/arch/s390/kernel/stacktrace.c
+index 85e46a5..57571f1 100644
+--- a/arch/s390/kernel/stacktrace.c
++++ b/arch/s390/kernel/stacktrace.c
+@@ -81,6 +81,7 @@ void save_stack_trace(struct stack_trace *trace)
+ 			   S390_lowcore.thread_info,
+ 			   S390_lowcore.thread_info + THREAD_SIZE, 1);
+ }
++EXPORT_SYMBOL_GPL(save_stack_trace);
  
- /**
-diff --git a/net/core/dev.c b/net/core/dev.c
-index c421a1f..48f1e04 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -4585,8 +4585,8 @@ static int __init net_dev_init(void)
+ void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
+ {
+@@ -93,3 +94,4 @@ void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
+ 	if (trace->nr_entries < trace->max_entries)
+ 		trace->entries[trace->nr_entries++] = ULONG_MAX;
+ }
++EXPORT_SYMBOL_GPL(save_stack_trace_tsk);
+diff --git a/arch/sh/kernel/stacktrace.c b/arch/sh/kernel/stacktrace.c
+index d41e561..1b2ae35 100644
+--- a/arch/sh/kernel/stacktrace.c
++++ b/arch/sh/kernel/stacktrace.c
+@@ -34,3 +34,4 @@ void save_stack_trace(struct stack_trace *trace)
+ 		}
+ 	}
+ }
++EXPORT_SYMBOL_GPL(save_stack_trace);
+diff --git a/arch/sparc64/kernel/stacktrace.c b/arch/sparc64/kernel/stacktrace.c
+index c73ce3f..b3e3737 100644
+--- a/arch/sparc64/kernel/stacktrace.c
++++ b/arch/sparc64/kernel/stacktrace.c
+@@ -1,6 +1,7 @@
+ #include <linux/sched.h>
+ #include <linux/stacktrace.h>
+ #include <linux/thread_info.h>
++#include <linux/module.h>
+ #include <asm/ptrace.h>
+ #include <asm/stacktrace.h>
  
- 	dev_boot_phase = 0;
+@@ -47,3 +48,4 @@ void save_stack_trace(struct stack_trace *trace)
+ 			trace->entries[trace->nr_entries++] = pc;
+ 	} while (trace->nr_entries < trace->max_entries);
+ }
++EXPORT_SYMBOL_GPL(save_stack_trace);
+diff --git a/arch/x86/kernel/stacktrace.c b/arch/x86/kernel/stacktrace.c
+index c28c342..a03e7f6 100644
+--- a/arch/x86/kernel/stacktrace.c
++++ b/arch/x86/kernel/stacktrace.c
+@@ -74,6 +74,7 @@ void save_stack_trace(struct stack_trace *trace)
+ 	if (trace->nr_entries < trace->max_entries)
+ 		trace->entries[trace->nr_entries++] = ULONG_MAX;
+ }
++EXPORT_SYMBOL_GPL(save_stack_trace);
  
--	open_softirq(NET_TX_SOFTIRQ, net_tx_action, NULL);
--	open_softirq(NET_RX_SOFTIRQ, net_rx_action, NULL);
-+	open_softirq(NET_TX_SOFTIRQ, net_tx_action);
-+	open_softirq(NET_RX_SOFTIRQ, net_rx_action);
+ void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
+ {
+@@ -81,3 +82,4 @@ void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
+ 	if (trace->nr_entries < trace->max_entries)
+ 		trace->entries[trace->nr_entries++] = ULONG_MAX;
+ }
++EXPORT_SYMBOL_GPL(save_stack_trace_tsk);
+diff --git a/kernel/backtracetest.c b/kernel/backtracetest.c
+index d1a7605..a5e026b 100644
+--- a/kernel/backtracetest.c
++++ b/kernel/backtracetest.c
+@@ -10,30 +10,73 @@
+  * of the License.
+  */
  
- 	hotcpu_notifier(dev_cpu_callback, 0);
- 	dst_init();
++#include <linux/completion.h>
++#include <linux/delay.h>
++#include <linux/interrupt.h>
+ #include <linux/module.h>
+ #include <linux/sched.h>
+-#include <linux/delay.h>
++#include <linux/stacktrace.h>
++
++static void backtrace_test_normal(void)
++{
++	printk("Testing a backtrace from process context.\n");
++	printk("The following trace is a kernel self test and not a bug!\n");
+ 
+-static struct timer_list backtrace_timer;
++	dump_stack();
++}
+ 
+-static void backtrace_test_timer(unsigned long data)
++static DECLARE_COMPLETION(backtrace_work);
++
++static void backtrace_test_irq_callback(unsigned long data)
++{
++	dump_stack();
++	complete(&backtrace_work);
++}
++
++static DECLARE_TASKLET(backtrace_tasklet, &backtrace_test_irq_callback, 0);
++
++static void backtrace_test_irq(void)
+ {
+ 	printk("Testing a backtrace from irq context.\n");
+ 	printk("The following trace is a kernel self test and not a bug!\n");
+-	dump_stack();
++
++	init_completion(&backtrace_work);
++	tasklet_schedule(&backtrace_tasklet);
++	wait_for_completion(&backtrace_work);
++}
++
++#ifdef CONFIG_STACKTRACE
++static void backtrace_test_saved(void)
++{
++	struct stack_trace trace;
++	unsigned long entries[8];
++
++	printk("Testing a saved backtrace.\n");
++	printk("The following trace is a kernel self test and not a bug!\n");
++
++	trace.nr_entries = 0;
++	trace.max_entries = ARRAY_SIZE(entries);
++	trace.entries = entries;
++	trace.skip = 0;
++
++	save_stack_trace(&trace);
++	print_stack_trace(&trace, 0);
++}
++#else
++static void backtrace_test_saved(void)
++{
++	printk("Saved backtrace test skipped.\n");
+ }
++#endif
++
+ static int backtrace_regression_test(void)
+ {
+ 	printk("====[ backtrace testing ]===========\n");
+-	printk("Testing a backtrace from process context.\n");
+-	printk("The following trace is a kernel self test and not a bug!\n");
+-	dump_stack();
+ 
+-	init_timer(&backtrace_timer);
+-	backtrace_timer.function = backtrace_test_timer;
+-	mod_timer(&backtrace_timer, jiffies + 10);
++	backtrace_test_normal();
++	backtrace_test_irq();
++	backtrace_test_saved();
+ 
+-	msleep(10);
+ 	printk("====[ end of backtrace testing ]====\n");
+ 	return 0;
+ }
+diff --git a/kernel/stacktrace.c b/kernel/stacktrace.c
+index b71816e..94b527e 100644
+--- a/kernel/stacktrace.c
++++ b/kernel/stacktrace.c
+@@ -6,19 +6,21 @@
+  *  Copyright (C) 2006 Red Hat, Inc., Ingo Molnar <mingo@redhat.com>
+  */
+ #include <linux/sched.h>
++#include <linux/module.h>
+ #include <linux/kallsyms.h>
+ #include <linux/stacktrace.h>
+ 
+ void print_stack_trace(struct stack_trace *trace, int spaces)
+ {
+-	int i, j;
++	int i;
+ 
+-	for (i = 0; i < trace->nr_entries; i++) {
+-		unsigned long ip = trace->entries[i];
++	if (WARN_ON(!trace->entries))
++		return;
+ 
+-		for (j = 0; j < spaces + 1; j++)
+-			printk(" ");
+-		print_ip_sym(ip);
++	for (i = 0; i < trace->nr_entries; i++) {
++		printk("%*c", 1 + spaces, ' ');
++		print_ip_sym(trace->entries[i]);
+ 	}
+ }
++EXPORT_SYMBOL_GPL(print_stack_trace);
+ 
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index d2099f4..6263e2d 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -419,7 +419,6 @@ config DEBUG_LOCKING_API_SELFTESTS
+ 
+ config STACKTRACE
+ 	bool
+-	depends on DEBUG_KERNEL
+ 	depends on STACKTRACE_SUPPORT
+ 
+ config DEBUG_KOBJECT
+@@ -563,6 +562,9 @@ config BACKTRACE_SELF_TEST
+ 	  for distributions or general kernels, but only for kernel
+ 	  developers working on architecture code.
+ 
++	  Note that if you want to also test saved backtraces, you will
++	  have to enable STACKTRACE as well.
++
+ 	  Say N if you are unsure.
+ 
+ config LKDTM
