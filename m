@@ -1,137 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758466AbYGOCON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758053AbYGOCP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758466AbYGOCON (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 22:14:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbYGOCN6
+	id S1758053AbYGOCP4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 22:15:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbYGOCPs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 22:13:58 -0400
-Received: from mail-in-09.arcor-online.net ([151.189.21.49]:39927 "EHLO
-	mail-in-09.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756625AbYGOCN5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 22:13:57 -0400
-Subject: Re: [PATCH] V4L: Link tuner before saa7134
-From: hermann pitton <hermann-pitton@arcor.de>
-To: Simon Arlott <simon@fire.lp0.eu>
-Cc: v4l-dvb-maintainer@linuxtv.org, Linux DVB <linux-dvb@linuxtv.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <24484.simon.1216035632@5ec7c279.invalid>
-References: <4878F314.6090608@simon.arlott.org.uk>
-	 <1215919227.2662.3.camel@pc10.localdom.local>
-	 <487A4A3D.9040809@simon.arlott.org.uk>
-	 <1216003710.2649.24.camel@pc10.localdom.local>
-	 <24484.simon.1216035632@5ec7c279.invalid>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 04:09:37 +0200
-Message-Id: <1216087777.2681.17.camel@pc10.localdom.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Jul 2008 22:15:48 -0400
+Received: from r00tworld.com ([212.85.137.21]:49459 "EHLO r00tworld.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751874AbYGOCPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 22:15:47 -0400
+From: pageexec@freemail.hu
+To: Greg KH <greg@kroah.com>
+Date: Tue, 15 Jul 2008 04:14:35 +0200
+MIME-Version: 1.0
+Subject: Re: [stable] Linux 2.6.25.10
+Reply-to: pageexec@freemail.hu
+CC: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Message-ID: <487C242B.19490.17F690F7@pageexec.freemail.hu>
+In-reply-to: <20080714120418.GA5334@kroah.com>
+References: <20080703185727.GA12617@suse.de>, <486D4541.25808.C600354@pageexec.freemail.hu>, <20080714120418.GA5334@kroah.com>
+X-mailer: Pegasus Mail for Windows (4.41)
+Content-type: text/plain; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+Content-description: Mail message body
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Tue, 15 Jul 2008 04:15:18 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 14 Jul 2008 at 5:04, Greg KH wrote:
 
-Am Montag, den 14.07.2008, 12:40 +0100 schrieb Simon Arlott:
-> On Mon, July 14, 2008 03:48, hermann pitton wrote:
-> >
-> > Am Sonntag, den 13.07.2008, 19:32 +0100 schrieb Simon Arlott:
-> >> >From cde790c56ffe76f3d0bf6f38d89f4e671a5218c6 Mon Sep 17 00:00:00 2001
-> >> From: Simon Arlott <simon@redrum.invalid>
-> >> Date: Sun, 13 Jul 2008 19:24:53 +0100
-> >> Subject: [PATCH] V4L: Link tuner before saa7134
-> >>
-> >> If saa7134_init is run before v4l2_i2c_drv_init (tuner),
-> >> then saa7134_board_init2 will try to set the tuner type
-> >> for devices that don't exist yet. This moves tuner to
-> >> before all of the device-specific drivers so that it's
-> >> loaded early enough on boot.
-> >>
-> >> Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
-> >> ---
-> >>  drivers/media/video/Makefile |    4 ++--
-> >>  1 files changed, 2 insertions(+), 2 deletions(-)
-> >>
-> >> diff --git a/drivers/media/video/Makefile b/drivers/media/video/Makefile
-> >> index ecbbfaa..6b0af12 100644
-> >> --- a/drivers/media/video/Makefile
-> >> +++ b/drivers/media/video/Makefile
-> >> @@ -18,6 +18,8 @@ ifeq ($(CONFIG_VIDEO_V4L1_COMPAT),y)
-> >>    obj-$(CONFIG_VIDEO_DEV) += v4l1-compat.o
-> >>  endif
-> >>
-> >> +obj-$(CONFIG_VIDEO_TUNER) += tuner.o
-> >> +
-> >>  obj-$(CONFIG_VIDEO_BT848) += bt8xx/
-> >>  obj-$(CONFIG_VIDEO_IR_I2C)  += ir-kbd-i2c.o
-> >>  obj-$(CONFIG_VIDEO_TVAUDIO) += tvaudio.o
-> >> @@ -84,8 +86,6 @@ obj-$(CONFIG_VIDEO_HEXIUM_GEMINI) += hexium_gemini.o
-> >>  obj-$(CONFIG_VIDEO_DPC) += dpc7146.o
-> >>  obj-$(CONFIG_TUNER_3036) += tuner-3036.o
-> >>
-> >> -obj-$(CONFIG_VIDEO_TUNER) += tuner.o
-> >> -
-> >>  obj-$(CONFIG_VIDEOBUF_GEN) += videobuf-core.o
-> >>  obj-$(CONFIG_VIDEOBUF_DMA_SG) += videobuf-dma-sg.o
-> >>  obj-$(CONFIG_VIDEOBUF_VMALLOC) += videobuf-vmalloc.o
-> >> --
-> >> 1.5.6.2
-> >>
-> >
-> > Thanks a lot for working on it!
-> >
-> > I must admit that I have not tested it yet.
-> >
-> > Remaining issues are.
-> >
-> > #1 users can't set the tuner type anymore,
-> >    but the few cases of tuner detection from eeprom we have should
-> >    work again for that price.
-> There are already module parameters to do that... they can be used
-> from the kernel command line too.
+> Sorry for the delay, was on vacation...
 
-They are broken for what I do say during the last three months and a
-build just now tells the same.
+a collective one, i take it, as noone else bothered to respond either ;).
 
-> >
-> > #2 We still don't have any sufficient HDTV support in the kernel ;)
-> >
-> DVB-T2? Why is that relevant to this change? My card doesn't even support
-> it.
+anyway, you must have been at an interesting place i suppose as you
+even managed to slip a mail through a wormhole that somehow arrived
+here on 8th ;).
 
-Sorry for abusing the thread a little, I plan some vacations and try to
-dump what I have left in mind.
-
-Your card should at least support Australian DVB-T HDTV.
-
-We have some new support for DVB-S in 2.6.26, mostly triple or quad
-capable cards, using the dual isl6405 as LNB supply. I would love to see
-more feedback here for HDTV usage. (not S2, but for example BBC HD
-1080i, works flawlessly somewhere else ...)
-
-> > #0 On 2.6.25, without dedicated TV subnorm selection possible anymore
-> >    and known auto detection flaws, fixed now, folks should have
-> >    complained about it.
-> >
-> >    Interestingly nothing like that happened.
-> >
-> >    What could that mean?
-> >
-> I'm not sure what you're asking, but not many people appear to compile
-> v4l/dvb into the kernel. Lots of function calls still work on
-> uninitialised modules so ordering problems can easily be missed.
+> > On 3 Jul 2008 at 11:57, Greg KH wrote:
+> > 
+> > > On Thu, Jul 03, 2008 at 10:29:14AM -0700, Greg KH wrote:
+> > > Adding 2 more addresses to this thread, as they were said to have
+> > > questions about this kernel release.
+> > 
+> > not only this one, but every commit for the past few years that fixed
+> > bugs with security impact. for reference:
+> > 
+> > http://lwn.net/Articles/285438/
+> > http://lwn.net/Articles/286263/
+> > http://lwn.net/Articles/287339/
+> > http://lwn.net/Articles/288473/
 > 
+> As I'm somewhere there is no web access, mind summarizing these if they
+> are relevant?
 
-We have much less testers than previously I believe.
+they're very relevant and rather long, you should take your time and read
+them whenever you're back on the normal net. or you can do like RMS and
+surf the web through email ;).
 
-The tda827x still seems not to compile, if tuner customization is not
-selected. Likely the isl6405 under frontend customization needs to be
-checked too.
+> > what is the disclosure policy used for commits fixing bugs with security
+> > impact (both vanilla and -stable, especially if there's a difference)?
+> 
+> What is outlined in Documentation/SecurityBugs.
 
-Thanks again.
+so it's full disclosure for both vanilla and -stable, there's no difference?
+just because at the end of your mail you say:
 
-Cheers,
-Hermann
+> > how does it relate to what is declared in Documentation/SecurityBugs?
+> 
+> That deals with how security bugs that are sent to security@kernel.org
+> are handled, which is totally different from -stable releases, right?
 
+now are they totally different or not? ;)
 
+in any case, you say the full disclosure policy applies. what does that mean
+for you? does it mean omitting security impact information you know about
+(not 'here is a working exploit' but 'this is a buffer overflow' or 'this
+is an exploitable bug')? because such omissions have repeatedly occured for
+the past many years (you'll find several examples pointed out at those LWN
+URLs) and they're hard to reconcile with your declared disclosure policy.
+
+> > what do you include/omit?
+> 
+> Personally, I omit posting full "and here is explicitly how to exploit
+> this problem" notices as that is foolish.
+
+do you also omit any of the usual security related words, such as, say,
+'buffer overflow', 'security' when describing a bug? say, look at today's
+2.6.25.11 and its single fix that doesn't say anything about 'security',
+heck, not even its announcement does. do you think it's what constitutes
+full disclosure? ;)
+
+> But also remember that -stable releases are just a compilation of
+> patches that developers have sent to the stable developers, we use the
+> original commit messages as published in the main kernel tree, except
+> where the patch differs, which is rare.
+
+you at least add CVE IDs on occasion, mainline commits are even worse in
+that regard.
+
+>  So it's not like these releases are any different than the main kernel
+> releases on descriptions of patches and issues surrounding them. 
+
+yes, the real and more important problem is with the mainline development
+itself, you're mostly suffering collateral damage, so to speak. but since
+you're also part of that development process, you can't hide behind that.
+
+so guys (meaning not only Greg but Andrew, Linus, et al.), when will you
+publicly explain why you're covering up security impact of bugs? and even
+more importantly, when will you change your policy or bring your process
+in line with what you declared?
+
+cheers,
+  PaX Team
 
