@@ -1,75 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763522AbYGOVwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762773AbYGOVxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763522AbYGOVwc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 17:52:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762773AbYGOVwR
+	id S1762773AbYGOVxs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 17:53:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755182AbYGOVxj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 17:52:17 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:23117 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762416AbYGOVwQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 17:52:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=uANPUSyJpMpxXR9CBvfEmlF3zCO73P2XtAtiX1jf8ayOVVnbr5SlS72Lr8AguzKU3X
-         PiewtuovrsNEuOaDkGoYx4IpieuAjE4Jk8D2weK1Nae5Q/yaT2JBG3KzcM83YsD7XonL
-         IfCgVy63vwCF0FvNVYfxYJFBiOoW7drwSDN2Y=
-Date: Wed, 16 Jul 2008 01:49:30 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: David Miller <davem@davemloft.net>, mingo@elte.hu
-Cc: nhorman@tuxdriver.com, simon@fire.lp0.eu, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, herbert@gondor.apana.org.au
-Subject: Re: BUG: unable to handle kernel NULL pointer dereference at
-	000000000000000e (reset_prng_context)
-Message-ID: <20080715214929.GA18268@martell.zuzino.mipt.ru>
-References: <487BE071.80101@simon.arlott.org.uk> <20080715020428.GA27463@hmsendeavour.rdu.redhat.com> <20080715113304.GA30565@elte.hu> <20080715.134407.150543177.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080715.134407.150543177.davem@davemloft.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 15 Jul 2008 17:53:39 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47955 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755095AbYGOVxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 17:53:38 -0400
+Date: Tue, 15 Jul 2008 17:52:52 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Lee.Schermerhorn@hp.com,
+       kosaki.motohiro@jp.fujitsu.com, lwoodman@redhat.com
+Subject: Re: [PATCH][RFC] evict streaming IO cache first
+Message-ID: <20080715175252.69072c09@cuia.bos.redhat.com>
+In-Reply-To: <20080715134848.cf2204b9.akpm@linux-foundation.org>
+References: <20080715160948.097b14a4@cuia.bos.redhat.com>
+	<20080715134848.cf2204b9.akpm@linux-foundation.org>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 01:44:07PM -0700, David Miller wrote:
-> From: Ingo Molnar <mingo@elte.hu>
+On Tue, 15 Jul 2008 13:48:48 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Tue, 15 Jul 2008 16:09:48 -0400
+> Rik van Riel <riel@redhat.com> wrote:
 > 
-> > i have just triggered this crash too. Please, when you know about bootup 
-> > crashes in your code send a patch to the lkml thread so that people can 
-> > apply it and have a working system.
-> > 
-> > Note that the new crypto/prng.c driver has very bad quality:
-> > 
-> >   total: 45 errors, 21 warnings, 1 checks, 410 lines checked
-> > 
-> > It has tons of completely unacceptable code mistakes in it.
+> > This patch still needs some testing under various workloads
+> > on different hardware - the approach should work but the
+> > threshold may need tweaking.
 > 
-> I think we should merge new drivers as aggressively as possible.
+> More than "some"!
 
-Well, I don't have strong opinion about this exact statement, but
+Agreed.  In my initial testing this patch seems to bring the
+behaviour of the kernel closer to the behaviour the old VM
+had, but it certainly needs lots and lots of testing!
 
-	Ingo, COULD YOU PLEASE PERSONALLY FUCKING STOP THIS
-	CHECKPATCH.PL-AS-INDICATOR HORSESHIT !
+> > When there is a lot of streaming IO going on, we do not want
+> > to scan or evict pages from the working set.  The old VM used
+> > to skip any mapped page, but still evict indirect blocks and
+> > other data that is useful to cache.
+> 
+> I'd be surprised if indirect blocks are getting kicked - they tend to
+> be awfully sticky due to frequent touch_buffer()s or equivalent.
 
-Every damn single warning in this case is about whitespace or 80 column limit.
+If you rewrite a large enough file, they get kicked.  This
+has become noticable some time between 2.6.9 and 2.6.18, but
+I don't think we can point to any particular changeset that
+caused it - and even if we do, chances are it does more good
+than harm :)
 
-Every damn single one!
-
-The hacker of your calibre should know the difference between whitespace-bad code
-and bug-ridden-bad code.
-
-
-What are those unacceptable mistakes?
-
-Don't read the code again, what are those mistakes?
-
-
-I _very_ briefly looked at prng.c and place I find wrong it passing
-"int nbytes" to get_prng_bytes(). It should be unsigned at least.
-
-checkpatch.pl says about this? Suuuure, it does...
-
+-- 
+All Rights Reversed
