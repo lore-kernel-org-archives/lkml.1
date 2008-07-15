@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761145AbYGOQEi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761300AbYGOQF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761145AbYGOQEi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 12:04:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754560AbYGOQEa
+	id S1761300AbYGOQF1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 12:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752950AbYGOQFQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 12:04:30 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:47916 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753863AbYGOQE3 (ORCPT
+	Tue, 15 Jul 2008 12:05:16 -0400
+Received: from casper.infradead.org ([85.118.1.10]:49350 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754560AbYGOQFP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 12:04:29 -0400
-Date: Tue, 15 Jul 2008 12:03:35 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: so ... what's really and truly "obsolete" and can be tossed?
-Message-ID: <alpine.LFD.1.10.0807151202280.3861@localhost.localdomain>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Tue, 15 Jul 2008 12:05:15 -0400
+Date: Tue, 15 Jul 2008 09:04:41 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Frans Pop <elendil@planet.nl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, jeff@garzik.org,
+       akpm@linux-foundation.org, dwmw2@infradead.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
+ in-kernel, use it in more drivers.
+Message-ID: <20080715090441.478c2287@infradead.org>
+In-Reply-To: <200807151757.10626.elendil@planet.nl>
+References: <1216077806.27455.85.camel@shinybook.infradead.org>
+	<20080714164119.99c33d5b.akpm@linux-foundation.org>
+	<20080714165956.7fe2d4ee@infradead.org>
+	<487C0365.5030203@garzik.org>
+	<487C0365.5030203@garzik.org>
+	<alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
+	<200807151757.10626.elendil@planet.nl>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 15 Jul 2008 17:57:09 +0200
+Frans Pop <elendil@planet.nl> wrote:
 
-$ grep -wi obsolete $(find . -name Kconfig*)
-./drivers/isdn/Kconfig:	  Therefore the old ISDN4Linux layer will eventually become obsolete.
-./drivers/message/i2o/Kconfig:	bool "Enable ioctls (OBSOLETE)"
-./drivers/sbus/char/Kconfig:	tristate "Bidirectional parallel port support (OBSOLETE)"
-./drivers/sbus/char/Kconfig:	  Say Y here to support Sun's obsolete variant of IEEE1284
-./drivers/mtd/nand/Kconfig:	bool "Enable chip ids for obsolete ancient NAND devices"
-./drivers/net/Kconfig:	  new card, since the 3c501 is slow, broken, and obsolete: you will
-./drivers/block/paride/Kconfig:	  This option enables support for the (obsolete) EPIA parallel port
-./drivers/block/paride/Kconfig:	  This option enables support for the (obsolete) 90c20 parallel port
-./drivers/block/Kconfig:	  obsolete. For details, read <file:Documentation/ramdisk.txt>.
-./drivers/misc/Kconfig:	  This support was made obsolete by the generic ACPI docking station
-./drivers/pcmcia/Kconfig:	bool "PCMCIA control ioctl (obsolete)"
-./net/bridge/netfilter/Kconfig:	tristate "ebt: ulog support (OBSOLETE)"
-./net/netfilter/Kconfig:	  This target replaced the old obsolete QUEUE target.
-./net/ipv6/netfilter/Kconfig:	tristate "IP6 Userspace queueing via NETLINK (OBSOLETE)"
-./net/ipv4/netfilter/Kconfig:	tristate "IP Userspace queueing via NETLINK (OBSOLETE)"
-./net/ipv4/Kconfig:	  This code is experimental and also obsolete. If you want to use it,
-./lib/Kconfig.debug:	bool "Enable unused/obsolete exported symbols"
-./fs/Kconfig:	bool "Print quota warnings to console (OBSOLETE)"
-./fs/Kconfig:	tristate "SMB file system support (OBSOLETE, please use CIFS)"
-./arch/powerpc/platforms/iseries/Kconfig:	bool "iSeries Virtual Console Support (Obsolete)"
-./arch/arm/Kconfig:	  1995 when it was made obsolete by the PCI bus.
-./arch/m68k/Kconfig:	  1995 when it was made obsolete by the PCI bus.
-./arch/sh/Kconfig:	  1995 when it was made obsolete by the PCI bus.
-./arch/x86/Kconfig:	  1995 when it was made obsolete by the PCI bus.
-./arch/mips/Kconfig:	  1995 when it was made obsolete by the PCI bus.
-./sound/core/Kconfig:	  Say Y here to support the obsolete ALSA PCM API (ver.0.9.0 rc3
+> Linus Torvalds wrote:
+> > On Mon, 14 Jul 2008, Jeff Garzik wrote:
+> >> IMO the newly added /inability/ to build firmware into kernel
+> >> modules is a clear regression.
+> > 
+> > IMO you're being stupid.
+> > 
+> > How about explainign why it makes any difference what-so-ever?
+> > 
+> > If you can load the module, you can load the firmware. Claiming
+> > anything else is just _stupid_.
+> 
+> Sure, in theory it's that simple. Here's a concrete example that
+> shows how things are harder in practice.
+> 
+> I use the 'make deb-pkg' target (from scripts/package) to build my
+> Debian kernel packages from git. So that needs to be adapted to
+> include /lib/firmware. No real problem so far.
+> 
+> So then I build 2.6.27-rc1 and install it. Great.
+> 
+> You release 2.6.27-rc2 and I build it. Ouch! It fails to install, at
+> least if I want to install it _alongside_ 2.6.27-rc1 or other kernels
+> (which I do!). Why does it fail? Because dpkg's package management
+> does not allow one package to overwrite files already "owned" by
+> another package.
+> 
 
-rday
---
-
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+question: how do you deal with this with the dozens of drivers that use
+request_firmware() even before yesterday ?
+the answer is critical in how to deal with this "new" situation as
+well ;-)
