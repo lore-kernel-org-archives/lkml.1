@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761346AbYGOR1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761824AbYGOR2A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761346AbYGOR1S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 13:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbYGOR1J
+	id S1761824AbYGOR2A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 13:28:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754535AbYGOR1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 13:27:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48126 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750908AbYGOR1G (ORCPT
+	Tue, 15 Jul 2008 13:27:52 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:42457 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754084AbYGOR1v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 13:27:06 -0400
-Date: Tue, 15 Jul 2008 10:25:51 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-cc: David Woodhouse <dwmw2@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
- use it in more drivers.
-In-Reply-To: <487CDB85.3050208@garzik.org>
-Message-ID: <alpine.LFD.1.10.0807151024220.3017@woody.linux-foundation.org>
-References: <1216077806.27455.85.camel@shinybook.infradead.org>  <20080714164119.99c33d5b.akpm@linux-foundation.org>  <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>  <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org> 
- <487C09EB.1050903@garzik.org>  <alpine.LFD.1.10.0807141928540.3017@woody.linux-foundation.org>  <487C1648.5070409@garzik.org>  <alpine.LFD.1.10.0807142027140.3017@woody.linux-foundation.org>  <487C500F.8000109@garzik.org> <1216107418.27455.236.camel@shinybook.infradead.org>
- <487C5ABE.2010907@garzik.org> <alpine.LFD.1.10.0807150808050.3017@woody.linux-foundation.org> <487CDB85.3050208@garzik.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 15 Jul 2008 13:27:51 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5339"; a="4557744"
+Message-ID: <487CDE15.1070401@qualcomm.com>
+Date: Tue, 15 Jul 2008 10:27:49 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Paul Menage <menage@google.com>
+CC: mingo@elte.hu, pj@sgi.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl
+Subject: Re: [PATCH] cpuset: Make rebuild_sched_domains() usable from any
+ context
+References: <1216122293-4888-1-git-send-email-maxk@qualcomm.com> <6599ad830807150914h152e3716n914dfa5e28288d28@mail.gmail.com>
+In-Reply-To: <6599ad830807150914h152e3716n914dfa5e28288d28@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 15 Jul 2008, Jeff Garzik wrote:
+Paul Menage wrote:
+> On Tue, Jul 15, 2008 at 4:44 AM, Max Krasnyansky <maxk@qualcomm.com> wrote:
+>> From: Max Krasnyanskiy <maxk@qualcomm.com>
+>>
+>> I do not really like the current solution of dropping cgroup lock
+>> but it shows what I have in mind in general.
 > 
-> The changes are good,
-> 
-> They just don't need to break stuff.
-> 
-> Which they do.
+> I think that dropping the cgroup lock will open up races for cpusets.
+> The idea of a separate workqueue/thread to do the sched domain
+> rebuilding is simplest.
 
-If you were serious about that, then you'd be suggesting _fixes_.
+Actually I audited (to the best of my knowledge) all the paths in 
+cpusets and rebuild_sched_domains() is the last action. ie We drop the 
+lock right after it anyways. It's just it's embedded deep in the call 
+stack and therefor I cannot drop it at the higher level.
 
-I'm not seeing you do that. I'm just seeing non-productive "we should 
-never have changed" emails.
+The only path where I think it's not safe is the cgroup destroy thing 
+where we do
+	
+cgroup.c
+	cgroup_lock();
+	for_each_cgroups(...)
+		cg->destroy();
+	cgroup_unlock();
 
-See my emails about what can be _productive_ avenues to explore. As it is, 
-I have yet to see a _single_ productive email from you. 
+So in theory it's just that one patch that really needs the workqueue 
+trick. But I do agree that it'll make it less tricky across the board.
+So I'll pick up you work queue based patch, convert it to single 
+threaded, bang on a bit later today and send a patch on top of this one.
 
-Really, Jeff.
+Max
 
-		Linus
+
