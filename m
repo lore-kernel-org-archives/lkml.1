@@ -1,85 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762220AbYGOTPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762911AbYGOTQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762220AbYGOTPj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 15:15:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758254AbYGOTPT
+	id S1762911AbYGOTQj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 15:16:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758254AbYGOTQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 15:15:19 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:30788 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758202AbYGOTPR (ORCPT
+	Tue, 15 Jul 2008 15:16:27 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55503 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758048AbYGOTQ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 15:15:17 -0400
-Date: Tue, 15 Jul 2008 13:15:15 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 01/14] Introduce cpu_enabled_map and friends
-Message-ID: <20080715191515.GE10919@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-	linux-acpi@vger.kernel.org
-References: <20080715023344.2528.1836.stgit@blender.achiang> <20080715023349.2528.9423.stgit@blender.achiang> <20080715031512.GF14894@parisc-linux.org> <87wsjnxy4w.fsf@basil.nowhere.org> <20080715102130.GA22866@flint.arm.linux.org.uk> <20080715175740.GB10919@ldl.fc.hp.com> <20080715181632.GG14894@parisc-linux.org> <20080715184822.GB29991@flint.arm.linux.org.uk>
+	Tue, 15 Jul 2008 15:16:26 -0400
+Date: Tue, 15 Jul 2008 12:16:11 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: pageexec@freemail.hu
+cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [stable] Linux 2.6.25.10
+In-Reply-To: <487D10B3.5586.1B9284FF@pageexec.freemail.hu>
+Message-ID: <alpine.LFD.1.10.0807151211180.3351@woody.linux-foundation.org>
+References: <20080703185727.GA12617@suse.de>, <487CDEDD.21049.1ACFDAEA@pageexec.freemail.hu>, <alpine.LFD.1.10.0807150904290.3017@woody.linux-foundation.org> <487D10B3.5586.1B9284FF@pageexec.freemail.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080715184822.GB29991@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Russell King <rmk+lkml@arm.linux.org.uk>:
-> On Tue, Jul 15, 2008 at 12:16:32PM -0600, Matthew Wilcox wrote:
-> > On Tue, Jul 15, 2008 at 11:57:40AM -0600, Alex Chiang wrote:
-> > > My thought was that big SMP systems like ia64, possibly sparc and
-> > > ppc, and increasingly, x86, might find something like this
-> > > useful, as systems get larger and larger, and vendors are going
-> > > to want to do RAS-ish features, like the ability to keep CPUs in
-> > > firmware across reboots until told otherwise by the sysadmin.
-> > > 
-> > > Right now, a 'present' CPU strongly implies 'online' as well,
-> > > since we're calling cpu_up() for all 'present' CPUs in
-> > > smp_init(). But this hurts if:
-> > > 
-> > > 	- you don't actually want to bring up all 'present' CPUs
-> > > 	- you still want to interact with these weirdo zombie
-> > > 	  CPUs that are 'present' but not 'online'
-> > 
-> > Have you considered simply failing __cpu_up() for CPUs that are
-> > deconfigured by firmware?
+
+
+On Tue, 15 Jul 2008, pageexec@freemail.hu wrote:
 > 
-> But what if you want to have a system boot with, say, 4 CPUs and
-> then decide at run time to bring up another 4 CPUs when required?
-> 
-> How about having smp_init() call into arch code to query whether
-> it should bring up a not-already-online CPU?  Architectures that
-> want to do something special can then make the decision there and
-> everyone else can define the test completely away.
+> in other words, try a better argument, possibly without bogeymen.
 
-So this is exactly what I'm doing. The ia64 patch has this hunk:
+You know what - when nobody does embargoes, I'll consider your argument to 
+have a point.
 
-@@ -820,6 +824,9 @@ __cpu_up (unsigned int cpu)
-        if (cpu_isset(cpu, cpu_callin_map))
-                return -EINVAL;
+In the meantime, I'm not in the least interested in your idiotic 
+arguments. Especially as you can't even read what I wrote:
 
-+       if (!cpu_isset(cpu, cpu_enabled_map))
-+               return -EINVAL;
-+
-        per_cpu(cpu_state, cpu) = CPU_UP_PREPARE;
-        /* Processor goes to start_secondary(), sets online flag */
-        ret = do_boot_cpu(sapicid, cpu);
+> i don't see you embargo normal bug fixes, why would you embargo security
+> bug fixes? they're just normal bugs, aren't they?
 
-That was the easiest, most-straightforward solution I could think
-of. If you have an idea for a version with lower taxes (doesn't
-touch all the archs or can be #define'd out), I'm happy to hear
-it.
+Exactly. I don't embargo them. I refuse to have anything to even _do_ with 
+organizations like vendor-sec that I think is a corrupt cluster-fuck of 
+people who just want to cover their own ass.
 
-Thanks.
+They're just normal bugs.
 
-/ac
+But that also doesn't mean that I see any reason to make it obvious what 
+to do to trigger them, and cause problems at universities and such. So I 
+don't do "here's how to exploit it" commit logs, for example.
 
+(If you haven't been at a univerisity, you don't know how many smart young 
+people want to "try it to see". And if you have been there, and don't 
+think it's a problem when they do and wouldn't be happier if they didn't, 
+you probably don't know what the word "empathy" means).
+
+			Linus
