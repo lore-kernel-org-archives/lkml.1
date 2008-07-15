@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756134AbYGOLNx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756397AbYGOLP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756134AbYGOLNx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 07:13:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755006AbYGOLNo
+	id S1756397AbYGOLP0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 07:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbYGOLPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 07:13:44 -0400
-Received: from smtp-02.mandic.com.br ([200.225.81.133]:40906 "EHLO
-	smtp-02.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752822AbYGOLNn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 07:13:43 -0400
-Message-ID: <487C865C.5060303@diamondcut.com.br>
-Date: Tue, 15 Jul 2008 08:13:32 -0300
-From: "Renato S. Yamane" <yamane@diamondcut.com.br>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
-CC: Greg KH <greg@kroah.com>, linux-acpi@vger.kernel.org, pavel@suse.cz,
-       linux-kernel@vger.kernel.org
-Subject: Re: Toshiba - Documentation for Linux Developers
-References: <4855971D.90004@diamondcut.com.br> <20080616221443.GA760@kroah.com>	 <b170af450807130654m2f800b10ybcba4b2c5c7cf329@mail.gmail.com>	 <487A1534.3000307@diamondcut.com.br> <b170af450807150017u248d4255i3800c10cb11df319@mail.gmail.com>
-In-Reply-To: <b170af450807150017u248d4255i3800c10cb11df319@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Tue, 15 Jul 2008 07:15:14 -0400
+Received: from ns.suse.de ([195.135.220.2]:45001 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752822AbYGOLPN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 07:15:13 -0400
+Date: Tue, 15 Jul 2008 13:15:53 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: =?UTF-8?B?RnLDqWTDqXJpYw==?= Weisbecker <fweisbec@gmail.com>,
+       =?UTF-8?B?VMO2csO2aw==?= Edwin <edwintorok@gmail.com>,
+       linux-next@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: today's linux-next fails to boot
+Message-ID: <20080715131553.61f36ca2@halley.suse.de>
+In-Reply-To: <s5htzer4d9p.wl%tiwai@suse.de>
+References: <4877400B.1000400@gmail.com>
+	<487C074E.8080309@gmail.com>
+	<s5htzer4d9p.wl%tiwai@suse.de>
+Organization: SUSE Linux Products GmbH
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
+ D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
+ vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
+ pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafał Miłecki wrote:
-> Renato S. Yamane wrote:
->> Rafał Miłecki wrote:
->>> I have Toshiba A100 with Phoenix BIOS. This means toshiba_acpi doesn't
->>> work for me and I can change LCD brightness.
->>
->> Rafal, try use omnibook driver.
->>  Get it with subversion:
->>  $ svn co
->>  https://omnibook.svn.sourceforge.net/svnroot/omnibook/omnibook/trunk
->>
->>  Use "make install" and "make load".
->>
->>  After this, maybe is possible change brightness writing in
->>  /proc/omnibook/lcd (0 is minimun and 7 is max brightness)
+* Takashi Iwai [2008-07-15 13:06]:
 > 
-> The newest version is packed for openSUSE fortunately. But it doesn't
-> for my notebook
+> Added Bernhard to Cc.  Maybe we should defer firmware_map_add*()?
 
-Try compile SVN version as commented in my last e-mail
+Yes. I already posted a patch for that.
 
-> dmesg is:
-> omnibook: Driver version 2.20070211-trunk.
-> omnibook: Unknown model.
+http://article.gmane.org/gmane.linux.kernel.kexec/1882
 
-Try force recognize with ectype parameter.
-#modprobe omnibook ectype=x
 
-Where "x" is a number between 1 and 15.
 
-Load with ectype=1, test, unload, try load again with ectype=2, test,
-unload...
-
-Best regards,
-Renato
+Bernhard
+-- 
+Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
