@@ -1,78 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762300AbYGOCmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761586AbYGOCoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762300AbYGOCmZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 22:42:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756266AbYGOCmO
+	id S1761586AbYGOCoz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 22:44:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754238AbYGOCor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 22:42:14 -0400
-Received: from sh.osrg.net ([192.16.179.4]:44252 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753844AbYGOCmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 22:42:13 -0400
-Date: Tue, 15 Jul 2008 11:40:46 +0900
-To: mpatocka@redhat.com
-Cc: fujita.tomonori@lab.ntt.co.jp, davem@davemloft.net, andi@firstfloor.org,
-       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [SUGGESTION]: drop virtual merge accounting in I/O requests
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <Pine.LNX.4.64.0807141720350.30981@devserv.devel.redhat.com>
-References: <20080713.202035.172246136.davem@davemloft.net>
-	<20080715024424R.fujita.tomonori@lab.ntt.co.jp>
-	<Pine.LNX.4.64.0807141720350.30981@devserv.devel.redhat.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080715114058A.fujita.tomonori@lab.ntt.co.jp>
+	Mon, 14 Jul 2008 22:44:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56737 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753967AbYGOCoq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 22:44:46 -0400
+Date: Mon, 14 Jul 2008 19:39:03 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+cc: rene.herman@keyaccess.nl, david@lang.hm, arjan@infradead.org,
+       akpm@linux-foundation.org, dwmw2@infradead.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
+ use it in more drivers.
+In-Reply-To: <20080714.192425.241878700.davem@davemloft.net>
+Message-ID: <alpine.LFD.1.10.0807141934060.3017@woody.linux-foundation.org>
+References: <alpine.DEB.1.10.0807141750290.14223@asgard.lang.hm> <20080714.185207.203328391.davem@davemloft.net> <487C0A12.9060906@keyaccess.nl> <20080714.192425.241878700.davem@davemloft.net>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Jul 2008 17:26:38 -0400 (EDT)
-Mikulas Patocka <mpatocka@redhat.com> wrote:
 
-> On Tue, 15 Jul 2008, FUJITA Tomonori wrote:
+
+On Mon, 14 Jul 2008, David Miller wrote:
 > 
-> > On Sun, 13 Jul 2008 20:20:35 -0700 (PDT)
-> > David Miller <davem@davemloft.net> wrote:
-> >
-> >> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> >> Date: Mon, 14 Jul 2008 11:19:02 +0900
-> >>
-> >>> Now IOMMUs don't ignore the max_segment_size. We hit this problem.
-> >>
-> >> It seems simply that max_segment_size needs to propagate
-> >> down into the block layer VMERGE code so that it can
-> >> act accordingly.
-> >
-> > Yeah, I think so. I'll take care of that.
-> >
-> > But I think that even with the fix, SPARC64 IOMMU still hits the
-> > problem.
-> >
-> > With the VMERGE accounting enabled,
-> >
-> > - an IOMMU must merge segments that the block layer expects the IOMMU
-> > to merge.
-> >
-> > - an IOMMU must return an error if it can't merge such segments.
-> >
-> > But the current SPARC64 IOMMU code doesn't return an error if it can't
-> > merge such segments (as POWER's IOMMU does, as you know).
-> 
-> BTW. what should the block device driver do when it receives a mapping 
-> error? (if it aborts the request and it was write request, there will be 
-> data corruption).
+> They states that it was being done on a technical basis rather
+> than being predominantly a legal one.
 
-I'm not sure how a aborted request can corrupt data on disk.
+No.
 
+Yes, the original reason for request_firmware() was obviously very much 
+partly legal.
 
-> Is it even legal to return IOMMU error in case where no 
-> real hardware error or overflow happened?
+HOWEVER.
 
-Of course, it's legal. It's a common event like kinda OOM. It's very
-possible with old IOMMUs that have the small I/O space. A SCSI driver
-retries a failed request later. But note that some drivers are still
-not able to handle that.
+Once you have a model that is required (for whatever reasons) for some 
+drivers, we're much better off using the _same_ model for all drivers, 
+whether it is necessary for legal reasons for those other drivers.
 
-http://marc.info/?l=linux-kernel&m=121300637114672&w=2
+Put this way: if you do a distro, you _need_ to support firmware loading 
+anyway. And once you do that, it's just annoying how some drivers then do 
+something odd and special for the same thing, for no real good reason.
+
+It's like having each wireless driver do their own 802.11 stack. It works, 
+and all those driver writers seem to be always convinced that it's the 
+right thing to do. But as a network maintainer, do you like it?
+
+Now, replace "802.11 stack" with "firmware loader", and then replace 
+"network maintainer" with "kernel maintainer".
+
+And maybe you can see why I like just making everybody do 
+request_firmware().
+
+Do you call that a legal reason? Or a technical one?
+
+				Linus
