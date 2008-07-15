@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763298AbYGOTrz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762600AbYGOTud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763298AbYGOTrz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 15:47:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759075AbYGOTrp
+	id S1762600AbYGOTud (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 15:50:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755912AbYGOTuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 15:47:45 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:52893 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759049AbYGOTro (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 15:47:44 -0400
-Subject: vread_tsc() compile error (post 2.6.26)
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: mingo <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Alok N Kataria <akataria@vmware.com>,
-       Alok N Kataria <akataria@vmware.com>, Dan Hecht <dhecht@vmware.com>
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 15 Jul 2008 12:47:41 -0700
-Message-Id: <1216151261.25942.24.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 8bit
+	Tue, 15 Jul 2008 15:50:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49173 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753076AbYGOTuZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 15:50:25 -0400
+Date: Tue, 15 Jul 2008 12:49:38 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Woodhouse <dwmw2@infradead.org>
+cc: Marcel Holtmann <marcel@holtmann.org>, Frans Pop <elendil@planet.nl>,
+       jeff@garzik.org, arjan@infradead.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
+ use it in more drivers.
+In-Reply-To: <1216150616.27455.377.camel@shinybook.infradead.org>
+Message-ID: <alpine.LFD.1.10.0807151244320.3351@woody.linux-foundation.org>
+References: <1216077806.27455.85.camel@shinybook.infradead.org>  <20080714164119.99c33d5b.akpm@linux-foundation.org>  <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>  <487C0365.5030203@garzik.org>  <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
+  <200807151757.10626.elendil@planet.nl>  <1216149637.27242.65.camel@violet.holtmann.net>  <alpine.LFD.1.10.0807151223290.3351@woody.linux-foundation.org> <1216150616.27455.377.camel@shinybook.infradead.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-$ git describe
-v2.6.26-2465-g1c0fea9
-
-This looks like it was caused by:
-﻿
-	8fbbc4b45ce3e4c0eeb15004c79c72b6896a79c2
-
-Did this get any testing on x86-32?  It looks like this symbol has no
-32-bit equivalent.
-
-...
-  MODPOST vmlinux.o
-WARNING: modpost: Found 11 section mismatch(es).
-To see full details build your kernel with:
-'make CONFIG_DEBUG_SECTION_MISMATCH=y'
-  GEN     .version
-  CHK     include/linux/compile.h
-  UPD     include/linux/compile.h
-  CC      init/version.o
-  LD      init/built-in.o
-  LD      .tmp_vmlinux1
-arch/x86/kernel/built-in.o: In function `vread_tsc':
-/home/dave/kernels/linux-2.6.git/arch/x86/kernel/tsc.c:365: undefined reference to `__vsyscall_gtod_data'
-/home/dave/kernels/linux-2.6.git/arch/x86/kernel/tsc.c:365: undefined reference to `__vsyscall_gtod_data'
-make: *** [.tmp_vmlinux1] Error 1
-﻿
-My config:
-
-http://sr71.net/~dave/linux/config-2.6.26-rc8-00089-ge1441b9
 
 
--- Dave
+On Tue, 15 Jul 2008, David Woodhouse wrote:
+> 
+> I'm unconvinced that the kernel should be setting this kind of policy.
 
+I do think it should probably be conditional, but I think that's true of 
+udevd itself too, so hey, it cuts both ways.
+
+> But I suppose if you make it tunable in sysfs and just switch to calling
+> do_filp_open() directly from firmware_class.c instead of punting to
+> userspace, that might work.
+
+Yup. And then you can disable it either statically (config option) or by 
+writing an invalid path into /proc/sys/kernel/firmware-dir or whatever.
+
+Or you can just decide that if you find something in the kernel-specific 
+firmware directory, then it should always take precedence over whatever 
+udev rules. Which sounds good to me anyway.
+
+Maybe you really do have some very kernel-specific issue (ie you're trying 
+a new driver that can handle a new experimental firmware, but you don't 
+want your old fall-back kernels to use it because you just fixed the bug 
+that makes it work again).
+
+Requiring you to write udevd scripts for that sounds insane. I wouldn't 
+even know where to start.
+
+So kernel-specific directories do make sense. As does the whole "I don't 
+want to handle the pain that is udev scripts".
+
+			Linus
