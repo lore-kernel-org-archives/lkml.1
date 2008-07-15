@@ -1,112 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbYGOJMg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755641AbYGOJRi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755849AbYGOJMg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 05:12:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbYGOJM3
+	id S1755641AbYGOJRi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 05:17:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551AbYGOJRa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 05:12:29 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:44456 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754594AbYGOJM2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 05:12:28 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5338"; a="4716466"
-Message-ID: <487C69F8.80906@qualcomm.com>
-Date: Tue, 15 Jul 2008 02:12:24 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
+	Tue, 15 Jul 2008 05:17:30 -0400
+Received: from cantor.suse.de ([195.135.220.2]:33842 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753509AbYGOJR3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 05:17:29 -0400
+Date: Tue, 15 Jul 2008 11:35:28 +0200
+From: Olaf Dabrunz <od@suse.de>
 To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Paul Menage <menage@google.com>, Paul Jackson <pj@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, miaox@cn.fujitsu.com,
-       rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: current linux-2.6.git: cpusets completely broken
-References: <alpine.LFD.1.10.0807121411350.2875@woody.linux-foundation.org> <b647ffbd0807141538g2004f245m5f54ec962f475ba5@mail.gmail.com> <alpine.LFD.1.10.0807141602250.3017@woody.linux-foundation.org> <b647ffbd0807141700s20e54fbewafb3d3e296e57f53@mail.gmail.com> <alpine.LFD.1.10.0807141707410.3017@woody.linux-foundation.org> <b647ffbd0807141921n13ffa59x416fc024c734ef02@mail.gmail.com> <487C1374.8020404@qualcomm.com> <alpine.LFD.1.10.0807142104250.3017@woody.linux-foundation.org> <20080715083223.GA2600@elte.hu> <487C62FB.6030304@qualcomm.com> <20080715085738.GA6325@elte.hu>
-In-Reply-To: <20080715085738.GA6325@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Stefan Assmann <sassmann@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       Ihno Krumreich <ihno@suse.de>, Sven Dietrich <sdietrich@suse.de>,
+       Daniel Gollub <dgollub@suse.de>, Felix Foerster <ffoerster@suse.de>
+Subject: Re: [PATCH 0/3] Boot IRQ quirks for Broadcom and AMD/ATI
+Message-ID: <20080715093527.GB2297@suse.de>
+Mail-Followup-To: Ingo Molnar <mingo@elte.hu>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Jon Masters <jonathan@jonmasters.org>,
+	Stefan Assmann <sassmann@suse.de>,
+	LKML <linux-kernel@vger.kernel.org>, Ihno Krumreich <ihno@suse.de>,
+	Sven Dietrich <sdietrich@suse.de>, Daniel Gollub <dgollub@suse.de>,
+	Felix Foerster <ffoerster@suse.de>
+References: <12155255883170-git-send-email-od@suse.de> <20080713210133.GA12362@elte.hu> <200807140924.59023.jbarnes@virtuousgeek.org> <20080714164548.GA28499@elte.hu> <20080714164948.GA15153@suse.de> <20080714165823.GB15153@suse.de> <20080714175137.GA2297@suse.de> <20080714182946.GA30754@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080714182946.GA30754@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Max Krasnyansky <maxk@qualcomm.com> wrote:
+On 14-Jul-08, Ingo Molnar wrote:
 > 
->> Ingo Molnar wrote:
->>> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
->>>
->>>> On Mon, 14 Jul 2008, Max Krasnyansky wrote:
->>>>> Did you guys an updated patch ? Dmitry pointed out several things that Linus
->>>>> missed in his original version. I guess I can go through the thread and
->>>>> reconstruct that but if you have a patch I can try let me know.
->>>> I didn't update it, and right now I'm just merging too much (and  
->>>> discussing the merges) to have time.
->>>>
->>>> The patch really needs to have some scheduler person look at the use  
->>>> fo cpu_active_map - I was kind of hoping that Ingo would.
->>> yeah - it's very high on our TODO list :-) Peter, Dmitry and me are  
->>> looking into it.
->>>
->>> I didnt touch most of -tip in the past few days to get a rock solid QA  
->>> track record for all items we have.
->> I just sent you guys a patch. Please take a look. I've probably missed 
->> something but it should close (I think). Also we'd probably at least 
->> want the bits that streamline the domain reinitialization because it 
->> helps with cpusets (ie uses same exact path for all cases).
+> * Olaf Dabrunz <od@suse.de> wrote:
 > 
-> thanks Max. Since upstream already has Dmitry's it conflicted with your 
-> patch - i fixed the interactions up, see it below. (completely untested)
-Hmm, I did it on top of 2.6.26 final which has Dmitry's patch. It must have
-been something in the -tip.
-Anyway, I'll apply it here and retest.
+> > On 14-Jul-08, Olaf Dabrunz wrote:
+> > > I am working on a consolidated patch set for AKMP. It integrates all
+> > > fixes and adds a config option CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS
+> > > (prepared by Stefan Assmann), which can default to off for vanilla and to
+> > > on for RT / threaded IRQ handling. This means that the whole patchset
+> > > can (in principle) be applied to vanilla and RT without change. Also
+> > > CONFIG_PREEMPT_HARDIRQ can "select CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS".
+> > > 
+> > > If you don't mind, I will send the full set out today.
+> > 
+> > On second thought and after talking to Stefan, as you think the 
+> > patches can go into 2.6.27 as they are, there is not much benefit in 
+> > integrating the fixes and the config option patch. Stefan will commit 
+> > the config option patch to tip tomorrow.
+> 
+> please do not rebase the patchset, that causes us lose the testing 
+> status, we lose the sha1's of the commits, etc. Lets keep what we have 
+> in tip/x86/pci-ioapic-boot-irq-quirks and do append-only fixlets to it.
 
-> It's not ready for inclusion yet though - these new
-> #ifdefs are quite ugly:
-> 
->  +#if !defined(CONFIG_CPUSETS)
->  +       partition_sched_domains(0, NULL, NULL);
->  +#else
->  +       rebuild_sched_domains();
->  +#endif
-> 
-> we should just have a single method for refreshing sched domains 
-> hierarchy, and in the !CONFIG_CPUSETS case that should simply fall back 
-> to partition_sched_domains().
-> 
-> We can do that by making rebuild_sched_domains() the primary method that 
-> is called - and in the !CPUSETS case it's an inline that calls 
-> partition_sched_domains().
+Right.
 
-Actually that's exactly what I have in the cpuset part of the patch. But as
-I mentioned there is some circular locking issues with rebuild_sched_domains().
-(cgroup_lock and get_online_cpus()) and I wanted to fix that fix. Now that I
-think about it's kind of unrelated. So in other words I totally agree. I'll
-go ahead fix it and resend.
+Thanks,
 
-btw While we're at it. Does arch_init_sched_domains() and arch_reinit_sched_domains()
-still make sense. I'm talking about naming here. I suppose arch_ part means that it
-can be replaced by the arch code. But it's not the case with those two guys.
-What do you think ?
+-- 
+Olaf Dabrunz (od/odabrunz), SUSE Linux Products GmbH, Nürnberg
 
-> also, small nits:
-> 
-> use #ifdef CONFIG_CPUSETS instead of "#if !defined(CONFIG_CPUSETS)".
-Will do.
-
-> and while at it:
-> 
->  +#if !defined(CONFIG_CPUSETS)
->          /* XXX: Theoretical race here - CPU may be hotplugged now */
->          hotcpu_notifier(update_sched_domains, 0);
->  +#endif
-> 
-> that race should be closed now, hm?
-Yeah, I stared at that comment for a second and decided to leave it.
-I guess it's still there. I mean in theory cpu can still be hotplugged just
-before sched or cpuset register their notifier callbacks.
-
-Max
