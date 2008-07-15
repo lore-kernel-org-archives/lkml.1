@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760979AbYGOOVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761346AbYGOOWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760979AbYGOOVu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 10:21:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753757AbYGOOVk
+	id S1761346AbYGOOWI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 10:22:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760940AbYGOOVr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 10:21:40 -0400
-Received: from sh.osrg.net ([192.16.179.4]:44128 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753238AbYGOOVj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 10:21:39 -0400
-Date: Tue, 15 Jul 2008 23:20:14 +0900
-To: mpatocka@redhat.com
-Cc: fujita.tomonori@lab.ntt.co.jp, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       davem@davemloft.net, linux-parisc@vger.kernel.org
-Subject: Re: [PATCH] block: fix q->max_segment_size checking in
- blk_recalc_rq_segments about VMERGE
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <Pine.LNX.4.64.0807150924250.21598@devserv.devel.redhat.com>
-References: <1216118676-13625-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<Pine.LNX.4.64.0807150924250.21598@devserv.devel.redhat.com>
+	Tue, 15 Jul 2008 10:21:47 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35310 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758419AbYGOOVq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 10:21:46 -0400
+Subject: Re: [PATCH] x86: traps and do_traps under one hood
+From: David Woodhouse <dwmw2@infradead.org>
+To: Jaswinder Singh <jaswinder@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       kernelnewbies <kernelnewbies@nl.linux.org>,
+       kernel-janitors <kernel-janitors@vger.kernel.org>, andi@firstfloor.org
+In-Reply-To: <1216119158.21749.5.camel@jaswinder.satnam>
+References: <1216119158.21749.5.camel@jaswinder.satnam>
+Content-Type: text/plain
+Date: Tue, 15 Jul 2008 07:21:43 -0700
+Message-Id: <1216131703.27455.245.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080715231956A.fujita.tomonori@lab.ntt.co.jp>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jul 2008 09:37:05 -0400 (EDT)
-Mikulas Patocka <mpatocka@redhat.com> wrote:
+On Tue, 2008-07-15 at 16:22 +0530, Jaswinder Singh wrote:
+> Declaring x86 traps under one hood.
+> Declaring x86 do_traps before defining them.
 
-> On Tue, 15 Jul 2008, FUJITA Tomonori wrote:
-> 
-> > blk_recalc_rq_segments assumes that any segments can be merged in the
-> > case of BIOVEC_VIRT_MERGEABLE && !BIOVEC_VIRT_OVERSIZE. However, an
-> > IOMMU can't merge segments if the total length of the segments is
-> > larger than max_segment_size (the LLD restriction).
-> >
-> > Due to this bug, a LLD may get the larger number of segments than
-> > nr_hw_segments because the block layer puts more segments in a request
-> > than it should do.
-> >
-> > This bug could happen on alpha, parisc, and sparc, which use VMERGE.
-> 
-> Parisc doesn't use virtual merge accounting (there is variable for it but 
-> it's always 0).
+> arch/x86/kernel/traps_32.c                |   20 ---------
+> arch/x86/kernel/traps_64.c                |   21 ----------
+> include/asm-x86/mach-default/mach_traps.h |   62 +++++++++++++++++++++++++++++
 
-Hmm, really? Looks like PARISC IOMMUs (ccio-dma.c and sba_iomm.c) set
-parisc_vmerge_boundary (CC'ed PARISC mailing list).
+You put these back in mach-default/mach_traps.h but does that cover all
+possibilities? What about other machine types?
 
+Looking at the ifdefs you introduced in that header, it seems there's
+more scope for unification here (although it makes sense for that to
+come later).
 
-> On sparc64 it is broken anyway with or without your patch. 
+-- 
+dwmw2
 
-Yeah, we need to modify SPARC64 IOMMU code (I'm not sure that it's
-worth). Right now, the best fix is setting BIO_VMERGE_BOUNDARY to 0.
-
-
-> And alpha alone doesn't justify substantial code bloat in generic block 
-> layer. So I propose this patch to drop it at all.
-
-Jens, what do you think about removing VMERGE code?
