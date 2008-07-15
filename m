@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759736AbYGOMoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758456AbYGOMoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759736AbYGOMoc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 08:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756542AbYGOMoY
+	id S1758456AbYGOMoq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 08:44:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757694AbYGOMoa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 08:44:24 -0400
-Received: from sorrow.cyrius.com ([65.19.161.204]:2971 "EHLO sorrow.cyrius.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756309AbYGOMoY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 08:44:24 -0400
-Date: Tue, 15 Jul 2008 15:44:06 +0300
-From: Martin Michlmayr <tbm@cyrius.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Soeren Sonnenburg <kernel@nn7.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.26-rc7: BUG at kernel/power/snapshot.c:493
-Message-ID: <20080715124406.GE2946@deprecation.cyrius.com>
-References: <1214584985.22228.15.camel@localhost> <200807092300.59678.rjw@sisk.pl> <20080711153815.GA7109@deprecation.cyrius.com> <200807112105.20917.rjw@sisk.pl>
+	Tue, 15 Jul 2008 08:44:30 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:32475 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757468AbYGOMo3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 08:44:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=KKfjc3Jf8DzGxqPy3pjGdTAj/2Foe626WLrdduedUK6ov3IjvRw6ygLXgj/3VAoTao
+         3dtju/vljbdbxWBBJ0j/dGF3aNGm4Jvhu8uKzPCaC3bmo3B7cmMn3gPjne8CvkHR9ajj
+         bdLt5UcOTJ6nmDFm7RCs8dwbwAhtP2uGHS5tw=
+Message-ID: <487C9BA8.5010709@gmail.com>
+Date: Tue, 15 Jul 2008 14:44:24 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200807112105.20917.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: mano@roarinelk.homelinux.net
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH]  ALSA Au1xpsc: psc not disabled when TX is idle
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rafael J. Wysocki <rjw@sisk.pl> [2008-07-11 21:05]:
-> If you have the user space resume utility in your initrd, please try
-> to disable or remove it.  I'd like to verify if it is responsible
-> for this message.
+Untested patch
+---
+TX idleness isn't tested, but RX twice. PSC is not disabled when TX is idle
 
-I haven't had a chance to try this yet.  However, I made a new
-observation in the meantime: when I suspend my system with 2.6.25 and
-resume it with 2.6.25, I get the problem.  But if I suspend my system
-with 2.6.25 and then resume it with 2.6.26-rc9 it resumes just fine.
-Suspending with 2.6.26-rc9 and resuming with 2.6.26-rc9 also works
-fine.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/sound/soc/au1x/psc-i2s.c b/sound/soc/au1x/psc-i2s.c
+index ba4b5c1..9384702 100644
+--- a/sound/soc/au1x/psc-i2s.c
++++ b/sound/soc/au1x/psc-i2s.c
+@@ -231,7 +231,7 @@ static int au1xpsc_i2s_stop(struct au1xpsc_audio_data *pscdata, int stype)
 
--- 
-Martin Michlmayr
-http://www.cyrius.com/
+        /* if both TX and RX are idle, disable PSC */
+        stat = au_readl(I2S_STAT(pscdata));
+-       if (!(stat & (PSC_I2SSTAT_RB | PSC_I2SSTAT_RB))) {
++       if (!(stat & (PSC_I2SSTAT_TB | PSC_I2SSTAT_RB))) {
+                au_writel(0, I2S_CFG(pscdata));
+                au_sync();
+                au_writel(PSC_CTRL_SUSPEND, PSC_CTRL(pscdata));
