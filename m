@@ -1,87 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932167AbYGOUng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759087AbYGOUn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932167AbYGOUng (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 16:43:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753019AbYGOUn1
+	id S1759087AbYGOUn4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 16:43:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761842AbYGOUnn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 16:43:27 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:60936 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756192AbYGOUn0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 16:43:26 -0400
-Date: Tue, 15 Jul 2008 23:43:20 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Stoyan Gaydarov <stoyboyker@gmail.com>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, gorcunov@gmail.com,
-       akpm@linux-foundation.org, mingo@elte.hu
-Subject: Re: From 2.4 to 2.6 to 2.7?
-Message-ID: <20080715204320.GJ24533@cs181140183.pp.htv.fi>
-References: <6d291e080807141910m573b29b2t753ea7c4db09902d@mail.gmail.com> <alpine.LFD.1.10.0807141914280.3017@woody.linux-foundation.org> <6d291e080807141931g3080c94cic94f503c1a18523b@mail.gmail.com> <alpine.LFD.1.10.0807141939410.3017@woody.linux-foundation.org>
+	Tue, 15 Jul 2008 16:43:43 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35411 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756192AbYGOUnm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 16:43:42 -0400
+Date: Tue, 15 Jul 2008 13:42:58 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: pageexec@freemail.hu
+cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [stable] Linux 2.6.25.10
+In-Reply-To: <487D2371.10258.1BDBBC00@pageexec.freemail.hu>
+Message-ID: <alpine.LFD.1.10.0807151331110.2867@woody.linux-foundation.org>
+References: <20080703185727.GA12617@suse.de>, <487D20EC.26203.1BD1E5C5@pageexec.freemail.hu>, <alpine.LFD.1.10.0807151317270.2867@woody.linux-foundation.org> <487D2371.10258.1BDBBC00@pageexec.freemail.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807141939410.3017@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 14, 2008 at 07:47:46PM -0700, Linus Torvalds wrote:
+
+
+On Tue, 15 Jul 2008, pageexec@freemail.hu wrote:
 > 
-> 
-> On Mon, 14 Jul 2008, Stoyan Gaydarov wrote:
-> > >
-> > > For example, I don't see any individual feature that would merit a jump
-> > > from 2.x to 3.x or even from 2.6.x to 2.8.x. So maybe those version jumps
-> > > should be done by a time-based model too - matching how we actually do
-> > > releases anyway.
-> >
-> > Does it have to be even numbers only?
-> 
-> No. But the even/odd thing is still so fresh in peoples memory (despite us 
-> not having used it for years), and I think some projects aped us on it, so 
-> if I didn't change the numbering setup, but just wanted to reset the minor 
-> number, I'd probably jump from 2.6 to 2.8 just for historical reasons.
-> 
-> But I could also see the second number as being the "year", and 2008 would 
-> get 2.8, and then next year I'd make the first release of 2009 be 2.9.1 
-> (and probably avoid the ".0" just because it again has the connotations of 
-> a "big new untested release", which is not true in a date-based numbering 
-> scheme). And then 2010 would be 3.0.1 etc..
-> 
-> Anyway, I have to say that I personally don't have any hugely strong 
-> opinions on the numbering. I suspect others do, though, and I'm almost 
-> certain that this is an absolutely _perfect_ "bikeshed-painting" subject 
-> where thousands of people will be very passionate and send me their 
-> opinions on why _their_ particular shed color is so much better.
->...
+> i understand and i think noone expects that. in fact, i know how much
+> expertise and time it takes to determine that. but what happens when
+> you do figure out the security relevance of a bug during bug submission
 
-The 2.6. prefix is like with X which is version 11 for 20 years and 
-still counting.
+The issue is that I think it's then _misleading_ to mark that kind of 
+commit specially, when I actually believe that it's in the minority.
 
-Or like with X11R6, that became X11R7 after 11 years, there might be in 
-a few years some big change that will warrant a 2.8 or 3.0 (the rewrite 
-of the kernel in Visual Basic .NET ;-) ).
+If people think that they are safer for only applying (or upgrading to) 
+certain patches that are marked as being security-specific, they are 
+missing all the ones that weren't marked as such. Making them even 
+_believe_ that the magic security marking is meaningful is simply a lie. 
+It's not going to be.
 
-But my personal opinion is that we now have an established version 
-numbering with the current development model that is 2.6.x, and users 
-got used to it.
+So why would I add some marking that I most emphatically do not believe in 
+myself, and think is just mostly security theater?
 
-If you'd change it you will only create confusion - e.g. with your 2.9.1 
-idea half the world will see that 9 is an odd number, remember the old 
-kernel versioning, and think this is the first development release 
-towards 3.0...
+I generally do not remove peoples changelog entries, although I _will_ 
+do even that if I think it's just too much of an actual exploit 
+description (of course - the patch itself can make the exploit fairly 
+clear). So you'll find CVE entries etc in the logs if you look.
 
-> 			Linus
+But I do hope that anybody who looks for them is _aware_ that it's just a 
+small minority of possible problems.
 
-cu
-Adrian
+Don't get me wrong - I'm not saying that security bugs are _common_, but 
+especially some local DoS thing for a specific driver or filesystem or 
+whatever can be a big security problem for _somebody_.
 
--- 
+			Linus
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
