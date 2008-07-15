@@ -1,179 +1,375 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755830AbYGPJUE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759623AbYGPJUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755830AbYGPJUE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 05:20:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759426AbYGPJTh
+	id S1759623AbYGPJUd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 05:20:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759575AbYGPJTl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 05:19:37 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:32793 "EHLO
+	Wed, 16 Jul 2008 05:19:41 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:32832 "EHLO
 	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757916AbYGPJTf (ORCPT
+	with ESMTP id S1759510AbYGPJTk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 05:19:35 -0400
-Message-Id: <20080715211407.970236131@bull.net>
+	Wed, 16 Jul 2008 05:19:40 -0400
+Message-Id: <20080715211408.381111371@bull.net>
 References: <20080715211407.423625725@bull.net>
 User-Agent: quilt/0.46-1
-Date: Tue, 15 Jul 2008 23:14:08 +0200
+Date: Tue, 15 Jul 2008 23:14:10 +0200
 From: <Solofo.Ramangalahy@bull.net>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: <linux-kernel@vger.kernel.org>, Matt Helsley <matthltc@us.ibm.com>,
        Mingming Cao <cmm@us.ibm.com>, Nadia Derbey <Nadia.Derbey@bull.net>,
        Manfred Spraul <manfred@colorfullife.com>,
        Solofo Ramangalahy <Solofo.Ramangalahy@bull.net>
-Subject: [PATCH -mm v2 1/3] sysv ipc: increase msgmnb default value wrt. the
- number of cpus
-Content-Disposition: inline;
- filename=ipc-scale-msgmnb-with-the-number-of-cpus.patch
+Subject: [PATCH -mm v2 3/3] sysv ipc: use auto_msgmnb to desactivate and
+ reactivate msgmnb recomputation
+Content-Disposition: inline; filename=ipc-use-auto_msgmnb.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Solofo Ramangalahy <Solofo.Ramangalahy@bull.net>
 
-Initialize msgmnb value to
-min(MSGMNB * num_online_cpus(), MSGMNB * MSG_CPU_SCALE)
-to increase the default value for larger machines.
-
-MSG_CPU_SCALE scaling factor is defined to be 4, as 16384 x 4 = 65536
-is an already used and recommended value.
-
-The msgmni value is made dependant of msgmnb to keep the memory
-dedicated to message queues within the 1/MSG_MEM_SCALE of lowmem
-bound.
-
-Unlike msgmni, the value is not scaled (down) with respect to the
-number of ipc namespaces for simplicity.
-
-To disable recomputation when user explicitely set a value,
-we reuse the callback defined for msgmni.
-
-As msgmni and msgmnb are correlated, user settings of any of the two
-disable recomputation of both, for now. This is refined in a later
-patch.
-
-When a negative value is put in /proc/sys/kernel/msgmnb
-automatic recomputing is re-enabled.
-
+Add /proc/sys/kernel/auto_msgmnb to control automatic recomputation of
+/proc/sys/kernel/msgmnb (msg_ctlmnb).
 
 Signed-off-by: Solofo Ramangalahy <Solofo.Ramangalahy@bull.net>
-
 ---
- include/linux/msg.h |    7 +++++++
- ipc/ipc_sysctl.c    |    5 +++--
- ipc/msg.c           |   22 ++++++++++++++++++----
- ipc/util.h          |    1 +
- 4 files changed, 29 insertions(+), 6 deletions(-)
+ Documentation/sysctl/kernel.txt |   35 ++++++++++++++++
+ include/linux/ipc_namespace.h   |    5 ++
+ ipc/ipc_sysctl.c                |   87 ++++++++++++++++++++++++++++++++++++----
+ ipc/ipcns_notifier.c            |   62 +++++++++++++++++++++++++++-
+ ipc/namespace.c                 |    2 
+ ipc/util.c                      |    1 
+ 6 files changed, 183 insertions(+), 9 deletions(-)
 
-Index: linux-2.6.26-rc8-mm1-MSGMNB3/ipc/msg.c
+Index: linux-2.6.26-rc8-mm1-MSGMNB3/include/linux/ipc_namespace.h
 ===================================================================
---- linux-2.6.26-rc8-mm1-MSGMNB3.orig/ipc/msg.c
-+++ linux-2.6.26-rc8-mm1-MSGMNB3/ipc/msg.c
-@@ -38,6 +38,7 @@
- #include <linux/rwsem.h>
- #include <linux/nsproxy.h>
- #include <linux/ipc_namespace.h>
-+#include <linux/cpumask.h>
+--- linux-2.6.26-rc8-mm1-MSGMNB3.orig/include/linux/ipc_namespace.h
++++ linux-2.6.26-rc8-mm1-MSGMNB3/include/linux/ipc_namespace.h
+@@ -38,6 +38,7 @@ struct ipc_namespace {
+ 	atomic_t	msg_bytes;
+ 	atomic_t	msg_hdrs;
+ 	int		auto_msgmni;
++	int		auto_msgmnb;
  
- #include <asm/current.h>
- #include <asm/uaccess.h>
-@@ -92,7 +93,7 @@ void recompute_msgmni(struct ipc_namespa
+ 	size_t		shm_ctlmax;
+ 	size_t		shm_ctlall;
+@@ -45,6 +46,7 @@ struct ipc_namespace {
+ 	int		shm_tot;
  
- 	si_meminfo(&i);
- 	allowed = (((i.totalram - i.totalhigh) / MSG_MEM_SCALE) * i.mem_unit)
--		/ MSGMNB;
-+		/ ns->msg_ctlmnb;
- 	nb_ns = atomic_read(&nr_ipc_ns);
- 	allowed /= nb_ns;
+ 	struct notifier_block ipcns_nb;
++	struct notifier_block ipcns_nb_msgmnb;
+ };
  
-@@ -108,11 +109,24 @@ void recompute_msgmni(struct ipc_namespa
+ extern struct ipc_namespace init_ipc_ns;
+@@ -56,6 +58,9 @@ extern atomic_t nr_ipc_ns;
+ extern int register_ipcns_notifier(struct ipc_namespace *);
+ extern int cond_register_ipcns_notifier(struct ipc_namespace *);
+ extern void unregister_ipcns_notifier(struct ipc_namespace *);
++extern int register_ipcns_notifier_msgmnb(struct ipc_namespace *);
++extern int cond_register_ipcns_notifier_msgmnb(struct ipc_namespace *);
++extern void unregister_ipcns_notifier_msgmnb(struct ipc_namespace *);
+ extern int ipcns_notify(unsigned long);
  
- 	ns->msg_ctlmni = allowed;
- }
-+/*
-+ * Scale msgmnb with the number of online cpus, up to 4x MSGMNB.  For
-+ * simplicity, it is not adjusted wrt. ipc namespaces.  This is done
-+ * indirectly by msgmni for the whole message pool.  Zero-sized
-+ * messages can be enqueued up to msgmnb consuming memory.  If this
-+ * becomes a problem, this function can be updated with a constraint
-+ * on low memory like in recompute_msgmni().
-+ */
-+void ipc_recompute_msgmnb(struct ipc_namespace *ns)
-+{
-+	ns->msg_ctlmnb =
-+		min(MSGMNB * num_online_cpus(), MSGMNB * MSG_CPU_SCALE);
-+}
- 
- void msg_init_ns(struct ipc_namespace *ns)
- {
- 	ns->msg_ctlmax = MSGMAX;
--	ns->msg_ctlmnb = MSGMNB;
-+	ipc_recompute_msgmnb(ns);
- 
- 	recompute_msgmni(ns);
- 
-@@ -132,8 +146,8 @@ void __init msg_init(void)
- {
- 	msg_init_ns(&init_ipc_ns);
- 
--	printk(KERN_INFO "msgmni has been set to %d\n",
--		init_ipc_ns.msg_ctlmni);
-+	printk(KERN_INFO "msgmni has been set to %d, msgmnb to %d\n",
-+	       init_ipc_ns.msg_ctlmni, init_ipc_ns.msg_ctlmnb);
- 
- 	ipc_init_proc_interface("sysvipc/msg",
- 				"       key      msqid perms      cbytes       qnum lspid lrpid   uid   gid  cuid  cgid      stime      rtime      ctime\n",
-Index: linux-2.6.26-rc8-mm1-MSGMNB3/include/linux/msg.h
-===================================================================
---- linux-2.6.26-rc8-mm1-MSGMNB3.orig/include/linux/msg.h
-+++ linux-2.6.26-rc8-mm1-MSGMNB3/include/linux/msg.h
-@@ -58,6 +58,13 @@ struct msginfo {
-  * more than 16 GB : msgmni = 32K (IPCMNI)
-  */
- #define MSG_MEM_SCALE 32
-+/*
-+ * Scaling factor to compute msgmnb: ns->msg_ctlmnb is between MSGMNB
-+ * and MSGMNB * MSG_CPU_SCALE. This leads to a max msgmnb value of
-+ * 65536 which is an already used and recommended value.
-+ * Note that zero-sized messages can be enqueued up to this max value.
-+ */
-+#define MSG_CPU_SCALE 4
- 
- #define MSGMNI    16   /* <= IPCMNI */     /* max # of msg queue identifiers */
- #define MSGMAX  8192   /* <= INT_MAX */   /* max size of message (bytes) */
+ #else /* CONFIG_SYSVIPC */
 Index: linux-2.6.26-rc8-mm1-MSGMNB3/ipc/ipc_sysctl.c
 ===================================================================
 --- linux-2.6.26-rc8-mm1-MSGMNB3.orig/ipc/ipc_sysctl.c
 +++ linux-2.6.26-rc8-mm1-MSGMNB3/ipc/ipc_sysctl.c
-@@ -44,6 +44,7 @@ static void ipc_auto_callback(int val)
- 		 * Re-enable automatic recomputing only if not already
- 		 * enabled.
- 		 */
-+		ipc_recompute_msgmnb(current->nsproxy->ipc_ns);
- 		recompute_msgmni(current->nsproxy->ipc_ns);
- 		cond_register_ipcns_notifier(current->nsproxy->ipc_ns);
+@@ -50,6 +50,22 @@ static void ipc_auto_callback(int val)
  	}
-@@ -246,8 +247,8 @@ static struct ctl_table ipc_kern_table[]
- 		.data		= &init_ipc_ns.msg_ctlmnb,
- 		.maxlen		= sizeof (init_ipc_ns.msg_ctlmnb),
- 		.mode		= 0644,
--		.proc_handler	= proc_ipc_dointvec,
--		.strategy	= sysctl_ipc_data,
-+		.proc_handler	= proc_ipc_callback_dointvec,
-+		.strategy	= sysctl_ipc_registered_data,
- 	},
- 	{
- 		.ctl_name	= KERN_SEM,
-Index: linux-2.6.26-rc8-mm1-MSGMNB3/ipc/util.h
-===================================================================
---- linux-2.6.26-rc8-mm1-MSGMNB3.orig/ipc/util.h
-+++ linux-2.6.26-rc8-mm1-MSGMNB3/ipc/util.h
-@@ -122,6 +122,7 @@ extern struct msg_msg *load_msg(const vo
- extern int store_msg(void __user *dest, struct msg_msg *msg, int len);
+ }
  
- extern void recompute_msgmni(struct ipc_namespace *);
-+extern void ipc_recompute_msgmnb(struct ipc_namespace *);
++static void ipc_auto_callback_msgmnb(int val)
++{
++	struct ipc_namespace *ns = current->nsproxy->ipc_ns;
++	if (!val)
++		unregister_ipcns_notifier_msgmnb(ns);
++	else {
++		/*
++		 * Re-enable automatic recomputing only if not already
++		 * enabled.
++		 */
++		ipc_recompute_msgmnb(ns);
++		recompute_msgmni(ns);
++		cond_register_ipcns_notifier_msgmnb(ns);
++	}
++}
++
+ #ifdef CONFIG_PROC_FS
+ static int proc_ipc_dointvec(ctl_table *table, int write, struct file *filp,
+ 	void __user *buffer, size_t *lenp, loff_t *ppos)
+@@ -73,14 +89,24 @@ static int proc_ipc_callback_dointvec(ct
  
- static inline int ipc_buildid(int id, int seq)
+ 	rc = proc_dointvec(&ipc_table, write, filp, buffer, lenp, ppos);
+ 
+-	if (write && !rc && lenp_bef == *lenp)
++	if (write && !rc && lenp_bef == *lenp) {
++		struct ipc_namespace *ns = current->nsproxy->ipc_ns;
+ 		/*
+ 		 * Tunable has successfully been changed by hand. Disable its
+ 		 * automatic adjustment. This simply requires unregistering
+ 		 * the notifiers that trigger recalculation.
+ 		 */
+-		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
+-
++		switch (table->ctl_name) {
++		case KERN_MSGMNI:
++			unregister_ipcns_notifier(ns);
++			break;
++		case KERN_MSGMNB:
++			unregister_ipcns_notifier_msgmnb(ns);
++			break;
++		default:
++			break;
++		}
++	}
+ 	return rc;
+ }
+ 
+@@ -123,6 +149,34 @@ static int proc_ipcauto_dointvec_minmax(
+ 	return rc;
+ }
+ 
++static int proc_ipcauto_dointvec_minmax_msgmnb(ctl_table *table, int write,
++	struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)
++{
++	struct ctl_table ipc_table;
++	size_t lenp_bef = *lenp;
++	int oldval;
++	int rc;
++
++	memcpy(&ipc_table, table, sizeof(ipc_table));
++	ipc_table.data = get_ipc(table);
++	oldval = *((int *)(ipc_table.data));
++
++	rc = proc_dointvec_minmax(&ipc_table, write, filp, buffer, lenp, ppos);
++
++	if (write && !rc && lenp_bef == *lenp) {
++		int newval = *((int *)(ipc_table.data));
++		/*
++		 * The file "auto_msgmnb" has correctly been set.
++		 * React by (un)registering the corresponding tunable, if the
++		 * value has changed.
++		 */
++		if (newval != oldval)
++			ipc_auto_callback_msgmnb(newval);
++	}
++
++	return rc;
++}
++
+ #else
+ #define proc_ipc_doulongvec_minmax NULL
+ #define proc_ipc_dointvec	   NULL
+@@ -175,16 +229,25 @@ static int sysctl_ipc_registered_data(ct
+ 		void __user *newval, size_t newlen)
  {
+ 	int rc;
+-
+ 	rc = sysctl_ipc_data(table, name, nlen, oldval, oldlenp, newval,
+ 		newlen);
+ 
+-	if (newval && newlen && rc > 0)
++	if (newval && newlen && rc > 0) {
++		struct ipc_namespace *ns = current->nsproxy->ipc_ns;
+ 		/*
+ 		 * Tunable has successfully been changed from userland
+ 		 */
+-		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
+-
++		switch (table->ctl_name) {
++		case KERN_MSGMNI:
++			unregister_ipcns_notifier(ns);
++			break;
++		case KERN_MSGMNB:
++			unregister_ipcns_notifier_msgmnb(ns);
++			break;
++		default:
++			break;
++		}
++	}
+ 	return rc;
+ }
+ #else
+@@ -269,6 +332,16 @@ static struct ctl_table ipc_kern_table[]
+ 		.extra1		= &zero,
+ 		.extra2		= &one,
+ 	},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "auto_msgmnb",
++		.data		= &init_ipc_ns.auto_msgmnb,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= proc_ipcauto_dointvec_minmax_msgmnb,
++		.extra1		= &zero,
++		.extra2		= &one,
++	},
+ 	{}
+ };
+ 
+Index: linux-2.6.26-rc8-mm1-MSGMNB3/ipc/ipcns_notifier.c
+===================================================================
+--- linux-2.6.26-rc8-mm1-MSGMNB3.orig/ipc/ipcns_notifier.c
++++ linux-2.6.26-rc8-mm1-MSGMNB3/ipc/ipcns_notifier.c
+@@ -29,7 +29,8 @@ static int ipcns_callback(struct notifie
+ 	ns = container_of(self, struct ipc_namespace, ipcns_nb);
+ 	switch (action) {
+ 	case IPCNS_CPUCHANGED:
+-		ipc_recompute_msgmnb(ns); /* Fall through */
++		if (ns->auto_msgmnb)
++			ipc_recompute_msgmnb(ns); /* Fall through */
+ 	case IPCNS_MEMCHANGED:   /* amount of lowmem has changed */
+ 	case IPCNS_CREATED:
+ 	case IPCNS_REMOVED:
+@@ -42,7 +43,8 @@ static int ipcns_callback(struct notifie
+ 		 * blocking_notifier_call_chain.
+ 		 * So the ipc ns cannot be freed while we are here.
+ 		 */
+-		recompute_msgmni(ns);
++		if (ns->auto_msgmni)
++			recompute_msgmni(ns);
+ 		break;
+ 	default:
+ 		break;
+@@ -88,3 +90,59 @@ int ipcns_notify(unsigned long val)
+ {
+ 	return blocking_notifier_call_chain(&ipcns_chain, val, NULL);
+ }
++
++static int ipcns_callback_msgmnb(struct notifier_block *self,
++				unsigned long action, void *arg)
++{
++	struct ipc_namespace *ns;
++	ns = container_of(self, struct ipc_namespace, ipcns_nb_msgmnb);
++	switch (action) {
++	case IPCNS_CPUCHANGED:
++		if (ns->auto_msgmnb)
++			ipc_recompute_msgmnb(ns); /* Fall through */
++	case IPCNS_MEMCHANGED:
++	case IPCNS_CREATED:
++	case IPCNS_REMOVED:
++		if (ns->auto_msgmni)
++			recompute_msgmni(ns);
++		break;
++	default:
++		break;
++	}
++
++	return NOTIFY_OK;
++}
++
++int register_ipcns_notifier_msgmnb(struct ipc_namespace *ns)
++{
++	int rc;
++
++	memset(&ns->ipcns_nb_msgmnb, 0, sizeof(ns->ipcns_nb_msgmnb));
++	ns->ipcns_nb_msgmnb.notifier_call = ipcns_callback_msgmnb;
++	ns->ipcns_nb_msgmnb.priority = IPCNS_CALLBACK_PRI;
++	rc = blocking_notifier_chain_register(&ipcns_chain,
++					      &ns->ipcns_nb_msgmnb);
++	if (!rc)
++		ns->auto_msgmnb = 1;
++	return rc;
++}
++
++int cond_register_ipcns_notifier_msgmnb(struct ipc_namespace *ns)
++{
++	int rc;
++
++	memset(&ns->ipcns_nb_msgmnb, 0, sizeof(ns->ipcns_nb_msgmnb));
++	ns->ipcns_nb_msgmnb.notifier_call = ipcns_callback_msgmnb;
++	ns->ipcns_nb_msgmnb.priority = IPCNS_CALLBACK_PRI;
++	rc = blocking_notifier_chain_cond_register(&ipcns_chain,
++							&ns->ipcns_nb_msgmnb);
++	if (!rc)
++		ns->auto_msgmnb = 1;
++	return rc;
++}
++
++void unregister_ipcns_notifier_msgmnb(struct ipc_namespace *ns)
++{
++	blocking_notifier_chain_unregister(&ipcns_chain, &ns->ipcns_nb_msgmnb);
++	ns->auto_msgmnb = 0;
++}
+Index: linux-2.6.26-rc8-mm1-MSGMNB3/ipc/namespace.c
+===================================================================
+--- linux-2.6.26-rc8-mm1-MSGMNB3.orig/ipc/namespace.c
++++ linux-2.6.26-rc8-mm1-MSGMNB3/ipc/namespace.c
+@@ -26,6 +26,7 @@ static struct ipc_namespace *clone_ipc_n
+ 	msg_init_ns(ns);
+ 	shm_init_ns(ns);
+ 
++	register_ipcns_notifier_msgmnb(ns);
+ 	/*
+ 	 * msgmni has already been computed for the new ipc ns.
+ 	 * Thus, do the ipcns creation notification before registering that
+@@ -98,6 +99,7 @@ void free_ipc_ns(struct kref *kref)
+ 	 * released the rd lock.
+ 	 */
+ 	unregister_ipcns_notifier(ns);
++	unregister_ipcns_notifier_msgmnb(ns);
+ 	sem_exit_ns(ns);
+ 	msg_exit_ns(ns);
+ 	shm_exit_ns(ns);
+Index: linux-2.6.26-rc8-mm1-MSGMNB3/ipc/util.c
+===================================================================
+--- linux-2.6.26-rc8-mm1-MSGMNB3.orig/ipc/util.c
++++ linux-2.6.26-rc8-mm1-MSGMNB3/ipc/util.c
+@@ -141,6 +141,7 @@ static int __init ipc_init(void)
+ 	hotplug_memory_notifier(ipc_memory_callback, IPC_CALLBACK_PRI);
+ 	hotcpu_notifier(ipc_cpu_callback, IPC_CALLBACK_PRI);
+ 	register_ipcns_notifier(&init_ipc_ns);
++	register_ipcns_notifier_msgmnb(&init_ipc_ns);
+ 	return 0;
+ }
+ __initcall(ipc_init);
+Index: linux-2.6.26-rc8-mm1-MSGMNB3/Documentation/sysctl/kernel.txt
+===================================================================
+--- linux-2.6.26-rc8-mm1-MSGMNB3.orig/Documentation/sysctl/kernel.txt
++++ linux-2.6.26-rc8-mm1-MSGMNB3/Documentation/sysctl/kernel.txt
+@@ -179,6 +179,41 @@ kernel stack.
+ 
+ ==============================================================
+ 
++msgmnb
++
++Maximum size in bytes, not in message count, of a single SystemV IPC
++message queue (b stands for bytes).
++
++This value is dynamic and depends on the online cpu count of the
++machine (taking cpu hotplug into account).
++
++Computed values are between MSGMNB and MSGMNB*MSG_CPU_SCALE #define
++constants (currently [16384,65536]).
++
++The exact value is automatically (re)computed, but:
++
++. If the value is positioned from user space (via procfs or sysctl()),
++  then the automatic recomputation is disabled. E.g.:
++
++  # echo 16384 > /proc/sys/kernel/msgmnb
++
++. The automatic recomputation can also be disabled via auto_msgmnb,
++  e.g.:
++
++  # echo 0 > /proc/sys/kernel/auto_msgmnb
++
++. When disabled, the automatic recomputation can be reenabled via
++  auto_msgmnb, e.g.:
++
++  # echo 1 > /proc/sys/kernel/auto_msgmnb
++
++The msgmnb and auto_msgmnb values in each (ipc) namespace are
++independent.
++
++Initially, the msgmnb value is computed automatically: at boot time
++and (ipc) namespace creation.
++
++==============================================================
+ osrelease, ostype & version:
+ 
+ # cat osrelease
 
 -- 
