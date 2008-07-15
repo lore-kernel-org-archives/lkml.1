@@ -1,114 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759263AbYGOUjO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762354AbYGOUkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759263AbYGOUjO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 16:39:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247AbYGOUi5
+	id S1762354AbYGOUkA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 16:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754491AbYGOUjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 16:38:57 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:33286 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753547AbYGOUi4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 16:38:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
-         :mime-version:content-type:content-disposition
-         :content-transfer-encoding:in-reply-to:user-agent:from;
-        b=dSPSofed1miXQPYee95z8oErg/d5rLoTkVXgJ6JFZ2Eaj7A5yH4R7B3JTl9n5EvAwM
-         eIv7bWkGKqI9TvHfoqdankASJ+7XCZSJf2ZdtWVrpR1EOHCoDfSDPMNeYlp7sx2vLbDI
-         jn1DjsF4vlya4RFMvINjaUN1gcj1hi3pmbcoc=
-Date: Tue, 15 Jul 2008 22:39:13 +0200
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH] ide-floppy fix
-Message-ID: <20080715203913.GA23431@gollum.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-	stable@kernel.org
-References: <20080715053356.GA18628@gollum.tnic> <200807161759.16803.bzolnier@gmail.com>
+	Tue, 15 Jul 2008 16:39:53 -0400
+Received: from www.tglx.de ([62.245.132.106]:39089 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753076AbYGOUjw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 16:39:52 -0400
+Date: Tue, 15 Jul 2008 22:11:02 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+cc: mingo <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Alok N Kataria <akataria@vmware.com>,
+       Alok N Kataria <akataria@vmware.com>, Dan Hecht <dhecht@vmware.com>
+Subject: Re: vread_tsc() compile error (post 2.6.26)
+In-Reply-To: <1216151261.25942.24.camel@nimitz>
+Message-ID: <alpine.LFD.1.10.0807152208380.3283@apollo.tec.linutronix.de>
+References: <1216151261.25942.24.camel@nimitz>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200807161759.16803.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: Borislav Petkov <petkovbb@googlemail.com>
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-2051528598-1216152667=:3283"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 16, 2008 at 05:59:16PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> 
-> Hi,
-> 
-> On Tuesday 15 July 2008, Borislav Petkov wrote:
-> 
-> [...]
-> 
-> > On a different note, the current pata tree on top of v2.6.25-2125-g50515af blows
-> > up here with the following error:
-> > 
-> > [    4.296729] Uniform Multi-Platform E-IDE driver
-> > [    4.297905] ICH4: IDE controller (0x8086:0x24cb rev 0x02) at  PCI slot 0000:00:1f.1
-> > [    4.297986] ACPI: PCI Interrupt 0000:00:1f.1[A] -> GSI 18 (level, low) -> IRQ 18
-> > [    4.298153] ICH4: not 100% native mode: will probe irqs later
-> > [    4.298213]     ide0: BM-DMA at 0xfc00-0xfc07
-> > [    4.298282]     ide1: BM-DMA at 0xfc08-0xfc0f
-> > [    4.561768] hda: QUANTUM FIREBALLlct10 20, ATA DISK drive
-> > [    4.816724] hdb: SAMSUNG SP2014N, ATA DISK drive
-> > [    4.867959] hda: drive side 80-wire cable detection failed, limiting max speed to UDMA33
-> > [    4.868027] hda: UDMA/33 mode selected
-> > [    4.868441] hdb: UDMA/100 mode selected
-> > [    5.540683] hdc: IOMEGA ZIP 100 ATAPI, ATAPI FLOPPY drive
-> > [    5.795564] hdd: IC35L120AVV207-0, ATA DISK drive
-> > [    5.847295] hdd: host side 80-wire cable detection failed, limiting max speed to UDMA33
-> > [    5.847362] hdd: UDMA/33 mode selected
-> > [    5.847715] ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
-> > [    5.855487] ide1 at 0x170-0x177,0x376 on irq 15
-> > [    5.875927] ide_generic: please use "probe_mask=0x3f" module parameter for probing all legacy ISA IDE ports
-> > [    5.876012] ide_generic: I/O resource 0x1F0-0x1F7 not free.
-> > [    5.876074] ide_generic: I/O resource 0x170-0x177 not free.
-> > [   11.342504] hde: no response (status = 0xa1), resetting drive
-> > [   17.206535] hdf: no response (status = 0xa1), resetting drive
-> 
-> hde? hdf?
-> 
-> [...]
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-yep, looks strange to me too. Isn't that the MAX_HWIFS upper bound of a loop.. ?
+--8323328-2051528598-1216152667=:3283
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
+On Tue, 15 Jul 2008, Dave Hansen wrote:
+> $ git describe
+> v2.6.26-2465-g1c0fea9
 > 
-> > I tracked the error down to the call to ide_register_port(hwif) in
-> > ide-probe.c:ide_host_register() which does device_register(&hwif->gendev) and
-> > the hwif->gendev->kobj seems unitialized thus the WARN_ON on its refcount in
-> > kref_get(). Will look into it more when i get some free time.
+> This looks like it was caused by:
+> ﻿
+> 	8fbbc4b45ce3e4c0eeb15004c79c72b6896a79c2
 > 
-> Unfortunately I couldn't reproduce this problem here (2.6.26 + pata tree)
-> so please try to debug it and/or narrow it down to the guilty change.
+> Did this get any testing on x86-32?  It looks like this symbol has no
+> 32-bit equivalent.
 
-Will do.
+Doh, that's odd. It compiles, links and boots here. Looks like the my gcc just
+optimizes it out without the usual "...., but not used warning"
 
-> > --
-> > From: Borislav Petkov <petkovbb@gmail.com>
-> > 
-> > Check the correct flags-location for set features.
-> > 
-> > Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
-> 
-> Thanks, I folded the fix into original patch (->dev_flags is not yet
-> upstream so -stable fix shouldn't be necessary).
-> 
-> While on it: I later noticed that there will be also need for common
-> ATA/ATAPI ->dev_flags in the future so I wonder whether current
-> ->dev_flags should be renamed to ->atapi_flags (& s/*DFLAG*/*AFLAG*/).
-> 
-> If there is agreement on this I'll fix it in pata tree.
+Patch below.
 
-... or if there's room, use a single ->dev_flags for all possible flag settings?
+Thanks,
 
--- 
-Regards/Gru�,
-    Boris.
+	tglx
+
+> ...
+>   MODPOST vmlinux.o
+> WARNING: modpost: Found 11 section mismatch(es).
+> To see full details build your kernel with:
+> 'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+>   GEN     .version
+>   CHK     include/linux/compile.h
+>   UPD     include/linux/compile.h
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> arch/x86/kernel/built-in.o: In function `vread_tsc':
+> /home/dave/kernels/linux-2.6.git/arch/x86/kernel/tsc.c:365: undefined reference to `__vsyscall_gtod_data'
+> /home/dave/kernels/linux-2.6.git/arch/x86/kernel/tsc.c:365: undefined reference to `__vsyscall_gtod_data'
+> make: *** [.tmp_vmlinux1] Error 1
+> ﻿
+> My config:
+> 
+> http://sr71.net/~dave/linux/config-2.6.26-rc8-00089-ge1441b9
+
+----------------->
+
+Subject: x86: fix tsc unification fallout
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Tue, 15 Jul 2008 22:08:04 +0200
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ arch/x86/kernel/tsc.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+Index: linux-2.6/arch/x86/kernel/tsc.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/tsc.c
++++ linux-2.6/arch/x86/kernel/tsc.c
+@@ -358,6 +358,7 @@ static cycle_t read_tsc(void)
+ 		ret : clocksource_tsc.cycle_last;
+ }
+ 
++#ifdef CONFIG_X86_64
+ static cycle_t __vsyscall_fn vread_tsc(void)
+ {
+ 	cycle_t ret = (cycle_t)vget_cycles();
+@@ -365,6 +366,7 @@ static cycle_t __vsyscall_fn vread_tsc(v
+ 	return ret >= __vsyscall_gtod_data.clock.cycle_last ?
+ 		ret : __vsyscall_gtod_data.clock.cycle_last;
+ }
++#endif
+ 
+ static struct clocksource clocksource_tsc = {
+ 	.name                   = "tsc",
+--8323328-2051528598-1216152667=:3283--
