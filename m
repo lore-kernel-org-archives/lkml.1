@@ -1,110 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761328AbYGOCMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761419AbYGOCM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761328AbYGOCMm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 22:12:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753122AbYGOCMe
+	id S1761419AbYGOCM6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 22:12:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761357AbYGOCMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 22:12:34 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:60348 "EHLO mail.dvmed.net"
+	Mon, 14 Jul 2008 22:12:46 -0400
+Received: from ozlabs.org ([203.10.76.45]:55690 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752189AbYGOCMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 22:12:34 -0400
-Message-ID: <487C0788.7030907@garzik.org>
-Date: Mon, 14 Jul 2008 22:12:24 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1761352AbYGOCMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 22:12:45 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [PATCH] stopmachine: add stopmachine_timeout
+Date: Tue, 15 Jul 2008 11:14:58 +1000
+User-Agent: KMail/1.9.9
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       Zachary Amsden <zach@vmware.com>
+References: <487B05CE.1050508@jp.fujitsu.com> <487BA152.1070102@goop.org> <20080714212026.GA6705@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20080714212026.GA6705@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-CC: david@lang.hm, Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from	in-kernel,
- use it in more drivers.
-References: <1216077806.27455.85.camel@shinybook.infradead.org>	 <20080714164119.99c33d5b.akpm@linux-foundation.org>	 <20080714165956.7fe2d4ee@infradead.org>	 <alpine.DEB.1.10.0807141704120.14223@asgard.lang.hm> <1216082213.27455.109.camel@shinybook.infradead.org>
-In-Reply-To: <1216082213.27455.109.camel@shinybook.infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200807151114.59562.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse wrote:
-> On Mon, 2008-07-14 at 17:06 -0700, david@lang.hm wrote:
->> On Mon, 14 Jul 2008, Arjan van de Ven wrote:
->>
->>> On Mon, 14 Jul 2008 16:41:19 -0700
->>> Andrew Morton <akpm@linux-foundation.org> wrote:
->>>
->>>> On Mon, 14 Jul 2008 16:23:26 -0700
->>>> David Woodhouse <dwmw2@infradead.org> wrote:
->>>>
->>>>> Linus, please pull from the for-2.6.27 branch of:
->>>>> 	git://git.infradead.org/users/dwmw2/firmware-2.6.git
->>>>> for-2.6.27
->>>> The firmware flamewars seem to have subsided lately.  Is everyone
->>>> happy with this now?
->>>>
->>> this seems to have left the contentious pieces out....
->> almost, the one thing that this could have done would be to offer an 
->> option to bundle the firmware with the module. currently it offers the 
->> option to load the firmware at the same time as the module, not _quite_ 
->> the same thing.
-> 
-> I see no real point in that. If you have userspace to load modules, then
-> you have userspace to load firmware.
+On Tuesday 15 July 2008 07:20:26 Heiko Carstens wrote:
+> On Mon, Jul 14, 2008 at 11:56:18AM -0700, Jeremy Fitzhardinge wrote:
+> > Rusty Russell wrote:
+> > > On Monday 14 July 2008 21:51:25 Christian Borntraeger wrote:
+> > >> Am Montag, 14. Juli 2008 schrieb Hidetoshi Seto:
+> > >>> +	/* Wait all others come to life */
+> > >>> +	while (cpus_weight(prepared_cpus) != num_online_cpus() - 1) {
+> > >>> +		if (time_is_before_jiffies(limit))
+> > >>> +			goto timeout;
+> > >>> +		cpu_relax();
+> > >>> +	}
+> > >>> +
+> > >>
+> > >> Hmm. I think this could become interesting on virtual machines. The
+> > >> hypervisor might be to busy to schedule a specific cpu at certain load
+> > >> scenarios. This would cause a failure even if the cpu is not really
+> > >> locked up. We had similar problems with the soft lockup daemon on
+> > >> s390.
+> > >
+> > > 5 seconds is a fairly long time.  If all else fails we could have a
+> > > config option to simply disable this code.
+>
+> Hmm.. probably a stupid question: but what could happen that a real cpu
+> (not virtual) becomes unresponsive so that it won't schedule a
+> MAX_RT_PRIO-1 prioritized task for 5 seconds?
 
-You have been provided with several counter-examples here.
+Yes.  That's exactly what we're trying to detect.  Currently the entire 
+machine will wedge.  With this patch we can often limp along.
 
-Driver disks, initrd, and other such constructs are not necessarily the 
-land of happy, fat and healthy userspace that you believe it universally 
-to be.  Image build scripts need to be aware that they need to copy 
-firmware.  Some already know -- but many, particularly with networking 
--- were such simple one-driver affairs that nobody bothered to script in 
-the extra smarts.
+Hidetoshi's original problem was a client whose machine had one CPU die, then 
+got wedged as the emergency backup tried to load a module.
 
+Along these lines, I found VMWare's relaxed co-scheduling interesting, BTW:
+http://communities.vmware.com/docs/DOC-4960
 
-> We made 'make modules_install' install the firmware in /lib/firmware for
-> you at the same time as it installs the modules, to avoid problems if
-> people forgot to run 'make firmware_install'. That really ought to be
-> enough.
+> cpu_relax() translates to a hypervisor yield on s390. Probably makes sense
+> if other architectures would do the same.
 
-And it was like pulling teeth, just get that change in, ensuring the 
-normal build process will not suddenly produce non-working drivers... 
-which it did for several kernel hackers.  As predicted.
+Yes, I think so too.  Actually, doing a random yield-to-other-VCPU on 
+cpu_relax is arguable the right semantic (in Linux it's used for spinning, 
+almost exclusively to wait for other cpus).
 
-
-> I know Jeff complained that it wasn't, and insisted that he _needed_ to
-> be able to scp a single .ko file around which contained both, and the
-> world was broken if he could not -- but I disagree with him.
-
-It's simple logic:  existing systems DO copy around modules.  You seem 
-to have forgotten an example not so easily derided:  driver disks and 
-their build scripts, which are used all over the place.
-
-Particularly in cases, like enterprise distros, where you are updating a 
-driver but never touch the main kernel image.
-
-That will continue to be true even when enterprise distros are based off 
-of 2.6.27 or later.
-
-
-> But since I wanted this tree to be uncontentious and obviously the
-> correct thing to do, I've dropped the drivers/net changes for now
-> anyway.
-> 
-> It's odd that this request has suddenly come out of the blue when we've
-> been using request_firmware() from modules for years already.
-
-Why is it out of the blue to worry about a working driver suddenly 
-ceasing to work?
-
-This has nothing to do with request_firmware() itself -- its about 
-having the infrastructure in place so that users do not notice the switch.
-
-	Jeff
-
+Cheers,
+Rusty.
 
