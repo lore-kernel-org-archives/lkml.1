@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755402AbYGOUKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758339AbYGOUOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755402AbYGOUKv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 16:10:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759203AbYGOUKZ
+	id S1758339AbYGOUOs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 16:14:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754693AbYGOUOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 16:10:25 -0400
-Received: from mga01.intel.com ([192.55.52.88]:7306 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759166AbYGOUKX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 16:10:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.30,368,1212390000"; 
-   d="scan'208";a="598050001"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Alex Chiang <achiang@hp.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>
-CC: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-Date: Tue, 15 Jul 2008 13:10:14 -0700
-Subject: RE: [PATCH 00/14] Introduce cpu_enabled_map and friends
-Thread-Topic: [PATCH 00/14] Introduce cpu_enabled_map and friends
-Thread-Index: AcjmI0usawaLE1B1TSGx02qGyB76/AAkvwew
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA306594DA5@orsmsx505.amr.corp.intel.com>
-References: <20080715023344.2528.1836.stgit@blender.achiang>
-In-Reply-To: <20080715023344.2528.1836.stgit@blender.achiang>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="utf-8"
+	Tue, 15 Jul 2008 16:14:40 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:52222 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753029AbYGOUOj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 16:14:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=BQtER+6GDgIWr4CtLHMhTe/SRQRTT/vvCXAeQuTK+GxLpFN2K5L5VaU1TO6Rlazhsm
+         pP8JXo6xLEwpcZ8QSM+zvmgaz8AKz9/duw+81D25VEM7kYRk1TW77jYFO0mrssMmn7nR
+         jOQrOVDBTpLcUEySMA8Tcr0FzVKuj32pF92Eg=
+Message-ID: <19f34abd0807151314r7462ecc4n8483c7e9fd52769f@mail.gmail.com>
+Date: Tue, 15 Jul 2008 22:14:39 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [git pull] RCU updates for v2.6.27
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@us.ibm.com>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807151037060.3017@woody.linux-foundation.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080714152045.GA29159@elte.hu>
+	 <alpine.LFD.1.10.0807151037060.3017@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m6FKAvfq003405
 
-> Patch 14 is the money patch. It demonstrates why we might
-> want to go through all these gyrations. Now that ia64 presents
-> *all* physically present CPUs in sysfs, even if they have been
-> disabled by firmware, we give userspace a way to poke at those
-> CPUs.
+On Tue, Jul 15, 2008 at 7:38 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>
+>
+> On Mon, 14 Jul 2008, Ingo Molnar wrote:
+>>
+>> [ NOTE: due to merge interaction please pull this after
+>>   kmemcheck-for-linus. The shortlog is relative to kmemcheck-for-linus. ]
+>
+> Hmm. I really wanted to wait with kmemcheck, which is huge and I'm not
+> entirely convinced yet. So now I'll have to wait for these fixes too, for
+> some reason that isn't clear.
 
-There's only the one bit for "disabled by firmware" ... no extra
-space for any extra information.  How would userspace know that
-it was safe to poke at a disabled cpu?  Perhaps firmware disabled
-it for some very good reason, and poking at it could cause system
-instability.
+Hey, give us some credit; at least it's disabled by default ;-)
 
--Tony
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+But yeah, I'll continue to improve it and hopefully get it in better
+shape for next time, especially with regards to SMP support. Maybe we
+can finally have Andrew's review too, if he's not too busy giving all
+these talks and whatnot. Some of the things we've actually fixed up
+since last time include impact on the slab code,
+CodingStyle/checkpatch issues, and the splitting the huge single file
+of code into its own directory to make it more manageable. Oh, and I
+believe 64-bit support is new as well.
+
+Thanks,
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
