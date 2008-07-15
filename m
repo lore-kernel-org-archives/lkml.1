@@ -1,97 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761232AbYGOWUP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760980AbYGOWVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761232AbYGOWUP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 18:20:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754966AbYGOWT7
+	id S1760980AbYGOWVA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 18:21:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbYGOWUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 18:19:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54801 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758613AbYGOWT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 18:19:58 -0400
-Date: Tue, 15 Jul 2008 18:18:26 -0400
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
-Subject: Re: [RFC] systemtap: begin the process of using proper kernel APIs (part1: use kprobe symbol_name/offset instead of address)
-Message-ID: <20080715221826.GD4280@redhat.com>
-References: <1216146802.3312.95.camel__45052.4692344063$1216146917$gmane$org@localhost.localdomain> <y0mr69vj5p0.fsf@ton.toronto.redhat.com> <1216151526.3312.102.camel@localhost.localdomain> <20080715200718.GC4280@redhat.com> <1216153462.3312.126.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 15 Jul 2008 18:20:53 -0400
+Received: from hpsmtp-eml14.kpnxchange.com ([213.75.38.114]:37099 "EHLO
+	hpsmtp-eml14.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752095AbYGOWUw convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 18:20:52 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel, use it in more drivers.
+Date: Wed, 16 Jul 2008 00:20:48 +0200
+User-Agent: KMail/1.9.9
+Cc: david@lang.hm, Marcel Holtmann <marcel@holtmann.org>,
+       David Woodhouse <dwmw2@infradead.org>, jeff@garzik.org,
+       arjan@infradead.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+References: <1216077806.27455.85.camel@shinybook.infradead.org> <alpine.DEB.1.10.0807151426021.16109@asgard.lang.hm> <alpine.LFD.1.10.0807151436400.2867@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807151436400.2867@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Content-Disposition: inline
-In-Reply-To: <1216153462.3312.126.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200807160020.49496.elendil@planet.nl>
+X-OriginalArrivalTime: 15 Jul 2008 22:20:49.0970 (UTC) FILETIME=[0958F920:01C8E6C9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
+On Tuesday 15 July 2008, you wrote:
+> Why is it suddenly so important that a kernel be 'zero impact' for that
+> module case, when it's never been zero impact for that case before? You
+> had to rewrite the initrd to begin with, but now you're not willing to
+> do it again, just because you have to rewrite it slightly
+> _differently_?
 
-On Tue, Jul 15, 2008 at 03:24:22PM -0500, James Bottomley wrote:
-> [...]
-> > > > > This is highly undesirable because it represents a subversion of the
-> > > > > kernel API to gain access to unexported symbols.
-> > [...]
-> > Maybe, but what "subversion" are you talking about?
-> 
-> using a hand crafted relocation function to gain access to kernel
-> symbols instead of the provided API.
+Because in most cases users do not write and maintain the scripts used to 
+build custom kernels themselves. They use (huge and way too) tools like 
+Debian's 'make-kpkg' for that.
 
-Please choose your words more carefully.  We don't "subvert" anything,
-where one would mean sneaking around some sort of protection.  We use
-an established, existing facility (placing kprobes by address).  We
-compute addresses correctly (an error would be obvious), and is
-conceptually not so different from an address being passed in at run
-time from /proc/kallsyms.
+Because users may want to build a custom 2.6.27 in for example a Debian 
+Etch environment using the make-kpkg package that is available in that 
+release of Debian. Or even a Debian Lenny environment (Lenny is about to 
+be frozen so is very unlikely to include whatever may be needed for 
+this).
 
+Why is it good to extend the lifetime of the i386 and amd64 symlinks for 
+x86 images by an extra few years so that older versions of kernel 
+packaging tools - like make-kpkg - don't break, but is breaking the exact 
+same tools with this firmware change suddenly OK?
 
-> > Of course, but for our purposes, the kernel will be just one amongst
-> > many probing targets.  We will be tracking multiple symbol tables and
-> > unwind data for user-space.
-> 
-> You're going to hand roll your own symbol resolution for user space too?
-> Isn't it pretty easy simply to get ld.so to do that for you?
+Users _want_ to be able to build new kernels in older environments. Why 
+take that option away from them? Why force them through the pain of 
+partial upgrades of their userspace if it can so easily be avoided?
 
-I don't see how.  We can't call into ld.so from kernel space.  One may
-need to probe ld.so itself.
+>From my PoV adding this option is a no-brainer: if Jeff is willing to do 
+the work, then what harm can it do? The benefits to me are obvious.
+I really don't get what you have against it.
 
+Cheers,
+FJP
 
-> [...] I made sure that pure addressed based kprobes still work even
-> when they have to use the symbol_name/offset resolution method
-> ... the new code just works out the closest symbol and applies an
-> offset.
-
-(Not important, but did you consider the possibility that this chosen
-reference symbol may, for whatever reason, not be listed in the
-kernel's kprobe-assisting symbol table?)
-
-
-> > Again, please consider user-space.  The runtime will need similar
-> > symbol resolution code *for user space* anyway.  Keeping it in there
-> > for the kernel is no incremental complexity - if anything, the
-> > opposite.
->
-> I really think there might have to be separate runtime pieces for
-> user space and for the kernel.  Trying to build a single scheme that
-> works in both places looks cumbersome.  In the separate case, the
-> kernel piece, which is potentially movable inside the kernel,
-> becomes a lot simpler. [...]
-
-It may just be in the eye of the beholder.  To me, a single scheme
-that supports all the various address spaces (and kernel versions and
-configurations!) we deal with is just as appealing to me as increasing
-kernel specialization is to you.
-
-
-> OK, with -ffunction-sections you can't offset from _stext which
-> seems to be what _stp_module_relocate() uses.  [...]  That means
-> that each function address can potentially move depending on the
-> number of relocation stubs embedded between it and the next
-> function.
-
-I may be missing something, but doesn't all that happen during
-linking?  We process linked executables, not object files subject to
-further run-time relaxation/shrinkage.
-
-
-- FChE
+P.S. Sorry to keep coming up with Debian examples, but that's the 
+environment I know.
