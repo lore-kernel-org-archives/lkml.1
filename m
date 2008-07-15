@@ -1,65 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757209AbYGOX2Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757421AbYGOX3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757209AbYGOX2Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 19:28:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795AbYGOX2R
+	id S1757421AbYGOX3k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 19:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754262AbYGOX3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 19:28:17 -0400
-Received: from r00tworld.com ([212.85.137.21]:48976 "EHLO r00tworld.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751794AbYGOX2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 19:28:16 -0400
-From: pageexec@freemail.hu
-To: tiago@assumpcao.org, David Miller <davem@davemloft.net>
-Date: Wed, 16 Jul 2008 01:26:13 +0200
-MIME-Version: 1.0
+	Tue, 15 Jul 2008 19:29:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56640 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753586AbYGOX3b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 19:29:31 -0400
+Date: Tue, 15 Jul 2008 16:28:48 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: pageexec@freemail.hu
+cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
 Subject: Re: [stable] Linux 2.6.25.10
-Reply-to: pageexec@freemail.hu
-CC: greg@kroah.com, tytso@mit.edu, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Message-ID: <487D4E35.17415.1C82C86C@pageexec.freemail.hu>
-In-reply-to: <20080715.162110.71403329.davem@davemloft.net>
-References: <20080715223910.GA6500@kroah.com>, <487D2E02.3040601@assumpcao.org>, <20080715.162110.71403329.davem@davemloft.net>
-X-mailer: Pegasus Mail for Windows (4.41)
-Content-type: text/plain; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-Content-description: Mail message body
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Wed, 16 Jul 2008 01:26:57 +0200 (CEST)
+In-Reply-To: <487D3C17.31467.1C3C0441@pageexec.freemail.hu>
+Message-ID: <alpine.LFD.1.10.0807151620450.2867@woody.linux-foundation.org>
+References: <20080703185727.GA12617@suse.de>, <487D3056.1183.1C0E1C47@pageexec.freemail.hu>, <alpine.LFD.1.10.0807151425170.2867@woody.linux-foundation.org> <487D3C17.31467.1C3C0441@pageexec.freemail.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 15 Jul 2008 at 16:21, David Miller wrote:
 
-> From: Tiago Assumpcao <tiago@assumpcao.org>
-> Date: Tue, 15 Jul 2008 20:08:50 -0300
+
+On Wed, 16 Jul 2008, pageexec@freemail.hu wrote:
+>
+> you should check out the last few -stable releases then and see how
+> the announcement doesn't ever mention the word 'security' while fixing
+> security bugs
+
+Umm. What part of "they are just normal bugs" did you have issues with?
+
+I expressly told you that security bugs should not be marked as such, 
+because bugs are bugs. 
+
+> in other words, it's all the more reason to have the commit say it's
+> fixing a security issue.
+
+No.
+
+> > I'm just saying that why mark things, when the marking have no meaning? 
+> > People who believe in them are just _wrong_.
 > 
-> > David Miller wrote:
-> > > 
-> > > Don't sweat it Greg.
-> > > 
-> > > This complaint about "full disclosure" is coming from someone who isn't
-> > > even willing to communicate with the world using his real name.
-> > > 
-> > 
-> > Does a symbolic reference change the truth behind it? No, it doesn't.
-> 
-> That's not the point.
-> 
-> The point is that he's a hypocrit because he's not willing to give the
-> world what he expects the world to give back to him.
+> what is wrong in particular?
 
-where did i expect the world to give out his/her/its real name? also, i'm
-not talking in my own name really, i don't personally care whether you cheat
-in your security bug statistics or not, i know better than that and so do
-many people in the security industry and elsewhere. the actual damage is
-done to innocent users who may not get timely fixes because you covered them
-up despite having promised not to do so. any other discussion is irrelevant,
-please take me off your replies if you can't help it.
+You have two cases:
 
-> That's, basically, unreasonable.
-> 
+ - people think the marking is somehow trustworthy.
 
+   People are WRONG, and are misled by the partial markings, thinking that 
+   unmarked bugfixes are "less important". They aren't.
 
+ - People don't think it matters
 
+   People are right, and the marking is pointless.
+
+In either case it's just stupid to mark them. I don't want to do it, 
+because I don't want to perpetuate the myth of "security fixes" as a 
+separate thing from "plain regular bug fixes".
+
+They're all fixes. They're all important. As are new features, for that 
+matter.
+
+> when you know that you're about to commit a patch that fixes a security 
+> bug, why is it wrong to say so in the commit?
+
+It's pointless and wrong because it makes people think that other bugs 
+aren't potential security fixes.
+
+What was unclear about that?
+
+		Linus
