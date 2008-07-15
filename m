@@ -1,86 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761471AbYGOCVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761612AbYGOCVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761471AbYGOCVW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 22:21:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbYGOCVO
+	id S1761612AbYGOCVy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 22:21:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753539AbYGOCVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 22:21:14 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:23745 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752178AbYGOCVN (ORCPT
+	Mon, 14 Jul 2008 22:21:41 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:56453 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752990AbYGOCVk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 22:21:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=NQU1NsAUnNpRyZLaW+xuaLaZlGv2IB2ekQHax6HexhfI2CEpwbbiXoxpi0Z0seUDnE
-         5fBiW54HJ30nijmSTcgVtbfjJyXC6vvPECdBC+3rUEhQL6h+Ky9AqKSh6YH2TeQojSNC
-         Al7NsT+z5nSt78GzLaC4ycLxY2ko4VZXzyZmI=
-Message-ID: <b647ffbd0807141921n13ffa59x416fc024c734ef02@mail.gmail.com>
-Date: Tue, 15 Jul 2008 04:21:10 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: current linux-2.6.git: cpusets completely broken
-Cc: "Vegard Nossum" <vegard.nossum@gmail.com>,
-       "Paul Menage" <menage@google.com>,
-       "Max Krasnyansky" <maxk@qualcomm.com>, "Paul Jackson" <pj@sgi.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>, miaox@cn.fujitsu.com,
-       rostedt@goodmis.org, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.1.10.0807141707410.3017@woody.linux-foundation.org>
+	Mon, 14 Jul 2008 22:21:40 -0400
+Message-ID: <487C0A12.9060906@keyaccess.nl>
+Date: Tue, 15 Jul 2008 04:23:14 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: David Miller <davem@davemloft.net>
+CC: david@lang.hm, torvalds@linux-foundation.org, arjan@infradead.org,
+       akpm@linux-foundation.org, dwmw2@infradead.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
+ use it in more drivers.
+References: <alpine.DEB.1.10.0807141704120.14223@asgard.lang.hm>	<alpine.LFD.1.10.0807141729200.3017@woody.linux-foundation.org>	<alpine.DEB.1.10.0807141750290.14223@asgard.lang.hm> <20080714.185207.203328391.davem@davemloft.net>
+In-Reply-To: <20080714.185207.203328391.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080712031736.GA3040@damson.getinternet.no>
-	 <alpine.LFD.1.10.0807112026390.2875@woody.linux-foundation.org>
-	 <b647ffbd0807120304o7a500dc9oce761e51c9dce908@mail.gmail.com>
-	 <alpine.LFD.1.10.0807121254490.2875@woody.linux-foundation.org>
-	 <alpine.LFD.1.10.0807121411350.2875@woody.linux-foundation.org>
-	 <b647ffbd0807141538g2004f245m5f54ec962f475ba5@mail.gmail.com>
-	 <alpine.LFD.1.10.0807141602250.3017@woody.linux-foundation.org>
-	 <b647ffbd0807141700s20e54fbewafb3d3e296e57f53@mail.gmail.com>
-	 <alpine.LFD.1.10.0807141707410.3017@woody.linux-foundation.org>
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/7/15 Linus Torvalds <torvalds@linux-foundation.org>:
->
->
-> On Tue, 15 Jul 2008, Dmitry Adamushko wrote:
->>
->> The 'synchronization' point occurs even earlier - when cpu_down() ->
->> __stop_machine_run() gets called (as I described in my previous mail).
->>
->> My point was that if it's ok to have a _delayed_ synchronization
->> point, having it not immediately after cpu_clear(cpu, cpu_active_map)
->> but when the "runqueue lock" is taken a bit later (as you pointed out
->> above) or __stop_machine_run() gets executed (which is a sync point,
->> scheduling-wise),
->>
->> then we can implement the proper synchronization (hotplugging vs.
->> task-migration) with cpu_online_map (no need for cpu_active_map).
->
-> [ ... ]
->
-> In particular, it should tell you that the code is too hard to follow, and
-> too fragile, and a total mess.
->
-> I do NOT understand why you seem to argue for being "subtle" and "clever",
-> considering the history of this whole setup. Subtle and clever and complex
-> is what got us to the crap situation.
+On 15-07-08 03:52, David Miller wrote:
 
-Fair enough, agreed.
+> From: david@lang.hm Date: Mon, 14 Jul 2008 17:51:37 -0700 (PDT)
+> 
+>> I agree with this, but the proponents of the seperate firmware are
+>> listing the fact that the firmware doesn't tie up ram as one of the
+>> big reasons for making the change.
+> 
+> Exactly.
+> 
+> Otherwise these firmware changes are utterly pointless.
 
+The point of them is legal. Which everyone knows so could perhaps that 
+particular dance be done away with?
 
->
->                Linus
->
+The current patches allow to
 
--- 
-Best regards,
-Dmitry Adamushko
+1) load the firmware from userspace
+2) load the firmware from the kernel image (vmlinux)
+
+They lack the ability to load the firmware from the module image.
+
+ From a technical standpoint that seems an odd setup. As a driver author 
+you'd either be satisfied with loading the firmware from userspace, or 
+if for example you feel you're very much tied to your specific firmware, 
+you want it to be as close to you as possible -- in the kernel image 
+while you yourself are a module makes little sense. You couldn't for 
+example just copy the single module around.
+
+That seems a clear technical point to fix but after that, the point is 
+legal. At least for existing drivers, this consists of distributions 
+worrying about GPL consequences and wanting to seperate out the existing 
+firmware blobs.
+
+They do worry -- whatever those worries might be worth -- so there's the 
+point. You may feel it not a good point but that's something other than 
+no point existing.
+
+I followed along on these flamewars and I'd say to reject these current 
+patches on technical grounds until the ability to build the firmware 
+into the module exists and merge it after -- even though people might 
+feel there's little or no upside to them, I'd say there's little of no 
+downside either once that ability is in.
+
+Rene.
