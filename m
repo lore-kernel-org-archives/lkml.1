@@ -1,73 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753522AbYGOQWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757913AbYGOQZL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753522AbYGOQWd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 12:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754498AbYGOQWW
+	id S1757913AbYGOQZL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 12:25:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbYGOQY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 12:22:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:32869 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752515AbYGOQWU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 12:22:20 -0400
-Date: Tue, 15 Jul 2008 12:20:59 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@devserv.devel.redhat.com
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       davem@davemloft.net, linux-parisc@vger.kernel.org
-Subject: Re: [PATCH] block: fix q->max_segment_size checking in blk_recalc_rq_segments
- about VMERGE
-In-Reply-To: <1216138072.3312.54.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0807151210400.31336@devserv.devel.redhat.com>
-References: <1216118676-13625-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-  <Pine.LNX.4.64.0807150924250.21598@devserv.devel.redhat.com> 
- <20080715231956A.fujita.tomonori@lab.ntt.co.jp>  <1216133421.3312.30.camel@localhost.localdomain>
-  <Pine.LNX.4.64.0807151104450.26824@devserv.devel.redhat.com> 
- <1216136503.3312.48.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0807151147040.29803@devserv.devel.redhat.com>
- <1216138072.3312.54.camel@localhost.localdomain>
+	Tue, 15 Jul 2008 12:24:59 -0400
+Received: from hpsmtp-eml19.kpnxchange.com ([213.75.38.84]:3294 "EHLO
+	hpsmtp-eml19.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753175AbYGOQY7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 12:24:59 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel, use it in more drivers.
+Date: Tue, 15 Jul 2008 18:24:55 +0200
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, jeff@garzik.org,
+       akpm@linux-foundation.org, dwmw2@infradead.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+References: <1216077806.27455.85.camel@shinybook.infradead.org> <200807151757.10626.elendil@planet.nl> <20080715090441.478c2287@infradead.org>
+In-Reply-To: <20080715090441.478c2287@infradead.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807151824.56980.elendil@planet.nl>
+X-OriginalArrivalTime: 15 Jul 2008 16:24:57.0423 (UTC) FILETIME=[523CDDF0:01C8E697]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jul 2008, James Bottomley wrote:
-
-> On Tue, 2008-07-15 at 11:58 -0400, Mikulas Patocka wrote:
->> You are mixing two ideas here:
->>
->> (1) virtual merging --- IOMMU maps discontinuous segments into continuous
->> area that it presents to the device.
->>
->> (2) virtual merge accounting --- block layer tries to guess how many
->> segments will be created by (1) and merges small requests into big ones.
->> The resulting requests are as big that they can't be processed by the
->> device if (1) weren't in effect.
+On Tuesday 15 July 2008, Arjan van de Ven wrote:
+> Frans Pop <elendil@planet.nl> wrote:
+> > You release 2.6.27-rc2 and I build it. Ouch! It fails to install, at
+> > least if I want to install it _alongside_ 2.6.27-rc1 or other kernels
+> > (which I do!). Why does it fail? Because dpkg's package management
+> > does not allow one package to overwrite files already "owned" by
+> > another package.
 >
-> No ... I'm not ... the virtual merge implementation requires the block
-> layer to get this accounting right, otherwise the iommu code can end up
-> doing the wrong thing.
+> question: how do you deal with this with the dozens of drivers that use
+> request_firmware() even before yesterday ?
+> the answer is critical in how to deal with this "new" situation as
+> well ;-)
 
-The virtual merge (1) can work even without accounting (2). IOMMU can 
-always create less sg entries then the block layer expects.
+For Debian packages that was in the part of the mail you snipped.
 
-> You're proposing to eliminate the difference between max_phys_segments
-> and max_hw_segments without actually removing them.
-
-Yes. Only for alpha and pa-risc, there is difference between these values. 
-And both of these architectures are being discontinued.
-
->> That's why I'm proposing to remove virtual merge accounting (2), but leave
->> virtual merging (1) itself. The accounting doesn't reduce number of sg
->> slots.
->
-> Yes, but it's gains very little ... architectures that don't want it can
-> already turn it off, and it's useful for those, like parisc, who do.
->
-> James
-
-It increases maintainability of the code, reduces bloat and bugs.
-
-Mikulas
+The simple answer for my current use of dep-pkg for custom kernels is:
+I don't _have_ any hardware that requires firmware that's split out with 
+current kernels.
+Maybe I'll be lucky and will find that I don't have any with 2.6.27, but 
+I'm not betting on that.
