@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761946AbYGOQhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760500AbYGOQhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761946AbYGOQhi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 12:37:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760926AbYGOQhJ
+	id S1760500AbYGOQhz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 12:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761918AbYGOQhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 12:37:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47161 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760686AbYGOQhI (ORCPT
+	Tue, 15 Jul 2008 12:37:36 -0400
+Received: from hpsmtp-eml11.kpnxchange.com ([213.75.38.111]:23479 "EHLO
+	hpsmtp-eml11.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761901AbYGOQhf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 12:37:08 -0400
-Date: Tue, 15 Jul 2008 09:35:56 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Frans Pop <elendil@planet.nl>
-cc: jeff@garzik.org, arjan@infradead.org, akpm@linux-foundation.org,
+	Tue, 15 Jul 2008 12:37:35 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel, use it in more drivers.
+Date: Tue, 15 Jul 2008 18:37:31 +0200
+User-Agent: KMail/1.9.9
+Cc: jeff@garzik.org, arjan@infradead.org, akpm@linux-foundation.org,
        dwmw2@infradead.org, alan@lxorguk.ukuu.org.uk,
        linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
- use it in more drivers.
+References: <1216077806.27455.85.camel@shinybook.infradead.org> <200807151757.10626.elendil@planet.nl> <alpine.LFD.1.10.0807150913590.3017@woody.linux-foundation.org>
 In-Reply-To: <alpine.LFD.1.10.0807150913590.3017@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0807150931010.3017@woody.linux-foundation.org>
-References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org> <487C0365.5030203@garzik.org> <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
- <200807151757.10626.elendil@planet.nl> <alpine.LFD.1.10.0807150913590.3017@woody.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807151837.32770.elendil@planet.nl>
+X-OriginalArrivalTime: 15 Jul 2008 16:37:33.0212 (UTC) FILETIME=[14B91DC0:01C8E699]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 15 July 2008, you wrote:
+> On Tue, 15 Jul 2008, Frans Pop wrote:
+> > So, how is this solved by Debian for already existing firmware
+> > packages? Basically by making a separate package for each firmware
+> > file (or driver). This works because there are not too many of them,
+> > but having a huge number of tiny packages is a nightmare by itself.
+>
+> Why don't you just take the kernel-supplied firmware and make it part
+> of the kernel package? The same way the kernel-supplied modules are
+> part of it?
 
+Important note: this is not me, this is the Debian kernel team based on 
+Debian Free Software Guidelines (DFSG). If it were purely up to me I'd be 
+a lot more pragmatic.
 
-On Tue, 15 Jul 2008, Linus Torvalds wrote:
-> 
-> Why don't you just take the kernel-supplied firmware and make it part of 
-> the kernel package? The same way the kernel-supplied modules are part of 
-> it?
+1) Because Debian _wants_ them split out for DFSG compliance reasons.
+Most of the current firmware packages are kept in the "non-free" section 
+of the Debian archive while the kernel itself lives in "main".
+As long as firmware could not be split out, the compliance problem was the 
+source of many discussions, but for the most part ignored in practice, 
+with the exception of a few drivers with really problematic firmware 
+licences.
 
-And, btw, if there is something we can do to help, we obviously should.
-
-So ask yourself (and DavidW) things like
-
- - Is "make firmware_install" not enough for the package build system?
-
- - Does it need some other way to figure out what firmware is needed for 
-   just the configured set of drivers, eg "make firmware_list"?
-
- - Do we need to make the firmware loader have multiple directories it 
-   looks at? Do we want first a kernel-version-specific one, then a 
-   generic fallback one, so that we can easily have per-kernel firmware, 
-   the same way we have per-kernel modules?
-
- - Add your interesting question here.
-
-There are obviously all these kinds of _productive_ questions you can ask. 
-But people seem to be mostly in an unproductive "Mommy, it hurts when I do 
-something stupid" mode.
-
-			Linus
+2) Because of the overwrite and version management problems.
+/lib/firmware as a single dumping ground for firmware for all kernel 
+versions really sucks from that PoV. One of the huge strengths of Debian 
+is its ability to clean up after itself when packages are removed.
+This is partially solved by giving each firmware file it's own package 
+because then you can use the versioning of the firmware itself in the 
+package versions, which allows proper file management by the packaging 
+system. But as I said, I'm not sure that still works if their number 
+suddenly explodes.
