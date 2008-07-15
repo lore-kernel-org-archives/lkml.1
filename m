@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbYGOH5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbYGOIHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756218AbYGOH5f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 03:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbYGOH51
+	id S1755205AbYGOIHw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 04:07:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbYGOIHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 03:57:27 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:57057 "EHLO mail.dvmed.net"
+	Tue, 15 Jul 2008 04:07:35 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:41304 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750942AbYGOH51 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 03:57:27 -0400
-Message-ID: <487C585C.2060002@garzik.org>
-Date: Tue, 15 Jul 2008 03:57:16 -0400
+	id S1751867AbYGOIHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 04:07:34 -0400
+Message-ID: <487C5ABE.2010907@garzik.org>
+Date: Tue, 15 Jul 2008 04:07:26 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: david@lang.hm, Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, alan@lxorguk.ukuu.org.uk,
+To: David Woodhouse <dwmw2@infradead.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, alan@lxorguk.ukuu.org.uk,
        linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from	in-kernel,
  use it in more drivers.
-References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <alpine.DEB.1.10.0807141704120.14223@asgard.lang.hm> <alpine.LFD.1.10.0807141729200.3017@woody.linux-foundation.org> <alpine.DEB.1.10.0807141750290.14223@asgard.lang.hm> <alpine.LFD.1.10.0807141756361.3017@woody.linux-foundation.org> <alpine.DEB.1.10.0807141805300.14223@asgard.lang.hm> <alpine.LFD.1.10.0807141903260.3017@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807141903260.3017@woody.linux-foundation.org>
+References: <1216077806.27455.85.camel@shinybook.infradead.org>	 <20080714164119.99c33d5b.akpm@linux-foundation.org>	 <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>	 <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>	 <487C09EB.1050903@garzik.org>	 <alpine.LFD.1.10.0807141928540.3017@woody.linux-foundation.org>	 <487C1648.5070409@garzik.org>	 <alpine.LFD.1.10.0807142027140.3017@woody.linux-foundation.org>	 <487C500F.8000109@garzik.org> <1216107418.27455.236.camel@shinybook.infradead.org>
+In-Reply-To: <1216107418.27455.236.camel@shinybook.infradead.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -32,40 +32,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> On Mon, 14 Jul 2008, david@lang.hm wrote:
->> On Mon, 14 Jul 2008, Linus Torvalds wrote:
->>> That's a totally bogus argument.
->> you misunderstood me. the people pushing request_firmware() are doing so on
->> the basis that they won't have to use kernel ram to hold the firmware. the
->> people pushing for having the option of building the firmware into the module
->> are acknowleding that this may use a little more ram, but they see it as being
->> more reliable.
+David Woodhouse wrote:
+> On Tue, 2008-07-15 at 03:21 -0400, Jeff Garzik wrote:
+>> * forced a flag day build process change upon all distros/builders who 
+>> switch to >= 2.6.27.  no build script updates == non-working drivers.
 > 
-> I'm just saying that it's a totally bogus argument to claim that it takes 
-> less memory - Either way.
+> Jeff, we don't usually call it a 'flag day' when it's just the normal
+> and uninteresting case that you update the upstream version of the
+> package, and you need minor tweaks to how you package it. That happens
+> all the time. A general rule of thumb is to stop drinking at least 4
+> hours before undertaking a full version upgrade of _any_ package you
+> maintain.
+> 
+> You could argue that converting a wireless driver to use mac80211 would
+> break ipkg distributions too. And call that a 'flag day'.
+> 
+> But that would be silly. Wouldn't it?
 
-Agreed.
+Normally, one can upgrade the kernel, not upgrade userland, and happily 
+continue working.
 
+With this change, there are several exceptions where this is not the 
+case, across all driver types -- media, wan, char, net, scsi, ...
 
-> As to reliability, I don't buy that, especially with a generic interface, 
-> and with a way to link the thing in-kernel anyway. Using common 
-> infrastructure is going to be more reliable.
+Package manifests, build scripts and other details MUST be updated, or 
+these drivers will not work as they did in kernels <= 2.6.26.
 
-A more complex, multi-file inter-dependent system is more reliable than 
-a single-file driver with built-in firmware, doing the same thing?
+That is not an opinion, that is a simple fact of life with the kernel as 
+of 50515af207d410c9f228380e529c56f43c3de0bd.
 
-Come _on_.
-
-There are good arguments for request_firmware(), but that ain't it.
-
-
-> The argument for request_firmware() is that it's a good _single_ interface 
-> to the whole firmware issue, allowing us to split up the driver from the 
-> firmware without every driver having to do some hack of its own.
-
-Agreed.
+And yes, for the people who have to clean up the mess, I call that a 
+flag day.
 
 	Jeff
+
 
 
