@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757432AbYGOCwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762387AbYGOCxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757432AbYGOCwn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 22:52:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757316AbYGOCwX
+	id S1762387AbYGOCxS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 22:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757316AbYGOCw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 22:52:23 -0400
-Received: from mail.lang.hm ([64.81.33.126]:37578 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756893AbYGOCwV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 22:52:21 -0400
-Date: Mon, 14 Jul 2008 19:52:33 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard
-To: David Woodhouse <dwmw2@infradead.org>
-cc: David Miller <davem@davemloft.net>, jeff@garzik.org, arjan@infradead.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from	in-kernel,
+	Mon, 14 Jul 2008 22:52:59 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54135 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757526AbYGOCw6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 22:52:58 -0400
+Date: Mon, 14 Jul 2008 19:51:55 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+cc: jeff@garzik.org, arjan@infradead.org, akpm@linux-foundation.org,
+       dwmw2@infradead.org, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
  use it in more drivers.
-In-Reply-To: <1216088636.27455.163.camel@shinybook.infradead.org>
-Message-ID: <alpine.DEB.1.10.0807141949100.6370@asgard>
-References: <alpine.DEB.1.10.0807141704120.14223@asgard.lang.hm>  <1216082213.27455.109.camel@shinybook.infradead.org>  <487C0788.7030907@garzik.org>  <20080714.191727.223788995.davem@davemloft.net> <1216088636.27455.163.camel@shinybook.infradead.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+In-Reply-To: <20080714.194032.117461306.davem@davemloft.net>
+Message-ID: <alpine.LFD.1.10.0807141947540.3017@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org> <487C09EB.1050903@garzik.org> <alpine.LFD.1.10.0807141928540.3017@woody.linux-foundation.org> <20080714.194032.117461306.davem@davemloft.net>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Jul 2008, David Woodhouse wrote:
 
-> On Mon, 2008-07-14 at 19:17 -0700, David Miller wrote:
->> When module support was added, guess what?  I could still build a
->> completely static kernel image like I always could.
->>
->> And in fact, to this day, that's what I personally do because that's
->> how I like my kernels.
->
-> Good. You can still do precisely that, and build the firmware into your
-> kernel. You can have exactly what you like. Hey, you can build even
-> _more_ firmware into your kernel now. You can have NFS-root on devices
-> you previously had to use an initrd for. hth.
 
-we recognise that a monolithic kernel can have the firmware embedded in it 
-(and I thank you for doing so, this will help me with my Intel wireless 
-cards). the objection is that you can't embed firmware into modules.
+On Mon, 14 Jul 2008, David Miller wrote:
+> 
+> Jeff's not against request_firmware() in an of itself.
+> 
+> He's against the fact that it's not possible to build a
+> self-contained foo.ko module file any longer, and that
+> would definitely be possible with using request_firmware().
 
->> But this request_firmware() change does not allow one to get what he
->> could get before, which is a completely self-contained driver module
->> object file.
->>
->> This is the difference between providing an option and making
->> something mandatory.  This firmware split up is now mandatory.
->
-> In all the years we've been using request_firmware(), nobody ever asked
-> for a way to build the firmware _into_ the .ko file, until now. Why is
-> it suddenly so important for a small handful of older network drivers,
-> when nobody else has ever seen the need for it -- even in modern network
-> drivers?
+.. but is it really that big of a deal?
 
-the reason the objections are showing up now is that the drivers that 
-previously had the firmware embedded in them (so that nobody but the 
-driver author needed to even know that there _was_ firmware involved) are 
-now being converted to use request_firmware(). that change is breaking the 
-invisability of the firmware that they have cultivated. if they had the 
-option to keep things as they are (even while you provide the option for 
-others to move the firmware out) they could not object like they are.
+If it were about not being able to build a self-contained non-modular 
+"vmlinux", I'd be upset too.
 
-David Lang
+But once you can load a module, you can load the firmware. You just have 
+to _remember_ to move it along with the module.
+
+I mean really, you're the one who was complaining that there was no 
+technical reason, but now you're apparently using the "alzheimer's 
+defense". 
+
+Besides, it's not even true that foo.ko modules are self-contained. We've 
+for years and years (pretty much since day one) had nesting module models, 
+where in order to load foo.ko you need to load baz.ko first. Yes, the 
+firmware file is named differently, but it _is_ different.
+
+			Linus
