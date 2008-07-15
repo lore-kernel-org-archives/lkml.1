@@ -1,55 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763367AbYGOV0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764001AbYGOV05@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763367AbYGOV0j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 17:26:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763365AbYGOV0X
+	id S1764001AbYGOV05 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 17:26:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763762AbYGOV0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 17:26:23 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:51507 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758577AbYGOV0W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 17:26:22 -0400
-Message-ID: <487D15FC.1060300@sgi.com>
-Date: Tue, 15 Jul 2008 14:26:20 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 15 Jul 2008 17:26:35 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46037 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763738AbYGOV0e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 17:26:34 -0400
+Date: Tue, 15 Jul 2008 14:26:17 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: pageexec@freemail.hu
+cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [stable] Linux 2.6.25.10
+In-Reply-To: <487D3056.1183.1C0E1C47@pageexec.freemail.hu>
+Message-ID: <alpine.LFD.1.10.0807151425170.2867@woody.linux-foundation.org>
+References: <20080703185727.GA12617@suse.de>, <487D2371.10258.1BDBBC00@pageexec.freemail.hu>, <alpine.LFD.1.10.0807151331110.2867@woody.linux-foundation.org> <487D3056.1183.1C0E1C47@pageexec.freemail.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>
-Subject: Re: [git pull] core/percpu for v2.6.27
-References: <20080714143413.GA19134@elte.hu> <alpine.LFD.1.10.0807141525000.2944@woody.linux-foundation.org> <487CC671.3000501@goop.org> <20080715210002.GA7072@elte.hu>
-In-Reply-To: <20080715210002.GA7072@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
 
-...
+
+On Tue, 15 Jul 2008, pageexec@freemail.hu wrote:
 > 
-> in hindsight core/percpu indeed looks unfinished and direction-less 
-> without core/percpu-zerobased - but the latter is not stable yet.
-> 
-> 	Ingo
+> and how is that different from today's situation where they aren't told
+> at all?
 
-Well it's very stable using gcc-4.2.4.  The earlier problems came about
-using gcc-4.2.0 and has yet to be determined what exactly went wrong.
-(And I need to install gcc-3.2 to complete the build/test QA.)
+Umm. They are. They are told to upgrade to the stable kernel, which 
+should have everything we know about.
 
-Btw, is there a list of "bad" gcc's for kernel building?  Or better yet,
-can the Makefile script provide a warning when a known "bad" gcc is
-being used to compile the kernel?  I seem to recall that Peter provided
-this list:
+I'm just saying that why mark things, when the marking have no meaning? 
+People who believe in them are just _wrong_.
 
-	4.2.3 is fine; he was using 4.2.0 before, and as far as I know,
-        4.2.0 and 4.2.1 are known broken for the kernel.
-
-Thanks!
-Mike
+		Linus
