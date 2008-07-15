@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762452AbYGOTnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763107AbYGOTnt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762452AbYGOTnP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 15:43:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757241AbYGOTnA
+	id S1763107AbYGOTnt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 15:43:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755402AbYGOTnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 15:43:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47644 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753076AbYGOTm7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 15:42:59 -0400
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
-Subject: Re: [RFC] systemtap: begin the process of using proper kernel APIs 	(part1: use kprobe symbol_name/offset instead of address)
-References: <1216146802.3312.95.camel__45052.4692344063$1216146917$gmane$org@localhost.localdomain>
-From: fche@redhat.com (Frank Ch. Eigler)
-Date: Tue, 15 Jul 2008 15:41:31 -0400
-In-Reply-To: <1216146802.3312.95.camel__45052.4692344063$1216146917$gmane$org@localhost.localdomain> (James Bottomley's message of "Tue, 15 Jul 2008 13:33:22 -0500")
-Message-ID: <y0mr69vj5p0.fsf@ton.toronto.redhat.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Tue, 15 Jul 2008 15:43:40 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:45484 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753346AbYGOTnj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 15:43:39 -0400
+X-IronPort-AV: E=Sophos;i="4.30,368,1212364800"; 
+   d="scan'208";a="127083994"
+From: Roland Dreier <rdreier@cisco.com>
+To: "Or Gerlitz" <or.gerlitz@gmail.com>
+Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: Re: [ofa-general] ***SPAM*** InfiniBand/RDMA merge plans for 2.6.27
+References: <ada8ww5jbaf.fsf@cisco.com> <487B820E.4020002@mellanox.co.il>
+	<adahcarezdy.fsf@cisco.com>
+	<15ddcffd0807151220m37204055rf6890037b445bd34@mail.gmail.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 15 Jul 2008 12:36:32 -0700
+In-Reply-To: <15ddcffd0807151220m37204055rf6890037b445bd34@mail.gmail.com> (Or
+	Gerlitz's message of "Tue, 15 Jul 2008 22:20:56 +0300")
+Message-ID: <ada7ibndjnj.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 15 Jul 2008 19:36:32.0726 (UTC) FILETIME=[15F8E760:01C8E6B2]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley <James.Bottomley@HansenPartnership.com> writes:
+ > So just to make sure, firmware 2.5 does not support IB BMME and if I want to
+ > test with this patch I need to get a special firmware drop from Mellanox?
 
-> One of the big nasties of systemtap is the way it tries to embed
-> virtually the entirety of the kernel symbol table in the probe
-> modules it constructs.
+Right: in the test
 
-It is a compromise of conflicting requirements. 
++	if ((dev->dev->caps.bmme_flags & MLX4_BMME_FLAG_LOCAL_INV) &&
++	    (dev->dev->caps.bmme_flags & MLX4_BMME_FLAG_REMOTE_INV) &&
++	    (dev->dev->caps.bmme_flags & MLX4_BMME_FLAG_FAST_REG_WR))
++		props->device_cap_flags |= IB_DEVICE_MEM_MGT_EXTENSIONS;
 
-> This is highly undesirable because it represents a subversion of the
-> kernel API to gain access to unexported symbols.
-
-Please elaborate.  Does the translator or its runtime use unexported
-symbols?  (That would arouse the question about why.)
-
-Or are you talking about being able to *probe* unexported functions or
-access unexported data?  That would be a deliberate feature.
-
-> At least for kprobes, the correct way to do this is to specify the
-> probe point by symbol and offset.
-
-But there won't be just kprobes.  Much of this code was built with
-anticipation of user-space probing, and there the kernel won't have a
-similar mechanism.  Similarly, the code is written to work with old
-kernels too - ones that predate the symbol+offset kprobe API.
-
-Unless someone is about to rip out pure address-based kprobes, I see
-no reason to complicate the code.
-
-
-- FChE
+you will see that not all the bmme_flags required are set by FW 2.5.
