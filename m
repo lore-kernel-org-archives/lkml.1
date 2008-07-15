@@ -1,70 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbYGOIHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755616AbYGOIJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755205AbYGOIHw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 04:07:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbYGOIHf
+	id S1755616AbYGOIJZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 04:09:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbYGOIJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 04:07:35 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:41304 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751867AbYGOIHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 04:07:34 -0400
-Message-ID: <487C5ABE.2010907@garzik.org>
-Date: Tue, 15 Jul 2008 04:07:26 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 15 Jul 2008 04:09:13 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:42359 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751118AbYGOIJL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 04:09:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=j8Mr8LneUV/B+cVmNEj+pf0FpL7Q4sLERBHXenGkk0UR81B8pMW7A01gV6wFWRR2GG
+         kjgA/Or5PMT/3h1RWZxZNUajnWeQR6hrUeEOYkjX7AMpcWjL3/veVaklZ0sj8LUsRYGK
+         /3ddfzgo7PiQ6iEbLTQA1999NQYxmWxMCxDzU=
+Date: Tue, 15 Jul 2008 17:09:03 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] intel_cacheinfo: fix use-after-free cache_kobject
+Message-ID: <20080715080903.GA22068@localhost.localdomain>
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from	in-kernel,
- use it in more drivers.
-References: <1216077806.27455.85.camel@shinybook.infradead.org>	 <20080714164119.99c33d5b.akpm@linux-foundation.org>	 <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>	 <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>	 <487C09EB.1050903@garzik.org>	 <alpine.LFD.1.10.0807141928540.3017@woody.linux-foundation.org>	 <487C1648.5070409@garzik.org>	 <alpine.LFD.1.10.0807142027140.3017@woody.linux-foundation.org>	 <487C500F.8000109@garzik.org> <1216107418.27455.236.camel@shinybook.infradead.org>
-In-Reply-To: <1216107418.27455.236.camel@shinybook.infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse wrote:
-> On Tue, 2008-07-15 at 03:21 -0400, Jeff Garzik wrote:
->> * forced a flag day build process change upon all distros/builders who 
->> switch to >= 2.6.27.  no build script updates == non-working drivers.
-> 
-> Jeff, we don't usually call it a 'flag day' when it's just the normal
-> and uninteresting case that you update the upstream version of the
-> package, and you need minor tweaks to how you package it. That happens
-> all the time. A general rule of thumb is to stop drinking at least 4
-> hours before undertaking a full version upgrade of _any_ package you
-> maintain.
-> 
-> You could argue that converting a wireless driver to use mac80211 would
-> break ipkg distributions too. And call that a 'flag day'.
-> 
-> But that would be silly. Wouldn't it?
+This avoids calling kobject_uevent() with cache_kobject that has
+already been deallocated in an error path.
 
-Normally, one can upgrade the kernel, not upgrade userland, and happily 
-continue working.
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+---
+ arch/x86/kernel/cpu/intel_cacheinfo.c |    7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-With this change, there are several exceptions where this is not the 
-case, across all driver types -- media, wan, char, net, scsi, ...
-
-Package manifests, build scripts and other details MUST be updated, or 
-these drivers will not work as they did in kernels <= 2.6.26.
-
-That is not an opinion, that is a simple fact of life with the kernel as 
-of 50515af207d410c9f228380e529c56f43c3de0bd.
-
-And yes, for the people who have to clean up the mess, I call that a 
-flag day.
-
-	Jeff
-
-
-
+Index: 2.6-mmotm/arch/x86/kernel/cpu/intel_cacheinfo.c
+===================================================================
+--- 2.6-mmotm.orig/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ 2.6-mmotm/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -780,15 +780,14 @@ static int __cpuinit cache_add_dev(struc
+ 			}
+ 			kobject_put(per_cpu(cache_kobject, cpu));
+ 			cpuid4_cache_sysfs_exit(cpu);
+-			break;
++			return retval;
+ 		}
+ 		kobject_uevent(&(this_object->kobj), KOBJ_ADD);
+ 	}
+-	if (!retval)
+-		cpu_set(cpu, cache_dev_map);
++	cpu_set(cpu, cache_dev_map);
+ 
+ 	kobject_uevent(per_cpu(cache_kobject, cpu), KOBJ_ADD);
+-	return retval;
++	return 0;
+ }
+ 
+ static void __cpuinit cache_remove_dev(struct sys_device * sys_dev)
