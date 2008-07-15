@@ -1,78 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761001AbYGOMVE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762259AbYGOMVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761001AbYGOMVE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 08:21:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761243AbYGOMS2
+	id S1762259AbYGOMVa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 08:21:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761684AbYGOMVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 08:18:28 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:56923 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761698AbYGOMS1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 08:18:27 -0400
-Date: Tue, 15 Jul 2008 14:18:19 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Sascha Sommer <saschasommer@freenet.de>
-Cc: sdricohcs-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: Status of Ricoh Bay1Controller driver?
-Message-ID: <20080715141819.086111e8@mjolnir.drzeus.cx>
-In-Reply-To: <200807112045.49809.saschasommer@freenet.de>
-References: <20080705115039.77bf7e1c@mjolnir.drzeus.cx>
-	<200807060909.30563.saschasommer@freenet.de>
-	<20080706194958.655056b4@mjolnir.drzeus.cx>
-	<200807112045.49809.saschasommer@freenet.de>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.4; i386-redhat-linux-gnu)
+	Tue, 15 Jul 2008 08:21:07 -0400
+Received: from sh.osrg.net ([192.16.179.4]:49255 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761673AbYGOMVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 08:21:05 -0400
+Date: Tue, 15 Jul 2008 21:19:44 +0900
+To: mpatocka@redhat.com
+Cc: fujita.tomonori@lab.ntt.co.jp, davem@davemloft.net, andi@firstfloor.org,
+       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [SUGGESTION]: drop virtual merge accounting in I/O requests
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <Pine.LNX.4.64.0807150759430.12202@devserv.devel.redhat.com>
+References: <Pine.LNX.4.64.0807141720350.30981@devserv.devel.redhat.com>
+	<20080715114058A.fujita.tomonori@lab.ntt.co.jp>
+	<Pine.LNX.4.64.0807150759430.12202@devserv.devel.redhat.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-16173-1216124303-0001-2"
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080715212007I.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Tue, 15 Jul 2008 08:09:53 -0400 (EDT)
+Mikulas Patocka <mpatocka@redhat.com> wrote:
 
---=_freyr.drzeus.cx-16173-1216124303-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 11 Jul 2008 20:45:49 +0200
-Sascha Sommer <saschasommer@freenet.de> wrote:
-
-> Hi,
->=20
-> On Sonntag, 6. Juli 2008, Pierre Ossman wrote:
+> >> BTW. what should the block device driver do when it receives a mapping
+> >> error? (if it aborts the request and it was write request, there will be
+> >> data corruption).
 > >
-> > Very odd. Anyway, send an updated patch with a proper entry in
-> > MAINTAINERS and I'll queue it up.
+> > I'm not sure how a aborted request can corrupt data on disk.
+> 
+> Writes are done by an async daemon and no one checks for their completion 
+> status. If there are three writes to directory, inode table and inode 
+> bitmap and one of these writes fail, there's no code to undo the other 
+> two. So the filesystem will be corrupted on write failure.
+
+Are you talking about file system metadata corruption?
+
+If your logic is correct, we hit the corruption every time a FC cable
+(switch, or whatever) has a problem. Fortunately, we don't. modern
+file systems can handle that.
+
+
+> >> Is it even legal to return IOMMU error in case where no
+> >> real hardware error or overflow happened?
 > >
->=20
-> See the attached patch.
->=20
+> > Of course, it's legal. It's a common event like kinda OOM. It's very
+> > possible with old IOMMUs that have the small I/O space. A SCSI driver
+> > retries a failed request later. But note that some drivers are still
+> > not able to handle that.
+> >
+> > http://marc.info/?l=linux-kernel&m=121300637114672&w=2
+> 
+> So should it return SCSI_MLQUEUE_HOST_BUSY? Or something other?
+> 
+> Unfortunatelly, many of the drivers contain BUG_ON or no check at all.
 
-I've queued it up and it should be with Linus within a day or two.
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-16173-1216124303-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkh8lY0ACgkQ7b8eESbyJLgLqACcCVY7lYllm3QB+ffFCgiyI82j
-p2wAoNg0c9wG69XGWZpl+J00TGihxqio
-=cgPE
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-16173-1216124303-0001-2--
+Yeah, many of the old scsi drivers contatinas BUG_ON. They are not
+likely to be used with IOMMUs. We don't care about them much. The
+recent scsi drivers can handle this.
