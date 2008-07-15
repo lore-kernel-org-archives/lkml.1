@@ -1,32 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754537AbYGOENX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755783AbYGOEQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754537AbYGOENX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 00:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbYGOENO
+	id S1755783AbYGOEQS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 00:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbYGOEQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 00:13:14 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37015 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750783AbYGOENN (ORCPT
+	Tue, 15 Jul 2008 00:16:10 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:35892 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750865AbYGOEQJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 00:13:13 -0400
-Date: Mon, 14 Jul 2008 21:12:38 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Max Krasnyansky <maxk@qualcomm.com>
+	Tue, 15 Jul 2008 00:16:09 -0400
+Date: Tue, 15 Jul 2008 00:16:07 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
 cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
        Vegard Nossum <vegard.nossum@gmail.com>,
-       Paul Menage <menage@google.com>, Paul Jackson <pj@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, miaox@cn.fujitsu.com,
-       rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
+       Paul Menage <menage@google.com>, Max Krasnyansky <maxk@qualcomm.com>,
+       Paul Jackson <pj@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       miaox@cn.fujitsu.com, Thomas Gleixner <tglx@linutronix.de>,
        Ingo Molnar <mingo@elte.hu>,
        Linux Kernel <linux-kernel@vger.kernel.org>
 Subject: Re: current linux-2.6.git: cpusets completely broken
-In-Reply-To: <487C1374.8020404@qualcomm.com>
-Message-ID: <alpine.LFD.1.10.0807142104250.3017@woody.linux-foundation.org>
-References: <20080712031736.GA3040@damson.getinternet.no>  <alpine.LFD.1.10.0807112026390.2875@woody.linux-foundation.org>  <b647ffbd0807120304o7a500dc9oce761e51c9dce908@mail.gmail.com>  <alpine.LFD.1.10.0807121254490.2875@woody.linux-foundation.org> 
- <alpine.LFD.1.10.0807121411350.2875@woody.linux-foundation.org>  <b647ffbd0807141538g2004f245m5f54ec962f475ba5@mail.gmail.com>  <alpine.LFD.1.10.0807141602250.3017@woody.linux-foundation.org>  <b647ffbd0807141700s20e54fbewafb3d3e296e57f53@mail.gmail.com> 
- <alpine.LFD.1.10.0807141707410.3017@woody.linux-foundation.org> <b647ffbd0807141921n13ffa59x416fc024c734ef02@mail.gmail.com> <487C1374.8020404@qualcomm.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+In-Reply-To: <alpine.LFD.1.10.0807142057310.3017@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.58.0807150013020.8553@gandalf.stny.rr.com>
+References: <20080712031736.GA3040@damson.getinternet.no> 
+ <alpine.LFD.1.10.0807112026390.2875@woody.linux-foundation.org> 
+ <b647ffbd0807120304o7a500dc9oce761e51c9dce908@mail.gmail.com> 
+ <alpine.LFD.1.10.0807121254490.2875@woody.linux-foundation.org> 
+ <alpine.LFD.1.10.0807121411350.2875@woody.linux-foundation.org>
+ <b647ffbd0807141538g2004f245m5f54ec962f475ba5@mail.gmail.com>
+ <alpine.LFD.1.10.0807141602250.3017@woody.linux-foundation.org>
+ <Pine.LNX.4.58.0807142320180.4530@gandalf.stny.rr.com>
+ <alpine.LFD.1.10.0807142029280.3017@woody.linux-foundation.org>
+ <Pine.LNX.4.58.0807142342450.8137@gandalf.stny.rr.com>
+ <alpine.LFD.1.10.0807142057310.3017@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,38 +43,27 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Mon, 14 Jul 2008, Max Krasnyansky wrote:
-> 
-> Did you guys an updated patch ? Dmitry pointed out several things that Linus
-> missed in his original version. I guess I can go through the thread and
-> reconstruct that but if you have a patch I can try let me know.
+On Mon, 14 Jul 2008, Linus Torvalds wrote:
+> >
+> > Oh, I'm not arguing. My mind is going off to an even bigger picture, where
+> > something in the future would need to stop migration to a particular CPU,
+> > and that it could simply clear the bit and call synchronize_sched. The run
+> > queue lock is only visible to the scheduler.  Sorry, I may have been day
+> > dreaming out loud ;-)
+>
+> Well, you'd be stuck right now anyway.
+>
+> At least in my trivial patch, the cpu_active_map locking is protected by
+> 'cpu_add_remove_lock' which is static to cpu.c. The only thing that
+> modifies it (apart from the initial setup before SMP has been brought up)
+> is the hotplug code.
 
-I didn't update it, and right now I'm just merging too much (and 
-discussing the merges) to have time.
+Yeah, I see that now. I was thinking back to a time I was doing some crazy
+kernel hacking and would have liked this feature (stop new tasks from
+migrating to a CPU). cpusets today are probably a better answer, and what
+I was thinking with using the cpu_active_map is more of a hack.
 
-The patch really needs to have some scheduler person look at the use fo 
-cpu_active_map - I was kind of hoping that Ingo would.
+Sorry for the noise, I'll go back to updating ftrace.txt
 
-The other thing I wish somebody would at least double-check (and 
-preferably just remove) is the !CPU_HOTPLUG special case. For that case, I 
-literally did
+-- Steve
 
-	#define cpu_active_map cpu_online_map
-
-and just depended on the fact that the few cases that touched 
-cpu_online_map even when CPU_HOTPLUG was disabled would do
-
-	if (cpu_online(cpu))
-		set_cpu(cpu, cpu_active_map);
-
-(or something - I ended up discaring the patch as I was doing the whole 
-2.6.26 release, so I don't even have it in front of me right now, just in 
-my email archives and in my memory).
-
-And quite frankly, I don't think that was a good idea. It was exactly the 
-sort of "subtle cleverness" that I myself argue against. So I think that 
-aliasing of cpu_active/online_map was a mistake - it was kind of cute, but 
-there's really no good reason to do it. It's not like that one CPU map 
-wastes any memory, and the special-case simply isn't worth it.
-
-			Linus
