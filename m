@@ -1,58 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761332AbYGOS5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761876AbYGOS6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761332AbYGOS5g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 14:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbYGOS52
+	id S1761876AbYGOS6u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 14:58:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755093AbYGOS6n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 14:57:28 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:55039 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753025AbYGOS51 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 14:57:27 -0400
-Subject: Re: kvm causing memory corruption?  now 2.6.26-rc8
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Avi Kivity <avi@qumranet.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       kvm-devel <kvm@vger.kernel.org>,
-       "Anthony N. Liguori [imap]" <aliguori@us.ibm.com>
-In-Reply-To: <48512028.3070104@qumranet.com>
-References: <1206479576.7562.21.camel@nimitz.home.sr71.net>
-	 <47EA1C63.8010202@qumranet.com>
-	 <1206550329.7883.5.camel@nimitz.home.sr71.net>
-	 <47EA80AC.4070204@qumranet.com>
-	 <1206551794.7883.7.camel@nimitz.home.sr71.net>
-	 <47EB6AAC.3040607@qumranet.com>  <47EB7281.6070300@qumranet.com>
-	 <1206629709.7883.30.camel@nimitz.home.sr71.net>
-	 <47EBB63E.2060306@qumranet.com>
-	 <1212445810.8211.9.camel@nimitz.home.sr71.net>
-	 <48469BDA.3050206@qumranet.com> <1212738105.7837.3.camel@nimitz>
-	 <48512028.3070104@qumranet.com>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 11:57:22 -0700
-Message-Id: <1216148242.25942.6.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Jul 2008 14:58:43 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:49372 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754957AbYGOS6m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 14:58:42 -0400
+Date: Tue, 15 Jul 2008 14:58:01 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, david@lang.hm,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
+	in-kernel, use it in more drivers.
+Message-ID: <20080715185801.GH8185@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Jeff Garzik <jeff@garzik.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>, david@lang.hm,
+	Arjan van de Ven <arjan@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Woodhouse <dwmw2@infradead.org>, alan@lxorguk.ukuu.org.uk,
+	linux-kernel@vger.kernel.org
+References: <alpine.LFD.1.10.0807141903260.3017@woody.linux-foundation.org> <487C585C.2060002@garzik.org> <alpine.LFD.1.10.0807150803580.3017@woody.linux-foundation.org> <487CD7FE.9010209@garzik.org> <alpine.LFD.1.10.0807151008450.3017@woody.linux-foundation.org> <487CDEC0.3090004@garzik.org> <alpine.LFD.1.10.0807151041080.3017@woody.linux-foundation.org> <487CEA73.9000408@garzik.org> <alpine.LFD.1.10.0807151124510.3017@woody.linux-foundation.org> <487CF01E.6000208@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <487CF01E.6000208@garzik.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So, just a continuation of what we were talking about before...
+On Tue, Jul 15, 2008 at 02:44:46PM -0400, Jeff Garzik wrote:
+> All of the regressions examples I am citing are cured by  
+> firmware-in-module, because they are all examples of problems that occur  
+> when you remove the ability to reproduce the same functional pieces as  
+> 2.6.26.
 
-I just had a bug triggered on my system because I'm running sparsemem
-(it was in show_mem()).  I wonder if sparsemem is contributing to the
-bug.  Does kvm ever do any arithmetic that you can think of with 'struct
-page's?
+Jeff,
 
-To summarize my config: 
-* 4GB of RAM
-* hole from 3-4GB (so ram ranges from 0-5GB)
-* PAE enabled
-* SPARSEMEM=y
+	I think you've said this before, but let me try to help you
+cut to the chase.  You are willing to *implement*
+firmware-in-the-module for request_firmware(), but you want a
+commitment that David Woodhouse and Linus will accept such a patch
+before you go off and write it.  Is that right?
 
-http://sr71.net/~dave/linux/config-2.6.26-rc8-00089-ge1441b9
+	If so, may I suggest you start implementing, instead of
+sending e-mails?  For all the time people have spent arguing about it,
+maybe it could have been implemented already.
 
-I'm compiling a kernel right now to try without sparsemem.
+	Once it has been implemented, do you have any further
+objections aka ideas about how request_firmware() could be improved?
 
--- Dave
+					- Ted
+					(who is hoping we can guide
+					 this thread onto slightly more
+					 productive avenues)
+
+
 
