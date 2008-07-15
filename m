@@ -1,106 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758823AbYGOUmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932167AbYGOUng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758823AbYGOUmf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 16:42:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763378AbYGOUl1
+	id S932167AbYGOUng (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 16:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753019AbYGOUn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 16:41:27 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:57076 "EHLO
-	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763373AbYGOUlZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 16:41:25 -0400
-Date: Tue, 15 Jul 2008 13:41:25 -0700 (PDT)
-From: Sage Weil <sage@newdream.net>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ceph-devel@lists.sourceforge.net
-Subject: Re: Recursive directory accounting for size, ctime, etc.
-In-Reply-To: <20080715195333.GK21590@fieldses.org>
-Message-ID: <Pine.LNX.4.64.0807151326130.1976@cobra.newdream.net>
-References: <Pine.LNX.4.64.0806192313530.7379@cobra.newdream.net>
- <20080715195333.GK21590@fieldses.org>
+	Tue, 15 Jul 2008 16:43:27 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:60936 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756192AbYGOUn0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 16:43:26 -0400
+Date: Tue, 15 Jul 2008 23:43:20 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Stoyan Gaydarov <stoyboyker@gmail.com>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, gorcunov@gmail.com,
+       akpm@linux-foundation.org, mingo@elte.hu
+Subject: Re: From 2.4 to 2.6 to 2.7?
+Message-ID: <20080715204320.GJ24533@cs181140183.pp.htv.fi>
+References: <6d291e080807141910m573b29b2t753ea7c4db09902d@mail.gmail.com> <alpine.LFD.1.10.0807141914280.3017@woody.linux-foundation.org> <6d291e080807141931g3080c94cic94f503c1a18523b@mail.gmail.com> <alpine.LFD.1.10.0807141939410.3017@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0807141939410.3017@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jul 2008, J. Bruce Fields wrote:
-> >  - There is some built-in delay before statistics fully propagate up 
-> > toward the root of the hierarchy.  Changes are propagated 
-> > opportunistically when lock/lease state allows, with an upper bound of (by 
-> > default) ~30 seconds for each level of directory nesting.
-> 
-> That makes it less useful, e.g., for somebody with cached data trying to
-> validate their cache, or for something like git trying to check a
-> directory tree for changes.
-
-Having fully up to date values would definitely be nice, but unfortunately 
-doesn't play nice with the fact that different parts of the directory 
-hierarchy may be managed by different metadata servers.  A primary goal in 
-implementing this was to minimize any impact on performance.  The uses I 
-had I mind were more in line with quota-based accounting than cache 
-validation.
-
-I think I can adjust the propagation heuristics/timeouts to make updates 
-seem more or less immediate to a user in most cases, but that won't be 
-sufficient for a tool like git that needs to reliably identify very recent 
-updates.  For backup software wanting a consistent file system image, it 
-should really be operating on a snapshot as well, in which case a delay 
-between taking the snapshot and starting the scan for changes would allow 
-those values to propagate.
-
-> >  - Ceph internally distinguishes between multiple links to the same file 
-> > (there is a single 'primary' link, and then zero or more 'remote' links).  
-> > Only the primary link contributes toward the 'rbytes' total.
-> 
-> Is that only true for 'rbytes'?
-
-The same goes for rctime.  As far as the recursive stats go, the other 
-stats (file/directory counts) aren't affected.  The primary/remote 
-hard link distinction is fundamental to the way metadata is internally 
-managed and stored by the MDS, though, if that's what you mean (inode 
-content is embedded with the primary link's directory metadata).
-
-sage
-
-
-> 
-> --b.
-> 
-> > 
-> >  - The 'rbytes' summation is over i_size, not blocks used.  That means 
-> > sparse files "appear" larger than the storage space they actually consume.
-> > 
-> >  - Directories don't yet contribute anything to the 'rbytes' total.  They
-> > should probably include an estimate of the storage consumed by directory 
-> > metadata.  For this reason, and because the size isn't rounded up to the 
-> > block size, the 'rbytes' total will usually be slightly smaller than what 
-> > you get from 'du'.
-> > 
-> >  - Currently no stats for the root directory itself.
-> > 
-> > 
-> > I'm extremely interested in what people think of overloading the file 
-> > system interface in this way.  Handy?  Crufty?  Dangerous?  Does anybody 
-> > know of any applications that rely on or expect meaningful values for a 
-> > directory's i_size?  Or read() a directory?
-> > 
-> > 
-> > More information on the recursive accounting at
-> > 
-> > 	http://ceph.newdream.net/wiki/Recursive_accounting
-> > 
-> > and Ceph itself at
-> > 
-> > 	http://ceph.newdream.net/
-> > 
-> > Cheers-
-> > sage
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On Mon, Jul 14, 2008 at 07:47:46PM -0700, Linus Torvalds wrote:
 > 
 > 
+> On Mon, 14 Jul 2008, Stoyan Gaydarov wrote:
+> > >
+> > > For example, I don't see any individual feature that would merit a jump
+> > > from 2.x to 3.x or even from 2.6.x to 2.8.x. So maybe those version jumps
+> > > should be done by a time-based model too - matching how we actually do
+> > > releases anyway.
+> >
+> > Does it have to be even numbers only?
+> 
+> No. But the even/odd thing is still so fresh in peoples memory (despite us 
+> not having used it for years), and I think some projects aped us on it, so 
+> if I didn't change the numbering setup, but just wanted to reset the minor 
+> number, I'd probably jump from 2.6 to 2.8 just for historical reasons.
+> 
+> But I could also see the second number as being the "year", and 2008 would 
+> get 2.8, and then next year I'd make the first release of 2009 be 2.9.1 
+> (and probably avoid the ".0" just because it again has the connotations of 
+> a "big new untested release", which is not true in a date-based numbering 
+> scheme). And then 2010 would be 3.0.1 etc..
+> 
+> Anyway, I have to say that I personally don't have any hugely strong 
+> opinions on the numbering. I suspect others do, though, and I'm almost 
+> certain that this is an absolutely _perfect_ "bikeshed-painting" subject 
+> where thousands of people will be very passionate and send me their 
+> opinions on why _their_ particular shed color is so much better.
+>...
+
+The 2.6. prefix is like with X which is version 11 for 20 years and 
+still counting.
+
+Or like with X11R6, that became X11R7 after 11 years, there might be in 
+a few years some big change that will warrant a 2.8 or 3.0 (the rewrite 
+of the kernel in Visual Basic .NET ;-) ).
+
+But my personal opinion is that we now have an established version 
+numbering with the current development model that is 2.6.x, and users 
+got used to it.
+
+If you'd change it you will only create confusion - e.g. with your 2.9.1 
+idea half the world will see that 9 is an odd number, remember the old 
+kernel versioning, and think this is the first development release 
+towards 3.0...
+
+> 			Linus
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
