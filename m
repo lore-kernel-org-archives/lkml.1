@@ -1,108 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758298AbYGOWpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756913AbYGOWqD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758298AbYGOWpn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 18:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756011AbYGOWpH
+	id S1756913AbYGOWqD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 18:46:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756730AbYGOWpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 18:45:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36451 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754830AbYGOWpF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 18:45:05 -0400
-Date: Tue, 15 Jul 2008 15:44:07 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: roland@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] coredump: kill mm->core_done
-Message-Id: <20080715154407.4ffadcb7.akpm@linux-foundation.org>
-In-Reply-To: <20080715162150.GA30927@tv-sign.ru>
-References: <20080715140715.GA25824@tv-sign.ru>
-	<20080715162150.GA30927@tv-sign.ru>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Jul 2008 18:45:38 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:33761 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757911AbYGOWph (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 18:45:37 -0400
+Date: Tue, 15 Jul 2008 18:45:35 -0400
+To: Sage Weil <sage@newdream.net>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ceph-devel@lists.sourceforge.net
+Subject: Re: Recursive directory accounting for size, ctime, etc.
+Message-ID: <20080715224535.GB28739@fieldses.org>
+References: <Pine.LNX.4.64.0806192313530.7379@cobra.newdream.net> <20080715195333.GK21590@fieldses.org> <Pine.LNX.4.64.0807151326130.1976@cobra.newdream.net> <20080715204812.GD25803@fieldses.org> <Pine.LNX.4.64.0807151349570.18395@cobra.newdream.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0807151349570.18395@cobra.newdream.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jul 2008 20:21:50 +0400
-Oleg Nesterov <oleg@tv-sign.ru> wrote:
-
-> Now that we have core_state->dumper list we can use it to wake up the
-> sub-threads waiting for the coredump completion.
+On Tue, Jul 15, 2008 at 02:16:45PM -0700, Sage Weil wrote:
+> On Tue, 15 Jul 2008, J. Bruce Fields wrote:
+> > I just wonder how one would explain to users (or application writers)
+> > why changes to a file are reflected in the parent's rctime in one case,
+> > and not in another, especially if the primary link is otherwise
+> > indistinguishable from the others.  The symptoms could be a bit
+> > mysterious from their point of view.
 > 
-> This uglifies the code and .text grows by 47 bytes, but otoh mm_struct
-> lessens by sizeof(struct completion). Also, with this change we can
-> decouple exit_mm() from the coredumping code.
+> Yes.  I'm not sure it can really be avoided, though.  I'm trying to lift 
+> the usual restriction of having to predefine what the 
+> volume/subvolume/qtree boundary is and then disallowing links/renames 
+> between then.  When all of a file's links are contained within the 
+> directory you're looking at (i.e. something that might be a subvolume 
+> under that paradigm), things look sensible.  If links span two directories 
+> and you're looking at recursive stats for a dir containing only one of 
+> them, then you're necessarily going to have some weirdness (you don't want 
+> to double-count).
 
-This conflicts with your
-coredump-simplify-core_state-nr_threads-calculation.patch
+Yeah, there's no clear right answer--that's partly why I was curious
+about rctime specifically.
 
-fs/exec.c:
-
-***************
-*** 1597,1603 ****
-  	struct completion *vfork_done;
-  	int core_waiters;
-  
-- 	init_completion(&mm->core_done);
-  	init_completion(&core_state->startup);
-  	core_state->dumper.task = tsk;
-  	core_state->dumper.next = NULL;
---- 1597,1602 ----
-  	struct completion *vfork_done;
-  	int core_waiters;
-  
-  	init_completion(&core_state->startup);
-  	core_state->dumper.task = tsk;
-  	core_state->dumper.next = NULL;
-***************
-*** 1812,1819 ****
-  		argv_free(helper_argv);
-  
-  	current->fsuid = fsuid;
-- 	complete_all(&mm->core_done);
-- 	mm->core_state = NULL;
-  fail:
-  	return retval;
-  }
---- 1832,1838 ----
-  		argv_free(helper_argv);
-  
-  	current->fsuid = fsuid;
-+ 	coredump_finish(mm);
-  fail:
-  	return retval;
-  }
-
-The second hunk is a bit worrisome.  The
-
-	mm->core_state = NULL;
-
-isn't there any more.
-
-
-I have a bad feelnig that I have a coredump patch which should have
-been dropped.  Can you please check everything?
-
-Current queue:
-
-#
-# coredump
-#
-introduce-pf_kthread-flag.patch
-kill-pf_borrowed_mm-in-favour-of-pf_kthread.patch
-coredump-zap_threads-must-skip-kernel-threads.patch
-coredump-elf_core_dump-skip-kernel-threads.patch
-#
-coredump-turn-mm-core_startup_done-into-the-pointer-to-struct-core_state.patch
-coredump-move-mm-core_waiters-into-struct-core_state.patch
-coredump-simplify-core_state-nr_threads-calculation.patch
-coredump-turn-core_state-nr_threads-into-atomic_t.patch
-coredump-kill-mm-core_done.patch
-
-
-All at http://userweb.kernel.org/~akpm/mmotm/
-
+--b.
