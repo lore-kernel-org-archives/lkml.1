@@ -1,48 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760605AbYGOMlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760806AbYGOMl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760605AbYGOMlT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 08:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756154AbYGOMlM
+	id S1760806AbYGOMl7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 08:41:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756566AbYGOMlv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 08:41:12 -0400
-Received: from sinclair.provo.novell.com ([137.65.248.137]:19685 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754667AbYGOMlL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 08:41:11 -0400
-Message-Id: <487C63AD.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Tue, 15 Jul 2008 06:45:33 -0600
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: <a.p.zijlstra@chello.nl>, <mingo@elte.hu>, <dmitry.adamushko@gmail.com>,
-       <torvalds@linux-foundation.org>, "Max Krasnyansky" <maxk@qualcomm.com>,
-       <pj@sgi.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cpu hotplug, sched: Introduce cpu_active_map and
-	redo sched domain managment (take 2)
-References: <1216122229-4865-1-git-send-email-maxk@qualcomm.com>
-In-Reply-To: <1216122229-4865-1-git-send-email-maxk@qualcomm.com>
+	Tue, 15 Jul 2008 08:41:51 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:52376 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756154AbYGOMlu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 08:41:50 -0400
+Date: Tue, 15 Jul 2008 14:41:47 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: David Howells <dhowells@redhat.com>
+Cc: akpm@linux-foundation.org, dhowells@redhat.com, alan@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix SDIO break control to now return success or an
+ error
+Message-ID: <20080715144147.74bf2bb3@mjolnir.drzeus.cx>
+In-Reply-To: <20080710112847.22339.88592.stgit@warthog.procyon.org.uk>
+References: <20080710112847.22339.88592.stgit@warthog.procyon.org.uk>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.4; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Max,
+On Thu, 10 Jul 2008 12:28:48 +0100
+David Howells <dhowells@redhat.com> wrote:
 
->>> On Tue, Jul 15, 2008 at  7:43 AM, in message
-<1216122229-4865-1-git-send-email-maxk@qualcomm.com>, Max Krasnyansky
-<maxk@qualcomm.com> wrote: 
+> Fix SDIO break control to now return success or an error.
 > 
-> Greg, please take a look at the RT balancer merge. I decided not to muck
-> with the cpupri thing and instead mask inactive cpus after the search.
+> This is a consequence of patch 9ea761bfef52c116fed4715d4043392c2503fe6a.
+> 
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> ---
 
-Ill take a look at this later today.
+Applied, thanks.
 
-Regards,
--Greg
+-- 
+     -- Pierre Ossman
 
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
 
-
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
