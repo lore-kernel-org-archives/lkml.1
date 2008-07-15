@@ -1,75 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761300AbYGOQF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbYGOQHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761300AbYGOQF1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 12:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752950AbYGOQFQ
+	id S1758110AbYGOQHi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 12:07:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbYGOQHb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 12:05:16 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49350 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754560AbYGOQFP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 12:05:15 -0400
-Date: Tue, 15 Jul 2008 09:04:41 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Frans Pop <elendil@planet.nl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, jeff@garzik.org,
-       akpm@linux-foundation.org, dwmw2@infradead.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
- in-kernel, use it in more drivers.
-Message-ID: <20080715090441.478c2287@infradead.org>
-In-Reply-To: <200807151757.10626.elendil@planet.nl>
-References: <1216077806.27455.85.camel@shinybook.infradead.org>
-	<20080714164119.99c33d5b.akpm@linux-foundation.org>
-	<20080714165956.7fe2d4ee@infradead.org>
-	<487C0365.5030203@garzik.org>
-	<487C0365.5030203@garzik.org>
-	<alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
-	<200807151757.10626.elendil@planet.nl>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+	Tue, 15 Jul 2008 12:07:31 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:50071 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752155AbYGOQHa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 12:07:30 -0400
+Date: Tue, 15 Jul 2008 11:07:26 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Max Krasnyansky <maxk@qualcomm.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, maxk@qualcomm.com,
+       a.p.zijlstra@chello.nl, menage@google.com
+Subject: Re: [PATCH] cpuset: Make rebuild_sched_domains() usable from any
+ context
+Message-Id: <20080715110726.5837c783.pj@sgi.com>
+In-Reply-To: <1216122293-4888-1-git-send-email-maxk@qualcomm.com>
+References: <1216122293-4888-1-git-send-email-maxk@qualcomm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jul 2008 17:57:09 +0200
-Frans Pop <elendil@planet.nl> wrote:
+Max K wrote:
+> Basically as Paul J. pointed out rebuild_sched_domains() is the
+> only way to rebuild sched domains correctly based on the current
+> cpuset settings. What this means is that we need to be able to
+> call it from different contexts, like cpuhotplug for example.
 
-> Linus Torvalds wrote:
-> > On Mon, 14 Jul 2008, Jeff Garzik wrote:
-> >> IMO the newly added /inability/ to build firmware into kernel
-> >> modules is a clear regression.
-> > 
-> > IMO you're being stupid.
-> > 
-> > How about explainign why it makes any difference what-so-ever?
-> > 
-> > If you can load the module, you can load the firmware. Claiming
-> > anything else is just _stupid_.
-> 
-> Sure, in theory it's that simple. Here's a concrete example that
-> shows how things are harder in practice.
-> 
-> I use the 'make deb-pkg' target (from scripts/package) to build my
-> Debian kernel packages from git. So that needs to be adapted to
-> include /lib/firmware. No real problem so far.
-> 
-> So then I build 2.6.27-rc1 and install it. Great.
-> 
-> You release 2.6.27-rc2 and I build it. Ouch! It fails to install, at
-> least if I want to install it _alongside_ 2.6.27-rc1 or other kernels
-> (which I do!). Why does it fail? Because dpkg's package management
-> does not allow one package to overwrite files already "owned" by
-> another package.
-> 
+The following is just a wild idea.
 
-question: how do you deal with this with the dozens of drivers that use
-request_firmware() even before yesterday ?
-the answer is critical in how to deal with this "new" situation as
-well ;-)
+On systems using cpusets to setup scheduler domains (anything more
+elaborate than the default of a single, system-wide, domain) have a
+special purpose thread sit around, that does nothing except rebuild
+sched domains on demand.
+
+If this rebuild thread was the -only- way that sched domains were
+allowed to be rebuilt, and if this rebuild was done -asynchronously-
+sometime shortly after requested, without any error or status feedback,
+then it would seem to simplify the locking issues.
+
+I would guess that any system big enough to have a non-default, cpuset
+determined, sched domain configuration is big enough to not mind one
+more thread sitting around, doing nothing most of the time.
+
+If the above is a really stupid idea, have fun taking out your
+agression on it ;).
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
