@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761134AbYGOOUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760979AbYGOOVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761134AbYGOOUe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 10:20:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760677AbYGOOUO
+	id S1760979AbYGOOVu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 10:21:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753757AbYGOOVk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 10:20:14 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:34692 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1759948AbYGOOUN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 10:20:13 -0400
-Date: Tue, 15 Jul 2008 10:20:11 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Johannes Berg <johannes@sipsolutions.net>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Greg KH <greg@kroah.com>
-Subject: Re: 2.6.26-rc9-git12: Reported regressions from 2.6.25
-In-Reply-To: <1216110638.3535.0.camel@johannes.berg>
-Message-ID: <Pine.LNX.4.44L0.0807151019420.2517-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 15 Jul 2008 10:21:40 -0400
+Received: from sh.osrg.net ([192.16.179.4]:44128 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753238AbYGOOVj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 10:21:39 -0400
+Date: Tue, 15 Jul 2008 23:20:14 +0900
+To: mpatocka@redhat.com
+Cc: fujita.tomonori@lab.ntt.co.jp, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       davem@davemloft.net, linux-parisc@vger.kernel.org
+Subject: Re: [PATCH] block: fix q->max_segment_size checking in
+ blk_recalc_rq_segments about VMERGE
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <Pine.LNX.4.64.0807150924250.21598@devserv.devel.redhat.com>
+References: <1216118676-13625-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<Pine.LNX.4.64.0807150924250.21598@devserv.devel.redhat.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080715231956A.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jul 2008, Johannes Berg wrote:
+On Tue, 15 Jul 2008 09:37:05 -0400 (EDT)
+Mikulas Patocka <mpatocka@redhat.com> wrote:
 
-> > Add
-> > 
-> > 	printk(KERN_ALERT "Unplug now!\n");
-> > 	ssleep(10);
-> > 
-> > to the start of slave_configure() in drivers/usb/storage/scsiglue.c.  
-> > Then it should be very easy to trigger the failure.  :-)
+> On Tue, 15 Jul 2008, FUJITA Tomonori wrote:
 > 
-> Indeed.
+> > blk_recalc_rq_segments assumes that any segments can be merged in the
+> > case of BIOVEC_VIRT_MERGEABLE && !BIOVEC_VIRT_OVERSIZE. However, an
+> > IOMMU can't merge segments if the total length of the segments is
+> > larger than max_segment_size (the LLD restriction).
+> >
+> > Due to this bug, a LLD may get the larger number of segments than
+> > nr_hw_segments because the block layer puts more segments in a request
+> > than it should do.
+> >
+> > This bug could happen on alpha, parisc, and sparc, which use VMERGE.
 > 
-> > Assuming the failure does occur without the patch, see if it still 
-> > occurs once the patch is in place.
-> 
-> Yes, it occurs without the patch and not with the patch, thanks!
+> Parisc doesn't use virtual merge accounting (there is variable for it but 
+> it's always 0).
 
-Okay, thanks for testing.  I will submit the patch for 2.6.26.1.
+Hmm, really? Looks like PARISC IOMMUs (ccio-dma.c and sba_iomm.c) set
+parisc_vmerge_boundary (CC'ed PARISC mailing list).
 
-Alan Stern
 
+> On sparc64 it is broken anyway with or without your patch. 
+
+Yeah, we need to modify SPARC64 IOMMU code (I'm not sure that it's
+worth). Right now, the best fix is setting BIO_VMERGE_BOUNDARY to 0.
+
+
+> And alpha alone doesn't justify substantial code bloat in generic block 
+> layer. So I propose this patch to drop it at all.
+
+Jens, what do you think about removing VMERGE code?
