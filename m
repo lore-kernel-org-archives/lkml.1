@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755198AbYGOGDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759305AbYGOGEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755198AbYGOGDw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 02:03:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757132AbYGOGDi
+	id S1759305AbYGOGEh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 02:04:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755162AbYGOGEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 02:03:38 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:40103 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756884AbYGOGDh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 02:03:37 -0400
-Date: Tue, 15 Jul 2008 07:03:35 +0100 (IST)
-From: Dave Airlie <airlied@skynet.ie>
-To: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
-cc: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [git pull] drm radeon fix for 2.6.27-rc1
-Message-ID: <alpine.DEB.0.82.0807150702330.6038@skynet.skynet.ie>
+	Tue, 15 Jul 2008 02:04:25 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:25206 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751692AbYGOGEY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 02:04:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=uKO+IVyYzo1lPeg/4hzCdh9DOh2WoJADy4rr9tNGwFEYgaJ6DHEGHNwmEICQr3bzka
+         g14JjJLD1QRaUXg1GRH1UPTLQuO2KCeVOomW99uvonAG5QYXz3reQAabqSzJnU3H4isj
+         ffQjTId0U59Eo/FUpXmJZc8IjCbSFOV+/cgho=
+Message-ID: <aecf5e530807142304m60ef0cb2pe1c3592ae1abc7eb@mail.gmail.com>
+Date: Tue, 15 Jul 2008 11:34:23 +0530
+From: "sasa sasa" <sasak.1983@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Set_up irq problem while using gpio
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-Hi Linus,
+I have query that the below patch has to applied on irq/manage.c file or not.
+--- kernel_old/irq/manage.c 2008-02-07 22:11:14.000000000 +0530
++++ kernel_new/irq/manage.c 2008-02-07 22:19:14.000000000 +0530
+@@ -349,8 +349,14 @@
+        /* Setup the type (level, edge polarity) if configured: */
+        if (new->flags & IRQF_TRIGGER_MASK) {
+            if (desc->chip && desc->chip->set_type)
+-               desc->chip->set_type(irq,
+-                       new->flags & IRQF_TRIGGER_MASK);
++           {
++               if((desc->chip->set_type(irq,
++                       new->flags & IRQF_TRIGGER_MASK)))
++               {
++                   spin_unlock_irqrestore(&desc->lock, flags);
++                   return -ESPIPE;
++               }
++           }
+            else
+                /*
+                 * IRQF_TRIGGER_* but the PIC does not support
 
-Please pull the 'drm-fixes' branch from
-ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-fixes
+The reason is that in case of gpio pins used as interrupt pin but that
+pin has already been ocuupied in other mode (like alternate function
+mode or in software mode) by other device. In that case, some error
+mechanism must be there, if we are requesting that gpio pin as
+interrupt through request_irq function.
 
-It appears we have a PAT incomPATibility, with how the radeon driver was 
-mapping some VRAM.
-
-Dave.
-
- drivers/gpu/drm/drm_memory.c       |    5 +++++
- drivers/gpu/drm/radeon/radeon_cp.c |    2 +-
- include/drm/drmP.h                 |    1 +
- 3 files changed, 7 insertions(+), 1 deletions(-)
-
-commit 242e3df80b8d25ed681c278512df0993725f25dd
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Tue Jul 15 15:48:05 2008 +1000
-
-    drm/radeon: fixup issue with radeon and PAT support.
-    
-    With new userspace libpciaccess we can get a conflicting mapping
-    on the PCIE GART table in the video RAM. Always try and map it _wc.
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
+Regards
+Sasa
