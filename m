@@ -1,48 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758273AbYGOTVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762746AbYGOTWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758273AbYGOTVX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 15:21:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762862AbYGOTUt
+	id S1762746AbYGOTWR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 15:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756341AbYGOTWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 15:20:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49789 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762834AbYGOTUs (ORCPT
+	Tue, 15 Jul 2008 15:22:00 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:41372 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756129AbYGOTV7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 15:20:48 -0400
-Date: Tue, 15 Jul 2008 12:19:36 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-cc: Theodore Tso <tytso@mit.edu>, david@lang.hm,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
- use it in more drivers.
-In-Reply-To: <487CF70C.1030309@garzik.org>
-Message-ID: <alpine.LFD.1.10.0807151218460.3351@woody.linux-foundation.org>
-References: <alpine.LFD.1.10.0807141903260.3017@woody.linux-foundation.org> <487C585C.2060002@garzik.org> <alpine.LFD.1.10.0807150803580.3017@woody.linux-foundation.org> <487CD7FE.9010209@garzik.org> <alpine.LFD.1.10.0807151008450.3017@woody.linux-foundation.org>
- <487CDEC0.3090004@garzik.org> <alpine.LFD.1.10.0807151041080.3017@woody.linux-foundation.org> <487CEA73.9000408@garzik.org> <alpine.LFD.1.10.0807151124510.3017@woody.linux-foundation.org> <487CF01E.6000208@garzik.org> <20080715185801.GH8185@mit.edu>
- <487CF70C.1030309@garzik.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 15 Jul 2008 15:21:59 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Tue, 15 Jul 2008 21:21:27 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [git pull 1/2] FireWire updates post 2.6.26
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
+Message-ID: <tkrat.ca57fe6c5cf3640c@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus, please pull from the for-linus branch at
 
+    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
 
-On Tue, 15 Jul 2008, Jeff Garzik wrote:
-> 
-> Already started, in fact, since Linus said he would not reject it out of
-> hands.
+to receive the following IEEE 1394/ FireWire subsystem updates.
+We FireWire guys are all slacking off at the beach, so the list is
+short.
 
-Btw, I need to see it actually solve a real problem. As it is, I really 
-think you've just painted yourself into a corner where you can't just 
-admit that we can just load the firmware directly.
+A second pull request will follow in a minute because it treads on
+SCSI territory.
 
-Could you _please_ entertain at least thinking about that option?
+Alan Cox (1):
+      ieee1394: raw1394: Push the BKL down into the driver ioctls
 
-		Linus
+Philippe De Muyter (1):
+      ieee1394: dump mmapped iso buffers in core files
+
+Stefan Richter (7):
+      ieee1394: reduce log noise about config ROM CRC errors
+      ieee1394: video1394: reorder module init, prepare BKL removal
+      firewire: implement broadcast_channel CSR for 1394a compliance
+      firewire: remove unused struct members
+      firewire: clean up some includes
+      firewire: clean up fw_card reference counting
+      firewire: don't respond to broadcast write requests
+
+ drivers/firewire/fw-card.c        |   32 +++++++++++++++++---------
+ drivers/firewire/fw-device.c      |    5 +--
+ drivers/firewire/fw-device.h      |    1 -
+ drivers/firewire/fw-ohci.c        |    1 -
+ drivers/firewire/fw-transaction.c |   32 +++++++++++++++++++-------
+ drivers/firewire/fw-transaction.h |   34 ++++++++++++++++++++++------
+ drivers/ieee1394/csr1212.c        |   32 ++++++++++++++++++--------
+ drivers/ieee1394/dma.c            |    2 +-
+ drivers/ieee1394/highlevel.c      |    4 +--
+ drivers/ieee1394/highlevel.h      |   13 ++++++++++-
+ drivers/ieee1394/raw1394.c        |   20 ++++++++++++----
+ drivers/ieee1394/video1394.c      |    2 +
+ 12 files changed, 125 insertions(+), 53 deletions(-)
+
+Thanks,
+-- 
+Stefan Richter
+-=====-==--- -=== -====
+http://arcgraph.de/sr/
+
