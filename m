@@ -1,94 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbYGOOuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543AbYGOO4y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754846AbYGOOuj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 10:50:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbYGOOu3
+	id S1754543AbYGOO4y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 10:56:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbYGOO4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 10:50:29 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:47090 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751863AbYGOOu1 (ORCPT
+	Tue, 15 Jul 2008 10:56:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56398 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751863AbYGOO4p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 10:50:27 -0400
-Subject: Re: [PATCH] block: fix q->max_segment_size checking in
-	blk_recalc_rq_segments about VMERGE
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: mpatocka@redhat.com, jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, davem@davemloft.net,
-       linux-parisc@vger.kernel.org
-In-Reply-To: <20080715231956A.fujita.tomonori@lab.ntt.co.jp>
-References: <1216118676-13625-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	 <Pine.LNX.4.64.0807150924250.21598@devserv.devel.redhat.com>
-	 <20080715231956A.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 09:50:21 -0500
-Message-Id: <1216133421.3312.30.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Jul 2008 10:56:45 -0400
+Date: Tue, 15 Jul 2008 07:55:37 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Willy Tarreau <w@1wt.eu>
+cc: David Miller <davem@davemloft.net>, jeff@garzik.org, arjan@infradead.org,
+       akpm@linux-foundation.org, dwmw2@infradead.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
+ use it in more drivers.
+In-Reply-To: <20080715045848.GG1369@1wt.eu>
+Message-ID: <alpine.LFD.1.10.0807150747540.3017@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org> <487C09EB.1050903@garzik.org> <alpine.LFD.1.10.0807141928540.3017@woody.linux-foundation.org> <20080714.194032.117461306.davem@davemloft.net> <alpine.LFD.1.10.0807141947540.3017@woody.linux-foundation.org>
+ <20080715045848.GG1369@1wt.eu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-15 at 23:20 +0900, FUJITA Tomonori wrote:
-> On Tue, 15 Jul 2008 09:37:05 -0400 (EDT)
-> Mikulas Patocka <mpatocka@redhat.com> wrote:
-> 
-> > On Tue, 15 Jul 2008, FUJITA Tomonori wrote:
+
+
+On Tue, 15 Jul 2008, Willy Tarreau wrote:
 > > 
-> > > blk_recalc_rq_segments assumes that any segments can be merged in the
-> > > case of BIOVEC_VIRT_MERGEABLE && !BIOVEC_VIRT_OVERSIZE. However, an
-> > > IOMMU can't merge segments if the total length of the segments is
-> > > larger than max_segment_size (the LLD restriction).
-> > >
-> > > Due to this bug, a LLD may get the larger number of segments than
-> > > nr_hw_segments because the block layer puts more segments in a request
-> > > than it should do.
-> > >
-> > > This bug could happen on alpha, parisc, and sparc, which use VMERGE.
-> > 
-> > Parisc doesn't use virtual merge accounting (there is variable for it but 
-> > it's always 0).
+> > But once you can load a module, you can load the firmware. You just have 
+> > to _remember_ to move it along with the module.
 > 
-> Hmm, really? Looks like PARISC IOMMUs (ccio-dma.c and sba_iomm.c) set
-> parisc_vmerge_boundary (CC'ed PARISC mailing list).
+> In order to transfer it, right now you feed it through a working device.
+> When that device itself requires firmware to work, you will suddenly
+> discover that it becomes harder and harder to get any communication device
+> to work on your target system.
 
-That's correct.  The size and boundary depend on the type of IOMMU (ccio
-or sba) so the vmerge boundary parameters are set up in the iommu driver
-code.
+Willy, stop this blathering.
 
-> > On sparc64 it is broken anyway with or without your patch. 
-> 
-> Yeah, we need to modify SPARC64 IOMMU code (I'm not sure that it's
-> worth). Right now, the best fix is setting BIO_VMERGE_BOUNDARY to 0.
-> 
-> 
-> > And alpha alone doesn't justify substantial code bloat in generic block 
-> > layer. So I propose this patch to drop it at all.
-> 
-> Jens, what do you think about removing VMERGE code?
+I suspect I will have to just delete this thread unread because it's so 
+full of total crap.
 
-Actually, it's code I did.
+This whole "working device" argument is total bullshit.
 
-There are plusses and minusses to all of this.  The original vmerge code
-was done for sparc ... mainly because the benefits of virtual merging
-can offset the cost of having to use the iommu.  However, most
-architectures didn't use it.  When I fixed it up to work for parisc (and
-introduced the parameters) we were trying to demonstrate that using it
-was feasible.
+If the driver was a module before, it needed a module load to become 
+working. If you could load the module, you could load the firmware. Thus 
+the transfer is non-issue.
 
-The idea behind vmerging is that assembling and programming sg lists is
-expensive, so you want to do it once.  Either in the iommu or in the
-driver sg list, but not in both.  There is evidence that it saves around
-7% or so on drivers.  However, for architectures that can do it, better
-savings are made simply by lifting the iommu out of the I/O path (so
-called bypass mode).
+And if the driver was built-in, you can still build in the firmware.
 
-I suspect with IOMMUs coming back (and being unable to be bypassed) with
-virtualisation, virtual merging might once more become a significant
-value.
+And by proof of induction - your "now you feed it through a working 
+device" - this also holds for that "a working device" driver. The device 
+you load the module off has exactly the same rules: you can build in the 
+firmware.
 
-James
+So it didn't get any harder at all. Except for the fact that you need to 
+remember to install the firmware. 
 
+Which is just about the same thing as asking people to remember to do 
+"make modules_install" to get a working system. Yes, if you have a driver 
+as a module, you need to install that module for the device to work. Yes, 
+it's definitely "harder", but seriously..
 
+			Linus
