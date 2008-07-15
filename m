@@ -1,72 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761737AbYGOCqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762127AbYGOCrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761737AbYGOCqQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 22:46:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754238AbYGOCp7
+	id S1762127AbYGOCrU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 22:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbYGOCrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 22:45:59 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34118
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753745AbYGOCp5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 22:45:57 -0400
-Date: Mon, 14 Jul 2008 19:45:57 -0700 (PDT)
-Message-Id: <20080714.194557.78177585.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: rene.herman@keyaccess.nl, david@lang.hm, arjan@infradead.org,
-       akpm@linux-foundation.org, dwmw2@infradead.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
- in-kernel, use it in more drivers.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.1.10.0807141934060.3017@woody.linux-foundation.org>
-References: <487C0A12.9060906@keyaccess.nl>
-	<20080714.192425.241878700.davem@davemloft.net>
-	<alpine.LFD.1.10.0807141934060.3017@woody.linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Jul 2008 22:47:12 -0400
+Received: from mail.lang.hm ([64.81.33.126]:58308 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754238AbYGOCrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 22:47:12 -0400
+Date: Mon, 14 Jul 2008 19:47:56 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
+ use it in more drivers.
+In-Reply-To: <alpine.LFD.1.10.0807141903260.3017@woody.linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0807141944210.6370@asgard>
+References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <alpine.DEB.1.10.0807141704120.14223@asgard.lang.hm> <alpine.LFD.1.10.0807141729200.3017@woody.linux-foundation.org>
+ <alpine.DEB.1.10.0807141750290.14223@asgard.lang.hm> <alpine.LFD.1.10.0807141756361.3017@woody.linux-foundation.org> <alpine.DEB.1.10.0807141805300.14223@asgard.lang.hm> <alpine.LFD.1.10.0807141903260.3017@woody.linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 14 Jul 2008 19:39:03 -0700 (PDT)
+On Mon, 14 Jul 2008, Linus Torvalds wrote:
 
-> Put this way: if you do a distro, you _need_ to support firmware loading 
-> anyway. And once you do that, it's just annoying how some drivers then do 
-> something odd and special for the same thing, for no real good reason.
+> On Mon, 14 Jul 2008, david@lang.hm wrote:
+>
+>> On Mon, 14 Jul 2008, Linus Torvalds wrote:
+>>>
+>>> That's a totally bogus argument.
+>>
+>> you misunderstood me. the people pushing request_firmware() are doing so on
+>> the basis that they won't have to use kernel ram to hold the firmware. the
+>> people pushing for having the option of building the firmware into the module
+>> are acknowleding that this may use a little more ram, but they see it as being
+>> more reliable.
+>
+> I'm just saying that it's a totally bogus argument to claim that it takes
+> less memory - Either way.
+>
+> As to reliability, I don't buy that, especially with a generic interface,
+> and with a way to link the thing in-kernel anyway. Using common
+> infrastructure is going to be more reliable.
+>
+>>> I don't know why people get confused about this. I suspect that people
+>>> kind of expect that since they need to reload the firmware when resuming
+>>> the device, they should also do the "request_firmware()" at resume time.
+>>
+>> according to David W they would, becouse the driver would not keep the
+>> firmware in kernel memory after it's initialized
+>
+> And if so, David W is a total moran, and shouldn't have been doing this.
+>
+> The fact is, there _are_ good arguments for request_firmware(), but they
+> have nothing what-so-ever to do with memory use or anything like that.
+>
+> The argument for request_firmware() is that it's a good _single_ interface
+> to the whole firmware issue, allowing us to split up the driver from the
+> firmware without every driver having to do some hack of its own.
 
-In what way is it annoying?
+I don't think anyone objects to request_firmware() as a common interface. 
+they object to forcing the firmware to be seperate.
 
-Most distribution people aren't even aware that drivers like tg3 and
-bnx2 even have firmware.  In fact it's self contained and less for
-them to worry about.
+in the monolithic kernel case the people pushing this bowed to preasure 
+and improved request_firmware() so that the firmware could be embedded in 
+the kernel image as opposed to the initial approach of requireing an 
+initramfs.
 
-The correct firmware is right there in the driver, it's what the
-driver maintainer tested as a unit, and everything.
+Jeff and David M are arguing that it should be possible to also embed the 
+firmware into the module .ko file. If that option was available I don't 
+think there would be opposition to having the one interface. the lack of 
+that option is causing them to object and point out cases where it's not 
+as good as previously.
 
-It neither gets in the distro guys way nor causes any functional
-problems.
+David Lang
 
-It may cause potential legal issues, but that is another matter.
-
-> It's like having each wireless driver do their own 802.11 stack. It works, 
-> and all those driver writers seem to be always convinced that it's the 
-> right thing to do. But as a network maintainer, do you like it?
-> 
-> Now, replace "802.11 stack" with "firmware loader", and then replace 
-> "network maintainer" with "kernel maintainer".
-
-Distro folks do ship external drivers that have their own 802.11
-stack, so this is a very good example in fact :-)
-
-I think the modular vs. static kernel image is a better analogy.
-At least with that I have a real choice, with this stuff I suddently
-won't.
-
-Regardless of what you or I think about these changes, the fact is
-that there were definitely some areas of contention and even some
-level of misrepresentation of these changes.  And given that, some
-of us feel that merging this in right now was on the premature side.
+> Not memory use.
+>
+> So next time you see somebody arguing about memory use (either way), just
+> slap them, and tell them Linus told you to.
+>
+> 			Linus
+>
