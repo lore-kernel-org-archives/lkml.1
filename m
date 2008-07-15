@@ -1,102 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758004AbYGOODO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759668AbYGOOEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758004AbYGOODO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 10:03:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750866AbYGOOC6
+	id S1759668AbYGOOEQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 10:04:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750866AbYGOOED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 10:02:58 -0400
-Received: from casper.infradead.org ([85.118.1.10]:54600 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750814AbYGOOC6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 10:02:58 -0400
-Subject: Re: [patch 01/15] Kernel Tracepoints
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Paul E McKenney <paulmck@linux.vnet.ibm.com>
-In-Reply-To: <20080715132543.GB20037@Krystal>
-References: <20080709145929.352201601@polymtl.ca>
-	 <20080709150043.693920317@polymtl.ca> <1216108237.12595.122.camel@twins>
-	 <20080715132543.GB20037@Krystal>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 16:03:13 +0200
-Message-Id: <1216130593.12595.189.camel@twins>
+	Tue, 15 Jul 2008 10:04:03 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:47987 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750814AbYGOOEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 10:04:01 -0400
+Date: Tue, 15 Jul 2008 18:07:15 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] coredump: kill mm->core_done
+Message-ID: <20080715140715.GA25824@tv-sign.ru>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-15 at 09:25 -0400, Mathieu Desnoyers wrote:
-> * Peter Zijlstra (peterz@infradead.org) wrote:
-> > On Wed, 2008-07-09 at 10:59 -0400, Mathieu Desnoyers wrote:
+Now that we have core_state->dumper list we can use it to wake up the
+sub-threads waiting for the coredump completion.
 
-> > > +#define __DO_TRACE(tp, proto, args)					\
-> > > +	do {								\
-> > > +		int i;							\
-> > > +		void **funcs;						\
-> > > +		preempt_disable();					\
-> > > +		funcs = (tp)->funcs;					\
-> > > +		smp_read_barrier_depends();				\
-> > > +		if (funcs) {						\
-> > > +			for (i = 0; funcs[i]; i++) {			\
-> > 
-> > Also, why is the preempt_disable needed?
-> > 
-> 
-> Addition and removal of tracepoints is synchronized by RCU using the
-> scheduler (and preempt_disable) as guarantees to find a quiescent state
-> (this is really RCU "classic"). The update side uses rcu_barrier_sched()
-> with call_rcu_sched() and the read/execute side uses
-> "preempt_disable()/preempt_enable()".
+This uglifies the code and .text grows by 47 bytes, but otoh mm_struct
+lessens by sizeof(struct completion). Also, with this change we can
+decouple exit_mm() from the coredumping code.
 
-> > > +static void tracepoint_entry_free_old(struct tracepoint_entry *entry, void *old)
-> > > +{
-> > > +	if (!old)
-> > > +		return;
-> > > +	entry->oldptr = old;
-> > > +	entry->rcu_pending = 1;
-> > > +	/* write rcu_pending before calling the RCU callback */
-> > > +	smp_wmb();
-> > > +#ifdef CONFIG_PREEMPT_RCU
-> > > +	synchronize_sched();	/* Until we have the call_rcu_sched() */
-> > > +#endif
-> > 
-> > Does this have something to do with the preempt_disable above?
-> > 
-> 
-> Yes, it does. We make sure the previous array containing probes, which
-> has been scheduled for deletion by the rcu callback, is indeed freed
-> before we proceed to the next update. It therefore limits the rate of
-> modification of a single tracepoint to one update per RCU period. The
-> objective here is to permit fast batch add/removal of probes on
-> _different_ tracepoints.
-> 
-> This use of "synchronize_sched()" can be changed for call_rcu_sched() in
-> linux-next, I'll fix this.
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-Right, I thought as much, its just that the raw preempt_disable()
-without comments leaves one wondering if there is anything else going
-on.
+ include/linux/mm_types.h |    4 +---
+ kernel/exit.c            |    8 +++++++-
+ fs/exec.c                |   25 ++++++++++++++++++++++---
+ 3 files changed, 30 insertions(+), 7 deletions(-)
 
-Would it make sense to add:
-
-rcu_read_sched_lock()
-rcu_read_sched_unlock()
-
-to match:
-
-call_rcu_sched()
-rcu_barrier_sched()
-synchronize_sched()
-
-?
+--- 26-rc2/include/linux/mm_types.h~5_KILL_CORE_DONE	2008-07-13 18:28:36.000000000 +0400
++++ 26-rc2/include/linux/mm_types.h	2008-07-15 17:06:58.000000000 +0400
+@@ -229,9 +229,7 @@ struct mm_struct {
+ 
+ 	unsigned long flags; /* Must use atomic bitops to access the bits */
+ 
+-	/* coredumping support */
+-	struct core_state *core_state;
+-	struct completion core_done;
++	struct core_state *core_state; /* coredumping support */
+ 
+ 	/* aio bits */
+ 	rwlock_t		ioctx_list_lock;	/* aio lock */
+--- 26-rc2/kernel/exit.c~5_KILL_CORE_DONE	2008-07-13 19:58:19.000000000 +0400
++++ 26-rc2/kernel/exit.c	2008-07-15 17:06:58.000000000 +0400
+@@ -680,7 +680,13 @@ static void exit_mm(struct task_struct *
+ 		if (atomic_dec_and_test(&core_state->nr_threads))
+ 			complete(&core_state->startup);
+ 
+-		wait_for_completion(&mm->core_done);
++		for (;;) {
++			set_task_state(tsk, TASK_UNINTERRUPTIBLE);
++			if (!self.task) /* see coredump_finish() */
++				break;
++			schedule();
++		}
++		__set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+ 		down_read(&mm->mmap_sem);
+ 	}
+ 	atomic_inc(&mm->mm_count);
+--- 26-rc2/fs/exec.c~5_KILL_CORE_DONE	2008-07-13 18:43:39.000000000 +0400
++++ 26-rc2/fs/exec.c	2008-07-15 17:54:45.000000000 +0400
+@@ -1597,7 +1597,6 @@ static int coredump_wait(int exit_code, 
+ 	struct completion *vfork_done;
+ 	int core_waiters;
+ 
+-	init_completion(&mm->core_done);
+ 	init_completion(&core_state->startup);
+ 	core_state->dumper.task = tsk;
+ 	core_state->dumper.next = NULL;
+@@ -1623,6 +1622,27 @@ fail:
+ 	return core_waiters;
+ }
+ 
++static void coredump_finish(struct mm_struct *mm)
++{
++	struct core_thread *curr, *next;
++	struct task_struct *task;
++
++	next = mm->core_state->dumper.next;
++	while ((curr = next) != NULL) {
++		next = curr->next;
++		task = curr->task;
++		/*
++		 * see exit_mm(), curr->task must not see
++		 * ->task == NULL before we read ->next.
++		 */
++		smp_mb();
++		curr->task = NULL;
++		wake_up_process(task);
++	}
++
++	mm->core_state = NULL;
++}
++
+ /*
+  * set_dumpable converts traditional three-value dumpable to two flags and
+  * stores them into mm->flags.  It modifies lower two bits of mm->flags, but
+@@ -1807,8 +1827,7 @@ fail_unlock:
+ 		argv_free(helper_argv);
+ 
+ 	current->fsuid = fsuid;
+-	complete_all(&mm->core_done);
+-	mm->core_state = NULL;
++	coredump_finish(mm);
+ fail:
+ 	return retval;
+ }
 
