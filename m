@@ -1,93 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758186AbYGODzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761159AbYGOD4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758186AbYGODzS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 23:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbYGODzG
+	id S1761159AbYGOD4k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 23:56:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754201AbYGOD4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 23:55:06 -0400
-Received: from mail.lang.hm ([64.81.33.126]:44048 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754523AbYGODzE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 23:55:04 -0400
-Date: Mon, 14 Jul 2008 20:55:59 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard
+	Mon, 14 Jul 2008 23:56:32 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:34152 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754086AbYGOD4b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 23:56:31 -0400
 To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Stoyan Gaydarov <stoyboyker@gmail.com>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, gorcunov@gmail.com,
-       akpm@linux-foundation.org, mingo@elte.hu
-Subject: Re: From 2.4 to 2.6 to 2.7?
-In-Reply-To: <alpine.LFD.1.10.0807141939410.3017@woody.linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0807142048260.6370@asgard>
-References: <6d291e080807141910m573b29b2t753ea7c4db09902d@mail.gmail.com>  <alpine.LFD.1.10.0807141914280.3017@woody.linux-foundation.org> <6d291e080807141931g3080c94cic94f503c1a18523b@mail.gmail.com>
- <alpine.LFD.1.10.0807141939410.3017@woody.linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] ext4 bugfixes
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1KIbeO-0001yQ-N4@closure.thunk.org>
+Date: Mon, 14 Jul 2008 23:56:28 -0400
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Jul 2008, Linus Torvalds wrote:
+Hi Linus,
 
->> Does it have to be even numbers only?
->
-> No. But the even/odd thing is still so fresh in peoples memory (despite us
-> not having used it for years), and I think some projects aped us on it, so
-> if I didn't change the numbering setup, but just wanted to reset the minor
-> number, I'd probably jump from 2.6 to 2.8 just for historical reasons.
->
-> But I could also see the second number as being the "year", and 2008 would
-> get 2.8, and then next year I'd make the first release of 2009 be 2.9.1
-> (and probably avoid the ".0" just because it again has the connotations of
-> a "big new untested release", which is not true in a date-based numbering
-> scheme). And then 2010 would be 3.0.1 etc..
+Please pull from:
 
-Ok, I'll jump in.
+        git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
 
-I don't have strong feelings either, but I do have comments
+This patch series contains a whole series of cleanups saved up since the
+last merge window, plus delayed allocation for ext4.
 
-1. for the historical reasons you allude to above going to a completely 
-different numbering system would be a nice thing
+Thanks!!
 
-2. I do like involving the year, but I think 2008/2009/2010 are much 
-clearer then 2.8/2.9/3.0 let people shorten it verbally, but still realize 
-that it's a full year being referred to.
+						- Ted
 
-3. avoid using the month of the release (which ubuntu does), first you 
-aren't going to predict the month of relese ahead of time (so what will 
-the -rc's be called, the year is fairly clear and it's not _that_ bad if 
-2008.4 happens to come out in Jan 2009). also too many people don't 
-understand that 8.10 is between 8.9 and 8.11, not between 8.0 and 8.2
+Akinobu Mita (1):
+      ext4: fix ext4_init_block_bitmap() for metablock block group
 
-so my prefrence (mild as it is) goes to YYYY.r.s (r=release, s=stable)
+Alex Tomas (2):
+      vfs: add hooks for ext4's delayed allocation support
+      ext4: Add delayed allocation support in data=writeback mode
 
-David Lang
+Alexey Dobriyan (1):
+      ext4: switch to seq_files
 
-> Anyway, I have to say that I personally don't have any hugely strong
-> opinions on the numbering. I suspect others do, though, and I'm almost
-> certain that this is an absolutely _perfect_ "bikeshed-painting" subject
-> where thousands of people will be very passionate and send me their
-> opinions on why _their_ particular shed color is so much better.
->
-> The only thing I do know is that I agree that "big meaningless numbers"
-> are bad. "26" is already pretty big. As you point out, the 2.4.x series
-> has much bigger numbers yet.
->
-> And yes, something like "2008" is obviously numerically bigger, but has a
-> direct meaning and as such is possibly better than something arbitrary and
-> non-descriptive like "26".
->
-> Let the bike-shed-painting begin.
->
-> (I had planned on taking this up at the kernel summit, where the shed
-> painting is at least limited to a much smaller audience, but since you
-> asked..)
->
-> 			Linus
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Aneesh Kumar K.V (12):
+      ext4: Fix mb_find_next_bit not to return larger than max
+      ext4: start searching for the right extent from the goal group.
+      ext4: Update i_disksize properly when allocating from fallocate area.
+      ext4: Fix sparse warning
+      ext4: Use inode preallocation with -o noextents
+      ext4: cleanup block allocator
+      ext4: Use page_mkwrite vma_operations to get mmap write notification.
+      mm: Add range_cont mode for writeback
+      ext4: Add ordered mode support for delalloc
+      ext4: Handle page without buffers in ext4_*_writepage()
+      ext4: Enable delalloc by default.
+      ext4: Don't allow nonextenst mount option for large filesystem
+
+Duane Griffin (3):
+      ext4: handle corrupted orphan list at mount
+      ext4: handle deleting corrupted indirect blocks
+      ext4: validate directory entry data before use
+
+Eric Sandeen (3):
+      ext4: call blkdev_issue_flush on fsync
+      ext4: use atomic functions to set bh_state
+      ext4: do not set extents feature from the kernel
+
+Frederic Bohe (1):
+      ext4: fix online resize with mballoc
+
+Jan Kara (8):
+      ext4: Set journal pointer to NULL when journal is released
+      vfs: Move mark_inode_dirty() from under page lock in generic_write_end()
+      ext4: Invert the locking order of page_lock and transaction start
+      ext4: Fix lock inversion in ext4_ext_truncate()
+      vfs: export filemap_fdatawrite_range()
+      jbd2: Implement data=ordered mode handling via inodes
+      ext4: Use new framework for data=ordered mode in JBD2
+      jbd2: Remove data=ordered mode support using jbd buffer heads
+
+Jose R. Santos (2):
+      ext4: New inode allocation for FLEX_BG meta-data groups.
+      ext4: Documentation updates.
+
+Julia Lawall (1):
+      ext4: Use BUG_ON() instead of BUG()
+
+Li Zefan (3):
+      ext4: fix build failure if DX_DEBUG is enabled
+      ext4: remove redundant code in ext4_fill_super()
+      ext4: cleanup never-used magic numbers from htree code
+
+Mingming Cao (9):
+      ext4: Fix ext4_mb_init_cache return error
+      jbd2: fix race between jbd2_journal_try_to_free_buffers() and jbd2 commit transaction
+      ext4: mballoc avoid use root reserved blocks for non root allocation
+      percpu_counter: new function percpu_counter_sum_and_set
+      ext4: delayed allocation ENOSPC handling
+      ext4: Invert lock ordering of page_lock and transaction start in delalloc
+      ext4: fix delalloc i_disksize early update issue
+      ext4: delayed allocation i_blocks fix for stat
+      ext4: Documention update for new ordered mode and delayed allocation
+
+Shen Feng (11):
+      ext4: fix comments to say "ext4"
+      ext4: improve some code in rb tree part of dir.c
+      ext4: add error processing when calling ext4_mb_init_cache in mballoc
+      ext4: miscellaneous error checks and coding cleanups for mballoc
+      ext4: remove double definitions of xattr macros
+      ext4: error proc entry creation when the fs/ext4 is not correctly created
+      ext4: fix error processing in mb_free_blocks
+      ext4: remove quota allocation when ext4_mb_new_blocks fails
+      ext4: return error when calling ext4_ext_split failed
+      ext4: Make ext4_ext_find_extent fills ext_path completely
+      ext4: Fix ext4_ext_journal_restart() to reflect errors up to the caller
+
+Stoyan Gaydarov (1):
+      ext4: replace __FUNCTION__ occurrences
+
+Theodore Ts'o (3):
+      ext4: Rename read_block_bitmap() to ext4_read_block_bitmap()
+      ext4: Remove unused variable from ext4_show_options
+      jbd2: Add commit time into the commit block
+
+ Documentation/filesystems/ext4.txt |  125 ++--
+ fs/buffer.c                        |   19 +-
+ fs/ext4/balloc.c                   |  209 ++++--
+ fs/ext4/dir.c                      |   17 +-
+ fs/ext4/ext4.h                     |   61 ++-
+ fs/ext4/ext4_extents.h             |    1 +
+ fs/ext4/ext4_i.h                   |   10 +-
+ fs/ext4/ext4_jbd2.h                |   21 +-
+ fs/ext4/ext4_sb.h                  |    5 +-
+ fs/ext4/extents.c                  |  111 ++-
+ fs/ext4/file.c                     |   20 +-
+ fs/ext4/fsync.c                    |    4 +
+ fs/ext4/group.h                    |    2 +-
+ fs/ext4/ialloc.c                   |  113 +++-
+ fs/ext4/inode.c                    | 1591 ++++++++++++++++++++++++++++++------
+ fs/ext4/mballoc.c                  |  451 +++++++---
+ fs/ext4/namei.c                    |   45 +-
+ fs/ext4/resize.c                   |   52 ++-
+ fs/ext4/super.c                    |  142 +++-
+ fs/ext4/xattr.c                    |    2 +-
+ fs/ext4/xattr_trusted.c            |    4 +-
+ fs/ext4/xattr_user.c               |    4 +-
+ fs/jbd2/checkpoint.c               |    1 -
+ fs/jbd2/commit.c                   |  294 +++-----
+ fs/jbd2/journal.c                  |   53 ++-
+ fs/jbd2/transaction.c              |  365 ++++-----
+ fs/mpage.c                         |   14 +-
+ include/linux/fs.h                 |    2 +
+ include/linux/jbd2.h               |   73 ++-
+ include/linux/mpage.h              |   10 +
+ include/linux/percpu_counter.h     |   12 +-
+ include/linux/writeback.h          |    1 +
+ lib/percpu_counter.c               |    7 +-
+ mm/filemap.c                       |    3 +-
+ mm/page-writeback.c                |    3 +
+ 35 files changed, 2805 insertions(+), 1042 deletions(-)
