@@ -1,65 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761539AbYGOCSb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761371AbYGOCSN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761539AbYGOCSb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 22:18:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761357AbYGOCRj
+	id S1761371AbYGOCSN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 22:18:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756586AbYGOCR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 22:17:39 -0400
-Received: from SpacedOut.fries.net ([67.64.210.234]:56249 "EHLO
-	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761310AbYGOCRi (ORCPT
+	Mon, 14 Jul 2008 22:17:28 -0400
+Received: from cnrelay03.alcatel-sbell.com.cn ([211.144.215.19]:46445 "EHLO
+	mail.alcatel-sbell.com.cn" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756037AbYGOCR1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 22:17:38 -0400
-Date: Mon, 14 Jul 2008 21:16:56 -0500
-From: David Fries <david@fries.net>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 29/30] W1: Documentation/w1/masters/ds2490 update
-Message-ID: <20080715021656.GQ5621@spacedout.fries.net>
-References: <12157843054074-git-send-email-johnpol@2ka.mipt.ru> <12157843071043-git-send-email-johnpol@2ka.mipt.ru> <20080714134002.e5dfaaae.randy.dunlap@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080714134002.e5dfaaae.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.4i
-X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Mon, 14 Jul 2008 21:17:03 -0500 (CDT)
+	Mon, 14 Jul 2008 22:17:27 -0400
+Message-ID: <487C08B6.5000301@alcatel-lucent.com>
+Date: Tue, 15 Jul 2008 10:17:26 +0800
+From: gshan <gshan@alcatel-lucent.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: DMA timeout on PIIX4
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Jul 2008 02:17:22.0892 (UTC) 
+	FILETIME=[EA9340C0:01C8E620]
+X-imss-version: 2.051
+X-imss-result: Passed
+X-imss-scores: Clean:0.79253 C:2 M:3 S:5 R:5
+X-imss-settings: Baseline:2 C:1 M:1 S:1 R:1 (0.1500 0.1500)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 14, 2008 at 01:40:02PM -0700, Randy Dunlap wrote:
-> > +- The number of USB bus transactions could be reduced if w1_reset_send
-> > +  was added to the API.  The name is just a suggestion.  It would take
-> > +  a write buffer and a read buffer (along with sizes) as arguments.
-> > +  It would add match rom and rom to the send buffer, reset the bus,
->                   ~~~~~~~~~~~~~~~~~
-> Can you clarify above?
+Hello, There has one PIIX4 IDE controller on my board. When I uncompressed
+a large tar file (almost 1.7GB) from one partition to another one, following
+errors were reported at middle way. Was it really caused by "lost 
+interrupt"?
+It means target didn't make response to master who initialized DMA request?
 
-I re-wrote the paragraph.  In the one wire protocol a bus reset is
-followed by a one byte command, in this case match rom which tells all
-the devices on the bus to expect an 8byte rom (slave device id) and
-only the slave device that matches the rom is to respond to the
-following message.  I was assuming people reading it would be familiar
-with the one wire bus protocol.  Do you have any of the one wire
-hardware?
+hdc: dma_timer_expiry: dma status == 0x24
+hdc: DMA interrupt recovery
+hdc: lost interrupt
 
-- The number of USB bus transactions could be reduced if w1_reset_send
-  was added to the API.  The name is just a suggestion.  It would take
-  a write buffer and a read buffer (along with sizes) as arguments.
-  The ds2490 block I/O command supports reset, write buffer, read
-  buffer, and strong pullup all in one command, instead of the current
-  1 reset bus, 2 write the match rom command and slave rom id, 3 block
-  write and read data.  The write buffer needs to have the match rom
-  command and slave rom id prepended to the front of the requested
-  write buffer, both of which are known to the driver.  
-
-The next paragraph was removed, I decided that listing the commands
-giong from three to one was enough, I didn't need to count all the USB
-bus transactions.
-
-I'll send the patch again in the next e-mail.
-
--- 
-David Fries <david@fries.net>
-http://fries.net/~david/ (PGP encryption key available)
