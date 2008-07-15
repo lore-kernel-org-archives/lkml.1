@@ -1,81 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757700AbYGOXJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757966AbYGOXKc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757700AbYGOXJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 19:09:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753586AbYGOXJr
+	id S1757966AbYGOXKc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 19:10:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754919AbYGOXKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 19:09:47 -0400
-Received: from wx-out-0506.google.com ([66.249.82.236]:62096 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752819AbYGOXJr (ORCPT
+	Tue, 15 Jul 2008 19:10:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38619 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753586AbYGOXKV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 19:09:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=NJXyM63iC+hNuu0KmylqcwPwo/QI08vv26rGKcfRlt9XdzKlUrL1RqkJPUcrmOJmfv
-         qFzBRaYOREdjVXJJXDfN82Rpgen8GReT7jz5xwJatSV83Sd6HY97xHEINIgQNS0GTOEE
-         IXUmJa5HER1MhuMWhsbBxbl5OMjikpYXoCTMU=
-Message-ID: <3aa654a40807151609m70d6852ex7f85d60c438bb4d7@mail.gmail.com>
-Date: Tue, 15 Jul 2008 16:09:46 -0700
-From: "Avuton Olrich" <avuton@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: s2disk: system powers up again after power off
-Cc: "Martin Michlmayr" <tbm@cyrius.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <200807160059.54886.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 15 Jul 2008 19:10:21 -0400
+Date: Tue, 15 Jul 2008 16:08:58 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: jbaron@redhat.com, linux-kernel@vger.kernel.org, joe@perches.com,
+       greg@kroah.com, nick@nick-andrew.net, randy.dunlap@oracle.com
+Subject: Re: [PATCH 2/7] dynamic debug v2 - nfs conversion
+Message-Id: <20080715160858.c70a54aa.akpm@linux-foundation.org>
+In-Reply-To: <1216162567.7981.82.camel@localhost>
+References: <20080715213241.GC23331@redhat.com>
+	<1216161003.7981.73.camel@localhost>
+	<20080715154323.b7d5f14d.akpm@linux-foundation.org>
+	<1216162567.7981.82.camel@localhost>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080715124733.GA4111@deprecation.cyrius.com>
-	 <200807152224.19559.rjw@sisk.pl>
-	 <3aa654a40807151548t485ea8e6k1d7e261277c1c5aa@mail.gmail.com>
-	 <200807160059.54886.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 3:59 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Wednesday, 16 of July 2008, Avuton Olrich wrote:
->> On Tue, Jul 15, 2008 at 1:24 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > On Tuesday, 15 of July 2008, Avuton Olrich wrote:
->> >> On Tue, Jul 15, 2008 at 5:47 AM, Martin Michlmayr <tbm@cyrius.com> wrote:
->> >> > When I use s2disk to suspend my HP 2510p notebook, it writes
->> >> > everything to disk, and powers off... but after 2-3 seconds it often
->> >> > powers on again.  This doesn't happen all the time but quite
->> >> > frequently (definitely in the majority of cases).
->> >> >
->> >> > I believe I've never seen this when I use "halt" to power off the
->> >> > machine (but I don't use halt very often).
->> >> >
->> >> > Any idea?
->> >>
->> >> Ugh, this happens here too, this started occuring before 2.6.25 but
->> >> every time I try to bisect it takes hours and I end up screwing up
->> >> somewhere along the way, so I haven't had time to bisect this
->> >> correctly.
->> >
->> > Please try to put "shutdown method = shutdown" into the s2disk's configuration
->> > file and see what happens in that case.
->>
->> Anything a little less fancy? I use pm-hibernate, or gnome's Power
->> Manager to hibernate; I don't even have s2disk installed, sorry I
->> should have mentioned that.
->
-> Martin mentioned s2disk in his original post.  Never mind.
->
-> Please try to do "echo shutdown > /sys/power/disk" before hibernation and
-> see what happens.
+On Tue, 15 Jul 2008 18:56:07 -0400
+Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
 
-Well, that certainly works (powers off as expected). Should I be
-putting this in my startup scripts or is there something I need to do
-to help fix this problem, kernel-wise?
+> On Tue, 2008-07-15 at 15:43 -0700, Andrew Morton wrote:
+> > On Tue, 15 Jul 2008 18:30:03 -0400
+> > Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> > 
+> > > On Tue, 2008-07-15 at 17:32 -0400, Jason Baron wrote:
+> > > > -convert sunrpc debug facility
+> > > > 
+> > > > Signed-off-by: Jason Baron <jbaron@redhat.com>
+> > > > 
+> > > 
+> > > Where the hell did this come from, what's its purpose, and WTF haven't
+> > > you Cced linux-nfs@vger.kernel.org so that the rest of us can review it?
+> > 
+> > It's on linux-kernel.  If you don't have a linux-kernel subscription
+> > then you should fix that.  Set up a procmail rule and do a
+> > search-by-subject when needed.
+> 
+> I get my daily share of 1000-odd mails from linux-kernel, thanks, but
+> 99% of that goes into the trashcan. I only keep a mail if I see that
+> it's relevant.
 
-Thanks!
--- 
-avuton
---
- "I've got a fever. And the only prescription is more cowbell." --
-Christopher Walken
+Well stop doing that then.  Use procmail to assemble a local
+linux-kernel archive and retain the last month or three's worth of
+traffic.  This is trivial to set up and is pretty much essential
+practice for a kernel subsystem maintainer such as yourself.
+
+> In this case, 1 email out of 7 turns out to be relevant
+> (after I inadvertently deleted the apparently crucial first 2 emails),
+> and there is no changelog entry to tell me what's being done or why.
+> 
+> By Ccing the correct list, we at least get a heads-up that this thread
+> might be important. I can't archive all of lkml on my laptop, but I can
+> and do archive all of linux-nfs...
+
+lkml is a mere 100MB/month.  Sorry, but you and others who are
+operating at your level should really just do this.
+
+Yes, it would be _better_ had Jason done the cc's perfectly, but as I
+said before, that is most uncommon.
+
+The main downside from what he did is that while it is reasonable to
+assume that all top-level maintainers have a local lkml archive, it
+is not reasonable to assume that _all_ interested-in-nfs individuals
+have one as well.
+
+But at least he copied _something_ to the right list.  That puts him
+ahead of half the pack.
+
+> > In this case, yes, it would have been nice if Jason had cc'ed lots of
+> > different lists and individuals on the core patch and then selectively
+> > cc'ed lists and individuals on the per-subsystem followup patches.  But
+> > I doubt if even 2% of patch submitters manage to do all that correctly.
+> 
+> The point is that he is changing a semi-official interface for tracing
+> the NFS kernel activity from userspace. I'd like to know why and how it
+> is being modified before I can ack it.
+> 
+> In addition there are several other developers who have a daily interest
+> in using this interface when helping our users, and who might have
+> comments.
+
+Sure.
+
+What Jason is brewing up here is pretty major and ambitious revamp of
+our current horridly-ad-hoc kernel debugging practices.  Look at this
+piece of horror:
+
+akpm:/usr/src/25> grep '^dprintk' Tags | wc -l
+206
+
+(I mean: wtf?)
+
+So yeah, it will be traumatic and intrusive and a bit risky and will
+require input and perhaps assistance from many developers.  But if we
+can pull this off, the long-term benefits will be appreciable.
+
