@@ -1,126 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757680AbYGOX72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754948AbYGOX7m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757680AbYGOX72 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 19:59:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754748AbYGOX7E
+	id S1754948AbYGOX7m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 19:59:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755091AbYGOX7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 19:59:04 -0400
-Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:59151 "EHLO
+	Tue, 15 Jul 2008 19:59:08 -0400
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:33842 "EHLO
 	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754647AbYGOX7D (ORCPT
+	with ESMTP id S1754945AbYGOX7G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 19:59:03 -0400
+	Tue, 15 Jul 2008 19:59:06 -0400
 From: Nathan Lynch <ntl@pobox.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, roland@redhat.com
-Subject: [PATCH] elf loader support for auxvec base platform string
-Date: Tue, 15 Jul 2008 18:58:50 -0500
-Message-Id: <1216166331-14810-2-git-send-email-ntl@pobox.com>
+Subject: [PATCH] enable AT_BASE_PLATFORM aux vector for powerpc
+Date: Tue, 15 Jul 2008 18:58:51 -0500
+Message-Id: <1216166331-14810-3-git-send-email-ntl@pobox.com>
 X-Mailer: git-send-email 1.5.5
 In-Reply-To: <1216166331-14810-1-git-send-email-ntl@pobox.com>
 References: <1216166331-14810-1-git-send-email-ntl@pobox.com>
-X-Pobox-Relay-ID: FFC65E6C-52C9-11DD-9547-3113EBD4C077-04752483!a-sasl-quonix.pobox.com
+X-Pobox-Relay-ID: 0227017A-52CA-11DD-9C36-CE28B26B55AE-04752483!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some IBM POWER-based platforms have the ability to run in a
-mode which mostly appears to the OS as a different processor from the
-actual hardware.  For example, a Power6 system may appear to be a
-Power5+, which makes the AT_PLATFORM value "power5+".  This means that
-programs are restricted to the ISA supported by Power5+;
-Power6-specific instructions are treated as illegal.
-
-However, some applications (virtual machines, optimized libraries) can
-benefit from knowledge of the underlying CPU model.  A new aux vector
-entry, AT_BASE_PLATFORM, will denote the actual hardware.  For
-example, on a Power6 system in Power5+ compatibility mode, AT_PLATFORM
-will be "power5+" and AT_BASE_PLATFORM will be "power6".  The idea is
-that AT_PLATFORM indicates the instruction set supported, while
-AT_BASE_PLATFORM indicates the underlying microarchitecture.
-
-If the architecture has defined ELF_BASE_PLATFORM, copy that value to
-the user stack in the same manner as ELF_PLATFORM.
+Stash the first platform string matched by identify_cpu() in
+powerpc_base_platform, and supply that to the ELF loader for the value
+of AT_BASE_PLATFORM.
 
 Signed-off-by: Nathan Lynch <ntl@pobox.com>
 ---
- fs/binfmt_elf.c        |   23 +++++++++++++++++++++++
- include/linux/auxvec.h |    5 ++++-
- 2 files changed, 27 insertions(+), 1 deletions(-)
+ arch/powerpc/kernel/cputable.c |   11 +++++++++++
+ include/asm-powerpc/cputable.h |    2 ++
+ include/asm-powerpc/elf.h      |    8 ++++++++
+ 3 files changed, 21 insertions(+), 0 deletions(-)
 
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index d48ff5f..834c2c4 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -131,6 +131,10 @@ static int padzero(unsigned long elf_bss)
- #define STACK_ALLOC(sp, len) ({ sp -= len ; sp; })
- #endif
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index f7f3c21..89d8731 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -23,6 +23,9 @@
+ struct cpu_spec* cur_cpu_spec = NULL;
+ EXPORT_SYMBOL(cur_cpu_spec);
  
-+#ifndef ELF_BASE_PLATFORM
-+#define ELF_BASE_PLATFORM NULL
-+#endif
++/* The platform string corresponding to the real PVR */
++const char *powerpc_base_platform;
 +
- static int
- create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
- 		unsigned long load_addr, unsigned long interp_load_addr)
-@@ -142,7 +146,9 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
- 	elf_addr_t __user *envp;
- 	elf_addr_t __user *sp;
- 	elf_addr_t __user *u_platform;
-+	elf_addr_t __user *u_base_platform;
- 	const char *k_platform = ELF_PLATFORM;
-+	const char *k_base_platform = ELF_BASE_PLATFORM;
- 	int items;
- 	elf_addr_t *elf_info;
- 	int ei_index = 0;
-@@ -172,6 +178,19 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
- 			return -EFAULT;
- 	}
- 
-+	/*
-+	 * If this architecture has a "base" platform capability
-+	 * string, copy it to userspace.
-+	 */
-+	u_base_platform = NULL;
-+	if (k_base_platform) {
-+		size_t len = strlen(k_base_platform) + 1;
+ /* NOTE:
+  * Unlike ppc32, ppc64 will only call this once for the boot CPU, it's
+  * the responsibility of the appropriate CPU save/restore functions to
+@@ -1632,6 +1635,14 @@ struct cpu_spec * __init identify_cpu(unsigned long offset, unsigned int pvr)
+ 			} else
+ 				*t = *s;
+ 			*PTRRELOC(&cur_cpu_spec) = &the_cpu_spec;
 +
-+		u_base_platform = (elf_addr_t __user *)STACK_ALLOC(p, len);
-+		if (__copy_to_user(u_base_platform, k_base_platform, len))
-+			return -EFAULT;
-+	}
++			/*
++			 * Set the base platform string once; assumes
++			 * we're called with real pvr first.
++			 */
++			if (powerpc_base_platform == NULL)
++				powerpc_base_platform = t->platform;
 +
- 	/* Create the ELF interpreter info */
- 	elf_info = (elf_addr_t *)current->mm->saved_auxv;
- 	/* update AT_VECTOR_SIZE_BASE if the number of NEW_AUX_ENT() changes */
-@@ -208,6 +227,10 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
- 		NEW_AUX_ENT(AT_PLATFORM,
- 			    (elf_addr_t)(unsigned long)u_platform);
- 	}
-+	if (k_base_platform) {
-+		NEW_AUX_ENT(AT_BASE_PLATFORM,
-+			    (elf_addr_t)(unsigned long)u_base_platform);
-+	}
- 	if (bprm->interp_flags & BINPRM_FLAGS_EXECFD) {
- 		NEW_AUX_ENT(AT_EXECFD, bprm->interp_data);
- 	}
-diff --git a/include/linux/auxvec.h b/include/linux/auxvec.h
-index ad89545..1adc61d 100644
---- a/include/linux/auxvec.h
-+++ b/include/linux/auxvec.h
-@@ -26,8 +26,11 @@
+ #if defined(CONFIG_PPC64) || defined(CONFIG_BOOKE)
+ 			/* ppc64 and booke expect identify_cpu to also call
+ 			 * setup_cpu for that processor. I will consolidate
+diff --git a/include/asm-powerpc/cputable.h b/include/asm-powerpc/cputable.h
+index 2a3e907..ef8a248 100644
+--- a/include/asm-powerpc/cputable.h
++++ b/include/asm-powerpc/cputable.h
+@@ -127,6 +127,8 @@ extern struct cpu_spec *identify_cpu(unsigned long offset, unsigned int pvr);
+ extern void do_feature_fixups(unsigned long value, void *fixup_start,
+ 			      void *fixup_end);
  
- #define AT_SECURE 23   /* secure mode boolean */
- 
-+#define AT_BASE_PLATFORM 38	/* string identifying real platform, may
-+				 * differ from AT_PLATFORM. */
++extern const char *powerpc_base_platform;
 +
- #ifdef __KERNEL__
--#define AT_VECTOR_SIZE_BASE (14 + 2) /* NEW_AUX_ENT entries in auxiliary table */
-+#define AT_VECTOR_SIZE_BASE (14 + 3) /* NEW_AUX_ENT entries in auxiliary table */
- #endif
+ #endif /* __ASSEMBLY__ */
  
- #endif /* _LINUX_AUXVEC_H */
+ /* CPU kernel features */
+diff --git a/include/asm-powerpc/elf.h b/include/asm-powerpc/elf.h
+index 8966467..80d1f39 100644
+--- a/include/asm-powerpc/elf.h
++++ b/include/asm-powerpc/elf.h
+@@ -217,6 +217,14 @@ typedef elf_vrregset_t elf_fpxregset_t;
+ 
+ #define ELF_PLATFORM	(cur_cpu_spec->platform)
+ 
++/* While ELF_PLATFORM indicates the ISA supported by the platform, it
++ * may not accurately reflect the underlying behavior of the hardware
++ * (as in the case of running in Power5+ compatibility mode on a
++ * Power6 machine).  ELF_BASE_PLATFORM allows ld.so to load libraries
++ * that are tuned for the real hardware.
++ */
++#define ELF_BASE_PLATFORM (powerpc_base_platform)
++
+ #ifdef __powerpc64__
+ # define ELF_PLAT_INIT(_r, load_addr)	do {	\
+ 	_r->gpr[2] = load_addr; 		\
 -- 
 1.5.6.2
 
