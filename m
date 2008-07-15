@@ -1,76 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755352AbYGOE7m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbYGOFDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755352AbYGOE7m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 00:59:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbYGOE7e
+	id S1754848AbYGOFDp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 01:03:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670AbYGOFDi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 00:59:34 -0400
-Received: from 1wt.eu ([62.212.114.60]:3969 "EHLO 1wt.eu"
+	Tue, 15 Jul 2008 01:03:38 -0400
+Received: from ozlabs.org ([203.10.76.45]:38564 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751465AbYGOE7d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 00:59:33 -0400
-Date: Tue, 15 Jul 2008 06:58:48 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, jeff@garzik.org, arjan@infradead.org,
-       akpm@linux-foundation.org, dwmw2@infradead.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel, use it in more drivers.
-Message-ID: <20080715045848.GG1369@1wt.eu>
-References: <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org> <487C09EB.1050903@garzik.org> <alpine.LFD.1.10.0807141928540.3017@woody.linux-foundation.org> <20080714.194032.117461306.davem@davemloft.net> <alpine.LFD.1.10.0807141947540.3017@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751490AbYGOFDh convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 01:03:37 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] x86: fix asm/e820.h for userspace inclusion (again)
+Date: Tue, 15 Jul 2008 15:02:27 +1000
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807141947540.3017@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.11
+Message-Id: <200807151502.27734.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 14, 2008 at 07:51:55PM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Mon, 14 Jul 2008, David Miller wrote:
-> > 
-> > Jeff's not against request_firmware() in an of itself.
-> > 
-> > He's against the fact that it's not possible to build a
-> > self-contained foo.ko module file any longer, and that
-> > would definitely be possible with using request_firmware().
-> 
-> .. but is it really that big of a deal?
-> 
-> If it were about not being able to build a self-contained non-modular 
-> "vmlinux", I'd be upset too.
-> 
-> But once you can load a module, you can load the firmware. You just have 
-> to _remember_ to move it along with the module.
+asm-x86/e820.h is included from userspace.  'x86: make e820.c to have
+common functions' (b79cd8f1268bab57ff85b19d131f7f23deab2dee) broke it:
 
-In order to transfer it, right now you feed it through a working device.
-When that device itself requires firmware to work, you will suddenly
-discover that it becomes harder and harder to get any communication device
-to work on your target system.
+	make -C Documentation/lguest
+	cc -Wall -Wmissing-declarations -Wmissing-prototypes -O3 -I../../include    
+lguest.c  -lz -o lguest
+	In file included from ../../include/asm-x86/bootparam.h:8,
+	                 from lguest.c:45:
+	../../include/asm/e820.h:66: error: expected ‘)’ before ‘start’
+	../../include/asm/e820.h:67: error: expected ‘)’ before ‘start’
+	../../include/asm/e820.h:68: error: expected ‘)’ before ‘start’
+	../../include/asm/e820.h:72: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ 
+or ‘__attribute__’ before ‘e820_update_range’
+	...
 
-Then, in order to load it, you need to have a properly set up system
-(hotplug scripts, firmware at the proper location, etc...). This is
-really not convenient on embedded systems or live CD systems. In fact,
-among all my machines, only my notebook is currently able to load a
-firmware.
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-Also, there's a versionning problem. It's easy to rename a driver
-"foo.ko" => "foo-1.ko" and just load the exact file or hold several
-versions there by simply moving a symlink. Having to fiddle around
-with firmware files depending on the driver version will get much
-harder.
-
-Also, when you're cleaning up a system after installation, how do
-you know which firmware files you need to keep and which ones you
-can safely remove ?
-
-Just like Jeff and Davem, I really want to be able to continue to
-use my drivers like I have done since modules were introduced.
-Switching a single-file to a multi-file/multi-dir installation would
-be a huge maintenance regression IMHO.
-
-Willy
-
+diff -r 0322ce52818b include/asm-x86/e820.h
+--- a/include/asm-x86/e820.h	Tue Jul 15 12:46:05 2008 +1000
++++ b/include/asm-x86/e820.h	Tue Jul 15 14:57:55 2008 +1000
+@@ -59,6 +59,7 @@ struct e820map {
+ 	struct e820entry map[E820_X_MAX];
+ };
+ 
++#ifdef __KERNEL__
+ /* see comment in arch/x86/kernel/e820.c */
+ extern struct e820map e820;
+ extern struct e820map e820_saved;
+@@ -115,7 +116,7 @@ extern char *default_machine_specific_me
+ extern char *default_machine_specific_memory_setup(void);
+ extern char *machine_specific_memory_setup(void);
+ extern char *memory_setup(void);
+-
++#endif /* __KERNEL__ */
+ #endif /* __ASSEMBLY__ */
+ 
+ #define ISA_START_ADDRESS	0xa0000
