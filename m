@@ -1,68 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753719AbYGOUv2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752155AbYGOUyO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753719AbYGOUv2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 16:51:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbYGOUvT
+	id S1752155AbYGOUyO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 16:54:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbYGOUx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 16:51:19 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:14193 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753320AbYGOUvS (ORCPT
+	Tue, 15 Jul 2008 16:53:59 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:54308 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752653AbYGOUx7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 16:51:18 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5339"; a="4736287"
-Message-ID: <487D0DC4.8090103@qualcomm.com>
-Date: Tue, 15 Jul 2008 13:51:16 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: mingo@elte.hu, pj@sgi.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl
-Subject: Re: [PATCH] cpuset: Make rebuild_sched_domains() usable from any
- context
-References: <1216122293-4888-1-git-send-email-maxk@qualcomm.com> <6599ad830807150914h152e3716n914dfa5e28288d28@mail.gmail.com>
-In-Reply-To: <6599ad830807150914h152e3716n914dfa5e28288d28@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Jul 2008 16:53:59 -0400
+Subject: scripts/mod/modpost.c: fix spelling of module and happens]
+Message-Id: <20080715205357.240969925@fluff.org.uk>
+User-Agent: quilt/0.46-1
+From: Ben Dooks <ben-linux@fluff.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ben Dooks <ben-linux@fluff.org>
+Content-Disposition: inline; filename=simtec/simtec-modpost-spello-fix.patch
+Date: Tue, 15 Jul 2008 21:53:57 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Tue, Jul 15, 2008 at 4:44 AM, Max Krasnyansky <maxk@qualcomm.com> wrote:
->> From: Max Krasnyanskiy <maxk@qualcomm.com>
->>
->> I do not really like the current solution of dropping cgroup lock
->> but it shows what I have in mind in general.
-> 
-> I think that dropping the cgroup lock will open up races for cpusets.
-> The idea of a separate workqueue/thread to do the sched domain
-> rebuilding is simplest.
+Spelling fixes in scripts/mod/modpost.c
 
-Actually I think we do not have to make it super strict "only rebuilt 
-from that thread rule". I'd only off-load cpuset_write64(), 
-update_flag() to the thread. It'd be nice to keep hotplug path clean 
-synchronous. It's synchronous without cpusets so there is really no good 
-reason when it needs to be async without them. And the toughest part is 
-not even hotplug where lock nesting is pretty clear
-get_online_cpus() ->
-	rebuild_sched_domains() ->
-		cgroup_lock();
-		// Build cpumaps
-			cpuset_callback_lock();
-			...
-			cpuset_callback_unlock();
-		cgroup_unlock();
-		
-		partition_sched_domains() ->
-			mutex_unlock(&sched_domains_mutex);
-			// Rebuild sched domains
-			mutex_unlock(&sched_domains_mutex);
-put_online_cpus()
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
-It's the other paths where cgroup_lock() is taken by cgroups before even 
-calling into cpusets, like cgroup destroy case.
-So I think we should just off-load those.
+Index: linux-2.6.26-quilt2/scripts/mod/modpost.c
+===================================================================
+--- linux-2.6.26-quilt2.orig/scripts/mod/modpost.c	2008-07-15 21:52:19.000000000 +0100
++++ linux-2.6.26-quilt2/scripts/mod/modpost.c	2008-07-15 21:52:40.000000000 +0100
+@@ -1468,7 +1468,7 @@ static void section_rel(const char *modn
+  * marked __initdata will be discarded when the module has been intialized.
+  * Likewise for modules used built-in the sections marked __exit
+  * are discarded because __exit marked function are supposed to be called
+- * only when a moduel is unloaded which never happes for built-in modules.
++ * only when a module is unloaded which never happens for built-in modules.
+  * The check_sec_ref() function traverses all relocation records
+  * to find all references to a section that reference a section that will
+  * be discarded and warns about it.
 
-Max
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
