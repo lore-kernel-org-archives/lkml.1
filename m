@@ -1,153 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762189AbYGOUYe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762660AbYGOUZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762189AbYGOUYe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 16:24:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbYGOUY1
+	id S1762660AbYGOUZa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 16:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756932AbYGOUZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 16:24:27 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:57303 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752851AbYGOUY0 (ORCPT
+	Tue, 15 Jul 2008 16:25:21 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:37371 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756527AbYGOUZU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 16:24:26 -0400
-Subject: Re: [RFC] systemtap: begin the process of using proper kernel APIs
-	(part1: use kprobe symbol_name/offset instead of address)
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
-In-Reply-To: <20080715200718.GC4280@redhat.com>
-References: <1216146802.3312.95.camel__45052.4692344063$1216146917$gmane$org@localhost.localdomain>
-	 <y0mr69vj5p0.fsf@ton.toronto.redhat.com>
-	 <1216151526.3312.102.camel@localhost.localdomain>
-	 <20080715200718.GC4280@redhat.com>
+	Tue, 15 Jul 2008 16:25:20 -0400
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
+	in-kernel, use it in more drivers.
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, Frans Pop <elendil@planet.nl>,
+       jeff@garzik.org, arjan@infradead.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LFD.1.10.0807151316180.2867@woody.linux-foundation.org>
+References: <1216077806.27455.85.camel@shinybook.infradead.org>
+	 <20080714164119.99c33d5b.akpm@linux-foundation.org>
+	 <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>
+	 <487C0365.5030203@garzik.org>
+	 <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
+	 <200807151757.10626.elendil@planet.nl>
+	 <1216149637.27242.65.camel@violet.holtmann.net>
+	 <alpine.LFD.1.10.0807151223290.3351@woody.linux-foundation.org>
+	 <1216150616.27455.377.camel@shinybook.infradead.org>
+	 <alpine.LFD.1.10.0807151244320.3351@woody.linux-foundation.org>
+	 <1216151866.26991.4.camel@shinybook.infradead.org>
+	 <1216152609.27242.99.camel@violet.holtmann.net>
+	 <alpine.LFD.1.10.0807151316180.2867@woody.linux-foundation.org>
 Content-Type: text/plain
-Date: Tue, 15 Jul 2008 15:24:22 -0500
-Message-Id: <1216153462.3312.126.camel@localhost.localdomain>
+Date: Tue, 15 Jul 2008 22:25:29 +0200
+Message-Id: <1216153529.27242.116.camel@violet.holtmann.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-15 at 16:07 -0400, Frank Ch. Eigler wrote:
-> On Tue, Jul 15, 2008 at 02:52:06PM -0500, James Bottomley wrote:
+Hi Linus,
+
+> > So Ubuntu will obviously not break since it does this already. For
+> > Fedora deploying new packages for 8 and 9 should not be a problem at all
+> > once the maintainer is convinced that it is a good idea. They update
+> > packages all the time anyway. For the other distros, I don't know.
 > 
-> > [...]
-> > > > One of the big nasties of systemtap is the way it tries to embed
-> > > > virtually the entirety of the kernel symbol table in the probe
-> > > > modules it constructs.
-> > > 
-> > > It is a compromise of conflicting requirements. 
-> > 
-> > Well ... in order to make forward progress, since the systemtap people
-> > expressed a desire to be better integrated with the kernel, the first
-> > order of business is to use the correct APIs [...]
+> Umm. Again, Marcel. We don't require new user land to work.
 > 
-> Let's concentrate then on those areas where this is more clear-cut.
+> But just loading the thing on our own does solve this problem. But udev we 
+> simply cannot require people to magically have a new version of.
 
-This is the most clear cut of the areas.  Until the systemtap modules
-get moved to the proper APIs, it's very difficult to tell what else
-needs to be cleaned up or changed inside the kernel to support them.
+we might have to do a step by step upgrade for this. Something like
+install everything in /lib/firmware/`uname -r`/ and create symlinks for
+a grace period of the next sixt month or something like this.
 
-> > > > This is highly undesirable because it represents a subversion of the
-> > > > kernel API to gain access to unexported symbols.
-> > > 
-> > > Please elaborate.  Does the translator or its runtime use unexported
-> > > symbols?  (That would arouse the question about why.)
-> > > 
-> > > Or are you talking about being able to *probe* unexported functions or
-> > > access unexported data?  That would be a deliberate feature.
-> > 
-> > No ... I'm talking about _stp_module_relocate() at this point.  It's an
-> > unnecessary function
-> 
-> Maybe, but what "subversion" are you talking about?
+These are details that have be sorted out, but should not stop us to get
+this right.
 
-using a hand crafted relocation function to gain access to kernel
-symbols instead of the provided API.  Even if it's not used as a
-template for every producer of binary modules, it's just incredibly
-fragile.
+And before you say anything. You can expect that firmware loading
+from /lib/firmware works almost everywhere. At least this has been for
+the last 3 years or so. Remember that we do have request_firmware() even
+in the latest 2.4 kernels.
 
-> > since the kprobes API provides a way to attach to a symbol and an
-> > offset.  The API allows access to unexported functions.
-> 
-> ... but not to e.g. data, which also uses this common mechanism.
+Regards
 
-That was number three in the original list of problems on my email.  I
-think it's solvable reasonably easily (as I outlined).
-
-> > > > At least for kprobes, the correct way to do this is to specify the
-> > > > probe point by symbol and offset.
-> > > 
-> > > But there won't be just kprobes.  Much of this code was built with
-> > > anticipation of user-space probing, and there the kernel won't have a
-> > > similar mechanism.  Similarly, the code is written to work with old
-> > > kernels too - ones that predate the symbol+offset kprobe API.
-> > 
-> > OK ... you've got me there ... why would user space probing necessitate
-> > resolution of kernel space symbols?  Surely you plan to use an exported
-> > module API of utrace or whatever the agreed framework is?
-> 
-> Of course, but for our purposes, the kernel will be just one amongst
-> many probing targets.  We will be tracking multiple symbol tables and
-> unwind data for user-space.
-
-You're going to hand roll your own symbol resolution for user space too?
-Isn't it pretty easy simply to get ld.so to do that for you?
-
-> > > Unless someone is about to rip out pure address-based kprobes, I see
-> > > no reason to complicate the code.
-> > 
-> > If you actually look, you'll see that pure addressed based kprobes still
-> > work.
-> 
-> No need for the snark.  I know they work; we've been using them for
-> years.  I am simply happy to stay with them.
-
-I meant if you read the patch I posted, I made sure that pure addressed
-based kprobes still work even when they have to use the
-symbol_name/offset resolution method ... the new code just works out the
-closest symbol and applies an offset.
-
-> > Also, I think you'll find it simplifies the code, since tons of the
-> > runtime junk that duplicate the in-kernel symbol resolution can be
-> > thrown out, plus the corresponding pieces of systemtap that have to
-> > worry about this.
-> 
-> Again, please consider user-space.  The runtime will need similar
-> symbol resolution code *for user space* anyway.  Keeping it in there
-> for the kernel is no incremental complexity - if anything, the
-> opposite.
-
-I really think there might have to be separate runtime pieces for user
-space and for the kernel.  Trying to build a single scheme that works in
-both places looks cumbersome.  In the separate case, the kernel piece,
-which is potentially movable inside the kernel, becomes a lot simpler.
-
-> > There's also the architectural worry: this scheme you currently use
-> > is very fragile.  For instance, I don't see it surviving a move to
-> > -ffunction-sections (which patches are already going over
-> > linux-arch).
-> 
-> Let's try it.  Whatever actual problems that throws up, we'd also
-> encounter with userspace.
-
-OK, with -ffunction-sections you can't offset from _stext which seems to
-be what _stp_module_relocate() uses.  The reason this gets used on
-something like parisc is so that we can place jump stubs in between the
-function sections if necessary to widen the PCREL17 relocations.  That
-means that each function address can potentially move depending on the
-number of relocation stubs embedded between it and the next function.
-The exact same problem occurs between DSOs in user space.  Your problem
-is that you don't know the separations until someone attempts linking
-(and even then, there's nothing except common sense that requires the
-linker to use the minimum number of stubs).
-
-Now, you could still offset from the start address of the section, but
-that's simply the address of the function, so resolution by
-symbol_name/offset is the effective solution.
-
-James
+Marcel
 
 
