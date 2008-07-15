@@ -1,134 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757902AbYGOImV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758574AbYGOImt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757902AbYGOImV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 04:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043AbYGOImJ
+	id S1758574AbYGOImt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 04:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754969AbYGOImk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 04:42:09 -0400
-Received: from mga14.intel.com ([143.182.124.37]:19653 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754314AbYGOImH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 04:42:07 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.30,365,1212390000"; 
-   d="scan'208";a="20576282"
-Subject: Re: ACPI Error under 2.6.26-rc*
-From: Zhang Rui <rui.zhang@intel.com>
-To: Andre Prendel <andre_prendel@gmx.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       kernel-testers@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Zhao, Yakui" <yakui.zhao@intel.com>
-In-Reply-To: <20080715074130.GA4724@linux.int.dgn.ag>
-References: <20080709083829.GA5748@linux.int.dgn.ag>
-	 <200807102255.23090.rjw@sisk.pl> <1215739210.1617.28.camel@rzhang-dt>
-	 <1215739682.1617.32.camel@rzhang-dt>
-	 <20080714080914.GA4965@linux.int.dgn.ag>
-	 <1216026701.1617.82.camel@rzhang-dt>
-	 <20080715074130.GA4724@linux.int.dgn.ag>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 15 Jul 2008 16:41:00 +0800
-Message-Id: <1216111260.1617.131.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Tue, 15 Jul 2008 04:42:40 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:58793 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754964AbYGOImi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 04:42:38 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5338"; a="4545879"
+Message-ID: <487C62FB.6030304@qualcomm.com>
+Date: Tue, 15 Jul 2008 01:42:35 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Paul Menage <menage@google.com>, Paul Jackson <pj@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, miaox@cn.fujitsu.com,
+       rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: current linux-2.6.git: cpusets completely broken
+References: <b647ffbd0807120304o7a500dc9oce761e51c9dce908@mail.gmail.com> <alpine.LFD.1.10.0807121254490.2875@woody.linux-foundation.org> <alpine.LFD.1.10.0807121411350.2875@woody.linux-foundation.org> <b647ffbd0807141538g2004f245m5f54ec962f475ba5@mail.gmail.com> <alpine.LFD.1.10.0807141602250.3017@woody.linux-foundation.org> <b647ffbd0807141700s20e54fbewafb3d3e296e57f53@mail.gmail.com> <alpine.LFD.1.10.0807141707410.3017@woody.linux-foundation.org> <b647ffbd0807141921n13ffa59x416fc024c734ef02@mail.gmail.com> <487C1374.8020404@qualcomm.com> <alpine.LFD.1.10.0807142104250.3017@woody.linux-foundation.org> <20080715083223.GA2600@elte.hu>
+In-Reply-To: <20080715083223.GA2600@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-15 at 15:41 +0800, Andre Prendel wrote:
-> On Mon, Jul 14, 2008 at 05:11:41PM +0800, Zhang Rui wrote:
-> > > Hello Rui,
-> > >
-> > > that's quite strange. Booting the system to get an acpidump I have
-> > > looked at the dmesg output and there is no ACPI Error like the one
-> > > above. There is only an ACPI Exeption.
-> > >
-> > > [...]
-> > > Jul 13 22:00:18 ubuntu kernel: [    0.104111] ACPI: Core revision
-> > > 20080321
-> > > Jul 13 22:00:18 ubuntu kernel: [    0.104259] ACPI Exception
-> > > (tbxface-0629): AE_NO_ACPI_TABLES, While loading namespace from
-> ACPI
-> > > tables [20080321]
-> > > [...]
-> > >
-> > > Booting again I found the error again
-> > >
-> > > [...]
-> > > Jul 13 22:10:50 ubuntu kernel: [    0.000000] ACPI Error
-> > > (tbutils-0472): Invalid length 0x0 in RSDT/XSDT [20080321]
-> > > [...]
-> > >
-> > > and acpidump says:
-> > > root@ubuntu:/home/andre/src/acpi/pmtools-20071116/acpidump#
-> > > ./acpidumpACPI tables were not found. If you know location of RSD
-> PTR
-> > > table (from dmesg, etc), supply it with either --addr or -a option
-> > >
-> > > Linux 2.6.25.10 always works.
-> >
-> > It seems that OS failed to get the correct RSDT address
-> (0x1fff0000),
-> > although the RSDP is found correctly. (﻿ACPI: RSDP 000FA340, 0014)
-> >
-> > please run "./acpidump --addr 0xFA340 --length 0x14 > rsdp_xxx",
-> > and attach the rsdp for all of the three cases (good, ACPI Error,
-> ACPI
-> > Exception).
+Ingo Molnar wrote:
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
-> Hello Rui,
+>> On Mon, 14 Jul 2008, Max Krasnyansky wrote:
+>>> Did you guys an updated patch ? Dmitry pointed out several things that Linus
+>>> missed in his original version. I guess I can go through the thread and
+>>> reconstruct that but if you have a patch I can try let me know.
+>> I didn't update it, and right now I'm just merging too much (and 
+>> discussing the merges) to have time.
+>>
+>> The patch really needs to have some scheduler person look at the use 
+>> fo cpu_active_map - I was kind of hoping that Ingo would.
 > 
-> here is the output of the three cases. The dump files are attached
-> too.
+> yeah - it's very high on our TODO list :-) Peter, Dmitry and me are 
+> looking into it.
 > 
-> ----
-> good
-> ----
-> andre@ubuntu:~/src/acpi/pmtools-20071116/acpidump$ hexdump rsdp_good
-> 0000000 5352 2044 5450 2052 418c 494d 2020 0020
-> 0000010 0000 1fff                             
-> 0000014
-> 
-> -----
-> error
-> -----
-> andre@ubuntu:~/src/acpi/pmtools-20071116/acpidump$ hexdump rsdp_error
-> 0000000 5352 2044 5450 2052 418a 494d 2020 0020
-> 0000010 0000 21ff                             
-> 0000014
-> 
-> ---------
-> exception
-> ---------
-> andre@ubuntu:~/src/acpi/pmtools-20071116/acpidump$ hexdump
-> rsdp_exception
-> 0000000 5352 2044 5450 2052 417c 494d 2020 0020
-> 0000010 0000 2fff                             
-> 0000014
+> I didnt touch most of -tip in the past few days to get a rock solid QA 
+> track record for all items we have.
 
-Weird.
-The dmesg shows that the memory map gotten from e820 table is changed.
-And the file attached shows that rsdp points to different rsdt address.
-> 
-> Now I see the ACPI Error under the 2.6.25.10 kernel sometimes too, but
-> power off works well. So I also attach the two configs. Maybe the
-> different config is the reason why power off works under 2.6.25.10.
-so you may get different e820 table when running 2.6.25.10 as well?
-could you please attach the dmesg output of a 2.6.25.10 kernel which has
-the ACPI error?
+I just sent you guys a patch. Please take a look. I've probably missed something
+but it should close (I think). Also we'd probably at least want the bits that
+streamline the domain reinitialization because it helps with cpusets (ie uses
+same exact path for all cases).
 
-> Is it possible that it is a hardware related issue?
-Don't know. :(
-It looks like a hardware issue as BIOS export different e820 tables.
-But from your description, it seems to be a software regression.
-please try to revert c3965bd15118742d72b4bc1a290d37b3f081eb98 and see if
-it helps.
-Please re-attach the kernel config files as attachments.
-
-thanks,
-rui
-
-
+Max
