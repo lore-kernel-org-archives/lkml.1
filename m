@@ -1,86 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758322AbYGOBoa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760926AbYGOBqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758322AbYGOBoa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 21:44:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754494AbYGOBoT
+	id S1760926AbYGOBqS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 21:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbYGOBqG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 21:44:19 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49499
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753206AbYGOBoT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 21:44:19 -0400
-Date: Mon, 14 Jul 2008 18:44:18 -0700 (PDT)
-Message-Id: <20080714.184418.203308475.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: dwmw2@infradead.org, torvalds@linux-foundation.org,
+	Mon, 14 Jul 2008 21:46:06 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:47872 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751935AbYGOBqF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 21:46:05 -0400
+Message-ID: <487C0147.5070808@garzik.org>
+Date: Mon, 14 Jul 2008 21:45:43 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: David Woodhouse <dwmw2@infradead.org>
+CC: torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-       jgarzik@pobox.com, mchan@broadcom.com
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
- in-kernel, use it in more drivers.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080714164119.99c33d5b.akpm@linux-foundation.org>
+       David Miller <davem@davemloft.net>
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
+ use it in more drivers.
 References: <1216077806.27455.85.camel@shinybook.infradead.org>
-	<20080714164119.99c33d5b.akpm@linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+In-Reply-To: <1216077806.27455.85.camel@shinybook.infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 14 Jul 2008 16:41:19 -0700
-
-> On Mon, 14 Jul 2008 16:23:26 -0700
-> David Woodhouse <dwmw2@infradead.org> wrote:
+David Woodhouse wrote:
+> Linus, please pull from the for-2.6.27 branch of:
+> 	git://git.infradead.org/users/dwmw2/firmware-2.6.git for-2.6.27
 > 
-> > Linus, please pull from the for-2.6.27 branch of:
-> > 	git://git.infradead.org/users/dwmw2/firmware-2.6.git for-2.6.27
+> This does the following (not quite in this order):
 > 
-> The firmware flamewars seem to have subsided lately.  Is everyone happy
-> with this now?
+>  - Provides a method for firmware files to be built into the kernel, so
+>    that drivers can be updated to use request_firmware() without forcing
+>    people to use an initrd.
+> 
+>  - In doing that, mark fw->data as 'const', and fix a few drivers to cope.
+> 
+>  - Update a bunch of drivers to use request_firmware(), and move their
+>    existing firmware, previously hardcoded in all kinds of interesting
+>    ways, into the firmware/ directory of the kernel tree.
+> 
+>  - Add a FIRMWARE_IN_KERNEL config option which allows the firmware for
+>    the above (and below) drivers to continue to be built into the kernel.
+> 
+>  - Add a simple method for representing Intel HEX records in binary form,
+>    since a bunch of drivers need that kind of thing. And a tool to
+>    convert HEX files into that binary form, for the kernel to load.
+> 
+>  - Drop special cases from a few drivers which could either use
+>    request_firmware() or build their firmware in; they don't need to
+>    do that for themselves any more.
+> 
+>  - Implement 'make firmware_install' target, which installs all firmware
+>    shipped with the kernel.
+> 
+>  - Modify 'make modules_install' to install any firmware required by the
+>    modules it installs (where that firmware is shipped in the kernel tree).
+> 
+> There are more drivers to be converted to request_firmware() -- notably
+> drivers/net and drivers/scsi, but it's probably best to ensure that the
+> infrastructure is all in place and working correctly before we update
+> those. (Although since modern drivers have been using request_firmware()
+> for some time, I don't think there's likely to be a problem there; we'll
+> probably clean up the stragglers in time for 2.6.28.)
+> 
+> David Howells (5):
+>       Fix a const pointer usage warning in the Digigram VX soundcard driver
+>       Fix a const assignment in moxa_load_fw()
+>       Fix a const pointer error in the Conexant cx23418 MPEG encoder driver
+>       Fix a const pointer usage warning in the Digigram pcxhr soundcard driver
+>       Fix a const pointer usage warning in the Digigram miXart soundcard driver
+> 
+> Full shortlog and diffstat below, although the really interesting part
+> is probably between commits fd4f80de..59890f74 -- seen at 
+> http://git.infradead.org/users/dwmw2/firmware-2.6.git?a=shortlog;h=59890f74
 
-I'm not happy for network drivers, although I'm happy to see that
-David respected out NACKs on tg3/bnx2/etc. and didn't include those
-bits.
 
-I still haven't seen an answer to the chip reset issues.  The argument
-has been that this stuff is going to save kernel memory when the
-driver isn't loading firmware, but that's not really possible.
+After the long threads, you would think you would have at least 
+mentioned controversy attached to these changes?
 
-When a lot of these network drivers reset, due to a transmit timeout
-or other exception, we need to load the firmware again.
+Or perhaps mention that you are specifically excluding the ability to 
+build firmware into modules -- the most reliable method available for 
+those who use modules, MORE reliable than a system where firmware and 
+kernel module are separated.
 
-So this means, that if request_firmware() dies or fails for some
-reason in these scenerios, we can't reset the network card.  Something
-as simple as a memory or other allocation failure deep inside of
-request_firmware() means we lose the networking interface.
+Or some of the objections raised, that were not met?
 
-To me this seems like a very non-resilient setup.  It makes sense
-to just keep the firmware in-core so we can load it without having
-to even think about possible failures.
+Or even _acknowledge_ that these changes have a high probability of 
+creating a non-working driver, and therefore advising distros with Big 
+Fat Warnings and Be Carefuls sprinkled liberally?
 
-And that to me basically makes this transformation pointless.  It's
-in fact a regression.
+Or perhaps describe the outside-the-kernel migration path for distros?
 
-Furthermore, the issue of suspend and resume was brought up.  What if
-request_firmware() fails then?  And can request_firmware() even be
-allowed in that context?  What if the disk on which the firmware
-resides hasn't been resumed yet?
+Isn't it silly to create firmware/ top-level dir, when the firmware more 
+naturally lives in the same dir as the driver to which it is intimately 
+tied?  We'll just have to start creating firmware/net firmware/char 
+firmware/media etc. after a while.
 
-In response to the suspend/resume queries, a lot of special voodoo was
-mentioned that perhaps would allow request_firmware() to get invoked
-in the correct context and with the firmware partition's block device
-resumed already.
+What about keeping binary objects as binary objects?  Surely git can 
+handle binary file.  And you are already converting each firmware's data 
+from format A to format B.  Might as well convert it to unpacked, 
+un-ASCII'd format that will be loaded directly, as that can be easier in 
+some cases.
 
-But who the heck is going to write all of that code and fix up all
-of these drivers so that they can resume reliably again?
+I think it's just downright shady to push this crap without mentioning 
+any of the swirl of issues surrounding this, that are quite relevant to 
+its inclusion.
 
-And for what?
+It should be obvious that building firmware into a kernel module (or the 
+kernel itself, if you don't use modules) is _the_ most reliable method 
+of ensuring your driver will work [if it requires firmware].
 
-None of the people who wrote and maintain these effected networking
-drivers want these changes installed.  And they are the ones who will
-have to diagnose strange request_firmware() failures that lead to
-non-functioning devices during resume or after a transmit timeout.
+	Jeff
+
+
+
