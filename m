@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760199AbYGOAFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760130AbYGOAGE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760199AbYGOAFo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 20:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760088AbYGOAFf
+	id S1760130AbYGOAGE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 20:06:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760185AbYGOAFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 20:05:35 -0400
-Received: from mx.i-worx.ca ([64.34.99.52]:10519 "EHLO mx.i-worx.ca"
+	Mon, 14 Jul 2008 20:05:43 -0400
+Received: from mail.lang.hm ([64.81.33.126]:43703 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760086AbYGOAFe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 20:05:34 -0400
-X-Greylist: delayed 312 seconds by postgrey-1.27 at vger.kernel.org; Mon, 14 Jul 2008 20:05:34 EDT
-X-Receiver: akpm@linux-foundation.org
-X-Receiver: sfr@canb.auug.org.au
-X-Receiver: david-b@pacbell.net
-X-Receiver: openwrt-devel@lists.openwrt.org
-X-Receiver: linux-kernel@vger.kernel.org
-X-Receiver: piotr.skamruk@gmail.com
-X-Receiver: drzeus-mmc@drzeus.cx
-thread-index: AcjmDcMIsPsHork7QGesbbdf7XvVfg==
-Thread-Topic: [MailServer Notification]Attachment Blocking Notification
-From: Administrator <TrendMicro.SRV15@i-worx.ca>
-To: <akpm@linux-foundation.org>, <sfr@canb.auug.org.au>
-CC: <david-b@pacbell.net>, <openwrt-devel@lists.openwrt.org>,
-       <linux-kernel@vger.kernel.org>, <piotr.skamruk@gmail.com>,
-       <drzeus-mmc@drzeus.cx>
-Subject: [MailServer Notification]Attachment Blocking Notification
-Date: Mon, 14 Jul 2008 17:00:16 -0700
-Message-ID: <12C4AE3CCC6F4D2FA0AF5BA109C8FF55@iworx.ca>
+	id S1760171AbYGOAFm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 20:05:42 -0400
+Date: Mon, 14 Jul 2008 17:06:06 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, torvalds@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
+ use it in more drivers.
+In-Reply-To: <20080714165956.7fe2d4ee@infradead.org>
+Message-ID: <alpine.DEB.1.10.0807141704120.14223@asgard.lang.hm>
+References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft CDO for Windows 2000
-Content-Class: urn:content-classes:message
-Importance: normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.4133
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The attachment "mmc_over_gpio.init" has been blocked,
-and action "Quarantine message part" has been taken on 7/14/2008 4:59:39 
-PM.
-Message details:
-Server: I-WORX-SRV-14
-Sender: mb@bu3sch.de;
-Recipient: 
-akpm@linux-foundation.org;sfr@canb.auug.org.au;david-b@pacbell.net;openwrt-devel@lists.openwrt.org;linux-kernel@vger.kernel.org;piotr.skamruk@gmail.com;drzeus-mmc@drzeus.cx;
-Subject: [OpenWrt-Devel] [PATCH] Add dynamic MMC-over-SPI-GPIO driver
-Attachment name: mmc_over_gpio.init
+On Mon, 14 Jul 2008, Arjan van de Ven wrote:
+
+> On Mon, 14 Jul 2008 16:41:19 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+>
+>> On Mon, 14 Jul 2008 16:23:26 -0700
+>> David Woodhouse <dwmw2@infradead.org> wrote:
+>>
+>>> Linus, please pull from the for-2.6.27 branch of:
+>>> 	git://git.infradead.org/users/dwmw2/firmware-2.6.git
+>>> for-2.6.27
+>>
+>> The firmware flamewars seem to have subsided lately.  Is everyone
+>> happy with this now?
+>>
+>
+> this seems to have left the contentious pieces out....
+
+almost, the one thing that this could have done would be to offer an 
+option to bundle the firmware with the module. currently it offers the 
+option to load the firmware at the same time as the module, not _quite_ 
+the same thing.
+
+there was also the issue that was raised about how to handle firmware 
+during suspend/resume. I don't remember seeing a happy solution to that 
+one.
+
+David Lang
