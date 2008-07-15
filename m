@@ -1,151 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764001AbYGOWfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763859AbYGOWgB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764001AbYGOWfp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 18:35:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763604AbYGOWbz
+	id S1763859AbYGOWgB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 18:36:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763676AbYGOWcu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 18:31:55 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:47901 "EHLO smtp.polymtl.ca"
+	Tue, 15 Jul 2008 18:32:50 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37891 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763595AbYGOWbx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 18:31:53 -0400
-Message-Id: <20080715222748.433063591@polymtl.ca>
-References: <20080715222604.331269462@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Tue, 15 Jul 2008 18:26:15 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andi Kleen <andi-suse@firstfloor.org>, linux-mm@kvack.org,
-       Dave Hansen <haveblue@us.ibm.com>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: [patch 11/17] LTTng instrumentation - memory page faults
-Content-Disposition: inline; filename=lttng-instrumentation-memory.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Tue, 15 Jul 2008 22:27:51 +0000
+	id S1763671AbYGOWct (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 18:32:49 -0400
+Date: Tue, 15 Jul 2008 18:32:37 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@devserv.devel.redhat.com
+To: David Miller <davem@davemloft.net>
+cc: andi@firstfloor.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+Subject: Re: [SUGGESTION]: drop virtual merge accounting in I/O requests
+In-Reply-To: <20080714.183116.121978835.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0807151830290.22181@devserv.devel.redhat.com>
+References: <Pine.LNX.4.64.0807141000340.24718@devserv.devel.redhat.com>
+ <20080714.143751.266098047.davem@davemloft.net>
+ <Pine.LNX.4.64.0807141903001.2825@devserv.devel.redhat.com>
+ <20080714.183116.121978835.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Instrument the page fault entry and exit. Useful to detect delays caused by page
-faults and bad memory usage patterns.
+On Mon, 14 Jul 2008, David Miller wrote:
 
-Those tracepoints are used by LTTng.
+> From: Mikulas Patocka <mpatocka@redhat.com>
+> Date: Mon, 14 Jul 2008 19:16:17 -0400 (EDT)
+> 
+> > So the question is: to reduce number of requests by 12% on an outdated 
+> > SCSI card, it is sensible to maintain complicated merge accounting logic 
+> > in the core block layer? To me, it doesn't seem sensible.
+> 
+> Rip out the code if you like, then.  I really don't have time to
+> work on this myself.  So if you do, by all means do whatever
+> you think is appropriate.
 
-About the performance impact of tracepoints (which is comparable to markers),
-even without immediate values optimizations, tests done by Hideo Aoki on ia64
-show no regression. His test case was using hackbench on a kernel where
-scheduler instrumentation (about 5 events in code scheduler code) was added.
-See the "Tracepoints" patch header for performance result detail.
+So add signed-off line and forward it to Linus.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Andi Kleen <andi-suse@firstfloor.org>
-CC: linux-mm@kvack.org
-CC: Dave Hansen <haveblue@us.ibm.com>
-CC: Masami Hiramatsu <mhiramat@redhat.com>
-CC: 'Peter Zijlstra' <peterz@infradead.org>
-CC: "Frank Ch. Eigler" <fche@redhat.com>
-CC: 'Ingo Molnar' <mingo@elte.hu>
-CC: 'Hideo AOKI' <haoki@redhat.com>
-CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
-CC: 'Steven Rostedt' <rostedt@goodmis.org>
-CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
 ---
- include/trace/memory.h |   14 ++++++++++++++
- mm/memory.c            |   33 ++++++++++++++++++++++++---------
- 2 files changed, 38 insertions(+), 9 deletions(-)
+ include/asm-sparc64/io.h |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Index: linux-2.6-lttng/mm/memory.c
+Index: linux-2.6.26-fast/include/asm-sparc64/io.h
 ===================================================================
---- linux-2.6-lttng.orig/mm/memory.c	2008-07-15 14:02:54.000000000 -0400
-+++ linux-2.6-lttng/mm/memory.c	2008-07-15 14:03:47.000000000 -0400
-@@ -61,6 +61,7 @@
+--- linux-2.6.26-fast.orig/include/asm-sparc64/io.h	2008-07-15 23:29:39.000000000 +0200
++++ linux-2.6.26-fast/include/asm-sparc64/io.h	2008-07-15 23:33:41.000000000 +0200
+@@ -16,7 +16,10 @@
+ /* BIO layer definitions. */
+ extern unsigned long kern_base, kern_size;
+ #define page_to_phys(page)	(page_to_pfn(page) << PAGE_SHIFT)
+-#define BIO_VMERGE_BOUNDARY	8192
++
++/* Don't declare that we are virtual-merge capable because Sparc64 IOMMU code
++   doesn't guarantee that the merge is always possible */
++#define BIO_VMERGE_BOUNDARY	0
  
- #include <linux/swapops.h>
- #include <linux/elf.h>
-+#include <trace/memory.h>
- 
- #ifndef CONFIG_NEED_MULTIPLE_NODES
- /* use the per-pgdat data instead for discontigmem - mbligh */
-@@ -2664,30 +2665,44 @@ unlock:
- int handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
- 		unsigned long address, int write_access)
+ static inline u8 _inb(unsigned long addr)
  {
-+	int res;
- 	pgd_t *pgd;
- 	pud_t *pud;
- 	pmd_t *pmd;
- 	pte_t *pte;
- 
-+	trace_memory_handle_fault_entry(mm, vma, address, write_access);
-+
- 	__set_current_state(TASK_RUNNING);
- 
- 	count_vm_event(PGFAULT);
- 
--	if (unlikely(is_vm_hugetlb_page(vma)))
--		return hugetlb_fault(mm, vma, address, write_access);
-+	if (unlikely(is_vm_hugetlb_page(vma))) {
-+		res = hugetlb_fault(mm, vma, address, write_access);
-+		goto end;
-+	}
- 
- 	pgd = pgd_offset(mm, address);
- 	pud = pud_alloc(mm, pgd, address);
--	if (!pud)
--		return VM_FAULT_OOM;
-+	if (!pud) {
-+		res = VM_FAULT_OOM;
-+		goto end;
-+	}
- 	pmd = pmd_alloc(mm, pud, address);
--	if (!pmd)
--		return VM_FAULT_OOM;
-+	if (!pmd) {
-+		res = VM_FAULT_OOM;
-+		goto end;
-+	}
- 	pte = pte_alloc_map(mm, pmd, address);
--	if (!pte)
--		return VM_FAULT_OOM;
-+	if (!pte) {
-+		res = VM_FAULT_OOM;
-+		goto end;
-+	}
- 
--	return handle_pte_fault(mm, vma, address, pte, pmd, write_access);
-+	res = handle_pte_fault(mm, vma, address, pte, pmd, write_access);
-+end:
-+	trace_memory_handle_fault_exit(res);
-+	return res;
- }
- 
- #ifndef __PAGETABLE_PUD_FOLDED
-Index: linux-2.6-lttng/include/trace/memory.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/include/trace/memory.h	2008-07-15 14:03:47.000000000 -0400
-@@ -0,0 +1,14 @@
-+#ifndef _TRACE_MEMORY_H
-+#define _TRACE_MEMORY_H
-+
-+#include <linux/tracepoint.h>
-+
-+DEFINE_TRACE(memory_handle_fault_entry,
-+	TPPROTO(struct mm_struct *mm, struct vm_area_struct *vma,
-+		unsigned long address, int write_access),
-+	TPARGS(mm, vma, address, write_access));
-+DEFINE_TRACE(memory_handle_fault_exit,
-+	TPPROTO(int res),
-+	TPARGS(res));
-+
-+#endif
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
