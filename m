@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758640AbYGOFbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759260AbYGOFcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758640AbYGOFbr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 01:31:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758053AbYGOFbf
+	id S1759260AbYGOFcf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 01:32:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbYGOFc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 01:31:35 -0400
-Received: from 1wt.eu ([62.212.114.60]:3987 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754062AbYGOFbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 01:31:34 -0400
-Date: Tue, 15 Jul 2008 07:31:01 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: david@lang.hm
+	Tue, 15 Jul 2008 01:32:27 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49441 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753149AbYGOFc0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 01:32:26 -0400
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
+	in-kernel, use it in more drivers.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Willy Tarreau <w@1wt.eu>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Stoyan Gaydarov <stoyboyker@gmail.com>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, gorcunov@gmail.com,
-       akpm@linux-foundation.org, mingo@elte.hu
-Subject: Re: From 2.4 to 2.6 to 2.7?
-Message-ID: <20080715053101.GJ1369@1wt.eu>
-References: <6d291e080807141910m573b29b2t753ea7c4db09902d@mail.gmail.com> <alpine.LFD.1.10.0807141914280.3017@woody.linux-foundation.org> <6d291e080807141931g3080c94cic94f503c1a18523b@mail.gmail.com> <alpine.LFD.1.10.0807141939410.3017@woody.linux-foundation.org> <alpine.DEB.1.10.0807142048260.6370@asgard>
+       Jeff Garzik <jeff@garzik.org>, Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080715050654.GH1369@1wt.eu>
+References: <1216077806.27455.85.camel@shinybook.infradead.org>
+	 <20080714164119.99c33d5b.akpm@linux-foundation.org>
+	 <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>
+	 <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
+	 <487C09EB.1050903@garzik.org>
+	 <alpine.LFD.1.10.0807141928540.3017@woody.linux-foundation.org>
+	 <487C1648.5070409@garzik.org>
+	 <alpine.LFD.1.10.0807142027140.3017@woody.linux-foundation.org>
+	 <20080715050654.GH1369@1wt.eu>
+Content-Type: text/plain
+Date: Mon, 14 Jul 2008 22:32:10 -0700
+Message-Id: <1216099930.27455.205.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0807142048260.6370@asgard>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 14, 2008 at 08:55:59PM -0700, david@lang.hm wrote:
-> On Mon, 14 Jul 2008, Linus Torvalds wrote:
-> 
-> >>Does it have to be even numbers only?
-> >
-> >No. But the even/odd thing is still so fresh in peoples memory (despite us
-> >not having used it for years), and I think some projects aped us on it, so
-> >if I didn't change the numbering setup, but just wanted to reset the minor
-> >number, I'd probably jump from 2.6 to 2.8 just for historical reasons.
-> >
-> >But I could also see the second number as being the "year", and 2008 would
-> >get 2.8, and then next year I'd make the first release of 2009 be 2.9.1
-> >(and probably avoid the ".0" just because it again has the connotations of
-> >a "big new untested release", which is not true in a date-based numbering
-> >scheme). And then 2010 would be 3.0.1 etc..
-> 
-> Ok, I'll jump in.
-> 
-> I don't have strong feelings either, but I do have comments
-> 
-> 1. for the historical reasons you allude to above going to a completely 
-> different numbering system would be a nice thing
-> 
-> 2. I do like involving the year, but I think 2008/2009/2010 are much 
-> clearer then 2.8/2.9/3.0 let people shorten it verbally, but still realize 
-> that it's a full year being referred to.
-> 
-> 3. avoid using the month of the release (which ubuntu does), first you 
-> aren't going to predict the month of relese ahead of time (so what will 
-> the -rc's be called, the year is fairly clear and it's not _that_ bad if 
-> 2008.4 happens to come out in Jan 2009). also too many people don't 
-> understand that 8.10 is between 8.9 and 8.11, not between 8.0 and 8.2
+On Tue, 2008-07-15 at 07:06 +0200, Willy Tarreau wrote:
+> This is just a matter of point of view. From my POV, having to feed
+> several unrelated files into a system to be able to get it to support
+> any device is moving backwards, compared to the currently clean
+> all-in-1 driver model.
 
-That's probably why openbsd jumps from 3.9 to 4.0. I like such a numbering
-too. It compacts 3 numbers into 2 (like we had before) but without any
-major/minor notion. You just bump each new version by 0.1 at a somewhat
-regular rate. Having the year and a sub-version is fine too, but I think
-it adds unnecessary digits. Or maybe jump to 8.X for 2008, then 9.X in
-2009 and 10.X in 2010 ? That way, we have both the date and the simplicity.
-And it's not like we really care about version 1000 in year 3000.
+So you disapprove of having to load mac80211.ko before your wireless NIC
+driver? Or sungem_phy.ko before sungem.ko? Or libphy.ko before various
+other drivers?
 
-> so my prefrence (mild as it is) goes to YYYY.r.s (r=release, s=stable)
+Or having to install /sbin/modprobe before you can load modules?
 
-agreed, but with Y.r.s :-)
-
-Willy
+-- 
+dwmw2
 
