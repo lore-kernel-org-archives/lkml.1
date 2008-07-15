@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763607AbYGOUpF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932451AbYGOUom@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763607AbYGOUpF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 16:45:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763568AbYGOUo1
+	id S932451AbYGOUom (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 16:44:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763504AbYGOUoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 16:44:27 -0400
-Received: from gw.goop.org ([64.81.55.164]:46373 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763547AbYGOUo0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 16:44:26 -0400
-Message-ID: <487D0719.9000503@goop.org>
-Date: Tue, 15 Jul 2008 13:22:49 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] generic ipi function calls: wait on alloc failure fallback
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 15 Jul 2008 16:44:09 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48528
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753019AbYGOUoI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 16:44:08 -0400
+Date: Tue, 15 Jul 2008 13:44:07 -0700 (PDT)
+Message-Id: <20080715.134407.150543177.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: nhorman@tuxdriver.com, simon@fire.lp0.eu, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, herbert@gondor.apana.org.au
+Subject: Re: BUG: unable to handle kernel NULL pointer dereference at
+ 000000000000000e (reset_prng_context)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080715113304.GA30565@elte.hu>
+References: <487BE071.80101@simon.arlott.org.uk>
+	<20080715020428.GA27463@hmsendeavour.rdu.redhat.com>
+	<20080715113304.GA30565@elte.hu>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When a GFP_ATOMIC allocation fails, it falls back to allocating the
-data on the stack and converting it to a waiting call.
+From: Ingo Molnar <mingo@elte.hu>
+Date: Tue, 15 Jul 2008 13:33:04 +0200
 
-Make sure we actually wait in this case.
+> i have just triggered this crash too. Please, when you know about bootup 
+> crashes in your code send a patch to the lkml thread so that people can 
+> apply it and have a working system.
+> 
+> Note that the new crypto/prng.c driver has very bad quality:
+> 
+>   total: 45 errors, 21 warnings, 1 checks, 410 lines checked
+> 
+> It has tons of completely unacceptable code mistakes in it.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
----
- kernel/smp.c |    1 +
- 1 file changed, 1 insertion(+)
-
-===================================================================
---- a/kernel/smp.c
-+++ b/kernel/smp.c
-@@ -312,6 +312,7 @@ int smp_call_function_mask(cpumask_t mas
- 	if (!data) {
- 		data = &d;
- 		data->csd.flags = CSD_FLAG_WAIT;
-+		wait = 1;
- 	}
- 
- 	spin_lock_init(&data->lock);
-
-
-
+I think we should merge new drivers as aggressively as possible.
