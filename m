@@ -1,74 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758491AbYGONo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756875AbYGONsC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758491AbYGONo5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 09:44:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755989AbYGONot
+	id S1756875AbYGONsC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 09:48:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755822AbYGONrx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 09:44:49 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:53190 "EHLO tim.rpsys.net"
+	Tue, 15 Jul 2008 09:47:53 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:50704 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755430AbYGONot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 09:44:49 -0400
-Subject: Re: [PATCH v2] leds: implement OpenFirmare GPIO LED driver
-From: Richard Purdie <rpurdie@rpsys.net>
-To: avorontsov@ru.mvista.com
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Kumar Gala <galak@kernel.crashing.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-In-Reply-To: <20080715132438.GA26648@polina.dev.rtsoft.ru>
-References: <20080715123822.GA10893@polina.dev.rtsoft.ru>
-	 <20080715124013.GA13086@polina.dev.rtsoft.ru>
-	 <1216126470.5345.55.camel@dax.rpnet.com>
-	 <20080715132438.GA26648@polina.dev.rtsoft.ru>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 14:31:27 +0100
-Message-Id: <1216128687.5345.61.camel@dax.rpnet.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	id S1755754AbYGONrx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 09:47:53 -0400
+Date: Tue, 15 Jul 2008 16:47:47 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: "H.J. Lu" <hjl.tools@gmail.com>
+Cc: dhowells@redhat.com, sam@ravnborg.org, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org
+Subject: Re: binutils 2.18.50.0.8 frv build error
+Message-ID: <20080715134747.GD24533@cs181140183.pp.htv.fi>
+References: <20080715121327.GA24533@cs181140183.pp.htv.fi> <20080715132005.GA6517@lucon.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080715132005.GA6517@lucon.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-15 at 17:24 +0400, Anton Vorontsov wrote:
-> On Tue, Jul 15, 2008 at 01:54:30PM +0100, Richard Purdie wrote:
-> > I don't have any issue with the driver itself, just the name which is
-> > going to confuse people no end.
+On Tue, Jul 15, 2008 at 06:20:05AM -0700, H.J. Lu wrote:
+> On Tue, Jul 15, 2008 at 03:13:27PM +0300, Adrian Bunk wrote:
+> > Toolchain:
+> > - gcc 4.3.1
+> > - binutils 2.18.50.0.7 and 2.18.50.0.8
+> > - configured for frv-linux
+> > - kernel 2.6.26
 > > 
-> > Can we come up with a better name for this driver please?
-[...]
-> > "openfirmware-led"?
+> > Builds fine when using binutils 2.18.50.0.7,
+> > but fails as follows with binutils 2.18.50.0.8:
+> > 
+> > <--  snip  -->
+> > 
+> > ...
+> >   HOSTCC  scripts/kallsyms
+> >   CC      init/main.o
+> >   CHK     include/linux/compile.h
+> >   UPD     include/linux/compile.h
+> >   CC      init/version.o
+> >   CC      init/do_mounts.o
+> >   LD      init/mounts.o
+> >   CC      init/noinitramfs.o
+> >   LD      init/built-in.o
+> > frv-linux-ld: init/mounts.o: compiled with -fpic and linked with modules that use non-pic relocations
+> > frv-linux-ld: failed to merge target specific data of file init/mounts.o
+> > make[2]: *** [init/built-in.o] Error 1
+> > 
+> > <--  snip  -->
+> > 
+> > Complete verbose log below.
+> > 
+> > Any hints what's going wrong?
+> > 
+> > cu
+> > Adrian
+> > 
+> > 
 > 
-> And this would be wrong, since this driver is for GPIO LEDs only, not
-> for all LEDs that OF can describe. In future there could be OF PWM LEDs
-> or something like this.
-
-Ok, will these be a separate driver or combined into the gpio driver?
-
-> > I'm mainly concerned with the more user visible bits like the name of
-> > the .c file, the wording of the Kconfig option and the module
-> > description. We need to play down the GPIO bit and play up the
-> > openfirmware bindings bit.
+> ...
 > 
-> Hm... file name is leds-of-gpio.c, how could I play up the "of" bit more
-> than this? ;-)
-
-Spell out openfirmware :). I initially had no idea "of == openfirmware"
-and I suspect others won't either...
-
-> > As an example the Kconfig says "LED Support for GPIO connected LEDs"
-> > which its not, the bit about openfirmware bindings is in brackets and
-> > hence looks incidental.
+> >    frv-linux-ld    -r -o init/built-in.o init/main.o init/version.o init/mounts.o init/noinitramfs.o 
+> > frv-linux-ld: init/mounts.o: compiled with -fpic and linked with modules that use non-pic relocations
+> > frv-linux-ld: failed to merge target specific data of file init/mounts.o
+> > make[1]: *** [init/built-in.o] Error 1
+> > make: *** [init] Error 2
 > 
-> As for Kconfig, yeah.. probably I can improve the wording. How about
-> "OpenFirmware bindings for GPIO connected LEDs"? Would that work?
+> This regression was introduced between 2008-05-02 10:10am and
+> 2008-07-09 5:45pm PDT.  Does ld from binutils 2.18.50.0.7 work
+> on the same init/main.o init/version.o init/mounts.o
+> init/noinitramfs.o? If yes, please open a bug report at
+> 
+> http://www.sourceware.org/bugzilla/
 
-Yes, thats better. I think basically we need to spell out OF a bit more.
-Its probably obvious to powerpc people but not everyone else.
+No, it does not work with these .o files.
 
-Cheers,
+> with those .o files. If not, please find out why.
 
-Richard
+Tried it the other way round:
+- compiled with 2.18.50.0.7.
+- then changed binutils to 2.18.50.0.8
+
+Works:
+frv-linux-ld    -r -o init/built-in.o init/main.o init/version.o init/mounts.o init/noinitramfs.o
+
+Fails:
+frv-linux-ld    -r -o init/mounts.o init/do_mounts.o
+frv-linux-ld    -r -o init/built-in.o init/main.o init/version.o init/mounts.o init/noinitramfs.o
 
 
+I did an "frv-linux-objdump  -Dx" on the init/mounts.o files generated 
+with both binutils versions, and the diff is:
+
+
+--- working	2008-07-15 16:34:49.000000000 +0300
++++ broken	2008-07-15 16:34:40.000000000 +0300
+ architecture: fr450, flags 0x00000011:
+ HAS_RELOC, HAS_SYMS
+ start address 0x00000000
+-private flags = 0x800020d: -mcpu=fr450 -mgpr-32 -msoft-float non-pic relocations
++private flags = 0x800030d: -mcpu=fr450 -mgpr-32 -msoft-float -fpic non-pic relocations
+ 
+ Sections:
+ Idx Name          Size      VMA       LMA       File off  Algn
+
+
+Is this an ld bug?
+
+
+> Thanks.
+> 
+> H.J.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
