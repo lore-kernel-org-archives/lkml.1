@@ -1,80 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763863AbYGOVVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764029AbYGOVVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763863AbYGOVVT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 17:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762297AbYGOVUs
+	id S1764029AbYGOVVj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 17:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755395AbYGOVV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 17:20:48 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42659 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761387AbYGOVUr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 17:20:47 -0400
-Date: Tue, 15 Jul 2008 17:19:55 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@devserv.devel.redhat.com
-To: torvalds@linux-foundation.org
-cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 4/4] Don't crash on IOMMU overflow in A100U2W driver
-In-Reply-To: <Pine.LNX.4.64.0807151014180.24544@devserv.devel.redhat.com>
-Message-ID: <Pine.LNX.4.64.0807151718410.4356@devserv.devel.redhat.com>
-References: <Pine.LNX.4.64.0807151008370.24544@devserv.devel.redhat.com>
- <Pine.LNX.4.64.0807151011350.24544@devserv.devel.redhat.com>
- <Pine.LNX.4.64.0807151012200.24544@devserv.devel.redhat.com>
- <Pine.LNX.4.64.0807151014180.24544@devserv.devel.redhat.com>
+	Tue, 15 Jul 2008 17:21:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60696 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753814AbYGOVV2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 17:21:28 -0400
+Date: Tue, 15 Jul 2008 14:20:11 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [GIT pull] x86 updates
+In-Reply-To: <alpine.LFD.1.10.0807152249270.3283@apollo.tec.linutronix.de>
+Message-ID: <alpine.LFD.1.10.0807151417440.2867@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0807152249270.3283@apollo.tec.linutronix.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=ISO-8859-7
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Handle IOMMU overflow correctly, by retrying. IOMMU errors can happen and 
-drivers must deal with them.
 
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
----
- drivers/scsi/a100u2w.c |   11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
 
-Index: linux-2.6.26-fast/drivers/scsi/a100u2w.c
-===================================================================
---- linux-2.6.26-fast.orig/drivers/scsi/a100u2w.c	2008-07-15 15:49:39.000000000 +0200
-+++ linux-2.6.26-fast/drivers/scsi/a100u2w.c	2008-07-15 16:04:50.000000000 +0200
-@@ -840,7 +840,7 @@ static irqreturn_t orc_interrupt(struct 
-  *	Build a host adapter control block from the SCSI mid layer command
-  */
- 
--static void inia100_build_scb(struct orc_host * host, struct orc_scb * scb, struct scsi_cmnd * cmd)
-+static int inia100_build_scb(struct orc_host * host, struct orc_scb * scb, struct scsi_cmnd * cmd)
- {				/* Create corresponding SCB     */
- 	struct scatterlist *sg;
- 	struct orc_sgent *sgent;		/* Pointer to SG list           */
-@@ -865,7 +865,8 @@ static void inia100_build_scb(struct orc
- 	sgent = (struct orc_sgent *) & escb->sglist[0];
- 
- 	count_sg = scsi_dma_map(cmd);
--	BUG_ON(count_sg < 0);
-+	if (count_sg < 0)
-+		return count_sg;
- 	BUG_ON(count_sg > TOTAL_SG_ENTRY);
- 
- 	/* Build the scatter gather lists */
-@@ -898,6 +899,7 @@ static void inia100_build_scb(struct orc
- 		scb->tag_msg = 0;	/* No tag support               */
- 	}
- 	memcpy(scb->cdb, cmd->cmnd, scb->cdb_len);
-+	return 0;
- }
- 
- /**
-@@ -921,7 +923,10 @@ static int inia100_queue(struct scsi_cmn
- 	if ((scb = orc_alloc_scb(host)) == NULL)
- 		return SCSI_MLQUEUE_HOST_BUSY;
- 
--	inia100_build_scb(host, scb, cmd);
-+	if (inia100_build_scb(host, scb, cmd)) {
-+		orc_release_scb(host, scb);
-+		return SCSI_MLQUEUE_HOST_BUSY;
-+	}
- 	orc_exec_scb(host, scb);	/* Start execute SCB            */
- 	return 0;
- }
+On Tue, 15 Jul 2008, Thomas Gleixner wrote:
+>
+> Please pull the latest x86/urgent git tree from:
+> 
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86/urgent
+
+Hmm> "Already up-to-date"?
+
+Also, your other tree seems to also have added annoying warnings:
+
+  arch/x86/kernel/acpi/boot.c: In function ¡acpi_parse_fadt¢:
+  arch/x86/kernel/acpi/boot.c:747: warning: format ¡%#x¢ expects type ¡unsigned int¢, but argument 2 has type ¡long unsigned int¢
+
+Grr.
+
+Guys, stop sending me crap. A _little_ bit of testing would be good.
+
+		Linus
