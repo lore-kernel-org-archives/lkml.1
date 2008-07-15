@@ -1,59 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761561AbYGOCy7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761765AbYGOCzj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761561AbYGOCy7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 22:54:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754704AbYGOCyv
+	id S1761765AbYGOCzj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 22:55:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755864AbYGOCz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 22:54:51 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:40793 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751661AbYGOCyu (ORCPT
+	Mon, 14 Jul 2008 22:55:29 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:38316 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753877AbYGOCz2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 22:54:50 -0400
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
-	in-kernel, use it in more drivers.
-From: David Woodhouse <dwmw2@infradead.org>
-To: David Miller <davem@davemloft.net>
-Cc: torvalds@linux-foundation.org, david@lang.hm, arjan@infradead.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080714.185012.245476473.davem@davemloft.net>
-References: <20080714165956.7fe2d4ee@infradead.org>
-	 <alpine.DEB.1.10.0807141704120.14223@asgard.lang.hm>
-	 <alpine.LFD.1.10.0807141729200.3017@woody.linux-foundation.org>
-	 <20080714.185012.245476473.davem@davemloft.net>
-Content-Type: text/plain
-Date: Mon, 14 Jul 2008 19:54:38 -0700
-Message-Id: <1216090479.27455.180.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 14 Jul 2008 22:55:28 -0400
+Date: Mon, 14 Jul 2008 20:55:27 -0600
+From: Alex Chiang <achiang@hp.com>
+To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Cc: linux-acpi@vger.kernel.org, Alex Chiang <achiang@hp.com>,
+       davem@davemloft.net
+Subject: [PATCH 10/14] [SPARC] Populate cpu_enabled_map
+Message-ID: <20080715025527.GB15452@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+	linux-acpi@vger.kernel.org, davem@davemloft.net
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-07-14 at 18:50 -0700, David Miller wrote:
-> From: Linus Torvalds <torvalds@linux-foundation.org>
-> Date: Mon, 14 Jul 2008 17:33:58 -0700 (PDT)
-> 
-> > The only reliable way to handle it is to load the firmware before the 
-> > suspend happens - preferably by simply never unloading it in the first 
-> > place.
-> 
-> That's what we were told was the huge benefit of moving some
-> of these drivers over to this request_firmware() stuff, it would
-> save memory.
+Populate the cpu_enabled_map correctly.
 
-There _are_ RAM benefits for a number of drivers, even when you load the
-firmware just once at initialisation time and keep it resident all the
-time the device is active (and no, I won't slap myself for saying it).
+Note that this patch does not actually make any decisions based
+on the contents of the map.
 
-The tg3 driver is a prime example -- it contains three separate firmware
-images for different revisions of the card, but you'll almost never
-actually need all three. Mostly you'll only need _one_ of them.
+However, as the map is presented via sysfs in:
 
--- 
-dwmw2
+	/sys/devices/system/cpu/
+
+It should be populated correctly.
+
+Signed-off-by: Alex Chiang <achiang@hp.com>
+Cc: David S. Miller <davem@davemloft.net>
+---
+
+ arch/sparc/kernel/smp.c     |    1 +
+ arch/sparc64/kernel/mdesc.c |    1 +
+ arch/sparc64/kernel/smp.c   |    1 +
+ 3 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/arch/sparc/kernel/smp.c b/arch/sparc/kernel/smp.c
+index 6724ab9..154f32c 100644
+--- a/arch/sparc/kernel/smp.c
++++ b/arch/sparc/kernel/smp.c
+@@ -343,6 +343,7 @@ void __init smp_setup_cpu_possible_map(void)
+ 		if (mid < NR_CPUS) {
+ 			cpu_set(mid, phys_cpu_present_map);
+ 			cpu_set(mid, cpu_present_map);
++			cpu_set(mid, cpu_enabled_map);
+ 		}
+ 		instance++;
+ 	}
+diff --git a/arch/sparc64/kernel/mdesc.c b/arch/sparc64/kernel/mdesc.c
+index dde52bc..5a77dad 100644
+--- a/arch/sparc64/kernel/mdesc.c
++++ b/arch/sparc64/kernel/mdesc.c
+@@ -827,6 +827,7 @@ void __cpuinit mdesc_fill_in_cpu_data(cpumask_t mask)
+ 
+ #ifdef CONFIG_SMP
+ 		cpu_set(cpuid, cpu_present_map);
++		cpu_set(cpuid, cpu_enabled_map);
+ #endif
+ 
+ 		c->core_id = 0;
+diff --git a/arch/sparc64/kernel/smp.c b/arch/sparc64/kernel/smp.c
+index fa63c68..652992a 100644
+--- a/arch/sparc64/kernel/smp.c
++++ b/arch/sparc64/kernel/smp.c
+@@ -1414,6 +1414,7 @@ void __cpu_die(unsigned int cpu)
+ 			hv_err = sun4v_cpu_stop(cpu);
+ 			if (hv_err == HV_EOK) {
+ 				cpu_clear(cpu, cpu_present_map);
++				cpu_clear(cpu, cpu_enabled_map);
+ 				break;
+ 			}
+ 		} while (--limit > 0);
 
