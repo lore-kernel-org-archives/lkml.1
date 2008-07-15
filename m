@@ -1,128 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760560AbYGOOA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758004AbYGOODO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760560AbYGOOA6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 10:00:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750770AbYGOOAt
+	id S1758004AbYGOODO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 10:03:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750866AbYGOOC6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 10:00:49 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:37391 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754458AbYGOOAq (ORCPT
+	Tue, 15 Jul 2008 10:02:58 -0400
+Received: from casper.infradead.org ([85.118.1.10]:54600 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750814AbYGOOC6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 10:00:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent:from;
-        b=MyBl2x1+nQbk6KQU9C/3dxwf7FfASIZaIOWPo1FJiMMRhQxw1I8NX7lQ/ig3r9SDqp
-         V2lJz5bnTmUaxxUVaMYX9JpHpEaUgsXwWqmgoFKIg39e0ilS4eFYEt6fzPyxyh4cRBrU
-         j7QgoXBN+KK0dnUZb4yQ7YpOz1xdvB3J7RMXc=
-Date: Tue, 15 Jul 2008 07:00:40 -0700
-To: Adrian Bunk <bunk@kernel.org>
-Cc: dhowells@redhat.com, sam@ravnborg.org, linux-kernel@vger.kernel.org,
-       linux-kbuild@vger.kernel.org
-Subject: Re: binutils 2.18.50.0.8 frv build error
-Message-ID: <20080715140040.GA8580@lucon.org>
-References: <20080715121327.GA24533@cs181140183.pp.htv.fi> <20080715132005.GA6517@lucon.org> <20080715134747.GD24533@cs181140183.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080715134747.GD24533@cs181140183.pp.htv.fi>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "H.J. Lu" <hjl.tools@gmail.com>
+	Tue, 15 Jul 2008 10:02:58 -0400
+Subject: Re: [patch 01/15] Kernel Tracepoints
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
+       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Paul E McKenney <paulmck@linux.vnet.ibm.com>
+In-Reply-To: <20080715132543.GB20037@Krystal>
+References: <20080709145929.352201601@polymtl.ca>
+	 <20080709150043.693920317@polymtl.ca> <1216108237.12595.122.camel@twins>
+	 <20080715132543.GB20037@Krystal>
+Content-Type: text/plain
+Date: Tue, 15 Jul 2008 16:03:13 +0200
+Message-Id: <1216130593.12595.189.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 04:47:47PM +0300, Adrian Bunk wrote:
-> On Tue, Jul 15, 2008 at 06:20:05AM -0700, H.J. Lu wrote:
-> > On Tue, Jul 15, 2008 at 03:13:27PM +0300, Adrian Bunk wrote:
-> > > Toolchain:
-> > > - gcc 4.3.1
-> > > - binutils 2.18.50.0.7 and 2.18.50.0.8
-> > > - configured for frv-linux
-> > > - kernel 2.6.26
-> > > 
-> > > Builds fine when using binutils 2.18.50.0.7,
-> > > but fails as follows with binutils 2.18.50.0.8:
-> > > 
-> > > <--  snip  -->
-> > > 
-> > > ...
-> > >   HOSTCC  scripts/kallsyms
-> > >   CC      init/main.o
-> > >   CHK     include/linux/compile.h
-> > >   UPD     include/linux/compile.h
-> > >   CC      init/version.o
-> > >   CC      init/do_mounts.o
-> > >   LD      init/mounts.o
-> > >   CC      init/noinitramfs.o
-> > >   LD      init/built-in.o
-> > > frv-linux-ld: init/mounts.o: compiled with -fpic and linked with modules that use non-pic relocations
-> > > frv-linux-ld: failed to merge target specific data of file init/mounts.o
-> > > make[2]: *** [init/built-in.o] Error 1
-> > > 
-> > > <--  snip  -->
-> > > 
-> > > Complete verbose log below.
-> > > 
-> > > Any hints what's going wrong?
-> > > 
-> > > cu
-> > > Adrian
-> > > 
-> > > 
+On Tue, 2008-07-15 at 09:25 -0400, Mathieu Desnoyers wrote:
+> * Peter Zijlstra (peterz@infradead.org) wrote:
+> > On Wed, 2008-07-09 at 10:59 -0400, Mathieu Desnoyers wrote:
+
+> > > +#define __DO_TRACE(tp, proto, args)					\
+> > > +	do {								\
+> > > +		int i;							\
+> > > +		void **funcs;						\
+> > > +		preempt_disable();					\
+> > > +		funcs = (tp)->funcs;					\
+> > > +		smp_read_barrier_depends();				\
+> > > +		if (funcs) {						\
+> > > +			for (i = 0; funcs[i]; i++) {			\
 > > 
-> > ...
+> > Also, why is the preempt_disable needed?
 > > 
-> > >    frv-linux-ld    -r -o init/built-in.o init/main.o init/version.o init/mounts.o init/noinitramfs.o 
-> > > frv-linux-ld: init/mounts.o: compiled with -fpic and linked with modules that use non-pic relocations
-> > > frv-linux-ld: failed to merge target specific data of file init/mounts.o
-> > > make[1]: *** [init/built-in.o] Error 1
-> > > make: *** [init] Error 2
+> 
+> Addition and removal of tracepoints is synchronized by RCU using the
+> scheduler (and preempt_disable) as guarantees to find a quiescent state
+> (this is really RCU "classic"). The update side uses rcu_barrier_sched()
+> with call_rcu_sched() and the read/execute side uses
+> "preempt_disable()/preempt_enable()".
+
+> > > +static void tracepoint_entry_free_old(struct tracepoint_entry *entry, void *old)
+> > > +{
+> > > +	if (!old)
+> > > +		return;
+> > > +	entry->oldptr = old;
+> > > +	entry->rcu_pending = 1;
+> > > +	/* write rcu_pending before calling the RCU callback */
+> > > +	smp_wmb();
+> > > +#ifdef CONFIG_PREEMPT_RCU
+> > > +	synchronize_sched();	/* Until we have the call_rcu_sched() */
+> > > +#endif
 > > 
-> > This regression was introduced between 2008-05-02 10:10am and
-> > 2008-07-09 5:45pm PDT.  Does ld from binutils 2.18.50.0.7 work
-> > on the same init/main.o init/version.o init/mounts.o
-> > init/noinitramfs.o? If yes, please open a bug report at
+> > Does this have something to do with the preempt_disable above?
 > > 
-> > http://www.sourceware.org/bugzilla/
 > 
-> No, it does not work with these .o files.
+> Yes, it does. We make sure the previous array containing probes, which
+> has been scheduled for deletion by the rcu callback, is indeed freed
+> before we proceed to the next update. It therefore limits the rate of
+> modification of a single tracepoint to one update per RCU period. The
+> objective here is to permit fast batch add/removal of probes on
+> _different_ tracepoints.
 > 
-> > with those .o files. If not, please find out why.
-> 
-> Tried it the other way round:
-> - compiled with 2.18.50.0.7.
-> - then changed binutils to 2.18.50.0.8
-> 
-> Works:
-> frv-linux-ld    -r -o init/built-in.o init/main.o init/version.o init/mounts.o init/noinitramfs.o
-> 
-> Fails:
-> frv-linux-ld    -r -o init/mounts.o init/do_mounts.o
-> frv-linux-ld    -r -o init/built-in.o init/main.o init/version.o init/mounts.o init/noinitramfs.o
-> 
-> 
-> I did an "frv-linux-objdump  -Dx" on the init/mounts.o files generated 
-> with both binutils versions, and the diff is:
-> 
-> 
-> --- working	2008-07-15 16:34:49.000000000 +0300
-> +++ broken	2008-07-15 16:34:40.000000000 +0300
->  architecture: fr450, flags 0x00000011:
->  HAS_RELOC, HAS_SYMS
->  start address 0x00000000
-> -private flags = 0x800020d: -mcpu=fr450 -mgpr-32 -msoft-float non-pic relocations
-> +private flags = 0x800030d: -mcpu=fr450 -mgpr-32 -msoft-float -fpic non-pic relocations
->  
+> This use of "synchronize_sched()" can be changed for call_rcu_sched() in
+> linux-next, I'll fix this.
 
-Are you saying "ld -r init/do_mounts.o" changed private flags? If
-yes, please open a bug report at
+Right, I thought as much, its just that the raw preempt_disable()
+without comments leaves one wondering if there is anything else going
+on.
 
-http://www.sourceware.org/bugzilla/
+Would it make sense to add:
 
-with the original init/do_mounts.o.
+rcu_read_sched_lock()
+rcu_read_sched_unlock()
 
+to match:
 
-H.J.
+call_rcu_sched()
+rcu_barrier_sched()
+synchronize_sched()
+
+?
+
