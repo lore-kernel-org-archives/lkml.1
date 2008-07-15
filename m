@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761415AbYGOCfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761903AbYGOCfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761415AbYGOCfZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 22:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760565AbYGOCeE
+	id S1761903AbYGOCfs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 22:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbYGOCeI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 22:34:04 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:11538 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759329AbYGOCeB (ORCPT
+	Mon, 14 Jul 2008 22:34:08 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:15366 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760782AbYGOCeG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 22:34:01 -0400
+	Mon, 14 Jul 2008 22:34:06 -0400
 From: Alex Chiang <achiang@hp.com>
-Subject: [PATCH 03/14] [ALPHA] Populate cpu_enabled_map
+Subject: [PATCH 04/14] [ARM] Populate cpu_enabled_map
 To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
 Cc: linux-acpi@vger.kernel.org, Alex Chiang <achiang@hp.com>,
-       Richard Henderson <rth@twiddle.net>
-Date: Mon, 14 Jul 2008 20:33:59 -0600
-Message-ID: <20080715023359.2528.87647.stgit@blender.achiang>
+       Catalin Marinas <catalin.marinas@arm.com>,
+       Russell King <rmk@dyn-67.arm.linux.org.uk>
+Date: Mon, 14 Jul 2008 20:34:05 -0600
+Message-ID: <20080715023405.2528.34106.stgit@blender.achiang>
 In-Reply-To: <20080715023344.2528.1836.stgit@blender.achiang>
 References: <20080715023344.2528.1836.stgit@blender.achiang>
 User-Agent: StGIT/0.14.3
@@ -41,51 +42,27 @@ However, as the map is presented via sysfs in:
 It should be populated correctly.
 
 Signed-off-by: Alex Chiang <achiang@hp.com>
-Cc: Richard Henderson <rth@twiddle.net>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Russell King <rmk@dyn-67.arm.linux.org.uk>
 ---
 
- arch/alpha/kernel/process.c |    2 ++
- arch/alpha/kernel/smp.c     |    2 ++
- 2 files changed, 4 insertions(+), 0 deletions(-)
+ arch/arm/mach-realview/platsmp.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/arch/alpha/kernel/process.c b/arch/alpha/kernel/process.c
-index 96ed82f..7a261e2 100644
---- a/arch/alpha/kernel/process.c
-+++ b/arch/alpha/kernel/process.c
-@@ -94,6 +94,7 @@ common_shutdown_1(void *generic_ptr)
- 		flags |= 0x00040000UL; /* "remain halted" */
- 		*pflags = flags;
- 		cpu_clear(cpuid, cpu_present_map);
-+		cpu_clear(cpuid, cpu_enabled_map);
- 		halt();
- 	}
- #endif
-@@ -120,6 +121,7 @@ common_shutdown_1(void *generic_ptr)
- #ifdef CONFIG_SMP
- 	/* Wait for the secondaries to halt. */
- 	cpu_clear(boot_cpuid, cpu_present_map);
-+	cpu_clear(boot_cpuid, cpu_enabled_map);
- 	while (cpus_weight(cpu_present_map))
- 		barrier();
- #endif
-diff --git a/arch/alpha/kernel/smp.c b/arch/alpha/kernel/smp.c
-index 2525692..ec53061 100644
---- a/arch/alpha/kernel/smp.c
-+++ b/arch/alpha/kernel/smp.c
-@@ -436,6 +436,7 @@ setup_smp(void)
- 			if ((cpu->flags & 0x1cc) == 0x1cc) {
- 				smp_num_probed++;
- 				cpu_set(i, cpu_present_map);
-+				cpu_set(i, cpu_enabled_map);
- 				cpu->pal_revision = boot_cpu_palrev;
- 			}
+diff --git a/arch/arm/mach-realview/platsmp.c b/arch/arm/mach-realview/platsmp.c
+index 8e813ed..c33f298 100644
+--- a/arch/arm/mach-realview/platsmp.c
++++ b/arch/arm/mach-realview/platsmp.c
+@@ -241,8 +241,10 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
+ 	 * Initialise the present map, which describes the set of CPUs
+ 	 * actually populated at the present time.
+ 	 */
+-	for (i = 0; i < max_cpus; i++)
++	for (i = 0; i < max_cpus; i++) {
+ 		cpu_set(i, cpu_present_map);
++		cpu_set(i, cpu_enabled_map);
++	}
  
-@@ -469,6 +470,7 @@ smp_prepare_cpus(unsigned int max_cpus)
- 	/* Nothing to do on a UP box, or when told not to.  */
- 	if (smp_num_probed == 1 || max_cpus == 0) {
- 		cpu_present_map = cpumask_of_cpu(boot_cpuid);
-+		cpu_enabled_map = cpumask_of_cpu(boot_cpuid);
- 		printk(KERN_INFO "SMP mode deactivated.\n");
- 		return;
- 	}
+ 	/*
+ 	 * Initialise the SCU if there are more than one CPU and let
 
