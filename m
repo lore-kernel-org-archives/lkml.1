@@ -1,87 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762885AbYGOTIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762922AbYGOTJo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762885AbYGOTIa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 15:08:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761608AbYGOTIL
+	id S1762922AbYGOTJo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 15:09:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758004AbYGOTJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 15:08:11 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39099 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762232AbYGOTIK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 15:08:10 -0400
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
-	in-kernel, use it in more drivers.
-From: David Woodhouse <dwmw2@infradead.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Frans Pop <elendil@planet.nl>, arjan@infradead.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+	Tue, 15 Jul 2008 15:09:32 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:38541 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758282AbYGOTJb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 15:09:31 -0400
+Message-ID: <487CF5E4.2070400@garzik.org>
+Date: Tue, 15 Jul 2008 15:09:24 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: david@lang.hm, Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, alan@lxorguk.ukuu.org.uk,
        linux-kernel@vger.kernel.org
-In-Reply-To: <487CF29E.5000009@garzik.org>
-References: <1216077806.27455.85.camel@shinybook.infradead.org>
-	 <20080714164119.99c33d5b.akpm@linux-foundation.org>
-	 <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>
-	 <487C0365.5030203@garzik.org>
-	 <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
-	 <200807151757.10626.elendil@planet.nl>
-	 <20080715180535.GA6080@khazad-dum.debian.net> <487CE917.3000000@garzik.org>
-	 <alpine.LFD.1.10.0807151122010.3017@woody.linux-foundation.org>
-	 <487CF29E.5000009@garzik.org>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 12:07:33 -0700
-Message-Id: <1216148853.27455.346.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
+ use it in more drivers.
+References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <alpine.DEB.1.10.0807141704120.14223@asgard.lang.hm> <alpine.LFD.1.10.0807141729200.3017@woody.linux-foundation.org> <alpine.DEB.1.10.0807141750290.14223@asgard.lang.hm> <alpine.LFD.1.10.0807141756361.3017@woody.linux-foundation.org> <alpine.DEB.1.10.0807141805300.14223@asgard.lang.hm> <alpine.LFD.1.10.0807141903260.3017@woody.linux-foundation.org> <487C585C.2060002@garzik.org> <alpine.LFD.1.10.0807150803580.3017@woody.linux-foundation.org> <487CD7FE.9010209@garzik.org> <alpine.LFD.1.10.0807151008450.3017@woody.linux-foundation.org> <487CDEC0.3090004@garzik.org> <alpine.LFD.1.10.0807151041080.3017@woody.linux-foundation.org> <487CEA73.9000408@garzik.org> <alpine.LFD.1.10.0807151124510.3017@woody.linux-foundation.org> <487CF01E.6000208@garzik.org> <alpine.LFD.1.10.0807151153020.3351@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807151153020.3351@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-15 at 14:55 -0400, Jeff Garzik wrote:
-> Linus Torvalds wrote:
-> > 
-> > On Tue, 15 Jul 2008, Jeff Garzik wrote:
-> > 
-> >> Henrique de Moraes Holschuh wrote:
-> >>> On Tue, 15 Jul 2008, Frans Pop wrote:
-> >>>> If I were able to compile firmware into the modules, the problem would be
-> >>>> solved in one go.
-> >>> And this thread would have been shorter, even. I hope someone decides to
-> >>> write that support instead of complaining ;-)
-> >> I've volunteered -- but if Linus and David will reject my code out of hand,
-> >> there is not much point in writing it.
-> > 
-> > Quite frankly, I don't think it's something to reject out of hand, but it 
-> > does sound pretty damn stupid.
-> > 
-> > Why compile them into the module, when that's just the _inflexible_ model?
+Linus Torvalds wrote:
 > 
-> Because it works today.
+> On Tue, 15 Jul 2008, Jeff Garzik wrote:
+>> That does not eliminate all problems, because build processes still have
+>> hardcoded assumptions about outputs.
 > 
-> Because that is what people and their scripts expect, today.
+> Tough. They need to get fixed.
 > 
-> Because people should not be forced to fix all their firmware-related 
-> breakage immediately, just to boot 2.6.27.
+> What's the downside of fixing them, again?
 
-On one hand, they don't -- the drivers I've updated in 2.6.27 aren't the
-ones they need to boot. I deliberately left drivers/net and drivers/scsi
-till later. I don't _expect_ any problems, but there's no rush -- we can
-iron out any kinks with the drivers I've done already, then merge the
-remaining updates into 2.6.28.
+Yes, they need fixing.
 
-One the other hand, they _do_ need to fix such breakage immediately, if
-they have it -- because what I'm doing here is nothing new. Most modern
-drivers use request_firmware() already.
+But without firmware-in-module this would be akin to adding kernel 
+module support in version 1.0.1, and forcing all distros to fix their 
+stuff immediately in order to upgrade from version 1.0.0.
 
-So if your userspace has this hypothetical "firmware-related breakage"
-of which you speak, then it already won't boot on machines with qla2xxx,
-which was converted to use request_firmware() in 2005. To pick but one
-example out of many.
+Permitting firmware-in-module means you do not force each distro, build 
+script, and user immediately into the new regime, with the associated 
+long list of breakage examples.
 
--- 
-dwmw2
+It's just sad because it feels "not the Linux way".
+
+The way this was rolled out just feels "harder", far less friendly on 
+the distros -- our customers -- than most other transitions.  Not as 
+hard as vmlinuz->kmodule and IDE->libata transitions, I grant, but still 
+  not the way we usually do things.
+
+Nobody was ever objecting to request_firmware().  It was always about 
+the removal of firmware-in-module and associated forced breakage on 
+distros and build processes.  The fallout of _that_ is the rich source 
+of breakage examples I've been pulling from.
+
+	Jeff
+
+
 
