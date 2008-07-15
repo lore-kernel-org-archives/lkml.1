@@ -1,83 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758206AbYGOWTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761232AbYGOWUP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758206AbYGOWTz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 18:19:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754966AbYGOWTs
+	id S1761232AbYGOWUP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 18:20:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754966AbYGOWT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 18:19:48 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:35453 "EHLO smtp5.pp.htv.fi"
+	Tue, 15 Jul 2008 18:19:59 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54801 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754163AbYGOWTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 18:19:47 -0400
-Date: Wed, 16 Jul 2008 01:19:41 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Frans Pop <elendil@planet.nl>, jeff@garzik.org, arjan@infradead.org,
-       akpm@linux-foundation.org, dwmw2@infradead.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
-	in-kernel, use it in more drivers.
-Message-ID: <20080715221941.GM24533@cs181140183.pp.htv.fi>
-References: <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org> <487C0365.5030203@garzik.org> <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org> <200807151757.10626.elendil@planet.nl> <1216149637.27242.65.camel@violet.holtmann.net> <alpine.LFD.1.10.0807151223290.3351@woody.linux-foundation.org> <1216150288.27242.75.camel@violet.holtmann.net> <alpine.LFD.1.10.0807151233580.3351@woody.linux-foundation.org> <1216151085.27242.86.camel@violet.holtmann.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	id S1758613AbYGOWT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 18:19:58 -0400
+Date: Tue, 15 Jul 2008 18:18:26 -0400
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
+Subject: Re: [RFC] systemtap: begin the process of using proper kernel APIs (part1: use kprobe symbol_name/offset instead of address)
+Message-ID: <20080715221826.GD4280@redhat.com>
+References: <1216146802.3312.95.camel__45052.4692344063$1216146917$gmane$org@localhost.localdomain> <y0mr69vj5p0.fsf@ton.toronto.redhat.com> <1216151526.3312.102.camel@localhost.localdomain> <20080715200718.GC4280@redhat.com> <1216153462.3312.126.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1216151085.27242.86.camel@violet.holtmann.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1216153462.3312.126.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 09:44:45PM +0200, Marcel Holtmann wrote:
-> Hi Linus,
+Hi -
+
+On Tue, Jul 15, 2008 at 03:24:22PM -0500, James Bottomley wrote:
+> [...]
+> > > > > This is highly undesirable because it represents a subversion of the
+> > > > > kernel API to gain access to unexported symbols.
+> > [...]
+> > Maybe, but what "subversion" are you talking about?
 > 
-> > > Personally I am against hacking file loading from within the kernel.
-> > > This is why we involved udev (or hotplug in the beginning). It allows
-> > > you to have userspace policy for the search paths etc.
-> > 
-> > Well, I'm personally against _forcing_ people to use udev. 
-> > 
-> > Yes, desktop distros generally will do so, since there are lots of complex 
-> > issues etc. But I don't think we've generally forced it on people if they 
-> > don't want it (ie I haven't tried it personally since the distro I used 
-> > started using udev, but I think you can still just ignore udev events and 
-> > set everything up statically).
-> > 
-> > And I don't think that's wrong. Which implies that setup things should 
-> > still generally at least allow us to avoid udev.
-> > 
-> > (But maybe I'm wrong, and everybody already uses udev just because they 
-> > couldn't be bothered not to).
+> using a hand crafted relocation function to gain access to kernel
+> symbols instead of the provided API.
+
+Please choose your words more carefully.  We don't "subvert" anything,
+where one would mean sneaking around some sort of protection.  We use
+an established, existing facility (placing kprobes by address).  We
+compute addresses correctly (an error would be obvious), and is
+conceptually not so different from an address being passed in at run
+time from /proc/kallsyms.
+
+
+> > Of course, but for our purposes, the kernel will be just one amongst
+> > many probing targets.  We will be tracking multiple symbol tables and
+> > unwind data for user-space.
 > 
-> I actually think that is the case here. udev is so lightweight and
-> really slim nowadays that not using it is a big drawback. There might be
-> some system out there that are still using a static /dev directory, but
-> for sure there are not many and even the embedded world doesn't really
-> mind.
->...
+> You're going to hand roll your own symbol resolution for user space too?
+> Isn't it pretty easy simply to get ld.so to do that for you?
 
-Depends on which embedded systems you look at.
+I don't see how.  We can't call into ld.so from kernel space.  One may
+need to probe ld.so itself.
 
-For MID devices that's definitely true, but there are also today still 
-cases where customers want fast startup times on < 200 MHz embedded 
-devices, and when every second counts you don't want to add a
-"Waiting for /dev to be fully populated" from udev to the bootup.
 
-(And on my computer (whose Linux installation predates the inclusion of 
- devfsd (sic) into the kernel) the static /dev also still works fine.)
+> [...] I made sure that pure addressed based kprobes still work even
+> when they have to use the symbol_name/offset resolution method
+> ... the new code just works out the closest symbol and applies an
+> offset.
 
-> Regards
-> 
-> Marcel
+(Not important, but did you consider the possibility that this chosen
+reference symbol may, for whatever reason, not be listed in the
+kernel's kprobe-assisting symbol table?)
 
-cu
-Adrian
 
--- 
+> > Again, please consider user-space.  The runtime will need similar
+> > symbol resolution code *for user space* anyway.  Keeping it in there
+> > for the kernel is no incremental complexity - if anything, the
+> > opposite.
+>
+> I really think there might have to be separate runtime pieces for
+> user space and for the kernel.  Trying to build a single scheme that
+> works in both places looks cumbersome.  In the separate case, the
+> kernel piece, which is potentially movable inside the kernel,
+> becomes a lot simpler. [...]
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+It may just be in the eye of the beholder.  To me, a single scheme
+that supports all the various address spaces (and kernel versions and
+configurations!) we deal with is just as appealing to me as increasing
+kernel specialization is to you.
 
+
+> OK, with -ffunction-sections you can't offset from _stext which
+> seems to be what _stp_module_relocate() uses.  [...]  That means
+> that each function address can potentially move depending on the
+> number of relocation stubs embedded between it and the next
+> function.
+
+I may be missing something, but doesn't all that happen during
+linking?  We process linked executables, not object files subject to
+further run-time relaxation/shrinkage.
+
+
+- FChE
