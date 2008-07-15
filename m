@@ -1,52 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760485AbYGOR4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761243AbYGOR5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760485AbYGOR4g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 13:56:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754883AbYGOR42
+	id S1761243AbYGOR5w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 13:57:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755176AbYGOR5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 13:56:28 -0400
-Received: from mail.lang.hm ([64.81.33.126]:40530 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753621AbYGOR41 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 13:56:27 -0400
-Date: Tue, 15 Jul 2008 10:56:34 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Willy Tarreau <w@1wt.eu>, David Miller <davem@davemloft.net>,
-       jeff@garzik.org, arjan@infradead.org, akpm@linux-foundation.org,
-       dwmw2@infradead.org, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
- use it in more drivers.
-In-Reply-To: <alpine.LFD.1.10.0807150843580.3017@woody.linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0807150933470.16109@asgard.lang.hm>
-References: <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org> <487C09EB.1050903@garzik.org> <alpine.LFD.1.10.0807141928540.3017@woody.linux-foundation.org> <20080714.194032.117461306.davem@davemloft.net> <alpine.LFD.1.10.0807141947540.3017@woody.linux-foundation.org>
- <20080715045848.GG1369@1wt.eu> <alpine.LFD.1.10.0807150747540.3017@woody.linux-foundation.org> <alpine.DEB.1.10.0807150759020.6370@asgard> <alpine.LFD.1.10.0807150843580.3017@woody.linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 15 Jul 2008 13:57:42 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:12986 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752157AbYGOR5l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 13:57:41 -0400
+Date: Tue, 15 Jul 2008 11:57:40 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 01/14] Introduce cpu_enabled_map and friends
+Message-ID: <20080715175740.GB10919@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
+	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+	linux-acpi@vger.kernel.org
+References: <20080715023344.2528.1836.stgit@blender.achiang> <20080715023349.2528.9423.stgit@blender.achiang> <20080715031512.GF14894@parisc-linux.org> <87wsjnxy4w.fsf@basil.nowhere.org> <20080715102130.GA22866@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080715102130.GA22866@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jul 2008, Linus Torvalds wrote:
+* Russell King <rmk+lkml@arm.linux.org.uk>:
+> On Tue, Jul 15, 2008 at 12:03:27PM +0200, Andi Kleen wrote:
+> > Matthew Wilcox <matthew@wil.cx> writes:
+> > >
+> > > I don't understand why we want to know about these CPUs.
+> > > Surely they should be 'possible', but not 'present'?  What
+> > > useful thing can Linux do with them?
+> > 
+> > He explained it in the intro, near the end (I nearly
+> > complained about this too when I hadn't finished reading it
+> > completely :):
+> > 
+> > |The big picture implication is that we can allow userspace
+> > |to interact with disabled CPUs. In this particular example,
+> > |we provide a knob that lets a sysadmin schedule any present
+> > |CPU for firmware deconfiguration or enablement.
+> > 
+> > The reason sounds pretty exotic, but ok.
+> 
+> I don't see why this needs to be cross architecture then -
+> shouldn't the generic kernel only be concerning itself with
+> things that are possible, present and/or online?
 
-> On Tue, 15 Jul 2008, david@lang.hm wrote:
->>
->> has a standard been defined for how to maintain different versions of firmware
->> for different versions of drivers yet?
->
-> No. We haven't had that possibility, probably largely because we haven't
-> even really had the ability (Davem and Jeff talk about "choice" and how
-> request_firmware() supposedly removes it, but they ignore the fact that it
-> very much cuts the other way too - request_firmware() _adds_ choice and
-> makes it easier for people to try to upgrade firmware without upgrading
-> the kernel).
+I suppose that's a fair statement. Touching all the archs for
+something 'exotic' like this does seem to be a bit of an
+overkill.
 
-and they aren't objecting to this choice being added. they just want to 
-keep the choice of working the other way (although they implicitly are 
-saying that they won't be doing a lot of testing of different firmware 
-versions becouse they do want to work the other way)
+My thought was that big SMP systems like ia64, possibly sparc and
+ppc, and increasingly, x86, might find something like this
+useful, as systems get larger and larger, and vendors are going
+to want to do RAS-ish features, like the ability to keep CPUs in
+firmware across reboots until told otherwise by the sysadmin.
 
-David Lang
+Right now, a 'present' CPU strongly implies 'online' as well,
+since we're calling cpu_up() for all 'present' CPUs in
+smp_init(). But this hurts if:
+
+	- you don't actually want to bring up all 'present' CPUs
+	- you still want to interact with these weirdo zombie
+	  CPUs that are 'present' but not 'online'
+
+That second item refers to creating a sysfs interface for each
+'present' CPU in topology_init().
+
+This feature puts a tax on smaller archs like arm, but maybe I
+could be smarter about it by using a 
+
+#define cpu_enabled_mask cpu_online_mask
+
+Hrm?
+
+> If you have an interface which allows you to change the
+> machines configuration in a machine specific way, shouldn't
+> that be something for that machine to support and forced upon
+> the entire kernel?
+
+I think that the generic kernel would be the appropriate place to
+create a place for these zombie CPUs, and give the vendor specific
+stuff a way to hook in.
+
+I'd be interested in learning if any of the other 'big' archs
+would have a use for something like this.
+
+Thanks.
+
+/ac
+
