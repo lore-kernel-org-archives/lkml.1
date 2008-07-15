@@ -1,68 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760980AbYGOWVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755928AbYGOWYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760980AbYGOWVA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 18:21:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbYGOWUx
+	id S1755928AbYGOWYR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 18:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbYGOWYD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 18:20:53 -0400
-Received: from hpsmtp-eml14.kpnxchange.com ([213.75.38.114]:37099 "EHLO
-	hpsmtp-eml14.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752095AbYGOWUw convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 18:20:52 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel, use it in more drivers.
-Date: Wed, 16 Jul 2008 00:20:48 +0200
-User-Agent: KMail/1.9.9
-Cc: david@lang.hm, Marcel Holtmann <marcel@holtmann.org>,
-       David Woodhouse <dwmw2@infradead.org>, jeff@garzik.org,
-       arjan@infradead.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-References: <1216077806.27455.85.camel@shinybook.infradead.org> <alpine.DEB.1.10.0807151426021.16109@asgard.lang.hm> <alpine.LFD.1.10.0807151436400.2867@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807151436400.2867@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Tue, 15 Jul 2008 18:24:03 -0400
+Received: from atlantis.8hz.com ([212.129.237.78]:55314 "EHLO atlantis.8hz.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751661AbYGOWYB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 18:24:01 -0400
+Date: Tue, 15 Jul 2008 22:23:59 +0000
+From: Sean Young <sean@mess.org>
+To: "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
+Subject: Re: Regression: boot failure on AMD Elan TS-5500
+Message-ID: <20080715222359.GA70973@atlantis.8hz.com>
+References: <200806162327.34912.rusty@rustcorp.com.au> <48566C88.6000702@goop.org> <20080616161944.GA53539@atlantis.8hz.com> <20080630214347.GA57988@atlantis.8hz.com> <4869558A.9020907@goop.org> <48695871.8000805@zytor.com> <48695F88.9080905@goop.org> <48696167.6050000@zytor.com> <20080701195942.GA76608@atlantis.8hz.com> <20080701202014.GA77013@atlantis.8hz.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807160020.49496.elendil@planet.nl>
-X-OriginalArrivalTime: 15 Jul 2008 22:20:49.0970 (UTC) FILETIME=[0958F920:01C8E6C9]
+In-Reply-To: <20080701202014.GA77013@atlantis.8hz.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 15 July 2008, you wrote:
-> Why is it suddenly so important that a kernel be 'zero impact' for that
-> module case, when it's never been zero impact for that case before? You
-> had to rewrite the initrd to begin with, but now you're not willing to
-> do it again, just because you have to rewrite it slightly
-> _differently_?
+On Tue, Jul 01, 2008 at 08:20:14PM +0000, Sean Young wrote:
+> On Tue, Jul 01, 2008 at 07:59:42PM +0000, Sean Young wrote:
+> > On Mon, Jun 30, 2008 at 03:42:47PM -0700, H. Peter Anvin wrote:
+> > > diff --git a/arch/x86/boot/pmjump.S b/arch/x86/boot/pmjump.S
+> > > index ab049d4..141b6e2 100644
+> > > --- a/arch/x86/boot/pmjump.S
+> > > +++ b/arch/x86/boot/pmjump.S
+> > > @@ -33,6 +33,8 @@ protected_mode_jump:
+> > >  	movw	%cs, %bx
+> > >  	shll	$4, %ebx
+> > >  	addl	%ebx, 2f
+> > > +	jmp	1f			# Short jump to serialize on 386/486
+> > > +1:
+> > >  
+> > >  	movw	$__BOOT_DS, %cx
+> > >  	movw	$__BOOT_TSS, %di
+> > > @@ -40,8 +42,6 @@ protected_mode_jump:
+> > >  	movl	%cr0, %edx
+> > >  	orb	$X86_CR0_PE, %dl	# Protected mode
+> > >  	movl	%edx, %cr0
+> > > -	jmp	1f			# Short jump to serialize on 386/486
+> > > -1:
+> > >  
+> > >  	# Transition to 32-bit mode
+> > >  	.byte	0x66, 0xea		# ljmpl opcode
+> > 
+> > I'm afraid it doesn't work. Maybe I can find something in the AMD Elan
+> > documentation. Would a fence make sense?
+> 
+> I was just trying to confirm this with postive and negative tests which 
+> is failing. I'm probably being an idiot, please let systematically test
+> this.
 
-Because in most cases users do not write and maintain the scripts used to 
-build custom kernels themselves. They use (huge and way too) tools like 
-Debian's 'make-kpkg' for that.
+When I bisected this issue between latest and 2.6.23 the issue seemed to be
+here (round about 2.6.24-rc1). Trying to repeat the same things on latest 
+just led to confusion.
 
-Because users may want to build a custom 2.6.27 in for example a Debian 
-Etch environment using the make-kpkg package that is available in that 
-release of Debian. Or even a Debian Lenny environment (Lenny is about to 
-be frozen so is very unlikely to include whatever may be needed for 
-this).
+So I've started from scratch with contemporary trees and found something 
+very different.
 
-Why is it good to extend the lifetime of the i386 and amd64 symlinks for 
-x86 images by an extra few years so that older versions of kernel 
-packaging tools - like make-kpkg - don't break, but is breaking the exact 
-same tools with this firmware change suddenly OK?
+2.6.25: works
+2.6.25.5: works
+2.6.25.6: broken
+2.6.25.10: broken
+2.6.26: works
 
-Users _want_ to be able to build new kernels in older environments. Why 
-take that option away from them? Why force them through the pain of 
-partial upgrades of their userspace if it can so easily be avoided?
+Now the issue which was introduced in 2.6.25.6 is that a rdtsc will be done
+even though this CPU does not support it (before console_init(), leaving
+me with only one led for output!). This issue has been fixed in 2.6.26 but 
+not in 2.6.25-stable.
 
->From my PoV adding this option is a no-brainer: if Jeff is willing to do 
-the work, then what harm can it do? The benefits to me are obvious.
-I really don't get what you have against it.
+The protected mode jump was just a red herring (or at least whatever was 
+broken back then is fixed now); 2.6.26 is working fine and that's good 
+enough for me.
 
-Cheers,
-FJP
+Thanks for all the help,
 
-P.S. Sorry to keep coming up with Debian examples, but that's the 
-environment I know.
+Sean
