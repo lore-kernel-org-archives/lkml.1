@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756243AbYGOIMG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754957AbYGOIMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756243AbYGOIMG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 04:12:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754305AbYGOILv
+	id S1754957AbYGOIMe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 04:12:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbYGOIMR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 04:11:51 -0400
-Received: from ozlabs.org ([203.10.76.45]:43777 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753570AbYGOILt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 04:11:49 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Max Krasnyansky <maxk@qualcomm.com>
-Subject: Re: [PATCH] stopmachine: add stopmachine_timeout
-Date: Tue, 15 Jul 2008 18:09:59 +1000
-User-Agent: KMail/1.9.9
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       Zachary Amsden <zach@vmware.com>
-References: <487B05CE.1050508@jp.fujitsu.com> <20080714212026.GA6705@osiris.boeblingen.de.ibm.com> <487C0A76.8060401@qualcomm.com>
-In-Reply-To: <487C0A76.8060401@qualcomm.com>
+	Tue, 15 Jul 2008 04:12:17 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:44121 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753474AbYGOIMP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 04:12:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=KxAthOUjag+Crsx3tLrtct3YfSr00AbbzcqsKpmMWYiwwo52TDnFQJIiiav065b5Ga
+         p1Zx6DbRWm2a+cCHgraOFtnPTkOMxZi0MOUwMxzzw6HwRaCg6kalFr8mz5y9RT0Ehm2T
+         i6vBEUotTgX1g6kUTOvHH3wRg4KRIDKCUJDxw=
+Date: Tue, 15 Jul 2008 17:12:10 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] workqueue: proper error unwinding in cpu hotplug error path
+Message-ID: <20080715081210.GC22068@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807151810.00365.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 15 July 2008 12:24:54 Max Krasnyansky wrote:
-> Heiko Carstens wrote:
-> > On Mon, Jul 14, 2008 at 11:56:18AM -0700, Jeremy Fitzhardinge wrote:
-> > This is asking for trouble... a config option to disable this would be
-> > nice. But as I don't know which problem this patch originally addresses
-> > it might be that this is needed anyway. So lets see why we need it first.
->
-> How about this. We'll make this a sysctl, as Rusty already did, and set the
-> default to 0 which means "never timeout". That way crazy people like me who
-> care about this scenario can enable this feature.
+Add proper error unwinding in error path in CPU_UP_PREPARE notifier.
 
-Indeed, this was my thought too.  s390 can initialize it to zero somewhere in 
-their boot code.
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+---
+ kernel/workqueue.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-> btw Rusty, I just had this "why didn't I think of that" moments. This is
-> actually another way of handling my workload. I mean it certainly does not
-> fix the root case of the problems and we still need other things that we
-> talked about (non-blocking module delete, lock-free module insertion, etc)
-> but at least in the mean time it avoids wedging the machines for good.
-> btw I'd like that timeout in milliseconds. I think 5 seconds is way tooooo
-> long :).
-
-We can make it ms, sure.  200ms should be plenty of time: worst I ever saw was 
-150ms, and that was some weird Power box doing crazy stuff.  I wouldn't be 
-surprised if you'd never see 1ms on your hardware.
-
-The ipi idea would handle your case a little more nicely, too, but that's 
-probably not going to hit this merge window.
-
-Cheers,
-Rusty.
+Index: 2.6-mmotm/kernel/workqueue.c
+===================================================================
+--- 2.6-mmotm.orig/kernel/workqueue.c
++++ 2.6-mmotm/kernel/workqueue.c
+@@ -928,6 +928,15 @@ static int __devinit workqueue_cpu_callb
+ 				break;
+ 			printk(KERN_ERR "workqueue [%s] for %i failed\n",
+ 				wq->name, cpu);
++
++			list_for_each_entry_continue_reverse(wq, &workqueues,
++							list) {
++				cwq = per_cpu_ptr(wq->cpu_wq, cpu);
++				start_workqueue_thread(cwq, -1);
++				cleanup_workqueue_thread(cwq);
++			}
++			cpu_clear(cpu, cpu_populated_map);
++
+ 			return NOTIFY_BAD;
+ 
+ 		case CPU_ONLINE:
