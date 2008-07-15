@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762721AbYGOTl7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762452AbYGOTnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762721AbYGOTl7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 15:41:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758206AbYGOTlv
+	id S1762452AbYGOTnP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 15:43:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757241AbYGOTnA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 15:41:51 -0400
-Received: from mail.lang.hm ([64.81.33.126]:33983 "EHLO bifrost.lang.hm"
+	Tue, 15 Jul 2008 15:43:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47644 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758127AbYGOTlu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 15:41:50 -0400
-Date: Tue, 15 Jul 2008 12:41:44 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Jeff Garzik <jeff@garzik.org>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Frans Pop <elendil@planet.nl>, arjan@infradead.org,
-       akpm@linux-foundation.org, dwmw2@infradead.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
- use it in more drivers.
-In-Reply-To: <alpine.LFD.1.10.0807151159400.3351@woody.linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0807151239290.16109@asgard.lang.hm>
-References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org> <487C0365.5030203@garzik.org> <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
- <200807151757.10626.elendil@planet.nl> <20080715180535.GA6080@khazad-dum.debian.net> <487CE917.3000000@garzik.org> <alpine.LFD.1.10.0807151122010.3017@woody.linux-foundation.org> <487CF29E.5000009@garzik.org>
- <alpine.LFD.1.10.0807151159400.3351@woody.linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S1753076AbYGOTm7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 15:42:59 -0400
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
+Subject: Re: [RFC] systemtap: begin the process of using proper kernel APIs 	(part1: use kprobe symbol_name/offset instead of address)
+References: <1216146802.3312.95.camel__45052.4692344063$1216146917$gmane$org@localhost.localdomain>
+From: fche@redhat.com (Frank Ch. Eigler)
+Date: Tue, 15 Jul 2008 15:41:31 -0400
+In-Reply-To: <1216146802.3312.95.camel__45052.4692344063$1216146917$gmane$org@localhost.localdomain> (James Bottomley's message of "Tue, 15 Jul 2008 13:33:22 -0500")
+Message-ID: <y0mr69vj5p0.fsf@ton.toronto.redhat.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jul 2008, Linus Torvalds wrote:
+James Bottomley <James.Bottomley@HansenPartnership.com> writes:
 
-> On Tue, 15 Jul 2008, Jeff Garzik wrote:
->>
->> Because people should not be forced to fix all their firmware-related breakage
->> immediately, just to boot 2.6.27.
->
-> You're continuing to make an argument that doesn't seem to backed up with
-> any actual real problems.
->
-> Can you point to real breakage? For real people?
+> One of the big nasties of systemtap is the way it tries to embed
+> virtually the entirety of the kernel symbol table in the probe
+> modules it constructs.
 
-several kernel devs ran into this with -next (Jeff can name names if 
-needed)
+It is a compromise of conflicting requirements. 
 
-> It sounds like your whole argument literally boils down to "one or two
-> people doing something really stupid or odd cannot just fix their setup".
->
-> What is the real-life situation where copying the firmware with the
-> modules (but still as separate files) actually breaks?
->
-> IOW, what _is_ this theoretical breakage? And why is it so deadly
-> suddenly? Give us real examples that somehow cannot be fixed?
+> This is highly undesirable because it represents a subversion of the
+> kernel API to gain access to unexported symbols.
 
-there are no cases that cannot somehow be fixed. the desire is to make it 
-possible to avoid having to find and fix everything before booting 2.6.27, 
-while still making it possible to compile a kernel with all the new 
-capabilities for those who want to fix everything now.
+Please elaborate.  Does the translator or its runtime use unexported
+symbols?  (That would arouse the question about why.)
 
-David Lang
+Or are you talking about being able to *probe* unexported functions or
+access unexported data?  That would be a deliberate feature.
+
+> At least for kprobes, the correct way to do this is to specify the
+> probe point by symbol and offset.
+
+But there won't be just kprobes.  Much of this code was built with
+anticipation of user-space probing, and there the kernel won't have a
+similar mechanism.  Similarly, the code is written to work with old
+kernels too - ones that predate the symbol+offset kprobe API.
+
+Unless someone is about to rip out pure address-based kprobes, I see
+no reason to complicate the code.
+
+
+- FChE
