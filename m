@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbYGOXVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756547AbYGOXW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755636AbYGOXVT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 19:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753387AbYGOXVL
+	id S1756547AbYGOXW3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 19:22:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753586AbYGOXWU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 19:21:11 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53308
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752189AbYGOXVK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 19:21:10 -0400
-Date: Tue, 15 Jul 2008 16:21:10 -0700 (PDT)
-Message-Id: <20080715.162110.71403329.davem@davemloft.net>
-To: tiago@assumpcao.org
-Cc: greg@kroah.com, pageexec@freemail.hu, tytso@mit.edu,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [stable] Linux 2.6.25.10
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <487D2E02.3040601@assumpcao.org>
-References: <20080715223910.GA6500@kroah.com>
-	<20080715.154727.176966436.davem@davemloft.net>
-	<487D2E02.3040601@assumpcao.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Jul 2008 19:22:20 -0400
+Received: from namei.org ([69.55.235.186]:42128 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753387AbYGOXWT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 19:22:19 -0400
+Date: Wed, 16 Jul 2008 09:13:11 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       safford@watson.ibm.com, serue@linux.vnet.ibm.com, sailer@watson.ibm.com,
+       zohar@us.ibm.com, debora@linux.vnet.ibm.com, srajiv@linux.vnet.ibm.com
+Subject: Re: [PATCH 1/5] integrity: TPM cleanup
+In-Reply-To: <1215467789.27626.3.camel@localhost.localdomain>
+Message-ID: <Xine.LNX.4.64.0807160910470.8360@us.intercode.com.au>
+References: <20080707192529.489789904@linux.vnet.ibm.com>
+ <1215467789.27626.3.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tiago Assumpcao <tiago@assumpcao.org>
-Date: Tue, 15 Jul 2008 20:08:50 -0300
+On Mon, 7 Jul 2008, Mimi Zohar wrote:
 
-> David Miller wrote:
-> > 
-> > Don't sweat it Greg.
-> > 
-> > This complaint about "full disclosure" is coming from someone who isn't
-> > even willing to communicate with the world using his real name.
-> > 
-> 
-> Does a symbolic reference change the truth behind it? No, it doesn't.
+> This patchset contains 5 patches.
+> 	Patch 1/5 integrity: TPM cleanup (scripts/Lindent and other)
+> 	Patch 2/5 integrity: TPM internal kernel interface
+> 	Patch 3/5 integrity: special fs magic
+> 	Patch 4/5 integrity: Linux Integrity Module(LIM)
+> 	Patch 5/5 integrity: IMA as an integrity service provider
+>  
+> Signed-off-by: Debora Velarde <dvelarde@us.ibm.com>
+> Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
 
-That's not the point.
+There's been no further comments on this patchset and it's had quite a lot 
+of review.  Do you feel it's ready for merging upstream?
 
-The point is that he's a hypocrit because he's not willing to give the
-world what he expects the world to give back to him.
+If you wish, I can apply this to the security-testing tree which will feed 
+into linux-next and then 2.6.27.  (Generating a new patchset against 
+recent Linus would likely be best).
 
-That's, basically, unreasonable.
+
+- James
+-- 
+James Morris
+<jmorris@namei.org>
