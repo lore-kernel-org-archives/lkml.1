@@ -1,81 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762096AbYGODFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761877AbYGODGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762096AbYGODFu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 23:05:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757215AbYGODFX
+	id S1761877AbYGODGz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 23:06:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbYGODGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 23:05:23 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:48111 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761586AbYGODFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 23:05:21 -0400
-Message-ID: <487C13E9.1020402@garzik.org>
-Date: Mon, 14 Jul 2008 23:05:13 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 14 Jul 2008 23:06:46 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:43922 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753995AbYGODGp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 23:06:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=YAKhig1tRzI5ypUCfRGsMcgok+di27OSUvKZ8fQ8Owo2gjiGfUUfz/1DBYUwql1kuh
+         46NbeF2ylJgPrDHQIniope3DNT1nACzauFCUqeM4LSI+HfQnea5Bf0PoZi4tvj5b96us
+         TIWKBons9q82FZzQSWAyHyI0Cg3hkLq/ef50Y=
+Date: Tue, 15 Jul 2008 12:06:39 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, "Michael H. Warfield" <mhw@wittsend.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] ip2: avoid add_timer() with pending timer
+Message-ID: <20080715030639.GA3123@localhost.localdomain>
+References: <20080714024955.GB30952@sssvn.sssvn> <20080714100402.b72e2b1e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: David Miller <davem@davemloft.net>, arjan@infradead.org,
-       akpm@linux-foundation.org, dwmw2@infradead.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
- use it in more drivers.
-References: <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org> <487C09EB.1050903@garzik.org> <alpine.LFD.1.10.0807141928540.3017@woody.linux-foundation.org> <20080714.194032.117461306.davem@davemloft.net> <alpine.LFD.1.10.0807141947540.3017@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807141947540.3017@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080714100402.b72e2b1e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+On Mon, Jul 14, 2008 at 10:04:02AM -0700, Andrew Morton wrote:
+> On Mon, 14 Jul 2008 11:49:55 +0900 Akinobu Mita <akinobu.mita@gmail.com> wrote:
 > 
-> On Mon, 14 Jul 2008, David Miller wrote:
->> Jeff's not against request_firmware() in an of itself.
->>
->> He's against the fact that it's not possible to build a
->> self-contained foo.ko module file any longer, and that
->> would definitely be possible with using request_firmware().
+> > @@ -746,10 +742,8 @@ ip2_loadmain(int *iop, int *irqp)
+> >  			}
+> >  			if ( ip2config.irq[i] == CIR_POLL ) {
+> >  retry:
+> > -				if (!TimerOn) {
+> > -					PollTimer.expires = POLL_TIMEOUT;
+> > -					add_timer ( &PollTimer );
+> > -					TimerOn = 1;
+> > +				if (!timer_pending(&PollTimer)) {
+> > +					mod_timer(&PollTimer, POLL_TIMEOUT);
+> >  					printk( KERN_INFO "IP2: polling\n");
 > 
-> .. but is it really that big of a deal?
-> 
-> If it were about not being able to build a self-contained non-modular 
-> "vmlinux", I'd be upset too.
-> 
-> But once you can load a module, you can load the firmware. You just have 
-> to _remember_ to move it along with the module.
+> This change to ip2_loadmain() might be racy if it actually did
+> anything.  But afaict timer_pending() can never be true here (we're
+> only called from module_init()) so it can and should be removed.
 
-And failure to "remember" to update associated build image scripts 
-silently and without complaint producing a non-working driver.  For 
-drivers that, in many cases, have worked for 5 or 10 or more years 
-without needing additional files.
+Yes, ip2_loadmain() is only called from module_init(). But this add_timer()
+is in the loop for each device. So it may be called more than once.
 
-So it's not about remembering.  You can't just wish new userland and 
-build processes upon the universe.
-
-Heck, you yourself have in the past supported building current kernels 
-on older userlands -- this flies in the face of that.
-
-
-> Besides, it's not even true that foo.ko modules are self-contained. We've 
-> for years and years (pretty much since day one) had nesting module models, 
-> where in order to load foo.ko you need to load baz.ko first. Yes, the 
-> firmware file is named differently, but it _is_ different.
-
-It's not only named differently, it is in a markedly different directory 
-hierarchy that isn't automatically picked up alongside *.ko.
-
-But fundamentally, why remove a capability that works, thereby depriving 
-system builders of the ability to _choose_ when, if ever, to prefer 
-/lib/firmware to built-in firmware?
-
-Let's standardize on a request_firmware() sure, one that does not remove 
-that choice.
-
-	Jeff
-
-
+And yes, I can remove timer_pending() here because I switched to use
+mod_timer() instead of add_timer(). But this PollTimer works as periodic
+timer and it's global timer. So it will not cause a problem.
 
