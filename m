@@ -1,61 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762981AbYGOTU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758273AbYGOTVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762981AbYGOTU5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 15:20:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757926AbYGOTUo
+	id S1758273AbYGOTVX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 15:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762862AbYGOTUt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 15:20:44 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:44714 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762697AbYGOTUn (ORCPT
+	Tue, 15 Jul 2008 15:20:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49789 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762834AbYGOTUs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 15:20:43 -0400
-Subject: Re: [PATCH] x86: let 32bit use apic_ops too - fix
-From: Zachary Amsden <zach@vmware.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       virtualization <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <86802c440807151210m37398d7es2e07f9d9b834363@mail.gmail.com>
-References: <1216147130.6620.184.camel@bodhitayantram.eng.vmware.com>
-	 <20080715185123.GA31445@linux-os.sc.intel.com>
-	 <1216148658.6620.192.camel@bodhitayantram.eng.vmware.com>
-	 <86802c440807151210m37398d7es2e07f9d9b834363@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 12:19:42 -0700
-Message-Id: <1216149582.6620.194.camel@bodhitayantram.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Jul 2008 15:20:48 -0400
+Date: Tue, 15 Jul 2008 12:19:36 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeff Garzik <jeff@garzik.org>
+cc: Theodore Tso <tytso@mit.edu>, david@lang.hm,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
+ use it in more drivers.
+In-Reply-To: <487CF70C.1030309@garzik.org>
+Message-ID: <alpine.LFD.1.10.0807151218460.3351@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0807141903260.3017@woody.linux-foundation.org> <487C585C.2060002@garzik.org> <alpine.LFD.1.10.0807150803580.3017@woody.linux-foundation.org> <487CD7FE.9010209@garzik.org> <alpine.LFD.1.10.0807151008450.3017@woody.linux-foundation.org>
+ <487CDEC0.3090004@garzik.org> <alpine.LFD.1.10.0807151041080.3017@woody.linux-foundation.org> <487CEA73.9000408@garzik.org> <alpine.LFD.1.10.0807151124510.3017@woody.linux-foundation.org> <487CF01E.6000208@garzik.org> <20080715185801.GH8185@mit.edu>
+ <487CF70C.1030309@garzik.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-15 at 12:10 -0700, Yinghai Lu wrote:
-> On Tue, Jul 15, 2008 at 12:04 PM, Zachary Amsden <zach@vmware.com> wrote:
-> > On Tue, 2008-07-15 at 11:51 -0700, Suresh Siddha wrote:
-> >> On Tue, Jul 15, 2008 at 11:38:50AM -0700, Zachary Amsden wrote:
-> >> >
-> >> > Nacked-by: Zachary Amsden <zach@vmware.com>
-> >> >
-> >> > What are you doing here and why aren't you cc-ing the maintainers?
-> >>
-> >> Sorry. I was about to bring you into the loop.
-> >>
-> >> Yinghai posted 32bit native apic_ops(similar to my 64bit apic ops patch, which
-> >> is different from pv_apic_ops) which is in tip/x86/x2apic and proposed a fix
-> >> for VMI case aswell.
-> >>
-> >> Based on my understanding, tip/x86/x2apic git commit
-> >> 94a8c3c2437c8946f1b6c8e0b2c560a7db8ed3c6 is wrong and it should be fixed with
-> >> something like
-> >> http://marc.info/?l=linux-kernel&m=121614328831237&w=2
 
 
-Suresh's patch looks good.  Thanks Suresh!
+On Tue, 15 Jul 2008, Jeff Garzik wrote:
+> 
+> Already started, in fact, since Linus said he would not reject it out of
+> hands.
 
-Acked-by: Zachary Amsden <zach@vmware.com>
+Btw, I need to see it actually solve a real problem. As it is, I really 
+think you've just painted yourself into a corner where you can't just 
+admit that we can just load the firmware directly.
 
+Could you _please_ entertain at least thinking about that option?
+
+		Linus
