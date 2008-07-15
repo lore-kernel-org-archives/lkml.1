@@ -1,71 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761750AbYGOOYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761308AbYGOOXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761750AbYGOOYb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 10:24:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761485AbYGOOYJ
+	id S1761308AbYGOOXz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 10:23:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756872AbYGOOXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 10:24:09 -0400
-Received: from rn-out-0910.google.com ([64.233.170.188]:56796 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761468AbYGOOYH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 10:24:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=l/uH/eRgGWxN2AY//alJ+B4y3WStSP/n8I0iYoX2ZNuMYke0qbuDxykuyq0/pBMnPQ
-         pDSv8iza0CFWYz/oU3EZYLLqDqFDmRQv/nEidwRmKp2ZED2A3+AIMv0KPaoQHgng5SCd
-         pDProkte5LkXDt1Qz2UsV4A1pQT+WGzmQwXgk=
-Message-ID: <8bd0f97a0807150724x8f7095dl9b5d2e203053223f@mail.gmail.com>
-Date: Tue, 15 Jul 2008 10:24:05 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Subject: Re: linux-next: 1ea0704e (ptep_modify_prot transaction abstraction) breaks no-mmu
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <486CF610.7000905@goop.org>
+	Tue, 15 Jul 2008 10:23:47 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:52272 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753757AbYGOOXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 10:23:46 -0400
+Date: Tue, 15 Jul 2008 17:23:41 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: "H.J. Lu" <hjl.tools@gmail.com>
+Cc: dhowells@redhat.com, sam@ravnborg.org, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org
+Subject: Re: binutils 2.18.50.0.8 frv build error
+Message-ID: <20080715142341.GF24533@cs181140183.pp.htv.fi>
+References: <20080715121327.GA24533@cs181140183.pp.htv.fi> <20080715132005.GA6517@lucon.org> <20080715134747.GD24533@cs181140183.pp.htv.fi> <20080715140040.GA8580@lucon.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <8bd0f97a0807030638g5eb8f0eavd740e990b1cdf1c5@mail.gmail.com>
-	 <486CF610.7000905@goop.org>
+In-Reply-To: <20080715140040.GA8580@lucon.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 3, 2008 at 11:53 AM, Jeremy Fitzhardinge wrote:
-> Mike Frysinger wrote:
->> the functions added to asm-generic/pgtable.h are only used by
->> mm/mprotect.c (a MMU-only file), but they were not added inside of the
->> CONFIG_MMU ifdef block.  since the functions rely on things inside of
->> CONFIG_MMU (the lines just above in pgtable.h), we get build failure
->> on all no-mmu setups:
->>  CC      init/main.o
->> In file included from include/asm/pgtable.h:94,
->>                 from include/linux/mm.h:39,
->>                 from include/asm/dma.h:39,
->>                 from include/linux/bootmem.h:8,
->>                 from init/main.c:27:
->> include/asm-generic/pgtable.h: In function '__ptep_modify_prot_start':
->> include/asm-generic/pgtable.h:210: error: implicit declaration of
->> function 'ptep_get_and_clear'
->> include/asm-generic/pgtable.h:210: error: incompatible types in return
->> make[1]: *** [init/main.o] Error 1
->> make: *** [init/main.o] Error 2
->
-> Uh, OK.  What does mprotect do on a nommu system?
+On Tue, Jul 15, 2008 at 07:00:40AM -0700, H.J. Lu wrote:
+> On Tue, Jul 15, 2008 at 04:47:47PM +0300, Adrian Bunk wrote:
+>...
+> > I did an "frv-linux-objdump  -Dx" on the init/mounts.o files generated 
+> > with both binutils versions, and the diff is:
+> > 
+> > 
+> > --- working	2008-07-15 16:34:49.000000000 +0300
+> > +++ broken	2008-07-15 16:34:40.000000000 +0300
+> >  architecture: fr450, flags 0x00000011:
+> >  HAS_RELOC, HAS_SYMS
+> >  start address 0x00000000
+> > -private flags = 0x800020d: -mcpu=fr450 -mgpr-32 -msoft-float non-pic relocations
+> > +private flags = 0x800030d: -mcpu=fr450 -mgpr-32 -msoft-float -fpic non-pic relocations
+> >  
+> 
+> Are you saying "ld -r init/do_mounts.o" changed private flags? If
+> yes, please open a bug report at
 
-it depends on the port.  by default, i'm pretty sure mprotect on all
-nommu systems are realistically pretty much noops.  the Blackfin can
-do real protection (CONFIG_MPU), but with significant performance
-degradation (since the page fault handler is not in hardware nor
-hardware assisted in any way).
+It seems so.
 
-> Would it be sufficient to
-> move the definitions of __ptep_modify_prot_start/commit out of a CONFIG_MMU
-> block, or provide separate no-op versions?
+> http://www.sourceware.org/bugzilla/
+> 
+> with the original init/do_mounts.o.
 
-simply move them into CONFIG_MMU for now
--mike
+Done, it's #6747.
+
+> H.J.
+
+Thanks for your help
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
