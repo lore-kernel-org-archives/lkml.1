@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761449AbYGOC2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757158AbYGOCbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761449AbYGOC2R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 22:28:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753544AbYGOC2E
+	id S1757158AbYGOCbS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 22:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752615AbYGOCbF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 22:28:04 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34616 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753329AbYGOC2C (ORCPT
+	Mon, 14 Jul 2008 22:31:05 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:49375 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752241AbYGOCbD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 22:28:02 -0400
-Date: Mon, 14 Jul 2008 19:27:41 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: pageexec@freemail.hu
-cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [stable] Linux 2.6.25.10
-In-Reply-To: <487C242B.19490.17F690F7@pageexec.freemail.hu>
-Message-ID: <alpine.LFD.1.10.0807141924020.3017@woody.linux-foundation.org>
-References: <20080703185727.GA12617@suse.de>, <486D4541.25808.C600354@pageexec.freemail.hu>, <20080714120418.GA5334@kroah.com> <487C242B.19490.17F690F7@pageexec.freemail.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Mon, 14 Jul 2008 22:31:03 -0400
+Message-ID: <487C0C52.9030000@keyaccess.nl>
+Date: Tue, 15 Jul 2008 04:32:50 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: David Miller <davem@davemloft.net>
+CC: david@lang.hm, torvalds@linux-foundation.org, arjan@infradead.org,
+       akpm@linux-foundation.org, dwmw2@infradead.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
+ use it in more drivers.
+References: <alpine.DEB.1.10.0807141750290.14223@asgard.lang.hm>	<20080714.185207.203328391.davem@davemloft.net>	<487C0A12.9060906@keyaccess.nl> <20080714.192425.241878700.davem@davemloft.net>
+In-Reply-To: <20080714.192425.241878700.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 15-07-08 04:24, David Miller wrote:
 
-
-On Tue, 15 Jul 2008, pageexec@freemail.hu wrote:
+> From: Rene Herman <rene.herman@keyaccess.nl>
+> Date: Tue, 15 Jul 2008 04:23:14 +0200
 > 
-> so guys (meaning not only Greg but Andrew, Linus, et al.), when will you
-> publicly explain why you're covering up security impact of bugs? and even
-> more importantly, when will you change your policy or bring your process
-> in line with what you declared?
+>> On 15-07-08 03:52, David Miller wrote:
+>>
+>>> From: david@lang.hm Date: Mon, 14 Jul 2008 17:51:37 -0700 (PDT)
+>>>
+>>>> I agree with this, but the proponents of the seperate firmware are
+>>>> listing the fact that the firmware doesn't tie up ram as one of the
+>>>> big reasons for making the change.
+>>> Exactly.
+>>>
+>>> Otherwise these firmware changes are utterly pointless.
+>> The point of them is legal.
+> 
+> Thanks for proving something I tried to establish for weeks
+> but which Alan Cox, David W., and others vehemently denied.
+> 
+> They states that it was being done on a technical basis rather
+> than being predominantly a legal one.
 
-We went through this discussion a couple of weeks ago, and I had 
-absolutely zero interest in explaining it again.
+Yes, they were obstinate or dishonest (I won't say "respectively"). As 
+to "proving" though, I cannot prove anything, being a mere observer.
 
-I personally don't like embargoes. I don't think they work. That means 
-that I want to fix things asap. But that also means that there is never a 
-time when you can "let people know", except when it's not an issue any 
-more, at which point there is no _point_ in letting people know any more.
+At this point I really believe this discussion should be about the other 
+part of my reply -- the point mostly put forward by Jef Garzik about the 
+firmware inside the module image. Without that ability, I don't believe 
+these are good patches.
 
-So I personally consider security bugs to be just "normal bugs". I don't 
-cover them up, but I also don't have any reason what-so-ever to think it's 
-a good idea to track them and announce them as something special. 
+_With_ that ability, I myself do. Let's allow allow everyone their own 
+level of fear, uncertainty and doubt.
 
-So there is no "policy". Nor is it likely to change. 
+Rene
 
-			Linus
