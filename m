@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756124AbYGOWvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755523AbYGOWyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756124AbYGOWvT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 18:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbYGOWvJ
+	id S1755523AbYGOWyT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 18:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbYGOWyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 18:51:09 -0400
-Received: from mail.lang.hm ([64.81.33.126]:42227 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753415AbYGOWvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 18:51:08 -0400
-Date: Tue, 15 Jul 2008 15:50:09 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: David Woodhouse <dwmw2@infradead.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Marcel Holtmann <marcel@holtmann.org>, Frans Pop <elendil@planet.nl>,
-       jeff@garzik.org, arjan@infradead.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from	in-kernel,
- use it in more drivers.
-In-Reply-To: <1216160785.26991.51.camel@shinybook.infradead.org>
-Message-ID: <alpine.DEB.1.10.0807151549400.16109@asgard.lang.hm>
-References: <1216077806.27455.85.camel@shinybook.infradead.org>  <20080714164119.99c33d5b.akpm@linux-foundation.org>  <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>  <487C0365.5030203@garzik.org>  <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
-  <200807151757.10626.elendil@planet.nl>  <1216149637.27242.65.camel@violet.holtmann.net>  <alpine.LFD.1.10.0807151223290.3351@woody.linux-foundation.org>  <1216150616.27455.377.camel@shinybook.infradead.org>  <alpine.LFD.1.10.0807151244320.3351@woody.linux-foundation.org>
-  <1216151640.27242.90.camel@violet.holtmann.net>  <alpine.LFD.1.10.0807151301130.2867@woody.linux-foundation.org>  <alpine.DEB.1.10.0807151426021.16109@asgard.lang.hm>  <alpine.LFD.1.10.0807151436400.2867@woody.linux-foundation.org> 
- <alpine.DEB.1.10.0807151503310.16109@asgard.lang.hm> <1216160785.26991.51.camel@shinybook.infradead.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 15 Jul 2008 18:54:09 -0400
+Received: from outbound-mail-22.bluehost.com ([69.89.21.17]:38366 "HELO
+	outbound-mail-22.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752697AbYGOWyI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 18:54:08 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User:DomainKey-Status;
+	b=DwicYfQRFziUHGmlPqM1Wqt/hqe3zGCb3alke0Rs0kx6t5IEtloA+8LszgZn9BD0mORxqBfmtwxAjMB7QLHf2kbwaDMPWB/gBmt/qiYsTGqLI8EGjnSdcnywKh+ZP1dI;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: akataria@vmware.com
+Subject: Re: acpi based pci gap calculation  - v3
+Date: Tue, 15 Jul 2008 15:53:39 -0700
+User-Agent: KMail/1.9.9
+Cc: "ak@linux.intel.com" <ak@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       "Brown, Len" <len.brown@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       TJ <linux@tjworld.net>
+References: <1216148382.6135.21.camel@alok-dev1> <200807151328.00739.jbarnes@virtuousgeek.org> <1216155256.6135.25.camel@alok-dev1>
+In-Reply-To: <1216155256.6135.25.camel@alok-dev1>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807151553.41403.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jul 2008, David Woodhouse wrote:
-
-> On Tue, 2008-07-15 at 15:24 -0700, david@lang.hm wrote:
->>
->>> Why is it suddenly so important that a kernel be 'zero impact' for that
->>> module case, when it's never been zero impact for that case before? You
->>> had to rewrite the initrd to begin with, but now you're not willing to do
->>> it again, just because you have to rewrite it slightly _differently_?
->>
->> becouse the tools that wrote the initrd already put the modules in. I
->> don't maintain those tools, they came with the distro. we're just asking
->> to not require those tools to be updated immediatly.
+On Tuesday, July 15, 2008 1:54 pm Alok Kataria wrote:
+> I have tested it with couple of different BIOS settings and it seems to
+> work as it should.
 >
-> The tools that write the initrd already put the firmware in too.
+> > Most of the PCI bugs we
+> > have at the moment are related to PCI resource allocation failures.  My
+> > hope is that finding more space will fix most of them.  Assuming this
+> > patch doesn't have any dependencies, I can put it in my linux-next
+> > branch.
+>
+> No dependencies, I had added a function e820_search_gap which is used by
+> this patch. This function is already in the mainline tree.
+> Thanks for applying.
 
-not always, as Jeff showed.
+Ok, I stuffed it in my linux-next branch.  I'll let it sit there for a day or 
+so though, just to shake out any build problems etc. in linux-next before 
+asking Linus to pull the whole lot.
 
-David Lang
+Thanks,
+Jesse
