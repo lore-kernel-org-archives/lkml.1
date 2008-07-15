@@ -1,93 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760773AbYGOWZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762045AbYGOWZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760773AbYGOWZA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 18:25:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754461AbYGOWYv
+	id S1762045AbYGOWZX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 18:25:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759259AbYGOWZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 18:24:51 -0400
-Received: from ik-out-1112.google.com ([66.249.90.178]:26903 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752095AbYGOWYv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 18:24:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding:sender;
-        b=Ut+N0hq+7VaB5E2PDYs1pTptnVuOdgFxJWwXwGotSAuPL45m1ZHLFBGc0YIMV4Lupb
-         eb66qXawZLFcZc6/YAy06+kCGMMKA3jzZUb0crqurBMLi0l+y0e3BppG7+AC3AnzUBbs
-         agwa+rjXwgazUZuoFaDbClo8x2lWnH23UqMmo=
-Message-ID: <487D23C3.5070301@student.cs.york.ac.uk>
-Date: Tue, 15 Jul 2008 23:25:07 +0100
-From: Alan Jenkins <aj504@student.cs.york.ac.uk>
-Reply-To: alan-jenkins@tuffmail.co.uk
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Tue, 15 Jul 2008 18:25:00 -0400
+Received: from mail.lang.hm ([64.81.33.126]:36719 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759067AbYGOWY7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 18:24:59 -0400
+Date: Tue, 15 Jul 2008 15:24:32 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Marcel Holtmann <marcel@holtmann.org>,
+       David Woodhouse <dwmw2@infradead.org>, Frans Pop <elendil@planet.nl>,
+       jeff@garzik.org, arjan@infradead.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
+ use it in more drivers.
+In-Reply-To: <alpine.LFD.1.10.0807151436400.2867@woody.linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0807151503310.16109@asgard.lang.hm>
+References: <1216077806.27455.85.camel@shinybook.infradead.org>  <20080714164119.99c33d5b.akpm@linux-foundation.org>  <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>  <487C0365.5030203@garzik.org>  <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
+  <200807151757.10626.elendil@planet.nl>  <1216149637.27242.65.camel@violet.holtmann.net>  <alpine.LFD.1.10.0807151223290.3351@woody.linux-foundation.org>  <1216150616.27455.377.camel@shinybook.infradead.org>  <alpine.LFD.1.10.0807151244320.3351@woody.linux-foundation.org>
+ <1216151640.27242.90.camel@violet.holtmann.net> <alpine.LFD.1.10.0807151301130.2867@woody.linux-foundation.org> <alpine.DEB.1.10.0807151426021.16109@asgard.lang.hm> <alpine.LFD.1.10.0807151436400.2867@woody.linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: astarikovskiy@suse.de
-CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] acpi: Avoid dropping rapid hotkey events (or other GPEs)
- on Asus EeePC
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It looks like this EC clears the SMI_EVT bit after every query, even if there
-are more events pending.  The workaround is to repeatedly query the EC until
-it reports that no events remain.
+On Tue, 15 Jul 2008, Linus Torvalds wrote:
 
-This fixes a regression in 2.6.26 (from 2.6.25.3).  Initially reported as
-"Asus Eee PC hotkeys stop working if pressed quickly" in bugzilla
-<http://bugzilla.kernel.org/show_bug.cgi?id=11089>.
+> On Tue, 15 Jul 2008, david@lang.hm wrote:
+>>
+>> a kernel compiled with this option would just drop-in to an older distro with
+>> zero impact. newer distros that have updated their userspace tools could
+>> compile with different options and have the firmware seperate.
+>
+> The 'zero impact' is what doesn't make sense here.
+>
+> You are supposed to be able to run ol distributions, yes.
+>
+> But that doesn't mean that you can necessarily just plop things in the
+> same way as you always did before.
+>
+> For example, you have to rewrite your distro's initrd if you are using
+> modules. You cannot just re-use the modules in the distro initrd. So doing
+> a new kernel has _never_ been 'zero impact' in the sense that you could
+> just switch vmlinux files around.
 
-The regression was caused by a recently added check for interrupt storms.
-The Eee PC triggers this check and switches to polling.  When multiple events
-arrive between polling intervals, only one is fetched from the EC.  This causes
-erroneous behaviour; ultimately events stop being delivered altogether when the
-EC buffer overflows.
+this time I will call 'strawman'. we've been required to put in the 
+appropriate modules ever since modules were introduced. as Jeff gave 
+examples of the userspace tools have been taking care of that for many 
+years (and on distros where they don't take care of that you go with 
+monolithic kernels), but they don't take care of firmware in many cases.
 
-Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+> (Btw, I personally actually want my kernel to be _truly_ zero impact, but
+> that also means that I don't use modules - because that way I really can
+> avoid changing even the initrd image too. But that also already works)
 
----
-diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
-index 5622aee..2b4c5a2 100644
---- a/drivers/acpi/ec.c
-+++ b/drivers/acpi/ec.c
-@@ -459,14 +459,10 @@ void acpi_ec_remove_query_handler(struct acpi_ec *ec, u8 query_bit)
- 
- EXPORT_SYMBOL_GPL(acpi_ec_remove_query_handler);
- 
--static void acpi_ec_gpe_query(void *ec_cxt)
-+static void acpi_ec_gpe_run_handler(struct acpi_ec *ec, u8 value)
- {
--	struct acpi_ec *ec = ec_cxt;
--	u8 value = 0;
- 	struct acpi_ec_query_handler *handler, copy;
- 
--	if (!ec || acpi_ec_query(ec, &value))
--		return;
- 	mutex_lock(&ec->lock);
- 	list_for_each_entry(handler, &ec->list, node) {
- 		if (value == handler->query_bit) {
-@@ -484,6 +480,18 @@ static void acpi_ec_gpe_query(void *ec_cxt)
- 	mutex_unlock(&ec->lock);
- }
- 
-+static void acpi_ec_gpe_query(void *ec_cxt)
-+{
-+	struct acpi_ec *ec = ec_cxt;
-+	u8 value = 0;
-+
-+	if (!ec)
-+		return;
-+
-+	while (!acpi_ec_query(ec, &value))
-+		acpi_ec_gpe_run_handler(ec, value);
-+}
-+
- static u32 acpi_ec_gpe_handler(void *data)
- {
- 	acpi_status status = AE_OK;
+I do the same thing 99% of the time.
 
+> Why is it suddenly so important that a kernel be 'zero impact' for that
+> module case, when it's never been zero impact for that case before? You
+> had to rewrite the initrd to begin with, but now you're not willing to do
+> it again, just because you have to rewrite it slightly _differently_?
 
+becouse the tools that wrote the initrd already put the modules in. I 
+don't maintain those tools, they came with the distro. we're just asking 
+to not require those tools to be updated immediatly.
+
+David Lang
+
+> THAT is what I find so odd. The inability to accept just a slight change
+> in kernel build.
+>
+> But whatever. This really isn't worth it. The request_firmware() thing
+> will clearly happen regardless, and as long as the backwards compat code
+> is small and Jeff writes it, what do I care? Even if I think it looks
+> largely pointless..
+>
+> 			Linus
+>
+>
+>
