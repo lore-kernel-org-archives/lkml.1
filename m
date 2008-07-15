@@ -1,68 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762213AbYGORgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758282AbYGORjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762213AbYGORgw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 13:36:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756416AbYGORgc
+	id S1758282AbYGORjm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 13:39:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbYGORjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 13:36:32 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:52868 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755648AbYGORgb (ORCPT
+	Tue, 15 Jul 2008 13:39:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54194 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752157AbYGORjd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 13:36:31 -0400
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
-	in-kernel, use it in more drivers.
-From: David Woodhouse <dwmw2@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: david@lang.hm, Frans Pop <elendil@planet.nl>, jeff@garzik.org,
-       arjan@infradead.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.1.10.0807150936070.3017@woody.linux-foundation.org>
-References: <1216077806.27455.85.camel@shinybook.infradead.org>
-	 <20080714164119.99c33d5b.akpm@linux-foundation.org>
-	 <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>
-	 <487C0365.5030203@garzik.org>
-	 <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
-	 <200807151757.10626.elendil@planet.nl>
-	 <alpine.LFD.1.10.0807150913590.3017@woody.linux-foundation.org>
-	 <alpine.DEB.1.10.0807150931290.16109@asgard.lang.hm>
-	 <alpine.LFD.1.10.0807150936070.3017@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 10:36:01 -0700
-Message-Id: <1216143361.27455.294.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 15 Jul 2008 13:39:33 -0400
+Date: Tue, 15 Jul 2008 10:38:27 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, "Paul E. McKenney" <paulmck@us.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [git pull] RCU updates for v2.6.27
+In-Reply-To: <20080714152045.GA29159@elte.hu>
+Message-ID: <alpine.LFD.1.10.0807151037060.3017@woody.linux-foundation.org>
+References: <20080714152045.GA29159@elte.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-15 at 09:41 -0700, Linus Torvalds wrote:
-> So I think the _infrastructure_ is important. But the extreme "you
-> have to split it off entirely" mindset is equally as stupid as the
-> "you must compile it into the module" mindset.
 
-I wouldn't necessarily argue that we _have_ to split it off, but I'd
-certainly like our infrastructure to be mature enough that it could cope
-with doing so.
 
-I plan to make a 'linux-firmware-from-linus' git tree which is generated
-automatically from yours by a script, much like the kernel-headers git
-tree is, commit by commit with an automatic transform on the tree
-objects.
+On Mon, 14 Jul 2008, Ingo Molnar wrote:
+> 
+> [ NOTE: due to merge interaction please pull this after 
+>   kmemcheck-for-linus. The shortlog is relative to kmemcheck-for-linus. ]
 
-Once we have that tree being created, we could pull from it into a
-canonical 'linux-firmware' tree, and _that_ tree could also start to
-include firmware belonging to companies who have said that we may
-distribute their firmware, but _not_ as part of the Linux kernel.
+Hmm. I really wanted to wait with kmemcheck, which is huge and I'm not 
+entirely convinced yet. So now I'll have to wait for these fixes too, for 
+some reason that isn't clear.
 
-We can see how that tree works out in practice, and how/whether people
-start using it. And then maybe we'll be in a position to have a
-_discussion_ about how best to ship the firmware. But for now it's
-premature.
- 
--- 
-dwmw2
+Merging stuff for me isn't good, when it then results in me simply not 
+pulling at all.
 
+		Linus
