@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763718AbYGOUtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759255AbYGOUuO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763718AbYGOUtv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 16:49:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbYGOUt0
+	id S1759255AbYGOUuO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 16:50:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763658AbYGOUtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 16:49:26 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:56386 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753903AbYGOUtY (ORCPT
+	Tue, 15 Jul 2008 16:49:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56683 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763095AbYGOUto (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 16:49:24 -0400
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
-	in-kernel, use it in more drivers.
-From: David Woodhouse <dwmw2@infradead.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-       sam@ravnborg.org
-In-Reply-To: <200807152245.44817.rjw@sisk.pl>
-References: <1216077806.27455.85.camel@shinybook.infradead.org>
-	 <20080714164119.99c33d5b.akpm@linux-foundation.org>
-	 <1216079223.27455.92.camel@shinybook.infradead.org>
-	 <200807152245.44817.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 13:49:16 -0700
-Message-Id: <1216154956.26991.30.camel@shinybook.infradead.org>
+	Tue, 15 Jul 2008 16:49:44 -0400
+Date: Tue, 15 Jul 2008 13:48:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Lee.Schermerhorn@hp.com,
+       kosaki.motohiro@jp.fujitsu.com
+Subject: Re: [PATCH][RFC] evict streaming IO cache first
+Message-Id: <20080715134848.cf2204b9.akpm@linux-foundation.org>
+In-Reply-To: <20080715160948.097b14a4@cuia.bos.redhat.com>
+References: <20080715160948.097b14a4@cuia.bos.redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-15 at 22:45 +0200, Rafael J. Wysocki wrote:
-> Have you fixed the issue with FORCE in line 117 of
-> scripts/Makefile.host?
+On Tue, 15 Jul 2008 16:09:48 -0400
+Rik van Riel <riel@redhat.com> wrote:
 
-I need to hassle Sam about that.
+> This patch still needs some testing under various workloads
+> on different hardware - the approach should work but the
+> threshold may need tweaking.
+> 
 
-Sam, why do we have FORCE on the rules for $(hostprogs-y)? It forces the
-ihex2fw tool to be rebuilt, which in turn forces all .HEX->.fw
-conversions to happen again, which means that 'make modules_install'
-wants to write to the source tree. That's a problem in some strange
-situations like Rafael's, where he builds on another host and exports
-the tree read-only by NFS.
+More than "some"!
 
-Can we do this? ...
+> 
+> When there is a lot of streaming IO going on, we do not want
+> to scan or evict pages from the working set.  The old VM used
+> to skip any mapped page, but still evict indirect blocks and
+> other data that is useful to cache.
 
-diff --git a/scripts/Makefile.host b/scripts/Makefile.host
-index 1ac414f..c0b6a86 100644
---- a/scripts/Makefile.host
-+++ b/scripts/Makefile.host
-@@ -114,7 +114,7 @@ hostcxx_flags  = -Wp,-MD,$(depfile) $(__hostcxx_flags)
- quiet_cmd_host-csingle 	= HOSTCC  $@
-       cmd_host-csingle	= $(HOSTCC) $(hostc_flags) -o $@ $< \
- 	  	$(HOST_LOADLIBES) $(HOSTLOADLIBES_$(@F))
--$(host-csingle): $(obj)/%: $(src)/%.c FORCE
-+$(host-csingle): $(obj)/%: $(src)/%.c
- 	$(call if_changed_dep,host-csingle)
- 
- # Link an executable based on list of .o files, all plain c
+I'd be surprised if indirect blocks are getting kicked - they tend to
+be awfully sticky due to frequent touch_buffer()s or equivalent.
 
--- 
-dwmw2
+inode blocks tend to be pretty sticky too - this is affected a lot by
+whether or not atime updates are enabled.
 
+directory blocks might be less sticky, but that might be what we want
+to happen.
+
+> This patch adds logic to skip scanning the anon lists and
+> the active file list if most of the file pages are on the
+> inactive file list (where streaming IO pages live), while
+> at the lowest scanning priority.
+> 
+> If the system is not doing a lot of streaming IO, eg. the
+> system is running a database workload, then more often used
+> file pages will be on the active file list and this logic
+> is automatically disabled.
+> 
