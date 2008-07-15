@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761308AbYGOOXz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759468AbYGOObO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761308AbYGOOXz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 10:23:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756872AbYGOOXr
+	id S1759468AbYGOObO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 10:31:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753544AbYGOOa5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 10:23:47 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:52272 "EHLO smtp6.pp.htv.fi"
+	Tue, 15 Jul 2008 10:30:57 -0400
+Received: from sh.osrg.net ([192.16.179.4]:36168 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753757AbYGOOXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 10:23:46 -0400
-Date: Tue, 15 Jul 2008 17:23:41 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: "H.J. Lu" <hjl.tools@gmail.com>
-Cc: dhowells@redhat.com, sam@ravnborg.org, linux-kernel@vger.kernel.org,
-       linux-kbuild@vger.kernel.org
-Subject: Re: binutils 2.18.50.0.8 frv build error
-Message-ID: <20080715142341.GF24533@cs181140183.pp.htv.fi>
-References: <20080715121327.GA24533@cs181140183.pp.htv.fi> <20080715132005.GA6517@lucon.org> <20080715134747.GD24533@cs181140183.pp.htv.fi> <20080715140040.GA8580@lucon.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080715140040.GA8580@lucon.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1753442AbYGOOa4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 10:30:56 -0400
+Date: Tue, 15 Jul 2008 23:30:27 +0900
+To: s.harker@adfa.edu.au, akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: PROBLEM: module a100u2w (SCSI, Initio) on ppc
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080711220901.e1b69adb.akpm@linux-foundation.org>
+References: <20080712033040.GA8086@h42136.pems.adfa.edu.au>
+	<20080711220901.e1b69adb.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080715233044N.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 07:00:40AM -0700, H.J. Lu wrote:
-> On Tue, Jul 15, 2008 at 04:47:47PM +0300, Adrian Bunk wrote:
->...
-> > I did an "frv-linux-objdump  -Dx" on the init/mounts.o files generated 
-> > with both binutils versions, and the diff is:
-> > 
-> > 
-> > --- working	2008-07-15 16:34:49.000000000 +0300
-> > +++ broken	2008-07-15 16:34:40.000000000 +0300
-> >  architecture: fr450, flags 0x00000011:
-> >  HAS_RELOC, HAS_SYMS
-> >  start address 0x00000000
-> > -private flags = 0x800020d: -mcpu=fr450 -mgpr-32 -msoft-float non-pic relocations
-> > +private flags = 0x800030d: -mcpu=fr450 -mgpr-32 -msoft-float -fpic non-pic relocations
-> >  
+On Fri, 11 Jul 2008 22:09:01 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> (cc linux-scsi)
 > 
-> Are you saying "ld -r init/do_mounts.o" changed private flags? If
-> yes, please open a bug report at
-
-It seems so.
-
-> http://www.sourceware.org/bugzilla/
+> On Sat, 12 Jul 2008 13:30:41 +1000 Stephen Harker <s.harker@adfa.edu.au> wrote:
 > 
-> with the original init/do_mounts.o.
+> > The SCSI Initio a100u2w driver compiles as a module, loads, but
+> > hangs on a powerpc machine.  
+> > 
+> > I am running linux (YellowDog 5.0) on a PowerMac 7600.  I am using
+> > self-compiled kernels.  The initio a100u2w card runs successfully
+> > under Mac OSX and OS9.  In the past when I tried the a100u2w module
+> > under kernel 2.4 and early 2.6 it would hang for at least 30 minutes
+> > (in the end I rebooted the machine).
+> > 
+> > I thought I would try again recently using 2.6.23.14 and 2.6.25.4
+> > kernels.  This was more successful in that the machine did not hang
+> > seemingly forever.  However, the module seems to fail in
+> > initialisation and no drive partitions are seen/mounted.  I tried
+> > removing the module (rmmod), the reloading it (modprobe) and similar
+> > issues are noted.  Output from dmesg shows the problems.  The
+> > following is the output from dmesg under 2.6.25.4, look for scsi2 and
+> > initio and inia100.  I am afraid that I am away from home at present
+> > and  don't have all the information that may be desirable.  I hope the
+> > following is adequate.  The kernel and system run well except for this
+> > one module.
 
-Done, it's #6747.
+Seems that this driver has some bugs on big endian architectures
+(though I've not looked at the patch):
 
-> H.J.
-
-Thanks for your help
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+http://marc.info/?l=linux-scsi&m=121613124207253&w=2
