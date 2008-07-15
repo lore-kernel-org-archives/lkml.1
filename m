@@ -1,192 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757263AbYGOPkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757981AbYGOPmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757263AbYGOPkR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 11:40:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbYGOPkE
+	id S1757981AbYGOPmA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 11:42:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753492AbYGOPlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 11:40:04 -0400
-Received: from casper.infradead.org ([85.118.1.10]:51472 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752692AbYGOPkD (ORCPT
+	Tue, 15 Jul 2008 11:41:49 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:44902 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753101AbYGOPls (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 11:40:03 -0400
-Subject: [PATCH] x86: Introducing asm-x86/traps.h
-From: Jaswinder Singh <jaswinder@infradead.org>
-To: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <andi@firstfloor.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Alexander van Heukelum <heukelum@fastmail.fm>
+	Tue, 15 Jul 2008 11:41:48 -0400
+Subject: Re: [PATCH] block: fix q->max_segment_size checking in
+	blk_recalc_rq_segments about VMERGE
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       davem@davemloft.net, linux-parisc@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0807151104450.26824@devserv.devel.redhat.com>
+References: <1216118676-13625-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	 <Pine.LNX.4.64.0807150924250.21598@devserv.devel.redhat.com>
+	 <20080715231956A.fujita.tomonori@lab.ntt.co.jp>
+	 <1216133421.3312.30.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0807151104450.26824@devserv.devel.redhat.com>
 Content-Type: text/plain
-Date: Tue, 15 Jul 2008 21:09:13 +0530
-Message-Id: <1216136353.2747.3.camel@jaswinder.satnam>
+Date: Tue, 15 Jul 2008 10:41:43 -0500
+Message-Id: <1216136503.3312.48.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2008-07-15 at 11:24 -0400, Mikulas Patocka wrote:
+> >>> On sparc64 it is broken anyway with or without your patch.
+> >>
+> >> Yeah, we need to modify SPARC64 IOMMU code (I'm not sure that it's
+> >> worth). Right now, the best fix is setting BIO_VMERGE_BOUNDARY to 0.
+> >>
+> >>
+> >>> And alpha alone doesn't justify substantial code bloat in generic block
+> >>> layer. So I propose this patch to drop it at all.
+> >>
+> >> Jens, what do you think about removing VMERGE code?
+> >
+> > Actually, it's code I did.
+> >
+> > There are plusses and minusses to all of this.  The original vmerge code
+> > was done for sparc ... mainly because the benefits of virtual merging
+> > can offset the cost of having to use the iommu.  However, most
+> > architectures didn't use it.  When I fixed it up to work for parisc (and
+> > introduced the parameters) we were trying to demonstrate that using it
+> > was feasible.
+> >
+> > The idea behind vmerging is that assembling and programming sg lists is
+> > expensive, so you want to do it once.  Either in the iommu or in the
+> > driver sg list, but not in both.  There is evidence that it saves around
+> > 7% or so on drivers.  However, for architectures that can do it, better
+> > savings are made simply by lifting the iommu out of the I/O path (so
+> > called bypass mode).
+> 
+> The problem is with vmerge accounting in block layer (that is what I'm 
+> proposing to remove), not with vmerge itself.
 
-Declaring x86 traps under one hood.
-Declaring x86 do_traps before defining them.
+I don't think that's true ... otherwise parisc would be falling over
+left right and centre.
 
-Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
----
- arch/x86/kernel/traps_32.c |   21 +-------------
- arch/x86/kernel/traps_64.c |   22 +--------------
- include/asm-x86/traps.h    |   66 ++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 68 insertions(+), 41 deletions(-)
- create mode 100644 include/asm-x86/traps.h
+> Vmerge accounting has advantages only if you have device with small amount 
+> of sg slots --- it allows the block layer to create request that has 
+> higher number of segments then the device.
 
-diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
-index 8a76897..a4e9ba5 100644
---- a/arch/x86/kernel/traps_32.c
-+++ b/arch/x86/kernel/traps_32.c
-@@ -58,6 +58,7 @@
- #include <asm/nmi.h>
- #include <asm/smp.h>
- #include <asm/io.h>
-+#include <asm/traps.h>
- 
- #include "mach_traps.h"
- 
-@@ -77,26 +78,6 @@ char ignore_fpu_irq;
- gate_desc idt_table[256]
- 	__attribute__((__section__(".data.idt"))) = { { { { 0, 0 } } }, };
- 
--asmlinkage void divide_error(void);
--asmlinkage void debug(void);
--asmlinkage void nmi(void);
--asmlinkage void int3(void);
--asmlinkage void overflow(void);
--asmlinkage void bounds(void);
--asmlinkage void invalid_op(void);
--asmlinkage void device_not_available(void);
--asmlinkage void coprocessor_segment_overrun(void);
--asmlinkage void invalid_TSS(void);
--asmlinkage void segment_not_present(void);
--asmlinkage void stack_segment(void);
--asmlinkage void general_protection(void);
--asmlinkage void page_fault(void);
--asmlinkage void coprocessor_error(void);
--asmlinkage void simd_coprocessor_error(void);
--asmlinkage void alignment_check(void);
--asmlinkage void spurious_interrupt_bug(void);
--asmlinkage void machine_check(void);
--
- int panic_on_unrecovered_nmi;
- int kstack_depth_to_print = 24;
- static unsigned int code_bytes = 64;
-diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
-index 2696a68..3d74429 100644
---- a/arch/x86/kernel/traps_64.c
-+++ b/arch/x86/kernel/traps_64.c
-@@ -51,30 +51,10 @@
- #include <asm/pgalloc.h>
- #include <asm/proto.h>
- #include <asm/pda.h>
-+#include <asm/traps.h>
- 
- #include <mach_traps.h>
- 
--asmlinkage void divide_error(void);
--asmlinkage void debug(void);
--asmlinkage void nmi(void);
--asmlinkage void int3(void);
--asmlinkage void overflow(void);
--asmlinkage void bounds(void);
--asmlinkage void invalid_op(void);
--asmlinkage void device_not_available(void);
--asmlinkage void double_fault(void);
--asmlinkage void coprocessor_segment_overrun(void);
--asmlinkage void invalid_TSS(void);
--asmlinkage void segment_not_present(void);
--asmlinkage void stack_segment(void);
--asmlinkage void general_protection(void);
--asmlinkage void page_fault(void);
--asmlinkage void coprocessor_error(void);
--asmlinkage void simd_coprocessor_error(void);
--asmlinkage void alignment_check(void);
--asmlinkage void spurious_interrupt_bug(void);
--asmlinkage void machine_check(void);
--
- int panic_on_unrecovered_nmi;
- int kstack_depth_to_print = 12;
- static unsigned int code_bytes = 64;
-diff --git a/include/asm-x86/traps.h b/include/asm-x86/traps.h
-new file mode 100644
-index 0000000..a4b65a7
---- /dev/null
-+++ b/include/asm-x86/traps.h
-@@ -0,0 +1,66 @@
-+#ifndef _ASM_X86_TRAPS_H
-+#define _ASM_X86_TRAPS_H
-+
-+/* Common in X86_32 and X86_64 */
-+asmlinkage void divide_error(void);
-+asmlinkage void debug(void);
-+asmlinkage void nmi(void);
-+asmlinkage void int3(void);
-+asmlinkage void overflow(void);
-+asmlinkage void bounds(void);
-+asmlinkage void invalid_op(void);
-+asmlinkage void device_not_available(void);
-+asmlinkage void coprocessor_segment_overrun(void);
-+asmlinkage void invalid_TSS(void);
-+asmlinkage void segment_not_present(void);
-+asmlinkage void stack_segment(void);
-+asmlinkage void general_protection(void);
-+asmlinkage void page_fault(void);
-+asmlinkage void coprocessor_error(void);
-+asmlinkage void simd_coprocessor_error(void);
-+asmlinkage void alignment_check(void);
-+asmlinkage void spurious_interrupt_bug(void);
-+#ifdef CONFIG_X86_MCE
-+asmlinkage void machine_check(void);
-+#endif /* CONFIG_X86_MCE */
-+
-+void do_divide_error(struct pt_regs *, long);
-+void do_overflow(struct pt_regs *, long);
-+void do_bounds(struct pt_regs *, long);
-+void do_coprocessor_segment_overrun(struct pt_regs *, long);
-+void do_invalid_TSS(struct pt_regs *, long);
-+void do_segment_not_present(struct pt_regs *, long);
-+void do_stack_segment(struct pt_regs *, long);
-+void do_alignment_check(struct pt_regs *, long);
-+void do_invalid_op(struct pt_regs *, long);
-+void do_general_protection(struct pt_regs *, long);
-+void do_nmi(struct pt_regs *, long);
-+
-+extern int panic_on_unrecovered_nmi;
-+extern int kstack_depth_to_print;
-+
-+#ifdef CONFIG_X86_32
-+
-+void do_iret_error(struct pt_regs *, long);
-+void do_int3(struct pt_regs *, long);
-+void do_debug(struct pt_regs *, long);
-+void math_error(void __user *);
-+void do_coprocessor_error(struct pt_regs *, long);
-+void do_simd_coprocessor_error(struct pt_regs *, long);
-+void do_spurious_interrupt_bug(struct pt_regs *, long);
-+unsigned long patch_espfix_desc(unsigned long, unsigned long);
-+asmlinkage void math_emulate(long);
-+
-+#else /* CONFIG_X86_32 */
-+
-+asmlinkage void double_fault(void);
-+
-+asmlinkage void do_int3(struct pt_regs *, long);
-+asmlinkage void do_stack_segment(struct pt_regs *, long);
-+asmlinkage void do_debug(struct pt_regs *, unsigned long);
-+asmlinkage void do_coprocessor_error(struct pt_regs *);
-+asmlinkage void do_simd_coprocessor_error(struct pt_regs *);
-+asmlinkage void do_spurious_interrupt_bug(struct pt_regs *);
-+
-+#endif /* CONFIG_X86_32 */
-+#endif /* _ASM_X86_TRAPS_H */
--- 
-1.5.5.1
+This isn't really true either.  A lot of devices with a high sg slot
+count are still less efficient than an iommu for programming.
 
+Even if they're not, on parisc we have to program the iommu, we can't
+bypass, so it still makes sense to only have one large sg list (in the
+iommu) and one small one (in the device).  Having two large ones reduces
+our I/O throughput because of the extra overhead.
+
+> If you have device with for example 1024 slots, the virtual merge 
+> accounting has no effect, because the any request will fit into that size. 
+
+It's not about fitting a request, it's about efficient processing.
+
+> Even without virtual merge accounting, the virtual merging will happen, so 
+> there will be no performance penalty for the controller --- the controller 
+> will be programmed with exactly the same number of segments as if virtual 
+> merge accounting was present. (there could be even slight positive 
+> performance effect if you remove accounting, because you burn less CPU 
+> cycles per request)
+
+Yes there is.  Both the iommu and the device have to traverse large SG
+lists.  This is where the inefficiency lies.  On PA, we use exactly the
+same number of iotlb slots whether virtual merging is in effect or not,
+but the device has an internal loop to go over the list.  It's that loop
+that virtual merging reduces.
+
+Since the virtual merge computation is in line when the request is built
+(by design) it doesn't really detract from the throughput and the cost
+is pretty small.
+
+> If you have device will small number of sg slots (16 or so), vmerge 
+> accounting can improve performance by creating requests with more than 16 
+> segments --- the question is: is there any such device? And is the device 
+> performance-sensitive? (i.e. isn't it such an old hardware where no one 
+> cares about performance anyway?)
+> 
+> > I suspect with IOMMUs coming back (and being unable to be bypassed) with
+> > virtualisation, virtual merging might once more become a significant
+> > value.
+> 
+> I suppose that no one would manufacture new SCSI card with 16 or 32 sg 
+> slots these days, so the accounting of hardware segments has no effect on 
+> modern hardware.
+
+It's not about accounting, it's about performance.  There's a cost in
+every device to traversing large count sg lists.  If you have to bear it
+in the iommu (which is usually more efficient because the iotlb tends to
+follow mmtlb optimisations) you can reduce the cost by eliminating it
+from the device.
+
+James
 
 
