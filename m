@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762000AbYGOVCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762929AbYGOVCt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762000AbYGOVCe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 17:02:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754306AbYGOVC0
+	id S1762929AbYGOVCt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 17:02:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762284AbYGOVCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 17:02:26 -0400
-Received: from www.tglx.de ([62.245.132.106]:44552 "EHLO www.tglx.de"
+	Tue, 15 Jul 2008 17:02:38 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:41447 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752155AbYGOVCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 17:02:25 -0400
-Date: Tue, 15 Jul 2008 23:01:45 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [GIT pull] x86 updates
-Message-ID: <alpine.LFD.1.10.0807152249270.3283@apollo.tec.linutronix.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	id S1759871AbYGOVCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 17:02:36 -0400
+Date: Wed, 16 Jul 2008 00:02:30 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] chsc headers userspace cleanup
+Message-ID: <20080715210230.GK24533@cs181140183.pp.htv.fi>
+References: <20080715125817.GB24533@cs181140183.pp.htv.fi> <20080715191748.1f3905ad@gondolin.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080715191748.1f3905ad@gondolin.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Tue, Jul 15, 2008 at 07:17:48PM +0200, Cornelia Huck wrote:
+> On Tue, 15 Jul 2008 15:58:18 +0300,
+> Adrian Bunk <bunk@kernel.org> wrote:
+> 
+> > Kernel headers shouldn't expose functions to userspace.
+> 
+> Could you please elaborate? Especially as I see e.g.
+> include/linux/virtio_ring.h exporting functions outside #ifdef
+> __KERNEL__ as well...
 
-Please pull the latest x86/urgent git tree from:
+Our headers are in a bad shape...
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86/urgent
+The userspace headers should contain everything that is part of the ABI 
+between the kernel and userspace.
 
-Thanks,
+Nothing more.
 
-	tglx
+The kernel is heavily changing with each release while the userspace ABI 
+is cast in stone, and leaking more stuff to userspace than required only 
+increases the chances of some userspace programmer using it and some 
+kernel programmer then changing it.
 
------------------->
+cu
+Adrian
 
-Thomas Gleixner (1):
-      x86: fix TSC build error on 32bit
+-- 
 
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
- arch/x86/kernel/tsc.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-index 3c36f92..7603c05 100644
---- a/arch/x86/kernel/tsc.c
-+++ b/arch/x86/kernel/tsc.c
-@@ -358,6 +358,7 @@ static cycle_t read_tsc(void)
- 		ret : clocksource_tsc.cycle_last;
- }
- 
-+#ifdef CONFIG_X86_64
- static cycle_t __vsyscall_fn vread_tsc(void)
- {
- 	cycle_t ret = (cycle_t)vget_cycles();
-@@ -365,6 +366,7 @@ static cycle_t __vsyscall_fn vread_tsc(void)
- 	return ret >= __vsyscall_gtod_data.clock.cycle_last ?
- 		ret : __vsyscall_gtod_data.clock.cycle_last;
- }
-+#endif
- 
- static struct clocksource clocksource_tsc = {
- 	.name                   = "tsc",
