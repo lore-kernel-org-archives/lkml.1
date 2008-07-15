@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761559AbYGORCN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758099AbYGORGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761559AbYGORCN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 13:02:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755648AbYGORB6
+	id S1758099AbYGORGw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 13:06:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbYGORGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 13:01:58 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:36262 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755570AbYGORB5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 13:01:57 -0400
-Message-ID: <487CD7FE.9010209@garzik.org>
-Date: Tue, 15 Jul 2008 13:01:50 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 15 Jul 2008 13:06:43 -0400
+Received: from mga12.intel.com ([143.182.124.36]:45069 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751818AbYGORGm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 13:06:42 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.30,367,1212390000"; 
+   d="scan'208";a="20747201"
+Message-ID: <487CD918.6060405@linux.intel.com>
+Date: Tue, 15 Jul 2008 19:06:32 +0200
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: david@lang.hm, Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
- use it in more drivers.
-References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <alpine.DEB.1.10.0807141704120.14223@asgard.lang.hm> <alpine.LFD.1.10.0807141729200.3017@woody.linux-foundation.org> <alpine.DEB.1.10.0807141750290.14223@asgard.lang.hm> <alpine.LFD.1.10.0807141756361.3017@woody.linux-foundation.org> <alpine.DEB.1.10.0807141805300.14223@asgard.lang.hm> <alpine.LFD.1.10.0807141903260.3017@woody.linux-foundation.org> <487C585C.2060002@garzik.org> <alpine.LFD.1.10.0807150803580.3017@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807150803580.3017@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Alex Chiang <achiang@hp.com>
+CC: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 14/14] ACPI: Provide /sys/devices/system/cpu/cpuN/deconfigure
+References: <20080715023344.2528.1836.stgit@blender.achiang> <20080715023455.2528.16193.stgit@blender.achiang>
+In-Reply-To: <20080715023455.2528.16193.stgit@blender.achiang>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+Alex Chiang wrote:
+> Provide a new sysfs interface for CPU deconfiguration.
 > 
-> On Tue, 15 Jul 2008, Jeff Garzik wrote:
->> A more complex, multi-file inter-dependent system is more reliable than a
->> single-file driver with built-in firmware, doing the same thing?
+> Since no vendors can agree on terminology for related but slightly
+> different features, provide a method for a platform to implement
+> its own version of what it thinks 'deconfiguring' a CPU might be.
 > 
-> I'm not interested in your made-up arguments.
+> Provide an HP-specific CPU deconfiguration implementation.
 
-It's a simple question...  you claimed A was more reliable than B, even 
-though A is a more complex system than B.
+Why are you ccing this to linux-arch? Dropped.
 
-I'm curious how that works, especially given that you have claimed the 
-_exact opposite_ in years past, by pointing out how firmware separation 
-could mean no-boot.
+What is the standard status of these new SCFG and ECFG tables? Have they
+been submitted for possible inclusion in ACPI? And is there a spec
+available? I can't say I'm really thrilled with having HP specific
+support in there.
 
+It would be better at least if you could reserve the table names and 
+then drop the HP DMI check. This is needed anyways, otherwise the 
+standard at some point could add different ECFG/SCFG tables.
 
-> Please just build everything statically. Don't use modules. They are 
-> clearly too complex for you, adn everybody is happy.
+> + * After echo'ing 0 or 1 into deconfigure, cat'ing the file will
+> + * return the next boot's status. However, the CPU will not actually
+> + * be deconfigured until the next boot.
 
-Can't you make a simple, objective, technical comparison between two 
-systems?
+Now that seems like weird semantics for a public fixed API. What happens
+when some other vendor adds hot deconfiguration?
 
-firmware-outside-driver has more utility and flexibility, but more 
-things can go wrong, like driver present/firmware absent case that 
-happens every day with today's wireless drivers.
+My feeling is that this seems to be overly specific to your BIOS
+and might better belong into some separate management tool. At least
+until we can define a nice general API for this with clear semantics. 
+For what systems is this anyways?
 
-firmware-inside-driver guarantees without _any_ doubt that the firmware 
-is present, if the driver is guarantee.  There is no guarantee more 
-solid than that.
-
-	Jeff
-
+-Andi
 
