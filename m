@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761876AbYGOS6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758097AbYGOS7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761876AbYGOS6u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 14:58:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755093AbYGOS6n
+	id S1758097AbYGOS7Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 14:59:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957AbYGOS6z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 14:58:43 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:49372 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754957AbYGOS6m (ORCPT
+	Tue, 15 Jul 2008 14:58:55 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:55670 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761943AbYGOS6x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 14:58:42 -0400
-Date: Tue, 15 Jul 2008 14:58:01 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, david@lang.hm,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
-	in-kernel, use it in more drivers.
-Message-ID: <20080715185801.GH8185@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jeff Garzik <jeff@garzik.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>, david@lang.hm,
-	Arjan van de Ven <arjan@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Woodhouse <dwmw2@infradead.org>, alan@lxorguk.ukuu.org.uk,
-	linux-kernel@vger.kernel.org
-References: <alpine.LFD.1.10.0807141903260.3017@woody.linux-foundation.org> <487C585C.2060002@garzik.org> <alpine.LFD.1.10.0807150803580.3017@woody.linux-foundation.org> <487CD7FE.9010209@garzik.org> <alpine.LFD.1.10.0807151008450.3017@woody.linux-foundation.org> <487CDEC0.3090004@garzik.org> <alpine.LFD.1.10.0807151041080.3017@woody.linux-foundation.org> <487CEA73.9000408@garzik.org> <alpine.LFD.1.10.0807151124510.3017@woody.linux-foundation.org> <487CF01E.6000208@garzik.org>
-MIME-Version: 1.0
+	Tue, 15 Jul 2008 14:58:53 -0400
+Date: Tue, 15 Jul 2008 19:48:22 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Alex Chiang <achiang@hp.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 01/14] Introduce cpu_enabled_map and friends
+Message-ID: <20080715184822.GB29991@flint.arm.linux.org.uk>
+Mail-Followup-To: Matthew Wilcox <matthew@wil.cx>,
+	Alex Chiang <achiang@hp.com>, Andi Kleen <andi@firstfloor.org>,
+	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+	linux-acpi@vger.kernel.org
+References: <20080715023344.2528.1836.stgit@blender.achiang> <20080715023349.2528.9423.stgit@blender.achiang> <20080715031512.GF14894@parisc-linux.org> <87wsjnxy4w.fsf@basil.nowhere.org> <20080715102130.GA22866@flint.arm.linux.org.uk> <20080715175740.GB10919@ldl.fc.hp.com> <20080715181632.GG14894@parisc-linux.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <487CF01E.6000208@garzik.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <20080715181632.GG14894@parisc-linux.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 02:44:46PM -0400, Jeff Garzik wrote:
-> All of the regressions examples I am citing are cured by  
-> firmware-in-module, because they are all examples of problems that occur  
-> when you remove the ability to reproduce the same functional pieces as  
-> 2.6.26.
+On Tue, Jul 15, 2008 at 12:16:32PM -0600, Matthew Wilcox wrote:
+> On Tue, Jul 15, 2008 at 11:57:40AM -0600, Alex Chiang wrote:
+> > My thought was that big SMP systems like ia64, possibly sparc and
+> > ppc, and increasingly, x86, might find something like this
+> > useful, as systems get larger and larger, and vendors are going
+> > to want to do RAS-ish features, like the ability to keep CPUs in
+> > firmware across reboots until told otherwise by the sysadmin.
+> > 
+> > Right now, a 'present' CPU strongly implies 'online' as well,
+> > since we're calling cpu_up() for all 'present' CPUs in
+> > smp_init(). But this hurts if:
+> > 
+> > 	- you don't actually want to bring up all 'present' CPUs
+> > 	- you still want to interact with these weirdo zombie
+> > 	  CPUs that are 'present' but not 'online'
+> 
+> Have you considered simply failing __cpu_up() for CPUs that are
+> deconfigured by firmware?
 
-Jeff,
+But what if you want to have a system boot with, say, 4 CPUs and
+then decide at run time to bring up another 4 CPUs when required?
 
-	I think you've said this before, but let me try to help you
-cut to the chase.  You are willing to *implement*
-firmware-in-the-module for request_firmware(), but you want a
-commitment that David Woodhouse and Linus will accept such a patch
-before you go off and write it.  Is that right?
+How about having smp_init() call into arch code to query whether
+it should bring up a not-already-online CPU?  Architectures that
+want to do something special can then make the decision there and
+everyone else can define the test completely away.
 
-	If so, may I suggest you start implementing, instead of
-sending e-mails?  For all the time people have spent arguing about it,
-maybe it could have been implemented already.
-
-	Once it has been implemented, do you have any further
-objections aka ideas about how request_firmware() could be improved?
-
-					- Ted
-					(who is hoping we can guide
-					 this thread onto slightly more
-					 productive avenues)
-
-
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
