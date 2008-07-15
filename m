@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761300AbYGOCeb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761114AbYGOCev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761300AbYGOCeb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 22:34:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756984AbYGOCd5
+	id S1761114AbYGOCev (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 22:34:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758988AbYGOCeB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 22:33:57 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:15313 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756694AbYGOCdz (ORCPT
+	Mon, 14 Jul 2008 22:34:01 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34613 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757315AbYGOCd6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 22:33:55 -0400
-From: Alex Chiang <achiang@hp.com>
-Subject: [PATCH 02/14] [M32R] Populate cpu_enabled_map
-To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Cc: linux-acpi@vger.kernel.org, Alex Chiang <achiang@hp.com>,
-       Hirokazu Takata <takata@linux-m32r.org>
-Date: Mon, 14 Jul 2008 20:33:54 -0600
-Message-ID: <20080715023354.2528.8879.stgit@blender.achiang>
-In-Reply-To: <20080715023344.2528.1836.stgit@blender.achiang>
-References: <20080715023344.2528.1836.stgit@blender.achiang>
-User-Agent: StGIT/0.14.3
+	Mon, 14 Jul 2008 22:33:58 -0400
+Date: Mon, 14 Jul 2008 19:33:25 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeff Garzik <jeff@garzik.org>
+cc: Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
+ use it in more drivers.
+In-Reply-To: <487C09EB.1050903@garzik.org>
+Message-ID: <alpine.LFD.1.10.0807141928540.3017@woody.linux-foundation.org>
+References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org> <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
+ <487C09EB.1050903@garzik.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Populate the cpu_enabled_map correctly.
 
-Note that this patch does not actually make any decisions based
-on the contents of the map.
 
-However, as the map is presented via sysfs in:
+On Mon, 14 Jul 2008, Jeff Garzik wrote:
+> 
+> My complaints are about --not breaking stuff--, not request_firmware().
 
-	/sys/devices/system/cpu/
+Guys, request_firmware() has been around for about five years now.
 
-It should be populated correctly.
+If this discussion had happened in 2003, I'd agree.
 
-Signed-off-by: Alex Chiang <achiang@hp.com>
-Cc: Hirokazu Takata <takata@linux-m32r.org>
----
+As it is, I think it's time to just face it - many people do want to have 
+a unified interface (and yes, I obviously count myself in that group), and 
+you can't just continue do nothing and ignore that.
 
- arch/m32r/kernel/smpboot.c |    1 +
- include/asm-m32r/smp.h     |    1 +
- 2 files changed, 2 insertions(+), 0 deletions(-)
+Your argument seems to be that you don't want to break anything, but 
+you've also clearly not wanted to _fix_ anything for the last five years. 
 
-diff --git a/arch/m32r/kernel/smpboot.c b/arch/m32r/kernel/smpboot.c
-index 2c03ac1..4f2bbde 100644
---- a/arch/m32r/kernel/smpboot.c
-+++ b/arch/m32r/kernel/smpboot.c
-@@ -184,6 +184,7 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
- 		physid_set(phys_id, phys_cpu_present_map);
- #ifndef CONFIG_HOTPLUG_CPU
- 	cpu_present_map = cpu_possible_map;
-+	cpu_enabled_map = cpu_possible_map;
- #endif
- 
- 	show_mp_info(nr_cpu);
-diff --git a/include/asm-m32r/smp.h b/include/asm-m32r/smp.h
-index 078e1a5..4ea1845 100644
---- a/include/asm-m32r/smp.h
-+++ b/include/asm-m32r/smp.h
-@@ -65,6 +65,7 @@ extern volatile int cpu_2_physid[NR_CPUS];
- extern cpumask_t cpu_callout_map;
- extern cpumask_t cpu_possible_map;
- extern cpumask_t cpu_present_map;
-+extern cpumask_t cpu_enabled_map;
- 
- static __inline__ int hard_smp_processor_id(void)
- {
+At some point, somebody has to just do it. And five years is _way_ long 
+enough.
 
+			Linus
