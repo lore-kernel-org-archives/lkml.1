@@ -1,79 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758843AbYGOMch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757652AbYGOMif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758843AbYGOMch (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 08:32:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756566AbYGOMca
+	id S1757652AbYGOMif (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 08:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755153AbYGOMi1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 08:32:30 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:62445 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756218AbYGOMca (ORCPT
+	Tue, 15 Jul 2008 08:38:27 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:5444 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753835AbYGOMi0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 08:32:30 -0400
-Date: Tue, 15 Jul 2008 13:32:28 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: sasa sasa <sasak.1983@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Set_up irq problem while using gpio
-Message-ID: <20080715123228.GG24620@fluff.org.uk>
-References: <aecf5e530807142304m60ef0cb2pe1c3592ae1abc7eb@mail.gmail.com>
+	Tue, 15 Jul 2008 08:38:26 -0400
+Date: Tue, 15 Jul 2008 16:38:22 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Richard Purdie <rpurdie@rpsys.net>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] leds: implement OpenFirmare GPIO LED driver
+Message-ID: <20080715123822.GA10893@polina.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20080714164114.GA18784@polina.dev.rtsoft.ru> <20080715131004.32646dae.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-In-Reply-To: <aecf5e530807142304m60ef0cb2pe1c3592ae1abc7eb@mail.gmail.com>
-X-Disclaimer: These are my own opinions, so there!
+In-Reply-To: <20080715131004.32646dae.sfr@canb.auug.org.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 11:34:23AM +0530, sasa sasa wrote:
-> Hi,
+Hello Stephen,
+
+On Tue, Jul 15, 2008 at 01:10:04PM +1000, Stephen Rothwell wrote:
+[...]
+> > +	led->np = np;
 > 
-> I have query that the below patch has to applied on irq/manage.c file or not.
-> --- kernel_old/irq/manage.c 2008-02-07 22:11:14.000000000 +0530
-> +++ kernel_new/irq/manage.c 2008-02-07 22:19:14.000000000 +0530
-> @@ -349,8 +349,14 @@
->         /* Setup the type (level, edge polarity) if configured: */
->         if (new->flags & IRQF_TRIGGER_MASK) {
->             if (desc->chip && desc->chip->set_type)
-> -               desc->chip->set_type(irq,
-> -                       new->flags & IRQF_TRIGGER_MASK);
-> +           {
-> +               if((desc->chip->set_type(irq,
-> +                       new->flags & IRQF_TRIGGER_MASK)))
-> +               {
-> +                   spin_unlock_irqrestore(&desc->lock, flags);
-> +                   return -ESPIPE;
-> +               }
-> +           }
+> You need to take a reference if you are keeping a pointer to a
+> device_node, so:
+> 	led->np = of_node_get(np);
+> 
+> > +	led->cdev.name = of_get_property(np, "label", NULL);
+> > +	if (!led->cdev.name)
+> > +		led->cdev.name = ofdev->dev.bus_id;
+> 
+> Please use dev_name() in new code:
+> 		led->cdev.name = dev_name(&ofdev->dev);
+> 
+> > +	led->cdev.brightness_set = gpio_led_set;
+> > +
+> > +	ret = gpio_request(led->gpio, ofdev->dev.bus_id);
+> 
+> dev_name() again.
+> 
+> > +err_get_gpio:
+> 
+> 	of_node_put(led->np);
+> 
+> > +	kfree(led);
+> > +	return ret;
+> > +}
+> > +
+> > +static int __devexit of_gpio_leds_remove(struct of_device *ofdev)
+> > +{
+> > +	struct of_gpio_led *led = dev_get_drvdata(&ofdev->dev);
+> > +
+> > +	led_classdev_unregister(&led->cdev);
+> > +	cancel_work_sync(&led->work);
+> > +	gpio_free(led->gpio);
+> > +	of_node_put(led->np);
+> 
+> This was going to be unbalanced, but is now correct.
 
-this is difficult to read, a better way would be to
-
-	ret = desc->chip->set_type(irq, new->flags & IRQF_TRIGGER_MASK)
-	if (ret) {
-		spin_unlock_irqrestore(&desc->lock, flags);
-		return ret;
-	}
-
-
-If set_type() is meant to return an error, this should have been done
-from the start, instead of being ignored.
-
-tbh, the code could be further cleaned up by holding 
-the (new->flags & IRQF_TRIGGER_MASK in a variable such as new_trigger
-which would stop the problem of wrapping lines...
-
-> The reason is that in case of gpio pins used as interrupt pin but that
-> pin has already been ocuupied in other mode (like alternate function
-> mode or in software mode) by other device. In that case, some error
-> mechanism must be there, if we are requesting that gpio pin as
-> interrupt through request_irq function.
-
-Hmm, I thought (when implementing the s3c24xx irq support) that
-requesting the IRQ should change the pin mode appropriately.
+Thank you so much for the review, corrected version follows.
 
 -- 
-Ben (ben@fluff.org, http://www.fluff.org/)
-
-  'a smiley only costs 4 bytes'
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
