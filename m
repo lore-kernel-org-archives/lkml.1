@@ -1,75 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756418AbYGOIPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755713AbYGOITm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756418AbYGOIPm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 04:15:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754187AbYGOIP3
+	id S1755713AbYGOITm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 04:19:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753769AbYGOIT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 04:15:29 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39110 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754131AbYGOIP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 04:15:27 -0400
-Date: Tue, 15 Jul 2008 10:14:31 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
-	in-kernel, use it in more drivers.
-Message-ID: <20080715081431.GB16600@elte.hu>
-References: <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org> <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org> <487C09EB.1050903@garzik.org> <alpine.LFD.1.10.0807141928540.3017@woody.linux-foundation.org> <487C1648.5070409@garzik.org> <alpine.LFD.1.10.0807142027140.3017@woody.linux-foundation.org> <487C500F.8000109@garzik.org> <1216107418.27455.236.camel@shinybook.infradead.org>
+	Tue, 15 Jul 2008 04:19:26 -0400
+Received: from wf-out-1314.google.com ([209.85.200.169]:52607 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753688AbYGOITZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 04:19:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=nzXORR2CbCcs241v8HfMvBjVOW/Szq4KlwdgCt3ZoBAhlOTW9VE65fGTrAu4+Gzs82
+         gPlwdkWT2UPIojOhlczqdLxH9JkgOiQMokocAd9B39+ypn1TW1Xwr8cpchyKfiDdTGJE
+         /7A1RCvv3N2x/S9E7a4vzii3Np96WILtRR7XY=
+Message-ID: <aec7e5c30807150119r160a104en5780c3288d50c60d@mail.gmail.com>
+Date: Tue, 15 Jul 2008 17:19:24 +0900
+From: "Magnus Damm" <magnus.damm@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 04/04] resource: add new IORESOURCE_CLK type
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
+In-Reply-To: <20080711121813.acc71327.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1216107418.27455.236.camel@shinybook.infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20080709115428.14144.7121.sendpatchset@rx1.opensource.se>
+	 <20080709115502.14144.49264.sendpatchset@rx1.opensource.se>
+	 <20080711121813.acc71327.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Andrew,
 
-* David Woodhouse <dwmw2@infradead.org> wrote:
+Thanks for picking up my patches.
 
-> On Tue, 2008-07-15 at 03:21 -0400, Jeff Garzik wrote:
-> > * forced a flag day build process change upon all distros/builders 
-> > who switch to >= 2.6.27.  no build script updates == non-working 
-> > drivers.
-> 
-> Jeff, we don't usually call it a 'flag day' when it's just the normal 
-> and uninteresting case that you update the upstream version of the 
-> package, and you need minor tweaks to how you package it. [...]
+On Sat, Jul 12, 2008 at 4:18 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Wed, 09 Jul 2008 20:55:02 +0900 Magnus Damm <magnus.damm@gmail.com> wrote:
+>
+>> This patch rearranges the values of the IORESOURCE_TYPE_BITS from
+>> one bit per type to a 4-bit counter. Also, IORESOURCE_CLK is added.
+>> Not sure if it is better to start counting from 0 instead of 1.
+>>
+>
+> I don't believe this is an adequate changelog.  It contains the "what" but
+> not the "why".
 
-well, i have no opinion one way or another about the firmware issue, but 
-breaking the build and breaking previously working setups is not a 
-"minor tweak".
+Yeah, sorry about that. I should have been more clear.
 
-> [...] That happens all the time. [...]
+> Why did we switch from one-bit to four-bits?
 
-No, you are quite wrong, it does not happen all the time.
+The 4-bit encoding is there because I thought it was a waste of bits
+to use one bit per type. =)
 
-It happens occasionally out of 10,000 changes per kernel cycle. It 
-happens unintentionally most of the time and it's called a regression.
+I wanted to add IORESOURCE_CLK and while at it I was playing around
+with changing the code to use a 4-bit value for resource type. We may
+already have spare bits available that are more suitable for new types
+though.
 
-The difference here is that you seem to have broken my setup fully 
-intentionally.
+> Why did we add IORESOURCE_CLK?
 
-I have no problem with going forward, but i have a problem with breaking 
-working setups and i have a problem with forced migration to something 
-that doesnt work by default.
+Currently we use struct resource with the types
+IORESOURCE_MEM/IORESOURCE_IO and IORESOUCE_IRQ to pass I/O and
+interrupt parameters to platform drivers. That works fine, but I'd
+like to extend this so we also pass clock information. Basically a
+string that tells the platform driver which clock that should be used
+with clk_get() for a certain driver instance.
 
-If there's a fix i can apply and test i'm a happy camper, but all this 
-arguing in these threads with zero patches posted makes me quite 
-nervous.
+I'm sure there are other ways to do this, but I'd like to have a
+generic way to pass a clock string to platform devices. Using a hard
+coded string in the device driver won't do since we may have multiple
+instances of drivers that need to use different clocks. Extending
+struct resource seems to be the easiest way to do this IMO.
 
-	Ingo
+If people are happy with this idea then i'd be more than happy to fix
+up and resend this patch.
+
+/ magnus
