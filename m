@@ -1,67 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753492AbYGOWs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757307AbYGOWtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753492AbYGOWs0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 18:48:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbYGOWsQ
+	id S1757307AbYGOWtY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 18:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754382AbYGOWtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 18:48:16 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:48845 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753686AbYGOWsO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 18:48:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=C8DfAPAIDO9rV+EJNJ1QvfmeWR+2Fb0MJ1qFhuT2Q9+Yaz2uqs5Bn0ftwN5D8qEp3Y
-         pHxzGevk6DDjXsVSXiu0kLAdZBu2/xAJ0X26zUeRIJa/wYnxTKATGtZ72OSKIEBgkBkY
-         sb8ZKv02d0BMgsW57TzTOK9lzZQ6ZajAxnAks=
-Message-ID: <3aa654a40807151548t485ea8e6k1d7e261277c1c5aa@mail.gmail.com>
-Date: Tue, 15 Jul 2008 15:48:13 -0700
-From: "Avuton Olrich" <avuton@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: s2disk: system powers up again after power off
-Cc: "Martin Michlmayr" <tbm@cyrius.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <200807152224.19559.rjw@sisk.pl>
+	Tue, 15 Jul 2008 18:49:15 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:56313 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753777AbYGOWtO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 18:49:14 -0400
+Message-ID: <487D2982.90109@linux.vnet.ibm.com>
+Date: Tue, 15 Jul 2008 17:49:38 -0500
+From: Jon Tollefson <kniht@linux.vnet.ibm.com>
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: npiggin@suse.de, adobriyan@gmail.com, penberg@cs.helsinki.fi,
+       mpm@selenic.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       cl@linux-foundation.org
+Subject: [patch v2] powerpc: hugetlb pgtable cache access cleanup
+References: <20080604112939.789444496@amd.local0.net> <20080604113113.648031825@amd.local0.net> <487B7F96.70305@linux.vnet.ibm.com> <20080714155659.b4fab697.akpm@linux-foundation.org>
+In-Reply-To: <20080714155659.b4fab697.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080715124733.GA4111@deprecation.cyrius.com>
-	 <3aa654a40807150605r6d6206delcd903aac58f6291d@mail.gmail.com>
-	 <200807152224.19559.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 1:24 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Tuesday, 15 of July 2008, Avuton Olrich wrote:
->> On Tue, Jul 15, 2008 at 5:47 AM, Martin Michlmayr <tbm@cyrius.com> wrote:
->> > When I use s2disk to suspend my HP 2510p notebook, it writes
->> > everything to disk, and powers off... but after 2-3 seconds it often
->> > powers on again.  This doesn't happen all the time but quite
->> > frequently (definitely in the majority of cases).
->> >
->> > I believe I've never seen this when I use "halt" to power off the
->> > machine (but I don't use halt very often).
->> >
->> > Any idea?
->>
->> Ugh, this happens here too, this started occuring before 2.6.25 but
->> every time I try to bisect it takes hours and I end up screwing up
->> somewhere along the way, so I haven't had time to bisect this
->> correctly.
+Andrew Morton wrote:
+> On Mon, 14 Jul 2008 11:32:22 -0500
+> Jon Tollefson <kniht@linux.vnet.ibm.com> wrote:
 >
-> Please try to put "shutdown method = shutdown" into the s2disk's configuration
-> file and see what happens in that case.
+>   
+>> Cleaned up use of macro.  We now reference the pgtable_cache array directly instead of using a macro.
+>>     
+>
+> This clashes rather a lot with all the other hugetlb things which we
+> have queued.
+>
+>   
+oops.  new version below here should be based on mmotm.
+---
 
-Anything a little less fancy? I use pm-hibernate, or gnome's Power
-Manager to hibernate; I don't even have s2disk installed, sorry I
-should have mentioned that.
--- 
-avuton
---
- "I've got a fever. And the only prescription is more cowbell." --
-Christopher Walken
+
+Cleaned up use of macro.  We now reference the pgtable_cache array directly instead of using a macro.
+
+
+Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
+---
+
+ arch/powerpc/mm/hugetlbpage.c |   22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
+
+
+--- a/arch/powerpc/mm/hugetlbpage.c	2008-07-15 17:17:42.741035616 -0500
++++ b/arch/powerpc/mm/hugetlbpage.c	2008-07-15 17:36:48.959015872 -0500
+@@ -53,8 +53,7 @@
+ 
+ /* Subtract one from array size because we don't need a cache for 4K since
+  * is not a huge page size */
+-#define huge_pgtable_cache(psize)	(pgtable_cache[HUGEPTE_CACHE_NUM \
+-							+ psize-1])
++#define HUGE_PGTABLE_INDEX(psize)	(HUGEPTE_CACHE_NUM + psize - 1)
+ #define HUGEPTE_CACHE_NAME(psize)	(huge_pgtable_cache_name[psize])
+ 
+ static const char *huge_pgtable_cache_name[MMU_PAGE_COUNT] = {
+@@ -113,7 +112,7 @@
+ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
+ 			   unsigned long address, unsigned int psize)
+ {
+-	pte_t *new = kmem_cache_zalloc(huge_pgtable_cache(psize),
++	pte_t *new = kmem_cache_zalloc(pgtable_cache[HUGE_PGTABLE_INDEX(psize)],
+ 				      GFP_KERNEL|__GFP_REPEAT);
+ 
+ 	if (! new)
+@@ -121,7 +120,7 @@
+ 
+ 	spin_lock(&mm->page_table_lock);
+ 	if (!hugepd_none(*hpdp))
+-		kmem_cache_free(huge_pgtable_cache(psize), new);
++		kmem_cache_free(pgtable_cache[HUGE_PGTABLE_INDEX(psize)], new);
+ 	else
+ 		hpdp->pd = (unsigned long)new | HUGEPD_OK;
+ 	spin_unlock(&mm->page_table_lock);
+@@ -746,13 +745,14 @@
+ 
+ 	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
+ 		if (mmu_huge_psizes[psize]) {
+-			huge_pgtable_cache(psize) = kmem_cache_create(
+-						HUGEPTE_CACHE_NAME(psize),
+-						HUGEPTE_TABLE_SIZE(psize),
+-						HUGEPTE_TABLE_SIZE(psize),
+-						0,
+-						NULL);
+-			if (!huge_pgtable_cache(psize))
++			pgtable_cache[HUGE_PGTABLE_INDEX(psize)] =
++				kmem_cache_create(
++					HUGEPTE_CACHE_NAME(psize),
++					HUGEPTE_TABLE_SIZE(psize),
++					HUGEPTE_TABLE_SIZE(psize),
++					0,
++					NULL);
++			if (!pgtable_cache[HUGE_PGTABLE_INDEX(psize)])
+ 				panic("hugetlbpage_init(): could not create %s"\
+ 				      "\n", HUGEPTE_CACHE_NAME(psize));
+ 		}
+
+
