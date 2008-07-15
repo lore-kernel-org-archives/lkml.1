@@ -1,87 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758011AbYGODrh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761282AbYGODsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758011AbYGODrh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 23:47:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753921AbYGODr3
+	id S1761282AbYGODsR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 23:48:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142AbYGODr7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 23:47:29 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:37198 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753701AbYGODr3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 23:47:29 -0400
-Date: Mon, 14 Jul 2008 23:47:27 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Paul Menage <menage@google.com>, Max Krasnyansky <maxk@qualcomm.com>,
-       Paul Jackson <pj@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       miaox@cn.fujitsu.com, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: current linux-2.6.git: cpusets completely broken
-In-Reply-To: <alpine.LFD.1.10.0807142029280.3017@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.58.0807142342450.8137@gandalf.stny.rr.com>
-References: <20080712031736.GA3040@damson.getinternet.no> 
- <alpine.LFD.1.10.0807112026390.2875@woody.linux-foundation.org> 
- <b647ffbd0807120304o7a500dc9oce761e51c9dce908@mail.gmail.com> 
- <alpine.LFD.1.10.0807121254490.2875@woody.linux-foundation.org> 
- <alpine.LFD.1.10.0807121411350.2875@woody.linux-foundation.org>
- <b647ffbd0807141538g2004f245m5f54ec962f475ba5@mail.gmail.com>
- <alpine.LFD.1.10.0807141602250.3017@woody.linux-foundation.org>
- <Pine.LNX.4.58.0807142320180.4530@gandalf.stny.rr.com>
- <alpine.LFD.1.10.0807142029280.3017@woody.linux-foundation.org>
+	Mon, 14 Jul 2008 23:47:59 -0400
+Received: from slackware.com ([64.57.102.34]:58611 "EHLO bob.slackware.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754098AbYGODr6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 23:47:58 -0400
+Date: Mon, 14 Jul 2008 20:47:38 -0700 (PDT)
+From: Piter PUNK <piterpunk@slackware.com>
+To: Tejun Heo <htejun@gmail.com>
+cc: linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: Regression: kernel 2.6.24{,.1} ahci problem, does not boot
+In-Reply-To: <487B403F.5040704@gmail.com>
+Message-ID: <Pine.LNX.4.63.0807142036180.2473@bob.slackware.com>
+References: <Pine.LNX.4.63.0806141945270.2761@bob.slackware.com>
+ <487B403F.5040704@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Jul 2008, Linus Torvalds wrote:
-> >
-> > On Mon, 14 Jul 2008, Linus Torvalds wrote:
-> > > So by doing the test for cpu_active_map not at queuing time, but at the
-> > > time when we actually try to do the migration, we can now also make that
-> > > cpu_active_map be totally serialized.
-> > >
-> > > (Of course, anybody who clears the bit does need to take the runqueue lock
-> > > of that CPU too, but cpu_down() will have to do that as it does the
-> > > "migrate away live tasks" anyway, so that's not a problem)
-> >
-> > Wouldn't simply doing a synchronize_sched() after clearing the bit also
-> > make sure that no new task will be scheduled on that CPU?
+> This change made into the kernel in commit 9a3b103c...  Today, I
+> tested a SIS968 board whose lspci -nn output looks like the following.
 >
-> My point was that it DOESN'T NEED TO DO ANYTHING AT ALL.
+>  00:00.0 Host bridge [Class 0600]: Silicon Integrated Systems [SiS] 671MX [1039:0671]
+>  00:01.0 PCI bridge [Class 0604]: Silicon Integrated Systems [SiS] PCI-to-PCI bridge [1039:0004]
+>  00:02.0 ISA bridge [Class 0601]: Silicon Integrated Systems [SiS] SiS968 [MuTIOL Media IO] [1039:0968] (rev 01)
+>  00:02.5 IDE interface [Class 0101]: Silicon Integrated Systems [SiS] 5513 [IDE] [1039:5513] (rev 01)
+>  00:03.0 USB Controller [Class 0c03]: Silicon Integrated Systems [SiS] USB 1.0 Controller [1039:7001] (rev 0f)
+>  00:03.1 USB Controller [Class 0c03]: Silicon Integrated Systems [SiS] USB 1.0 Controller [1039:7001] (rev 0f)
+>  00:03.3 USB Controller [Class 0c03]: Silicon Integrated Systems [SiS] USB 2.0 Controller [1039:7002]
+>  00:04.0 Ethernet controller [Class 0200]: Silicon Integrated Systems [SiS] 191 Gigabit Ethernet Adapter [1039:0191] (rev 02)
+>  00:05.0 SATA controller [Class 0106]: Silicon Integrated Systems [SiS] AHCI IDE Controller (0106) [1039:1185] (rev 03)
+>  00:06.0 PCI bridge [Class 0604]: Silicon Integrated Systems [SiS] PCI-to-PCI bridge [1039:000a]
+>  00:07.0 PCI bridge [Class 0604]: Silicon Integrated Systems [SiS] PCI-to-PCI bridge [1039:000a]
+>  00:0d.0 VGA compatible controller [Class 0300]: ATI Technologies Inc Radeon RV100 QZ [Radeon 7000/VE] [1002:515a]
+>  00:0f.0 Audio device [Class 0403]: Silicon Integrated Systems [SiS] Azalia Audio Controller [1039:7502]
+>  00:10.0 RAID bus controller [Class 0104]: HighPoint Technologies, Inc. HPT372A/372N [1103:0005] (rev 02)
+>  02:00.0 Ethernet controller [Class 0200]: Intel Corporation 82572EI Gigabit Ethernet Controller (Copper) [8086:10b9] (rev 06)
 >
-> It has to get the runqueue lock in order to move the currently executing
-> threads off that CPU anyway. The fact that it can (and actually does)
-> synchronize with the scheduler in other ways is totally and utterly
-> immaterial.
->
-> That's what "robust" means. It means that things just work, and there are
-> no subtle interactions.
->
-> Sure, you can serialize with something complicated and heavy.
->
-> But isn't it nice that the absolutely _least_ complicated and heavy
-> operation (ie getting the runqueue lock) also serializes sufficiently?
-> Isn't it nice how you have to do that in order to do all those other
-> things that you obviously have to do?
->
-> Please don't argue about how we can add more subtle rules, or how other
-> thigns can serialize this thing as well. Isn't it sufficient that the
-> _obvious_ things serialize it?
+> And the AHCI controller 1039:1185 @ 00:05.0 works just fine with
+> regular devices and PMPs.  Can you please post lspci -nn output on
+> your machine?  It seems the blacklisting was too wide.
 
-Oh, I'm not arguing. My mind is going off to an even bigger picture, where
-something in the future would need to stop migration to a particular CPU,
-and that it could simply clear the bit and call synchronize_sched. The run
-queue lock is only visible to the scheduler.  Sorry, I may have been day
-dreaming out loud ;-)
+OK.
 
-But for the case at hand, yes I agree, simply grabbing the run queue lock
-is a very elegant and simple solution.
+That is the lspci-nn output:
 
--- Steve
+00:00.0 Host bridge [0600]: Silicon Integrated Systems [SiS] 671MX [1039:0671]
+00:01.0 PCI bridge [0604]: Silicon Integrated Systems [SiS] SiS AGP Port (virtual PCI-to-PCI bridge) [1039:0003]
+00:02.0 ISA bridge [0601]: Silicon Integrated Systems [SiS] SiS968 [MuTIOL Media IO] [1039:0968] (rev 01)
+00:02.5 IDE interface [0101]: Silicon Integrated Systems [SiS] 5513 [IDE] [1039:5513] (rev 01)
+00:03.0 USB Controller [0c03]: Silicon Integrated Systems [SiS] USB 1.1 Controller [1039:7001] (rev 0f)
+00:03.1 USB Controller [0c03]: Silicon Integrated Systems [SiS] USB 1.1 Controller [1039:7001] (rev 0f)
+00:03.3 USB Controller [0c03]: Silicon Integrated Systems [SiS] USB 2.0 Controller [1039:7002]
+00:04.0 Ethernet controller [0200]: Silicon Integrated Systems [SiS] 191 Gigabit Ethernet Adapter [1039:0191] (rev 02)
+00:05.0 SATA controller [0106]: Silicon Integrated Systems [SiS] AHCI IDE Controller (0106) [1039:1185] (rev 03)
+00:0f.0 Audio device [0403]: Silicon Integrated Systems [SiS] Azalia Audio Controller [1039:7502]
+01:00.0 VGA compatible controller [0300]: Silicon Integrated Systems [SiS] 771/671 PCIE VGA Display Adapter [1039:6351] (rev 10)
 
+The main differences that i can see are the internal SiS video chip and
+the "SiS AGP Port".
+
+Hope it can help
+
+Piter Punk
