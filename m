@@ -1,54 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbYGOX3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757930AbYGOXaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758224AbYGOX3z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 19:29:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754414AbYGOX3c
+	id S1757930AbYGOXaz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 19:30:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754123AbYGOXaq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 19:29:32 -0400
-Received: from ax54.genwebserver.com ([72.18.156.50]:56841 "EHLO
-	ax54.genwebserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753611AbYGOX3c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 19:29:32 -0400
-Message-ID: <487D323B.7070101@assumpcao.org>
-Date: Tue, 15 Jul 2008 20:26:51 -0300
-From: Tiago Assumpcao <tiago@assumpcao.org>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Tue, 15 Jul 2008 19:30:46 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:53836 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753772AbYGOXaq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 19:30:46 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Avuton Olrich" <avuton@gmail.com>
+Subject: Re: s2disk: system powers up again after power off
+Date: Wed, 16 Jul 2008 01:32:38 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Martin Michlmayr" <tbm@cyrius.com>, linux-kernel@vger.kernel.org
+References: <20080715124733.GA4111@deprecation.cyrius.com> <200807160059.54886.rjw@sisk.pl> <3aa654a40807151609m70d6852ex7f85d60c438bb4d7@mail.gmail.com>
+In-Reply-To: <3aa654a40807151609m70d6852ex7f85d60c438bb4d7@mail.gmail.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: greg@kroah.com, pageexec@freemail.hu, tytso@mit.edu,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [stable] Linux 2.6.25.10
-References: <20080715223910.GA6500@kroah.com>	<20080715.154727.176966436.davem@davemloft.net>	<487D2E02.3040601@assumpcao.org> <20080715.162110.71403329.davem@davemloft.net>
-In-Reply-To: <20080715.162110.71403329.davem@davemloft.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - ax54.genwebserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - assumpcao.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Disposition: inline
+Message-Id: <200807160132.38814.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
+On Wednesday, 16 of July 2008, Avuton Olrich wrote:
+> On Tue, Jul 15, 2008 at 3:59 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Wednesday, 16 of July 2008, Avuton Olrich wrote:
+> >> On Tue, Jul 15, 2008 at 1:24 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> > On Tuesday, 15 of July 2008, Avuton Olrich wrote:
+> >> >> On Tue, Jul 15, 2008 at 5:47 AM, Martin Michlmayr <tbm@cyrius.com> wrote:
+> >> >> > When I use s2disk to suspend my HP 2510p notebook, it writes
+> >> >> > everything to disk, and powers off... but after 2-3 seconds it often
+> >> >> > powers on again.  This doesn't happen all the time but quite
+> >> >> > frequently (definitely in the majority of cases).
+> >> >> >
+> >> >> > I believe I've never seen this when I use "halt" to power off the
+> >> >> > machine (but I don't use halt very often).
+> >> >> >
+> >> >> > Any idea?
+> >> >>
+> >> >> Ugh, this happens here too, this started occuring before 2.6.25 but
+> >> >> every time I try to bisect it takes hours and I end up screwing up
+> >> >> somewhere along the way, so I haven't had time to bisect this
+> >> >> correctly.
+> >> >
+> >> > Please try to put "shutdown method = shutdown" into the s2disk's configuration
+> >> > file and see what happens in that case.
+> >>
+> >> Anything a little less fancy? I use pm-hibernate, or gnome's Power
+> >> Manager to hibernate; I don't even have s2disk installed, sorry I
+> >> should have mentioned that.
+> >
+> > Martin mentioned s2disk in his original post.  Never mind.
+> >
+> > Please try to do "echo shutdown > /sys/power/disk" before hibernation and
+> > see what happens.
 > 
-> That's not the point.
-> 
-> The point is that he's a hypocrit because he's not willing to give the
-> world what he expects the world to give back to him.
-> 
+> Well, that certainly works (powers off as expected). Should I be
+> putting this in my startup scripts or is there something I need to do
+> to help fix this problem, kernel-wise?
 
-The point that is not is that of his identity. Be it true or false the 
-inadequacy of his anonymity.
+The problem is probably that in the "platform" mode, which is the default,
+some devices are set up for wake-up and they trigger that immediately after
+powering off.  I think we can figure out which devices do it and try to provide
+a fix, but that will certainly take time.
 
-BTW, it seems like one previous e-mail regarding the relevant point of 
-the discussion has never arrived. I'll give it a try on resending.
+In the meantime, if there are no adverse effects of using the "shutdown" mode
+on your box, I'd recommend putting the "echo ..." into startup or hibernation
+scripts.
 
---t
+BTW, is the problem also present in linux-next?
+
+Thanks,
+Rafael
