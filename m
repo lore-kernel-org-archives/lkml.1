@@ -1,64 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbYGOFba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758640AbYGOFbr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753884AbYGOFba (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 01:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754062AbYGOFbD
+	id S1758640AbYGOFbr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 01:31:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758053AbYGOFbf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 01:31:03 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:49211 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756166AbYGOFbA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 01:31:00 -0400
-Message-ID: <487C367D.4060808@keyaccess.nl>
-Date: Tue, 15 Jul 2008 07:32:45 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       david@lang.hm, akpm@linux-foundation.org, dwmw2@infradead.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
- use it in more drivers.
-References: <487C0A12.9060906@keyaccess.nl>	<20080714.192425.241878700.davem@davemloft.net>	<alpine.LFD.1.10.0807141934060.3017@woody.linux-foundation.org>	<20080714.194557.78177585.davem@davemloft.net> <20080714215648.1ed29448@infradead.org>
-In-Reply-To: <20080714215648.1ed29448@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+	Tue, 15 Jul 2008 01:31:35 -0400
+Received: from 1wt.eu ([62.212.114.60]:3987 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754062AbYGOFbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 01:31:34 -0400
+Date: Tue, 15 Jul 2008 07:31:01 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: david@lang.hm
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Stoyan Gaydarov <stoyboyker@gmail.com>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, gorcunov@gmail.com,
+       akpm@linux-foundation.org, mingo@elte.hu
+Subject: Re: From 2.4 to 2.6 to 2.7?
+Message-ID: <20080715053101.GJ1369@1wt.eu>
+References: <6d291e080807141910m573b29b2t753ea7c4db09902d@mail.gmail.com> <alpine.LFD.1.10.0807141914280.3017@woody.linux-foundation.org> <6d291e080807141931g3080c94cic94f503c1a18523b@mail.gmail.com> <alpine.LFD.1.10.0807141939410.3017@woody.linux-foundation.org> <alpine.DEB.1.10.0807142048260.6370@asgard>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0807142048260.6370@asgard>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 15-07-08 06:56, Arjan van de Ven wrote:
-
-> On Mon, 14 Jul 2008 19:45:57 -0700 (PDT)
-> David Miller <davem@davemloft.net> wrote:
+On Mon, Jul 14, 2008 at 08:55:59PM -0700, david@lang.hm wrote:
+> On Mon, 14 Jul 2008, Linus Torvalds wrote:
 > 
->> From: Linus Torvalds <torvalds@linux-foundation.org>
->> Date: Mon, 14 Jul 2008 19:39:03 -0700 (PDT)
->>
->>> Put this way: if you do a distro, you _need_ to support firmware
->>> loading anyway. And once you do that, it's just annoying how some
->>> drivers then do something odd and special for the same thing, for
->>> no real good reason.
->> In what way is it annoying?
->>
->> Most distribution people aren't even aware that drivers like tg3 and
->> bnx2 even have firmware.  In fact it's self contained and less for
->> them to worry about.
+> >>Does it have to be even numbers only?
+> >
+> >No. But the even/odd thing is still so fresh in peoples memory (despite us
+> >not having used it for years), and I think some projects aped us on it, so
+> >if I didn't change the numbering setup, but just wanted to reset the minor
+> >number, I'd probably jump from 2.6 to 2.8 just for historical reasons.
+> >
+> >But I could also see the second number as being the "year", and 2008 would
+> >get 2.8, and then next year I'd make the first release of 2009 be 2.9.1
+> >(and probably avoid the ".0" just because it again has the connotations of
+> >a "big new untested release", which is not true in a date-based numbering
+> >scheme). And then 2010 would be 3.0.1 etc..
 > 
-> and.. after this patch that still seems to be the case, unless I'm
-> looking at it really cross eyed.
-> Nothing in this patch makes it impossible to do so.. or changes the
-> drivers you mention. in fact it's the opposite almost: it improves
-> request_firmware() usability significantly. (by allowing vmlinux build
-> in etc).
+> Ok, I'll jump in.
+> 
+> I don't have strong feelings either, but I do have comments
+> 
+> 1. for the historical reasons you allude to above going to a completely 
+> different numbering system would be a nice thing
+> 
+> 2. I do like involving the year, but I think 2008/2009/2010 are much 
+> clearer then 2.8/2.9/3.0 let people shorten it verbally, but still realize 
+> that it's a full year being referred to.
+> 
+> 3. avoid using the month of the release (which ubuntu does), first you 
+> aren't going to predict the month of relese ahead of time (so what will 
+> the -rc's be called, the year is fairly clear and it's not _that_ bad if 
+> 2008.4 happens to come out in Jan 2009). also too many people don't 
+> understand that 8.10 is between 8.9 and 8.11, not between 8.0 and 8.2
 
-Only by virtue of those specific drivers having been skipped for now. 
-For those that weren't skipped, the only way to have them still be self 
-contained is to have the kernel itself compile in all firmware for all 
-modules after which the module will find it there. Distributions will of 
-course not do this, not does it make any sense for own kernels.
+That's probably why openbsd jumps from 3.9 to 4.0. I like such a numbering
+too. It compacts 3 numbers into 2 (like we had before) but without any
+major/minor notion. You just bump each new version by 0.1 at a somewhat
+regular rate. Having the year and a sub-version is fine too, but I think
+it adds unnecessary digits. Or maybe jump to 8.X for 2008, then 9.X in
+2009 and 10.X in 2010 ? That way, we have both the date and the simplicity.
+And it's not like we really care about version 1000 in year 3000.
 
-Rene.
+> so my prefrence (mild as it is) goes to YYYY.r.s (r=release, s=stable)
+
+agreed, but with Y.r.s :-)
+
+Willy
+
