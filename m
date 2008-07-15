@@ -1,53 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbYGOEEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757249AbYGOEFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755503AbYGOEEy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 00:04:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750865AbYGOEEq
+	id S1757249AbYGOEFR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 00:05:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbYGOEEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 00:04:46 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37549 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750814AbYGOEEq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 00:04:46 -0400
-Date: Mon, 14 Jul 2008 21:04:12 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Paul Menage <menage@google.com>, Max Krasnyansky <maxk@qualcomm.com>,
-       Paul Jackson <pj@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       miaox@cn.fujitsu.com, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: current linux-2.6.git: cpusets completely broken
-In-Reply-To: <Pine.LNX.4.58.0807142342450.8137@gandalf.stny.rr.com>
-Message-ID: <alpine.LFD.1.10.0807142057310.3017@woody.linux-foundation.org>
-References: <20080712031736.GA3040@damson.getinternet.no>  <alpine.LFD.1.10.0807112026390.2875@woody.linux-foundation.org>  <b647ffbd0807120304o7a500dc9oce761e51c9dce908@mail.gmail.com>  <alpine.LFD.1.10.0807121254490.2875@woody.linux-foundation.org> 
- <alpine.LFD.1.10.0807121411350.2875@woody.linux-foundation.org> <b647ffbd0807141538g2004f245m5f54ec962f475ba5@mail.gmail.com> <alpine.LFD.1.10.0807141602250.3017@woody.linux-foundation.org> <Pine.LNX.4.58.0807142320180.4530@gandalf.stny.rr.com>
- <alpine.LFD.1.10.0807142029280.3017@woody.linux-foundation.org> <Pine.LNX.4.58.0807142342450.8137@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 15 Jul 2008 00:04:48 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:51619 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751315AbYGOEEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 00:04:47 -0400
+Date: Tue, 15 Jul 2008 14:04:39 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Dave Airlie <airlied@linux.ie>
+Cc: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>,
+       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [git pull] drm tree reorganisation for merge window
+Message-Id: <20080715140439.4cfcd808.sfr@canb.auug.org.au>
+In-Reply-To: <alpine.DEB.0.82.0807142207010.3936@skynet.skynet.ie>
+References: <alpine.DEB.0.82.0807140147500.9419@skynet.skynet.ie>
+	<20080715012153.a3bb9df0.sfr@canb.auug.org.au>
+	<alpine.DEB.0.82.0807142207010.3936@skynet.skynet.ie>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__15_Jul_2008_14_04_39_+1000_8bc5G=Uw+vX_BMel"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Tue__15_Jul_2008_14_04_39_+1000_8bc5G=Uw+vX_BMel
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Dave,
 
-On Mon, 14 Jul 2008, Steven Rostedt wrote:
-> 
-> Oh, I'm not arguing. My mind is going off to an even bigger picture, where
-> something in the future would need to stop migration to a particular CPU,
-> and that it could simply clear the bit and call synchronize_sched. The run
-> queue lock is only visible to the scheduler.  Sorry, I may have been day
-> dreaming out loud ;-)
+On Mon, 14 Jul 2008 22:08:39 +0100 (IST) Dave Airlie <airlied@linux.ie> wro=
+te:
+>
+> > > Please pull the 'drm-reorg' branch from
+> > > ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git =
+drm-reorg
+> > >=20
+> > > This contains a moving around of a lot of the DRM into a more Linux l=
+ike=20
+> > > tree and makes it a lot nicer going forward for merging new features.
+> >=20
+> > Does this tree have a fix for the x86_64 allmodconfig build failures I
+> > reported against linux-next?
+>=20
+> Yes I rolled them into the patch instead of cluttering up the history.
 
-Well, you'd be stuck right now anyway. 
+Thanks.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-At least in my trivial patch, the cpu_active_map locking is protected by 
-'cpu_add_remove_lock' which is static to cpu.c. The only thing that 
-modifies it (apart from the initial setup before SMP has been brought up) 
-is the hotplug code.
+--Signature=_Tue__15_Jul_2008_14_04_39_+1000_8bc5G=Uw+vX_BMel
+Content-Type: application/pgp-signature
 
-			Linus
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkh8IdcACgkQjjKRsyhoI8yfAQCfezh/QOQNqhRMIA/N++NF8myX
+viUAn05aNnfUA5NVhp/3OTq4mIsdwX9d
+=5Iug
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__15_Jul_2008_14_04_39_+1000_8bc5G=Uw+vX_BMel--
