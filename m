@@ -1,36 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763509AbYGOWea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764001AbYGOWfp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763509AbYGOWea (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 18:34:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762889AbYGOW3x
+	id S1764001AbYGOWfp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 18:35:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763604AbYGOWbz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 18:29:53 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:47476 "EHLO smtp.polymtl.ca"
+	Tue, 15 Jul 2008 18:31:55 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:47901 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762674AbYGOW3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 18:29:52 -0400
-Message-Id: <20080715222748.002421557@polymtl.ca>
+	id S1763595AbYGOWbx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 18:31:53 -0400
+Message-Id: <20080715222748.433063591@polymtl.ca>
 References: <20080715222604.331269462@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 15 Jul 2008 18:26:13 -0400
+Date: Tue, 15 Jul 2008 18:26:15 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
        Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, linux-mm@kvack.org,
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Andi Kleen <andi-suse@firstfloor.org>, linux-mm@kvack.org,
        Dave Hansen <haveblue@us.ibm.com>, "Frank Ch. Eigler" <fche@redhat.com>,
        Hideo AOKI <haoki@redhat.com>,
        Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: [patch 09/17] LTTng instrumentation - filemap
-Content-Disposition: inline; filename=lttng-instrumentation-filemap.patch
+Subject: [patch 11/17] LTTng instrumentation - memory page faults
+Content-Disposition: inline; filename=lttng-instrumentation-memory.patch
 X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Tue, 15 Jul 2008 22:27:51 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Instrumentation of waits caused by memory accesses on mmap regions.
+Instrument the page fault entry and exit. Useful to detect delays caused by page
+faults and bad memory usage patterns.
 
 Those tracepoints are used by LTTng.
 
@@ -41,6 +43,7 @@ scheduler instrumentation (about 5 events in code scheduler code) was added.
 See the "Tracepoints" patch header for performance result detail.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Andi Kleen <andi-suse@firstfloor.org>
 CC: linux-mm@kvack.org
 CC: Dave Hansen <haveblue@us.ibm.com>
 CC: Masami Hiramatsu <mhiramat@redhat.com>
@@ -52,50 +55,93 @@ CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
 CC: 'Steven Rostedt' <rostedt@goodmis.org>
 CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 ---
- include/trace/filemap.h |   13 +++++++++++++
- mm/filemap.c            |    3 +++
- 2 files changed, 16 insertions(+)
+ include/trace/memory.h |   14 ++++++++++++++
+ mm/memory.c            |   33 ++++++++++++++++++++++++---------
+ 2 files changed, 38 insertions(+), 9 deletions(-)
 
-Index: linux-2.6-lttng/mm/filemap.c
+Index: linux-2.6-lttng/mm/memory.c
 ===================================================================
---- linux-2.6-lttng.orig/mm/filemap.c	2008-07-15 14:51:50.000000000 -0400
-+++ linux-2.6-lttng/mm/filemap.c	2008-07-15 15:14:46.000000000 -0400
-@@ -33,6 +33,7 @@
- #include <linux/cpuset.h>
- #include <linux/hardirq.h> /* for BUG_ON(!in_atomic()) only */
- #include <linux/memcontrol.h>
-+#include <trace/filemap.h>
- #include "internal.h"
+--- linux-2.6-lttng.orig/mm/memory.c	2008-07-15 14:02:54.000000000 -0400
++++ linux-2.6-lttng/mm/memory.c	2008-07-15 14:03:47.000000000 -0400
+@@ -61,6 +61,7 @@
  
- /*
-@@ -541,9 +542,11 @@ void wait_on_page_bit(struct page *page,
+ #include <linux/swapops.h>
+ #include <linux/elf.h>
++#include <trace/memory.h>
+ 
+ #ifndef CONFIG_NEED_MULTIPLE_NODES
+ /* use the per-pgdat data instead for discontigmem - mbligh */
+@@ -2664,30 +2665,44 @@ unlock:
+ int handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+ 		unsigned long address, int write_access)
  {
- 	DEFINE_WAIT_BIT(wait, &page->flags, bit_nr);
++	int res;
+ 	pgd_t *pgd;
+ 	pud_t *pud;
+ 	pmd_t *pmd;
+ 	pte_t *pte;
  
-+	trace_filemap_wait_start(page, bit_nr);
- 	if (test_bit(bit_nr, &page->flags))
- 		__wait_on_bit(page_waitqueue(page), &wait, sync_page,
- 							TASK_UNINTERRUPTIBLE);
-+	trace_filemap_wait_end(page, bit_nr);
++	trace_memory_handle_fault_entry(mm, vma, address, write_access);
++
+ 	__set_current_state(TASK_RUNNING);
+ 
+ 	count_vm_event(PGFAULT);
+ 
+-	if (unlikely(is_vm_hugetlb_page(vma)))
+-		return hugetlb_fault(mm, vma, address, write_access);
++	if (unlikely(is_vm_hugetlb_page(vma))) {
++		res = hugetlb_fault(mm, vma, address, write_access);
++		goto end;
++	}
+ 
+ 	pgd = pgd_offset(mm, address);
+ 	pud = pud_alloc(mm, pgd, address);
+-	if (!pud)
+-		return VM_FAULT_OOM;
++	if (!pud) {
++		res = VM_FAULT_OOM;
++		goto end;
++	}
+ 	pmd = pmd_alloc(mm, pud, address);
+-	if (!pmd)
+-		return VM_FAULT_OOM;
++	if (!pmd) {
++		res = VM_FAULT_OOM;
++		goto end;
++	}
+ 	pte = pte_alloc_map(mm, pmd, address);
+-	if (!pte)
+-		return VM_FAULT_OOM;
++	if (!pte) {
++		res = VM_FAULT_OOM;
++		goto end;
++	}
+ 
+-	return handle_pte_fault(mm, vma, address, pte, pmd, write_access);
++	res = handle_pte_fault(mm, vma, address, pte, pmd, write_access);
++end:
++	trace_memory_handle_fault_exit(res);
++	return res;
  }
- EXPORT_SYMBOL(wait_on_page_bit);
  
-Index: linux-2.6-lttng/include/trace/filemap.h
+ #ifndef __PAGETABLE_PUD_FOLDED
+Index: linux-2.6-lttng/include/trace/memory.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/include/trace/filemap.h	2008-07-15 15:14:46.000000000 -0400
-@@ -0,0 +1,13 @@
-+#ifndef _TRACE_FILEMAP_H
-+#define _TRACE_FILEMAP_H
++++ linux-2.6-lttng/include/trace/memory.h	2008-07-15 14:03:47.000000000 -0400
+@@ -0,0 +1,14 @@
++#ifndef _TRACE_MEMORY_H
++#define _TRACE_MEMORY_H
 +
 +#include <linux/tracepoint.h>
 +
-+DEFINE_TRACE(filemap_wait_start,
-+	TPPROTO(struct page *page, int bit_nr),
-+	TPARGS(page, bit_nr));
-+DEFINE_TRACE(filemap_wait_end,
-+	TPPROTO(struct page *page, int bit_nr),
-+	TPARGS(page, bit_nr));
++DEFINE_TRACE(memory_handle_fault_entry,
++	TPPROTO(struct mm_struct *mm, struct vm_area_struct *vma,
++		unsigned long address, int write_access),
++	TPARGS(mm, vma, address, write_access));
++DEFINE_TRACE(memory_handle_fault_exit,
++	TPPROTO(int res),
++	TPARGS(res));
 +
 +#endif
 
