@@ -1,86 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762986AbYGOTxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759170AbYGOTyJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762986AbYGOTxp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 15:53:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757324AbYGOTxg
+	id S1759170AbYGOTyJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 15:54:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757324AbYGOTxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 15:53:36 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:35303 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756077AbYGOTxf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 15:53:35 -0400
-Date: Tue, 15 Jul 2008 15:53:33 -0400
-To: Sage Weil <sage@newdream.net>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ceph-devel@lists.sourceforge.net
-Subject: Re: Recursive directory accounting for size, ctime, etc.
-Message-ID: <20080715195333.GK21590@fieldses.org>
-References: <Pine.LNX.4.64.0806192313530.7379@cobra.newdream.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0806192313530.7379@cobra.newdream.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	Tue, 15 Jul 2008 15:53:53 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:33723 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753647AbYGOTxv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 15:53:51 -0400
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
+	in-kernel, use it in more drivers.
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, Frans Pop <elendil@planet.nl>,
+       jeff@garzik.org, arjan@infradead.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LFD.1.10.0807151244320.3351@woody.linux-foundation.org>
+References: <1216077806.27455.85.camel@shinybook.infradead.org>
+	 <20080714164119.99c33d5b.akpm@linux-foundation.org>
+	 <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>
+	 <487C0365.5030203@garzik.org>
+	 <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
+	 <200807151757.10626.elendil@planet.nl>
+	 <1216149637.27242.65.camel@violet.holtmann.net>
+	 <alpine.LFD.1.10.0807151223290.3351@woody.linux-foundation.org>
+	 <1216150616.27455.377.camel@shinybook.infradead.org>
+	 <alpine.LFD.1.10.0807151244320.3351@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 15 Jul 2008 21:54:00 +0200
+Message-Id: <1216151640.27242.90.camel@violet.holtmann.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 11:28:22AM -0700, Sage Weil wrote:
-> Fields prefixed with 'r' are recursively defined, while 
-> entries/files/subdirs is just for the one directory.  'rctime' is the most 
-> recent ctime within the hierarchy, which should be useful for backup 
-> software or anything else scanning the hierarchy for recent changes.
-> 
-> Naturally, there are a few caveats:
-> 
->  - There is some built-in delay before statistics fully propagate up 
-> toward the root of the hierarchy.  Changes are propagated 
-> opportunistically when lock/lease state allows, with an upper bound of (by 
-> default) ~30 seconds for each level of directory nesting.
+Hi Linus,
 
-That makes it less useful, e.g., for somebody with cached data trying to
-validate their cache, or for something like git trying to check a
-directory tree for changes.
+> Requiring you to write udevd scripts for that sounds insane. I wouldn't 
+> even know where to start.
+> 
+> So kernel-specific directories do make sense. As does the whole "I don't 
+> want to handle the pain that is udev scripts".
 
->  - Ceph internally distinguishes between multiple links to the same file 
-> (there is a single 'primary' link, and then zero or more 'remote' links).  
-> Only the primary link contributes toward the 'rbytes' total.
+you don't have to. We extend udev once and then it will always work. As
+mentioned before, Ubuntu is already doing this. They never bothered to
+submit this upstream and I didn't really care since I have all my
+firmware files in /lib/firmware and had no need to add versions to it.
 
-Is that only true for 'rbytes'?
+Regards
 
---b.
+Marcel
 
-> 
->  - The 'rbytes' summation is over i_size, not blocks used.  That means 
-> sparse files "appear" larger than the storage space they actually consume.
-> 
->  - Directories don't yet contribute anything to the 'rbytes' total.  They
-> should probably include an estimate of the storage consumed by directory 
-> metadata.  For this reason, and because the size isn't rounded up to the 
-> block size, the 'rbytes' total will usually be slightly smaller than what 
-> you get from 'du'.
-> 
->  - Currently no stats for the root directory itself.
-> 
-> 
-> I'm extremely interested in what people think of overloading the file 
-> system interface in this way.  Handy?  Crufty?  Dangerous?  Does anybody 
-> know of any applications that rely on or expect meaningful values for a 
-> directory's i_size?  Or read() a directory?
-> 
-> 
-> More information on the recursive accounting at
-> 
-> 	http://ceph.newdream.net/wiki/Recursive_accounting
-> 
-> and Ceph itself at
-> 
-> 	http://ceph.newdream.net/
-> 
-> Cheers-
-> sage
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
