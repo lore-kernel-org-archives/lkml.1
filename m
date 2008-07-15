@@ -1,80 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756059AbYGOSBO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761808AbYGOSCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756059AbYGOSBO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 14:01:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761734AbYGOSAy
+	id S1761808AbYGOSCj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 14:02:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755145AbYGOSCb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 14:00:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59671 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753474AbYGOSAx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 14:00:53 -0400
-Subject: Re: Linux Wireless Mini-Summit -- Ottawa -- July 22, 2008
-From: Dan Williams <dcbw@redhat.com>
-To: Nicolas Pitre <nico@cam.org>
-Cc: Michael Buesch <mb@bu3sch.de>,
-       Stefanik =?ISO-8859-1?Q?G=E1bor?= <netrolller.3d@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.1.10.0807151323570.12484@xanadu.home>
-References: <20080709190915.GA8238@tuxdriver.com>
-	 <69e28c910807100912h30fcb57fpb4fb48b95c640f77@mail.gmail.com>
-	 <200807101815.27204.mb@bu3sch.de>
-	 <1216142191.6039.113.camel@localhost.localdomain>
-	 <alpine.LFD.1.10.0807151323570.12484@xanadu.home>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 15 Jul 2008 13:58:31 -0400
-Message-Id: <1216144711.13411.18.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 8bit
+	Tue, 15 Jul 2008 14:02:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39402 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753688AbYGOSCa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 14:02:30 -0400
+Date: Tue, 15 Jul 2008 11:01:29 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [GIT pull] timer updates for 2.6.27
+In-Reply-To: <alpine.LFD.1.10.0807151046180.3017@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0807151100140.3017@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0807141827340.3283@apollo.tec.linutronix.de> <alpine.LFD.1.10.0807151046180.3017@woody.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-15 at 13:31 -0400, Nicolas Pitre wrote:
-> On Tue, 15 Jul 2008, Dan Williams wrote:
+
+
+On Tue, 15 Jul 2008, Linus Torvalds wrote:
 > 
-> > On Thu, 2008-07-10 at 18:15 +0200, Michael Buesch wrote:
-> > > On Thursday 10 July 2008 18:12:32 Stefanik Gábor wrote:
-> > > > Some other topics which might be of interest/good to include:
-> > > > - New chipsets needing drivers (SiS 16x, Marvell, etc.)
-> > > 
-> > > I have no idea what to discuss about non-existing drivers, really.
-> > > Something like: "Do we need that driver? Everyone votes YES and is happy"?
-> > 
-> > Maybe during the week we could organize some hackfests to work on the
-> > Marvell/SiS/etc mac80211 drivers?  Everyone bring their favorite
-> > non-working Marvell 88w83xx card and we make mrv8k our bitch or
-> > something like that.
-> 
-> FYI...
-> 
-> Lennert Buytenhek and I are writing a GPL driver for mv8300 class of 
-> Marvell WIFI chips right now, present and future versions. This is 
-> Marvell work as we work for Marvell.  I have access to firmware sources, 
-> etc. but obviously cannot share them.
-> 
-> We both will be in Ottawa next week.
+> Anyway, I'm not fixing it right now, since it's unclear which way to go, 
+> but this need to be fixed _some_ way.
 
-Great!  Lets definitely sit down and talk then.  There is already some
-GPL-ed source code for 83xx chips out there but it always used net80211,
-not mac80211.  So the mrv8k effort is meant to write a mac80211 driver
-for 8310/8335/etc and perhaps TopDog chips too since they don't seem
-that much different from a driver perspective.
+What the hell. The second type is always "unsigned long", and needs to be 
+that since it's passed in as a pointer to "strict_strtoul()". So 
+regardless of whether the cast to the first port should be removed or not, 
+the second thing should be 0x%04lx.
 
-Some of the issues with the current Marvell 83xx GPL drivers that have
-gotten out are (a) code style, (b) lots of commented out stuff that's
-never used, (c) OS abstraction that's unnecessary on Linux, (d) doesn't
-use mac80211, and (e) uses private ioctls.  So hopefully you're writing
-a new 83xx driver from scratch :)
-
-We cleaned up a lot of stuff for the OLPC 8388 libertas driver, but
-unfortunately we never were able to get the Marvell 8388 team onboard,
-and so they just went off and kept working on their driver and didn't
-really move the upstream libertas driver forward at all.
-
-Dan
-
-
+		Linus
