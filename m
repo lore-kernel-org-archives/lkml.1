@@ -1,213 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761661AbYGOQ05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757657AbYGOQcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761661AbYGOQ05 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 12:26:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbYGOQ0t
+	id S1757657AbYGOQcT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 12:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbYGOQcF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 12:26:49 -0400
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:47563 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753474AbYGOQ0s (ORCPT
+	Tue, 15 Jul 2008 12:32:05 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:34550 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752615AbYGOQcE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 12:26:48 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvIEABRnfEhMRKxB/2dsb2JhbACBWq1Z
-Date: Tue, 15 Jul 2008 12:26:46 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Paul E McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [patch 01/15] Kernel Tracepoints
-Message-ID: <20080715162646.GA30082@Krystal>
-References: <20080709145929.352201601@polymtl.ca> <20080709150043.693920317@polymtl.ca> <1216108237.12595.122.camel@twins> <20080715132543.GB20037@Krystal> <1216130356.12595.184.camel@twins> <20080715142710.GC20037@Krystal> <1216132928.12595.201.camel@twins> <20080715152224.GE20037@Krystal> <1216135902.12595.214.camel@twins> <20080715160813.GB27626@Krystal>
-Mime-Version: 1.0
+	Tue, 15 Jul 2008 12:32:04 -0400
+Date: Tue, 15 Jul 2008 08:53:13 -0700
+From: Greg KH <greg@kroah.com>
+To: David Vrabel <david.vrabel@csr.com>
+Cc: Inaky Perez-Gonzalez <inaky.perez-gonzalez@intel.com>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Dropping WUSB/UWB from my patch queue
+Message-ID: <20080715155313.GA3075@kroah.com>
+References: <20080630180009.GA30833@kroah.com> <4871E9F0.60608@csr.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080715160813.GB27626@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:25:37 up 40 days, 21:06,  5 users,  load average: 3.00, 1.38,
-	1.25
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <4871E9F0.60608@csr.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> * Peter Zijlstra (peterz@infradead.org) wrote:
-> > On Tue, 2008-07-15 at 11:22 -0400, Mathieu Desnoyers wrote:
-> > > * Peter Zijlstra (peterz@infradead.org) wrote:
-> > > > 
-> > > > I'm confused by the barrier games here.
-> > > > 
-> > > > Why not:
-> > > > 
-> > > >   void **it_func;
-> > > > 
-> > > >   preempt_disable();
-> > > >   it_func = rcu_dereference((tp)->funcs);
-> > > >   if (it_func) {
-> > > >     for (; *it_func; it_func++)
-> > > >       ((void(*)(proto))(*it_func))(args);
-> > > >   }
-> > > >   preempt_enable();
-> > > > 
-> > > > That is, why can we skip the barrier when !it_func? is that because at
-> > > > that time we don't actually dereference it_func and therefore cannot
-> > > > observe stale data?
-> > > > 
-> > > 
-> > > Exactly. I used the implementation of rcu_assign_pointer as a hint that
-> > > we did not need barriers when setting the pointer to NULL, and thus we
-> > > should not need the read barrier when reading the NULL pointer, because
-> > > it references no data.
-> > > 
-> > > #define rcu_assign_pointer(p, v) \
-> > >         ({ \
-> > >                 if (!__builtin_constant_p(v) || \
-> > >                     ((v) != NULL)) \
-> > >                         smp_wmb(); \
-> > >                 (p) = (v); \
-> > >         })
-> > 
-> > Yeah, I saw that,.. made me wonder. It basically assumes that when we
-> > write:
-> > 
-> >   rcu_assign_pointer(foo, NULL);
-> > 
-> > foo will not be used as an index or offset.
-> > 
-> > I guess Paul has thought it through and verified all in-kernel use
-> > cases, but it still makes me feel unconfortable.
-> > 
-> > > #define rcu_dereference(p)     ({ \
-> > >                                 typeof(p) _________p1 = ACCESS_ONCE(p); \
-> > >                                 smp_read_barrier_depends(); \
-> > >                                 (_________p1); \
-> > >                                 })
-> > > 
-> > > But I think you are right, since we are already in unlikely code, using
-> > > rcu_dereference as you do is better than my use of read barrier depends.
-> > > It should not change anything in the assembly result except on alpha,
-> > > where the read_barrier_depends() is not a nop.
-> > > 
-> > > I wonder if there would be a way to add this kind of NULL pointer case
-> > > check without overhead in rcu_dereference() on alpha. I guess not, since
-> > > the pointer is almost never known at compile-time. And I guess Paul must
-> > > already have thought about it. The only case where we could add this
-> > > test is when we know that we have a if (ptr != NULL) test following the
-> > > rcu_dereference(); we could then assume the compiler will merge the two
-> > > branches since they depend on the same condition.
-> > 
-> > I remember seeing a thread about all this special casing NULL, but have
-> > never been able to find it again - my google skillz always fail me.
-> > 
-> > Basically it doesn't work if you use the variable as an index/offset,
-> > because in that case 0 is a valid offset and you still generate a data
-> > dependency.
-> > 
-> > IIRC the conclusion was that the gains were too small to spend more time
-> > on it, although I would like to hear about the special case in
-> > rcu_assign_pointer.
-> > 
-> > /me goes use git blame....
-> > 
-> 
-> Actually, we could probably do the following, which also adds an extra
-> coherency check about non-NULL pointer assumptions :
-> 
-> #ifdef CONFIG_RCU_DEBUG /* this would be new */
-> #define DEBUG_RCU_BUG_ON(x) BUG_ON(x)
-> #else
-> #define DEBUG_RCU_BUG_ON(x)
-> #endif
-> 
-> #define rcu_dereference(p)     ({ \
->                                 typeof(p) _________p1 = ACCESS_ONCE(p); \
->                                 if (p != NULL) \
+On Mon, Jul 07, 2008 at 11:03:28AM +0100, David Vrabel wrote:
+> Greg KH wrote:
+> > Hi David,
 
-Actually this line should be :
-                                if (_________p1 != NULL) \
+Sorry for the delay, was on vacation all last week without email access,
+and am on a business trip this week with very limited email access :(
 
->                                   smp_read_barrier_depends(); \
->                                 (_________p1); \
->                                 })
+> > In looking further at the WUSB/UWB code, it doesn't look like it is
+> > going to make it for the 2.6.27 kernel tree due to the reliance on some
+> > contriversial core USB changes as well as a total lack of documentation
+> > for the sysfs apis.
 > 
-> #define rcu_dereference_non_null(p)     ({ \
->                                 typeof(p) _________p1 = ACCESS_ONCE(p); \
->                                 DEBUG_RCU_BUG_ON(p == NULL); \
+> I assume you are referring to the usb_dev_reset_delayed() change here.
+> This is only required by the wire adapter code and should not prevent
+> the majority of the UWB and WUSB stack from being merged.
 
-And this one :
-                                DEBUG_RCU_BUG_ON(_________p1 == NULL); \
+Ok, thanks for letting me know, I did not realize this.
 
-Mathieu
+> You should postpone:
+> 
+> usb-add-usb_dev_reset_delayed.patch
+> wusb-add-the-wire-adapter-core.patch
+> wusb-add-hwa-hc-wireless-host-controller-driver.patch
+> wusb-wa-abort-rpipe-request-type-fix.patch
 
+Will the code still work properly for users with these patches removed?
+If so, I'll reconsider sending this for 2.6.27.
 
->                                 smp_read_barrier_depends(); \
->                                 (_________p1); \
->                                 })
+> I will correct the lack of sysfs API documentation this week.  Please
+> advise on where the documentation should go and its style and format.
+> Be aware that some of the API is experimental and subject to change. I
+> will ensure the documentation is clear on this and that the Kconfig
+> entries depend on EXPERIMENTAL.
 > 
-> The use-case where rcu_dereference() would be used is when it is
-> followed by a null pointer check (grepping through the sources shows me
-> this is a very very common case). In rare cases, it is assumed that the
-> pointer is never NULL and it is used just after the rcu_dereference. It
-> those cases, the extra test could be saved on alpha by using
-> rcu_dereference_non_null(p), which would check the the pointer is indeed
-> never NULL under some debug kernel configuration.
-> 
-> Does it make sense ?
-> 
-> Mathieu
-> 
-> > > > If so, does this really matter since we're already in an unlikely
-> > > > section? Again, if so, this deserves a comment ;-)
-> > > > 
-> > > > [ still think those preempt_* calls should be called
-> > > >   rcu_read_sched_lock() or such. ]
-> > > > 
-> > > > Anyway, does this still generate better code?
-> > > > 
-> > > 
-> > > On x86_64 :
-> > > 
-> > >  820:   bf 01 00 00 00          mov    $0x1,%edi
-> > >  825:   e8 00 00 00 00          callq  82a <thread_return+0x136>
-> > >  82a:   48 8b 1d 00 00 00 00    mov    0x0(%rip),%rbx        # 831 <thread_return+0x13d>
-> > >  831:   48 85 db                test   %rbx,%rbx
-> > >  834:   75 21                   jne    857 <thread_return+0x163>
-> > >  836:   eb 27                   jmp    85f <thread_return+0x16b>
-> > >  838:   0f 1f 84 00 00 00 00    nopl   0x0(%rax,%rax,1)
-> > >  83f:   00 
-> > >  840:   48 8b 95 68 ff ff ff    mov    -0x98(%rbp),%rdx
-> > >  847:   48 8b b5 60 ff ff ff    mov    -0xa0(%rbp),%rsi
-> > >  84e:   4c 89 e7                mov    %r12,%rdi
-> > >  851:   48 83 c3 08             add    $0x8,%rbx
-> > >  855:   ff d0                   callq  *%rax
-> > >  857:   48 8b 03                mov    (%rbx),%rax
-> > >  85a:   48 85 c0                test   %rax,%rax
-> > >  85d:   75 e1                   jne    840 <thread_return+0x14c>
-> > >  85f:   bf 01 00 00 00          mov    $0x1,%edi
-> > >  864:
-> > > 
-> > > for 68 bytes.
-> > > 
-> > > My original implementation was 77 bytes, so yes, we have a win.
-> > 
-> > Ah, good good ! :-)
-> > 
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> Would this be sufficient to reinstate the majority of the UWB and WUSB
+> stacks for 2.6.27?
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Yes.  I'll take what you sent me, and try to reorder things to make it
+so that we can get the majority of the code into .27, I don't want this
+to live outside the tree for any longer either, that's why I started
+working on getting this mess cleaned up in the first place :)
+
+> > Because of this, I've dropped all of the patches from my USB queue, so
+> > they will no longer show up in the -next releases anymore.
+> 
+> In future, it would be appreciated if any issues with UWB patches are
+> discussed rather than summarily dropping them.
+
+Hey, they were not "dropped" in the format that they suddenly
+disappeared, they are still around and useful :)
+
+thanks,
+
+greg k-h
