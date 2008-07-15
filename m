@@ -1,61 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762929AbYGOVCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761455AbYGOVFJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762929AbYGOVCt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 17:02:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762284AbYGOVCi
+	id S1761455AbYGOVFJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 17:05:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbYGOVE5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 17:02:38 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:41447 "EHLO smtp6.pp.htv.fi"
+	Tue, 15 Jul 2008 17:04:57 -0400
+Received: from www.tglx.de ([62.245.132.106]:43804 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759871AbYGOVCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 17:02:36 -0400
-Date: Wed, 16 Jul 2008 00:02:30 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] chsc headers userspace cleanup
-Message-ID: <20080715210230.GK24533@cs181140183.pp.htv.fi>
-References: <20080715125817.GB24533@cs181140183.pp.htv.fi> <20080715191748.1f3905ad@gondolin.boeblingen.de.ibm.com>
+	id S1755254AbYGOVE4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 17:04:56 -0400
+Date: Tue, 15 Jul 2008 23:04:22 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [Git pull] timer updates
+Message-ID: <alpine.LFD.1.10.0807152303270.3283@apollo.tec.linutronix.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080715191748.1f3905ad@gondolin.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 07:17:48PM +0200, Cornelia Huck wrote:
-> On Tue, 15 Jul 2008 15:58:18 +0300,
-> Adrian Bunk <bunk@kernel.org> wrote:
-> 
-> > Kernel headers shouldn't expose functions to userspace.
-> 
-> Could you please elaborate? Especially as I see e.g.
-> include/linux/virtio_ring.h exporting functions outside #ifdef
-> __KERNEL__ as well...
+Linus,
 
-Our headers are in a bad shape...
+Please pull the latest timers/for-linus git tree from:
 
-The userspace headers should contain everything that is part of the ABI 
-between the kernel and userspace.
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git timers/for-linus
 
-Nothing more.
+ Thanks,
 
-The kernel is heavily changing with each release while the userspace ABI 
-is cast in stone, and leaking more stuff to userspace than required only 
-increases the chances of some userspace programmer using it and some 
-kernel programmer then changing it.
+	tglx
 
-cu
-Adrian
+------------------>
 
--- 
+Randy Dunlap (1):
+      acpi_pm: re-fix printk format
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
+ drivers/clocksource/acpi_pm.c |    6 +++---
+ include/linux/acpi_pmtmr.h    |    2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/clocksource/acpi_pm.c b/drivers/clocksource/acpi_pm.c
+index 5ca1d80..0f38b1b 100644
+--- a/drivers/clocksource/acpi_pm.c
++++ b/drivers/clocksource/acpi_pm.c
+@@ -28,7 +28,7 @@
+  * The location is detected during setup_arch(),
+  * in arch/i386/kernel/acpi/boot.c
+  */
+-u32 pmtmr_ioport __read_mostly;
++unsigned long pmtmr_ioport __read_mostly;
+ 
+ static inline u32 read_pmtmr(void)
+ {
+@@ -227,8 +227,8 @@ static int __init parse_pmtmr(char *arg)
+ 	if (strict_strtoul(arg, 16, &base))
+ 		return -EINVAL;
+ 
+-	printk(KERN_INFO "PMTMR IOPort override: 0x%04x -> 0x%04lx\n",
+-	       (unsigned int)pmtmr_ioport, base);
++	printk(KERN_INFO "PMTMR IOPort override: 0x%04lx -> 0x%04lx\n",
++	       pmtmr_ioport, base);
+ 	pmtmr_ioport = base;
+ 
+ 	return 1;
+diff --git a/include/linux/acpi_pmtmr.h b/include/linux/acpi_pmtmr.h
+index 7e3d285..503c7f7 100644
+--- a/include/linux/acpi_pmtmr.h
++++ b/include/linux/acpi_pmtmr.h
+@@ -15,7 +15,7 @@
+ #ifdef CONFIG_X86_PM_TIMER
+ 
+ extern u32 acpi_pm_read_verified(void);
+-extern u32 pmtmr_ioport;
++extern unsigned long pmtmr_ioport;
+ 
+ static inline u32 acpi_pm_read_early(void)
+ {
