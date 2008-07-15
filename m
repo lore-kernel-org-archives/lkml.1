@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763577AbYGOV0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763367AbYGOV0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763577AbYGOV0Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 17:26:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227AbYGOV0L
+	id S1763367AbYGOV0j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 17:26:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763365AbYGOV0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 17:26:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55944 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751306AbYGOV0J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 17:26:09 -0400
-Date: Tue, 15 Jul 2008 14:24:54 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-cc: Theodore Tso <tytso@mit.edu>, david@lang.hm,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
- use it in more drivers.
-In-Reply-To: <487D1327.7090805@garzik.org>
-Message-ID: <alpine.LFD.1.10.0807151420550.2867@woody.linux-foundation.org>
-References: <alpine.LFD.1.10.0807141903260.3017@woody.linux-foundation.org> <487C585C.2060002@garzik.org> <alpine.LFD.1.10.0807150803580.3017@woody.linux-foundation.org> <487CD7FE.9010209@garzik.org> <alpine.LFD.1.10.0807151008450.3017@woody.linux-foundation.org>
- <487CDEC0.3090004@garzik.org> <alpine.LFD.1.10.0807151041080.3017@woody.linux-foundation.org> <487CEA73.9000408@garzik.org> <alpine.LFD.1.10.0807151124510.3017@woody.linux-foundation.org> <487CF01E.6000208@garzik.org> <20080715185801.GH8185@mit.edu>
- <487CF70C.1030309@garzik.org> <alpine.LFD.1.10.0807151218460.3351@woody.linux-foundation.org> <487D1327.7090805@garzik.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 15 Jul 2008 17:26:23 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:51507 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758577AbYGOV0W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 17:26:22 -0400
+Message-ID: <487D15FC.1060300@sgi.com>
+Date: Tue, 15 Jul 2008 14:26:20 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>
+Subject: Re: [git pull] core/percpu for v2.6.27
+References: <20080714143413.GA19134@elte.hu> <alpine.LFD.1.10.0807141525000.2944@woody.linux-foundation.org> <487CC671.3000501@goop.org> <20080715210002.GA7072@elte.hu>
+In-Reply-To: <20080715210002.GA7072@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
 
-
-On Tue, 15 Jul 2008, Jeff Garzik wrote:
+...
 > 
-> Kernel 2.6.26.  Older userland w/ initrd requirement, plus module w/
-> compiled-in firmware.
+> in hindsight core/percpu indeed looks unfinished and direction-less 
+> without core/percpu-zerobased - but the latter is not stable yet.
 > 
-> Simply dropping 2.6.27 into that situation will produce an unbootable system,
-> since the firmware would not get copied into the initrd.
+> 	Ingo
 
-Umm. Neither would the module.
+Well it's very stable using gcc-4.2.4.  The earlier problems came about
+using gcc-4.2.0 and has yet to be determined what exactly went wrong.
+(And I need to install gcc-3.2 to complete the build/test QA.)
 
-So I assume you are doing the module load from the disk, not the initrd?
+Btw, is there a list of "bad" gcc's for kernel building?  Or better yet,
+can the Makefile script provide a warning when a known "bad" gcc is
+being used to compile the kernel?  I seem to recall that Peter provided
+this list:
 
-Or are you rebuilding the module into the initrd? If so, why didn't you do 
-the firmware too and my "load directly from file" idea which is pretty 
-simple? IOW, what's the fundamnetal problem here?
+	4.2.3 is fine; he was using 4.2.0 before, and as far as I know,
+        4.2.0 and 4.2.1 are known broken for the kernel.
 
-But hey, if you _do_ the "link it together", go ahead. I don't see why 
-it's so magically superior, but I wanted it for the compiled-in driver 
-case, so it's not fundamentally different from that either. And I can't 
-really find the energy to care any more.
-
-		Linus
+Thanks!
+Mike
