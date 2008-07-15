@@ -1,73 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762746AbYGOTWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762746AbYGOTWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762746AbYGOTWR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 15:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756341AbYGOTWA
+	id S1762746AbYGOTWd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 15:22:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762502AbYGOTWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 15:22:00 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:41372 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756129AbYGOTV7 (ORCPT
+	Tue, 15 Jul 2008 15:22:14 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:51125 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757506AbYGOTWM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 15:21:59 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Tue, 15 Jul 2008 21:21:27 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [git pull 1/2] FireWire updates post 2.6.26
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
-Message-ID: <tkrat.ca57fe6c5cf3640c@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Tue, 15 Jul 2008 15:22:12 -0400
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
+	in-kernel, use it in more drivers.
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: david@lang.hm, Frans Pop <elendil@planet.nl>, jeff@garzik.org,
+       arjan@infradead.org, akpm@linux-foundation.org, dwmw2@infradead.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LFD.1.10.0807150936070.3017@woody.linux-foundation.org>
+References: <1216077806.27455.85.camel@shinybook.infradead.org>
+	 <20080714164119.99c33d5b.akpm@linux-foundation.org>
+	 <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>
+	 <487C0365.5030203@garzik.org>
+	 <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
+	 <200807151757.10626.elendil@planet.nl>
+	 <alpine.LFD.1.10.0807150913590.3017@woody.linux-foundation.org>
+	 <alpine.DEB.1.10.0807150931290.16109@asgard.lang.hm>
+	 <alpine.LFD.1.10.0807150936070.3017@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 15 Jul 2008 21:22:21 +0200
+Message-Id: <1216149741.27242.67.camel@violet.holtmann.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from the for-linus branch at
+Hi Linus,
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
+> > David W has made it very clear that the eventual intent of this patch series
+> > is to remove all firmware from the kernel tree and have it shipped as a
+> > seperate package.
+> 
+> I don't think that kind of black-and-white model is necessarily 
+> attainable. Nor do I think it's even _good_.
+> 
+> It's probably the right thign for _some_ firmware, assuming we have models 
+> that just make it easy enough - for drivers where it's generally better 
+> for distros to get the firmware from vendors rather than the kernel.
+> 
+> But there is certainly nothing inherently good in forcing a split.
+> 
+> I think both sides here need to calm down and stop being so extreme.
+> 
+> I do want request_firmware() to be the way to load firmware (and possibly 
+> other configuration data too, for that matter - I don't think it's 
+> necessarily wrong for people to "misuse" it for other long-term data 
+> despite the name), and I do want people to be able to update firmware 
+> easily without having to force a kernel bump, but I also don't think it 
+> means that firmware has to go away from the kernel sources.
 
-to receive the following IEEE 1394/ FireWire subsystem updates.
-We FireWire guys are all slacking off at the beach, so the list is
-short.
+actually the PCMCIA subsystem is already using request_firmware() to
+load external CIS data to overwrite broken ones.
 
-A second pull request will follow in a minute because it treads on
-SCSI territory.
+Regards
 
-Alan Cox (1):
-      ieee1394: raw1394: Push the BKL down into the driver ioctls
+Marcel
 
-Philippe De Muyter (1):
-      ieee1394: dump mmapped iso buffers in core files
-
-Stefan Richter (7):
-      ieee1394: reduce log noise about config ROM CRC errors
-      ieee1394: video1394: reorder module init, prepare BKL removal
-      firewire: implement broadcast_channel CSR for 1394a compliance
-      firewire: remove unused struct members
-      firewire: clean up some includes
-      firewire: clean up fw_card reference counting
-      firewire: don't respond to broadcast write requests
-
- drivers/firewire/fw-card.c        |   32 +++++++++++++++++---------
- drivers/firewire/fw-device.c      |    5 +--
- drivers/firewire/fw-device.h      |    1 -
- drivers/firewire/fw-ohci.c        |    1 -
- drivers/firewire/fw-transaction.c |   32 +++++++++++++++++++-------
- drivers/firewire/fw-transaction.h |   34 ++++++++++++++++++++++------
- drivers/ieee1394/csr1212.c        |   32 ++++++++++++++++++--------
- drivers/ieee1394/dma.c            |    2 +-
- drivers/ieee1394/highlevel.c      |    4 +--
- drivers/ieee1394/highlevel.h      |   13 ++++++++++-
- drivers/ieee1394/raw1394.c        |   20 ++++++++++++----
- drivers/ieee1394/video1394.c      |    2 +
- 12 files changed, 125 insertions(+), 53 deletions(-)
-
-Thanks,
--- 
-Stefan Richter
--=====-==--- -=== -====
-http://arcgraph.de/sr/
 
