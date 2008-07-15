@@ -1,173 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbYGOPua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758099AbYGOPwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757482AbYGOPua (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 11:50:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbYGOPuW
+	id S1758099AbYGOPwX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 11:52:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753743AbYGOPwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 11:50:22 -0400
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:44460 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752430AbYGOPuV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 11:50:21 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvIEAEZgfEhMRKxB/2dsb2JhbACBWq1O
-Date: Tue, 15 Jul 2008 11:50:18 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Paul E McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [patch 01/15] Kernel Tracepoints
-Message-ID: <20080715155018.GA27626@Krystal>
-References: <20080709145929.352201601@polymtl.ca> <20080709150043.693920317@polymtl.ca> <1216108237.12595.122.camel@twins> <20080715132543.GB20037@Krystal> <1216130356.12595.184.camel@twins> <20080715142710.GC20037@Krystal> <1216132928.12595.201.camel@twins> <20080715152224.GE20037@Krystal> <1216135902.12595.214.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1216135902.12595.214.camel@twins>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:49:37 up 40 days, 20:30,  5 users,  load average: 0.91, 1.19,
-	1.35
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Tue, 15 Jul 2008 11:52:15 -0400
+Received: from r00tworld.com ([212.85.137.21]:37850 "EHLO r00tworld.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753659AbYGOPwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 11:52:14 -0400
+From: pageexec@freemail.hu
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 15 Jul 2008 17:31:09 +0200
+MIME-Version: 1.0
+Subject: Re: [stable] Linux 2.6.25.10
+Reply-to: pageexec@freemail.hu
+CC: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Message-ID: <487CDEDD.21049.1ACFDAEA@pageexec.freemail.hu>
+In-reply-to: <alpine.LFD.1.10.0807141924020.3017@woody.linux-foundation.org>
+References: <20080703185727.GA12617@suse.de>, <487C242B.19490.17F690F7@pageexec.freemail.hu>, <alpine.LFD.1.10.0807141924020.3017@woody.linux-foundation.org>
+X-mailer: Pegasus Mail for Windows (4.41)
+Content-type: text/plain; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+Content-description: Mail message body
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Tue, 15 Jul 2008 17:31:53 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra (peterz@infradead.org) wrote:
-> On Tue, 2008-07-15 at 11:22 -0400, Mathieu Desnoyers wrote:
-> > * Peter Zijlstra (peterz@infradead.org) wrote:
-> > > 
-> > > I'm confused by the barrier games here.
-> > > 
-> > > Why not:
-> > > 
-> > >   void **it_func;
-> > > 
-> > >   preempt_disable();
-> > >   it_func = rcu_dereference((tp)->funcs);
-> > >   if (it_func) {
-> > >     for (; *it_func; it_func++)
-> > >       ((void(*)(proto))(*it_func))(args);
-> > >   }
-> > >   preempt_enable();
-> > > 
-> > > That is, why can we skip the barrier when !it_func? is that because at
-> > > that time we don't actually dereference it_func and therefore cannot
-> > > observe stale data?
-> > > 
-> > 
-> > Exactly. I used the implementation of rcu_assign_pointer as a hint that
-> > we did not need barriers when setting the pointer to NULL, and thus we
-> > should not need the read barrier when reading the NULL pointer, because
-> > it references no data.
-> > 
-> > #define rcu_assign_pointer(p, v) \
-> >         ({ \
-> >                 if (!__builtin_constant_p(v) || \
-> >                     ((v) != NULL)) \
-> >                         smp_wmb(); \
-> >                 (p) = (v); \
-> >         })
-> 
-> Yeah, I saw that,.. made me wonder. It basically assumes that when we
-> write:
-> 
->   rcu_assign_pointer(foo, NULL);
-> 
-> foo will not be used as an index or offset.
-> 
-> I guess Paul has thought it through and verified all in-kernel use
-> cases, but it still makes me feel unconfortable.
-> 
-> > #define rcu_dereference(p)     ({ \
-> >                                 typeof(p) _________p1 = ACCESS_ONCE(p); \
-> >                                 smp_read_barrier_depends(); \
-> >                                 (_________p1); \
-> >                                 })
-> > 
-> > But I think you are right, since we are already in unlikely code, using
-> > rcu_dereference as you do is better than my use of read barrier depends.
-> > It should not change anything in the assembly result except on alpha,
-> > where the read_barrier_depends() is not a nop.
-> > 
-> > I wonder if there would be a way to add this kind of NULL pointer case
-> > check without overhead in rcu_dereference() on alpha. I guess not, since
-> > the pointer is almost never known at compile-time. And I guess Paul must
-> > already have thought about it. The only case where we could add this
-> > test is when we know that we have a if (ptr != NULL) test following the
-> > rcu_dereference(); we could then assume the compiler will merge the two
-> > branches since they depend on the same condition.
-> 
-> I remember seeing a thread about all this special casing NULL, but have
-> never been able to find it again - my google skillz always fail me.
-> 
-> Basically it doesn't work if you use the variable as an index/offset,
-> because in that case 0 is a valid offset and you still generate a data
-> dependency.
-> 
-> IIRC the conclusion was that the gains were too small to spend more time
-> on it, although I would like to hear about the special case in
-> rcu_assign_pointer.
-> 
-> /me goes use git blame....
-> 
+On 14 Jul 2008 at 19:27, Linus Torvalds wrote:
 
-Seems to come from :
+> We went through this discussion a couple of weeks ago, and I had 
+> absolutely zero interest in explaining it again.
 
-commit d99c4f6b13b3149bc83703ab1493beaeaaaf8a2d
+sorry, i was unaware of that discussion. any quick URLs?
 
-which refers to this discussion :
+> I personally don't like embargoes. I don't think they work. That means 
+> that I want to fix things asap. But that also means that there is never a 
+> time when you can "let people know", except when it's not an issue any 
+> more, at which point there is no _point_ in letting people know any more.
 
-http://www.mail-archive.com/netdev@vger.kernel.org/msg54852.html
+i don't follow you here. you're making 4 statements essentially:
 
-Mathieu
+A. 'i want to fix bugs asap'
+B. 'i can let people know only when it's not an issue any more'
+C. 'there is no point in letting people know when it's not an issue any more'
+D. A implies B and/or C
 
+let's see them one by one.
 
-> > > If so, does this really matter since we're already in an unlikely
-> > > section? Again, if so, this deserves a comment ;-)
-> > > 
-> > > [ still think those preempt_* calls should be called
-> > >   rcu_read_sched_lock() or such. ]
-> > > 
-> > > Anyway, does this still generate better code?
-> > > 
-> > 
-> > On x86_64 :
-> > 
-> >  820:   bf 01 00 00 00          mov    $0x1,%edi
-> >  825:   e8 00 00 00 00          callq  82a <thread_return+0x136>
-> >  82a:   48 8b 1d 00 00 00 00    mov    0x0(%rip),%rbx        # 831 <thread_return+0x13d>
-> >  831:   48 85 db                test   %rbx,%rbx
-> >  834:   75 21                   jne    857 <thread_return+0x163>
-> >  836:   eb 27                   jmp    85f <thread_return+0x16b>
-> >  838:   0f 1f 84 00 00 00 00    nopl   0x0(%rax,%rax,1)
-> >  83f:   00 
-> >  840:   48 8b 95 68 ff ff ff    mov    -0x98(%rbp),%rdx
-> >  847:   48 8b b5 60 ff ff ff    mov    -0xa0(%rbp),%rsi
-> >  84e:   4c 89 e7                mov    %r12,%rdi
-> >  851:   48 83 c3 08             add    $0x8,%rbx
-> >  855:   ff d0                   callq  *%rax
-> >  857:   48 8b 03                mov    (%rbx),%rax
-> >  85a:   48 85 c0                test   %rax,%rax
-> >  85d:   75 e1                   jne    840 <thread_return+0x14c>
-> >  85f:   bf 01 00 00 00          mov    $0x1,%edi
-> >  864:
-> > 
-> > for 68 bytes.
-> > 
-> > My original implementation was 77 bytes, so yes, we have a win.
-> 
-> Ah, good good ! :-)
-> 
+A: fine and even commendable.
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+B: that's part of the disclosure policy, so be it, although it raises
+   the question of *when* a bug is no longer an issue. when the fix is
+   in your git tree? in all/some affected vendor trees? in all affected
+   linux trees in existence? or does it depend on when x % of the
+   affected machines is running it? what's your criterion?
+
+C: do you realize what you just said? effectively, 'there's no point
+   in disclosure'. that's diametrically opposite to what you previously
+   argued for (rather vehemently, as vendor-sec readers surely remember).
+   to remind yourself of your own words:
+
+     http://lkml.org/lkml/2005/1/12/205
+     http://lkml.org/lkml/2005/1/12/363
+     http://lkml.org/lkml/2005/1/13/305
+
+   in any case, who decided this? you? did you ask anyone actually
+   affected (vendors, users, whatnot)? in case you missed about two
+   decades of security problems and their (mis)handling by proprietary
+   vendors, this was the *exact* reason why they got shamed repeatedly
+   in public (does bugtraq mean anything to you?) and why we have
+   public security mailing lists and a whole industry nowadays.
+
+D: this one is a non-sequitur, the timeline (or even willingness) of
+   fixing bugs does not imply their disclosure policy. you can surely
+   fix a bug independently of telling about it. so the question stays:
+   why do you think not disclosing security impact info at all is good,
+   and is what users want?
+
+> So I personally consider security bugs to be just "normal bugs".
+
+security bugs aren't just 'normal bugs', the more serious of them
+allow to completely break the security model of the kernel. the world
+at large has long ago decided that such bugs *are* special and there's
+an entire industry dedicated to finding/fixing/exploiting/etc them,
+not to mention academic research of the same. you can't ignore reality
+like that, i'm afraid.
+
+> I don't cover them up,
+
+by 'cover up' i meant that even when you know better, you quite
+consciously do *not* report the security impact of said bugs - that's
+the part called 'cover up' because it's about the opposite of full
+disclosure that you also advocated in the past. now you made it clear
+that you don't actually (want to) practice it (i'm not arguing with
+that choice btw, just pointing out the inconsistency between your
+declared words and actual actions).
+
+> but I also don't have any reason what-so-ever to think it's 
+> a good idea to track them and announce them as something special. 
+
+see my comment about reality above. heck, even linux vendors do track
+and announce them, it's part of the support they provide to paying
+customers (and even non-paying users).
+
+> So there is no "policy". Nor is it likely to change. 
+
+obviously there *is* a policy, it's just not what you guys declared
+earlier in Documentation/SecurityBugs. would you care to update it
+or, more properly, remove it altogether as it currently says:
+
+  Linux kernel developers take security very seriously.  As such, we'd
+  like to know when a security bug is found so that it can be fixed and
+                      ^^^^^^^^^^^^
+  disclosed as quickly as possible.  Please report security bugs to the
+  ^^^^^^^^^
+  Linux kernel security team.
+
+and what you said above about disclosure and treatment of security bugs
+is the opposite of it. there is no reason for the kernel security list
+to exist, basically (you already have lkml and bugzilla to discuss bugs,
+which, according to you, security bugs are as well, there's no need for
+special treatment).
+
+cheers,
+  PaX Team
+
+PS: i do wonder however, how do you and others expect people to track the
+quality of the development process if you apparently refuse to properly
+account for security bugs? at this moment the Jeff Jones of the world are
+smacking their head realizing the extent their statistics were flawed and
+will no doubt have a field day with your statements.
+
