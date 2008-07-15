@@ -1,70 +1,225 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761412AbYGORcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761412AbYGORdl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761412AbYGORcJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 13:32:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753921AbYGORbx
+	id S1761412AbYGORdl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 13:33:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbYGORdd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 13:31:53 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:24398 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750908AbYGORbw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 13:31:52 -0400
-MIME-version: 1.0
-Content-type: multipart/mixed; boundary="Boundary_(ID_WVaOmNPgt6jwEv21NrtLig)"
-Date: Tue, 15 Jul 2008 13:31:51 -0400 (EDT)
-From: Nicolas Pitre <nico@cam.org>
-X-X-Sender: nico@xanadu.home
-To: Dan Williams <dcbw@redhat.com>
-Cc: Michael Buesch <mb@bu3sch.de>,
-       =?ISO-8859-15?Q?Stefanik_G=E1bor?= <netrolller.3d@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Linux Wireless Mini-Summit -- Ottawa -- July 22, 2008
-In-reply-to: <1216142191.6039.113.camel@localhost.localdomain>
-Message-id: <alpine.LFD.1.10.0807151323570.12484@xanadu.home>
-References: <20080709190915.GA8238@tuxdriver.com>
- <69e28c910807100912h30fcb57fpb4fb48b95c640f77@mail.gmail.com>
- <200807101815.27204.mb@bu3sch.de>
- <1216142191.6039.113.camel@localhost.localdomain>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 15 Jul 2008 13:33:33 -0400
+Received: from mga02.intel.com ([134.134.136.20]:13961 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753921AbYGORdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 13:33:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.30,367,1212390000"; 
+   d="scan'208";a="315544858"
+Date: Tue, 15 Jul 2008 10:33:18 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: let 32bit use apic_ops too - fix
+Message-ID: <20080715173318.GA18203@linux-os.sc.intel.com>
+References: <200807080141.05436.yhlu.kernel@gmail.com> <200807102038.26591.yhlu.kernel@gmail.com> <200807111841.55403.yhlu.kernel@gmail.com> <200807132219.35814.yhlu.kernel@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200807132219.35814.yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---Boundary_(ID_WVaOmNPgt6jwEv21NrtLig)
-Content-type: TEXT/PLAIN; charset=utf-8
-Content-transfer-encoding: 8BIT
-
-On Tue, 15 Jul 2008, Dan Williams wrote:
-
-> On Thu, 2008-07-10 at 18:15 +0200, Michael Buesch wrote:
-> > On Thursday 10 July 2008 18:12:32 Stefanik Gábor wrote:
-> > > Some other topics which might be of interest/good to include:
-> > > - New chipsets needing drivers (SiS 16x, Marvell, etc.)
-> > 
-> > I have no idea what to discuss about non-existing drivers, really.
-> > Something like: "Do we need that driver? Everyone votes YES and is happy"?
+On Sun, Jul 13, 2008 at 10:19:35PM -0700, Yinghai Lu wrote:
 > 
-> Maybe during the week we could organize some hackfests to work on the
-> Marvell/SiS/etc mac80211 drivers?  Everyone bring their favorite
-> non-working Marvell 88w83xx card and we make mrv8k our bitch or
-> something like that.
+> fix for pv.
+> 
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> 
+> ---
+>  arch/x86/kernel/paravirt.c |    5 ----
+>  arch/x86/kernel/vmi_32.c   |   51 ++++++++++++++++++++++++++++++++++++++++++---
+>  arch/x86/xen/enlighten.c   |   19 +++++++---------
+>  include/asm-x86/paravirt.h |   29 -------------------------
+>  4 files changed, 57 insertions(+), 47 deletions(-)
+> 
+> Index: linux-2.6/arch/x86/kernel/paravirt.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/paravirt.c
+> +++ linux-2.6/arch/x86/kernel/paravirt.c
+> @@ -373,11 +373,6 @@ struct pv_cpu_ops pv_cpu_ops = {
+> 
+>  struct pv_apic_ops pv_apic_ops = {
+>  #ifdef CONFIG_X86_LOCAL_APIC
+> -#ifndef CONFIG_X86_64
+> -       .apic_write = native_apic_mem_write,
+> -       .apic_write_atomic = native_apic_mem_write_atomic,
+> -       .apic_read = native_apic_mem_read,
+> -#endif
+>         .setup_boot_clock = setup_boot_APIC_clock,
+>         .setup_secondary_clock = setup_secondary_APIC_clock,
+>         .startup_ipi_hook = paravirt_nop,
+> Index: linux-2.6/arch/x86/kernel/vmi_32.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/vmi_32.c
+> +++ linux-2.6/arch/x86/kernel/vmi_32.c
+> @@ -676,6 +676,50 @@ static inline int __init probe_vmi_rom(v
+>         return 0;
+>  }
+> 
+> +#ifdef CONFIG_X86_LOCAL_APIC
+> +static u32 vmi_apic_read(u32 reg)
+> +{
+> +       return 0;
+> +}
+> +
+> +static void vmi_apic_write(u32 reg, u32 val)
+> +{
+> +       /* Warn to see if there's any stray references */
+> +       WARN_ON(1);
+> +}
+> +
+> +static u64 vmi_apic_icr_read(void)
+> +{
+> +       return 0;
+> +}
+> +
+> +static void vmi_apic_icr_write(u32 low, u32 id)
+> +{
+> +       /* Warn to see if there's any stray references */
+> +       WARN_ON(1);
+> +}
+> +
+> +static void vmi_apic_wait_icr_idle(void)
+> +{
+> +       return;
+> +}
+> +
+> +static u32 vmi_safe_apic_wait_icr_idle(void)
+> +{
+> +       return 0;
+> +}
+> +
+> +static struct apic_ops vmi_basic_apic_ops = {
+> +        .read = vmi_apic_read,
+> +        .write = vmi_apic_write,
+> +        .write_atomic = vmi_apic_write,
+> +        .icr_read = vmi_apic_icr_read,
+> +        .icr_write = vmi_apic_icr_write,
+> +        .wait_icr_idle = vmi_apic_wait_icr_idle,
+> +        .safe_wait_icr_idle = vmi_safe_apic_wait_icr_idle,
+> +};
+> +#endif
+> +
+>  /*
+>   * VMI setup common to all processors
+>   */
+> @@ -904,9 +948,10 @@ static inline int __init activate_vmi(vo
+>  #endif
+> 
+>  #ifdef CONFIG_X86_LOCAL_APIC
+> -       para_fill(pv_apic_ops.apic_read, APICRead);
+> -       para_fill(pv_apic_ops.apic_write, APICWrite);
+> -       para_fill(pv_apic_ops.apic_write_atomic, APICWrite);
+> +       para_fill(vmi_basic_apic_ops.read, APICRead);
+> +       para_fill(vmi_basic_apic_ops.write, APICWrite);
+> +       para_fill(vmi_basic_apic_ops.write_atomic, APICWrite);
+> +       apic_ops = &vmi_basic_apic_ops;
 
-FYI...
+Yinghai, Looking more closely at this, based on my understanding this might be
+wrong for VMI. Correct patch should be as follows. Any comments?
 
-Lennert Buytenhek and I are writing a GPL driver for mv8300 class of 
-Marvell WIFI chips right now, present and future versions. This is 
-Marvell work as we work for Marvell.  I have access to firmware sources, 
-etc. but obviously cannot share them.
+thanks,
+suresh
+---
+Fix VMI apic_ops.
 
-We both will be in Ottawa next week.
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
 
-
-Nicolas
-
---Boundary_(ID_WVaOmNPgt6jwEv21NrtLig)--
+diff --git a/arch/x86/kernel/apic_32.c b/arch/x86/kernel/apic_32.c
+index b1375fa..3410196 100644
+--- a/arch/x86/kernel/apic_32.c
++++ b/arch/x86/kernel/apic_32.c
+@@ -145,6 +145,11 @@ static int modern_apic(void)
+ 	return lapic_get_version() >= 0x14;
+ }
+ 
++/*
++ * Paravirt kernels also might be using these below ops. So we still
++ * use generic apic_read()/apic_write(), which might be pointing to different
++ * ops in PARAVIRT case.
++ */
+ void xapic_wait_icr_idle(void)
+ {
+ 	while (apic_read(APIC_ICR) & APIC_ICR_BUSY)
+diff --git a/arch/x86/kernel/vmi_32.c b/arch/x86/kernel/vmi_32.c
+index cf30743..d6897e4 100644
+--- a/arch/x86/kernel/vmi_32.c
++++ b/arch/x86/kernel/vmi_32.c
+@@ -676,50 +676,6 @@ static inline int __init probe_vmi_rom(void)
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_X86_LOCAL_APIC
+-static u32 vmi_apic_read(u32 reg)
+-{
+-	return 0;
+-}
+-
+-static void vmi_apic_write(u32 reg, u32 val)
+-{
+-	/* Warn to see if there's any stray references */
+-	WARN_ON(1);
+-}
+-
+-static u64 vmi_apic_icr_read(void)
+-{
+-	return 0;
+-}
+-
+-static void vmi_apic_icr_write(u32 low, u32 id)
+-{
+-	/* Warn to see if there's any stray references */
+-	WARN_ON(1);
+-}
+-
+-static void vmi_apic_wait_icr_idle(void)
+-{
+-	return;
+-}
+-
+-static u32 vmi_safe_apic_wait_icr_idle(void)
+-{
+-	return 0;
+-}
+-
+-static struct apic_ops vmi_basic_apic_ops = {
+-        .read = vmi_apic_read,
+-        .write = vmi_apic_write,
+-        .write_atomic = vmi_apic_write,
+-        .icr_read = vmi_apic_icr_read,
+-        .icr_write = vmi_apic_icr_write,
+-        .wait_icr_idle = vmi_apic_wait_icr_idle,
+-        .safe_wait_icr_idle = vmi_safe_apic_wait_icr_idle,
+-};
+-#endif
+-
+ /*
+  * VMI setup common to all processors
+  */
+@@ -948,10 +904,9 @@ static inline int __init activate_vmi(void)
+ #endif
+ 
+ #ifdef CONFIG_X86_LOCAL_APIC
+-	para_fill(vmi_basic_apic_ops.read, APICRead);
+-	para_fill(vmi_basic_apic_ops.write, APICWrite);
+-	para_fill(vmi_basic_apic_ops.write_atomic, APICWrite);
+-	apic_ops = &vmi_basic_apic_ops;
++	para_fill(apic_ops->read, APICRead);
++	para_fill(apic_ops->write, APICWrite);
++	para_fill(apic_ops->write_atomic, APICWrite);
+ #endif
+ 
+ 	/*
