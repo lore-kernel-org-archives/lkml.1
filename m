@@ -1,49 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763553AbYGOWbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759255AbYGOWcL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763553AbYGOWbp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 18:31:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762145AbYGOW3B
+	id S1759255AbYGOWcL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 18:32:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755808AbYGOW3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 18:29:01 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:47240 "EHLO smtp.polymtl.ca"
+	Tue, 15 Jul 2008 18:29:04 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:47242 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761955AbYGOW27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1762038AbYGOW27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 15 Jul 2008 18:28:59 -0400
-Message-Id: <20080715222748.646777573@polymtl.ca>
+Message-Id: <20080715222746.597625508@polymtl.ca>
 References: <20080715222604.331269462@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 15 Jul 2008 18:26:16 -0400
+Date: Tue, 15 Jul 2008 18:26:07 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
        Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Martin Bligh <mbligh@google.com>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Hideo AOKI <haoki@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
        Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: [patch 12/17] LTTng instrumentation - page
-Content-Disposition: inline; filename=lttng-instrumentation-page.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Tue, 15 Jul 2008 22:27:51 +0000
+Subject: [patch 03/17] Tracepoints Documentation
+Content-Disposition: inline; filename=tracepoints-documentation.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Tue, 15 Jul 2008 22:27:49 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paging activity instrumentation. Instruments page allocation/free to keep track
-of page allocation. This does not cover hugetlb activity, which is covered by a
-separate patch.
-
-Those tracepoints are used by LTTng.
-
-About the performance impact of tracepoints (which is comparable to markers),
-even without immediate values optimizations, tests done by Hideo Aoki on ia64
-show no regression. His test case was using hackbench on a kernel where
-scheduler instrumentation (about 5 events in code scheduler code) was added.
-See the "Tracepoints" patch header for performance result detail.
+Documentation of tracepoint usage.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Martin Bligh <mbligh@google.com>
 CC: Masami Hiramatsu <mhiramat@redhat.com>
 CC: 'Peter Zijlstra' <peterz@infradead.org>
 CC: "Frank Ch. Eigler" <fche@redhat.com>
@@ -53,69 +41,115 @@ CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
 CC: 'Steven Rostedt' <rostedt@goodmis.org>
 CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 ---
- include/trace/page.h |   16 ++++++++++++++++
- mm/page_alloc.c      |    6 ++++++
- 2 files changed, 22 insertions(+)
+ Documentation/tracepoints.txt |  101 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 101 insertions(+)
 
-Index: linux-2.6-lttng/mm/page_alloc.c
-===================================================================
---- linux-2.6-lttng.orig/mm/page_alloc.c	2008-07-15 13:54:46.000000000 -0400
-+++ linux-2.6-lttng/mm/page_alloc.c	2008-07-15 14:04:38.000000000 -0400
-@@ -46,6 +46,7 @@
- #include <linux/page-isolation.h>
- #include <linux/memcontrol.h>
- #include <linux/debugobjects.h>
-+#include <trace/page.h>
- 
- #include <asm/tlbflush.h>
- #include <asm/div64.h>
-@@ -510,6 +511,8 @@ static void __free_pages_ok(struct page 
- 	int i;
- 	int reserved = 0;
- 
-+	trace_page_free(page, order);
-+
- 	for (i = 0 ; i < (1 << order) ; ++i)
- 		reserved += free_pages_check(page + i);
- 	if (reserved)
-@@ -966,6 +969,8 @@ static void free_hot_cold_page(struct pa
- 	struct per_cpu_pages *pcp;
- 	unsigned long flags;
- 
-+	trace_page_free(page, 0);
-+
- 	if (PageAnon(page))
- 		page->mapping = NULL;
- 	if (free_pages_check(page))
-@@ -1630,6 +1635,7 @@ nopage:
- 		show_mem();
- 	}
- got_pg:
-+	trace_page_alloc(page, order);
- 	return page;
- }
- 
-Index: linux-2.6-lttng/include/trace/page.h
+Index: linux-2.6-lttng/Documentation/tracepoints.txt
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/include/trace/page.h	2008-07-15 14:04:38.000000000 -0400
-@@ -0,0 +1,16 @@
-+#ifndef _TRACE_PAGE_H
-+#define _TRACE_PAGE_H
++++ linux-2.6-lttng/Documentation/tracepoints.txt	2008-07-15 17:39:38.000000000 -0400
+@@ -0,0 +1,101 @@
++ 	             Using the Linux Kernel Tracepoints
++
++			    Mathieu Desnoyers
++
++
++This document introduces Linux Kernel Tracepoints and their use. It provides
++examples of how to insert tracepoints in the kernel and connect probe functions
++to them and provides some examples of probe functions.
++
++
++* Purpose of tracepoints
++
++A tracepoint placed in code provides a hook to call a function (probe) that you
++can provide at runtime. A tracepoint can be "on" (a probe is connected to it) or
++"off" (no probe is attached). When a tracepoint is "off" it has no effect,
++except for adding a tiny time penalty (checking a condition for a branch) and
++space penalty (adding a few bytes for the function call at the end of the
++instrumented function and adds a data structure in a separate section).  When a
++tracepoint is "on", the function you provide is called each time the tracepoint
++is executed, in the execution context of the caller. When the function provided
++ends its execution, it returns to the caller (continuing from the tracepoint
++site).
++
++You can put tracepoints at important locations in the code. They are
++lightweight hooks that can pass an arbitrary number of parameters,
++which prototypes are described in a tracepoint declaration placed in a header
++file.
++
++They can be used for tracing and performance accounting.
++
++
++* Usage
++
++Two elements are required for tracepoints :
++
++- A tracepoint definition, placed in a header file.
++- The tracepoint statement, in C code.
++
++In order to use tracepoints, you should include linux/tracepoint.h.
++
++In include/trace/subsys.h :
 +
 +#include <linux/tracepoint.h>
 +
-+/*
-+ * mm_page_alloc : page can be NULL.
-+ */
-+DEFINE_TRACE(page_alloc,
-+	TPPROTO(struct page *page, unsigned int order),
-+	TPARGS(page, order));
-+DEFINE_TRACE(page_free,
-+	TPPROTO(struct page *page, unsigned int order),
-+	TPARGS(page, order));
++DEFINE_TRACE(subsys_eventname,
++	TPPTOTO(int firstarg, struct task_struct *p),
++	TPARGS(firstarg, p));
 +
-+#endif
++In subsys/file.c (where the tracing statement must be added) :
++
++#include <trace/subsys.h>
++
++void somefct(void)
++{
++	...
++	trace_subsys_eventname(arg, task);
++	...
++}
++
++Where :
++- subsys_eventname is an identifier unique to your event
++    - subsys is the name of your subsystem.
++    - eventname is the name of the event to trace.
++- TPPTOTO(int firstarg, struct task_struct *p) is the prototype of the function
++  called by this tracepoint.
++- TPARGS(firstarg, p) are the parameters names, same as found in the prototype.
++
++Connecting a function (probe) to a tracepoint is done by providing a probe
++(function to call) for the specific tracepoint through
++register_trace_subsys_eventname().  Removing a probe is done through
++unregister_trace_subsys_eventname(); it will remove the probe sure there is no
++caller left using the probe when it returns. Probe removal is preempt-safe
++because preemption is disabled around the probe call. See the "Probe example"
++section below for a sample probe module.
++
++The tracepoint mechanism supports inserting multiple instances of the same
++tracepoint, but a single definition must be made of a given tracepoint name over
++all the kernel to make sure no type conflict will occur. Name mangling of the
++tracepoints is done using the prototypes to make sure typing is correct.
++Verification of probe type correctness is done at the registration site by the
++compiler. Tracepoints can be put in inline functions, inlined static functions,
++and unrolled loops as well as regular functions.
++
++The naming scheme "subsys_event" is suggested here as a convention intended
++to limit collisions. Tracepoint names are global to the kernel: they are
++considered as being the same whether they are in the core kernel image or in
++modules.
++
++
++* Probe / tracepoint example
++
++See the example provided in samples/tracepoints/src
++
++Compile them with your kernel.
++
++Run, as root :
++modprobe tracepoint-example (insmod order is not important)
++modprobe tracepoint-probe-example
++cat /proc/tracepoint-example (returns an expected error)
++rmmod tracepoint-example tracepoint-probe-example
++dmesg
 
 -- 
 Mathieu Desnoyers
