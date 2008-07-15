@@ -1,84 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761938AbYGORgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762213AbYGORgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761938AbYGORgi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 13:36:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755554AbYGORgb
+	id S1762213AbYGORgw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 13:36:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756416AbYGORgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 15 Jul 2008 13:36:32 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:52868 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755648AbYGORgb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 15 Jul 2008 13:36:31 -0400
-Received: from 1wt.eu ([62.212.114.60]:4002 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754594AbYGORga (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 13:36:30 -0400
-Date: Tue, 15 Jul 2008 19:35:20 +0200
-From: Willy Tarreau <w@1wt.eu>
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
+	in-kernel, use it in more drivers.
+From: David Woodhouse <dwmw2@infradead.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, jeff@garzik.org, arjan@infradead.org,
-       akpm@linux-foundation.org, dwmw2@infradead.org,
+Cc: david@lang.hm, Frans Pop <elendil@planet.nl>, jeff@garzik.org,
+       arjan@infradead.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel, use it in more drivers.
-Message-ID: <20080715173520.GA30521@1wt.eu>
-References: <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org> <487C09EB.1050903@garzik.org> <alpine.LFD.1.10.0807141928540.3017@woody.linux-foundation.org> <20080714.194032.117461306.davem@davemloft.net> <alpine.LFD.1.10.0807141947540.3017@woody.linux-foundation.org> <20080715045848.GG1369@1wt.eu> <alpine.LFD.1.10.0807150747540.3017@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807150936070.3017@woody.linux-foundation.org>
+References: <1216077806.27455.85.camel@shinybook.infradead.org>
+	 <20080714164119.99c33d5b.akpm@linux-foundation.org>
+	 <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>
+	 <487C0365.5030203@garzik.org>
+	 <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
+	 <200807151757.10626.elendil@planet.nl>
+	 <alpine.LFD.1.10.0807150913590.3017@woody.linux-foundation.org>
+	 <alpine.DEB.1.10.0807150931290.16109@asgard.lang.hm>
+	 <alpine.LFD.1.10.0807150936070.3017@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 15 Jul 2008 10:36:01 -0700
+Message-Id: <1216143361.27455.294.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807150747540.3017@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 07:55:37AM -0700, Linus Torvalds wrote:
-> Willy, stop this blathering.
-> 
-> I suspect I will have to just delete this thread unread because it's so 
-> full of total crap.
-> 
-> This whole "working device" argument is total bullshit.
-> 
-> If the driver was a module before, it needed a module load to become 
-> working. If you could load the module, you could load the firmware. Thus 
-> the transfer is non-issue.
+On Tue, 2008-07-15 at 09:41 -0700, Linus Torvalds wrote:
+> So I think the _infrastructure_ is important. But the extreme "you
+> have to split it off entirely" mindset is equally as stupid as the
+> "you must compile it into the module" mindset.
 
-Sometimes your responses leave me speechless! It's not only a problem of
-transfer, but also a problem of selection of what to copy overthere. It
-has happened to me more than once when installing a machine to proceed this
-way :
-  - leave the data center
-  - go back to the office to find the driver somewhere
-  - burn a CD with it (I once even had to feed it through a 9600 bauds Annex
-    port concentrator).
-  - go back to the DC and copy it from the CD. I must say that at this stage
-    when you see warnings because it's not the exact same kernel version, you
-    don't mind anymore and force the load in order to be able to stick an IP
-    address on your machine.
+I wouldn't necessarily argue that we _have_ to split it off, but I'd
+certainly like our infrastructure to be mature enough that it could cope
+with doing so.
 
-Now when you load it and you see it requires a firmware, you're back to #1,
-without even the certainty that the firmware you get will :
-  a) be the right one
-  b) work
-  c) be enough
-  
-So please don't say that the transfer is a non-issue. It is what magnifies
-the added complexity.
+I plan to make a 'linux-firmware-from-linus' git tree which is generated
+automatically from yours by a script, much like the kernel-headers git
+tree is, commit by commit with an automatic transform on the tree
+objects.
 
-Instead, I would have loved to see multiboot-compatible module loading.
-When your kernel does not support your fresh new RAID card and panics at
-boot, you simply put the driver on a floppy (or USB stick), pre-load the
-driver from GRUB and boot the kernel. I don't see how this would be possible
-anymore with separate firmwares.
+Once we have that tree being created, we could pull from it into a
+canonical 'linux-firmware' tree, and _that_ tree could also start to
+include firmware belonging to companies who have said that we may
+distribute their firmware, but _not_ as part of the Linux kernel.
 
-Don't get me wrong: I'm not against the ability to separate firmware from
-modules, I'm against making that mandatory when it obviously complexifies
-a lot of things without any obvious advantage in return.
-
-> Which is just about the same thing as asking people to remember to do 
-> "make modules_install" to get a working system. Yes, if you have a driver 
-> as a module, you need to install that module for the device to work. Yes, 
-> it's definitely "harder", but seriously..
-
-Please don't compare an upgrade of a working desktop or developer machine with
-an installation from scratch of a server in an uncomfortable location. Those
-are two completely different things.
-
-Willy
+We can see how that tree works out in practice, and how/whether people
+start using it. And then maybe we'll be in a position to have a
+_discussion_ about how best to ship the firmware. But for now it's
+premature.
+ 
+-- 
+dwmw2
 
