@@ -1,150 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763955AbYGOVST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764019AbYGOVSg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763955AbYGOVST (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 17:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763226AbYGOVQR
+	id S1764019AbYGOVSg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 17:18:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761455AbYGOVQr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 17:16:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42008 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757244AbYGOVQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 17:16:14 -0400
-Date: Tue, 15 Jul 2008 17:15:41 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@devserv.devel.redhat.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/4] Fix endianity in A100U2W SCSI driver
-In-Reply-To: <alpine.LFD.1.10.0807151018170.3017@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0807151710400.4356@devserv.devel.redhat.com>
-References: <Pine.LNX.4.64.0807151008370.24544@devserv.devel.redhat.com>
- <alpine.LFD.1.10.0807151018170.3017@woody.linux-foundation.org>
+	Tue, 15 Jul 2008 17:16:47 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:56955 "EHLO
+	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762350AbYGOVQq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 17:16:46 -0400
+Date: Tue, 15 Jul 2008 14:16:45 -0700 (PDT)
+From: Sage Weil <sage@newdream.net>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ceph-devel@lists.sourceforge.net
+Subject: Re: Recursive directory accounting for size, ctime, etc.
+In-Reply-To: <20080715204812.GD25803@fieldses.org>
+Message-ID: <Pine.LNX.4.64.0807151349570.18395@cobra.newdream.net>
+References: <Pine.LNX.4.64.0806192313530.7379@cobra.newdream.net>
+ <20080715195333.GK21590@fieldses.org> <Pine.LNX.4.64.0807151326130.1976@cobra.newdream.net>
+ <20080715204812.GD25803@fieldses.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jul 2008, Linus Torvalds wrote:
+On Tue, 15 Jul 2008, J. Bruce Fields wrote:
+> I just wonder how one would explain to users (or application writers)
+> why changes to a file are reflected in the parent's rctime in one case,
+> and not in another, especially if the primary link is otherwise
+> indistinguishable from the others.  The symptoms could be a bit
+> mysterious from their point of view.
 
-> On Tue, 15 Jul 2008, Mikulas Patocka wrote:
-> > 
-> > Support big endian systems.
-> 
-> Hmm. Your email seems whitespace-corrupted.
+Yes.  I'm not sure it can really be avoided, though.  I'm trying to lift 
+the usual restriction of having to predefine what the 
+volume/subvolume/qtree boundary is and then disallowing links/renames 
+between then.  When all of a file's links are contained within the 
+directory you're looking at (i.e. something that might be a subvolume 
+under that paradigm), things look sensible.  If links span two directories 
+and you're looking at recursive stats for a dir containing only one of 
+them, then you're necessarily going to have some weirdness (you don't want 
+to double-count).
 
-Oh, sorry. I disabled "quell flowed text", sent mail to myself and it 
-applies. Here I'm sending them again:
+Making the primary/remote-ness visible to users somehow (via, say, a 
+virtual xattr) might help a bit.  The bottom line, though, is that links 
+from multiple points in the namespace and a hierarchical view of file 
+_content_ aren't particularly compatible concepts...
 
-
-Support big endian systems in a100u2w driver.
-
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
----
- drivers/scsi/a100u2w.c |   36 ++++++++++++++++++------------------
- 1 file changed, 18 insertions(+), 18 deletions(-)
-
-Index: linux-2.6.26-rc8/drivers/scsi/a100u2w.c
-===================================================================
---- linux-2.6.26-rc8.orig/drivers/scsi/a100u2w.c	2008-06-25 03:58:20.000000000 +0200
-+++ linux-2.6.26-rc8/drivers/scsi/a100u2w.c	2008-07-01 18:51:20.000000000 +0200
-@@ -389,7 +389,7 @@ static u8 orc_load_firmware(struct orc_h
- 
- 	outb(PRGMRST | DOWNLOAD, host->base + ORC_RISCCTL);	/* Enable SRAM programming */
- 	data32_ptr = (u8 *) & data32;
--	data32 = 0;		/* Initial FW address to 0 */
-+	data32 = cpu_to_le32(0);		/* Initial FW address to 0 */
- 	outw(0x0010, host->base + ORC_EBIOSADR0);
- 	*data32_ptr = inb(host->base + ORC_EBIOSDATA);		/* Read from BIOS */
- 	outw(0x0011, host->base + ORC_EBIOSADR0);
-@@ -397,18 +397,18 @@ static u8 orc_load_firmware(struct orc_h
- 	outw(0x0012, host->base + ORC_EBIOSADR0);
- 	*(data32_ptr + 2) = inb(host->base + ORC_EBIOSDATA);	/* Read from BIOS */
- 	outw(*(data32_ptr + 2), host->base + ORC_EBIOSADR2);
--	outl(data32, host->base + ORC_FWBASEADR);		/* Write FW address */
-+	outl(le32_to_cpu(data32), host->base + ORC_FWBASEADR);		/* Write FW address */
- 
- 	/* Copy the code from the BIOS to the SRAM */
- 
--	bios_addr = (u16) data32;	/* FW code locate at BIOS address + ? */
-+	bios_addr = (u16) le32_to_cpu(data32);	/* FW code locate at BIOS address + ? */
- 	for (i = 0, data32_ptr = (u8 *) & data32;	/* Download the code    */
- 	     i < 0x1000;	/* Firmware code size = 4K      */
- 	     i++, bios_addr++) {
- 		outw(bios_addr, host->base + ORC_EBIOSADR0);
- 		*data32_ptr++ = inb(host->base + ORC_EBIOSDATA);	/* Read from BIOS */
- 		if ((i % 4) == 3) {
--			outl(data32, host->base + ORC_RISCRAM);	/* Write every 4 bytes */
-+			outl(le32_to_cpu(data32), host->base + ORC_RISCRAM);	/* Write every 4 bytes */
- 			data32_ptr = (u8 *) & data32;
- 		}
- 	}
-@@ -423,7 +423,7 @@ static u8 orc_load_firmware(struct orc_h
- 		outw(bios_addr, host->base + ORC_EBIOSADR0);
- 		*data32_ptr++ = inb(host->base + ORC_EBIOSDATA);	/* Read from BIOS */
- 		if ((i % 4) == 3) {
--			if (inl(host->base + ORC_RISCRAM) != data32) {
-+			if (inl(host->base + ORC_RISCRAM) != le32_to_cpu(data32)) {
- 				outb(PRGMRST, host->base + ORC_RISCCTL);	/* Reset program to 0 */
- 				outb(data, host->base + ORC_GCFG);	/*Disable EEPROM programming */
- 				return 0;
-@@ -459,8 +459,8 @@ static void setup_SCBs(struct orc_host *
- 
- 	for (i = 0; i < ORC_MAXQUEUE; i++) {
- 		escb_phys = (host->escb_phys + (sizeof(struct orc_extended_scb) * i));
--		scb->sg_addr = (u32) escb_phys;
--		scb->sense_addr = (u32) escb_phys;
-+		scb->sg_addr = cpu_to_le32((u32) escb_phys);
-+		scb->sense_addr = cpu_to_le32((u32) escb_phys);
- 		scb->escb = escb;
- 		scb->scbidx = i;
- 		scb++;
-@@ -642,8 +642,8 @@ static int orc_device_reset(struct orc_h
- 	scb->link = 0xFF;
- 	scb->reserved0 = 0;
- 	scb->reserved1 = 0;
--	scb->xferlen = 0;
--	scb->sg_len = 0;
-+	scb->xferlen = cpu_to_le32(0);
-+	scb->sg_len = cpu_to_le32(0);
- 
- 	escb->srb = NULL;
- 	escb->srb = cmd;
-@@ -858,9 +858,9 @@ static void inia100_build_scb(struct orc
- 	scb->lun = cmd->device->lun;
- 	scb->reserved0 = 0;
- 	scb->reserved1 = 0;
--	scb->sg_len = 0;
-+	scb->sg_len = cpu_to_le32(0);
- 
--	scb->xferlen = (u32) scsi_bufflen(cmd);
-+	scb->xferlen = cpu_to_le32((u32) scsi_bufflen(cmd));
- 	sgent = (struct orc_sgent *) & escb->sglist[0];
- 
- 	count_sg = scsi_dma_map(cmd);
-@@ -868,18 +868,18 @@ static void inia100_build_scb(struct orc
- 
- 	/* Build the scatter gather lists */
- 	if (count_sg) {
--		scb->sg_len = (u32) (count_sg * 8);
-+		scb->sg_len = cpu_to_le32((u32) (count_sg * 8));
- 		scsi_for_each_sg(cmd, sg, count_sg, i) {
--			sgent->base = (u32) sg_dma_address(sg);
--			sgent->length = (u32) sg_dma_len(sg);
-+			sgent->base = cpu_to_le32((u32) sg_dma_address(sg));
-+			sgent->length = cpu_to_le32((u32) sg_dma_len(sg));
- 			sgent++;
- 		}
- 	} else {
--		scb->sg_len = 0;
--		sgent->base = 0;
--		sgent->length = 0;
-+		scb->sg_len = cpu_to_le32(0);
-+		sgent->base = cpu_to_le32(0);
-+		sgent->length = cpu_to_le32(0);
- 	}
--	scb->sg_addr = (u32) scb->sense_addr;
-+	scb->sg_addr = (u32) scb->sense_addr;	/* sense_addr is already little endian */
- 	scb->hastat = 0;
- 	scb->tastat = 0;
- 	scb->link = 0xFF;
+sage
