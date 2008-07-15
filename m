@@ -1,51 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762581AbYGOS7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762402AbYGOTBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762581AbYGOS7g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 14:59:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761971AbYGOS64
+	id S1762402AbYGOTBZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 15:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758622AbYGOTBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 14:58:56 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:35545 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761953AbYGOS6y (ORCPT
+	Tue, 15 Jul 2008 15:01:15 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:49330 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758237AbYGOTBO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 14:58:54 -0400
-Subject: Re: Patch from LKML
-From: Zachary Amsden <zach@vmware.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: "suresh.b.siddha@intel.com" <suresh.b.siddha@intel.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       virtualization <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <86802c440807151152s57d26f07jf1bc9336bf287dfe@mail.gmail.com>
-References: <1216147130.6620.184.camel@bodhitayantram.eng.vmware.com>
-	 <86802c440807151152s57d26f07jf1bc9336bf287dfe@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 11:57:53 -0700
-Message-Id: <1216148273.6620.187.camel@bodhitayantram.eng.vmware.com>
+	Tue, 15 Jul 2008 15:01:14 -0400
+Date: Tue, 15 Jul 2008 11:59:51 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] acpi_pm: re-fix printk format (was: timer updates for
+ 2.6.27)
+Message-Id: <20080715115951.95f7917d.randy.dunlap@oracle.com>
+In-Reply-To: <alpine.LFD.1.10.0807151100140.3017@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0807141827340.3283@apollo.tec.linutronix.de>
+	<alpine.LFD.1.10.0807151046180.3017@woody.linux-foundation.org>
+	<alpine.LFD.1.10.0807151100140.3017@woody.linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-15 at 11:52 -0700, Yinghai Lu wrote:
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-> > Nacked-by: Zachary Amsden <zach@vmware.com>
-> 
-> because of not ccing you?
+Re-fix printk format warning in acpi_pm clocksource.
 
-Because it's wrong.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/clocksource/acpi_pm.c |    6 +++---
+ include/linux/acpi_pmtmr.h    |    2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-> >
-> > What are you doing here and why aren't you cc-ing the maintainers?
-> 
-> did you checking tip tree for x86 changing?
+[still looking for penance task]
 
-No, this was brought to my attention by someone who spotted it.
+--- linhead.orig/drivers/clocksource/acpi_pm.c
++++ linhead/drivers/clocksource/acpi_pm.c
+@@ -28,7 +28,7 @@
+  * The location is detected during setup_arch(),
+  * in arch/i386/kernel/acpi/boot.c
+  */
+-u32 pmtmr_ioport __read_mostly;
++unsigned long pmtmr_ioport __read_mostly;
+ 
+ static inline u32 read_pmtmr(void)
+ {
+@@ -227,8 +227,8 @@ static int __init parse_pmtmr(char *arg)
+ 	if (strict_strtoul(arg, 16, &base))
+ 		return -EINVAL;
+ 
+-	printk(KERN_INFO "PMTMR IOPort override: 0x%04x -> 0x%04lx\n",
+-	       (unsigned int)pmtmr_ioport, base);
++	printk(KERN_INFO "PMTMR IOPort override: 0x%04lx -> 0x%04lx\n",
++	       pmtmr_ioport, base);
+ 	pmtmr_ioport = base;
+ 
+ 	return 1;
+--- linhead.orig/include/linux/acpi_pmtmr.h
++++ linhead/include/linux/acpi_pmtmr.h
+@@ -15,7 +15,7 @@
+ #ifdef CONFIG_X86_PM_TIMER
+ 
+ extern u32 acpi_pm_read_verified(void);
+-extern u32 pmtmr_ioport;
++extern unsigned long pmtmr_ioport;
+ 
+ static inline u32 acpi_pm_read_early(void)
+ {
 
-Zach
 
+
+
+
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
