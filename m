@@ -1,51 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbYGOKzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756616AbYGOK47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756728AbYGOKzX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 06:55:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755066AbYGOKzK
+	id S1756616AbYGOK47 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 06:56:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752822AbYGOK4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 06:55:10 -0400
-Received: from mail.macqel.be ([194.78.208.39]:16845 "EHLO mail.macqel.be"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755055AbYGOKzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 06:55:09 -0400
-Date: Tue, 15 Jul 2008 12:55:04 +0200
-From: Philippe De Muyter <phdm@macqel.be>
-To: linux-kernel@vger.kernel.org
-Subject: core_uses_pid==0 still produces core.PID
-Message-ID: <20080715105504.GA31097@frolo.macqel>
+	Tue, 15 Jul 2008 06:56:51 -0400
+Received: from fk-out-0910.google.com ([209.85.128.184]:14133 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754769AbYGOK4u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 06:56:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Xobh8Qrxu1ugqC13aa1mYAG932ZUqzkxCY4AxK1XcsoVdQYwQp3B0WuTslq3tmqrBc
+         QoH3FwNfeXyoSSN9pP48TPPjr4i9KJ+IjcwQfdzpZ8JMd1qrp5gqFcKGA3LDoZZpXULx
+         XGvf8l0oNQ7LmZI4NB4EnnVZRsCuETbsodjaw=
+Message-ID: <6101e8c40807150356t5ecb0885ud0249eff1ec03e77@mail.gmail.com>
+Date: Tue, 15 Jul 2008 12:56:48 +0200
+From: "Oliver Pinter" <oliver.pntr@gmail.com>
+To: "Dave Airlie" <airlied@skynet.ie>
+Subject: Re: [git pull] drm radeon fix for 2.6.27-rc1
+Cc: torvalds@linux-foundation.org, "Andrew Morton" <akpm@linux-foundation.org>,
+       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+In-Reply-To: <alpine.DEB.0.82.0807150702330.6038@skynet.skynet.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <alpine.DEB.0.82.0807150702330.6038@skynet.skynet.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everybody
+Hi David,
 
-I have a process that produces core files of the form "core.PID".
+it affects stable (2.6.26) too?
 
-I read in the docs the core file name can be controlled by
-/proc/sys/kernel/core_pattern and /proc/sys/kernel/core_uses_pid.
+On 7/15/08, Dave Airlie <airlied@skynet.ie> wrote:
+>
+> Hi Linus,
+>
+> Please pull the 'drm-fixes' branch from
+> ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git
+> drm-fixes
+>
+> It appears we have a PAT incomPATibility, with how the radeon driver was
+> mapping some VRAM.
+>
+> Dave.
+>
+>  drivers/gpu/drm/drm_memory.c       |    5 +++++
+>  drivers/gpu/drm/radeon/radeon_cp.c |    2 +-
+>  include/drm/drmP.h                 |    1 +
+>  3 files changed, 7 insertions(+), 1 deletions(-)
+>
+> commit 242e3df80b8d25ed681c278512df0993725f25dd
+> Author: Dave Airlie <airlied@linux.ie>
+> Date:   Tue Jul 15 15:48:05 2008 +1000
+>
+>     drm/radeon: fixup issue with radeon and PAT support.
+>
+>     With new userspace libpciaccess we can get a conflicting mapping
+>     on the PCIE GART table in the video RAM. Always try and map it _wc.
+>
+>     Signed-off-by: Dave Airlie <airlied@redhat.com>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-On my machine, they have the value "core" and 0, so I would expect the
-core files named "core", not "core.PID".
 
-If I start "sleep 100" and kill it with CTRL-C, I indeed get a file
-named "core", but with my interesting process the files are always named
-"core.PID".
-
-Looking at the fs/exec.c sources, I see that core_uses_pid is superseded
-by
-	atomic_read(&current->mm->mm_users) != 1
-
-Why is that needed there ? When my process crashes or is killed, I always
-get only one core file, not many core files, although my process is
-multi-threaded.
-
-Is that a rest of a previous thread implementation that could now be removed ?
-
-Best regards
-
-Philippe
+-- 
+Thanks,
+Oliver
