@@ -1,41 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764080AbYGOWes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764108AbYGOWfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764080AbYGOWes (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 18:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756673AbYGOWaP
+	id S1764108AbYGOWfS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 18:35:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763259AbYGOWao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 18:30:15 -0400
-Received: from mail-out1.uio.no ([129.240.10.57]:47636 "EHLO mail-out1.uio.no"
+	Tue, 15 Jul 2008 18:30:44 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:47637 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762398AbYGOWaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 18:30:12 -0400
-Subject: Re: [PATCH 2/7] dynamic debug v2 - nfs conversion
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Jason Baron <jbaron@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, joe@perches.com,
-       greg@kroah.com, nick@nick-andrew.net, randy.dunlap@oracle.com
-In-Reply-To: <20080715213241.GC23331@redhat.com>
-References: <20080715213241.GC23331@redhat.com>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 18:30:03 -0400
-Message-Id: <1216161003.7981.73.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 164E97E3533917800386D4FC3849DD1DD2BAE879
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 119 total 9205386 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	id S1763248AbYGOWam (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 18:30:42 -0400
+Message-Id: <20080715222746.136282703@polymtl.ca>
+References: <20080715222604.331269462@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Tue, 15 Jul 2008 18:26:05 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Paul E McKenney <paulmck@linux.vnet.ibm.com>
+Subject: [patch 01/17] RCU read sched
+Content-Disposition: inline; filename=rcu-read-sched.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Tue, 15 Jul 2008 22:27:49 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-15 at 17:32 -0400, Jason Baron wrote:
-> -convert sunrpc debug facility
-> 
-> Signed-off-by: Jason Baron <jbaron@redhat.com>
-> 
+Add rcu_read_lock_sched() and rcu_read_unlock_sched() to rcupdate.h to match the
+recently added write-side call_rcu_sched() and rcu_barrier_sched(). They also
+match the no-so-recently-added synchronize_sched().
 
-Where the hell did this come from, what's its purpose, and WTF haven't
-you Cced linux-nfs@vger.kernel.org so that the rest of us can review it?
+It will help following matching use of the update/read lock primitives. Those
+new read lock will replace preempt_disable()/enable() used in pair with
+RCU-classic synchronization.
 
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Peter Zijlstra <peterz@infradead.org>
+CC: Paul E McKenney <paulmck@linux.vnet.ibm.com>
+CC: akpm@linux-foundation.org
+---
+ include/linux/rcupdate.h |   18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+Index: linux-2.6-lttng/include/linux/rcupdate.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/rcupdate.h	2008-07-15 15:28:08.000000000 -0400
++++ linux-2.6-lttng/include/linux/rcupdate.h	2008-07-15 17:38:02.000000000 -0400
+@@ -133,6 +133,24 @@ struct rcu_head {
+ #define rcu_read_unlock_bh() __rcu_read_unlock_bh()
+ 
+ /**
++ * rcu_read_lock_sched - mark the beginning of a RCU-classic critical section
++ *
++ * Should be used with either
++ * - synchronize_sched()
++ * or
++ * - call_rcu_sched() and rcu_barrier_sched()
++ * on the write-side to insure proper synchronization.
++ */
++#define rcu_read_lock_sched() preempt_disable()
++
++/*
++ * rcu_read_unlock_sched - marks the end of a RCU-classic critical section
++ *
++ * See rcu_read_lock_sched for more information.
++ */
++#define rcu_read_unlock_sched() preempt_enable()
++
++/**
+  * rcu_dereference - fetch an RCU-protected pointer in an
+  * RCU read-side critical section.  This pointer may later
+  * be safely dereferenced.
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
