@@ -1,31 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057AbYGOFOK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755352AbYGOFUI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754057AbYGOFOK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 01:14:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754876AbYGOFNr
+	id S1755352AbYGOFUI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 01:20:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbYGOFT5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 01:13:47 -0400
-Received: from mga09.intel.com ([134.134.136.24]:23262 "EHLO mga09.intel.com"
+	Tue, 15 Jul 2008 01:19:57 -0400
+Received: from gate.crashing.org ([63.228.1.57]:34749 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754644AbYGOFNr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 01:13:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.30,364,1212390000"; 
-   d="scan'208";a="418264967"
-Subject: Re: [PATCH -mm 2/2] kexec jump -v12: save/restore device state
-From: Huang Ying <ying.huang@intel.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-In-Reply-To: <20080714134805.GD16673@redhat.com>
-References: <1215401124.4660.5.camel@caritas-dev.intel.com>
-	 <20080714134805.GD16673@redhat.com>
+	id S1752030AbYGOFT4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 01:19:56 -0400
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
+	in-kernel, use it in more drivers.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, david@lang.hm,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1216082640.27455.116.camel@shinybook.infradead.org>
+References: <1216077806.27455.85.camel@shinybook.infradead.org>
+	 <20080714164119.99c33d5b.akpm@linux-foundation.org>
+	 <20080714165956.7fe2d4ee@infradead.org>
+	 <alpine.DEB.1.10.0807141704120.14223@asgard.lang.hm>
+	 <1216082213.27455.109.camel@shinybook.infradead.org>
+	 <alpine.LFD.1.10.0807141738360.3017@woody.linux-foundation.org>
+	 <1216082640.27455.116.camel@shinybook.infradead.org>
 Content-Type: text/plain
-Date: Tue, 15 Jul 2008 13:19:04 +0800
-Message-Id: <1216099144.22944.35.camel@caritas-dev.intel.com>
+Date: Tue, 15 Jul 2008 15:05:07 +1000
+Message-Id: <1216098307.7740.54.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
@@ -33,28 +36,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Vivek,
-
-On Mon, 2008-07-14 at 09:48 -0400, Vivek Goyal wrote:
-[...]
-> You have cited various possible use cases of this patchset. Which is
-> the specific feature you are planning to use?
-
-I think two features are useful:
-
-1. Kexec based hibernation
-2. Do kdump then continue
-
-> Thinking more about it, what's the compelling feature out of this list
-> which makes this patchset a strong candidate for inclusion?
+On Mon, 2008-07-14 at 17:44 -0700, David Woodhouse wrote:
+> On Mon, 2008-07-14 at 17:40 -0700, Linus Torvalds wrote:
+> > 
+> > On Mon, 14 Jul 2008, David Woodhouse wrote:
+> > > 
+> > > I see no real point in that. If you have userspace to load modules, then
+> > > you have userspace to load firmware.
+> > 
+> > David, the case is different: the module is loaded _across_ the 
+> > suspend/resume, but the device needs to have its firmware reloaded at 
+> > resume time because it lost power.
 > 
-> Regarding hibernation, Rafael does not think this is the way to go 
-> for future.
+> Either I put my reply in response to the wrong quotation, or you thought
+> I did.
+> 
+> I intended the above to be a response to the "please put firmware _into_
+> the .ko file" request. Not to the suspend/resume thing.
+> 
+> Yes, I agree that suspend/resume is a non-issue.
 
-I think kexec based hibernation can be a better hibernation scheme, at
-least more code sharing.
+Besides, request_firmware() from a resume() method is broken. Has always
+been and will probably always be.
 
-Best Regards,
-Huang Ying
-
+Ben.
 
