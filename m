@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756891AbYGOSZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758432AbYGOS0r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756891AbYGOSZY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 14:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756092AbYGOSZK
+	id S1758432AbYGOS0r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 14:26:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbYGOS0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 14:25:10 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43132 "EHLO
+	Tue, 15 Jul 2008 14:26:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33068 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755798AbYGOSZI (ORCPT
+	by vger.kernel.org with ESMTP id S1753025AbYGOS0j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 14:25:08 -0400
-Date: Tue, 15 Jul 2008 11:24:24 -0700 (PDT)
+	Tue, 15 Jul 2008 14:26:39 -0400
+Date: Tue, 15 Jul 2008 11:25:50 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
 To: Jeff Garzik <jeff@garzik.org>
-cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Frans Pop <elendil@planet.nl>, arjan@infradead.org,
-       akpm@linux-foundation.org, dwmw2@infradead.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+cc: david@lang.hm, Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
 Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
  use it in more drivers.
-In-Reply-To: <487CE917.3000000@garzik.org>
-Message-ID: <alpine.LFD.1.10.0807151122010.3017@woody.linux-foundation.org>
-References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org> <487C0365.5030203@garzik.org> <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
- <200807151757.10626.elendil@planet.nl> <20080715180535.GA6080@khazad-dum.debian.net> <487CE917.3000000@garzik.org>
+In-Reply-To: <487CEA73.9000408@garzik.org>
+Message-ID: <alpine.LFD.1.10.0807151124510.3017@woody.linux-foundation.org>
+References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <alpine.DEB.1.10.0807141704120.14223@asgard.lang.hm> <alpine.LFD.1.10.0807141729200.3017@woody.linux-foundation.org>
+ <alpine.DEB.1.10.0807141750290.14223@asgard.lang.hm> <alpine.LFD.1.10.0807141756361.3017@woody.linux-foundation.org> <alpine.DEB.1.10.0807141805300.14223@asgard.lang.hm> <alpine.LFD.1.10.0807141903260.3017@woody.linux-foundation.org> <487C585C.2060002@garzik.org>
+ <alpine.LFD.1.10.0807150803580.3017@woody.linux-foundation.org> <487CD7FE.9010209@garzik.org> <alpine.LFD.1.10.0807151008450.3017@woody.linux-foundation.org> <487CDEC0.3090004@garzik.org> <alpine.LFD.1.10.0807151041080.3017@woody.linux-foundation.org>
+ <487CEA73.9000408@garzik.org>
 User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -33,28 +35,17 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 On Tue, 15 Jul 2008, Jeff Garzik wrote:
-
-> Henrique de Moraes Holschuh wrote:
-> > On Tue, 15 Jul 2008, Frans Pop wrote:
-> > > If I were able to compile firmware into the modules, the problem would be
-> > > solved in one go.
-> > 
-> > And this thread would have been shorter, even. I hope someone decides to
-> > write that support instead of complaining ;-)
 > 
-> I've volunteered -- but if Linus and David will reject my code out of hand,
-> there is not much point in writing it.
+> Which is why 'make modules_install' installs the firmware, or at least it did
+> before David W pushed upstream.
 
-Quite frankly, I don't think it's something to reject out of hand, but it 
-does sound pretty damn stupid.
+So you're literally just about making this be "make modules_install" 
+rather than "make firmware_install"
 
-Why compile them into the module, when that's just the _inflexible_ model?
+Ok. Are you going to be happy if "make modules_install" just copies the 
+firmware files of the affected modules too?
 
-Why not just install them with the module (perhaps in the module 
-directory, perhaps not), and just load them? 
-
-Really. You _do_ have do to "make modules_install" or similar. That has 
-_already_ got inter-file dependencies (ie some modules simply depend on 
-other modules). I'm not seeing why you cannot accept change.
+Or are you just whining because you want to whine, and will make up some 
+new argument then?
 
 			Linus
