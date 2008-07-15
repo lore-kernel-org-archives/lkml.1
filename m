@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758582AbYGOWBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761882AbYGOWBe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758582AbYGOWBV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 18:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbYGOWBG
+	id S1761882AbYGOWBe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 18:01:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757344AbYGOWBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 18:01:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52420 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755787AbYGOWBF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 18:01:05 -0400
-Date: Tue, 15 Jul 2008 15:00:22 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [GIT pull] x86 updates
-In-Reply-To: <alpine.LFD.1.10.0807152341240.3283@apollo.tec.linutronix.de>
-Message-ID: <alpine.LFD.1.10.0807151456490.2867@woody.linux-foundation.org>
-References: <alpine.LFD.1.10.0807152249270.3283@apollo.tec.linutronix.de> <alpine.LFD.1.10.0807151417440.2867@woody.linux-foundation.org> <alpine.LFD.1.10.0807152341240.3283@apollo.tec.linutronix.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 15 Jul 2008 18:01:17 -0400
+Received: from gw.goop.org ([64.81.55.164]:59291 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756416AbYGOWBP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 18:01:15 -0400
+Message-ID: <487D1E1E.9060609@goop.org>
+Date: Tue, 15 Jul 2008 15:01:02 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] generic ipi function calls: wait on alloc failure	fallback
+References: <487D0719.9000503@goop.org> <20080715214819.GA23588@elte.hu>
+In-Reply-To: <20080715214819.GA23588@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 15 Jul 2008, Thomas Gleixner wrote:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=shortlog;h=x86/urgent
-> 
-> has a commit on top of your tree. 
-> 
-> commit	     431ceb83f703a343bdd14350480a2224fa4bfedf
-> tree	     2f4644aec0d326e23327ed2297a4a4f52b1d830e
-> parent	     b9d2252c1e44fa83a4e65fdc9eb93db6297c55af
+Ingo Molnar wrote:
+> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 >
-> I waited with the pull request until it showed up there.
+>   
+>> When a GFP_ATOMIC allocation fails, it falls back to allocating the 
+>> data on the stack and converting it to a waiting call.
+>>
+>> Make sure we actually wait in this case.
+>>     
+>
+> cool, thanks!
+>
+> does this explain the xen64 weirdnesses you've been seeing?
+>   
 
-I'd say it's a mirroring issue, but:
+No, but I haven't seen it lately.  I think the other RCU fixes may have 
+helped.  But it's all a bit of a worry: I didn't have a good theory 
+about what was going wrong, the RCU patches didn't look like they'd fix 
+the symptoms I was seeing.
 
-[torvalds@woody linux]$ git ls-remote ssh://master.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git | grep x86/urgent
-b9d2252c1e44fa83a4e65fdc9eb93db6297c55af	refs/heads/x86/urgent
-b9d2252c1e44fa83a4e65fdc9eb93db6297c55af	refs/heads/x86/urgent-undo-ioapic
-41b7aafd3ea22fcd6cbb062da39d5c757d6c09ca	refs/remotes/origin/x86/urgent
+I've seen it with 32 and 64-bit Xen, but there's nothing about the 
+problem which makes me think it's really Xen specific.  If it were, I'd 
+expect to see failures all over the place, rather than in just in this 
+one specific place.
 
-ie it looks like even master has b9d2252c1 as tip (which is the one you 
-say is the parent).
+I'm concerned there's a lurking bug, particularly if it's a generic race 
+or something that happens to be triggered when running under Xen because 
+of the timing changes.  I've tried reproducing it in a hvm Xen domain 
+(so it's running the normal x86 kernel fully virtualized, but with the 
+Xen scheduler, etc).  I didn't see a problem, but it isn't a very 
+convincing test one way or the other.
 
-I wonder if Ingo overwrote it. You both push to the same tree, don't you? 
-And maybe somebody used "-f" to force an over-push?
-
-			Linus
+    J
