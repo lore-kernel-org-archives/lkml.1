@@ -1,105 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758113AbYGODKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761461AbYGODL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758113AbYGODKZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 23:10:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbYGODKO
+	id S1761461AbYGODL5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 23:11:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753431AbYGODLt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 23:10:14 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:42994 "EHLO smtps.tip.net.au"
+	Mon, 14 Jul 2008 23:11:49 -0400
+Received: from ozlabs.org ([203.10.76.45]:36064 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752800AbYGODKN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 23:10:13 -0400
-Date: Tue, 15 Jul 2008 13:10:04 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Richard Purdie <rpurdie@rpsys.net>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] leds: implement OpenFirmare GPIO LED driver
-Message-Id: <20080715131004.32646dae.sfr@canb.auug.org.au>
-In-Reply-To: <20080714164114.GA18784@polina.dev.rtsoft.ru>
-References: <20080714164114.GA18784@polina.dev.rtsoft.ru>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__15_Jul_2008_13_10_04_+1000_JPX3fhZjiHZlAYkg"
+	id S1753254AbYGODLt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 23:11:49 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PULL] typesafe callbacks
+Date: Tue, 15 Jul 2008 13:10:26 +1000
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807151310.26412.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__15_Jul_2008_13_10_04_+1000_JPX3fhZjiHZlAYkg
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+As featured in linux-next for at least two full revs, and posted here.
+Allows (but doesn't require) various callbacks to be the correct type
+instead of void *.
 
-Hi Anton,
+kthread and timers for the moment, stop_machine and request_irq are
+blocked pending textual clashes.
 
-On Mon, 14 Jul 2008 20:41:14 +0400 Anton Vorontsov <avorontsov@ru.mvista.co=
-m> wrote:
->
-> +static int __devinit of_gpio_leds_probe(struct of_device *ofdev,
-> +					const struct of_device_id *match)
-> +{
-> +	int ret;
-> +	struct of_gpio_led *led;
-> +	struct device_node *np =3D ofdev->node;
-> +
-> +	led =3D kzalloc(sizeof(*led), GFP_KERNEL);
-> +	if (!led)
-> +		return -ENOMEM;
-> +
-> +	led->np =3D np;
+Added __attribute__((printf)) to kthread_create to this batch: textual
+conflicts otherwise.
 
-You need to take a reference if you are keeping a pointer to a
-device_node, so:
-	led->np =3D of_node_get(np);
+Thanks,
+Rusty.
+===
+The following changes since commit 50515af207d410c9f228380e529c56f43c3de0bd:
+  David Woodhouse (1):
+        firmware: Correct dependency on CONFIG_EXTRA_FIRMWARE_DIR
 
-> +	led->cdev.name =3D of_get_property(np, "label", NULL);
-> +	if (!led->cdev.name)
-> +		led->cdev.name =3D ofdev->dev.bus_id;
+are available in the git repository at:
 
-Please use dev_name() in new code:
-		led->cdev.name =3D dev_name(&ofdev->dev);
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-for-linus.git master
 
-> +	led->cdev.brightness_set =3D gpio_led_set;
-> +
-> +	ret =3D gpio_request(led->gpio, ofdev->dev.bus_id);
+Rusty Russell (5):
+      cast_if_type: allow macros functions which take more than one type.
+      typesafe_cb: wrappers for typesafe callbacks.
+      Label kthread_create() with printf attribute tag.
+      typesafe: kthread_create and kthread_run
+      typesafe: TIMER_INITIALIZER and setup_timer
 
-dev_name() again.
-
-> +err_get_gpio:
-
-	of_node_put(led->np);
-
-> +	kfree(led);
-> +	return ret;
-> +}
-> +
-> +static int __devexit of_gpio_leds_remove(struct of_device *ofdev)
-> +{
-> +	struct of_gpio_led *led =3D dev_get_drvdata(&ofdev->dev);
-> +
-> +	led_classdev_unregister(&led->cdev);
-> +	cancel_work_sync(&led->work);
-> +	gpio_free(led->gpio);
-> +	of_node_put(led->np);
-
-This was going to be unbalanced, but is now correct.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__15_Jul_2008_13_10_04_+1000_JPX3fhZjiHZlAYkg
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkh8FQ0ACgkQjjKRsyhoI8zeoQCfUMM1DNIvqwa8d/uiM3FTjuIH
-EZUAoKeYYZNL2PMSiKDgHxZz877bYRTt
-=HVeE
------END PGP SIGNATURE-----
-
---Signature=_Tue__15_Jul_2008_13_10_04_+1000_JPX3fhZjiHZlAYkg--
+ include/linux/compiler-gcc.h   |   18 ++++++++++++++++++
+ include/linux/compiler-intel.h |    2 ++
+ include/linux/kernel.h         |   35 +++++++++++++++++++++++++++++++++++
+ include/linux/kthread.h        |   29 ++++++++++++++++++++++++++---
+ include/linux/timer.h          |   32 +++++++++++++++++++++++---------
+ kernel/kthread.c               |   29 +++++------------------------
+ 6 files changed, 109 insertions(+), 36 deletions(-)
