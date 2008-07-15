@@ -1,61 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762773AbYGOVxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbYGOV4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762773AbYGOVxs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 17:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755182AbYGOVxj
+	id S1758174AbYGOV4i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 17:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbYGOV43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 17:53:39 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47955 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755095AbYGOVxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 17:53:38 -0400
-Date: Tue, 15 Jul 2008 17:52:52 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Lee.Schermerhorn@hp.com,
-       kosaki.motohiro@jp.fujitsu.com, lwoodman@redhat.com
-Subject: Re: [PATCH][RFC] evict streaming IO cache first
-Message-ID: <20080715175252.69072c09@cuia.bos.redhat.com>
-In-Reply-To: <20080715134848.cf2204b9.akpm@linux-foundation.org>
-References: <20080715160948.097b14a4@cuia.bos.redhat.com>
-	<20080715134848.cf2204b9.akpm@linux-foundation.org>
-Organization: Red Hat, Inc
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Jul 2008 17:56:29 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:48950 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751632AbYGOV42 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 17:56:28 -0400
+Date: Tue, 15 Jul 2008 22:56:26 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Sage Weil <sage@newdream.net>
+Cc: "J. Bruce Fields" <bfields@fieldses.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, ceph-devel@lists.sourceforge.net
+Subject: Re: Recursive directory accounting for size, ctime, etc.
+Message-ID: <20080715215626.GB9222@shareable.org>
+References: <Pine.LNX.4.64.0806192313530.7379@cobra.newdream.net> <20080715195333.GK21590@fieldses.org> <Pine.LNX.4.64.0807151326130.1976@cobra.newdream.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0807151326130.1976@cobra.newdream.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jul 2008 13:48:48 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Tue, 15 Jul 2008 16:09:48 -0400
-> Rik van Riel <riel@redhat.com> wrote:
+Sage Weil wrote:
+> Having fully up to date values would definitely be nice, but unfortunately 
+> doesn't play nice with the fact that different parts of the directory 
+> hierarchy may be managed by different metadata servers.  A primary goal in 
+> implementing this was to minimize any impact on performance.  The uses I 
+> had I mind were more in line with quota-based accounting than cache 
+> validation.
 > 
-> > This patch still needs some testing under various workloads
-> > on different hardware - the approach should work but the
-> > threshold may need tweaking.
-> 
-> More than "some"!
+> I think I can adjust the propagation heuristics/timeouts to make updates 
+> seem more or less immediate to a user in most cases, but that won't be 
+> sufficient for a tool like git that needs to reliably identify very recent 
+> updates.  For backup software wanting a consistent file system image, it 
+> should really be operating on a snapshot as well, in which case a delay 
+> between taking the snapshot and starting the scan for changes would allow 
+> those values to propagate.
 
-Agreed.  In my initial testing this patch seems to bring the
-behaviour of the kernel closer to the behaviour the old VM
-had, but it certainly needs lots and lots of testing!
+I have a similar thing in a distributed database (with some
+filesystem-like characteristics) I'm working on.
 
-> > When there is a lot of streaming IO going on, we do not want
-> > to scan or evict pages from the working set.  The old VM used
-> > to skip any mapped page, but still evict indirect blocks and
-> > other data that is useful to cache.
-> 
-> I'd be surprised if indirect blocks are getting kicked - they tend to
-> be awfully sticky due to frequent touch_buffer()s or equivalent.
+The way I handle propagating compound values which are derived from
+multiple metadata servers, like that, is using leases.  (Similar to
+fcntl F_GETLEASE, Windows oplocks, and CPU MESI protocol).
 
-If you rewrite a large enough file, they get kicked.  This
-has become noticable some time between 2.6.9 and 2.6.18, but
-I don't think we can point to any particular changeset that
-caused it - and even if we do, chances are it does more good
-than harm :)
+E.g. when a single server is about to modify a file, it grabs a lease
+covering the metadata for this file _plus_ leases for the aggregated
+values for all parent directories, prior to allowing the file
+modification.  The first file modification will be delayed briefly to
+do this, but then subsequent modifications, including to other files
+covered by the same directories, are instant because those servers
+already have leases.  They can renew them asynchronously as needed.
 
--- 
-All Rights Reversed
+When a client wants the aggregate values for a directory (i.e. total
+size of all files recursively under it), it acquires a lease on that
+directory only.  To do that, it has to query all the metadata servers
+which currently hold a lease covering that.
+
+The net effect is you can use the results for cache validation as the
+git example.  There's a network ping-pong if someone is alternately
+modifying a file under the tree and reading the aggregate value from a
+parent directory elsewhere, but at least the values are always
+consistent.  Most times, there is no ping-pong because that's not a
+common scenario.
+
+(In my project, you can also specify that some queries are allowed to
+be a little out of date, to avoid lease acquisition delays if getting
+an inaccurate result fast is better.  That's useful for GUIs, but not
+suitable for git-like cache validation.)
+
+-- Jamie
