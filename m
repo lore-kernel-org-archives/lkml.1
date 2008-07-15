@@ -1,55 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762184AbYGOPce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762431AbYGOPcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762184AbYGOPce (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 11:32:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755776AbYGOPbh
+	id S1762431AbYGOPcv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 11:32:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762139AbYGOPca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 11:31:37 -0400
-Received: from sh.osrg.net ([192.16.179.4]:53701 "EHLO sh.osrg.net"
+	Tue, 15 Jul 2008 11:32:30 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:3559 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752437AbYGOPbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 11:31:35 -0400
-Date: Wed, 16 Jul 2008 00:30:43 +0900
-To: mpatocka@redhat.com
-Cc: fujita.tomonori@lab.ntt.co.jp, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       davem@davemloft.net, linux-parisc@vger.kernel.org
-Subject: Re: [PATCH] block: fix q->max_segment_size checking in
- blk_recalc_rq_segments about VMERGE
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <Pine.LNX.4.64.0807151033040.25390@devserv.devel.redhat.com>
-References: <Pine.LNX.4.64.0807150924250.21598@devserv.devel.redhat.com>
-	<20080715231956A.fujita.tomonori@lab.ntt.co.jp>
-	<Pine.LNX.4.64.0807151033040.25390@devserv.devel.redhat.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080716003047P.fujita.tomonori@lab.ntt.co.jp>
+	id S1762132AbYGOPc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 11:32:29 -0400
+Date: Tue, 15 Jul 2008 11:31:40 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, herbert@gondor.apana.org.au, mingo@elte.hu,
+       nhorman@tuxdriver.com
+Subject: [cyrpto]: fix bad ERRPTR check in prng
+Message-ID: <20080715153140.GD4918@hmsreliant.think-freely.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jul 2008 10:37:58 -0400 (EDT)
-Mikulas Patocka <mpatocka@redhat.com> wrote:
+Patch to correct a bad return code check from crypto_alloc_blkcipher
+Also correct Kconfig to pull in the needed ciphers to make prng work when its
+enabled
 
-> >>> This bug could happen on alpha, parisc, and sparc, which use VMERGE.
-> >>
-> >> Parisc doesn't use virtual merge accounting (there is variable for it but
-> >> it's always 0).
-> >
-> > Hmm, really? Looks like PARISC IOMMUs (ccio-dma.c and sba_iomm.c) set
-> > parisc_vmerge_boundary (CC'ed PARISC mailing list).
-> 
-> That's right, I looked only at arch and include.
-> 
-> >> On sparc64 it is broken anyway with or without your patch.
-> >
-> > Yeah, we need to modify SPARC64 IOMMU code (I'm not sure that it's
-> > worth). Right now, the best fix is setting BIO_VMERGE_BOUNDARY to 0.
-> 
-> Even if we fix it now, the question is: how long it will stay fixed? Until 
-> someone makes another change to struct device that restricts boundaries on 
-> some wacky hardware.
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com
 
-I'm not sure how the boundary restriction of a device can break
-the VMERGE accounting.
+
+ Kconfig |    3 +++
+ prng.c  |    8 ++++++--
+ 2 files changed, 9 insertions(+), 2 deletions(-)
+
+
+diff --git a/crypto/Kconfig b/crypto/Kconfig
+index ea50357..91e0d07 100644
+--- a/crypto/Kconfig
++++ b/crypto/Kconfig
+@@ -670,6 +670,9 @@ comment "Random Number Generation"
+ 
+ config CRYPTO_PRNG
+ 	tristate "Pseudo Random Number Generation for Cryptographic modules"
++	select CRYPTO_AES
++	select CRYPTO_CTR
++	depends on CRYPTO
+ 	help
+ 	  This option enables the generic pseudo random number generator
+ 	  for cryptographic modules.  Uses the Algorithm specified in
+diff --git a/crypto/prng.c b/crypto/prng.c
+index 11b9306..b28f89a 100644
+--- a/crypto/prng.c
++++ b/crypto/prng.c
+@@ -300,6 +300,9 @@ struct prng_context *alloc_prng_context(void)
+ 	struct prng_context *ctx = kzalloc(sizeof(struct prng_context),
+ 					GFP_KERNEL);
+ 
++	if (!ctx)
++		return NULL;
++
+ 	spin_lock_init(&ctx->prng_lock);
+ 
+ 	if (reset_prng_context(ctx, NULL, NULL, NULL, NULL)) {
+@@ -357,9 +360,10 @@ int reset_prng_context(struct prng_context *ctx,
+ 		crypto_free_blkcipher(ctx->tfm);
+ 
+ 	ctx->tfm = crypto_alloc_blkcipher("rfc3686(ctr(aes))", 0, 0);
+-	if (!ctx->tfm) {
++	if (IS_ERR(ctx->tfm)) {
+ 		dbgprint(KERN_CRIT "Failed to alloc tfm for context %p\n",
+-			ctx->tfm);
++			ctx);
++		ctx->tfm = NULL;
+ 		goto out;
+ 	}
+ 
+
+-- 
+/****************************************************
+ * Neil Horman <nhorman@tuxdriver.com>
+ * Software Engineer, Red Hat
+ ****************************************************/
