@@ -1,128 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762959AbYGOTeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761031AbYGOThp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762959AbYGOTeT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 15:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757698AbYGOTeG
+	id S1761031AbYGOThp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 15:37:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755984AbYGOThh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 15:34:06 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:41599 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756576AbYGOTeD (ORCPT
+	Tue, 15 Jul 2008 15:37:37 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:54226 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753076AbYGOThg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 15:34:03 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Tue, 15 Jul 2008 21:33:39 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [git pull 2/2] FireWire updates post 2.6.26 (with a few lines of SCSI
- in it)
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <tkrat.ca57fe6c5cf3640c@s5r6.in-berlin.de>
-Message-ID: <tkrat.898af704693a539b@s5r6.in-berlin.de>
-References: <tkrat.ca57fe6c5cf3640c@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Tue, 15 Jul 2008 15:37:36 -0400
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
+	in-kernel, use it in more drivers.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Marcel Holtmann <marcel@holtmann.org>, Frans Pop <elendil@planet.nl>,
+       jeff@garzik.org, arjan@infradead.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LFD.1.10.0807151223290.3351@woody.linux-foundation.org>
+References: <1216077806.27455.85.camel@shinybook.infradead.org>
+	 <20080714164119.99c33d5b.akpm@linux-foundation.org>
+	 <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>
+	 <487C0365.5030203@garzik.org>
+	 <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
+	 <200807151757.10626.elendil@planet.nl>
+	 <1216149637.27242.65.camel@violet.holtmann.net>
+	 <alpine.LFD.1.10.0807151223290.3351@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 15 Jul 2008 12:36:56 -0700
+Message-Id: <1216150616.27455.377.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from the sbp2-spindown branch at
+On Tue, 2008-07-15 at 12:27 -0700, Linus Torvalds wrote:
+> 
+> On Tue, 15 Jul 2008, Marcel Holtmann wrote:
+> > 
+> > using /lib/firmware/`uname -r`/ is actually not a bad idea. You only
+> > have to fix udev to actually include this in the list of directories to
+> > look for firmware files. Also Ubuntu is already doing this.
+> 
+> I really don't think we need to even "fix udev".
+> 
+> Why don't we just load it ourselves? Esepcially as there are probably 
+> places that try to avoid udev entirely, or at least use a very 
+> cut-down-version.
+> 
+> We should be fairly trivially able to be _entirely_ backwards compatible 
+> with any sane setup (not the _sane_ part! It implies that people don't 
+> copy individual modules around by hand!), with no actual breakage or need 
+> for distros to even update anything at all - just make the kernel able to 
+> look up binary blobs in the same place it installed them.
+> 
+> That sounds like the RightThing(tm) to do _regardless_ of any other 
+> issues, doesn't it? If the kernel installs it in some known place, why 
+> should it not just read them from that known place?
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git sbp2-spindown
+I'm unconvinced that the kernel should be setting this kind of policy.
 
-to receive the following IEEE 1394/ FireWire subsystem updates.
-James has been polled for ACK or NAK or take-over of the SCSI bit
-three times or so.
+But I suppose if you make it tunable in sysfs and just switch to calling
+do_filp_open() directly from firmware_class.c instead of punting to
+userspace, that might work.
 
-Stefan Richter (5):
-      scsi: sd: optionally set power condition in START STOP UNIT
-      firewire: fw-sbp2: fix spindown for PL-3507 and TSB42AA9 firmwares
-      ieee1394: sbp2: fix spindown for PL-3507 and TSB42AA9 firmwares
-      firewire: fw-sbp2: spin disks down on suspend and shutdown
-      ieee1394: sbp2: spin disks down on suspend and shutdown
+It leaves you with less flexibility -- it would prevent stuff like the
+udev trick I posted a week or so back to fix the Intel microcode loader
+by automatically generating the needed binary blob on the fly from
+microcode.dat, for example.
 
- drivers/firewire/fw-sbp2.c |   25 +++++++++++++++++++++++--
- drivers/ieee1394/sbp2.c    |   22 ++++++++++++++++++++--
- drivers/ieee1394/sbp2.h    |    1 +
- drivers/scsi/sd.c          |    5 +++++
- include/scsi/scsi_device.h |    1 +
- 5 files changed, 50 insertions(+), 4 deletions(-)
+We also have a long tradition of pointing and laughing at people who
+want to call open() from within the kernel. But it _could_ work,
+certainly.
 
-
-Start of the series, prerequisite for the rest:
-
-commit d2886ea368a67704ecc13e69075f18a9d74cb12b
-Author: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Date:   Sun May 11 00:34:07 2008 +0200
-
-    scsi: sd: optionally set power condition in START STOP UNIT
-    
-    Adds a new scsi_device flag, start_stop_pwr_cond:  If enabled, the sd
-    driver will not send plain START STOP UNIT commands but ones with the
-    power condition field set to 3 (standby) or 1 (active) respectively.
-    
-    Some FireWire disk firmwares do not stop the motor if power condition is
-    zero.  Or worse, they become unresponsive after a START STOP UNIT with
-    power condition = 0 and start = 0.
-    
-    http://lkml.org/lkml/2008/4/29/704
-    
-    This patch only adds the necessary code to sd_mod but doesn't activate
-    it.  Follow-up patches to the FireWire drivers will add detection of
-    affected devices and enable the code for them.
-    
-    I did not add power condition values to scsi_error.c::scsi_eh_try_stu()
-    for now.  The three firmwares which suffer from above mentioned problems
-    do not need START STOP UNIT in the error handler, and they are not
-    adversely affected by START STOP UNIT with power condition = 0 and start
-    = 1 (like scsi_eh_try_stu() sends it if scsi_device.allow_restart is
-    enabled).
-    
-    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-    Tested-by: Tino Keitel <tino.keitel@gmx.de>
-
-diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-index 01cefbb..d53312c 100644
---- a/drivers/scsi/sd.c
-+++ b/drivers/scsi/sd.c
-@@ -1124,6 +1124,8 @@ sd_spinup_disk(struct scsi_disk *sdkp)
- 				cmd[1] = 1;	/* Return immediately */
- 				memset((void *) &cmd[2], 0, 8);
- 				cmd[4] = 1;	/* Start spin cycle */
-+				if (sdkp->device->start_stop_pwr_cond)
-+					cmd[4] |= 1 << 4;
- 				scsi_execute_req(sdkp->device, cmd, DMA_NONE,
- 						 NULL, 0, &sshdr,
- 						 SD_TIMEOUT, SD_MAX_RETRIES);
-@@ -1790,6 +1792,9 @@ static int sd_start_stop_device(struct scsi_disk *sdkp, int start)
- 	if (start)
- 		cmd[4] |= 1;	/* START */
- 
-+	if (sdp->start_stop_pwr_cond)
-+		cmd[4] |= start ? 1 << 4 : 3 << 4;	/* Active or Standby */
-+
- 	if (!scsi_device_online(sdp))
- 		return -ENODEV;
- 
-diff --git a/include/scsi/scsi_device.h b/include/scsi/scsi_device.h
-index f6a9fe0..00b7876 100644
---- a/include/scsi/scsi_device.h
-+++ b/include/scsi/scsi_device.h
-@@ -134,6 +134,7 @@ struct scsi_device {
- 	unsigned no_start_on_add:1;	/* do not issue start on add */
- 	unsigned allow_restart:1; /* issue START_UNIT in error handler */
- 	unsigned manage_start_stop:1;	/* Let HLD (sd) manage start/stop */
-+	unsigned start_stop_pwr_cond:1;	/* Set power cond. in START_STOP_UNIT */
- 	unsigned no_uld_attach:1; /* disable connecting to upper level drivers */
- 	unsigned select_no_atn:1;
- 	unsigned fix_capacity:1;	/* READ_CAPACITY is too high by 1 */
+I'm not really convinced it helps though. The script which creates an
+initrd still needs to look at the MODULE_FIRMWARE() tag and include the
+right firmware file. If that's broken, you're screwed anyway. And that
+was true in 2.6.25 too.
 
 -- 
-Stefan Richter
--=====-==--- -=== -====
-http://arcgraph.de/sr/
+dwmw2
 
