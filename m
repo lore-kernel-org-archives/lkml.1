@@ -1,225 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761412AbYGORdl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761931AbYGOReZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761412AbYGORdl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 13:33:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbYGORdd
+	id S1761931AbYGOReZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 13:34:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756199AbYGOReS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 13:33:33 -0400
-Received: from mga02.intel.com ([134.134.136.20]:13961 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753921AbYGORdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 13:33:32 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.30,367,1212390000"; 
-   d="scan'208";a="315544858"
-Date: Tue, 15 Jul 2008 10:33:18 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: let 32bit use apic_ops too - fix
-Message-ID: <20080715173318.GA18203@linux-os.sc.intel.com>
-References: <200807080141.05436.yhlu.kernel@gmail.com> <200807102038.26591.yhlu.kernel@gmail.com> <200807111841.55403.yhlu.kernel@gmail.com> <200807132219.35814.yhlu.kernel@gmail.com>
+	Tue, 15 Jul 2008 13:34:18 -0400
+Received: from casper.infradead.org ([85.118.1.10]:48400 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753296AbYGOReR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 13:34:17 -0400
+Date: Tue, 15 Jul 2008 10:33:52 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Frans Pop <elendil@planet.nl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, jeff@garzik.org,
+       akpm@linux-foundation.org, dwmw2@infradead.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
+ in-kernel, use it in more drivers.
+Message-ID: <20080715103352.4a47419e@infradead.org>
+In-Reply-To: <200807151836.57983.elendil@planet.nl>
+References: <1216077806.27455.85.camel@shinybook.infradead.org>
+	<200807151757.10626.elendil@planet.nl>
+	<20080715090441.478c2287@infradead.org>
+	<200807151836.57983.elendil@planet.nl>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200807132219.35814.yhlu.kernel@gmail.com>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 13, 2008 at 10:19:35PM -0700, Yinghai Lu wrote:
-> 
-> fix for pv.
-> 
-> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> 
-> ---
->  arch/x86/kernel/paravirt.c |    5 ----
->  arch/x86/kernel/vmi_32.c   |   51 ++++++++++++++++++++++++++++++++++++++++++---
->  arch/x86/xen/enlighten.c   |   19 +++++++---------
->  include/asm-x86/paravirt.h |   29 -------------------------
->  4 files changed, 57 insertions(+), 47 deletions(-)
-> 
-> Index: linux-2.6/arch/x86/kernel/paravirt.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/paravirt.c
-> +++ linux-2.6/arch/x86/kernel/paravirt.c
-> @@ -373,11 +373,6 @@ struct pv_cpu_ops pv_cpu_ops = {
-> 
->  struct pv_apic_ops pv_apic_ops = {
->  #ifdef CONFIG_X86_LOCAL_APIC
-> -#ifndef CONFIG_X86_64
-> -       .apic_write = native_apic_mem_write,
-> -       .apic_write_atomic = native_apic_mem_write_atomic,
-> -       .apic_read = native_apic_mem_read,
-> -#endif
->         .setup_boot_clock = setup_boot_APIC_clock,
->         .setup_secondary_clock = setup_secondary_APIC_clock,
->         .startup_ipi_hook = paravirt_nop,
-> Index: linux-2.6/arch/x86/kernel/vmi_32.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/vmi_32.c
-> +++ linux-2.6/arch/x86/kernel/vmi_32.c
-> @@ -676,6 +676,50 @@ static inline int __init probe_vmi_rom(v
->         return 0;
->  }
-> 
-> +#ifdef CONFIG_X86_LOCAL_APIC
-> +static u32 vmi_apic_read(u32 reg)
-> +{
-> +       return 0;
-> +}
-> +
-> +static void vmi_apic_write(u32 reg, u32 val)
-> +{
-> +       /* Warn to see if there's any stray references */
-> +       WARN_ON(1);
-> +}
-> +
-> +static u64 vmi_apic_icr_read(void)
-> +{
-> +       return 0;
-> +}
-> +
-> +static void vmi_apic_icr_write(u32 low, u32 id)
-> +{
-> +       /* Warn to see if there's any stray references */
-> +       WARN_ON(1);
-> +}
-> +
-> +static void vmi_apic_wait_icr_idle(void)
-> +{
-> +       return;
-> +}
-> +
-> +static u32 vmi_safe_apic_wait_icr_idle(void)
-> +{
-> +       return 0;
-> +}
-> +
-> +static struct apic_ops vmi_basic_apic_ops = {
-> +        .read = vmi_apic_read,
-> +        .write = vmi_apic_write,
-> +        .write_atomic = vmi_apic_write,
-> +        .icr_read = vmi_apic_icr_read,
-> +        .icr_write = vmi_apic_icr_write,
-> +        .wait_icr_idle = vmi_apic_wait_icr_idle,
-> +        .safe_wait_icr_idle = vmi_safe_apic_wait_icr_idle,
-> +};
-> +#endif
-> +
->  /*
->   * VMI setup common to all processors
->   */
-> @@ -904,9 +948,10 @@ static inline int __init activate_vmi(vo
->  #endif
-> 
->  #ifdef CONFIG_X86_LOCAL_APIC
-> -       para_fill(pv_apic_ops.apic_read, APICRead);
-> -       para_fill(pv_apic_ops.apic_write, APICWrite);
-> -       para_fill(pv_apic_ops.apic_write_atomic, APICWrite);
-> +       para_fill(vmi_basic_apic_ops.read, APICRead);
-> +       para_fill(vmi_basic_apic_ops.write, APICWrite);
-> +       para_fill(vmi_basic_apic_ops.write_atomic, APICWrite);
-> +       apic_ops = &vmi_basic_apic_ops;
+On Tue, 15 Jul 2008 18:36:56 +0200
+Frans Pop <elendil@planet.nl> wrote:
 
-Yinghai, Looking more closely at this, based on my understanding this might be
-wrong for VMI. Correct patch should be as follows. Any comments?
+> On Tuesday 15 July 2008, you wrote:
+> > > You release 2.6.27-rc2 and I build it. Ouch! It fails to install,
+> > > at least if I want to install it _alongside_ 2.6.27-rc1 or other
+> > > kernels (which I do!). Why does it fail? Because dpkg's package
+> > > management does not allow one package to overwrite files already
+> > > "owned" by another package.
+> >
+> > question: how do you deal with this with the dozens of drivers that
+> > use request_firmware() even before yesterday ?
+> > the answer is critical in how to deal with this "new" situation as
+> > well ;-)
+> 
+> For Debian packages that's in the part of the mail you snipped.
+> 
+> The simple answer for my current use of dep-pkg is: I don't _have_
+> any hardware that requires firmware that's split out with current
+> kernels.
 
-thanks,
-suresh
----
-Fix VMI apic_ops.
+... and do you have any with current -git ?
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
 
-diff --git a/arch/x86/kernel/apic_32.c b/arch/x86/kernel/apic_32.c
-index b1375fa..3410196 100644
---- a/arch/x86/kernel/apic_32.c
-+++ b/arch/x86/kernel/apic_32.c
-@@ -145,6 +145,11 @@ static int modern_apic(void)
- 	return lapic_get_version() >= 0x14;
- }
- 
-+/*
-+ * Paravirt kernels also might be using these below ops. So we still
-+ * use generic apic_read()/apic_write(), which might be pointing to different
-+ * ops in PARAVIRT case.
-+ */
- void xapic_wait_icr_idle(void)
- {
- 	while (apic_read(APIC_ICR) & APIC_ICR_BUSY)
-diff --git a/arch/x86/kernel/vmi_32.c b/arch/x86/kernel/vmi_32.c
-index cf30743..d6897e4 100644
---- a/arch/x86/kernel/vmi_32.c
-+++ b/arch/x86/kernel/vmi_32.c
-@@ -676,50 +676,6 @@ static inline int __init probe_vmi_rom(void)
- 	return 0;
- }
- 
--#ifdef CONFIG_X86_LOCAL_APIC
--static u32 vmi_apic_read(u32 reg)
--{
--	return 0;
--}
--
--static void vmi_apic_write(u32 reg, u32 val)
--{
--	/* Warn to see if there's any stray references */
--	WARN_ON(1);
--}
--
--static u64 vmi_apic_icr_read(void)
--{
--	return 0;
--}
--
--static void vmi_apic_icr_write(u32 low, u32 id)
--{
--	/* Warn to see if there's any stray references */
--	WARN_ON(1);
--}
--
--static void vmi_apic_wait_icr_idle(void)
--{
--	return;
--}
--
--static u32 vmi_safe_apic_wait_icr_idle(void)
--{
--	return 0;
--}
--
--static struct apic_ops vmi_basic_apic_ops = {
--        .read = vmi_apic_read,
--        .write = vmi_apic_write,
--        .write_atomic = vmi_apic_write,
--        .icr_read = vmi_apic_icr_read,
--        .icr_write = vmi_apic_icr_write,
--        .wait_icr_idle = vmi_apic_wait_icr_idle,
--        .safe_wait_icr_idle = vmi_safe_apic_wait_icr_idle,
--};
--#endif
--
- /*
-  * VMI setup common to all processors
-  */
-@@ -948,10 +904,9 @@ static inline int __init activate_vmi(void)
- #endif
- 
- #ifdef CONFIG_X86_LOCAL_APIC
--	para_fill(vmi_basic_apic_ops.read, APICRead);
--	para_fill(vmi_basic_apic_ops.write, APICWrite);
--	para_fill(vmi_basic_apic_ops.write_atomic, APICWrite);
--	apic_ops = &vmi_basic_apic_ops;
-+	para_fill(apic_ops->read, APICRead);
-+	para_fill(apic_ops->write, APICWrite);
-+	para_fill(apic_ops->write_atomic, APICWrite);
- #endif
- 
- 	/*
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
