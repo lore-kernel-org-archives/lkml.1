@@ -1,107 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758767AbYGORug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757280AbYGORzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758767AbYGORug (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 13:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754531AbYGORu2
+	id S1757280AbYGORzV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 13:55:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbYGORzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 13:50:28 -0400
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:61297 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754142AbYGORu1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 13:50:27 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvIEAFh9fEhMRKxB/2dsb2JhbACBWq13
-Date: Tue, 15 Jul 2008 13:50:25 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Paul E McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [patch 01/15] Kernel Tracepoints
-Message-ID: <20080715175025.GA1936@Krystal>
-References: <20080709145929.352201601@polymtl.ca> <20080709150043.693920317@polymtl.ca> <1216108237.12595.122.camel@twins> <20080715132543.GB20037@Krystal> <1216130356.12595.184.camel@twins> <20080715142710.GC20037@Krystal> <1216132928.12595.201.camel@twins> <20080715152224.GE20037@Krystal> <1216135902.12595.214.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 15 Jul 2008 13:55:08 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:35681 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751661AbYGORzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 13:55:07 -0400
+Message-ID: <487CE471.9060808@garzik.org>
+Date: Tue, 15 Jul 2008 13:54:57 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: David Woodhouse <dwmw2@infradead.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
+ use it in more drivers.
+References: <1216077806.27455.85.camel@shinybook.infradead.org>  <20080714164119.99c33d5b.akpm@linux-foundation.org>  <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>  <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>  <487C09EB.1050903@garzik.org>  <alpine.LFD.1.10.0807141928540.3017@woody.linux-foundation.org>  <487C1648.5070409@garzik.org>  <alpine.LFD.1.10.0807142027140.3017@woody.linux-foundation.org>  <487C500F.8000109@garzik.org> <1216107418.27455.236.camel@shinybook.infradead.org> <487C5ABE.2010907@garzik.org> <alpine.LFD.1.10.0807150808050.3017@woody.linux-foundation.org> <487CDB85.3050208@garzik.org> <alpine.LFD.1.10.0807151024220.3017@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807151024220.3017@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1216135902.12595.214.camel@twins>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 13:43:53 up 40 days, 22:24,  4 users,  load average: 0.87, 1.61,
-	1.24
-User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra (peterz@infradead.org) wrote:
-> > > Anyway, does this still generate better code?
-> > > 
-> > 
-> > On x86_64 :
-> > 
-> >  820:   bf 01 00 00 00          mov    $0x1,%edi
-> >  825:   e8 00 00 00 00          callq  82a <thread_return+0x136>
-> >  82a:   48 8b 1d 00 00 00 00    mov    0x0(%rip),%rbx        # 831 <thread_return+0x13d>
-> >  831:   48 85 db                test   %rbx,%rbx
-> >  834:   75 21                   jne    857 <thread_return+0x163>
-> >  836:   eb 27                   jmp    85f <thread_return+0x16b>
-> >  838:   0f 1f 84 00 00 00 00    nopl   0x0(%rax,%rax,1)
-> >  83f:   00 
-> >  840:   48 8b 95 68 ff ff ff    mov    -0x98(%rbp),%rdx
-> >  847:   48 8b b5 60 ff ff ff    mov    -0xa0(%rbp),%rsi
-> >  84e:   4c 89 e7                mov    %r12,%rdi
-> >  851:   48 83 c3 08             add    $0x8,%rbx
-> >  855:   ff d0                   callq  *%rax
-> >  857:   48 8b 03                mov    (%rbx),%rax
-> >  85a:   48 85 c0                test   %rax,%rax
-> >  85d:   75 e1                   jne    840 <thread_return+0x14c>
-> >  85f:   bf 01 00 00 00          mov    $0x1,%edi
-> >  864:
-> > 
-> > for 68 bytes.
-> > 
-> > My original implementation was 77 bytes, so yes, we have a win.
+Linus Torvalds wrote:
 > 
-> Ah, good good ! :-)
+> On Tue, 15 Jul 2008, Jeff Garzik wrote:
+>> The changes are good,
+>>
+>> They just don't need to break stuff.
+>>
+>> Which they do.
 > 
+> If you were serious about that, then you'd be suggesting _fixes_.
 
-For the same number of instruction bytes, here is yet another improvement. I
-removed the it_func[0] NULL test case, which is impossible. We never
-have an empty array. If the array is empty, the array pointer is set to
-NULL and the array is eventually freed when a quiescent state is reached.
+The fix was suggested from day one:  permit firmware-in-module, which 
+I've already said I will work on...  provided its not dead on arrival.
 
-/*
- * it_func[0] is never NULL because there is at least one element in the array
- * when the array itself is non NULL.
- */
-#define __DO_TRACE(tp, proto, args)                                     \
-        do {                                                            \
-                void **it_func;                                         \
-                                                                        \
-                preempt_disable();                                      \
-                it_func = rcu_dereference((tp)->funcs);                 \
-                if (it_func) {                                          \
-                        do {                                            \
-                                ((void(*)(proto))(*it_func))(args);     \
-                        } while (*(++it_func));                         \
-                }                                                       \
-                preempt_enable();                                       \
-        } while (0)
+Other fixes I've stated in these threads I want to tackle:
 
-P.S.: I'll change the preempt_enable/disable for rcu locks when I port
-this patchset to linux.next. I temporarily keep the preempt
-disable/enable statements.
+* newly separated firmware should live alongside the driver
 
-Mathieu
+* driver author should be able to deliver binary firmware direct from 
+vendor, without any ihex or C-source-code mangling.
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+
+> I'm not seeing you do that. I'm just seeing non-productive "we should 
+> never have changed" emails.
+
+The emails are "this change should not contain obvious breakages"
+
+To review the parts you've apparently missed, the problems and 
+regressions I have found during review were
+
+- Kconfig produced non-working drivers.  10+ skilled kernel hackers hit 
+this.  I complained, was called silly, pointless, and having a tantrum. 
+  Then, the issue was fixed, and kernel hackers could boot again.
+
+- the normal build process produced non-working drivers.  A couple more 
+skilled kernel hackers hit this one.  Build process regression was 
+OBVIOUS.  Again, fixing this was called pointless and silly.  Again, it 
+got fixed.  Again, kernel hackers started working again.
+
+Now we have one last major regression hole to fix -- firmware-in-module.
+
+
+> See my emails about what can be _productive_ avenues to explore. As it is, 
+> I have yet to see a _single_ productive email from you. 
+
+Strange, considering that it has been me who pointed out problems that 
+would -- and did -- hit other kernel hackers, and those problems after 
+much complaining and insulting got fixed.
+
+	Jeff
+
+
+
