@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755576AbYGOQ56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761997AbYGOQ6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755576AbYGOQ56 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 12:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758657AbYGOQ5f
+	id S1761997AbYGOQ6Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 12:58:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758842AbYGOQ5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 12:57:35 -0400
-Received: from smtp.movial.fi ([62.236.91.34]:53424 "EHLO smtp.movial.fi"
+	Tue, 15 Jul 2008 12:57:36 -0400
+Received: from smtp.movial.fi ([62.236.91.34]:53426 "EHLO smtp.movial.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758623AbYGOQ5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758610AbYGOQ5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 15 Jul 2008 12:57:34 -0400
 From: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>
 To: ralf@linux-mips.org, linux-mips@linux-mips.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] [MIPS] make the pcibios_max_latency variable static
-Date: Tue, 15 Jul 2008 19:57:30 +0300
-Message-Id: <1216141052-28005-2-git-send-email-dmitri.vorobiev@movial.fi>
+Subject: [PATCH 2/3] [MIPS] fix missing prototypes in asm/fpu.h
+Date: Tue, 15 Jul 2008 19:57:31 +0300
+Message-Id: <1216141052-28005-3-git-send-email-dmitri.vorobiev@movial.fi>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1216141052-28005-1-git-send-email-dmitri.vorobiev@movial.fi>
 References: <1216141052-28005-1-git-send-email-dmitri.vorobiev@movial.fi>
@@ -22,29 +22,59 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The pcibios_max_latency variable is needlessly defined global,
-and this patch makes it static.
+While building the Malta defconfig, sparse spat the following
+warnings:
 
-Build-tested using malta_defconfig.
+>>>>>>>>>>>>>>>>>>
+arch/mips/math-emu/kernel_linkage.c:31:6: warning: symbol
+'fpu_emulator_init_fpu' was not declared. Should it be static?
+
+arch/mips/math-emu/kernel_linkage.c:54:5: warning: symbol
+'fpu_emulator_save_context' was not declared. Should it be
+static?
+
+arch/mips/math-emu/kernel_linkage.c:68:5: warning: symbol
+'fpu_emulator_restore_context' was not declared. Should it be
+static?
+>>>>>>>>>>>>>>>>>>
+
+This patch fixes these errors by adding the proper prototypes
+to the include/asm-mips/fpu.h header, and actually using this
+header in the sparse-spotted source file.
+
+Build-tested with Malta defconfig.
 
 Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>
 ---
- arch/mips/pci/pci.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/mips/math-emu/kernel_linkage.c |    1 +
+ include/asm-mips/fpu.h              |    2 ++
+ 2 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/arch/mips/pci/pci.c b/arch/mips/pci/pci.c
-index 358ad62..0187b8c 100644
---- a/arch/mips/pci/pci.c
-+++ b/arch/mips/pci/pci.c
-@@ -205,7 +205,7 @@ static int pcibios_enable_resources(struct pci_dev *dev, int mask)
-  *  If we set up a device for bus mastering, we need to check the latency
-  *  timer as certain crappy BIOSes forget to set it properly.
-  */
--unsigned int pcibios_max_latency = 255;
-+static unsigned int pcibios_max_latency = 255;
+diff --git a/arch/mips/math-emu/kernel_linkage.c b/arch/mips/math-emu/kernel_linkage.c
+index ed49ef0..52e6c58 100644
+--- a/arch/mips/math-emu/kernel_linkage.c
++++ b/arch/mips/math-emu/kernel_linkage.c
+@@ -24,6 +24,7 @@
+ #include <asm/signal.h>
+ #include <asm/uaccess.h>
  
- void pcibios_set_master(struct pci_dev *dev)
- {
++#include <asm/fpu.h>
+ #include <asm/fpu_emulator.h>
+ 
+ #define SIGNALLING_NAN 0x7ff800007ff80000LL
+diff --git a/include/asm-mips/fpu.h b/include/asm-mips/fpu.h
+index e59d4c0..8a3ef24 100644
+--- a/include/asm-mips/fpu.h
++++ b/include/asm-mips/fpu.h
+@@ -35,6 +35,8 @@ extern asmlinkage int (*save_fp_context32)(struct sigcontext32 __user *sc);
+ extern asmlinkage int (*restore_fp_context32)(struct sigcontext32 __user *sc);
+ 
+ extern void fpu_emulator_init_fpu(void);
++extern int fpu_emulator_save_context(struct sigcontext __user *sc);
++extern int fpu_emulator_restore_context(struct sigcontext __user *sc);
+ extern void _init_fpu(void);
+ extern void _save_fp(struct task_struct *);
+ extern void _restore_fp(struct task_struct *);
 -- 
 1.5.6
 
