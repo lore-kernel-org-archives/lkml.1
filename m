@@ -1,101 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758950AbYGOUAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762058AbYGOUAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758950AbYGOUAV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 16:00:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbYGOUAG
+	id S1762058AbYGOUAl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 16:00:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756932AbYGOUAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 16:00:06 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:47005 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753346AbYGOUAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 16:00:05 -0400
-Message-ID: <487D01B5.7020300@garzik.org>
-Date: Tue, 15 Jul 2008 15:59:49 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Frans Pop <elendil@planet.nl>, arjan@infradead.org,
-       akpm@linux-foundation.org, dwmw2@infradead.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
- use it in more drivers.
-References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org> <487C0365.5030203@garzik.org> <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org> <200807151757.10626.elendil@planet.nl> <20080715180535.GA6080@khazad-dum.debian.net> <487CE917.3000000@garzik.org> <alpine.LFD.1.10.0807151122010.3017@woody.linux-foundation.org> <487CF29E.5000009@garzik.org> <alpine.LFD.1.10.0807151159400.3351@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807151159400.3351@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 15 Jul 2008 16:00:15 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:43042 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756651AbYGOUAN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 16:00:13 -0400
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
+	in-kernel, use it in more drivers.
+From: Marcel Holtmann <marcel@holtmann.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>, david@lang.hm,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1216146651.27455.336.camel@shinybook.infradead.org>
+References: <1216077806.27455.85.camel@shinybook.infradead.org>
+	 <20080714164119.99c33d5b.akpm@linux-foundation.org>
+	 <20080714165956.7fe2d4ee@infradead.org>
+	 <alpine.DEB.1.10.0807141704120.14223@asgard.lang.hm>
+	 <alpine.LFD.1.10.0807141729200.3017@woody.linux-foundation.org>
+	 <alpine.DEB.1.10.0807141750290.14223@asgard.lang.hm>
+	 <alpine.LFD.1.10.0807141756361.3017@woody.linux-foundation.org>
+	 <alpine.DEB.1.10.0807141805300.14223@asgard.lang.hm>
+	 <alpine.LFD.1.10.0807141903260.3017@woody.linux-foundation.org>
+	 <487C585C.2060002@garzik.org>
+	 <alpine.LFD.1.10.0807150803580.3017@woody.linux-foundation.org>
+	 <487CD7FE.9010209@garzik.org>
+	 <alpine.LFD.1.10.0807151008450.3017@woody.linux-foundation.org>
+	 <487CDEC0.3090004@garzik.org>
+	 <alpine.LFD.1.10.0807151041080.3017@woody.linux-foundation.org>
+	 <487CEA73.9000408@garzik.org>
+	 <alpine.LFD.1.10.0807151124510.3017@woody.linux-foundation.org>
+	 <1216146651.27455.336.camel@shinybook.infradead.org>
+Content-Type: text/plain
+Date: Tue, 15 Jul 2008 22:00:21 +0200
+Message-Id: <1216152021.27242.94.camel@violet.holtmann.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+Hi David,
+
+> > > Which is why 'make modules_install' installs the firmware, or at least it did
+> > > before David W pushed upstream.
+> > 
+> > So you're literally just about making this be "make modules_install" 
+> > rather than "make firmware_install"
+> > 
+> > Ok. Are you going to be happy if "make modules_install" just copies the 
+> > firmware files of the affected modules too?
 > 
-> On Tue, 15 Jul 2008, Jeff Garzik wrote:
->> Because people should not be forced to fix all their firmware-related breakage
->> immediately, just to boot 2.6.27.
+> I did that already. I'm not _entirely_ sure it was the right thing to
+> do, but it does help to reduce surprises when people don't realise that
+> a driver they're using now has separate firmware.
 > 
-> You're continuing to make an argument that doesn't seem to backed up with 
-> any actual real problems.
+> I don't believe it was the result of a constructive request from Jeff; I
+> think someone else suggested it in response to his whining. It may even
+> have been my idea, but I don't recall.
 > 
-> Can you point to real breakage? For real people? 
-
-Already posted a list.
-
-
-> It sounds like your whole argument literally boils down to "one or two 
-> people doing something really stupid or odd cannot just fix their setup".
+> This is the current situation:
 > 
-> What is the real-life situation where copying the firmware with the 
-> modules (but still as separate files) actually breaks?
+> 'make modules_install' will install the firmware required by the modules
+> it installs. It'll install that to $(INSTALL_MOD_PATH)/lib/firmware/
+> unless you override that by setting $(INSTALL_FW_PATH). So you can put
+> it into a kernel-specific directory if you want to.
+> 
+> 'make firmware_install' will install _all_ available firmware files
+> to /lib/firmware (or $(INSTALL_FW_PATH)), regardless of architecture or
+> configuration. That's what Fedora is using for its 'kernel-firmware'
+> package, which is arch-independent and required by the various kernel
+> binary packages.
 
-The breakage comes from all the existing-at-this-point-today processes 
-that will not copy the firmware with the module.
+I really think we should use /lib/firmware/`uname -r`/. I do see the
+point here that I don't wanna overwrite existing firmware from other
+installed kernels. Especially if modules_install will install the
+firmware files.
 
-We're not talking about one or two people, we are talking about projects 
-being actively used.
+So in case of non-Ubuntu distros we have to push a fix to udev, but that
+is not a big deal. It should be a one-line change if I am not mistaken.
 
-Which in turn means not only those projects need to immediately fix 
-stuff to make 2.6.27 work, but users who build and test kernels are left 
-to pick up the pieces when their drivers break too.
+Regards
 
-
-> IOW, what _is_ this theoretical breakage? And why is it so deadly 
-> suddenly? Give us real examples that somehow cannot be fixed?
-
-It's not theoretical, we have already run into non-working drivers due 
-to build process changes.  And those were the smart guys, the kernel 
-hackers.
-
-All of the examples I have listed can certainly be fixed -- well, except 
-the "new kernel, old system" case -- sometimes easily.
-
-* the consequences of the breakage -- 100% non-working driver, possibly 
-unbootable system
-
-* the likelihood of breakage -- anything that is not a recent version of 
-a mainstream distro WILL have problems, because it simply does not know 
-about the firmware that must follow the module whereever it goes.
-
-* the need to immediately add/fix userland and build processes, just to 
-keep the same driver set working.
-
-* the need for time, to figure out if you are even affected by this change
-
-* the need for time, to plan the best method to implement firmware 
-deployment in your distro
-
-
-Without firmware-in-module, it is a basic fact that you are forcing 
-everyone to fix their stuff, simply to be able to use 2.6.27 like they 
-did 2.6.26.
-
-That's unfriendly to distros, users, and kernel testers.
-
-	Jeff
-
+Marcel
 
 
