@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760613AbYGONFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761240AbYGONFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760613AbYGONFl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 09:05:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756602AbYGONFd
+	id S1761240AbYGONFy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 09:05:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759414AbYGONFo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 09:05:33 -0400
-Received: from ti-out-0910.google.com ([209.85.142.184]:16506 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756507AbYGONFc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 09:05:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=kDYhKQSctFCgvzfoXLFVBpO0yW0RF/fXnvRJugKV9WhqV0bHFTvWOzbC4t4kvfw/TB
-         Fq9pZjfDcIUo8bKlL7co+AqiWinUNI5XAM6VpotwGK/Rix/SBFYTqSDCwOVYcnpxkBw8
-         MS+V7FWvhO8/aK3Y5+jAG75rhkL6RH1kk7QRM=
-Message-ID: <3aa654a40807150605r6d6206delcd903aac58f6291d@mail.gmail.com>
-Date: Tue, 15 Jul 2008 06:05:30 -0700
-From: "Avuton Olrich" <avuton@gmail.com>
-To: "Martin Michlmayr" <tbm@cyrius.com>
-Subject: Re: s2disk: system powers up again after power off
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <20080715124733.GA4111@deprecation.cyrius.com>
+	Tue, 15 Jul 2008 09:05:44 -0400
+Received: from bu3sch.de ([62.75.166.246]:51415 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760961AbYGONFn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 09:05:43 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Ben Nizette <bn@niasdigital.com>
+Subject: Re: [PATCH] Add SPI over GPIO driver
+Date: Tue, 15 Jul 2008 15:05:16 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       David Brownell <david-b@pacbell.net>,
+       Piot Skamruk <piotr.skamruk@gmail.com>, openwrt-devel@lists.openwrt.org
+References: <200807142109.13243.mb@bu3sch.de> <1216099851.4265.156.camel@moss.renham>
+In-Reply-To: <1216099851.4265.156.camel@moss.renham>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080715124733.GA4111@deprecation.cyrius.com>
+Message-Id: <200807151505.16371.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 5:47 AM, Martin Michlmayr <tbm@cyrius.com> wrote:
-> When I use s2disk to suspend my HP 2510p notebook, it writes
-> everything to disk, and powers off... but after 2-3 seconds it often
-> powers on again.  This doesn't happen all the time but quite
-> frequently (definitely in the majority of cases).
->
-> I believe I've never seen this when I use "halt" to power off the
-> machine (but I don't use halt very often).
->
-> Any idea?
+On Tuesday 15 July 2008 07:30:51 Ben Nizette wrote:
+> Looks good overall.  I'm not sure that it need pretend to be
+> hotpluggable though
 
-Ugh, this happens here too, this started occuring before 2.6.25 but
-every time I try to bisect it takes hours and I end up screwing up
-somewhere along the way, so I haven't had time to bisect this
-correctly.
+Because the hardware _is_ hotpluggable.
+
+> (i.e. the board info can be hardwired so there's no 
+> need for the board setup callback).
+
+I'm not sure why we should limit ourselves so much by compiling
+dynamic and completely individual information, like the bus
+wireing into the kernel.
+This _has_ to be dynamic, as the wireing is _completely_ random and
+different for every machine. This is selfmade hardware. ;)
+
+> What problem are you solving (or whole in board support are you
+> plugging) in this dynamic plugging of MMCs?
+
+This is to support running MMCs/SDs on GPIO pins.
+Which board or card provides the GPIO pins doesn't matter. It doesn't
+matter, as it's completely abstracted. You can even run 10 or more
+of the cards at the same time, if you have enough GPIO pins.
+
+Of course, this is mostly useful for embedded systems only.
+But it is not bound to any specific type of hardware. The hardware just
+has to implement generic GPIO for its GPIO pins.
+
 -- 
-avuton
---
- "I've got a fever. And the only prescription is more cowbell." --
-Christopher Walken
+Greetings Michael.
