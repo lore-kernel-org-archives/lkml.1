@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbYGOEUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754378AbYGOEeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754644AbYGOEUy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 00:20:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbYGOEUo
+	id S1754378AbYGOEeV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 00:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbYGOEeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 00:20:44 -0400
-Received: from tone.orchestra.cse.unsw.EDU.AU ([129.94.242.59]:53015 "EHLO
-	tone.orchestra.cse.unsw.EDU.AU" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751406AbYGOEUn (ORCPT
+	Tue, 15 Jul 2008 00:34:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55434 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750967AbYGOEeM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 00:20:43 -0400
-From: Shehjar Tikoo <shehjart@cse.unsw.edu.au>
-To: linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Date: Tue, 15 Jul 2008 14:06:21 +1000
-Message-ID: <487C223D.6060704@cse.unsw.edu.au>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Tue, 15 Jul 2008 00:34:12 -0400
+Date: Mon, 14 Jul 2008 21:33:07 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Dave Jones <davej@redhat.com>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [git pull] x86 changes for v2.6.27
+In-Reply-To: <20080715025149.GA6137@redhat.com>
+Message-ID: <alpine.LFD.1.10.0807142126300.3017@woody.linux-foundation.org>
+References: <20080714135034.GA7013@elte.hu> <20080715025149.GA6137@redhat.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Subject: ext4 fallocate related crash on 2.6.26
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all
 
-I've observed the following kernel crash during tests against ext4 
-fallocate'ion support on 2.6.26.
 
-Stack trace is at:
-http://www.gelato.unsw.edu.au/~shehjart/docs/ext4_fallocate_test_trace_2.6.26.txt
+On Mon, 14 Jul 2008, Dave Jones wrote:
+> 
+> 6924d1ab8b7bbe5ab416713f5701b3316b2df85b is a work of art.
+> Is it ascii-art tetris? a magic eye picture? you decide!
+> 
+> It looks even more spectacular in gitk.
 
-The test involved running the following program which fallocates a 
-given length in bytes then writes to it. The above crash was seen when 
-writing to an ext4 disk, 2G file, in blocks of 64k with fallocate 
-requests of 1mb. After each 1mb of data is written to the fallocated 
-space, another 1mb is requested. This write-fallocate cycle continues 
-till the requested file size is reached. The trace is from one of the 
-crashes from the various runs(all crashed). I must emphasise that 
-after one of the runs, the test disk could not be mounted as the 
-filesystem was unrecognized. ext4dev was mounted in data=ordered mode.
+Here's how to search for those with git:
 
-See the test code at:
-http://www.gelato.unsw.edu.au/~shehjart/docs/writefallocate.c
+	git rev-list --all --parents | egrep '( .*){10}' | cut -d' ' -f1
 
-The command line arguments are self-explanatory. Run without any 
-arguments to see the usage message. Do change the _NR_fallocate define 
-at the beginning of the file to your architecture's syscall number for 
-sys_fallocate.
+will show you all commits with ten or more parents (although some of them 
+have duplicate parents due to git historically not checking that very 
+carefully).
 
-I can run a few more tests if more info is needed.
+Len and rmk have been doing it for a while, but yeah, I think Ingo pushed 
+the envelope there a bit.
 
-Shehjar
-PS: I am only on linux-fsdevel. So please CC if replying from another 
-list.
+But 96916090f488986a4ebb8e9ffa6a3b50881d5ccd is pretty nice too, doncha 
+think?
+
+		Linus
