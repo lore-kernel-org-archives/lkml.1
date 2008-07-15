@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbYGOEsj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbYGOE5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755287AbYGOEsj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 00:48:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbYGOEsc
+	id S1754751AbYGOE5R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 00:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbYGOE5D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 00:48:32 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:10897 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752241AbYGOEsb (ORCPT
+	Tue, 15 Jul 2008 00:57:03 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47874 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752437AbYGOE5B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 00:48:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=GhTI1CDvW0hVdaHOHh/1x6ZY763AcPlcZ62luHc/a/ppZECWhlUgTWA5CBOShWENxI
-         GtlOZUIw9FixSKEJBzHwV2fMsWPqoK0DpQx+kXRkw2iwwiyiuDAnlzC2C31AIk7lOetQ
-         YVo5oFYB2GFo5Rh6VbCamnTHEefy4y4Zw4t7M=
-Message-ID: <9b2db90b0807142148o77c0bb7au7560cb5bd2d97f7@mail.gmail.com>
-Date: Tue, 15 Jul 2008 07:48:29 +0300
-From: "Nir Tzachar" <nir.tzachar@gmail.com>
-To: "Pavel Machek" <pavel@suse.cz>
-Subject: Re: Problems with resume from s2ram following hibernate
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080712133236.GA14877@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 15 Jul 2008 00:57:01 -0400
+Date: Mon, 14 Jul 2008 21:56:48 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, rene.herman@keyaccess.nl, david@lang.hm,
+       akpm@linux-foundation.org, dwmw2@infradead.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
+ in-kernel, use it in more drivers.
+Message-ID: <20080714215648.1ed29448@infradead.org>
+In-Reply-To: <20080714.194557.78177585.davem@davemloft.net>
+References: <487C0A12.9060906@keyaccess.nl>
+	<20080714.192425.241878700.davem@davemloft.net>
+	<alpine.LFD.1.10.0807141934060.3017@woody.linux-foundation.org>
+	<20080714.194557.78177585.davem@davemloft.net>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <9b2db90b0807100200h5e1eabaapada93d8e5cc3ec79@mail.gmail.com>
-	 <9b2db90b0807100202l53df9364tf36c5dfaf18bf1f5@mail.gmail.com>
-	 <20080712133236.GA14877@ucw.cz>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 12, 2008 at 4:32 PM, Pavel Machek <pavel@suse.cz> wrote:
-> Hi!
->
->> I am currently using kernel 2.6.25 (with Gentoo patches), and have had
->> the problem ever since I managed to get suspend to disk working. One
->> issue which might be related is that I boot my kernel with
->> "acpi_serialize", as otherwise I get many acpi error messages.
->
-> Try vanilla 2.6.26-rc... we can't debug vendor kernels here.
+On Mon, 14 Jul 2008 19:45:57 -0700 (PDT)
+David Miller <davem@davemloft.net> wrote:
 
-Ok, will report any problems.
+> From: Linus Torvalds <torvalds@linux-foundation.org>
+> Date: Mon, 14 Jul 2008 19:39:03 -0700 (PDT)
+> 
+> > Put this way: if you do a distro, you _need_ to support firmware
+> > loading anyway. And once you do that, it's just annoying how some
+> > drivers then do something odd and special for the same thing, for
+> > no real good reason.
+> 
+> In what way is it annoying?
+> 
+> Most distribution people aren't even aware that drivers like tg3 and
+> bnx2 even have firmware.  In fact it's self contained and less for
+> them to worry about.
 
-10x.
+and.. after this patch that still seems to be the case, unless I'm
+looking at it really cross eyed.
+Nothing in this patch makes it impossible to do so.. or changes the
+drivers you mention. in fact it's the opposite almost: it improves
+request_firmware() usability significantly. (by allowing vmlinux build
+in etc).
+
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
