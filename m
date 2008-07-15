@@ -1,69 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762858AbYGOT0o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762626AbYGOT15@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762858AbYGOT0o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 15:26:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757117AbYGOT0h
+	id S1762626AbYGOT15 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 15:27:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757532AbYGOT1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 15:26:37 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:54115 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755675AbYGOT0g (ORCPT
+	Tue, 15 Jul 2008 15:27:50 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49943 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756484AbYGOT1t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 15:26:36 -0400
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
-	in-kernel, use it in more drivers.
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Frans Pop <elendil@planet.nl>, jeff@garzik.org, arjan@infradead.org,
+	Tue, 15 Jul 2008 15:27:49 -0400
+Date: Tue, 15 Jul 2008 12:27:00 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Marcel Holtmann <marcel@holtmann.org>
+cc: Frans Pop <elendil@planet.nl>, jeff@garzik.org, arjan@infradead.org,
        akpm@linux-foundation.org, dwmw2@infradead.org,
        alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.1.10.0807150931010.3017@woody.linux-foundation.org>
-References: <1216077806.27455.85.camel@shinybook.infradead.org>
-	 <20080714164119.99c33d5b.akpm@linux-foundation.org>
-	 <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>
-	 <487C0365.5030203@garzik.org>
-	 <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
-	 <200807151757.10626.elendil@planet.nl>
-	 <alpine.LFD.1.10.0807150913590.3017@woody.linux-foundation.org>
-	 <alpine.LFD.1.10.0807150931010.3017@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 21:26:44 +0200
-Message-Id: <1216150004.27242.72.camel@violet.holtmann.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
+ use it in more drivers.
+In-Reply-To: <1216149637.27242.65.camel@violet.holtmann.net>
+Message-ID: <alpine.LFD.1.10.0807151223290.3351@woody.linux-foundation.org>
+References: <1216077806.27455.85.camel@shinybook.infradead.org>  <20080714164119.99c33d5b.akpm@linux-foundation.org>  <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>  <487C0365.5030203@garzik.org>  <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
+  <200807151757.10626.elendil@planet.nl> <1216149637.27242.65.camel@violet.holtmann.net>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
 
-> > Why don't you just take the kernel-supplied firmware and make it part of 
-> > the kernel package? The same way the kernel-supplied modules are part of 
-> > it?
+
+On Tue, 15 Jul 2008, Marcel Holtmann wrote:
 > 
-> And, btw, if there is something we can do to help, we obviously should.
-> 
-> So ask yourself (and DavidW) things like
-> 
->  - Is "make firmware_install" not enough for the package build system?
-> 
->  - Does it need some other way to figure out what firmware is needed for 
->    just the configured set of drivers, eg "make firmware_list"?
-> 
->  - Do we need to make the firmware loader have multiple directories it 
->    looks at? Do we want first a kernel-version-specific one, then a 
->    generic fallback one, so that we can easily have per-kernel firmware, 
->    the same way we have per-kernel modules?
+> using /lib/firmware/`uname -r`/ is actually not a bad idea. You only
+> have to fix udev to actually include this in the list of directories to
+> look for firmware files. Also Ubuntu is already doing this.
 
-as just mentioned in another post. If you look at Ubuntu, their udev
-helper that actually looks for the firmware and loads it into the kernel
-does exactly this. Historically we have also old paths since the
-agreement on /lib/firmware came later, but that is userspace policy
-anyway and not part of the kernel.
+I really don't think we need to even "fix udev".
 
-Regards
+Why don't we just load it ourselves? Esepcially as there are probably 
+places that try to avoid udev entirely, or at least use a very 
+cut-down-version.
 
-Marcel
+We should be fairly trivially able to be _entirely_ backwards compatible 
+with any sane setup (not the _sane_ part! It implies that people don't 
+copy individual modules around by hand!), with no actual breakage or need 
+for distros to even update anything at all - just make the kernel able to 
+look up binary blobs in the same place it installed them.
 
+That sounds like the RightThing(tm) to do _regardless_ of any other 
+issues, doesn't it? If the kernel installs it in some known place, why 
+should it not just read them from that known place?
 
+		Linus
