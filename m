@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756580AbYGOLoL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756651AbYGOLpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756580AbYGOLoL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 07:44:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbYGOLnz
+	id S1756651AbYGOLpJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 07:45:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbYGOLo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 07:43:55 -0400
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:63220 "EHLO
+	Tue, 15 Jul 2008 07:44:56 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:62732 "EHLO
 	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754473AbYGOLny (ORCPT
+	with ESMTP id S1754399AbYGOLoz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 07:43:54 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5338"; a="4548209"
+	Tue, 15 Jul 2008 07:44:55 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5338"; a="4548219"
 From: Max Krasnyansky <maxk@qualcomm.com>
-To: mingo@elte.hu, dmitry.adamushko@gmail.com, a.p.zijlstra@chello.nl,
-       torvalds@linux-foundation.org, pj@sgi.com
-Cc: ghaskins@novell.com, linux-kernel@vger.kernel.org,
-       Max Krasnyanskiy <maxk@qualcomm.com>
-Subject: [PATCH] cpu hotplug, sched: Introduce cpu_active_map and redo sched domain managment (take 2)
-Date: Tue, 15 Jul 2008 04:43:49 -0700
-Message-Id: <1216122229-4865-1-git-send-email-maxk@qualcomm.com>
+To: mingo@elte.hu, pj@sgi.com
+Cc: linux-kernel@vger.kernel.org, Max Krasnyanskiy <maxk@qualcomm.com>,
+       a.p.zijlstra@chello.nl, menage@google.com
+Subject: [PATCH] cpuset: Make rebuild_sched_domains() usable from any context
+Date: Tue, 15 Jul 2008 04:44:53 -0700
+Message-Id: <1216122293-4888-1-git-send-email-maxk@qualcomm.com>
 X-Mailer: git-send-email 1.5.5.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -26,476 +25,249 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Max Krasnyanskiy <maxk@qualcomm.com>
 
-Addressed Ingo's comments and merged on top of latest Linus's tree.
+I do not really like the current solution of dropping cgroup lock
+but it shows what I have in mind in general.
 
-This is based on Linus' idea of creating cpu_active_map that prevents
-scheduler load balancer from migrating tasks to the cpu that is going
-down.
+Basically as Paul J. pointed out rebuild_sched_domains() is the
+only way to rebuild sched domains correctly based on the current
+cpuset settings. What this means is that we need to be able to
+call it from different contexts, like cpuhotplug for example.
 
-It allows us to simplify domain management code and avoid unecessary
-domain rebuilds during cpu hotplug event handling.
+In order to get there we need to redo the lock nesting a bit.
+This patch tries to do that. New lock nesting is explained in the
+comments.
+Paul M has some patches for fine grain cgroup locking. That should
+simplify things in the future.
 
-Please ignore the cpusets part for now. It needs some more work in order
-to avoid crazy lock nesting. Although I did simplfy and unify domain
-reinitialization logic. We now simply call partition_sched_domains() in
-all the cases. This means that we're using exact same code paths as in
-cpusets case and hence the test below cover cpusets too.
-Cpuset changes to make rebuild_sched_domains() callable from various
-contexts are in the separate patch (right next after this one).
-
-This not only boots but also easily handles
-	while true; do make clean; make -j 8; done
-and
-	while true; do on-off-cpu 1; done
-at the same time.
-(on-off-cpu 1 simple does echo 0/1 > /sys/.../cpu1/online thing).
-
-Suprisingly the box (dual-core Core2) is quite usable. In fact I'm typing
-this on right now in gnome-terminal and things are moving just fine.
-
-Also this is running with most of the debug features enabled (lockdep,
-mutex, etc) no BUG_ONs or lockdep complaints so far.
-
-I beleive I addressed all of the Dmitry's comments for original Linus'
-version. I changed both fair and rt balancer to mask out non-active cpus.
-And replaced cpu_is_offline() with !cpu_active() in the main scheduler
-code where it made sense (to me).
-
-Peter, please take a look at how I merged it with your latest RT runtime
-fixes. I basically moved calls to disable_runtime() into the separate
-notifier callback since we do not need update_sched_domains() anymore if
-cpusets are enabled.
-
-Greg, please take a look at the RT balancer merge. I decided not to muck
-with the cpupri thing and instead mask inactive cpus after the search.
-
-I've probably missed something but I'd dare to say consider for the
-inclusion ;-)
+This passes light testing (building stuff and creating/removing
+domains and bring cpus off/online at the same time) and keeps lockdep
+mostly happy. The only thing that I haven't resolved yet is some
+complains from lockdep and preemtable RCU is enabled.
 
 Signed-off-by: Max Krasnyanskiy <maxk@qualcomm.com>
-Cc: ghaskins@novell.com
-Cc: Max Krasnyanskiy <maxk@qualcomm.com>
-Cc: dmitry.adamushko@gmail.com
 Cc: a.p.zijlstra@chello.nl
-Cc: torvalds@linux-foundation.org
 Cc: pj@sgi.com
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Cc: mingo@elte.hu
+Cc: menage@google.com
 ---
- include/linux/cpumask.h |    6 ++-
- include/linux/cpuset.h  |    7 +++
- init/main.c             |    7 +++
- kernel/cpu.c            |   30 ++++++++++---
- kernel/cpuset.c         |    2 +-
- kernel/sched.c          |  108 +++++++++++++++++++---------------------------
- kernel/sched_fair.c     |    3 +
- kernel/sched_rt.c       |    7 +++
- 8 files changed, 99 insertions(+), 71 deletions(-)
+ kernel/cpuset.c |   91 ++++++++++++++++++++++++++++--------------------------
+ 1 files changed, 47 insertions(+), 44 deletions(-)
 
-diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-index c24875b..d614d24 100644
---- a/include/linux/cpumask.h
-+++ b/include/linux/cpumask.h
-@@ -359,13 +359,14 @@ static inline void __cpus_fold(cpumask_t *dstp, const cpumask_t *origp,
- 
- /*
-  * The following particular system cpumasks and operations manage
-- * possible, present and online cpus.  Each of them is a fixed size
-+ * possible, present, active and online cpus.  Each of them is a fixed size
-  * bitmap of size NR_CPUS.
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index 3c3ef02..7b9fa17 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -522,13 +522,8 @@ update_domain_attr(struct sched_domain_attr *dattr, struct cpuset *c)
+  * domains when operating in the severe memory shortage situations
+  * that could cause allocation failures below.
   *
-  *  #ifdef CONFIG_HOTPLUG_CPU
-  *     cpu_possible_map - has bit 'cpu' set iff cpu is populatable
-  *     cpu_present_map  - has bit 'cpu' set iff cpu is populated
-  *     cpu_online_map   - has bit 'cpu' set iff cpu available to scheduler
-+ *     cpu_active_map   - has bit 'cpu' set iff cpu available to migration
-  *  #else
-  *     cpu_possible_map - has bit 'cpu' set iff cpu is populated
-  *     cpu_present_map  - copy of cpu_possible_map
-@@ -416,6 +417,7 @@ static inline void __cpus_fold(cpumask_t *dstp, const cpumask_t *origp,
- extern cpumask_t cpu_possible_map;
- extern cpumask_t cpu_online_map;
- extern cpumask_t cpu_present_map;
-+extern cpumask_t cpu_active_map;
+- * Call with cgroup_mutex held.  May take callback_mutex during
+- * call due to the kfifo_alloc() and kmalloc() calls.  May nest
+- * a call to the get_online_cpus()/put_online_cpus() pair.
+- * Must not be called holding callback_mutex, because we must not
+- * call get_online_cpus() while holding callback_mutex.  Elsewhere
+- * the kernel nests callback_mutex inside get_online_cpus() calls.
+- * So the reverse nesting would risk an ABBA deadlock.
++ * Call under get_online_cpus().
++ * Must not be called with cgroup_lock or callback_mutex held.
+  *
+  * The three key local variables below are:
+  *    q  - a kfifo queue of cpuset pointers, used to implement a
+@@ -581,6 +576,10 @@ void rebuild_sched_domains(void)
+ 	doms = NULL;
+ 	dattr = NULL;
  
- #if NR_CPUS > 1
- #define num_online_cpus()	cpus_weight(cpu_online_map)
-@@ -424,6 +426,7 @@ extern cpumask_t cpu_present_map;
- #define cpu_online(cpu)		cpu_isset((cpu), cpu_online_map)
- #define cpu_possible(cpu)	cpu_isset((cpu), cpu_possible_map)
- #define cpu_present(cpu)	cpu_isset((cpu), cpu_present_map)
-+#define cpu_active(cpu)		cpu_isset((cpu), cpu_active_map)
- #else
- #define num_online_cpus()	1
- #define num_possible_cpus()	1
-@@ -431,6 +434,7 @@ extern cpumask_t cpu_present_map;
- #define cpu_online(cpu)		((cpu) == 0)
- #define cpu_possible(cpu)	((cpu) == 0)
- #define cpu_present(cpu)	((cpu) == 0)
-+#define cpu_active(cpu)		((cpu) == 0)
- #endif
- 
- #define cpu_is_offline(cpu)	unlikely(!cpu_online(cpu))
-diff --git a/include/linux/cpuset.h b/include/linux/cpuset.h
-index 0385783..e8f450c 100644
---- a/include/linux/cpuset.h
-+++ b/include/linux/cpuset.h
-@@ -78,6 +78,8 @@ extern void cpuset_track_online_nodes(void);
- 
- extern int current_cpuset_is_being_rebound(void);
- 
-+extern void rebuild_sched_domains(void);
++	/* We have to iterate cgroup hierarchy, make sure nobody is messing 
++	 * with it. */
++	cgroup_lock();
 +
- #else /* !CONFIG_CPUSETS */
+ 	/* Special case for the 99% of systems with one, full, sched domain */
+ 	if (is_sched_load_balance(&top_cpuset)) {
+ 		ndoms = 1;
+@@ -598,10 +597,10 @@ void rebuild_sched_domains(void)
  
- static inline int cpuset_init_early(void) { return 0; }
-@@ -156,6 +158,11 @@ static inline int current_cpuset_is_being_rebound(void)
+ 	q = kfifo_alloc(number_of_cpusets * sizeof(cp), GFP_KERNEL, NULL);
+ 	if (IS_ERR(q))
+-		goto done;
++		goto unlock;
+ 	csa = kmalloc(number_of_cpusets * sizeof(cp), GFP_KERNEL);
+ 	if (!csa)
+-		goto done;
++		goto unlock;
+ 	csn = 0;
+ 
+ 	cp = &top_cpuset;
+@@ -688,10 +687,16 @@ restart:
+ 	BUG_ON(nslot != ndoms);
+ 
+ rebuild:
++	/* Drop cgroup lock before calling the scheduler.
++	 * This is not strictly necesseary but simplifies lock nesting. */
++	cgroup_unlock();
++
+ 	/* Have scheduler rebuild sched domains */
+-	get_online_cpus();
+ 	partition_sched_domains(ndoms, doms, dattr);
+-	put_online_cpus();
++	goto done;
++
++unlock:
++	cgroup_unlock();
+ 
+ done:
+ 	if (q && !IS_ERR(q))
+@@ -701,6 +706,27 @@ done:
+ 	/* Don't kfree(dattr) -- partition_sched_domains() does that. */
+ }
+ 
++/*
++ * Internal version of the rebuild_sched_domains() that ensures proper 
++ * lock nesting. rebuild_sched_domains() must be called under 
++ * get_online_cpus() and it needs to take cgroup_lock(). Since most of 
++ * the cpuset code is already holding cgroup_lock() while calling 
++ * rebuild_sched_domains() we must drop it here and take it under 
++ * get_online_cpus().
++ * This should go away when fine grained cgroup locking is available.
++ *
++ * Must be called with cgroup_lock() held.
++ * Must not be called under get_online_cpus().
++ */ 
++static void __rebuild_sched_domains(void)
++{
++	cgroup_unlock();
++	get_online_cpus();
++	rebuild_sched_domains();
++	put_online_cpus();
++	cgroup_lock();
++}
++
+ static inline int started_after_time(struct task_struct *t1,
+ 				     struct timespec *time,
+ 				     struct task_struct *t2)
+@@ -831,7 +857,7 @@ static int update_cpumask(struct cpuset *cs, char *buf)
+ 	heap_free(&heap);
+ 
+ 	if (is_load_balanced)
+-		rebuild_sched_domains();
++		__rebuild_sched_domains();
  	return 0;
  }
  
-+static inline void rebuild_sched_domains(void)
-+{
-+	partition_sched_domains(0, NULL, NULL);
-+}
-+
- #endif /* !CONFIG_CPUSETS */
+@@ -1042,7 +1068,7 @@ static int update_relax_domain_level(struct cpuset *cs, s64 val)
  
- #endif /* _LINUX_CPUSET_H */
-diff --git a/init/main.c b/init/main.c
-index f7fb200..bfccff6 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -414,6 +414,13 @@ static void __init smp_init(void)
- {
- 	unsigned int cpu;
- 
-+	/*
-+	 * Set up the current CPU as possible to migrate to.
-+	 * The other ones will be done by cpu_up/cpu_down()
-+	 */
-+	cpu = smp_processor_id();
-+	cpu_set(cpu, cpu_active_map);
-+
- 	/* FIXME: This should be done in userspace --RR */
- 	for_each_present_cpu(cpu) {
- 		if (num_online_cpus() >= setup_max_cpus)
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index b11f06d..71c5c9d 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -64,6 +64,8 @@ void __init cpu_hotplug_init(void)
- 	cpu_hotplug.refcount = 0;
- }
- 
-+cpumask_t cpu_active_map;
-+
- #ifdef CONFIG_HOTPLUG_CPU
- 
- void get_online_cpus(void)
-@@ -291,11 +293,20 @@ int __ref cpu_down(unsigned int cpu)
- 	int err = 0;
- 
- 	cpu_maps_update_begin();
--	if (cpu_hotplug_disabled)
-+
-+	if (cpu_hotplug_disabled) {
- 		err = -EBUSY;
--	else
--		err = _cpu_down(cpu, 0);
-+		goto out;
-+	}
-+
-+	cpu_clear(cpu, cpu_active_map);
-+
-+	err = _cpu_down(cpu, 0);
-+
-+	if (cpu_online(cpu))
-+		cpu_set(cpu, cpu_active_map);
- 
-+out:
- 	cpu_maps_update_done();
- 	return err;
- }
-@@ -354,11 +365,18 @@ int __cpuinit cpu_up(unsigned int cpu)
+ 	if (val != cs->relax_domain_level) {
+ 		cs->relax_domain_level = val;
+-		rebuild_sched_domains();
++		__rebuild_sched_domains();
  	}
  
- 	cpu_maps_update_begin();
--	if (cpu_hotplug_disabled)
-+
-+	if (cpu_hotplug_disabled) {
- 		err = -EBUSY;
--	else
--		err = _cpu_up(cpu, 0);
-+		goto out;
-+	}
+ 	return 0;
+@@ -1083,7 +1109,7 @@ static int update_flag(cpuset_flagbits_t bit, struct cpuset *cs,
+ 	mutex_unlock(&callback_mutex);
  
-+	err = _cpu_up(cpu, 0);
-+
-+	if (cpu_online(cpu))
-+		cpu_set(cpu, cpu_active_map);
-+
-+out:
- 	cpu_maps_update_done();
- 	return err;
+ 	if (cpus_nonempty && balance_flag_changed)
+-		rebuild_sched_domains();
++		__rebuild_sched_domains();
+ 
+ 	return 0;
  }
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-index 459d601..3c3ef02 100644
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -564,7 +564,7 @@ update_domain_attr(struct sched_domain_attr *dattr, struct cpuset *c)
-  *	partition_sched_domains().
-  */
+@@ -1194,15 +1220,6 @@ static int cpuset_can_attach(struct cgroup_subsys *ss,
  
--static void rebuild_sched_domains(void)
-+void rebuild_sched_domains(void)
- {
- 	struct kfifo *q;	/* queue of cpusets to be scanned */
- 	struct cpuset *cp;	/* scans q */
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 99e6d85..9019f63 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2881,7 +2881,7 @@ static void sched_migrate_task(struct task_struct *p, int dest_cpu)
- 
- 	rq = task_rq_lock(p, &flags);
- 	if (!cpu_isset(dest_cpu, p->cpus_allowed)
--	    || unlikely(cpu_is_offline(dest_cpu)))
-+	    || unlikely(!cpu_active(dest_cpu)))
- 		goto out;
- 
- 	/* force the process onto the specified CPU */
-@@ -3849,7 +3849,7 @@ int select_nohz_load_balancer(int stop_tick)
- 		/*
- 		 * If we are going offline and still the leader, give up!
- 		 */
--		if (cpu_is_offline(cpu) &&
-+		if (!cpu_active(cpu) &&
- 		    atomic_read(&nohz.load_balancer) == cpu) {
- 			if (atomic_cmpxchg(&nohz.load_balancer, cpu, -1) != cpu)
- 				BUG();
-@@ -5876,7 +5876,7 @@ static int __migrate_task(struct task_struct *p, int src_cpu, int dest_cpu)
- 	struct rq *rq_dest, *rq_src;
- 	int ret = 0, on_rq;
- 
--	if (unlikely(cpu_is_offline(dest_cpu)))
-+	if (unlikely(!cpu_active(dest_cpu)))
- 		return ret;
- 
- 	rq_src = cpu_rq(src_cpu);
-@@ -7553,18 +7553,6 @@ void __attribute__((weak)) arch_update_cpu_topology(void)
- }
- 
- /*
-- * Free current domain masks.
-- * Called after all cpus are attached to NULL domain.
-- */
--static void free_sched_domains(void)
--{
--	ndoms_cur = 0;
--	if (doms_cur != &fallback_doms)
--		kfree(doms_cur);
--	doms_cur = &fallback_doms;
--}
+ 	if (cpus_empty(cs->cpus_allowed) || nodes_empty(cs->mems_allowed))
+ 		return -ENOSPC;
+-	if (tsk->flags & PF_THREAD_BOUND) {
+-		cpumask_t mask;
 -
--/*
-  * Set up scheduler domains and groups. Callers must hold the hotplug lock.
-  * For now this just excludes isolated cpus, but could be used to
-  * exclude other special cases in the future.
-@@ -7642,7 +7630,7 @@ static int dattrs_equal(struct sched_domain_attr *cur, int idx_cur,
-  * ownership of it and will kfree it when done with it. If the caller
-  * failed the kmalloc call, then it can pass in doms_new == NULL,
-  * and partition_sched_domains() will fallback to the single partition
-- * 'fallback_doms'.
-+ * 'fallback_doms', it also forces the domains to be rebuilt.
-  *
-  * Call with hotplug lock held
-  */
-@@ -7656,12 +7644,8 @@ void partition_sched_domains(int ndoms_new, cpumask_t *doms_new,
- 	/* always unregister in case we don't destroy any domains */
- 	unregister_sched_domain_sysctl();
- 
--	if (doms_new == NULL) {
--		ndoms_new = 1;
--		doms_new = &fallback_doms;
--		cpus_andnot(doms_new[0], cpu_online_map, cpu_isolated_map);
--		dattr_new = NULL;
+-		mutex_lock(&callback_mutex);
+-		mask = cs->cpus_allowed;
+-		mutex_unlock(&callback_mutex);
+-		if (!cpus_equal(tsk->cpus_allowed, mask))
+-			return -EINVAL;
 -	}
-+	if (doms_new == NULL)
-+		ndoms_new = 0;
  
- 	/* Destroy deleted domains */
- 	for (i = 0; i < ndoms_cur; i++) {
-@@ -7676,6 +7660,14 @@ match1:
- 		;
- 	}
- 
-+	if (doms_new == NULL) {
-+		ndoms_cur = 0;
-+		ndoms_new = 1;
-+		doms_new = &fallback_doms;
-+		cpus_andnot(doms_new[0], cpu_online_map, cpu_isolated_map);
-+		dattr_new = NULL;
-+	}
-+
- 	/* Build new domains */
- 	for (i = 0; i < ndoms_new; i++) {
- 		for (j = 0; j < ndoms_cur; j++) {
-@@ -7706,17 +7698,10 @@ match2:
- #if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
- int arch_reinit_sched_domains(void)
- {
+ 	return security_task_setscheduler(tsk, 0, NULL);
+ }
+@@ -1216,14 +1233,11 @@ static void cpuset_attach(struct cgroup_subsys *ss,
+ 	struct mm_struct *mm;
+ 	struct cpuset *cs = cgroup_cs(cont);
+ 	struct cpuset *oldcs = cgroup_cs(oldcont);
 -	int err;
--
- 	get_online_cpus();
--	mutex_lock(&sched_domains_mutex);
--	detach_destroy_domains(&cpu_online_map);
--	free_sched_domains();
--	err = arch_init_sched_domains(&cpu_online_map);
--	mutex_unlock(&sched_domains_mutex);
-+	rebuild_sched_domains();
- 	put_online_cpus();
--
--	return err;
-+	return 0;
+ 
+ 	mutex_lock(&callback_mutex);
+ 	guarantee_online_cpus(cs, &cpus);
+-	err = set_cpus_allowed_ptr(tsk, &cpus);
++	set_cpus_allowed_ptr(tsk, &cpus);
+ 	mutex_unlock(&callback_mutex);
+-	if (err)
+-		return;
+ 
+ 	from = oldcs->mems_allowed;
+ 	to = cs->mems_allowed;
+@@ -1677,15 +1691,9 @@ static struct cgroup_subsys_state *cpuset_create(
  }
  
- static ssize_t sched_power_savings_store(const char *buf, size_t count, int smt)
-@@ -7782,59 +7767,49 @@ int sched_create_sysfs_power_savings_entries(struct sysdev_class *cls)
- }
- #endif /* CONFIG_SCHED_MC || CONFIG_SCHED_SMT */
- 
-+#ifndef CONFIG_CPUSETS
  /*
-- * Force a reinitialization of the sched domains hierarchy. The domains
-- * and groups cannot be updated in place without racing with the balancing
-- * code, so we temporarily attach all running cpus to the NULL domain
-- * which will prevent rebalancing while the sched domains are recalculated.
-+ * Add online and remove offline CPUs from the scheduler domains.
-+ * When cpusets are enabled they take over this function.
+- * Locking note on the strange update_flag() call below:
+- *
+  * If the cpuset being removed has its flag 'sched_load_balance'
+  * enabled, then simulate turning sched_load_balance off, which
+- * will call rebuild_sched_domains().  The get_online_cpus()
+- * call in rebuild_sched_domains() must not be made while holding
+- * callback_mutex.  Elsewhere the kernel nests callback_mutex inside
+- * get_online_cpus() calls.  So the reverse nesting would risk an
+- * ABBA deadlock.
++ * will call rebuild_sched_domains().
   */
- static int update_sched_domains(struct notifier_block *nfb,
- 				unsigned long action, void *hcpu)
+ 
+ static void cpuset_destroy(struct cgroup_subsys *ss, struct cgroup *cont)
+@@ -1894,7 +1902,7 @@ static void scan_for_empty_cpusets(const struct cpuset *root)
+  * in order to minimize text size.
+  */
+ 
+-static void common_cpu_mem_hotplug_unplug(int rebuild_sd)
++static void common_cpu_mem_hotplug_unplug(void)
  {
-+	switch (action) {
-+	case CPU_ONLINE:
-+	case CPU_ONLINE_FROZEN:
-+	case CPU_DEAD:
-+	case CPU_DEAD_FROZEN:
-+		partition_sched_domains(0, NULL, NULL);
-+		return NOTIFY_OK;
-+
-+	default:
-+		return NOTIFY_DONE;
-+	}
-+}
-+#endif
-+
-+static int update_runtime(struct notifier_block *nfb,
-+				unsigned long action, void *hcpu)
-+{
- 	int cpu = (int)(long)hcpu;
+ 	cgroup_lock();
  
- 	switch (action) {
- 	case CPU_DOWN_PREPARE:
- 	case CPU_DOWN_PREPARE_FROZEN:
- 		disable_runtime(cpu_rq(cpu));
--		/* fall-through */
--	case CPU_UP_PREPARE:
--	case CPU_UP_PREPARE_FROZEN:
--		detach_destroy_domains(&cpu_online_map);
--		free_sched_domains();
- 		return NOTIFY_OK;
+@@ -1902,13 +1910,6 @@ static void common_cpu_mem_hotplug_unplug(int rebuild_sd)
+ 	top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
+ 	scan_for_empty_cpusets(&top_cpuset);
  
+-	/*
+-	 * Scheduler destroys domains on hotplug events.
+-	 * Rebuild them based on the current settings.
+-	 */
+-	if (rebuild_sd)
+-		rebuild_sched_domains();
 -
- 	case CPU_DOWN_FAILED:
- 	case CPU_DOWN_FAILED_FROZEN:
- 	case CPU_ONLINE:
+ 	cgroup_unlock();
+ }
+ 
+@@ -1934,12 +1935,14 @@ static int cpuset_handle_cpuhp(struct notifier_block *unused_nb,
  	case CPU_ONLINE_FROZEN:
- 		enable_runtime(cpu_rq(cpu));
--		/* fall-through */
--	case CPU_UP_CANCELED:
--	case CPU_UP_CANCELED_FROZEN:
--	case CPU_DEAD:
--	case CPU_DEAD_FROZEN:
--		/*
--		 * Fall through and re-initialise the domains.
--		 */
--		break;
-+		return NOTIFY_OK;
+ 	case CPU_DEAD:
+ 	case CPU_DEAD_FROZEN:
+-		common_cpu_mem_hotplug_unplug(1);
+ 		break;
 +
  	default:
  		return NOTIFY_DONE;
  	}
--
--#ifndef CONFIG_CPUSETS
--	/*
--	 * Create default domain partitioning if cpusets are disabled.
--	 * Otherwise we let cpusets rebuild the domains based on the
--	 * current setup.
--	 */
--
--	/* The hotplug lock is already held by cpu_up/cpu_down */
--	arch_init_sched_domains(&cpu_online_map);
--#endif
--
--	return NOTIFY_OK;
+ 
++	common_cpu_mem_hotplug_unplug();
++	rebuild_sched_domains();
+ 	return NOTIFY_OK;
  }
  
- void __init sched_init_smp(void)
-@@ -7854,8 +7829,15 @@ void __init sched_init_smp(void)
- 		cpu_set(smp_processor_id(), non_isolated_cpus);
- 	mutex_unlock(&sched_domains_mutex);
- 	put_online_cpus();
-+
-+#ifndef CONFIG_CPUSETS
- 	/* XXX: Theoretical race here - CPU may be hotplugged now */
- 	hotcpu_notifier(update_sched_domains, 0);
-+#endif
-+
-+	/* RT runtime code needs to handle some hotplug events */
-+	hotcpu_notifier(update_runtime, 0);
-+
- 	init_hrtick();
+@@ -1953,7 +1956,7 @@ static int cpuset_handle_cpuhp(struct notifier_block *unused_nb,
  
- 	/* Move init over to a non-isolated CPU */
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index f2aa987..d924c67 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -1004,6 +1004,8 @@ static void yield_task_fair(struct rq *rq)
-  * not idle and an idle cpu is available.  The span of cpus to
-  * search starts with cpus closest then further out as needed,
-  * so we always favor a closer, idle cpu.
-+ * Domains may include CPUs that are not usable for migration,
-+ * hence we need to mask them out (cpu_active_map)
-  *
-  * Returns the CPU we should wake onto.
-  */
-@@ -1031,6 +1033,7 @@ static int wake_idle(int cpu, struct task_struct *p)
- 		    || ((sd->flags & SD_WAKE_IDLE_FAR)
- 			&& !task_hot(p, task_rq(p)->clock, sd))) {
- 			cpus_and(tmp, sd->span, p->cpus_allowed);
-+			cpus_and(tmp, tmp, cpu_active_map);
- 			for_each_cpu_mask(i, tmp) {
- 				if (idle_cpu(i)) {
- 					if (i != task_cpu(p)) {
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 47ceac9..5166080 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -922,6 +922,13 @@ static int find_lowest_rq(struct task_struct *task)
- 		return -1; /* No targets found */
+ void cpuset_track_online_nodes(void)
+ {
+-	common_cpu_mem_hotplug_unplug(0);
++	common_cpu_mem_hotplug_unplug();
+ }
+ #endif
  
- 	/*
-+	 * Only consider CPUs that are usable for migration.
-+	 * I guess we might want to change cpupri_find() to ignore those
-+	 * in the first place.
-+	 */ 
-+	cpus_and(*lowest_mask, *lowest_mask, cpu_active_map);
-+
-+	/*
- 	 * At this point we have built a mask of cpus representing the
- 	 * lowest priority tasks in the system.  Now we want to elect
- 	 * the best one based on our affinity and topology.
 -- 
 1.5.5.1
 
