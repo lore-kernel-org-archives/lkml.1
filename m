@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754957AbYGOIMe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756418AbYGOIPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754957AbYGOIMe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 04:12:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbYGOIMR
+	id S1756418AbYGOIPm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 04:15:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754187AbYGOIP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 04:12:17 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:44121 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753474AbYGOIMP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 04:12:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=KxAthOUjag+Crsx3tLrtct3YfSr00AbbzcqsKpmMWYiwwo52TDnFQJIiiav065b5Ga
-         p1Zx6DbRWm2a+cCHgraOFtnPTkOMxZi0MOUwMxzzw6HwRaCg6kalFr8mz5y9RT0Ehm2T
-         i6vBEUotTgX1g6kUTOvHH3wRg4KRIDKCUJDxw=
-Date: Tue, 15 Jul 2008 17:12:10 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] workqueue: proper error unwinding in cpu hotplug error path
-Message-ID: <20080715081210.GC22068@localhost.localdomain>
+	Tue, 15 Jul 2008 04:15:29 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39110 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754131AbYGOIP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 04:15:27 -0400
+Date: Tue, 15 Jul 2008 10:14:31 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
+	in-kernel, use it in more drivers.
+Message-ID: <20080715081431.GB16600@elte.hu>
+References: <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org> <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org> <487C09EB.1050903@garzik.org> <alpine.LFD.1.10.0807141928540.3017@woody.linux-foundation.org> <487C1648.5070409@garzik.org> <alpine.LFD.1.10.0807142027140.3017@woody.linux-foundation.org> <487C500F.8000109@garzik.org> <1216107418.27455.236.camel@shinybook.infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1216107418.27455.236.camel@shinybook.infradead.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add proper error unwinding in error path in CPU_UP_PREPARE notifier.
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
----
- kernel/workqueue.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
+* David Woodhouse <dwmw2@infradead.org> wrote:
 
-Index: 2.6-mmotm/kernel/workqueue.c
-===================================================================
---- 2.6-mmotm.orig/kernel/workqueue.c
-+++ 2.6-mmotm/kernel/workqueue.c
-@@ -928,6 +928,15 @@ static int __devinit workqueue_cpu_callb
- 				break;
- 			printk(KERN_ERR "workqueue [%s] for %i failed\n",
- 				wq->name, cpu);
-+
-+			list_for_each_entry_continue_reverse(wq, &workqueues,
-+							list) {
-+				cwq = per_cpu_ptr(wq->cpu_wq, cpu);
-+				start_workqueue_thread(cwq, -1);
-+				cleanup_workqueue_thread(cwq);
-+			}
-+			cpu_clear(cpu, cpu_populated_map);
-+
- 			return NOTIFY_BAD;
- 
- 		case CPU_ONLINE:
+> On Tue, 2008-07-15 at 03:21 -0400, Jeff Garzik wrote:
+> > * forced a flag day build process change upon all distros/builders 
+> > who switch to >= 2.6.27.  no build script updates == non-working 
+> > drivers.
+> 
+> Jeff, we don't usually call it a 'flag day' when it's just the normal 
+> and uninteresting case that you update the upstream version of the 
+> package, and you need minor tweaks to how you package it. [...]
+
+well, i have no opinion one way or another about the firmware issue, but 
+breaking the build and breaking previously working setups is not a 
+"minor tweak".
+
+> [...] That happens all the time. [...]
+
+No, you are quite wrong, it does not happen all the time.
+
+It happens occasionally out of 10,000 changes per kernel cycle. It 
+happens unintentionally most of the time and it's called a regression.
+
+The difference here is that you seem to have broken my setup fully 
+intentionally.
+
+I have no problem with going forward, but i have a problem with breaking 
+working setups and i have a problem with forced migration to something 
+that doesnt work by default.
+
+If there's a fix i can apply and test i'm a happy camper, but all this 
+arguing in these threads with zero patches posted makes me quite 
+nervous.
+
+	Ingo
