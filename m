@@ -1,48 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762965AbYGOUc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763237AbYGOUd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762965AbYGOUc1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 16:32:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755879AbYGOUcR
+	id S1763237AbYGOUd0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 16:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757383AbYGOUdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 16:32:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46953 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755345AbYGOUcQ (ORCPT
+	Tue, 15 Jul 2008 16:33:15 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:41717 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755879AbYGOUdO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 16:32:16 -0400
-Date: Tue, 15 Jul 2008 13:30:57 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Marcel Holtmann <marcel@holtmann.org>
-cc: David Woodhouse <dwmw2@infradead.org>, Frans Pop <elendil@planet.nl>,
-       jeff@garzik.org, arjan@infradead.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
- use it in more drivers.
-In-Reply-To: <1216153270.27242.110.camel@violet.holtmann.net>
-Message-ID: <alpine.LFD.1.10.0807151329361.2867@woody.linux-foundation.org>
-References: <1216077806.27455.85.camel@shinybook.infradead.org>  <20080714164119.99c33d5b.akpm@linux-foundation.org>  <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>  <487C0365.5030203@garzik.org>  <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
-  <200807151757.10626.elendil@planet.nl>  <1216149637.27242.65.camel@violet.holtmann.net>  <alpine.LFD.1.10.0807151223290.3351@woody.linux-foundation.org>  <1216150616.27455.377.camel@shinybook.infradead.org>  <alpine.LFD.1.10.0807151244320.3351@woody.linux-foundation.org>
-  <1216151640.27242.90.camel@violet.holtmann.net>  <alpine.LFD.1.10.0807151301130.2867@woody.linux-foundation.org> <1216153270.27242.110.camel@violet.holtmann.net>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 15 Jul 2008 16:33:14 -0400
+Subject: Re: [PATCH 00/20] generic show_mem() v5
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: hannes@saeurebad.de, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, stable@kernel.org
+In-Reply-To: <20080715132203.a9482685.akpm@linux-foundation.org>
+References: <20080704160737.750988999@saeurebad.de>
+	 <1216148794.25942.11.camel@nimitz>
+	 <20080715132203.a9482685.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 15 Jul 2008 13:33:06 -0700
+Message-Id: <1216153986.25942.31.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 15 Jul 2008, Marcel Holtmann wrote:
+On Tue, 2008-07-15 at 13:22 -0700, Andrew Morton wrote:
+> > The sections are 512MB, and you can see 6 valid ones
+> > followed by two holes, and then two more valid ones.
+> > 
+> > Anyway, I believe this patch will fix the oops.
 > 
-> so request_firmware() is well established and works. It is used by a
-> bunch of drivers at the moment.
+> This looks like it might be suitable.  Can you please test it?
 
-That's not the question.
+Yup, will do.  It's where I'm sending this email from, so I'll get to it
+in a bit. :)
 
-The question is whether it works with the *new* users.
+> > ---
+> >  arch/x86/mm/pgtable_32.c |    2 ++
+> >  1 files changed, 2 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/arch/x86/mm/pgtable_32.c b/arch/x86/mm/pgtable_32.c
+> > index 369cf06..eb2a480 100644
+> > --- a/arch/x86/mm/pgtable_32.c
+> > +++ b/arch/x86/mm/pgtable_32.c
+> > @@ -37,6 +37,8 @@ void show_mem(void)
+> >               for (i = 0; i < pgdat->node_spanned_pages; ++i) {
+> >                       if (unlikely(i % MAX_ORDER_NR_PAGES == 0))
+> >                               touch_nmi_watchdog();
+> > +                     if (!pfn_valid(pgdat->node_start_pfn + i))
+> > +                             continue;
+> >                       page = pgdat_page_nr(pgdat, i);
+> >                       total++;
+> >                       if (PageHighMem(page))
+> 
+> What change caused this oops to turn up now?
 
-Which it would apparently NOT do for everybody if we put the new drivers 
-in any other place than /lib/firmware, very much including a kernel- 
-specific subdirectory there.
+Me getting an extra 2GB (up to 4GB) of RAM for my laptop, which caused a
+memory hole, which triggers only with SPARSEMEM=y.  Most people probably
+don't run with sparsemem or a 32-bit kernel with that much RAM.
 
-		Linus
+-- Dave
+
