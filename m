@@ -1,96 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761473AbYGOCSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761270AbYGOCTX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761473AbYGOCSt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 22:18:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754305AbYGOCSO
+	id S1761270AbYGOCTX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 22:19:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754198AbYGOCS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 22:18:14 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:58428 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761356AbYGOCSM (ORCPT
+	Mon, 14 Jul 2008 22:18:58 -0400
+Received: from SpacedOut.fries.net ([67.64.210.234]:56255 "EHLO
+	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754305AbYGOCS5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 22:18:12 -0400
-Date: Mon, 14 Jul 2008 22:18:09 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Elias Oltmanns <eo@nebensachen.de>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Clark Williams <clark.williams@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jon Masters <jonathan@jonmasters.org>
-Subject: Re: [PATCH -v2] ftrace: Documentation
-In-Reply-To: <m13ambkivq.fsf@frodo.ebiederm.org>
-Message-ID: <Pine.LNX.4.58.0807142212030.4530@gandalf.stny.rr.com>
-References: <Pine.LNX.4.58.0807101242070.3740@gandalf.stny.rr.com>
- <87zlop7bp6.fsf@denkblock.local> <20080710132832.38cc5048.randy.dunlap@oracle.com>
- <Pine.LNX.4.58.0807101956120.7719@gandalf.stny.rr.com>
- <Pine.LNX.4.58.0807102035550.7719@gandalf.stny.rr.com>
- <20080711121655.05810822.akpm@linux-foundation.org>
- <Pine.LNX.4.58.0807111546560.25977@gandalf.stny.rr.com>
- <20080711153740.b86acadd.akpm@linux-foundation.org> <m13amg9fl0.fsf@frodo.ebiederm.org>
- <Pine.LNX.4.58.0807142105390.2955@gandalf.stny.rr.com> <m1r69wj5t8.fsf@frodo.ebiederm.org>
- <Pine.LNX.4.58.0807142142070.4223@gandalf.stny.rr.com> <m13ambkivq.fsf@frodo.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 14 Jul 2008 22:18:57 -0400
+Date: Mon, 14 Jul 2008 21:17:54 -0500
+From: David Fries <david@fries.net>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 29/30] W1: Documentation/w1/masters/ds2490 update
+Message-ID: <20080715021754.GR5621@spacedout.fries.net>
+References: <12157843054074-git-send-email-johnpol@2ka.mipt.ru> <12157843071043-git-send-email-johnpol@2ka.mipt.ru> <20080714134002.e5dfaaae.randy.dunlap@oracle.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="tqI+Z3u+9OQ7kwn0"
+Content-Disposition: inline
+In-Reply-To: <20080714134002.e5dfaaae.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.4i
+X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Mon, 14 Jul 2008 21:17:54 -0500 (CDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Mon, 14 Jul 2008, Eric W. Biederman wrote:
-> >
-> > Bare with me, I'm new to the namespace concept of pids.
->
-> Sure.  Just bare with me as I am new to the concept of ftrace.
+--tqI+Z3u+9OQ7kwn0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Yep, understood. But you can get a good understanding by reading this
-document ;-)
+Provide some additional details about the status of the driver and the
+ds2490 hardware.
 
->
-> >> So it would not be hard to capture the pid namespace in mount or
-> >> even look at current to get it (although the last is a little odd).
-> >
-> >>From userspace or from with the kernel (doing the trace)
-> >
-> >>
-> >> I'm not at all certain if it makes sense.  If this is something
-> >> an ordinary user could use then we definitely want to do something.
-> >>
-> >> Is tracing possible without inserting kernel modules?
-> >
-> > The tracer is built into the kernel (no module needed).
->
-> Ok.  So this is something simpler to use then SystemTap.  Yeah.
+Signed-off-by: David Fries <david@fries.net>
+---
+ Documentation/w1/masters/ds2490 |   52 +++++++++++++++++++++++++++++++++++=
+++++
+ 1 files changed, 52 insertions(+), 0 deletions(-)
 
-Yes, very similar.  SystemTap may even hook into ftrace, and vice versa.
+diff --git a/Documentation/w1/masters/ds2490 b/Documentation/w1/masters/ds2=
+490
+index 239f9ae..4290982 100644
+--- a/Documentation/w1/masters/ds2490
++++ b/Documentation/w1/masters/ds2490
+@@ -16,3 +16,55 @@ which allows to build USB <-> W1 bridges.
+ DS9490(R) is a USB <-> W1 bus master device
+ which has 0x81 family ID integrated chip and DS2490
+ low-level operational chip.
++
++Notes and limitations.
++- The weak pullup current is a minimum of 0.9mA and maximum of 6.0mA.
++- The 5V strong pullup is supported with a minimum of 5.9mA and a
++  maximum of 30.4 mA.  (From DS2490.pdf)
++- While the ds2490 supports a hardware search the code doesn't take
++  advantage of it (in tested case it only returned first device).
++- The hardware will detect when devices are attached to the bus on the
++  next bus (reset?) operation, however only a message is printed as
++  the core w1 code doesn't make use of the information.  Connecting
++  one device tends to give multiple new device notifications.
++- The number of USB bus transactions could be reduced if w1_reset_send
++  was added to the API.  The name is just a suggestion.  It would take
++  a write buffer and a read buffer (along with sizes) as arguments.
++  The ds2490 block I/O command supports reset, write buffer, read
++  buffer, and strong pullup all in one command, instead of the current
++  1 reset bus, 2 write the match rom command and slave rom id, 3 block
++  write and read data.  The write buffer needs to have the match rom
++  command and slave rom id prepended to the front of the requested
++  write buffer, both of which are known to the driver. =20
++- The hardware supports normal, flexible, and overdrive bus
++  communication speeds, but only the normal is supported.
++- The registered w1_bus_master functions don't define error
++  conditions.  If a bus search is in progress and the ds2490 is
++  removed it can produce a good amount of error output before the bus
++  search finishes.
++- The hardware supports detecting some error conditions, such as
++  short, alarming presence on reset, and no presence on reset, but the
++  driver doesn't query those values.
++- The ds2490 specification doesn't cover short bulk in reads in
++  detail, but my observation is if fewer bytes are requested than are
++  available, the bulk read will return an error and the hardware will
++  clear the entire bulk in buffer.  It would be possible to read the
++  maximum buffer size to not run into this error condition, only extra
++  bytes in the buffer is a logic error in the driver.  The code should
++  should match reads and writes as well as data sizes.  Reads and
++  writes are serialized and the status verifies that the chip is idle
++  (and data is available) before the read is executed, so it should
++  not happen.
++- Running x86_64 2.6.24 UHCI under qemu 0.9.0 under x86_64 2.6.22-rc6
++  with a OHCI controller, ds2490 running in the guest would operate
++  normally the first time the module was loaded after qemu attached
++  the ds2490 hardware, but if the module was unloaded, then reloaded
++  most of the time one of the bulk out or in, and usually the bulk in
++  would fail.  qemu sets a 50ms timeout and the bulk in would timeout
++  even when the status shows data available.  A bulk out write would
++  show a successful completion, but the ds2490 status register would
++  show 0 bytes written.  Detaching qemu from the ds2490 hardware and
++  reattaching would clear the problem.  usbmon output in the guest and
++  host did not explain the problem.  My guess is a bug in either qemu
++  or the host OS and more likely the host OS.
++-- 03-06-2008 David Fries <David@Fries.net>
+--=20
+1.4.4.4
 
->
-> It sounds like it is reasonable or at least semi reasonable to use
-> this as an unprivileged user.
 
-Currently only root can do the traces. Since some of the tracing can
-hurt the performance of the system.
+--tqI+Z3u+9OQ7kwn0
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
->
-> The easiest model to think of this in is a chroot that does pids as
-> well as the filesystem.  In which case if you are inside one and
-> you use the tracer.  You want pids that are meaningful in your
-> subset of userspace, and not the global ones.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
 
-Some tracers do a trace at every function call. This uses the gcc -pg
-option to set up the start of each function to call profiling code.
-Dynamic ftrace is a on the fly code modification to maintain good
-performance while tracing is disabled.
+iD8DBQFIfAjSAI852cse6PARAtipAKCa3WRWi10L++X9N+iwL0AHn4polQCeOKR/
+OQE0iixqoVLpHHFOJawvFSY=
+=44tr
+-----END PGP SIGNATURE-----
 
-Because of this being such a high critical path, can I get the namespace
-pid information directly from the task structure. Any function that is
-called must also be careful to not fall back into the tracer. The trace
-deals with self recursion, but functions that call back to the tracer
-cause a bigger performance impact while tracing.
-
--- Steve
-
+--tqI+Z3u+9OQ7kwn0--
