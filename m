@@ -1,46 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763001AbYGOT3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761648AbYGOTb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763001AbYGOT3T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 15:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbYGOT3J
+	id S1761648AbYGOTb2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 15:31:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755497AbYGOTbU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 15:29:09 -0400
-Received: from smtp02.uc3m.es ([163.117.176.132]:55748 "EHLO smtp02.uc3m.es"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755187AbYGOT3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 15:29:08 -0400
-Date: Tue, 15 Jul 2008 21:29:04 +0200
-Message-Id: <200807151929.m6FJT4W14807@inv.it.uc3m.es>
-From: "Peter T. Breuer" <ptb@inv.it.uc3m.es>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from 
+	Tue, 15 Jul 2008 15:31:20 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:49772 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755070AbYGOTbU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 15:31:20 -0400
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
 	in-kernel, use it in more drivers.
-X-Newsgroups: gmane.linux.kernel
-In-Reply-To: <alpine.LFD.1.10.0807151122010.3017@woody.linux-foundation.org>
-User-Agent: tin/1.4.4-20000803 ("Vet for the Insane") (UNIX) (Linux/2.2.15 
-	(i686))
-X-imss-version: 2.051
-X-imss-result: Passed
-X-imss-scanInfo: M:B L:E SM:2
-X-imss-tmaseResult: TT:1 TS:-8.8770 TC:1F TRN:20 TV:5.5.1026(16034.000)
-X-imss-scores: Clean:100.00000 C:0 M:0 S:0 R:0
-X-imss-settings: Baseline:1 C:1 M:1 S:1 R:1 (0.0000 0.0000)
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Frans Pop <elendil@planet.nl>, jeff@garzik.org, arjan@infradead.org,
+       akpm@linux-foundation.org, dwmw2@infradead.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LFD.1.10.0807151223290.3351@woody.linux-foundation.org>
+References: <1216077806.27455.85.camel@shinybook.infradead.org>
+	 <20080714164119.99c33d5b.akpm@linux-foundation.org>
+	 <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>
+	 <487C0365.5030203@garzik.org>
+	 <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
+	 <200807151757.10626.elendil@planet.nl>
+	 <1216149637.27242.65.camel@violet.holtmann.net>
+	 <alpine.LFD.1.10.0807151223290.3351@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 15 Jul 2008 21:31:28 +0200
+Message-Id: <1216150288.27242.75.camel@violet.holtmann.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In article <alpine.LFD.1.10.0807151122010.3017@woody.linux-foundation.org> Linus wrote:
-> Why not just install them with the module (perhaps in the module 
-> directory, perhaps not), and just load them? 
+Hi Linus,
 
-I also don't get why one can't put them in a module wrapper in some OTHER
-dir as
+> > using /lib/firmware/`uname -r`/ is actually not a bad idea. You only
+> > have to fix udev to actually include this in the list of directories to
+> > look for firmware files. Also Ubuntu is already doing this.
+> 
+> I really don't think we need to even "fix udev".
 
-__init__ fwFOO = something_huge_made_from_a_string ;
-EXPORT_SYMBOL(fwFOO);
+fixing udev means adding an extra path to it :)
 
-and have the real driver module just reference fwFOO in its init sequence.
-Modprobe can deal with where to look for it. No kernel source need be
-tainted.
+> Why don't we just load it ourselves? Esepcially as there are probably 
+> places that try to avoid udev entirely, or at least use a very 
+> cut-down-version.
+> 
+> We should be fairly trivially able to be _entirely_ backwards compatible 
+> with any sane setup (not the _sane_ part! It implies that people don't 
+> copy individual modules around by hand!), with no actual breakage or need 
+> for distros to even update anything at all - just make the kernel able to 
+> look up binary blobs in the same place it installed them.
+> 
+> That sounds like the RightThing(tm) to do _regardless_ of any other 
+> issues, doesn't it? If the kernel installs it in some known place, why 
+> should it not just read them from that known place?
 
-Peter
+Personally I am against hacking file loading from within the kernel.
+This is why we involved udev (or hotplug in the beginning). It allows
+you to have userspace policy for the search paths etc.
+
+Regards
+
+Marcel
+
+
