@@ -1,87 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761772AbYGOTOs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762220AbYGOTPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761772AbYGOTOs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 15:14:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbYGOTOe
+	id S1762220AbYGOTPj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 15:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758254AbYGOTPT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 15:14:34 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:46256 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758051AbYGOTOe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 15:14:34 -0400
-Message-ID: <487CF70C.1030309@garzik.org>
-Date: Tue, 15 Jul 2008 15:14:20 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 15 Jul 2008 15:15:19 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:30788 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758202AbYGOTPR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 15:15:17 -0400
+Date: Tue, 15 Jul 2008 13:15:15 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 01/14] Introduce cpu_enabled_map and friends
+Message-ID: <20080715191515.GE10919@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
+	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+	linux-acpi@vger.kernel.org
+References: <20080715023344.2528.1836.stgit@blender.achiang> <20080715023349.2528.9423.stgit@blender.achiang> <20080715031512.GF14894@parisc-linux.org> <87wsjnxy4w.fsf@basil.nowhere.org> <20080715102130.GA22866@flint.arm.linux.org.uk> <20080715175740.GB10919@ldl.fc.hp.com> <20080715181632.GG14894@parisc-linux.org> <20080715184822.GB29991@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, david@lang.hm,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from	in-kernel,
- use it in more drivers.
-References: <alpine.LFD.1.10.0807141903260.3017@woody.linux-foundation.org> <487C585C.2060002@garzik.org> <alpine.LFD.1.10.0807150803580.3017@woody.linux-foundation.org> <487CD7FE.9010209@garzik.org> <alpine.LFD.1.10.0807151008450.3017@woody.linux-foundation.org> <487CDEC0.3090004@garzik.org> <alpine.LFD.1.10.0807151041080.3017@woody.linux-foundation.org> <487CEA73.9000408@garzik.org> <alpine.LFD.1.10.0807151124510.3017@woody.linux-foundation.org> <487CF01E.6000208@garzik.org> <20080715185801.GH8185@mit.edu>
-In-Reply-To: <20080715185801.GH8185@mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080715184822.GB29991@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Tue, Jul 15, 2008 at 02:44:46PM -0400, Jeff Garzik wrote:
->> All of the regressions examples I am citing are cured by  
->> firmware-in-module, because they are all examples of problems that occur  
->> when you remove the ability to reproduce the same functional pieces as  
->> 2.6.26.
+* Russell King <rmk+lkml@arm.linux.org.uk>:
+> On Tue, Jul 15, 2008 at 12:16:32PM -0600, Matthew Wilcox wrote:
+> > On Tue, Jul 15, 2008 at 11:57:40AM -0600, Alex Chiang wrote:
+> > > My thought was that big SMP systems like ia64, possibly sparc and
+> > > ppc, and increasingly, x86, might find something like this
+> > > useful, as systems get larger and larger, and vendors are going
+> > > to want to do RAS-ish features, like the ability to keep CPUs in
+> > > firmware across reboots until told otherwise by the sysadmin.
+> > > 
+> > > Right now, a 'present' CPU strongly implies 'online' as well,
+> > > since we're calling cpu_up() for all 'present' CPUs in
+> > > smp_init(). But this hurts if:
+> > > 
+> > > 	- you don't actually want to bring up all 'present' CPUs
+> > > 	- you still want to interact with these weirdo zombie
+> > > 	  CPUs that are 'present' but not 'online'
+> > 
+> > Have you considered simply failing __cpu_up() for CPUs that are
+> > deconfigured by firmware?
 > 
-> Jeff,
+> But what if you want to have a system boot with, say, 4 CPUs and
+> then decide at run time to bring up another 4 CPUs when required?
 > 
-> 	I think you've said this before, but let me try to help you
-> cut to the chase.  You are willing to *implement*
-> firmware-in-the-module for request_firmware(), but you want a
-> commitment that David Woodhouse and Linus will accept such a patch
-> before you go off and write it.  Is that right?
-> 
-> 	If so, may I suggest you start implementing, instead of
-> sending e-mails?  For all the time people have spent arguing about it,
-> maybe it could have been implemented already.
+> How about having smp_init() call into arch code to query whether
+> it should bring up a not-already-online CPU?  Architectures that
+> want to do something special can then make the decision there and
+> everyone else can define the test completely away.
 
-Already started, in fact, since Linus said he would not reject it out of 
-hands.
+So this is exactly what I'm doing. The ia64 patch has this hunk:
 
-Obviously that is not acceptance; I know as well as any that acceptance 
-does not occur until the moment of upstream merge.
+@@ -820,6 +824,9 @@ __cpu_up (unsigned int cpu)
+        if (cpu_isset(cpu, cpu_callin_map))
+                return -EINVAL;
 
++       if (!cpu_isset(cpu, cpu_enabled_map))
++               return -EINVAL;
++
+        per_cpu(cpu_state, cpu) = CPU_UP_PREPARE;
+        /* Processor goes to start_secondary(), sets online flag */
+        ret = do_boot_cpu(sapicid, cpu);
 
-> 	Once it has been implemented, do you have any further
-> objections aka ideas about how request_firmware() could be improved?
+That was the easiest, most-straightforward solution I could think
+of. If you have an idea for a version with lower taxes (doesn't
+touch all the archs or can be #define'd out), I'm happy to hear
+it.
 
-Further objections?  None major.
+Thanks.
 
-The two other minor problems I feel need solving, but are not related to 
-breakage or regressions, are:
-
-1) firmware should be able to live alongside the driver.  We don't need 
-to start growing firmware/net alongside drivers/net, firmware/scsi 
-alongside drivers/scsi, firmware/char alongside drivers/char, etc.
-
-2) firmware should be able to be shipped in final format (binary), 
-rather than ihex.
-
-
-I feel strongly that 2.6.27 should not be released without 
-firmware-in-module, for all the reasons mentioned in these threads. 
-It's a major regression, IMO, without firmware-in-module ability.
-
-The other stuff (#1, #2 in list above) is small potatoes.
-
-	Jeff
-
-
+/ac
 
