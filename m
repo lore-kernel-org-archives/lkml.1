@@ -1,148 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761951AbYGOSJy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756270AbYGOSKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761951AbYGOSJy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 14:09:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbYGOSJq
+	id S1756270AbYGOSKt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 14:10:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbYGOSKl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 14:09:46 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48048 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752973AbYGOSJp (ORCPT
+	Tue, 15 Jul 2008 14:10:41 -0400
+Received: from rv-out-0506.google.com ([209.85.198.225]:51087 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752973AbYGOSKk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 14:09:45 -0400
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied
-	from	in-kernel, use it in more drivers.
-From: David Woodhouse <dwmw2@infradead.org>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: david@lang.hm, Arjan van de Ven <arjan@infradead.org>,
-       David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       rene.herman@keyaccess.nl, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-In-Reply-To: <200807151853.01143.oliver@neukum.org>
-References: <487C0A12.9060906@keyaccess.nl>
-	 <200807150823.35628.oliver@neukum.org>
-	 <1216132854.27455.247.camel@shinybook.infradead.org>
-	 <200807151853.01143.oliver@neukum.org>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 11:09:28 -0700
-Message-Id: <1216145368.27455.318.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+	Tue, 15 Jul 2008 14:10:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=lGZHmz6uiOHUZNcT97uNwhb+VMNp0mcnD436OGwa+wM9UTpRjWovrApRLq+lxnmfJ/
+         24tTGAF0dOV9LCbZvll+sbubxTqzKxMH1ObaQ2D6cxa07e4pxdLv+d+artOpbbV6RqKL
+         5DaZgHT78wo3kFrVM5WRZcbp8XDHDCEzzhL7Q=
+Message-ID: <86802c440807151110vf814830r9bf0e9d50f559e1d@mail.gmail.com>
+Date: Tue, 15 Jul 2008 11:10:37 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Suresh Siddha" <suresh.b.siddha@intel.com>
+Subject: Re: [PATCH] x86: let 32bit use apic_ops too - fix
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080715173318.GA18203@linux-os.sc.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <200807080141.05436.yhlu.kernel@gmail.com>
+	 <200807102038.26591.yhlu.kernel@gmail.com>
+	 <200807111841.55403.yhlu.kernel@gmail.com>
+	 <200807132219.35814.yhlu.kernel@gmail.com>
+	 <20080715173318.GA18203@linux-os.sc.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-15 at 18:52 +0200, Oliver Neukum wrote:
-> Am Dienstag 15 Juli 2008 16:40:54 schrieb David Woodhouse:
-> > On Tue, 2008-07-15 at 08:23 +0200, Oliver Neukum wrote:
-> > > Am Dienstag 15 Juli 2008 08:03:15 schrieb David Woodhouse:
-> > > > Mostly it follows the documented recommendation, since most of the
-> > > > touched drivers are USB drivers and you end up re-enumerating and
-> > > > starting from scratch on resume anyway. And the remainder are so old
-> > > > that they don't have suspend/resume support anyway. Remember, we're only
-> > > > really updating the older drivers; newer drivers tend to use
-> > > > request_firmware() already, and have done for years.
-> > > 
-> > > As for USB that was before persistance. It now allows you to even
-> > > support a loss of power without reprobing, provided
-> > > 
-> > > a) the devices does not change IDs
-> > > b) you have firmware around when reset_resume() is called
-> > 
-> > c) the driver in question actually _has_ a reset_resume() method
-> > 
-> > The old, unloved drivers which I've touched as part of this patch set
-> > did not. In general the newer, loved drivers use request_firmware()
-> > already.
-> > 
-> 
-> Generally we love all drivers and welcome new additions.
-> Which did you touch? I lost track.
+On Tue, Jul 15, 2008 at 10:33 AM, Suresh Siddha
+<suresh.b.siddha@intel.com> wrote:
+> On Sun, Jul 13, 2008 at 10:19:35PM -0700, Yinghai Lu wrote:
+>>
+>> fix for pv.
+>>
+>> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+>>
+>> ---
+>>  arch/x86/kernel/paravirt.c |    5 ----
+>>  arch/x86/kernel/vmi_32.c   |   51 ++++++++++++++++++++++++++++++++++++++++++---
+>>  arch/x86/xen/enlighten.c   |   19 +++++++---------
+>>  include/asm-x86/paravirt.h |   29 -------------------------
+>>  4 files changed, 57 insertions(+), 47 deletions(-)
+>>
+>> Index: linux-2.6/arch/x86/kernel/paravirt.c
+>> ===================================================================
+>> --- linux-2.6.orig/arch/x86/kernel/paravirt.c
+>> +++ linux-2.6/arch/x86/kernel/paravirt.c
+>> @@ -373,11 +373,6 @@ struct pv_cpu_ops pv_cpu_ops = {
+>>
+>>  struct pv_apic_ops pv_apic_ops = {
+>>  #ifdef CONFIG_X86_LOCAL_APIC
+>> -#ifndef CONFIG_X86_64
+>> -       .apic_write = native_apic_mem_write,
+>> -       .apic_write_atomic = native_apic_mem_write_atomic,
+>> -       .apic_read = native_apic_mem_read,
+>> -#endif
+>>         .setup_boot_clock = setup_boot_APIC_clock,
+>>         .setup_secondary_clock = setup_secondary_APIC_clock,
+>>         .startup_ipi_hook = paravirt_nop,
+>> Index: linux-2.6/arch/x86/kernel/vmi_32.c
+>> ===================================================================
+>> --- linux-2.6.orig/arch/x86/kernel/vmi_32.c
+>> +++ linux-2.6/arch/x86/kernel/vmi_32.c
+>> @@ -676,6 +676,50 @@ static inline int __init probe_vmi_rom(v
+>>         return 0;
+>>  }
+>>
+>> +#ifdef CONFIG_X86_LOCAL_APIC
+>> +static u32 vmi_apic_read(u32 reg)
+>> +{
+>> +       return 0;
+>> +}
+>> +
+>> +static void vmi_apic_write(u32 reg, u32 val)
+>> +{
+>> +       /* Warn to see if there's any stray references */
+>> +       WARN_ON(1);
+>> +}
+>> +
+>> +static u64 vmi_apic_icr_read(void)
+>> +{
+>> +       return 0;
+>> +}
+>> +
+>> +static void vmi_apic_icr_write(u32 low, u32 id)
+>> +{
+>> +       /* Warn to see if there's any stray references */
+>> +       WARN_ON(1);
+>> +}
+>> +
+>> +static void vmi_apic_wait_icr_idle(void)
+>> +{
+>> +       return;
+>> +}
+>> +
+>> +static u32 vmi_safe_apic_wait_icr_idle(void)
+>> +{
+>> +       return 0;
+>> +}
+>> +
+>> +static struct apic_ops vmi_basic_apic_ops = {
+>> +        .read = vmi_apic_read,
+>> +        .write = vmi_apic_write,
+>> +        .write_atomic = vmi_apic_write,
+>> +        .icr_read = vmi_apic_icr_read,
+>> +        .icr_write = vmi_apic_icr_write,
+>> +        .wait_icr_idle = vmi_apic_wait_icr_idle,
+>> +        .safe_wait_icr_idle = vmi_safe_apic_wait_icr_idle,
+>> +};
+>> +#endif
+>> +
+>>  /*
+>>   * VMI setup common to all processors
+>>   */
+>> @@ -904,9 +948,10 @@ static inline int __init activate_vmi(vo
+>>  #endif
+>>
+>>  #ifdef CONFIG_X86_LOCAL_APIC
+>> -       para_fill(pv_apic_ops.apic_read, APICRead);
+>> -       para_fill(pv_apic_ops.apic_write, APICWrite);
+>> -       para_fill(pv_apic_ops.apic_write_atomic, APICWrite);
+>> +       para_fill(vmi_basic_apic_ops.read, APICRead);
+>> +       para_fill(vmi_basic_apic_ops.write, APICWrite);
+>> +       para_fill(vmi_basic_apic_ops.write_atomic, APICWrite);
+>> +       apic_ops = &vmi_basic_apic_ops;
+>
+> Yinghai, Looking more closely at this, based on my understanding this might be
+> wrong for VMI. Correct patch should be as follows. Any comments?
 
-Ignoring the simple bits to make fw->data const? See
-http://git.infradead.org/users/dwmw2/firmware-2.6.git?a=shortlog&h=d71792ac
-or    git-diff --stat 59890f74..d71792ac | grep -v firmware/
+so you mean icr related will still use default native member?
 
-21 drivers, mostly older USB drivers and including four sound drivers
-which were already using request_firmware() optionally. The HEAD of my
-tree contains a few more updates in drivers/scsi and drivers/net, but
-out of respect for Dave's and Jeff's objections I left those out of the
-pull request for now. Hopefully the noise will die down when the sky
-doesn't _actually_ fall on our heads, and we can merge the remaining
-changes into 2.6.28.
-
- drivers/atm/Makefile                               |    6 +-
- drivers/atm/ambassador.c                           |  140 +-
- drivers/atm/ambassador.h                           |   11 -
- drivers/atm/atmsar11.data                          | 2063 -----
- drivers/atm/atmsar11.regions                       |    6 -
- drivers/atm/atmsar11.start                         |    4 -
- drivers/char/dsp56k.c                              |   84 +-
- drivers/char/ip2/fip_firm.h                        | 2149 -----
- drivers/char/ip2/ip2base.c                         |    5 +-
- drivers/char/ip2/ip2main.c                         |   47 +-
- drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c  |   16 +-
- .../media/dvb/ttusb-budget/dvb-ttusb-dspbootcode.h | 1644 ----
- drivers/media/video/cpia2/cpia2_core.c             |   46 +-
- drivers/media/video/cpia2/cpia2patch.h             |  233 -
- drivers/media/video/dabfirmware.h                  | 1415 ----
- drivers/media/video/dabusb.c                       |   44 +-
- drivers/media/video/usbvideo/vicam.c               |  317 +-
- drivers/net/tokenring/smctr.c                      |   56 +-
- drivers/net/tokenring/smctr.h                      |    2 -
- drivers/net/tokenring/smctr_firmware.h             |  978 ---
- drivers/net/usb/kaweth.c                           |   43 +-
- drivers/net/usb/kawethfw.h                         |  557 --
- drivers/usb/misc/emi26.c                           |   96 +-
- drivers/usb/misc/emi26_fw.h                        | 5779 -------------
- drivers/usb/misc/emi62.c                           |  130 +-
- drivers/usb/misc/emi62_fw_m.h                      | 8853 --------------------
- drivers/usb/misc/emi62_fw_s.h                      | 8837 -------------------
- drivers/usb/serial/Kconfig                         |   24 +-
- drivers/usb/serial/io_edgeport.c                   |  183 +-
- drivers/usb/serial/io_fw_boot.h                    |  556 --
- drivers/usb/serial/io_fw_boot2.h                   |  546 --
- drivers/usb/serial/io_fw_down.h                    | 1229 ---
- drivers/usb/serial/io_fw_down2.h                   | 1133 ---
- drivers/usb/serial/io_fw_down3.h                   |  847 --
- drivers/usb/serial/io_ti.c                         |   73 +-
- drivers/usb/serial/keyspan.c                       |   78 +-
- drivers/usb/serial/keyspan.h                       |   84 -
- drivers/usb/serial/keyspan_mpr_fw.h                |  286 -
- drivers/usb/serial/keyspan_pda.S                   | 1124 ---
- drivers/usb/serial/keyspan_pda.c                   |   51 +-
- drivers/usb/serial/keyspan_pda_fw.h                |   99 -
- drivers/usb/serial/keyspan_usa18x_fw.h             |  447 -
- drivers/usb/serial/keyspan_usa19_fw.h              |  285 -
- drivers/usb/serial/keyspan_usa19qi_fw.h            |  284 -
- drivers/usb/serial/keyspan_usa19qw_fw.h            |  448 -
- drivers/usb/serial/keyspan_usa19w_fw.h             |  446 -
- drivers/usb/serial/keyspan_usa28_fw.h              |  466 -
- drivers/usb/serial/keyspan_usa28x_fw.h             |  447 -
- drivers/usb/serial/keyspan_usa28xa_fw.h            |  449 -
- drivers/usb/serial/keyspan_usa28xb_fw.h            |  448 -
- drivers/usb/serial/keyspan_usa49w_fw.h             |  464 -
- drivers/usb/serial/keyspan_usa49wlc_fw.h           |  476 --
- drivers/usb/serial/ti_fw_3410.h                    |  885 --
- drivers/usb/serial/ti_fw_5052.h                    |  885 --
- drivers/usb/serial/ti_usb_3410_5052.c              |   40 +-
- drivers/usb/serial/whiteheat.c                     |   77 +-
- drivers/usb/serial/whiteheat_fw.h                  | 1669 ----
- drivers/usb/serial/xircom_pgs.S                    | 1192 ---
- drivers/usb/serial/xircom_pgs_fw.h                 |  103 -
- sound/isa/Kconfig                                  |    9 -
- sound/isa/sb/sb16_csp.c                            |   22 -
- sound/isa/sb/sb16_csp_codecs.h                     |  949 ---
- sound/pci/Kconfig                                  |   30 -
- sound/pci/korg1212/korg1212-firmware.h             |  987 ---
- sound/pci/korg1212/korg1212.c                      |   18 -
- sound/pci/maestro3.c                               |  171 -
- sound/pci/ymfpci/ymfpci_image.h                    | 1565 ----
- sound/pci/ymfpci/ymfpci_main.c                     |   63 -
-
--- 
-dwmw2
-
+YH
