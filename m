@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762387AbYGOCxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761561AbYGOCy7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762387AbYGOCxS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 22:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757316AbYGOCw7
+	id S1761561AbYGOCy7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 22:54:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754704AbYGOCyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 22:52:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54135 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757526AbYGOCw6 (ORCPT
+	Mon, 14 Jul 2008 22:54:51 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:40793 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751661AbYGOCyu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 22:52:58 -0400
-Date: Mon, 14 Jul 2008 19:51:55 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
+	Mon, 14 Jul 2008 22:54:50 -0400
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
+	in-kernel, use it in more drivers.
+From: David Woodhouse <dwmw2@infradead.org>
 To: David Miller <davem@davemloft.net>
-cc: jeff@garzik.org, arjan@infradead.org, akpm@linux-foundation.org,
-       dwmw2@infradead.org, alan@lxorguk.ukuu.org.uk,
+Cc: torvalds@linux-foundation.org, david@lang.hm, arjan@infradead.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
- use it in more drivers.
-In-Reply-To: <20080714.194032.117461306.davem@davemloft.net>
-Message-ID: <alpine.LFD.1.10.0807141947540.3017@woody.linux-foundation.org>
-References: <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org> <487C09EB.1050903@garzik.org> <alpine.LFD.1.10.0807141928540.3017@woody.linux-foundation.org> <20080714.194032.117461306.davem@davemloft.net>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20080714.185012.245476473.davem@davemloft.net>
+References: <20080714165956.7fe2d4ee@infradead.org>
+	 <alpine.DEB.1.10.0807141704120.14223@asgard.lang.hm>
+	 <alpine.LFD.1.10.0807141729200.3017@woody.linux-foundation.org>
+	 <20080714.185012.245476473.davem@davemloft.net>
+Content-Type: text/plain
+Date: Mon, 14 Jul 2008 19:54:38 -0700
+Message-Id: <1216090479.27455.180.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 14 Jul 2008, David Miller wrote:
+On Mon, 2008-07-14 at 18:50 -0700, David Miller wrote:
+> From: Linus Torvalds <torvalds@linux-foundation.org>
+> Date: Mon, 14 Jul 2008 17:33:58 -0700 (PDT)
 > 
-> Jeff's not against request_firmware() in an of itself.
+> > The only reliable way to handle it is to load the firmware before the 
+> > suspend happens - preferably by simply never unloading it in the first 
+> > place.
 > 
-> He's against the fact that it's not possible to build a
-> self-contained foo.ko module file any longer, and that
-> would definitely be possible with using request_firmware().
+> That's what we were told was the huge benefit of moving some
+> of these drivers over to this request_firmware() stuff, it would
+> save memory.
 
-.. but is it really that big of a deal?
+There _are_ RAM benefits for a number of drivers, even when you load the
+firmware just once at initialisation time and keep it resident all the
+time the device is active (and no, I won't slap myself for saying it).
 
-If it were about not being able to build a self-contained non-modular 
-"vmlinux", I'd be upset too.
+The tg3 driver is a prime example -- it contains three separate firmware
+images for different revisions of the card, but you'll almost never
+actually need all three. Mostly you'll only need _one_ of them.
 
-But once you can load a module, you can load the firmware. You just have 
-to _remember_ to move it along with the module.
+-- 
+dwmw2
 
-I mean really, you're the one who was complaining that there was no 
-technical reason, but now you're apparently using the "alzheimer's 
-defense". 
-
-Besides, it's not even true that foo.ko modules are self-contained. We've 
-for years and years (pretty much since day one) had nesting module models, 
-where in order to load foo.ko you need to load baz.ko first. Yes, the 
-firmware file is named differently, but it _is_ different.
-
-			Linus
