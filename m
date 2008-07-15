@@ -1,38 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758450AbYGOXbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757449AbYGOXen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758450AbYGOXbV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 19:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754977AbYGOXbJ
+	id S1757449AbYGOXen (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 19:34:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754647AbYGOXef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 19:31:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56619 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754945AbYGOXbI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 19:31:08 -0400
-Date: Tue, 15 Jul 2008 16:29:59 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT pull] x86 updates
-In-Reply-To: <alpine.LFD.1.10.0807160011400.3283@apollo.tec.linutronix.de>
-Message-ID: <alpine.LFD.1.10.0807151629250.2867@woody.linux-foundation.org>
-References: <alpine.LFD.1.10.0807152249270.3283@apollo.tec.linutronix.de> <alpine.LFD.1.10.0807151417440.2867@woody.linux-foundation.org> <alpine.LFD.1.10.0807152341240.3283@apollo.tec.linutronix.de> <alpine.LFD.1.10.0807151456490.2867@woody.linux-foundation.org>
- <20080715220547.GA11448@elte.hu> <alpine.LFD.1.10.0807160011400.3283@apollo.tec.linutronix.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 15 Jul 2008 19:34:35 -0400
+Received: from lsd-gw.ic.unicamp.br ([143.106.7.165]:40923 "EHLO
+	boneca.lsd.ic.unicamp.br" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754511AbYGOXef convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 19:34:35 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>, rene.herman@keyaccess.nl,
+       david@lang.hm, arjan@infradead.org, akpm@linux-foundation.org,
+       dwmw2@infradead.org, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel, use it in more drivers.
+References: <alpine.DEB.1.10.0807141750290.14223@asgard.lang.hm>
+	<20080714.185207.203328391.davem@davemloft.net>
+	<487C0A12.9060906@keyaccess.nl>
+	<20080714.192425.241878700.davem@davemloft.net>
+	<alpine.LFD.1.10.0807141934060.3017@woody.linux-foundation.org>
+From: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
+Date: Tue, 15 Jul 2008 20:33:33 -0300
+In-Reply-To: <alpine.LFD.1.10.0807141934060.3017@woody.linux-foundation.org> (Linus Torvalds's message of "Mon\, 14 Jul 2008 19\:39\:03 -0700 \(PDT\)")
+Message-ID: <or63r63epe.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jul 14, 2008, Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
+> [...] I like just making everybody do request_firmware().
 
-On Wed, 16 Jul 2008, Thomas Gleixner wrote:
-> 
->    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86/urgent
+> Do you call that a legal reason? Or a technical one?
 
-Worked now.
+\o.
 
-		Linus
+Hmm, let's se...
+
+How about legal?
+
+If they don't budge in, you can terminate their license to Linux,
+because they are distributing your GPLed work combined with software
+that is not under a GPL-compatible license.
+
+:-P :-D
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+FSFLA Board Member       ¡Sé Libre! => http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
