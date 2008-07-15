@@ -1,60 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762846AbYGOWiE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763011AbYGOWjh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762846AbYGOWiE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 18:38:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754087AbYGOWhw
+	id S1763011AbYGOWjh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 18:39:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754163AbYGOWj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 18:37:52 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40573
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751661AbYGOWhv (ORCPT
+	Tue, 15 Jul 2008 18:39:28 -0400
+Received: from fk-out-0910.google.com ([209.85.128.187]:20443 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754087AbYGOWj1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 18:37:51 -0400
-Date: Tue, 15 Jul 2008 15:37:51 -0700 (PDT)
-Message-Id: <20080715.153751.71531968.davem@davemloft.net>
-To: mpatocka@redhat.com
-Cc: andi@firstfloor.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: [SUGGESTION]: drop virtual merge accounting in I/O requests
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0807151830290.22181@devserv.devel.redhat.com>
-References: <Pine.LNX.4.64.0807141903001.2825@devserv.devel.redhat.com>
-	<20080714.183116.121978835.davem@davemloft.net>
-	<Pine.LNX.4.64.0807151830290.22181@devserv.devel.redhat.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Jul 2008 18:39:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=jngP00/V8yntpN8BCRIxkvFUeZ35JzrpDy5US1DxVEbJxH28DXfnifQla5MTlGrfiU
+         59HuSsLzlRxhBymk9zKnoGFLLytGcm9SAd02gld8vxR0ljdBDHidcpwjUYmsyFL3tEtU
+         J1+KtZXUV7c/biCwTkzJjzG8PrFrkuJntNqRk=
+Date: Wed, 16 Jul 2008 02:36:44 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: davem@davemloft.net, mingo@elte.hu, nhorman@tuxdriver.com,
+       simon@fire.lp0.eu, linux-kernel@vger.kernel.org,
+       herbert@gondor.apana.org.au
+Subject: Re: BUG: unable to handle kernel NULL pointer dereference at
+	000000000000000e (reset_prng_context)
+Message-ID: <20080715223644.GA13773@martell.zuzino.mipt.ru>
+References: <487BE071.80101@simon.arlott.org.uk> <20080715020428.GA27463@hmsendeavour.rdu.redhat.com> <20080715113304.GA30565@elte.hu> <20080715.134407.150543177.davem@davemloft.net> <20080715214929.GA18268@martell.zuzino.mipt.ru> <20080715151110.d7a17c89.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080715151110.d7a17c89.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mikulas Patocka <mpatocka@redhat.com>
-Date: Tue, 15 Jul 2008 18:32:37 -0400 (EDT)
-
-> On Mon, 14 Jul 2008, David Miller wrote:
+On Tue, Jul 15, 2008 at 03:11:10PM -0700, Andrew Morton wrote:
+> On Wed, 16 Jul 2008 01:49:30 +0400
+> Alexey Dobriyan <adobriyan@gmail.com> wrote:
 > 
-> > From: Mikulas Patocka <mpatocka@redhat.com>
-> > Date: Mon, 14 Jul 2008 19:16:17 -0400 (EDT)
+> > On Tue, Jul 15, 2008 at 01:44:07PM -0700, David Miller wrote:
+> > > From: Ingo Molnar <mingo@elte.hu>
+> > > 
+> > > > i have just triggered this crash too. Please, when you know about bootup 
+> > > > crashes in your code send a patch to the lkml thread so that people can 
+> > > > apply it and have a working system.
+> > > > 
+> > > > Note that the new crypto/prng.c driver has very bad quality:
+> > > > 
+> > > >   total: 45 errors, 21 warnings, 1 checks, 410 lines checked
+> > > > 
+> > > > It has tons of completely unacceptable code mistakes in it.
+> > > 
+> > > I think we should merge new drivers as aggressively as possible.
 > > 
-> > > So the question is: to reduce number of requests by 12% on an outdated 
-> > > SCSI card, it is sensible to maintain complicated merge accounting logic 
-> > > in the core block layer? To me, it doesn't seem sensible.
+> > Well, I don't have strong opinion about this exact statement, but
 > > 
-> > Rip out the code if you like, then.  I really don't have time to
-> > work on this myself.  So if you do, by all means do whatever
-> > you think is appropriate.
+> > 	Ingo, COULD YOU PLEASE PERSONALLY FUCKING STOP THIS
+> > 	CHECKPATCH.PL-AS-INDICATOR HORSESHIT !
 > 
-> So add signed-off line and forward it to Linus.
+> Well I wouldn't put it that way but sure, there is no clear correlation.
 > 
-> Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+> Except that such a high density of coding-style errors is an indication
+> that the code was not closely and critically reviewed by an experienced
+> kernel developer.
 
-I said remove code, not turn if off.  I guess you didn't like
-that option even though you seem heavily convinced that it buys
-us essentially nothing, and I'm even starting to agree with you.
+So it's all about entrance? Looking at archives, I wouldn't say so.
 
-If the VMERGE code is going to stay, and it's a bug or a limitation in
-the sparc64 IOMMU code, I'd rather that get fixed.
+> > Every damn single warning in this case is about whitespace or 80 column limit.
+> > 
+> > Every damn single one!
+> > 
+> > The hacker of your calibre should know the difference between whitespace-bad code
+> > and bug-ridden-bad code.
+> > 
+> > 
+> > What are those unacceptable mistakes?
+> > 
+> > Don't read the code again, what are those mistakes?
+> > 
+> 
+> Sleeping inside spinlock?
 
-I have FUJITA's excellent analysis of the sparc64 specific IOMMU issue
-in my inbox and I intend to have a look at it when I get a chance.
+Haven't found that place, but checkpatch.pl neither.
+
+> > I _very_ briefly looked at prng.c and place I find wrong it passing
+> > "int nbytes" to get_prng_bytes(). It should be unsigned at least.
+> > 
+> > checkpatch.pl says about this? Suuuure, it does...
+> 
+> If we're going to merge code which has zillions of trivially-detectable
+> coding-style errors and which hasn't been runtime tested with very
+> mainstream kernel debug options enabled and which afacit hasn't been
+> reviewed then we have no standards at all.
+
+No excuse for no runtime testing. No arguments about it.
+
+But stamping code bad because it writes all loops as "for (i=0;i<N;i++)"
+is unexplainble when person making such statements can rewrite OS
+scheduler every weekend.
+
