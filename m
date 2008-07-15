@@ -1,69 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761368AbYGOPbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762058AbYGOPcI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761368AbYGOPbt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 11:31:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbYGOPbd
+	id S1762058AbYGOPcI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 11:32:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756145AbYGOPbg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 11:31:33 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:19000 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752257AbYGOPbc (ORCPT
+	Tue, 15 Jul 2008 11:31:36 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50339 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754171AbYGOPbe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 11:31:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=hh8oTaPkT4eVWsmgYW4n0fEVpd6XG0WBPg7Vs2EX2C7U9IQ4YeCJU6Kv6kqUeEbO6x
-         1n7/t0RvhfWsaDZxKE+WIuulWg2Ylq03daO8vzYECS2xbSyg5qGMzh+FQbKTyI7Sw2fY
-         nf5FfXz8x1x7E4SGwg4coJutWTQfQP22rvxWM=
-Message-ID: <4dfa50520807150831i519a3a43n635ab7e58d35ba5e@mail.gmail.com>
-Date: Tue, 15 Jul 2008 09:31:29 -0600
-From: "David Hubbard" <david.c.hubbard@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: [RFC] (almost) booting allyesconfig -- please don't poke super-io without request_region
-Cc: "Hans de Goede" <j.w.r.degoede@hhs.nl>, linuxppc-dev@ozlabs.org,
-       "Samuel Ortiz" <samuel@sortiz.org>, linux-kernel@vger.kernel.org,
-       "Milton Miller" <miltonm@bga.com>, lm-sensors@lm-sensors.org
-In-Reply-To: <20080715103613.4fbbf01f@hyperion.delvare>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 15 Jul 2008 11:31:34 -0400
+Subject: Re: [patch 01/15] Kernel Tracepoints
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
+       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Paul E McKenney <paulmck@linux.vnet.ibm.com>
+In-Reply-To: <20080715152224.GE20037@Krystal>
+References: <20080709145929.352201601@polymtl.ca>
+	 <20080709150043.693920317@polymtl.ca> <1216108237.12595.122.camel@twins>
+	 <20080715132543.GB20037@Krystal> <1216130356.12595.184.camel@twins>
+	 <20080715142710.GC20037@Krystal> <1216132928.12595.201.camel@twins>
+	 <20080715152224.GE20037@Krystal>
+Content-Type: text/plain
+Date: Tue, 15 Jul 2008 17:31:42 +0200
+Message-Id: <1216135902.12595.214.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <for-27-patch1-0@bga.com> <4879A144.8060203@hhs.nl>
-	 <4dfa50520807131411ied883cgcb20eb6bd94f761@mail.gmail.com>
-	 <487A7211.7030309@hhs.nl>
-	 <4dfa50520807131426t4013142cp1fcd49e078a79c1f@mail.gmail.com>
-	 <20080714095914.0644ac5d@hyperion.delvare>
-	 <88f5162604470179b3c6ebfe729a46f5@bga.com> <487B8D2C.1090208@hhs.nl>
-	 <4dfa50520807141055l532caaaai700255936600e5ae@mail.gmail.com>
-	 <20080715103613.4fbbf01f@hyperion.delvare>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean,
+On Tue, 2008-07-15 at 11:22 -0400, Mathieu Desnoyers wrote:
+> * Peter Zijlstra (peterz@infradead.org) wrote:
+> > 
+> > I'm confused by the barrier games here.
+> > 
+> > Why not:
+> > 
+> >   void **it_func;
+> > 
+> >   preempt_disable();
+> >   it_func = rcu_dereference((tp)->funcs);
+> >   if (it_func) {
+> >     for (; *it_func; it_func++)
+> >       ((void(*)(proto))(*it_func))(args);
+> >   }
+> >   preempt_enable();
+> > 
+> > That is, why can we skip the barrier when !it_func? is that because at
+> > that time we don't actually dereference it_func and therefore cannot
+> > observe stale data?
+> > 
+> 
+> Exactly. I used the implementation of rcu_assign_pointer as a hint that
+> we did not need barriers when setting the pointer to NULL, and thus we
+> should not need the read barrier when reading the NULL pointer, because
+> it references no data.
+> 
+> #define rcu_assign_pointer(p, v) \
+>         ({ \
+>                 if (!__builtin_constant_p(v) || \
+>                     ((v) != NULL)) \
+>                         smp_wmb(); \
+>                 (p) = (v); \
+>         })
 
-On Tue, Jul 15, 2008 at 2:36 AM, Jean Delvare <khali@linux-fr.org> wrote:
->> Is there any way to use lspci and start at the LPC bridge, then find
->> the SuperIO chip's IO address? What about ACPI tables? Perhaps probing
->> logic could look for an LPC bridge before probing certain IO addresses
->> even if the addresses are not in the LPC bridge config.
->
-> I always assumed that there was no way to know in advance if a
-> Super-I/O (LPC) chip was present or not, let alone the exact model of
-> the chip. The I/O addresses are decoded by the Super-I/O chip itself,
-> and in general it has no relation to PCI. And I've never seen ports
-> 0x2e/0x2f nor 0x4e/0x4f listed in /proc/ioports.
->
-> But of course if there is a way to know, we should use it. Avoiding
-> random access to I/O ports, even if they are relatively standard in
-> this case, is always good.
+Yeah, I saw that,.. made me wonder. It basically assumes that when we
+write:
 
-I looked at my lspci output and did a little researching, and I think
-the only thing we can deduce is that there is an LPC bridge, so
-looking for a SuperIO is a good idea. If there is no LPC bridge
-listed, I can't say whether probing the ports is a good idea or not.
+  rcu_assign_pointer(foo, NULL);
 
-David
+foo will not be used as an index or offset.
+
+I guess Paul has thought it through and verified all in-kernel use
+cases, but it still makes me feel unconfortable.
+
+> #define rcu_dereference(p)     ({ \
+>                                 typeof(p) _________p1 = ACCESS_ONCE(p); \
+>                                 smp_read_barrier_depends(); \
+>                                 (_________p1); \
+>                                 })
+> 
+> But I think you are right, since we are already in unlikely code, using
+> rcu_dereference as you do is better than my use of read barrier depends.
+> It should not change anything in the assembly result except on alpha,
+> where the read_barrier_depends() is not a nop.
+> 
+> I wonder if there would be a way to add this kind of NULL pointer case
+> check without overhead in rcu_dereference() on alpha. I guess not, since
+> the pointer is almost never known at compile-time. And I guess Paul must
+> already have thought about it. The only case where we could add this
+> test is when we know that we have a if (ptr != NULL) test following the
+> rcu_dereference(); we could then assume the compiler will merge the two
+> branches since they depend on the same condition.
+
+I remember seeing a thread about all this special casing NULL, but have
+never been able to find it again - my google skillz always fail me.
+
+Basically it doesn't work if you use the variable as an index/offset,
+because in that case 0 is a valid offset and you still generate a data
+dependency.
+
+IIRC the conclusion was that the gains were too small to spend more time
+on it, although I would like to hear about the special case in
+rcu_assign_pointer.
+
+/me goes use git blame....
+
+> > If so, does this really matter since we're already in an unlikely
+> > section? Again, if so, this deserves a comment ;-)
+> > 
+> > [ still think those preempt_* calls should be called
+> >   rcu_read_sched_lock() or such. ]
+> > 
+> > Anyway, does this still generate better code?
+> > 
+> 
+> On x86_64 :
+> 
+>  820:   bf 01 00 00 00          mov    $0x1,%edi
+>  825:   e8 00 00 00 00          callq  82a <thread_return+0x136>
+>  82a:   48 8b 1d 00 00 00 00    mov    0x0(%rip),%rbx        # 831 <thread_return+0x13d>
+>  831:   48 85 db                test   %rbx,%rbx
+>  834:   75 21                   jne    857 <thread_return+0x163>
+>  836:   eb 27                   jmp    85f <thread_return+0x16b>
+>  838:   0f 1f 84 00 00 00 00    nopl   0x0(%rax,%rax,1)
+>  83f:   00 
+>  840:   48 8b 95 68 ff ff ff    mov    -0x98(%rbp),%rdx
+>  847:   48 8b b5 60 ff ff ff    mov    -0xa0(%rbp),%rsi
+>  84e:   4c 89 e7                mov    %r12,%rdi
+>  851:   48 83 c3 08             add    $0x8,%rbx
+>  855:   ff d0                   callq  *%rax
+>  857:   48 8b 03                mov    (%rbx),%rax
+>  85a:   48 85 c0                test   %rax,%rax
+>  85d:   75 e1                   jne    840 <thread_return+0x14c>
+>  85f:   bf 01 00 00 00          mov    $0x1,%edi
+>  864:
+> 
+> for 68 bytes.
+> 
+> My original implementation was 77 bytes, so yes, we have a win.
+
+Ah, good good ! :-)
+
