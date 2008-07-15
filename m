@@ -1,111 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757307AbYGOWtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756124AbYGOWvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757307AbYGOWtY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 18:49:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754382AbYGOWtP
+	id S1756124AbYGOWvT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 18:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbYGOWvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 18:49:15 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:56313 "EHLO e4.ny.us.ibm.com"
+	Tue, 15 Jul 2008 18:51:09 -0400
+Received: from mail.lang.hm ([64.81.33.126]:42227 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753777AbYGOWtO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 18:49:14 -0400
-Message-ID: <487D2982.90109@linux.vnet.ibm.com>
-Date: Tue, 15 Jul 2008 17:49:38 -0500
-From: Jon Tollefson <kniht@linux.vnet.ibm.com>
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	id S1753415AbYGOWvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 18:51:08 -0400
+Date: Tue, 15 Jul 2008 15:50:09 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: David Woodhouse <dwmw2@infradead.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Marcel Holtmann <marcel@holtmann.org>, Frans Pop <elendil@planet.nl>,
+       jeff@garzik.org, arjan@infradead.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from	in-kernel,
+ use it in more drivers.
+In-Reply-To: <1216160785.26991.51.camel@shinybook.infradead.org>
+Message-ID: <alpine.DEB.1.10.0807151549400.16109@asgard.lang.hm>
+References: <1216077806.27455.85.camel@shinybook.infradead.org>  <20080714164119.99c33d5b.akpm@linux-foundation.org>  <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>  <487C0365.5030203@garzik.org>  <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
+  <200807151757.10626.elendil@planet.nl>  <1216149637.27242.65.camel@violet.holtmann.net>  <alpine.LFD.1.10.0807151223290.3351@woody.linux-foundation.org>  <1216150616.27455.377.camel@shinybook.infradead.org>  <alpine.LFD.1.10.0807151244320.3351@woody.linux-foundation.org>
+  <1216151640.27242.90.camel@violet.holtmann.net>  <alpine.LFD.1.10.0807151301130.2867@woody.linux-foundation.org>  <alpine.DEB.1.10.0807151426021.16109@asgard.lang.hm>  <alpine.LFD.1.10.0807151436400.2867@woody.linux-foundation.org> 
+ <alpine.DEB.1.10.0807151503310.16109@asgard.lang.hm> <1216160785.26991.51.camel@shinybook.infradead.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: npiggin@suse.de, adobriyan@gmail.com, penberg@cs.helsinki.fi,
-       mpm@selenic.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       cl@linux-foundation.org
-Subject: [patch v2] powerpc: hugetlb pgtable cache access cleanup
-References: <20080604112939.789444496@amd.local0.net> <20080604113113.648031825@amd.local0.net> <487B7F96.70305@linux.vnet.ibm.com> <20080714155659.b4fab697.akpm@linux-foundation.org>
-In-Reply-To: <20080714155659.b4fab697.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 14 Jul 2008 11:32:22 -0500
-> Jon Tollefson <kniht@linux.vnet.ibm.com> wrote:
+On Tue, 15 Jul 2008, David Woodhouse wrote:
+
+> On Tue, 2008-07-15 at 15:24 -0700, david@lang.hm wrote:
+>>
+>>> Why is it suddenly so important that a kernel be 'zero impact' for that
+>>> module case, when it's never been zero impact for that case before? You
+>>> had to rewrite the initrd to begin with, but now you're not willing to do
+>>> it again, just because you have to rewrite it slightly _differently_?
+>>
+>> becouse the tools that wrote the initrd already put the modules in. I
+>> don't maintain those tools, they came with the distro. we're just asking
+>> to not require those tools to be updated immediatly.
 >
->   
->> Cleaned up use of macro.  We now reference the pgtable_cache array directly instead of using a macro.
->>     
->
-> This clashes rather a lot with all the other hugetlb things which we
-> have queued.
->
->   
-oops.  new version below here should be based on mmotm.
----
+> The tools that write the initrd already put the firmware in too.
 
+not always, as Jeff showed.
 
-Cleaned up use of macro.  We now reference the pgtable_cache array directly instead of using a macro.
-
-
-Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
----
-
- arch/powerpc/mm/hugetlbpage.c |   22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
-
-
---- a/arch/powerpc/mm/hugetlbpage.c	2008-07-15 17:17:42.741035616 -0500
-+++ b/arch/powerpc/mm/hugetlbpage.c	2008-07-15 17:36:48.959015872 -0500
-@@ -53,8 +53,7 @@
- 
- /* Subtract one from array size because we don't need a cache for 4K since
-  * is not a huge page size */
--#define huge_pgtable_cache(psize)	(pgtable_cache[HUGEPTE_CACHE_NUM \
--							+ psize-1])
-+#define HUGE_PGTABLE_INDEX(psize)	(HUGEPTE_CACHE_NUM + psize - 1)
- #define HUGEPTE_CACHE_NAME(psize)	(huge_pgtable_cache_name[psize])
- 
- static const char *huge_pgtable_cache_name[MMU_PAGE_COUNT] = {
-@@ -113,7 +112,7 @@
- static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
- 			   unsigned long address, unsigned int psize)
- {
--	pte_t *new = kmem_cache_zalloc(huge_pgtable_cache(psize),
-+	pte_t *new = kmem_cache_zalloc(pgtable_cache[HUGE_PGTABLE_INDEX(psize)],
- 				      GFP_KERNEL|__GFP_REPEAT);
- 
- 	if (! new)
-@@ -121,7 +120,7 @@
- 
- 	spin_lock(&mm->page_table_lock);
- 	if (!hugepd_none(*hpdp))
--		kmem_cache_free(huge_pgtable_cache(psize), new);
-+		kmem_cache_free(pgtable_cache[HUGE_PGTABLE_INDEX(psize)], new);
- 	else
- 		hpdp->pd = (unsigned long)new | HUGEPD_OK;
- 	spin_unlock(&mm->page_table_lock);
-@@ -746,13 +745,14 @@
- 
- 	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
- 		if (mmu_huge_psizes[psize]) {
--			huge_pgtable_cache(psize) = kmem_cache_create(
--						HUGEPTE_CACHE_NAME(psize),
--						HUGEPTE_TABLE_SIZE(psize),
--						HUGEPTE_TABLE_SIZE(psize),
--						0,
--						NULL);
--			if (!huge_pgtable_cache(psize))
-+			pgtable_cache[HUGE_PGTABLE_INDEX(psize)] =
-+				kmem_cache_create(
-+					HUGEPTE_CACHE_NAME(psize),
-+					HUGEPTE_TABLE_SIZE(psize),
-+					HUGEPTE_TABLE_SIZE(psize),
-+					0,
-+					NULL);
-+			if (!pgtable_cache[HUGE_PGTABLE_INDEX(psize)])
- 				panic("hugetlbpage_init(): could not create %s"\
- 				      "\n", HUGEPTE_CACHE_NAME(psize));
- 		}
-
-
+David Lang
