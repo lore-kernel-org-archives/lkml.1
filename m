@@ -1,58 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761853AbYGOSUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762585AbYGOSVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761853AbYGOSUu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 14:20:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060AbYGOSUm
+	id S1762585AbYGOSVU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 14:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758159AbYGOSVI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 14:20:42 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:47241 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753688AbYGOSUl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 14:20:41 -0400
-Message-ID: <487CEA73.9000408@garzik.org>
-Date: Tue, 15 Jul 2008 14:20:35 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: david@lang.hm, Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
- use it in more drivers.
-References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <alpine.DEB.1.10.0807141704120.14223@asgard.lang.hm> <alpine.LFD.1.10.0807141729200.3017@woody.linux-foundation.org> <alpine.DEB.1.10.0807141750290.14223@asgard.lang.hm> <alpine.LFD.1.10.0807141756361.3017@woody.linux-foundation.org> <alpine.DEB.1.10.0807141805300.14223@asgard.lang.hm> <alpine.LFD.1.10.0807141903260.3017@woody.linux-foundation.org> <487C585C.2060002@garzik.org> <alpine.LFD.1.10.0807150803580.3017@woody.linux-foundation.org> <487CD7FE.9010209@garzik.org> <alpine.LFD.1.10.0807151008450.3017@woody.linux-foundation.org> <487CDEC0.3090004@garzik.org> <alpine.LFD.1.10.0807151041080.3017@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807151041080.3017@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 15 Jul 2008 14:21:08 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:60203 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757201AbYGOSVH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 14:21:07 -0400
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
+	in-kernel, use it in more drivers.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Frans Pop <elendil@planet.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>, jeff@garzik.org,
+       arjan@infradead.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+In-Reply-To: <20080715180535.GA6080@khazad-dum.debian.net>
+References: <1216077806.27455.85.camel@shinybook.infradead.org>
+	 <20080714164119.99c33d5b.akpm@linux-foundation.org>
+	 <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>
+	 <487C0365.5030203@garzik.org>
+	 <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
+	 <200807151757.10626.elendil@planet.nl>
+	 <20080715180535.GA6080@khazad-dum.debian.net>
+Content-Type: text/plain
+Date: Tue, 15 Jul 2008 11:20:57 -0700
+Message-Id: <1216146057.27455.325.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+On Tue, 2008-07-15 at 15:05 -0300, Henrique de Moraes Holschuh wrote:
 > 
-> On Tue, 15 Jul 2008, Jeff Garzik wrote:
->> Already addressed -- you and David seem to be ignoring the common case where
->> you may update the driver but not the kernel, making that feature far less
->> useful than it appears.
+> I believe I read in the previous thread that some distros are already using
+> /lib/firmware/<kernel version>/.
 > 
-> This is the "I'm too stupid to live" argument. I've already answered that. 
-> What's so hard with "make firmware_install"?
+> There was also the suggestion of moving the entire set of kernel-packaged
+> firmware to /lib/modules/<kernel version>/firmware, probably while keeping
+> /lib/firmware as a second place to look for firmware so that we don't hose
+> any system.
 
-So hard that several kernel hackers wound up with non-working drivers 
-(read the pre-push bug reports).
+You can do that right now; I expect Ubuntu will, since their userspace
+already looks like that. You just need to set $(INSTALL_FW_PATH) when
+you install the firmware (or modules).
 
-Which is why 'make modules_install' installs the firmware, or at least 
-it did before David W pushed upstream.
+The Ubuntu folks have chosen not to share their changes with upstream,
+though -- and if we were to _impose_ that policy, then we would be
+requiring changes to userspace which are not yet widespread. That's a
+bad idea. What we're doing right now is _entirely_ compatible with what
+userspace already has to deal with for modern drivers, and that's very
+important.
 
-That was a key build process regression fix (thanks David!).
+There may be some merit in Ubuntu's policy, but we need userspace to
+change first, long before we can change the default in the kernel.
 
-Sorry Linus, the end change is a good idea, but you cannot hand-wave 
-away breakage just by calling people stupid.
+But certainly the kernel _allows_ that, if you want it.
 
-	Jeff
-
+-- 
+dwmw2
 
