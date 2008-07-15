@@ -1,75 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763425AbYGOUsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762927AbYGOUtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763425AbYGOUsY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 16:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbYGOUsP
+	id S1762927AbYGOUtS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 16:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbYGOUtD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 16:48:15 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:41124 "EHLO fieldses.org"
+	Tue, 15 Jul 2008 16:49:03 -0400
+Received: from 1wt.eu ([62.212.114.60]:4010 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753561AbYGOUsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 16:48:14 -0400
-Date: Tue, 15 Jul 2008 16:48:12 -0400
-To: Sage Weil <sage@newdream.net>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ceph-devel@lists.sourceforge.net
-Subject: Re: Recursive directory accounting for size, ctime, etc.
-Message-ID: <20080715204812.GD25803@fieldses.org>
-References: <Pine.LNX.4.64.0806192313530.7379@cobra.newdream.net> <20080715195333.GK21590@fieldses.org> <Pine.LNX.4.64.0807151326130.1976@cobra.newdream.net>
-MIME-Version: 1.0
+	id S1753475AbYGOUtB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 16:49:01 -0400
+Date: Tue, 15 Jul 2008 22:47:50 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       David Woodhouse <dwmw2@infradead.org>, Frans Pop <elendil@planet.nl>,
+       arjan@infradead.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel, use it in more drivers.
+Message-ID: <20080715204750.GM1369@1wt.eu>
+References: <487C0365.5030203@garzik.org> <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org> <200807151757.10626.elendil@planet.nl> <1216149637.27242.65.camel@violet.holtmann.net> <alpine.LFD.1.10.0807151223290.3351@woody.linux-foundation.org> <1216150616.27455.377.camel@shinybook.infradead.org> <alpine.LFD.1.10.0807151244320.3351@woody.linux-foundation.org> <1216151640.27242.90.camel@violet.holtmann.net> <alpine.LFD.1.10.0807151301130.2867@woody.linux-foundation.org> <487D0801.4000206@garzik.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0807151326130.1976@cobra.newdream.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+In-Reply-To: <487D0801.4000206@garzik.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 01:41:25PM -0700, Sage Weil wrote:
-> On Tue, 15 Jul 2008, J. Bruce Fields wrote:
-> > >  - There is some built-in delay before statistics fully propagate up 
-> > > toward the root of the hierarchy.  Changes are propagated 
-> > > opportunistically when lock/lease state allows, with an upper bound of (by 
-> > > default) ~30 seconds for each level of directory nesting.
-> > 
-> > That makes it less useful, e.g., for somebody with cached data trying to
-> > validate their cache, or for something like git trying to check a
-> > directory tree for changes.
+On Tue, Jul 15, 2008 at 04:26:41PM -0400, Jeff Garzik wrote:
+> To be extremely concrete, firmware-in-module is
 > 
-> Having fully up to date values would definitely be nice, but unfortunately 
-> doesn't play nice with the fact that different parts of the directory 
-> hierarchy may be managed by different metadata servers.  A primary goal in 
-> implementing this was to minimize any impact on performance.  The uses I 
-> had I mind were more in line with quota-based accounting than cache 
-> validation.
-
-Fair enough.
-
-> I think I can adjust the propagation heuristics/timeouts to make updates 
-> seem more or less immediate to a user in most cases, but that won't be 
-> sufficient for a tool like git that needs to reliably identify very recent 
-> updates.  For backup software wanting a consistent file system image, it 
-> should really be operating on a snapshot as well, in which case a delay 
-> between taking the snapshot and starting the scan for changes would allow 
-> those values to propagate.
+> 	* add Kconfig option (kernel-wide or per-driver, dunno) asking
+> 	  "build firmware into drivers, as before?"
 > 
-> > >  - Ceph internally distinguishes between multiple links to the same file 
-> > > (there is a single 'primary' link, and then zero or more 'remote' links).  
-> > > Only the primary link contributes toward the 'rbytes' total.
-> > 
-> > Is that only true for 'rbytes'?
+> 	* tweak build process to build firmware into foo.ko output,
+> 	  probably in a specially marked ELF section
 > 
-> The same goes for rctime.  As far as the recursive stats go, the other 
-> stats (file/directory counts) aren't affected.  The primary/remote 
-> hard link distinction is fundamental to the way metadata is internally 
-> managed and stored by the MDS, though, if that's what you mean (inode 
-> content is embedded with the primary link's directory metadata).
+> 	* get request_firmware() to automatically notice that the
+> 	  MODULE_FIRMWARE() was built into this driver, and to
+> 	  look at the special ELF section for its data
 
-I just wonder how one would explain to users (or application writers)
-why changes to a file are reflected in the parent's rctime in one case,
-and not in another, especially if the primary link is otherwise
-indistinguishable from the others.  The symptoms could be a bit
-mysterious from their point of view.
+Jeff, just thinking, wouldn't it be slightly easier to move the firmware
+in a separate module on its own and just add a dependency, so that foo.ko
+automatically loads foo-fw.ko ? I know it will be slightly differente, but
+would not change in-site deployment workflows nor installed scripts.
 
---b.
+Regards,
+Willy
+
