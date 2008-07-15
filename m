@@ -1,74 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762297AbYGOUyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759174AbYGOUzP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762297AbYGOUyx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 16:54:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbYGOUyo
+	id S1759174AbYGOUzP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 16:55:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbYGOUy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 16:54:44 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:37684 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752155AbYGOUyn (ORCPT
+	Tue, 15 Jul 2008 16:54:58 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:45753 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762645AbYGOUy5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 16:54:43 -0400
-Subject: Re: acpi based pci gap calculation  - v3
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: "ak@linux.intel.com" <ak@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       "Brown, Len" <len.brown@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       TJ <linux@tjworld.net>
-In-Reply-To: <200807151328.00739.jbarnes@virtuousgeek.org>
-References: <1216148382.6135.21.camel@alok-dev1>
-	 <200807151328.00739.jbarnes@virtuousgeek.org>
+	Tue, 15 Jul 2008 16:54:57 -0400
+Subject: Re: [Ksummit-2008-discuss] KS Topic Proposal: Vendor and User
+	problems with the Kernel
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: ksummit-2008-discuss@lists.linux-foundation.org
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1214583706.3394.58.camel@localhost.localdomain>
+References: <1214583706.3394.58.camel@localhost.localdomain>
 Content-Type: text/plain
-Organization: VMware INC.
-Date: Tue, 15 Jul 2008 13:54:16 -0700
-Message-Id: <1216155256.6135.25.camel@alok-dev1>
+Date: Tue, 15 Jul 2008 15:54:52 -0500
+Message-Id: <1216155292.3312.138.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-15 at 13:28 -0700, Jesse Barnes wrote:
-> On Tuesday, July 15, 2008 11:59 am Alok Kataria wrote:
-> > Hi Andi,
-> >
-> > I don't see this patch being applied in any of the tree yet.
-> > Resending this incase you guys might have missed it.
-> > I assume this will go through the ACPI tree.
-> >
-> > The need for this patch was explained in
-> > http://marc.info/?l=linux-kernel&m=121441818818598&w=2
-> >
-> > The v2 patch was discussed in
-> > http://marc.info/?l=linux-acpi&m=121433339619175&w=2
-> >
-> > I then sent a incremental patch on top of v2 to fix some conditions and
-> > handle the change in the e820_search_gap interface.
-> >
-> > In this v3 patch, i have folded the incremental fix into the v2 patch.
-> > Please apply this.
+On Fri, 2008-06-27 at 11:21 -0500, James Bottomley wrote: 
+> This proposal is a bit different from a concrete topic, but it's based
+> on the generally positive feedback from the end user panel last year.
+> It's to allocate 2h of Kernel summit to discuss problems raised by
+> vendors and end users.  The format I'm proposing is 10 minutes of
+> problem introduction by someone from the vendor or user representative
+> who is a subject matter expert and 20 minutes of discussion (so,
+> hopefully four such problems).
 > 
-> This should probably go to linux-pci too.
+> As usual, the difficulty is actually finding people from the vendor and
+> user community willing to do such a presentation (and ensuring they
+> won't simply want to talk about their problems with X distro enterprise
+> kernels).  The way I think we might get some diverse problems is to send
+> out a call for participation.  Something like.
 > 
-> I wonder if this is stable enough to go into 2.6.27?  
+> "The kernel summit programme committe is inviting proposals for
+> participation in the 2008 Kernel Summit in Portland Oregon (URL) from
+> members of the End User and Vendor communities wishing to raise
+> particular issues or problems they see with the current Linux Kernel.  A
+> good problem presentation should stimulate discussion with the kernel
+> community, and as such the presenter should be a subject matter expert
+> capable of engaging in the debate.  While the presenter may have a
+> preferred solution, they should concentrate on the problem and be
+> prepared to consider the effects of solutions outside of their preferred
+> one.  It goes without saying that problems should have a significant
+> component which is susceptible to a solution within the Linux Kernel.
+> 
+> "Proposals of around 500 words and describing the nature of the problem
+> and the credentials of the presenter should be forwarded to the Linux
+> Kernel Programme Committee at
+> <ksummit-2008-pc@lists.linux-foundation.org>"
+> 
+> Obviously we'd have to circulate this beyond the usual mailing lists,
+> but we can solicit help from the Linux Foundation to do this.
 
-I have tested it with couple of different BIOS settings and it seems to
-work as it should.
+Since there wasn't much feedback on this, the programme committee
+thought it would be unlikely to produce much in the way of proposals, so
+instead, we'll do what we did last year:  recruit two or three end users
+to do a lightning type talk followed by 20 minutes or so of discussion.
 
-> Most of the PCI bugs we
-> have at the moment are related to PCI resource allocation failures.  My hope
-> is that finding more space will fix most of them.  Assuming this patch
-> doesn't have any dependencies, I can put it in my linux-next branch.
+For those of you who enjoyed the end user presentations last year and
+wanted to go into greater depth than we can in a single KS session, the
+Linux Foundation is holding an end user summit in October in New York:
 
-No dependencies, I had added a function e820_search_gap which is used by
-this patch. This function is already in the mainline tree. 
-Thanks for applying.
+http://www.linuxfoundation.org/events/enduser
 
---
-Alok
+Since it's already in Manhattan, and a lot of the major banks and other
+end users with enterprise class problems are attending, we're going to
+try to schedule individual sessions with some of their architects and
+kernel developers to go over some of the interesting problem cases.
+
+KS attendees who want to come and whose employers won't pay, we can
+likely sponsor (at least some) from the LF community travel fund:
+
+http://www.linuxfoundation.org/travel/
+
+James
+
 
