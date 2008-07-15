@@ -1,68 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762525AbYGOU2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760959AbYGOUaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762525AbYGOU2e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 16:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754295AbYGOU20
+	id S1760959AbYGOUaR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 16:30:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbYGOUaD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 16:28:26 -0400
-Received: from outbound-mail-140.bluehost.com ([67.222.39.30]:53653 "HELO
-	outbound-mail-140.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753346AbYGOU2Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 16:28:25 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User:DomainKey-Status;
-	b=MVH4cB5TtsPuZ93sI9oCuVqjORFDap4O6EVM3Mo13EMF2X3JlUkhijAP0SyXnMBHSjXG63wl10KoFga1UUu9iF7j7i5NFO+d2LKjnb/q1LL+U8ddTBqUz5PQTB0LB01G;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: akataria@vmware.com
-Subject: Re: acpi based pci gap calculation  - v3
-Date: Tue, 15 Jul 2008 13:28:00 -0700
-User-Agent: KMail/1.9.9
-Cc: ak@linux.intel.com, Ingo Molnar <mingo@elte.hu>,
-       "Brown, Len" <len.brown@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>, linux-pci@vger.kernel.org,
-       TJ <linux@tjworld.net>
-References: <1216148382.6135.21.camel@alok-dev1>
-In-Reply-To: <1216148382.6135.21.camel@alok-dev1>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Jul 2008 16:30:03 -0400
+Received: from www.tglx.de ([62.245.132.106]:37068 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754247AbYGOUaB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 16:30:01 -0400
+Date: Tue, 15 Jul 2008 22:28:46 +0200
+From: Sebastian Siewior <bigeasy@linutronix.de>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Mike Frysinger <vapier.adi@gmail.com>
+Subject: [PATCH] mm: fix build on non-mmu machines
+Message-ID: <20080715202846.GA8867@www.tglx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-Message-Id: <200807151328.00739.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
+User-Agent: Mutt/1.4.2.2i
+X-Key-Id: 97C4700B
+X-Key-Fingerprint: 09E2 D1F3 9A3A FF13 C3D3  961C 0688 1C1E 97C4 700B
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, July 15, 2008 11:59 am Alok Kataria wrote:
-> Hi Andi,
->
-> I don't see this patch being applied in any of the tree yet.
-> Resending this incase you guys might have missed it.
-> I assume this will go through the ACPI tree.
->
-> The need for this patch was explained in
-> http://marc.info/?l=linux-kernel&m=121441818818598&w=2
->
-> The v2 patch was discussed in
-> http://marc.info/?l=linux-acpi&m=121433339619175&w=2
->
-> I then sent a incremental patch on top of v2 to fix some conditions and
-> handle the change in the e820_search_gap interface.
->
-> In this v3 patch, i have folded the incremental fix into the v2 patch.
-> Please apply this.
+Commit 1ea0704e0d aka
+ [mm: add a ptep_modify_prot transaction abstraction]
 
-This should probably go to linux-pci too.
+caused:
 
-I wonder if this is stable enough to go into 2.6.27?  Most of the PCI bugs we 
-have at the moment are related to PCI resource allocation failures.  My hope 
-is that finding more space will fix most of them.  Assuming this patch 
-doesn't have any dependencies, I can put it in my linux-next branch.
+|  CC      init/main.o
+|In file included from include2/asm/pgtable.h:68,
+|                 from /home/bigeasy/git/linux-2.6-m68k/include/linux/mm.h:39,
+|                 from include2/asm/uaccess.h:8,
+|                 from /home/bigeasy/git/linux-2.6-m68k/include/linux/poll.h:13,
+|                 from /home/bigeasy/git/linux-2.6-m68k/include/linux/rtc.h:113,
+|                 from /home/bigeasy/git/linux-2.6-m68k/include/linux/efi.h:19,
+|                 from /home/bigeasy/git/linux-2.6-m68k/init/main.c:43:
+|/linux-2.6/include/asm-generic/pgtable.h: In function '__ptep_modify_prot_start':
+|/linux-2.6/include/asm-generic/pgtable.h:209: error: implicit declaration of function 'ptep_get_and_clear'
+|/linux-2.6/include/asm-generic/pgtable.h:209: error: incompatible types in return
+|/linux-2.6/include/asm-generic/pgtable.h: In function '__ptep_modify_prot_commit':
+|/linux-2.6/include/asm-generic/pgtable.h:220: error: implicit declaration of function 'set_pte_at'
+|make[2]: *** [init/main.o] Error 1
+|make[1]: *** [init] Error 2
+|make: *** [sub-make] Error 2
 
-Also, TJ was working on something similar; any comments TJ?
+on my m68knommu box.
+Now I'm, not sure If this is the right solution, but with this
+patch applied I am able to boot the kernel I've build.
 
-Thanks,
-Jesse
+Cc: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Hugh Dickins <hugh@veritas.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Sebastian Siewior <bigeasy@linutronix.de>
+---
+ include/asm-generic/pgtable.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
+index 4fce3db..ef87f88 100644
+--- a/include/asm-generic/pgtable.h
++++ b/include/asm-generic/pgtable.h
+@@ -195,7 +195,6 @@ static inline int pmd_none_or_clear_bad(pmd_t *pmd)
+ 	}
+ 	return 0;
+ }
+-#endif /* CONFIG_MMU */
+ 
+ static inline pte_t __ptep_modify_prot_start(struct mm_struct *mm,
+ 					     unsigned long addr,
+@@ -253,6 +252,7 @@ static inline void ptep_modify_prot_commit(struct mm_struct *mm,
+ 	__ptep_modify_prot_commit(mm, addr, ptep, pte);
+ }
+ #endif /* __HAVE_ARCH_PTEP_MODIFY_PROT_TRANSACTION */
++#endif /* CONFIG_MMU */
+ 
+ /*
+  * A facility to provide lazy MMU batching.  This allows PTE updates and
+-- 
+1.5.5.2
+
