@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761580AbYGOTrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763223AbYGOTrh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761580AbYGOTrW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 15:47:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbYGOTrM
+	id S1763223AbYGOTrh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 15:47:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759099AbYGOTrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 15:47:12 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:36006 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753346AbYGOTrL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 15:47:11 -0400
-Date: Tue, 15 Jul 2008 13:47:06 -0600
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: Recursive directory accounting for size, ctime, etc.
-In-reply-to: <Pine.LNX.4.64.0806192313530.7379@cobra.newdream.net>
-To: Sage Weil <sage@newdream.net>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ceph-devel@lists.sourceforge.net
-Message-id: <20080715194706.GK6239@webber.adilger.int>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <Pine.LNX.4.64.0806192313530.7379@cobra.newdream.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 15 Jul 2008 15:47:17 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:38617 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759060AbYGOTrP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 15:47:15 -0400
+From: John Keller <jpk@sgi.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-acpi@vger.kernel.org, John Keller <jpk@sgi.com>
+Message-Id: <20080715194714.1437.92354.57492@attica.americas.sgi.com>
+Subject: [RESEND] [PATCH] x86: Allow MMCONFIG above 4GB on x86_64
+Date: Tue, 15 Jul 2008 14:47:14 -0500 (CDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jul 15, 2008  11:28 -0700, Sage Weil wrote:
-> unique (?) recursive accounting 
-> infrastructure that allows statistics about all metadata nested beneath a 
-> point in the directory hierarchy to be efficiently propagated up the tree.  
-> Currently this includes a file and directory count, total bytes (summation 
-> over file sizes), and most recent inode ctime.
+SGI UV will have MMCFG base addresses that are greater than 4GB (32 bits).
 
-Interesting...
+Signed-off-by: John Keller <jpk@sgi.com>
+---
 
-> Note that st_blocks is _not_ recursively defined, so 'du' still behaves as 
-> expected.  If mounted with -o norbytes instead, the directory st_size is 
-> the number of entries in the directory.
+Resend #2: Create a flag, that is set by platform specific code,
+           to disable the > 4GB check.
 
-Is it possible to extract an environment variable from the process
-in the kernel to decide what behaviour to have (e.g. like LS_COLORS)?
+Resend #1: Use CONFIG_RESOURCES_64BIT instead of CONFIG_X86_64.
 
-> The second interface takes advantage of the fact (?) that read() on a 
-> directory is more or less undefined.  (Okay, that's not really true, but 
-> it used to return encoded dirents or something similar, and more recently 
-> returns -EISDIR.  As far as I know, no sane application expects meaningful 
-> data from read() on a directory...)  So, assuming Ceph is mounted with -o 
-> dirstat,
 
-Hmm, what about just creating a virtual xattr that can be had with
-getfattr user.dirstats?
 
->  - The 'rbytes' summation is over i_size, not blocks used.  That means 
-> sparse files "appear" larger than the storage space they actually consume.
-
-I'd think that in many cases it is more important to accumulate the
-blocks count and not the size, since a single core file would throw
-off the whole "hunt for the worst space consumer" approach.
-
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
-
+Index: linux-2.6/arch/x86/kernel/acpi/boot.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/acpi/boot.c	2008-07-15 11:04:14.000000000 -0500
++++ linux-2.6/arch/x86/kernel/acpi/boot.c	2008-07-15 11:08:11.000000000 -0500
+@@ -97,6 +97,8 @@ static u64 acpi_lapic_addr __initdata = 
+ #warning ACPI uses CMPXCHG, i486 and later hardware
+ #endif
+ 
++static int acpi_mcfg_64bit_base_addr __initdata = FALSE;
++
+ /* --------------------------------------------------------------------------
+                               Boot-time Configuration
+    -------------------------------------------------------------------------- */
+@@ -158,6 +160,14 @@ char *__init __acpi_map_table(unsigned l
+ struct acpi_mcfg_allocation *pci_mmcfg_config;
+ int pci_mmcfg_config_num;
+ 
++static int __init acpi_mcfg_oem_check(struct acpi_table_mcfg *mcfg)
++{
++	if (!strcmp(mcfg->header.oem_id, "SGI"))
++		acpi_mcfg_64bit_base_addr = TRUE;
++
++	return 0;
++}
++
+ int __init acpi_parse_mcfg(struct acpi_table_header *header)
+ {
+ 	struct acpi_table_mcfg *mcfg;
+@@ -190,8 +200,12 @@ int __init acpi_parse_mcfg(struct acpi_t
+ 	}
+ 
+ 	memcpy(pci_mmcfg_config, &mcfg[1], config_size);
++
++	acpi_mcfg_oem_check(mcfg);
++
+ 	for (i = 0; i < pci_mmcfg_config_num; ++i) {
+-		if (pci_mmcfg_config[i].address > 0xFFFFFFFF) {
++		if ((pci_mmcfg_config[i].address > 0xFFFFFFFF) &&
++		    !acpi_mcfg_64bit_base_addr) {
+ 			printk(KERN_ERR PREFIX
+ 			       "MMCONFIG not in low 4GB of memory\n");
+ 			kfree(pci_mmcfg_config);
