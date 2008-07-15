@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756613AbYGOFbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbYGOFba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756613AbYGOFbM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 01:31:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755413AbYGOFa4
+	id S1753884AbYGOFba (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 01:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754062AbYGOFbD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 01:30:56 -0400
-Received: from outbound.icp-qv1-irony-out4.iinet.net.au ([203.59.1.150]:6799
-	"EHLO outbound.icp-qv1-irony-out4.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752703AbYGOFaz (ORCPT
+	Tue, 15 Jul 2008 01:31:03 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:49211 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756166AbYGOFbA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 01:30:55 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArQAAG3Te0jLrQkK/2dsb2JhbAAIrTk
-X-IronPort-AV: E=Sophos;i="4.30,364,1212336000"; 
-   d="scan'208";a="247543143"
-Subject: Re: [PATCH] Add SPI over GPIO driver
-From: Ben Nizette <bn@niasdigital.com>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       David Brownell <david-b@pacbell.net>,
-       Piot Skamruk <piotr.skamruk@gmail.com>, openwrt-devel@lists.openwrt.org
-In-Reply-To: <200807142109.13243.mb@bu3sch.de>
-References: <200807142109.13243.mb@bu3sch.de>
-Content-Type: text/plain
-Organization: Nias Digital
-Date: Tue, 15 Jul 2008 15:30:51 +1000
-Message-Id: <1216099851.4265.156.camel@moss.renham>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Tue, 15 Jul 2008 01:31:00 -0400
+Message-ID: <487C367D.4060808@keyaccess.nl>
+Date: Tue, 15 Jul 2008 07:32:45 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
+       david@lang.hm, akpm@linux-foundation.org, dwmw2@infradead.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
+ use it in more drivers.
+References: <487C0A12.9060906@keyaccess.nl>	<20080714.192425.241878700.davem@davemloft.net>	<alpine.LFD.1.10.0807141934060.3017@woody.linux-foundation.org>	<20080714.194557.78177585.davem@davemloft.net> <20080714215648.1ed29448@infradead.org>
+In-Reply-To: <20080714215648.1ed29448@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 15-07-08 06:56, Arjan van de Ven wrote:
 
-On Mon, 2008-07-14 at 21:09 +0200, Michael Buesch wrote:
-> This adds a driver that lets you drive an SPI bus over
-> generic GPIO pins.
+> On Mon, 14 Jul 2008 19:45:57 -0700 (PDT)
+> David Miller <davem@davemloft.net> wrote:
+> 
+>> From: Linus Torvalds <torvalds@linux-foundation.org>
+>> Date: Mon, 14 Jul 2008 19:39:03 -0700 (PDT)
+>>
+>>> Put this way: if you do a distro, you _need_ to support firmware
+>>> loading anyway. And once you do that, it's just annoying how some
+>>> drivers then do something odd and special for the same thing, for
+>>> no real good reason.
+>> In what way is it annoying?
+>>
+>> Most distribution people aren't even aware that drivers like tg3 and
+>> bnx2 even have firmware.  In fact it's self contained and less for
+>> them to worry about.
+> 
+> and.. after this patch that still seems to be the case, unless I'm
+> looking at it really cross eyed.
+> Nothing in this patch makes it impossible to do so.. or changes the
+> drivers you mention. in fact it's the opposite almost: it improves
+> request_firmware() usability significantly. (by allowing vmlinux build
+> in etc).
 
-Right, this is where spi-gpio is, please disregard my question in the
-mmc-spi-gpio thing thread, it was domestic blindness after all :-)
+Only by virtue of those specific drivers having been skipped for now. 
+For those that weren't skipped, the only way to have them still be self 
+contained is to have the kernel itself compile in all firmware for all 
+modules after which the module will find it there. Distributions will of 
+course not do this, not does it make any sense for own kernels.
 
-Looks good overall.  I'm not sure that it need pretend to be
-hotpluggable though (i.e. the board info can be hardwired so there's no
-need for the board setup callback).  I guess this is to integrate with
-your "dynamically create an mmc over spi over gpio" thinggy in the other
-thread.  As I said there, I'd prefer that this platform device is
-treated like other platform devices and any dynamicness be introduced at
-in a more generic way.
-
-What problem are you solving (or whole in board support are you
-plugging) in this dynamic plugging of MMCs?
-
-Thanks,
-	--Ben.
-
-
+Rene.
