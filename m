@@ -1,73 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757069AbYGOWGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757322AbYGOWKO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757069AbYGOWGR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 18:06:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbYGOWGF
+	id S1757322AbYGOWKO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 18:10:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYGOWKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 18:06:05 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37606 "EHLO mx3.mail.elte.hu"
+	Tue, 15 Jul 2008 18:10:00 -0400
+Received: from r00tworld.com ([212.85.137.21]:60152 "EHLO r00tworld.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753638AbYGOWGD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 18:06:03 -0400
-Date: Wed, 16 Jul 2008 00:05:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
+	id S1752075AbYGOWJ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 18:09:59 -0400
+From: pageexec@freemail.hu
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT pull] x86 updates
-Message-ID: <20080715220547.GA11448@elte.hu>
-References: <alpine.LFD.1.10.0807152249270.3283@apollo.tec.linutronix.de> <alpine.LFD.1.10.0807151417440.2867@woody.linux-foundation.org> <alpine.LFD.1.10.0807152341240.3283@apollo.tec.linutronix.de> <alpine.LFD.1.10.0807151456490.2867@woody.linux-foundation.org>
+Date: Wed, 16 Jul 2008 00:08:55 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807151456490.2867@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Subject: Re: [stable] Linux 2.6.25.10
+Reply-to: pageexec@freemail.hu
+CC: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Message-ID: <487D3C17.31467.1C3C0441@pageexec.freemail.hu>
+In-reply-to: <alpine.LFD.1.10.0807151425170.2867@woody.linux-foundation.org>
+References: <20080703185727.GA12617@suse.de>, <487D3056.1183.1C0E1C47@pageexec.freemail.hu>, <alpine.LFD.1.10.0807151425170.2867@woody.linux-foundation.org>
+X-mailer: Pegasus Mail for Windows (4.41)
+Content-type: text/plain; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+Content-description: Mail message body
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Wed, 16 Jul 2008 00:09:39 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 15 Jul 2008 at 14:26, Linus Torvalds wrote:
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> On Tue, 15 Jul 2008, Thomas Gleixner wrote:
+> 
+> 
+> On Tue, 15 Jul 2008, pageexec@freemail.hu wrote:
 > > 
-> > http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=shortlog;h=x86/urgent
-> > 
-> > has a commit on top of your tree. 
-> > 
-> > commit	     431ceb83f703a343bdd14350480a2224fa4bfedf
-> > tree	     2f4644aec0d326e23327ed2297a4a4f52b1d830e
-> > parent	     b9d2252c1e44fa83a4e65fdc9eb93db6297c55af
-> >
-> > I waited with the pull request until it showed up there.
+> > and how is that different from today's situation where they aren't told
+> > at all?
 > 
-> I'd say it's a mirroring issue, but:
-> 
-> [torvalds@woody linux]$ git ls-remote ssh://master.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git | grep x86/urgent
-> b9d2252c1e44fa83a4e65fdc9eb93db6297c55af	refs/heads/x86/urgent
-> b9d2252c1e44fa83a4e65fdc9eb93db6297c55af	refs/heads/x86/urgent-undo-ioapic
-> 41b7aafd3ea22fcd6cbb062da39d5c757d6c09ca	refs/remotes/origin/x86/urgent
-> 
-> ie it looks like even master has b9d2252c1 as tip (which is the one 
-> you say is the parent).
-> 
-> I wonder if Ingo overwrote it. You both push to the same tree, don't 
-> you? And maybe somebody used "-f" to force an over-push?
+> Umm. They are. They are told to upgrade to the stable kernel, which 
+> should have everything we know about.
 
-sorry, my fault - i have reset it back to -git because i wanted to get 
-rid of the local merge commit that we created over 
-include/asm-x86/dwarf2.h. That coincided with Thomas pushing an urgent 
-fix out. We rarely push out via -f but this was an exception.
+you should check out the last few -stable releases then and see how
+the announcement doesn't ever mention the word 'security' while fixing
+security bugs (see my analysis at http://lwn.net/Articles/288473/).
 
-Thomas, could you please push it again?
+unless one digs into the actual commits and determines what's going on,
+it's easy to make a bad judgement call even for -stable. you know, there
+are places that can't just reboot into a new kernel every week for no
+reason (Microsoft has patch Tuesday once a month only).
 
-	Ingo
+also what about people running older kernels, outside of -stable focus?
+do you determine how far back a fix should be applied? i don't think so,
+but people maintaining older series will do that, provided they get a hint.
+
+in other words, it's all the more reason to have the commit say it's
+fixing a security issue.
+
+> I'm just saying that why mark things, when the marking have no meaning? 
+> People who believe in them are just _wrong_.
+
+what is wrong in particular? when you know that you're about to commit a
+patch that fixes a security bug, why is it wrong to say so in the commit?
+in what way will people reading that commit be misled? they will see it's
+fixing a security bug and they can prioritize it for whatever processes they
+have for backports, analysis, etc. if they don't see such marks, they will
+have to do a whole lot more work (effectively duplicating your own and even
+each other's efforts) to figure out the same. why not save them time and
+tell them directly what you already know?
+
+cheers,
+  PaX Team
+
