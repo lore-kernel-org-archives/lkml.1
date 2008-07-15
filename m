@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757158AbYGOMK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbYGOMKz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757158AbYGOMK1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 08:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755429AbYGOMKQ
+	id S1757539AbYGOMKz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 08:10:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755281AbYGOMKo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 08:10:16 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58467 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752950AbYGOMKO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 08:10:14 -0400
-Date: Tue, 15 Jul 2008 08:09:53 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@devserv.devel.redhat.com
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-cc: davem@davemloft.net, andi@firstfloor.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: [SUGGESTION]: drop virtual merge accounting in I/O requests
-In-Reply-To: <20080715114058A.fujita.tomonori@lab.ntt.co.jp>
-Message-ID: <Pine.LNX.4.64.0807150759430.12202@devserv.devel.redhat.com>
-References: <20080713.202035.172246136.davem@davemloft.net>
- <20080715024424R.fujita.tomonori@lab.ntt.co.jp>
- <Pine.LNX.4.64.0807141720350.30981@devserv.devel.redhat.com>
- <20080715114058A.fujita.tomonori@lab.ntt.co.jp>
+	Tue, 15 Jul 2008 08:10:44 -0400
+Received: from stinky.trash.net ([213.144.137.162]:55855 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755009AbYGOMKn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 08:10:43 -0400
+Message-ID: <487C93C1.4030305@trash.net>
+Date: Tue, 15 Jul 2008 14:10:41 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Jan Engelhardt <jengelh@medozas.de>
+CC: David Howells <dhowells@redhat.com>, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix netfilter xt_time's time_mt()'s use of do_div()
+References: <20080711140206.982.19421.stgit@warthog.procyon.org.uk> <487C8D60.9040405@trash.net> <alpine.LNX.1.10.0807151400160.13215@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <alpine.LNX.1.10.0807151400160.13215@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> BTW. what should the block device driver do when it receives a mapping
->> error? (if it aborts the request and it was write request, there will be
->> data corruption).
->
-> I'm not sure how a aborted request can corrupt data on disk.
+Jan Engelhardt wrote:
+> On Tuesday 2008-07-15 13:43, Patrick McHardy wrote:
+> 
+>> David Howells wrote:
+>>> Fix netfilter xt_time's time_mt()'s use of do_div() on an s64 by using
+>>> div_s64() instead.
+>>>
+>>> This was introduced by patch ee4411a1b1e0b679c99686629b5eab5a072ce49f.
+>> Alternatively we could use an u64 for the time. Jan, any preferences?
+> 
+> ktime_t and ktime_to_ns operate on signed quantities. I do not think we 
+> should be interpreting it as unsigned.
 
-Writes are done by an async daemon and no one checks for their completion 
-status. If there are three writes to directory, inode table and inode 
-bitmap and one of these writes fail, there's no code to undo the other 
-two. So the filesystem will be corrupted on write failure.
+OK, I've applied David's patch. Thanks.
 
->> Is it even legal to return IOMMU error in case where no
->> real hardware error or overflow happened?
->
-> Of course, it's legal. It's a common event like kinda OOM. It's very
-> possible with old IOMMUs that have the small I/O space. A SCSI driver
-> retries a failed request later. But note that some drivers are still
-> not able to handle that.
->
-> http://marc.info/?l=linux-kernel&m=121300637114672&w=2
-
-So should it return SCSI_MLQUEUE_HOST_BUSY? Or something other?
-
-Unfortunatelly, many of the drivers contain BUG_ON or no check at all.
-
-Mikulas
