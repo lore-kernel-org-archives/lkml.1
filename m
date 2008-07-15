@@ -1,123 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761175AbYGOCHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761250AbYGOCIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761175AbYGOCHZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 22:07:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755242AbYGOCHM
+	id S1761250AbYGOCIS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 22:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbYGOCIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 22:07:12 -0400
-Received: from mail9.hitachi.co.jp ([133.145.228.44]:59982 "EHLO
-	mail9.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754957AbYGOCHK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 22:07:10 -0400
-X-AuditID: 0ac90648-abf7aba000000c2f-3b-487c064cf625
-Message-ID: <487C0643.8080907@hitachi.com>
-Date: Tue, 15 Jul 2008 11:06:59 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
+	Mon, 14 Jul 2008 22:08:09 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:44611 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754775AbYGOCII (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 22:08:08 -0400
+Message-ID: <487C07A4.70202@sgi.com>
+Date: Tue, 15 Jul 2008 12:12:52 +1000
+From: Lachlan McIlroy <lachlan@sgi.com>
+Reply-To: lachlan@sgi.com
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-To: Mike Snitzer <snitzer@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, jack@suse.cz,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
-       sugita <yumiko.sugita.yf@hitachi.com>
-Subject: Re: - jbd-strictly-check-for-write-errors-on-data-buffers.patch
-    removed from -mm tree
-References: <200806092212.m59MC553010889@imap1.linux-foundation.org> 
-    <484E4097.2010204@hitachi.com> 
-    <20080610021746.51e5cfa8.akpm@linux-foundation.org> 
-    <170fa0d20807140708k46f86ac1tfee50d3fa14e3e41@mail.gmail.com>
-In-Reply-To: <170fa0d20807140708k46f86ac1tfee50d3fa14e3e41@mail.gmail.com>
-Content-Type: text/plain; charset="us-ascii"
+To: Lachlan McIlroy <lachlan@sgi.com>, Mikael Abrahamsson <swmike@swm.pp.se>,
+       linux-kernel@vger.kernel.org, xfs@oss.sgi.com, linux-mm@kvack.org
+Subject: Re: xfs bug in 2.6.26-rc9
+References: <alpine.DEB.1.10.0807110939520.30192@uplift.swm.pp.se> <20080711084248.GU29319@disturbed> <alpine.DEB.1.10.0807111215040.30192@uplift.swm.pp.se> <487B019B.9090401@sgi.com> <20080714121332.GX29319@disturbed>
+In-Reply-To: <20080714121332.GX29319@disturbed>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Snitzer wrote:
-> On Tue, Jun 10, 2008 at 5:17 AM, Andrew Morton <akpm@linux-foundation.org>
-> wrote:
+Dave Chinner wrote:
+> On Mon, Jul 14, 2008 at 05:34:51PM +1000, Lachlan McIlroy wrote:
+>> Mikael Abrahamsson wrote:
+>>> On Fri, 11 Jul 2008, Dave Chinner wrote:
+>>>
+>>>> That aside, what was the assert failure reported prior to the oops?  
+>>>> i.e. paste the lines in the log before the ---[ cut here ]--- line?  
+>>>> One of them will start with 'Assertion failed:', I think....
+>>> These ones?
+>>>
+>>> Jul  8 04:44:56 via kernel: [554197.888008] Assertion failed: whichfork 
+>>> == XFS_ATTR_FORK || ip->i_delayed_blks == 0, file: fs/xfs/xfs_bmap.c,  
+>>> line: 5879
+>>> Jul  9 03:25:21 via kernel: [42940.748007] Assertion failed: whichfork  
+>>> == XFS_ATTR_FORK || ip->i_delayed_blks == 0, file: fs/xfs/xfs_bmap.c,  
+>>> line: 5879
+>> 	xfs_ilock(ip, XFS_IOLOCK_SHARED);
+>>
+>> 	if (whichfork == XFS_DATA_FORK &&
+>> 		(ip->i_delayed_blks || ip->i_size > ip->i_d.di_size)) {
+>> 		/* xfs_fsize_t last_byte = xfs_file_last_byte(ip); */
+>> 		error = xfs_flush_pages(ip, (xfs_off_t)0,
+>> 					       -1, 0, FI_REMAPF);
+>> 		if (error) {
+>> 			xfs_iunlock(ip, XFS_IOLOCK_SHARED);
+>> 		return error;
+>> 		}
+>> 	}
+>>
+>> 	ASSERT(whichfork == XFS_ATTR_FORK || ip->i_delayed_blks == 0);
+>>
+>> This is a race between xfs_fsr and a mmap write. xfs_fsr acquires the
+>> iolock and then flushes the file and because it has the iolock it doesn't
+>> expect any new delayed allocations to occur.  A mmap write can allocate
+>> delayed allocations without acquiring the iolock so is able to get in
+>> after the flush but before the ASSERT.
 > 
+> Christoph and I were contemplating this problem with ->page_mkwrite
+> reecently. The problem is that we can't, right now, return an
+> EAGAIN-like error to ->page_mkwrite() and have it retry the
+> page fault. Other parts of the page faulting code can do this,
+> so it seems like a solvable problem.
 > 
->>On Tue, 10 Jun 2008 17:51:35 +0900 Hidehiro Kawai <
->>hidehiro.kawai.ez@hitachi.com> wrote:
->>
->>
->>>Hello Andrew,
->>>
->>>akpm@linux-foundation.org wrote:
->>>
->>>
->>>>The patch titled
->>>>     jbd: strictly check for write errors on data buffers
->>>>has been removed from the -mm tree.  Its filename was
->>>>     jbd-strictly-check-for-write-errors-on-data-buffers.patch
->>>>
->>>>This patch was dropped because I don't think we want to go read-only on
->>
->>file data write errors
->>
->>>>The current -mm tree may be found at
->>
->>http://userweb.kernel.org/~akpm/mmotm/<http://userweb.kernel.org/%7Eakpm/mmotm/>
->>
->>>>------------------------------------------------------
->>>>Subject: jbd: strictly check for write errors on data buffers
->>>>From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
->>>
->>>This patch series doesn't change the behavior on file data write
->>>errors as I stated before, but we found that the current behavior has
->>>been made accidentally.  So yesterday I sent an additional patch(*)
->>>which removes the invocation of journal_abort() and thus stop making
->>>the fs read-only on file data write errors, but it seems to be late
->>>for the -mm release preparation.
->>>
->>>  Patch(*) can be found at:
->>>  http://marc.info/?l=linux-kernel&m=121300618614453&w=2
->>>
->>>Anyway, as this patch series was dropped from -mm, I'm going to
->>>send a revised version.
->>>
->>>I plan to separate these pathces into three patche set.
->>>The first patch (set) corrects the current behavior in ordered
->>>writes, it means it removes the invocation of journal_abort() on file
->>>data write errors.  It is the almost same as the patch(*).
->>>The second patch set fixes error handlings for metadata writes and
->>>checkpointing.  It should be applied independently of the first
->>>patch set, and it is the same as PATCH 3/5 to 5/5.
->>>The third patch set makes "abort the journal on file data write errors"
->>>tunable for mission critical users.  Of course, this feature depends
->>>on the first patch set.
->>>
->>
->>That sounds like a good plan, thanks.
-> 
-> Hidehiro and Andrew,
-> 
-> The first patch(set) has been in -mm with the following patches:
-> jbd-dont-abort-if-flushing-file-data-failed.patch
-> jbd-dont-abort-if-flushing-file-data-failed-fix.patch
-> 
-> "PATCH 3/5 to 5/5" haven't made their way into -mm; nor has the tunable
-> "abort the journal on file data write errors".  Where do things stand on
-> this work?
-> 
-> Given the potential for corruption and the fact that -mm's series file
-> justifiably has a place-holder comment of "jbd write-error stuff: scary" I'm
-> wondering: how soon will all associated fixes be included in -mm?
-
-Hello Mike,
-
-Sorry for my late work.  I'm going to send these two patch set soon,
-but I have a trouble, 2.6.26-rc8-mm1 doesn't boot on my box.
-So it may a bit more delay.
-
-Regards,
--- 
-Hidehiro Kawai
-Hitachi, Systems Development Laboratory
-Linux Technology Center
-
+> The basic concept is that if we can return a EAGAIN result we can
+> try-lock the inode and hold the locks necessary to avoid this race
+> or prevent the page fault from dirtying the page until the
+> filesystem is unfrozen.
+Why do we need to try-lock the inode?  Will we have an ABBA deadlock
+if we block on the iolock in ->page_mkwrite()?
