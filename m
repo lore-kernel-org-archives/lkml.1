@@ -1,84 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758794AbYGOTNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761525AbYGOTNy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758794AbYGOTNe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 15:13:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757506AbYGOTNW
+	id S1761525AbYGOTNy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 15:13:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756707AbYGOTNc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 15:13:22 -0400
-Received: from tomts20.bellnexxia.net ([209.226.175.74]:45620 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755824AbYGOTNV (ORCPT
+	Tue, 15 Jul 2008 15:13:32 -0400
+Received: from hpsmtp-eml17.kpnxchange.com ([213.75.38.117]:5307 "EHLO
+	hpsmtp-eml17.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758475AbYGOTNb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 15:13:21 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvIEAK2SfEhMRKxB/2dsb2JhbACBWq4l
-Date: Tue, 15 Jul 2008 15:08:16 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Paul E McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [patch 01/15] Kernel Tracepoints
-Message-ID: <20080715190816.GB6664@Krystal>
-References: <20080709145929.352201601@polymtl.ca> <20080709150043.693920317@polymtl.ca> <1216108237.12595.122.camel@twins> <20080715132543.GB20037@Krystal> <1216130593.12595.189.camel@twins> <20080715144628.GD20037@Krystal> <1216134829.12595.207.camel@twins> <487CF206.4010905@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 15 Jul 2008 15:13:31 -0400
+From: Frans Pop <elendil@planet.nl>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel, use it in more drivers.
+Date: Tue, 15 Jul 2008 21:13:27 +0200
+User-Agent: KMail/1.9.9
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Linus Torvalds <torvalds@linux-foundation.org>, jeff@garzik.org,
+       arjan@infradead.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080715180535.GA6080@khazad-dum.debian.net> <1216146057.27455.325.camel@shinybook.infradead.org>
+In-Reply-To: <1216146057.27455.325.camel@shinybook.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <487CF206.4010905@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 15:02:56 up 40 days, 23:43,  6 users,  load average: 4.26, 2.66,
-	1.70
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200807152113.28762.elendil@planet.nl>
+X-OriginalArrivalTime: 15 Jul 2008 19:13:29.0126 (UTC) FILETIME=[DD484C60:01C8E6AE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Masami Hiramatsu (mhiramat@redhat.com) wrote:
-> Hi,
-> 
-> Peter Zijlstra wrote:
-> > On Tue, 2008-07-15 at 10:46 -0400, Mathieu Desnoyers wrote:
-> > 
-> >> Talking about headers, I have noticed that placing headers with the code
-> >> may not be as clean as I would hope. For instance, the kernel/irq-trace.h
-> >> header, when included from kernel/irq/handle.c, has to be included with:
-> >>
-> >> #include "../irq-trace.h"
-> >>
-> >> Which is not _that_ bad, but we we want to instrument the irq handler
-> >> found in arch/x86/kernel/cpu/mcheck/mce_intel_64.c, including
-> >> #include "../../../../../kernel/irq-trace.h" makes me go "yeeeek!"
-> >>
-> >> How about creating include/trace/irq.h and friends ?
-> > 
-> > Might as well.. anybody else got opinions?
-> 
-> I just wonder why DEFINE_TRACE are used in separated headers
-> instead of include/linux/irq.h directly.
-> 
-> anyway, #include <trace/XXX.h> is good to me.
-> 
+On Tuesday 15 July 2008, David Woodhouse wrote:
+> On Tue, 2008-07-15 at 15:05 -0300, Henrique de Moraes Holschuh wrote:
+> > I believe I read in the previous thread that some distros are already
+> > using /lib/firmware/<kernel version>/.
+> >
+> > There was also the suggestion of moving the entire set of
+> > kernel-packaged firmware to /lib/modules/<kernel version>/firmware,
+> > probably while keeping /lib/firmware as a second place to look for
+> > firmware so that we don't hose any system.
+>
+> You can do that right now; I expect Ubuntu will, since their userspace
+> already looks like that. You just need to set $(INSTALL_FW_PATH) when
+> you install the firmware (or modules).
 
-Having these headers all placed nicely together will make it easier for
-people who are looking for already existing tracepoints to locate them.
+With the disclaimer that I really haven't researched this all that much I 
+think we'll end up finding that a multi-level model is needed.
 
-It's also worth noting that I am considering deploying a standard set of
-tracepoints for userspace in a relatively short time frame. e.g. having
-the ability to add tracepoints to pthread mutexes seems like an
-interesting thing to have. And that will definitely require those
-headers to sit somewhere around /usr/include/trace/ or something
-similar, otherwise trying to locate those tracepoints will be hellish.
+Something like:
+- /lib/firmware: intended for externally provided firmware and local
+  overrides; try to load from there first (version checks may fail)
+- /lib/modules/firmware: not sure if this level is necessary, but
+  could be useful for e.g. firmware for out-of-tree drivers
+- /lib/modules/$kver/firmware or
+  /lib/modules/$kver/$modulepath: firmware built (and possibly packaged
+  together with the kernel
 
-Mathieu
+Some scheme like this would introduce at least some sanity when it comes 
+to keeping control of what is installed and provided (and may therefore 
+be removed) by what and to avoid the question "how the hell did that file 
+get there and do I still actually need it with my current kernels?".
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+It sounds to me like $(INSTALL_FW_PATH) is a good start, but maybe even 
+too flexible as it does not define a standard: it allows user spaces of 
+different distros to diverge which at some point will create its own 
+nightmares.
+It's also not flexible enough as it only supports a single location for 
+firmware while clearly there can be different sources of firmware.
+
+Cheers,
+FJP
