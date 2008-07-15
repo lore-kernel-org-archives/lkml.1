@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760667AbYGOVr2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762054AbYGOVsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760667AbYGOVr2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 17:47:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbYGOVrU
+	id S1762054AbYGOVsr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 17:48:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520AbYGOVsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 17:47:20 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37906
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754520AbYGOVrU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 17:47:20 -0400
-Date: Tue, 15 Jul 2008 14:47:20 -0700 (PDT)
-Message-Id: <20080715.144720.66126410.davem@davemloft.net>
-To: dwmw2@infradead.org
-Cc: jeff@garzik.org, torvalds@linux-foundation.org, tytso@mit.edu,
-       david@lang.hm, arjan@infradead.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
- in-kernel, use it in more drivers.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1216157061.26991.41.camel@shinybook.infradead.org>
-References: <alpine.LFD.1.10.0807151218460.3351@woody.linux-foundation.org>
-	<487D1327.7090805@garzik.org>
-	<1216157061.26991.41.camel@shinybook.infradead.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Jul 2008 17:48:40 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42216 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753222AbYGOVsj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 17:48:39 -0400
+Date: Tue, 15 Jul 2008 23:48:19 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] generic ipi function calls: wait on alloc failure
+	fallback
+Message-ID: <20080715214819.GA23588@elte.hu>
+References: <487D0719.9000503@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <487D0719.9000503@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Woodhouse <dwmw2@infradead.org>
-Date: Tue, 15 Jul 2008 14:24:21 -0700
 
-> Kernel 2.6.15 with ancient userland. You update to 2.6.16, which
-> includes commit 5433383e ('convert qla2xxx to request_firmware()').
-> 
-> Same problem?
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-For the record I did get burnt by that one and I did make a huge stink
-about it.
+> When a GFP_ATOMIC allocation fails, it falls back to allocating the 
+> data on the stack and converting it to a waiting call.
+>
+> Make sure we actually wait in this case.
 
-I used to be able to avoid initrd entirely on every single one of my
-boxes, even my machines with qla2xxx based root filesystems, and that
-changeset basically meant the end of that.
+cool, thanks!
 
-I simply don't do much hacking on that particular machine any more,
-it's not worth the pain just to get a kernel that boots on it.
+does this explain the xen64 weirdnesses you've been seeing?
 
-Yes, I know I can do stupid things like use the dist's initrd image
-and just ignore the module version warnings, which is what Linus
-happens to do, but that's just too gross for my tastes.
+	Ingo
