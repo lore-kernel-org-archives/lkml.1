@@ -1,78 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761775AbYGOCW4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761386AbYGOCYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761775AbYGOCW4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 22:22:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761564AbYGOCWn
+	id S1761386AbYGOCYU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 22:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752493AbYGOCYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 22:22:43 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52769 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760719AbYGOCWm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 22:22:42 -0400
-Message-ID: <487C09EB.1050903@garzik.org>
-Date: Mon, 14 Jul 2008 22:22:35 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
- use it in more drivers.
-References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org> <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 14 Jul 2008 22:24:09 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:41642 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752229AbYGOCYI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 22:24:08 -0400
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
+	in-kernel, use it in more drivers.
+From: David Woodhouse <dwmw2@infradead.org>
+To: David Miller <davem@davemloft.net>
+Cc: jeff@garzik.org, david@lang.hm, arjan@infradead.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+In-Reply-To: <20080714.191727.223788995.davem@davemloft.net>
+References: <alpine.DEB.1.10.0807141704120.14223@asgard.lang.hm>
+	 <1216082213.27455.109.camel@shinybook.infradead.org>
+	 <487C0788.7030907@garzik.org>
+	 <20080714.191727.223788995.davem@davemloft.net>
+Content-Type: text/plain
+Date: Mon, 14 Jul 2008 19:23:55 -0700
+Message-Id: <1216088636.27455.163.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> On Mon, 14 Jul 2008, Jeff Garzik wrote:
->> IMO the newly added /inability/ to build firmware into kernel modules is a
->> clear regression.
+On Mon, 2008-07-14 at 19:17 -0700, David Miller wrote:
+> When module support was added, guess what?  I could still build a
+> completely static kernel image like I always could.
 > 
-> IMO you're being stupid.
+> And in fact, to this day, that's what I personally do because that's
+> how I like my kernels.
+
+Good. You can still do precisely that, and build the firmware into your
+kernel. You can have exactly what you like. Hey, you can build even
+_more_ firmware into your kernel now. You can have NFS-root on devices
+you previously had to use an initrd for. hth.
+
+> But this request_firmware() change does not allow one to get what he
+> could get before, which is a completely self-contained driver module
+> object file.
 > 
-> How about explainign why it makes any difference what-so-ever?
-> 
-> If you can load the module, you can load the firmware. Claiming anything 
-> else is just _stupid_.
+> This is the difference between providing an option and making
+> something mandatory.  This firmware split up is now mandatory.
 
-False -- for every router build script, driver disk build script, etc. 
-that has not yet been updated to copy both a module and the 
-/lib/firmware that the kernel tree is newly spitting out.
+In all the years we've been using request_firmware(), nobody ever asked
+for a way to build the firmware _into_ the .ko file, until now. Why is
+it suddenly so important for a small handful of older network drivers,
+when nobody else has ever seen the need for it -- even in modern network
+drivers?
 
-And for every case, the breakage is completely silent, until one boots 
-into a firmware-less image and loads drivers.
-
-
-> And if you cannot see the advantage of having _one_ interface to firmware 
-> loading, instead of each driver picking a random approach, I don't know 
-> what to say.
-
-It's a great approach!  As I've said over and over and over (and now 
-over) again.
-
-My complaints are about --not breaking stuff--, not request_firmware().
-
-You have to look at the build process, second stage image builders, 
-embedded system image creators, and other "hangers on" that do not look 
-and behave like a mainstream Linux distro.
-
-It is a mistake to assume that all systems are _already_ prepared to 
-install and digest new /lib/firmware files that the kernel build now 
-spits out.
-
-And the consequences of that assumption is a non-working driver, often a 
-non-booting system, not just a few quirks here and there.
-
-	Jeff
-
-
+-- 
+dwmw2
 
