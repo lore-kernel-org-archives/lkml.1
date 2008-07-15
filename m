@@ -1,58 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762113AbYGOSOc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762455AbYGOSPR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762113AbYGOSOc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 14:14:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757029AbYGOSOU
+	id S1762455AbYGOSPR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 14:15:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756011AbYGOSPD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 14:14:20 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:21190 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754883AbYGOSOT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 14:14:19 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Tue, 15 Jul 2008 14:14:18 -0400 (EDT)
-From: Nicolas Pitre <nico@cam.org>
-X-X-Sender: nico@xanadu.home
-To: Dan Williams <dcbw@redhat.com>
-Cc: Michael Buesch <mb@bu3sch.de>,
-       =?ISO-8859-15?Q?Stefanik_G=E1bor?= <netrolller.3d@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Linux Wireless Mini-Summit -- Ottawa -- July 22, 2008
-In-reply-to: <1216144711.13411.18.camel@localhost.localdomain>
-Message-id: <alpine.LFD.1.10.0807151404530.12484@xanadu.home>
-References: <20080709190915.GA8238@tuxdriver.com>
- <69e28c910807100912h30fcb57fpb4fb48b95c640f77@mail.gmail.com>
- <200807101815.27204.mb@bu3sch.de>
- <1216142191.6039.113.camel@localhost.localdomain>
- <alpine.LFD.1.10.0807151323570.12484@xanadu.home>
- <1216144711.13411.18.camel@localhost.localdomain>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 15 Jul 2008 14:15:03 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:39865 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757029AbYGOSPB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 14:15:01 -0400
+Message-ID: <487CE917.3000000@garzik.org>
+Date: Tue, 15 Jul 2008 14:14:47 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+CC: Frans Pop <elendil@planet.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>, arjan@infradead.org,
+       akpm@linux-foundation.org, dwmw2@infradead.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from	in-kernel,
+ use it in more drivers.
+References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org> <487C0365.5030203@garzik.org> <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org> <200807151757.10626.elendil@planet.nl> <20080715180535.GA6080@khazad-dum.debian.net>
+In-Reply-To: <20080715180535.GA6080@khazad-dum.debian.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jul 2008, Dan Williams wrote:
+Henrique de Moraes Holschuh wrote:
+> On Tue, 15 Jul 2008, Frans Pop wrote:
+>> If I were able to compile firmware into the modules, the problem would be 
+>> solved in one go.
+> 
+> And this thread would have been shorter, even. I hope someone decides to
+> write that support instead of complaining ;-)
 
-> Some of the issues with the current Marvell 83xx GPL drivers that have
-> gotten out are (a) code style, (b) lots of commented out stuff that's
-> never used, (c) OS abstraction that's unnecessary on Linux, (d) doesn't
-> use mac80211, and (e) uses private ioctls.  So hopefully you're writing
-> a new 83xx driver from scratch :)
-
-Yes, this is all from scratch.  The objective for this work is to be 
-"mainlinable".
-
-> We cleaned up a lot of stuff for the OLPC 8388 libertas driver, but
-> unfortunately we never were able to get the Marvell 8388 team onboard,
-> and so they just went off and kept working on their driver and didn't
-> really move the upstream libertas driver forward at all.
-
-Libertas is a rather different beast.
+I've volunteered -- but if Linus and David will reject my code out of 
+hand, there is not much point in writing it.
 
 
-Nicolas
+>> [2] As one of the developers for Debian Installer I'm not looking forward 
+>> to the complications that is going to cause for us and users.
+> 
+> That was my point.  These firmware loading changes are good, but there is a
+> lot of crap missing (most of it NOT in the kernel) before it can be exposed
+> to ordinary users.
+
+100% agreed.
+
+That's the point I've been trying to make all along.
+
+The end goal is good, but it's not at all ready for normal users.
+
+
+> And without firmware-in-the-module support (which is the ONLY scenario where
+> the entire userspace will not notice anything different), this WILL cause
+> problem to distros, we will need to scramble up and fix it all before we can
+> package 2.6.26.  I don't know if this is a big problem, though.  The work
+> will need to be done sooner or later anyway, and we should have enough time
+> to do so as long as we don't care for packaging the early -rc.
+
+Agreed.
+
+	Jeff
+
+
