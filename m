@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758284AbYGORmy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760712AbYGORoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758284AbYGORmy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 13:42:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbYGORmq
+	id S1760712AbYGORoK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 13:44:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753454AbYGORn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 13:42:46 -0400
-Received: from bu3sch.de ([62.75.166.246]:37543 "EHLO vs166246.vserver.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752973AbYGORmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 13:42:46 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Add dynamic MMC-over-SPI-GPIO driver
-Date: Tue, 15 Jul 2008 19:42:13 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       David Brownell <david-b@pacbell.net>,
-       Piot Skamruk <piotr.skamruk@gmail.com>,
-       Pierre Ossman <drzeus-mmc@drzeus.cx>, openwrt-devel@lists.openwrt.org
-References: <200807142109.19360.mb@bu3sch.de>
-In-Reply-To: <200807142109.19360.mb@bu3sch.de>
+	Tue, 15 Jul 2008 13:43:57 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43107 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753197AbYGORn4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 13:43:56 -0400
+Date: Tue, 15 Jul 2008 10:41:37 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeff Garzik <jeff@garzik.org>
+cc: david@lang.hm, Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
+ use it in more drivers.
+In-Reply-To: <487CDEC0.3090004@garzik.org>
+Message-ID: <alpine.LFD.1.10.0807151041080.3017@woody.linux-foundation.org>
+References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <alpine.DEB.1.10.0807141704120.14223@asgard.lang.hm> <alpine.LFD.1.10.0807141729200.3017@woody.linux-foundation.org>
+ <alpine.DEB.1.10.0807141750290.14223@asgard.lang.hm> <alpine.LFD.1.10.0807141756361.3017@woody.linux-foundation.org> <alpine.DEB.1.10.0807141805300.14223@asgard.lang.hm> <alpine.LFD.1.10.0807141903260.3017@woody.linux-foundation.org> <487C585C.2060002@garzik.org>
+ <alpine.LFD.1.10.0807150803580.3017@woody.linux-foundation.org> <487CD7FE.9010209@garzik.org> <alpine.LFD.1.10.0807151008450.3017@woody.linux-foundation.org> <487CDEC0.3090004@garzik.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807151942.13979.mb@bu3sch.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 July 2008 21:09:18 Michael Buesch wrote:
-> This driver provides a sysfs interface to dynamically create
-> and destroy GPIO-based MMC/SD card interfaces.
-> So an MMC or SD card can be connected to generic GPIO pins
-> and be configured dynamically from userspace.
-
-Ok, I had requests in private to also allow registering the platform
-device from outside of the module (and use platform data). This is
-used for certain embedded hardware from the arch
-code to statically create a GPIO-based MMC device.
-I'll add that and resend along with the proposed fixes.
-Thanks for the review! :)
 
 
--- 
-Greetings Michael.
+On Tue, 15 Jul 2008, Jeff Garzik wrote:
+> 
+> Already addressed -- you and David seem to be ignoring the common case where
+> you may update the driver but not the kernel, making that feature far less
+> useful than it appears.
+
+This is the "I'm too stupid to live" argument. I've already answered that. 
+What's so hard with "make firmware_install"?
+
+		Linus
