@@ -1,108 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762354AbYGOUkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761909AbYGOUlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762354AbYGOUkA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 16:40:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754491AbYGOUjx
+	id S1761909AbYGOUlI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 16:41:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbYGOUk4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 16:39:53 -0400
-Received: from www.tglx.de ([62.245.132.106]:39089 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753076AbYGOUjw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 16:39:52 -0400
-Date: Tue, 15 Jul 2008 22:11:02 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-cc: mingo <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Alok N Kataria <akataria@vmware.com>,
-       Alok N Kataria <akataria@vmware.com>, Dan Hecht <dhecht@vmware.com>
-Subject: Re: vread_tsc() compile error (post 2.6.26)
-In-Reply-To: <1216151261.25942.24.camel@nimitz>
-Message-ID: <alpine.LFD.1.10.0807152208380.3283@apollo.tec.linutronix.de>
-References: <1216151261.25942.24.camel@nimitz>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-2051528598-1216152667=:3283"
+	Tue, 15 Jul 2008 16:40:56 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:58560 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753475AbYGOUkz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 16:40:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=ZmZeBvgeJUgkoe/dh7uQNSWp/E918LG0iXy/81C9ZwuLM4lELny6syVZnqt5vv4KYu
+         xdHcki+Cfk5a1UOThUhKA+PTBh/WRWhBaoxtchsS8+nv6xGxuIeRZUzCVOpdGP3MxAxw
+         fZ3aurev9jtZ65s19++ALmrL6rODTvvBucjok=
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
+       akpm@linux-foundation.org
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Carl Henrik Lunde <chlunde@ping.uio.no>,
+       axboe@kernel.dk, matt@bluehost.com, roberto@unbit.it,
+       Marco Innocenti <m.innocenti@cineca.it>, randy.dunlap@oracle.com,
+       Divyesh Shah <dpshah@google.com>, subrata@linux.vnet.ibm.com,
+       eric.rannaud@gmail.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH -mm 0/3] cgroup: block device i/o bandwidth controller (v6)
+Date: Tue, 15 Jul 2008 22:40:46 +0200
+Message-Id: <1216154449-29742-1-git-send-email-righi.andrea@gmail.com>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <>
+References: <>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
---8323328-2051528598-1216152667=:3283
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+The objective of the i/o bandwidth controller is to improve i/o performance
+predictability of different cgroups sharing the same block devices.
 
-On Tue, 15 Jul 2008, Dave Hansen wrote:
-> $ git describe
-> v2.6.26-2465-g1c0fea9
-> 
-> This looks like it was caused by:
-> ﻿
-> 	8fbbc4b45ce3e4c0eeb15004c79c72b6896a79c2
-> 
-> Did this get any testing on x86-32?  It looks like this symbol has no
-> 32-bit equivalent.
+Respect to other priority/weight-based solutions the approach used by this
+controller is to explicitly choke applications' requests that directly (or
+indirectly) generate i/o activity in the system.
 
-Doh, that's odd. It compiles, links and boots here. Looks like the my gcc just
-optimizes it out without the usual "...., but not used warning"
+The direct bandwidth limiting method has the advantage of improving the
+performance predictability at the cost of reducing, in general, the overall
+performance of the system (in terms of throughput).
 
-Patch below.
+Detailed informations about design, its goal and usage are described in the
+documentation.
 
-Thanks,
+Tested against 2.6.26-rc8-mm1.
 
-	tglx
+The all-in-one patch (and previous versions) can be found at:
+http://download.systemimager.org/~arighi/linux/patches/io-throttle/
 
-> ...
->   MODPOST vmlinux.o
-> WARNING: modpost: Found 11 section mismatch(es).
-> To see full details build your kernel with:
-> 'make CONFIG_DEBUG_SECTION_MISMATCH=y'
->   GEN     .version
->   CHK     include/linux/compile.h
->   UPD     include/linux/compile.h
->   CC      init/version.o
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
-> arch/x86/kernel/built-in.o: In function `vread_tsc':
-> /home/dave/kernels/linux-2.6.git/arch/x86/kernel/tsc.c:365: undefined reference to `__vsyscall_gtod_data'
-> /home/dave/kernels/linux-2.6.git/arch/x86/kernel/tsc.c:365: undefined reference to `__vsyscall_gtod_data'
-> make: *** [.tmp_vmlinux1] Error 1
-> ﻿
-> My config:
-> 
-> http://sr71.net/~dave/linux/config-2.6.26-rc8-00089-ge1441b9
+Changelog: (v5 -> v6)
+  - do not make kernel threads to sleep
+  - do not throttle i/o for pages that need to be urgently reclaimed in
+    submit_bio(READ, ...) (i.e. tasks such as pdflush and kswapd when
+    performing writeout)
+  - minor fixes and improvements (thanks to Li Zefan review)
+  - fixed a small typo in the documentation (reported by Marco Innocenti)
 
------------------>
+TODO:
+  - see documentation
 
-Subject: x86: fix tsc unification fallout
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Tue, 15 Jul 2008 22:08:04 +0200
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- arch/x86/kernel/tsc.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-Index: linux-2.6/arch/x86/kernel/tsc.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/tsc.c
-+++ linux-2.6/arch/x86/kernel/tsc.c
-@@ -358,6 +358,7 @@ static cycle_t read_tsc(void)
- 		ret : clocksource_tsc.cycle_last;
- }
- 
-+#ifdef CONFIG_X86_64
- static cycle_t __vsyscall_fn vread_tsc(void)
- {
- 	cycle_t ret = (cycle_t)vget_cycles();
-@@ -365,6 +366,7 @@ static cycle_t __vsyscall_fn vread_tsc(v
- 	return ret >= __vsyscall_gtod_data.clock.cycle_last ?
- 		ret : __vsyscall_gtod_data.clock.cycle_last;
- }
-+#endif
- 
- static struct clocksource clocksource_tsc = {
- 	.name                   = "tsc",
---8323328-2051528598-1216152667=:3283--
+-Andrea
