@@ -1,43 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762027AbYGOR6I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761470AbYGOSAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762027AbYGOR6I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 13:58:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755328AbYGOR5o
+	id S1761470AbYGOSAs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 14:00:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbYGOSAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 13:57:44 -0400
-Received: from hpsmtp-eml15.kpnxchange.com ([213.75.38.115]:18694 "EHLO
-	hpsmtp-eml15.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755145AbYGOR5m (ORCPT
+	Tue, 15 Jul 2008 14:00:40 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43219 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752973AbYGOSAk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 13:57:42 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel, use it in more drivers.
-Date: Tue, 15 Jul 2008 19:57:36 +0200
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, jeff@garzik.org,
-       akpm@linux-foundation.org, dwmw2@infradead.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-References: <1216077806.27455.85.camel@shinybook.infradead.org> <200807151836.57983.elendil@planet.nl> <20080715103352.4a47419e@infradead.org>
-In-Reply-To: <20080715103352.4a47419e@infradead.org>
+	Tue, 15 Jul 2008 14:00:40 -0400
+Date: Tue, 15 Jul 2008 10:59:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [GIT pull] timer updates for 2.6.27
+In-Reply-To: <alpine.LFD.1.10.0807141827340.3283@apollo.tec.linutronix.de>
+Message-ID: <alpine.LFD.1.10.0807151046180.3017@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0807141827340.3283@apollo.tec.linutronix.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807151957.37773.elendil@planet.nl>
-X-OriginalArrivalTime: 15 Jul 2008 17:57:40.0412 (UTC) FILETIME=[46099FC0:01C8E6A4]
+Content-Type: TEXT/PLAIN; charset=ISO-8859-7
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 15 July 2008, Arjan van de Ven wrote:
-> > The simple answer for my current use of dep-pkg is: I don't _have_
-> > any hardware that requires firmware that's split out with current
-> > kernels.
->
-> ... and do you have any with current -git ?
 
-Haven't tried that yet. Only just finished building .26 for my boxes and 
-have other priorities ATM anyway.
-You'll hear about it on the list when I do :-)
+
+On Mon, 14 Jul 2008, Thomas Gleixner wrote:
+> 
+> Please pull the latest timers/for-linus git tree from:
+> 
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git timers/for-linus
+> ...
+> Randy Dunlap (1):
+>       acpi_pm clccksource: fix printk format warning
+
+This just _adds_ a warning. I now get
+
+drivers/clocksource/acpi_pm.c:231: warning: format ¡%04x¢ expects type ¡unsigned int¢, but argument 3 has type ¡long unsigned int¢
+
+Why? Because it only adds the (unsigned int) cast (which is wrong anyway - 
+ioports really should be long) to the ioport value, not 'base' is still 
+'unsigned long', and it removed the 'lx' from the latter too.
+
+One clean fix is probably to just make pmtmr_ioport be of type 'unsigned 
+long'. It's the right thing from a portability angle anyway - even if no 
+architecture that uses ACPI will likely ever have ioports that are long 
+anyway.
+
+The alternative - and probably better, but _much_ more intrusive - patch
+is to make 'u32' just be 'unsigned int' on x86-32, along with making 'u64' 
+be 'unsigned long long' on x86-64, which would unify more types.
+
+Anyway, I'm not fixing it right now, since it's unclear which way to go, 
+but this need to be fixed _some_ way.
+
+		Linus
