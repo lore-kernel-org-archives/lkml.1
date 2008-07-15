@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757249AbYGOEFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754537AbYGOENX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757249AbYGOEFR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 00:05:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbYGOEEs
+	id S1754537AbYGOENX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 00:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbYGOENO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 00:04:48 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:51619 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751315AbYGOEEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 00:04:47 -0400
-Date: Tue, 15 Jul 2008 14:04:39 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dave Airlie <airlied@linux.ie>
-Cc: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>,
-       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [git pull] drm tree reorganisation for merge window
-Message-Id: <20080715140439.4cfcd808.sfr@canb.auug.org.au>
-In-Reply-To: <alpine.DEB.0.82.0807142207010.3936@skynet.skynet.ie>
-References: <alpine.DEB.0.82.0807140147500.9419@skynet.skynet.ie>
-	<20080715012153.a3bb9df0.sfr@canb.auug.org.au>
-	<alpine.DEB.0.82.0807142207010.3936@skynet.skynet.ie>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__15_Jul_2008_14_04_39_+1000_8bc5G=Uw+vX_BMel"
+	Tue, 15 Jul 2008 00:13:14 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37015 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750783AbYGOENN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 00:13:13 -0400
+Date: Mon, 14 Jul 2008 21:12:38 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Max Krasnyansky <maxk@qualcomm.com>
+cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Paul Menage <menage@google.com>, Paul Jackson <pj@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, miaox@cn.fujitsu.com,
+       rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: current linux-2.6.git: cpusets completely broken
+In-Reply-To: <487C1374.8020404@qualcomm.com>
+Message-ID: <alpine.LFD.1.10.0807142104250.3017@woody.linux-foundation.org>
+References: <20080712031736.GA3040@damson.getinternet.no>  <alpine.LFD.1.10.0807112026390.2875@woody.linux-foundation.org>  <b647ffbd0807120304o7a500dc9oce761e51c9dce908@mail.gmail.com>  <alpine.LFD.1.10.0807121254490.2875@woody.linux-foundation.org> 
+ <alpine.LFD.1.10.0807121411350.2875@woody.linux-foundation.org>  <b647ffbd0807141538g2004f245m5f54ec962f475ba5@mail.gmail.com>  <alpine.LFD.1.10.0807141602250.3017@woody.linux-foundation.org>  <b647ffbd0807141700s20e54fbewafb3d3e296e57f53@mail.gmail.com> 
+ <alpine.LFD.1.10.0807141707410.3017@woody.linux-foundation.org> <b647ffbd0807141921n13ffa59x416fc024c734ef02@mail.gmail.com> <487C1374.8020404@qualcomm.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__15_Jul_2008_14_04_39_+1000_8bc5G=Uw+vX_BMel
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Dave,
 
-On Mon, 14 Jul 2008 22:08:39 +0100 (IST) Dave Airlie <airlied@linux.ie> wro=
-te:
->
-> > > Please pull the 'drm-reorg' branch from
-> > > ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git =
-drm-reorg
-> > >=20
-> > > This contains a moving around of a lot of the DRM into a more Linux l=
-ike=20
-> > > tree and makes it a lot nicer going forward for merging new features.
-> >=20
-> > Does this tree have a fix for the x86_64 allmodconfig build failures I
-> > reported against linux-next?
->=20
-> Yes I rolled them into the patch instead of cluttering up the history.
+On Mon, 14 Jul 2008, Max Krasnyansky wrote:
+> 
+> Did you guys an updated patch ? Dmitry pointed out several things that Linus
+> missed in his original version. I guess I can go through the thread and
+> reconstruct that but if you have a patch I can try let me know.
 
-Thanks.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+I didn't update it, and right now I'm just merging too much (and 
+discussing the merges) to have time.
 
---Signature=_Tue__15_Jul_2008_14_04_39_+1000_8bc5G=Uw+vX_BMel
-Content-Type: application/pgp-signature
+The patch really needs to have some scheduler person look at the use fo 
+cpu_active_map - I was kind of hoping that Ingo would.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+The other thing I wish somebody would at least double-check (and 
+preferably just remove) is the !CPU_HOTPLUG special case. For that case, I 
+literally did
 
-iEYEARECAAYFAkh8IdcACgkQjjKRsyhoI8yfAQCfezh/QOQNqhRMIA/N++NF8myX
-viUAn05aNnfUA5NVhp/3OTq4mIsdwX9d
-=5Iug
------END PGP SIGNATURE-----
+	#define cpu_active_map cpu_online_map
 
---Signature=_Tue__15_Jul_2008_14_04_39_+1000_8bc5G=Uw+vX_BMel--
+and just depended on the fact that the few cases that touched 
+cpu_online_map even when CPU_HOTPLUG was disabled would do
+
+	if (cpu_online(cpu))
+		set_cpu(cpu, cpu_active_map);
+
+(or something - I ended up discaring the patch as I was doing the whole 
+2.6.26 release, so I don't even have it in front of me right now, just in 
+my email archives and in my memory).
+
+And quite frankly, I don't think that was a good idea. It was exactly the 
+sort of "subtle cleverness" that I myself argue against. So I think that 
+aliasing of cpu_active/online_map was a mistake - it was kind of cute, but 
+there's really no good reason to do it. It's not like that one CPU map 
+wastes any memory, and the special-case simply isn't worth it.
+
+			Linus
