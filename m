@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756405AbYGOGXJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756404AbYGOG3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756405AbYGOGXJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 02:23:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754501AbYGOGW5
+	id S1756404AbYGOG3u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 02:29:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754816AbYGOG3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 02:22:57 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:35335 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754395AbYGOGW4 (ORCPT
+	Tue, 15 Jul 2008 02:29:42 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:41205 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754581AbYGOG3l convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 02:22:56 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: NOvell
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied =?utf-8?q?from=09in-kernel?=, use it in more drivers.
-Date: Tue, 15 Jul 2008 08:23:34 +0200
+	Tue, 15 Jul 2008 02:29:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=Z2p86/aKKlABAEBl/gJnz7h2sUUnrB+PBp9+2hQKQ4H0GrbZ/gW2RYnCqPjftRo+qI
+         zARP7YfTiIcrPUvFtlLOKRKE+50lNLTX5ry0A8WLwfcgd/GGWMVmnybBrX6k5/nz48m6
+         9qAl0qIV91CKbeWmNkzIx0H6cno0gHJOdGLTk=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] x86: fix numaq_tsc_disable
+Date: Mon, 14 Jul 2008 23:29:01 -0700
 User-Agent: KMail/1.9.9
-Cc: david@lang.hm, Arjan van de Ven <arjan@infradead.org>,
-       David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       rene.herman@keyaccess.nl, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-References: <487C0A12.9060906@keyaccess.nl> <alpine.DEB.1.10.0807142241040.6370@asgard> <1216101795.27455.213.camel@shinybook.infradead.org>
-In-Reply-To: <1216101795.27455.213.camel@shinybook.infradead.org>
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200807150823.35628.oliver@neukum.org>
+Message-Id: <200807142329.02273.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag 15 Juli 2008 08:03:15 schrieb David Woodhouse:
-> Mostly it follows the documented recommendation, since most of the
-> touched drivers are USB drivers and you end up re-enumerating and
-> starting from scratch on resume anyway. And the remainder are so old
-> that they don't have suspend/resume support anyway. Remember, we're only
-> really updating the older drivers; newer drivers tend to use
-> request_firmware() already, and have done for years.
 
-As for USB that was before persistance. It now allows you to even
-support a loss of power without reprobing, provided
+fix
 
-a) the devices does not change IDs
-b) you have firmware around when reset_resume() is called
+arch/x86/kernel/numaq_32.c: In function ‘numaq_tsc_disable’:
+arch/x86/kernel/numaq_32.c:99: warning: ‘return’ with a value, in function returning void
 
-	Regards
-		Oliver
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
+---
+ arch/x86/kernel/numaq_32.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6/arch/x86/kernel/numaq_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/numaq_32.c
++++ linux-2.6/arch/x86/kernel/numaq_32.c
+@@ -96,7 +96,7 @@ int __init get_memcfg_numaq(void)
+ void __init numaq_tsc_disable(void)
+ {
+ 	if (!found_numaq)
+-		return -1;
++		return;
+ 
+ 	if (num_online_nodes() > 1) {
+ 		printk(KERN_DEBUG "NUMAQ: disabling TSC\n");
