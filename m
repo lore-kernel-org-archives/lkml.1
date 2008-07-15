@@ -1,77 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755340AbYGOJ5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbYGOKEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755340AbYGOJ5V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 05:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbYGOJ5N
+	id S1755540AbYGOKEQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 06:04:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754717AbYGOKD7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 05:57:13 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:40742 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753324AbYGOJ5M (ORCPT
+	Tue, 15 Jul 2008 06:03:59 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:27346 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752645AbYGOKD6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 05:57:12 -0400
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
-	in-kernel, use it in more drivers.
-From: Marcel Holtmann <marcel@holtmann.org>
-To: David Miller <davem@davemloft.net>
-Cc: akpm@linux-foundation.org, dwmw2@infradead.org,
-       torvalds@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org, jgarzik@pobox.com, mchan@broadcom.com
-In-Reply-To: <20080714.184418.203308475.davem@davemloft.net>
-References: <1216077806.27455.85.camel@shinybook.infradead.org>
-	 <20080714164119.99c33d5b.akpm@linux-foundation.org>
-	 <20080714.184418.203308475.davem@davemloft.net>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 11:57:18 +0200
-Message-Id: <1216115838.27242.54.camel@violet.holtmann.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Jul 2008 06:03:58 -0400
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Alex Chiang <achiang@hp.com>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 01/14] Introduce cpu_enabled_map and friends
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080715023344.2528.1836.stgit@blender.achiang>
+	<20080715023349.2528.9423.stgit@blender.achiang>
+	<20080715031512.GF14894@parisc-linux.org>
+Date: Tue, 15 Jul 2008 12:03:27 +0200
+In-Reply-To: <20080715031512.GF14894@parisc-linux.org> (Matthew Wilcox's message of "Mon, 14 Jul 2008 21:15:12 -0600")
+Message-ID: <87wsjnxy4w.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 15 Jul 2008 10:03:26.0860 (UTC) FILETIME=[066624C0:01C8E662]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+Matthew Wilcox <matthew@wil.cx> writes:
+>
+> I don't understand why we want to know about these CPUs.  Surely they
+> should be 'possible', but not 'present'?  What useful thing can Linux do
+> with them?
 
-> I'm not happy for network drivers, although I'm happy to see that
-> David respected out NACKs on tg3/bnx2/etc. and didn't include those
-> bits.
-> 
-> I still haven't seen an answer to the chip reset issues.  The argument
-> has been that this stuff is going to save kernel memory when the
-> driver isn't loading firmware, but that's not really possible.
-> 
-> When a lot of these network drivers reset, due to a transmit timeout
-> or other exception, we need to load the firmware again.
-> 
-> So this means, that if request_firmware() dies or fails for some
-> reason in these scenerios, we can't reset the network card.  Something
-> as simple as a memory or other allocation failure deep inside of
-> request_firmware() means we lose the networking interface.
-> 
-> To me this seems like a very non-resilient setup.  It makes sense
-> to just keep the firmware in-core so we can load it without having
-> to even think about possible failures.
+He explained it in the intro, near the end (I nearly complained about
+this too when I hadn't finished reading it completely :):
 
-actually when we wrote request_firmware() a long time ago, the idea was
-to support various kind of setups (although until now only the on-demand
-got used).
+|The big picture implication is that we can allow userspace
+|to interact with disabled CPUs. In this particular example,
+|we provide a knob that lets a sysadmin schedule any present
+|CPU for firmware deconfiguration or enablement.
 
-So one idea was to allow minimal inclusion of firmware as binary blobs
-in the driver and allow overwriting them by loading newer version from
-the filesystem. This was intended to ensure minimal working drivers. The
-main background was that some devices work with a small firmware and
-provide basic features and only need extra firmware for advanced
-features. Everything suppose to be hidden behind request_firmware() and
-a method to register binary blobs as firmware from within a driver. So
-the driver developer really doesn't have to invent anything by himself.
+The reason sounds pretty exotic, but ok.
 
-We are not there yet and at the moment, I am not sure if this is still a
-valid requirement, but David's work goes into the right direction and is
-a good start.
-
-Regards
-
-Marcel
-
-
+-Andi
