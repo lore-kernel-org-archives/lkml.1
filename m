@@ -1,59 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbYGOQHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761029AbYGOQIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758110AbYGOQHi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 12:07:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbYGOQHb
+	id S1761029AbYGOQIR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 12:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbYGOQH6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 12:07:31 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:50071 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752155AbYGOQHa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 12:07:30 -0400
-Date: Tue, 15 Jul 2008 11:07:26 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Max Krasnyansky <maxk@qualcomm.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, maxk@qualcomm.com,
-       a.p.zijlstra@chello.nl, menage@google.com
-Subject: Re: [PATCH] cpuset: Make rebuild_sched_domains() usable from any
- context
-Message-Id: <20080715110726.5837c783.pj@sgi.com>
-In-Reply-To: <1216122293-4888-1-git-send-email-maxk@qualcomm.com>
-References: <1216122293-4888-1-git-send-email-maxk@qualcomm.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Tue, 15 Jul 2008 12:07:58 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:43755 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752515AbYGOQH4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 12:07:56 -0400
+Subject: Re: [PATCH] block: fix q->max_segment_size checking in
+	blk_recalc_rq_segments about VMERGE
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       davem@davemloft.net, linux-parisc@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0807151147040.29803@devserv.devel.redhat.com>
+References: <1216118676-13625-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	 <Pine.LNX.4.64.0807150924250.21598@devserv.devel.redhat.com>
+	 <20080715231956A.fujita.tomonori@lab.ntt.co.jp>
+	 <1216133421.3312.30.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0807151104450.26824@devserv.devel.redhat.com>
+	 <1216136503.3312.48.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0807151147040.29803@devserv.devel.redhat.com>
+Content-Type: text/plain
+Date: Tue, 15 Jul 2008 11:07:51 -0500
+Message-Id: <1216138072.3312.54.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Max K wrote:
-> Basically as Paul J. pointed out rebuild_sched_domains() is the
-> only way to rebuild sched domains correctly based on the current
-> cpuset settings. What this means is that we need to be able to
-> call it from different contexts, like cpuhotplug for example.
+On Tue, 2008-07-15 at 11:58 -0400, Mikulas Patocka wrote:
+> You are mixing two ideas here:
+> 
+> (1) virtual merging --- IOMMU maps discontinuous segments into continuous 
+> area that it presents to the device.
+> 
+> (2) virtual merge accounting --- block layer tries to guess how many 
+> segments will be created by (1) and merges small requests into big ones. 
+> The resulting requests are as big that they can't be processed by the 
+> device if (1) weren't in effect.
 
-The following is just a wild idea.
+No ... I'm not ... the virtual merge implementation requires the block
+layer to get this accounting right, otherwise the iommu code can end up
+doing the wrong thing.
 
-On systems using cpusets to setup scheduler domains (anything more
-elaborate than the default of a single, system-wide, domain) have a
-special purpose thread sit around, that does nothing except rebuild
-sched domains on demand.
+You're proposing to eliminate the difference between max_phys_segments
+and max_hw_segments without actually removing them.
 
-If this rebuild thread was the -only- way that sched domains were
-allowed to be rebuilt, and if this rebuild was done -asynchronously-
-sometime shortly after requested, without any error or status feedback,
-then it would seem to simplify the locking issues.
+> >> The problem is with vmerge accounting in block layer (that is what I'm
+> >> proposing to remove), not with vmerge itself.
+> >
+> > I don't think that's true ... otherwise parisc would be falling over
+> > left right and centre.
+> >
+> >> Vmerge accounting has advantages only if you have device with small amount
+> >> of sg slots --- it allows the block layer to create request that has
+> >> higher number of segments then the device.
+> >
+> > This isn't really true either.  A lot of devices with a high sg slot
+> > count are still less efficient than an iommu for programming.
+> 
+> --- for these devices virtual merging (1) improves performance, but 
+> virtual merge accounting (2) doesn't.
+> 
+> > Even if they're not, on parisc we have to program the iommu, we can't
+> > bypass, so it still makes sense to only have one large sg list (in the
+> > iommu) and one small one (in the device).  Having two large ones reduces
+> > our I/O throughput because of the extra overhead.
+> >
+> >> If you have device with for example 1024 slots, the virtual merge
+> >> accounting has no effect, because the any request will fit into that size.
+> >
+> > It's not about fitting a request, it's about efficient processing.
+> 
+> Virtual merge accounting (2) is about fitting a request. It is block layer 
+> technique.
+> 
+> >> Even without virtual merge accounting, the virtual merging will happen, so
+> >> there will be no performance penalty for the controller --- the controller
+> >> will be programmed with exactly the same number of segments as if virtual
+> >> merge accounting was present. (there could be even slight positive
+> >> performance effect if you remove accounting, because you burn less CPU
+> >> cycles per request)
+> >
+> > Yes there is.  Both the iommu and the device have to traverse large SG
+> > lists.  This is where the inefficiency lies.  On PA, we use exactly the
+> > same number of iotlb slots whether virtual merging is in effect or not,
+> > but the device has an internal loop to go over the list.  It's that loop
+> > that virtual merging reduces.
+> >
+> > Since the virtual merge computation is in line when the request is built
+> > (by design) it doesn't really detract from the throughput and the cost
+> > is pretty small.
+> 
+> The purpose of (1) virtual merging is to save device's sg slots. The 
+> purpose of (2) virtual merge accounting is to allow block layer to build 
+> larger requests. If you remove virtual merge accounting, it will cause no 
+> increase in number of sg slots used.
+> 
+> >>> I suspect with IOMMUs coming back (and being unable to be bypassed) with
+> >>> virtualisation, virtual merging might once more become a significant
+> >>> value.
+> >>
+> >> I suppose that no one would manufacture new SCSI card with 16 or 32 sg
+> >> slots these days, so the accounting of hardware segments has no effect on
+> >> modern hardware.
+> >
+> > It's not about accounting, it's about performance.  There's a cost in
+> > every device to traversing large count sg lists.  If you have to bear it
+> > in the iommu (which is usually more efficient because the iotlb tends to
+> > follow mmtlb optimisations) you can reduce the cost by eliminating it
+> > from the device.
+> 
+> That's why I'm proposing to remove virtual merge accounting (2), but leave 
+> virtual merging (1) itself. The accounting doesn't reduce number of sg 
+> slots.
 
-I would guess that any system big enough to have a non-default, cpuset
-determined, sched domain configuration is big enough to not mind one
-more thread sitting around, doing nothing most of the time.
+Yes, but it's gains very little ... architectures that don't want it can
+already turn it off, and it's useful for those, like parisc, who do.
 
-If the above is a really stupid idea, have fun taking out your
-agression on it ;).
+James
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+
