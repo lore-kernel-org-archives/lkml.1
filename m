@@ -1,53 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756472AbYGOXQG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757029AbYGOXQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756472AbYGOXQG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 19:16:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbYGOXPz
+	id S1757029AbYGOXQx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 19:16:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753726AbYGOXQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 19:15:55 -0400
-Received: from mail-out2.uio.no ([129.240.10.58]:45525 "EHLO mail-out2.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751794AbYGOXPy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 19:15:54 -0400
-Subject: Re: [PATCH 2/7] dynamic debug v2 - nfs conversion
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: jbaron@redhat.com, linux-kernel@vger.kernel.org, joe@perches.com,
-       greg@kroah.com, nick@nick-andrew.net, randy.dunlap@oracle.com
-In-Reply-To: <1216162567.7981.82.camel@localhost>
-References: <20080715213241.GC23331@redhat.com>
-	 <1216161003.7981.73.camel@localhost>
-	 <20080715154323.b7d5f14d.akpm@linux-foundation.org>
-	 <1216162567.7981.82.camel@localhost>
+	Tue, 15 Jul 2008 19:16:46 -0400
+Received: from mail-in-12.arcor-online.net ([151.189.21.52]:60666 "EHLO
+	mail-in-12.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752189AbYGOXQp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 19:16:45 -0400
+Subject: Re: [PATCH] V4L: Link tuner before saa7134
+From: hermann pitton <hermann-pitton@arcor.de>
+To: Simon Arlott <simon@fire.lp0.eu>,
+       Hartmut Hackmann <hartmut.hackmann@t-online.de>
+Cc: v4l-dvb-maintainer@linuxtv.org, Linux DVB <linux-dvb@linuxtv.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <487D1964.7050607@simon.arlott.org.uk>
+References: <4878F314.6090608@simon.arlott.org.uk>
+	 <1215919227.2662.3.camel@pc10.localdom.local>
+	 <487D1964.7050607@simon.arlott.org.uk>
 Content-Type: text/plain
-Date: Tue, 15 Jul 2008 19:15:45 -0400
-Message-Id: <1216163745.7981.90.camel@localhost>
+Date: Wed, 16 Jul 2008 01:12:16 +0200
+Message-Id: <1216163536.4290.17.camel@pc10.localdom.local>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 18B72734C1FAE7FC2727C9F8730E105AA1379987
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 49 total 9205510 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-15 at 18:56 -0400, Trond Myklebust wrote:
+Hi Simon,
 
-> The point is that he is changing a semi-official interface for tracing
-> the NFS kernel activity from userspace. I'd like to know why and how it
-> is being modified before I can ack it.
+Am Dienstag, den 15.07.2008, 22:40 +0100 schrieb Simon Arlott:
+> If saa7134_init is run before v4l2_i2c_drv_init (tuner),
+> then saa7134_board_init2 will try to set the tuner type
+> for devices that don't exist yet. This moves tuner to
+> before all of the device-specific drivers so that it's
+> loaded early enough on boot.
 > 
-> In addition there are several other developers who have a daily interest
-> in using this interface when helping our users, and who might have
-> comments.
+> Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+> ---
+> Resend... I accidentally left the git-send-email headers in.
+> 
+> Mailman appears to be easily confused too: 
+> http://www.linuxtv.org/pipermail/linux-dvb/2008-July/027205.html
 
-OK. Having looked up the missing patch on gmane, I'd like to know
-whether or not there is a followup plan to fix up utilities like
-'rpcdebug'? Apparently this patch doesn't remove the existing sunrpc
-sysctl interface, but does circumvent it. The result is that while
-rpcdebug will happily continue to run, it just won't work any more...
+the saa713x maintainer after Gerd is actually Hartmut.
 
-Trond
+He might not have always the time for it immediately, but should have a
+copy of what is going on.
+
+Actually, these problems are within the build system and should not even
+come down to a driver maintainer.
+
+The crowd here is used to have some trouble concerning the build, best
+was when guys like Trent did watch out for it before we had some impact.
+
+Cheers,
+Hermann
+
+>  drivers/media/video/Makefile |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/media/video/Makefile b/drivers/media/video/Makefile
+> index ecbbfaa..6b0af12 100644
+> --- a/drivers/media/video/Makefile
+> +++ b/drivers/media/video/Makefile
+> @@ -18,6 +18,8 @@ ifeq ($(CONFIG_VIDEO_V4L1_COMPAT),y)
+>    obj-$(CONFIG_VIDEO_DEV) += v4l1-compat.o
+>  endif
+>  
+> +obj-$(CONFIG_VIDEO_TUNER) += tuner.o
+> +
+>  obj-$(CONFIG_VIDEO_BT848) += bt8xx/
+>  obj-$(CONFIG_VIDEO_IR_I2C)  += ir-kbd-i2c.o
+>  obj-$(CONFIG_VIDEO_TVAUDIO) += tvaudio.o
+> @@ -84,8 +86,6 @@ obj-$(CONFIG_VIDEO_HEXIUM_GEMINI) += hexium_gemini.o
+>  obj-$(CONFIG_VIDEO_DPC) += dpc7146.o
+>  obj-$(CONFIG_TUNER_3036) += tuner-3036.o
+>  
+> -obj-$(CONFIG_VIDEO_TUNER) += tuner.o
+> -
+>  obj-$(CONFIG_VIDEOBUF_GEN) += videobuf-core.o
+>  obj-$(CONFIG_VIDEOBUF_DMA_SG) += videobuf-dma-sg.o
+>  obj-$(CONFIG_VIDEOBUF_VMALLOC) += videobuf-vmalloc.o
+> -- 
+> 1.5.6.2
+> 
 
