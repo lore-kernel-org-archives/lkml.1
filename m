@@ -1,41 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762635AbYGOW3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762735AbYGOWaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762635AbYGOW3w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 18:29:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761777AbYGOW2z
+	id S1762735AbYGOWaV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 18:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761846AbYGOW24
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 18:28:55 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:47222 "EHLO smtp.polymtl.ca"
+	Tue, 15 Jul 2008 18:28:56 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:47226 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761480AbYGOW2y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1761587AbYGOW2y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 15 Jul 2008 18:28:54 -0400
-Message-Id: <20080715222747.520809773@polymtl.ca>
+Message-Id: <20080715222747.290133980@polymtl.ca>
 References: <20080715222604.331269462@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 15 Jul 2008 18:26:11 -0400
+Date: Tue, 15 Jul 2008 18:26:10 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
        Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "David S. Miller" <davem@davemloft.net>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
        "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
        Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: [patch 07/17] LTTng instrumentation - timer
-Content-Disposition: inline; filename=lttng-instrumentation-timer.patch
+Subject: [patch 06/17] LTTng instrumentation - scheduler
+Content-Disposition: inline; filename=lttng-instrumentation-scheduler.patch
 X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Tue, 15 Jul 2008 22:27:50 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Instrument timer activity (timer set, expired, current time updates) to keep
-information about the "real time" flow within the kernel. It can be used by a
-trace analysis tool to synchronize information coming from various sources, e.g.
-to merge traces with system logs.
-
-Those tracepoints are used by LTTng.
+Instrument the scheduler activity (sched_switch, migration, wakeups, wait for a
+task, signal delivery) and process/thread creation/destruction (fork, exit,
+kthread stop). Actually, kthread creation is not instrumented in this patch
+because it is architecture dependent. It allows to connect tracers such as
+ftrace which detects scheduling latencies, good/bad scheduler decisions. Tools
+like LTTng can export this scheduler information along with instrumentation of
+the rest of the kernel activity to perform post-mortem analysis on the scheduler
+activity.
 
 About the performance impact of tracepoints (which is comparable to markers),
 even without immediate values optimizations, tests done by Hideo Aoki on ia64
@@ -43,126 +45,251 @@ show no regression. His test case was using hackbench on a kernel where
 scheduler instrumentation (about 5 events in code scheduler code) was added.
 See the "Tracepoints" patch header for performance result detail.
 
+Changelog :
+- Change instrumentation location and parameter to match ftrace instrumentation,
+  previously done with kernel markers.
+
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: 'Ingo Molnar' <mingo@elte.hu>
-CC: "David S. Miller" <davem@davemloft.net>
-CC: Masami Hiramatsu <mhiramat@redhat.com>
 CC: 'Peter Zijlstra' <peterz@infradead.org>
+CC: 'Steven Rostedt' <rostedt@goodmis.org>
+CC: Thomas Gleixner <tglx@linutronix.de>
+CC: Masami Hiramatsu <mhiramat@redhat.com>
 CC: "Frank Ch. Eigler" <fche@redhat.com>
+CC: 'Ingo Molnar' <mingo@elte.hu>
 CC: 'Hideo AOKI' <haoki@redhat.com>
 CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
-CC: 'Steven Rostedt' <rostedt@goodmis.org>
 CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 ---
- include/trace/timer.h |   24 ++++++++++++++++++++++++
- kernel/itimer.c       |    5 +++++
- kernel/timer.c        |    8 +++++++-
- 3 files changed, 36 insertions(+), 1 deletion(-)
+ include/trace/sched.h |   45 +++++++++++++++++++++++++++++++++++++++++++++
+ kernel/exit.c         |    6 ++++++
+ kernel/fork.c         |    3 +++
+ kernel/kthread.c      |    5 +++++
+ kernel/sched.c        |   17 ++++++-----------
+ kernel/signal.c       |    3 +++
+ 6 files changed, 68 insertions(+), 11 deletions(-)
 
-Index: linux-2.6-lttng/kernel/itimer.c
+Index: linux-2.6-lttng/kernel/kthread.c
 ===================================================================
---- linux-2.6-lttng.orig/kernel/itimer.c	2008-07-15 14:49:14.000000000 -0400
-+++ linux-2.6-lttng/kernel/itimer.c	2008-07-15 15:14:28.000000000 -0400
-@@ -12,6 +12,7 @@
- #include <linux/time.h>
- #include <linux/posix-timers.h>
- #include <linux/hrtimer.h>
-+#include <trace/timer.h>
+--- linux-2.6-lttng.orig/kernel/kthread.c	2008-07-15 14:51:49.000000000 -0400
++++ linux-2.6-lttng/kernel/kthread.c	2008-07-15 15:12:54.000000000 -0400
+@@ -13,6 +13,7 @@
+ #include <linux/file.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
++#include <trace/sched.h>
  
- #include <asm/uaccess.h>
+ #define KTHREAD_NICE_LEVEL (-5)
  
-@@ -132,6 +133,8 @@ enum hrtimer_restart it_real_fn(struct h
- 	struct signal_struct *sig =
- 		container_of(timer, struct signal_struct, real_timer);
+@@ -187,6 +188,8 @@ int kthread_stop(struct task_struct *k)
+ 	/* It could exit after stop_info.k set, but before wake_up_process. */
+ 	get_task_struct(k);
  
-+	trace_timer_itimer_expired(sig);
++	trace_sched_kthread_stop(k);
 +
- 	kill_pid_info(SIGALRM, SEND_SIG_PRIV, sig->leader_pid);
+ 	/* Must init completion *before* thread sees kthread_stop_info.k */
+ 	init_completion(&kthread_stop_info.done);
+ 	smp_wmb();
+@@ -202,6 +205,8 @@ int kthread_stop(struct task_struct *k)
+ 	ret = kthread_stop_info.err;
+ 	mutex_unlock(&kthread_stop_lock);
  
- 	return HRTIMER_NORESTART;
-@@ -157,6 +160,8 @@ int do_setitimer(int which, struct itime
- 	    !timeval_valid(&value->it_interval))
- 		return -EINVAL;
- 
-+	trace_timer_itimer_set(which, value);
++	trace_sched_kthread_stop_ret(ret);
 +
- 	switch (which) {
- 	case ITIMER_REAL:
- again:
-Index: linux-2.6-lttng/kernel/timer.c
+ 	return ret;
+ }
+ EXPORT_SYMBOL(kthread_stop);
+Index: linux-2.6-lttng/kernel/sched.c
 ===================================================================
---- linux-2.6-lttng.orig/kernel/timer.c	2008-07-15 14:51:50.000000000 -0400
-+++ linux-2.6-lttng/kernel/timer.c	2008-07-15 15:14:28.000000000 -0400
-@@ -37,12 +37,14 @@
- #include <linux/delay.h>
- #include <linux/tick.h>
- #include <linux/kallsyms.h>
-+#include <trace/timer.h>
+--- linux-2.6-lttng.orig/kernel/sched.c	2008-07-15 14:51:50.000000000 -0400
++++ linux-2.6-lttng/kernel/sched.c	2008-07-15 15:13:49.000000000 -0400
+@@ -71,6 +71,7 @@
+ #include <linux/debugfs.h>
+ #include <linux/ctype.h>
+ #include <linux/ftrace.h>
++#include <trace/sched.h>
+ 
+ #include <asm/tlb.h>
+ #include <asm/irq_regs.h>
+@@ -1987,6 +1988,7 @@ void wait_task_inactive(struct task_stru
+ 		 * just go back and repeat.
+ 		 */
+ 		rq = task_rq_lock(p, &flags);
++		trace_sched_wait_task(rq, p);
+ 		running = task_running(rq, p);
+ 		on_rq = p->se.on_rq;
+ 		task_rq_unlock(rq, &flags);
+@@ -2337,9 +2339,7 @@ out_activate:
+ 	success = 1;
+ 
+ out_running:
+-	trace_mark(kernel_sched_wakeup,
+-		"pid %d state %ld ## rq %p task %p rq->curr %p",
+-		p->pid, p->state, rq, p, rq->curr);
++	trace_sched_wakeup(rq, p);
+ 	check_preempt_curr(rq, p);
+ 
+ 	p->state = TASK_RUNNING;
+@@ -2472,9 +2472,7 @@ void wake_up_new_task(struct task_struct
+ 		p->sched_class->task_new(rq, p);
+ 		inc_nr_running(rq);
+ 	}
+-	trace_mark(kernel_sched_wakeup_new,
+-		"pid %d state %ld ## rq %p task %p rq->curr %p",
+-		p->pid, p->state, rq, p, rq->curr);
++	trace_sched_wakeup_new(rq, p);
+ 	check_preempt_curr(rq, p);
+ #ifdef CONFIG_SMP
+ 	if (p->sched_class->task_wake_up)
+@@ -2647,11 +2645,7 @@ context_switch(struct rq *rq, struct tas
+ 	struct mm_struct *mm, *oldmm;
+ 
+ 	prepare_task_switch(rq, prev, next);
+-	trace_mark(kernel_sched_schedule,
+-		"prev_pid %d next_pid %d prev_state %ld "
+-		"## rq %p prev %p next %p",
+-		prev->pid, next->pid, prev->state,
+-		rq, prev, next);
++	trace_sched_switch(rq, prev, next);
+ 	mm = next->mm;
+ 	oldmm = prev->active_mm;
+ 	/*
+@@ -2884,6 +2878,7 @@ static void sched_migrate_task(struct ta
+ 	    || unlikely(cpu_is_offline(dest_cpu)))
+ 		goto out;
+ 
++	trace_sched_migrate_task(rq, p, dest_cpu);
+ 	/* force the process onto the specified CPU */
+ 	if (migrate_task(p, dest_cpu, &req)) {
+ 		/* Need to wait for migration thread (might exit: take ref). */
+Index: linux-2.6-lttng/kernel/exit.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/exit.c	2008-07-15 14:51:49.000000000 -0400
++++ linux-2.6-lttng/kernel/exit.c	2008-07-15 15:12:54.000000000 -0400
+@@ -46,6 +46,7 @@
+ #include <linux/resource.h>
+ #include <linux/blkdev.h>
+ #include <linux/task_io_accounting_ops.h>
++#include <trace/sched.h>
  
  #include <asm/uaccess.h>
  #include <asm/unistd.h>
- #include <asm/div64.h>
- #include <asm/timex.h>
- #include <asm/io.h>
-+#include <asm/irq_regs.h>
+@@ -149,6 +150,7 @@ static void __exit_signal(struct task_st
  
- u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
- 
-@@ -288,6 +290,7 @@ static void internal_add_timer(struct tv
- 		i = (expires >> (TVR_BITS + 3 * TVN_BITS)) & TVN_MASK;
- 		vec = base->tv5.vec + i;
- 	}
-+	trace_timer_set(timer);
- 	/*
- 	 * Timers are FIFO:
- 	 */
-@@ -1066,6 +1069,7 @@ void do_timer(unsigned long ticks)
+ static void delayed_put_task_struct(struct rcu_head *rhp)
  {
- 	jiffies_64 += ticks;
- 	update_times(ticks);
-+	trace_timer_update_time(&xtime, &wall_to_monotonic);
++	trace_sched_process_free(container_of(rhp, struct task_struct, rcu));
+ 	put_task_struct(container_of(rhp, struct task_struct, rcu));
  }
  
- #ifdef __ARCH_WANT_SYS_ALARM
-@@ -1147,7 +1151,9 @@ asmlinkage long sys_getegid(void)
+@@ -1040,6 +1042,8 @@ NORET_TYPE void do_exit(long code)
  
- static void process_timeout(unsigned long __data)
- {
--	wake_up_process((struct task_struct *)__data);
-+	struct task_struct *task = (struct task_struct *)__data;
-+	trace_timer_timeout(task);
-+	wake_up_process(task);
- }
+ 	if (group_dead)
+ 		acct_process();
++	trace_sched_process_exit(tsk);
++
+ 	exit_sem(tsk);
+ 	exit_files(tsk);
+ 	exit_fs(tsk);
+@@ -1524,6 +1528,8 @@ static long do_wait(enum pid_type type, 
+ 	struct task_struct *tsk;
+ 	int flag, retval;
  
- /**
-Index: linux-2.6-lttng/include/trace/timer.h
++	trace_sched_process_wait(pid);
++
+ 	add_wait_queue(&current->signal->wait_chldexit,&wait);
+ repeat:
+ 	/* If there is nothing that can match our critier just get out */
+Index: linux-2.6-lttng/kernel/fork.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/fork.c	2008-07-15 14:51:49.000000000 -0400
++++ linux-2.6-lttng/kernel/fork.c	2008-07-15 15:14:23.000000000 -0400
+@@ -56,6 +56,7 @@
+ #include <linux/proc_fs.h>
+ #include <linux/blkdev.h>
+ #include <linux/magic.h>
++#include <trace/sched.h>
+ 
+ #include <asm/pgtable.h>
+ #include <asm/pgalloc.h>
+@@ -1362,6 +1363,8 @@ long do_fork(unsigned long clone_flags,
+ 	if (!IS_ERR(p)) {
+ 		struct completion vfork;
+ 
++		trace_sched_process_fork(current, p);
++
+ 		nr = task_pid_vnr(p);
+ 
+ 		if (clone_flags & CLONE_PARENT_SETTID)
+Index: linux-2.6-lttng/kernel/signal.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/signal.c	2008-07-15 14:49:14.000000000 -0400
++++ linux-2.6-lttng/kernel/signal.c	2008-07-15 15:12:54.000000000 -0400
+@@ -26,6 +26,7 @@
+ #include <linux/freezer.h>
+ #include <linux/pid_namespace.h>
+ #include <linux/nsproxy.h>
++#include <trace/sched.h>
+ 
+ #include <asm/param.h>
+ #include <asm/uaccess.h>
+@@ -807,6 +808,8 @@ static int send_signal(int sig, struct s
+ 	struct sigpending *pending;
+ 	struct sigqueue *q;
+ 
++	trace_sched_signal_send(sig, t);
++
+ 	assert_spin_locked(&t->sighand->siglock);
+ 	if (!prepare_signal(sig, t))
+ 		return 0;
+Index: linux-2.6-lttng/include/trace/sched.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/include/trace/timer.h	2008-07-15 15:14:28.000000000 -0400
-@@ -0,0 +1,24 @@
-+#ifndef _TRACE_TIMER_H
-+#define _TRACE_TIMER_H
++++ linux-2.6-lttng/include/trace/sched.h	2008-07-15 15:12:54.000000000 -0400
+@@ -0,0 +1,45 @@
++#ifndef _TRACE_SCHED_H
++#define _TRACE_SCHED_H
 +
++#include <linux/sched.h>
 +#include <linux/tracepoint.h>
 +
-+DEFINE_TRACE(timer_itimer_expired,
-+	TPPROTO(struct signal_struct *sig),
-+	TPARGS(sig));
-+DEFINE_TRACE(timer_itimer_set,
-+	TPPROTO(int which, struct itimerval *value),
-+	TPARGS(which, value));
-+DEFINE_TRACE(timer_set,
-+	TPPROTO(struct timer_list *timer),
-+	TPARGS(timer));
-+/*
-+ * xtime_lock is taken when kernel_timer_update_time tracepoint is reached.
-+ */
-+DEFINE_TRACE(timer_update_time,
-+	TPPROTO(struct timespec *_xtime, struct timespec *_wall_to_monotonic),
-+	TPARGS(_xtime, _wall_to_monotonic));
-+DEFINE_TRACE(timer_timeout,
++DEFINE_TRACE(sched_kthread_stop,
++	TPPROTO(struct task_struct *t),
++	TPARGS(t));
++DEFINE_TRACE(sched_kthread_stop_ret,
++	TPPROTO(int ret),
++	TPARGS(ret));
++DEFINE_TRACE(sched_wait_task,
++	TPPROTO(struct rq *rq, struct task_struct *p),
++	TPARGS(rq, p));
++DEFINE_TRACE(sched_wakeup,
++	TPPROTO(struct rq *rq, struct task_struct *p),
++	TPARGS(rq, p));
++DEFINE_TRACE(sched_wakeup_new,
++	TPPROTO(struct rq *rq, struct task_struct *p),
++	TPARGS(rq, p));
++DEFINE_TRACE(sched_switch,
++	TPPROTO(struct rq *rq, struct task_struct *prev,
++		struct task_struct *next),
++	TPARGS(rq, prev, next));
++DEFINE_TRACE(sched_migrate_task,
++	TPPROTO(struct rq *rq, struct task_struct *p, int dest_cpu),
++	TPARGS(rq, p, dest_cpu));
++DEFINE_TRACE(sched_process_free,
 +	TPPROTO(struct task_struct *p),
 +	TPARGS(p));
++DEFINE_TRACE(sched_process_exit,
++	TPPROTO(struct task_struct *p),
++	TPARGS(p));
++DEFINE_TRACE(sched_process_wait,
++	TPPROTO(struct pid *pid),
++	TPARGS(pid));
++DEFINE_TRACE(sched_process_fork,
++	TPPROTO(struct task_struct *parent, struct task_struct *child),
++	TPARGS(parent, child));
++DEFINE_TRACE(sched_signal_send,
++	TPPROTO(int sig, struct task_struct *p),
++	TPARGS(sig, p));
++
 +#endif
 
 -- 
