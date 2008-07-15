@@ -1,69 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761642AbYGOSzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756412AbYGOS4A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761642AbYGOSzr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 14:55:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbYGOSzj
+	id S1756412AbYGOS4A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 14:56:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756818AbYGOSzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 14:55:39 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48077 "EHLO mx1.redhat.com"
+	Tue, 15 Jul 2008 14:55:41 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:42005 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755781AbYGOSzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 14:55:38 -0400
-Message-ID: <487CF206.4010905@redhat.com>
-Date: Tue, 15 Jul 2008 14:52:54 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
+	id S1756616AbYGOSzk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 14:55:40 -0400
+Message-ID: <487CF29E.5000009@garzik.org>
+Date: Tue, 15 Jul 2008 14:55:26 -0400
+From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, "Frank Ch. Eigler" <fche@redhat.com>,
-       Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Paul E McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [patch 01/15] Kernel Tracepoints
-References: <20080709145929.352201601@polymtl.ca>	 <20080709150043.693920317@polymtl.ca> <1216108237.12595.122.camel@twins>	 <20080715132543.GB20037@Krystal> <1216130593.12595.189.camel@twins>	 <20080715144628.GD20037@Krystal> <1216134829.12595.207.camel@twins>
-In-Reply-To: <1216134829.12595.207.camel@twins>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-2022-JP
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Frans Pop <elendil@planet.nl>, arjan@infradead.org,
+       akpm@linux-foundation.org, dwmw2@infradead.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
+ use it in more drivers.
+References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org> <487C0365.5030203@garzik.org> <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org> <200807151757.10626.elendil@planet.nl> <20080715180535.GA6080@khazad-dum.debian.net> <487CE917.3000000@garzik.org> <alpine.LFD.1.10.0807151122010.3017@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807151122010.3017@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-Peter Zijlstra wrote:
-> On Tue, 2008-07-15 at 10:46 -0400, Mathieu Desnoyers wrote:
+Linus Torvalds wrote:
 > 
->> Talking about headers, I have noticed that placing headers with the code
->> may not be as clean as I would hope. For instance, the kernel/irq-trace.h
->> header, when included from kernel/irq/handle.c, has to be included with:
->>
->> #include "../irq-trace.h"
->>
->> Which is not _that_ bad, but we we want to instrument the irq handler
->> found in arch/x86/kernel/cpu/mcheck/mce_intel_64.c, including
->> #include "../../../../../kernel/irq-trace.h" makes me go "yeeeek!"
->>
->> How about creating include/trace/irq.h and friends ?
+> On Tue, 15 Jul 2008, Jeff Garzik wrote:
 > 
-> Might as well.. anybody else got opinions?
+>> Henrique de Moraes Holschuh wrote:
+>>> On Tue, 15 Jul 2008, Frans Pop wrote:
+>>>> If I were able to compile firmware into the modules, the problem would be
+>>>> solved in one go.
+>>> And this thread would have been shorter, even. I hope someone decides to
+>>> write that support instead of complaining ;-)
+>> I've volunteered -- but if Linus and David will reject my code out of hand,
+>> there is not much point in writing it.
+> 
+> Quite frankly, I don't think it's something to reject out of hand, but it 
+> does sound pretty damn stupid.
+> 
+> Why compile them into the module, when that's just the _inflexible_ model?
 
-I just wonder why DEFINE_TRACE are used in separated headers
-instead of include/linux/irq.h directly.
+Because it works today.
 
-anyway, #include <trace/XXX.h> is good to me.
+Because that is what people and their scripts expect, today.
 
--- 
-Masami Hiramatsu
+Because people should not be forced to fix all their firmware-related 
+breakage immediately, just to boot 2.6.27.
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
 
-e-mail: mhiramat@redhat.com
+> I'm not seeing why you cannot accept change.
+
+It is highly feasible to do the change without breaking stuff and 
+removing choice.
+
+Beer can be great tasting AND less filling.
+
+	Jeff
+
 
