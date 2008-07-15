@@ -1,77 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763658AbYGOUpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753517AbYGOUp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763658AbYGOUpj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 16:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763579AbYGOUo3
+	id S1753517AbYGOUp6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 16:45:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762367AbYGOUox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 16:44:29 -0400
-Received: from gw.goop.org ([64.81.55.164]:47252 "EHLO mail.goop.org"
+	Tue, 15 Jul 2008 16:44:53 -0400
+Received: from gw.goop.org ([64.81.55.164]:47262 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763092AbYGOUo2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 16:44:28 -0400
-Message-ID: <487D0AEB.6080304@goop.org>
-Date: Tue, 15 Jul 2008 13:39:07 -0700
+	id S1763433AbYGOUov (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 16:44:51 -0400
+Message-ID: <487D0BBA.8010602@goop.org>
+Date: Tue, 15 Jul 2008 13:42:34 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Mike Frysinger <vapier.adi@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] mm: fix ptep_modify_* for no-MMU systems
-References: <8bd0f97a0807030638g5eb8f0eavd740e990b1cdf1c5@mail.gmail.com>	 <486CF610.7000905@goop.org> <8bd0f97a0807150724x8f7095dl9b5d2e203053223f@mail.gmail.com>
-In-Reply-To: <8bd0f97a0807150724x8f7095dl9b5d2e203053223f@mail.gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: [PATCH] xen: report hypervisor version
 X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixes build problem: 
- the functions added to asm-generic/pgtable.h are only used by
- mm/mprotect.c (a MMU-only file), but they were not added inside of the
- CONFIG_MMU ifdef block.  since the functions rely on things inside of
- CONFIG_MMU (the lines just above in pgtable.h), we get build failure
- on all no-mmu setups:
-   CC      init/main.o
- In file included from include/asm/pgtable.h:94,
-                  from include/linux/mm.h:39,
-                  from include/asm/dma.h:39,
-                  from include/linux/bootmem.h:8,
-                  from init/main.c:27:
- include/asm-generic/pgtable.h: In function '__ptep_modify_prot_start':
- include/asm-generic/pgtable.h:210: error: implicit declaration of
- function 'ptep_get_and_clear'
- include/asm-generic/pgtable.h:210: error: incompatible types in return
- make[1]: *** [init/main.o] Error 1
- make: *** [init/main.o] Error 2
+Various versions of the hypervisor have differences in what ABIs and
+features they support.  Print some details into the boot log to help
+with remote debugging.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: Adrian Bunk <bunk@kernel.org>
-Cc: Mike Frysinger <vapier.adi@gmail.com>
 ---
- include/asm-generic/pgtable.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/xen/enlighten.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
 ===================================================================
---- a/include/asm-generic/pgtable.h
-+++ b/include/asm-generic/pgtable.h
-@@ -195,7 +195,6 @@
- 	}
- 	return 0;
- }
--#endif /* CONFIG_MMU */
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -168,10 +168,14 @@ void xen_vcpu_restore(void)
  
- static inline pte_t __ptep_modify_prot_start(struct mm_struct *mm,
- 					     unsigned long addr,
-@@ -253,6 +252,7 @@
- 	__ptep_modify_prot_commit(mm, addr, ptep, pte);
+ static void __init xen_banner(void)
+ {
++	unsigned version = HYPERVISOR_xen_version(XENVER_version, NULL);
++	struct xen_extraversion extra;
++	HYPERVISOR_xen_version(XENVER_extraversion, &extra);
++
+ 	printk(KERN_INFO "Booting paravirtualized kernel on %s\n",
+ 	       pv_info.name);
+-	printk(KERN_INFO "Hypervisor signature: %s%s\n",
+-	       xen_start_info->magic,
++	printk(KERN_INFO "Xen version: %d.%d%s%s\n",
++	       version >> 16, version & 0xffff, extra.extraversion,
+ 	       xen_feature(XENFEAT_mmu_pt_update_preserve_ad) ? " (preserve-AD)" : "");
  }
- #endif /* __HAVE_ARCH_PTEP_MODIFY_PROT_TRANSACTION */
-+#endif /* CONFIG_MMU */
  
- /*
-  * A facility to provide lazy MMU batching.  This allows PTE updates and
 
 
 
