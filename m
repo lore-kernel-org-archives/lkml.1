@@ -1,50 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762950AbYGOWbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762629AbYGOWbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762950AbYGOWbA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 18:31:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761994AbYGOW26
+	id S1762629AbYGOWbZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 18:31:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762095AbYGOW3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 18:28:58 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:47238 "EHLO smtp.polymtl.ca"
+	Tue, 15 Jul 2008 18:29:00 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:47241 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761895AbYGOW25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 18:28:57 -0400
-Message-Id: <20080715222748.856581704@polymtl.ca>
+	id S1762021AbYGOW27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 18:28:59 -0400
+Message-Id: <20080715222746.813437960@polymtl.ca>
 References: <20080715222604.331269462@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 15 Jul 2008 18:26:17 -0400
+Date: Tue, 15 Jul 2008 18:26:08 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
        Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       William Lee Irwin III <wli@holomorphy.com>,
        "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
        Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: [patch 13/17] LTTng instrumentation - hugetlb
-Content-Disposition: inline; filename=lttng-instrumentation-hugetlb.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Tue, 15 Jul 2008 22:27:51 +0000
+Subject: [patch 04/17] Tracepoints Samples
+Content-Disposition: inline; filename=tracepoints-samples.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Tue, 15 Jul 2008 22:27:49 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Instrumentation of hugetlb activity (alloc/free/reserve/grab/release).
-
-Those tracepoints are used by LTTng.
-
-About the performance impact of tracepoints (which is comparable to markers),
-even without immediate values optimizations, tests done by Hideo Aoki on ia64
-show no regression. His test case was using hackbench on a kernel where
-scheduler instrumentation (about 5 events in code scheduler code) was added.
-See the "Tracepoints" patch header for performance result detail.
-
-Changelog :
-- instrument page grab, buddy allocator alloc, page release.
+Tracepoint example code under samples/.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: William Lee Irwin III <wli@holomorphy.com>
 CC: Masami Hiramatsu <mhiramat@redhat.com>
 CC: 'Peter Zijlstra' <peterz@infradead.org>
 CC: "Frank Ch. Eigler" <fche@redhat.com>
@@ -54,164 +41,235 @@ CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
 CC: 'Steven Rostedt' <rostedt@goodmis.org>
 CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 ---
- include/trace/hugetlb.h |   28 ++++++++++++++++++++++++++++
- mm/hugetlb.c            |   41 +++++++++++++++++++++++++++++------------
- 2 files changed, 57 insertions(+), 12 deletions(-)
+ samples/Kconfig                                |    6 ++
+ samples/Makefile                               |    2 
+ samples/tracepoints/Makefile                   |    6 ++
+ samples/tracepoints/tp-samples-trace.h         |   13 +++++
+ samples/tracepoints/tracepoint-probe-sample.c  |   55 +++++++++++++++++++++++++
+ samples/tracepoints/tracepoint-probe-sample2.c |   42 +++++++++++++++++++
+ samples/tracepoints/tracepoint-sample.c        |   53 ++++++++++++++++++++++++
+ 7 files changed, 176 insertions(+), 1 deletion(-)
 
-Index: linux-2.6-lttng/mm/hugetlb.c
+Index: linux-2.6-lttng/samples/Kconfig
 ===================================================================
---- linux-2.6-lttng.orig/mm/hugetlb.c	2008-07-15 13:54:45.000000000 -0400
-+++ linux-2.6-lttng/mm/hugetlb.c	2008-07-15 14:05:36.000000000 -0400
-@@ -14,6 +14,7 @@
- #include <linux/mempolicy.h>
- #include <linux/cpuset.h>
- #include <linux/mutex.h>
-+#include <trace/hugetlb.h>
+--- linux-2.6-lttng.orig/samples/Kconfig	2008-07-07 09:59:25.000000000 -0400
++++ linux-2.6-lttng/samples/Kconfig	2008-07-07 10:00:07.000000000 -0400
+@@ -13,6 +13,12 @@ config SAMPLE_MARKERS
+ 	help
+ 	  This build markers example modules.
  
- #include <asm/page.h>
- #include <asm/pgtable.h>
-@@ -123,6 +124,7 @@ static struct page *dequeue_huge_page_vm
- static void update_and_free_page(struct page *page)
- {
- 	int i;
-+	trace_hugetlb_page_release(page);
- 	nr_huge_pages--;
- 	nr_huge_pages_node[page_to_nid(page)]--;
- 	for (i = 0; i < (HPAGE_SIZE / PAGE_SIZE); i++) {
-@@ -141,6 +143,7 @@ static void free_huge_page(struct page *
- 	int nid = page_to_nid(page);
- 	struct address_space *mapping;
- 
-+	trace_hugetlb_page_free(page);
- 	mapping = (struct address_space *) page_private(page);
- 	set_page_private(page, 0);
- 	BUG_ON(page_count(page));
-@@ -205,7 +208,8 @@ static struct page *alloc_fresh_huge_pag
- 	if (page) {
- 		if (arch_prepare_hugepage(page)) {
- 			__free_pages(page, HUGETLB_PAGE_ORDER);
--			return NULL;
-+			page = NULL;
-+			goto end;
- 		}
- 		set_compound_page_dtor(page, free_huge_page);
- 		spin_lock(&hugetlb_lock);
-@@ -214,7 +218,8 @@ static struct page *alloc_fresh_huge_pag
- 		spin_unlock(&hugetlb_lock);
- 		put_page(page); /* free it into the hugepage allocator */
- 	}
--
-+end:
-+	trace_hugetlb_page_grab(page);
- 	return page;
- }
- 
-@@ -288,7 +293,8 @@ static struct page *alloc_buddy_huge_pag
- 	spin_lock(&hugetlb_lock);
- 	if (surplus_huge_pages >= nr_overcommit_huge_pages) {
- 		spin_unlock(&hugetlb_lock);
--		return NULL;
-+		page = NULL;
-+		goto end;
- 	} else {
- 		nr_huge_pages++;
- 		surplus_huge_pages++;
-@@ -321,7 +327,8 @@ static struct page *alloc_buddy_huge_pag
- 		__count_vm_event(HTLB_BUDDY_PGALLOC_FAIL);
- 	}
- 	spin_unlock(&hugetlb_lock);
--
-+end:
-+	trace_hugetlb_buddy_pgalloc(page);
- 	return page;
- }
- 
-@@ -510,6 +517,7 @@ static struct page *alloc_huge_page(stru
- 		set_page_refcounted(page);
- 		set_page_private(page, (unsigned long) mapping);
- 	}
-+	trace_hugetlb_page_alloc(page);
- 	return page;
- }
- 
-@@ -1292,27 +1300,36 @@ out:
- 
- int hugetlb_reserve_pages(struct inode *inode, long from, long to)
- {
--	long ret, chg;
-+	int ret;
-+	long chg;
- 
- 	chg = region_chg(&inode->i_mapping->private_list, from, to);
--	if (chg < 0)
--		return chg;
-+	if (chg < 0) {
-+		ret = chg;
-+		goto end;
-+	}
- 
--	if (hugetlb_get_quota(inode->i_mapping, chg))
--		return -ENOSPC;
-+	if (hugetlb_get_quota(inode->i_mapping, chg)) {
-+		ret = -ENOSPC;
-+		goto end;
-+	}
- 	ret = hugetlb_acct_memory(chg);
- 	if (ret < 0) {
- 		hugetlb_put_quota(inode->i_mapping, chg);
--		return ret;
-+		goto end;
- 	}
- 	region_add(&inode->i_mapping->private_list, from, to);
--	return 0;
-+end:
-+	trace_hugetlb_pages_reserve(inode, from, to, ret);
-+	return ret;
- }
- 
- void hugetlb_unreserve_pages(struct inode *inode, long offset, long freed)
- {
--	long chg = region_truncate(&inode->i_mapping->private_list, offset);
-+	long chg;
- 
-+	trace_hugetlb_pages_unreserve(inode, offset, freed);
-+	chg = region_truncate(&inode->i_mapping->private_list, offset);
- 	spin_lock(&inode->i_lock);
- 	inode->i_blocks -= BLOCKS_PER_HUGEPAGE * freed;
- 	spin_unlock(&inode->i_lock);
-Index: linux-2.6-lttng/include/trace/hugetlb.h
++config SAMPLE_TRACEPOINTS
++	tristate "Build tracepoints examples -- loadable modules only"
++	depends on TRACEPOINTS && m
++	help
++	  This build tracepoints example modules.
++
+ config SAMPLE_KOBJECT
+ 	tristate "Build kobject examples"
+ 	help
+Index: linux-2.6-lttng/samples/tracepoints/Makefile
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/include/trace/hugetlb.h	2008-07-15 14:05:36.000000000 -0400
-@@ -0,0 +1,28 @@
-+#ifndef _TRACE_HUGETLB_H
-+#define _TRACE_HUGETLB_H
++++ linux-2.6-lttng/samples/tracepoints/Makefile	2008-07-07 10:53:09.000000000 -0400
+@@ -0,0 +1,6 @@
++# builds the tracepoint example kernel modules;
++# then to use one (as root):  insmod <module_name.ko>
 +
++obj-$(CONFIG_SAMPLE_TRACEPOINTS) += tracepoint-sample.o
++obj-$(CONFIG_SAMPLE_TRACEPOINTS) += tracepoint-probe-sample.o
++obj-$(CONFIG_SAMPLE_TRACEPOINTS) += tracepoint-probe-sample2.o
+Index: linux-2.6-lttng/samples/tracepoints/tracepoint-probe-sample.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/samples/tracepoints/tracepoint-probe-sample.c	2008-07-07 10:50:26.000000000 -0400
+@@ -0,0 +1,55 @@
++/*
++ * tracepoint-probe-sample.c
++ *
++ * sample tracepoint probes.
++ */
++
++#include <linux/module.h>
++#include <linux/file.h>
++#include <linux/dcache.h>
++#include "tp-samples-trace.h"
++
++/*
++ * Here the caller only guarantees locking for struct file and struct inode.
++ * Locking must therefore be done in the probe to use the dentry.
++ */
++static void probe_subsys_event(struct inode *inode, struct file *file)
++{
++	path_get(&file->f_path);
++	dget(file->f_path.dentry);
++	printk(KERN_INFO "Event is encountered with filename %s\n",
++		file->f_path.dentry->d_name.name);
++	dput(file->f_path.dentry);
++	path_put(&file->f_path);
++}
++
++static void probe_subsys_eventb(void)
++{
++	printk(KERN_INFO "Event B is encountered\n");
++}
++
++int __init tp_sample_trace_init(void)
++{
++	int ret;
++
++	ret = register_trace_subsys_event(probe_subsys_event);
++	WARN_ON(ret);
++	ret = register_trace_subsys_eventb(probe_subsys_eventb);
++	WARN_ON(ret);
++
++	return 0;
++}
++
++module_init(tp_sample_trace_init);
++
++void __exit tp_sample_trace_exit(void)
++{
++	unregister_trace_subsys_eventb(probe_subsys_eventb);
++	unregister_trace_subsys_event(probe_subsys_event);
++}
++
++module_exit(tp_sample_trace_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Mathieu Desnoyers");
++MODULE_DESCRIPTION("Tracepoint Probes Samples");
+Index: linux-2.6-lttng/samples/tracepoints/tracepoint-sample.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/samples/tracepoints/tracepoint-sample.c	2008-07-07 10:04:16.000000000 -0400
+@@ -0,0 +1,53 @@
++/* tracepoint-sample.c
++ *
++ * Executes a tracepoint when /proc/tracepoint-example is opened.
++ *
++ * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
++
++#include <linux/module.h>
++#include <linux/sched.h>
++#include <linux/proc_fs.h>
++#include "tp-samples-trace.h"
++
++struct proc_dir_entry *pentry_example;
++
++static int my_open(struct inode *inode, struct file *file)
++{
++	int i;
++
++	trace_subsys_event(inode, file);
++	for (i = 0; i < 10; i++)
++		trace_subsys_eventb();
++	return -EPERM;
++}
++
++static struct file_operations mark_ops = {
++	.open = my_open,
++};
++
++static int example_init(void)
++{
++	printk(KERN_ALERT "example init\n");
++	pentry_example = proc_create("tracepoint-example", 0444, NULL,
++		&mark_ops);
++	if (!pentry_example)
++		return -EPERM;
++	return 0;
++}
++
++static void example_exit(void)
++{
++	printk(KERN_ALERT "example exit\n");
++	remove_proc_entry("tracepoint-example", NULL);
++}
++
++module_init(example_init)
++module_exit(example_exit)
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Mathieu Desnoyers");
++MODULE_DESCRIPTION("Tracepoint example");
+Index: linux-2.6-lttng/samples/tracepoints/tp-samples-trace.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/samples/tracepoints/tp-samples-trace.h	2008-07-07 10:06:26.000000000 -0400
+@@ -0,0 +1,13 @@
++#ifndef _TP_SAMPLES_TRACE_H
++#define _TP_SAMPLES_TRACE_H
++
++#include <linux/proc_fs.h>	/* for struct inode and struct file */
 +#include <linux/tracepoint.h>
 +
-+DEFINE_TRACE(hugetlb_page_release,
-+	TPPROTO(struct page *page),
-+	TPARGS(page));
-+DEFINE_TRACE(hugetlb_page_grab,
-+	TPPROTO(struct page *page),
-+	TPARGS(page));
-+DEFINE_TRACE(hugetlb_buddy_pgalloc,
-+	TPPROTO(struct page *page),
-+	TPARGS(page));
-+DEFINE_TRACE(hugetlb_page_alloc,
-+	TPPROTO(struct page *page),
-+	TPARGS(page));
-+DEFINE_TRACE(hugetlb_page_free,
-+	TPPROTO(struct page *page),
-+	TPARGS(page));
-+DEFINE_TRACE(hugetlb_pages_reserve,
-+	TPPROTO(struct inode *inode, long from, long to, int ret),
-+	TPARGS(inode, from, to, ret));
-+DEFINE_TRACE(hugetlb_pages_unreserve,
-+	TPPROTO(struct inode *inode, long offset, long freed),
-+	TPARGS(inode, offset, freed));
-+
++DEFINE_TRACE(subsys_event,
++	TPPROTO(struct inode *inode, struct file *file),
++	TPARGS(inode, file));
++DEFINE_TRACE(subsys_eventb,
++	TPPROTO(void),
++	TPARGS());
 +#endif
+Index: linux-2.6-lttng/samples/Makefile
+===================================================================
+--- linux-2.6-lttng.orig/samples/Makefile	2008-07-07 10:44:50.000000000 -0400
++++ linux-2.6-lttng/samples/Makefile	2008-07-07 10:44:59.000000000 -0400
+@@ -1,3 +1,3 @@
+ # Makefile for Linux samples code
+ 
+-obj-$(CONFIG_SAMPLES)	+= markers/ kobject/ kprobes/
++obj-$(CONFIG_SAMPLES)	+= markers/ kobject/ kprobes/ tracepoints/
+Index: linux-2.6-lttng/samples/tracepoints/tracepoint-probe-sample2.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/samples/tracepoints/tracepoint-probe-sample2.c	2008-07-07 10:56:09.000000000 -0400
+@@ -0,0 +1,42 @@
++/*
++ * tracepoint-probe-sample2.c
++ *
++ * 2nd sample tracepoint probes.
++ */
++
++#include <linux/module.h>
++#include <linux/fs.h>
++#include "tp-samples-trace.h"
++
++/*
++ * Here the caller only guarantees locking for struct file and struct inode.
++ * Locking must therefore be done in the probe to use the dentry.
++ */
++static void probe_subsys_event(struct inode *inode, struct file *file)
++{
++	printk(KERN_INFO "Event is encountered with inode number %lu\n",
++		inode->i_ino);
++}
++
++int __init tp_sample_trace_init(void)
++{
++	int ret;
++
++	ret = register_trace_subsys_event(probe_subsys_event);
++	WARN_ON(ret);
++
++	return 0;
++}
++
++module_init(tp_sample_trace_init);
++
++void __exit tp_sample_trace_exit(void)
++{
++	unregister_trace_subsys_event(probe_subsys_event);
++}
++
++module_exit(tp_sample_trace_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Mathieu Desnoyers");
++MODULE_DESCRIPTION("Tracepoint Probes Samples");
 
 -- 
 Mathieu Desnoyers
