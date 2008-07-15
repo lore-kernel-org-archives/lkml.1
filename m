@@ -1,41 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763463AbYGOWdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763709AbYGOWcy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763463AbYGOWdn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 18:33:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762526AbYGOW33
+	id S1763709AbYGOWcy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 18:32:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756936AbYGOW3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 18:29:29 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:47361 "EHLO smtp.polymtl.ca"
+	Tue, 15 Jul 2008 18:29:14 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:47313 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761597AbYGOW3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 18:29:25 -0400
-Message-Id: <20080715222749.098349597@polymtl.ca>
+	id S1762294AbYGOW3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 18:29:13 -0400
+Message-Id: <20080715222748.214360024@polymtl.ca>
 References: <20080715222604.331269462@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 15 Jul 2008 18:26:18 -0400
+Date: Tue, 15 Jul 2008 18:26:14 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
        Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, netdev@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>, "Frank Ch. Eigler" <fche@redhat.com>,
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, linux-mm@kvack.org,
+       Dave Hansen <haveblue@us.ibm.com>, "Frank Ch. Eigler" <fche@redhat.com>,
        Hideo AOKI <haoki@redhat.com>,
        Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: [patch 14/17] LTTng instrumentation - net
-Content-Disposition: inline; filename=lttng-instrumentation-net.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Tue, 15 Jul 2008 22:27:52 +0000
+Subject: [patch 10/17] LTTng instrumentation - swap
+Content-Disposition: inline; filename=lttng-instrumentation-swap.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Tue, 15 Jul 2008 22:27:51 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Network device activity instrumentation (xmit/receive). Allows to detect when a
-packet had arrived on the network card or when it is going to be sent. This is
-the instrumentation point outside of the drivers that is the closest to the
-hardware. It allows to detect the amount of time taken by a packet to go through
-the kernel between the system call and the actual delivery to the network card
-(given that system calls are instrumented).
+Instrumentation of waits caused by swap activity. Also instrumentation
+swapon/swapoff events to keep track of active swap partitions.
 
 Those tracepoints are used by LTTng.
 
@@ -46,9 +42,8 @@ scheduler instrumentation (about 5 events in code scheduler code) was added.
 See the "Tracepoints" patch header for performance result detail.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: netdev@vger.kernel.org
-CC: Jeff Garzik <jgarzik@pobox.com>
+CC: linux-mm@kvack.org
+CC: Dave Hansen <haveblue@us.ibm.com>
 CC: Masami Hiramatsu <mhiramat@redhat.com>
 CC: 'Peter Zijlstra' <peterz@infradead.org>
 CC: "Frank Ch. Eigler" <fche@redhat.com>
@@ -58,55 +53,111 @@ CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
 CC: 'Steven Rostedt' <rostedt@goodmis.org>
 CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 ---
- include/trace/net.h |   14 ++++++++++++++
- net/core/dev.c      |    3 +++
- 2 files changed, 17 insertions(+)
+ include/trace/swap.h |   20 ++++++++++++++++++++
+ mm/memory.c          |    2 ++
+ mm/page_io.c         |    2 ++
+ mm/swapfile.c        |    4 ++++
+ 4 files changed, 28 insertions(+)
 
-Index: linux-2.6-lttng/net/core/dev.c
+Index: linux-2.6-lttng/mm/memory.c
 ===================================================================
---- linux-2.6-lttng.orig/net/core/dev.c	2008-07-15 14:51:51.000000000 -0400
-+++ linux-2.6-lttng/net/core/dev.c	2008-07-15 15:15:59.000000000 -0400
-@@ -121,6 +121,7 @@
- #include <linux/ctype.h>
- #include <linux/if_arp.h>
- #include <linux/if_vlan.h>
-+#include <trace/net.h>
+--- linux-2.6-lttng.orig/mm/memory.c	2008-07-15 13:54:46.000000000 -0400
++++ linux-2.6-lttng/mm/memory.c	2008-07-15 14:02:54.000000000 -0400
+@@ -51,6 +51,7 @@
+ #include <linux/init.h>
+ #include <linux/writeback.h>
+ #include <linux/memcontrol.h>
++#include <trace/swap.h>
  
- #include "net-sysfs.h"
- 
-@@ -1702,6 +1703,7 @@ int dev_queue_xmit(struct sk_buff *skb)
+ #include <asm/pgalloc.h>
+ #include <asm/uaccess.h>
+@@ -2213,6 +2214,7 @@ static int do_swap_page(struct mm_struct
+ 		/* Had to read the page from swap area: Major fault */
+ 		ret = VM_FAULT_MAJOR;
+ 		count_vm_event(PGMAJFAULT);
++		trace_swap_in(page, entry);
  	}
  
- gso:
-+	trace_net_dev_xmit(skb);
- 	txq = &dev->tx_queue;
- 	spin_lock_prefetch(&txq->lock);
+ 	if (mem_cgroup_charge(page, mm, GFP_KERNEL)) {
+Index: linux-2.6-lttng/mm/page_io.c
+===================================================================
+--- linux-2.6-lttng.orig/mm/page_io.c	2008-07-15 13:54:46.000000000 -0400
++++ linux-2.6-lttng/mm/page_io.c	2008-07-15 14:02:54.000000000 -0400
+@@ -17,6 +17,7 @@
+ #include <linux/bio.h>
+ #include <linux/swapops.h>
+ #include <linux/writeback.h>
++#include <trace/swap.h>
+ #include <asm/pgtable.h>
  
-@@ -2107,6 +2109,7 @@ int netif_receive_skb(struct sk_buff *sk
+ static struct bio *get_swap_bio(gfp_t gfp_flags, pgoff_t index,
+@@ -114,6 +115,7 @@ int swap_writepage(struct page *page, st
+ 		rw |= (1 << BIO_RW_SYNC);
+ 	count_vm_event(PSWPOUT);
+ 	set_page_writeback(page);
++	trace_swap_out(page);
+ 	unlock_page(page);
+ 	submit_bio(rw, bio);
+ out:
+Index: linux-2.6-lttng/mm/swapfile.c
+===================================================================
+--- linux-2.6-lttng.orig/mm/swapfile.c	2008-07-15 13:54:46.000000000 -0400
++++ linux-2.6-lttng/mm/swapfile.c	2008-07-15 14:02:54.000000000 -0400
+@@ -32,6 +32,7 @@
+ #include <asm/pgtable.h>
+ #include <asm/tlbflush.h>
+ #include <linux/swapops.h>
++#include <trace/swap.h>
  
- 	__get_cpu_var(netdev_rx_stat).total++;
+ DEFINE_SPINLOCK(swap_lock);
+ unsigned int nr_swapfiles;
+@@ -1310,6 +1311,7 @@ asmlinkage long sys_swapoff(const char _
+ 	swap_map = p->swap_map;
+ 	p->swap_map = NULL;
+ 	p->flags = 0;
++	trace_swap_file_close(swap_file);
+ 	spin_unlock(&swap_lock);
+ 	mutex_unlock(&swapon_mutex);
+ 	vfree(swap_map);
+@@ -1695,6 +1697,7 @@ asmlinkage long sys_swapon(const char __
+ 	} else {
+ 		swap_info[prev].next = p - swap_info;
+ 	}
++	trace_swap_file_open(swap_file, name);
+ 	spin_unlock(&swap_lock);
+ 	mutex_unlock(&swapon_mutex);
+ 	error = 0;
+@@ -1796,6 +1799,7 @@ get_swap_info_struct(unsigned type)
+ {
+ 	return &swap_info[type];
+ }
++EXPORT_SYMBOL_GPL(get_swap_info_struct);
  
-+	trace_net_dev_receive(skb);
- 	skb_reset_network_header(skb);
- 	skb_reset_transport_header(skb);
- 	skb->mac_len = skb->network_header - skb->mac_header;
-Index: linux-2.6-lttng/include/trace/net.h
+ /*
+  * swap_lock prevents swap_map being freed. Don't grab an extra
+Index: linux-2.6-lttng/include/trace/swap.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/include/trace/net.h	2008-07-15 15:14:54.000000000 -0400
-@@ -0,0 +1,14 @@
-+#ifndef _TRACE_NET_H
-+#define _TRACE_NET_H
++++ linux-2.6-lttng/include/trace/swap.h	2008-07-15 14:02:54.000000000 -0400
+@@ -0,0 +1,20 @@
++#ifndef _TRACE_SWAP_H
++#define _TRACE_SWAP_H
 +
-+#include <net/sock.h>
++#include <linux/swap.h>
 +#include <linux/tracepoint.h>
 +
-+DEFINE_TRACE(net_dev_xmit,
-+	TPPROTO(struct sk_buff *skb),
-+	TPARGS(skb));
-+DEFINE_TRACE(net_dev_receive,
-+	TPPROTO(struct sk_buff *skb),
-+	TPARGS(skb));
++DEFINE_TRACE(swap_in,
++	TPPROTO(struct page *page, swp_entry_t entry),
++	TPARGS(page, entry));
++DEFINE_TRACE(swap_out,
++	TPPROTO(struct page *page),
++	TPARGS(page));
++DEFINE_TRACE(swap_file_open,
++	TPPROTO(struct file *file, char *filename),
++	TPARGS(file, filename));
++DEFINE_TRACE(swap_file_close,
++	TPPROTO(struct file *file),
++	TPARGS(file));
 +
 +#endif
 
