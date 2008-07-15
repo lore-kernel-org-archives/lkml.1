@@ -1,148 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762574AbYGOUXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762189AbYGOUYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762574AbYGOUXA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 16:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbYGOUWu
+	id S1762189AbYGOUYe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 16:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbYGOUY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 16:22:50 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54098 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753947AbYGOUWt (ORCPT
+	Tue, 15 Jul 2008 16:24:27 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:57303 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752851AbYGOUY0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 16:22:49 -0400
-Date: Tue, 15 Jul 2008 13:22:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: hannes@saeurebad.de, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, stable@kernel.org
-Subject: Re: [PATCH 00/20] generic show_mem() v5
-Message-Id: <20080715132203.a9482685.akpm@linux-foundation.org>
-In-Reply-To: <1216148794.25942.11.camel@nimitz>
-References: <20080704160737.750988999@saeurebad.de>
-	<1216148794.25942.11.camel@nimitz>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 15 Jul 2008 16:24:26 -0400
+Subject: Re: [RFC] systemtap: begin the process of using proper kernel APIs
+	(part1: use kprobe symbol_name/offset instead of address)
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
+In-Reply-To: <20080715200718.GC4280@redhat.com>
+References: <1216146802.3312.95.camel__45052.4692344063$1216146917$gmane$org@localhost.localdomain>
+	 <y0mr69vj5p0.fsf@ton.toronto.redhat.com>
+	 <1216151526.3312.102.camel@localhost.localdomain>
+	 <20080715200718.GC4280@redhat.com>
+Content-Type: text/plain
+Date: Tue, 15 Jul 2008 15:24:22 -0500
+Message-Id: <1216153462.3312.126.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jul 2008 12:06:34 -0700
-Dave Hansen <dave@linux.vnet.ibm.com> wrote:
-
-> What's holding this up?
-
-Stuck in my backlog, sorry.  Not lost.
-
-> I'm getting a pretty regular oops that this series would have fixed.
-
-Well the patches were far too late for 2.6.26 and you've hit a bug in (I
-assume 2.6.26) so we need a 2.6.26.1 fix asap and that megapatchbomb
-series is not appropriate.
-
-So the best approach is to get the short-form fix tested and merged
-first, so we can also fix 2.6.26.x.
-
-
->  I
-> have a temporary workaround patch attached, but it would conflict with
-> this, and I'd hate to muck up its merge.
+On Tue, 2008-07-15 at 16:07 -0400, Frank Ch. Eigler wrote:
+> On Tue, Jul 15, 2008 at 02:52:06PM -0500, James Bottomley wrote:
 > 
-> [127227.081586] IP: [<c011c5bb>] show_mem+0x8b/0x250
-> [127227.091751] Oops: 0000 [#1] SMP
-> [127227.095152] Modules linked in: kqemu authenc esp4 aead xfrm4_mode_tunnel nls_iso8859_1 vfat fat rfcomm l2cap kvm_intel kvm tun ppdev acpi_cpufreq cpufreq_stats cpufreq_ondemand freq_table cpufreq_powersave cpufreq_userspace cpufreq_conservative sbs container sbshc iptable_filter ip_tables x_tables deflate zlib_deflate des_generic cbc aes_generic xcbc sha256_generic sha1_generic af_key dummy dm_crypt dm_mod lp joydev snd_hda_intel snd_pcm_oss snd_pcm snd_mixer_oss snd_seq_dummy snd_seq_oss af_packet snd_seq_midi_event snd_seq arc4 ecb usbhid snd_timer pcmcia crypto_blkcipher usb_storage snd_seq_device psmouse thinkpad_acpi iwl4965 iwlcore hid serio_raw libusual hci_usb sdhci mac80211 led_class snd parport_pc parport mmc_core ricoh_mmc yenta_socket rsrc_nonstatic pcmcia_core button soundcore cfg80211 nvram evdev snd_page_alloc ohci1394 ieee1394 ehci_hcd uhci_hcd usbcore e1000 thermal processor fan fuse
-> [127227.095152]
-> [127227.095152] Pid: 0, comm: swapper Not tainted (2.6.26-rc8-00089-ge1441b9 #24)
-> [127227.095152] EIP: 0060:[<c011c5bb>] EFLAGS: 00010206 CPU: 0
-> [127227.095152] EIP is at show_mem+0x8b/0x250
-> [127227.095152] EAX: 01800000 EBX: 000c0000 ECX: 00000018 EDX: 01800000
-> [127227.095152] ESI: c04b5700 EDI: 0013c000 EBP: c0536e10 ESP: c0536de8
-> [127227.095152]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> [127227.095152] Process swapper (pid: 0, ti=c0536000 task=c04afa40 task.ti=c04e8000)
-> [127227.095152] Stack: c04574fa 00000000 00088000 0000000b 00060e45 00002f19 000c0001 c04b6b24
-> [127227.095152]        c04afa40 00004020 c0536e5c c016b067 c045fddc c04afd41 00000002 00004020
-> [127227.095152]        c04b6b04 00000000 00000032 00000000 00000001 00000000 c04b6b00 00000002
-> [127227.095152] Call Trace:
-> [127227.095152]  [<c016b067>] ? __alloc_pages_internal+0x3d7/0x420
-> [127227.095152]  [<c016b0c2>] ? __alloc_pages+0x12/0x20
-> [127227.095152]  [<c016b102>] ? __get_free_pages+0x12/0x30
-> [127227.095152]  [<c018d262>] ? __kmalloc_track_caller+0xd2/0x100
-> [127227.095152]  [<c031bb44>] ? skb_copy+0x34/0x90
-> [127227.095152]  [<c031b43b>] ? __alloc_skb+0x4b/0x100
-> [127227.095152]  [<c031bb44>] ? skb_copy+0x34/0x90
-> [127227.095152]  [<f8ba234b>] ? __ieee80211_rx_handle_packet+0x13b/0x1f0 [mac80211]
-> [127227.095152]  [<f8ba2906>] ? __ieee80211_rx+0xb6/0xc0 [mac80211]
-> [127227.095152]  [<f8b91ad3>] ? ieee80211_tasklet_handler+0x103/0x110 [mac80211]
-> [127227.095152]  [<c013257b>] ? tasklet_action+0xcb/0xe0
-> [127227.095152]  [<c0132161>] ? __do_softirq+0x81/0x110
-> [127227.095152]  [<c0105f1e>] ? do_softirq+0x6e/0xd0
-> [127227.095152]  [<c0160cd0>] ? handle_fasteoi_irq+0x0/0xd0
-> [127227.095152]  [<c0132255>] ? irq_exit+0x45/0x50
-> [127227.095152]  [<c0105da1>] ? do_IRQ+0x91/0xf0
-> [127227.095152]  [<c010479b>] ? common_interrupt+0x23/0x28
-> [127227.095152]  [<c014007b>] ? sys_timer_create+0xeb/0x2a0
-> [127227.095152]  [<f8862079>] ? acpi_processor_idle+0x30f/0x47c [processor]
-> [127227.095152]  [<f8861d6a>] ? acpi_processor_idle+0x0/0x47c [processor]
-> [127227.095152]  [<c0102122>] ? cpu_idle+0x92/0xe0
-> [127227.095152]  [<c038d6de>] ? rest_init+0x4e/0x50
-> [127227.095152]  =======================
-> [127227.095152] Code: f7 c3 ff 03 00 00 0f 84 bc 01 00 00 8b 86 34 14 00 00 ff 45 f0 01 d8 89 c2 c1 ea 11 8b 14 d5 00 a3 59 c0 c1 e0 05 83 e2 fc 01 c2 <8b> 0a 89 c8 c1 e8 17 83 e0 03 8d 04 80 c1 e0 08 05 00 57 4b c0
-> [127227.095152] EIP: [<c011c5bb>] show_mem+0x8b/0x250 SS:ESP 0068:c0536de8
-> [127227.704832] Kernel panic - not syncing: Fatal exception in interrupt
+> > [...]
+> > > > One of the big nasties of systemtap is the way it tries to embed
+> > > > virtually the entirety of the kernel symbol table in the probe
+> > > > modules it constructs.
+> > > 
+> > > It is a compromise of conflicting requirements. 
+> > 
+> > Well ... in order to make forward progress, since the systemtap people
+> > expressed a desire to be better integrated with the kernel, the first
+> > order of business is to use the correct APIs [...]
 > 
-> -- Dave
-> 
-> >From 55b1d0caade20e9597e07759d923f6ce1350e522 Mon Sep 17 00:00:00 2001
-> From: Dave Hansen <dave@sr71.net>
-> Date: Tue, 15 Jul 2008 10:32:56 -0700
-> Subject: [PATCH] fix i386 show_mem() oops
-> 
-> I've had the occasional kernel hang with 2.6.26 since I
-> upgraded my laptop to 4G of RAM.  But, I have a hole at
-> 3-4GB, so I need PAE, and I'm running with SPARSEMEM=y.
-> 
-> I figured it was something to do with PAE, but never
-> got a clean oops until this morning.  The oops was in
-> show_mem()'s pgdat_page_nr().  It was passing a pfn of
-> a page from the memory hole and oopsing.
-> 
-> Dumping my sparsemem section table, you can clearly see
-> the hole:
-> 
-> 00000000  03 10 00 c1 00 02 00 c1  03 10 00 c1 80 02 00 c1  |................|
-> 00000010  03 10 00 c1 00 03 00 c1  03 10 00 c1 80 03 00 c1  |................|
-> 00000020  03 10 00 c1 00 04 00 c1  03 10 00 c1 80 04 00 c1  |................|
-> 00000030  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-> 00000040  03 10 80 c0 00 05 00 c1  03 10 80 c0 80 05 00 c1  |................|
-> 00000050  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-> *
-> 00000400
-> 
-> The sections are 512MB, and you can see 6 valid ones
-> followed by two holes, and then two more valid ones.
-> 
-> Anyway, I believe this patch will fix the oops.
+> Let's concentrate then on those areas where this is more clear-cut.
 
-This looks like it might be suitable.  Can you please test it?
+This is the most clear cut of the areas.  Until the systemtap modules
+get moved to the proper APIs, it's very difficult to tell what else
+needs to be cleaned up or changed inside the kernel to support them.
 
-> ---
->  arch/x86/mm/pgtable_32.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
+> > > > This is highly undesirable because it represents a subversion of the
+> > > > kernel API to gain access to unexported symbols.
+> > > 
+> > > Please elaborate.  Does the translator or its runtime use unexported
+> > > symbols?  (That would arouse the question about why.)
+> > > 
+> > > Or are you talking about being able to *probe* unexported functions or
+> > > access unexported data?  That would be a deliberate feature.
+> > 
+> > No ... I'm talking about _stp_module_relocate() at this point.  It's an
+> > unnecessary function
 > 
-> diff --git a/arch/x86/mm/pgtable_32.c b/arch/x86/mm/pgtable_32.c
-> index 369cf06..eb2a480 100644
-> --- a/arch/x86/mm/pgtable_32.c
-> +++ b/arch/x86/mm/pgtable_32.c
-> @@ -37,6 +37,8 @@ void show_mem(void)
->  		for (i = 0; i < pgdat->node_spanned_pages; ++i) {
->  			if (unlikely(i % MAX_ORDER_NR_PAGES == 0))
->  				touch_nmi_watchdog();
-> +			if (!pfn_valid(pgdat->node_start_pfn + i))
-> +				continue;
->  			page = pgdat_page_nr(pgdat, i);
->  			total++;
->  			if (PageHighMem(page))
+> Maybe, but what "subversion" are you talking about?
 
-What change caused this oops to turn up now?
+using a hand crafted relocation function to gain access to kernel
+symbols instead of the provided API.  Even if it's not used as a
+template for every producer of binary modules, it's just incredibly
+fragile.
+
+> > since the kprobes API provides a way to attach to a symbol and an
+> > offset.  The API allows access to unexported functions.
+> 
+> ... but not to e.g. data, which also uses this common mechanism.
+
+That was number three in the original list of problems on my email.  I
+think it's solvable reasonably easily (as I outlined).
+
+> > > > At least for kprobes, the correct way to do this is to specify the
+> > > > probe point by symbol and offset.
+> > > 
+> > > But there won't be just kprobes.  Much of this code was built with
+> > > anticipation of user-space probing, and there the kernel won't have a
+> > > similar mechanism.  Similarly, the code is written to work with old
+> > > kernels too - ones that predate the symbol+offset kprobe API.
+> > 
+> > OK ... you've got me there ... why would user space probing necessitate
+> > resolution of kernel space symbols?  Surely you plan to use an exported
+> > module API of utrace or whatever the agreed framework is?
+> 
+> Of course, but for our purposes, the kernel will be just one amongst
+> many probing targets.  We will be tracking multiple symbol tables and
+> unwind data for user-space.
+
+You're going to hand roll your own symbol resolution for user space too?
+Isn't it pretty easy simply to get ld.so to do that for you?
+
+> > > Unless someone is about to rip out pure address-based kprobes, I see
+> > > no reason to complicate the code.
+> > 
+> > If you actually look, you'll see that pure addressed based kprobes still
+> > work.
+> 
+> No need for the snark.  I know they work; we've been using them for
+> years.  I am simply happy to stay with them.
+
+I meant if you read the patch I posted, I made sure that pure addressed
+based kprobes still work even when they have to use the
+symbol_name/offset resolution method ... the new code just works out the
+closest symbol and applies an offset.
+
+> > Also, I think you'll find it simplifies the code, since tons of the
+> > runtime junk that duplicate the in-kernel symbol resolution can be
+> > thrown out, plus the corresponding pieces of systemtap that have to
+> > worry about this.
+> 
+> Again, please consider user-space.  The runtime will need similar
+> symbol resolution code *for user space* anyway.  Keeping it in there
+> for the kernel is no incremental complexity - if anything, the
+> opposite.
+
+I really think there might have to be separate runtime pieces for user
+space and for the kernel.  Trying to build a single scheme that works in
+both places looks cumbersome.  In the separate case, the kernel piece,
+which is potentially movable inside the kernel, becomes a lot simpler.
+
+> > There's also the architectural worry: this scheme you currently use
+> > is very fragile.  For instance, I don't see it surviving a move to
+> > -ffunction-sections (which patches are already going over
+> > linux-arch).
+> 
+> Let's try it.  Whatever actual problems that throws up, we'd also
+> encounter with userspace.
+
+OK, with -ffunction-sections you can't offset from _stext which seems to
+be what _stp_module_relocate() uses.  The reason this gets used on
+something like parisc is so that we can place jump stubs in between the
+function sections if necessary to widen the PCREL17 relocations.  That
+means that each function address can potentially move depending on the
+number of relocation stubs embedded between it and the next function.
+The exact same problem occurs between DSOs in user space.  Your problem
+is that you don't know the separations until someone attempts linking
+(and even then, there's nothing except common sense that requires the
+linker to use the minimum number of stubs).
+
+Now, you could still offset from the start address of the section, but
+that's simply the address of the function, so resolution by
+symbol_name/offset is the effective solution.
+
+James
+
+
