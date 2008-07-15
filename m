@@ -1,32 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762712AbYGOVPu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763114AbYGOVQI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762712AbYGOVPu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 17:15:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755964AbYGOVOe
+	id S1763114AbYGOVQI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 17:16:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755958AbYGOVOf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 17:14:34 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:33425 "EHLO relay.sgi.com"
+	Tue, 15 Jul 2008 17:14:35 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:33441 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755402AbYGOVOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 17:14:30 -0400
-Message-Id: <20080715211430.306421000@polaris-admin.engr.sgi.com>
+	id S1755650AbYGOVOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 17:14:31 -0400
+Message-Id: <20080715211430.448714000@polaris-admin.engr.sgi.com>
 References: <20080715211429.454823000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 15 Jul 2008 14:14:35 -0700
+Date: Tue, 15 Jul 2008 14:14:36 -0700
 From: Mike Travis <travis@sgi.com>
 To: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: "H. Peter Anvin" <hpa@zytor.com>,
        Christoph Lameter <cl@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 6/8] cpumask: Optimize cpumask_of_cpu in lib/smp_processor_id.c
-Content-Disposition: inline; filename=optimize-cpu_mask_of_cpu-in-lib_smp_processor_id_c
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Paul Jackson <pj@sgi.com>
+Subject: [PATCH 7/8] cpumask: Provide a generic set of CPUMASK_ALLOC macros
+Content-Disposition: inline; filename=add-CPUMASK_ALLOC
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  * Optimize various places where a pointer to the cpumask_of_cpu value
-    will result in reducing stack pressure.
+  * Provide a generic set of CPUMASK_ALLOC macros patterned after the
+    SCHED_CPUMASK_ALLOC macros.  This is used where multiple cpumask_t
+    variables are declared on the stack to reduce the amount of stack
+    space required.
 
 Based on linux-2.6.tip/master at the following commit:
 
@@ -36,32 +39,47 @@ Based on linux-2.6.tip/master at the following commit:
     Date:   Tue Jul 15 14:55:17 2008 +0200
 
 Signed-off-by: Mike Travis <travis@sgi.com>
+Cc: Paul Jackson <pj@sgi.com>
 ---
- lib/smp_processor_id.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ include/linux/cpumask.h |   21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
---- linux-2.6.tip.orig/lib/smp_processor_id.c
-+++ linux-2.6.tip/lib/smp_processor_id.c
-@@ -11,7 +11,7 @@ notrace unsigned int debug_smp_processor
- {
- 	unsigned long preempt_count = preempt_count();
- 	int this_cpu = raw_smp_processor_id();
--	cpumask_t this_mask;
-+	cpumask_of_cpu_ptr_declare(this_mask);
+--- linux-2.6.tip.orig/include/linux/cpumask.h
++++ linux-2.6.tip/include/linux/cpumask.h
+@@ -75,6 +75,17 @@
+  * CPU_MASK_NONE			Initializer - no bits set
+  * unsigned long *cpus_addr(mask)	Array of unsigned long's in mask
+  *
++ *if NR_CPUS > BITS_PER_LONG
++ *   CPUMASK_ALLOC(m)			Declares and allocates struct m *m =
++ *					   (struct m *)kmalloc(sizeof(*m), ...)
++ *   CPUMASK_FREE(m)			Macro for kfree(v)
++ *else
++ *   CPUMASK_ALLOC(m)			Declares struct m _m, *m = &_m
++ *   CPUMASK_FREE(m)			Nop
++ *endif
++ *   CPUMASK_VAR(v, m)			Declares cpumask_t *v =
++ *						m + offset(struct m, v)
++ *
+  * int cpumask_scnprintf(buf, len, mask) Format cpumask for printing
+  * int cpumask_parse_user(ubuf, ulen, mask)	Parse ascii string as cpumask
+  * int cpulist_scnprintf(buf, len, mask) Format cpumask as list for printing
+@@ -311,6 +322,16 @@ extern cpumask_t cpu_mask_all;
  
- 	if (likely(preempt_count))
- 		goto out;
-@@ -23,9 +23,9 @@ notrace unsigned int debug_smp_processor
- 	 * Kernel threads bound to a single CPU can safely use
- 	 * smp_processor_id():
- 	 */
--	this_mask = cpumask_of_cpu(this_cpu);
-+	cpumask_of_cpu_ptr_next(this_mask, cpu);
+ #define cpus_addr(src) ((src).bits)
  
--	if (cpus_equal(current->cpus_allowed, this_mask))
-+	if (cpus_equal(current->cpus_allowed, *this_mask))
- 		goto out;
- 
- 	/*
++#if NR_CPUS > BITS_PER_LONG
++#define	CPUMASK_ALLOC(m)	struct m *m = kmalloc(sizeof(*m), GFP_KERNEL)
++#define	CPUMASK_FREE(m)		kfree(m)
++#else
++#define	CPUMASK_ALLOC(m)	struct allmasks _m, *m = &_m
++#define	CPUMASK_FREE(m)
++#endif
++#define	CPUMASK_VAR(v, m) 	cpumask_t *v = (cpumask_t *)		\
++				((unsigned long)(m) + offsetof(struct m, v))
++
+ #define cpumask_scnprintf(buf, len, src) \
+ 			__cpumask_scnprintf((buf), (len), &(src), NR_CPUS)
+ static inline int __cpumask_scnprintf(char *buf, int len,
 
 -- 
