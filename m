@@ -1,51 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758882AbYGOShe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756244AbYGOSht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758882AbYGOShe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 14:37:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755055AbYGOShT
+	id S1756244AbYGOSht (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 14:37:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757954AbYGOSh1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 14:37:19 -0400
-Received: from mga11.intel.com ([192.55.52.93]:60866 "EHLO mga11.intel.com"
+	Tue, 15 Jul 2008 14:37:27 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:3814 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754913AbYGOShR convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 14:37:17 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.30,367,1212390000"; 
-   d="scan'208";a="361799582"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1757067AbYGOShZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 14:37:25 -0400
+Date: Tue, 15 Jul 2008 14:26:54 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: linux-wireless@vger.kernel.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: REVISED AGENDA -- Re: Linux Wireless Mini-Summit -- Ottawa -- July
+	22, 2008
+Message-ID: <20080715182654.GA5969@tuxdriver.com>
+References: <20080709190915.GA8238@tuxdriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Dropping WUSB/UWB from my patch queue
-Date: Tue, 15 Jul 2008 11:36:54 -0700
-Message-ID: <C72DEB015BA7724783363DE1AF6B0F98053933DC@orsmsx417.amr.corp.intel.com>
-In-Reply-To: <487CE2E7.90505@csr.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Dropping WUSB/UWB from my patch queue
-Thread-Index: AcjmoxSe9Yk4fYTeRiaQooP29qUnnQABqAkw
-References: <20080630180009.GA30833@kroah.com> <4871E9F0.60608@csr.com> <20080715155313.GA3075@kroah.com> <487CE2E7.90505@csr.com>
-From: "Perez-Gonzalez, Inaky" <inaky.perez-gonzalez@intel.com>
-To: "David Vrabel" <david.vrabel@csr.com>, "Greg KH" <greg@kroah.com>
-Cc: "linux-usb" <linux-usb@vger.kernel.org>,
-       "Kernel development list" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 15 Jul 2008 18:36:54.0626 (UTC) FILETIME=[C1422C20:01C8E6A9]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080709190915.GA8238@tuxdriver.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From: David Vrabel [mailto:david.vrabel@csr.com]
->
->And since there are now no drivers for WLP hardware you may also
-postpone:
->
->uwb/uwb-add-wimedia-llc-protocol-core.patch
->uwb/uwb-wlp-messages.patch
->uwb/uwb-wlp-wss.patch
->uwb/uwb-wlp-build-system.patch
->uwb/wusb-drivers-uwb-wlp-sysfs.c-move-misplaced-debug-statement.patch
+I revised the agenda based on the feedback from last week.
+Most changes are fairly minor, although I moved the vendor/distro
+round table after lunch to give us a chance to cover some in-progress
+work beforehand.
 
-What happened to the 1480-wlp code?
+As I mentioned elsewhere in the thread, I don't think we have enough
+time for work sessions on Tuesday.  As others have pointed-out, there
+is plenty of time for extended discussions during the days at OLS.
+So I think we should keep Tuesday for more high-level design and
+development process discussions.
+
+Feel free to volunteer to cover any of the listed topics.  Further
+suggestions to alter or augment the agenda are, of course, still
+welcome as well.
+
+Thanks!
+
+John
+
+---
+
+3rd Linux Wireless Summit
+Ottawa, Canada
+22 July 2008
+
+Proposed Agenda
+
+0830	Meet & Greet
+
+	Introductions and opening remarks
+
+0900	Status Reports
+
+	Overview of where things stand today
+
+	- 802.11n
+
+	- QoS/Multiqueue
+
+	- spectrum management
+
+	- Mesh mode (802.11s)
+
+	- RF kill
+
+1015	Break
+
+1030	Current Work
+
+	Short presentations/discussions about work in progress
+
+	- access point mode
+
+	- cfg80211/nl80211
+		- time to push to replace WEXT?
+		- tool enhancements and/or userland support?
+
+	- regulatory enforcement (802.11d, CRDA)
+
+	- encrypted management frames (802.11w)
+
+	- virtual hardware (mac80211_hwsim)
+
+	- WiMAX
+
+1200	Lunch/Break (provided by HP)
+
+1300	Vendor/Distro Round Table
+
+	Representatives from hardware vendors and Linux distributions
+	discuss issues around cooperation between themselves and the
+	development community, what we are doing well, and what problems we
+	are causing for each other.
+
+1445	Break
+
+1500	Future work
+
+	Short presentations/discussions about work that has previously
+	been suggested or requested
+
+	- power management 
+		- suspend/resume
+		- power savings
+
+	- lib80211 (code sharing w/ full MAC drivers)
+
+	- rate scaling algorithms
+		- minstrel
+		- others?
+
+	- userland MLME
+
+	- userland driver implementation
+
+	- organized testing?
+
+1645	Break
+
+1700	Maintainence Issues
+
+	Round table discussion of issues related to maintenance of
+	the wireless trees
+
+	- trivial/cleanup patches
+		- testing or other requirements?
+		- should they have lower priority?
+		- should they require ACKs from primary author?
+
+	- submissions to -stable
+		- who should drive it?
+		- what policies?
+
+	- rate scaling algs
+		- driver-specific ok?  what limitations?
+		- build policies (part of mac80211.ko?)
+
+	- questions/suggestions/complaints
+
+1800	Dinner/Break (sorry, no funding)
+
+2000	BoF/Break-out Sessions
+
+	Impromptu and/or unscheduled discussions as desired by group
+	participants
+
+-- 
+John W. Linville
+linville@tuxdriver.com
