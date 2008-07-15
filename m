@@ -1,69 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761820AbYGOP14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761241AbYGOP3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761820AbYGOP14 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 11:27:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757371AbYGOPZP
+	id S1761241AbYGOP3h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 11:29:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758095AbYGOPZ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 11:25:15 -0400
-Received: from multi.imgtec.com ([194.200.65.239]:2275 "EHLO multi.imgtec.com"
+	Tue, 15 Jul 2008 11:25:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46643 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754384AbYGOPY6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 11:24:58 -0400
-From: Will Newton <will.newton@imgtec.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-usb@vger.kernel.org, leoli@freescale.com, tanya.jiang@freescale.com,
-       gregkh@suse.de, Will Newton <will.newton@gmail.com>
-Subject: [PATCH 07/11] fsl_usb2_udc: Rename the arguments of the fsl_writel macro.
-Date: Tue, 15 Jul 2008 16:24:46 +0100
-Message-Id: <1216135490-21656-8-git-send-email-will.newton@imgtec.com>
-X-Mailer: git-send-email 1.5.5.2
-In-Reply-To: <1216135490-21656-7-git-send-email-will.newton@imgtec.com>
-References: <1216135490-21656-1-git-send-email-will.newton@imgtec.com>
- <1216135490-21656-2-git-send-email-will.newton@imgtec.com>
- <1216135490-21656-3-git-send-email-will.newton@imgtec.com>
- <1216135490-21656-4-git-send-email-will.newton@imgtec.com>
- <1216135490-21656-5-git-send-email-will.newton@imgtec.com>
- <1216135490-21656-6-git-send-email-will.newton@imgtec.com>
- <1216135490-21656-7-git-send-email-will.newton@imgtec.com>
-X-OriginalArrivalTime: 15 Jul 2008 15:24:53.0230 (UTC) FILETIME=[EDF8A8E0:01C8E68E]
-X-SEF-Processed: 6_0_1_111__2008_07_15_16_24_55
+	id S1753118AbYGOPZZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 11:25:25 -0400
+Date: Tue, 15 Jul 2008 11:24:08 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@devserv.devel.redhat.com
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       davem@davemloft.net, linux-parisc@vger.kernel.org
+Subject: Re: [PATCH] block: fix q->max_segment_size checking in blk_recalc_rq_segments
+ about VMERGE
+In-Reply-To: <1216133421.3312.30.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0807151104450.26824@devserv.devel.redhat.com>
+References: <1216118676-13625-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+  <Pine.LNX.4.64.0807150924250.21598@devserv.devel.redhat.com> 
+ <20080715231956A.fujita.tomonori@lab.ntt.co.jp> <1216133421.3312.30.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Will Newton <will.newton@gmail.com>
+>>> On sparc64 it is broken anyway with or without your patch.
+>>
+>> Yeah, we need to modify SPARC64 IOMMU code (I'm not sure that it's
+>> worth). Right now, the best fix is setting BIO_VMERGE_BOUNDARY to 0.
+>>
+>>
+>>> And alpha alone doesn't justify substantial code bloat in generic block
+>>> layer. So I propose this patch to drop it at all.
+>>
+>> Jens, what do you think about removing VMERGE code?
+>
+> Actually, it's code I did.
+>
+> There are plusses and minusses to all of this.  The original vmerge code
+> was done for sparc ... mainly because the benefits of virtual merging
+> can offset the cost of having to use the iommu.  However, most
+> architectures didn't use it.  When I fixed it up to work for parisc (and
+> introduced the parameters) we were trying to demonstrate that using it
+> was feasible.
+>
+> The idea behind vmerging is that assembling and programming sg lists is
+> expensive, so you want to do it once.  Either in the iommu or in the
+> driver sg list, but not in both.  There is evidence that it saves around
+> 7% or so on drivers.  However, for architectures that can do it, better
+> savings are made simply by lifting the iommu out of the I/O path (so
+> called bypass mode).
 
-Rename the arguments of the fsl_writel macro to match their use.
-Remove a couple of unnecessary prototypes.
+The problem is with vmerge accounting in block layer (that is what I'm 
+proposing to remove), not with vmerge itself.
 
-Signed-off-by: Will Newton <will.newton@gmail.com>
----
- drivers/usb/gadget/fsl_usb2_udc.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+Vmerge accounting has advantages only if you have device with small amount 
+of sg slots --- it allows the block layer to create request that has 
+higher number of segments then the device.
 
-diff --git a/drivers/usb/gadget/fsl_usb2_udc.c b/drivers/usb/gadget/fsl_usb2_udc.c
-index e7bdec0..4b452bd 100644
---- a/drivers/usb/gadget/fsl_usb2_udc.c
-+++ b/drivers/usb/gadget/fsl_usb2_udc.c
-@@ -71,16 +71,14 @@ fsl_ep0_desc = {
- 	.wMaxPacketSize =	USB_MAX_CTRL_PAYLOAD,
- };
- 
--static int fsl_udc_suspend(struct platform_device *pdev, pm_message_t state);
--static int fsl_udc_resume(struct platform_device *pdev);
- static void fsl_ep_fifo_flush(struct usb_ep *_ep);
- 
- #ifdef CONFIG_PPC32
- #define fsl_readl(addr)		in_le32(addr)
--#define fsl_writel(addr, val32) out_le32(val32, addr)
-+#define fsl_writel(val32, addr) out_le32(addr, val32)
- #else
- #define fsl_readl(addr)		readl(addr)
--#define fsl_writel(addr, val32) writel(addr, val32)
-+#define fsl_writel(val32, addr) writel(val32, addr)
- #endif
- 
- /********************************************************************
--- 
-1.5.5.2
+If you have device with for example 1024 slots, the virtual merge 
+accounting has no effect, because the any request will fit into that size. 
+Even without virtual merge accounting, the virtual merging will happen, so 
+there will be no performance penalty for the controller --- the controller 
+will be programmed with exactly the same number of segments as if virtual 
+merge accounting was present. (there could be even slight positive 
+performance effect if you remove accounting, because you burn less CPU 
+cycles per request)
 
+If you have device will small number of sg slots (16 or so), vmerge 
+accounting can improve performance by creating requests with more than 16 
+segments --- the question is: is there any such device? And is the device 
+performance-sensitive? (i.e. isn't it such an old hardware where no one 
+cares about performance anyway?)
+
+> I suspect with IOMMUs coming back (and being unable to be bypassed) with
+> virtualisation, virtual merging might once more become a significant
+> value.
+
+I suppose that no one would manufacture new SCSI card with 16 or 32 sg 
+slots these days, so the accounting of hardware segments has no effect on 
+modern hardware.
+
+Mikulas
+
+> James
+>
+>
