@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758282AbYGORjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758284AbYGORmy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758282AbYGORjm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 13:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbYGORjd
+	id S1758284AbYGORmy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 13:42:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbYGORmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 13:39:33 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54194 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752157AbYGORjd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 13:39:33 -0400
-Date: Tue, 15 Jul 2008 10:38:27 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [git pull] RCU updates for v2.6.27
-In-Reply-To: <20080714152045.GA29159@elte.hu>
-Message-ID: <alpine.LFD.1.10.0807151037060.3017@woody.linux-foundation.org>
-References: <20080714152045.GA29159@elte.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 15 Jul 2008 13:42:46 -0400
+Received: from bu3sch.de ([62.75.166.246]:37543 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752973AbYGORmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 13:42:46 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Add dynamic MMC-over-SPI-GPIO driver
+Date: Tue, 15 Jul 2008 19:42:13 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       David Brownell <david-b@pacbell.net>,
+       Piot Skamruk <piotr.skamruk@gmail.com>,
+       Pierre Ossman <drzeus-mmc@drzeus.cx>, openwrt-devel@lists.openwrt.org
+References: <200807142109.19360.mb@bu3sch.de>
+In-Reply-To: <200807142109.19360.mb@bu3sch.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807151942.13979.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 14 July 2008 21:09:18 Michael Buesch wrote:
+> This driver provides a sysfs interface to dynamically create
+> and destroy GPIO-based MMC/SD card interfaces.
+> So an MMC or SD card can be connected to generic GPIO pins
+> and be configured dynamically from userspace.
+
+Ok, I had requests in private to also allow registering the platform
+device from outside of the module (and use platform data). This is
+used for certain embedded hardware from the arch
+code to statically create a GPIO-based MMC device.
+I'll add that and resend along with the proposed fixes.
+Thanks for the review! :)
 
 
-On Mon, 14 Jul 2008, Ingo Molnar wrote:
-> 
-> [ NOTE: due to merge interaction please pull this after 
->   kmemcheck-for-linus. The shortlog is relative to kmemcheck-for-linus. ]
-
-Hmm. I really wanted to wait with kmemcheck, which is huge and I'm not 
-entirely convinced yet. So now I'll have to wait for these fixes too, for 
-some reason that isn't clear.
-
-Merging stuff for me isn't good, when it then results in me simply not 
-pulling at all.
-
-		Linus
+-- 
+Greetings Michael.
