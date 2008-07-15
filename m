@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755717AbYGOW41@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756117AbYGOW6H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755717AbYGOW41 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 18:56:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753686AbYGOW4S
+	id S1756117AbYGOW6H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 18:58:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbYGOW5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 18:56:18 -0400
-Received: from mail-out2.uio.no ([129.240.10.58]:40143 "EHLO mail-out2.uio.no"
+	Tue, 15 Jul 2008 18:57:55 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:53656 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753492AbYGOW4R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 18:56:17 -0400
-Subject: Re: [PATCH 2/7] dynamic debug v2 - nfs conversion
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: jbaron@redhat.com, linux-kernel@vger.kernel.org, joe@perches.com,
-       greg@kroah.com, nick@nick-andrew.net, randy.dunlap@oracle.com
-In-Reply-To: <20080715154323.b7d5f14d.akpm@linux-foundation.org>
-References: <20080715213241.GC23331@redhat.com>
-	 <1216161003.7981.73.camel@localhost>
-	 <20080715154323.b7d5f14d.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 18:56:07 -0400
-Message-Id: <1216162567.7981.82.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	id S1753454AbYGOW5z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 18:57:55 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Avuton Olrich" <avuton@gmail.com>
+Subject: Re: s2disk: system powers up again after power off
+Date: Wed, 16 Jul 2008 00:59:54 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Martin Michlmayr" <tbm@cyrius.com>, linux-kernel@vger.kernel.org
+References: <20080715124733.GA4111@deprecation.cyrius.com> <200807152224.19559.rjw@sisk.pl> <3aa654a40807151548t485ea8e6k1d7e261277c1c5aa@mail.gmail.com>
+In-Reply-To: <3aa654a40807151548t485ea8e6k1d7e261277c1c5aa@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 33CD9D71F544F349CBBFA7DE9E1F861FCE7E3C7F
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 188 total 9205455 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+Content-Disposition: inline
+Message-Id: <200807160059.54886.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-15 at 15:43 -0700, Andrew Morton wrote:
-> On Tue, 15 Jul 2008 18:30:03 -0400
-> Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+On Wednesday, 16 of July 2008, Avuton Olrich wrote:
+> On Tue, Jul 15, 2008 at 1:24 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Tuesday, 15 of July 2008, Avuton Olrich wrote:
+> >> On Tue, Jul 15, 2008 at 5:47 AM, Martin Michlmayr <tbm@cyrius.com> wrote:
+> >> > When I use s2disk to suspend my HP 2510p notebook, it writes
+> >> > everything to disk, and powers off... but after 2-3 seconds it often
+> >> > powers on again.  This doesn't happen all the time but quite
+> >> > frequently (definitely in the majority of cases).
+> >> >
+> >> > I believe I've never seen this when I use "halt" to power off the
+> >> > machine (but I don't use halt very often).
+> >> >
+> >> > Any idea?
+> >>
+> >> Ugh, this happens here too, this started occuring before 2.6.25 but
+> >> every time I try to bisect it takes hours and I end up screwing up
+> >> somewhere along the way, so I haven't had time to bisect this
+> >> correctly.
+> >
+> > Please try to put "shutdown method = shutdown" into the s2disk's configuration
+> > file and see what happens in that case.
 > 
-> > On Tue, 2008-07-15 at 17:32 -0400, Jason Baron wrote:
-> > > -convert sunrpc debug facility
-> > > 
-> > > Signed-off-by: Jason Baron <jbaron@redhat.com>
-> > > 
-> > 
-> > Where the hell did this come from, what's its purpose, and WTF haven't
-> > you Cced linux-nfs@vger.kernel.org so that the rest of us can review it?
-> 
-> It's on linux-kernel.  If you don't have a linux-kernel subscription
-> then you should fix that.  Set up a procmail rule and do a
-> search-by-subject when needed.
+> Anything a little less fancy? I use pm-hibernate, or gnome's Power
+> Manager to hibernate; I don't even have s2disk installed, sorry I
+> should have mentioned that.
 
-I get my daily share of 1000-odd mails from linux-kernel, thanks, but
-99% of that goes into the trashcan. I only keep a mail if I see that
-it's relevant. In this case, 1 email out of 7 turns out to be relevant
-(after I inadvertently deleted the apparently crucial first 2 emails),
-and there is no changelog entry to tell me what's being done or why.
+Martin mentioned s2disk in his original post.  Never mind.
 
-By Ccing the correct list, we at least get a heads-up that this thread
-might be important. I can't archive all of lkml on my laptop, but I can
-and do archive all of linux-nfs...
+Please try to do "echo shutdown > /sys/power/disk" before hibernation and
+see what happens.
 
-> In this case, yes, it would have been nice if Jason had cc'ed lots of
-> different lists and individuals on the core patch and then selectively
-> cc'ed lists and individuals on the per-subsystem followup patches.  But
-> I doubt if even 2% of patch submitters manage to do all that correctly.
-
-The point is that he is changing a semi-official interface for tracing
-the NFS kernel activity from userspace. I'd like to know why and how it
-is being modified before I can ack it.
-
-In addition there are several other developers who have a daily interest
-in using this interface when helping our users, and who might have
-comments.
-
- Trond
-
+Thanks,
+Rafael
