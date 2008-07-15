@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757994AbYGOPOA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbYGOPOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757994AbYGOPOA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 11:14:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbYGOPNt
+	id S1753880AbYGOPOW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 11:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757887AbYGOPN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 11:13:49 -0400
-Received: from casper.infradead.org ([85.118.1.10]:51140 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753363AbYGOPNs (ORCPT
+	Tue, 15 Jul 2008 11:13:57 -0400
+Received: from cantor.suse.de ([195.135.220.2]:40359 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757802AbYGOPNz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 11:13:48 -0400
-Subject: Re: [patch 01/15] Kernel Tracepoints
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Paul E McKenney <paulmck@linux.vnet.ibm.com>
-In-Reply-To: <20080715144628.GD20037@Krystal>
-References: <20080709145929.352201601@polymtl.ca>
-	 <20080709150043.693920317@polymtl.ca> <1216108237.12595.122.camel@twins>
-	 <20080715132543.GB20037@Krystal> <1216130593.12595.189.camel@twins>
-	 <20080715144628.GD20037@Krystal>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 17:13:49 +0200
-Message-Id: <1216134829.12595.207.camel@twins>
+	Tue, 15 Jul 2008 11:13:55 -0400
+Date: Tue, 15 Jul 2008 17:14:36 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: "=?UTF-8?B?RnLDqWTDqXJpYw==?= Weisbecker" <fweisbec@gmail.com>
+Cc: "Takashi Iwai" <tiwai@suse.de>,
+       "=?UTF-8?B?VMO2csO2aw==?= Edwin" <edwintorok@gmail.com>,
+       linux-next@vger.kernel.org,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: today's linux-next fails to boot
+Message-ID: <20080715171436.1010403f@halley.suse.de>
+In-Reply-To: <c62985530807150800l4f34a6a3m22d58d66316c1e09@mail.gmail.com>
+References: <4877400B.1000400@gmail.com>
+	<487C074E.8080309@gmail.com>
+	<s5htzer4d9p.wl%tiwai@suse.de>
+	<20080715131553.61f36ca2@halley.suse.de>
+	<20080715131744.0e1e20a3@halley.suse.de>
+	<c62985530807150800l4f34a6a3m22d58d66316c1e09@mail.gmail.com>
+Organization: SUSE Linux Products GmbH
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
+ D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
+ vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
+ pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-15 at 10:46 -0400, Mathieu Desnoyers wrote:
-
-> Talking about headers, I have noticed that placing headers with the code
-> may not be as clean as I would hope. For instance, the kernel/irq-trace.h
-> header, when included from kernel/irq/handle.c, has to be included with:
+* Frédéric Weisbecker [2008-07-15 17:00]:
 > 
-> #include "../irq-trace.h"
-> 
-> Which is not _that_ bad, but we we want to instrument the irq handler
-> found in arch/x86/kernel/cpu/mcheck/mce_intel_64.c, including
-> #include "../../../../../kernel/irq-trace.h" makes me go "yeeeek!"
-> 
-> How about creating include/trace/irq.h and friends ?
+> Oops, sorry I didn't see you patch.
+> I tested it with success.
 
-Might as well.. anybody else got opinions?
+Thanks for testing!
 
+
+
+Bernhard
+-- 
+Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
