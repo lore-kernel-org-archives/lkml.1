@@ -1,72 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761282AbYGODsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758186AbYGODzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761282AbYGODsR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 23:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142AbYGODr7
+	id S1758186AbYGODzS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 23:55:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbYGODzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 23:47:59 -0400
-Received: from slackware.com ([64.57.102.34]:58611 "EHLO bob.slackware.com"
+	Mon, 14 Jul 2008 23:55:06 -0400
+Received: from mail.lang.hm ([64.81.33.126]:44048 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754098AbYGODr6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 23:47:58 -0400
-Date: Mon, 14 Jul 2008 20:47:38 -0700 (PDT)
-From: Piter PUNK <piterpunk@slackware.com>
-To: Tejun Heo <htejun@gmail.com>
-cc: linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: Regression: kernel 2.6.24{,.1} ahci problem, does not boot
-In-Reply-To: <487B403F.5040704@gmail.com>
-Message-ID: <Pine.LNX.4.63.0807142036180.2473@bob.slackware.com>
-References: <Pine.LNX.4.63.0806141945270.2761@bob.slackware.com>
- <487B403F.5040704@gmail.com>
+	id S1754523AbYGODzE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jul 2008 23:55:04 -0400
+Date: Mon, 14 Jul 2008 20:55:59 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Stoyan Gaydarov <stoyboyker@gmail.com>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, gorcunov@gmail.com,
+       akpm@linux-foundation.org, mingo@elte.hu
+Subject: Re: From 2.4 to 2.6 to 2.7?
+In-Reply-To: <alpine.LFD.1.10.0807141939410.3017@woody.linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0807142048260.6370@asgard>
+References: <6d291e080807141910m573b29b2t753ea7c4db09902d@mail.gmail.com>  <alpine.LFD.1.10.0807141914280.3017@woody.linux-foundation.org> <6d291e080807141931g3080c94cic94f503c1a18523b@mail.gmail.com>
+ <alpine.LFD.1.10.0807141939410.3017@woody.linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This change made into the kernel in commit 9a3b103c...  Today, I
-> tested a SIS968 board whose lspci -nn output looks like the following.
+On Mon, 14 Jul 2008, Linus Torvalds wrote:
+
+>> Does it have to be even numbers only?
 >
->  00:00.0 Host bridge [Class 0600]: Silicon Integrated Systems [SiS] 671MX [1039:0671]
->  00:01.0 PCI bridge [Class 0604]: Silicon Integrated Systems [SiS] PCI-to-PCI bridge [1039:0004]
->  00:02.0 ISA bridge [Class 0601]: Silicon Integrated Systems [SiS] SiS968 [MuTIOL Media IO] [1039:0968] (rev 01)
->  00:02.5 IDE interface [Class 0101]: Silicon Integrated Systems [SiS] 5513 [IDE] [1039:5513] (rev 01)
->  00:03.0 USB Controller [Class 0c03]: Silicon Integrated Systems [SiS] USB 1.0 Controller [1039:7001] (rev 0f)
->  00:03.1 USB Controller [Class 0c03]: Silicon Integrated Systems [SiS] USB 1.0 Controller [1039:7001] (rev 0f)
->  00:03.3 USB Controller [Class 0c03]: Silicon Integrated Systems [SiS] USB 2.0 Controller [1039:7002]
->  00:04.0 Ethernet controller [Class 0200]: Silicon Integrated Systems [SiS] 191 Gigabit Ethernet Adapter [1039:0191] (rev 02)
->  00:05.0 SATA controller [Class 0106]: Silicon Integrated Systems [SiS] AHCI IDE Controller (0106) [1039:1185] (rev 03)
->  00:06.0 PCI bridge [Class 0604]: Silicon Integrated Systems [SiS] PCI-to-PCI bridge [1039:000a]
->  00:07.0 PCI bridge [Class 0604]: Silicon Integrated Systems [SiS] PCI-to-PCI bridge [1039:000a]
->  00:0d.0 VGA compatible controller [Class 0300]: ATI Technologies Inc Radeon RV100 QZ [Radeon 7000/VE] [1002:515a]
->  00:0f.0 Audio device [Class 0403]: Silicon Integrated Systems [SiS] Azalia Audio Controller [1039:7502]
->  00:10.0 RAID bus controller [Class 0104]: HighPoint Technologies, Inc. HPT372A/372N [1103:0005] (rev 02)
->  02:00.0 Ethernet controller [Class 0200]: Intel Corporation 82572EI Gigabit Ethernet Controller (Copper) [8086:10b9] (rev 06)
+> No. But the even/odd thing is still so fresh in peoples memory (despite us
+> not having used it for years), and I think some projects aped us on it, so
+> if I didn't change the numbering setup, but just wanted to reset the minor
+> number, I'd probably jump from 2.6 to 2.8 just for historical reasons.
 >
-> And the AHCI controller 1039:1185 @ 00:05.0 works just fine with
-> regular devices and PMPs.  Can you please post lspci -nn output on
-> your machine?  It seems the blacklisting was too wide.
+> But I could also see the second number as being the "year", and 2008 would
+> get 2.8, and then next year I'd make the first release of 2009 be 2.9.1
+> (and probably avoid the ".0" just because it again has the connotations of
+> a "big new untested release", which is not true in a date-based numbering
+> scheme). And then 2010 would be 3.0.1 etc..
 
-OK.
+Ok, I'll jump in.
 
-That is the lspci-nn output:
+I don't have strong feelings either, but I do have comments
 
-00:00.0 Host bridge [0600]: Silicon Integrated Systems [SiS] 671MX [1039:0671]
-00:01.0 PCI bridge [0604]: Silicon Integrated Systems [SiS] SiS AGP Port (virtual PCI-to-PCI bridge) [1039:0003]
-00:02.0 ISA bridge [0601]: Silicon Integrated Systems [SiS] SiS968 [MuTIOL Media IO] [1039:0968] (rev 01)
-00:02.5 IDE interface [0101]: Silicon Integrated Systems [SiS] 5513 [IDE] [1039:5513] (rev 01)
-00:03.0 USB Controller [0c03]: Silicon Integrated Systems [SiS] USB 1.1 Controller [1039:7001] (rev 0f)
-00:03.1 USB Controller [0c03]: Silicon Integrated Systems [SiS] USB 1.1 Controller [1039:7001] (rev 0f)
-00:03.3 USB Controller [0c03]: Silicon Integrated Systems [SiS] USB 2.0 Controller [1039:7002]
-00:04.0 Ethernet controller [0200]: Silicon Integrated Systems [SiS] 191 Gigabit Ethernet Adapter [1039:0191] (rev 02)
-00:05.0 SATA controller [0106]: Silicon Integrated Systems [SiS] AHCI IDE Controller (0106) [1039:1185] (rev 03)
-00:0f.0 Audio device [0403]: Silicon Integrated Systems [SiS] Azalia Audio Controller [1039:7502]
-01:00.0 VGA compatible controller [0300]: Silicon Integrated Systems [SiS] 771/671 PCIE VGA Display Adapter [1039:6351] (rev 10)
+1. for the historical reasons you allude to above going to a completely 
+different numbering system would be a nice thing
 
-The main differences that i can see are the internal SiS video chip and
-the "SiS AGP Port".
+2. I do like involving the year, but I think 2008/2009/2010 are much 
+clearer then 2.8/2.9/3.0 let people shorten it verbally, but still realize 
+that it's a full year being referred to.
 
-Hope it can help
+3. avoid using the month of the release (which ubuntu does), first you 
+aren't going to predict the month of relese ahead of time (so what will 
+the -rc's be called, the year is fairly clear and it's not _that_ bad if 
+2008.4 happens to come out in Jan 2009). also too many people don't 
+understand that 8.10 is between 8.9 and 8.11, not between 8.0 and 8.2
 
-Piter Punk
+so my prefrence (mild as it is) goes to YYYY.r.s (r=release, s=stable)
+
+David Lang
+
+> Anyway, I have to say that I personally don't have any hugely strong
+> opinions on the numbering. I suspect others do, though, and I'm almost
+> certain that this is an absolutely _perfect_ "bikeshed-painting" subject
+> where thousands of people will be very passionate and send me their
+> opinions on why _their_ particular shed color is so much better.
+>
+> The only thing I do know is that I agree that "big meaningless numbers"
+> are bad. "26" is already pretty big. As you point out, the 2.4.x series
+> has much bigger numbers yet.
+>
+> And yes, something like "2008" is obviously numerically bigger, but has a
+> direct meaning and as such is possibly better than something arbitrary and
+> non-descriptive like "26".
+>
+> Let the bike-shed-painting begin.
+>
+> (I had planned on taking this up at the kernel summit, where the shed
+> painting is at least limited to a much smaller audience, but since you
+> asked..)
+>
+> 			Linus
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
