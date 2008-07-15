@@ -1,438 +1,650 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756160AbYGONiC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757872AbYGONmh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756160AbYGONiC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 09:38:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755429AbYGONhw
+	id S1757872AbYGONmh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 09:42:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756107AbYGONm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 09:37:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43041 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754392AbYGONhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 09:37:51 -0400
-Date: Tue, 15 Jul 2008 09:37:05 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@devserv.devel.redhat.com
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] block: fix q->max_segment_size checking in blk_recalc_rq_segments
- about VMERGE
-In-Reply-To: <1216118676-13625-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-Message-ID: <Pine.LNX.4.64.0807150924250.21598@devserv.devel.redhat.com>
-References: <1216118676-13625-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	Tue, 15 Jul 2008 09:42:28 -0400
+Received: from bruhost-2.ispvds.com ([82.146.33.243]:60812 "EHLO
+	bruhost-2.ispvds.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755690AbYGONm0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 09:42:26 -0400
+Message-ID: <487CA8E5.8020208@r000n.net>
+Date: Tue, 15 Jul 2008 17:40:53 +0400
+From: Roman Mindalev <lists@r000n.net>
+Reply-To: lists@r000n.net
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Bug #11035] System hangs on 2.6.26-rc8
+References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik> <uBi7uNfg81L.A.xt.SzLcIB@albercik> <4878D259.7050403@r000n.net>
+In-Reply-To: <4878D259.7050403@r000n.net>
+Content-Type: multipart/mixed;
+ boundary="------------060902030705070405070101"
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (bruhost-2.ispvds.com [82.146.33.243]); Tue, 15 Jul 2008 15:41:19 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jul 2008, FUJITA Tomonori wrote:
+This is a multi-part message in MIME format.
+--------------060902030705070405070101
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-> blk_recalc_rq_segments assumes that any segments can be merged in the
-> case of BIOVEC_VIRT_MERGEABLE && !BIOVEC_VIRT_OVERSIZE. However, an
-> IOMMU can't merge segments if the total length of the segments is
-> larger than max_segment_size (the LLD restriction).
->
-> Due to this bug, a LLD may get the larger number of segments than
-> nr_hw_segments because the block layer puts more segments in a request
-> than it should do.
->
-> This bug could happen on alpha, parisc, and sparc, which use VMERGE.
+Roman Mindalev wrote:
+> Rafael J. Wysocki wrote:
+>> This message has been generated automatically as a part of a report
+>> of recent regressions.
+>>
+>> The following bug entry is on the current list of known regressions
+>> from 2.6.25.  Please verify if it still should be listed.
+>>
+>>
+>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11035
+>> Subject		: System hangs on 2.6.26-rc8
+>> Submitter	: Roman Mindalev <lists@r000n.net>
+>> Date		: 2008-07-02 14:25 (5 days old)
+>> References	: http://marc.info/?l=linux-kernel&m=121500871414995&w=4
+>>
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe kernel-testers" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>
+> 
+> Announce: It is long history, if you don't want to read it, go directly
+> to assumption ;)
+> 
+> Short description of problem: SIGSEGV on high I/O load (reading packages
+> database, kernel untaring) without any records in logs
+> 
+> Prehistory: 2.6.26-rc7 works, 2.6.26-rc8 buggy, configs very simular.
+> 
+> History: In last days I compiled some 2.6.25 kernels (took it, because
+> it is stable) with different configs (step-by-step disabling options,
+> not equals in -rc7 and -rc8) and got next results:
+> 
+> 2.6.25 (preemtible, preempt rcu, 300 Hz, snd_sequencer, snd_seq_dummy,
+> snd_rtctimer, snd_seq_rtctimer_default, debug_preempt, rcu_tortune_test)
+> - bug
+> 2.6.25 (preemtible, preempt rcu, 300 Hz, snd_sequencer, snd_seq_dummy,
+> debug_preempt, rcu_tortune_test) - bug
+> 2.6.25 (preemtible, preempt rcu, 300 Hz, snd_sequencer, debug_preempt,
+> rcu_tortune_test) - bug
+> 2.6.25 (preemtible, preempt rcu, 300 Hz, debug_preempt,
+> rcu_tortune_test) - bug
+> 2.6.25 (preemtible, preempt rcu, 250 Hz, debug_preempt,
+> rcu_tortune_test) - bug
+> 2.6.25 (preemtible, preempt rcu, 250 Hz, snd_rtctimer, debug_preempt,
+> rcu_tortune_test) - bug
+> 2.6.25 (preemtible, preempt rcu, 100 Hz, debug_preempt,
+> rcu_tortune_test) - bug
+> 2.6.25 (preemtible, 250 Hz, debug_preempt, rcu_tortune_test) - bug
+> 2.6.25 (250 Hz, rcu_tortune_test) - bug
+> 2.6.25 (250 Hz) - bug
+> 
+> And I understand - problem not (only?) in kernel, problem in GCC too (I
+> updated whole system in June).
+> 
+> 2.6.24 - one kernel (I'm tested from it to latest rc), which (with
+> time.patch) works with GCC 4.3.1
+> 2.6.25 and above (tested with 2.6.26-rc7, 2.6.26-rc8, 2.6.26-rc9) don't
+> works, if compiled with this compiler version.
+> 
+> Then I look on my (working) kernels - 2.6.26-rc6 was compiled with GCC
+> 4.2.4, and 2.6.26-rc7 too...
+> 
+> In testing purposes I took some listed kernels and recompiled them with
+> other GCC version.
+> 
+> Common results in table:
+> GCC 4.3.1, kernel 2.6.24 - works
+> GCC 4.2.4, kernel 2.6.25 - works
+> GCC 4.3.1, kernel 2.6.25 - bug
+> GCC 4.2.4, kernel 2.6.26-rc7 - works
+> GCC 4.3.1, kernel 2.6.26-rc7 - bug
+> GCC 4.2.4, kernel 2.6.26-rc8 - works
+> GCC 4.3.1, kernel 2.6.26-rc8 - bug
+> 
+> Assumption: new features (or new bugs:)) in GCC 4.3 conflicts with some
+> commit(s), included in kernel between 2.6.24 and 2.6.25
+> --
+> To unsubscribe from this list: send the line "unsubscribe kernel-testers" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-Parisc doesn't use virtual merge accounting (there is variable for it but 
-it's always 0). On sparc64 it is broken anyway with or without your patch. 
-And alpha alone doesn't justify substantial code bloat in generic block 
-layer. So I propose this patch to drop it at all.
+I done bisection.
+Result below:
 
-A further patch could be made to drop bi_hw_segments, nr_hw_segments and 
-similar --- they have no use for anything except alpha and because there 
-are few alpha computers and alpha is discontinued platform, the logic for 
-attempting to predict number of hardware segments can't be well tested and 
-maintained.
+8f46924600e30b140445f5b84abe9b80d2fff5fb is first bad commit
+commit 8f46924600e30b140445f5b84abe9b80d2fff5fb
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Wed Jan 30 13:34:09 2008 +0100
 
-> Like blk_hw_contig_segment() does, this patch uses hw_seg_size for
-> simplicity, which is a bit larger than an exact value (we don't need
-> BIOVEC_VIRT_START_SIZE here).
->
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Cc: Jens Axboe <jens.axboe@oracle.com>
-> Cc: Mikulas Patocka <mpatocka@redhat.com>
-> Cc: David Miller <davem@davemloft.net>
-> ---
-> block/blk-merge.c |    3 ++-
-> 1 files changed, 2 insertions(+), 1 deletions(-)
->
-> diff --git a/block/blk-merge.c b/block/blk-merge.c
-> index 5efc9e7..39a22f8 100644
-> --- a/block/blk-merge.c
-> +++ b/block/blk-merge.c
-> @@ -83,7 +83,8 @@ void blk_recalc_rq_segments(struct request *rq)
-> 			continue;
-> 		}
-> new_segment:
-> -		if (BIOVEC_VIRT_MERGEABLE(bvprv, bv) &&
-> +		if (hw_seg_size + bv->bv_len <= q->max_segment_size &&
-> +		    BIOVEC_VIRT_MERGEABLE(bvprv, bv) &&
-> 		    !BIOVEC_VIRT_OVERSIZE(hw_seg_size + bv->bv_len))
-> 			hw_seg_size += bv->bv_len;
-> 		else {
->
+    x86: enable CONFIG_DEBUG_PAGEALLOC more widely
 
-Drop virtual merge accounting in bio layer (not the virtual merging 
-itself). It is used only on Sparc64 (where it is broken and needs to be 
-disabled) and on Alpha. This logic is very hard to maintain (the generic 
-code in block/blk-merge.c tries to attempt to predict how 
-architecture-specific IOMMU will merge the segments) and Alpha 
-architecture alone doesn't justify the maintenance and code-bloat cost.
+    make CONFIG_DEBUG_PAGEALLOC universally available.
 
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+    CONFIG_HIBERNATION and CONFIG_HUGETLBFS was disabling it, for no
+    particular reason.
+
+    If there are any unfixed bugs here we'll fix it, but do not disable
+    vital debugging facilities like that ..
+
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+
+:040000 040000 ea82c42d0972aabc1f34978dc9b9c73edbd7e508
+446e8dd9bb2fcb1698d038b09800dc8aa8c335ab M      arch
+
+Commit body:
+
+diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+index 2a859a7..347e33e 100644
+--- a/arch/x86/Kconfig.debug
++++ b/arch/x86/Kconfig.debug
+@@ -40,7 +40,7 @@ comment "Page alloc debug is incompatible with
+Software Suspend on i386"
+
+ config DEBUG_PAGEALLOC
+        bool "Debug page memory allocations"
+-       depends on DEBUG_KERNEL && !HIBERNATION && !HUGETLBFS
++       depends on DEBUG_KERNEL
+        help
+          Unmap pages from the kernel linear mapping after free_pages().
+          This results in a large slowdown, but helps to find certain types
+
+I applied it (reversed) to 2.6.25 source and compiled new kernel.
+Hibernation enabled, hugetlbfs too. And difference between configs:
+
+diff config-2.6.25-old config-2.6.25-new
+4c4
+< # Sat Jul 12 17:24:17 2008
 ---
-  arch/parisc/kernel/setup.c |    5 ---
-  arch/x86/kernel/pci-dma.c  |    6 ---
-  block/blk-merge.c          |   72 +++------------------------------------------
-  fs/bio.c                   |    6 +--
-  include/asm-alpha/io.h     |    3 -
-  include/asm-ia64/io.h      |   26 +---------------
-  include/asm-parisc/io.h    |    6 ---
-  include/asm-powerpc/io.h   |    7 ----
-  include/asm-sparc64/io.h   |    1
-  include/asm-x86/io_64.h    |    3 -
-  include/linux/bio.h        |   15 ---------
-  11 files changed, 10 insertions(+), 140 deletions(-)
+> # Tue Jul 15 16:24:10 2008
+1927d1926
+< CONFIG_DEBUG_PAGEALLOC=y
 
-Index: linux-2.6.26-fast/arch/parisc/kernel/setup.c
-===================================================================
---- linux-2.6.26-fast.orig/arch/parisc/kernel/setup.c	2008-07-15 14:19:01.000000000 +0200
-+++ linux-2.6.26-fast/arch/parisc/kernel/setup.c	2008-07-15 14:19:18.000000000 +0200
-@@ -57,11 +57,6 @@ int parisc_bus_is_phys __read_mostly = 1
-  EXPORT_SYMBOL(parisc_bus_is_phys);
-  #endif
+I have no problems with this (new) config.
 
--/* This sets the vmerge boundary and size, it's here because it has to
-- * be available on all platforms (zero means no-virtual merging) */
--unsigned long parisc_vmerge_boundary = 0;
--unsigned long parisc_vmerge_max_size = 0;
--
-  void __init setup_cmdline(char **cmdline_p)
-  {
-  	extern unsigned int boot_args[];
-Index: linux-2.6.26-fast/arch/x86/kernel/pci-dma.c
-===================================================================
---- linux-2.6.26-fast.orig/arch/x86/kernel/pci-dma.c	2008-07-15 14:20:15.000000000 +0200
-+++ linux-2.6.26-fast/arch/x86/kernel/pci-dma.c	2008-07-15 14:20:37.000000000 +0200
-@@ -30,11 +30,6 @@ int no_iommu __read_mostly;
-  /* Set this to 1 if there is a HW IOMMU in the system */
-  int iommu_detected __read_mostly = 0;
+Seems conflict between new features in GCC 4.3.1 and pagealloc debug?
 
--/* This tells the BIO block layer to assume merging. Default to off
--   because we cannot guarantee merging later. */
--int iommu_bio_merge __read_mostly = 0;
--EXPORT_SYMBOL(iommu_bio_merge);
--
-  dma_addr_t bad_dma_address __read_mostly = 0;
-  EXPORT_SYMBOL(bad_dma_address);
+--------------060902030705070405070101
+Content-Type: application/x-gzip;
+ name="config-2.6.25-new.tar.gz"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="config-2.6.25-new.tar.gz"
 
-@@ -151,7 +146,6 @@ static __init int iommu_setup(char *p)
-  		}
+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
+AAAAAAAAAAAAAAAAAADgH/wC+Sly6gDwAAA=
+--------------060902030705070405070101
+Content-Type: application/x-gzip;
+ name="config-2.6.25-old.tar.gz"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="config-2.6.25-old.tar.gz"
 
-  		if (!strncmp(p, "biomerge", 8)) {
--			iommu_bio_merge = 4096;
-  			iommu_merge = 1;
-  			force_iommu = 1;
-  		}
-Index: linux-2.6.26-fast/block/blk-merge.c
-===================================================================
---- linux-2.6.26-fast.orig/block/blk-merge.c	2008-07-15 14:22:25.000000000 +0200
-+++ linux-2.6.26-fast/block/blk-merge.c	2008-07-15 14:36:06.000000000 +0200
-@@ -66,7 +66,7 @@ void blk_recalc_rq_segments(struct reque
-  		 */
-  		high = page_to_pfn(bv->bv_page) > q->bounce_pfn;
-  		if (high || highprv)
--			goto new_hw_segment;
-+			goto new_segment;
-  		if (cluster) {
-  			if (seg_size + bv->bv_len > q->max_segment_size)
-  				goto new_segment;
-@@ -74,8 +74,6 @@ void blk_recalc_rq_segments(struct reque
-  				goto new_segment;
-  			if (!BIOVEC_SEG_BOUNDARY(q, bvprv, bv))
-  				goto new_segment;
--			if (BIOVEC_VIRT_OVERSIZE(hw_seg_size + bv->bv_len))
--				goto new_hw_segment;
-
-  			seg_size += bv->bv_len;
-  			hw_seg_size += bv->bv_len;
-@@ -83,17 +81,11 @@ void blk_recalc_rq_segments(struct reque
-  			continue;
-  		}
-  new_segment:
--		if (BIOVEC_VIRT_MERGEABLE(bvprv, bv) &&
--		    !BIOVEC_VIRT_OVERSIZE(hw_seg_size + bv->bv_len))
--			hw_seg_size += bv->bv_len;
--		else {
--new_hw_segment:
--			if (nr_hw_segs == 1 &&
--			    hw_seg_size > rq->bio->bi_hw_front_size)
--				rq->bio->bi_hw_front_size = hw_seg_size;
--			hw_seg_size = BIOVEC_VIRT_START_SIZE(bv) + bv->bv_len;
--			nr_hw_segs++;
--		}
-+		if (nr_hw_segs == 1 &&
-+		    hw_seg_size > rq->bio->bi_hw_front_size)
-+			rq->bio->bi_hw_front_size = hw_seg_size;
-+		hw_seg_size = bv->bv_len;
-+		nr_hw_segs++;
-
-  		nr_phys_segs++;
-  		bvprv = bv;
-@@ -146,22 +138,6 @@ static int blk_phys_contig_segment(struc
-  	return 0;
-  }
-
--static int blk_hw_contig_segment(struct request_queue *q, struct bio *bio,
--				 struct bio *nxt)
--{
--	if (!bio_flagged(bio, BIO_SEG_VALID))
--		blk_recount_segments(q, bio);
--	if (!bio_flagged(nxt, BIO_SEG_VALID))
--		blk_recount_segments(q, nxt);
--	if (!BIOVEC_VIRT_MERGEABLE(__BVEC_END(bio), __BVEC_START(nxt)) ||
--	    BIOVEC_VIRT_OVERSIZE(bio->bi_hw_back_size + nxt->bi_hw_front_size))
--		return 0;
--	if (bio->bi_hw_back_size + nxt->bi_hw_front_size > q->max_segment_size)
--		return 0;
--
--	return 1;
--}
--
-  /*
-   * map a request to scatterlist, return number of sg entries setup. Caller
-   * must make sure sg can hold rq->nr_phys_segments entries
-@@ -317,18 +293,6 @@ int ll_back_merge_fn(struct request_queu
-  	if (!bio_flagged(bio, BIO_SEG_VALID))
-  		blk_recount_segments(q, bio);
-  	len = req->biotail->bi_hw_back_size + bio->bi_hw_front_size;
--	if (BIOVEC_VIRT_MERGEABLE(__BVEC_END(req->biotail), __BVEC_START(bio))
--	    && !BIOVEC_VIRT_OVERSIZE(len)) {
--		int mergeable =  ll_new_mergeable(q, req, bio);
--
--		if (mergeable) {
--			if (req->nr_hw_segments == 1)
--				req->bio->bi_hw_front_size = len;
--			if (bio->bi_hw_segments == 1)
--				bio->bi_hw_back_size = len;
--		}
--		return mergeable;
--	}
-
-  	return ll_new_hw_segment(q, req, bio);
-  }
-@@ -356,18 +320,6 @@ int ll_front_merge_fn(struct request_que
-  		blk_recount_segments(q, bio);
-  	if (!bio_flagged(req->bio, BIO_SEG_VALID))
-  		blk_recount_segments(q, req->bio);
--	if (BIOVEC_VIRT_MERGEABLE(__BVEC_END(bio), __BVEC_START(req->bio)) &&
--	    !BIOVEC_VIRT_OVERSIZE(len)) {
--		int mergeable =  ll_new_mergeable(q, req, bio);
--
--		if (mergeable) {
--			if (bio->bi_hw_segments == 1)
--				bio->bi_hw_front_size = len;
--			if (req->nr_hw_segments == 1)
--				req->biotail->bi_hw_back_size = len;
--		}
--		return mergeable;
--	}
-
-  	return ll_new_hw_segment(q, req, bio);
-  }
-@@ -399,18 +351,6 @@ static int ll_merge_requests_fn(struct r
-  		return 0;
-
-  	total_hw_segments = req->nr_hw_segments + next->nr_hw_segments;
--	if (blk_hw_contig_segment(q, req->biotail, next->bio)) {
--		int len = req->biotail->bi_hw_back_size +
--				next->bio->bi_hw_front_size;
--		/*
--		 * propagate the combined length to the end of the requests
--		 */
--		if (req->nr_hw_segments == 1)
--			req->bio->bi_hw_front_size = len;
--		if (next->nr_hw_segments == 1)
--			next->biotail->bi_hw_back_size = len;
--		total_hw_segments--;
--	}
-
-  	if (total_hw_segments > q->max_hw_segments)
-  		return 0;
-Index: linux-2.6.26-fast/include/asm-alpha/io.h
-===================================================================
---- linux-2.6.26-fast.orig/include/asm-alpha/io.h	2008-07-15 14:14:39.000000000 +0200
-+++ linux-2.6.26-fast/include/asm-alpha/io.h	2008-07-15 14:16:15.000000000 +0200
-@@ -96,9 +96,6 @@ static inline dma_addr_t __deprecated is
-  	return page_to_phys(page);
-  }
-
--/* This depends on working iommu.  */
--#define BIO_VMERGE_BOUNDARY	(alpha_mv.mv_pci_tbi ? PAGE_SIZE : 0)
--
-  /* Maximum PIO space address supported?  */
-  #define IO_SPACE_LIMIT 0xffff
-
-Index: linux-2.6.26-fast/include/asm-ia64/io.h
-===================================================================
---- linux-2.6.26-fast.orig/include/asm-ia64/io.h	2008-07-15 14:14:45.000000000 +0200
-+++ linux-2.6.26-fast/include/asm-ia64/io.h	2008-07-15 14:18:24.000000000 +0200
-@@ -430,30 +430,8 @@ extern void memcpy_fromio(void *dst, con
-  extern void memcpy_toio(volatile void __iomem *dst, const void *src, long n);
-  extern void memset_io(volatile void __iomem *s, int c, long n);
-
--# endif /* __KERNEL__ */
--
--/*
-- * Enabling BIO_VMERGE_BOUNDARY forces us to turn off I/O MMU bypassing.  It is said that
-- * BIO-level virtual merging can give up to 4% performance boost (not verified for ia64).
-- * On the other hand, we know that I/O MMU bypassing gives ~8% performance improvement on
-- * SPECweb-like workloads on zx1-based machines.  Thus, for now we favor I/O MMU bypassing
-- * over BIO-level virtual merging.
-- */
-  extern unsigned long ia64_max_iommu_merge_mask;
--#if 1
--#define BIO_VMERGE_BOUNDARY	0
--#else
--/*
-- * It makes no sense at all to have this BIO_VMERGE_BOUNDARY macro here.  Should be
-- * replaced by dma_merge_mask() or something of that sort.  Note: the only way
-- * BIO_VMERGE_BOUNDARY is used is to mask off bits.  Effectively, our definition gets
-- * expanded into:
-- *
-- *	addr & ((ia64_max_iommu_merge_mask + 1) - 1) == (addr & ia64_max_iommu_vmerge_mask)
-- *
-- * which is precisely what we want.
-- */
--#define BIO_VMERGE_BOUNDARY	(ia64_max_iommu_merge_mask + 1)
--#endif
-+
-+# endif /* __KERNEL__ */
-
-  #endif /* _ASM_IA64_IO_H */
-Index: linux-2.6.26-fast/include/asm-parisc/io.h
-===================================================================
---- linux-2.6.26-fast.orig/include/asm-parisc/io.h	2008-07-15 14:14:52.000000000 +0200
-+++ linux-2.6.26-fast/include/asm-parisc/io.h	2008-07-15 14:18:58.000000000 +0200
-@@ -4,12 +4,6 @@
-  #include <linux/types.h>
-  #include <asm/pgtable.h>
-
--extern unsigned long parisc_vmerge_boundary;
--extern unsigned long parisc_vmerge_max_size;
--
--#define BIO_VMERGE_BOUNDARY	parisc_vmerge_boundary
--#define BIO_VMERGE_MAX_SIZE	parisc_vmerge_max_size
--
-  #define virt_to_phys(a) ((unsigned long)__pa(a))
-  #define phys_to_virt(a) __va(a)
-  #define virt_to_bus virt_to_phys
-Index: linux-2.6.26-fast/include/asm-powerpc/io.h
-===================================================================
---- linux-2.6.26-fast.orig/include/asm-powerpc/io.h	2008-07-15 14:14:56.000000000 +0200
-+++ linux-2.6.26-fast/include/asm-powerpc/io.h	2008-07-15 14:19:37.000000000 +0200
-@@ -683,13 +683,6 @@ static inline void * phys_to_virt(unsign
-   */
-  #define page_to_phys(page)	(page_to_pfn(page) << PAGE_SHIFT)
-
--/* We do NOT want virtual merging, it would put too much pressure on
-- * our iommu allocator. Instead, we want drivers to be smart enough
-- * to coalesce sglists that happen to have been mapped in a contiguous
-- * way by the iommu
-- */
--#define BIO_VMERGE_BOUNDARY	0
--
-  /*
-   * 32 bits still uses virt_to_bus() for it's implementation of DMA
-   * mappings se we have to keep it defined here. We also have some old
-Index: linux-2.6.26-fast/include/asm-sparc64/io.h
-===================================================================
---- linux-2.6.26-fast.orig/include/asm-sparc64/io.h	2008-07-15 14:15:04.000000000 +0200
-+++ linux-2.6.26-fast/include/asm-sparc64/io.h	2008-07-15 14:19:52.000000000 +0200
-@@ -16,7 +16,6 @@
-  /* BIO layer definitions. */
-  extern unsigned long kern_base, kern_size;
-  #define page_to_phys(page)	(page_to_pfn(page) << PAGE_SHIFT)
--#define BIO_VMERGE_BOUNDARY	8192
-
-  static inline u8 _inb(unsigned long addr)
-  {
-Index: linux-2.6.26-fast/include/asm-x86/io_64.h
-===================================================================
---- linux-2.6.26-fast.orig/include/asm-x86/io_64.h	2008-07-15 14:15:08.000000000 +0200
-+++ linux-2.6.26-fast/include/asm-x86/io_64.h	2008-07-15 14:20:11.000000000 +0200
-@@ -304,9 +304,6 @@ void memset_io(volatile void __iomem *a,
-
-  #define flush_write_buffers()
-
--extern int iommu_bio_merge;
--#define BIO_VMERGE_BOUNDARY iommu_bio_merge
--
-  /*
-   * Convert a virtual cached pointer to an uncached pointer
-   */
-Index: linux-2.6.26-fast/include/linux/bio.h
-===================================================================
---- linux-2.6.26-fast.orig/include/linux/bio.h	2008-07-15 14:15:13.000000000 +0200
-+++ linux-2.6.26-fast/include/linux/bio.h	2008-07-15 14:44:58.000000000 +0200
-@@ -26,21 +26,8 @@
-
-  #ifdef CONFIG_BLOCK
-
--/* Platforms may set this to teach the BIO layer about IOMMU hardware. */
-  #include <asm/io.h>
-
--#if defined(BIO_VMERGE_MAX_SIZE) && defined(BIO_VMERGE_BOUNDARY)
--#define BIOVEC_VIRT_START_SIZE(x) (bvec_to_phys(x) & (BIO_VMERGE_BOUNDARY - 1))
--#define BIOVEC_VIRT_OVERSIZE(x)	((x) > BIO_VMERGE_MAX_SIZE)
--#else
--#define BIOVEC_VIRT_START_SIZE(x)	0
--#define BIOVEC_VIRT_OVERSIZE(x)		0
--#endif
--
--#ifndef BIO_VMERGE_BOUNDARY
--#define BIO_VMERGE_BOUNDARY	0
--#endif
--
-  #define BIO_DEBUG
-
-  #ifdef BIO_DEBUG
-@@ -235,8 +222,6 @@ static inline void *bio_data(struct bio
-  	((bvec_to_phys((vec1)) + (vec1)->bv_len) == bvec_to_phys((vec2)))
-  #endif
-
--#define BIOVEC_VIRT_MERGEABLE(vec1, vec2)	\
--	((((bvec_to_phys((vec1)) + (vec1)->bv_len) | bvec_to_phys((vec2))) & (BIO_VMERGE_BOUNDARY - 1)) == 0)
-  #define __BIO_SEG_BOUNDARY(addr1, addr2, mask) \
-  	(((addr1) | (mask)) == (((addr2) - 1) | (mask)))
-  #define BIOVEC_SEG_BOUNDARY(q, b1, b2) \
-Index: linux-2.6.26-fast/fs/bio.c
-===================================================================
---- linux-2.6.26-fast.orig/fs/bio.c	2008-07-15 14:43:03.000000000 +0200
-+++ linux-2.6.26-fast/fs/bio.c	2008-07-15 14:43:58.000000000 +0200
-@@ -352,8 +352,7 @@ static int __bio_add_page(struct request
-  	 */
-
-  	while (bio->bi_phys_segments >= q->max_phys_segments
--	       || bio->bi_hw_segments >= q->max_hw_segments
--	       || BIOVEC_VIRT_OVERSIZE(bio->bi_size)) {
-+	       || bio->bi_hw_segments >= q->max_hw_segments) {
-
-  		if (retried_segments)
-  			return 0;
-@@ -390,8 +389,7 @@ static int __bio_add_page(struct request
-  	}
-
-  	/* If we may be able to merge these biovecs, force a recount */
--	if (bio->bi_vcnt && (BIOVEC_PHYS_MERGEABLE(bvec-1, bvec) ||
--	    BIOVEC_VIRT_MERGEABLE(bvec-1, bvec)))
-+	if (bio->bi_vcnt && (BIOVEC_PHYS_MERGEABLE(bvec-1, bvec)))
-  		bio->bi_flags &= ~(1 << BIO_SEG_VALID);
-
-  	bio->bi_vcnt++;
+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
+--------------060902030705070405070101--
