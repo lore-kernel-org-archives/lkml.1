@@ -1,77 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761357AbYGOVBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762000AbYGOVCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761357AbYGOVBx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 17:01:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754306AbYGOVBp
+	id S1762000AbYGOVCe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 17:02:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754306AbYGOVC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 17:01:45 -0400
-Received: from rn-out-0910.google.com ([64.233.170.185]:59226 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752241AbYGOVBo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 17:01:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=cugYgZovv+7hTpq++ghVpk1cu2TzgSgAu0HsT7M2bySDhSqaLBXIBA4HXuChMSJuga
-         l5qtaFzilKM0tNx8GgZkEt8isAVk3N/tZ6YVpRn5Pg6Jd+slMepvrN2zwC3NDU4h27cd
-         Ytleo5QuJhtBaYoT8iHovKD/BNxQaJ4GWS7Vo=
-Message-ID: <84144f020807151401s2e37b892q2df007c9e1e3464a@mail.gmail.com>
-Date: Wed, 16 Jul 2008 00:01:42 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: [git pull] RCU updates for v2.6.27
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, paulmck@us.ibm.com,
-       a.p.zijlstra@chello.nl, "Vegard Nossum" <vegard.nossum@gmail.com>
-In-Reply-To: <alpine.LFD.1.10.0807151319360.2867@woody.linux-foundation.org>
+	Tue, 15 Jul 2008 17:02:26 -0400
+Received: from www.tglx.de ([62.245.132.106]:44552 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752155AbYGOVCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 17:02:25 -0400
+Date: Tue, 15 Jul 2008 23:01:45 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [GIT pull] x86 updates
+Message-ID: <alpine.LFD.1.10.0807152249270.3283@apollo.tec.linutronix.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080714152045.GA29159@elte.hu>
-	 <alpine.LFD.1.10.0807151037060.3017@woody.linux-foundation.org>
-	 <20080715131515.ebdc53d8.akpm@linux-foundation.org>
-	 <alpine.LFD.1.10.0807151319360.2867@woody.linux-foundation.org>
-X-Google-Sender-Auth: faa8b5b0670ab25e
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Linus,
 
-On Tue, 15 Jul 2008 10:38:27 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
->>> Hmm. I really wanted to wait with kmemcheck, which is huge and I'm not
->>> entirely convinced yet.
+Please pull the latest x86/urgent git tree from:
 
-On Tue, 15 Jul 2008, Andrew Morton wrote:
->> Any particular concerns?
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86/urgent
 
-On Tue, Jul 15, 2008 at 11:29 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
-> It's big, complex and looks fragile. And it reports lots of false
-> positives, with big warnings to people to generally not use or make
-> reports about itit unless they are already experts. So it looks like
-> something pretty specific.
->
-> I also want to feel like it actually has been helpful.
+Thanks,
 
-Besides catching reads to uninitialized memory, kmemcheck detects
-use-after-free now and can be extended to catch red-zone overwrites
-*as they happen* which will make debugging kernel memory corruptions
-much easier for everybody.
+	tglx
 
-There are now three commits in your tree that fix a real bug reported
-by kmemcheck: 8410565f540db87ca938f56f92780d251e4f157d ("ACPICA: Fix
-for access to deleted object <regression>"),
-adeed48090fc370afa0db8d007748ee72a40b578 ("rc80211_pid: Fix fast_start
-parameter handling"), and 62f75532b583c03840f31e40386ce2df73be9ca0
-("slub: Initialize per-cpu stats").
+------------------>
 
-So I think it has been helpful and that the infrastructure it adds is
-valuable for future debugging aids.
+Thomas Gleixner (1):
+      x86: fix TSC build error on 32bit
 
-                        Pekka
+
+ arch/x86/kernel/tsc.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+index 3c36f92..7603c05 100644
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -358,6 +358,7 @@ static cycle_t read_tsc(void)
+ 		ret : clocksource_tsc.cycle_last;
+ }
+ 
++#ifdef CONFIG_X86_64
+ static cycle_t __vsyscall_fn vread_tsc(void)
+ {
+ 	cycle_t ret = (cycle_t)vget_cycles();
+@@ -365,6 +366,7 @@ static cycle_t __vsyscall_fn vread_tsc(void)
+ 	return ret >= __vsyscall_gtod_data.clock.cycle_last ?
+ 		ret : __vsyscall_gtod_data.clock.cycle_last;
+ }
++#endif
+ 
+ static struct clocksource clocksource_tsc = {
+ 	.name                   = "tsc",
