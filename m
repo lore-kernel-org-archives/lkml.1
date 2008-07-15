@@ -1,115 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757919AbYGOP7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760108AbYGOQAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757919AbYGOP7V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 11:59:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753522AbYGOP7I
+	id S1760108AbYGOQAf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 12:00:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753522AbYGOQA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 11:59:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36387 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753817AbYGOP7G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 11:59:06 -0400
-Date: Tue, 15 Jul 2008 11:58:05 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@devserv.devel.redhat.com
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       davem@davemloft.net, linux-parisc@vger.kernel.org
-Subject: Re: [PATCH] block: fix q->max_segment_size checking in blk_recalc_rq_segments
- about VMERGE
-In-Reply-To: <1216136503.3312.48.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0807151147040.29803@devserv.devel.redhat.com>
-References: <1216118676-13625-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-  <Pine.LNX.4.64.0807150924250.21598@devserv.devel.redhat.com> 
- <20080715231956A.fujita.tomonori@lab.ntt.co.jp>  <1216133421.3312.30.camel@localhost.localdomain>
-  <Pine.LNX.4.64.0807151104450.26824@devserv.devel.redhat.com>
- <1216136503.3312.48.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Tue, 15 Jul 2008 12:00:27 -0400
+Received: from casper.infradead.org ([85.118.1.10]:50301 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754912AbYGOQA0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 12:00:26 -0400
+Subject: Re: [PATCH] x86: Introducing asm-x86/syscalls.h
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       kernelnewbies <kernelnewbies@nl.linux.org>,
+       kernel-janitors <kernel-janitors@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1216133883.27455.252.camel@shinybook.infradead.org>
+References: <1216114072.21749.1.camel@jaswinder.satnam>
+	 <1216127174.30096.3.camel@jaswinder.satnam>
+	 <1216133883.27455.252.camel@shinybook.infradead.org>
+Content-Type: text/plain
+Date: Tue, 15 Jul 2008 21:29:38 +0530
+Message-Id: <1216137578.2747.16.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You are mixing two ideas here:
+Hello David,
 
-(1) virtual merging --- IOMMU maps discontinuous segments into continuous 
-area that it presents to the device.
+On Tue, 2008-07-15 at 07:58 -0700, David Woodhouse wrote:
 
-(2) virtual merge accounting --- block layer tries to guess how many 
-segments will be created by (1) and merges small requests into big ones. 
-The resulting requests are as big that they can't be processed by the 
-device if (1) weren't in effect.
+> I don't like this bit though:
+> 
+> > --- a/include/linux/syscalls.h
+> > +++ b/include/linux/syscalls.h
+> > @@ -65,6 +65,10 @@ struct getcpu_cache;
+> >  #include <linux/quota.h>
+> >  #include <linux/key.h>
+> >  
+> > +#ifdef CONFIG_X86
+> > +#include <asm/syscalls.h>
+> > +#endif
+> > +
+> >  asmlinkage long sys_time(time_t __user *tloc);
+> >  asmlinkage long sys_stime(time_t __user *tptr);
+> >  asmlinkage long sys_gettimeofday(struct timeval __user *tv,
+> 
+> We're going to want to do this for all architectures, aren't we? Perhaps
+> it's better to provide <asm/syscalls.h> for all architectures from the
+> beginning, and not bother with the ifdef? Or if you must have an ifdef,
+> perhaps make it on something like ARCH_HAS_ASM_SYSCALLS_H rather than
+> having to change it every time an architecture adds its own
+> <asm/syscalls.h> file?
+> 
 
->> The problem is with vmerge accounting in block layer (that is what I'm
->> proposing to remove), not with vmerge itself.
->
-> I don't think that's true ... otherwise parisc would be falling over
-> left right and centre.
->
->> Vmerge accounting has advantages only if you have device with small amount
->> of sg slots --- it allows the block layer to create request that has
->> higher number of segments then the device.
->
-> This isn't really true either.  A lot of devices with a high sg slot
-> count are still less efficient than an iommu for programming.
+OK, I will also create asm/syscalls.h for all the architectures.
 
---- for these devices virtual merging (1) improves performance, but 
-virtual merge accounting (2) doesn't.
+Thank you,
 
-> Even if they're not, on parisc we have to program the iommu, we can't
-> bypass, so it still makes sense to only have one large sg list (in the
-> iommu) and one small one (in the device).  Having two large ones reduces
-> our I/O throughput because of the extra overhead.
->
->> If you have device with for example 1024 slots, the virtual merge
->> accounting has no effect, because the any request will fit into that size.
->
-> It's not about fitting a request, it's about efficient processing.
+Jaswinder Singh.
 
-Virtual merge accounting (2) is about fitting a request. It is block layer 
-technique.
-
->> Even without virtual merge accounting, the virtual merging will happen, so
->> there will be no performance penalty for the controller --- the controller
->> will be programmed with exactly the same number of segments as if virtual
->> merge accounting was present. (there could be even slight positive
->> performance effect if you remove accounting, because you burn less CPU
->> cycles per request)
->
-> Yes there is.  Both the iommu and the device have to traverse large SG
-> lists.  This is where the inefficiency lies.  On PA, we use exactly the
-> same number of iotlb slots whether virtual merging is in effect or not,
-> but the device has an internal loop to go over the list.  It's that loop
-> that virtual merging reduces.
->
-> Since the virtual merge computation is in line when the request is built
-> (by design) it doesn't really detract from the throughput and the cost
-> is pretty small.
-
-The purpose of (1) virtual merging is to save device's sg slots. The 
-purpose of (2) virtual merge accounting is to allow block layer to build 
-larger requests. If you remove virtual merge accounting, it will cause no 
-increase in number of sg slots used.
-
->>> I suspect with IOMMUs coming back (and being unable to be bypassed) with
->>> virtualisation, virtual merging might once more become a significant
->>> value.
->>
->> I suppose that no one would manufacture new SCSI card with 16 or 32 sg
->> slots these days, so the accounting of hardware segments has no effect on
->> modern hardware.
->
-> It's not about accounting, it's about performance.  There's a cost in
-> every device to traversing large count sg lists.  If you have to bear it
-> in the iommu (which is usually more efficient because the iotlb tends to
-> follow mmtlb optimisations) you can reduce the cost by eliminating it
-> from the device.
-
-That's why I'm proposing to remove virtual merge accounting (2), but leave 
-virtual merging (1) itself. The accounting doesn't reduce number of sg 
-slots.
-
-Mikulas
-
-> James
