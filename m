@@ -1,37 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763709AbYGOWcy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762487AbYGOWdX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763709AbYGOWcy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 18:32:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756936AbYGOW3O
+	id S1762487AbYGOWdX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 18:33:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759075AbYGOW3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 18:29:14 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:47313 "EHLO smtp.polymtl.ca"
+	Tue, 15 Jul 2008 18:29:23 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:47347 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762294AbYGOW3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 18:29:13 -0400
-Message-Id: <20080715222748.214360024@polymtl.ca>
+	id S1757267AbYGOW3W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 18:29:22 -0400
+Message-Id: <20080715222749.309982460@polymtl.ca>
 References: <20080715222604.331269462@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 15 Jul 2008 18:26:14 -0400
+Date: Tue, 15 Jul 2008 18:26:19 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
        Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, linux-mm@kvack.org,
-       Dave Hansen <haveblue@us.ibm.com>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Hideo AOKI <haoki@redhat.com>,
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, netdev@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>,
+       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
        Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: [patch 10/17] LTTng instrumentation - swap
-Content-Disposition: inline; filename=lttng-instrumentation-swap.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Tue, 15 Jul 2008 22:27:51 +0000
+Subject: [patch 15/17] LTTng instrumentation - ipv4
+Content-Disposition: inline; filename=lttng-instrumentation-ipv4.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Tue, 15 Jul 2008 22:27:52 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Instrumentation of waits caused by swap activity. Also instrumentation
-swapon/swapoff events to keep track of active swap partitions.
+Keep track of interface up/down for ipv4. Allows to keep track of interface
+address changes in a trace.
 
 Those tracepoints are used by LTTng.
 
@@ -42,8 +43,10 @@ scheduler instrumentation (about 5 events in code scheduler code) was added.
 See the "Tracepoints" patch header for performance result detail.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: linux-mm@kvack.org
-CC: Dave Hansen <haveblue@us.ibm.com>
+CC: netdev@vger.kernel.org
+CC: David S. Miller <davem@davemloft.net>
+CC: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+CC: 
 CC: Masami Hiramatsu <mhiramat@redhat.com>
 CC: 'Peter Zijlstra' <peterz@infradead.org>
 CC: "Frank Ch. Eigler" <fche@redhat.com>
@@ -53,111 +56,55 @@ CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
 CC: 'Steven Rostedt' <rostedt@goodmis.org>
 CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 ---
- include/trace/swap.h |   20 ++++++++++++++++++++
- mm/memory.c          |    2 ++
- mm/page_io.c         |    2 ++
- mm/swapfile.c        |    4 ++++
- 4 files changed, 28 insertions(+)
+ include/trace/ipv4.h |   14 ++++++++++++++
+ net/ipv4/devinet.c   |    3 +++
+ 2 files changed, 17 insertions(+)
 
-Index: linux-2.6-lttng/mm/memory.c
+Index: linux-2.6-lttng/net/ipv4/devinet.c
 ===================================================================
---- linux-2.6-lttng.orig/mm/memory.c	2008-07-15 13:54:46.000000000 -0400
-+++ linux-2.6-lttng/mm/memory.c	2008-07-15 14:02:54.000000000 -0400
-@@ -51,6 +51,7 @@
- #include <linux/init.h>
- #include <linux/writeback.h>
- #include <linux/memcontrol.h>
-+#include <trace/swap.h>
+--- linux-2.6-lttng.orig/net/ipv4/devinet.c	2008-07-15 14:51:51.000000000 -0400
++++ linux-2.6-lttng/net/ipv4/devinet.c	2008-07-15 15:16:11.000000000 -0400
+@@ -61,6 +61,7 @@
+ #include <net/ip_fib.h>
+ #include <net/rtnetlink.h>
+ #include <net/net_namespace.h>
++#include <trace/ipv4.h>
  
- #include <asm/pgalloc.h>
- #include <asm/uaccess.h>
-@@ -2213,6 +2214,7 @@ static int do_swap_page(struct mm_struct
- 		/* Had to read the page from swap area: Major fault */
- 		ret = VM_FAULT_MAJOR;
- 		count_vm_event(PGMAJFAULT);
-+		trace_swap_in(page, entry);
+ static struct ipv4_devconf ipv4_devconf = {
+ 	.data = {
+@@ -257,6 +258,7 @@ static void __inet_del_ifa(struct in_dev
+ 		struct in_ifaddr **ifap1 = &ifa1->ifa_next;
+ 
+ 		while ((ifa = *ifap1) != NULL) {
++			trace_ipv4_addr_del(ifa);
+ 			if (!(ifa->ifa_flags & IFA_F_SECONDARY) &&
+ 			    ifa1->ifa_scope <= ifa->ifa_scope)
+ 				last_prim = ifa;
+@@ -363,6 +365,7 @@ static int __inet_insert_ifa(struct in_i
+ 			}
+ 			ifa->ifa_flags |= IFA_F_SECONDARY;
+ 		}
++		trace_ipv4_addr_add(ifa);
  	}
  
- 	if (mem_cgroup_charge(page, mm, GFP_KERNEL)) {
-Index: linux-2.6-lttng/mm/page_io.c
-===================================================================
---- linux-2.6-lttng.orig/mm/page_io.c	2008-07-15 13:54:46.000000000 -0400
-+++ linux-2.6-lttng/mm/page_io.c	2008-07-15 14:02:54.000000000 -0400
-@@ -17,6 +17,7 @@
- #include <linux/bio.h>
- #include <linux/swapops.h>
- #include <linux/writeback.h>
-+#include <trace/swap.h>
- #include <asm/pgtable.h>
- 
- static struct bio *get_swap_bio(gfp_t gfp_flags, pgoff_t index,
-@@ -114,6 +115,7 @@ int swap_writepage(struct page *page, st
- 		rw |= (1 << BIO_RW_SYNC);
- 	count_vm_event(PSWPOUT);
- 	set_page_writeback(page);
-+	trace_swap_out(page);
- 	unlock_page(page);
- 	submit_bio(rw, bio);
- out:
-Index: linux-2.6-lttng/mm/swapfile.c
-===================================================================
---- linux-2.6-lttng.orig/mm/swapfile.c	2008-07-15 13:54:46.000000000 -0400
-+++ linux-2.6-lttng/mm/swapfile.c	2008-07-15 14:02:54.000000000 -0400
-@@ -32,6 +32,7 @@
- #include <asm/pgtable.h>
- #include <asm/tlbflush.h>
- #include <linux/swapops.h>
-+#include <trace/swap.h>
- 
- DEFINE_SPINLOCK(swap_lock);
- unsigned int nr_swapfiles;
-@@ -1310,6 +1311,7 @@ asmlinkage long sys_swapoff(const char _
- 	swap_map = p->swap_map;
- 	p->swap_map = NULL;
- 	p->flags = 0;
-+	trace_swap_file_close(swap_file);
- 	spin_unlock(&swap_lock);
- 	mutex_unlock(&swapon_mutex);
- 	vfree(swap_map);
-@@ -1695,6 +1697,7 @@ asmlinkage long sys_swapon(const char __
- 	} else {
- 		swap_info[prev].next = p - swap_info;
- 	}
-+	trace_swap_file_open(swap_file, name);
- 	spin_unlock(&swap_lock);
- 	mutex_unlock(&swapon_mutex);
- 	error = 0;
-@@ -1796,6 +1799,7 @@ get_swap_info_struct(unsigned type)
- {
- 	return &swap_info[type];
- }
-+EXPORT_SYMBOL_GPL(get_swap_info_struct);
- 
- /*
-  * swap_lock prevents swap_map being freed. Don't grab an extra
-Index: linux-2.6-lttng/include/trace/swap.h
+ 	if (!(ifa->ifa_flags & IFA_F_SECONDARY)) {
+Index: linux-2.6-lttng/include/trace/ipv4.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/include/trace/swap.h	2008-07-15 14:02:54.000000000 -0400
-@@ -0,0 +1,20 @@
-+#ifndef _TRACE_SWAP_H
-+#define _TRACE_SWAP_H
++++ linux-2.6-lttng/include/trace/ipv4.h	2008-07-15 15:16:11.000000000 -0400
+@@ -0,0 +1,14 @@
++#ifndef _TRACE_IPV4_H
++#define _TRACE_IPV4_H
 +
-+#include <linux/swap.h>
++#include <linux/inetdevice.h>
 +#include <linux/tracepoint.h>
 +
-+DEFINE_TRACE(swap_in,
-+	TPPROTO(struct page *page, swp_entry_t entry),
-+	TPARGS(page, entry));
-+DEFINE_TRACE(swap_out,
-+	TPPROTO(struct page *page),
-+	TPARGS(page));
-+DEFINE_TRACE(swap_file_open,
-+	TPPROTO(struct file *file, char *filename),
-+	TPARGS(file, filename));
-+DEFINE_TRACE(swap_file_close,
-+	TPPROTO(struct file *file),
-+	TPARGS(file));
++DEFINE_TRACE(ipv4_addr_add,
++	TPPROTO(struct in_ifaddr *ifa),
++	TPARGS(ifa));
++DEFINE_TRACE(ipv4_addr_del,
++	TPPROTO(struct in_ifaddr *ifa),
++	TPARGS(ifa));
 +
 +#endif
 
