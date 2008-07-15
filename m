@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762600AbYGOTud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762832AbYGOTwB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762600AbYGOTud (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 15:50:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755912AbYGOTuZ
+	id S1762832AbYGOTwB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 15:52:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755912AbYGOTvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 15:50:25 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49173 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753076AbYGOTuZ (ORCPT
+	Tue, 15 Jul 2008 15:51:53 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:43517 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754674AbYGOTvw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 15:50:25 -0400
-Date: Tue, 15 Jul 2008 12:49:38 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Woodhouse <dwmw2@infradead.org>
-cc: Marcel Holtmann <marcel@holtmann.org>, Frans Pop <elendil@planet.nl>,
-       jeff@garzik.org, arjan@infradead.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
- use it in more drivers.
-In-Reply-To: <1216150616.27455.377.camel@shinybook.infradead.org>
-Message-ID: <alpine.LFD.1.10.0807151244320.3351@woody.linux-foundation.org>
-References: <1216077806.27455.85.camel@shinybook.infradead.org>  <20080714164119.99c33d5b.akpm@linux-foundation.org>  <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>  <487C0365.5030203@garzik.org>  <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
-  <200807151757.10626.elendil@planet.nl>  <1216149637.27242.65.camel@violet.holtmann.net>  <alpine.LFD.1.10.0807151223290.3351@woody.linux-foundation.org> <1216150616.27455.377.camel@shinybook.infradead.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 15 Jul 2008 15:51:52 -0400
+Subject: Re: [patch 01/15] Kernel Tracepoints
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
+       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Paul E McKenney <paulmck@linux.vnet.ibm.com>
+In-Reply-To: <20080715190211.GA6664@Krystal>
+References: <20080709145929.352201601@polymtl.ca>
+	 <20080709150043.693920317@polymtl.ca> <1216108237.12595.122.camel@twins>
+	 <20080715132543.GB20037@Krystal> <1216130593.12595.189.camel@twins>
+	 <20080715190211.GA6664@Krystal>
+Content-Type: text/plain
+Date: Tue, 15 Jul 2008 21:52:00 +0200
+Message-Id: <1216151520.12595.236.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2008-07-15 at 15:02 -0400, Mathieu Desnoyers wrote:
+> * Peter Zijlstra (peterz@infradead.org) wrote:
 
-
-On Tue, 15 Jul 2008, David Woodhouse wrote:
+> > Would it make sense to add:
+> > 
+> > rcu_read_sched_lock()
+> > rcu_read_sched_unlock()
+> > 
+> > to match:
+> > 
+> > call_rcu_sched()
+> > rcu_barrier_sched()
+> > synchronize_sched()
+> > 
+> > ?
+> > 
 > 
-> I'm unconvinced that the kernel should be setting this kind of policy.
+> Actually I think it's better to call them
+> rcu_read_lock_sched() and rcu_read_unlock_sched() to match the _bh()
+> equivalent already in rcupdate.h.
 
-I do think it should probably be conditional, but I think that's true of 
-udevd itself too, so hey, it cuts both ways.
+Sure,.
 
-> But I suppose if you make it tunable in sysfs and just switch to calling
-> do_filp_open() directly from firmware_class.c instead of punting to
-> userspace, that might work.
-
-Yup. And then you can disable it either statically (config option) or by 
-writing an invalid path into /proc/sys/kernel/firmware-dir or whatever.
-
-Or you can just decide that if you find something in the kernel-specific 
-firmware directory, then it should always take precedence over whatever 
-udev rules. Which sounds good to me anyway.
-
-Maybe you really do have some very kernel-specific issue (ie you're trying 
-a new driver that can handle a new experimental firmware, but you don't 
-want your old fall-back kernels to use it because you just fixed the bug 
-that makes it work again).
-
-Requiring you to write udevd scripts for that sounds insane. I wouldn't 
-even know where to start.
-
-So kernel-specific directories do make sense. As does the whole "I don't 
-want to handle the pain that is udev scripts".
-
-			Linus
