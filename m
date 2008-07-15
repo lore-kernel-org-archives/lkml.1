@@ -1,60 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757594AbYGONRn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757389AbYGONUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757594AbYGONRn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 09:17:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755430AbYGONRe
+	id S1757389AbYGONUZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 09:20:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755555AbYGONUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 09:17:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58041 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755285AbYGONRe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 09:17:34 -0400
-Date: Tue, 15 Jul 2008 09:16:52 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@devserv.devel.redhat.com
-To: Andi Kleen <andi@firstfloor.org>
-cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, davem@davemloft.net,
-       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [SUGGESTION]: drop virtual merge accounting in I/O requests
-In-Reply-To: <487C94CC.3090402@firstfloor.org>
-Message-ID: <Pine.LNX.4.64.0807150913020.21598@devserv.devel.redhat.com>
-References: <20080713.202035.172246136.davem@davemloft.net>
- <20080715024424R.fujita.tomonori@lab.ntt.co.jp>
- <Pine.LNX.4.64.0807141720350.30981@devserv.devel.redhat.com>
- <20080715114058A.fujita.tomonori@lab.ntt.co.jp>
- <Pine.LNX.4.64.0807150759430.12202@devserv.devel.redhat.com>
- <487C94CC.3090402@firstfloor.org>
+	Tue, 15 Jul 2008 09:20:15 -0400
+Received: from rn-out-0910.google.com ([64.233.170.190]:2882 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755430AbYGONUN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 09:20:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent:from;
+        b=vuasc3H/f3PnMqgEJnEYdA3J7dtaSiCsy5VUCstJiW1LXCYC/G8urPqLkqT+x+G1Fb
+         I4IJ8y94V6oAJF2aQgsTAOWFWdKJ9aFQqhH8+nisENeyaDGlzx+hPCaTdYj0+HYSZboj
+         wVbzf6wgN4//vLvo9iMNvsCEvY20U5MbRm5vI=
+Date: Tue, 15 Jul 2008 06:20:05 -0700
+To: Adrian Bunk <bunk@kernel.org>
+Cc: dhowells@redhat.com, sam@ravnborg.org, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org
+Subject: Re: binutils 2.18.50.0.8 frv build error
+Message-ID: <20080715132005.GA6517@lucon.org>
+References: <20080715121327.GA24533@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080715121327.GA24533@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "H.J. Lu" <hjl.tools@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jul 2008, Andi Kleen wrote:
+On Tue, Jul 15, 2008 at 03:13:27PM +0300, Adrian Bunk wrote:
+> Toolchain:
+> - gcc 4.3.1
+> - binutils 2.18.50.0.7 and 2.18.50.0.8
+> - configured for frv-linux
+> - kernel 2.6.26
+> 
+> Builds fine when using binutils 2.18.50.0.7,
+> but fails as follows with binutils 2.18.50.0.8:
+> 
+> <--  snip  -->
+> 
+> ...
+>   HOSTCC  scripts/kallsyms
+>   CC      init/main.o
+>   CHK     include/linux/compile.h
+>   UPD     include/linux/compile.h
+>   CC      init/version.o
+>   CC      init/do_mounts.o
+>   LD      init/mounts.o
+>   CC      init/noinitramfs.o
+>   LD      init/built-in.o
+> frv-linux-ld: init/mounts.o: compiled with -fpic and linked with modules that use non-pic relocations
+> frv-linux-ld: failed to merge target specific data of file init/mounts.o
+> make[2]: *** [init/built-in.o] Error 1
+> 
+> <--  snip  -->
+> 
+> Complete verbose log below.
+> 
+> Any hints what's going wrong?
+> 
+> cu
+> Adrian
+> 
+> 
 
-> Mikulas Patocka wrote:
->>>> BTW. what should the block device driver do when it receives a mapping
->>>> error? (if it aborts the request and it was write request, there will be
->>>> data corruption).
->>>
->>> I'm not sure how a aborted request can corrupt data on disk.
->>
->> Writes are done by an async daemon and no one checks for their
->> completion status. If there are three writes to directory, inode table
->> and inode bitmap and one of these writes fail, there's no code to undo
->> the other two. So the filesystem will be corrupted on write failure.
->
-> Normally journaling in ordered mode takes care of that. The transaction
-> is not committed until all earlier data has been successfully written.
+...
 
-And if there was write error, then what happens? Retry? Blocking of any 
-further updates?
+>    frv-linux-ld    -r -o init/built-in.o init/main.o init/version.o init/mounts.o init/noinitramfs.o 
+> frv-linux-ld: init/mounts.o: compiled with -fpic and linked with modules that use non-pic relocations
+> frv-linux-ld: failed to merge target specific data of file init/mounts.o
+> make[1]: *** [init/built-in.o] Error 1
+> make: *** [init] Error 2
 
-> And even the other fs typically turn the file system read only
-> on IO error to prevent further corruption.
+This regression was introduced between 2008-05-02 10:10am and
+2008-07-09 5:45pm PDT.  Does ld from binutils 2.18.50.0.7 work
+on the same init/main.o init/version.o init/mounts.o
+init/noinitramfs.o? If yes, please open a bug report at
 
-There is no interface how filesystem could query that buffer marked with 
-mark_buffer_dirty was not written. Or is there?
+http://www.sourceware.org/bugzilla/
 
-Mikulas
+with those .o files. If not, please find out why.
+
+Thanks.
+
+
+
+H.J.
