@@ -1,18 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761293AbYGOQZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761661AbYGOQ05@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761293AbYGOQZv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 12:25:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754079AbYGOQZm
+	id S1761661AbYGOQ05 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 12:26:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbYGOQ0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 12:25:42 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:57212 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752851AbYGOQZl (ORCPT
+	Tue, 15 Jul 2008 12:26:49 -0400
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:47563 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753474AbYGOQ0s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 12:25:41 -0400
-Subject: Re: [patch 01/15] Kernel Tracepoints
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+	Tue, 15 Jul 2008 12:26:48 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvIEABRnfEhMRKxB/2dsb2JhbACBWq1Z
+Date: Tue, 15 Jul 2008 12:26:46 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Peter Zijlstra <peterz@infradead.org>
 Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org, Masami Hiramatsu <mhiramat@redhat.com>,
        "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
@@ -21,24 +23,25 @@ Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        Alexander Viro <viro@zeniv.linux.org.uk>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
        Paul E McKenney <paulmck@linux.vnet.ibm.com>
-In-Reply-To: <20080715160813.GB27626@Krystal>
-References: <20080709145929.352201601@polymtl.ca>
-	 <20080709150043.693920317@polymtl.ca> <1216108237.12595.122.camel@twins>
-	 <20080715132543.GB20037@Krystal> <1216130356.12595.184.camel@twins>
-	 <20080715142710.GC20037@Krystal> <1216132928.12595.201.camel@twins>
-	 <20080715152224.GE20037@Krystal> <1216135902.12595.214.camel@twins>
-	 <20080715160813.GB27626@Krystal>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 18:25:49 +0200
-Message-Id: <1216139149.12595.224.camel@twins>
+Subject: Re: [patch 01/15] Kernel Tracepoints
+Message-ID: <20080715162646.GA30082@Krystal>
+References: <20080709145929.352201601@polymtl.ca> <20080709150043.693920317@polymtl.ca> <1216108237.12595.122.camel@twins> <20080715132543.GB20037@Krystal> <1216130356.12595.184.camel@twins> <20080715142710.GC20037@Krystal> <1216132928.12595.201.camel@twins> <20080715152224.GE20037@Krystal> <1216135902.12595.214.camel@twins> <20080715160813.GB27626@Krystal>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080715160813.GB27626@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:25:37 up 40 days, 21:06,  5 users,  load average: 3.00, 1.38,
+	1.25
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-15 at 12:08 -0400, Mathieu Desnoyers wrote:
+* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
 > * Peter Zijlstra (peterz@infradead.org) wrote:
 > > On Tue, 2008-07-15 at 11:22 -0400, Mathieu Desnoyers wrote:
 > > > * Peter Zijlstra (peterz@infradead.org) wrote:
@@ -130,6 +133,10 @@ On Tue, 2008-07-15 at 12:08 -0400, Mathieu Desnoyers wrote:
 > #define rcu_dereference(p)     ({ \
 >                                 typeof(p) _________p1 = ACCESS_ONCE(p); \
 >                                 if (p != NULL) \
+
+Actually this line should be :
+                                if (_________p1 != NULL) \
+
 >                                   smp_read_barrier_depends(); \
 >                                 (_________p1); \
 >                                 })
@@ -137,6 +144,13 @@ On Tue, 2008-07-15 at 12:08 -0400, Mathieu Desnoyers wrote:
 > #define rcu_dereference_non_null(p)     ({ \
 >                                 typeof(p) _________p1 = ACCESS_ONCE(p); \
 >                                 DEBUG_RCU_BUG_ON(p == NULL); \
+
+And this one :
+                                DEBUG_RCU_BUG_ON(_________p1 == NULL); \
+
+Mathieu
+
+
 >                                 smp_read_barrier_depends(); \
 >                                 (_________p1); \
 >                                 })
@@ -150,28 +164,50 @@ On Tue, 2008-07-15 at 12:08 -0400, Mathieu Desnoyers wrote:
 > never NULL under some debug kernel configuration.
 > 
 > Does it make sense ?
+> 
+> Mathieu
+> 
+> > > > If so, does this really matter since we're already in an unlikely
+> > > > section? Again, if so, this deserves a comment ;-)
+> > > > 
+> > > > [ still think those preempt_* calls should be called
+> > > >   rcu_read_sched_lock() or such. ]
+> > > > 
+> > > > Anyway, does this still generate better code?
+> > > > 
+> > > 
+> > > On x86_64 :
+> > > 
+> > >  820:   bf 01 00 00 00          mov    $0x1,%edi
+> > >  825:   e8 00 00 00 00          callq  82a <thread_return+0x136>
+> > >  82a:   48 8b 1d 00 00 00 00    mov    0x0(%rip),%rbx        # 831 <thread_return+0x13d>
+> > >  831:   48 85 db                test   %rbx,%rbx
+> > >  834:   75 21                   jne    857 <thread_return+0x163>
+> > >  836:   eb 27                   jmp    85f <thread_return+0x16b>
+> > >  838:   0f 1f 84 00 00 00 00    nopl   0x0(%rax,%rax,1)
+> > >  83f:   00 
+> > >  840:   48 8b 95 68 ff ff ff    mov    -0x98(%rbp),%rdx
+> > >  847:   48 8b b5 60 ff ff ff    mov    -0xa0(%rbp),%rsi
+> > >  84e:   4c 89 e7                mov    %r12,%rdi
+> > >  851:   48 83 c3 08             add    $0x8,%rbx
+> > >  855:   ff d0                   callq  *%rax
+> > >  857:   48 8b 03                mov    (%rbx),%rax
+> > >  85a:   48 85 c0                test   %rax,%rax
+> > >  85d:   75 e1                   jne    840 <thread_return+0x14c>
+> > >  85f:   bf 01 00 00 00          mov    $0x1,%edi
+> > >  864:
+> > > 
+> > > for 68 bytes.
+> > > 
+> > > My original implementation was 77 bytes, so yes, we have a win.
+> > 
+> > Ah, good good ! :-)
+> > 
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
 
-This would break the case where the dereferenced variable is used as an
-index/offset where 0 is a valid value and still generates data
-dependencies.
-
-So if with your new version we do:
-
-  i = rcu_dereference(foo);
-  j = table[i];
-
-which translates into:
-
-  i = ACCESS_ONCE(foo);
-  if (i)
-    smp_read_barrier_depends();
-  j = table[i];
-
-which when i == 0, would fail to do the barrier and can thus cause j to
-be a wrong value.
-
-Sadly I'll have to defer to Paul to explain exactly how that can happen
-- I always get my head in a horrible twist with this case.
-
-
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
