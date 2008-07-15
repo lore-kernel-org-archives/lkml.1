@@ -1,47 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763107AbYGOTnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762605AbYGOTop@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763107AbYGOTnt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 15:43:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755402AbYGOTnk
+	id S1762605AbYGOTop (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 15:44:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbYGOToh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 15:43:40 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:45484 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753346AbYGOTnj (ORCPT
+	Tue, 15 Jul 2008 15:44:37 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:55408 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752437AbYGOToh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 15:43:39 -0400
-X-IronPort-AV: E=Sophos;i="4.30,368,1212364800"; 
-   d="scan'208";a="127083994"
-From: Roland Dreier <rdreier@cisco.com>
-To: "Or Gerlitz" <or.gerlitz@gmail.com>
-Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: [ofa-general] ***SPAM*** InfiniBand/RDMA merge plans for 2.6.27
-References: <ada8ww5jbaf.fsf@cisco.com> <487B820E.4020002@mellanox.co.il>
-	<adahcarezdy.fsf@cisco.com>
-	<15ddcffd0807151220m37204055rf6890037b445bd34@mail.gmail.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 15 Jul 2008 12:36:32 -0700
-In-Reply-To: <15ddcffd0807151220m37204055rf6890037b445bd34@mail.gmail.com> (Or
-	Gerlitz's message of "Tue, 15 Jul 2008 22:20:56 +0300")
-Message-ID: <ada7ibndjnj.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 15 Jul 2008 19:36:32.0726 (UTC) FILETIME=[15F8E760:01C8E6B2]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+	Tue, 15 Jul 2008 15:44:37 -0400
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
+	in-kernel, use it in more drivers.
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Frans Pop <elendil@planet.nl>, jeff@garzik.org, arjan@infradead.org,
+       akpm@linux-foundation.org, dwmw2@infradead.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LFD.1.10.0807151233580.3351@woody.linux-foundation.org>
+References: <1216077806.27455.85.camel@shinybook.infradead.org>
+	 <20080714164119.99c33d5b.akpm@linux-foundation.org>
+	 <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>
+	 <487C0365.5030203@garzik.org>
+	 <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
+	 <200807151757.10626.elendil@planet.nl>
+	 <1216149637.27242.65.camel@violet.holtmann.net>
+	 <alpine.LFD.1.10.0807151223290.3351@woody.linux-foundation.org>
+	 <1216150288.27242.75.camel@violet.holtmann.net>
+	 <alpine.LFD.1.10.0807151233580.3351@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 15 Jul 2008 21:44:45 +0200
+Message-Id: <1216151085.27242.86.camel@violet.holtmann.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > So just to make sure, firmware 2.5 does not support IB BMME and if I want to
- > test with this patch I need to get a special firmware drop from Mellanox?
+Hi Linus,
 
-Right: in the test
+> > Personally I am against hacking file loading from within the kernel.
+> > This is why we involved udev (or hotplug in the beginning). It allows
+> > you to have userspace policy for the search paths etc.
+> 
+> Well, I'm personally against _forcing_ people to use udev. 
+> 
+> Yes, desktop distros generally will do so, since there are lots of complex 
+> issues etc. But I don't think we've generally forced it on people if they 
+> don't want it (ie I haven't tried it personally since the distro I used 
+> started using udev, but I think you can still just ignore udev events and 
+> set everything up statically).
+> 
+> And I don't think that's wrong. Which implies that setup things should 
+> still generally at least allow us to avoid udev.
+> 
+> (But maybe I'm wrong, and everybody already uses udev just because they 
+> couldn't be bothered not to).
 
-+	if ((dev->dev->caps.bmme_flags & MLX4_BMME_FLAG_LOCAL_INV) &&
-+	    (dev->dev->caps.bmme_flags & MLX4_BMME_FLAG_REMOTE_INV) &&
-+	    (dev->dev->caps.bmme_flags & MLX4_BMME_FLAG_FAST_REG_WR))
-+		props->device_cap_flags |= IB_DEVICE_MEM_MGT_EXTENSIONS;
+I actually think that is the case here. udev is so lightweight and
+really slim nowadays that not using it is a big drawback. There might be
+some system out there that are still using a static /dev directory, but
+for sure there are not many and even the embedded world doesn't really
+mind.
 
-you will see that not all the bmme_flags required are set by FW 2.5.
+Also I think the /sbin/hotplug thing is still available (not verified
+this) and thus calling a firmware loading helper script with a udev
+replacement would be possible. Someone correct me here if I am wrong.
+
+Regards
+
+Marcel
+
+
