@@ -1,74 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757322AbYGOWKO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756872AbYGOWMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757322AbYGOWKO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 18:10:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYGOWKA
+	id S1756872AbYGOWMx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 18:12:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753544AbYGOWMp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 18:10:00 -0400
-Received: from r00tworld.com ([212.85.137.21]:60152 "EHLO r00tworld.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752075AbYGOWJ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 18:09:59 -0400
-From: pageexec@freemail.hu
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 16 Jul 2008 00:08:55 +0200
-MIME-Version: 1.0
-Subject: Re: [stable] Linux 2.6.25.10
-Reply-to: pageexec@freemail.hu
-CC: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Message-ID: <487D3C17.31467.1C3C0441@pageexec.freemail.hu>
-In-reply-to: <alpine.LFD.1.10.0807151425170.2867@woody.linux-foundation.org>
-References: <20080703185727.GA12617@suse.de>, <487D3056.1183.1C0E1C47@pageexec.freemail.hu>, <alpine.LFD.1.10.0807151425170.2867@woody.linux-foundation.org>
-X-mailer: Pegasus Mail for Windows (4.41)
-Content-type: text/plain; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-Content-description: Mail message body
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Wed, 16 Jul 2008 00:09:39 +0200 (CEST)
+	Tue, 15 Jul 2008 18:12:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46356 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753522AbYGOWMo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 18:12:44 -0400
+Date: Tue, 15 Jul 2008 15:11:10 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: davem@davemloft.net, mingo@elte.hu, nhorman@tuxdriver.com,
+       simon@fire.lp0.eu, linux-kernel@vger.kernel.org,
+       herbert@gondor.apana.org.au
+Subject: Re: BUG: unable to handle kernel NULL pointer dereference at
+ 000000000000000e (reset_prng_context)
+Message-Id: <20080715151110.d7a17c89.akpm@linux-foundation.org>
+In-Reply-To: <20080715214929.GA18268@martell.zuzino.mipt.ru>
+References: <487BE071.80101@simon.arlott.org.uk>
+	<20080715020428.GA27463@hmsendeavour.rdu.redhat.com>
+	<20080715113304.GA30565@elte.hu>
+	<20080715.134407.150543177.davem@davemloft.net>
+	<20080715214929.GA18268@martell.zuzino.mipt.ru>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 15 Jul 2008 at 14:26, Linus Torvalds wrote:
+On Wed, 16 Jul 2008 01:49:30 +0400
+Alexey Dobriyan <adobriyan@gmail.com> wrote:
 
-> 
-> 
-> On Tue, 15 Jul 2008, pageexec@freemail.hu wrote:
+> On Tue, Jul 15, 2008 at 01:44:07PM -0700, David Miller wrote:
+> > From: Ingo Molnar <mingo@elte.hu>
 > > 
-> > and how is that different from today's situation where they aren't told
-> > at all?
+> > > i have just triggered this crash too. Please, when you know about bootup 
+> > > crashes in your code send a patch to the lkml thread so that people can 
+> > > apply it and have a working system.
+> > > 
+> > > Note that the new crypto/prng.c driver has very bad quality:
+> > > 
+> > >   total: 45 errors, 21 warnings, 1 checks, 410 lines checked
+> > > 
+> > > It has tons of completely unacceptable code mistakes in it.
+> > 
+> > I think we should merge new drivers as aggressively as possible.
 > 
-> Umm. They are. They are told to upgrade to the stable kernel, which 
-> should have everything we know about.
+> Well, I don't have strong opinion about this exact statement, but
+> 
+> 	Ingo, COULD YOU PLEASE PERSONALLY FUCKING STOP THIS
+> 	CHECKPATCH.PL-AS-INDICATOR HORSESHIT !
 
-you should check out the last few -stable releases then and see how
-the announcement doesn't ever mention the word 'security' while fixing
-security bugs (see my analysis at http://lwn.net/Articles/288473/).
+Well I wouldn't put it that way but sure, there is no clear correlation.
 
-unless one digs into the actual commits and determines what's going on,
-it's easy to make a bad judgement call even for -stable. you know, there
-are places that can't just reboot into a new kernel every week for no
-reason (Microsoft has patch Tuesday once a month only).
+Except that such a high density of coding-style errors is an indication
+that the code was not closely and critically reviewed by an experienced
+kernel developer.
 
-also what about people running older kernels, outside of -stable focus?
-do you determine how far back a fix should be applied? i don't think so,
-but people maintaining older series will do that, provided they get a hint.
+> Every damn single warning in this case is about whitespace or 80 column limit.
+> 
+> Every damn single one!
+> 
+> The hacker of your calibre should know the difference between whitespace-bad code
+> and bug-ridden-bad code.
+> 
+> 
+> What are those unacceptable mistakes?
+> 
+> Don't read the code again, what are those mistakes?
+> 
 
-in other words, it's all the more reason to have the commit say it's
-fixing a security issue.
+Sleeping inside spinlock?
 
-> I'm just saying that why mark things, when the marking have no meaning? 
-> People who believe in them are just _wrong_.
+> 
+> I _very_ briefly looked at prng.c and place I find wrong it passing
+> "int nbytes" to get_prng_bytes(). It should be unsigned at least.
+> 
+> checkpatch.pl says about this? Suuuure, it does...
 
-what is wrong in particular? when you know that you're about to commit a
-patch that fixes a security bug, why is it wrong to say so in the commit?
-in what way will people reading that commit be misled? they will see it's
-fixing a security bug and they can prioritize it for whatever processes they
-have for backports, analysis, etc. if they don't see such marks, they will
-have to do a whole lot more work (effectively duplicating your own and even
-each other's efforts) to figure out the same. why not save them time and
-tell them directly what you already know?
-
-cheers,
-  PaX Team
-
+If we're going to merge code which has zillions of trivially-detectable
+coding-style errors and which hasn't been runtime tested with very
+mainstream kernel debug options enabled and which afacit hasn't been
+reviewed then we have no standards at all.
