@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757289AbYGONxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757979AbYGONzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757289AbYGONxt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 09:53:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbYGONxl
+	id S1757979AbYGONzm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 09:55:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbYGONzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 09:53:41 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:57689 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753111AbYGONxk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 09:53:40 -0400
-Date: Tue, 15 Jul 2008 09:53:37 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH] ftrace: only trace preempt off with preempt tracer
-Message-ID: <Pine.LNX.4.58.0807150952080.8218@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 15 Jul 2008 09:55:33 -0400
+Received: from igw2.br.ibm.com ([32.104.18.25]:45492 "EHLO igw2.br.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753743AbYGONzc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 09:55:32 -0400
+Subject: [PATCH] MAINTAINERS whitespace fix and email addresses addition
+From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, debora@linux.vnet.ibm.com
+Content-Type: text/plain
+Date: Tue, 15 Jul 2008 10:52:58 -0300
+Message-Id: <1216129978.6327.11.camel@blackbox>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-When PREEMPT_TRACER and IRQSOFF_TRACER are both configured and irqsoff
-tracer is running, the preempt_off sections might also be traced.
-
-Thanks to Andrew Morton for pointing out my mistake of spin_lock disabling
-interrupts while he was reviewing ftrace.txt. Seems that my example I used
-actually hit this bug.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
 ---
- kernel/trace/trace_irqsoff.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ MAINTAINERS |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-Index: linus.git/kernel/trace/trace_irqsoff.c
-===================================================================
---- linus.git.orig/kernel/trace/trace_irqsoff.c	2008-07-14 23:08:16.000000000 -0400
-+++ linus.git/kernel/trace/trace_irqsoff.c	2008-07-15 00:22:59.000000000 -0400
-@@ -337,12 +337,14 @@ EXPORT_SYMBOL(trace_hardirqs_off_caller)
- #ifdef CONFIG_PREEMPT_TRACER
- void trace_preempt_on(unsigned long a0, unsigned long a1)
- {
--	stop_critical_timing(a0, a1);
-+	if (preempt_trace())
-+		stop_critical_timing(a0, a1);
- }
-
- void trace_preempt_off(unsigned long a0, unsigned long a1)
- {
--	start_critical_timing(a0, a1);
-+	if (preempt_trace())
-+		start_critical_timing(a0, a1);
- }
- #endif /* CONFIG_PREEMPT_TRACER */
-
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 1528e58..90bbd8a 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4003,9 +4003,10 @@ W:	http://www.buzzard.org.uk/toshiba/
+ S:	Maintained
+ 
+ TPM DEVICE DRIVER
+-P:     Debora Velarde
+-P:     Rajiv Andrade
+-M:	tpmdd-devel@lists.sourceforge.net
++P:	Debora Velarde
++M:	debora@linux.vnet.ibm.com
++P:	Rajiv Andrade
++M:	srajiv@linux.vnet.ibm.com
+ W:	http://tpmdd.sourceforge.net
+ P:	Marcel Selhorst
+ M:	tpm@selhorst.net
+--
 
