@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756412AbYGOS4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761332AbYGOS5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756412AbYGOS4A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 14:56:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756818AbYGOSzl
+	id S1761332AbYGOS5g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 14:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbYGOS52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 14:55:41 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:42005 "EHLO mail.dvmed.net"
+	Tue, 15 Jul 2008 14:57:28 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:55039 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756616AbYGOSzk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 14:55:40 -0400
-Message-ID: <487CF29E.5000009@garzik.org>
-Date: Tue, 15 Jul 2008 14:55:26 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Frans Pop <elendil@planet.nl>, arjan@infradead.org,
-       akpm@linux-foundation.org, dwmw2@infradead.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
- use it in more drivers.
-References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org> <487C0365.5030203@garzik.org> <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org> <200807151757.10626.elendil@planet.nl> <20080715180535.GA6080@khazad-dum.debian.net> <487CE917.3000000@garzik.org> <alpine.LFD.1.10.0807151122010.3017@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807151122010.3017@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1753025AbYGOS51 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 14:57:27 -0400
+Subject: Re: kvm causing memory corruption?  now 2.6.26-rc8
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Avi Kivity <avi@qumranet.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       kvm-devel <kvm@vger.kernel.org>,
+       "Anthony N. Liguori [imap]" <aliguori@us.ibm.com>
+In-Reply-To: <48512028.3070104@qumranet.com>
+References: <1206479576.7562.21.camel@nimitz.home.sr71.net>
+	 <47EA1C63.8010202@qumranet.com>
+	 <1206550329.7883.5.camel@nimitz.home.sr71.net>
+	 <47EA80AC.4070204@qumranet.com>
+	 <1206551794.7883.7.camel@nimitz.home.sr71.net>
+	 <47EB6AAC.3040607@qumranet.com>  <47EB7281.6070300@qumranet.com>
+	 <1206629709.7883.30.camel@nimitz.home.sr71.net>
+	 <47EBB63E.2060306@qumranet.com>
+	 <1212445810.8211.9.camel@nimitz.home.sr71.net>
+	 <48469BDA.3050206@qumranet.com> <1212738105.7837.3.camel@nimitz>
+	 <48512028.3070104@qumranet.com>
+Content-Type: text/plain
+Date: Tue, 15 Jul 2008 11:57:22 -0700
+Message-Id: <1216148242.25942.6.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Tue, 15 Jul 2008, Jeff Garzik wrote:
-> 
->> Henrique de Moraes Holschuh wrote:
->>> On Tue, 15 Jul 2008, Frans Pop wrote:
->>>> If I were able to compile firmware into the modules, the problem would be
->>>> solved in one go.
->>> And this thread would have been shorter, even. I hope someone decides to
->>> write that support instead of complaining ;-)
->> I've volunteered -- but if Linus and David will reject my code out of hand,
->> there is not much point in writing it.
-> 
-> Quite frankly, I don't think it's something to reject out of hand, but it 
-> does sound pretty damn stupid.
-> 
-> Why compile them into the module, when that's just the _inflexible_ model?
+So, just a continuation of what we were talking about before...
 
-Because it works today.
+I just had a bug triggered on my system because I'm running sparsemem
+(it was in show_mem()).  I wonder if sparsemem is contributing to the
+bug.  Does kvm ever do any arithmetic that you can think of with 'struct
+page's?
 
-Because that is what people and their scripts expect, today.
+To summarize my config: 
+* 4GB of RAM
+* hole from 3-4GB (so ram ranges from 0-5GB)
+* PAE enabled
+* SPARSEMEM=y
 
-Because people should not be forced to fix all their firmware-related 
-breakage immediately, just to boot 2.6.27.
+http://sr71.net/~dave/linux/config-2.6.26-rc8-00089-ge1441b9
 
+I'm compiling a kernel right now to try without sparsemem.
 
-> I'm not seeing why you cannot accept change.
-
-It is highly feasible to do the change without breaking stuff and 
-removing choice.
-
-Beer can be great tasting AND less filling.
-
-	Jeff
-
+-- Dave
 
