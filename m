@@ -1,229 +1,292 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757993AbYGOIqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756809AbYGOIty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757993AbYGOIqP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 04:46:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754909AbYGOIqA
+	id S1756809AbYGOIty (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 04:49:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753045AbYGOItr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 04:46:00 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:45483 "EHLO
-	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753761AbYGOIp7 (ORCPT
+	Tue, 15 Jul 2008 04:49:47 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:34068 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752734AbYGOItp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 04:45:59 -0400
-From: Chandru <chandru@in.ibm.com>
-Organization: ibm
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC] [Patch] calgary iommu: Use the first kernel's tce tables in kdump
-Date: Tue, 15 Jul 2008 14:15:27 +0530
-User-Agent: KMail/1.9.9
-Cc: Muli Ben-Yehuda <muli@il.ibm.com>, linux-kernel@vger.kernel.org,
-       Alexis Bruemmer <alexisb@us.ibm.com>
-References: <1191962414.24134.68.camel@chandru> <200806211741.43703.chandru@in.ibm.com> <20080623192918.GB6989@il.ibm.com>
-In-Reply-To: <20080623192918.GB6989@il.ibm.com>
+	Tue, 15 Jul 2008 04:49:45 -0400
+Message-ID: <487C64A6.1020607@ah.jp.nec.com>
+Date: Tue, 15 Jul 2008 17:49:42 +0900
+From: Takenori Nagano <t-nagano@ah.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807151415.27845.chandru@in.ibm.com>
+To: LKML <linux-kernel@vger.kernel.org>, greg@kroah.com
+Subject: [PATCH] Japanese translation of Documentation/SubmitChecklist
+Content-Type: multipart/mixed;
+ boundary="------------010308020209000800050400"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kdump kernel fails to boot with calgary iommu and aacraid driver on a x366 
-box. The ongoing dma's of aacraid from the first kernel continue to exist 
-until the driver is loaded in the kdump kernel. Calgary is initialized prior 
-to aacraid and creation of new tce tables causes wrong dma's to occur. Here 
-we try to get the tce tables of the first kernel in kdump kernel and use 
-them. While in the kdump kernel we do not allocate new tce tables but instead 
-read the base addres register contents of calgary iommu and use the tables 
-that the registers point to. With these changes the kdump kernel and hence 
-aacraid now boots normally.
+This is a multi-part message in MIME format.
+--------------010308020209000800050400
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Chandru Siddalingappa <chandru@in.ibm.com>
+Hi,
+
+This patch adds SubmitChecklist translated into Japanese to
+Documentation/ja_JP directory.
+The translated SubmitChecklist has already been reviewed by JF project.
+
+SubmitChecklist is one of the important policy documents.
+So, I would like to merge into 2.6.27.
+
+Signed-off-by: Takenori Nagano <t-nagano@ah.jp.nec.com>
 ---
+diff -uprN linux-2.6.26.orig/Documentation/ja_JP/SubmitChecklist
+linux-2.6.26/Documentation/ja_JP/SubmitChecklist
+--- linux-2.6.26.orig/Documentation/ja_JP/SubmitChecklist	1970-01-01
+09:00:00.000000000 +0900
++++ linux-2.6.26/Documentation/ja_JP/SubmitChecklist	2008-07-15
+17:46:13.591862098 +0900
+@@ -0,0 +1,111 @@
++NOTE:
++This is a version of Documentation/SubmitChecklist into Japanese.
++This document is maintained by Takenori Nagano <t-nagano@ah.jp.nec.com>
++and the JF Project team <http://www.linux.or.jp/JF/>.
++If you find any difference between this document and the original file
++or a problem with the translation,
++please contact the maintainer of this file or JF project.
++
++Please also note that the purpose of this file is to be easier to read
++for non English (read: Japanese) speakers and is not intended as a
++fork. So if you have any comments or updates of this file, please try
++to update the original English file first.
++
++Last Updated: 2008/07/14
++==================================
++これは、
++linux-2.6.26/Documentation/SubmitChecklist の和訳です。
++
++翻訳団体： JF プロジェクト < http://www.linux.or.jp/JF/ >
++翻訳日： 2008/07/14
++翻訳者： Takenori Nagano <t-nagano at ah dot jp dot nec dot com>
++校正者： Masanori Kobayashi さん <zap03216 at nifty dot ne dot jp>
++==================================
++
++
++Linux カーネルパッチ投稿者向けチェックリスト
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++
++本書では、パッチをより素早く取り込んでもらいたい開発者が実践すべき基本的な事柄
++をいくつか紹介します。ここにある全ての事柄は、Documentation/SubmittingPatches
++などのLinuxカーネルパッチ投稿に際しての心得を補足するものです。
++
++ 1: 妥当なCONFIGオプションや変更されたCONFIGオプション、つまり =y, =m, =n
++    全てで正しくビルドできることを確認してください。その際、gcc及びリンカが
++    warningやerrorを出していないことも確認してください。
++
++ 2: allnoconfig, allmodconfig オプションを用いて正しくビルドできることを
++    確認してください。
++
++ 3: 手許のクロスコンパイルツールやOSDLのPLMのようなものを用いて、複数の
++    アーキテクチャにおいても正しくビルドできることを確認してください。
++
++ 4: 64bit長の'unsigned long'を使用しているppc64は、クロスコンパイルでの
++    チェックに適当なアーキテクチャです。
++
++ 5: カーネルコーディングスタイルに準拠しているかどうか確認してください(!)
++
++ 6: CONFIGオプションの追加・変更をした場合には、CONFIGメニューが壊れていない
++    ことを確認してください。
++
++ 7: 新しくKconfigのオプションを追加する際には、必ずそのhelpも記述してください。
++
++ 8: 適切なKconfigの依存関係を考えながら慎重にチェックしてください。
++    ただし、この作業はマシンを使ったテストできちんと行うのがとても困難です。
++    うまくやるには、自分の頭で考えることです。
++
++ 9: sparseを利用してちゃんとしたコードチェックをしてください。
++
++10: 'make checkstack' と 'make namespacecheck' を利用し、問題が発見されたら
++    修正してください。'make checkstack' は明示的に問題を示しませんが、どれか
++    １つの関数が512バイトより大きいスタックを使っていれば、修正すべき候補と
++    なります。
++
++11: グローバルなkernel API を説明する kernel-doc をソースの中に含めてください。
++    ( staticな関数においては必須ではありませんが、含めてもらっても結構です )
++    そして、'make htmldocs' もしくは 'make mandocs' を利用して追記した
++    ドキュメントのチェックを行い、問題が見つかった場合には修正を行ってください。
++
++12: CONFIG_PREEMPT, CONFIG_DEBUG_PREEMPT, CONFIG_DEBUG_SLAB,
++    CONFIG_DEBUG_PAGEALLOC, CONFIG_DEBUG_MUTEXES, CONFIG_DEBUG_SPINLOCK,
++    CONFIG_DEBUG_SPINLOCK_SLEEP これら全てを同時に有効にして動作確認を
++    行ってください。
++
++13: CONFIG_SMP, CONFIG_PREEMPT を有効にした場合と無効にした場合の両方で
++    ビルドした上、動作確認を行ってください。
++
++14: もしパッチがディスクのI/O性能などに影響を与えるようであれば、
++    'CONFIG_LBD'オプションを有効にした場合と無効にした場合の両方で
++    テストを実施してみてください。
++
++15: lockdepの機能を全て有効にした上で、全てのコードパスを評価してください。
++
++16: /proc に新しいエントリを追加した場合には、Documentation/ 配下に
++    必ずドキュメントを追加してください。
++
++17: 新しいブートパラメータを追加した場合には、
++    必ずDocumentation/kernel-parameters.txt に説明を追加してください。
++
++18: 新しくmoduleにパラメータを追加した場合には、MODULE_PARM_DESC()を
++    利用して必ずその説明を記述してください。
++
++19: 新しいuserspaceインタフェースを作成した場合には、Documentation/ABI/ に
++    Documentation/ABI/README を参考にして必ずドキュメントを追加してください。
++
++20: 'make headers_check'を実行して全く問題がないことを確認してください。
++
++21: 少なくともslabアロケーションとpageアロケーションに失敗した場合の
++    挙動について、fault-injectionを利用して確認してください。
++    Documentation/fault-injection/ を参照してください。
++
++    追加したコードがかなりの量であったならば、サブシステム特有の
++    fault-injectionを追加したほうが良いかもしれません。
++
++22: 新たに追加したコードは、`gcc -W'でコンパイルしてください。
++    このオプションは大量の不要なメッセージを出力しますが、
++    "warning: comparison between signed and unsigned" のようなメッセージは、
++    バグを見つけるのに役に立ちます。
++
++23: 投稿したパッチが -mm パッチセットにマージされた後、全ての既存のパッチや
++    VM, VFS およびその他のサブシステムに関する様々な変更と、現時点でも共存
++    できることを確認するテストを行ってください。
 
-patch taken on top of linux-2.6.26 stable. Comments from Muli Ben-Yehuda taken 
-into consideration. Pls apply it as a stop-gap patch until we can come up 
-with a more stable patch for this issue. Thanks,
+--------------010308020209000800050400
+Content-Type: text/plain;
+ name="SubmitChecklist_JP.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="SubmitChecklist_JP.patch"
 
- arch/x86/kernel/pci-calgary_64.c |   87 ++++++++++++++++++++++++++---
- include/linux/crash_dump.h       |    8 ++
- 2 files changed, 88 insertions(+), 7 deletions(-)
-
-diff -Narup linux-2.6.26-orig/arch/x86/kernel/pci-calgary_64.c 
-linux-2.6.26/arch/x86/kernel/pci-calgary_64.c
---- linux-2.6.26-orig/arch/x86/kernel/pci-calgary_64.c	2008-07-15 
-13:36:00.000000000 +0530
-+++ linux-2.6.26/arch/x86/kernel/pci-calgary_64.c	2008-07-15 
-13:45:36.000000000 +0530
-@@ -36,6 +36,7 @@
- #include <linux/delay.h>
- #include <linux/scatterlist.h>
- #include <linux/iommu-helper.h>
-+#include <linux/crash_dump.h>
- #include <asm/gart.h>
- #include <asm/calgary.h>
- #include <asm/tce.h>
-@@ -167,6 +168,8 @@ static void calgary_dump_error_regs(stru
- static void calioc2_handle_quirks(struct iommu_table *tbl, struct pci_dev 
-*dev);
- static void calioc2_tce_cache_blast(struct iommu_table *tbl);
- static void calioc2_dump_error_regs(struct iommu_table *tbl);
-+static void calgary_init_bitmap_from_tce_table(struct iommu_table *tbl);
-+static void get_tce_space_from_tar(void);
- 
- static struct cal_chipset_ops calgary_chip_ops = {
- 	.handle_quirks = calgary_handle_quirks,
-@@ -830,7 +833,11 @@ static int __init calgary_setup_tar(stru
- 
- 	tbl = pci_iommu(dev->bus);
- 	tbl->it_base = (unsigned long)bus_info[dev->bus->number].tce_space;
--	tce_free(tbl, 0, tbl->it_size);
-+
-+	if (is_kdump_kernel())
-+		calgary_init_bitmap_from_tce_table(tbl);
-+	else
-+		tce_free(tbl, 0, tbl->it_size);
- 
- 	if (is_calgary(dev->device))
- 		tbl->chip_ops = &calgary_chip_ops;
-@@ -1209,6 +1216,10 @@ static int __init calgary_init(void)
- 	if (ret)
- 		return ret;
- 
-+	/* Purely for kdump kernel case  */
-+	if (is_kdump_kernel())
-+		get_tce_space_from_tar();
-+
- 	do {
- 		dev = pci_get_device(PCI_VENDOR_ID_IBM, PCI_ANY_ID, dev);
- 		if (!dev)
-@@ -1256,6 +1267,23 @@ error:
- 	return ret;
- }
- 
-+/*
-+ * calgary_init_bitmap_from_tce_table():
-+ * Funtion for kdump case. In the second/kdump kernel initialize
-+ * the bitmap based on the tce table entries obtained from first kernel
-+ */
-+static void calgary_init_bitmap_from_tce_table(struct iommu_table *tbl)
-+{
-+	u64 *tp;
-+	unsigned int index;
-+	tp = ((u64 *)tbl->it_base);
-+	for (index = 0 ; index < tbl->it_size; index++) {
-+		if (*tp != 0x0)
-+			set_bit(index, tbl->it_map);
-+		tp++;
-+	}
-+}
-+
- static inline int __init determine_tce_table_size(u64 ram)
- {
- 	int ret;
-@@ -1339,12 +1367,50 @@ static int __init calgary_bus_has_device
- 	return (val != 0xffffffff);
- }
- 
-+/*
-+ * get_tce_space_from_tar():
-+ * Function for kdump case. Get the tce tables from first kernel
-+ * by reading the contents of the base adress register of calgary iommu
-+ */
-+static void get_tce_space_from_tar()
-+{
-+	int bus;
-+	void __iomem *target;
-+	unsigned long tce_space;
-+
-+	for (bus = 0; bus < MAX_PHB_BUS_NUM; bus++) {
-+		struct calgary_bus_info *info = &bus_info[bus];
-+		unsigned short pci_device;
-+		u32 val;
-+
-+		val = read_pci_config(bus, 0, 0, 0);
-+		pci_device = (val & 0xFFFF0000) >> 16;
-+
-+		if (!is_cal_pci_dev(pci_device))
-+			continue;
-+		if (info->translation_disabled)
-+			continue;
-+
-+		if (calgary_bus_has_devices(bus, pci_device) ||
-+			translate_empty_slots) {
-+			target = calgary_reg(bus_info[bus].bbar,
-+				tar_offset(bus));
-+			tce_space = be64_to_cpu(readq(target));
-+			tce_space = tce_space & TAR_SW_BITS;
-+
-+			tce_space = tce_space & (~specified_table_size);
-+			info->tce_space = (u64 *)__va(tce_space);
-+		}
-+	}
-+	return;
-+}
-+
- void __init detect_calgary(void)
- {
- 	int bus;
- 	void *tbl;
- 	int calgary_found = 0;
--	unsigned long ptr;
-+	unsigned long ptr, max_pfn;
- 	unsigned int offset, prev_offset;
- 	int ret;
- 
-@@ -1394,7 +1460,8 @@ void __init detect_calgary(void)
- 		return;
- 	}
- 
--	specified_table_size = determine_tce_table_size(end_pfn * PAGE_SIZE);
-+	max_pfn = is_kdump_kernel() ? saved_max_pfn : end_pfn ;
-+	specified_table_size = determine_tce_table_size(max_pfn * PAGE_SIZE);
- 
- 	for (bus = 0; bus < MAX_PHB_BUS_NUM; bus++) {
- 		struct calgary_bus_info *info = &bus_info[bus];
-@@ -1412,10 +1479,16 @@ void __init detect_calgary(void)
- 
- 		if (calgary_bus_has_devices(bus, pci_device) ||
- 		    translate_empty_slots) {
--			tbl = alloc_tce_table();
--			if (!tbl)
--				goto cleanup;
--			info->tce_space = tbl;
-+			/*
-+			 * If it is kdump kernel, find and use tce tables
-+			 * from first kernel, else allocate tce tables here
-+			 */
-+			if (!is_kdump_kernel()) {
-+				tbl = alloc_tce_table();
-+				if (!tbl)
-+					goto cleanup;
-+				info->tce_space = tbl;
-+			}
- 			calgary_found = 1;
- 		}
- 	}
-diff -Narup linux-2.6.26-orig/include/linux/crash_dump.h 
-linux-2.6.26/include/linux/crash_dump.h
---- linux-2.6.26-orig/include/linux/crash_dump.h	2008-07-15 13:36:09.000000000 
-+0530
-+++ linux-2.6.26/include/linux/crash_dump.h	2008-07-15 13:36:37.000000000 
-+0530
-@@ -22,5 +22,13 @@ extern struct proc_dir_entry *proc_vmcor
- 
- #define vmcore_elf_check_arch(x) (elf_check_arch(x) || 
-vmcore_elf_check_arch_cross(x))
- 
-+static inline int is_kdump_kernel(void)
-+{
-+	return (elfcorehdr_addr != ELFCORE_ADDR_MAX) ? 1 : 0 ;
-+}
-+#else /* !CONFIG_CRASH_DUMP */
-+static inline int is_kdump_kernel(void) { return 0; }
- #endif /* CONFIG_CRASH_DUMP */
-+
-+extern unsigned long saved_max_pfn;
- #endif /* LINUX_CRASHDUMP_H */
+ZGlmZiAtdXByTiBsaW51eC0yLjYuMjYub3JpZy9Eb2N1bWVudGF0aW9uL2phX0pQL1N1Ym1p
+dENoZWNrbGlzdCBsaW51eC0yLjYuMjYvRG9jdW1lbnRhdGlvbi9qYV9KUC9TdWJtaXRDaGVj
+a2xpc3QKLS0tIGxpbnV4LTIuNi4yNi5vcmlnL0RvY3VtZW50YXRpb24vamFfSlAvU3VibWl0
+Q2hlY2tsaXN0CTE5NzAtMDEtMDEgMDk6MDA6MDAuMDAwMDAwMDAwICswOTAwCisrKyBsaW51
+eC0yLjYuMjYvRG9jdW1lbnRhdGlvbi9qYV9KUC9TdWJtaXRDaGVja2xpc3QJMjAwOC0wNy0x
+NSAxNzo0NjoxMy41OTE4NjIwOTggKzA5MDAKQEAgLTAsMCArMSwxMTEgQEAKK05PVEU6CitU
+aGlzIGlzIGEgdmVyc2lvbiBvZiBEb2N1bWVudGF0aW9uL1N1Ym1pdENoZWNrbGlzdCBpbnRv
+IEphcGFuZXNlLgorVGhpcyBkb2N1bWVudCBpcyBtYWludGFpbmVkIGJ5IFRha2Vub3JpIE5h
+Z2FubyA8dC1uYWdhbm9AYWguanAubmVjLmNvbT4KK2FuZCB0aGUgSkYgUHJvamVjdCB0ZWFt
+IDxodHRwOi8vd3d3LmxpbnV4Lm9yLmpwL0pGLz4uCitJZiB5b3UgZmluZCBhbnkgZGlmZmVy
+ZW5jZSBiZXR3ZWVuIHRoaXMgZG9jdW1lbnQgYW5kIHRoZSBvcmlnaW5hbCBmaWxlCitvciBh
+IHByb2JsZW0gd2l0aCB0aGUgdHJhbnNsYXRpb24sCitwbGVhc2UgY29udGFjdCB0aGUgbWFp
+bnRhaW5lciBvZiB0aGlzIGZpbGUgb3IgSkYgcHJvamVjdC4KKworUGxlYXNlIGFsc28gbm90
+ZSB0aGF0IHRoZSBwdXJwb3NlIG9mIHRoaXMgZmlsZSBpcyB0byBiZSBlYXNpZXIgdG8gcmVh
+ZAorZm9yIG5vbiBFbmdsaXNoIChyZWFkOiBKYXBhbmVzZSkgc3BlYWtlcnMgYW5kIGlzIG5v
+dCBpbnRlbmRlZCBhcyBhCitmb3JrLiBTbyBpZiB5b3UgaGF2ZSBhbnkgY29tbWVudHMgb3Ig
+dXBkYXRlcyBvZiB0aGlzIGZpbGUsIHBsZWFzZSB0cnkKK3RvIHVwZGF0ZSB0aGUgb3JpZ2lu
+YWwgRW5nbGlzaCBmaWxlIGZpcnN0LgorCitMYXN0IFVwZGF0ZWQ6IDIwMDgvMDcvMTQKKz09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KK+OBk+OCjOOBr+OAgQorbGludXgt
+Mi42LjI2L0RvY3VtZW50YXRpb24vU3VibWl0Q2hlY2tsaXN0IOOBruWSjOios+OBp+OBmeOA
+ggorCivnv7voqLPlm6PkvZPvvJogSkYg44OX44Ot44K444Kn44Kv44OIIDwgaHR0cDovL3d3
+dy5saW51eC5vci5qcC9KRi8gPgor57+76Kiz5pel77yaIDIwMDgvMDcvMTQKK+e/u+ios+iA
+he+8miBUYWtlbm9yaSBOYWdhbm8gPHQtbmFnYW5vIGF0IGFoIGRvdCBqcCBkb3QgbmVjIGRv
+dCBjb20+CivmoKHmraPogIXvvJogTWFzYW5vcmkgS29iYXlhc2hpIOOBleOCkyA8emFwMDMy
+MTYgYXQgbmlmdHkgZG90IG5lIGRvdCBqcD4KKz09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT0KKworCitMaW51eCDjgqvjg7zjg43jg6vjg5Hjg4Pjg4HmipXnqL/ogIXlkJHj
+gZHjg4Hjgqfjg4Pjgq/jg6rjgrnjg4gKK35+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+
+fn5+fn5+fn5+fn5+fn5+fn5+fn4KKwor5pys5pu444Gn44Gv44CB44OR44OD44OB44KS44KI
+44KK57Sg5pep44GP5Y+W44KK6L6844KT44Gn44KC44KJ44GE44Gf44GE6ZaL55m66ICF44GM
+5a6f6Le144GZ44G544GN5Z+65pys55qE44Gq5LqL5p+ECivjgpLjgYTjgY/jgaTjgYvntLnk
+u4vjgZfjgb7jgZnjgILjgZPjgZPjgavjgYLjgovlhajjgabjga7kuovmn4Tjga/jgIFEb2N1
+bWVudGF0aW9uL1N1Ym1pdHRpbmdQYXRjaGVzCivjgarjganjga5MaW51eOOCq+ODvOODjeOD
+q+ODkeODg+ODgeaKleeov+OBq+mam+OBl+OBpuOBruW/g+W+l+OCkuijnOi2s+OBmeOCi+OC
+guOBruOBp+OBmeOAggorCisgMTog5aal5b2T44GqQ09ORklH44Kq44OX44K344On44Oz44KE
+5aSJ5pu044GV44KM44GfQ09ORklH44Kq44OX44K344On44Oz44CB44Gk44G+44KKID15LCA9
+bSwgPW4KKyAgICDlhajjgabjgafmraPjgZfjgY/jg5Pjg6vjg4njgafjgY3jgovjgZPjgajj
+gpLnorroqo3jgZfjgabjgY/jgaDjgZXjgYTjgILjgZ3jga7pmpvjgIFnY2Plj4rjgbPjg6rj
+g7PjgqvjgYwKKyAgICB3YXJuaW5n44KEZXJyb3LjgpLlh7rjgZfjgabjgYTjgarjgYTjgZPj
+gajjgoLnorroqo3jgZfjgabjgY/jgaDjgZXjgYTjgIIKKworIDI6IGFsbG5vY29uZmlnLCBh
+bGxtb2Rjb25maWcg44Kq44OX44K344On44Oz44KS55So44GE44Gm5q2j44GX44GP44OT44Or
+44OJ44Gn44GN44KL44GT44Go44KSCisgICAg56K66KqN44GX44Gm44GP44Gg44GV44GE44CC
+CisKKyAzOiDmiYvoqLHjga7jgq/jg63jgrnjgrPjg7Pjg5HjgqTjg6vjg4Tjg7zjg6vjgoRP
+U0RM44GuUExN44Gu44KI44GG44Gq44KC44Gu44KS55So44GE44Gm44CB6KSH5pWw44GuCisg
+ICAg44Ki44O844Kt44OG44Kv44OB44Oj44Gr44GK44GE44Gm44KC5q2j44GX44GP44OT44Or
+44OJ44Gn44GN44KL44GT44Go44KS56K66KqN44GX44Gm44GP44Gg44GV44GE44CCCisKKyA0
+OiA2NGJpdOmVt+OBrid1bnNpZ25lZCBsb25nJ+OCkuS9v+eUqOOBl+OBpuOBhOOCi3BwYzY0
+44Gv44CB44Kv44Ot44K544Kz44Oz44OR44Kk44Or44Gn44GuCisgICAg44OB44Kn44OD44Kv
+44Gr6YGp5b2T44Gq44Ki44O844Kt44OG44Kv44OB44Oj44Gn44GZ44CCCisKKyA1OiDjgqvj
+g7zjg43jg6vjgrPjg7zjg4fjgqPjg7PjgrDjgrnjgr/jgqTjg6vjgavmupbmi6DjgZfjgabj
+gYTjgovjgYvjganjgYbjgYvnorroqo3jgZfjgabjgY/jgaDjgZXjgYQoISkKKworIDY6IENP
+TkZJR+OCquODl+OCt+ODp+ODs+OBrui/veWKoOODu+WkieabtOOCkuOBl+OBn+WgtOWQiOOB
+q+OBr+OAgUNPTkZJR+ODoeODi+ODpeODvOOBjOWjiuOCjOOBpuOBhOOBquOBhAorICAgIOOB
+k+OBqOOCkueiuuiqjeOBl+OBpuOBj+OBoOOBleOBhOOAggorCisgNzog5paw44GX44GPS2Nv
+bmZpZ+OBruOCquODl+OCt+ODp+ODs+OCkui/veWKoOOBmeOCi+mam+OBq+OBr+OAgeW/heOB
+muOBneOBrmhlbHDjgoLoqJjov7DjgZfjgabjgY/jgaDjgZXjgYTjgIIKKworIDg6IOmBqeWI
+h+OBqktjb25maWfjga7kvp3lrZjplqLkv4LjgpLogIPjgYjjgarjgYzjgonmhY7ph43jgavj
+g4Hjgqfjg4Pjgq/jgZfjgabjgY/jgaDjgZXjgYTjgIIKKyAgICDjgZ/jgaDjgZfjgIHjgZPj
+ga7kvZzmpa3jga/jg57jgrfjg7PjgpLkvb/jgaPjgZ/jg4bjgrnjg4jjgafjgY3jgaHjgpPj
+gajooYzjgYbjga7jgYzjgajjgabjgoLlm7Dpm6PjgafjgZnjgIIKKyAgICDjgYbjgb7jgY/j
+goTjgovjgavjga/jgIHoh6rliIbjga7poK3jgafogIPjgYjjgovjgZPjgajjgafjgZnjgIIK
+KworIDk6IHNwYXJzZeOCkuWIqeeUqOOBl+OBpuOBoeOCg+OCk+OBqOOBl+OBn+OCs+ODvOOD
+ieODgeOCp+ODg+OCr+OCkuOBl+OBpuOBj+OBoOOBleOBhOOAggorCisxMDogJ21ha2UgY2hl
+Y2tzdGFjaycg44GoICdtYWtlIG5hbWVzcGFjZWNoZWNrJyDjgpLliKnnlKjjgZfjgIHllY/p
+oYzjgYznmbropovjgZXjgozjgZ/jgokKKyAgICDkv67mraPjgZfjgabjgY/jgaDjgZXjgYTj
+gIInbWFrZSBjaGVja3N0YWNrJyDjga/mmI7npLrnmoTjgavllY/poYzjgpLnpLrjgZfjgb7j
+gZvjgpPjgYzjgIHjganjgozjgYsKKyAgICDvvJHjgaTjga7plqLmlbDjgYw1MTLjg5DjgqTj
+g4jjgojjgorlpKfjgY3jgYTjgrnjgr/jg4Pjgq/jgpLkvb/jgaPjgabjgYTjgozjgbDjgIHk
+v67mraPjgZnjgbnjgY3lgJnoo5zjgagKKyAgICDjgarjgorjgb7jgZnjgIIKKworMTE6IOOC
+sOODreODvOODkOODq+OBqmtlcm5lbCBBUEkg44KS6Kqs5piO44GZ44KLIGtlcm5lbC1kb2Mg
+44KS44K944O844K544Gu5Lit44Gr5ZCr44KB44Gm44GP44Gg44GV44GE44CCCisgICAgKCBz
+dGF0aWPjgarplqLmlbDjgavjgYrjgYTjgabjga/lv4XpoIjjgafjga/jgYLjgorjgb7jgZvj
+gpPjgYzjgIHlkKvjgoHjgabjgoLjgonjgaPjgabjgoLntZDmp4vjgafjgZkgKQorICAgIOOB
+neOBl+OBpuOAgSdtYWtlIGh0bWxkb2NzJyDjgoLjgZfjgY/jga8gJ21ha2UgbWFuZG9jcycg
+44KS5Yip55So44GX44Gm6L+96KiY44GX44GfCisgICAg44OJ44Kt44Ol44Oh44Oz44OI44Gu
+44OB44Kn44OD44Kv44KS6KGM44GE44CB5ZWP6aGM44GM6KaL44Gk44GL44Gj44Gf5aC05ZCI
+44Gr44Gv5L+u5q2j44KS6KGM44Gj44Gm44GP44Gg44GV44GE44CCCisKKzEyOiBDT05GSUdf
+UFJFRU1QVCwgQ09ORklHX0RFQlVHX1BSRUVNUFQsIENPTkZJR19ERUJVR19TTEFCLCAKKyAg
+ICBDT05GSUdfREVCVUdfUEFHRUFMTE9DLCBDT05GSUdfREVCVUdfTVVURVhFUywgQ09ORklH
+X0RFQlVHX1NQSU5MT0NLLCAKKyAgICBDT05GSUdfREVCVUdfU1BJTkxPQ0tfU0xFRVAg44GT
+44KM44KJ5YWo44Gm44KS5ZCM5pmC44Gr5pyJ5Yq544Gr44GX44Gm5YuV5L2c56K66KqN44KS
+CisgICAg6KGM44Gj44Gm44GP44Gg44GV44GE44CCCisKKzEzOiBDT05GSUdfU01QLCBDT05G
+SUdfUFJFRU1QVCDjgpLmnInlirnjgavjgZfjgZ/loLTlkIjjgajnhKHlirnjgavjgZfjgZ/l
+oLTlkIjjga7kuKHmlrnjgacKKyAgICDjg5Pjg6vjg4njgZfjgZ/kuIrjgIHli5XkvZznorro
+qo3jgpLooYzjgaPjgabjgY/jgaDjgZXjgYTjgIIKKworMTQ6IOOCguOBl+ODkeODg+ODgeOB
+jOODh+OCo+OCueOCr+OBrkkvT+aAp+iDveOBquOBqeOBq+W9semfv+OCkuS4juOBiOOCi+OC
+iOOBhuOBp+OBguOCjOOBsOOAgQorICAgICdDT05GSUdfTEJEJ+OCquODl+OCt+ODp+ODs+OC
+kuacieWKueOBq+OBl+OBn+WgtOWQiOOBqOeEoeWKueOBq+OBl+OBn+WgtOWQiOOBruS4oeaW
+ueOBpworICAgIOODhuOCueODiOOCkuWun+aWveOBl+OBpuOBv+OBpuOBj+OBoOOBleOBhOOA
+ggorCisxNTogbG9ja2RlcOOBruapn+iDveOCkuWFqOOBpuacieWKueOBq+OBl+OBn+S4iuOB
+p+OAgeWFqOOBpuOBruOCs+ODvOODieODkeOCueOCkuipleS+oeOBl+OBpuOBj+OBoOOBleOB
+hOOAggorCisxNjogL3Byb2Mg44Gr5paw44GX44GE44Ko44Oz44OI44Oq44KS6L+95Yqg44GX
+44Gf5aC05ZCI44Gr44Gv44CBRG9jdW1lbnRhdGlvbi8g6YWN5LiL44GrCisgICAg5b+F44Ga
+44OJ44Kt44Ol44Oh44Oz44OI44KS6L+95Yqg44GX44Gm44GP44Gg44GV44GE44CCCisKKzE3
+OiDmlrDjgZfjgYTjg5bjg7zjg4jjg5Hjg6njg6Hjg7zjgr/jgpLov73liqDjgZfjgZ/loLTl
+kIjjgavjga/jgIEKKyAgICDlv4XjgZpEb2N1bWVudGF0aW9uL2tlcm5lbC1wYXJhbWV0ZXJz
+LnR4dCDjgavoqqzmmI7jgpLov73liqDjgZfjgabjgY/jgaDjgZXjgYTjgIIKKworMTg6IOaW
+sOOBl+OBj21vZHVsZeOBq+ODkeODqeODoeODvOOCv+OCkui/veWKoOOBl+OBn+WgtOWQiOOB
+q+OBr+OAgU1PRFVMRV9QQVJNX0RFU0MoKeOCkgorICAgIOWIqeeUqOOBl+OBpuW/heOBmuOB
+neOBruiqrOaYjuOCkuiomOi/sOOBl+OBpuOBj+OBoOOBleOBhOOAggorCisxOTog5paw44GX
+44GEdXNlcnNwYWNl44Kk44Oz44K/44OV44Kn44O844K544KS5L2c5oiQ44GX44Gf5aC05ZCI
+44Gr44Gv44CBRG9jdW1lbnRhdGlvbi9BQkkvIOOBqworICAgIERvY3VtZW50YXRpb24vQUJJ
+L1JFQURNRSDjgpLlj4LogIPjgavjgZfjgablv4XjgZrjg4njgq3jg6Xjg6Hjg7Pjg4jjgpLo
+v73liqDjgZfjgabjgY/jgaDjgZXjgYTjgIIKKworMjA6ICdtYWtlIGhlYWRlcnNfY2hlY2sn
+44KS5a6f6KGM44GX44Gm5YWo44GP5ZWP6aGM44GM44Gq44GE44GT44Go44KS56K66KqN44GX
+44Gm44GP44Gg44GV44GE44CCCisKKzIxOiDlsJHjgarjgY/jgajjgoJzbGFi44Ki44Ot44Kx
+44O844K344On44Oz44GocGFnZeOCouODreOCseODvOOCt+ODp+ODs+OBq+WkseaVl+OBl+OB
+n+WgtOWQiOOBrgorICAgIOaMmeWLleOBq+OBpOOBhOOBpuOAgWZhdWx0LWluamVjdGlvbuOC
+kuWIqeeUqOOBl+OBpueiuuiqjeOBl+OBpuOBj+OBoOOBleOBhOOAggorICAgIERvY3VtZW50
+YXRpb24vZmF1bHQtaW5qZWN0aW9uLyDjgpLlj4LnhafjgZfjgabjgY/jgaDjgZXjgYTjgIIK
+KworICAgIOi/veWKoOOBl+OBn+OCs+ODvOODieOBjOOBi+OBquOCiuOBrumHj+OBp+OBguOB
+o+OBn+OBquOCieOBsOOAgeOCteODluOCt+OCueODhuODoOeJueacieOBrgorICAgIGZhdWx0
+LWluamVjdGlvbuOCkui/veWKoOOBl+OBn+OBu+OBhuOBjOiJr+OBhOOBi+OCguOBl+OCjOOB
+vuOBm+OCk+OAggorCisyMjog5paw44Gf44Gr6L+95Yqg44GX44Gf44Kz44O844OJ44Gv44CB
+YGdjYyAtVyfjgafjgrPjg7Pjg5HjgqTjg6vjgZfjgabjgY/jgaDjgZXjgYTjgIIKKyAgICDj
+gZPjga7jgqrjg5fjgrfjg6fjg7Pjga/lpKfph4/jga7kuI3opoHjgarjg6Hjg4Pjgrvjg7zj
+grjjgpLlh7rlipvjgZfjgb7jgZnjgYzjgIEKKyAgICAid2FybmluZzogY29tcGFyaXNvbiBi
+ZXR3ZWVuIHNpZ25lZCBhbmQgdW5zaWduZWQiIOOBruOCiOOBhuOBquODoeODg+OCu+ODvOOC
+uOOBr+OAgQorICAgIOODkOOCsOOCkuimi+OBpOOBkeOCi+OBruOBq+W9ueOBq+eri+OBoeOB
+vuOBmeOAggorCisyMzog5oqV56i/44GX44Gf44OR44OD44OB44GMIC1tbSDjg5Hjg4Pjg4Hj
+grvjg4Pjg4jjgavjg57jg7zjgrjjgZXjgozjgZ/lvozjgIHlhajjgabjga7ml6LlrZjjga7j
+g5Hjg4Pjg4HjgoQKKyAgICBWTSwgVkZTIOOBiuOCiOOBs+OBneOBruS7luOBruOCteODluOC
+t+OCueODhuODoOOBq+mWouOBmeOCi+anmOOAheOBquWkieabtOOBqOOAgeePvuaZgueCueOB
+p+OCguWFseWtmAorICAgIOOBp+OBjeOCi+OBk+OBqOOCkueiuuiqjeOBmeOCi+ODhuOCueOD
+iOOCkuihjOOBo+OBpuOBj+OBoOOBleOBhOOAggo=
+--------------010308020209000800050400--
