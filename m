@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758983AbYGOW1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758807AbYGOW2r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758983AbYGOW1S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 18:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754390AbYGOW1F
+	id S1758807AbYGOW2r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 18:28:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754637AbYGOW2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 18:27:05 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:41697 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753974AbYGOW1D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 18:27:03 -0400
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
-	in-kernel, use it in more drivers.
-From: David Woodhouse <dwmw2@infradead.org>
-To: david@lang.hm
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Marcel Holtmann <marcel@holtmann.org>, Frans Pop <elendil@planet.nl>,
-       jeff@garzik.org, arjan@infradead.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.1.10.0807151503310.16109@asgard.lang.hm>
-References: <1216077806.27455.85.camel@shinybook.infradead.org>
-	 <20080714164119.99c33d5b.akpm@linux-foundation.org>
-	 <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>
-	 <487C0365.5030203@garzik.org>
-	 <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
-	 <200807151757.10626.elendil@planet.nl>
-	 <1216149637.27242.65.camel@violet.holtmann.net>
-	 <alpine.LFD.1.10.0807151223290.3351@woody.linux-foundation.org>
-	 <1216150616.27455.377.camel@shinybook.infradead.org>
-	 <alpine.LFD.1.10.0807151244320.3351@woody.linux-foundation.org>
-	 <1216151640.27242.90.camel@violet.holtmann.net>
-	 <alpine.LFD.1.10.0807151301130.2867@woody.linux-foundation.org>
-	 <alpine.DEB.1.10.0807151426021.16109@asgard.lang.hm>
-	 <alpine.LFD.1.10.0807151436400.2867@woody.linux-foundation.org>
-	 <alpine.DEB.1.10.0807151503310.16109@asgard.lang.hm>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 15:26:25 -0700
-Message-Id: <1216160785.26991.51.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 15 Jul 2008 18:28:40 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:47162 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754140AbYGOW2j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 18:28:39 -0400
+Message-Id: <20080715222604.331269462@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Tue, 15 Jul 2008 18:26:04 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [patch 00/17] Tracepoints v4 for linux-next
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Tue, 15 Jul 2008 22:27:48 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-15 at 15:24 -0700, david@lang.hm wrote:
-> 
-> > Why is it suddenly so important that a kernel be 'zero impact' for that
-> > module case, when it's never been zero impact for that case before? You
-> > had to rewrite the initrd to begin with, but now you're not willing to do
-> > it again, just because you have to rewrite it slightly _differently_?
-> 
-> becouse the tools that wrote the initrd already put the modules in. I 
-> don't maintain those tools, they came with the distro. we're just asking 
-> to not require those tools to be updated immediatly.
+Hi,
 
-The tools that write the initrd already put the firmware in too.
+Here is the newest release of the Tracepoints, following the feedback from Peter
+Zijlstra. The main change is the creation of include/trace/ as a placeholder
+from tracepoint headers.
+
+The patchset applies over linux-next patch-v2.6.26-next-20080715 in this order :
+
+#This a separate RCU update upon which the tracepoints depend
+rcu-read-sched.patch
+
+tracepoints.patch
+tracepoints-documentation.patch
+tracepoints-samples.patch
+
+lttng-instrumentation-irq.patch
+lttng-instrumentation-scheduler.patch
+lttng-instrumentation-timer.patch
+lttng-instrumentation-kernel.patch
+
+lttng-instrumentation-filemap.patch
+lttng-instrumentation-swap.patch
+lttng-instrumentation-memory.patch
+lttng-instrumentation-page.patch
+lttng-instrumentation-hugetlb.patch
+
+lttng-instrumentation-net.patch
+lttng-instrumentation-ipv4.patch
+lttng-instrumentation-ipv6.patch
+
+ftrace-port-to-tracepoints.patch
+
+Mathieu
 
 -- 
-dwmw2
-
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
