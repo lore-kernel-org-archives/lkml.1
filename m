@@ -1,80 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761997AbYGOQ6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758003AbYGORRQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761997AbYGOQ6Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 12:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758842AbYGOQ5g
+	id S1758003AbYGORRQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 13:17:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbYGORRA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 12:57:36 -0400
-Received: from smtp.movial.fi ([62.236.91.34]:53426 "EHLO smtp.movial.fi"
+	Tue, 15 Jul 2008 13:17:00 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:53576 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758610AbYGOQ5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 12:57:34 -0400
-From: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>
-To: ralf@linux-mips.org, linux-mips@linux-mips.org,
+	id S1752157AbYGORQ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 13:16:59 -0400
+Message-ID: <487CDB85.3050208@garzik.org>
+Date: Tue, 15 Jul 2008 13:16:53 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: David Woodhouse <dwmw2@infradead.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, alan@lxorguk.ukuu.org.uk,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] [MIPS] fix missing prototypes in asm/fpu.h
-Date: Tue, 15 Jul 2008 19:57:31 +0300
-Message-Id: <1216141052-28005-3-git-send-email-dmitri.vorobiev@movial.fi>
-X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1216141052-28005-1-git-send-email-dmitri.vorobiev@movial.fi>
-References: <1216141052-28005-1-git-send-email-dmitri.vorobiev@movial.fi>
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
+ use it in more drivers.
+References: <1216077806.27455.85.camel@shinybook.infradead.org>  <20080714164119.99c33d5b.akpm@linux-foundation.org>  <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>  <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>  <487C09EB.1050903@garzik.org>  <alpine.LFD.1.10.0807141928540.3017@woody.linux-foundation.org>  <487C1648.5070409@garzik.org>  <alpine.LFD.1.10.0807142027140.3017@woody.linux-foundation.org>  <487C500F.8000109@garzik.org> <1216107418.27455.236.camel@shinybook.infradead.org> <487C5ABE.2010907@garzik.org> <alpine.LFD.1.10.0807150808050.3017@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807150808050.3017@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While building the Malta defconfig, sparse spat the following
-warnings:
+Linus Torvalds wrote:
+> I call bullshit. You don't like the change - ok.
 
->>>>>>>>>>>>>>>>>>
-arch/mips/math-emu/kernel_linkage.c:31:6: warning: symbol
-'fpu_emulator_init_fpu' was not declared. Should it be static?
+SIGH.  Wrong, wrong, wrong.  I have always thought request_firmware() 
+was a good idea, even if it decreased reliability.  Because we need that 
+ability and that API.
 
-arch/mips/math-emu/kernel_linkage.c:54:5: warning: symbol
-'fpu_emulator_save_context' was not declared. Should it be
-static?
+The changes are good,
 
-arch/mips/math-emu/kernel_linkage.c:68:5: warning: symbol
-'fpu_emulator_restore_context' was not declared. Should it be
-static?
->>>>>>>>>>>>>>>>>>
+They just don't need to break stuff.
 
-This patch fixes these errors by adding the proper prototypes
-to the include/asm-mips/fpu.h header, and actually using this
-header in the sparse-spotted source file.
+Which they do.
 
-Build-tested with Malta defconfig.
 
-Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>
----
- arch/mips/math-emu/kernel_linkage.c |    1 +
- include/asm-mips/fpu.h              |    2 ++
- 2 files changed, 3 insertions(+), 0 deletions(-)
+> But stop making bogus 
+> arguments about it.
 
-diff --git a/arch/mips/math-emu/kernel_linkage.c b/arch/mips/math-emu/kernel_linkage.c
-index ed49ef0..52e6c58 100644
---- a/arch/mips/math-emu/kernel_linkage.c
-+++ b/arch/mips/math-emu/kernel_linkage.c
-@@ -24,6 +24,7 @@
- #include <asm/signal.h>
- #include <asm/uaccess.h>
- 
-+#include <asm/fpu.h>
- #include <asm/fpu_emulator.h>
- 
- #define SIGNALLING_NAN 0x7ff800007ff80000LL
-diff --git a/include/asm-mips/fpu.h b/include/asm-mips/fpu.h
-index e59d4c0..8a3ef24 100644
---- a/include/asm-mips/fpu.h
-+++ b/include/asm-mips/fpu.h
-@@ -35,6 +35,8 @@ extern asmlinkage int (*save_fp_context32)(struct sigcontext32 __user *sc);
- extern asmlinkage int (*restore_fp_context32)(struct sigcontext32 __user *sc);
- 
- extern void fpu_emulator_init_fpu(void);
-+extern int fpu_emulator_save_context(struct sigcontext __user *sc);
-+extern int fpu_emulator_restore_context(struct sigcontext __user *sc);
- extern void _init_fpu(void);
- extern void _save_fp(struct task_struct *);
- extern void _restore_fp(struct task_struct *);
--- 
-1.5.6
+How many more real world examples of breakage do you need?
+
+* This breaks newer kernel / older userland
+* This breaks anywhere with a file list for modules' contents (ipkg 
+kernel module packages)
+* This breaks driver disk build packages
+* This breaks for the oddball, not just me, who
+* This breaks for an unknown amount of people who have been assuming 
+that their driver will always work when modprobe'd, even though they are 
+completely unaware of its new firmware needs
+
+All these are cases in use today.  Real users, Linus.  Real distros.
+
+	Jeff
+
+
+P.S.  And as I stated in another email, I'm happy to help fix this 
+regression.
 
