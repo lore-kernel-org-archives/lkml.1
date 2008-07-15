@@ -1,80 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757473AbYGONOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757594AbYGONRn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757473AbYGONOv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 09:14:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285AbYGONOm
+	id S1757594AbYGONRn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 09:17:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755430AbYGONRe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 09:14:42 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:40009 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755172AbYGONOm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 09:14:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=rPwjqyvYi94t4BtXw78sRjvVyqAo1Bh1WwWXU7KX0XegtG6/MB/cR3wfw+hFhmfBgs
-         SfgCT0hKjYs6sTJoVsftFnYzq+ajEDzDaIdno8tA2Ehs9sC2LE/4RY+FU/suZ+Au6VOm
-         HDEMach+ZeMhmSQMk3J0rOlI6wTtc+V4C7qDY=
-Message-ID: <b647ffbd0807150614j38204f41q3e7b4ed0ffff101b@mail.gmail.com>
-Date: Tue, 15 Jul 2008 15:14:38 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Gregory Haskins" <ghaskins@novell.com>
-Subject: Re: [sched-devel, patch-rfc] rework #2 of "prioritize non-migratable tasks over migratable ones"
-Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>, "Ingo Molnar" <mingo@elte.hu>,
-       "Steven Rostedt" <rostedt@goodmis.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <487C6873.BA47.005A.0@novell.com>
+	Tue, 15 Jul 2008 09:17:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58041 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755285AbYGONRe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 09:17:34 -0400
+Date: Tue, 15 Jul 2008 09:16:52 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@devserv.devel.redhat.com
+To: Andi Kleen <andi@firstfloor.org>
+cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, davem@davemloft.net,
+       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [SUGGESTION]: drop virtual merge accounting in I/O requests
+In-Reply-To: <487C94CC.3090402@firstfloor.org>
+Message-ID: <Pine.LNX.4.64.0807150913020.21598@devserv.devel.redhat.com>
+References: <20080713.202035.172246136.davem@davemloft.net>
+ <20080715024424R.fujita.tomonori@lab.ntt.co.jp>
+ <Pine.LNX.4.64.0807141720350.30981@devserv.devel.redhat.com>
+ <20080715114058A.fujita.tomonori@lab.ntt.co.jp>
+ <Pine.LNX.4.64.0807150759430.12202@devserv.devel.redhat.com>
+ <487C94CC.3090402@firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1214947935.5658.11.camel@earth>
-	 <b647ffbd0807140750r54e5139aj7b25a28ef7ca247e@mail.gmail.com>
-	 <487C6873.BA47.005A.0@novell.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/7/15 Gregory Haskins <ghaskins@novell.com>:
->>>> On Mon, Jul 14, 2008 at 10:50 AM, in message
-> <b647ffbd0807140750r54e5139aj7b25a28ef7ca247e@mail.gmail.com>, "Dmitry
-> Adamushko" <dmitry.adamushko@gmail.com> wrote:
->> 2008/7/1 Dmitry Adamushko <dmitry.adamushko@gmail.com>:
+On Tue, 15 Jul 2008, Andi Kleen wrote:
+
+> Mikulas Patocka wrote:
+>>>> BTW. what should the block device driver do when it receives a mapping
+>>>> error? (if it aborts the request and it was write request, there will be
+>>>> data corruption).
 >>>
->>> Finally, this new version compiles and boots (applied a minor compilation
->> fix).
->>> Functionality is not yet fully tested though.
->>>
->>> It's on top of today's tip tree.
->>>
->>> Any objections to this approach?
+>>> I'm not sure how a aborted request can corrupt data on disk.
 >>
->> [ ping ]
->>
->> Gregory or anyone else, any feedback on this one?
+>> Writes are done by an async daemon and no one checks for their
+>> completion status. If there are three writes to directory, inode table
+>> and inode bitmap and one of these writes fail, there's no code to undo
+>> the other two. So the filesystem will be corrupted on write failure.
 >
-> Hi Dmitry,
->  A brief inspection of the patch looks good.  I am still not convinced we need to worry
-> about this condition anymore, however.
+> Normally journaling in ordered mode takes care of that. The transaction
+> is not committed until all earlier data has been successfully written.
 
-Neither am I.
+And if there was write error, then what happens? Retry? Blocking of any 
+further updates?
 
-It's just that (I think):
+> And even the other fs typically turn the file system read only
+> on IO error to prevent further corruption.
 
-(a) either we remove this whole new 'concept' (as it's implemented
-now) completely;
-(b) or do it in a more generic way (like with this patch).
+There is no interface how filesystem could query that buffer marked with 
+mark_buffer_dirty was not written. Or is there?
 
-Thanks for the feedback!
-
->
-> Regards,
-> -Greg
-
--- 
-Best regards,
-Dmitry Adamushko
+Mikulas
