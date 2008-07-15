@@ -1,58 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761514AbYGOCT7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761471AbYGOCVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761514AbYGOCT7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jul 2008 22:19:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbYGOCTu
+	id S1761471AbYGOCVW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jul 2008 22:21:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbYGOCVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jul 2008 22:19:50 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37287
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754108AbYGOCTt (ORCPT
+	Mon, 14 Jul 2008 22:21:14 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:23745 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752178AbYGOCVN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jul 2008 22:19:49 -0400
-Date: Mon, 14 Jul 2008 19:19:49 -0700 (PDT)
-Message-Id: <20080714.191949.121577785.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: jeff@garzik.org, arjan@infradead.org, akpm@linux-foundation.org,
-       dwmw2@infradead.org, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
- in-kernel, use it in more drivers.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
-References: <20080714165956.7fe2d4ee@infradead.org>
-	<487C0365.5030203@garzik.org>
-	<alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 14 Jul 2008 22:21:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=NQU1NsAUnNpRyZLaW+xuaLaZlGv2IB2ekQHax6HexhfI2CEpwbbiXoxpi0Z0seUDnE
+         5fBiW54HJ30nijmSTcgVtbfjJyXC6vvPECdBC+3rUEhQL6h+Ky9AqKSh6YH2TeQojSNC
+         Al7NsT+z5nSt78GzLaC4ycLxY2ko4VZXzyZmI=
+Message-ID: <b647ffbd0807141921n13ffa59x416fc024c734ef02@mail.gmail.com>
+Date: Tue, 15 Jul 2008 04:21:10 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: current linux-2.6.git: cpusets completely broken
+Cc: "Vegard Nossum" <vegard.nossum@gmail.com>,
+       "Paul Menage" <menage@google.com>,
+       "Max Krasnyansky" <maxk@qualcomm.com>, "Paul Jackson" <pj@sgi.com>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>, miaox@cn.fujitsu.com,
+       rostedt@goodmis.org, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.1.10.0807141707410.3017@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080712031736.GA3040@damson.getinternet.no>
+	 <alpine.LFD.1.10.0807112026390.2875@woody.linux-foundation.org>
+	 <b647ffbd0807120304o7a500dc9oce761e51c9dce908@mail.gmail.com>
+	 <alpine.LFD.1.10.0807121254490.2875@woody.linux-foundation.org>
+	 <alpine.LFD.1.10.0807121411350.2875@woody.linux-foundation.org>
+	 <b647ffbd0807141538g2004f245m5f54ec962f475ba5@mail.gmail.com>
+	 <alpine.LFD.1.10.0807141602250.3017@woody.linux-foundation.org>
+	 <b647ffbd0807141700s20e54fbewafb3d3e296e57f53@mail.gmail.com>
+	 <alpine.LFD.1.10.0807141707410.3017@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 14 Jul 2008 19:13:16 -0700 (PDT)
+2008/7/15 Linus Torvalds <torvalds@linux-foundation.org>:
+>
+>
+> On Tue, 15 Jul 2008, Dmitry Adamushko wrote:
+>>
+>> The 'synchronization' point occurs even earlier - when cpu_down() ->
+>> __stop_machine_run() gets called (as I described in my previous mail).
+>>
+>> My point was that if it's ok to have a _delayed_ synchronization
+>> point, having it not immediately after cpu_clear(cpu, cpu_active_map)
+>> but when the "runqueue lock" is taken a bit later (as you pointed out
+>> above) or __stop_machine_run() gets executed (which is a sync point,
+>> scheduling-wise),
+>>
+>> then we can implement the proper synchronization (hotplugging vs.
+>> task-migration) with cpu_online_map (no need for cpu_active_map).
+>
+> [ ... ]
+>
+> In particular, it should tell you that the code is too hard to follow, and
+> too fragile, and a total mess.
+>
+> I do NOT understand why you seem to argue for being "subtle" and "clever",
+> considering the history of this whole setup. Subtle and clever and complex
+> is what got us to the crap situation.
 
-> On Mon, 14 Jul 2008, Jeff Garzik wrote:
-> > 
-> > IMO the newly added /inability/ to build firmware into kernel modules is a
-> > clear regression.
-> 
-> IMO you're being stupid.
-> 
-> How about explainign why it makes any difference what-so-ever?
+Fair enough, agreed.
 
-Just like Jeff, I think it does.
 
-> If you can load the module, you can load the firmware. Claiming anything 
-> else is just _stupid_.
+>
+>                Linus
+>
 
-It's about having one foo.ko file that is self contained.
-
-We've always been able to do that.
-
-Just like how when module support was added to the kernel, and we
-could still build everything statically into one kernel image if we
-wanted to, we likewise should still be able to get everything
-necessary for a driver module into a single foo.ko file.
+-- 
+Best regards,
+Dmitry Adamushko
