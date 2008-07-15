@@ -1,71 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758863AbYGOSpL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758380AbYGOStm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758863AbYGOSpL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 14:45:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbYGOSo7
+	id S1758380AbYGOStm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 14:49:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754641AbYGOSte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 14:44:59 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:35189 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753208AbYGOSo6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 14:44:58 -0400
-Message-ID: <487CF01E.6000208@garzik.org>
-Date: Tue, 15 Jul 2008 14:44:46 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: david@lang.hm, Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
- use it in more drivers.
-References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <alpine.DEB.1.10.0807141704120.14223@asgard.lang.hm> <alpine.LFD.1.10.0807141729200.3017@woody.linux-foundation.org> <alpine.DEB.1.10.0807141750290.14223@asgard.lang.hm> <alpine.LFD.1.10.0807141756361.3017@woody.linux-foundation.org> <alpine.DEB.1.10.0807141805300.14223@asgard.lang.hm> <alpine.LFD.1.10.0807141903260.3017@woody.linux-foundation.org> <487C585C.2060002@garzik.org> <alpine.LFD.1.10.0807150803580.3017@woody.linux-foundation.org> <487CD7FE.9010209@garzik.org> <alpine.LFD.1.10.0807151008450.3017@woody.linux-foundation.org> <487CDEC0.3090004@garzik.org> <alpine.LFD.1.10.0807151041080.3017@woody.linux-foundation.org> <487CEA73.9000408@garzik.org> <alpine.LFD.1.10.0807151124510.3017@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807151124510.3017@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 15 Jul 2008 14:49:34 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:58336 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753025AbYGOStd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 14:49:33 -0400
+X-Greylist: delayed 580 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Jul 2008 14:49:33 EDT
+Subject: Patch from LKML
+From: Zachary Amsden <zach@vmware.com>
+To: suresh.b.siddha@intel.com, yhlu.kernel@gmail.com,
+       Chris Wright <chrisw@sous-sol.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       virtualization <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 15 Jul 2008 11:38:50 -0700
+Message-Id: <1216147130.6620.184.camel@bodhitayantram.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+
+> On Tue, Jul 15, 2008 at 10:33 AM, Suresh Siddha
+> <suresh.b.siddha@intel.com> wrote:
+> > On Sun, Jul 13, 2008 at 10:19:35PM -0700, Yinghai Lu wrote:
+> >>
+> >> fix for pv.
+> >>
+> >> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> >>
+> >> ---
+> >>  arch/x86/kernel/paravirt.c |    5 ----
+> >>  arch/x86/kernel/vmi_32.c   |   51 ++++++++++++++++++++++++++++++++++++++++++---
+> >>  arch/x86/xen/enlighten.c   |   19 +++++++---------
+> >>  include/asm-x86/paravirt.h |   29 -------------------------
+> >>  4 files changed, 57 insertions(+), 47 deletions(-)
+> >>
+> >> Index: linux-2.6/arch/x86/kernel/paravirt.c
+> >> ===================================================================
+> >> --- linux-2.6.orig/arch/x86/kernel/paravirt.c
+> >> +++ linux-2.6/arch/x86/kernel/paravirt.c
+> >> @@ -373,11 +373,6 @@ struct pv_cpu_ops pv_cpu_ops = {
+> >>
+> >>  struct pv_apic_ops pv_apic_ops = {
+> >>  #ifdef CONFIG_X86_LOCAL_APIC
+> >> -#ifndef CONFIG_X86_64
+> >> -       .apic_write = native_apic_mem_write,
+> >> -       .apic_write_atomic = native_apic_mem_write_atomic,
+> >> -       .apic_read = native_apic_mem_read,
+> >> -#endif
+> >>         .setup_boot_clock = setup_boot_APIC_clock,
+> >>         .setup_secondary_clock = setup_secondary_APIC_clock,
+> >>         .startup_ipi_hook = paravirt_nop,
+> >> Index: linux-2.6/arch/x86/kernel/vmi_32.c
+> >> ===================================================================
+> >> --- linux-2.6.orig/arch/x86/kernel/vmi_32.c
+> >> +++ linux-2.6/arch/x86/kernel/vmi_32.c
+> >> @@ -676,6 +676,50 @@ static inline int __init probe_vmi_rom(v
+> >>         return 0;
+> >>  }
+> >>
+> >> +#ifdef CONFIG_X86_LOCAL_APIC
+> >> +static u32 vmi_apic_read(u32 reg)
+> >> +{
+> >> +       return 0;
+> >> +}
+> >> +
+> >> +static void vmi_apic_write(u32 reg, u32 val)
+> >> +{
+> >> +       /* Warn to see if there's any stray references */
+> >> +       WARN_ON(1);
+> >> +}
+> >> +
+> >> +static u64 vmi_apic_icr_read(void)
+> >> +{
+> >> +       return 0;
+> >> +}
+> >> +
+> >> +static void vmi_apic_icr_write(u32 low, u32 id)
+> >> +{
+> >> +       /* Warn to see if there's any stray references */
+> >> +       WARN_ON(1);
+> >> +}
+> >> +
+> >> +static void vmi_apic_wait_icr_idle(void)
+> >> +{
+> >> +       return;
+> >> +}
+> >> +
+> >> +static u32 vmi_safe_apic_wait_icr_idle(void)
+> >> +{
+> >> +       return 0;
+> >> +}
+> >> +
+> >> +static struct apic_ops vmi_basic_apic_ops = {
+> >> +        .read = vmi_apic_read,
+> >> +        .write = vmi_apic_write,
+> >> +        .write_atomic = vmi_apic_write,
+> >> +        .icr_read = vmi_apic_icr_read,
+> >> +        .icr_write = vmi_apic_icr_write,
+> >> +        .wait_icr_idle = vmi_apic_wait_icr_idle,
+> >> +        .safe_wait_icr_idle = vmi_safe_apic_wait_icr_idle,
+> >> +};
+> >> +#endif
+> >> +
+> >>  /*
+> >>   * VMI setup common to all processors
+> >>   */
+> >> @@ -904,9 +948,10 @@ static inline int __init activate_vmi(vo
+> >>  #endif
+> >>
+> >>  #ifdef CONFIG_X86_LOCAL_APIC
+> >> -       para_fill(pv_apic_ops.apic_read, APICRead);
+> >> -       para_fill(pv_apic_ops.apic_write, APICWrite);
+> >> -       para_fill(pv_apic_ops.apic_write_atomic, APICWrite);
+> >> +       para_fill(vmi_basic_apic_ops.read, APICRead);
+> >> +       para_fill(vmi_basic_apic_ops.write, APICWrite);
+> >> +       para_fill(vmi_basic_apic_ops.write_atomic, APICWrite);
+> >> +       apic_ops = &vmi_basic_apic_ops;
+> >
+> > Yinghai, Looking more closely at this, based on my understanding this might be
+> > wrong for VMI. Correct patch should be as follows. Any comments?
 > 
-> On Tue, 15 Jul 2008, Jeff Garzik wrote:
->> Which is why 'make modules_install' installs the firmware, or at least it did
->> before David W pushed upstream.
+> so you mean icr related will still use default native member?
 > 
-> So you're literally just about making this be "make modules_install" 
-> rather than "make firmware_install"
-> 
-> Ok. Are you going to be happy if "make modules_install" just copies the 
-> firmware files of the affected modules too?
+> YH
 
-Re-read the above, and what you snipped.  My statement was
+Nacked-by: Zachary Amsden <zach@vmware.com>
 
-* upstream _already_ does this (installs firmware via modules_install)
+What are you doing here and why aren't you cc-ing the maintainers?
 
-* it is a good thing, because it means existing build scripts and 
-processes will Do The Right Thing and produce a working driver
+Thanks,
 
-* thus eliminating the most common problem likely to be encountered
-
-That does not eliminate all problems, because build processes still have 
-hardcoded assumptions about outputs.
-
-Restoring firmware-in-module ability closes the last logical hole, last 
-fundamental flaw in the scheme, by permitting distros to reproduce 
-precisely what they built in 2.6.26.
-
-All of the regressions examples I am citing are cured by 
-firmware-in-module, because they are all examples of problems that occur 
-when you remove the ability to reproduce the same functional pieces as 
-2.6.26.
-
-	Jeff
-
-
+Zach
 
