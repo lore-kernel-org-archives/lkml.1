@@ -1,55 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758771AbYGOM6z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758633AbYGOM7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758771AbYGOM6z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 08:58:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755032AbYGOM6p
+	id S1758633AbYGOM7X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 08:59:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755032AbYGOM7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 08:58:45 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:41461 "EHLO tim.rpsys.net"
+	Tue, 15 Jul 2008 08:59:13 -0400
+Received: from bu3sch.de ([62.75.166.246]:49074 "EHLO vs166246.vserver.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754766AbYGOM6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 08:58:45 -0400
-Subject: Re: [PATCH v2] leds: implement OpenFirmare GPIO LED driver
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Kumar Gala <galak@kernel.crashing.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-In-Reply-To: <20080715124013.GA13086@polina.dev.rtsoft.ru>
-References: <20080715123822.GA10893@polina.dev.rtsoft.ru>
-	 <20080715124013.GA13086@polina.dev.rtsoft.ru>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 13:54:30 +0100
-Message-Id: <1216126470.5345.55.camel@dax.rpnet.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	id S1754766AbYGOM7M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 08:59:12 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Add dynamic MMC-over-SPI-GPIO driver
+Date: Tue, 15 Jul 2008 14:58:40 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, david-b@pacbell.net,
+       piotr.skamruk@gmail.com, drzeus-mmc@drzeus.cx,
+       openwrt-devel@lists.openwrt.org
+References: <200807142109.19360.mb@bu3sch.de> <20080714135441.e3ef9b0b.akpm@linux-foundation.org>
+In-Reply-To: <20080714135441.e3ef9b0b.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807151458.41007.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-15 at 16:40 +0400, Anton Vorontsov wrote:
-> Despite leds-gpio and leds-of-gpio similar names and purposes, there
-> is not much code can be shared between the two drivers (both are mostly
-> driver bindings anyway).
+On Monday 14 July 2008 22:54:41 Andrew Morton wrote:
+> > +static int gpiommc_probe(struct platform_device *pdev)
+> > +{
+> > +	static int instance;
+> > +	struct gpiommc_device *d = platform_get_drvdata(pdev);
+> > +	struct spi_gpio_platform_data pdata;
+> > +	int err = -ENOMEM;
+> > +
+> > +	d->spi_pdev = platform_device_alloc("spi-gpio", instance++);
+> > +	if (!d->spi_pdev)
+> > +		goto out;
+> 
+> I guess that incrementing `instance' even if the allocation failed is
+> somewhat wrong.
 
-I don't have any issue with the driver itself, just the name which is
-going to confuse people no end.
+Well, I guess it doesn't matter much. The number is pretty random anyway.
 
-Can we come up with a better name for this driver please?
-"dts-bind-gpio"? "openfirmware-led"?
+> > +static struct gpiommc_device *gpiommc_alloc(struct platform_device *pdev,
+> > +					    const char *name,
+> > +					    const struct gpiommc_pins *pins,
+> > +					    u8 mode)
+> > +{
+> > +	struct gpiommc_device *d;
+> > +
+> > +	d = kmalloc(sizeof(*d), GFP_KERNEL);
+> > +	if (!d)
+> > +		return NULL;
+> > +
+> > +	strcpy(d->name, name);
+> 
+> No check for overruns?
 
-I'm mainly concerned with the more user visible bits like the name of
-the .c file, the wording of the Kconfig option and the module
-description. We need to play down the GPIO bit and play up the
-openfirmware bindings bit.
+The caller checks the length, but it is a good idea to double-check here.
+Good catch.
 
-As an example the Kconfig says "LED Support for GPIO connected LEDs"
-which its not, the bit about openfirmware bindings is in brackets and
-hence looks incidental.
+> > +	memcpy(&d->pins, pins, sizeof(d->pins));
+> 
+> If this had used the typesafe
+> 
+> 	d->pins = *pins;
+> 
+> I wouldn't have needed to run all around the place working out if
+> overflow/underflow checks were needed here.
 
-Cheers,
+Yeah well, can use this.
 
-Richard
+> > +static ssize_t gpiommc_add_store(struct device_driver *drv,
+> > +				 const char *buf, size_t count)
+> > +{
+> > +	int res, err;
+> > +	char name[GPIOMMC_MAX_NAMELEN + 1];
+> > +	struct gpiommc_pins pins;
+> > +	unsigned int mode;
+> > +
+> > +	res = sscanf(buf, "%" GPIOMMC_MAX_NAMELEN_STR "s %u,%u,%u,%u %u",
+> > +		     name, &pins.gpio_di, &pins.gpio_do,
+> > +		     &pins.gpio_clk, &pins.gpio_cs, &mode);
+> 
+> What's going on here?  So new kernel/userspace ABI.
 
+The whole point of the module is to create a new userspace interface for
+creating the device. The module does just glue several modules together
+and create an actual device.
 
+> Not documented in 
+> changelog, not documented in code comments, not documented in
+> Documentation/ABI.  This forces reviewers to reverse-engineer the
+> interface design from the implementation and then attempt to review
+> that design.  Reviewers not happy!
+
+Yeah well, as I said, I will do docs later. I didn't have any time
+to write documentation, yet.
+by. ;)
+
+> > +static ssize_t gpiommc_remove_show(struct device_driver *drv,
+> > +				   char *buf)
+> > +{
+> > +	return snprintf(buf, PAGE_SIZE, "write device-name to remove the device\n");
+> > +}
+> 
+> Now that is one weird way in which to document the interface!  What a
+> waste of kernel text :(
+
+Yeah, well. Better than nothing ;)
+As I already said in the original patch announcement. This is by no way the
+final version of the patch. Docs will be moved to Documentation/
+
+-- 
+Greetings Michael.
