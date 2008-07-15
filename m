@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754603AbYGOOjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbYGOOjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754603AbYGOOjX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 10:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbYGOOjP
+	id S1757311AbYGOOjr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 10:39:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755330AbYGOOjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 10:39:15 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:63951 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751250AbYGOOjP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 10:39:15 -0400
-Date: Tue, 15 Jul 2008 10:39:13 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Abhishek Sagar <sagar.abhishek@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Clark Williams <clark.williams@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Jon Masters <jonathan@jonmasters.org>
-Subject: Re: [PATCH] ftrace: Documentation
-In-Reply-To: <863e9df20807120549r793c93c3o4c6049bed8670149@mail.gmail.com>
-Message-ID: <Pine.LNX.4.58.0807151038120.8218@gandalf.stny.rr.com>
-References: <Pine.LNX.4.58.0807101242070.3740@gandalf.stny.rr.com>
- <863e9df20807120549r793c93c3o4c6049bed8670149@mail.gmail.com>
+	Tue, 15 Jul 2008 10:39:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36028 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751250AbYGOOje (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 10:39:34 -0400
+Date: Tue, 15 Jul 2008 10:37:58 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@devserv.devel.redhat.com
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, davem@davemloft.net,
+       linux-parisc@vger.kernel.org
+Subject: Re: [PATCH] block: fix q->max_segment_size checking in blk_recalc_rq_segments
+ about VMERGE
+In-Reply-To: <20080715231956A.fujita.tomonori@lab.ntt.co.jp>
+Message-ID: <Pine.LNX.4.64.0807151033040.25390@devserv.devel.redhat.com>
+References: <1216118676-13625-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <Pine.LNX.4.64.0807150924250.21598@devserv.devel.redhat.com>
+ <20080715231956A.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 12 Jul 2008, Abhishek Sagar wrote:
-
+>>> This bug could happen on alpha, parisc, and sparc, which use VMERGE.
+>>
+>> Parisc doesn't use virtual merge accounting (there is variable for it but
+>> it's always 0).
 >
-> On Thu, Jul 10, 2008 at 10:16 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
-> >
-> > This is the long awaited ftrace.txt. It explains in quite detail how to
-> > use ftrace and the various tracers.
+> Hmm, really? Looks like PARISC IOMMUs (ccio-dma.c and sba_iomm.c) set
+> parisc_vmerge_boundary (CC'ed PARISC mailing list).
+
+That's right, I looked only at arch and include.
+
+>> On sparc64 it is broken anyway with or without your patch.
 >
-> This is quite good. Thanks!
+> Yeah, we need to modify SPARC64 IOMMU code (I'm not sure that it's
+> worth). Right now, the best fix is setting BIO_VMERGE_BOUNDARY to 0.
+
+Even if we fix it now, the question is: how long it will stay fixed? Until 
+someone makes another change to struct device that restricts boundaries on 
+some wacky hardware.
+
+Mikulas
+
+>> And alpha alone doesn't justify substantial code bloat in generic block
+>> layer. So I propose this patch to drop it at all.
 >
-> > +Output format:
-> > +--------------
-> > +
-> > +Here's an example of the output format of the file "trace"
-> > +
-> > +                             --------
-> > +# tracer: ftrace
-> > +#
-> > +#           TASK-PID   CPU#    TIMESTAMP  FUNCTION
-> > +#              | |      |          |         |
-> > +            bash-4251  [01] 10152.583854: path_put <-path_walk
-> > +            bash-4251  [01] 10152.583855: dput <-path_put
-> > +            bash-4251  [01] 10152.583855: _atomic_dec_and_lock <-dput
-> > +                             --------
+> Jens, what do you think about removing VMERGE code?
 >
-> A small caveat here...the function names may be substituted with a
-> "[unkown/kretprobe'd]" under special circumstances
-> (http://lkml.org/lkml/2008/5/27/275). May be that should be mentioned
-> here?
-
-Hmm, I thinking that this might be too much information for this document.
-If you can think of a good way to expline this without "overloading" the
-reader, then please, let me know.
-
-Thanks,
-
--- Steve
-
