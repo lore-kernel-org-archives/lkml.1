@@ -1,74 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761525AbYGOTNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761772AbYGOTOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761525AbYGOTNy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 15:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756707AbYGOTNc
+	id S1761772AbYGOTOs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 15:14:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbYGOTOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 15:13:32 -0400
-Received: from hpsmtp-eml17.kpnxchange.com ([213.75.38.117]:5307 "EHLO
-	hpsmtp-eml17.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758475AbYGOTNb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 15:13:31 -0400
-From: Frans Pop <elendil@planet.nl>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel, use it in more drivers.
-Date: Tue, 15 Jul 2008 21:13:27 +0200
-User-Agent: KMail/1.9.9
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Linus Torvalds <torvalds@linux-foundation.org>, jeff@garzik.org,
-       arjan@infradead.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080715180535.GA6080@khazad-dum.debian.net> <1216146057.27455.325.camel@shinybook.infradead.org>
-In-Reply-To: <1216146057.27455.325.camel@shinybook.infradead.org>
+	Tue, 15 Jul 2008 15:14:34 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:46256 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758051AbYGOTOe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 15:14:34 -0400
+Message-ID: <487CF70C.1030309@garzik.org>
+Date: Tue, 15 Jul 2008 15:14:20 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Theodore Tso <tytso@mit.edu>, Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, david@lang.hm,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from	in-kernel,
+ use it in more drivers.
+References: <alpine.LFD.1.10.0807141903260.3017@woody.linux-foundation.org> <487C585C.2060002@garzik.org> <alpine.LFD.1.10.0807150803580.3017@woody.linux-foundation.org> <487CD7FE.9010209@garzik.org> <alpine.LFD.1.10.0807151008450.3017@woody.linux-foundation.org> <487CDEC0.3090004@garzik.org> <alpine.LFD.1.10.0807151041080.3017@woody.linux-foundation.org> <487CEA73.9000408@garzik.org> <alpine.LFD.1.10.0807151124510.3017@woody.linux-foundation.org> <487CF01E.6000208@garzik.org> <20080715185801.GH8185@mit.edu>
+In-Reply-To: <20080715185801.GH8185@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807152113.28762.elendil@planet.nl>
-X-OriginalArrivalTime: 15 Jul 2008 19:13:29.0126 (UTC) FILETIME=[DD484C60:01C8E6AE]
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 15 July 2008, David Woodhouse wrote:
-> On Tue, 2008-07-15 at 15:05 -0300, Henrique de Moraes Holschuh wrote:
-> > I believe I read in the previous thread that some distros are already
-> > using /lib/firmware/<kernel version>/.
-> >
-> > There was also the suggestion of moving the entire set of
-> > kernel-packaged firmware to /lib/modules/<kernel version>/firmware,
-> > probably while keeping /lib/firmware as a second place to look for
-> > firmware so that we don't hose any system.
->
-> You can do that right now; I expect Ubuntu will, since their userspace
-> already looks like that. You just need to set $(INSTALL_FW_PATH) when
-> you install the firmware (or modules).
+Theodore Tso wrote:
+> On Tue, Jul 15, 2008 at 02:44:46PM -0400, Jeff Garzik wrote:
+>> All of the regressions examples I am citing are cured by  
+>> firmware-in-module, because they are all examples of problems that occur  
+>> when you remove the ability to reproduce the same functional pieces as  
+>> 2.6.26.
+> 
+> Jeff,
+> 
+> 	I think you've said this before, but let me try to help you
+> cut to the chase.  You are willing to *implement*
+> firmware-in-the-module for request_firmware(), but you want a
+> commitment that David Woodhouse and Linus will accept such a patch
+> before you go off and write it.  Is that right?
+> 
+> 	If so, may I suggest you start implementing, instead of
+> sending e-mails?  For all the time people have spent arguing about it,
+> maybe it could have been implemented already.
 
-With the disclaimer that I really haven't researched this all that much I 
-think we'll end up finding that a multi-level model is needed.
+Already started, in fact, since Linus said he would not reject it out of 
+hands.
 
-Something like:
-- /lib/firmware: intended for externally provided firmware and local
-  overrides; try to load from there first (version checks may fail)
-- /lib/modules/firmware: not sure if this level is necessary, but
-  could be useful for e.g. firmware for out-of-tree drivers
-- /lib/modules/$kver/firmware or
-  /lib/modules/$kver/$modulepath: firmware built (and possibly packaged
-  together with the kernel
+Obviously that is not acceptance; I know as well as any that acceptance 
+does not occur until the moment of upstream merge.
 
-Some scheme like this would introduce at least some sanity when it comes 
-to keeping control of what is installed and provided (and may therefore 
-be removed) by what and to avoid the question "how the hell did that file 
-get there and do I still actually need it with my current kernels?".
 
-It sounds to me like $(INSTALL_FW_PATH) is a good start, but maybe even 
-too flexible as it does not define a standard: it allows user spaces of 
-different distros to diverge which at some point will create its own 
-nightmares.
-It's also not flexible enough as it only supports a single location for 
-firmware while clearly there can be different sources of firmware.
+> 	Once it has been implemented, do you have any further
+> objections aka ideas about how request_firmware() could be improved?
 
-Cheers,
-FJP
+Further objections?  None major.
+
+The two other minor problems I feel need solving, but are not related to 
+breakage or regressions, are:
+
+1) firmware should be able to live alongside the driver.  We don't need 
+to start growing firmware/net alongside drivers/net, firmware/scsi 
+alongside drivers/scsi, firmware/char alongside drivers/char, etc.
+
+2) firmware should be able to be shipped in final format (binary), 
+rather than ihex.
+
+
+I feel strongly that 2.6.27 should not be released without 
+firmware-in-module, for all the reasons mentioned in these threads. 
+It's a major regression, IMO, without firmware-in-module ability.
+
+The other stuff (#1, #2 in list above) is small potatoes.
+
+	Jeff
+
+
+
