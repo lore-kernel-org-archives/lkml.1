@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758012AbYGOQmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761209AbYGOQnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758012AbYGOQmk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 12:42:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753693AbYGOQmc
+	id S1761209AbYGOQnV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 12:43:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753693AbYGOQnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 12:42:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57217 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753611AbYGOQmb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 12:42:31 -0400
-Date: Tue, 15 Jul 2008 09:41:10 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: david@lang.hm
-cc: Frans Pop <elendil@planet.nl>, jeff@garzik.org, arjan@infradead.org,
-       akpm@linux-foundation.org, dwmw2@infradead.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
- use it in more drivers.
-In-Reply-To: <alpine.DEB.1.10.0807150931290.16109@asgard.lang.hm>
-Message-ID: <alpine.LFD.1.10.0807150936070.3017@woody.linux-foundation.org>
-References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org> <487C0365.5030203@garzik.org> <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
- <200807151757.10626.elendil@planet.nl> <alpine.LFD.1.10.0807150913590.3017@woody.linux-foundation.org> <alpine.DEB.1.10.0807150931290.16109@asgard.lang.hm>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 15 Jul 2008 12:43:13 -0400
+Received: from mux2.uit.no ([129.242.5.252]:49448 "EHLO mux2.uit.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753611AbYGOQnM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 12:43:12 -0400
+X-Greylist: delayed 377 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Jul 2008 12:43:12 EDT
+X-DKIM: Sendmail DKIM Filter v2.6.0 mux2.uit.no m6FGaqEo067622
+Date: Tue, 15 Jul 2008 18:36:52 +0200
+From: Tobias Brox <tobias@stud.cs.uit.no>
+To: linux-kernel@vger.kernel.org
+Subject: Re: From 2.4 to 2.6 to 2.7?
+Message-ID: <20080715163652.GA12728@lgserv3.stud.cs.uit.no>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080715142444.GA7121@asus>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Cyrill Gorcunov]
+> Some areas should be distinguished:
 
+Areas?  "Target audience groups" maybe?  Well, I'm also not a native
+English writer ;-)
 
-On Tue, 15 Jul 2008, david@lang.hm wrote:
->
-> David W has made it very clear that the eventual intent of this patch series
-> is to remove all firmware from the kernel tree and have it shipped as a
-> seperate package.
+>	- development/stable team
+>	- distros
+> 	- regular users
 
-I don't think that kind of black-and-white model is necessarily 
-attainable. Nor do I think it's even _good_.
+> So we have the quite large group of people which should be considered for
+> convenient versioning scheme - _regular users_. Lets say I'm a regular user -
+> the most convenient scheme for me would be YYYY.r.s i think since it tells
+> me - this kernel is fresh enough to be used on my shining laptop, and maybe
+> it even supports all hardware I have! And at least it looks good -
+> 	Linux-2008.0.0
 
-It's probably the right thign for _some_ firmware, assuming we have models 
-that just make it easy enough - for drivers where it's generally better 
-for distros to get the firmware from vendors rather than the kernel.
+So, the version numbers aren't important for anyone else than "regular
+users"?  Ok, I'm a "regular user", so then I'm qualified to comment
+;-)
 
-But there is certainly nothing inherently good in forcing a split.
+Microsoft has attempted using year numbers in their releases, do we
+really want to go the same way? ;-) Well, indeed - my vote goes in the
+direction of YYYY.r.s.  I have one concern though, such a release
+could easily be mistaken for beeing an actual date. Maybe better to
+write 2008.r1.s1 to make it explicit it isn't the release date?
+2008.r1.s1 would at a glance easily give me an impression on whether
+the kernel version is "outdated", "mature" or "fresh".  2008.r1.s1 is
+easily googlable (though googling for "linux changelog 2.6.25" isn't
+really that difficult)
 
-I think both sides here need to calm down and stop being so extreme.
+That being said, is it really reasonable to assume the linux kernel
+will continue evolving gradually for all future?  In all software,
+sometimes it is really needed to make some major changes, break
+backward compatibility and decrease the stability - and that's what
+the major version numbers are for.  I think saying "we'll never need
+to change the major version number again" is roughly equivalent with
+"the design of Linux 2.6 is perfect".  Or, maybe some years or decades
+down the road we'll all upgrade to something with a different name
+than Linux ;-)
 
-I do want request_firmware() to be the way to load firmware (and possibly 
-other configuration data too, for that matter - I don't think it's 
-necessarily wrong for people to "misuse" it for other long-term data 
-despite the name), and I do want people to be able to update firmware 
-easily without having to force a kernel bump, but I also don't think it 
-means that firmware has to go away from the kernel sources.
-
-So I think the _infrastructure_ is important. But the extreme "you have to 
-split it off entirely" mindset is equally as stupid as the "you must 
-compile it into the module" mindset.
-
-			Linus
+-- 
+Tobias Brox, 69°42'N, 18°57'E
