@@ -1,60 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758807AbYGOW2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757926AbYGOW3I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758807AbYGOW2r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 18:28:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754637AbYGOW2k
+	id S1757926AbYGOW3I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 18:29:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760967AbYGOW2u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 18:28:40 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:47162 "EHLO smtp.polymtl.ca"
+	Tue, 15 Jul 2008 18:28:50 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:47200 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754140AbYGOW2j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 18:28:39 -0400
-Message-Id: <20080715222604.331269462@polymtl.ca>
+	id S1759263AbYGOW2t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 18:28:49 -0400
+Message-Id: <20080715222747.761260243@polymtl.ca>
+References: <20080715222604.331269462@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 15 Jul 2008 18:26:04 -0400
+Date: Tue, 15 Jul 2008 18:26:12 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
        Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [patch 00/17] Tracepoints v4 for linux-next
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Tue, 15 Jul 2008 22:27:48 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
+       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Subject: [patch 08/17] LTTng instrumentation - kernel
+Content-Disposition: inline; filename=lttng-instrumentation-kernel.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Tue, 15 Jul 2008 22:27:50 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Instrument the core kernel : module load/free and printk events. It helps the
+tracer to keep track of module related events and to export valuable printk
+information into the traces.
 
-Here is the newest release of the Tracepoints, following the feedback from Peter
-Zijlstra. The main change is the creation of include/trace/ as a placeholder
-from tracepoint headers.
+Those tracepoints are used by LTTng.
 
-The patchset applies over linux-next patch-v2.6.26-next-20080715 in this order :
+About the performance impact of tracepoints (which is comparable to markers),
+even without immediate values optimizations, tests done by Hideo Aoki on ia64
+show no regression. His test case was using hackbench on a kernel where
+scheduler instrumentation (about 5 events in code scheduler code) was added.
+See the "Tracepoints" patch header for performance result detail.
 
-#This a separate RCU update upon which the tracepoints depend
-rcu-read-sched.patch
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: Masami Hiramatsu <mhiramat@redhat.com>
+CC: 'Peter Zijlstra' <peterz@infradead.org>
+CC: "Frank Ch. Eigler" <fche@redhat.com>
+CC: 'Ingo Molnar' <mingo@elte.hu>
+CC: 'Hideo AOKI' <haoki@redhat.com>
+CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
+CC: 'Steven Rostedt' <rostedt@goodmis.org>
+CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+---
+ include/trace/kernel.h |   19 +++++++++++++++++++
+ kernel/module.c        |    5 +++++
+ kernel/printk.c        |    6 ++++++
+ 3 files changed, 30 insertions(+)
 
-tracepoints.patch
-tracepoints-documentation.patch
-tracepoints-samples.patch
-
-lttng-instrumentation-irq.patch
-lttng-instrumentation-scheduler.patch
-lttng-instrumentation-timer.patch
-lttng-instrumentation-kernel.patch
-
-lttng-instrumentation-filemap.patch
-lttng-instrumentation-swap.patch
-lttng-instrumentation-memory.patch
-lttng-instrumentation-page.patch
-lttng-instrumentation-hugetlb.patch
-
-lttng-instrumentation-net.patch
-lttng-instrumentation-ipv4.patch
-lttng-instrumentation-ipv6.patch
-
-ftrace-port-to-tracepoints.patch
-
-Mathieu
+Index: linux-2.6-lttng/kernel/printk.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/printk.c	2008-07-15 14:51:50.000000000 -0400
++++ linux-2.6-lttng/kernel/printk.c	2008-07-15 15:14:31.000000000 -0400
+@@ -32,6 +32,7 @@
+ #include <linux/security.h>
+ #include <linux/bootmem.h>
+ #include <linux/syscalls.h>
++#include <trace/kernel.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -59,6 +60,7 @@ int console_printk[4] = {
+ 	MINIMUM_CONSOLE_LOGLEVEL,	/* minimum_console_loglevel */
+ 	DEFAULT_CONSOLE_LOGLEVEL,	/* default_console_loglevel */
+ };
++EXPORT_SYMBOL_GPL(console_printk);
+ 
+ /*
+  * Low level drivers may need that to know if they can schedule in
+@@ -601,6 +603,7 @@ asmlinkage int printk(const char *fmt, .
+ 	int r;
+ 
+ 	va_start(args, fmt);
++	trace_kernel_printk(__builtin_return_address(0));
+ 	r = vprintk(fmt, args);
+ 	va_end(args);
+ 
+@@ -677,6 +680,9 @@ asmlinkage int vprintk(const char *fmt, 
+ 	raw_local_irq_save(flags);
+ 	this_cpu = smp_processor_id();
+ 
++	trace_kernel_vprintk(__builtin_return_address(0),
++		printk_buf, printed_len);
++
+ 	/*
+ 	 * Ouch, printk recursed into itself!
+ 	 */
+Index: linux-2.6-lttng/kernel/module.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/module.c	2008-07-15 15:12:09.000000000 -0400
++++ linux-2.6-lttng/kernel/module.c	2008-07-15 15:14:31.000000000 -0400
+@@ -48,6 +48,7 @@
+ #include <linux/license.h>
+ #include <asm/sections.h>
+ #include <linux/tracepoint.h>
++#include <trace/kernel.h>
+ 
+ #if 0
+ #define DEBUGP printk
+@@ -1429,6 +1430,8 @@ static int __unlink_module(void *_mod)
+ /* Free a module, remove from lists, etc (must hold module_mutex). */
+ static void free_module(struct module *mod)
+ {
++	trace_kernel_module_free(mod);
++
+ 	/* Delete from various lists */
+ 	stop_machine(__unlink_module, mod, NULL);
+ 	remove_notes_attrs(mod);
+@@ -2244,6 +2247,8 @@ static struct module *load_module(void _
+ 	/* Get rid of temporary copy */
+ 	vfree(hdr);
+ 
++	trace_kernel_module_load(mod);
++
+ 	/* Done! */
+ 	return mod;
+ 
+Index: linux-2.6-lttng/include/trace/kernel.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/trace/kernel.h	2008-07-15 15:14:31.000000000 -0400
+@@ -0,0 +1,19 @@
++#ifndef _TRACE_KERNEL_H
++#define _TRACE_KERNEL_H
++
++#include <linux/tracepoint.h>
++
++DEFINE_TRACE(kernel_printk,
++	TPPROTO(void *retaddr),
++	TPARGS(retaddr));
++DEFINE_TRACE(kernel_vprintk,
++	TPPROTO(void *retaddr, char *buf, int len),
++	TPARGS(retaddr, buf, len));
++DEFINE_TRACE(kernel_module_free,
++	TPPROTO(struct module *mod),
++	TPARGS(mod));
++DEFINE_TRACE(kernel_module_load,
++	TPPROTO(struct module *mod),
++	TPARGS(mod));
++
++#endif
 
 -- 
 Mathieu Desnoyers
