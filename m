@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760948AbYGOR0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761346AbYGOR1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760948AbYGOR0A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 13:26:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754535AbYGORZx
+	id S1761346AbYGOR1S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 13:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbYGOR1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 13:25:53 -0400
-Received: from hpsmtp-eml18.kpnxchange.com ([213.75.38.118]:58593 "EHLO
-	hpsmtp-eml18.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754063AbYGORZx (ORCPT
+	Tue, 15 Jul 2008 13:27:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48126 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750908AbYGOR1G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 13:25:53 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel, use it in more drivers.
-Date: Tue, 15 Jul 2008 19:25:49 +0200
-User-Agent: KMail/1.9.9
-Cc: david@lang.hm, jeff@garzik.org, arjan@infradead.org,
-       akpm@linux-foundation.org, dwmw2@infradead.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-References: <1216077806.27455.85.camel@shinybook.infradead.org> <alpine.DEB.1.10.0807150931290.16109@asgard.lang.hm> <alpine.LFD.1.10.0807150936070.3017@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807150936070.3017@woody.linux-foundation.org>
+	Tue, 15 Jul 2008 13:27:06 -0400
+Date: Tue, 15 Jul 2008 10:25:51 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeff Garzik <jeff@garzik.org>
+cc: David Woodhouse <dwmw2@infradead.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
+ use it in more drivers.
+In-Reply-To: <487CDB85.3050208@garzik.org>
+Message-ID: <alpine.LFD.1.10.0807151024220.3017@woody.linux-foundation.org>
+References: <1216077806.27455.85.camel@shinybook.infradead.org>  <20080714164119.99c33d5b.akpm@linux-foundation.org>  <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org>  <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org> 
+ <487C09EB.1050903@garzik.org>  <alpine.LFD.1.10.0807141928540.3017@woody.linux-foundation.org>  <487C1648.5070409@garzik.org>  <alpine.LFD.1.10.0807142027140.3017@woody.linux-foundation.org>  <487C500F.8000109@garzik.org> <1216107418.27455.236.camel@shinybook.infradead.org>
+ <487C5ABE.2010907@garzik.org> <alpine.LFD.1.10.0807150808050.3017@woody.linux-foundation.org> <487CDB85.3050208@garzik.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807151925.50432.elendil@planet.nl>
-X-OriginalArrivalTime: 15 Jul 2008 17:25:50.0990 (UTC) FILETIME=[D3EEF2E0:01C8E69F]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 15 July 2008, you wrote:
-> So I think the _infrastructure_ is important. But the extreme "you have
-> to split it off entirely" mindset is equally as stupid as the "you must
-> compile it into the module" mindset.
 
-Agreed. All I've wanted to say is that having the _option_ to continue to 
-compile it into the module can simplify certain use cases, including my 
-current use of the kernel's own deb-pkg target for private builds of the 
-kernel for testing purposes.
 
-One thing I would dearly like to see is the ability to choose a different 
-location for firmware for my own custom built kernels than the location 
-used for firmware from official Debian kernel packages so that at least 
-those two don't clash.
-Doesn't look like that is possible with current git head.
+On Tue, 15 Jul 2008, Jeff Garzik wrote:
+> 
+> The changes are good,
+> 
+> They just don't need to break stuff.
+> 
+> Which they do.
+
+If you were serious about that, then you'd be suggesting _fixes_.
+
+I'm not seeing you do that. I'm just seeing non-productive "we should 
+never have changed" emails.
+
+See my emails about what can be _productive_ avenues to explore. As it is, 
+I have yet to see a _single_ productive email from you. 
+
+Really, Jeff.
+
+		Linus
