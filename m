@@ -1,96 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762333AbYGOSF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762446AbYGOSG0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762333AbYGOSF4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 14:05:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762205AbYGOSFm
+	id S1762446AbYGOSG0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 14:06:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755595AbYGOSGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 14:05:42 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:46336 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762180AbYGOSFl (ORCPT
+	Tue, 15 Jul 2008 14:06:14 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:9704 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755822AbYGOSGL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 14:05:41 -0400
-X-Sasl-enc: /IhEXhVz3zkIzUoGsrH2T8GbEKVNLYS+7hf3yzQEZrwL 1216145140
-Date: Tue, 15 Jul 2008 15:05:35 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Frans Pop <elendil@planet.nl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, jeff@garzik.org,
-       arjan@infradead.org, akpm@linux-foundation.org, dwmw2@infradead.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
-	in-kernel, use it in more drivers.
-Message-ID: <20080715180535.GA6080@khazad-dum.debian.net>
-References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org> <487C0365.5030203@garzik.org> <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org> <200807151757.10626.elendil@planet.nl>
+	Tue, 15 Jul 2008 14:06:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:cc:subject:references
+         :in-reply-to:x-enigmail-version:openpgp:content-type
+         :content-transfer-encoding:from;
+        b=VgdDlxYqLc8kj4hgiAYJW/6dW5fu+ECAcy9OxoecPhKDbnrxkN98Y7JQHhKv97kfIZ
+         Ksn0qPqxd/J600g7y/Ve+aG8kRrtP9QL6PS22R7krY5wrINRYBb0PkX2xfpZlFDwgR7J
+         4xqEC0a6GRfV8crq9suCYZJwN5x7rPxyc/W7g=
+Message-ID: <487CE70B.9070506@greyfade.us>
+Date: Tue, 15 Jul 2008 11:06:03 -0700
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200807151757.10626.elendil@planet.nl>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Stoyan Gaydarov <stoyboyker@gmail.com>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, gorcunov@gmail.com,
+       akpm@linux-foundation.org, mingo@elte.hu
+Subject: Re: From 2.4 to 2.6 to 2.7?
+References: <6d291e080807141910m573b29b2t753ea7c4db09902d@mail.gmail.com>  <alpine.LFD.1.10.0807141914280.3017@woody.linux-foundation.org> <6d291e080807141931g3080c94cic94f503c1a18523b@mail.gmail.com> <alpine.LFD.1.10.0807141939410.3017@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807141939410.3017@woody.linux-foundation.org>
+X-Enigmail-Version: 0.95.0
+OpenPGP: id=1BB322F8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+From: Charles grey wolf Banas <greyfade@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jul 2008, Frans Pop wrote:
-> So then I build 2.6.27-rc1 and install it. Great.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Linus Torvalds wrote:
 > 
-> You release 2.6.27-rc2 and I build it. Ouch! It fails to install, at least 
-> if I want to install it _alongside_ 2.6.27-rc1 or other kernels (which I 
-> do!). Why does it fail? Because dpkg's package management does not allow 
-> one package to overwrite files already "owned" by another package.
+> On Mon, 14 Jul 2008, Stoyan Gaydarov wrote:
+>>> For example, I don't see any individual feature that would merit a jump
+>>> from 2.x to 3.x or even from 2.6.x to 2.8.x. So maybe those version jumps
+>>> should be done by a time-based model too - matching how we actually do
+>>> releases anyway.
+>> Does it have to be even numbers only?
+> 
+> No. But the even/odd thing is still so fresh in peoples memory (despite us 
+> not having used it for years), and I think some projects aped us on it, so 
+> if I didn't change the numbering setup, but just wanted to reset the minor 
+> number, I'd probably jump from 2.6 to 2.8 just for historical reasons.
+> 
+> But I could also see the second number as being the "year", and 2008 would 
+> get 2.8, and then next year I'd make the first release of 2009 be 2.9.1 
+> (and probably avoid the ".0" just because it again has the connotations of 
+> a "big new untested release", which is not true in a date-based numbering 
+> scheme). And then 2010 would be 3.0.1 etc..
+> 
+It occurred to me that another approach might make sense:
 
-I believe I read in the previous thread that some distros are already using
-/lib/firmware/<kernel version>/.
+Linux was released in 1991 with a 1.0 in 1994, correct? So, why not make
+1991 sort of the Linux Epoch? The major number would be the decade since
+Linux' release (this being the second decade of Linux, it works well)
+and the minor number could be the year within that decade of releases.
 
-There was also the suggestion of moving the entire set of kernel-packaged
-firmware to /lib/modules/<kernel version>/firmware, probably while keeping
-/lib/firmware as a second place to look for firmware so that we don't hose
-any system.
+I like this idea personally because it doesn't break the current
+numbering scheme (2.7 is still skipped, though) and it can be
+self-consistent for a number of years. When Linux reaches its fifth
+decade and its midlife crisis, it'll be in version 5.0.
 
-> If I were able to compile firmware into the modules, the problem would be 
-> solved in one go.
+I don't know. That's my shed's color. :)
 
-And this thread would have been shorter, even. I hope someone decides to
-write that support instead of complaining ;-)
+> Anyway, I have to say that I personally don't have any hugely strong 
+> opinions on the numbering. I suspect others do, though, and I'm almost 
+> certain that this is an absolutely _perfect_ "bikeshed-painting" subject 
+> where thousands of people will be very passionate and send me their 
+> opinions on why _their_ particular shed color is so much better.
+> 
+> The only thing I do know is that I agree that "big meaningless numbers" 
+> are bad. "26" is already pretty big. As you point out, the 2.4.x series 
+> has much bigger numbers yet.
+> 
+> And yes, something like "2008" is obviously numerically bigger, but has a 
+> direct meaning and as such is possibly better than something arbitrary and 
+> non-descriptive like "26".
+> 
+> Let the bike-shed-painting begin.
+> 
+> (I had planned on taking this up at the kernel summit, where the shed 
+> painting is at least limited to a much smaller audience, but since you 
+> asked..)
+> 
+> 			Linus
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-But I do feel we still need a smarter userspace firmware loader to make
-firmware packaging less insane.  The "current aproach" you described, with
-one firmware per package, is not good.  It doesn't allow for multiple
-versions of the firmware to be installed should you need it.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-> I don't know how the Debian kernel team plans to deal with this for distro 
-> kernel packages. They probably _do_ want to keep them separate [2]. Maybe 
-> by grouping firmware for really common drivers into 
-> firmware-basic-drivers or something along those lines.
-
-I sure hope we go with the more proper fix (a version-enabled firmware
-loader that can do the unversioned /lib/firmware as well).  It is far more
-resilient in the long run.
-
-> [1] Only quick solution I see is to have it install the firmware in a 
-> versioned directory and have the postinst copy things from there to
-> /lib/firmware.
-
-Yuck.  That would work only if you never needed two active copies of the
-kernel [with different firmware files] active at the same time.
-
-> [2] As one of the developers for Debian Installer I'm not looking forward 
-> to the complications that is going to cause for us and users.
-
-That was my point.  These firmware loading changes are good, but there is a
-lot of crap missing (most of it NOT in the kernel) before it can be exposed
-to ordinary users.
-
-And without firmware-in-the-module support (which is the ONLY scenario where
-the entire userspace will not notice anything different), this WILL cause
-problem to distros, we will need to scramble up and fix it all before we can
-package 2.6.26.  I don't know if this is a big problem, though.  The work
-will need to be done sooner or later anyway, and we should have enough time
-to do so as long as we don't care for packaging the early -rc.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+iD8DBQFIfOcLi1yS1BuzIvgRAnW9AKCSBqFsctCS58XdZ81QdnSuMB4WpQCfbPTf
+qTRm2dSF6OyvyTrN8cR4XzM=
+=VcmW
+-----END PGP SIGNATURE-----
