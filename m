@@ -1,104 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755673AbYGTAS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755649AbYGTAgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755673AbYGTAS0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 20:18:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbYGTAST
+	id S1755649AbYGTAgR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 20:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbYGTAgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 20:18:19 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46051 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754501AbYGTASS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 20:18:18 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Subject: Re: linux-next: Tree for July 18: sky2 WOL broken
-Date: Sun, 20 Jul 2008 02:20:10 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       netdev@vger.kernel.org
-References: <20080718195352.e562a00f.sfr@canb.auug.org.au>
-In-Reply-To: <20080718195352.e562a00f.sfr@canb.auug.org.au>
+	Sat, 19 Jul 2008 20:36:06 -0400
+Received: from ax54.genwebserver.com ([72.18.156.50]:53424 "EHLO
+	ax54.genwebserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754468AbYGTAgF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jul 2008 20:36:05 -0400
+Message-ID: <487D0564.7070606@assumpcao.org>
+Date: Tue, 15 Jul 2008 17:15:32 -0300
+From: Tiago Assumpcao <tiago@assumpcao.org>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: pageexec@freemail.hu, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [stable] Linux 2.6.25.10
+References: <20080703185727.GA12617@suse.de>, <486D4541.25808.C600354@pageexec.freemail.hu>, <20080714120418.GA5334@kroah.com> <487C242B.19490.17F690F7@pageexec.freemail.hu> <alpine.LFD.1.10.0807141924020.3017@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807141924020.3017@woody.linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807200220.11701.rjw@sisk.pl>
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - ax54.genwebserver.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - assumpcao.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 18 of July 2008, Stephen Rothwell wrote:
-> Hi all,
+Linus Torvalds wrote:
 > 
-> Changes since next-20080717:
+> That means that I want to fix things asap. But that also means that there is never a 
+> time when you can "let people know", except when it's not an issue any 
+> more, at which point there is no _point_ in letting people know any more.
 > 
-> Restored tree: ttydev.
-> 
-> Temporarily dropped tree: acpi (confusion about its source).
-> 
-> Most of the differences were conflicts moving from tree to tree as some
-> of the trees are now merged into Linus' tree.  Most have been inflicted
-> on the driver-core and usb trees.  I have not notified these separately.
-> 
-> Because of the moving of conflicts around it is difficult to tell when
-> they are going away (though I assume some are).
-> 
-> The driver-core tree gained a conflict against Linus' tree.
-> 
-> The usb tree inherited a build fix patch from the pci tree.
-> 
-> The x86 tree gained a trivial conflict against Linus' tree but it was in
-> a commit that is still being reverted.
-> 
-> The ocsf2 tree gained several conflicts against Linus' tree because what
-> was sent to Linus was not the same as what is in linuxt-next.
-> 
-> The vfs tree gained conflicts against Linus' tree, the sparc tree and the
-> mips tree.
-> 
-> The semaphore-removal tree gained conflicts against Linus' tree that
-> required the reversion of two commits.
-> 
-> The ttydev tree had two patches that didn't apply and gained conflicts
-> against the wireless tree and the usb tree (4).  It also required a build
-> fix patch.
-> 
-> Lots of conflicts have gone from the x86 and ubifs trees.
-> 
-> I have also applied the following patches for known problems:
-> 
-> 	sparc64: sysdev API change fallout
-> 	sparc32: smp_call_function API change fallout (this has already
-> been fixed in the upstream sparc tree and comes from an incomplete merge
-> on my part).
-> 
-> This tree fails to build for ARCH=sparc (i.e. 32bit) with a 64bit gcc
-> v3.4.5 - it tries to use the 64bit header files.  This may be an artifact
-> of one of my merge fixups, but I don't actually think so.
-> 
-> ----------------------------------------------------------------------------
 
-commit db99b98885e717454feef1c6868b27d3f23c2e7c
-Author: Stephen Hemminger <shemminger@vyatta.com>
-Date:   Wed May 14 17:04:16 2008 -0700
+The only plausible solution people have found to this problem is
+"letting the world know", so everyone involved in the different stages
+of IT maintenance can do their part and properly spread the solution
+throughout the assets.
 
-    sky2: put PHY in sleep when down
+Unless you have a better idea, the full-disclosure policy must remain or
+we're going back into 1992AD -- except the threats are thereof 2008.
 
-and
+> So I personally consider security bugs to be just "normal bugs". I don't 
+> cover them up, but I also don't have any reason what-so-ever to think it's 
+> a good idea to track them and announce them as something special. 
+> 
+> So there is no "policy". Nor is it likely to change. 
+> 
+> 			Linus
 
-commit a068c0adf2fe28b324bca87f85d27af7f993cdaf
-Author: Stephen Hemminger <shemminger@vyatta.com>
-Date:   Wed May 14 17:04:17 2008 -0700
+Either someone classify and inform it as it is, a *security problem*, or 
+the issue is likely to pass unnoticed by the majority or to not receive 
+the necessary attention by the involved parts.
 
-    sky2: pci power savings
+Right. You don't want your developers to be responsible for classifying 
+bugs towards security. Fine. Even though my intuition and personal 
+experience tell that the question must be approached by those deeply 
+involved in the development life-cycle, which, on their side, are 
+responsible for finding, classifying, advising and fixing the security 
+issues. This seems appropriate. Further, this appears to be what the big 
+software houses nowadays do: from early design and development stages, 
+have people to [security] review their applications before deployment, 
+up to giving high attention and adequate support to any reported 
+security problem, afterwards release. Maybe this is all silly and the 
+world is swimming in the wrong direction.
 
-break Wake-on-LAN on my test box using sky2.  More specifically, with these
-two commits applied the box hangs solid during hibernation/power off
-while executing the sky2 callbacks.
+Opinions apart, what really matters: we have an ultimate declaration 
+about Linus' tree -- we may forget the pre-official (?) announcement 
+[Documentation/SecurityBugs] and know that someone else must, 
+eventually, classify and inform the world about security bugs existent 
+in their software.
+ From our consumer side, every time an issue of this nature is found, 
+let's pray for some intermediate, gray, angel to send us an "warning" 
+message.
 
-The adapter is reported as 88E8056 (Asus M3A32-MVP Deluxe mainboard).
 
-Thanks,
-Rafael
+Not more I can do but to make sure that all my peers are informed of 
+such a grave reality.
+
+Sincerely,
+Tiago
+
