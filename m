@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753698AbYGOFJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbYGOFNu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753698AbYGOFJv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 01:09:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbYGOFJk
+	id S1756214AbYGOFNu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 01:13:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752714AbYGOFNm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 01:09:40 -0400
-Received: from 1wt.eu ([62.212.114.60]:3974 "EHLO 1wt.eu"
+	Tue, 15 Jul 2008 01:13:42 -0400
+Received: from 1wt.eu ([62.212.114.60]:3979 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756198AbYGOFJj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 01:09:39 -0400
-Date: Tue, 15 Jul 2008 07:06:54 +0200
+	id S1752226AbYGOFNm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 01:13:42 -0400
+Date: Tue, 15 Jul 2008 07:12:25 +0200
 From: Willy Tarreau <w@1wt.eu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeff Garzik <jeff@garzik.org>, Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, alan@lxorguk.ukuu.org.uk,
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, alan@lxorguk.ukuu.org.uk,
        linux-kernel@vger.kernel.org
 Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel, use it in more drivers.
-Message-ID: <20080715050654.GH1369@1wt.eu>
-References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org> <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org> <487C09EB.1050903@garzik.org> <alpine.LFD.1.10.0807141928540.3017@woody.linux-foundation.org> <487C1648.5070409@garzik.org> <alpine.LFD.1.10.0807142027140.3017@woody.linux-foundation.org>
+Message-ID: <20080715051224.GI1369@1wt.eu>
+References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org> <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org> <487C09EB.1050903@garzik.org> <1216090112.27455.173.camel@shinybook.infradead.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807142027140.3017@woody.linux-foundation.org>
+In-Reply-To: <1216090112.27455.173.camel@shinybook.infradead.org>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 14, 2008 at 08:29:13PM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Mon, 14 Jul 2008, Jeff Garzik wrote:
+On Mon, Jul 14, 2008 at 07:48:32PM -0700, David Woodhouse wrote:
+> On Mon, 2008-07-14 at 22:22 -0400, Jeff Garzik wrote:
+> > You have to look at the build process, second stage image builders, 
+> > embedded system image creators, and other "hangers on" that do not look 
+> > and behave like a mainstream Linux distro.
 > > 
-> > Do you really think embedded system and micro distro authors are in 100%
-> > agreement that /lib/firmware is best for their situation?  Really?
+> > It is a mistake to assume that all systems are _already_ prepared to 
+> > install and digest new /lib/firmware files that the kernel build now 
+> > spits out.
 > 
-> Umm. Why are you bringing up these total red herrings?
+> I didn't just assume it. I checked the major distributions -- and they
+> _do_ check the MODULE_FIRMWARE() tags in the modules they include, and
+> include the corresponding firmware. The firmware loader has been around
+> for a _long_ time now, and they've had to support this for almost as
+> long.
 
-It's not red herring, Linus. I (as a user, as an embedded system developer
-and as a micro distro maintainer) do really care.
+David, "being around" and "being heavily used" are not the same. My
+experience with firmware is limited to WiFi drivers. I've never seen
+that annoying thing on a server yet. Not that it does not exist there,
+just that fortunately I've not being facing it.
 
-> Those embedded systems can just build everything into one image, and are 
-> much better off using no modules at all.
+> Yes, there are occasional bugs -- and I'm sure there _are_ some minor
+> distributions or 'image creators' out there which still don't cope.
+> 
+> But that isn't a new problem -- and it's certainly not _caused_ by us
+> updating a small handful of the older drivers to match what modern
+> drivers do.
 
-While it is sometimes acceptable to have everything built into one image,
-sometimes your embedded system is modular in that the same image works
-on several hardware variants. In this case, it's largely preferable to
-work with modules.
-
-> But how about instead of complaining, help add the infrastructure then, so 
-> that you can insert those firmware things into modules and still use just 
-> one single interface? 
-
-I think that would make everyone happy. It would be worth taking a
-look at myri10ge version 1.4.2 to see how they managed to support
-both mechanisms.
-
-> Move _forward_, not backwards.
-
-This is just a matter of point of view. From my POV, having to feed
-several unrelated files into a system to be able to get it to support
-any device is moving backwards, compared to the currently clean all-in-1
-driver model.
-
-BTW, I still did not understand what existing problem we are trying
-to solve by this move "forward".
+Pardon? If by "updating" you mean you keep backwards compatibility, OK.
+But if by "updating" you mean "breaking existing behaviour", yes, it
+is your change which will cause the problems.
 
 Willy
 
