@@ -1,77 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759260AbYGPIZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759255AbYGPI3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759260AbYGPIZR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 04:25:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756752AbYGPIYz
+	id S1759255AbYGPI3V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 04:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326AbYGPI3H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 04:24:55 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:34303 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756671AbYGPIYx (ORCPT
+	Wed, 16 Jul 2008 04:29:07 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:44573 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753886AbYGPI3G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 04:24:53 -0400
-Subject: Re: Linux Wireless Mini-Summit -- Ottawa -- July 22, 2008
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Dan Williams <dcbw@redhat.com>
-Cc: "John W. Linville" <linville@tuxdriver.com>, Guy Cohen <guy@cguy.net>,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1216145731.13411.25.camel@localhost.localdomain> (sfid-20080715_201731_895315_46FC8F2F)
-References: <20080709190915.GA8238@tuxdriver.com>
-	 <247d6d340807140805gfb6523en74384f6f47469d79@mail.gmail.com>
-	 <20080715174246.GA3117@tuxdriver.com>
-	 <1216145731.13411.25.camel@localhost.localdomain>
-	 (sfid-20080715_201731_895315_46FC8F2F)
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-5SrjtC43sfUzGHmunCAn"
-Date: Wed, 16 Jul 2008 10:24:28 +0200
-Message-Id: <1216196668.3422.2.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 16 Jul 2008 04:29:06 -0400
+Date: Wed, 16 Jul 2008 10:29:04 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: jkacur <jkacur@gmail.com>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: Make the git URL match usage
+In-Reply-To: <200807160919.35833.jkacur@gmail.com>
+Message-ID: <alpine.LNX.1.10.0807161028190.26724@fbirervta.pbzchgretzou.qr>
+References: <200807160919.35833.jkacur@gmail.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-5SrjtC43sfUzGHmunCAn
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Wednesday 2008-07-16 09:19, jkacur wrote:
 
+>Change the MAINTAINERS file so that the git URL reads EXACTLY the way someone
+>would use it.
 
-> > Not sure exactly what you mean with this one.  Are you talking about
-> > the lib80211 line item?  Or enhancements to the mac80211 component
-> > to support full(er) MAC designs?
->=20
-> I hope just lib80211.  We shouldn't be extending mac80211 to fullmac or
-> quasi-fullmac parts.  But we can certainly share a lot of stuff.
-> lib80211 is where I see any additional fullmac effort going.
+>-T:	git kernel.org:/pub/scm/linux/kernel/ericvh/v9fs.git
+>+T:	git://git.kernel.org:/pub/scm/linux/kernel/ericvh/v9fs.git
 
-Just a minor point wrt. lib80211: I see little use in creating yet
-another module since hopefully soon enough fullmac chipsets will bind
-cfg80211 anyway so all of that stuff might as well be in there.
+I would not use it that^ way.
 
-johannes
-
---=-5SrjtC43sfUzGHmunCAn
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJIfbA2AAoJEKVg1VMiehFYPUwQAIjia5olwIOp/+ZYuiQGEb4+
-o2vuoBRTd8hcVAXR7SPj3vCPSA072Sgcfy7nxL1C8Wjj3BUKDrDd4s6+bFLE3TTd
-lYbH59eh0OsMFdAZNrNwwGFsC+VpOtPGRqY0WfgeerhmbvkSXsWIcPd5c7kQ1S6v
-pzcQ0ajWroOtaSn0+Ue+45uugAIDskexqA+WWbHPC15I3b2d7uSDUdBq2C3StlPj
-IkK5g5Z/hlSGydPtutkeNsAkiml6VpfJJJLG1dRA99pcZThQwzxhFdhnKoneSnXb
-PToADdr3LfmzOMQIJPjLGcrsnDyX+hkpXPARJXcu+BpnizA7lSkXXPw/Yq/sHQLA
-g4r+nEUnPwkVUAUYJ9AfaVNAKB77sI8+yPxV0Gj8PynlkIkelc5oSYEWxC11yh49
-cSrXeTwWO+YeuNacBx2BGykTxoSzeUQB9XVMUkyr4tqqvV1c7A/he4Q5PcIoM1RU
-/Ns22DdqYHn1LRpwuCwdZkkks52ks7Cb6nsDq5cc5gd0ieFufTz3TxqfysLPDnWR
-bWSxP3LIRsahzpM6czIPaG3WUufEocozPfN4c8BDaNjh3MIeU41xMXvSsgMKBjF/
-8UQWYnjmeZNed5GlEd9+fYxVI9p/uJASoneX5WgbTQIUXEoX8rb+DaI7xJfQDeMt
-g9pPFKlCvhO7aWzxKxq0
-=BHM8
------END PGP SIGNATURE-----
-
---=-5SrjtC43sfUzGHmunCAn--
-
+-git://git.kernel.org:/pub/scm/linux/kernel/ericvh/v9fs.git
++git://git.kernel.org/pub/scm/linux/kernel/ericvh/v9fs.git
