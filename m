@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759232AbYGPVme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759544AbYGPVnx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759232AbYGPVme (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 17:42:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757315AbYGPVmZ
+	id S1759544AbYGPVnx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 17:43:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757422AbYGPVnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 17:42:25 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:34780 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757182AbYGPVmY (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 17:42:24 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Morton Harrow <mharrow@linuxmail.org>
-Cc: Miod Vallat <miod@online.fr>, licensing@fsf.org,
-       linux-kernel@vger.kernel.org, rms@gnu.org, claire.newman@canonical.com,
-       announce@fsfeurope.org, misc@openbsd.org, ubuntu-users@lists.ubuntu.com,
-       fedora-list@redhat.com, netbsd-users@netbsd.org,
-       freebsd-questions@freebsd.org
-Subject: Re: GPL version 4
-In-Reply-To: Your message of "Thu, 17 Jul 2008 05:31:15 +0800."
-             <20080716213115.C747F7BC45@ws5-10.us4.outblaze.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20080716213115.C747F7BC45@ws5-10.us4.outblaze.com>
+	Wed, 16 Jul 2008 17:43:45 -0400
+Received: from rn-out-0910.google.com ([64.233.170.191]:60550 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756586AbYGPVno (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 17:43:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=hRdbHyZjE0NpKZvznaQK+VIwom7X3OyGg2sN/jra/62yD81Sx5WWeSVNmd6RAcnNam
+         rZHdQzNy974aV5s7pi2NUKxzjd9UaN4tIrmjdyw3QExIxGSEYcS63dTnOgNoUUE2ftWf
+         Y1yUj6n+F3QSHYxloiSW9AeCu9qwSqdEUZkaU=
+Subject: Re: [PATCH] dlm: sparse endian annotations
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: David Teigland <teigland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080716213801.GK28946@ZenIV.linux.org.uk>
+References: <1216239367.28841.22.camel@brick>
+	 <20080716213801.GK28946@ZenIV.linux.org.uk>
+Content-Type: text/plain
+Date: Wed, 16 Jul 2008 14:43:41 -0700
+Message-Id: <1216244621.28841.35.camel@brick>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1216244510_16143P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Date: Wed, 16 Jul 2008 17:41:50 -0400
-Message-ID: <33958.1216244510@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1216244510_16143P
-Content-Type: text/plain; charset=us-ascii
+On Wed, 2008-07-16 at 22:38 +0100, Al Viro wrote:
+> On Wed, Jul 16, 2008 at 01:16:07PM -0700, Harvey Harrison wrote:
+> 
+> 
+> NAK on ones below.  You are only hiding the warnings; ...s() is not making
+> it any better.
+> 
 
-On Thu, 17 Jul 2008 05:31:15 +0800, Morton Harrow said:
+I'd suggest that any use of {endian}s() points to code that should be
+looked at.  But if you'd also rather have the warnings, so be it.
 
-> I see with pain in my heart that the GPLv3 doesn't actually give the
-> users of GPLv3 software the liberty and freedom the FSF has been
-> fighting for. Instead they are forced to play by the strict set of
-> terms the GPLv3 provides.
+Cheers,
 
-You missed an important philosophical point.  In Richard Stallman's world view,
-it isn't the user's freedoms that matter, it's the *software*s freedom.
+Harvey
 
-> For example, as a liberated computer user, I might like to incorporate
-> a high quality piece of GPLv3 software in a commercial product,
-> which for bussiness strategic reasons happens to be closed source software.
-> But the GPLv3 denies my claim for this freedom to do this.
-
-Right, because doing so would impact the *software*s freedom.
-
-> I fail to see how that strengthens me in a Free and Liberal Software World.
-
-Sometimes, it's not about you.
-
---==_Exmh_1216244510_16143P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFIfmsecC3lWbTT17ARAtrkAKCxuL4Nl5y3WKApGk76crwfKPBbKwCg71JK
-yHVVN7dtNX2ddG3Q2929x2E=
-=8eAA
------END PGP SIGNATURE-----
-
---==_Exmh_1216244510_16143P--
