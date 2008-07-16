@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760057AbYGPXLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760203AbYGPXLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760057AbYGPXLS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 19:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759400AbYGPXLG
+	id S1760203AbYGPXLd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 19:11:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759587AbYGPXLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 16 Jul 2008 19:11:06 -0400
-Received: from fizeau.zen.co.uk ([212.23.8.67]:47158 "EHLO fizeau.zen.co.uk"
+Received: from gate.crashing.org ([63.228.1.57]:53704 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758627AbYGPXLE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 19:11:04 -0400
-X-Greylist: delayed 1101 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Jul 2008 19:11:04 EDT
-Date: Wed, 16 Jul 2008 23:49:32 +0100
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Nathan Lynch <ntl@pobox.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Vegard Nossum <vegard.nossum@gmail.com>
-Subject: Re: [PATCH] cputopology: Always define CPU topology information [4th try]
-Message-ID: <20080716224931.GZ19302@solarflare.com>
-References: <20080604154454.GD11300@solarflare.com> <20080716213717.GB9594@localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080716213717.GB9594@localdomain>
-User-Agent: Mutt/1.4.1i
-X-Originating-Smarthost03-IP: [82.69.137.158]
+	id S1759011AbYGPXLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 19:11:05 -0400
+Date: Wed, 16 Jul 2008 18:05:58 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+X-X-Sender: galak@blarg.am.freescale.net
+To: linuxppc-dev@ozlabs.org
+cc: davej@redhat.com, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/ep8248e: Unconditionally select PHYLIB for mdio_bitbang
+Message-ID: <Pine.LNX.4.64.0807161802590.26841@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nathan Lynch wrote:
-> Hi Ben-
-> 
-> Ben Hutchings wrote:
-> > Not all architectures and configurations define CPU topology information.
-> > This can result in an empty topology directory in sysfs, and requires
-> > in-kernel users to protect all uses with #ifdef - see
-> > <http://marc.info/?l=linux-netdev&m=120639033904472&w=2>.
-> > 
-> > The documentation of CPU topology specifies what the defaults should be
-> > if only partial information is available from the hardware.  So we can
-> > provide these defaults as a fallback.
-> 
-> I've been looking at adding topology information to powerpc and I came
-> across this.
-> 
-> I understand the need for fallback definitions of the topology APIs
-> within the kernel, but I'm not sure I agree with exposing these things
-> in sysfs unconditionally -- the default values for physical_package_id
-> and core_id don't really make sense on powerpc (and other non-x86
-> architectures, I suspect).
+Its possible to build the phylib as a module, however this breaks the
+board code because alloc_mdio_bitbang and mdiobus_register are not
+available if we build as a module.  These are needed by the board code
+since it implements the low level mdio bitbang ops.
 
-In what way are they wrong?
+So we unconditionally select PHYLIB to ensure its built into the kernel
+if we are building in EP8248E support.
 
-> Would you object to a patch which exposes in sysfs only the topology
-> information which the architecture provides?
+Long term we should look at moving the mdio_ops into its own file so it
+can be built as a module.
 
-I was primarily concerned with having the fallbacks available in-kernel.
-However, I don't think you will be doing user-space any favours by
-requiring checks for missing attributes for ever.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
 
-Ben.
+This patch supercededs:
 
+[PATCH] powerpc/ep8248e: Fix compile problem if !CONFIG_FS_ENET
+
+I've reverted the old patch and applied the new patch in my git tree and
+have asked Ben to pull and push it to Linus.
+
+- k
+
+ arch/powerpc/platforms/82xx/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/platforms/82xx/Kconfig b/arch/powerpc/platforms/82xx/Kconfig
+index 1c8034b..75eb1ed 100644
+--- a/arch/powerpc/platforms/82xx/Kconfig
++++ b/arch/powerpc/platforms/82xx/Kconfig
+@@ -30,6 +30,7 @@ config EP8248E
+ 	select 8272
+ 	select 8260
+ 	select FSL_SOC
++	select PHYLIB
+ 	select MDIO_BITBANG
+ 	help
+ 	  This enables support for the Embedded Planet EP8248E board.
 -- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
+1.5.5.1
+
