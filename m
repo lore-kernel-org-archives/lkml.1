@@ -1,89 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758709AbYGPUtK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759155AbYGPUus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758709AbYGPUtK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 16:49:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754850AbYGPUs4
+	id S1759155AbYGPUus (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 16:50:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757055AbYGPUul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 16:48:56 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:25626 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754715AbYGPUs4 (ORCPT
+	Wed, 16 Jul 2008 16:50:41 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36942 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756281AbYGPUuk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 16:48:56 -0400
-Date: Wed, 16 Jul 2008 13:43:27 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Louis Rilling <Louis.Rilling@kerlabs.com>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: Re: [BUGFIX][PATCH v2 0/2] configfs: Fix cleanup after mkdir()
-	failure
-Message-ID: <20080716204327.GB16440@ca-server1.us.oracle.com>
-Mail-Followup-To: Louis Rilling <Louis.Rilling@kerlabs.com>,
-	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-References: <1215183366-17479-1-git-send-email-louis.rilling@kerlabs.com> <20080711220740.GC22577@mail.oracle.com> <20080716130821.GF3801@hawkmoon.kerlabs.com> <20080716172703.GA18105@ca-server1.us.oracle.com> <20080716175654.GA19577@hawkmoon.kerlabs.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080716175654.GA19577@hawkmoon.kerlabs.com>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 16 Jul 2008 16:50:40 -0400
+Subject: Re: [PATCH] : A better approach to compute int_sqrt in
+	lib/int_sqrt.c
+From: Peter Zijlstra <peterz@infradead.org>
+To: Soumyadip Das Mahapatra <soumya.linux@yahoo.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <551692.52350.qm@web59507.mail.ac4.yahoo.com>
+References: <551692.52350.qm@web59507.mail.ac4.yahoo.com>
+Content-Type: text/plain
+Date: Wed, 16 Jul 2008 22:51:09 +0200
+Message-Id: <1216241469.5232.59.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 16, 2008 at 07:56:54PM +0200, Louis Rilling wrote:
-> On Wed, Jul 16, 2008 at 10:27:03AM -0700, Joel Becker wrote:
-> > On Wed, Jul 16, 2008 at 03:08:21PM +0200, Louis Rilling wrote:
-> > > - error handling in config_*_init_type_name(): has rather low priority in my
-> > >   TODO list, will come back to it probably in a few weeks.
-> > 
-> > 	I thought we did this already.  Perhaps I didn't include it?
-> > Did we have another change to make?
+On Wed, 2008-07-16 at 13:19 -0700, Soumyadip Das Mahapatra wrote:
+> Hello everybody !!
+>       The patch below is what i think is a better approach to
+> compute int_sqrt().
 > 
-> You requested me to move a BUG_ON() earlier (before the actual memory
-> allocation), and to update documentation. I'm quite in a hurry on other things,
-> so I'm delaying this (especially the documentation part for which I feel like a
-> new paragraph is needed).
+> What about it ?
 
-	Sounds good.
+Indeed, what about it?
 
-> > > - a small locking cleanup in configfs_rmdir(): will do at the same time as
-> > >   lockdep stuff.
-> > 
-> > 	What sort of change?  I suppose I'll see it when it arrives.
+How is it better;
+ - is it cheaper
+   - how so
+   - on what platform
+
+ - it is more accurate
+   - who needs it
+
+Please provide a little more information about why you suggest this
+change.
+
+> Thanks !!
 > 
-> You may look at the retry loop in configfs_rmdir() and see that locks need only
-> to be taken inside the loop, not outside. This would result in fewer lines for
-> exactly the same behavior.
+> ---
+> --- a/lib/int_sqrt.c    2008-04-17 08:19:44.000000000 +0530
+> +++ b/lib/int_sqrt.c    2008-07-02 11:37:01.000000000 +0530
+> @@ -1,4 +1,3 @@
+> -
+>  #include <linux/kernel.h>
+>  #include <linux/module.h>
+>  
+> @@ -7,26 +6,21 @@
+>   * @x: integer of which to calculate the sqrt
+>   *
+>   * A very rough approximation to the sqrt() function.
+> + * Improved version from the previous one.
 
-	I see what you mean.  Not pressing, I agree.
+With the previuos one being gone, this comment adds little but
+confusion..
 
-> > 	I figure this new stuff will probably miss the .27 window, but
-> > it sounds like that's fine - nothing too serious, and it will make .28.
+>   */
+>  unsigned long int_sqrt(unsigned long x)
+>  {
+> -    unsigned long op, res, one;
+> -
+> -    op = x;
+> -    res = 0;
+> -
+> -    one = 1UL << (BITS_PER_LONG - 2);
+> -    while (one > op)
+> -        one >>= 2;
+> -
+> -    while (one != 0) {
+> -        if (op >= res + one) {
+> -            op = op - (res + one);
+> -            res = res +  2 * one;
+> -        }
+> -        res /= 2;
+> -        one /= 4;
+> -    }
+> -    return res;
+> +    unsigned long ub, lb, m;
+> +    lb = 1;                /* lower bound */
+> +    ub = (x >> 5) + 8;        /* upper bound */
+> +    do {
+> +        m = (ub + lb) >>  1;    /* middle value */
+> +        if((m * m) > x)
+> +            ub = m - 1;
+> +        else
+> +            lb = m + 1;
+> +    } while(ub >= lb);
+> +    
+> +    return lb - 1;
+>  }
+>  EXPORT_SYMBOL(int_sqrt);
 > 
-> Sorry for not being responsive enough. As mentioned above, I have more urgent
-> things to work on right now.
+> 
+> 
+>       
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-	Don't worry, do what you have to do.  We're good for .27 - the
-major races have been fixed.  Thank you for all your work!
-
-Joel
-
-
--- 
-
-Life's Little Instruction Book #451
-
-	"Don't be afraid to say, 'I'm sorry.'"
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
