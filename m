@@ -1,46 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758605AbYGPS4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758718AbYGPS6L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758605AbYGPS4g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 14:56:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004AbYGPS42
+	id S1758718AbYGPS6L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 14:58:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbYGPS5y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 14:56:28 -0400
-Received: from 206-248-169-182.dsl.ncf.ca ([206.248.169.182]:49030 "EHLO
-	phobos.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753725AbYGPS42 (ORCPT
+	Wed, 16 Jul 2008 14:57:54 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:39556 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754004AbYGPS5x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 14:56:28 -0400
-Date: Wed, 16 Jul 2008 14:56:27 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Guy Martin <gmsoft@tuxicoman.be>
-Cc: linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org
-Subject: Re: 64bit kernel not booting with CONFIG_PRINTK_TIME=y
-Message-ID: <20080716185627.GC22716@phobos.i.cabal.ca>
-References: <20080716204552.56270e7c@tuxicoman.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080716204552.56270e7c@tuxicoman.be>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 16 Jul 2008 14:57:53 -0400
+Date: Wed, 16 Jul 2008 11:50:57 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>, dwmw2 <dwmw2@infradead.org>
+Cc: scsi <linux-scsi@vger.kernel.org>,
+       jejb <James.Bottomley@HansenPartnership.com>
+Subject: [PATCH -next] scsi: fix advansys printk format warnings
+Message-Id: <20080716115057.47b3e117.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 16, 2008 at 08:45:52PM +0200, Guy Martin wrote:
-> 
-> This is the output of my L2000 when trying to do so :
-> 
-> Information: No console specified on kernel command line. This is
-> normal. PALO will choose the console currently used by firmware
-> (serial). Command line for kernel: 'root=/dev/md1 console=ttyS0
-> palo_kernel=2/vmlinux' Selected kernel: /vmlinux from partition 2
-> ELF64 executable
-> Entry 00100000 first 00100000 n 2
-> Segment 0 load 00100000 size 4997120 mediaptr 0x1000
-> Segment 1 load 00634000 size 640576 mediaptr 0x4c5000
-> Branching to kernel entry point 0x00100000.  If this is the last
-> message you see, you may need to switch your console.  This is
-> a common symptom -- search the FAQ and mailing list at parisc-linux.org
-> 
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Wrong mailing list. :)
+Fix printk format warnings (firmware-related):
+
+linux-next-20080716/drivers/scsi/advansys.c:4788: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
+linux-next-20080716/drivers/scsi/advansys.c:5117: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
+linux-next-20080716/drivers/scsi/advansys.c:5631: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
+linux-next-20080716/drivers/scsi/advansys.c:6131: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/scsi/advansys.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+--- linux-next-20080716.orig/drivers/scsi/advansys.c
++++ linux-next-20080716/drivers/scsi/advansys.c
+@@ -4784,7 +4784,7 @@ static ushort AscInitAsc1000Driver(ASC_D
+ 		return err;
+ 	}
+ 	if (fw->size < 4) {
+-		printk(KERN_ERR "Bogus length %d in image \"%s\"\n",
++		printk(KERN_ERR "Bogus length %zu in image \"%s\"\n",
+ 		       fw->size, fwname);
+ 		release_firmware(fw);
+ 		return -EINVAL;
+@@ -5113,7 +5113,7 @@ static int AdvInitAsc3550Driver(ADV_DVC_
+ 		return err;
+ 	}
+ 	if (fw->size < 4) {
+-		printk(KERN_ERR "Bogus length %d in image \"%s\"\n",
++		printk(KERN_ERR "Bogus length %zu in image \"%s\"\n",
+ 		       fw->size, fwname);
+ 		release_firmware(fw);
+ 		return -EINVAL;
+@@ -5627,7 +5627,7 @@ static int AdvInitAsc38C0800Driver(ADV_D
+ 		return err;
+ 	}
+ 	if (fw->size < 4) {
+-		printk(KERN_ERR "Bogus length %d in image \"%s\"\n",
++		printk(KERN_ERR "Bogus length %zu in image \"%s\"\n",
+ 		       fw->size, fwname);
+ 		release_firmware(fw);
+ 		return -EINVAL;
+@@ -6127,7 +6127,7 @@ static int AdvInitAsc38C1600Driver(ADV_D
+ 		return err;
+ 	}
+ 	if (fw->size < 4) {
+-		printk(KERN_ERR "Bogus length %d in image \"%s\"\n",
++		printk(KERN_ERR "Bogus length %zu in image \"%s\"\n",
+ 		       fw->size, fwname);
+ 		release_firmware(fw);
+ 		return -EINVAL;
+
+
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
