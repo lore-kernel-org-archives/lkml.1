@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759391AbYGPK23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759495AbYGPKbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759391AbYGPK23 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 06:28:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756328AbYGPK2V
+	id S1759495AbYGPKbW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 06:31:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755978AbYGPKbO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 06:28:21 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:58682 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756301AbYGPK2U (ORCPT
+	Wed, 16 Jul 2008 06:31:14 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47503
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755927AbYGPKbN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 06:28:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=pFBAalO406xr2Pxs7X9GcMlFMIih91BulXVfax7Vu8DotgXT82OMGaJu0JJoHyWOJ5
-         hlVVPUFKEuf6qEE58W7PW/CFuW5iWmwS4Gsxcgju2uUZT0i4yOhuq/+CD0Z0PSgjCo4i
-         1uZPCzED0quxrQrbDRuuJ5Tn3I0CaX2j3X3VY=
-Message-ID: <520f0cf10807160328m68c9bd92h9951322ec0ca8ecc@mail.gmail.com>
-Date: Wed, 16 Jul 2008 12:28:19 +0200
-From: "John Kacur" <jkacur@gmail.com>
-To: "Jan Engelhardt" <jengelh@medozas.de>
-Subject: Re: Make the git URL match usage
-Cc: "Bodo Eggert" <7eggert@gmx.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <alpine.LNX.1.10.0807161205220.26724@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 16 Jul 2008 06:31:13 -0400
+Date: Wed, 16 Jul 2008 03:31:12 -0700 (PDT)
+Message-Id: <20080716.033112.193697209.davem@davemloft.net>
+To: pageexec@freemail.hu
+Cc: tiago@assumpcao.org, torvalds@linux-foundation.org, greg@kroah.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [stable] Linux 2.6.25.10
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <487DE856.15132.1EDCDAAF@pageexec.freemail.hu>
+References: <487DE059.15123.1EBDA558@pageexec.freemail.hu>
+	<20080716.030857.261411379.davem@davemloft.net>
+	<487DE856.15132.1EDCDAAF@pageexec.freemail.hu>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <aQ9CN-4cK-11@gated-at.bofh.it>
-	 <E1KJ3Ex-0001LD-Ub@be1.7eggert.dyndns.org>
-	 <alpine.LNX.1.10.0807161205220.26724@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 16, 2008 at 12:06 PM, Jan Engelhardt <jengelh@medozas.de> wrote:
-> On Wednesday 2008-07-16 10:54, Bodo Eggert wrote:
->
->>jkacur <jkacur@gmail.com> wrote:
->>
->>> Subject: Make the git URL match the usage
->>> Change the MAINTAINERS file so that the git URL reads EXACTLY the way someone
->>> would use it.
->>
->>> +++ linux-2.6.26/MAINTAINERS
->>
->>> +T:   git://git.kernel.org:/pub/scm/linux/kernel/ericvh/v9fs.git
->>                            ^^
->
-> There is more brokenness in this patch. That URL (even without ':')
-> gives 404.
-> Here is a clueful hint...
->
-> -git://git.kernel.org/pub/scm/linux/kernel/ericvh/v9fs.git
-> +git://git.kernel.org/pub/scm/linux/kernel/git/ericvh/v9fs.git
->
-> Check the URLs before modifying them.
->
+From: pageexec@freemail.hu
+Date: Wed, 16 Jul 2008 12:23:50 +0200
 
-Hmnn, ok, that is what happens when you try to fix what looks like a
-simple problem that occurs to you in one context for everyone else in
-a mechanical way. Thanks for pointing it out, this time I will
-carefully go through every URL and check them before modifying so,
-give me a little bit of time before I send out a refreshed patch, I
-wanted to do it right this time.
+> On 16 Jul 2008 at 3:08, David Miller wrote:
+> 
+> > IOW, when we fix security issues, it's simply not even appropriate or 
+> > relevant to you.
+> 
+> i'll ask again: why aren't security fixes that you fix relevant to users
+> of older kernels (as that's what the topic was)?
+
+Backporting any fix to older kernels is a chore, the further back you
+go, the harder and less fun it is.
+
+The tipping point is really quick to where someone hacking the kernel
+for fun simply isn't going to do it, nor should they be expected to.
+
+That's why people who want a stable supported kernel with fixes
+constantly backported have grown accustomed to paying for that service.
+
+And to me that is entirely reasonable.
