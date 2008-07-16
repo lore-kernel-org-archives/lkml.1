@@ -1,101 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759388AbYGPO4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759915AbYGPO5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759388AbYGPO4T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 10:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754587AbYGPO4J
+	id S1759915AbYGPO5T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 10:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757163AbYGPO5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 10:56:09 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:36886 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752686AbYGPO4H (ORCPT
+	Wed, 16 Jul 2008 10:57:07 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:59121 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755981AbYGPO5E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 10:56:07 -0400
-Subject: Re: [RFC] systemtap: begin the process of using proper kernel APIs
-	(part1: use kprobe symbol_name/offset instead of address)
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
-In-Reply-To: <20080716105644.GB5413@redhat.com>
-References: <1216146802.3312.95.camel__45052.4692344063$1216146917$gmane$org@localhost.localdomain>
-	 <y0mr69vj5p0.fsf@ton.toronto.redhat.com>
-	 <1216151526.3312.102.camel@localhost.localdomain>
-	 <20080715200718.GC4280@redhat.com>
-	 <1216153462.3312.126.camel@localhost.localdomain>
-	 <20080715221826.GD4280@redhat.com>
-	 <1216173983.3312.183.camel@localhost.localdomain>
-	 <20080716105644.GB5413@redhat.com>
-Content-Type: text/plain
-Date: Wed, 16 Jul 2008 09:56:02 -0500
-Message-Id: <1216220162.3358.16.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Jul 2008 10:57:04 -0400
+Date: Wed, 16 Jul 2008 08:57:03 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [build fix] Re: [GIT PATCH] SCSI part 1
+Message-ID: <20080716145703.GF25255@parisc-linux.org>
+References: <1216138543.3312.60.camel@localhost.localdomain> <20080716101634.GA8494@elte.hu> <20080716103337.GA22931@elte.hu> <20080716131543.GA3673@elte.hu> <1216216320.3230.1.camel@localhost.localdomain> <20080716141805.GB22631@elte.hu> <20080716144106.GD25255@parisc-linux.org> <20080716144602.GB4369@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080716144602.GB4369@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-16 at 06:56 -0400, Frank Ch. Eigler wrote:
-> Hi -
-> 
-> On Tue, Jul 15, 2008 at 09:06:23PM -0500, James Bottomley wrote:
-> > [...]
-> > > Please choose your words more carefully.  We don't "subvert" anything,
-> > > where one would mean sneaking around some sort of protection.
-> > 
-> > Actually, I did and you do.  One of the OED's definition of subvert is
-> > "to undermine or overturn a condition or order of things, a principle or
-> > a law etc."  In this particular case, this:
-> > 
-> > commit 3a872d89baae821a0f6e2c1055d4b47650661137
-> > Author: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> > Date:   Mon Oct 2 02:17:30 2006 -0700
-> >     [PATCH] Kprobes: Make kprobe modules more portable
-> >
-> > Which provided a portable input to kprobes (the symbol_name/offset one)
-> > and revoked the global accessibility of the kallsyms_lookup_name().
-> 
-> That patch served two purposes: a helpful utility for other kprobes
-> users, and it enabling what LKML deemed more important - unexporting
-> kallsyms*.
-> 
-> 
-> > It's actually worse than this, though.  The kernel API isn't fixed in
-> > stone, it evolves usually by trying to make problematic use cases
-> > better.  By refusing to consider using the replacement API [...]
-> 
-> Your lecture is based upon a misundertanding ...
-> 
-> 
-> > [...]
-> > It emits a single probe and produces this in the module build:
-> > -rw-r--r-- 1 root root  17996 2008-07-15 20:45 stap_2154.c
-> > About 600 lines.
-> > However, it also needs this for the symbol table:
-> > -rw-r--r-- 1 root root 446137 2008-07-15 20:45 stap-symbols.h
-> 
-> ... that this is somehow connected to the kprobe api issue.
-> 
-> IT IS NOT.
-> 
-> We do not use those symbol tables for kprobe placement purposes.
-> (This part is partially a prototype for user-space parts, and the
-> sizes will not stay large.)
+On Wed, Jul 16, 2008 at 04:46:02PM +0200, Ingo Molnar wrote:
+> yeah, that's OK - but why is scsi.h #ifdef-ed? For example we can 
+> include blkdev.h without #ifdef CONFIG_BLOCK.
 
-There's no misunderstanding that you're currently embedding the kernel
-symbol table and have expanded the sizes of the modules enormously to do
-so.  The real truth is that coming up with convoluted ways to recompute
-some information the kernel already knows is fragile and shouldn't be
-done.  What should be done is to engage in discussion about how to get
-that information out of the kernel ... preferably with use cases and
-patches.
+Sure.  The important bit comes when deciding which bits need to be
+available when CONFIG_BLOCK isn't set.  Obviously, there is no SCSI
+without block (while sg is a character device, not a block device,
+it depends on the block infrastructure to the extent that you couldn't
+use it without CONFIG_BLOCK).
 
-> The way we set up kprobes now could be trivially converted to
-> "_stext"+offset.  Would that alone allay your concerns?
+While it's not impossible that someone could want the SCSI protocol
+and opcodes, status codes, etc. for a different character device, that
+seems unlikely.  The four opcodes defined in the header seem to be
+pretty SCSI-specific and not useful to use on non-scsi devices.
+SCSI_IOCTL_GET_PCI looks like it might possibly be useful on more than
+just SCSI, but we have better ways (ie sysfs) of determining the same
+information in a more general way.
 
-No ... because as I already said, that's broken for -ffunction-sections.
-It needs to be the symbol of the actual function the probe is in and the
-offset into that function.
+So I think it's fair to put an #ifdef CONFIG_BLOCK right after the
+_SCSI_SCSI_H define and close it right at the end of the file.
 
-James
-
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
