@@ -1,101 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754948AbYGOX7m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757448AbYGPAC6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754948AbYGOX7m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 19:59:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755091AbYGOX7I
+	id S1757448AbYGPAC6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 20:02:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbYGPACv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 19:59:08 -0400
-Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:33842 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754945AbYGOX7G (ORCPT
+	Tue, 15 Jul 2008 20:02:51 -0400
+Received: from ax54.genwebserver.com ([72.18.156.50]:43129 "EHLO
+	ax54.genwebserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754087AbYGPACu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 19:59:06 -0400
-From: Nathan Lynch <ntl@pobox.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, roland@redhat.com
-Subject: [PATCH] enable AT_BASE_PLATFORM aux vector for powerpc
-Date: Tue, 15 Jul 2008 18:58:51 -0500
-Message-Id: <1216166331-14810-3-git-send-email-ntl@pobox.com>
-X-Mailer: git-send-email 1.5.5
-In-Reply-To: <1216166331-14810-1-git-send-email-ntl@pobox.com>
-References: <1216166331-14810-1-git-send-email-ntl@pobox.com>
-X-Pobox-Relay-ID: 0227017A-52CA-11DD-9C36-CE28B26B55AE-04752483!a-sasl-fastnet.pobox.com
+	Tue, 15 Jul 2008 20:02:50 -0400
+Message-ID: <487D3A13.3040507@assumpcao.org>
+Date: Tue, 15 Jul 2008 21:00:19 -0300
+From: Tiago Assumpcao <tiago@assumpcao.org>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: pageexec@freemail.hu, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [stable] Linux 2.6.25.10
+References: <20080703185727.GA12617@suse.de>, <487D3056.1183.1C0E1C47@pageexec.freemail.hu>, <alpine.LFD.1.10.0807151425170.2867@woody.linux-foundation.org> <487D3C17.31467.1C3C0441@pageexec.freemail.hu> <alpine.LFD.1.10.0807151620450.2867@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807151620450.2867@woody.linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - ax54.genwebserver.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - assumpcao.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stash the first platform string matched by identify_cpu() in
-powerpc_base_platform, and supply that to the ELF loader for the value
-of AT_BASE_PLATFORM.
+Linus Torvalds wrote:
+> 
+> On Wed, 16 Jul 2008, pageexec@freemail.hu wrote:
+>> you should check out the last few -stable releases then and see how
+>> the announcement doesn't ever mention the word 'security' while fixing
+>> security bugs
+> 
+> Umm. What part of "they are just normal bugs" did you have issues with?
+> 
+> I expressly told you that security bugs should not be marked as such, 
+> because bugs are bugs. 
+> 
+>> in other words, it's all the more reason to have the commit say it's
+>> fixing a security issue.
+> 
+> No.
+> 
+>>> I'm just saying that why mark things, when the marking have no meaning? 
+>>> People who believe in them are just _wrong_.
+>> what is wrong in particular?
+> 
+> You have two cases:
+> 
+>  - people think the marking is somehow trustworthy.
+> 
+>    People are WRONG, and are misled by the partial markings, thinking that 
+>    unmarked bugfixes are "less important". They aren't.
+> 
+>  - People don't think it matters
+> 
+>    People are right, and the marking is pointless.
+> 
+> In either case it's just stupid to mark them. I don't want to do it, 
+> because I don't want to perpetuate the myth of "security fixes" as a 
+> separate thing from "plain regular bug fixes".
+> 
+> They're all fixes. They're all important. As are new features, for that 
+> matter.
+> 
+>> when you know that you're about to commit a patch that fixes a security 
+>> bug, why is it wrong to say so in the commit?
+> 
+> It's pointless and wrong because it makes people think that other bugs 
+> aren't potential security fixes.
+> 
+> What was unclear about that?
+> 
+> 		Linus
 
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
----
- arch/powerpc/kernel/cputable.c |   11 +++++++++++
- include/asm-powerpc/cputable.h |    2 ++
- include/asm-powerpc/elf.h      |    8 ++++++++
- 3 files changed, 21 insertions(+), 0 deletions(-)
+For all the above: no. And this is the point of divergence.
+For you, as a person who "writes software", every bug is equivalent. You 
+need to resolve problems, not classify them.
 
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index f7f3c21..89d8731 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -23,6 +23,9 @@
- struct cpu_spec* cur_cpu_spec = NULL;
- EXPORT_SYMBOL(cur_cpu_spec);
- 
-+/* The platform string corresponding to the real PVR */
-+const char *powerpc_base_platform;
-+
- /* NOTE:
-  * Unlike ppc32, ppc64 will only call this once for the boot CPU, it's
-  * the responsibility of the appropriate CPU save/restore functions to
-@@ -1632,6 +1635,14 @@ struct cpu_spec * __init identify_cpu(unsigned long offset, unsigned int pvr)
- 			} else
- 				*t = *s;
- 			*PTRRELOC(&cur_cpu_spec) = &the_cpu_spec;
-+
-+			/*
-+			 * Set the base platform string once; assumes
-+			 * we're called with real pvr first.
-+			 */
-+			if (powerpc_base_platform == NULL)
-+				powerpc_base_platform = t->platform;
-+
- #if defined(CONFIG_PPC64) || defined(CONFIG_BOOKE)
- 			/* ppc64 and booke expect identify_cpu to also call
- 			 * setup_cpu for that processor. I will consolidate
-diff --git a/include/asm-powerpc/cputable.h b/include/asm-powerpc/cputable.h
-index 2a3e907..ef8a248 100644
---- a/include/asm-powerpc/cputable.h
-+++ b/include/asm-powerpc/cputable.h
-@@ -127,6 +127,8 @@ extern struct cpu_spec *identify_cpu(unsigned long offset, unsigned int pvr);
- extern void do_feature_fixups(unsigned long value, void *fixup_start,
- 			      void *fixup_end);
- 
-+extern const char *powerpc_base_platform;
-+
- #endif /* __ASSEMBLY__ */
- 
- /* CPU kernel features */
-diff --git a/include/asm-powerpc/elf.h b/include/asm-powerpc/elf.h
-index 8966467..80d1f39 100644
---- a/include/asm-powerpc/elf.h
-+++ b/include/asm-powerpc/elf.h
-@@ -217,6 +217,14 @@ typedef elf_vrregset_t elf_fpxregset_t;
- 
- #define ELF_PLATFORM	(cur_cpu_spec->platform)
- 
-+/* While ELF_PLATFORM indicates the ISA supported by the platform, it
-+ * may not accurately reflect the underlying behavior of the hardware
-+ * (as in the case of running in Power5+ compatibility mode on a
-+ * Power6 machine).  ELF_BASE_PLATFORM allows ld.so to load libraries
-+ * that are tuned for the real hardware.
-+ */
-+#define ELF_BASE_PLATFORM (powerpc_base_platform)
-+
- #ifdef __powerpc64__
- # define ELF_PLAT_INIT(_r, load_addr)	do {	\
- 	_r->gpr[2] = load_addr; 		\
--- 
-1.5.6.2
+However, as I previously explained [http://lkml.org/lkml/2008/7/15/654], 
+security issues are identified and communicated through what can be a 
+long and complicated (due to DNAs, etc.) process. If it culminates at 
+implementation, without proper information forwarding from the 
+development team, it will never reach the "upper layers" -- vendors, 
+distributors, end users, et al.
+
+Therefore, yes, it is of major importance that you people, too, buy the 
+problem and support the process as a whole. Otherwise... well, 
+otherwise, we're back to where we started, 20 years ago. Good luck Linux 
+users.
+
+--t
 
