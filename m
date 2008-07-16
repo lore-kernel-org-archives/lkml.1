@@ -1,213 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756565AbYGPGyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757916AbYGPGzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756565AbYGPGyY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 02:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbYGPGyP
+	id S1757916AbYGPGzf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 02:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbYGPGz0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 02:54:15 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37589 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751618AbYGPGyO (ORCPT
+	Wed, 16 Jul 2008 02:55:26 -0400
+Received: from an-out-0708.google.com ([209.85.132.242]:30084 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751090AbYGPGz0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 02:54:14 -0400
-Message-ID: <487D9A8B.5020005@jp.fujitsu.com>
-Date: Wed, 16 Jul 2008 15:51:55 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Wed, 16 Jul 2008 02:55:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:references
+         :in-reply-to:content-type:content-transfer-encoding;
+        b=sAilwZcSy2XUHJI3AJ35SOyVUgr1fpQiAxCHKGUJPVSdqkdI1pTu5jg4FTRAJJH3gF
+         a6L42JFujphz5xkyc7ilC/QoLebT4rlBeQp+kN3pDfTPP4C7hylVuZyjFilm0Gz5hgwH
+         PQYyGezeiwykIxBcSJUG5RILZ38iy1tT4nI+w=
+Message-ID: <487D9B58.7070609@gmail.com>
+Date: Wed, 16 Jul 2008 03:55:20 -0300
+From: "Rafael C. de Almeida" <almeidaraf@gmail.com>
+User-Agent: Icedove 1.5.0.14eol (X11/20080509)
 MIME-Version: 1.0
-To: Max Krasnyansky <maxk@qualcomm.com>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-CC: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       virtualization@lists.linux-foundation.org,
-       Zachary Amsden <zach@vmware.com>
-Subject: [PATCH] stopmachine: add stopmachine_timeout v3
-References: <487B05CE.1050508@jp.fujitsu.com> <487D78A3.6050105@jp.fujitsu.com> <487D93CD.1000007@qualcomm.com> <487D96A2.10904@jp.fujitsu.com>
-In-Reply-To: <487D96A2.10904@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Subject: Re: From 2.4 to 2.6 to 2.7?
+References: <6d291e080807141910m573b29b2t753ea7c4db09902d@mail.gmail.com> <alpine.LFD.1.10.0807141914280.3017@woody.linux-foundation.org> <487CE6CB.9090405@zytor.com> <487D7781.6000407@keyaccess.nl>
+In-Reply-To: <487D7781.6000407@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If stop_machine() invoked while one of onlined cpu is locked up
-by some reason, stop_machine cannot finish its work because the
-locked cpu cannot stop.  This means all other healthy cpus
-will be blocked infinitely by one dead cpu.
+Rene Herman wrote:
+> On 15-07-08 20:04, H. Peter Anvin wrote:
+> 
+>> Clearly, the 2. prefix has long outlived its usefulness as far as
+>> Linux is concerned, and probably the 6 as well.
+> 
+> Been calling the -stable branches v20, v21, v22, ... here.
+> 
+> I do believe the numbering scheme should at least ostensibly still be
+> feature driven, not be a fully robotic date thing. With the latter, you
+> definitely miss out on press-opportunities and that's not even meant
+> cynical. There just is a bit of industry around Linux and the promotion
+> opportunities of (say) "Linux 3" are really lots, lots bigger than
+> anything boringly date based.
 
-This patch allows stop_machine to return -EBUSY with some printk
-messages if any of stop_machine's threads cannot start running on
-its target cpu in time.  You can enable this timeout via sysctl.
+And that's why after the adoption of generics and a few things java all
+the sudden became java 5. I don't like that. I hope the world gets used
+to learning things instead of just being driven by a pretty number. And
+I think that not using marketing numbers on a popular software is a good
+step into helping people realise that version numbers are meant to keep
+track of the changes not to look cool.
 
-v3:
- - set stopmachine_timeout default to 0 (= never timeout)
+> That even holds for things like books -- I just bet that a "all new,
+> covers Linux 3!" blurp on the cover sells lots more copies than a "all
+> new, covers the march 21st 2009 version of Linux!" one.
 
-v2:
- - remove fix for warning since it will be fixed upcoming typesafe
-   patches
- - make stopmachine_timeout from secs to msecs
- - allow disabling timeout by setting the stopmachine_timeout to 0
+I rather just have good books around. I can bet that all -- or at least
+most of -- those new "LINUX 3!" books would suck. So it's better if they
+sell little or not sell at all.
 
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
----
- kernel/stop_machine.c |   54 ++++++++++++++++++++++++++++++++++++++++++++++--
- kernel/sysctl.c       |   15 +++++++++++++
- 2 files changed, 66 insertions(+), 3 deletions(-)
+> But yes, the current monotic increase is definitely getting a bit boring
+> as well. The kernel as of 2.6.26 is quite different from the kernel that
+> was known as 2.6.0 so just be creative I'd say and set a 2.8 goal. Next
+> version can be 2.9 (should be clear enough by then) and then watch world
+> domination happen with the big 3.0 release.
 
-diff --git a/kernel/stop_machine.c b/kernel/stop_machine.c
-index 5b72c2b..77b7944 100644
---- a/kernel/stop_machine.c
-+++ b/kernel/stop_machine.c
-@@ -35,15 +35,18 @@ struct stop_machine_data {
- };
- 
- /* Like num_online_cpus(), but hotplug cpu uses us, so we need this. */
--static unsigned int num_threads;
-+static atomic_t num_threads;
- static atomic_t thread_ack;
-+static cpumask_t prepared_cpus;
- static struct completion finished;
- static DEFINE_MUTEX(lock);
- 
-+unsigned long stopmachine_timeout = 0; /* msecs, 0 = "never timeout" */
-+
- static void set_state(enum stopmachine_state newstate)
- {
- 	/* Reset ack counter. */
--	atomic_set(&thread_ack, num_threads);
-+	atomic_set(&thread_ack, atomic_read(&num_threads));
- 	smp_wmb();
- 	state = newstate;
- }
-@@ -67,6 +70,8 @@ static int stop_cpu(struct stop_machine_data *smdata)
- 	enum stopmachine_state curstate = STOPMACHINE_NONE;
- 	int uninitialized_var(ret);
- 
-+	cpu_set(smp_processor_id(), prepared_cpus);
-+
- 	/* Simple state machine */
- 	do {
- 		/* Chill out and ensure we re-read stopmachine_state. */
-@@ -90,6 +95,7 @@ static int stop_cpu(struct stop_machine_data *smdata)
- 		}
- 	} while (curstate != STOPMACHINE_EXIT);
- 
-+	atomic_dec(&num_threads);
- 	local_irq_enable();
- 	do_exit(0);
- }
-@@ -105,6 +111,15 @@ int __stop_machine_run(int (*fn)(void *), void *data, const cpumask_t *cpus)
- 	int i, err;
- 	struct stop_machine_data active, idle;
- 	struct task_struct **threads;
-+	unsigned long limit;
-+
-+	if (atomic_read(&num_threads)) {
-+		/*
-+		 * previous stop_machine was timeout, and still there are some
-+		 * unfinished thread (dangling stucked CPU?).
-+		 */
-+		return -EBUSY;
-+	}
- 
- 	active.fn = fn;
- 	active.data = data;
-@@ -120,7 +135,7 @@ int __stop_machine_run(int (*fn)(void *), void *data, const cpumask_t *cpus)
- 	/* Set up initial state. */
- 	mutex_lock(&lock);
- 	init_completion(&finished);
--	num_threads = num_online_cpus();
-+	atomic_set(&num_threads, num_online_cpus());
- 	set_state(STOPMACHINE_PREPARE);
- 
- 	for_each_online_cpu(i) {
-@@ -152,10 +167,21 @@ int __stop_machine_run(int (*fn)(void *), void *data, const cpumask_t *cpus)
- 
- 	/* We've created all the threads.  Wake them all: hold this CPU so one
- 	 * doesn't hit this CPU until we're ready. */
-+	cpus_clear(prepared_cpus);
- 	get_cpu();
- 	for_each_online_cpu(i)
- 		wake_up_process(threads[i]);
- 
-+	/* Wait all others come to life */
-+	if (stopmachine_timeout) {
-+		limit = jiffies + msecs_to_jiffies(stopmachine_timeout);
-+		while (cpus_weight(prepared_cpus) != num_online_cpus() - 1) {
-+			if (time_is_before_jiffies(limit))
-+				goto timeout;
-+			cpu_relax();
-+		}
-+	}
-+
- 	/* This will release the thread on our CPU. */
- 	put_cpu();
- 	wait_for_completion(&finished);
-@@ -169,10 +195,32 @@ kill_threads:
- 	for_each_online_cpu(i)
- 		if (threads[i])
- 			kthread_stop(threads[i]);
-+	atomic_set(&num_threads, 0);
- 	mutex_unlock(&lock);
- 
- 	kfree(threads);
- 	return err;
-+
-+timeout:
-+	printk(KERN_CRIT "stopmachine: Failed to stop machine in time(%lds).\n",
-+			stopmachine_timeout);
-+	for_each_online_cpu(i) {
-+		if (!cpu_isset(i, prepared_cpus) && i != smp_processor_id())
-+			printk(KERN_CRIT "stopmachine: cpu#%d seems to be "
-+					"stuck.\n", i);
-+		/* Unbind threads */
-+		set_cpus_allowed(threads[i], cpu_online_map);
-+	}
-+
-+	/* Let threads go exit */
-+	set_state(STOPMACHINE_EXIT);
-+
-+	put_cpu();
-+	/* no wait for completion */
-+	mutex_unlock(&lock);
-+	kfree(threads);
-+
-+	return -EBUSY;	/* canceled */
- }
- 
- int stop_machine_run(int (*fn)(void *), void *data, const cpumask_t *cpus)
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 2911665..3c7ca98 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -146,6 +146,10 @@ extern int no_unaligned_warning;
- extern int max_lock_depth;
- #endif
- 
-+#ifdef CONFIG_STOP_MACHINE
-+extern unsigned long stopmachine_timeout;
-+#endif
-+
- #ifdef CONFIG_PROC_SYSCTL
- static int proc_do_cad_pid(struct ctl_table *table, int write, struct file *filp,
- 		  void __user *buffer, size_t *lenp, loff_t *ppos);
-@@ -813,6 +817,17 @@ static struct ctl_table kern_table[] = {
- 		.child		= key_sysctls,
- 	},
- #endif
-+#ifdef CONFIG_STOP_MACHINE
-+	{
-+		.ctl_name       = CTL_UNNUMBERED,
-+		.procname       = "stopmachine_timeout",
-+		.data           = &stopmachine_timeout,
-+		.maxlen         = sizeof(unsigned long),
-+		.mode           = 0644,
-+		.proc_handler   = &proc_doulongvec_minmax,
-+		.strategy       = &sysctl_intvec,
-+	},
-+#endif
- /*
-  * NOTE: do not add new entries to this table unless you have read
-  * Documentation/sysctl/ctl_unnumbered.txt
--- 
+Well, if 2.6.0 was 3.0 (2003.0) then people would easily realise that
+they're missing 5 years of kernel development. Given that hint, if they
+take a look on a few Changelogs they'll soon find out they're missing on
+quite a lot.
+
+> Linux 2010.5? Boooooooooring....
+
+Well, it is software versioning and not Gisele Bündchen taking off her top.
+
+> Rene.
