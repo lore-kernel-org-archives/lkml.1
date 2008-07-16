@@ -1,77 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757400AbYGPHux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758144AbYGPHxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757400AbYGPHux (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 03:50:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753574AbYGPHup
+	id S1758144AbYGPHxg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 03:53:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbYGPHx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 03:50:45 -0400
-Received: from wr-out-0506.google.com ([64.233.184.239]:23048 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752147AbYGPHuo (ORCPT
+	Wed, 16 Jul 2008 03:53:26 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:42893 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753574AbYGPHx0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 03:50:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=k3blse3lYdgtLTanzzYFur4iMJRdWXdK5/1mWH/d7Ky1ixCGIGUYW7IVlBi38qZqsf
-         XazDNn6v19t3+kTRbBjwJbsgYmAxcXghV4pz1DyQVdSlnMBpMjzx4etQ224hTFZUAjPd
-         vjcaJRw9Ono4y+lPsFCd+g9WFgzFICYCDGbwA=
-Message-ID: <dd18b0c30807160050r5b10908fiffc2a4b464abe5f3@mail.gmail.com>
-Date: Wed, 16 Jul 2008 07:50:43 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
-Cc: "Jack Howarth" <howarth@bromo.msbb.uc.edu>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <86802c440807160044ge504cacl419b6cbcad5f0f9d@mail.gmail.com>
+	Wed, 16 Jul 2008 03:53:26 -0400
+Date: Wed, 16 Jul 2008 09:53:24 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Adrian Bunk <bunk@kernel.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Stoyan Gaydarov <stoyboyker@gmail.com>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, gorcunov@gmail.com,
+       akpm@linux-foundation.org, mingo@elte.hu
+Subject: Re: From 2.4 to 2.6 to 2.7?
+In-Reply-To: <20080715204320.GJ24533@cs181140183.pp.htv.fi>
+Message-ID: <alpine.LNX.1.10.0807160951000.26724@fbirervta.pbzchgretzou.qr>
+References: <6d291e080807141910m573b29b2t753ea7c4db09902d@mail.gmail.com> <alpine.LFD.1.10.0807141914280.3017@woody.linux-foundation.org> <6d291e080807141931g3080c94cic94f503c1a18523b@mail.gmail.com> <alpine.LFD.1.10.0807141939410.3017@woody.linux-foundation.org>
+ <20080715204320.GJ24533@cs181140183.pp.htv.fi>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <dd18b0c30807151252w7edcea19t8cec5ec5f958c7c0@mail.gmail.com>
-	 <20080715231118.GA26807@bromo.msbb.uc.edu>
-	 <dd18b0c30807151726i622dabceve31828460085ee57@mail.gmail.com>
-	 <20080716012427.GA27398@bromo.msbb.uc.edu>
-	 <dd18b0c30807152005g3c58001br7182f7670d6247db@mail.gmail.com>
-	 <20080716035830.GA27935@bromo.msbb.uc.edu>
-	 <dd18b0c30807152230u39ef9c18v78b48d1c7b9ddd17@mail.gmail.com>
-	 <86802c440807160044ge504cacl419b6cbcad5f0f9d@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 16, 2008 at 7:44 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> I looked at your dmesg from 2.6.25.10
->
-> it tried to use mmconfig, and later fall back to conf1, because
-> 1. your MCFG said it support bus [0,255], and range will be
-> [0xf0000000, 0xffffffff]
-> 2. firmware only reserve [0xf0000000, 0xf4000000)
->
-> and 2.5.25 will not check acp reserved range.
->
-> from 2.6.26, it will check if the [0xf0000000, 0xffffffff] is reserved
-> via acpi dsdt _crs?
-> it will fail too.
->
-> So MCFG table is broken.
->
-> You need to get firmware update from your vendor.
->
-> or we need to put that system on DMI check to change end_bus_number
-> from 0xff to 0x3f
->
-> ps: mem=2g will not work, it will can not change mcfg table etc... you
-> need take out 1G ram out.
->
-> YH
->
 
-Well shit man, that sucks...
-how hard is it to do a DMI check?
-regards;
+On Tuesday 2008-07-15 22:43, Adrian Bunk wrote:
+>
+>The 2.6. prefix is like with X which is version 11 for 20 years and 
+>still counting.
+>
+>Or like with X11R6, that became X11R7 after 11 years, there might be
+>in a few years some big change that will warrant a 2.8 or 3.0 (the
+>rewrite of the kernel in Visual Basic .NET ;-) ).
 
--- 
-Justin P. Mattock
+Jumping the major number would really require some big flag day.
+What was it that made the jump from 1.x to 2.0?
+(Some ABI change w.r.t. binaries -- ELF becoming standard maybe?)
