@@ -1,135 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759214AbYGPNwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758822AbYGPNxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759214AbYGPNwW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 09:52:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757306AbYGPNwI
+	id S1758822AbYGPNxt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 09:53:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756731AbYGPNxl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 09:52:08 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:57913 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756985AbYGPNwG (ORCPT
+	Wed, 16 Jul 2008 09:53:41 -0400
+Received: from wx-out-0506.google.com ([66.249.82.230]:47024 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756145AbYGPNxk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 09:52:06 -0400
-Subject: Re: [build fix] Re: [GIT PATCH] SCSI part 1
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080716131543.GA3673@elte.hu>
-References: <1216138543.3312.60.camel@localhost.localdomain>
-	 <20080716101634.GA8494@elte.hu> <20080716103337.GA22931@elte.hu>
-	 <20080716131543.GA3673@elte.hu>
-Content-Type: text/plain
-Date: Wed, 16 Jul 2008 08:52:00 -0500
-Message-Id: <1216216320.3230.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Wed, 16 Jul 2008 09:53:40 -0400
+Message-ID: <fa686aa40807160653h5710232cgd0e16cd2aad7dd23@mail.gmail.com>
+Date: Wed, 16 Jul 2008 07:53:39 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: Make the git URL match usage
+Cc: jkacur <jkacur@gmail.com>, akpm@linux-foundation.org,
+       "Jan Engelhardt" <jengelh@medozas.de>,
+       "Andy Whitcroft" <apw@shadowen.org>, linux-kernel@vger.kernel.org,
+       "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20080716133108.GC25557@cs181140183.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200807161500.08500.jkacur@gmail.com>
+	 <20080716133108.GC25557@cs181140183.pp.htv.fi>
+X-Google-Sender-Auth: ca4154baba04a8e6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-16 at 15:15 +0200, Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > > scsi_cmnd.h depends on symbols defined in blkdev.h. The fix is to 
-> > > include blkdev.h as well.
-> > 
-> > that wont work - a better replacement fix is the one below. The 
-> > problem is that scsi.h is included even on !CONFIG_BLOCK and then the 
-> > BLK_MAX_CDB symbol is meaningless.
-> 
-> -v3 .. the new methods need to be under #ifdef CONFIG_BLOCK as well. 
-> Note my patch is just a quick RFC, this can probably be done cleaner.
+On Wed, Jul 16, 2008 at 7:31 AM, Adrian Bunk <bunk@kernel.org> wrote:
+> On Wed, Jul 16, 2008 at 03:00:08PM +0200, jkacur wrote:
+>> 2. Required me to change powerpc.git to powerpc-4xx.git
+>> P:    Josh Boyer
+>> M:    jwboyer@linux.vnet.ibm.com
+>> P:    Matt Porter
+>> M:    mporter@kernel.crashing.org
+>> W:    http://www.penguinppc.org/
+>> L:    linuxppc-dev@ozlabs.org
+>> T:    git://git.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git
+>> S:    Maintained
+>
+> That's not the correct tree, please ask the powerpc maintainers.
 
-Erm, Ingo, if you'd just follow linux-next instead of your own tree,
-you'd see there's already a fix for this.
+It is the correct tree.  This entry is for PowerPC 4xx support, not
+for all of PowerPC.  Josh is the PowerPC 4xx maintainer and that is
+his tree.
 
-James
+Cheers,
+g.
 
-----
-
-From: Randy Dunlap <randy.dunlap@oracle.com>
-
-Fix fs/compat_ioctl.c to handle CONFIG_BLOCK=n, CONFIG_SCSI=n
-to avoid build errors:
-
-In file included from linux-next-20080708/include/scsi/scsi.h:12,
-                 from linux-next-20080708/fs/compat_ioctl.c:71:
-linux-next-20080708/include/scsi/scsi_cmnd.h:27:25: warning:
-"BLK_MAX_CDB" is not defined
-linux-next-20080708/include/scsi/scsi_cmnd.h:28:3: error: #error
-MAX_COMMAND_SIZE can not be bigger than BLK_MAX_CDB
-In file included from linux-next-20080708/include/scsi/scsi.h:12,
-                 from linux-next-20080708/fs/compat_ioctl.c:71:
-linux-next-20080708/include/scsi/scsi_cmnd.h: In function
-'scsi_bidi_cmnd':
-linux-next-20080708/include/scsi/scsi_cmnd.h:182: error: implicit
-declaration of function 'blk_bidi_rq'
-linux-next-20080708/include/scsi/scsi_cmnd.h:183: error: dereferencing
-pointer to incomplete type
-linux-next-20080708/include/scsi/scsi_cmnd.h: In function 'scsi_in':
-linux-next-20080708/include/scsi/scsi_cmnd.h:189: error: dereferencing
-pointer to incomplete type
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- fs/compat_ioctl.c |    6 ++++++
- 1 file changed, 6 insertions(+)
-
---- linux-next-20080708.orig/fs/compat_ioctl.c
-+++ linux-next-20080708/fs/compat_ioctl.c
-@@ -68,9 +68,11 @@
- #include <linux/capi.h>
- #include <linux/gigaset_dev.h>
- 
-+#ifdef CONFIG_BLOCK
- #include <scsi/scsi.h>
- #include <scsi/scsi_ioctl.h>
- #include <scsi/sg.h>
-+#endif
- 
- #include <asm/uaccess.h>
- #include <linux/ethtool.h>
-@@ -1965,6 +1967,7 @@ COMPATIBLE_IOCTL(GIO_UNISCRNMAP)
- COMPATIBLE_IOCTL(PIO_UNISCRNMAP)
- COMPATIBLE_IOCTL(PIO_FONTRESET)
- COMPATIBLE_IOCTL(PIO_UNIMAPCLR)
-+#ifdef CONFIG_BLOCK
- /* Big S */
- COMPATIBLE_IOCTL(SCSI_IOCTL_GET_IDLUN)
- COMPATIBLE_IOCTL(SCSI_IOCTL_DOORLOCK)
-@@ -1974,6 +1977,7 @@ COMPATIBLE_IOCTL(SCSI_IOCTL_GET_BUS_NUMB
- COMPATIBLE_IOCTL(SCSI_IOCTL_SEND_COMMAND)
- COMPATIBLE_IOCTL(SCSI_IOCTL_PROBE_HOST)
- COMPATIBLE_IOCTL(SCSI_IOCTL_GET_PCI)
-+#endif
- /* Big T */
- COMPATIBLE_IOCTL(TUNSETNOCSUM)
- COMPATIBLE_IOCTL(TUNSETDEBUG)
-@@ -2044,6 +2048,7 @@ COMPATIBLE_IOCTL(SIOCGIFVLAN)
- COMPATIBLE_IOCTL(SIOCSIFVLAN)
- COMPATIBLE_IOCTL(SIOCBRADDBR)
- COMPATIBLE_IOCTL(SIOCBRDELBR)
-+#ifdef CONFIG_BLOCK
- /* SG stuff */
- COMPATIBLE_IOCTL(SG_SET_TIMEOUT)
- COMPATIBLE_IOCTL(SG_GET_TIMEOUT)
-@@ -2068,6 +2073,7 @@ COMPATIBLE_IOCTL(SG_SCSI_RESET)
- COMPATIBLE_IOCTL(SG_GET_REQUEST_TABLE)
- COMPATIBLE_IOCTL(SG_SET_KEEP_ORPHAN)
- COMPATIBLE_IOCTL(SG_GET_KEEP_ORPHAN)
-+#endif
- /* PPP stuff */
- COMPATIBLE_IOCTL(PPPIOCGFLAGS)
- COMPATIBLE_IOCTL(PPPIOCSFLAGS)
-
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
-
-
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
