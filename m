@@ -1,60 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759472AbYGPOYf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758718AbYGPO2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759472AbYGPOYf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 10:24:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757388AbYGPOY0
+	id S1758718AbYGPO2e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 10:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755221AbYGPO2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 10:24:26 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43832 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757352AbYGPOYZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 10:24:25 -0400
-Date: Wed, 16 Jul 2008 16:23:54 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Lutomirski <luto@myrealbox.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       public-kernel-testers-u79uwXL29TY76Z2rM5mHXA@lo.gmane.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
-Message-ID: <20080716142354.GA20897@elte.hu>
-References: <200807010148.02135.rjw@sisk.pl> <487A2431.2050103@myrealbox.com> <487A4CB7.1080001@firstfloor.org> <200807132115.08230.rjw@sisk.pl> <487A617B.80707@firstfloor.org> <487A67C3.50000@zytor.com> <487AD37A.2050903@zytor.com> <cb0375e10807160713r5aa2bb82md1e0b3b349ca8115@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cb0375e10807160713r5aa2bb82md1e0b3b349ca8115@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 16 Jul 2008 10:28:24 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:57973 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754382AbYGPO2X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 10:28:23 -0400
+Subject: Re: [build fix] Re: [GIT PATCH] SCSI part 1
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080716141805.GB22631@elte.hu>
+References: <1216138543.3312.60.camel@localhost.localdomain>
+	 <20080716101634.GA8494@elte.hu> <20080716103337.GA22931@elte.hu>
+	 <20080716131543.GA3673@elte.hu>
+	 <1216216320.3230.1.camel@localhost.localdomain>
+	 <20080716141805.GB22631@elte.hu>
+Content-Type: text/plain
+Date: Wed, 16 Jul 2008 09:28:18 -0500
+Message-Id: <1216218498.3358.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2008-07-16 at 16:18 +0200, Ingo Molnar wrote:
+> * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> 
+> > On Wed, 2008-07-16 at 15:15 +0200, Ingo Molnar wrote:
+> > > * Ingo Molnar <mingo@elte.hu> wrote:
+> > > 
+> > > > > scsi_cmnd.h depends on symbols defined in blkdev.h. The fix is to 
+> > > > > include blkdev.h as well.
+> > > > 
+> > > > that wont work - a better replacement fix is the one below. The 
+> > > > problem is that scsi.h is included even on !CONFIG_BLOCK and then the 
+> > > > BLK_MAX_CDB symbol is meaningless.
+> > > 
+> > > -v3 .. the new methods need to be under #ifdef CONFIG_BLOCK as well. 
+> > > Note my patch is just a quick RFC, this can probably be done 
+> > > cleaner.
+> > 
+> > Erm, Ingo, if you'd just follow linux-next instead of your own tree, 
+> > you'd see there's already a fix for this.
+> 
+> Erm, no. In the merge window i follow upstream -git, not "my tree", and 
+> i searched lkml for the build failure signature and it had nothing 
+> there. Then i looked at the commit and it said that it was created just 
+> 1 day before the merge window started:
+> 
+>  commit feac6a07c4a3578bffd6769bb4927e8a7e1f3ffe
+>  Author:     Martin Petermann <martin@linux.vnet.ibm.com>
+>  AuthorDate: Wed Jul 2 10:56:35 2008 +0200
+>  Commit:     James Bottomley <James.Bottomley@HansenPartnership.com>
+>  CommitDate: Sat Jul 12 08:22:34 2008 -0500
+>                  ^^^^^^
+> 
+> So i didnt even think of it having hit linux-next so i didnt look into 
+> the linux-next archives. lkml should have been Cc:-ed in this case, 
 
-* Andrew Lutomirski <luto@myrealbox.com> wrote:
+It was, that would be this email:
 
-> Sorry for the delay in testing.  This appears to work and fix the problem.
+http://marc.info/?l=linux-kernel&m=121555252007662
 
-great, thanks!
+Perhaps now you might see how even you can miss important stuff on such
+a high volume, low signal to noise ratio list ...
 
-Peter's fix is now upstream as:
+> that's where people look for in case of upstream breakages. You would 
+> have saved me some effort via that - please try to do it in the future, 
+> it's very helpful to testers.
 
-| commit 3bf2e77453a87c22eb57ed4926760ac131c84459
-| Author: H. Peter Anvin <hpa@zytor.com>
-| Date:   Sun Jul 13 21:18:02 2008 -0700
-|
-|    x86, suspend, acpi: enter Big Real Mode
+Not if they miss the email, as you apparently did.
 
-and has been requested to be added to v2.6.26.1 as well.
+> btw., about the technical aspects of the solution, i'm not sure i like 
+> these big #ifdef blocks:
+> 
+> > --- linux-next-20080708.orig/fs/compat_ioctl.c
+> > +++ linux-next-20080708/fs/compat_ioctl.c
+> > @@ -68,9 +68,11 @@
+> >  #include <linux/capi.h>
+> >  #include <linux/gigaset_dev.h>
+> >  
+> > +#ifdef CONFIG_BLOCK
+> >  #include <scsi/scsi.h>
+> >  #include <scsi/scsi_ioctl.h>
+> >  #include <scsi/sg.h>
+> > +#endif
+> >  
+> >  #include <asm/uaccess.h>
+> >  #include <linux/ethtool.h>
+> > @@ -1965,6 +1967,7 @@ COMPATIBLE_IOCTL(GIO_UNISCRNMAP)
+> >  COMPATIBLE_IOCTL(PIO_UNISCRNMAP)
+> >  COMPATIBLE_IOCTL(PIO_FONTRESET)
+> >  COMPATIBLE_IOCTL(PIO_UNIMAPCLR)
+> > +#ifdef CONFIG_BLOCK
+> >  /* Big S */
+> >  COMPATIBLE_IOCTL(SCSI_IOCTL_GET_IDLUN)
+> >  COMPATIBLE_IOCTL(SCSI_IOCTL_DOORLOCK)
+> > @@ -1974,6 +1977,7 @@ COMPATIBLE_IOCTL(SCSI_IOCTL_GET_BUS_NUMB
+> >  COMPATIBLE_IOCTL(SCSI_IOCTL_SEND_COMMAND)
+> >  COMPATIBLE_IOCTL(SCSI_IOCTL_PROBE_HOST)
+> >  COMPATIBLE_IOCTL(SCSI_IOCTL_GET_PCI)
+> > +#endif
+> >  /* Big T */
+> >  COMPATIBLE_IOCTL(TUNSETNOCSUM)
+> >  COMPATIBLE_IOCTL(TUNSETDEBUG)
+> > @@ -2044,6 +2048,7 @@ COMPATIBLE_IOCTL(SIOCGIFVLAN)
+> >  COMPATIBLE_IOCTL(SIOCSIFVLAN)
+> >  COMPATIBLE_IOCTL(SIOCBRADDBR)
+> >  COMPATIBLE_IOCTL(SIOCBRDELBR)
+> > +#ifdef CONFIG_BLOCK
+> >  /* SG stuff */
+> >  COMPATIBLE_IOCTL(SG_SET_TIMEOUT)
+> >  COMPATIBLE_IOCTL(SG_GET_TIMEOUT)
+> > @@ -2068,6 +2073,7 @@ COMPATIBLE_IOCTL(SG_SCSI_RESET)
+> >  COMPATIBLE_IOCTL(SG_GET_REQUEST_TABLE)
+> >  COMPATIBLE_IOCTL(SG_SET_KEEP_ORPHAN)
+> >  COMPATIBLE_IOCTL(SG_GET_KEEP_ORPHAN)
+> > +#endif
+> >  /* PPP stuff */
+> >  COMPATIBLE_IOCTL(PPPIOCGFLAGS)
+> >  COMPATIBLE_IOCTL(PPPIOCSFLAGS)
+> 
+> the clean solution we use everywhere else is to push such #ifdefs into 
+> the headers, to make them generally includable. For example you can 
+> include lockdep.h even if you dont have lockdep enabled, you can include 
+> smp.h even on UP-only files, etc. etc.
 
-	Ingo
+The problem being that compat stuff only needs to exist for block ioctls
+if block actually exists.  If we're going to have a single giant file
+for all compat ioctls, then I think we have to fix it the way randy has
+done.  If you want to separate it into say compat_block.h and simply
+#include that into compat.h then we can fix it more cleanly.
+
+James
+
+
