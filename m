@@ -1,104 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbYGPR1M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756078AbYGPR13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753968AbYGPR1M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 13:27:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbYGPR06
+	id S1756078AbYGPR13 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 13:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754709AbYGPR1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 13:26:58 -0400
-Received: from r00tworld.com ([212.85.137.21]:37103 "EHLO r00tworld.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751018AbYGPR05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 13:26:57 -0400
-From: pageexec@freemail.hu
-To: Greg KH <greg@kroah.com>
-Date: Wed, 16 Jul 2008 19:25:17 +0200
+	Wed, 16 Jul 2008 13:27:18 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:52499 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751809AbYGPR1R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 13:27:17 -0400
+Date: Wed, 16 Jul 2008 10:27:03 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Louis Rilling <Louis.Rilling@kerlabs.com>
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+Subject: Re: [BUGFIX][PATCH v2 0/2] configfs: Fix cleanup after mkdir()
+	failure
+Message-ID: <20080716172703.GA18105@ca-server1.us.oracle.com>
+Mail-Followup-To: Louis Rilling <Louis.Rilling@kerlabs.com>,
+	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+References: <1215183366-17479-1-git-send-email-louis.rilling@kerlabs.com> <20080711220740.GC22577@mail.oracle.com> <20080716130821.GF3801@hawkmoon.kerlabs.com>
 MIME-Version: 1.0
-Subject: Re: [stable] Linux 2.6.25.10
-Reply-to: pageexec@freemail.hu
-CC: Tiago Assumpcao <tiago@assumpcao.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Message-ID: <487E4B1D.24359.205EB2E5@pageexec.freemail.hu>
-In-reply-to: <20080716162949.GA7480@kroah.com>
-References: <20080716144347.GB13253@kroah.com>, <487E3333.30028.20014B8F@pageexec.freemail.hu>, <20080716162949.GA7480@kroah.com>
-X-mailer: Pegasus Mail for Windows (4.41)
-Content-type: text/plain; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-Content-description: Mail message body
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Wed, 16 Jul 2008 19:26:02 +0200 (CEST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080716130821.GF3801@hawkmoon.kerlabs.com>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16 Jul 2008 at 9:29, Greg KH wrote:
-
-> On Wed, Jul 16, 2008 at 05:43:15PM +0200, pageexec@freemail.hu wrote:
-> > exploiting local bugs has nothing to do with having untrusted users in
-> > the age of client side exploits. due to your completely
-> > mischaracterized description, individual home users may very well feel
-> > that they do not need to upgrade, to the delight of the next malware
-> > owning their browser. you can congratulate yourself Greg, you
-> > successfully misled a whole class of users.
-> 
-> No, I do not believe this is true, for this bug, sorry.
-
-what do you not believe in? that a task refcount leak can be exploited
-for privilege elevation?
-
->  If you disagree, please feel free to post such an exploit.
-
-i never post exploits. however spender did write at least a proof-of-concept
-that triggers it and proves that it's potentially exploitable. writing a
-weaponized version takes a whole lot more effort than it's worth for us
-(though i bet others have been working on it ever since if they didn't
-already write one when the bug got introduced).
-
->  Such a problem
-> would be a browser issue, and totally out of scope for a kernel issue.
-
-what i said was *not* specific to this bug at all, any local privilege
-elevation bug can be used to, well, elevate privileges, regardless of
-how one gets into a box. the browser example was just that, to highlight
-that even single home user systems may very well be affected. sure, the
-browser bug is not your problem, but the local privilege elevation due
-to kernel bugs *is*. your wording was wrong, untrusted users are only
-*one* potential kind of threat therefore if only such systems update,
-many others will remain vulnerable.
-
-> > > then they need to rely on a company
-> > > to provide updates for them, and not be running their own kernels
-> > > because they really have no clue about system management.
+On Wed, Jul 16, 2008 at 03:08:21PM +0200, Louis Rilling wrote:
+> On Fri, Jul 11, 2008 at 03:07:40PM -0700, Joel Becker wrote:
+> > On Fri, Jul 04, 2008 at 04:56:04PM +0200, Louis Rilling wrote:
+> > > This patchset fixes two kinds of bugs happening when
+> > > configfs_attach_group()/configfs_attach_item() fail and userspace races with
+> > > mkdir() or symlink().
 > > 
-> > you conveniently failed to respond to the rest of my mail where i showed
-> > that Chris Wright, heck, even yourself did announce security fixes as such
-> > in the past. how do you explain that?
+> > 	Ok, I've merged all this work.  Please check out my configfs-ALL
+> > branch and make sure I have everything we've worked on.
+> > 
+> > http://oss.oracle.com/git/?p=jlbec/linux-2.6.git;a=shortlog;h=configfs-ALL
+> > git://oss.oracle.com/git/jlbec/linux-2.6.git configfs-ALL
 > 
-> I am human and as such, word things differently at times.  Based on crap
-> like this thread, and from discussions with Linus and others, trying to
-> classify such things as "security fixes" all the time isn't useful or
-> helpful.
+> Looks complete.
 
-why isn't it useful? i've been asking every one of you who said so and
-have yet to receive a reasonable justification. remember, your own
-employers do it 'all the time', it must be useful to someone.
+	Ok, I'm going to get it to linux-next,then off to Linus for .27.
 
-and what's with this 'all the time'? if you guys fix security bugs all
-the time, then yes, you are expected to announce them all the time. if
-you think that reflects badly on the quality of the kernel code, then
-maybe you should think over your development process that results in
-security fixes 'all the time'.
+> There is still a few things in flight:
+> - error handling in config_*_init_type_name(): has rather low priority in my
+>   TODO list, will come back to it probably in a few weeks.
 
-> Again, I still feel my original wording was sufficent.  If you disagree,
-> feel free to start releasing your own kernels with whatever wording you
-> like.  If people find them useful, perhaps they will use them instead of
-> the ones I do at times.
+	I thought we did this already.  Perhaps I didn't include it?
+Did we have another change to make?
 
-if you are not qualified to do this job then don't do it. noone forced
-you to accept this task. look at Chris Wright, he has no problems with
-disclosing the security issues and he actually publicly pledged to do
-his best to do so (and i hope he won't revert his position now).
+> - a small locking cleanup in configfs_rmdir(): will do at the same time as
+>   lockdep stuff.
 
-cheers,
-  PaX Team
+	What sort of change?  I suppose I'll see it when it arrives.
+	I figure this new stuff will probably miss the .27 window, but
+it sounds like that's fine - nothing too serious, and it will make .28.
 
+Joel
+
+-- 
+
+Life's Little Instruction Book #198
+
+	"Feed a stranger's expired parking meter."
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
