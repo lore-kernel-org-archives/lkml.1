@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759239AbYGPW0q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759457AbYGPW17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759239AbYGPW0q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 18:26:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757430AbYGPW0h
+	id S1759457AbYGPW17 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 18:27:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757447AbYGPW1v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 18:26:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49025 "EHLO mx1.redhat.com"
+	Wed, 16 Jul 2008 18:27:51 -0400
+Received: from gate.crashing.org ([63.228.1.57]:43655 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757618AbYGPW0h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 18:26:37 -0400
-Date: Wed, 16 Jul 2008 18:19:49 -0400
-From: Dave Jones <davej@redhat.com>
+	id S1754219AbYGPW1u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 18:27:50 -0400
+Cc: Dave Jones <davej@redhat.com>, Scott Wood <scottwood@freescale.com>,
+       linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Message-Id: <CB4E8B1D-60AB-4D9C-B612-8FDC389C22BC@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
 To: Kumar Gala <galak@kernel.crashing.org>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc/ep8248e: Fix compile problem if !CONFIG_FS_ENET
-Message-ID: <20080716221949.GA18148@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Kumar Gala <galak@kernel.crashing.org>,
-	Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	akpm@linux-foundation.org, torvalds@linux-foundation.org,
-	linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.64.0807160838520.14127@blarg.am.freescale.net> <20080716214722.GA6251@ld0162-tx32.am.freescale.net> <20080716215745.GA17093@redhat.com> <37829F82-D71C-4B42-A752-DA86C6F2764D@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 In-Reply-To: <37829F82-D71C-4B42-A752-DA86C6F2764D@kernel.crashing.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH] powerpc/ep8248e: Fix compile problem if !CONFIG_FS_ENET
+Date: Wed, 16 Jul 2008 17:23:28 -0500
+References: <Pine.LNX.4.64.0807160838520.14127@blarg.am.freescale.net> <20080716214722.GA6251@ld0162-tx32.am.freescale.net> <20080716215745.GA17093@redhat.com> <37829F82-D71C-4B42-A752-DA86C6F2764D@kernel.crashing.org>
+X-Mailer: Apple Mail (2.926)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 16, 2008 at 05:10:29PM -0500, Kumar Gala wrote:
- > 
- > On Jul 16, 2008, at 4:57 PM, Dave Jones wrote:
- > 
- > > On Wed, Jul 16, 2008 at 04:47:23PM -0500, Scott Wood wrote:
- > >> On Wed, Jul 16, 2008 at 08:39:12AM -0500, Kumar Gala wrote:
- > >>> If we don't enable FS_ENET we get build issues:
- > >>>
- > >>> arch/powerpc/platforms/built-in.o: In function `ep8248e_mdio_probe':
- > >>> arch/powerpc/platforms/82xx/ep8248e.c:129: undefined reference to  
- > >>> `alloc_mdio_bitbang'
- > >>> arch/powerpc/platforms/82xx/ep8248e.c:143: undefined reference to  
- > >>> `mdiobus_register'
- > >>
- > >> How is this possible?  CONFIG_EP8248E selects CONFIG_MDIO_BITBANG.
- > >
- > > If CONFIG_PHYLIB=m however, that doesn't make any difference, because
- > > vmlinuz is trying to use a symbol which now lives in a module.
- > 
- > The mdiobus_register make sense, I'm not sure get why  
- > alloc_mdio_bitbang is undefined.
 
-Erm, same reason.  it's built into phy.o, which ends up in the module,
-not the vmlinuz.
+On Jul 16, 2008, at 5:10 PM, Kumar Gala wrote:
 
-(also, it doesn't look like it's exported even if it was built-in?)
+>
+> On Jul 16, 2008, at 4:57 PM, Dave Jones wrote:
+>
+>> On Wed, Jul 16, 2008 at 04:47:23PM -0500, Scott Wood wrote:
+>>> On Wed, Jul 16, 2008 at 08:39:12AM -0500, Kumar Gala wrote:
+>>>> If we don't enable FS_ENET we get build issues:
+>>>>
+>>>> arch/powerpc/platforms/built-in.o: In function  
+>>>> `ep8248e_mdio_probe':
+>>>> arch/powerpc/platforms/82xx/ep8248e.c:129: undefined reference to  
+>>>> `alloc_mdio_bitbang'
+>>>> arch/powerpc/platforms/82xx/ep8248e.c:143: undefined reference to  
+>>>> `mdiobus_register'
+>>>
+>>> How is this possible?  CONFIG_EP8248E selects CONFIG_MDIO_BITBANG.
+>>
+>> If CONFIG_PHYLIB=m however, that doesn't make any difference, because
+>> vmlinuz is trying to use a symbol which now lives in a module.
+>
+> The mdiobus_register make sense, I'm not sure get why  
+> alloc_mdio_bitbang is undefined.
 
-	Dave
+nevermind, I now see why the libphy is being built.
 
--- 
-http://www.codemonkey.org.uk
+- k
