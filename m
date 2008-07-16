@@ -1,65 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756858AbYGPElm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757288AbYGPEnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756858AbYGPElm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 00:41:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYGPEle
+	id S1757288AbYGPEnc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 00:43:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbYGPEnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 00:41:34 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:40379 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751235AbYGPEld (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 00:41:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:x-accept-language:mime-version:to
-         :subject:content-type:content-transfer-encoding;
-        b=S11JbKJCSWwXVjMrVjEhQ4V0+4sIfCBa0rNaHLv8qqPbgRKcc7LBIs5fTd35xa0iJj
-         aIl7xV8T6+bVAj/Rr0SjJ99sqi5TJpYcuh9PkLxISsunV8+QcM2TyMPVuRW3eF+lSYLk
-         Ywoy03m16gpdtg6HE9lQieXuqP4fECOZl9/q4=
-Message-ID: <487D7BF9.60509@gmail.com>
-Date: Tue, 15 Jul 2008 18:41:29 -1000
-From: Adam Greenblatt <adam.greenblatt@gmail.com>
-User-Agent: Mozilla Thunderbird 0.9 (X11/20041103)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: akpm@linux-foundation.org, jack@ucw.cz, linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.26] isofs: fix minor filesystem corruption
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Jul 2008 00:43:24 -0400
+Received: from 1wt.eu ([62.212.114.60]:1557 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750997AbYGPEnX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 00:43:23 -0400
+Date: Wed, 16 Jul 2008 06:42:29 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, david@lang.hm,
+       Marcel Holtmann <marcel@holtmann.org>,
+       David Woodhouse <dwmw2@infradead.org>, arjan@infradead.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel, use it in more drivers.
+Message-ID: <20080716044228.GN1369@1wt.eu>
+References: <1216077806.27455.85.camel@shinybook.infradead.org> <alpine.DEB.1.10.0807151503310.16109@asgard.lang.hm> <alpine.LFD.1.10.0807151631260.2867@woody.linux-foundation.org> <200807160222.40705.elendil@planet.nl> <alpine.LFD.1.10.0807151726520.2867@woody.linux-foundation.org> <487D441B.5010908@garzik.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <487D441B.5010908@garzik.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some iso9660 images contain files with rockridge data that is either 
-incorrect or
-incompletely parsed.  Prior to commit 
-f2966632a134e865db3c819346a1dc7d96e05309,
-(included with kernel 2.6.13) the kernel ignored the rockridge data for 
-these files,
-while still allowing the files to be accessed under their non-rockridge 
-names.  That commit
-inadvertently changed things so that files with invalid rockridge data 
-could not be accessed
-at all.  (I ran across the problem when comparing some old CDs with hard 
-disk copies I had
-made long ago under kernel 2.4: a few of the files on the hard disk 
-copies were no longer
-visible on the CDs.)
+On Tue, Jul 15, 2008 at 08:43:07PM -0400, Jeff Garzik wrote:
+> Linus Torvalds wrote:
+> >
+> >On Wed, 16 Jul 2008, Frans Pop wrote:
+> >>Where did you get this strange notion that mkinitrd is the _only_ (your 
+> >>emphasis) thing people use?
+> >
+> >Heh. Maybe from the fact that I don't personally use modules or initrd at 
+> >all, and have no interest in doing so ;)
+> >
+> >Ok, so people use other things. Grr. I guess we can't just require updated 
+> >tools, because we don't know what the tools are.
+> 
+> Yes, that's part of the problem :/
+> 
+> Everybody seems to love rolling their own stuff in this area, partly 
+> necessitated I suppose by the wide variety of ways to boot on various 
+> platforms.
 
-This change reverts to the pre-2.6.13 behavior.
+Exactly. To give you an idea, I have a lot of servers running on a
+"firmware" which consists in two parts :
+  - a bzImage containing an initramfs with modules and a few scripts
+  - an initrd which is in fact the rootfs
 
-Signed-off-by: Adam Greenblatt <adam.greenblatt@gmail.com>
----
---- linux-2.6.26/fs/isofs/rock.c.orig   2008-07-15 18:19:36.000000000 -1000
-+++ linux-2.6.26/fs/isofs/rock.c        2008-07-15 18:16:56.000000000 -1000
-@@ -217,7 +217,7 @@ repeat:
-                rs.chr += rr->len;
-                rs.len -= rr->len;
-                if (rs.len < 0)
--                       goto eio;       /* corrupted isofs */
-+                       goto out;       /* corrupted isofs */
- 
-                switch (sig) {
-                case SIG('R', 'R'):
+When the kernel boots, it mounts the initrd, does a pivot_root and mounts
+its modules into /boot/$(uname -r). All my kernels run modules from /boot
+and not from /lib/modules, because it makes them more convenient to add
+and remove. So /lib/modules is just a symlink to /boot.
+
+The above process is very convenient, as it is compatible with a lot of
+boot methods : hard disk, CDROM, USB stick, PXE, etc...
+
+And moreover, I can have multiple kernels with only one rootfs (SMP, etc).
+Introducing firmware there would mean a major thinking and rework of the
+build (and possibly boot) process. The least invasive would probably be
+to stuff them next to the modules in $(uname -r)/firmware, but even then,
+it will take a lot of time to switch to a new system.
+
+And judging from what I see around, I'm far from being the only one not
+using mkinitrd.
+
+Willy
 
