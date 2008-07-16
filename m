@@ -1,130 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757874AbYGPNb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757961AbYGPNdn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757874AbYGPNb1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 09:31:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756038AbYGPNbT
+	id S1757961AbYGPNdn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 09:33:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755597AbYGPNdg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 09:31:19 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:48434 "EHLO smtp6.pp.htv.fi"
+	Wed, 16 Jul 2008 09:33:36 -0400
+Received: from gwu.lbox.cz ([62.245.111.132]:55628 "EHLO gwu.lbox.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756033AbYGPNbT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 09:31:19 -0400
-Date: Wed, 16 Jul 2008 16:31:08 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: jkacur <jkacur@gmail.com>
-Cc: akpm@linux-foundation.org, Jan Engelhardt <jengelh@medozas.de>,
-       Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org
-Subject: Re: Make the git URL match usage
-Message-ID: <20080716133108.GC25557@cs181140183.pp.htv.fi>
-References: <200807161500.08500.jkacur@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200807161500.08500.jkacur@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1755579AbYGPNdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 09:33:35 -0400
+From: Nikola Ciprich <nikola.ciprich@linuxbox.cz>
+To: linux-kernel@vger.kernel.org
+Cc: Nikola Ciprich <nikola.ciprich@linuxbox.cz>
+Subject: [PATCH] small include/linux/parser.h fixes
+Date: Wed, 16 Jul 2008 13:33:13 -0400
+Message-Id: <1216229593-8186-1-git-send-email-nikola.ciprich@linuxbox.cz>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <>
+References: <>
+X-Antivirus: on proxybox by Kaspersky antivirus, engine 5.5.10, data 855314 records(16-07-2008)
+X-Envelope-From: root@linuxbox.cz
+X-Spam-Score: N/A (trusted relay)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 16, 2008 at 03:00:08PM +0200, jkacur wrote:
-> This time, in order to test that the URL was correct, I started a git clone
-> (and broke it off of course) on EVERY SINGLE git URL listed in the
-> MAINTAINERS file, even the ones that I didn't have to modify.
+add linux/types.h include to linux/parser.h
+also add #ifndef __LINUX_PARSER_H ... #endif
 
-Thanks for doing this work!
+Signed-off-by: Nikola Ciprich <nikola.ciprich@linuxbox.cz>
+---
+ include/linux/parser.h |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-> I believe that this patch is ready to be ACKed and applied, however
-> I made some observations that I will follow up on: Here is a summary.
-
-An alternative solution would be to drop the trees from MAINTAINERS and 
-instead point to
-http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=blob;f=Next/Trees 
-which is always kept up-to-date.
-
-It does not completely match what's currently in MAINTAINERS, but as 
-you've obsserved the information in MAINTAINERS is quite stale.
-
-> 1. Why is the testing and release tree the same?
-> HARDWARE MONITORING
-> P:	Mark M. Hoffman
-> M:	mhoffman@lightlink.com
-> L:	lm-sensors@lm-sensors.org
-> W:	http://www.lm-sensors.org/
-> T:	git://lm-sensors.org/kernel/mhoffman/hwmon-2.6.git testing
-> T:	git://lm-sensors.org/kernel/mhoffman/hwmon-2.6.git release
-> S:	Maintained
-
-These are not different trees, "testing" and "release" are branches of 
-this tree.
-
-> 2. Required me to change powerpc.git to powerpc-4xx.git
-> P:	Josh Boyer
-> M:	jwboyer@linux.vnet.ibm.com
-> P:	Matt Porter
-> M:	mporter@kernel.crashing.org
-> W:	http://www.penguinppc.org/
-> L:	linuxppc-dev@ozlabs.org
-> T:	git://git.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git
-> S:	Maintained
-
-That's not the correct tree, please ask the powerpc maintainers.
-
-> 3. This one seems to require password authentication to fetch, howcome?
-> MIPS
-> P:	Ralf Baechle
-> M:	ralf@linux-mips.org
-> W:	http://www.linux-mips.org/
-> L:	linux-mips@linux-mips.org
-> T:	git www.linux-mips.org:/pub/scm/linux.git
-> S:	Supported
-
-That's most likely git://git.linux-mips.org/pub/scm/linux
-
-Please ask the maintainer.
-
-> 4. The following 3 drivers are all maintained by the same person
-> in the same git repository, but fail when I attempt git clone
-> 
-> ADM8211 WIRELESS DRIVER
-> P:	Michael Wu
-> M:	flamingice@sourmilk.net
-> L:	linux-wireless@vger.kernel.org
-> W:	http://linuxwireless.org/
-> T:	git://git.kernel.org/pub/scm/linux/kernel/git/mwu/mac80211-drivers.git
-> S:	Maintained
->...
-> The failure looks like this
-> git clone git://git.kernel.org/pub/scm/linux/kernel/git/mwu/mac80211-drivers.git
-> Initialized empty Git repository in /home/jkacur/git-trees/mac80211-drivers/.git/
-> fatal: The remote end hung up unexpectedly
-> fetch-pack from 'git://git.kernel.org/pub/scm/linux/kernel/git/mwu/mac80211-drivers.git' failed.
->...
-
-http://git.kernel.org shows all available trees at git.kernel.org and 
-their contents.
-
-More interesting is that there is no recent contents, which makes 
-listing the trees anyway pointless.
-
-> Finally, more a curiosity than anything, the following 3 repositories do NOT end in .git
-> but this does not seem to be a problem either.
-> 
-> grep git:// MAINTAINERS | grep -v "\.git"
-> T:      git://git.qlogic.com/ipath-linux-2.6
-> T:      git://opensource.wolfsonmicro.com/linux-2.6-asoc
-> T:      git://opensource.wolfsonmicro.com/linux-2.6-touch
->...
-
-With the default git-daemon configuration it doesn't matter whether or 
-not you specify a .git postfix.
-
-cu
-Adrian
-
+diff --git a/include/linux/parser.h b/include/linux/parser.h
+index 7dcd050..2f4c8e1 100644
+--- a/include/linux/parser.h
++++ b/include/linux/parser.h
+@@ -7,6 +7,10 @@
+  * parsing is required.
+  */
+ 
++#ifndef _LINUX_PARSER_H
++#define _LINUX_PARSER_H
++
++#include <linux/types.h>
+ 
+ /* associates an integer enumerator with a pattern string. */
+ struct match_token {
+@@ -31,3 +35,5 @@ int match_octal(substring_t *, int *result);
+ int match_hex(substring_t *, int *result);
+ size_t match_strlcpy(char *, const substring_t *, size_t);
+ char *match_strdup(const substring_t *);
++
++#endif
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+1.5.4.3
 
