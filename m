@@ -1,44 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756710AbYGPLnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756304AbYGPLwD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756710AbYGPLnR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 07:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753978AbYGPLnE
+	id S1756304AbYGPLwD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 07:52:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753522AbYGPLvy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 07:43:04 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:42379 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750971AbYGPLnE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 07:43:04 -0400
-Date: Wed, 16 Jul 2008 13:43:01 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: John Kacur <jkacur@gmail.com>
-cc: Andy Whitcroft <apw@shadowen.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Make the git URL match usage
-In-Reply-To: <520f0cf10807160334y7228527ev7e970b00c734778d@mail.gmail.com>
-Message-ID: <alpine.LNX.1.10.0807161338290.26724@fbirervta.pbzchgretzou.qr>
-References: <200807161047.21040.jkacur@gmail.com>  <20080716102104.GA7477@shadowen.org> <520f0cf10807160334y7228527ev7e970b00c734778d@mail.gmail.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Wed, 16 Jul 2008 07:51:54 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38037 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753373AbYGPLvx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 07:51:53 -0400
+Date: Wed, 16 Jul 2008 13:51:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] x86: more header fixes
+Message-ID: <20080716115137.GA8075@elte.hu>
+References: <20080610214544.GA14824@damson.getinternet.no> <20080618103006.GF15255@elte.hu> <19f34abd0806180919v5a8c21e7ua7e1f928d8a53ab4@mail.gmail.com> <20080626120202.GH29619@elte.hu> <19f34abd0806260953h504ff85dmf11a59171df3442b@mail.gmail.com> <20080701092820.GA31309@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080701092820.GA31309@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wednesday 2008-07-16 12:34, John Kacur wrote:
->>
->> This now looses information.  Although it is obvious that this particular
->> example (after conversion) is a git repository over git protocol this falls
->> down for other forms, for example a git repository exported over http://
-[...]
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-git over http really is no fun at the moment and one should really
-use git:// whenever possible. Where it is not possible due to
-tightknotted corporate firewalls, well, that's (a) their problem and
-(b) they probably know already how to go around it.
+> * Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> 
+> > > or perhaps we could include it in tip/master right now as well, if 
+> > > you did another branch that excluded the files below. That would 
+> > > make merging a lot easier - and we could do a second phase in 
+> > > v2.6.27-rc1. Hm?
+> > 
+> > I don't think we really need to resolve conflicts at all. What we 
+> > can do is simply to re-run the scripts against tip/master whenever 
+> > you want the update.
+> 
+> ok, lets do it that way.
 
-If in doubt, just add a paragraph that one can exchange git://
-by http://, but I would not make it that obvious to use an inferior
-transfer protocol.
+... the right moment for this would be about now. Mind rerunning your 
+scripts and create a pullable linux-2.6-headers tree, based on latest 
+-git?
+
+	Ingo
