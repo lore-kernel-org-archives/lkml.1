@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbYGPFus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756741AbYGPFx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756037AbYGPFus (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 01:50:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbYGPFuh
+	id S1756741AbYGPFx1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 01:53:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbYGPFxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 01:50:37 -0400
-Received: from ti-out-0910.google.com ([209.85.142.186]:26449 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751210AbYGPFug (ORCPT
+	Wed, 16 Jul 2008 01:53:19 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:57430 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751778AbYGPFxS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 01:50:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=bFTPBtv3HYvRzP1Dh5n5j5EGd3dOwN3I4WtjLlqTSHFj+XG98Ln1+d3lK4xCaFrx0B
-         /vrzeM9zDkuVkUpnUlVrI2qeF+UbK80WN+/f3L24BmLDeNH2el/m1ivJLPEaJFkuoi/M
-         AJIt/iUE69tvB/kI7Tb4kQDeWVUqdIIsILZ+U=
-Message-ID: <487D8C0A.9060100@gmail.com>
-Date: Wed, 16 Jul 2008 14:50:02 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Wed, 16 Jul 2008 01:53:18 -0400
+Date: Wed, 16 Jul 2008 13:53:07 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: Oliver Pinter <oliver.pntr@gmail.com>,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
+       stable@kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [stable] Crypto Fixes for 2.6.26
+Message-ID: <20080716055307.GA13282@gondor.apana.org.au>
+References: <20080501102812.GA7151@gondor.apana.org.au> <20080509132343.GA12979@gondor.apana.org.au> <20080602080512.GA22059@gondor.apana.org.au> <20080709003741.GA32340@gondor.apana.org.au> <20080710125126.GA25843@gondor.apana.org.au> <6101e8c40807151007p3367a985sb3f70e876e109d76@mail.gmail.com> <20080715171736.GA13328@kroah.com> <20080716020938.GB11777@gondor.apana.org.au>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Linux Containers <containers@lists.osdl.org>,
-       Benjamin Thery <benjamin.thery@bull.net>, netdev@vger.kernel.org
-Subject: Re: [PATCH 12/15] driver core: Implement tagged directory support
- for device classes.
-References: <m18wwiihbn.fsf_-_@frodo.ebiederm.org>	<m14p76ih9a.fsf_-_@frodo.ebiederm.org>	<m1zloyh2mb.fsf_-_@frodo.ebiederm.org>	<m1vdzmh2jr.fsf_-_@frodo.ebiederm.org>	<m1r6aah2hh.fsf_-_@frodo.ebiederm.org>	<m1mykyh2fu.fsf_-_@frodo.ebiederm.org>	<m1hcb6h2d2.fsf_-_@frodo.ebiederm.org> <486DD650.3000804@gmail.com>	<m1tzf593ny.fsf@frodo.ebiederm.org> <486E2C3B.6020603@gmail.com>	<20080704161200.GA1440@suse.de> <m1lk052ptp.fsf@frodo.ebiederm.org>	<487D6A24.9070001@gmail.com> <m17ibmbd39.fsf@frodo.ebiederm.org>
-In-Reply-To: <m17ibmbd39.fsf@frodo.ebiederm.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080716020938.GB11777@gondor.apana.org.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-Eric W. Biederman wrote:
->> Eric, with the multiple superblocks, sysfs now uses inode from the
->> default sysfs_sb with dentries from other sb's.  Is this okay?  Are
->> there any other filesystems which do this?
+On Wed, Jul 16, 2008 at 10:09:38AM +0800, Herbert Xu wrote:
+> On Tue, Jul 15, 2008 at 10:17:36AM -0700, Greg KH wrote:
+> >
+> > Herbert, can you let me know what the git commit id is for this fix?
+> > 
+> > And do you want it added to the .25 and .26 -stable releases?
+> > 
+> > Oliver, thanks for the pointer.
 > 
-> I don't know of any other filesystems where this unique challenge arises.
-> /proc almost qualifies but it never needs to be modified.
-> 
-> It is certainly ok to go from multiple dentries to a single inode.
-> I'm trying to remember why I choose to do that.  I think both because it simplifies
-> the locking and keeps us more efficient in the icache.
+> Sorry, that was meant to say 2.6.27 :) So you don't need it
+> for stable.
 
-It's a bit scary tho.  Working inode->i_dentry or dentry->d_alias
-crosses multiple sb's.  sysfs isn't too greedy about dcache/icache.
-Only open files and directories hold them and only single copy of
-sysfs_dirent is there for most nodes.  Wouldn't it be better to stay on
-the safer side and use separate inode hierarchy?
+Wait, I thought you were talking about a different message.
 
-Thanks.
+The chainiv patch is certainly needed for 2.6.25 (not for 26
+since it made the cut).  But I've already sent it to stable@.
+If you don't have it let me know and I'll resend it.
 
+Thanks,
 -- 
-tejun
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
