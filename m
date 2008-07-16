@@ -1,182 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756739AbYGPS1u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757444AbYGPSbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756739AbYGPS1u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 14:27:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753700AbYGPS1n
+	id S1757444AbYGPSbY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 14:31:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbYGPSbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 14:27:43 -0400
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:58618 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753647AbYGPS1m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 14:27:42 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5340"; a="4600022"
-Message-ID: <487E3D90.3040107@qualcomm.com>
-Date: Wed, 16 Jul 2008 11:27:28 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 16 Jul 2008 14:31:16 -0400
+Received: from webmail-outgoing.us4.outblaze.com ([205.158.62.67]:38604 "EHLO
+	webmail-outgoing.us4.outblaze.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751018AbYGPSbP convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 14:31:15 -0400
+X-Greylist: delayed 1280 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Jul 2008 14:31:15 EDT
+X-OB-Received: from unknown (205.158.62.232)
+  by wfilter.us4.outblaze.com; 16 Jul 2008 18:09:54 -0000
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: mingo@elte.hu, pj@sgi.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, vegard.nossum@gmail.com
-Subject: Re: [PATCH] cpuset: Make rebuild_sched_domains() usable from any
- context (take 2)
-References: <1216189268-30122-1-git-send-email-maxk@qualcomm.com> <6599ad830807160011h39378e24ld24b837da1710d27@mail.gmail.com>
-In-Reply-To: <6599ad830807160011h39378e24ld24b837da1710d27@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+From: "Morton Harrow" <mharrow@linuxmail.org>
+To: linux-kernel@vger.kernel.org
+Date: Thu, 17 Jul 2008 02:09:53 +0800
+Subject: GPL version 4
+X-Originating-Ip: 86.85.251.34
+X-Originating-Server: ws5-11.us4.outblaze.com
+Message-Id: <20080716180953.F408ACA586@ws5-11.us4.outblaze.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Tue, Jul 15, 2008 at 11:21 PM, Max Krasnyansky <maxk@qualcomm.com> wrote:
->> From: Max Krasnyanskiy <maxk@qualcomm.com>
->>
->> Basically as Paul J. pointed out rebuild_sched_domains() is the
->> only way to rebuild sched domains correctly based on the current
->> cpuset settings. What this means is that we need to be able to
->> call it from different contexts, like cpuhotplug for example.
->> Also if you look at the cpu_active_map patches, the scheduler now
->> calls rebuild_sched_domains() directly from places like
->> arch_init_sched_domains().
->>
->> In order to support that properly we need to change cpuset locking
->> a bit, to avoid circular locking dependencies.
->> This patch makes rebuild_sched_domains() callable from any context.
->> The only requirement now is the the caller has to hold cpu_hotplug.lock
->> (ie get_online_cpus()).
-> 
-> Calling get_online_cpus() doesn't technically result in you holding
-> cpu_hotplug.lock - it ensures that either you're the active
-> cpu_hotplug writer or else no-one else holds cpu_hotplug.lock and
-> cpu_hotplug.refcount > 0. Can you specify this more precisely? Maybe
-> say "the caller has to hold cpu_hotplug for read or write"? 
-Very good point.
-How about we just say
-	"has to be called under get_online_cpus()"
-I think that reflects what the calling requirement is without diving into
-to much detail as to how get_online_cpus() works internally.
+Dear gentlemen (and included list-members),
 
-> A useful
-> patch might be to rename "struct {} cpu_hotplug" to "struct {}
-> cpu_hotplug_recursive_rw_mutex", since that's exactly what it is. 
-Hmm, I guess the idea was that struct cpu_hotplug would hold more stuff
-then just the lock. But maybe I'm wrong.
+Let me first introduce myself. My name is Morton Harrow, senior GNU/Linux consultant in the London metropolitan area. I have been around in the Open Source world since the early beginning. I am very happy with the spirit and efforts of the Free Software Foundation (FSF).
 
-> Then this patch could say "caller has to hold
-> cpu_hotplug_recursive_rw_mutex". Yes, it's a bit ugly, but at least it
-> exposes it properly.
-I think at this level we should just say
-	"call me inside get_online_cpus() ... put_online_cpus()"
-and leave the details. I mean we should just stop using "hold
-cpu_hotplug.lock" notation because it's something internal. All we really care
-about is that we called under get_online_cpus() to make sure that cpus are not
-unplugged at the wrong time.
+As the name mentions “free”, one would think this organisation embraces real freedom. I can't help but feel that the FSF has made a mistake with the release of the third version of the GPL (GPLv3). This license restricts the freedom and usage of open source software for governments, companies and end-users alike.
+Linking from other software which is not regarded by the FSF as free software, is not allowed by this license. I can't help but wonder if this is the freedom the FSF intensions. Real free should be that users are allowed link any software against GPL licensed software, without restrictions. But the current “freedom” restricts the spirit of Richard M. Stallman's original vision on a free world.
 
->> +       /* We have to iterate cgroup hierarchy, make sure nobody is messing
->> +        * with it. */
->> +       cgroup_lock();
->> +
->>        /* Special case for the 99% of systems with one, full, sched domain */
->>        if (is_sched_load_balance(&top_cpuset)) {
->>                ndoms = 1;
->> @@ -598,10 +606,10 @@ void rebuild_sched_domains(void)
->>
->>        q = kfifo_alloc(number_of_cpusets * sizeof(cp), GFP_KERNEL, NULL);
->>        if (IS_ERR(q))
->> -               goto done;
->> +               goto unlock;
->>        csa = kmalloc(number_of_cpusets * sizeof(cp), GFP_KERNEL);
->>        if (!csa)
->> -               goto done;
->> +               goto unlock;
->>        csn = 0;
->>
->>        cp = &top_cpuset;
->> @@ -688,10 +696,16 @@ restart:
->>        BUG_ON(nslot != ndoms);
->>
->>  rebuild:
->> +       /* Drop cgroup lock before calling the scheduler.
->> +        * This is not strictly necesseary but simplifies lock nesting. */
->> +       cgroup_unlock();
->> +
->>        /* Have scheduler rebuild sched domains */
->> -       get_online_cpus();
->>        partition_sched_domains(ndoms, doms, dattr);
->> -       put_online_cpus();
->> +       goto done;
->> +
->> +unlock:
->> +       cgroup_unlock();
-> 
-> This goto ordering's a bit ugly. rebuild_sched_domains() is ripe for a
-> refactoring, but I guess that can wait.
-Yeah. I tried a couple of option and settled on the current one for now.
-If we did not have to drop cgroup_lock() before calling the scheduler some of
-the gotos would go away but I'd rather drop it to avoid more nesting in the
-future.
-Sounds like you're ok with the current version logic wise. I'll take another
-cleanup pass some time late.
+We propose to release as soon as possible, version 4 of the General Public License.
 
->> +/*
->> + * Internal helper for rebuilding sched domains when something changes.
->> + * rebuild_sched_domains() must be called under get_online_cpus() and
->> + * it needs to take cgroup_lock(). But most of the cpuset code is already
->> + * holding cgroup_lock() while calling __rebuild_sched_domains().
->> + * In order to avoid incorrect lock nesting we delegate the actual domain
->> + * rebuilding to the workqueue.
->> + */
->> +static void __rebuild_sched_domains(void)
->> +{
->> +       queue_work(cpuset_wq, &rebuild_domains_work);
->> +}
->> +
-> 
-> The __ prefix is normally used to indicate a lower-level or pre-locked
-> version of a function. In this case it's a higher-level function so I
-> don't think that prefix is appropriate. How about
-> async_rebuild_sched_domains() ?
-Yep. Much better name.
+The GPL version 4 will accept every other license, accepted by the Open Source Initiative as open source. Corporate usage of GPL released software should be possible without restrictions. Linking from closed source software to GPLv4 software and libraries will be permitted. GPLv4 software can be shipped in (commercial) closed source software. Only this and the original authors need to be mentioned. Also, I believe the copyright of the FSF software should be transferred to the United Nations. As “human knowledge belongs to the world.”
 
->> -static void common_cpu_mem_hotplug_unplug(int rebuild_sd)
->> +static void common_cpu_mem_hotplug_unplug(void)
->>  {
->>        cgroup_lock();
->>
->> @@ -1902,13 +1934,6 @@ static void common_cpu_mem_hotplug_unplug(int rebuild_sd)
->>        top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
->>        scan_for_empty_cpusets(&top_cpuset);
-> 
-> This is still unsafe because it accesses cpu_online_map without
-> get_online_cpus() (when called as the memory hotplug handler)?
-> 
-> Maybe scan_for_empty_cpusets() should take a parameter indicating
-> whether we're interested in cpus or mems?
-Ah, I thought I separated them out, but you're right it still accesses
-cpu_online_map from mem hotplug events. I think instead of the argument
-we can just split them up completely. The common part is
-scan_for_empty_cpusets() the rest is not. I'll fix that.
+Our planned release date of GPLv4 is 15th September 2008. The first software to be released under the terms of this new license, will be a continuation of the stalled ReiserFS project. As the FSF headers allow software to be released under the terms of the GPLv2 or higher, we will prepare automatic relicensing of GPLv2 and GPLv3 software to the GPLv4.
 
->>        hotcpu_notifier(cpuset_handle_cpuhp, 0);
->> +
->> +       cpuset_wq = create_singlethread_workqueue("cpuset");
->> +       BUG_ON(!cpuset_wq);
-> 
-> Seems a bit of a shame to waste a kthread on this. Is there no generic
-> single-threaded workqueue that we could piggyback on? Maybe create one
-> in workqueue.c that can be used by anyone who specifically needs a
-> singlethreaded workqueue for occasional work?
-Agree
-$ git grep create_singlethread_workqueue | wc
-   104     412    9037
+If you have any questions or comments, please feel free to contact me.
 
-Granted, it's unlikely that a single machine would have all that stuff enabled
-but 104 kthreads just for workqueues does seems like an overkill.
+With kind regards,
 
-I was going to take a pass at the workqueue users and replaces
-flush_scheduled_work() with flush_work()/cancel_work_sync() so I might take a
-crack at this too.
+Morton Harrow
 
-Max
+
+=
+
+
+-- 
+Powered by Outblaze
