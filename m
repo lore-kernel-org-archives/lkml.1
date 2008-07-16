@@ -1,106 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757448AbYGPAC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756756AbYGPAJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757448AbYGPAC6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 20:02:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbYGPACv
+	id S1756756AbYGPAJA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 20:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbYGPAIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 20:02:51 -0400
-Received: from ax54.genwebserver.com ([72.18.156.50]:43129 "EHLO
-	ax54.genwebserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754087AbYGPACu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 20:02:50 -0400
-Message-ID: <487D3A13.3040507@assumpcao.org>
-Date: Tue, 15 Jul 2008 21:00:19 -0300
-From: Tiago Assumpcao <tiago@assumpcao.org>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Tue, 15 Jul 2008 20:08:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38568 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752189AbYGPAIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 20:08:51 -0400
+Date: Tue, 15 Jul 2008 20:00:38 -0400
+From: Dave Jones <davej@redhat.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Frans Pop <elendil@planet.nl>, arjan@infradead.org,
+       akpm@linux-foundation.org, dwmw2@infradead.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
+	in-kernel, use it in more drivers.
+Message-ID: <20080716000038.GB17417@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Jeff Garzik <jeff@garzik.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+	Frans Pop <elendil@planet.nl>, arjan@infradead.org,
+	akpm@linux-foundation.org, dwmw2@infradead.org,
+	alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+References: <20080715180535.GA6080@khazad-dum.debian.net> <487CE917.3000000@garzik.org> <alpine.LFD.1.10.0807151122010.3017@woody.linux-foundation.org> <487CF29E.5000009@garzik.org> <alpine.LFD.1.10.0807151159400.3351@woody.linux-foundation.org> <487D01B5.7020300@garzik.org> <alpine.LFD.1.10.0807151310370.2867@woody.linux-foundation.org> <487D0ED1.7010003@garzik.org> <20080715230204.GC10532@redhat.com> <487D36D9.6020105@garzik.org>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: pageexec@freemail.hu, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [stable] Linux 2.6.25.10
-References: <20080703185727.GA12617@suse.de>, <487D3056.1183.1C0E1C47@pageexec.freemail.hu>, <alpine.LFD.1.10.0807151425170.2867@woody.linux-foundation.org> <487D3C17.31467.1C3C0441@pageexec.freemail.hu> <alpine.LFD.1.10.0807151620450.2867@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807151620450.2867@woody.linux-foundation.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - ax54.genwebserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - assumpcao.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <487D36D9.6020105@garzik.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Wed, 16 Jul 2008, pageexec@freemail.hu wrote:
->> you should check out the last few -stable releases then and see how
->> the announcement doesn't ever mention the word 'security' while fixing
->> security bugs
-> 
-> Umm. What part of "they are just normal bugs" did you have issues with?
-> 
-> I expressly told you that security bugs should not be marked as such, 
-> because bugs are bugs. 
-> 
->> in other words, it's all the more reason to have the commit say it's
->> fixing a security issue.
-> 
-> No.
-> 
->>> I'm just saying that why mark things, when the marking have no meaning? 
->>> People who believe in them are just _wrong_.
->> what is wrong in particular?
-> 
-> You have two cases:
-> 
->  - people think the marking is somehow trustworthy.
-> 
->    People are WRONG, and are misled by the partial markings, thinking that 
->    unmarked bugfixes are "less important". They aren't.
-> 
->  - People don't think it matters
-> 
->    People are right, and the marking is pointless.
-> 
-> In either case it's just stupid to mark them. I don't want to do it, 
-> because I don't want to perpetuate the myth of "security fixes" as a 
-> separate thing from "plain regular bug fixes".
-> 
-> They're all fixes. They're all important. As are new features, for that 
-> matter.
-> 
->> when you know that you're about to commit a patch that fixes a security 
->> bug, why is it wrong to say so in the commit?
-> 
-> It's pointless and wrong because it makes people think that other bugs 
-> aren't potential security fixes.
-> 
-> What was unclear about that?
-> 
-> 		Linus
+On Tue, Jul 15, 2008 at 07:46:33PM -0400, Jeff Garzik wrote:
+ > Dave Jones wrote:
+ > > On Tue, Jul 15, 2008 at 04:55:45PM -0400, Jeff Garzik wrote:
+ > > 
+ > >  > No, I spelled out a list of projects, what would break, and how it would 
+ > >  > break.
+ > >  > 
+ > >  > Again,
+ > >  > 
+ > >  > * Red Hat driver disks.  The build process is unaware of the need to 
+ > >  > bundle firmware.  Any use with Fedora (or, later, RHEL) will result in a 
+ > >  > non-working driver, for the simple reason that firmware is not copied 
+ > >  > onto the image.
+ > > 
+ > > For old RHEL - they won't support 2.6.27, so moot.
+ > > For next-gen RHEL - they need fixing anyway.
+ > > For Fedora, they don't (and hopefully won't) exist.
+ > 
+ > Grin,
+ > http://docs.fedoraproject.org/fedora-install-guide-en/fc5/sn-bootoptions-hardware.html
 
-For all the above: no. And this is the point of divergence.
-For you, as a person who "writes software", every bug is equivalent. You 
-need to resolve problems, not classify them.
+I don't think any of this stuff has ever been actually used in a Fedora context.
+We certainly haven't released any official ones ttbomk.
 
-However, as I previously explained [http://lkml.org/lkml/2008/7/15/654], 
-security issues are identified and communicated through what can be a 
-long and complicated (due to DNAs, etc.) process. If it culminates at 
-implementation, without proper information forwarding from the 
-development team, it will never reach the "upper layers" -- vendors, 
-distributors, end users, et al.
+ > Or DKMS, which should package firmware:
+ > http://linux.dell.com/projects.shtml
 
-Therefore, yes, it is of major importance that you people, too, buy the 
-problem and support the process as a whole. Otherwise... well, 
-otherwise, we're back to where we started, 20 years ago. Good luck Linux 
-users.
+Not quite the same thing as a driver disk, but I'll humour you..
+That handles MODULE_FIRMWARE fine afaik.  Though again, this doesn't see much
+actual use in a Fedora context.
 
---t
+	Dave
 
+-- 
+http://www.codemonkey.org.uk
