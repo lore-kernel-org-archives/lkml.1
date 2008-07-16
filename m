@@ -1,131 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757773AbYGPSRi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758369AbYGPSSn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757773AbYGPSRi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 14:17:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbYGPSR2
+	id S1758369AbYGPSSn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 14:18:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753613AbYGPSSf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 14:17:28 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:47290 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752830AbYGPSR0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 14:17:26 -0400
-Subject: Re: rdac and aac
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Mark Salyzyn <mark_salyzyn@adaptec.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux-Scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <86802c440807161051r7632c1d3qeb73c3cc1a124ed6@mail.gmail.com>
-References: <86802c440807161051r7632c1d3qeb73c3cc1a124ed6@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 16 Jul 2008 13:17:22 -0500
-Message-Id: <1216232242.3358.48.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Jul 2008 14:18:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45355 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753050AbYGPSSf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 14:18:35 -0400
+Message-ID: <487E3B71.9040902@redhat.com>
+Date: Wed, 16 Jul 2008 14:18:25 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?P=E1draig_Brady?= <P@draigBrady.com>
+CC: Emmanuel Florac <eflorac@intellique.com>, linux-kernel@vger.kernel.org
+Subject: Re: RAID-1 performance under 2.4 and 2.6
+References: <20080325194306.4ac71ff2@galadriel.home> <47E975F8.3000702@redhat.com> <47E98108.9000906@tmr.com> <47E98712.6090203@redhat.com> <487E0B30.6050007@draigBrady.com>
+In-Reply-To: <487E0B30.6050007@draigBrady.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-16 at 10:51 -0700, Yinghai Lu wrote:
-> calling  aac_init+0x0/0x9a
-> Adaptec aacraid driver 1.1-5[2456]-ms
-> vendor=10de device=005d
-> ACPI: PCI Interrupt 0000:86:00.0[A] -> Link [LN2C] -> GSI 42 (level,
-> low) -> IRQ 42
-> PCI: Setting latency timer of device 0000:86:00.0 to 64
-> AAC0: kernel 5.2-0[15535] Oct 11 2007
-> AAC0: monitor 5.2-0[15535]
-> AAC0: bios 5.2-0[15535]
-> AAC0: serial 00721EC0115
-> AAC0: Non-DASD support enabled.
-> AAC0: 64bit support enabled.
-> AAC0: 64 Bit DAC enabled
-> scsi0 : aacraid
-> BUG: unable to handle kernel NULL pointer dereference at 0000000000000003
-> IP: [<ffffffff8051f024>] strncmp+0x1b/0x54
-> PGD 0
-> Oops: 0000 [1] SMP
-> CPU 28
-> Modules linked in:
-> Pid: 1, comm: swapper Not tainted 2.6.26-tip-00047-g69a6a3e-dirty #394
-> RIP: 0010:[<ffffffff8051f024>]  [<ffffffff8051f024>] strncmp+0x1b/0x54
-> RSP: 0018:ffff883824c579f0  EFLAGS: 00010206
-> RAX: 0000000000000000 RBX: ffffffff80ad2190 RCX: 0000000000000000
-> RDX: 0000000000000003 RSI: ffffffff80cfe351 RDI: 0000000000000003
-> RBP: ffff883824c57a00 R08: 0000000000000000 R09: ffffe200e0774440
-> R10: 00000000f6f3ecb9 R11: 00000000f6f3ecb9 R12: ffff88402206c050
-> R13: ffff88402206c170 R14: 0000000000000000 R15: ffffffffffffffff
-> FS:  0000000000000000(0000) GS:ffff884024c3b600(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> CR2: 0000000000000003 CR3: 0000000000201000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process swapper (pid: 1, threadinfo ffff883824c56000, task ffff883024c58000)
-> Stack:  ffffffff80e705d0 00000000f6f3ecb9 ffff883824c57a50 ffffffff806ab127
->  ffffe200e0774440 00000000f6f3ecb9 00000000f6f3ecb9 0000000000000000
->  00000000ffffffff 0000000000000000 ffff88402206c170 0000000000000001
-> Call Trace:
->  [<ffffffff806ab127>] rdac_bus_notify+0x68/0x235
->  [<ffffffff80a4f7c6>] notifier_call_chain+0x45/0x84
->  [<ffffffff802835f1>] __blocking_notifier_call_chain+0x61/0x92
->  [<ffffffff80283649>] blocking_notifier_call_chain+0x27/0x3d
->  [<ffffffff805b5f36>] device_add+0xf5/0x4fd
->  [<ffffffff80682811>] ? scsi_setup_command_freelist+0x6c/0xc6
->  [<ffffffff80683477>] scsi_add_host+0xc5/0x20f
->  [<ffffffff80a28269>] aac_probe_one+0x3ef/0x4ba
->  [<ffffffff8053014e>] pci_device_probe+0xd5/0x142
->  [<ffffffff805b8a01>] driver_probe_device+0xd4/0x199
->  [<ffffffff802830da>] ? down+0x4b/0x68
->  [<ffffffff805b8b29>] __driver_attach+0x63/0xa4
->  [<ffffffff805b8ac6>] ? __driver_attach+0x0/0xa4
->  [<ffffffff805b8009>] bus_for_each_dev+0x63/0xb1
->  [<ffffffff805b87cb>] driver_attach+0x34/0x4a
->  [<ffffffff805b7779>] bus_add_driver+0xcb/0x22b
->  [<ffffffff8051ae5a>] ? kset_find_obj+0x4c/0x96
->  [<ffffffff805b8e4e>] driver_register+0xbc/0x153
->  [<ffffffff802313bd>] ? read_tsc+0x9/0x1c
->  [<ffffffff8053046f>] __pci_register_driver+0x67/0xb8
->  [<ffffffff80f71e34>] ? aac_init+0x0/0x9a
->  [<ffffffff80f71e7f>] aac_init+0x4b/0x9a
->  [<ffffffff80f409e4>] kernel_init+0x1de/0x346
->  [<ffffffff8022a4f4>] ? mcount_call+0x5/0x31
->  [<ffffffff80262df7>] ? finish_task_switch+0x14/0xe3
->  [<ffffffff8022b589>] child_rip+0xa/0x11
->  [<ffffffff80f40806>] ? kernel_init+0x0/0x346
->  [<ffffffff8022b57f>] ? child_rip+0x0/0x11
+Pádraig Brady wrote:
+> Chris Snook wrote:
+>> Bill Davidsen wrote:
+>>> Chris Snook wrote:
+>>>> Emmanuel Florac wrote:
+>>>>> I post there because I couldn't find any information about this
+>>>>> elsewhere : on the same hardware ( Athlon X2 3500+, 512MB RAM, 2x400 GB
+>>>>> Hitachi SATA2 hard drives ) the 2.4 Linux software RAID-1 (tested
+>>>>> 2.4.32
+>>>>> and 2.4.36.2, slightly patched to recognize the hardware :p) is way
+>>>>> faster than 2.6 ( tested 2.6.17.13, 2.6.18.8, 2.6.22.16, 2.6.24.3)
+>>>>> especially for writes. I actually made the test on several different
+>>>>> machines (same hard drives though) and it remained consistent across
+>>>>> the board, with /mountpoint a software RAID-1.
+>>>>> Actually checking disk activity with iostat or vmstat shows clearly a
+>>>>> cache effect much more pronounced on 2.4 (i.e. writing goes on much
+>>>>> longer in the background) but it doesn't really account for the
+>>>>> difference. I've also tested it thru NFS from another machine (Giga
+>>>>> ethernet network):
+>>>>>
+>>>>> dd if=/dev/zero of=/mountpoint/testfile bs=1M count=1024
+>>>>>
+>>>>> kernel        2.4       2.6        2.4 thru NFS   2.6 thru NFS
+>>>>>
+>>>>> write        90 MB/s    65 MB/s      70 MB/s       45 MB/s
+>>>>> read         90 MB/s    80 MB/s      75 MB/s       65 MB/s
+>>>>>
+>>>>> Duh. That's terrible. Does it mean I should stick to  (heavily
+>>>>> patched...) 2.4 for my file servers or... ? :)
+>>>>>
+>>>> It means you shouldn't use dd as a benchmark.
+>>>>
+>>> What do you use as a benchmark for writing large sequential files or
+>>> reading them, and why is it better than dd at modeling programs which
+>>> read or write in a similar fashion?
+>>>
+>>> Media programs often do data access in just this fashion,
+>>> multi-channel video capture, streaming video servers, and similar.
+>>>
+>> dd uses unaligned stack-allocated buffers, and defaults to block sized
+>> I/O.  To call this inefficient is a gross understatement.  Modern
+>> applications which care about streaming I/O performance use large,
+>> aligned buffers which allow the kernel to efficiently optimize things,
+>> or they use direct I/O to do it themselves, or they make use of system
+>> calls like fadvise, madvise, splice, etc. that inform the kernel how
+>> they intend to use the data or pass the work off to the kernel
+>> completely.  dd is designed to be incredibly lightweight, so it works
+>> very well on a box with a 16 MHz CPU.  It was *not* designed to take
+>> advantage of the resources modern systems have available to enable
+>> scalability.
+>>
+>> I suggest an application-oriented benchmark that resembles the
+>> application you'll actually be using.
+> 
+> I was trying to speed up an app¹ I wrote which streams parts of a large file,
+> to separate files, and tested your advice above (on ext3 on 2.6.24.5-85.fc8).
+> 
+> I tested reading blocks of 4096, both to stack and page aligned buffers,
+> but there were negligible differences between the CPU usage between the
+> aligned and non-aligned buffer case.
+> I guess the kernel could be clever and only copy the page to userspace
+> on modification in the page aligned case, but the benchmarks at least
+> don't suggest this is what's happening?
+> 
+> What difference exactly should be expected from using page aligned buffers?
+> 
+> Note I also tested using mmap to stream the data, and there is a significant
+> decrease in CPU usage in user and kernel space as expected due to the
+> data not being copied from the page cache.
+> 
+> thanks,
+> Pádraig.
+> 
+> ¹ http://www.pixelbeat.org/programs/dvd-vr/
 
-Great ... I think this is another "we added targets to the scsi bus and
-now it doesn't work" problem.  To test the theory, does this fix the
-problem?
+Page alignment, by itself, doesn't do much, but it implies a couple of 
+things:
 
-James
+1) cache line alignment, which matters more with some architectures than 
+others
 
----
+2) block alignment, which is necessary for direct I/O
 
-diff --git a/drivers/scsi/device_handler/scsi_dh_rdac.c b/drivers/scsi/device_handler/scsi_dh_rdac.c
-index 6fff077..fdf34b0 100644
---- a/drivers/scsi/device_handler/scsi_dh_rdac.c
-+++ b/drivers/scsi/device_handler/scsi_dh_rdac.c
-@@ -608,12 +608,17 @@ static int rdac_bus_notify(struct notifier_block *nb,
- 			    unsigned long action, void *data)
- {
- 	struct device *dev = data;
--	struct scsi_device *sdev = to_scsi_device(dev);
-+	struct scsi_device *sdev;
- 	struct scsi_dh_data *scsi_dh_data;
- 	struct rdac_dh_data *h;
- 	int i, found = 0;
- 	unsigned long flags;
- 
-+	if (!scsi_is_sdev_device(dev))
-+		return 0;
-+
-+	sdev = to_scsi_device(dev);
-+
- 	if (action == BUS_NOTIFY_ADD_DEVICE) {
- 		for (i = 0; rdac_dev_list[i].vendor; i++) {
- 			if (!strncmp(sdev->vendor, rdac_dev_list[i].vendor,
+You're on the right track with mmap, but you may want to use madvise() 
+to tune the readahead on the pagecache.
 
-
+-- Chris
