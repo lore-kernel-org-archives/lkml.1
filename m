@@ -1,84 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758824AbYGPHae@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758132AbYGPHdX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758824AbYGPHae (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 03:30:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754202AbYGPHaW
+	id S1758132AbYGPHdX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 03:33:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbYGPHdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 03:30:22 -0400
-Received: from smtp-out5.blueyonder.co.uk ([195.188.213.8]:52035 "EHLO
-	smtp-out5.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751618AbYGPHaV convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 03:30:21 -0400
-Message-ID: <487DA388.3030104@jeffray.co.uk>
-Date: Wed, 16 Jul 2008 08:30:16 +0100
-From: Ian Jeffray <ian@jeffray.co.uk>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: sendfile() broken with 2.6.26 + Apache 2 ?
-References: <487CD7A7.2080800@jeffray.co.uk> <487D893A.5080207@cosmosbay.com>
-In-Reply-To: <487D893A.5080207@cosmosbay.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+	Wed, 16 Jul 2008 03:33:15 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:53090 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753497AbYGPHdO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 03:33:14 -0400
+Subject: Re: [PATCH] stopmachine: add stopmachine_timeout v3
+From: Peter Zijlstra <peterz@infradead.org>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Max Krasnyansky <maxk@qualcomm.com>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       virtualization@lists.linux-foundation.org,
+       Zachary Amsden <zach@vmware.com>
+In-Reply-To: <487D9A8B.5020005@jp.fujitsu.com>
+References: <487B05CE.1050508@jp.fujitsu.com>
+	 <487D78A3.6050105@jp.fujitsu.com> <487D93CD.1000007@qualcomm.com>
+	 <487D96A2.10904@jp.fujitsu.com>  <487D9A8B.5020005@jp.fujitsu.com>
+Content-Type: text/plain
+Date: Wed, 16 Jul 2008 09:33:35 +0200
+Message-Id: <1216193615.5232.11.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Eric,
-
-Thanks for directing me to a better list.
-
-Further responses below:
-
-Eric Dumazet wrote:
-> CC to netdev where this report might find better answers
+On Wed, 2008-07-16 at 15:51 +0900, Hidetoshi Seto wrote:
+> If stop_machine() invoked while one of onlined cpu is locked up
+> by some reason, stop_machine cannot finish its work because the
+> locked cpu cannot stop.  This means all other healthy cpus
+> will be blocked infinitely by one dead cpu.
 > 
-> Ian Jeffray a écrit :
->> All,
->>
->> I moved from kernel 2.6.25.4 to 2.6.26 yesterday and observed that
->> large files sent via Apache2 are partially corrupt.
->>
->> This appears to be linked to sendfile() -- disabling the use of
->> sendfile in the apache config (EnableSendfile Off) allows it to
->> function as normal.
->>
->> My system is a simple Core2Duo running Debian lenny/sid; nothing
->> special, and I have never observed problems like this before.
->>
->> The problem feels certainly related to sendfile() since the data
->> reads correctly from disc in other programs, and via CIFS etc.
->>
->> The corruption happens part-way in to the file... I've no exact
->> figure but it would seem like maybe 32KB -- I'm seeing broken
->> PNGs served from Apache, where the top few dozen lines decode
->> correctly, and the rest is garbage.
->>
->> I've made basically no configuration changes between 2.6.25.4 and
->> 2.6.26 and have explicitly tried both enabling and disabling the
->> new PAT support to no effect.
->>
->> This is completely repeatable and reproducible.
->>
->> Is anyone else seeing this broken behaviour?
->>
+> This patch allows stop_machine to return -EBUSY with some printk
+> messages if any of stop_machine's threads cannot start running on
+> its target cpu in time.  You can enable this timeout via sysctl.
 > 
+> v3:
+>  - set stopmachine_timeout default to 0 (= never timeout)
 > 
-> What kind of network adapter are you using ? (lspci | grep -i ether)
+> v2:
+>  - remove fix for warning since it will be fixed upcoming typesafe
+>    patches
+>  - make stopmachine_timeout from secs to msecs
+>  - allow disabling timeout by setting the stopmachine_timeout to 0
+> 
+> Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 
-02:00.0 Ethernet controller: Attansic Technology Corp. L1 Gigabit 
-Ethernet Adapter (rev b0)
+I really don't like this, it means the system is really screwed up and
+doesn't deserve to continue.
 
-
-> If you disable TCP segmentation offload on this NIC (ethtool -K eth0 tso 
-> off) , is this problem still present ?
-
-Wow.  That 'solves' the problem!  Great.
-
-Does this therefore point to an attansic driver issue?
-
-
-Ian.
+> ---
+>  kernel/stop_machine.c |   54 ++++++++++++++++++++++++++++++++++++++++++++++--
+>  kernel/sysctl.c       |   15 +++++++++++++
+>  2 files changed, 66 insertions(+), 3 deletions(-)
+> 
+> diff --git a/kernel/stop_machine.c b/kernel/stop_machine.c
+> index 5b72c2b..77b7944 100644
+> --- a/kernel/stop_machine.c
+> +++ b/kernel/stop_machine.c
+> @@ -35,15 +35,18 @@ struct stop_machine_data {
+>  };
+>  
+>  /* Like num_online_cpus(), but hotplug cpu uses us, so we need this. */
+> -static unsigned int num_threads;
+> +static atomic_t num_threads;
+>  static atomic_t thread_ack;
+> +static cpumask_t prepared_cpus;
+>  static struct completion finished;
+>  static DEFINE_MUTEX(lock);
+>  
+> +unsigned long stopmachine_timeout = 0; /* msecs, 0 = "never timeout" */
+> +
+>  static void set_state(enum stopmachine_state newstate)
+>  {
+>  	/* Reset ack counter. */
+> -	atomic_set(&thread_ack, num_threads);
+> +	atomic_set(&thread_ack, atomic_read(&num_threads));
+>  	smp_wmb();
+>  	state = newstate;
+>  }
+> @@ -67,6 +70,8 @@ static int stop_cpu(struct stop_machine_data *smdata)
+>  	enum stopmachine_state curstate = STOPMACHINE_NONE;
+>  	int uninitialized_var(ret);
+>  
+> +	cpu_set(smp_processor_id(), prepared_cpus);
+> +
+>  	/* Simple state machine */
+>  	do {
+>  		/* Chill out and ensure we re-read stopmachine_state. */
+> @@ -90,6 +95,7 @@ static int stop_cpu(struct stop_machine_data *smdata)
+>  		}
+>  	} while (curstate != STOPMACHINE_EXIT);
+>  
+> +	atomic_dec(&num_threads);
+>  	local_irq_enable();
+>  	do_exit(0);
+>  }
+> @@ -105,6 +111,15 @@ int __stop_machine_run(int (*fn)(void *), void *data, const cpumask_t *cpus)
+>  	int i, err;
+>  	struct stop_machine_data active, idle;
+>  	struct task_struct **threads;
+> +	unsigned long limit;
+> +
+> +	if (atomic_read(&num_threads)) {
+> +		/*
+> +		 * previous stop_machine was timeout, and still there are some
+> +		 * unfinished thread (dangling stucked CPU?).
+> +		 */
+> +		return -EBUSY;
+> +	}
+>  
+>  	active.fn = fn;
+>  	active.data = data;
+> @@ -120,7 +135,7 @@ int __stop_machine_run(int (*fn)(void *), void *data, const cpumask_t *cpus)
+>  	/* Set up initial state. */
+>  	mutex_lock(&lock);
+>  	init_completion(&finished);
+> -	num_threads = num_online_cpus();
+> +	atomic_set(&num_threads, num_online_cpus());
+>  	set_state(STOPMACHINE_PREPARE);
+>  
+>  	for_each_online_cpu(i) {
+> @@ -152,10 +167,21 @@ int __stop_machine_run(int (*fn)(void *), void *data, const cpumask_t *cpus)
+>  
+>  	/* We've created all the threads.  Wake them all: hold this CPU so one
+>  	 * doesn't hit this CPU until we're ready. */
+> +	cpus_clear(prepared_cpus);
+>  	get_cpu();
+>  	for_each_online_cpu(i)
+>  		wake_up_process(threads[i]);
+>  
+> +	/* Wait all others come to life */
+> +	if (stopmachine_timeout) {
+> +		limit = jiffies + msecs_to_jiffies(stopmachine_timeout);
+> +		while (cpus_weight(prepared_cpus) != num_online_cpus() - 1) {
+> +			if (time_is_before_jiffies(limit))
+> +				goto timeout;
+> +			cpu_relax();
+> +		}
+> +	}
+> +
+>  	/* This will release the thread on our CPU. */
+>  	put_cpu();
+>  	wait_for_completion(&finished);
+> @@ -169,10 +195,32 @@ kill_threads:
+>  	for_each_online_cpu(i)
+>  		if (threads[i])
+>  			kthread_stop(threads[i]);
+> +	atomic_set(&num_threads, 0);
+>  	mutex_unlock(&lock);
+>  
+>  	kfree(threads);
+>  	return err;
+> +
+> +timeout:
+> +	printk(KERN_CRIT "stopmachine: Failed to stop machine in time(%lds).\n",
+> +			stopmachine_timeout);
+> +	for_each_online_cpu(i) {
+> +		if (!cpu_isset(i, prepared_cpus) && i != smp_processor_id())
+> +			printk(KERN_CRIT "stopmachine: cpu#%d seems to be "
+> +					"stuck.\n", i);
+> +		/* Unbind threads */
+> +		set_cpus_allowed(threads[i], cpu_online_map);
+> +	}
+> +
+> +	/* Let threads go exit */
+> +	set_state(STOPMACHINE_EXIT);
+> +
+> +	put_cpu();
+> +	/* no wait for completion */
+> +	mutex_unlock(&lock);
+> +	kfree(threads);
+> +
+> +	return -EBUSY;	/* canceled */
+>  }
+>  
+>  int stop_machine_run(int (*fn)(void *), void *data, const cpumask_t *cpus)
+> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+> index 2911665..3c7ca98 100644
+> --- a/kernel/sysctl.c
+> +++ b/kernel/sysctl.c
+> @@ -146,6 +146,10 @@ extern int no_unaligned_warning;
+>  extern int max_lock_depth;
+>  #endif
+>  
+> +#ifdef CONFIG_STOP_MACHINE
+> +extern unsigned long stopmachine_timeout;
+> +#endif
+> +
+>  #ifdef CONFIG_PROC_SYSCTL
+>  static int proc_do_cad_pid(struct ctl_table *table, int write, struct file *filp,
+>  		  void __user *buffer, size_t *lenp, loff_t *ppos);
+> @@ -813,6 +817,17 @@ static struct ctl_table kern_table[] = {
+>  		.child		= key_sysctls,
+>  	},
+>  #endif
+> +#ifdef CONFIG_STOP_MACHINE
+> +	{
+> +		.ctl_name       = CTL_UNNUMBERED,
+> +		.procname       = "stopmachine_timeout",
+> +		.data           = &stopmachine_timeout,
+> +		.maxlen         = sizeof(unsigned long),
+> +		.mode           = 0644,
+> +		.proc_handler   = &proc_doulongvec_minmax,
+> +		.strategy       = &sysctl_intvec,
+> +	},
+> +#endif
+>  /*
+>   * NOTE: do not add new entries to this table unless you have read
+>   * Documentation/sysctl/ctl_unnumbered.txt
 
