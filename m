@@ -1,67 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756540AbYGPLRZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755806AbYGPLgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756540AbYGPLRZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 07:17:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752241AbYGPLRR
+	id S1755806AbYGPLgr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 07:36:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbYGPLgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 07:17:17 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:59088 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752036AbYGPLRQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 07:17:16 -0400
-Date: Wed, 16 Jul 2008 06:17:15 -0500
-From: Dean Nelson <dcn@sgi.com>
-To: Mike Travis <travis@sgi.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/8] cpumask: Optimize cpumask_of_cpu in drivers/misc/sgi-xp/xpc_main.c
-Message-ID: <20080716111715.GA15671@sgi.com>
-References: <20080715211429.454823000@polaris-admin.engr.sgi.com> <20080715211430.040646000@polaris-admin.engr.sgi.com>
+	Wed, 16 Jul 2008 07:36:39 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:34640 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752122AbYGPLgi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 07:36:38 -0400
+Date: Wed, 16 Jul 2008 07:36:37 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Vegard Nossum <vegard.nossum@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: 4d3702b6 (post-v2.6.26): WARNING: at kernel/lockdep.c:2731
+ check_flags (ftrace)
+In-Reply-To: <19f34abd0807160232u635891fai2450f29e71c801b6@mail.gmail.com>
+Message-ID: <Pine.LNX.4.58.0807160736170.31086@gandalf.stny.rr.com>
+References: <19f34abd0807151855k22dc80d5tf3629da2e52ee6de@mail.gmail.com> 
+ <Pine.LNX.4.58.0807160010490.25043@gandalf.stny.rr.com>
+ <19f34abd0807160232u635891fai2450f29e71c801b6@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080715211430.040646000@polaris-admin.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 02:14:33PM -0700, Mike Travis wrote:
->   * Optimize various places where a pointer to the cpumask_of_cpu value
->     will result in reducing stack pressure.
-> 
-> Based on linux-2.6.tip/master at the following commit:
-> 
->     commit 0a91813e16ebd5c2d9b5c2acd5b7c91742112c4f
->     Merge: 9a635fa... 724dce0...
->     Author: Ingo Molnar <mingo@elte.hu>
->     Date:   Tue Jul 15 14:55:17 2008 +0200
-> 
-> Signed-off-by: Mike Travis <travis@sgi.com>
-> Cc: Dean Nelson <dcn@sgi.com>
-> ---
->  drivers/misc/sgi-xp/xpc_main.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> --- linux-2.6.tip.orig/drivers/misc/sgi-xp/xpc_main.c
-> +++ linux-2.6.tip/drivers/misc/sgi-xp/xpc_main.c
-> @@ -229,10 +229,11 @@ xpc_hb_checker(void *ignore)
->  	int last_IRQ_count = 0;
->  	int new_IRQ_count;
->  	int force_IRQ = 0;
-> +	cpumask_of_cpu_ptr(cpumask, XPC_HB_CHECK_CPU);
->  
->  	/* this thread was marked active by xpc_hb_init() */
->  
-> -	set_cpus_allowed(current, cpumask_of_cpu(XPC_HB_CHECK_CPU));
-> +	set_cpus_allowed_ptr(current, cpumask);
->  
->  	/* set our heartbeating to other partitions into motion */
->  	xpc_hb_check_timeout = jiffies + (xpc_hb_check_interval * HZ);
-> 
 
-Acked-by: Dean Nelson <dcn@sgi.com>
+On Wed, 16 Jul 2008, Vegard Nossum wrote:
+
+>
+> On Wed, Jul 16, 2008 at 6:13 AM, Steven Rostedt <rostedt@goodmis.org> wrote:
+> > Things get weird between lockdep and ftrace because ftrace can be called
+> > within lockdep internal code (via the mcount pointer) and lockdep can be
+> > called with ftrace (via spin_locks).
+> >
+> > Can you try this patch out and see if it fixes your problem. I only
+> > compiled tested it.
+> >
+> > Note: I'll be traveling for the next couple of weeks, so I will be on and
+> > off with email.
+> >
+> > Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> > ---
+> >  kernel/trace/trace_sched_wakeup.c |   27 ++++++++++++++++-----------
+> >  1 file changed, 16 insertions(+), 11 deletions(-)
+>
+> Works for me! :-)
+>
+> There's no warning during self-tests. But then again, I didn't try
+> tracing anything else either.
+
+Great!
+
+Ingo or Thomas, can you include this patch.
+
+-- Steve
 
