@@ -1,70 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753620AbYGPRMe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbYGPRNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753620AbYGPRMe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 13:12:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbYGPRM0
+	id S1754484AbYGPRNR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 13:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752114AbYGPRNB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 13:12:26 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:56187 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751018AbYGPRM0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 13:12:26 -0400
-Date: Wed, 16 Jul 2008 21:15:38 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: PATCH? exit_mm: update the comments, move atomic_inc(mm_count) outside of mmap_sem
-Message-ID: <20080716171538.GA3056@tv-sign.ru>
+	Wed, 16 Jul 2008 13:13:01 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:3124 "EHLO
+	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751947AbYGPRNA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 13:13:00 -0400
+Subject: Re: BUG: unable to handle kernel NULL pointer dereference at
+	000000000000000e (reset_prng_context)
+From: Joe Perches <joe@perches.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: David Miller <davem@davemloft.net>, mingo@elte.hu, nhorman@tuxdriver.com,
+       simon@fire.lp0.eu, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, herbert@gondor.apana.org.au
+In-Reply-To: <20080715214929.GA18268@martell.zuzino.mipt.ru>
+References: <487BE071.80101@simon.arlott.org.uk>
+	 <20080715020428.GA27463@hmsendeavour.rdu.redhat.com>
+	 <20080715113304.GA30565@elte.hu>
+	 <20080715.134407.150543177.davem@davemloft.net>
+	 <20080715214929.GA18268@martell.zuzino.mipt.ru>
+Content-Type: text/plain
+Date: Wed, 16 Jul 2008 09:57:26 -0700
+Message-Id: <1216227446.8292.37.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.12.3-1.3mdv2008.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(textually depends on
- "[PATCH 2/2] coredump: exit_mm: clear ->mm first, then play with ->core_state")
+On Wed, 2008-07-16 at 01:49 +0400, Alexey Dobriyan wrote:
+> On Tue, Jul 15, 2008 at 01:44:07PM -0700, David Miller wrote:
+> > From: Ingo Molnar <mingo@elte.hu>
+> > > Note that the new crypto/prng.c driver has very bad quality:
+> > I think we should merge new drivers as aggressively as possible.
+> Well, I don't have strong opinion about this exact statement, but
+> Ingo, COULD YOU PLEASE [...] STOP THIS
+> CHECKPATCH.PL-AS-INDICATOR HORSESHIT !
 
-More the "is my understanding correct" than a patch. Assuming it is correct:
+Coding style conformity (easy and clinical) and quality
+(hard and emotional) are only weakly correlated in software.
 
-	- explain the subtle atomic_inc(&mm->mm_count).
+I think that Ingo sometimes conflates them and he should be more
+selective when using the "quality" term.
 
-	- move it outside of mm->mmap_sem, otherwise it is not clear why
-	  do we need this lock to bump ->mm_count.
+I think he recognizes this, he just hasn't done much about it.
+http://lkml.org/lkml/2008/2/22/307
 
-	- "fix" the comment above task_lock(). This lock is really needed
-	  for get_task_mm/etc. Yes, we can change the code to use smp_mb()
-	  + spin_unlock_wait() but I guess we also have another reason.
-
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-
---- 26-rc2/kernel/exit.c~EXIT_MM	2008-07-15 20:24:50.000000000 +0400
-+++ 26-rc2/kernel/exit.c	2008-07-16 20:59:34.000000000 +0400
-@@ -680,6 +680,14 @@ static void exit_mm(struct task_struct *
- 	mm_release(tsk, mm);
- 	if (!mm)
- 		return;
-+
-+	/*
-+	 * We are going to clear ->mm. The next schedule() after that
-+	 * will assume we did context_switch()->atomic_inc(mm_count).
-+	 * finish_task_switch()->mmdrop() will "fix" the counter.
-+	 */
-+	atomic_inc(&mm->mm_count);
-+	BUG_ON(mm != tsk->active_mm);
- 	/*
- 	 * Serialize with any possible pending coredump.
- 	 * We must hold mmap_sem around checking core_state
-@@ -689,9 +697,7 @@ static void exit_mm(struct task_struct *
- 	 */
- 	down_read(&mm->mmap_sem);
- 	core_state = mm->core_state;
--	atomic_inc(&mm->mm_count);
--	BUG_ON(mm != tsk->active_mm);
--	/* more a memory barrier than a real lock */
-+	/* disables preemption, we must not schedule before enter_lazy_tlb() */
- 	task_lock(tsk);
- 	tsk->mm = NULL;
- 	up_read(&mm->mmap_sem);
+Ingo, could you please just substitute conformity for quality
+in these sorts of posts?  Perhaps you could also change the
+name of your code-quality script to style-conformity?
 
