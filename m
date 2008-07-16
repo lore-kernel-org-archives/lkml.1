@@ -1,66 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758036AbYGPOOM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758212AbYGPOS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758036AbYGPOOM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 10:14:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756444AbYGPON5
+	id S1758212AbYGPOS3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 10:18:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756768AbYGPOST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 10:13:57 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:49588 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756009AbYGPON4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 10:13:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=Vyn4t313C65sgt1IPJiL3TNJ1YXkWcGiN7QftpbyN/vcrxyulxzdojfBXbkW07hE1Q
-         cAt4Ma1UcMQEM5fbbyXaFCgJ7TEVYlONggLHY8CH50Os4uoSlQ0BeRNgeIesPQm2WNmq
-         Khd3s7sSBIAmLCOGaVVRsZtko2yfM+/yoy31I=
-Message-ID: <cb0375e10807160713r5aa2bb82md1e0b3b349ca8115@mail.gmail.com>
-Date: Wed, 16 Jul 2008 10:13:54 -0400
-From: "Andrew Lutomirski" <luto@myrealbox.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
-Cc: "Andi Kleen" <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Matthew Garrett" <mjg59@srcf.ucam.org>, "Ingo Molnar" <mingo@elte.hu>,
-       public-kernel-testers-u79uwXL29TY76Z2rM5mHXA@lo.gmane.org,
-       "ACPI Devel Maling List" <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "pm list" <linux-pm@lists.linux-foundation.org>,
-       "Pavel Machek" <pavel@ucw.cz>
-In-Reply-To: <487AD37A.2050903@zytor.com>
+	Wed, 16 Jul 2008 10:18:19 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47021 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756751AbYGPOSS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 10:18:18 -0400
+Date: Wed, 16 Jul 2008 16:18:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [build fix] Re: [GIT PATCH] SCSI part 1
+Message-ID: <20080716141805.GB22631@elte.hu>
+References: <1216138543.3312.60.camel@localhost.localdomain> <20080716101634.GA8494@elte.hu> <20080716103337.GA22931@elte.hu> <20080716131543.GA3673@elte.hu> <1216216320.3230.1.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200807010148.02135.rjw@sisk.pl> <487A2431.2050103@myrealbox.com>
-	 <487A4CB7.1080001@firstfloor.org> <200807132115.08230.rjw@sisk.pl>
-	 <487A617B.80707@firstfloor.org> <487A67C3.50000@zytor.com>
-	 <487AD37A.2050903@zytor.com>
-X-Google-Sender-Auth: f073bf8317ba1746
+In-Reply-To: <1216216320.3230.1.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for the delay in testing.  This appears to work and fix the problem.
 
---Andy
+* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-On Mon, Jul 14, 2008 at 12:18 AM, H. Peter Anvin <hpa@zytor.com> wrote:
-> H. Peter Anvin wrote:
->>
->> The most likely explanation for this is that the VESA BIOS expects to be
->> entered in Big Real Mode (*.limit = 0xffffffff) instead of ordinary Real
->> Mode.  Here is a completely untested patch which changes the segment
->> descriptors to Big Real Mode instead.  It would be worth testing out.
->>
->
-> ... and here is one that actually has a prayer of actually working.
->
->        -hpa
->
->
-> --- AV & Spam Filtering by M+Guardian - Risk Free Email (TM) ---
->
+> On Wed, 2008-07-16 at 15:15 +0200, Ingo Molnar wrote:
+> > * Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > > scsi_cmnd.h depends on symbols defined in blkdev.h. The fix is to 
+> > > > include blkdev.h as well.
+> > > 
+> > > that wont work - a better replacement fix is the one below. The 
+> > > problem is that scsi.h is included even on !CONFIG_BLOCK and then the 
+> > > BLK_MAX_CDB symbol is meaningless.
+> > 
+> > -v3 .. the new methods need to be under #ifdef CONFIG_BLOCK as well. 
+> > Note my patch is just a quick RFC, this can probably be done 
+> > cleaner.
+> 
+> Erm, Ingo, if you'd just follow linux-next instead of your own tree, 
+> you'd see there's already a fix for this.
+
+Erm, no. In the merge window i follow upstream -git, not "my tree", and 
+i searched lkml for the build failure signature and it had nothing 
+there. Then i looked at the commit and it said that it was created just 
+1 day before the merge window started:
+
+ commit feac6a07c4a3578bffd6769bb4927e8a7e1f3ffe
+ Author:     Martin Petermann <martin@linux.vnet.ibm.com>
+ AuthorDate: Wed Jul 2 10:56:35 2008 +0200
+ Commit:     James Bottomley <James.Bottomley@HansenPartnership.com>
+ CommitDate: Sat Jul 12 08:22:34 2008 -0500
+                 ^^^^^^
+
+So i didnt even think of it having hit linux-next so i didnt look into 
+the linux-next archives. lkml should have been Cc:-ed in this case, 
+that's where people look for in case of upstream breakages. You would 
+have saved me some effort via that - please try to do it in the future, 
+it's very helpful to testers.
+
+btw., about the technical aspects of the solution, i'm not sure i like 
+these big #ifdef blocks:
+
+> --- linux-next-20080708.orig/fs/compat_ioctl.c
+> +++ linux-next-20080708/fs/compat_ioctl.c
+> @@ -68,9 +68,11 @@
+>  #include <linux/capi.h>
+>  #include <linux/gigaset_dev.h>
+>  
+> +#ifdef CONFIG_BLOCK
+>  #include <scsi/scsi.h>
+>  #include <scsi/scsi_ioctl.h>
+>  #include <scsi/sg.h>
+> +#endif
+>  
+>  #include <asm/uaccess.h>
+>  #include <linux/ethtool.h>
+> @@ -1965,6 +1967,7 @@ COMPATIBLE_IOCTL(GIO_UNISCRNMAP)
+>  COMPATIBLE_IOCTL(PIO_UNISCRNMAP)
+>  COMPATIBLE_IOCTL(PIO_FONTRESET)
+>  COMPATIBLE_IOCTL(PIO_UNIMAPCLR)
+> +#ifdef CONFIG_BLOCK
+>  /* Big S */
+>  COMPATIBLE_IOCTL(SCSI_IOCTL_GET_IDLUN)
+>  COMPATIBLE_IOCTL(SCSI_IOCTL_DOORLOCK)
+> @@ -1974,6 +1977,7 @@ COMPATIBLE_IOCTL(SCSI_IOCTL_GET_BUS_NUMB
+>  COMPATIBLE_IOCTL(SCSI_IOCTL_SEND_COMMAND)
+>  COMPATIBLE_IOCTL(SCSI_IOCTL_PROBE_HOST)
+>  COMPATIBLE_IOCTL(SCSI_IOCTL_GET_PCI)
+> +#endif
+>  /* Big T */
+>  COMPATIBLE_IOCTL(TUNSETNOCSUM)
+>  COMPATIBLE_IOCTL(TUNSETDEBUG)
+> @@ -2044,6 +2048,7 @@ COMPATIBLE_IOCTL(SIOCGIFVLAN)
+>  COMPATIBLE_IOCTL(SIOCSIFVLAN)
+>  COMPATIBLE_IOCTL(SIOCBRADDBR)
+>  COMPATIBLE_IOCTL(SIOCBRDELBR)
+> +#ifdef CONFIG_BLOCK
+>  /* SG stuff */
+>  COMPATIBLE_IOCTL(SG_SET_TIMEOUT)
+>  COMPATIBLE_IOCTL(SG_GET_TIMEOUT)
+> @@ -2068,6 +2073,7 @@ COMPATIBLE_IOCTL(SG_SCSI_RESET)
+>  COMPATIBLE_IOCTL(SG_GET_REQUEST_TABLE)
+>  COMPATIBLE_IOCTL(SG_SET_KEEP_ORPHAN)
+>  COMPATIBLE_IOCTL(SG_GET_KEEP_ORPHAN)
+> +#endif
+>  /* PPP stuff */
+>  COMPATIBLE_IOCTL(PPPIOCGFLAGS)
+>  COMPATIBLE_IOCTL(PPPIOCSFLAGS)
+
+the clean solution we use everywhere else is to push such #ifdefs into 
+the headers, to make them generally includable. For example you can 
+include lockdep.h even if you dont have lockdep enabled, you can include 
+smp.h even on UP-only files, etc. etc.
+
+	Ingo
