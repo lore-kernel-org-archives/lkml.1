@@ -1,131 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757537AbYGPAJy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757228AbYGPALn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757537AbYGPAJy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 20:09:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbYGPAJq
+	id S1757228AbYGPALn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 20:11:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbYGPALf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 20:09:46 -0400
-Received: from r00tworld.com ([212.85.137.21]:59138 "EHLO r00tworld.com"
+	Tue, 15 Jul 2008 20:11:35 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:2281 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752814AbYGPAJp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 20:09:45 -0400
-From: pageexec@freemail.hu
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 16 Jul 2008 02:04:25 +0200
+	id S1753890AbYGPALe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 20:11:34 -0400
+Date: Tue, 15 Jul 2008 20:04:43 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, davem@davemloft.net, mingo@elte.hu,
+       simon@fire.lp0.eu, linux-kernel@vger.kernel.org,
+       herbert@gondor.apana.org.au
+Subject: Re: BUG: unable to handle kernel NULL pointer dereference at
+	000000000000000e (reset_prng_context)
+Message-ID: <20080716000443.GA18297@hmsreliant.think-freely.org>
+References: <487BE071.80101@simon.arlott.org.uk> <20080715020428.GA27463@hmsendeavour.rdu.redhat.com> <20080715113304.GA30565@elte.hu> <20080715.134407.150543177.davem@davemloft.net> <20080715214929.GA18268@martell.zuzino.mipt.ru> <20080715151110.d7a17c89.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Subject: Re: [stable] Linux 2.6.25.10
-Reply-to: pageexec@freemail.hu
-CC: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Message-ID: <487D5729.14854.1CA5C3EB@pageexec.freemail.hu>
-In-reply-to: <alpine.LFD.1.10.0807151620450.2867@woody.linux-foundation.org>
-References: <20080703185727.GA12617@suse.de>, <487D3C17.31467.1C3C0441@pageexec.freemail.hu>, <alpine.LFD.1.10.0807151620450.2867@woody.linux-foundation.org>
-X-mailer: Pegasus Mail for Windows (4.41)
-Content-type: text/plain; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-Content-description: Mail message body
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Wed, 16 Jul 2008 02:05:10 +0200 (CEST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080715151110.d7a17c89.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 15 Jul 2008 at 16:28, Linus Torvalds wrote:
-
-> On Wed, 16 Jul 2008, pageexec@freemail.hu wrote:
-> >
-> > you should check out the last few -stable releases then and see how
-> > the announcement doesn't ever mention the word 'security' while fixing
-> > security bugs
+On Tue, Jul 15, 2008 at 03:11:10PM -0700, Andrew Morton wrote:
+> On Wed, 16 Jul 2008 01:49:30 +0400
+> Alexey Dobriyan <adobriyan@gmail.com> wrote:
 > 
-> Umm. What part of "they are just normal bugs" did you have issues with?
-
-oh, we're back to that. i told you that already, here it is again (just
-quoting myself back):
-
-  when you fix a bug, the commit describes what it fixes without omitting
-  anything relevant. when you fix a security bug, its commit doesn't say
-  what it fixes (not even that it's a security fix, never mind actual
-  impact information), that is, you omit relevant information (based on
-  some ill-conceived argument that i deconstructed at the beginning). in
-  other words, you're *not* treating security bugs as normal bugs. for
-  all intents and purposes, you cover them up. i *wish* you did treat
-  them as normal bugs however.
-
-we went through this and you yourself said that security bugs are *not*
-treated as normal bugs because you do omit relevant information from such
-commits whereas you do *not* omit relevant information from normal commits.
-for security bugs the fact that they fix a security issue is relevant
-information.
-
-> I expressly told you that security bugs should not be marked as such, 
-> because bugs are bugs. 
-
-repeating the same thing doesn't make the self-contradiction above go
-away. bugs are properly described in the commits, security bugs aren't
-(you said so yourself), therefore they can't be of the same category.
-
-what you're still trying to justify is why you are covering up security
-bugs, plain and simple.
-
-> > > I'm just saying that why mark things, when the marking have no meaning? 
-> > > People who believe in them are just _wrong_.
+> > On Tue, Jul 15, 2008 at 01:44:07PM -0700, David Miller wrote:
+> > > From: Ingo Molnar <mingo@elte.hu>
+> > > 
+> > > > i have just triggered this crash too. Please, when you know about bootup 
+> > > > crashes in your code send a patch to the lkml thread so that people can 
+> > > > apply it and have a working system.
+> > > > 
+> > > > Note that the new crypto/prng.c driver has very bad quality:
+> > > > 
+> > > >   total: 45 errors, 21 warnings, 1 checks, 410 lines checked
+> > > > 
+> > > > It has tons of completely unacceptable code mistakes in it.
+> > > 
+> > > I think we should merge new drivers as aggressively as possible.
 > > 
-> > what is wrong in particular?
+> > Well, I don't have strong opinion about this exact statement, but
+> > 
+> > 	Ingo, COULD YOU PLEASE PERSONALLY FUCKING STOP THIS
+> > 	CHECKPATCH.PL-AS-INDICATOR HORSESHIT !
 > 
-> You have two cases:
+> Well I wouldn't put it that way but sure, there is no clear correlation.
 > 
->  - people think the marking is somehow trustworthy.
+> Except that such a high density of coding-style errors is an indication
+> that the code was not closely and critically reviewed by an experienced
+> kernel developer.
 > 
->    People are WRONG, and are misled by the partial markings, thinking that 
->    unmarked bugfixes are "less important". They aren't.
+In fairness, I should have run checkpatch.pl on it before I submitted (sorry,
+I'm bad about that), and I just missed the bad ifdef check for my startup test,
+because I never thought to test with CRYPTO_PRNG built monolithically and no
+support for the requisite cipher built in.  That was just stupid of of me, and I
+apologize.
 
-why would people think that unmarked bugfixes are less important? who are
-you to make that judgement for them anyway? the importance of bugs is
-*orthogonal* to their classification (security, etc). it's up to the people
-and their decision making processes to deal with that. all you should do
-is help them by not withholding relevant information. in case it wasn't
-clear, i'm not talking about just about any person like my grandma, but
-people whose work involves following kernel development, who can use all
-the extra information to make judgement calls about what to prioritize.
-they're certainly not dumb and would not think that only commits marked
-as such are security related.
+As its been pointed out though, these are trivial errors, and as such trivial to
+fix (FWIW, the 45 errors from checkpatch boiled down to all spacing on about 10
+different lines of code).   The PRNG works, is usefull, and for anything that
+doesn't use it its irrelevant (now that it doesn't oops when built in).
 
->  - People don't think it matters
-> 
->    People are right, and the marking is pointless.
+At any rate, its all moot now anyway, I've posted patches that clean up the
+whitespace, and fix the oops.  
 
-you have yet to prove why it's pointless. the above attempt failed to do so.
+Regards
+Neil
 
-> In either case it's just stupid to mark them. I don't want to do it, 
-> because I don't want to perpetuate the myth of "security fixes" as a 
-> separate thing from "plain regular bug fixes".
-
-it's not a myth, it's called reality. a bugfix that gets my pc speaker beep
-again is very different from a fix that stops the tcp/ip stack sending out
-random kernel memory to the net (just made them up, before anyone starts
-looking). you're desperately trying to ignore the importance of security
-bugs but you're failing. the world has decided that security bugs *are*
-important and deserve special attention. and it's not as if you had to do
-any extra work, you already have the information, you should just not
-*withhold* it.
-
-> They're all fixes. They're all important. As are new features, for that 
-> matter.
-
-'importance' is not a big grey goo that applies equally to all fixes. you
-want to make it appear so, but that doesn't make it so.
-
-> > when you know that you're about to commit a patch that fixes a security 
-> > bug, why is it wrong to say so in the commit?
-> 
-> It's pointless and wrong because it makes people think that other bugs 
-> aren't potential security fixes.
-
-why does it make people think that? did you ask them? what if you told them
-as i suggested (and you conveniently skipped) what to expect? do you think
-people dealing with kernel maintenance at companies, distros, etc are that
-dumb?
-
-cheers,
-  PaX Team
-
+-- 
+/****************************************************
+ * Neil Horman <nhorman@tuxdriver.com>
+ * Software Engineer, Red Hat
+ ****************************************************/
