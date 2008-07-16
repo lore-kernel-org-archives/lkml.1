@@ -1,53 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759225AbYGPQVG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758340AbYGPQ0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759225AbYGPQVG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 12:21:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757520AbYGPQUx
+	id S1758340AbYGPQ0y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 12:26:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756969AbYGPQ0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 12:20:53 -0400
-Received: from mga01.intel.com ([192.55.52.88]:42365 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756910AbYGPQUw convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 12:20:52 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.30,374,1212390000"; 
-   d="scan'208";a="362108560"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Dropping WUSB/UWB from my patch queue
-Date: Wed, 16 Jul 2008 09:20:30 -0700
-Message-ID: <C72DEB015BA7724783363DE1AF6B0F9805393C24@orsmsx417.amr.corp.intel.com>
-In-Reply-To: <487DC4FA.4050505@csr.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Dropping WUSB/UWB from my patch queue
-Thread-Index: AcjnKdutTmJVDBNgTiOg7v0gUr0RigANfBZA
-References: <20080630180009.GA30833@kroah.com> <4871E9F0.60608@csr.com> <20080715155313.GA3075@kroah.com> <487CE2E7.90505@csr.com> <20080716054911.GA9806@kroah.com> <487DC4FA.4050505@csr.com>
-From: "Perez-Gonzalez, Inaky" <inaky.perez-gonzalez@intel.com>
-To: "David Vrabel" <david.vrabel@csr.com>, "Greg KH" <greg@kroah.com>
-Cc: "linux-usb" <linux-usb@vger.kernel.org>,
-       "Kernel development list" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 16 Jul 2008 16:20:32.0625 (UTC) FILETIME=[DED1A610:01C8E75F]
+	Wed, 16 Jul 2008 12:26:45 -0400
+Received: from xenotime.net ([66.160.160.81]:48291 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756896AbYGPQ0p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 12:26:45 -0400
+Date: Wed, 16 Jul 2008 09:26:43 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: "Cheradenine Zakalwe" <sc.contact@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: The state of linux security
+Message-Id: <20080716092643.f94f9957.rdunlap@xenotime.net>
+In-Reply-To: <67b4e5f30807160905n224a7808tf346dd4d506edd25@mail.gmail.com>
+References: <67b4e5f30807160905n224a7808tf346dd4d506edd25@mail.gmail.com>
+Organization: YPO4
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From: David Vrabel [mailto:david.vrabel@csr.com]
->
->Postponed:
->
->* HWA radio controller driver
->* Wire Adapter core (for HWAs and DWAs).
->* HWA host controller
->* WLP support
->* i1480 firmware download driver.
->* i1480 WLP driver.
+On Wed, 16 Jul 2008 16:05:07 +0000 Cheradenine Zakalwe wrote:
 
-If I got you a fix for the USB reset stuff, would you be able to merge
-these guys?
+[deletia]
 
+Please submit patch(es) to Documentation/stable_kernel_rules.txt
+or some other (even new) file in Documentation/ .
+
+Thanks.
+
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
