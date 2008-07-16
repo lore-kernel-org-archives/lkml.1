@@ -1,90 +1,207 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758087AbYGPPMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759509AbYGPPMl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758087AbYGPPMU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 11:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755999AbYGPPMH
+	id S1759509AbYGPPMl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 11:12:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758785AbYGPPM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 11:12:07 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:49758 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751595AbYGPPMF (ORCPT
+	Wed, 16 Jul 2008 11:12:29 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:35687 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758762AbYGPPM2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 11:12:05 -0400
-Subject: Re: [build fix] Re: [GIT PATCH] SCSI part 1
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080716144501.GA4369@elte.hu>
-References: <1216138543.3312.60.camel@localhost.localdomain>
-	 <20080716101634.GA8494@elte.hu> <20080716103337.GA22931@elte.hu>
-	 <20080716131543.GA3673@elte.hu>
-	 <1216216320.3230.1.camel@localhost.localdomain>
-	 <20080716141805.GB22631@elte.hu>
-	 <1216218498.3358.3.camel@localhost.localdomain>
-	 <20080716144501.GA4369@elte.hu>
-Content-Type: text/plain
-Date: Wed, 16 Jul 2008 10:11:57 -0500
-Message-Id: <1216221117.3358.19.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Wed, 16 Jul 2008 11:12:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=PWtmocbQMQKWuUyM0dmaVq9eDtQkLNV7AYcKcFcOgM8M+2bFyhjuHyp9e1o5Iymuuk
+         iZZWZOhcyfm1MLNa94FRdrcFF+WT8CsMMnrF8JzEbbaIoGGXwXY/SLWHqT7kXen/xqL0
+         mQHl8GghpXLkKSRgAlI6wQ9ILsxonrOI+kKoM=
+Message-ID: <dd18b0c30807160812x5b979236i2dd585684cb7ee59@mail.gmail.com>
+Date: Wed, 16 Jul 2008 15:12:16 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Jack Howarth" <howarth@bromo.msbb.uc.edu>
+Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
+Cc: "Yinghai Lu" <yhlu.kernel@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Barnes, Jesse" <jesse.barnes@intel.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080716140810.GA2861@bromo.msbb.uc.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <dd18b0c30807151252w7edcea19t8cec5ec5f958c7c0@mail.gmail.com>
+	 <dd18b0c30807151726i622dabceve31828460085ee57@mail.gmail.com>
+	 <20080716012427.GA27398@bromo.msbb.uc.edu>
+	 <dd18b0c30807152005g3c58001br7182f7670d6247db@mail.gmail.com>
+	 <20080716035830.GA27935@bromo.msbb.uc.edu>
+	 <dd18b0c30807152230u39ef9c18v78b48d1c7b9ddd17@mail.gmail.com>
+	 <86802c440807160044ge504cacl419b6cbcad5f0f9d@mail.gmail.com>
+	 <dd18b0c30807160050r5b10908fiffc2a4b464abe5f3@mail.gmail.com>
+	 <86802c440807160136m6af981b2u6a37cabb8e33a629@mail.gmail.com>
+	 <20080716140810.GA2861@bromo.msbb.uc.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-16 at 16:45 +0200, Ingo Molnar wrote:
-> * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> 
-> > On Wed, 2008-07-16 at 16:18 +0200, Ingo Molnar wrote:
-> > > * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> > > 
-> > > > On Wed, 2008-07-16 at 15:15 +0200, Ingo Molnar wrote:
-> > > > > * Ingo Molnar <mingo@elte.hu> wrote:
-> > > > > 
-> > > > > > > scsi_cmnd.h depends on symbols defined in blkdev.h. The fix is to 
-> > > > > > > include blkdev.h as well.
-> > > > > > 
-> > > > > > that wont work - a better replacement fix is the one below. The 
-> > > > > > problem is that scsi.h is included even on !CONFIG_BLOCK and then the 
-> > > > > > BLK_MAX_CDB symbol is meaningless.
-> > > > > 
-> > > > > -v3 .. the new methods need to be under #ifdef CONFIG_BLOCK as well. 
-> > > > > Note my patch is just a quick RFC, this can probably be done 
-> > > > > cleaner.
-> > > > 
-> > > > Erm, Ingo, if you'd just follow linux-next instead of your own tree, 
-> > > > you'd see there's already a fix for this.
-> > > 
-> > > Erm, no. In the merge window i follow upstream -git, not "my tree", and 
-> > > i searched lkml for the build failure signature and it had nothing 
-> > > there. Then i looked at the commit and it said that it was created just 
-> > > 1 day before the merge window started:
-> > > 
-> > >  commit feac6a07c4a3578bffd6769bb4927e8a7e1f3ffe
-> > >  Author:     Martin Petermann <martin@linux.vnet.ibm.com>
-> > >  AuthorDate: Wed Jul 2 10:56:35 2008 +0200
-> > >  Commit:     James Bottomley <James.Bottomley@HansenPartnership.com>
-> > >  CommitDate: Sat Jul 12 08:22:34 2008 -0500
-> > >                  ^^^^^^
-> > > 
-> > > So i didnt even think of it having hit linux-next so i didnt look into 
-> > > the linux-next archives. lkml should have been Cc:-ed in this case, 
-> > 
-> > It was, that would be this email:
-> > 
-> > http://marc.info/?l=linux-kernel&m=121555252007662
-> 
-> right - i missed it because i limited my search based on the Jul 12 
-> CommitDate. Why is the CommitDate in your commit _after_ the creation of 
-> a fix to it? I have found the patch in linux-next as well now, but under 
-> a different sha1 that was generated on July 7th.
+On Wed, Jul 16, 2008 at 2:08 PM, Jack Howarth <howarth@bromo.msbb.uc.edu> wrote:
+> Yunghai,
+>   I had partial success with your proposed patch. The MacPro2
+> identifier doesn't appear to be correct for a second generation
+> MacBook Pro so I had to comment out the line...
+>
+>                     DMI_MATCH(DMI_PRODUCT_NAME, "MacPro2"),
+>
+> With that change, a patched 2.6.26-git2 kernel now uses MMCONFIG.
+> However I still see the same hang. The boot messages I see on
+> screen are...
+>
+> ACPI: bus type pci registered
+> PCI: MCFG configuration 0: base f0000000 segment 0 buses 0 - 63
+> PCI: MCFG area at f0000000 reserved in E820
+> PCI: Using MMCONFIG at f0000000 - f3ffffff
+> PCI: Using configuration type 1 for base access
+> ACPI: EC: EC description table is found, configuring boot EC
+> ACPI: EC: non-query interrupt received, switching to interrupt mode
+> ACPI: BIOS_OSI(Linux) query ignored via DMI
+> ACPI: Interpreter enabled
+> ACPI: (S0 S3 S4 S5)
+> ACPI: Using IOAPIC for interrupt routing
+> ACPI: EC: GPE = 0x17, I/O: command/status = 0x66, data = 0x62
+> ACPI: EC: drivers started in interrupt mode
+> ACPI: PCI Root Bridge [PCI0] (0000.00)
+> pci 0000:00:1f.00 : quirk region 0400-047f claimed by ICH6 ACPI/GPIO/TCO
+> pci 0000.00:1f:00 : quirk region 0500-053f claimed by ICH6 GPIO
+>
+> ...at which the boot hangs. On the positive side, I was able to fully
+> boot if I passed 'pci=noacpi' to the kernel options (which never worked
+> before with 2.6.26). I can post the dmesg from a noacpi boot of the
+> patched kernel to my bugzilla report tonight if it would help debug the
+> issues we are still seeing with ACPI.
+>   One thing I notice with the patched kernel (without noacpi) is that I
+> only see buses 0 - 63. A normal boot of 2.6.25.10 on this machine (or
+> 2.6.26 reportedly on a MacMini) always shows buses 0 - 255. Could this
+> be related to the ACPI breakage? Let me know if I can do anything
+> else to debug the ACPI issues under MMCONFIG.
+>                     Jack
+>
+>
+> On Wed, Jul 16, 2008 at 01:36:21AM -0700, Yinghai Lu wrote:
+>> On Wed, Jul 16, 2008 at 12:50 AM, Justin Mattock
+>> <justinmattock@gmail.com> wrote:
+>> > On Wed, Jul 16, 2008 at 7:44 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>> >> I looked at your dmesg from 2.6.25.10
+>> >>
+>> >> it tried to use mmconfig, and later fall back to conf1, because
+>> >> 1. your MCFG said it support bus [0,255], and range will be
+>> >> [0xf0000000, 0xffffffff]
+>> >> 2. firmware only reserve [0xf0000000, 0xf4000000)
+>> >>
+>> >> and 2.5.25 will not check acp reserved range.
+>> >>
+>> >> from 2.6.26, it will check if the [0xf0000000, 0xffffffff] is reserved
+>> >> via acpi dsdt _crs?
+>> >> it will fail too.
+>> >>
+>> >> So MCFG table is broken.
+>> >>
+>> >> You need to get firmware update from your vendor.
+>> >>
+>> >> or we need to put that system on DMI check to change end_bus_number
+>> >> from 0xff to 0x3f
+>> >>
+>> >> ps: mem=2g will not work, it will can not change mcfg table etc... you
+>> >> need take out 1G ram out.
+>> >>
+>> >> YH
+>> >>
+>> >
+>> > Well shit man, that sucks...
+>> > how hard is it to do a DMI check?
+>> > regards;
+>>
+>> please check attached patch... not sure the
+>> DMI_MATCH(DMI_PRODUCT_NAME, "MacPro2"),  is right or not.
+>>
+>> YH
+>
+>> [PATCH] x86,pci: dmi check for mackpro 2.2 mmconf
+>>
+>> change the mconf bus range from [0,0xff] to to [0, 0x3f]
+>> to match range [0xf0000000, 0xf4000000) in e820 tables.
+>>
+>> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+>>
+>> ---
+>>  arch/x86/pci/mmconfig-shared.c |   35 +++++++++++++++++++++++++++++++++++
+>>  1 file changed, 35 insertions(+)
+>>
+>> Index: linux-2.6/arch/x86/pci/mmconfig-shared.c
+>> ===================================================================
+>> --- linux-2.6.orig/arch/x86/pci/mmconfig-shared.c
+>> +++ linux-2.6/arch/x86/pci/mmconfig-shared.c
+>> @@ -374,6 +374,40 @@ reject:
+>>
+>>  static int __initdata known_bridge;
+>>
+>> +static int __devinit check_mmconf(const struct dmi_system_id *d)
+>> +{
+>> +     typeof(pci_mmcfg_config[0]) *cfg;
+>> +
+>> +     if ((pci_mmcfg_config_num != 1) ||
+>> +         (pci_mmcfg_config == NULL) ||
+>> +         (pci_mmcfg_config[0].address == 0))
+>> +             return 1;
+>> +
+>> +     cfg = &pci_mmcfg_config[0];
+>> +
+>> +     if (cfg->start_bus_number == 0 && cfg->end_bus_number > 0x3f)
+>> +             cfg->end_bus_number = 0x3f;
+>> +
+>> +     return 0;
+>> +}
+>> +
+>> +static struct dmi_system_id __devinitdata mmconf_dmi_table[] = {
+>> +        {
+>> +                .callback = check_mmconf,
+>> +                .ident = "Apple",
+>> +                .matches = {
+>> +                        DMI_MATCH(DMI_SYS_VENDOR, "Apple"),
+>> +                     DMI_MATCH(DMI_PRODUCT_NAME, "MacPro2"),
+>> +                },
+>> +        },
+>> +        {}
+>> +};
+>> +
+>> +void __init check_mmconf_dmi(void)
+>> +{
+>> +        dmi_check_system(mmconf_dmi_table);
+>> +}
+>> +
+>>  static void __init __pci_mmcfg_init(int early)
+>>  {
+>>       /* MMCONFIG disabled */
+>> @@ -395,6 +429,7 @@ static void __init __pci_mmcfg_init(int
+>>
+>>       if (!known_bridge) {
+>>               acpi_table_parse(ACPI_SIG_MCFG, acpi_parse_mcfg);
+>> +             check_mmconf_dmi();
+>>               pci_mmcfg_reject_broken(early);
+>>       }
+>>
+>
+>
 
-Because my tree got rebased; some of the patches needed to be moved to
-immediate fixes.
+Hmm Im not seeing MMCONFIG anywhere in dmesg
+I'm wondering if I should apply this patch as well.
+this is what I'm seeing with dmesg | grep MCFG:
 
-James
+[    0.000000] ACPI: MCFG 3FEF8000, 003C (r1 APPLE   Apple00        1
+Loki       5F)
+[    0.340000]  domain 0: span 0-1 level MC
+[    0.340000]  domain 0: span 0-1 level MC
+[    1.660595] EDAC MC: Ver: 2.1.0 Jul 15 2008
 
-
+-- 
+Justin P. Mattock
