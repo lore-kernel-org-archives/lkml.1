@@ -1,131 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757352AbYGPOhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759485AbYGPOip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757352AbYGPOhc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 10:37:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755511AbYGPOhY
+	id S1759485AbYGPOip (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 10:38:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbYGPOii
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 10:37:24 -0400
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:63200 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754417AbYGPOhY (ORCPT
+	Wed, 16 Jul 2008 10:38:38 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:36360 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752452AbYGPOih (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 10:37:24 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtUEALijfUhMRKxB/2dsb2JhbACBWa8R
-Date: Wed, 16 Jul 2008 10:37:19 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Masami Hiramatsu <mhiramat@redhat.com>,
-       linux-mm@kvack.org, Dave Hansen <haveblue@us.ibm.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: Re: [patch 09/17] LTTng instrumentation - filemap
-Message-ID: <20080716143719.GF24546@Krystal>
-References: <20080715222604.331269462@polymtl.ca> <20080715222748.002421557@polymtl.ca> <1216197334.5232.24.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 16 Jul 2008 10:38:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:subject:content-type
+         :content-transfer-encoding:from;
+        b=k1pof3sMJind5TfnIRiN3WRlJjY87hvkU6fiWAiTGYAGb6YOlNk8UMamSDLx42kb7P
+         IByAnXxYG3qiHe2/NfYzRWLNs3oRZn/uqoofcPErQaeX9B/vT5Ckz73BZ21OPC+/1yGd
+         gKsbd/sKf4QzsqsQPQ2JriR6revCNaeD0lKC4=
+Message-ID: <487E0706.70107@gmail.com>
+Date: Wed, 16 Jul 2008 16:34:46 +0200
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: man-pages-3.04 is released
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1216197334.5232.24.camel@twins>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 10:34:11 up 41 days, 19:15,  5 users,  load average: 3.41, 1.23,
-	0.85
-User-Agent: Mutt/1.5.16 (2007-06-11)
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra (peterz@infradead.org) wrote:
-> On Tue, 2008-07-15 at 18:26 -0400, Mathieu Desnoyers wrote:
-> > plain text document attachment (lttng-instrumentation-filemap.patch)
-> > Instrumentation of waits caused by memory accesses on mmap regions.
-> > 
-> > Those tracepoints are used by LTTng.
-> > 
-> > About the performance impact of tracepoints (which is comparable to markers),
-> > even without immediate values optimizations, tests done by Hideo Aoki on ia64
-> > show no regression. His test case was using hackbench on a kernel where
-> > scheduler instrumentation (about 5 events in code scheduler code) was added.
-> > See the "Tracepoints" patch header for performance result detail.
-> > 
-> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> > CC: linux-mm@kvack.org
-> > CC: Dave Hansen <haveblue@us.ibm.com>
-> > CC: Masami Hiramatsu <mhiramat@redhat.com>
-> > CC: 'Peter Zijlstra' <peterz@infradead.org>
-> > CC: "Frank Ch. Eigler" <fche@redhat.com>
-> > CC: 'Ingo Molnar' <mingo@elte.hu>
-> > CC: 'Hideo AOKI' <haoki@redhat.com>
-> > CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
-> > CC: 'Steven Rostedt' <rostedt@goodmis.org>
-> > CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-> > ---
-> >  include/trace/filemap.h |   13 +++++++++++++
-> >  mm/filemap.c            |    3 +++
-> >  2 files changed, 16 insertions(+)
-> > 
-> > Index: linux-2.6-lttng/mm/filemap.c
-> > ===================================================================
-> > --- linux-2.6-lttng.orig/mm/filemap.c	2008-07-15 14:51:50.000000000 -0400
-> > +++ linux-2.6-lttng/mm/filemap.c	2008-07-15 15:14:46.000000000 -0400
-> > @@ -33,6 +33,7 @@
-> >  #include <linux/cpuset.h>
-> >  #include <linux/hardirq.h> /* for BUG_ON(!in_atomic()) only */
-> >  #include <linux/memcontrol.h>
-> > +#include <trace/filemap.h>
-> >  #include "internal.h"
-> >  
-> >  /*
-> > @@ -541,9 +542,11 @@ void wait_on_page_bit(struct page *page,
-> >  {
-> >  	DEFINE_WAIT_BIT(wait, &page->flags, bit_nr);
-> >  
-> > +	trace_filemap_wait_start(page, bit_nr);
-> >  	if (test_bit(bit_nr, &page->flags))
-> >  		__wait_on_bit(page_waitqueue(page), &wait, sync_page,
-> >  							TASK_UNINTERRUPTIBLE);
-> > +	trace_filemap_wait_end(page, bit_nr);
-> >  }
-> >  EXPORT_SYMBOL(wait_on_page_bit);
-> 
-> I don't like the trace_filemap_wait_* naming..
-> 
+Gidday
 
-Me neither :)
+I've released man-pages-3.04.
 
-> trace_wait_on_page_* might make more sense
-> 
+This release is now available for download at:
 
-Yep, agreed,
+     http://www.kernel.org/pub/linux/docs/man-pages
+     or ftp://ftp.kernel.org/pub/linux/docs/man-pages
 
-Mathieu
+This release is now available for download at:
 
-> > Index: linux-2.6-lttng/include/trace/filemap.h
-> > ===================================================================
-> > --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> > +++ linux-2.6-lttng/include/trace/filemap.h	2008-07-15 15:14:46.000000000 -0400
-> > @@ -0,0 +1,13 @@
-> > +#ifndef _TRACE_FILEMAP_H
-> > +#define _TRACE_FILEMAP_H
-> > +
-> > +#include <linux/tracepoint.h>
-> > +
-> > +DEFINE_TRACE(filemap_wait_start,
-> > +	TPPROTO(struct page *page, int bit_nr),
-> > +	TPARGS(page, bit_nr));
-> > +DEFINE_TRACE(filemap_wait_end,
-> > +	TPPROTO(struct page *page, int bit_nr),
-> > +	TPARGS(page, bit_nr));
-> > +
-> > +#endif
-> > 
-> 
+     http://www.kernel.org/pub/linux/docs/man-pages
+     or ftp://ftp.kernel.org/pub/linux/docs/man-pages
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+The online changelog is available at
+http://www.kernel.org/doc/man-pages/changelog.html
+(blogged at
+http://linux-man-pages.blogspot.com/2008/07/man-pages-304-is-released.html)
+and the current version of the pages is browsable at
+http://www.kernel.org/doc/man-pages/
+
+An abridged version of the changes in this release that may be of
+interest to readers of this list is provided below.
+
+Cheers,
+
+Michael
+
+==================== Changes in man-pages-3.04 ====================
+
+Web site
+--------
+
+licenses.html
+     mtk
+         A page describing the preferred licenses for new pages that
+         are contributed to man-pages.
+
+
+New and rewritten pages
+-----------------------
+
+utimensat.2
+     mtk
+         New page documenting the utimensat() system call, new in 2.6.22,
+         and futimens() library function.
+
+end.3
+     mtk
+         Documents etext, edata, and end symbols.
+
+
+Newly documented interfaces in existing pages
+---------------------------------------------
+
+proc.5
+     mtk
+         Document /proc/config.gz (new in kernel 2.6).
+     mtk, based on text from Documentation/vm/sysctl.txt
+         Document /proc/sys/vm/oom_kill_allocating_task
+         (new in Linux 2.6.24).
+         Document /proc/sys/vm/oom_dump_tasks
+         (new in Linux 2.6.25).
+         Document /proc/sys/vm/panic_on_oom
+         (new in Linux 2.6.18).
+
+
+Changes to individual pages
+---------------------------
+
+capget.2
+     Andrew Morgan
+         Update in line with addition of file capabilities and
+         64-bit capability sets in kernel 2.6.2[45].
+
+getrusage.2
+     Sripathi Kodi
+         Document RUSAGE_THREAD, new in 2.6.26.
+
+mount.2
+     mtk
+         Since Linux 2.6.26, MS_RDONLY honors bind mounts.
+
+prctl.2
+     Serge Hallyn, with some edits/input from mtk
+         Document PR_CAPBSET_READ and PR_CAPBSET_DROP.
+     Erik Bosman
+         Document PR_GET_TSC and PR_SET_TSC.
+     mtk, reviewed by Andrea Arcangeli
+         Document PR_SET_SECCOMP and PR_GET_SECCOMP.
+     mtk
+         Add description of PR_SET_SECUREBITS and PR_GET_SECUREBITS,
+         as well as pointer to further info in capabilities(7).
+
+sigaction.2
+     mtk
+         Document si_overrun and si_tid fields of siginfo structure.
+
+signal.2
+     mtk
+         Rewrote and expanded portability discussion.
+
+getopt.3
+     mtk
+         Add details on initial value of optind, and note that it can
+         be reset (to 1) to restart scanning of an argument vector.
+         Add a NOTES section describing the glibc-specific behavior
+         when optind is reset to 0 (rather than 1).
+         See http://groups.google.com/group/comp.unix.programmer/browse_thread/thread/be0d0b7a07a165fb
+     mtk
+         Note glibc extensions under CONFORMING TO.
+
+tty_ioctl.4
+     mtk / Petr Gajdos
+         The features in the "Get and Set Window Size" subsection
+         require the inclusion of <sys/ioctl.h>.
+
+capabilities.7
+     Serge Hallyn, plus a bit of work by mtk
+         Document file capabilities, per-process capability bounding set,
+         changed semantics for CAP_SETPCAP, and other changes in 2.6.2[45].
+         Add CAP_MAC_ADMIN, CAP_MAC_OVERRIDE, CAP_SETFCAP.
+         Various smaller fixes.
+     mtk, plus review by Serge Hallyn and Andrew Morgan
+         Add text detailing how CAP_SETPCAP (theoretically) permits -- on
+         pre-2.6.25 kernels, and 2.6.25 and later kernels with file
+         capabilities disabled -- a thread to change the capability sets
+         of another thread.
+         Add section describing rules for programmatically adjusting
+         thread capability sets.
+         Add some words describing purpose of inheritable set.
+         Note existence of CONFIG_SECURITY_CAPABILITIES config option.
+         Describe rationale for capability bounding set.
+         Document securebits flags (new in 2.6.26).
+     mtk
+         Add text noting that if we set the effective flag for one
+         file capability, then we must also set the effective flag for all
+         other capabilities where the permitted or inheritable bit is set.
+
+
