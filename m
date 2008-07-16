@@ -1,46 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754705AbYGPRtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbYGPRwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754705AbYGPRtm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 13:49:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbYGPRte
+	id S1756061AbYGPRwQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 13:52:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbYGPRv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 13:49:34 -0400
-Received: from 216-99-213-120.dsl.aracnet.com ([216.99.213.120]:53039 "EHLO
-	clueserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751780AbYGPRte (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 13:49:34 -0400
-Message-ID: <7445.12.172.32.236.1216230573.squirrel@clueserver.org>
-In-Reply-To: <52610.198.182.194.170.1216229551.squirrel@clueserver.org>
-References: <52610.198.182.194.170.1216229551.squirrel@clueserver.org>
-Date: Wed, 16 Jul 2008 10:49:33 -0700 (PDT)
-Subject: Re: Problem mounting Motorola USB device
-From: "Alan" <alan@clueserver.org>
-To: "Alan" <alan@clueserver.org>
-Cc: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.10a-1.fc6
+	Wed, 16 Jul 2008 13:51:59 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:35190 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752201AbYGPRv6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 13:51:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=hMroNRk96rPizPzkDExzS8rz75qv0vh3tKkSa8D2y5IkbCdizarsAm/W77rPLDcOKY
+         HJDGzpHD0uFXLfBvmcNzRUXGRPnhhWal9afo8EcKPfXMvEXFautaQn6RZGiYMnKRR36l
+         LLUANWzxk9gNTGSqULO2E5UwVKdlCsqMdtG30=
+Message-ID: <86802c440807161051r7632c1d3qeb73c3cc1a124ed6@mail.gmail.com>
+Date: Wed, 16 Jul 2008 10:51:56 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>,
+       "James Bottomley" <James.Bottomley@hansenpartnership.com>,
+       "Mark Salyzyn" <mark_salyzyn@adaptec.com>
+Subject: rdac and aac
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       Linux-Scsi <linux-scsi@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Initializing USB Mass Storage driver...
-> scsi6 : SCSI emulation for USB Mass Storage devices
-> I have a Motorola phone that mounts as USB storage.  The phone used to
-> mount under 2.6.24 on Fedora 8.  Under the latest kernels, however, it
-> does not want to mount.  The device gives an odd media error at towards
-> the end of the device.  It gave that before, but would still mount.
->
-> Does anyone have an idea what is going wrong?
+calling  aac_init+0x0/0x9a
+Adaptec aacraid driver 1.1-5[2456]-ms
+vendor=10de device=005d
+ACPI: PCI Interrupt 0000:86:00.0[A] -> Link [LN2C] -> GSI 42 (level,
+low) -> IRQ 42
+PCI: Setting latency timer of device 0000:86:00.0 to 64
+AAC0: kernel 5.2-0[15535] Oct 11 2007
+AAC0: monitor 5.2-0[15535]
+AAC0: bios 5.2-0[15535]
+AAC0: serial 00721EC0115
+AAC0: Non-DASD support enabled.
+AAC0: 64bit support enabled.
+AAC0: 64 Bit DAC enabled
+scsi0 : aacraid
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000003
+IP: [<ffffffff8051f024>] strncmp+0x1b/0x54
+PGD 0
+Oops: 0000 [1] SMP
+CPU 28
+Modules linked in:
+Pid: 1, comm: swapper Not tainted 2.6.26-tip-00047-g69a6a3e-dirty #394
+RIP: 0010:[<ffffffff8051f024>]  [<ffffffff8051f024>] strncmp+0x1b/0x54
+RSP: 0018:ffff883824c579f0  EFLAGS: 00010206
+RAX: 0000000000000000 RBX: ffffffff80ad2190 RCX: 0000000000000000
+RDX: 0000000000000003 RSI: ffffffff80cfe351 RDI: 0000000000000003
+RBP: ffff883824c57a00 R08: 0000000000000000 R09: ffffe200e0774440
+R10: 00000000f6f3ecb9 R11: 00000000f6f3ecb9 R12: ffff88402206c050
+R13: ffff88402206c170 R14: 0000000000000000 R15: ffffffffffffffff
+FS:  0000000000000000(0000) GS:ffff884024c3b600(0000) knlGS:0000000000000000
+CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+CR2: 0000000000000003 CR3: 0000000000201000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process swapper (pid: 1, threadinfo ffff883824c56000, task ffff883024c58000)
+Stack:  ffffffff80e705d0 00000000f6f3ecb9 ffff883824c57a50 ffffffff806ab127
+ ffffe200e0774440 00000000f6f3ecb9 00000000f6f3ecb9 0000000000000000
+ 00000000ffffffff 0000000000000000 ffff88402206c170 0000000000000001
+Call Trace:
+ [<ffffffff806ab127>] rdac_bus_notify+0x68/0x235
+ [<ffffffff80a4f7c6>] notifier_call_chain+0x45/0x84
+ [<ffffffff802835f1>] __blocking_notifier_call_chain+0x61/0x92
+ [<ffffffff80283649>] blocking_notifier_call_chain+0x27/0x3d
+ [<ffffffff805b5f36>] device_add+0xf5/0x4fd
+ [<ffffffff80682811>] ? scsi_setup_command_freelist+0x6c/0xc6
+ [<ffffffff80683477>] scsi_add_host+0xc5/0x20f
+ [<ffffffff80a28269>] aac_probe_one+0x3ef/0x4ba
+ [<ffffffff8053014e>] pci_device_probe+0xd5/0x142
+ [<ffffffff805b8a01>] driver_probe_device+0xd4/0x199
+ [<ffffffff802830da>] ? down+0x4b/0x68
+ [<ffffffff805b8b29>] __driver_attach+0x63/0xa4
+ [<ffffffff805b8ac6>] ? __driver_attach+0x0/0xa4
+ [<ffffffff805b8009>] bus_for_each_dev+0x63/0xb1
+ [<ffffffff805b87cb>] driver_attach+0x34/0x4a
+ [<ffffffff805b7779>] bus_add_driver+0xcb/0x22b
+ [<ffffffff8051ae5a>] ? kset_find_obj+0x4c/0x96
+ [<ffffffff805b8e4e>] driver_register+0xbc/0x153
+ [<ffffffff802313bd>] ? read_tsc+0x9/0x1c
+ [<ffffffff8053046f>] __pci_register_driver+0x67/0xb8
+ [<ffffffff80f71e34>] ? aac_init+0x0/0x9a
+ [<ffffffff80f71e7f>] aac_init+0x4b/0x9a
+ [<ffffffff80f409e4>] kernel_init+0x1de/0x346
+ [<ffffffff8022a4f4>] ? mcount_call+0x5/0x31
+ [<ffffffff80262df7>] ? finish_task_switch+0x14/0xe3
+ [<ffffffff8022b589>] child_rip+0xa/0x11
+ [<ffffffff80f40806>] ? kernel_init+0x0/0x346
+ [<ffffffff8022b57f>] ? child_rip+0x0/0x11
 
-Forgot the kernel version.
 
-Fedora 9 2.6.25.10-86.fc9_x86_64
-
-I am wondering if this is a kernel problem or a udev problem.  Should I
-diff the udev rules between f8 and f9?
-
-It appears to be a maze of twisty configs, all alike.
+Code: 28 00 00 00 0f be c0 74 05 e8 0e 74 d4 ff c9 c3 55 31 c9 48 89
+e5 48 83 ec 10 65 48 8b 04 25 28 00 00 00 48 89 45 f8 31 c0 eb 19 <44>
+8a 04 0f 44 88 c0 2a 04 0e 84 c0 75 12 48 ff c1 45 84 c0 74
+RIP  [<ffffffff8051f024>] strncmp+0x1b/0x54
+ RSP <ffff883824c579f0>
+CR2: 0000000000000003
+---[ end trace c89c20984b386ade ]---
