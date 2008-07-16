@@ -1,83 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759923AbYGPRBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753620AbYGPRMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759923AbYGPRBb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 13:01:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758058AbYGPRBN
+	id S1753620AbYGPRMe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 13:12:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbYGPRM0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 13:01:13 -0400
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:42227 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757874AbYGPRBL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 13:01:11 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5340"; a="4596717"
-Message-ID: <487E2950.7030905@qualcomm.com>
-Date: Wed, 16 Jul 2008 10:01:04 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Paul Menage <menage@google.com>, Paul Jackson <pj@sgi.com>,
-       miaox@cn.fujitsu.com, rostedt@goodmis.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: current linux-2.6.git: cpusets completely broken
-References: <alpine.LFD.1.10.0807121411350.2875@woody.linux-foundation.org>	 <b647ffbd0807141538g2004f245m5f54ec962f475ba5@mail.gmail.com>	 <alpine.LFD.1.10.0807141602250.3017@woody.linux-foundation.org>	 <b647ffbd0807141700s20e54fbewafb3d3e296e57f53@mail.gmail.com>	 <alpine.LFD.1.10.0807141707410.3017@woody.linux-foundation.org>	 <b647ffbd0807141921n13ffa59x416fc024c734ef02@mail.gmail.com>	 <487C1374.8020404@qualcomm.com>	 <alpine.LFD.1.10.0807142104250.3017@woody.linux-foundation.org>	 <20080715083223.GA2600@elte.hu> <487C62FB.6030304@qualcomm.com>	 <20080715085738.GA6325@elte.hu>  <487D96C9.7070502@qualcomm.com> <1216192222.5232.7.camel@twins>
-In-Reply-To: <1216192222.5232.7.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Jul 2008 13:12:26 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:56187 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751018AbYGPRM0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 13:12:26 -0400
+Date: Wed, 16 Jul 2008 21:15:38 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: PATCH? exit_mm: update the comments, move atomic_inc(mm_count) outside of mmap_sem
+Message-ID: <20080716171538.GA3056@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Tue, 2008-07-15 at 23:35 -0700, Max Krasnyansky wrote:
->> There are now three patches that are outstanding (pending reviews, etc) on this:
->>
->> 1. cpu hotplug, sched: Introduce cpu_active_map and redo sched\
->> 		    domain managment (take 2)
->>
->> 2. cpu hotplug: Make cpu_active_map synchronization dependency clear
->>
->> 3. cpuset: Make rebuild_sched_domains() usable from any context (take 2)
->>
->> Please review/ack/nak/etc.
->>
->> ----
->> Linus ACKed #1 and Ingo seemed to be more or less ok with it. We need ACKs
->> from Dmitry, Peter and Greg on the general approach and due to some
->> non-trivial merges with their stuff. RT balancer cpupri thingy and and RT
->> bandwidth handling.
-> 
-> ACK
-> 
->> #2 Should be fairly straightforward.
-> 
-> Has a misformed comment, ACK when that's fixed.
-> 
->> #3 Need ACKs from Paul J. and Paul M. overall they seemed ok with the first
->> version, and new version implements the suggested workqueue based rebuild.
-> 
-> Has more misformed comments. Please use
-> 
->  /*
->   * this is a multiline
->   * comment
->   */
-> 
-> instead of
-> 
->   /* this is a multiline
->    * comment */
+(textually depends on
+ "[PATCH 2/2] coredump: exit_mm: clear ->mm first, then play with ->core_state")
 
-Got it. Will fix and resend.
+More the "is my understanding correct" than a patch. Assuming it is correct:
 
-Thanx for the ACKs and review.
+	- explain the subtle atomic_inc(&mm->mm_count).
 
-Max
+	- move it outside of mm->mmap_sem, otherwise it is not clear why
+	  do we need this lock to bump ->mm_count.
 
+	- "fix" the comment above task_lock(). This lock is really needed
+	  for get_task_mm/etc. Yes, we can change the code to use smp_mb()
+	  + spin_unlock_wait() but I guess we also have another reason.
+
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+
+--- 26-rc2/kernel/exit.c~EXIT_MM	2008-07-15 20:24:50.000000000 +0400
++++ 26-rc2/kernel/exit.c	2008-07-16 20:59:34.000000000 +0400
+@@ -680,6 +680,14 @@ static void exit_mm(struct task_struct *
+ 	mm_release(tsk, mm);
+ 	if (!mm)
+ 		return;
++
++	/*
++	 * We are going to clear ->mm. The next schedule() after that
++	 * will assume we did context_switch()->atomic_inc(mm_count).
++	 * finish_task_switch()->mmdrop() will "fix" the counter.
++	 */
++	atomic_inc(&mm->mm_count);
++	BUG_ON(mm != tsk->active_mm);
+ 	/*
+ 	 * Serialize with any possible pending coredump.
+ 	 * We must hold mmap_sem around checking core_state
+@@ -689,9 +697,7 @@ static void exit_mm(struct task_struct *
+ 	 */
+ 	down_read(&mm->mmap_sem);
+ 	core_state = mm->core_state;
+-	atomic_inc(&mm->mm_count);
+-	BUG_ON(mm != tsk->active_mm);
+-	/* more a memory barrier than a real lock */
++	/* disables preemption, we must not schedule before enter_lazy_tlb() */
+ 	task_lock(tsk);
+ 	tsk->mm = NULL;
+ 	up_read(&mm->mmap_sem);
 
