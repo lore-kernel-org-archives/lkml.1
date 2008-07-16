@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759449AbYGPDof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759545AbYGPDos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759449AbYGPDof (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 23:44:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754382AbYGPDoM
+	id S1759545AbYGPDos (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 23:44:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755386AbYGPDoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 23:44:12 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:65156 "EHLO song.cn.fujitsu.com"
+	Tue, 15 Jul 2008 23:44:13 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62866 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752493AbYGPDoL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 23:44:11 -0400
-Message-ID: <487D6E49.7070805@cn.fujitsu.com>
-Date: Wed, 16 Jul 2008 11:43:05 +0800
+	id S1751226AbYGPDoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 23:44:12 -0400
+Message-ID: <487D6E51.1000907@cn.fujitsu.com>
+Date: Wed, 16 Jul 2008 11:43:13 +0800
 From: Lai Jiangshan <laijs@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
 To: Andrew Morton <akpm@linux-foundation.org>
 CC: Paul Jackson <pj@sgi.com>, Paul Menage <menage@google.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/3] cpuset: Don't pass empty cpumasks to partition_sched_domains()
+Subject: [PATCH 3/3] cpuset: two minor code-cleanups
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-i create a lots of empty cpusets(empty cpumasks) and
-turn off the "sched_load_balance" in top cpuset.
+in function cpuset_update_task_memory_state()
+local variable
+struct task_struct *tsk = current;
 
-And i found that all these empty cpumasks are passed to
-partition_sched_domains() in rebuild_sched_domains(),
-it's very time-consuming for partition_sched_domains()
-and it's not need.
+and local variable tsk is used 14 times and
+statement task_cs(tsk) is used twice in this function.
+So using task_cs(tsk) instead of task_cs(current) is
+better for readability.
 
-It also reduce memory consumed and some works in
-rebuild_sched_domains() too.
+And "(struct cgroup_scanner *)&scan" is not good for
+readability also. (and "container_of" is used in cpuset_do_move_task(),
+not "(cpuset_hotplug_scanner *)scan")
 
 Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 ---
 diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-index 798b3ab..1fbd52c 100644
+index 798b3ab..4513deb 100644
 --- a/kernel/cpuset.c
 +++ b/kernel/cpuset.c
-@@ -609,8 +609,13 @@ static void rebuild_sched_domains(void)
- 	while (__kfifo_get(q, (void *)&cp, sizeof(cp))) {
- 		struct cgroup *cont;
- 		struct cpuset *child;   /* scans child cpusets of cp */
-+
-+		if (cpus_empty(cp->cpus_allowed))
-+			continue;
-+
- 		if (is_sched_load_balance(cp))
- 			csa[csn++] = cp;
-+
- 		list_for_each_entry(cont, &cp->css.cgroup->children, sibling) {
- 			child = cgroup_cs(cont);
- 			__kfifo_put(q, (void *)&child, sizeof(cp));
-
+@@ -369,7 +369,7 @@ void cpuset_update_task_memory_state(void)
+ 		my_cpusets_mem_gen = top_cpuset.mems_generation;
+ 	} else {
+ 		rcu_read_lock();
+-		my_cpusets_mem_gen = task_cs(current)->mems_generation;
++		my_cpusets_mem_gen = task_cs(tsk)->mems_generation;
+ 		rcu_read_unlock();
+ 	}
+ 
+@@ -1778,7 +1778,7 @@ static void move_member_tasks_to_cpuset(struct cpuset *from, struct cpuset *to)
+ 	scan.scan.heap = NULL;
+ 	scan.to = to->css.cgroup;
+ 
+-	if (cgroup_scan_tasks((struct cgroup_scanner *)&scan))
++	if (cgroup_scan_tasks(&scan.scan))
+ 		printk(KERN_ERR "move_member_tasks_to_cpuset: "
+ 				"cgroup_scan_tasks failed\n");
+ }
 
 
 
