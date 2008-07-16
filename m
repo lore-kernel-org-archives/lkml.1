@@ -1,43 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759708AbYGPWMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759183AbYGPWQm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759708AbYGPWMV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 18:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756065AbYGPWMI
+	id S1759183AbYGPWQm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 18:16:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756065AbYGPWQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 18:12:08 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:40823 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753662AbYGPWMH (ORCPT
+	Wed, 16 Jul 2008 18:16:35 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:32955 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754961AbYGPWQe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 18:12:07 -0400
-Date: Wed, 16 Jul 2008 23:12:01 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: David Teigland <teigland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] dlm: sparse endian annotations
-Message-ID: <20080716221201.GM28946@ZenIV.linux.org.uk>
-References: <1216239367.28841.22.camel@brick> <20080716213801.GK28946@ZenIV.linux.org.uk> <1216244621.28841.35.camel@brick>
+	Wed, 16 Jul 2008 18:16:34 -0400
+Date: Wed, 16 Jul 2008 15:16:26 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] MMC updates for 2.6.26
+In-Reply-To: <20080715160436.0f6ac19e@mjolnir.drzeus.cx>
+Message-ID: <alpine.LFD.1.10.0807161512030.2835@woody.linux-foundation.org>
+References: <20080715160436.0f6ac19e@mjolnir.drzeus.cx>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1216244621.28841.35.camel@brick>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 16, 2008 at 02:43:41PM -0700, Harvey Harrison wrote:
-> On Wed, 2008-07-16 at 22:38 +0100, Al Viro wrote:
-> > On Wed, Jul 16, 2008 at 01:16:07PM -0700, Harvey Harrison wrote:
-> > 
-> > 
-> > NAK on ones below.  You are only hiding the warnings; ...s() is not making
-> > it any better.
-> > 
-> 
-> I'd suggest that any use of {endian}s() points to code that should be
-> looked at.  But if you'd also rather have the warnings, so be it.
 
-Frankly, I would rather have the rest of byteswaps in dlm eliminated...
+
+On Tue, 15 Jul 2008, Pierre Ossman wrote:
+>
+>  45 files changed, 6054 insertions(+), 1320 deletions(-)
+
+If you had done the "--summary", you'd also have seen these bogus:
+
+	 mode change 100644 => 100755 drivers/mmc/core/sdio_io.c
+	 mode change 100644 => 100755 include/linux/mmc/sdio_func.h
+
+entries.
+
+I have no idea why you think those things should be executable, but it 
+happened in commit 6d37333163025b46afbcad434ec9a5f2e88e7254 ("mmc: fix 
+sdio_io sparse errors").
+
+Anyway, there's a reason why I ask people to use
+
+	--diffstat --summary -M
+
+when generating the report. This is just part of it.
+
+I fixed it up in the merge, so it's ok in my tree, but I thought I'd point 
+it out.
+
+		Linus
