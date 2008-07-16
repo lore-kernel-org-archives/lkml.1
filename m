@@ -1,221 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758132AbYGPHdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756275AbYGPHjA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758132AbYGPHdX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 03:33:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbYGPHdP
+	id S1756275AbYGPHjA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 03:39:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbYGPHiw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 03:33:15 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:53090 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753497AbYGPHdO (ORCPT
+	Wed, 16 Jul 2008 03:38:52 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36293 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752539AbYGPHiv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 03:33:14 -0400
-Subject: Re: [PATCH] stopmachine: add stopmachine_timeout v3
-From: Peter Zijlstra <peterz@infradead.org>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: Max Krasnyansky <maxk@qualcomm.com>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       virtualization@lists.linux-foundation.org,
-       Zachary Amsden <zach@vmware.com>
-In-Reply-To: <487D9A8B.5020005@jp.fujitsu.com>
-References: <487B05CE.1050508@jp.fujitsu.com>
-	 <487D78A3.6050105@jp.fujitsu.com> <487D93CD.1000007@qualcomm.com>
-	 <487D96A2.10904@jp.fujitsu.com>  <487D9A8B.5020005@jp.fujitsu.com>
-Content-Type: text/plain
-Date: Wed, 16 Jul 2008 09:33:35 +0200
-Message-Id: <1216193615.5232.11.camel@twins>
+	Wed, 16 Jul 2008 03:38:51 -0400
+Date: Wed, 16 Jul 2008 16:43:46 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org
+Subject: Re: mmotm 2008-07-15-15-39 uploaded
+Message-Id: <20080716164346.35c6a692.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <200807152240.m6FMeErt024703@imap1.linux-foundation.org>
+References: <200807152240.m6FMeErt024703@imap1.linux-foundation.org>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-16 at 15:51 +0900, Hidetoshi Seto wrote:
-> If stop_machine() invoked while one of onlined cpu is locked up
-> by some reason, stop_machine cannot finish its work because the
-> locked cpu cannot stop.  This means all other healthy cpus
-> will be blocked infinitely by one dead cpu.
-> 
-> This patch allows stop_machine to return -EBUSY with some printk
-> messages if any of stop_machine's threads cannot start running on
-> its target cpu in time.  You can enable this timeout via sysctl.
-> 
-> v3:
->  - set stopmachine_timeout default to 0 (= never timeout)
-> 
-> v2:
->  - remove fix for warning since it will be fixed upcoming typesafe
->    patches
->  - make stopmachine_timeout from secs to msecs
->  - allow disabling timeout by setting the stopmachine_timeout to 0
-> 
-> Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+On Tue, 15 Jul 2008 15:40:14 -0700
+akpm@linux-foundation.org wrote:
 
-I really don't like this, it means the system is really screwed up and
-doesn't deserve to continue.
-
-> ---
->  kernel/stop_machine.c |   54 ++++++++++++++++++++++++++++++++++++++++++++++--
->  kernel/sysctl.c       |   15 +++++++++++++
->  2 files changed, 66 insertions(+), 3 deletions(-)
+> The mm-of-the-moment snapshot 2008-07-15-15-39 has been uploaded to
 > 
-> diff --git a/kernel/stop_machine.c b/kernel/stop_machine.c
-> index 5b72c2b..77b7944 100644
-> --- a/kernel/stop_machine.c
-> +++ b/kernel/stop_machine.c
-> @@ -35,15 +35,18 @@ struct stop_machine_data {
->  };
->  
->  /* Like num_online_cpus(), but hotplug cpu uses us, so we need this. */
-> -static unsigned int num_threads;
-> +static atomic_t num_threads;
->  static atomic_t thread_ack;
-> +static cpumask_t prepared_cpus;
->  static struct completion finished;
->  static DEFINE_MUTEX(lock);
->  
-> +unsigned long stopmachine_timeout = 0; /* msecs, 0 = "never timeout" */
-> +
->  static void set_state(enum stopmachine_state newstate)
->  {
->  	/* Reset ack counter. */
-> -	atomic_set(&thread_ack, num_threads);
-> +	atomic_set(&thread_ack, atomic_read(&num_threads));
->  	smp_wmb();
->  	state = newstate;
->  }
-> @@ -67,6 +70,8 @@ static int stop_cpu(struct stop_machine_data *smdata)
->  	enum stopmachine_state curstate = STOPMACHINE_NONE;
->  	int uninitialized_var(ret);
->  
-> +	cpu_set(smp_processor_id(), prepared_cpus);
-> +
->  	/* Simple state machine */
->  	do {
->  		/* Chill out and ensure we re-read stopmachine_state. */
-> @@ -90,6 +95,7 @@ static int stop_cpu(struct stop_machine_data *smdata)
->  		}
->  	} while (curstate != STOPMACHINE_EXIT);
->  
-> +	atomic_dec(&num_threads);
->  	local_irq_enable();
->  	do_exit(0);
->  }
-> @@ -105,6 +111,15 @@ int __stop_machine_run(int (*fn)(void *), void *data, const cpumask_t *cpus)
->  	int i, err;
->  	struct stop_machine_data active, idle;
->  	struct task_struct **threads;
-> +	unsigned long limit;
-> +
-> +	if (atomic_read(&num_threads)) {
-> +		/*
-> +		 * previous stop_machine was timeout, and still there are some
-> +		 * unfinished thread (dangling stucked CPU?).
-> +		 */
-> +		return -EBUSY;
-> +	}
->  
->  	active.fn = fn;
->  	active.data = data;
-> @@ -120,7 +135,7 @@ int __stop_machine_run(int (*fn)(void *), void *data, const cpumask_t *cpus)
->  	/* Set up initial state. */
->  	mutex_lock(&lock);
->  	init_completion(&finished);
-> -	num_threads = num_online_cpus();
-> +	atomic_set(&num_threads, num_online_cpus());
->  	set_state(STOPMACHINE_PREPARE);
->  
->  	for_each_online_cpu(i) {
-> @@ -152,10 +167,21 @@ int __stop_machine_run(int (*fn)(void *), void *data, const cpumask_t *cpus)
->  
->  	/* We've created all the threads.  Wake them all: hold this CPU so one
->  	 * doesn't hit this CPU until we're ready. */
-> +	cpus_clear(prepared_cpus);
->  	get_cpu();
->  	for_each_online_cpu(i)
->  		wake_up_process(threads[i]);
->  
-> +	/* Wait all others come to life */
-> +	if (stopmachine_timeout) {
-> +		limit = jiffies + msecs_to_jiffies(stopmachine_timeout);
-> +		while (cpus_weight(prepared_cpus) != num_online_cpus() - 1) {
-> +			if (time_is_before_jiffies(limit))
-> +				goto timeout;
-> +			cpu_relax();
-> +		}
-> +	}
-> +
->  	/* This will release the thread on our CPU. */
->  	put_cpu();
->  	wait_for_completion(&finished);
-> @@ -169,10 +195,32 @@ kill_threads:
->  	for_each_online_cpu(i)
->  		if (threads[i])
->  			kthread_stop(threads[i]);
-> +	atomic_set(&num_threads, 0);
->  	mutex_unlock(&lock);
->  
->  	kfree(threads);
->  	return err;
-> +
-> +timeout:
-> +	printk(KERN_CRIT "stopmachine: Failed to stop machine in time(%lds).\n",
-> +			stopmachine_timeout);
-> +	for_each_online_cpu(i) {
-> +		if (!cpu_isset(i, prepared_cpus) && i != smp_processor_id())
-> +			printk(KERN_CRIT "stopmachine: cpu#%d seems to be "
-> +					"stuck.\n", i);
-> +		/* Unbind threads */
-> +		set_cpus_allowed(threads[i], cpu_online_map);
-> +	}
-> +
-> +	/* Let threads go exit */
-> +	set_state(STOPMACHINE_EXIT);
-> +
-> +	put_cpu();
-> +	/* no wait for completion */
-> +	mutex_unlock(&lock);
-> +	kfree(threads);
-> +
-> +	return -EBUSY;	/* canceled */
->  }
->  
->  int stop_machine_run(int (*fn)(void *), void *data, const cpumask_t *cpus)
-> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-> index 2911665..3c7ca98 100644
-> --- a/kernel/sysctl.c
-> +++ b/kernel/sysctl.c
-> @@ -146,6 +146,10 @@ extern int no_unaligned_warning;
->  extern int max_lock_depth;
->  #endif
->  
-> +#ifdef CONFIG_STOP_MACHINE
-> +extern unsigned long stopmachine_timeout;
-> +#endif
-> +
->  #ifdef CONFIG_PROC_SYSCTL
->  static int proc_do_cad_pid(struct ctl_table *table, int write, struct file *filp,
->  		  void __user *buffer, size_t *lenp, loff_t *ppos);
-> @@ -813,6 +817,17 @@ static struct ctl_table kern_table[] = {
->  		.child		= key_sysctls,
->  	},
->  #endif
-> +#ifdef CONFIG_STOP_MACHINE
-> +	{
-> +		.ctl_name       = CTL_UNNUMBERED,
-> +		.procname       = "stopmachine_timeout",
-> +		.data           = &stopmachine_timeout,
-> +		.maxlen         = sizeof(unsigned long),
-> +		.mode           = 0644,
-> +		.proc_handler   = &proc_doulongvec_minmax,
-> +		.strategy       = &sysctl_intvec,
-> +	},
-> +#endif
->  /*
->   * NOTE: do not add new entries to this table unless you have read
->   * Documentation/sysctl/ctl_unnumbered.txt
+>    http://userweb.kernel.org/~akpm/mmotm/
+> 
+> It contains the following patches against 2.6.26:
+> 
+
+booted succesfully with my usual config.
+but not with allmodconfig. (I'm now trying various configs.)
+
+Compile time trouble is here.
+
+allmodconfig complile report on x86-64.
+==
+compile troubles.
+
+- CONFIG_MOXA_SMARTIO .......no idea.
+
+  CC [M]  drivers/char/mxser.o
+drivers/char/mxser.c: In function 'mxser_flush_chars':
+drivers/char/mxser.c:1306: error: 'struct mxser_port' has no member named 'xmit_buf'
+drivers/char/mxser.c: In function 'mxser_ioctl_special':
+drivers/char/mxser.c:1640: error: 'GMStatus' undeclared (first use in this function)
+drivers/char/mxser.c:1640: error: (Each undeclared identifier is reported only once
+drivers/char/mxser.c:1640: error: for each function it appears in.)
+drivers/char/mxser.c:1701: error: 'mon_data_ext' undeclared (first use in this function)
+drivers/char/mxser.c:1720: error: 'me' undeclared (first use in this function)
+drivers/char/mxser.c:1678: warning: unused variable 'shiftbit'
+make[2]: *** [drivers/char/mxser.o] Error 1
+
+CONFIG_FB_EINK_APOLLO .... seems only for ARM ?
+  CC [M]  drivers/video/eink_apollofb.o
+drivers/video/eink_apollofb.c:36:32: error: asm/arch/regs-gpio.h: No such file or directory
+drivers/video/eink_apollofb.c:37:26: error: asm/hardware.h: No such file or dire#tory
+
+CONFIG_MFD_TC6393XB  .....seems only for ARM ?
+  CC      drivers/mfd/tc6393xb.o
+drivers/mfd/tc6393xb.c: In function 'tc6393xb_attach_irq':
+drivers/mfd/tc6393xb.c:324: error: implicit declaration of function 'set_irq_flags'
+drivers/mfd/tc6393xb.c:324: error: 'IRQF_VALID' undeclared (first use in this function)
+drivers/mfd/tc6393xb.c:324: error: (Each undeclared identifier is reported only once
+drivers/mfd/tc6393xb.c:324: error: for each function it appears in.)
+drivers/mfd/tc6393xb.c:324: error: 'IRQF_PROBE' undeclared (first use in this function)
+drivers/mfd/tc6393xb.c:327: error: 'IRQT_FALLING' undeclared (first use in this function)
+make[2]: *** [drivers/mfd/tc6393xb.o] Error 1
+
+
+Seems failed to catch this change.
+patches/dma-mapping-add-the-device-argument-to-dma_mapping_error.patch
+
+drivers/mmc/host/sdhci.c: In function 'sdhci_adma_table_pre':
+drivers/mmc/host/sdhci.c:363: warning: passing argument 1 of 'dma_mapping_error' makes pointer from integer without a cast
+drivers/mmc/host/sdhci.c:363: error: too few arguments to function 'dma_mapping_error'
+drivers/mmc/host/sdhci.c:464: warning: passing argument 1 of 'dma_mapping_error' makes pointer from integer without a cast
+drivers/mmc/host/sdhci.c:464: error: too few arguments to function 'dma_mapping_error'
+make[3]: *** [drivers/mmc/host/sdhci.o] Error 1
+
+==
+
+Regards,
+-Kame
+
 
