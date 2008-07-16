@@ -1,102 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757793AbYGPQA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760041AbYGPQBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757793AbYGPQA7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 12:00:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756927AbYGPQAr
+	id S1760041AbYGPQBT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 12:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756927AbYGPQBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 12:00:47 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:34686 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756899AbYGPQAq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 12:00:46 -0400
-Date: Wed, 16 Jul 2008 18:00:42 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: zaitcev@redhat.com, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH retry] drivers/usb/class/usblp.c: adjust error handling code
-In-Reply-To: <200807161744.59137.oliver@neukum.org>
-Message-ID: <Pine.LNX.4.64.0807161758520.28783@ask.diku.dk>
-References: <Pine.LNX.4.64.0807161717220.28783@ask.diku.dk>
- <200807161744.59137.oliver@neukum.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 16 Jul 2008 12:01:04 -0400
+Received: from anchor-post-37.mail.demon.net ([194.217.242.87]:39784 "EHLO
+	anchor-post-37.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759907AbYGPQBB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 12:01:01 -0400
+Subject: Re: [PATCH][RFC] slub: increasing order reduces memory usage
+	of	some key caches
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: penberg@cs.helsinki.fi, mpm@selenic.com, linux-mm <linux-mm@kvack.org>,
+       lkml <linux-kernel@vger.kernel.org>, Mel Gorman <mel@csn.ul.ie>
+In-Reply-To: <487DFFBE.5050407@linux-foundation.org>
+References: <1216211371.3122.46.camel@castor.localdomain>
+	 <487DF5D4.9070101@linux-foundation.org>
+	 <1216216730.3122.60.camel@castor.localdomain>
+	 <487DFFBE.5050407@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 16 Jul 2008 15:30:57 +0100
+Message-Id: <1216218657.3122.66.camel@castor.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
 
-In this code, it is possible to tell statically whether usblp will be NULL
-in the error handling code.
+On Wed, 2008-07-16 at 09:03 -0500, Christoph Lameter wrote:
+> Richard Kennedy wrote:
+> 
+> > before
+> > dentry             82136  82137    208   19    1 : tunables    0    0    0 : slabdata   4323   4323      0
+> > after
+> > dentry             79482  79482    208   39    2 : tunables    0    0    0 : slabdata   2038   2038      0
+> 
+> 19 objects with an order 1 alloc and 208 byte size? Urgh. 8192/208 = 39 and not 19.
+> 
+> Kmemcheck or something else active? We seem to be loosing 50% of our memory.
+> 
+> Pekka: Is the slabinfo emulation somehow broken?
+> 
+> I'd really like to see the output of slabinfo dentry.
+> 
+/proc/slabinfo says it shows pages/slab not order -- so the numbers are consistent if nothing else.
 
-Oliver Neukum suggested to make a goto to the final return rather than 
-return directly.
+I'm getting the log message 
+> SLUB: increasing order dentry->[1] [208]
+from my code, so it looks correct. It's just the standard code is
+picking order 0.
 
-The semantic match that finds this problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+I'm just rebuilding the kernel & will get you that slabinfo
 
-// <smpl>
-@@
-identifier f,err,l,l1;
-type T;
-expression x,E;
-statement S;
-@@
+Richard 
 
-x = NULL
-... when != goto l1;
-* x = f(...)
-... when != x
-err = E;
-goto l;
-...
-* if (x != NULL)
-  S
-return err;
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
-diff -u -p a/drivers/usb/class/usblp.c b/drivers/usb/class/usblp.c
---- a/drivers/usb/class/usblp.c
-+++ b/drivers/usb/class/usblp.c
-@@ -1076,15 +1076,16 @@ static int usblp_probe(struct usb_interf
- 		       const struct usb_device_id *id)
- {
- 	struct usb_device *dev = interface_to_usbdev (intf);
--	struct usblp *usblp = NULL;
-+	struct usblp *usblp;
- 	int protocol;
- 	int retval;
- 
- 	/* Malloc and start initializing usblp structure so we can use it
- 	 * directly. */
--	if (!(usblp = kzalloc(sizeof(struct usblp), GFP_KERNEL))) {
-+	usblp = kzalloc(sizeof(struct usblp), GFP_KERNEL);
-+	if (!usblp) {
- 		retval = -ENOMEM;
--		goto abort;
-+		goto abort_ret;
- 	}
- 	usblp->dev = dev;
- 	mutex_init(&usblp->wmut);
-@@ -1179,12 +1180,11 @@ abort_intfdata:
- 	usb_set_intfdata (intf, NULL);
- 	device_remove_file(&intf->dev, &dev_attr_ieee1284_id);
- abort:
--	if (usblp) {
--		kfree(usblp->readbuf);
--		kfree(usblp->statusbuf);
--		kfree(usblp->device_id_string);
--		kfree(usblp);
--	}
-+	kfree(usblp->readbuf);
-+	kfree(usblp->statusbuf);
-+	kfree(usblp->device_id_string);
-+	kfree(usblp);
-+abort_ret:
- 	return retval;
- }
- 
