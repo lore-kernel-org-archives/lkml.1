@@ -1,124 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759439AbYGPIgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759372AbYGPIjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759439AbYGPIgc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 04:36:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756458AbYGPIgY
+	id S1759372AbYGPIjm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 04:39:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756099AbYGPIjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 04:36:24 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:55761 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756375AbYGPIgW (ORCPT
+	Wed, 16 Jul 2008 04:39:35 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58709 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755698AbYGPIje (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 04:36:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:references;
-        b=QeM++O1I4pHaWebvhd2KqLpVzFbS2HMCyu3YEyT11WJzRdwBqSPUTgnwB0mqm6La0P
-         6ItpXTsJX2tEaDJzOkIJB3qVoBBY9QygkDjXCxOAKn5pBVxMYI2XeBALLxXezL/Ilwbe
-         nayBjd4xwGMi0kspfz1L5roXU4ZlZFq7NvmkE=
-Message-ID: <86802c440807160136m6af981b2u6a37cabb8e33a629@mail.gmail.com>
-Date: Wed, 16 Jul 2008 01:36:21 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Justin Mattock" <justinmattock@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>
-Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
-Cc: "Jack Howarth" <howarth@bromo.msbb.uc.edu>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <dd18b0c30807160050r5b10908fiffc2a4b464abe5f3@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_13601_20922336.1216197381082"
-References: <dd18b0c30807151252w7edcea19t8cec5ec5f958c7c0@mail.gmail.com>
-	 <20080715231118.GA26807@bromo.msbb.uc.edu>
-	 <dd18b0c30807151726i622dabceve31828460085ee57@mail.gmail.com>
-	 <20080716012427.GA27398@bromo.msbb.uc.edu>
-	 <dd18b0c30807152005g3c58001br7182f7670d6247db@mail.gmail.com>
-	 <20080716035830.GA27935@bromo.msbb.uc.edu>
-	 <dd18b0c30807152230u39ef9c18v78b48d1c7b9ddd17@mail.gmail.com>
-	 <86802c440807160044ge504cacl419b6cbcad5f0f9d@mail.gmail.com>
-	 <dd18b0c30807160050r5b10908fiffc2a4b464abe5f3@mail.gmail.com>
+	Wed, 16 Jul 2008 04:39:34 -0400
+Subject: Re: [patch 10/17] LTTng instrumentation - swap
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Masami Hiramatsu <mhiramat@redhat.com>,
+       linux-mm@kvack.org, Dave Hansen <haveblue@us.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
+       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+In-Reply-To: <20080715222748.214360024@polymtl.ca>
+References: <20080715222604.331269462@polymtl.ca>
+	 <20080715222748.214360024@polymtl.ca>
+Content-Type: text/plain
+Date: Wed, 16 Jul 2008 10:39:36 +0200
+Message-Id: <1216197576.5232.27.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_13601_20922336.1216197381082
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Tue, 2008-07-15 at 18:26 -0400, Mathieu Desnoyers wrote:
+> plain text document attachment (lttng-instrumentation-swap.patch)
+> Instrumentation of waits caused by swap activity. Also instrumentation
+> swapon/swapoff events to keep track of active swap partitions.
+> 
+> Those tracepoints are used by LTTng.
+> 
+> About the performance impact of tracepoints (which is comparable to markers),
+> even without immediate values optimizations, tests done by Hideo Aoki on ia64
+> show no regression. His test case was using hackbench on a kernel where
+> scheduler instrumentation (about 5 events in code scheduler code) was added.
+> See the "Tracepoints" patch header for performance result detail.
+> 
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> CC: linux-mm@kvack.org
+> CC: Dave Hansen <haveblue@us.ibm.com>
+> CC: Masami Hiramatsu <mhiramat@redhat.com>
+> CC: 'Peter Zijlstra' <peterz@infradead.org>
+> CC: "Frank Ch. Eigler" <fche@redhat.com>
+> CC: 'Ingo Molnar' <mingo@elte.hu>
+> CC: 'Hideo AOKI' <haoki@redhat.com>
+> CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
+> CC: 'Steven Rostedt' <rostedt@goodmis.org>
+> CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+> ---
+>  include/trace/swap.h |   20 ++++++++++++++++++++
+>  mm/memory.c          |    2 ++
+>  mm/page_io.c         |    2 ++
+>  mm/swapfile.c        |    4 ++++
+>  4 files changed, 28 insertions(+)
+> 
+> Index: linux-2.6-lttng/mm/memory.c
+> ===================================================================
+> --- linux-2.6-lttng.orig/mm/memory.c	2008-07-15 13:54:46.000000000 -0400
+> +++ linux-2.6-lttng/mm/memory.c	2008-07-15 14:02:54.000000000 -0400
+> @@ -51,6 +51,7 @@
+>  #include <linux/init.h>
+>  #include <linux/writeback.h>
+>  #include <linux/memcontrol.h>
+> +#include <trace/swap.h>
+>  
+>  #include <asm/pgalloc.h>
+>  #include <asm/uaccess.h>
+> @@ -2213,6 +2214,7 @@ static int do_swap_page(struct mm_struct
+>  		/* Had to read the page from swap area: Major fault */
+>  		ret = VM_FAULT_MAJOR;
+>  		count_vm_event(PGMAJFAULT);
+> +		trace_swap_in(page, entry);
+>  	}
+>  
+>  	if (mem_cgroup_charge(page, mm, GFP_KERNEL)) {
+> Index: linux-2.6-lttng/mm/page_io.c
+> ===================================================================
+> --- linux-2.6-lttng.orig/mm/page_io.c	2008-07-15 13:54:46.000000000 -0400
+> +++ linux-2.6-lttng/mm/page_io.c	2008-07-15 14:02:54.000000000 -0400
+> @@ -17,6 +17,7 @@
+>  #include <linux/bio.h>
+>  #include <linux/swapops.h>
+>  #include <linux/writeback.h>
+> +#include <trace/swap.h>
+>  #include <asm/pgtable.h>
+>  
+>  static struct bio *get_swap_bio(gfp_t gfp_flags, pgoff_t index,
+> @@ -114,6 +115,7 @@ int swap_writepage(struct page *page, st
+>  		rw |= (1 << BIO_RW_SYNC);
+>  	count_vm_event(PSWPOUT);
+>  	set_page_writeback(page);
+> +	trace_swap_out(page);
+>  	unlock_page(page);
+>  	submit_bio(rw, bio);
+>  out:
+> Index: linux-2.6-lttng/mm/swapfile.c
+> ===================================================================
+> --- linux-2.6-lttng.orig/mm/swapfile.c	2008-07-15 13:54:46.000000000 -0400
+> +++ linux-2.6-lttng/mm/swapfile.c	2008-07-15 14:02:54.000000000 -0400
+> @@ -32,6 +32,7 @@
+>  #include <asm/pgtable.h>
+>  #include <asm/tlbflush.h>
+>  #include <linux/swapops.h>
+> +#include <trace/swap.h>
+>  
+>  DEFINE_SPINLOCK(swap_lock);
+>  unsigned int nr_swapfiles;
+> @@ -1310,6 +1311,7 @@ asmlinkage long sys_swapoff(const char _
+>  	swap_map = p->swap_map;
+>  	p->swap_map = NULL;
+>  	p->flags = 0;
+> +	trace_swap_file_close(swap_file);
+>  	spin_unlock(&swap_lock);
+>  	mutex_unlock(&swapon_mutex);
+>  	vfree(swap_map);
+> @@ -1695,6 +1697,7 @@ asmlinkage long sys_swapon(const char __
+>  	} else {
+>  		swap_info[prev].next = p - swap_info;
+>  	}
+> +	trace_swap_file_open(swap_file, name);
+>  	spin_unlock(&swap_lock);
+>  	mutex_unlock(&swapon_mutex);
+>  	error = 0;
+> @@ -1796,6 +1799,7 @@ get_swap_info_struct(unsigned type)
+>  {
+>  	return &swap_info[type];
+>  }
+> +EXPORT_SYMBOL_GPL(get_swap_info_struct);
 
-On Wed, Jul 16, 2008 at 12:50 AM, Justin Mattock
-<justinmattock@gmail.com> wrote:
-> On Wed, Jul 16, 2008 at 7:44 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->> I looked at your dmesg from 2.6.25.10
->>
->> it tried to use mmconfig, and later fall back to conf1, because
->> 1. your MCFG said it support bus [0,255], and range will be
->> [0xf0000000, 0xffffffff]
->> 2. firmware only reserve [0xf0000000, 0xf4000000)
->>
->> and 2.5.25 will not check acp reserved range.
->>
->> from 2.6.26, it will check if the [0xf0000000, 0xffffffff] is reserved
->> via acpi dsdt _crs?
->> it will fail too.
->>
->> So MCFG table is broken.
->>
->> You need to get firmware update from your vendor.
->>
->> or we need to put that system on DMI check to change end_bus_number
->> from 0xff to 0x3f
->>
->> ps: mem=2g will not work, it will can not change mcfg table etc... you
->> need take out 1G ram out.
->>
->> YH
->>
->
-> Well shit man, that sucks...
-> how hard is it to do a DMI check?
-> regards;
+I'm not too happy with this export.
 
-please check attached patch... not sure the
-DMI_MATCH(DMI_PRODUCT_NAME, "MacPro2"),  is right or not.
+>  
+>  /*
+>   * swap_lock prevents swap_map being freed. Don't grab an extra
+> Index: linux-2.6-lttng/include/trace/swap.h
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6-lttng/include/trace/swap.h	2008-07-15 14:02:54.000000000 -0400
+> @@ -0,0 +1,20 @@
+> +#ifndef _TRACE_SWAP_H
+> +#define _TRACE_SWAP_H
+> +
+> +#include <linux/swap.h>
+> +#include <linux/tracepoint.h>
+> +
+> +DEFINE_TRACE(swap_in,
+> +	TPPROTO(struct page *page, swp_entry_t entry),
+> +	TPARGS(page, entry));
+> +DEFINE_TRACE(swap_out,
+> +	TPPROTO(struct page *page),
+> +	TPARGS(page));
+> +DEFINE_TRACE(swap_file_open,
+> +	TPPROTO(struct file *file, char *filename),
+> +	TPARGS(file, filename));
+> +DEFINE_TRACE(swap_file_close,
+> +	TPPROTO(struct file *file),
+> +	TPARGS(file));
+> +
+> +#endif
+> 
 
-YH
-
-------=_Part_13601_20922336.1216197381082
-Content-Type: text/x-patch; name=mmconfig_apple_macpro2.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fipofk0l0
-Content-Disposition: attachment; filename=mmconfig_apple_macpro2.patch
-
-W1BBVENIXSB4ODYscGNpOiBkbWkgY2hlY2sgZm9yIG1hY2twcm8gMi4yIG1tY29uZgoKY2hhbmdl
-IHRoZSBtY29uZiBidXMgcmFuZ2UgZnJvbSBbMCwweGZmXSB0byB0byBbMCwgMHgzZl0KdG8gbWF0
-Y2ggcmFuZ2UgWzB4ZjAwMDAwMDAsIDB4ZjQwMDAwMDApIGluIGU4MjAgdGFibGVzLgoKU2lnbmVk
-LW9mZi1ieTogWWluZ2hhaSBMdSA8eWhsdS5rZXJuZWxAZ21haWwuY29tPgoKLS0tCiBhcmNoL3g4
-Ni9wY2kvbW1jb25maWctc2hhcmVkLmMgfCAgIDM1ICsrKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKysrCiAxIGZpbGUgY2hhbmdlZCwgMzUgaW5zZXJ0aW9ucygrKQoKSW5kZXg6IGxpbnV4
-LTIuNi9hcmNoL3g4Ni9wY2kvbW1jb25maWctc2hhcmVkLmMKPT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgt
-Mi42Lm9yaWcvYXJjaC94ODYvcGNpL21tY29uZmlnLXNoYXJlZC5jCisrKyBsaW51eC0yLjYvYXJj
-aC94ODYvcGNpL21tY29uZmlnLXNoYXJlZC5jCkBAIC0zNzQsNiArMzc0LDQwIEBAIHJlamVjdDoK
-IAogc3RhdGljIGludCBfX2luaXRkYXRhIGtub3duX2JyaWRnZTsKIAorc3RhdGljIGludCBfX2Rl
-dmluaXQgY2hlY2tfbW1jb25mKGNvbnN0IHN0cnVjdCBkbWlfc3lzdGVtX2lkICpkKQoreworCXR5
-cGVvZihwY2lfbW1jZmdfY29uZmlnWzBdKSAqY2ZnOworCisJaWYgKChwY2lfbW1jZmdfY29uZmln
-X251bSAhPSAxKSB8fAorCSAgICAocGNpX21tY2ZnX2NvbmZpZyA9PSBOVUxMKSB8fAorCSAgICAo
-cGNpX21tY2ZnX2NvbmZpZ1swXS5hZGRyZXNzID09IDApKQorCQlyZXR1cm4gMTsKKworCWNmZyA9
-ICZwY2lfbW1jZmdfY29uZmlnWzBdOworCisJaWYgKGNmZy0+c3RhcnRfYnVzX251bWJlciA9PSAw
-ICYmIGNmZy0+ZW5kX2J1c19udW1iZXIgPiAweDNmKQorCQljZmctPmVuZF9idXNfbnVtYmVyID0g
-MHgzZjsKKworCXJldHVybiAwOworfQorCitzdGF0aWMgc3RydWN0IGRtaV9zeXN0ZW1faWQgX19k
-ZXZpbml0ZGF0YSBtbWNvbmZfZG1pX3RhYmxlW10gPSB7CisgICAgICAgIHsKKyAgICAgICAgICAg
-ICAgICAuY2FsbGJhY2sgPSBjaGVja19tbWNvbmYsCisgICAgICAgICAgICAgICAgLmlkZW50ID0g
-IkFwcGxlIiwKKyAgICAgICAgICAgICAgICAubWF0Y2hlcyA9IHsKKyAgICAgICAgICAgICAgICAg
-ICAgICAgIERNSV9NQVRDSChETUlfU1lTX1ZFTkRPUiwgIkFwcGxlIiksCisJCQlETUlfTUFUQ0go
-RE1JX1BST0RVQ1RfTkFNRSwgIk1hY1BybzIiKSwKKyAgICAgICAgICAgICAgICB9LAorICAgICAg
-ICB9LAorICAgICAgICB7fQorfTsKKwordm9pZCBfX2luaXQgY2hlY2tfbW1jb25mX2RtaSh2b2lk
-KQoreworICAgICAgICBkbWlfY2hlY2tfc3lzdGVtKG1tY29uZl9kbWlfdGFibGUpOworfQorCiBz
-dGF0aWMgdm9pZCBfX2luaXQgX19wY2lfbW1jZmdfaW5pdChpbnQgZWFybHkpCiB7CiAJLyogTU1D
-T05GSUcgZGlzYWJsZWQgKi8KQEAgLTM5NSw2ICs0MjksNyBAQCBzdGF0aWMgdm9pZCBfX2luaXQg
-X19wY2lfbW1jZmdfaW5pdChpbnQKIAogCWlmICgha25vd25fYnJpZGdlKSB7CiAJCWFjcGlfdGFi
-bGVfcGFyc2UoQUNQSV9TSUdfTUNGRywgYWNwaV9wYXJzZV9tY2ZnKTsKKwkJY2hlY2tfbW1jb25m
-X2RtaSgpOwogCQlwY2lfbW1jZmdfcmVqZWN0X2Jyb2tlbihlYXJseSk7CiAJfQogCg==
-------=_Part_13601_20922336.1216197381082--
