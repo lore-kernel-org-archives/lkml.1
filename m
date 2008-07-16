@@ -1,152 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758620AbYGPTad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759413AbYGPTav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758620AbYGPTad (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 15:30:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbYGPTaW
+	id S1759413AbYGPTav (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 15:30:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759042AbYGPTal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 15:30:22 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:2333 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753242AbYGPTaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 15:30:21 -0400
-Date: Wed, 16 Jul 2008 14:48:03 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: linux-wireless@vger.kernel.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: 2nd REVISED AGENDA -- Re: Linux Wireless Mini-Summit -- Ottawa --
-	July 22, 2008
-Message-ID: <20080716184803.GB3232@tuxdriver.com>
-References: <20080709190915.GA8238@tuxdriver.com> <20080715182654.GA5969@tuxdriver.com>
+	Wed, 16 Jul 2008 15:30:41 -0400
+Received: from mail.gmx.net ([213.165.64.20]:48565 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753646AbYGPTak (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 15:30:40 -0400
+X-Authenticated: #1692767
+X-Provags-ID: V01U2FsdGVkX19LVvR7VS5L8skCu00iTWLc5bh+ANmW3Qv06oO9I3
+	aoG14+jJ5iRJBp
+Message-ID: <487E4C5D.3010900@gmx.net>
+Date: Wed, 16 Jul 2008 21:30:37 +0200
+From: "MadLoisae@gmx.net" <MadLoisae@gmx.net>
+Reply-To: MadLoisae@gmx.net
+User-Agent: Icedove 1.5.0.14eol (X11/20080509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080715182654.GA5969@tuxdriver.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux-kernel@vger.kernel.org
+CC: Alexey Dobriyan <adobriyan@gmail.com>, santiago@crfreenet.org
+Subject: RE: Re: kernel oops with framebuffer device vt8623fb
+References: <487E2911.5090701@gmx.net> <20080716171321.GA5146@martell.zuzino.mipt.ru>
+In-Reply-To: <20080716171321.GA5146@martell.zuzino.mipt.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I adjusted the times based on the schedule for lunch and coffee breaks
-from the OLS crew.  I also adjusted the length of some slots, and
-move the BoF/Break-Out/BarCamp section before adjourning for dinner.
+Hi Alexey,
 
-I'm still looking for more/different topics and for people to
-explicitly claim the ones on the list...speak up!
+thanks, now my machine boots, the VT8623 is now recognized correctly on 
+bootup.
 
-John
+will this issue be reverted or corrected with a 2.6.26.1?
 
----
+thanks!
 
-3rd Linux Wireless Summit
-Les Suites Hotel, Byward Suite
-Ottawa, Canada
-22 July 2008
+kind regards, Alois
 
-Proposed Agenda
 
-0830	Meet & Greet
+Alexey Dobriyan wrote:
+> On Wed, Jul 16, 2008 at 07:00:02PM +0200, MadLoisae@gmx.net wrote:
+>   
+>> I've updated my machine from 2.6.25.11 to 2.6.26 and I think I've found a 
+>> problem.
+>>
+>> If I load the module vt8623fb i get a kernel oops, if the VIA 8623 display 
+>> framebuffer driver is compiled direct into kernel the system hangs up very 
+>> early at booting the kernel.
+>>     
+>
+> Of course, info->dev is NULL, info was just kzallocated!
+>
+> Do
+> 	git-revert 20e061fb750d36ec0ffcb2e44ed7dafa9018223b
+>
+> rebuild, reboot to confirm.
+>
+>   
+>> BUG: unable to handle kernel NULL pointer dereference at 000000b8
+>> IP: [<c02a39c0>] dev_driver_string+0x0/0x29
+>> *pde = 00000000
+>> Oops: 0000 [#1]
+>> Modules linked in: vt8623fb(+) svgalib vgastate budget_av saa7146_vv 
+>> videobuf_dma_sg videobuf_core budget_core saa7146 ttpci_eeprom tda10021 
+>> tda10023 tda1004x
+>>
+>> Pid: 3657, comm: modprobe Not tainted (2.6.26 #5)
+>> EIP: 0060:[<c02a39c0>] EFLAGS: 00010286 CPU: 0
+>> EIP is at dev_driver_string+0x0/0x29
+>> EAX: 00000000 EBX: f8e57e00 ECX: 00000010 EDX: 00000004
+>> ESI: 0000008c EDI: f5fe9c00 EBP: 00000000 ESP: ec041de0
+>> DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+>> Process modprobe (pid: 3657, ti=ec040000 task=ec03d8d0 task.ti=ec040000)
+>> Stack: f8e56408 f7d44000 c0185b44 f5fe9e34 00000010 04d440b4 000719d4 
+>> f8e57e90
+>>       f8e57e60 f7d44000 c02a5daa c0250f4a f7d4404c 00000000 f8e57e90 
+>> c02a5d34
+>>       f7d4404c f7d440f4 f8e57e90 c02a5de1 00000000 f8e57e90 f8e57e90 
+>> c02a560d
+>> Call Trace:
+>> [<f8e56408>] vt8623_pci_probe+0x283/0x45b [vt8623fb]
+>> [<c0185b44>] sysfs_create_link+0x85/0xc5
+>> [<c02a5daa>] __driver_attach+0x0/0x55
+>> [<c0250f4a>] pci_device_probe+0x36/0x57
+>> [<c02a5d34>] driver_probe_device+0xb4/0x12a
+>> [<c02a5de1>] __driver_attach+0x37/0x55
+>> [<c02a560d>] bus_for_each_dev+0x34/0x56
+>> [<c02a5bd0>] driver_attach+0x11/0x13
+>> [<c02a5daa>] __driver_attach+0x0/0x55
+>> [<c02a5963>] bus_add_driver+0x8a/0x1a7
+>> [<c02419f0>] kset_find_obj+0x18/0x40
+>> [<c02a5f39>] driver_register+0x6d/0xc1
+>> [<c02510e0>] __pci_register_driver+0x2b/0x57
+>> [<c012f73f>] sys_init_module+0x14cd/0x161e
+>> [<c0110b49>] do_page_fault+0x228/0x537
+>> [<c024265d>] prio_tree_insert+0x1b/0x1dd
+>> [<f8e4a021>] svga_tilecopy+0x0/0x100 [svgalib]
+>> [<c01035c1>] sysenter_past_esp+0x6a/0x99
+>> =======================
+>> Code: 5a 85 c0 59 79 20 68 24 d7 5d c0 b9 1b 87 4a c0 31 d2 b8 e8 0e 4e c0 
+>> 53 e8 09 47 e7 ff 5a 59 eb 05 b8 ed ff ff ff 5b c3 90 90 90 <8b> 90 b8 00 
+>> 00 00 85 d2 75 0a 8b 90 b4 00 00 00 85 d2 74 03 8b
+>> EIP: [<c02a39c0>] dev_driver_string+0x0/0x29 SS:ESP 0068:ec041de0
+>>     
+>
+>
+>   
 
-	Introductions and opening remarks
-
-0900	Status Reports
-
-	Overview of where things stand today
-
-	- QoS/Multiqueue
-
-	- 802.11n
-
-	- spectrum management
-
-	- Mesh mode (802.11s)
-
-	- RF kill
-
-	- driver status reports
-
-1000	Break
-
-1030	Current Work
-
-	Short presentations/discussions about work in progress
-
-	- access point mode
-
-	- cfg80211/nl80211
-		- time to push to replace WEXT?
-		- tool enhancements and/or userland support?
-
-	- regulatory enforcement (802.11d, CRDA)
-
-	- encrypted management frames (802.11w)
-
-	- virtual hardware (mac80211_hwsim)
-
-	- WiMAX
-
-1200	Vendor/Distro Round Table
-
-	Representatives from hardware vendors and Linux distributions
-	discuss issues around cooperation between themselves and the
-	development community, what we are doing well, and what problems we
-	are causing for each other.
-
-1230	Lunch/Break (provided by HP)
-
-1330	Future work
-
-	Short presentations/discussions about work that has previously
-	been suggested or requested
-
-	- power management 
-		- suspend/resume
-		- power savings
-
-	- lib80211 (code sharing w/ full MAC drivers)
-
-	- rate scaling algorithms
-		- minstrel
-		- others?
-
-	- userland MLME
-
-	- userland driver implementation
-
-	- organized testing (anyone have a proposal?)
-
-1500	BoF/Break-out/BarCamp Session Proposals
-
-1530	Break
-
-1600	BoF/Break-out/BarCamp Sessions
-
-	Impromptu and/or unscheduled discussions as desired by group
-	participants
-
-1730	BoF/Break-out/BarCamp Session Reports
-
-1800	Maintainence Issues
-
-	Round table discussion of issues related to maintenance of
-	the wireless trees
-
-	- trivial/cleanup patches
-		- testing or other requirements?
-		- should they have lower priority?
-		- should they require ACKs from primary author?
-
-	- submissions to -stable
-		- who should drive it?
-		- what policies?
-
-	- rate scaling algs
-		- driver-specific ok?  what limitations?
-		- build policies (part of mac80211.ko?)
-
-	- questions/suggestions/complaints
-
-1830	Adjourn
-
--- 
-John W. Linville
-linville@tuxdriver.com
