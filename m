@@ -1,81 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758718AbYGPTeP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757610AbYGPTl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758718AbYGPTeP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 15:34:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753632AbYGPTd7
+	id S1757610AbYGPTl2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 15:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbYGPTlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 15:33:59 -0400
-Received: from qb-out-0506.google.com ([72.14.204.237]:36115 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752559AbYGPTd6 (ORCPT
+	Wed, 16 Jul 2008 15:41:20 -0400
+Received: from outbound-mail-03.bluehost.com ([69.89.21.13]:56644 "HELO
+	outbound-mail-03.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753640AbYGPTlT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 15:33:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=rIDbL9AOMtG4KIKz3/tmiUDTk2lDkRAXI1WWukXfl4KHDSsWHc6LaJCRhNEtWHNz9Y
-         vVKzJGoqpnWoIdpnglVR6LWah9xrwjnZZcP7Yc6rImOtYtRvwlGk6Mi/j1/suBMbO58c
-         UXk+AvZeMnNsKSn0JUQdqiHIbyONEn+lFTOp8=
-Message-ID: <5ab239b10807161233i6c1c4d0we01ea1b8e6ccaa5b@mail.gmail.com>
-Date: Wed, 16 Jul 2008 12:33:57 -0700
-From: "D. Kelly" <user.kernel@gmail.com>
-To: "mailing list: linux-kernel" <linux-kernel@vger.kernel.org>
-Subject: Problem with restricted I2C algorithms in kernel 2.6.26!
+	Wed, 16 Jul 2008 15:41:19 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User:DomainKey-Status;
+	b=lHdRrZzZFw5Ps3RA47hEWz3NHK2wkt+PlS9qtsq64gqXg/JkeEYMCMoxRKK5NA5SHRNH3r5XNij+STQoIvqxxCZq0gwo1b4gRlsiL6Bf/duON0UCQpt4sBdqY0MnkYtK;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Nick Kossifidis" <mickflemm@gmail.com>
+Subject: Re: [PATCH 5/5] Ath5k: suspend/resume fixes
+Date: Wed, 16 Jul 2008 12:41:02 -0700
+User-Agent: KMail/1.9.9
+Cc: "Pavel Roskin" <proski@gnu.org>, "Jiri Slaby" <jirislaby@gmail.com>,
+       linville@tuxdriver.com, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@gmail.com>
+References: <1216136661-10930-1-git-send-email-jirislaby@gmail.com> <200807161141.59385.jbarnes@virtuousgeek.org> <40f31dec0807161227n4254b8adobbbcfdde540704fd@mail.gmail.com>
+In-Reply-To: <40f31dec0807161227n4254b8adobbbcfdde540704fd@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200807161241.04387.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=3845de25c5f83cd52729570f7b501679d37ca8de
+On Wednesday, July 16, 2008 12:27 pm Nick Kossifidis wrote:
+> 2008/7/16 Jesse Barnes <jbarnes@virtuousgeek.org>:
+> > On Wednesday, July 16, 2008 10:35 am Pavel Roskin wrote:
+> >> On Wed, 2008-07-16 at 09:31 -0700, Jesse Barnes wrote:
+> >> > On Wednesday, July 16, 2008 9:15 am Nick Kossifidis wrote:
+> >> > > It's ok for now, but have in mind that on my upcoming patch series
+> >> > > i'm disabling msi (commented out) since it results no interrupts on
+> >> > > pci-e cards (seems there is a bug in kernel's msi implementation).
+> >> >
+> >> > Hm, would be good to get details here.  MSI is being used by other
+> >> > drivers successfully...
+> >>
+> >> That's true, but no driver uses the same interrupt handler with and
+> >> without MSI.  Either it's different handlers or the handler checks if
+> >> MSI is enabled and does something differently.
+> >
+> > Yeah, using MSI on your device can mean that you have to make some
+> > changes (like on Intel graphics you have to disable regular interrupts or
+> > bad things happen), but you can still share the handler or at least most
+> > of it in some cases.
+>
+> Is there documentation for this somewhere ? Msi documentation
+> (MSI-HOWTO.txt) doesn't say anything about a different interrupt
+> handler etc.
 
-The patch at the preceeding url disables the users ability to select
-I2C algorithms.  Specifically the reason stated was:
+Matthew just rewrote MSI-HOWTO as part of his rework of the MSI code.  It 
+might be more helpful now (see 
+http://kerneltrap.org/mailarchive/linux-kernel/2008/7/1).
 
-"The algorithm drivers are
-helper drivers that are selected automatically
-as needed. There's no point in listing them in the config menu, it can
-only confuse users and waste their time."
+>
+> >> Checks is any interrupts are pending are different for MSI.  It may be
+> >> not hard to do (it's probably easier than for real interrupts), but it
+> >> has to be figured out.  Somebody has to do it right.  Until MSI is
+> >> supported by the interrupt handler, it should not be enabled by the
+> >> driver, or we get a non-functioning driver for AR5006.
+> >
+> > Sure, that's fine.  I just wanted to make sure that there weren't some
+> > weird generic MSI problems.
+>
+> I was referring to this post...
+> http://lkml.org/lkml/2008/6/24/150
 
-The algorithm drivers will not be 'selected automatically as needed'
-if the user is compiling something outside of the kernel that requires
-them!  Just one example, there are drivers found in the V4L dvb driver
-tree that require i2c bit-banging be enabled.  The drivers are now
-broken because the user is not allowed to enable bit-banging himself.
-The only way around this is to revert the patch manually or enable
-something else in the kernel, that he doesn't need, just to get
-bit-banging.
+Yeah, that's a real bug on x86; I don't know how widespread its effects are 
+though.  I'll ping Ingo & Thomas again.
 
-It's a very bad idea to assume that nothing built outside of the
-kernel may need i2c algorithms.  Furthermore, the whole point of being
-able to customize your kernel is so you can select only the things
-which you need.  It makes no good sense to intentionally
-disable/restrict the users ability to do so.  Additionally, assuming
-the ability to select i2c algorithms will only confuse the user and
-waste their time is ridiculous.  The user should be allowed to decide
-for himself what he needs regarding this!
-
-One of the biggest reasons people choose to compile things from
-cvs/svn/mercurial/etc. is because it gives them access to newer bug
-fixes and support for things not yet present in the kernel source.  A
-perfect example, the multiproto dvb driver tree.  Users wanting
-support for dvb-s2 devices have to compile drivers outside of the
-kernel because it's simply not available in the kernel and won't be
-for some time.
-
-I've contacted one of the i2c subsystem maintainers, Jean Delvare, but
-unfortunately he doesn't seem to care about this problem and his
-advice in dealing with it is to "Just get these drivers merged in the
-kernel. Ah ah ah!"...
-
-Clearly the more sane and reasonable solution is to not cripple the
-menu options in the first place, especially when it creates no benefit
-and only serves to limit/restrict the users ability to select what he
-needs.  I'm asking that the patch be reverted and anyone in agreement
-to please voice their opinion here in public.
-
-Best regards,
--Derek
+Jesse
