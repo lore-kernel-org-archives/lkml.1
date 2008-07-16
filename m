@@ -1,141 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758033AbYGPBzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758599AbYGPBz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758033AbYGPBzk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 21:55:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYGPBzb
+	id S1758599AbYGPBz7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 21:55:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYGPBzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 21:55:31 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:21204 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751935AbYGPBza (ORCPT
+	Tue, 15 Jul 2008 21:55:49 -0400
+Received: from ax54.genwebserver.com ([72.18.156.50]:53973 "EHLO
+	ax54.genwebserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751227AbYGPBzt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 21:55:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=Yi+C9bWAC8ipuD58IWyLBvKbzL8BsoMnhaZ8jp6J4n5Enw8hFdKiW3HdAM8S6z5sKk
-         JlzafX61rDEl+Q83ClNqTld08/yw4wmwLZEFDWMscgmjIhVj/K1kJZsI4hB/nE+ADgf4
-         xbIujTCAHLTeliT9ZI7rogYSh8H/T8MdAwgwE=
-Message-ID: <19f34abd0807151855k22dc80d5tf3629da2e52ee6de@mail.gmail.com>
-Date: Wed, 16 Jul 2008 03:55:28 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Steven Rostedt" <rostedt@goodmis.org>
-Subject: 4d3702b6 (post-v2.6.26): WARNING: at kernel/lockdep.c:2731 check_flags (ftrace)
+	Tue, 15 Jul 2008 21:55:49 -0400
+Message-ID: <487D547C.7060909@assumpcao.org>
+Date: Tue, 15 Jul 2008 22:53:00 -0300
+From: Tiago Assumpcao <tiago@assumpcao.org>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Theodore Tso <tytso@mit.edu>, Tiago Assumpcao <tiago@assumpcao.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, pageexec@freemail.hu,
+       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [stable] Linux 2.6.25.10
+References: <alpine.LFD.1.10.0807151425170.2867@woody.linux-foundation.org> <487D3C17.31467.1C3C0441@pageexec.freemail.hu> <alpine.LFD.1.10.0807151620450.2867@woody.linux-foundation.org> <487D3A13.3040507@assumpcao.org> <20080716010836.GL8185@mit.edu>
+In-Reply-To: <20080716010836.GL8185@mit.edu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - ax54.genwebserver.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - assumpcao.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Theodore Tso wrote:
+> Look if you want this, pay $$$ to a distribution and get their
+> supported distribution.  It costs time and effort to classify bugs as
+> security related (or not), (...)
 
-When booting 4d3702b6, I got this huge thing:
+That's fallacious. Assuming that you have good programmers, and you do, 
+it's of very low cost the act of identifying what *is likely to be* a 
+security bug. In most cases, they are easy to spot. And, hey, we are not 
+asking for an absurd amount of care. You must not pay $200 /hour for 
+someone to review your software. All I, personally, ask for is that the 
+basic attention is given. With this simple act, I'm sure you would cover 
+the majority of the bugs.
 
-Testing tracer wakeup: <4>------------[ cut here ]------------
-WARNING: at kernel/lockdep.c:2731 check_flags+0x123/0x160()
-Modules linked in:
-Pid: 1, comm: swapper Not tainted 2.6.26-crashing-02127-g4d3702b6 #30
- [<c015c349>] warn_on_slowpath+0x59/0xb0
- [<c01276c6>] ? ftrace_call+0x5/0x8
- [<c012d800>] ? native_read_tsc+0x0/0x20
- [<c0158de2>] ? sub_preempt_count+0x12/0xf0
- [<c01814eb>] ? trace_hardirqs_off+0xb/0x10
- [<c0182fbc>] ? __lock_acquire+0x2cc/0x1120
- [<c01814eb>] ? trace_hardirqs_off+0xb/0x10
- [<c01276af>] ? mcount_call+0x5/0xa
- [<c017ff53>] check_flags+0x123/0x160
- [<c0183e61>] lock_acquire+0x51/0xd0
- [<c01276c6>] ? ftrace_call+0x5/0x8
- [<c0613d4f>] _spin_lock_irqsave+0x5f/0xa0
- [<c01a8d45>] ? ftrace_record_ip+0xf5/0x220
- [<c02d5413>] ? debug_locks_off+0x3/0x50
- [<c01a8d45>] ftrace_record_ip+0xf5/0x220
- [<c01276af>] mcount_call+0x5/0xa
- [<c02d5418>] ? debug_locks_off+0x8/0x50
- [<c017ff27>] check_flags+0xf7/0x160
- [<c0183e61>] lock_acquire+0x51/0xd0
- [<c01276c6>] ? ftrace_call+0x5/0x8
- [<c0613d4f>] _spin_lock_irqsave+0x5f/0xa0
- [<c01affcd>] ? wakeup_tracer_call+0x6d/0xf0
- [<c01625e2>] ? _local_bh_enable+0x62/0xb0
- [<c0158ddd>] ? sub_preempt_count+0xd/0xf0
- [<c01affcd>] wakeup_tracer_call+0x6d/0xf0
- [<c0162724>] ? __do_softirq+0xf4/0x110
- [<c01afff1>] ? wakeup_tracer_call+0x91/0xf0
- [<c01276c6>] ftrace_call+0x5/0x8
- [<c0162724>] ? __do_softirq+0xf4/0x110
- [<c0158de2>] ? sub_preempt_count+0x12/0xf0
- [<c01625e2>] _local_bh_enable+0x62/0xb0
- [<c0162724>] __do_softirq+0xf4/0x110
- [<c01627ed>] do_softirq+0xad/0xb0
- [<c0162a15>] irq_exit+0xa5/0xb0
- [<c013a506>] smp_apic_timer_interrupt+0x66/0xa0
- [<c02d3fac>] ? trace_hardirqs_off_thunk+0xc/0x10
- [<c0127449>] apic_timer_interrupt+0x2d/0x34
- [<c018007b>] ? find_usage_backwards+0xb/0xf0
- [<c0613a09>] ? _spin_unlock_irqrestore+0x69/0x80
- [<c014ef32>] tg_shares_up+0x132/0x1d0
- [<c014d2a2>] walk_tg_tree+0x62/0xa0
- [<c014ee00>] ? tg_shares_up+0x0/0x1d0
- [<c014a860>] ? tg_nop+0x0/0x10
- [<c015499d>] update_shares+0x5d/0x80
- [<c0154a2f>] try_to_wake_up+0x6f/0x280
- [<c01a8b90>] ? __ftrace_modify_code+0x0/0xc0
- [<c01a8b90>] ? __ftrace_modify_code+0x0/0xc0
- [<c0154c94>] wake_up_process+0x14/0x20
- [<c01725f6>] kthread_create+0x66/0xb0
- [<c0195400>] ? do_stop+0x0/0x200
- [<c0195320>] ? __stop_machine_run+0x30/0xb0
- [<c0195340>] __stop_machine_run+0x50/0xb0
- [<c0195400>] ? do_stop+0x0/0x200
- [<c01a8b90>] ? __ftrace_modify_code+0x0/0xc0
- [<c061242d>] ? mutex_unlock+0xd/0x10
- [<c01953cc>] stop_machine_run+0x2c/0x60
- [<c01a94d3>] unregister_ftrace_function+0x103/0x180
- [<c01b0517>] stop_wakeup_tracer+0x17/0x60
- [<c01b056f>] wakeup_tracer_ctrl_update+0xf/0x30
- [<c01ab8d5>] trace_selftest_startup_wakeup+0xb5/0x130
- [<c01ab950>] ? trace_wakeup_test_thread+0x0/0x70
- [<c01aadf5>] register_tracer+0x135/0x1b0
- [<c0877d02>] init_wakeup_tracer+0xd/0xf
- [<c085d437>] kernel_init+0x1a9/0x2ce
- [<c061397b>] ? _spin_unlock_irq+0x3b/0x60
- [<c02d3f9c>] ? trace_hardirqs_on_thunk+0xc/0x10
- [<c0877cf5>] ? init_wakeup_tracer+0x0/0xf
- [<c0182646>] ? trace_hardirqs_on_caller+0x126/0x180
- [<c02d3f9c>] ? trace_hardirqs_on_thunk+0xc/0x10
- [<c01269c8>] ? restore_nocheck_notrace+0x0/0xe
- [<c085d28e>] ? kernel_init+0x0/0x2ce
- [<c085d28e>] ? kernel_init+0x0/0x2ce
- [<c01275fb>] kernel_thread_helper+0x7/0x10
- =======================
----[ end trace a7919e7f17c0a725 ]---
-irq event stamp: 579530
-hardirqs last  enabled at (579528): [<c01826ab>] trace_hardirqs_on+0xb/0x10
-hardirqs last disabled at (579529): [<c01814eb>] trace_hardirqs_off+0xb/0x10
-softirqs last  enabled at (579530): [<c0162724>] __do_softirq+0xf4/0x110
-softirqs last disabled at (579517): [<c01627ed>] do_softirq+0xad/0xb0
-irq event stamp: 579530
-hardirqs last  enabled at (579528): [<c01826ab>] trace_hardirqs_on+0xb/0x10
-hardirqs last disabled at (579529): [<c01814eb>] trace_hardirqs_off+0xb/0x10
-softirqs last  enabled at (579530): [<c0162724>] __do_softirq+0xf4/0x110
-softirqs last disabled at (579517): [<c01627ed>] do_softirq+0xad/0xb0
-PASSED
+> It will cost you money, but hey, the people who want
+> this sort of thing typically are willing to pay for the service.
+> 
 
-Incidentally, the kernel also hung while I was typing in this report.
+So, only those willing to pay have the right of respect? Because, you 
+see, this is rather a matter of respect with those who choose to use 
+your solution. And, no, the "free will" argument does not qualify 
+herein. My mother is not aware of your absurd acts.
 
-(I thought I'd already reported this in -next before the merge window
-opened... weird.)
+> I'll note that trying to classify bugs as being "security-related" at
+> the kernel.org level often doesn't help the distro's, since many of
+> these bugs won't even apply to whatever version of the kernel the
+> distro's snapshotted 9-18 months ago.  So if the distro snapshotted
+ > 2.6.18 in Fall 2006, and their next snapshot will be sometime two
+> years later in the fall of this year, they will have no use for some
+> potential local denial of service attack that was introduced by
+> accident in 2.6.24-rc3, and fixed in 2.6.25-rc1.  It just doesn't
+> matter to them.
+
+I don't follow what you have just said. What is the problem with 
+"versioning" and the strictness of its relation to bugs, security or not?
+
+> 
+> So basically, if there are enough kernel.org users who care, they can
+> pay someone to classify and issue CVE numbers for each and every
+> potential "security bug" that might appear and then disappear.
+
+I think, CVE registration or the alike would be too much for what I call 
+"act of decency". A single parenthesis note on the bug itself would be 
+of great help and of small effort.
 
 
-Vegard
+--t
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+
+
+
+
+
+
