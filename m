@@ -1,55 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757566AbYGPHO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757878AbYGPHPY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757566AbYGPHO4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 03:14:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbYGPHOt
+	id S1757878AbYGPHPY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 03:15:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758329AbYGPHPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 03:14:49 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:26226 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751618AbYGPHOs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 03:14:48 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=EfB0dbNRQ+SsqivxDLvLSAyWlda6HXnKugsIQCPgbr6bqkedlhu47JS/3IWXpYdmd
-	ev4tMB7u2ItFyjXesND8Q==
-Message-ID: <6599ad830807160014t2ae6cb4dm5c273d612bf4522b@mail.gmail.com>
-Date: Wed, 16 Jul 2008 00:14:32 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Lai Jiangshan" <laijs@cn.fujitsu.com>
-Subject: Re: [PATCH 1/3] cpuset: Don't pass empty cpumasks to partition_sched_domains()
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Paul Jackson" <pj@sgi.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <487D6E49.7070805@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <487D6E49.7070805@cn.fujitsu.com>
+	Wed, 16 Jul 2008 03:15:04 -0400
+Received: from ozlabs.org ([203.10.76.45]:56471 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757746AbYGPHPD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 03:15:03 -0400
+To: <srostedt@redhat.com>
+Cc: Andrew Morton <akpm@osdl.org>, <linux-kernel@vger.kernel.org>
+Message-Id: <ea127060ce3764c4b714406be0521171b925a847.1216192501.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] ftrace: Make output nicely spaced for up to 999 cpus
+Date: Wed, 16 Jul 2008 17:15:01 +1000 (EST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 8:43 PM, Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
-> i create a lots of empty cpusets(empty cpumasks) and
-> turn off the "sched_load_balance" in top cpuset.
->
-> And i found that all these empty cpumasks are passed to
-> partition_sched_domains() in rebuild_sched_domains(),
-> it's very time-consuming for partition_sched_domains()
-> and it's not need.
->
-> It also reduce memory consumed and some works in
-> rebuild_sched_domains() too.
->
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Currently some of the ftrace output goes skewiff if you have more
+than 9 cpus, and some if you have more than 99.
 
-Acked-by: Paul Menage <menage@google.com>
+Twiddle with the headers and format strings to make up to 999 cpus
+display without causing spacing problems.
 
-Seems reasonable, and I don't think that it clashes with the other
-outstanding rebuild_sched_domains() patches.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ kernel/trace/trace.c |   28 ++++++++++++++--------------
+ 1 files changed, 14 insertions(+), 14 deletions(-)
 
-Paul
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 868e121..be92a79 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -1334,21 +1334,21 @@ seq_print_ip_sym(struct trace_seq *s, unsigned long ip, unsigned long sym_flags)
+ 
+ static void print_lat_help_header(struct seq_file *m)
+ {
+-	seq_puts(m, "#                _------=> CPU#            \n");
+-	seq_puts(m, "#               / _-----=> irqs-off        \n");
+-	seq_puts(m, "#              | / _----=> need-resched    \n");
+-	seq_puts(m, "#              || / _---=> hardirq/softirq \n");
+-	seq_puts(m, "#              ||| / _--=> preempt-depth   \n");
+-	seq_puts(m, "#              |||| /                      \n");
+-	seq_puts(m, "#              |||||     delay             \n");
+-	seq_puts(m, "#  cmd     pid ||||| time  |   caller      \n");
+-	seq_puts(m, "#     \\   /    |||||   \\   |   /           \n");
++	seq_puts(m, "#                  _------=> CPU#            \n");
++	seq_puts(m, "#                 / _-----=> irqs-off        \n");
++	seq_puts(m, "#                | / _----=> need-resched    \n");
++	seq_puts(m, "#                || / _---=> hardirq/softirq \n");
++	seq_puts(m, "#                ||| / _--=> preempt-depth   \n");
++	seq_puts(m, "#                |||| /                      \n");
++	seq_puts(m, "#                |||||     delay             \n");
++	seq_puts(m, "#  cmd     pid   ||||| time  |   caller      \n");
++	seq_puts(m, "#     \\   /      |||||   \\   |   /           \n");
+ }
+ 
+ static void print_func_help_header(struct seq_file *m)
+ {
+-	seq_puts(m, "#           TASK-PID   CPU#    TIMESTAMP  FUNCTION\n");
+-	seq_puts(m, "#              | |      |          |         |\n");
++	seq_puts(m, "#           TASK-PID    CPU#    TIMESTAMP  FUNCTION\n");
++	seq_puts(m, "#              | |       |          |         |\n");
+ }
+ 
+ 
+@@ -1432,7 +1432,7 @@ lat_print_generic(struct trace_seq *s, struct trace_entry *entry, int cpu)
+ 	comm = trace_find_cmdline(entry->pid);
+ 
+ 	trace_seq_printf(s, "%8.8s-%-5d ", comm, entry->pid);
+-	trace_seq_printf(s, "%d", cpu);
++	trace_seq_printf(s, "%3d", cpu);
+ 	trace_seq_printf(s, "%c%c",
+ 			(entry->flags & TRACE_FLAG_IRQS_OFF) ? 'd' : '.',
+ 			((entry->flags & TRACE_FLAG_NEED_RESCHED) ? 'N' : '.'));
+@@ -1497,7 +1497,7 @@ print_lat_fmt(struct trace_iterator *iter, unsigned int trace_idx, int cpu)
+ 
+ 	if (verbose) {
+ 		comm = trace_find_cmdline(entry->pid);
+-		trace_seq_printf(s, "%16s %5d %d %d %08x %08x [%08lx]"
++		trace_seq_printf(s, "%16s %5d %3d %d %08x %08x [%08lx]"
+ 				 " %ld.%03ldms (+%ld.%03ldms): ",
+ 				 comm,
+ 				 entry->pid, cpu, entry->flags,
+@@ -1580,7 +1580,7 @@ static int print_trace_fmt(struct trace_iterator *iter)
+ 	ret = trace_seq_printf(s, "%16s-%-5d ", comm, entry->pid);
+ 	if (!ret)
+ 		return 0;
+-	ret = trace_seq_printf(s, "[%02d] ", iter->cpu);
++	ret = trace_seq_printf(s, "[%03d] ", iter->cpu);
+ 	if (!ret)
+ 		return 0;
+ 	ret = trace_seq_printf(s, "%5lu.%06lu: ", secs, usec_rem);
+-- 
+1.5.5
+
