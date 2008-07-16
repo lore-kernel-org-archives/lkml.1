@@ -1,61 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757181AbYGPLE5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757497AbYGPLGe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757181AbYGPLE5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 07:04:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYGPLEt
+	id S1757497AbYGPLGe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 07:06:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbYGPLG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 07:04:49 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58458
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750967AbYGPLEt (ORCPT
+	Wed, 16 Jul 2008 07:06:26 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:47447 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751196AbYGPLG0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 07:04:49 -0400
-Date: Wed, 16 Jul 2008 04:04:47 -0700 (PDT)
-Message-Id: <20080716.040447.249346237.davem@davemloft.net>
-To: pageexec@freemail.hu
-Cc: tiago@assumpcao.org, torvalds@linux-foundation.org, greg@kroah.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [stable] Linux 2.6.25.10
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <487DEED3.1351.1EF6349A@pageexec.freemail.hu>
-References: <487DE856.15132.1EDCDAAF@pageexec.freemail.hu>
-	<20080716.033112.193697209.davem@davemloft.net>
-	<487DEED3.1351.1EF6349A@pageexec.freemail.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Jul 2008 07:06:26 -0400
+Date: Wed, 16 Jul 2008 19:06:21 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu
+Subject: Re: [PATCH] crypto: fix up checkpatch errors
+Message-ID: <20080716110621.GA15288@gondor.apana.org.au>
+References: <20080715152904.GC4918@hmsreliant.think-freely.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080715152904.GC4918@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: pageexec@freemail.hu
-Date: Wed, 16 Jul 2008 12:51:31 +0200
-
-> On 16 Jul 2008 at 3:31, David Miller wrote:
+On Tue, Jul 15, 2008 at 11:29:04AM -0400, Neil Horman wrote:
+> Patch to clean up the checkpatch errors in crypto/prng.c
 > 
-> > From: pageexec@freemail.hu
-> > Date: Wed, 16 Jul 2008 12:23:50 +0200
-> > 
-> > > On 16 Jul 2008 at 3:08, David Miller wrote:
-> > > 
-> > > > IOW, when we fix security issues, it's simply not even appropriate or 
-> > > > relevant to you.
-> > > 
-> > > i'll ask again: why aren't security fixes that you fix relevant to users
-> > > of older kernels (as that's what the topic was)?
-> > 
-> > Backporting any fix to older kernels is a chore, the further back you
-> > go, the harder and less fun it is.
- ...
-> > The tipping point is really quick to where someone hacking the kernel
-> > for fun simply isn't going to do it, nor should they be expected to.
-> > 
-> > That's why people who want a stable supported kernel with fixes
-> > constantly backported have grown accustomed to paying for that service.
-> 
-> and how does that imply that you should not mark security fixes as such?
+> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
 
-You asked me why fixes are not relevant to users of older upstream
-non-dist kernels.  And I answered that question.
+Thanks Neil! I'll fold these patches into cryptodev-2.6.
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
