@@ -1,82 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757572AbYGPKw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757240AbYGPK6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757572AbYGPKw6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 06:52:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755094AbYGPKwt
+	id S1757240AbYGPK6U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 06:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYGPK6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 06:52:49 -0400
-Received: from r00tworld.com ([212.85.137.21]:50629 "EHLO r00tworld.com"
+	Wed, 16 Jul 2008 06:58:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58918 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754836AbYGPKwl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 06:52:41 -0400
-From: pageexec@freemail.hu
-To: David Miller <davem@davemloft.net>
-Date: Wed, 16 Jul 2008 12:51:31 +0200
-MIME-Version: 1.0
-Subject: Re: [stable] Linux 2.6.25.10
-Reply-to: pageexec@freemail.hu
-CC: tiago@assumpcao.org, torvalds@linux-foundation.org, greg@kroah.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Message-ID: <487DEED3.1351.1EF6349A@pageexec.freemail.hu>
-In-reply-to: <20080716.033112.193697209.davem@davemloft.net>
-References: <487DE059.15123.1EBDA558@pageexec.freemail.hu>, <487DE856.15132.1EDCDAAF@pageexec.freemail.hu>, <20080716.033112.193697209.davem@davemloft.net>
-X-mailer: Pegasus Mail for Windows (4.41)
-Content-type: text/plain; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-Content-description: Mail message body
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Wed, 16 Jul 2008 12:52:15 +0200 (CEST)
+	id S1754836AbYGPK6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 06:58:12 -0400
+Date: Wed, 16 Jul 2008 06:56:44 -0400
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
+Subject: Re: [RFC] systemtap: begin the process of using proper kernel APIs (part1: use kprobe symbol_name/offset instead of address)
+Message-ID: <20080716105644.GB5413@redhat.com>
+References: <1216146802.3312.95.camel__45052.4692344063$1216146917$gmane$org@localhost.localdomain> <y0mr69vj5p0.fsf@ton.toronto.redhat.com> <1216151526.3312.102.camel@localhost.localdomain> <20080715200718.GC4280@redhat.com> <1216153462.3312.126.camel@localhost.localdomain> <20080715221826.GD4280@redhat.com> <1216173983.3312.183.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1216173983.3312.183.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16 Jul 2008 at 3:31, David Miller wrote:
+Hi -
 
-> From: pageexec@freemail.hu
-> Date: Wed, 16 Jul 2008 12:23:50 +0200
+On Tue, Jul 15, 2008 at 09:06:23PM -0500, James Bottomley wrote:
+> [...]
+> > Please choose your words more carefully.  We don't "subvert" anything,
+> > where one would mean sneaking around some sort of protection.
 > 
-> > On 16 Jul 2008 at 3:08, David Miller wrote:
-> > 
-> > > IOW, when we fix security issues, it's simply not even appropriate or 
-> > > relevant to you.
-> > 
-> > i'll ask again: why aren't security fixes that you fix relevant to users
-> > of older kernels (as that's what the topic was)?
+> Actually, I did and you do.  One of the OED's definition of subvert is
+> "to undermine or overturn a condition or order of things, a principle or
+> a law etc."  In this particular case, this:
 > 
-> Backporting any fix to older kernels is a chore, the further back you
-> go, the harder and less fun it is.
+> commit 3a872d89baae821a0f6e2c1055d4b47650661137
+> Author: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> Date:   Mon Oct 2 02:17:30 2006 -0700
+>     [PATCH] Kprobes: Make kprobe modules more portable
+>
+> Which provided a portable input to kprobes (the symbol_name/offset one)
+> and revoked the global accessibility of the kallsyms_lookup_name().
 
-it depends on the fix and the context of the code it touches. a one
-liner in 2.6.26 may not necessarily have to become a 100 line, multi-file
-fix in 2.6.16. look at 28d838cc4dfea980cb6eda0a7409cbf91889ca74 for an
-example, that was trivial to backport to many kernel versions before.
+That patch served two purposes: a helpful utility for other kprobes
+users, and it enabling what LKML deemed more important - unexporting
+kallsyms*.
 
-also, if you can find a commercial distro whose kernel predates even
-yours (i.e., yours is between mainline and a well maintained commercial
-one) then you may not actually have such a big problem with backports
-even for more complex fixes as you can peek at what the commercial guys
-are doing.
 
-in any case, you're answering a different question or i'm failing to see
-the logical connection between 'irrelevant' and 'laborious'. basically you
-said now that you don't provide security info because it's labourious to
-backport fixes, or something like that. i'm afraid there's no such logical
-connection. you also didn't answer the question about why you should not
-make the life of people doing the actual backports (paid for, commercial,
-whatever the trigger word for you is) easier.
+> It's actually worse than this, though.  The kernel API isn't fixed in
+> stone, it evolves usually by trying to make problematic use cases
+> better.  By refusing to consider using the replacement API [...]
 
-> The tipping point is really quick to where someone hacking the kernel
-> for fun simply isn't going to do it, nor should they be expected to.
-> 
-> That's why people who want a stable supported kernel with fixes
-> constantly backported have grown accustomed to paying for that service.
+Your lecture is based upon a misundertanding ...
 
-and how does that imply that you should not mark security fixes as such?
-remember, we're not discussing how backports are done in the world, but
-why you're helping them by withholding security information. because if
-you admit that you're not, then that's one less reason to withhold this
-info.
 
-cheers,
-  PaX Team
+> [...]
+> It emits a single probe and produces this in the module build:
+> -rw-r--r-- 1 root root  17996 2008-07-15 20:45 stap_2154.c
+> About 600 lines.
+> However, it also needs this for the symbol table:
+> -rw-r--r-- 1 root root 446137 2008-07-15 20:45 stap-symbols.h
 
+... that this is somehow connected to the kprobe api issue.
+
+IT IS NOT.
+
+We do not use those symbol tables for kprobe placement purposes.
+(This part is partially a prototype for user-space parts, and the
+sizes will not stay large.)
+
+The way we set up kprobes now could be trivially converted to
+"_stext"+offset.  Would that alone allay your concerns?
+
+
+- FChE
