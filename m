@@ -1,78 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758310AbYGPH22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758824AbYGPHae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758310AbYGPH22 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 03:28:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbYGPH2U
+	id S1758824AbYGPHae (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 03:30:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754202AbYGPHaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 03:28:20 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:41110 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751939AbYGPH2T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 03:28:19 -0400
-Message-ID: <487DA383.1090503@keyaccess.nl>
-Date: Wed, 16 Jul 2008 09:30:11 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Wed, 16 Jul 2008 03:30:22 -0400
+Received: from smtp-out5.blueyonder.co.uk ([195.188.213.8]:52035 "EHLO
+	smtp-out5.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751618AbYGPHaV convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 03:30:21 -0400
+Message-ID: <487DA388.3030104@jeffray.co.uk>
+Date: Wed, 16 Jul 2008 08:30:16 +0100
+From: Ian Jeffray <ian@jeffray.co.uk>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-To: "Rafael C. de Almeida" <almeidaraf@gmail.com>
-CC: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Stoyan Gaydarov <stoyboyker@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, gorcunov@gmail.com,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-Subject: Re: From 2.4 to 2.6 to 2.7?
-References: <6d291e080807141910m573b29b2t753ea7c4db09902d@mail.gmail.com> <alpine.LFD.1.10.0807141914280.3017@woody.linux-foundation.org> <487CE6CB.9090405@zytor.com> <487D7781.6000407@keyaccess.nl> <487D9B58.7070609@gmail.com>
-In-Reply-To: <487D9B58.7070609@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -0.9 (/)
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: sendfile() broken with 2.6.26 + Apache 2 ?
+References: <487CD7A7.2080800@jeffray.co.uk> <487D893A.5080207@cosmosbay.com>
+In-Reply-To: <487D893A.5080207@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16-07-08 08:55, Rafael C. de Almeida wrote:
+Hi Eric,
 
-(and please don't drop CCs on linux-kernel. I for example in this case 
-would like the X as user thing to be noticed as I believe it's a nice 
-point as an "externally significant" thing)
+Thanks for directing me to a better list.
 
-> Rene Herman wrote:
+Further responses below:
 
->> I do believe the numbering scheme should at least ostensibly still be
->> feature driven, not be a fully robotic date thing. With the latter, you
->> definitely miss out on press-opportunities and that's not even meant
->> cynical. There just is a bit of industry around Linux and the promotion
->> opportunities of (say) "Linux 3" are really lots, lots bigger than
->> anything boringly date based.
+Eric Dumazet wrote:
+> CC to netdev where this report might find better answers
 > 
-> And that's why after the adoption of generics and a few things java all
-> the sudden became java 5. I don't like that. I hope the world gets used
-> to learning things instead of just being driven by a pretty number.
+> Ian Jeffray a écrit :
+>> All,
+>>
+>> I moved from kernel 2.6.25.4 to 2.6.26 yesterday and observed that
+>> large files sent via Apache2 are partially corrupt.
+>>
+>> This appears to be linked to sendfile() -- disabling the use of
+>> sendfile in the apache config (EnableSendfile Off) allows it to
+>> function as normal.
+>>
+>> My system is a simple Core2Duo running Debian lenny/sid; nothing
+>> special, and I have never observed problems like this before.
+>>
+>> The problem feels certainly related to sendfile() since the data
+>> reads correctly from disc in other programs, and via CIFS etc.
+>>
+>> The corruption happens part-way in to the file... I've no exact
+>> figure but it would seem like maybe 32KB -- I'm seeing broken
+>> PNGs served from Apache, where the top few dozen lines decode
+>> correctly, and the rest is garbage.
+>>
+>> I've made basically no configuration changes between 2.6.25.4 and
+>> 2.6.26 and have explicitly tried both enabling and disabling the
+>> new PAT support to no effect.
+>>
+>> This is completely repeatable and reproducible.
+>>
+>> Is anyone else seeing this broken behaviour?
+>>
+> 
+> 
+> What kind of network adapter are you using ? (lspci | grep -i ether)
 
-I don't. I hate bores.
+02:00.0 Ethernet controller: Attansic Technology Corp. L1 Gigabit 
+Ethernet Adapter (rev b0)
 
-More importantly though, that's really the kind of thing where you can
-argue about how life should and/or could be until you're blue in the
-face but if it isn't, it doesn't actually matter any. People intimately
-involved with a project like Linux (say, subscribers to this list)
-definitely look quite different at it than others and that's nothing
-bad. Communicating information to these people through shortcuts like
-version numbers isn't necesarily anything to avoid.
 
-There ARE features in the pipeline you could plan for that would warrant
-a version jump. I'd for example consider being able to run X not as root
-a very worthy goal for a version jump (be it 2.8 or 3.0). That's also a
-change in the area where those that are NOT intimately involved yet
-interested in a more than professional way are -- on the desktop.
+> If you disable TCP segmentation offload on this NIC (ethtool -K eth0 tso 
+> off) , is this problem still present ?
 
-Really. I'd like it much better if the big cool feature of the all new
-Linux kernel would be running X as user, rather than when the big cool
-feature of X running as a user would require a version of Linux newer
-than the february 2010 release.
+Wow.  That 'solves' the problem!  Great.
 
-If you get what I mean. Do trust me, you'll have time and opportunity
-enough in your lifetime to be boringly professional.
+Does this therefore point to an attansic driver issue?
 
-Rene.
+
+Ian.
 
