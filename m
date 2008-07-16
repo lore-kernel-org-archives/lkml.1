@@ -1,51 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759354AbYGPDVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759353AbYGPDZu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759354AbYGPDVR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 23:21:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755263AbYGPDVG
+	id S1759353AbYGPDZu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 23:25:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754550AbYGPDZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 23:21:06 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:56691 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751661AbYGPDVF (ORCPT
+	Tue, 15 Jul 2008 23:25:37 -0400
+Received: from ti-out-0910.google.com ([209.85.142.187]:63900 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752984AbYGPDZg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 23:21:05 -0400
-Date: Tue, 15 Jul 2008 20:13:19 -0700
-From: Greg KH <greg@kroah.com>
-To: Tiago Assumpcao <tiago@assumpcao.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, pageexec@freemail.hu,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [stable] Linux 2.6.25.10
-Message-ID: <20080716031319.GA7558@kroah.com>
-References: <alpine.LFD.1.10.0807151425170.2867@woody.linux-foundation.org> <487D3C17.31467.1C3C0441@pageexec.freemail.hu> <alpine.LFD.1.10.0807151707450.2867@woody.linux-foundation.org> <487D4301.5080609@assumpcao.org> <alpine.LFD.1.10.0807151749570.2867@woody.linux-foundation.org> <487D4A7B.8090403@assumpcao.org>
+	Tue, 15 Jul 2008 23:25:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=sd54SWFK2goKukwjxErVG3dQ4dMve/a4jIw6dAZlZmTfFckdLFzPfYw9nv1ZCZa5G5
+         wCyjQvE8hb7iBYrKqRwGzr9xtDo4q+uVCtc+USdAaFkOi0i86wZ/5USM9qbH7xFaWv8L
+         WlIc04v6Ajnd/w4LFkT7SSSqyWJgjrcnxOsTE=
+Message-ID: <487D6A24.9070001@gmail.com>
+Date: Wed, 16 Jul 2008 12:25:24 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <487D4A7B.8090403@assumpcao.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, linux-kernel@vger.kernel.org,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>,
+       Benjamin Thery <benjamin.thery@bull.net>, netdev@vger.kernel.org
+Subject: Re: [PATCH 12/15] driver core: Implement tagged directory support
+ for device classes.
+References: <m18wwiihbn.fsf_-_@frodo.ebiederm.org>	<m14p76ih9a.fsf_-_@frodo.ebiederm.org>	<m1zloyh2mb.fsf_-_@frodo.ebiederm.org>	<m1vdzmh2jr.fsf_-_@frodo.ebiederm.org>	<m1r6aah2hh.fsf_-_@frodo.ebiederm.org>	<m1mykyh2fu.fsf_-_@frodo.ebiederm.org>	<m1hcb6h2d2.fsf_-_@frodo.ebiederm.org> <486DD650.3000804@gmail.com>	<m1tzf593ny.fsf@frodo.ebiederm.org> <486E2C3B.6020603@gmail.com>	<20080704161200.GA1440@suse.de> <m1lk052ptp.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1lk052ptp.fsf@frodo.ebiederm.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 10:10:19PM -0300, Tiago Assumpcao wrote:
->
-> All I ask for is to receive the "There are updates available." message as 
-> soon as one security problem is reported, understood and treated by your 
-> development part. And that is, the sooner possible, if you please.
+Eric W. Biederman wrote:
+> Greg KH <gregkh@suse.de> writes:
+>> Sorry, Greg is walking out the door in 30 minutes for a much needed week
+>> long vacation and can't look into this right now :(
+>>
+>> I'll be able to review it next weekend, sorry for the delay.
+> 
+> Any progress in reviewing these changes, and seeing if you can stand
+> to merge them?
 
-Do we not already do this today?  I know I do this as soon as possible
-for any reported problem for the -stable tree, as soon as the fix is in
-Linus's tree.
+Greg, please disregard my earlier NACKs and commit the patches if you're
+okay with them.  I'm working on cleaning it up but I don't think I'll be
+able to make it in time for merge window and as Eric said getting the
+functionality in place is more important at this point as it doesn't
+affect user visible interface.
 
-See the 2.6.25.11 release for an example of this.
+Eric, with the multiple superblocks, sysfs now uses inode from the
+default sysfs_sb with dentries from other sb's.  Is this okay?  Are
+there any other filesystems which do this?
 
-> Plus, if one bothers, to be able to know the exact location of this bug and 
-> its characteristics.
+Thanks.
 
-That's the extra work that you are saying we also need to do.  Linus and
-others have already detailed why we don't do that.
-
-thanks,
-
-greg k-h
+-- 
+tejun
