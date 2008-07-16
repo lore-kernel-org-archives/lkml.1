@@ -1,213 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759561AbYGPOeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759787AbYGPOex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759561AbYGPOeY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 10:34:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759004AbYGPOeG
+	id S1759787AbYGPOex (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 10:34:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754417AbYGPOek
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 10:34:06 -0400
-Received: from tomts25.bellnexxia.net ([209.226.175.188]:63982 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758798AbYGPOeE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 10:34:04 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtUEALijfUhMRKxB/2dsb2JhbACBWa8R
-Date: Wed, 16 Jul 2008 10:34:02 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Masami Hiramatsu <mhiramat@redhat.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 07/17] LTTng instrumentation - timer
-Message-ID: <20080716143401.GE24546@Krystal>
-References: <20080715222604.331269462@polymtl.ca> <20080715222747.520809773@polymtl.ca> <1216197251.5232.21.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1216197251.5232.21.camel@twins>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 10:27:02 up 41 days, 19:08,  5 users,  load average: 0.37, 0.47,
-	0.64
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Wed, 16 Jul 2008 10:34:40 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:44044 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756045AbYGPOei (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 10:34:38 -0400
+Date: Wed, 16 Jul 2008 16:34:29 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: davem@davemloft.net, netdev@vger.kernel.org, jeff@garzik.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/2] drivers/net/r6040.c: adjust error handling
+Message-ID: <Pine.LNX.4.64.0807161633570.28783@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra (peterz@infradead.org) wrote:
-> On Tue, 2008-07-15 at 18:26 -0400, Mathieu Desnoyers wrote:
-> > plain text document attachment (lttng-instrumentation-timer.patch)
-> > Instrument timer activity (timer set, expired, current time updates) to keep
-> > information about the "real time" flow within the kernel. It can be used by a
-> > trace analysis tool to synchronize information coming from various sources, e.g.
-> > to merge traces with system logs.
-> > 
-> > Those tracepoints are used by LTTng.
-> > 
-> > About the performance impact of tracepoints (which is comparable to markers),
-> > even without immediate values optimizations, tests done by Hideo Aoki on ia64
-> > show no regression. His test case was using hackbench on a kernel where
-> > scheduler instrumentation (about 5 events in code scheduler code) was added.
-> > See the "Tracepoints" patch header for performance result detail.
-> > 
-> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> > CC: 'Ingo Molnar' <mingo@elte.hu>
-> > CC: "David S. Miller" <davem@davemloft.net>
-> > CC: Masami Hiramatsu <mhiramat@redhat.com>
-> > CC: 'Peter Zijlstra' <peterz@infradead.org>
-> > CC: "Frank Ch. Eigler" <fche@redhat.com>
-> > CC: 'Hideo AOKI' <haoki@redhat.com>
-> > CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
-> > CC: 'Steven Rostedt' <rostedt@goodmis.org>
-> > CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-> > ---
-> >  include/trace/timer.h |   24 ++++++++++++++++++++++++
-> >  kernel/itimer.c       |    5 +++++
-> >  kernel/timer.c        |    8 +++++++-
-> >  3 files changed, 36 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6-lttng/kernel/itimer.c
-> > ===================================================================
-> > --- linux-2.6-lttng.orig/kernel/itimer.c	2008-07-15 14:49:14.000000000 -0400
-> > +++ linux-2.6-lttng/kernel/itimer.c	2008-07-15 15:14:28.000000000 -0400
-> > @@ -12,6 +12,7 @@
-> >  #include <linux/time.h>
-> >  #include <linux/posix-timers.h>
-> >  #include <linux/hrtimer.h>
-> > +#include <trace/timer.h>
-> >  
-> >  #include <asm/uaccess.h>
-> >  
-> > @@ -132,6 +133,8 @@ enum hrtimer_restart it_real_fn(struct h
-> >  	struct signal_struct *sig =
-> >  		container_of(timer, struct signal_struct, real_timer);
-> >  
-> > +	trace_timer_itimer_expired(sig);
-> > +
-> >  	kill_pid_info(SIGALRM, SEND_SIG_PRIV, sig->leader_pid);
-> >  
-> >  	return HRTIMER_NORESTART;
-> > @@ -157,6 +160,8 @@ int do_setitimer(int which, struct itime
-> >  	    !timeval_valid(&value->it_interval))
-> >  		return -EINVAL;
-> >  
-> > +	trace_timer_itimer_set(which, value);
-> > +
-> >  	switch (which) {
-> >  	case ITIMER_REAL:
-> >  again:
-> > Index: linux-2.6-lttng/kernel/timer.c
-> > ===================================================================
-> > --- linux-2.6-lttng.orig/kernel/timer.c	2008-07-15 14:51:50.000000000 -0400
-> > +++ linux-2.6-lttng/kernel/timer.c	2008-07-15 15:14:28.000000000 -0400
-> > @@ -37,12 +37,14 @@
-> >  #include <linux/delay.h>
-> >  #include <linux/tick.h>
-> >  #include <linux/kallsyms.h>
-> > +#include <trace/timer.h>
-> >  
-> >  #include <asm/uaccess.h>
-> >  #include <asm/unistd.h>
-> >  #include <asm/div64.h>
-> >  #include <asm/timex.h>
-> >  #include <asm/io.h>
-> > +#include <asm/irq_regs.h>
-> >  
-> >  u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
-> >  
-> > @@ -288,6 +290,7 @@ static void internal_add_timer(struct tv
-> >  		i = (expires >> (TVR_BITS + 3 * TVN_BITS)) & TVN_MASK;
-> >  		vec = base->tv5.vec + i;
-> >  	}
-> > +	trace_timer_set(timer);
-> >  	/*
-> >  	 * Timers are FIFO:
-> >  	 */
-> > @@ -1066,6 +1069,7 @@ void do_timer(unsigned long ticks)
-> >  {
-> >  	jiffies_64 += ticks;
-> >  	update_times(ticks);
-> > +	trace_timer_update_time(&xtime, &wall_to_monotonic);
-> >  }
-> 
-> This is a very dangerous trace point - we're holding xtime lock here.
-> 
-> Ah, I see you make that comment below too, are you sure you want to do
-> this? 
-> 
+From: Julia Lawall <julia@diku.dk>
 
-Yes, this is done on purpose : I want to know the link between evolution
-of the "system time" and my more precise time source (habitually the TSC),
-so I can know how to interleave events between system logs and low-level
-traces.
+The just preceding error case does a lot of error handling, so it seems
+like this one should as well.
 
-However it involves that a tracer connected to this tracepoint cannot
-take the xtime lock (or must be aware that it is already taken). Since
-LTTng has been designed to support NMIs, and because seqlocks and NMIs
-does not mix well together (cause deadlocks), I have no such concern. I
-created my own RCU-based 32-to-64 bits counter extension infrastructure
-for that precise purpose (so I could support architectures which provide
-hardware counters with fewer than 64 bits).
+The semantic match that found the problem is:
+(http://www.emn.fr/x-info/coccinelle/)
 
-You'll notice that as tracepoints are added, one must be more and more
-careful about what locks it takes or what parts of kernel infrastructure
-it uses in its tracer. But nobody said tracing was easy. ;-)
+// <smpl>
+@@
+expression E,E1,E2;
+@@
 
-Mathieu
+E = alloc_etherdev(...)
+... when != E = E1
+if (...) { ... free_netdev(E); ... return ...; }
+... when != E = E2
+(
+  if (...)
+   {
+   ... when != free_netdev(E);
+   return dev; }
+|
+* if (...)
+   {
+   ... when != free_netdev(E);
+   return ...; }
+|
+register_netdev(E)
+)
 
-> Thomas, any input?
-> 
-> >  #ifdef __ARCH_WANT_SYS_ALARM
-> > @@ -1147,7 +1151,9 @@ asmlinkage long sys_getegid(void)
-> >  
-> >  static void process_timeout(unsigned long __data)
-> >  {
-> > -	wake_up_process((struct task_struct *)__data);
-> > +	struct task_struct *task = (struct task_struct *)__data;
-> > +	trace_timer_timeout(task);
-> > +	wake_up_process(task);
-> >  }
-> >  
-> >  /**
-> > Index: linux-2.6-lttng/include/trace/timer.h
-> > ===================================================================
-> > --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> > +++ linux-2.6-lttng/include/trace/timer.h	2008-07-15 15:14:28.000000000 -0400
-> > @@ -0,0 +1,24 @@
-> > +#ifndef _TRACE_TIMER_H
-> > +#define _TRACE_TIMER_H
-> > +
-> > +#include <linux/tracepoint.h>
-> > +
-> > +DEFINE_TRACE(timer_itimer_expired,
-> > +	TPPROTO(struct signal_struct *sig),
-> > +	TPARGS(sig));
-> > +DEFINE_TRACE(timer_itimer_set,
-> > +	TPPROTO(int which, struct itimerval *value),
-> > +	TPARGS(which, value));
-> > +DEFINE_TRACE(timer_set,
-> > +	TPPROTO(struct timer_list *timer),
-> > +	TPARGS(timer));
-> > +/*
-> > + * xtime_lock is taken when kernel_timer_update_time tracepoint is reached.
-> > + */
-> > +DEFINE_TRACE(timer_update_time,
-> > +	TPPROTO(struct timespec *_xtime, struct timespec *_wall_to_monotonic),
-> > +	TPARGS(_xtime, _wall_to_monotonic));
-> > +DEFINE_TRACE(timer_timeout,
-> > +	TPPROTO(struct task_struct *p),
-> > +	TPARGS(p));
-> > +#endif
-> > 
-> 
+// </smpl>
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+diff -u -p a/drivers/net/r6040.c b/drivers/net/r6040.c
+--- a/drivers/net/r6040.c
++++ b/drivers/net/r6040.c
+@@ -1029,7 +1029,8 @@ static int __devinit r6040_init_one(stru
+ 	if (!ioaddr) {
+ 		printk(KERN_ERR "ioremap failed for device %s\n",
+ 			pci_name(pdev));
+-		return -EIO;
++		err = -EIO;
++		goto err_out_res;
+ 	}
+ 
+ 	/* Init system & device */
