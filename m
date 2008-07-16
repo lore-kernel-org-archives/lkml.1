@@ -1,75 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754193AbYGPRSr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbYGPR1M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754193AbYGPRSr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 13:18:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751045AbYGPRSj
+	id S1753968AbYGPR1M (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 13:27:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbYGPR06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 13:18:39 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:57521 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751002AbYGPRSi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 13:18:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ir6kxM6tK82iOMTw0VLvt9gaxevjoy5utyQwrDfU1pAaFf0kaJwy6FlFMYR3pNeUOn
-         lXiQyRKIh20NdMx/K72aDqZt5i1nc3H9e45UVtpNsn/gtAnaITVL6g4ehQBtM0QWEo9P
-         9Of8H+cG464ak0H2Cxjm7FrYUYAnh4hoRyGuw=
-Message-ID: <19f34abd0807161018x279ddd94u5625d69673ae34f3@mail.gmail.com>
-Date: Wed, 16 Jul 2008 19:18:37 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [git pull] RCU updates for v2.6.27
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <87abghydaq.fsf@basil.nowhere.org>
+	Wed, 16 Jul 2008 13:26:58 -0400
+Received: from r00tworld.com ([212.85.137.21]:37103 "EHLO r00tworld.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751018AbYGPR05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 13:26:57 -0400
+From: pageexec@freemail.hu
+To: Greg KH <greg@kroah.com>
+Date: Wed, 16 Jul 2008 19:25:17 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080714152045.GA29159@elte.hu>
-	 <alpine.LFD.1.10.0807151037060.3017@woody.linux-foundation.org>
-	 <19f34abd0807151314r7462ecc4n8483c7e9fd52769f@mail.gmail.com>
-	 <87abghydaq.fsf@basil.nowhere.org>
+Subject: Re: [stable] Linux 2.6.25.10
+Reply-to: pageexec@freemail.hu
+CC: Tiago Assumpcao <tiago@assumpcao.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Message-ID: <487E4B1D.24359.205EB2E5@pageexec.freemail.hu>
+In-reply-to: <20080716162949.GA7480@kroah.com>
+References: <20080716144347.GB13253@kroah.com>, <487E3333.30028.20014B8F@pageexec.freemail.hu>, <20080716162949.GA7480@kroah.com>
+X-mailer: Pegasus Mail for Windows (4.41)
+Content-type: text/plain; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+Content-description: Mail message body
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Wed, 16 Jul 2008 19:26:02 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 16, 2008 at 7:00 PM, Andi Kleen <andi@firstfloor.org> wrote:
-> "Vegard Nossum" <vegard.nossum@gmail.com> writes:
->>
->> But yeah, I'll continue to improve it and hopefully get it in better
->> shape for next time, especially with regards to SMP support. Maybe we
->> can finally have Andrew's review too, if he's not too busy giving all
->> these talks and whatnot. Some of the things we've actually fixed up
->> since last time include impact on the slab code,
->> CodingStyle/checkpatch issues, and the splitting the huge single file
->> of code into its own directory to make it more manageable. Oh, and I
->> believe 64-bit support is new as well.
->
-> Have the network (or likely general) IO false positives be fixed
-> yet? That seemed like the largest design misfeature last time I looked.
-> I suspect it needs integration into the PCI-DMA API.
+On 16 Jul 2008 at 9:29, Greg KH wrote:
 
-They haven't.
+> On Wed, Jul 16, 2008 at 05:43:15PM +0200, pageexec@freemail.hu wrote:
+> > exploiting local bugs has nothing to do with having untrusted users in
+> > the age of client side exploits. due to your completely
+> > mischaracterized description, individual home users may very well feel
+> > that they do not need to upgrade, to the delight of the next malware
+> > owning their browser. you can congratulate yourself Greg, you
+> > successfully misled a whole class of users.
+> 
+> No, I do not believe this is true, for this bug, sorry.
 
-Integration into DMA API would be really nice (and a quite logical
-thing to do). I will take a look at it... (Unless you beat me to it
-with a patch, of course ;-))
+what do you not believe in? that a task refcount leak can be exploited
+for privilege elevation?
 
-Thanks,
+>  If you disagree, please feel free to post such an exploit.
 
+i never post exploits. however spender did write at least a proof-of-concept
+that triggers it and proves that it's potentially exploitable. writing a
+weaponized version takes a whole lot more effort than it's worth for us
+(though i bet others have been working on it ever since if they didn't
+already write one when the bug got introduced).
 
-Vegard
+>  Such a problem
+> would be a browser issue, and totally out of scope for a kernel issue.
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+what i said was *not* specific to this bug at all, any local privilege
+elevation bug can be used to, well, elevate privileges, regardless of
+how one gets into a box. the browser example was just that, to highlight
+that even single home user systems may very well be affected. sure, the
+browser bug is not your problem, but the local privilege elevation due
+to kernel bugs *is*. your wording was wrong, untrusted users are only
+*one* potential kind of threat therefore if only such systems update,
+many others will remain vulnerable.
+
+> > > then they need to rely on a company
+> > > to provide updates for them, and not be running their own kernels
+> > > because they really have no clue about system management.
+> > 
+> > you conveniently failed to respond to the rest of my mail where i showed
+> > that Chris Wright, heck, even yourself did announce security fixes as such
+> > in the past. how do you explain that?
+> 
+> I am human and as such, word things differently at times.  Based on crap
+> like this thread, and from discussions with Linus and others, trying to
+> classify such things as "security fixes" all the time isn't useful or
+> helpful.
+
+why isn't it useful? i've been asking every one of you who said so and
+have yet to receive a reasonable justification. remember, your own
+employers do it 'all the time', it must be useful to someone.
+
+and what's with this 'all the time'? if you guys fix security bugs all
+the time, then yes, you are expected to announce them all the time. if
+you think that reflects badly on the quality of the kernel code, then
+maybe you should think over your development process that results in
+security fixes 'all the time'.
+
+> Again, I still feel my original wording was sufficent.  If you disagree,
+> feel free to start releasing your own kernels with whatever wording you
+> like.  If people find them useful, perhaps they will use them instead of
+> the ones I do at times.
+
+if you are not qualified to do this job then don't do it. noone forced
+you to accept this task. look at Chris Wright, he has no problems with
+disclosing the security issues and he actually publicly pledged to do
+his best to do so (and i hope he won't revert his position now).
+
+cheers,
+  PaX Team
+
