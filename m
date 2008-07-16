@@ -1,114 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759413AbYGPTav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758718AbYGPTeP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759413AbYGPTav (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 15:30:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759042AbYGPTal
+	id S1758718AbYGPTeP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 15:34:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753632AbYGPTd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 15:30:41 -0400
-Received: from mail.gmx.net ([213.165.64.20]:48565 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753646AbYGPTak (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 15:30:40 -0400
-X-Authenticated: #1692767
-X-Provags-ID: V01U2FsdGVkX19LVvR7VS5L8skCu00iTWLc5bh+ANmW3Qv06oO9I3
-	aoG14+jJ5iRJBp
-Message-ID: <487E4C5D.3010900@gmx.net>
-Date: Wed, 16 Jul 2008 21:30:37 +0200
-From: "MadLoisae@gmx.net" <MadLoisae@gmx.net>
-Reply-To: MadLoisae@gmx.net
-User-Agent: Icedove 1.5.0.14eol (X11/20080509)
+	Wed, 16 Jul 2008 15:33:59 -0400
+Received: from qb-out-0506.google.com ([72.14.204.237]:36115 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752559AbYGPTd6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 15:33:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=rIDbL9AOMtG4KIKz3/tmiUDTk2lDkRAXI1WWukXfl4KHDSsWHc6LaJCRhNEtWHNz9Y
+         vVKzJGoqpnWoIdpnglVR6LWah9xrwjnZZcP7Yc6rImOtYtRvwlGk6Mi/j1/suBMbO58c
+         UXk+AvZeMnNsKSn0JUQdqiHIbyONEn+lFTOp8=
+Message-ID: <5ab239b10807161233i6c1c4d0we01ea1b8e6ccaa5b@mail.gmail.com>
+Date: Wed, 16 Jul 2008 12:33:57 -0700
+From: "D. Kelly" <user.kernel@gmail.com>
+To: "mailing list: linux-kernel" <linux-kernel@vger.kernel.org>
+Subject: Problem with restricted I2C algorithms in kernel 2.6.26!
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Alexey Dobriyan <adobriyan@gmail.com>, santiago@crfreenet.org
-Subject: RE: Re: kernel oops with framebuffer device vt8623fb
-References: <487E2911.5090701@gmx.net> <20080716171321.GA5146@martell.zuzino.mipt.ru>
-In-Reply-To: <20080716171321.GA5146@martell.zuzino.mipt.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alexey,
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=3845de25c5f83cd52729570f7b501679d37ca8de
 
-thanks, now my machine boots, the VT8623 is now recognized correctly on 
-bootup.
+The patch at the preceeding url disables the users ability to select
+I2C algorithms.  Specifically the reason stated was:
 
-will this issue be reverted or corrected with a 2.6.26.1?
+"The algorithm drivers are
+helper drivers that are selected automatically
+as needed. There's no point in listing them in the config menu, it can
+only confuse users and waste their time."
 
-thanks!
+The algorithm drivers will not be 'selected automatically as needed'
+if the user is compiling something outside of the kernel that requires
+them!  Just one example, there are drivers found in the V4L dvb driver
+tree that require i2c bit-banging be enabled.  The drivers are now
+broken because the user is not allowed to enable bit-banging himself.
+The only way around this is to revert the patch manually or enable
+something else in the kernel, that he doesn't need, just to get
+bit-banging.
 
-kind regards, Alois
+It's a very bad idea to assume that nothing built outside of the
+kernel may need i2c algorithms.  Furthermore, the whole point of being
+able to customize your kernel is so you can select only the things
+which you need.  It makes no good sense to intentionally
+disable/restrict the users ability to do so.  Additionally, assuming
+the ability to select i2c algorithms will only confuse the user and
+waste their time is ridiculous.  The user should be allowed to decide
+for himself what he needs regarding this!
 
+One of the biggest reasons people choose to compile things from
+cvs/svn/mercurial/etc. is because it gives them access to newer bug
+fixes and support for things not yet present in the kernel source.  A
+perfect example, the multiproto dvb driver tree.  Users wanting
+support for dvb-s2 devices have to compile drivers outside of the
+kernel because it's simply not available in the kernel and won't be
+for some time.
 
-Alexey Dobriyan wrote:
-> On Wed, Jul 16, 2008 at 07:00:02PM +0200, MadLoisae@gmx.net wrote:
->   
->> I've updated my machine from 2.6.25.11 to 2.6.26 and I think I've found a 
->> problem.
->>
->> If I load the module vt8623fb i get a kernel oops, if the VIA 8623 display 
->> framebuffer driver is compiled direct into kernel the system hangs up very 
->> early at booting the kernel.
->>     
->
-> Of course, info->dev is NULL, info was just kzallocated!
->
-> Do
-> 	git-revert 20e061fb750d36ec0ffcb2e44ed7dafa9018223b
->
-> rebuild, reboot to confirm.
->
->   
->> BUG: unable to handle kernel NULL pointer dereference at 000000b8
->> IP: [<c02a39c0>] dev_driver_string+0x0/0x29
->> *pde = 00000000
->> Oops: 0000 [#1]
->> Modules linked in: vt8623fb(+) svgalib vgastate budget_av saa7146_vv 
->> videobuf_dma_sg videobuf_core budget_core saa7146 ttpci_eeprom tda10021 
->> tda10023 tda1004x
->>
->> Pid: 3657, comm: modprobe Not tainted (2.6.26 #5)
->> EIP: 0060:[<c02a39c0>] EFLAGS: 00010286 CPU: 0
->> EIP is at dev_driver_string+0x0/0x29
->> EAX: 00000000 EBX: f8e57e00 ECX: 00000010 EDX: 00000004
->> ESI: 0000008c EDI: f5fe9c00 EBP: 00000000 ESP: ec041de0
->> DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
->> Process modprobe (pid: 3657, ti=ec040000 task=ec03d8d0 task.ti=ec040000)
->> Stack: f8e56408 f7d44000 c0185b44 f5fe9e34 00000010 04d440b4 000719d4 
->> f8e57e90
->>       f8e57e60 f7d44000 c02a5daa c0250f4a f7d4404c 00000000 f8e57e90 
->> c02a5d34
->>       f7d4404c f7d440f4 f8e57e90 c02a5de1 00000000 f8e57e90 f8e57e90 
->> c02a560d
->> Call Trace:
->> [<f8e56408>] vt8623_pci_probe+0x283/0x45b [vt8623fb]
->> [<c0185b44>] sysfs_create_link+0x85/0xc5
->> [<c02a5daa>] __driver_attach+0x0/0x55
->> [<c0250f4a>] pci_device_probe+0x36/0x57
->> [<c02a5d34>] driver_probe_device+0xb4/0x12a
->> [<c02a5de1>] __driver_attach+0x37/0x55
->> [<c02a560d>] bus_for_each_dev+0x34/0x56
->> [<c02a5bd0>] driver_attach+0x11/0x13
->> [<c02a5daa>] __driver_attach+0x0/0x55
->> [<c02a5963>] bus_add_driver+0x8a/0x1a7
->> [<c02419f0>] kset_find_obj+0x18/0x40
->> [<c02a5f39>] driver_register+0x6d/0xc1
->> [<c02510e0>] __pci_register_driver+0x2b/0x57
->> [<c012f73f>] sys_init_module+0x14cd/0x161e
->> [<c0110b49>] do_page_fault+0x228/0x537
->> [<c024265d>] prio_tree_insert+0x1b/0x1dd
->> [<f8e4a021>] svga_tilecopy+0x0/0x100 [svgalib]
->> [<c01035c1>] sysenter_past_esp+0x6a/0x99
->> =======================
->> Code: 5a 85 c0 59 79 20 68 24 d7 5d c0 b9 1b 87 4a c0 31 d2 b8 e8 0e 4e c0 
->> 53 e8 09 47 e7 ff 5a 59 eb 05 b8 ed ff ff ff 5b c3 90 90 90 <8b> 90 b8 00 
->> 00 00 85 d2 75 0a 8b 90 b4 00 00 00 85 d2 74 03 8b
->> EIP: [<c02a39c0>] dev_driver_string+0x0/0x29 SS:ESP 0068:ec041de0
->>     
->
->
->   
+I've contacted one of the i2c subsystem maintainers, Jean Delvare, but
+unfortunately he doesn't seem to care about this problem and his
+advice in dealing with it is to "Just get these drivers merged in the
+kernel. Ah ah ah!"...
 
+Clearly the more sane and reasonable solution is to not cripple the
+menu options in the first place, especially when it creates no benefit
+and only serves to limit/restrict the users ability to select what he
+needs.  I'm asking that the patch be reverted and anyone in agreement
+to please voice their opinion here in public.
+
+Best regards,
+-Derek
