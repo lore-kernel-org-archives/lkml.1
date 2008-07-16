@@ -1,78 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757240AbYGPK6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758431AbYGPK7O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757240AbYGPK6U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 06:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYGPK6M
+	id S1758431AbYGPK7O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 06:59:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYGPK67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 06:58:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58918 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754836AbYGPK6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 06:58:12 -0400
-Date: Wed, 16 Jul 2008 06:56:44 -0400
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
-Subject: Re: [RFC] systemtap: begin the process of using proper kernel APIs (part1: use kprobe symbol_name/offset instead of address)
-Message-ID: <20080716105644.GB5413@redhat.com>
-References: <1216146802.3312.95.camel__45052.4692344063$1216146917$gmane$org@localhost.localdomain> <y0mr69vj5p0.fsf@ton.toronto.redhat.com> <1216151526.3312.102.camel@localhost.localdomain> <20080715200718.GC4280@redhat.com> <1216153462.3312.126.camel@localhost.localdomain> <20080715221826.GD4280@redhat.com> <1216173983.3312.183.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 16 Jul 2008 06:58:59 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:15903 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751808AbYGPK66 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 06:58:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=XdcHqNZpeXEGmiVf3fpqofUTZmdddUjouloQyCNNq4Y+5ljYHy4nqnmono9zzXKFZ0
+         4a23V+QJbqaDT1rZShc013pjn472pjpRLBwz+mAgkr0kEkm6LCIW8gy1Ss0HHcfudB5d
+         4V7MSAs4qdfKiB3vIuPkSsV+uwJ5KePINoh4g=
+Message-ID: <520f0cf10807160358t22fefd3fn70d50e59b394ab3b@mail.gmail.com>
+Date: Wed, 16 Jul 2008 12:58:56 +0200
+From: "John Kacur" <jkacur@gmail.com>
+To: "Jan Engelhardt" <jengelh@medozas.de>
+Subject: Re: Make the git URL match usage
+Cc: "Bodo Eggert" <7eggert@gmx.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <alpine.LNX.1.10.0807161205220.26724@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1216173983.3312.183.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.1i
+References: <aQ9CN-4cK-11@gated-at.bofh.it>
+	 <E1KJ3Ex-0001LD-Ub@be1.7eggert.dyndns.org>
+	 <alpine.LNX.1.10.0807161205220.26724@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
-
-On Tue, Jul 15, 2008 at 09:06:23PM -0500, James Bottomley wrote:
-> [...]
-> > Please choose your words more carefully.  We don't "subvert" anything,
-> > where one would mean sneaking around some sort of protection.
-> 
-> Actually, I did and you do.  One of the OED's definition of subvert is
-> "to undermine or overturn a condition or order of things, a principle or
-> a law etc."  In this particular case, this:
-> 
-> commit 3a872d89baae821a0f6e2c1055d4b47650661137
-> Author: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> Date:   Mon Oct 2 02:17:30 2006 -0700
->     [PATCH] Kprobes: Make kprobe modules more portable
+On Wed, Jul 16, 2008 at 12:06 PM, Jan Engelhardt <jengelh@medozas.de> wrote:
+> On Wednesday 2008-07-16 10:54, Bodo Eggert wrote:
 >
-> Which provided a portable input to kprobes (the symbol_name/offset one)
-> and revoked the global accessibility of the kallsyms_lookup_name().
+>>jkacur <jkacur@gmail.com> wrote:
+>>
+>>> Subject: Make the git URL match the usage
+>>> Change the MAINTAINERS file so that the git URL reads EXACTLY the way someone
+>>> would use it.
+>>
+>>> +++ linux-2.6.26/MAINTAINERS
+>>
+>>> +T:   git://git.kernel.org:/pub/scm/linux/kernel/ericvh/v9fs.git
+>>                            ^^
+>
+> There is more brokenness in this patch. That URL (even without ':')
+> gives 404.
+> Here is a clueful hint...
+>
+> -git://git.kernel.org/pub/scm/linux/kernel/ericvh/v9fs.git
+> +git://git.kernel.org/pub/scm/linux/kernel/git/ericvh/v9fs.git
+>
+> Check the URLs before modifying them.
+>
 
-That patch served two purposes: a helpful utility for other kprobes
-users, and it enabling what LKML deemed more important - unexporting
-kallsyms*.
-
-
-> It's actually worse than this, though.  The kernel API isn't fixed in
-> stone, it evolves usually by trying to make problematic use cases
-> better.  By refusing to consider using the replacement API [...]
-
-Your lecture is based upon a misundertanding ...
-
-
-> [...]
-> It emits a single probe and produces this in the module build:
-> -rw-r--r-- 1 root root  17996 2008-07-15 20:45 stap_2154.c
-> About 600 lines.
-> However, it also needs this for the symbol table:
-> -rw-r--r-- 1 root root 446137 2008-07-15 20:45 stap-symbols.h
-
-... that this is somehow connected to the kprobe api issue.
-
-IT IS NOT.
-
-We do not use those symbol tables for kprobe placement purposes.
-(This part is partially a prototype for user-space parts, and the
-sizes will not stay large.)
-
-The way we set up kprobes now could be trivially converted to
-"_stext"+offset.  Would that alone allay your concerns?
-
-
-- FChE
+Incidentally, although I am now committed to fixing all these
+problems, note that since I merely mechanically converted
+git kernel.org:
+to
+git://git.kernel.org/
+The rest of the source tree location was already wrong BEFORE I
+touched it, as well as inconsistent, so this is another indication
+that this should be fixed.
