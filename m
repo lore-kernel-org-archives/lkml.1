@@ -1,72 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759578AbYGPQHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758839AbYGPQMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759578AbYGPQHS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 12:07:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756834AbYGPQHF
+	id S1758839AbYGPQMT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 12:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754652AbYGPQMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 12:07:05 -0400
-Received: from outbound-mail-31.bluehost.com ([69.89.18.151]:55109 "HELO
-	outbound-mail-31.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757288AbYGPQHD (ORCPT
+	Wed, 16 Jul 2008 12:12:05 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:47082 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752686AbYGPQMD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 12:07:03 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User:DomainKey-Status;
-	b=LYBknT2iJfVNGDE5qQoUmiIZwIiIwRItS00nYyiR8KeY//kh64QggpYzFZ0lda1tZ6Huvpp8bZGFZOR4Vq6Km3XkZvCaA/ym7A88PzJ6KG3XyAZclQjrAn6SbJDOen80;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Andi Kleen <ak@linux.intel.com>
-Subject: Re: acpi based pci gap calculation  - v3
-Date: Wed, 16 Jul 2008 09:06:43 -0700
-User-Agent: KMail/1.9.9
-Cc: akataria@vmware.com, Ingo Molnar <mingo@elte.hu>,
-       "Brown, Len" <len.brown@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       TJ <linux@tjworld.net>
-References: <1216148382.6135.21.camel@alok-dev1> <200807151553.41403.jbarnes@virtuousgeek.org> <487D89E3.9070604@linux.intel.com>
-In-Reply-To: <487D89E3.9070604@linux.intel.com>
+	Wed, 16 Jul 2008 12:12:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=jf/3AV3q4NFsJjUkIDQm3AYN/nFhsvumVswEl29sqm6cfZ1E2zK/2s19jNm1LCqai4
+         G57H4+7cNVtNcdcuECP3vYL7m4l2GBDZU5MKH8Yp7uen9DH5e/6lpX7JMxujGNV5+18O
+         zVh4JA3sl4cLIkS8mHPA60YXBTofd1i59mBvE=
+Message-ID: <40f31dec0807160912h6ce88550w770b8d221b6d5579@mail.gmail.com>
+Date: Wed, 16 Jul 2008 19:12:01 +0300
+From: "Nick Kossifidis" <mickflemm@gmail.com>
+To: "Jiri Slaby" <jirislaby@gmail.com>
+Subject: Re: [PATCH 1/5] Ath5k: fix memory corruption
+Cc: linville@tuxdriver.com, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@gmail.com>
+In-Reply-To: <1216136661-10930-1-git-send-email-jirislaby@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Message-Id: <200807160906.43632.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
+References: <1216136661-10930-1-git-send-email-jirislaby@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m6GGCNfq024963
 
-On Tuesday, July 15, 2008 10:40 pm Andi Kleen wrote:
-> Jesse Barnes wrote:
-> > On Tuesday, July 15, 2008 1:54 pm Alok Kataria wrote:
-> >> I have tested it with couple of different BIOS settings and it seems to
-> >> work as it should.
-> >>
-> >>> Most of the PCI bugs we
-> >>> have at the moment are related to PCI resource allocation failures.  My
-> >>> hope is that finding more space will fix most of them.  Assuming this
-> >>> patch doesn't have any dependencies, I can put it in my linux-next
-> >>> branch.
-> >>
-> >> No dependencies, I had added a function e820_search_gap which is used by
-> >> this patch. This function is already in the mainline tree.
-> >> Thanks for applying.
-> >
-> > Ok, I stuffed it in my linux-next branch.  I'll let it sit there for a
-> > day or so though, just to shake out any build problems etc. in linux-next
-> > before asking Linus to pull the whole lot.
->
-> For me it seems a little risky to push up that early. I think it would
-> be better to let it sit longer in linux-next for this. After all this is
-> a major change how IO resources are allocated. That is why I didn't pull
-> it into the ACPI release branch.
-
-The only problem there is that linux-next doesn't get nearly the sort of 
-testing coverage we need for this kind of change.  It's also small, and 
-reverting it is easy, so if we run into big problems that we can't fix we can 
-always back it out...
-
-I'm interested in hearing people's thoughts on this.
-
-Jesse
+2008/7/15 Jiri Slaby <jirislaby@gmail.com>:> When signal is noisy, hardware can use all RX buffers and since the last> entry in the list is self-linked, it overwrites the entry until we link> new buffers.>> Ensure that we don't free this last one until we are 100% sure that it> is not used by the hardware anymore to not cause memory curruption as> can be seen below.>> This is done by checking next buffer in the list. Even after that we> know that the hardware refetched the new link and proceeded further> (the next buffer is ready) we can finally free the overwritten buffer.>> We discard it since the status in its descriptor is overwritten (OR-ed> by new status) too.>> =============================================================================> BUG kmalloc-4096: Poison overwritten> ----------------------------------------------------------------------------->> INFO: 0xffff810067419060-0xffff810067419667. First byte 0x8 instead of 0x6b> INFO: Allocated in dev_alloc_skb+0x18/0x30 age=1118 cpu=1 pid=0> INFO: Freed in skb_release_data+0x85/0xd0 age=1105 cpu=1 pid=3718> INFO: Slab 0xffffe200019d0600 objects=7 used=0 fp=0xffff810067419048 flags=0x40000000000020c3> INFO: Object 0xffff810067419048 @offset=4168 fp=0xffff81006741c120>> Bytes b4 0xffff810067419038:  4f 0b 02 00 01 00 00 00 5a 5a 5a 5a 5a 5a 5a 5a O.......ZZZZZZZZ>  Object 0xffff810067419048:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk>  Object 0xffff810067419058:  6b 6b 6b 6b 6b 6b 6b 6b 08 42 30 00 00 0b 6b 80 kkkkkkkk.B0...k.>  Object 0xffff810067419068:  f0 5d 00 4f 62 08 a3 64 00 0c 42 16 52 e4 f0 5a 360].Ob.243d..B.R344360Z>  Object 0xffff810067419078:  68 81 00 00 7b a5 b4 be 7d 3b 8f 53 cd d5 de 12 h...{245264276};.S315325336.>  Object 0xffff810067419088:  96 10 0b 89 48 54 23 41 0f 4e 2d b9 37 c3 cb 29 ....HT#A.N-2717303313)>  Object 0xffff810067419098:  d1 e0 de 14 8a 57 2a cc 3b 44 0d 78 7a 19 12 15 321340336..W*314;D.xz...>  Object 0xffff8100674190a8:  a9 ec d4 35 a8 10 ec 8c 40 a7 06 0a 51 a7 48 bb 2513543245250.354.@247..Q247H273>  Object 0xffff8100674190b8:  3e cf a1 c7 38 60 63 3f 51 15 c7 20 eb ba 65 30 >Ï¡3078`c?Q.307.353272e0>  Redzone 0xffff81006741a048:  bb bb bb bb bb bb bb bb                         273273273273273273273273>  Padding 0xffff81006741a088:  5a 5a 5a 5a 5a 5a 5a 5a                         ZZZZZZZZ> Pid: 3297, comm: ath5k_pci Not tainted 2.6.26-rc8-mm1_64 #427>> Call Trace:>  [<ffffffff802a7306>] print_trailer+0xf6/0x150>  [<ffffffff802a7485>] check_bytes_and_report+0x125/0x180>  [<ffffffff802a75dc>] check_object+0xac/0x260>  [<ffffffff802a9308>] __slab_alloc+0x368/0x6d0>  [<ffffffff80544f82>] ? wireless_send_event+0x142/0x310>  [<ffffffff804b1bd4>] ? __alloc_skb+0x44/0x150>  [<ffffffff80544f82>] ? wireless_send_event+0x142/0x310>  [<ffffffff802aa853>] __kmalloc_track_caller+0xc3/0xf0>  [<ffffffff804b1bfe>] __alloc_skb+0x6e/0x150> [... stack snipped]>> FIX kmalloc-4096: Restoring 0xffff810067419060-0xffff810067419667=0x6b>> FIX kmalloc-4096: Marking all objects used>> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>> Cc: Nick Kossifidis <mickflemm@gmail.com>> Cc: Luis R. Rodriguez <mcgrof@gmail.com>> --->  drivers/net/wireless/ath5k/base.c |   32 +++++++++++++++++++++++++------->  drivers/net/wireless/ath5k/base.h |    2 +->  2 files changed, 26 insertions(+), 8 deletions(-)>> diff --git a/drivers/net/wireless/ath5k/base.c b/drivers/net/wireless/ath5k/base.c> index 12a9443..e9ec284 100644> --- a/drivers/net/wireless/ath5k/base.c> +++ b/drivers/net/wireless/ath5k/base.c> @@ -1683,20 +1683,21 @@ ath5k_tasklet_rx(unsigned long data)>        struct ath5k_rx_status rs = {};>        struct sk_buff *skb;>        struct ath5k_softc *sc = (void *)data;> -       struct ath5k_buf *bf;> +       struct ath5k_buf *bf, *bf_last;>        struct ath5k_desc *ds;>        int ret;>        int hdrlen;>        int pad;>>        spin_lock(&sc->rxbuflock);> +       if (list_empty(&sc->rxbuf)) {> +               ATH5K_WARN(sc, "empty rx buf pool\n");> +               goto unlock;> +       }> +       bf_last = list_entry(sc->rxbuf.prev, struct ath5k_buf, list);>        do {>                rxs.flag = 0;>> -               if (unlikely(list_empty(&sc->rxbuf))) {> -                       ATH5K_WARN(sc, "empty rx buf pool\n");> -                       break;> -               }>                bf = list_first_entry(&sc->rxbuf, struct ath5k_buf, list);>                BUG_ON(bf->skb == NULL);>                skb = bf->skb;> @@ -1706,8 +1707,24 @@ ath5k_tasklet_rx(unsigned long data)>                pci_dma_sync_single_for_cpu(sc->pdev, sc->desc_daddr,>                                sc->desc_len, PCI_DMA_FROMDEVICE);>> -               if (unlikely(ds->ds_link == bf->daddr)) /* this is the end */> -                       break;> +               /*> +                * last buffer must not be freed to ensure proper hardware> +                * function. When the hardware finishes also a packet next to> +                * it, we are sure, it doesn't use it anymore and we can go on.> +                */> +               if (bf_last == bf)> +                       bf->flags |= 1;> +               if (bf->flags) {> +                       struct ath5k_buf *bf_next = list_entry(bf->list.next,> +                                       struct ath5k_buf, list);> +                       ret = sc->ah->ah_proc_rx_desc(sc->ah, bf_next->desc,> +                                       &rs);> +                       if (ret)> +                               break;> +                       bf->flags &= ~1;> +                       /* skip the overwritten one (even status is martian) */> +                       goto next;> +               }>>                ret = sc->ah->ah_proc_rx_desc(sc->ah, ds, &rs);>                if (unlikely(ret == -EINPROGRESS))> @@ -1817,6 +1834,7 @@ accept:>  next:>                list_move_tail(&bf->list, &sc->rxbuf);>        } while (ath5k_rxbuf_setup(sc, bf) == 0);> +unlock:>        spin_unlock(&sc->rxbuflock);>  }>> diff --git a/drivers/net/wireless/ath5k/base.h b/drivers/net/wireless/ath5k/base.h> index 47f414b..d7e03e6 100644> --- a/drivers/net/wireless/ath5k/base.h> +++ b/drivers/net/wireless/ath5k/base.h> @@ -56,7 +56,7 @@>>  struct ath5k_buf {>        struct list_head        list;> -       unsigned int            flags;  /* tx descriptor flags */> +       unsigned int            flags;  /* rx descriptor flags */>        struct ath5k_desc       *desc;  /* virtual addr of desc */>        dma_addr_t              daddr;  /* physical addr of desc */>        struct sk_buff          *skb;   /* skbuff for buf */> --> 1.5.6.2>>
+Nice catch ;-)
+Acked-by: Nick Kossifidis <mickflemm@gmail.com>
+-- GPG ID: 0xD21DB2DBAs you read this post global entropy rises. Have Fun ;-)Nickÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
