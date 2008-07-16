@@ -1,101 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760131AbYGPPAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760282AbYGPPA5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760131AbYGPPAV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 11:00:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756768AbYGPPAG
+	id S1760282AbYGPPA5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 11:00:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753778AbYGPPAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 11:00:06 -0400
-Received: from main.gmane.org ([80.91.229.2]:50830 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757194AbYGPPAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 11:00:04 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: "Holger Hoffstaette" <holger@wizards.de>
-Subject: Re: sendfile() broken with 2.6.26 + Apache 2 ?
-Date: Wed, 16 Jul 2008 16:58:08 +0200
-Organization: The Fists of the White Lotus
-Message-ID: <pan.2008.07.16.14.58.05.879125@wizards.de>
-References: <487CD7A7.2080800@jeffray.co.uk> <487D893A.5080207@cosmosbay.com> <487DA388.3030104@jeffray.co.uk> <487DBA74.3090800@cosmosbay.com>
+	Wed, 16 Jul 2008 11:00:49 -0400
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:45065 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756768AbYGPPAs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 11:00:48 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtUEAKikfUhMRKxB/2dsb2JhbACBWa8b
+Date: Wed, 16 Jul 2008 11:00:46 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Masami Hiramatsu <mhiramat@redhat.com>,
+       linux-mm@kvack.org, Dave Hansen <haveblue@us.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
+       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Subject: Re: [patch 10/17] LTTng instrumentation - swap
+Message-ID: <20080716150046.GI24546@Krystal>
+References: <20080715222604.331269462@polymtl.ca> <20080715222748.214360024@polymtl.ca> <1216197576.5232.27.camel@twins> <20080716144008.GG24546@Krystal> <1216219654.5232.55.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: port-87-234-135-63.dynamic.qsc.de
-User-Agent: Pan/0.13.91 (Before we let euphoria convince us we are free)
-Cc: netdev@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1216219654.5232.55.camel@twins>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 10:59:19 up 41 days, 19:40,  5 users,  load average: 3.23, 2.74,
+	1.65
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Jul 2008 11:08:04 +0200, Eric Dumazet wrote:
-
-> Ian Jeffray a écrit :
->> Hi Eric,
->> 
->> Thanks for directing me to a better list.
->> 
->> Further responses below:
->> 
->> Eric Dumazet wrote:
->>> CC to netdev where this report might find better answers
->>>
->>> Ian Jeffray a écrit :
->>>> All,
->>>>
->>>> I moved from kernel 2.6.25.4 to 2.6.26 yesterday and observed that
->>>> large files sent via Apache2 are partially corrupt.
->>>>
->>>> This appears to be linked to sendfile() -- disabling the use of
->>>> sendfile in the apache config (EnableSendfile Off) allows it to
->>>> function as normal.
->>>>
->>>> My system is a simple Core2Duo running Debian lenny/sid; nothing
->>>> special, and I have never observed problems like this before.
->>>>
->>>> The problem feels certainly related to sendfile() since the data reads
->>>> correctly from disc in other programs, and via CIFS etc.
->>>>
->>>> The corruption happens part-way in to the file... I've no exact figure
->>>> but it would seem like maybe 32KB -- I'm seeing broken PNGs served
->>>> from Apache, where the top few dozen lines decode correctly, and the
->>>> rest is garbage.
->>>>
->>>> I've made basically no configuration changes between 2.6.25.4 and
->>>> 2.6.26 and have explicitly tried both enabling and disabling the new
->>>> PAT support to no effect.
->>>>
->>>> This is completely repeatable and reproducible.
->>>>
->>>> Is anyone else seeing this broken behaviour?
->>>>
->>>>
->>>
->>> What kind of network adapter are you using ? (lspci | grep -i ether)
->> 
->> 02:00.0 Ethernet controller: Attansic Technology Corp. L1 Gigabit
->> Ethernet Adapter (rev b0)
->> 
->> 
->>> If you disable TCP segmentation offload on this NIC (ethtool -K eth0
->>> tso off) , is this problem still present ?
->> 
->> Wow.  That 'solves' the problem!  Great.
->> 
->> Does this therefore point to an attansic driver issue?
+* Peter Zijlstra (peterz@infradead.org) wrote:
+> On Wed, 2008-07-16 at 10:40 -0400, Mathieu Desnoyers wrote:
+> > * Peter Zijlstra (peterz@infradead.org) wrote:
+> > > On Tue, 2008-07-15 at 18:26 -0400, Mathieu Desnoyers wrote:
 > 
-> Yes, maybe related to commit 9d90fb1ac9d97da86e24d9ea947bf2a2f333829a
+> > > > @@ -1796,6 +1799,7 @@ get_swap_info_struct(unsigned type)
+> > > >  {
+> > > >  	return &swap_info[type];
+> > > >  }
+> > > > +EXPORT_SYMBOL_GPL(get_swap_info_struct);
+> > > 
+> > > I'm not too happy with this export.
+> > > 
+> > 
+> > Would it make more sense to turn get_swap_info_struct into a static
+> > inline in swap.h ?
 > 
-> In this patch, Jay Cliburn enabled TSO by default for atl1 driver.
+> Seeing a consumer of it would go a long way towards discussing it ;-)
 > 
-> This might be a driver problem, or a generic sendfile() problem, I dont
-> know...
 
-Maybe related to http://lkml.org/lkml/2007/12/6/229 ?
-I switched to a different server with e1000 NIC in the meantime and so I
-cannot test if this is still a problem in 2.6.26, but apparently it seems
-so. For me the combo e1000/e1000e + sendfile works reliably..
+The LTTng probe which connects to this tracepoint looks like :
 
-Holger
++static void probe_swap_out(struct page *page)
++{
++       trace_mark(mm_swap_out, "pfn %lu filp %p offset %lu",
++               page_to_pfn(page),
++               get_swap_info_struct(swp_type(
++                       page_swp_entry(page)))->swap_file,
++               swp_offset(page_swp_entry(page)));
++}
 
+So, I need get_swap_info_struct to extract the swap file pointer from
+the swap entry.
 
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
