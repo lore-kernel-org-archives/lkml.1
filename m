@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758494AbYGPIB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758854AbYGPICx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758494AbYGPIB7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 04:01:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbYGPIBv
+	id S1758854AbYGPICx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 04:02:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbYGPICj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 04:01:51 -0400
-Received: from smtp.movial.fi ([62.236.91.34]:51419 "EHLO smtp.movial.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754202AbYGPIBv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 04:01:51 -0400
-From: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>
-To: ralf@linux-mips.org, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3 part 2] [MIPS] make the pcibios_max_latency variable static
-Date: Wed, 16 Jul 2008 11:01:49 +0300
-Message-Id: <1216195309-13069-1-git-send-email-dmitri.vorobiev@movial.fi>
-X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1216141052-28005-2-git-send-email-dmitri.vorobiev@movial.fi>
-References: <1216141052-28005-2-git-send-email-dmitri.vorobiev@movial.fi>
+	Wed, 16 Jul 2008 04:02:39 -0400
+Received: from boogie.lpds.sztaki.hu ([193.224.70.237]:47896 "EHLO
+	boogie.lpds.sztaki.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754202AbYGPICh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 04:02:37 -0400
+Date: Wed, 16 Jul 2008 10:02:35 +0200
+From: Gabor Gombas <gombasg@sztaki.hu>
+To: Sven-Haegar Koch <haegar@sdinet.de>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Linux-Kernel-Mailinglist <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
+	in-kernel,  use it in more drivers.
+Message-ID: <20080716080235.GB11485@boogie.lpds.sztaki.hu>
+References: <alpine.LFD.1.10.0807151124510.3017@woody.linux-foundation.org> <487CF01E.6000208@garzik.org> <20080715185801.GH8185@mit.edu> <487CF70C.1030309@garzik.org> <alpine.LFD.1.10.0807151218460.3351@woody.linux-foundation.org> <487D1327.7090805@garzik.org> <alpine.LFD.1.10.0807151420550.2867@woody.linux-foundation.org> <487D1925.50008@garzik.org> <1216159959.26991.48.camel@shinybook.infradead.org> <alpine.DEB.1.10.0807160241060.21568@mercury.sdinet.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0807160241060.21568@mercury.sdinet.de>
+X-Copyright: Forwarding or publishing without permission is prohibited.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Along with making the pcibios_max_latency variable static,
-its declaration needs to be removed from the header file.
+On Wed, Jul 16, 2008 at 02:55:32AM +0200, Sven-Haegar Koch wrote:
 
-Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>
----
+> Something from the non-development world:
+> 
+> At least the initramfs-tools (which contains mkinitrd) of Debian Etch do 
+> not do this (the current testing/development version Lenny does) - no 
+> firmware support in the initrd at all - and not needed for booting until 
+> now.
+> (It has /lib/firmware support after the initrd for the not-so-important
+> stuff like usb/sound/video/wireless)
+> 
+> Yes, it may be nearly ancient by now, but for servers it contains all we 
+> need, and most certainly would not want to use something that changes and 
+> needs checking/hand-fixing every month - I expect this version to be still 
+> in use a year from now, then just gradually being updated to the next 
+> debian version.
+> 
+> Currently we use 2.6.24, and I expect to use some newer kernel to support 
+> newer replacement hardware before all installs are upgraded. So having the 
+> firmware-inside-module support would be a help for us when modules are 
+> starting to be needed for disk or network access, keeping from the need to 
+> try backporting huge initrd/make-kpkg changes.
 
-Hi Ralf,
+You can easyly install initramfs-tools from lenny on an etch box. It
+only depends on a newer klibc, so it won't disturb any other services.
 
-Forgot about this one yesterday, sorry.
+Btw., the Debian-provided 2.6.25 kernel already lacks the firmware for
+some popular modules (like bnx2). So if you're using Debian, you as a
+sysadmin already have to handle the "firmware is in a separate package"
+issue.
 
-Dmitri
+Gabor
 
- include/asm-mips/pci.h |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
-
-diff --git a/include/asm-mips/pci.h b/include/asm-mips/pci.h
-index d3be834..c205875 100644
---- a/include/asm-mips/pci.h
-+++ b/include/asm-mips/pci.h
-@@ -173,6 +173,5 @@ static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
- }
- 
- extern int pci_probe_only;
--extern unsigned int pcibios_max_latency;
- 
- #endif /* _ASM_PCI_H */
 -- 
-1.5.6
-
+     ---------------------------------------------------------
+     MTA SZTAKI Computer and Automation Research Institute
+                Hungarian Academy of Sciences
+     ---------------------------------------------------------
