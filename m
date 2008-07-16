@@ -1,35 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932209AbYGQSaw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932065AbYGQSbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932209AbYGQSaw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 14:30:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758933AbYGQSa3
+	id S932065AbYGQSbf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 14:31:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758866AbYGQSbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 14:30:29 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:35832 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758759AbYGQSa0 (ORCPT
+	Thu, 17 Jul 2008 14:31:24 -0400
+Received: from 82-39-188-205.cable.ubr03.benw.blueyonder.co.uk ([82.39.188.205]:38880
+	"EHLO the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758759AbYGQSbX convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 14:30:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=XPkI8iR4hZ63PaD90ikkW9+ve8Q1dlIp9JiOSO+Eg4Vo8xUiKCVsAX2WwauT3c0Wsg
-         rcfDPC0aPiellUgxKFhedqXYNpZ58KndCcVpoRfcWneQHU2i0kcpzQYl9mwQGY7ysgPz
-         fQ+GYVgy5XipztT+6mX9SkOlDmWKJGthOj2dQ=
-Message-ID: <8bfdd4d60807171130h75ae940btc3f5bb05b81246f4@mail.gmail.com>
-Date: Thu, 17 Jul 2008 14:30:24 -0400
-From: "Jason mclaughlin" <mcjason@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: seems right on anyhow
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Thu, 17 Jul 2008 14:31:23 -0400
+Date: Wed, 16 Jul 2008 18:57:03 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Cheradenine Zakalwe" <sc.contact@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: The state of linux security
+Message-ID: <20080716185703.4c223ed8@the-village.bc.nu>
+In-Reply-To: <67b4e5f30807160905n224a7808tf346dd4d506edd25@mail.gmail.com>
+References: <67b4e5f30807160905n224a7808tf346dd4d506edd25@mail.gmail.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-a crude way to tell it maybe....
+> the relative security of linux and the likely hood that smart people
+> are able to cause a bit of mindless vandalism or get up to much worse.
 
-http://groups.google.com/group/comp.lang.c/msg/073812010e0516a4
+Distributions assign CVE numbers to kernel vulnerabilities. As
+distributions like Fedora ship current kernels they provide a pretty
+complete summary.
+
+> One more thing I'd like to throw out there on the issue of
+> accountability is this:  How do I know that some developers have not
+> been paid to specifically introduce some obscure security flaw? 
+
+Wrong question. Thats a very naïve basis for thinking about security. Why
+should end users care whether a flaw was added deliberately or by
+mistake. What matters is that the flaw is identified. A passive attacker
+observing a flaw and using it is at least as dangerous if not more so
+than an active attacker.
+
+Alan
