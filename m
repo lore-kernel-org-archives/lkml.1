@@ -1,97 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759088AbYGPV6J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbYGPWA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759088AbYGPV6J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 17:58:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755639AbYGPV54
+	id S1756202AbYGPWA2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 18:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756281AbYGPWAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 17:57:56 -0400
-Received: from fk-out-0910.google.com ([209.85.128.188]:58171 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753157AbYGPV5z (ORCPT
+	Wed, 16 Jul 2008 18:00:20 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:35443 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755786AbYGPWAT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 17:57:55 -0400
+	Wed, 16 Jul 2008 18:00:19 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=ILJewGwoezupbKaxAJ5wJ2TR/KU+llqQ8d0+NDzYNo1mi6Li7YA0wDd5jkWBN6irvZ
-         /TbsdmvTEUVBm4QRcFFdLkNeoA8q0N4QOBwvMwYrtBwMH3vaUKUOfqHUmT8lQzMUoSfW
-         hLfrvfmjUYKaExEU4Z62dj4B+gLMkwWqtqIso=
-Message-ID: <487E6EDF.7050905@gmail.com>
-Date: Wed, 16 Jul 2008 23:57:51 +0200
-From: =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
-MIME-Version: 1.0
-To: Thomas Meyer <thomas@m3y3r.de>
-CC: Takashi Iwai <tiwai@suse.de>,
-       =?UTF-8?B?VMO2csO2ayBFZHdpbg==?= <edwintorok@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org
-Subject: Re: today's linux-next fails to boot
-References: <4877400B.1000400@gmail.com>  <s5hy747rvpr.wl%tiwai@suse.de> <1216242664.3218.14.camel@dhcppc2>
-In-Reply-To: <1216242664.3218.14.camel@dhcppc2>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+        h=subject:from:to:content-type:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=bVyY7WbblncDufJyU9d8orPBlRKz3n9EW3aO+OYgnqIB1LzQsxQNAAw3XWIVBPSXP1
+         YEluHkAQyiRdFjuSTylBXY+l4Lezp8U8s6qSPRl0dQoxWCQUAVR4fES8PYC1NF+yJaU8
+         mTQhMWIqVQ5Ea8hQk+6atxqw+zkl7TMTGonDw=
+Subject: Usage of kgdb in v2.6.26
+From: ZC Miao <hellwolf.misty@gmail.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 16 Jul 2008 23:00:03 +0100
+Message-Id: <1216245603.3664.29.camel@hellwolf-sony.freehell.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Meyer a écrit :
-> Am Samstag, den 12.07.2008, 17:03 +0200 schrieb Takashi Iwai:
->   
->> At Fri, 11 Jul 2008 14:12:11 +0300,
->> Török Edwin wrote:
->>     
->>> Today's linux-next tree (commit
->>> 93847083e4791567931bd17c039cc35881cdad29) fails to boot:
->>> [built with gcc-4.2.4-3]
->>>
->>> BUG: Int 14: CR2 b0049dea
->>>      EDI 00000082 ESI 00000000 EBP c059be88 ESP c059be5c
->>>      EBX f000ec62 EDX 0000000e ECX c0595480 EAX f000ec62
->>>      err 00000000 EIP c0181ca0  CS 00000060 flg 00010082
->>> Stack:   00000040 c06a2ba0 000080d0 c0595480 c0000f19c c000f180 c0581120
->>> c059bea8
->>>          c02bf19b 00000000 00000080 c059beb8 c0000f194 c000f180 0000000a
->>> c059beb8
->>>          c03a1059 00000000 00000000 c059bed8 c05c4c7c  0009efff 00000000
->>> c04f4df4
->>>
->>> I get this as soon as I boot from grub2, strangely the error message is
->>> at the bottom of the screen, and I can't see the full message (scrolling
->>> won't work).
->>>
->>> The last kernel I built & booted was 2.6.26-rc8 from Linus's tree. I
->>> will try to built&boot 2.6.26-rc9, and then bisect.
->>>
->>> This happens on 32-bit Dell Inspiron 6400 (Intel Core Duo T2300 @1.66
->>> Ghz CPU),  Intel ICH-7 chipset, and a seagate SATA drive. 
->>> I will provide  full hardware details once I bisected the problem.
->>>
->>> Meanwhile, if somebody has an idea as to what is wrong?
->>>       
->> [Added Ingo to Cc]
->>
->> I get the boot problem on i386 with 2008-07-11 linux-next tree, too.
->> In my case, no error appears on the screen, just staying blank and
->> dead.  It seems stopping at the very beginning, soon after GRUB, so
->> could be the same reason.
->>
->> The same config worked fine with yesterday's tree (2008-07-10) on the
->> same machine. 
->> Also, today's tree works on x86-64 (but on another machine).
->>
->>     
->
-> I have got the same problem as Edwin TÖRÖK: From next-20080710 to next-20080711 the kernel fails to boot.
-> EIP seems to be in function kmem_cache_alloc.
->
-> This is also true for next-20080716.
-> I didn't try the kernels > next-20080711 and < next-20080716.
->
-> Any news on this bug?
->   
-Yes a fix has been released:
-http://article.gmane.org/gmane.linux.kernel.kexec/1882
+I tried to use the kgdb from v2.6.26, but met few problems.
+I use :
+1. gdb 6.8 (gdb-6.8-11.fc9.i386)
+2. kernel v2.6.26 source code
+3. Qemu 0.9.1 (qemu-0.9.1-5.fc9.i386)
+4. Host is : 2.6.25.10-86.fc9.i686
+5. Cpu : Intel(R) Core(TM)2 Duo CPU     T5450  @ 1.66GHz
 
-But I don't know when it will be applied....
+
+* Firstly I compile kernel 2.6.26 with kgdb support :
+CONFIG_KGDB=y
+CONFIG_KGDB_SERIAL_CONSOLE=y
+
+* Then I use qemu to boot my kernel along with a rootfs that I created,
+with a qemu option that makes a local tcp port a listening service as a
+serial port for the emulated system. The kernel arguments I gave is :
+nfsroot=192.168.200.1:/path/to/rootfs,udp,nolock ip=dhcp root=/dev/nfs
+ro single kgdboc=ttyS0,115200 kgdbwait
+
+* After the kernel loaded and boot for a while, the gdb receives a
+signal and hangs the kernel :
+kgdb_register_io_module (new_kgdb_io_ops=<value optimized out>)
+    at /data/home/hellwolf/mydoc/prog/linux/linux-2.6/kernel/kgdb.c:1674
+(gdb) 
+
+Question 1 :
+* If I type "b sys_read", and then "c", the kernel continues until I
+get :
+
+---------------------------------------------------------------
+[New Thread 1]
+Cannot remove breakpoints because program is no longer writable.
+It might be running in another process.
+Further execution is probably impossible.
+
+Breakpoint 1, sys_read (fd=3, buf=0xbfdb31dc "", count=512)
+
+at /data/home/hellwolf/mydoc/prog/linux/linux-2.6/fs/read_write.c:360
+(gdb) 
+---------------------------------------------------------------
+
+Why "program is no longer writable" happens here?
+
+Question 2 :
+* If I directly type "c" when kgdbwait triggered. And use Sys-Rq+G to
+interrupt the kernel, I will get :
+---------------------------------------------------------------
+[New Thread -1]
+
+Program received signal SIGTRAP, Trace/breakpoint trap.
+[Switching to Thread -1]
+sysrq_handle_gdb (key=103, tty=0xc78f6400)
+    at /data/home/hellwolf/mydoc/prog/linux/linux-2.6/kernel/kgdb.c:167
+(gdb)  
+---------------------------------------------------------------
+Here if I type "c sys_read" and "c", it never actually makes any break
+points, I will never receive a break from gdb.
+
+
+I don't know if I made anything wrong, or I missed any important thing,
+so I post here and would like to get some help from you.
+
+Thanks. 
+
+--
+ZC Miao (hellwolf.misty@gmail.com)
+Blog http://hellwolf.cublog.cn
+
+gpg --keyserver pgp.mit.edu --recv-key 0x6B174C6F
+
+Most people deserve each other.
+		-- Shirley
+
+
