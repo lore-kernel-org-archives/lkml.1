@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759915AbYGPO5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759858AbYGPO6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759915AbYGPO5T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 10:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757163AbYGPO5H
+	id S1759858AbYGPO6T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 10:58:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756335AbYGPO6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 10:57:07 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:59121 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755981AbYGPO5E (ORCPT
+	Wed, 16 Jul 2008 10:58:08 -0400
+Received: from mylar.outflux.net ([69.93.193.226]:42379 "EHLO
+	mylar.outflux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756232AbYGPO6H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 10:57:04 -0400
-Date: Wed, 16 Jul 2008 08:57:03 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [build fix] Re: [GIT PATCH] SCSI part 1
-Message-ID: <20080716145703.GF25255@parisc-linux.org>
-References: <1216138543.3312.60.camel@localhost.localdomain> <20080716101634.GA8494@elte.hu> <20080716103337.GA22931@elte.hu> <20080716131543.GA3673@elte.hu> <1216216320.3230.1.camel@localhost.localdomain> <20080716141805.GB22631@elte.hu> <20080716144106.GD25255@parisc-linux.org> <20080716144602.GB4369@elte.hu>
+	Wed, 16 Jul 2008 10:58:07 -0400
+X-Greylist: delayed 2256 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Jul 2008 10:58:07 EDT
+Date: Wed, 16 Jul 2008 07:20:22 -0700
+From: Kees Cook <kees@outflux.net>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: useless kernel.maps_protect and more
+Message-ID: <20080716142022.GU5794@outflux.net>
+References: <20080716021135.GA5973@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080716144602.GB4369@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080716021135.GA5973@martell.zuzino.mipt.ru>
+Organization: Outflux
+X-HELO: www.outflux.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 16, 2008 at 04:46:02PM +0200, Ingo Molnar wrote:
-> yeah, that's OK - but why is scsi.h #ifdef-ed? For example we can 
-> include blkdev.h without #ifdef CONFIG_BLOCK.
+Hi,
 
-Sure.  The important bit comes when deciding which bits need to be
-available when CONFIG_BLOCK isn't set.  Obviously, there is no SCSI
-without block (while sg is a character device, not a block device,
-it depends on the block infrastructure to the extent that you couldn't
-use it without CONFIG_BLOCK).
+On Wed, Jul 16, 2008 at 06:11:35AM +0400, Alexey Dobriyan wrote:
+> commit 5096add84b9e96e2e0a9c72675c442fe5433388a
+> "proc: maps protection"
+> 
+> commit 831830b5a2b5d413407adf380ef62fe17d6fcbf2
+> "restrict reading from /proc/<pid>/maps to those who share ->mm or can ptrace pid"
+> 
+> After Al added mm_for_maps(), maps_protect stopped controlling anything,
+> because they're run at ->show time, but mm_for_maps() checks are done at
+> ->start time.
+> 
+> Unless anyone objects, I'll remove maps_protect.
 
-While it's not impossible that someone could want the SCSI protocol
-and opcodes, status codes, etc. for a different character device, that
-seems unlikely.  The four opcodes defined in the header seem to be
-pretty SCSI-specific and not useful to use on non-scsi devices.
-SCSI_IOCTL_GET_PCI looks like it might possibly be useful on more than
-just SCSI, but we have better ways (ie sysfs) of determining the same
-information in a more general way.
+As long as this provides the same protections as maps_protect, I'm fine
+with it.  I am a bit confused, though, since the reason I had to create
+the sysctl entry in the first place was because akpm objected to the
+maps file disappearing without a tunable.  Has this objection gone away?
 
-So I think it's fair to put an #ifdef CONFIG_BLOCK right after the
-_SCSI_SCSI_H define and close it right at the end of the file.
+> Also, logic behind second commit applies to /proc/*/pagemap , don't you
+> think?
+
+If that file shows memory location, yes.  What about the numa maps that
+the first commit protects?
+
+Thanks,
+
+-Kees
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Kees Cook                                            @outflux.net
