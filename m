@@ -1,145 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759679AbYGPKeO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759879AbYGPKeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759679AbYGPKeO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 06:34:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756433AbYGPKdy
+	id S1759879AbYGPKeh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 06:34:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756871AbYGPKeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 06:33:54 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37853 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755048AbYGPKdw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 06:33:52 -0400
-Date: Wed, 16 Jul 2008 12:33:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [build fix] Re: [GIT PATCH] SCSI part 1
-Message-ID: <20080716103337.GA22931@elte.hu>
-References: <1216138543.3312.60.camel@localhost.localdomain> <20080716101634.GA8494@elte.hu>
+	Wed, 16 Jul 2008 06:34:25 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:62332 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755965AbYGPKeY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 06:34:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=M6vETGLsdLeL/KEEzSm1f5bkO8KW2rKwpILyGLZSkQ/K0IoeIiHzR5odPpxx5jveKj
+         8Q274C0meWYyPNk1s/VNu1lhSBuuBckuIuzH6d4zaFfPhgwHVQDAaqJtJExwDVwyFZ51
+         zklT2d2MByw+BdPhUXWessdx2FUcR2L+TxEVQ=
+Message-ID: <520f0cf10807160334y7228527ev7e970b00c734778d@mail.gmail.com>
+Date: Wed, 16 Jul 2008 12:34:23 +0200
+From: "John Kacur" <jkacur@gmail.com>
+To: "Andy Whitcroft" <apw@shadowen.org>
+Subject: Re: Make the git URL match usage
+Cc: "Jan Engelhardt" <jengelh@medozas.de>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080716102104.GA7477@shadowen.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080716101634.GA8494@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <200807161047.21040.jkacur@gmail.com>
+	 <20080716102104.GA7477@shadowen.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jul 16, 2008 at 12:21 PM, Andy Whitcroft <apw@shadowen.org> wrote:
+> On Wed, Jul 16, 2008 at 10:47:20AM +0200, jkacur wrote:
+>> On Wed, Jul 16, 2008 at 10:29 AM, Jan Engelhardt <jengelh@medozas.de> wrote:
+>> >
+>> > On Wednesday 2008-07-16 09:19, jkacur wrote:
+>> >
+>> >>Change the MAINTAINERS file so that the git URL reads EXACTLY the way someone
+>> >>would use it.
+>> >
+>> >>-T:    git kernel.org:/pub/scm/linux/kernel/ericvh/v9fs.git
+>> >>+T:    git://git.kernel.org:/pub/scm/linux/kernel/ericvh/v9fs.git
+>> >
+>> > I would not use it that^ way.
+>> >
+>> > -git://git.kernel.org:/pub/scm/linux/kernel/ericvh/v9fs.git
+>> > +git://git.kernel.org/pub/scm/linux/kernel/ericvh/v9fs.git
+>> >
+>>
+>> Yikes! Good catch, thank you, I've respun the patch below.
+>>
+>> Subject: Make the git URL match the usage
+>> Change the MAINTAINERS file so that the git URL reads EXACTLY the way someone
+>> would use it. They should only have to copy and paste it and not guess how
+>> to modify it. Secondly, drop the "git" type when the protocol is already git://
+>>
+>> Signed-off-by:John Kacur <jkacur at gmail dot com>
+>>
+>> Index: linux-2.6.26/MAINTAINERS
+>> ===================================================================
+>> --- linux-2.6.26.orig/MAINTAINERS
+>> +++ linux-2.6.26/MAINTAINERS
+>> @@ -154,7 +154,7 @@ P:        Latchesar Ionkov
+>>  M:   lucho@ionkov.net
+>>  L:   v9fs-developer@lists.sourceforge.net
+>>  W:   http://swik.net/v9fs
+>> -T:   git kernel.org:/pub/scm/linux/kernel/ericvh/v9fs.git
+>> +T:   git://git.kernel.org/pub/scm/linux/kernel/ericvh/v9fs.git
+>>  S:   Maintained
+>
+> This now looses information.  Although it is obvious that this particular
+> example (after conversion) is a git repository over git protocol this falls
+> down for other forms, for example a git repository exported over http://
+> would appear as below:
+>
+>    T: http://www.kernel.org/pub/scm/linux/kernel/ericvh/v9fs.git
+>
+> which would be indistiguishable from a quilt series such as Greg KH's
+> which, if I follow your scheme logically ie. convert it to the same form,
+> would also be represented as below:
+>
+>    T: http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
+>
+> I think your conversion makes sense in that the URL part should be
+> exactly what one would use with the tool but you still need the tool
+> designator:
+>
+>    T: git git://git.kernel.org/pub/scm/linux/kernel/ericvh/v9fs.git
+>    T: git http://www.kernel.org/pub/scm/linux/kernel/ericvh/v9fs.git
+>    T: guilt http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
+>
+> -apw
+>
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> The problem is this aspect of that change:
-> 
-> | @@ -9,6 +9,7 @@
-> |  #define _SCSI_SCSI_H
-> |
-> |  #include <linux/types.h>
-> | +#include <scsi/scsi_cmnd.h>
-> |
-> |  /*
-> |   * The maximum number of SG segments that we will put inside a
-> 
-> scsi_cmnd.h depends on symbols defined in blkdev.h. The fix is to 
-> include blkdev.h as well.
-
-that wont work - a better replacement fix is the one below. The problem 
-is that scsi.h is included even on !CONFIG_BLOCK and then the 
-BLK_MAX_CDB symbol is meaningless.
-
-	Ingo
-
------------>
-commit 7c2bc6236e6c787ab9962cfc6fad04551d9c4057
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Wed Jul 16 11:56:08 2008 +0200
-
-    scsi: fix build error in fs/compat_ioctl.c
-    
-    -tip testing found that the build broke in fs/compat_ioctl.c:
-    
-    ----------->
-    In file included from include/scsi/scsi.h:12,
-                     from fs/compat_ioctl.c:72:
-    include/scsi/scsi_cmnd.h:27:25: warning: "BLK_MAX_CDB" is not defined
-    include/scsi/scsi_cmnd.h:28:3: error: #error MAX_COMMAND_SIZE can not be bigger than BLK_MAX_CDB
-    In file included from include/scsi/scsi.h:12,
-                     from fs/compat_ioctl.c:72:
-    include/scsi/scsi_cmnd.h: In function ‘scsi_bidi_cmnd’:
-    include/scsi/scsi_cmnd.h:182: error: implicit declaration of function ‘blk_bidi_rq’
-    include/scsi/scsi_cmnd.h:183: error: dereferencing pointer to incomplete type
-    include/scsi/scsi_cmnd.h: In function ‘scsi_in’:
-    include/scsi/scsi_cmnd.h:189: error: dereferencing pointer to incomplete type
-    <-----------
-    
-    with this config:
-    
-      http://redhat.com/~mingo/misc/config-Wed_Jul_16_11_32_32_CEST_2008.bad
-    
-    I have bisected it down to:
-    
-    | feac6a07c4a3578bffd6769bb4927e8a7e1f3ffe is first bad commit
-    | commit feac6a07c4a3578bffd6769bb4927e8a7e1f3ffe
-    | Author: Martin Petermann <martin@linux.vnet.ibm.com>
-    | Date:   Wed Jul 2 10:56:35 2008 +0200
-    |
-    |    [SCSI] zfcp: Move status accessors from zfcp to SCSI include file.
-    |
-    |    Move the accessor functions for the scsi_cmnd status from zfcp to the
-    |    SCSI include file. Change the interface to the functions to pass the
-    |    scsi_cmnd pointer instead of the status pointer.
-    |
-    |    Signed-off-by: Martin Petermann <martin@linux.vnet.ibm.com>
-    |    Signed-off-by: Christof Schmitt <christof.schmitt@de.ibm.com>
-    |    Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-    
-    The problem is due to this aspect of that change:
-    
-    | @@ -9,6 +9,7 @@
-    |  #define _SCSI_SCSI_H
-    |
-    |  #include <linux/types.h>
-    | +#include <scsi/scsi_cmnd.h>
-    |
-    |  /*
-    |   * The maximum number of SG segments that we will put inside a
-    
-    scsi_cmnd.h depends on symbols defined in blkdev.h but those symbols
-    are not available if !CONFIG_BLOCK.
-    
-    Only include scsi/scsi_cmnd.h if on CONFIG_BLOCK.
-    (those methods are not used when CONFIG_BLOCK is off anyway).
-    
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/scsi/scsi.h |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
-
-diff --git a/include/scsi/scsi.h b/include/scsi/scsi.h
-index 00137a7..b212859 100644
---- a/include/scsi/scsi.h
-+++ b/include/scsi/scsi.h
-@@ -9,7 +9,10 @@
- #define _SCSI_SCSI_H
- 
- #include <linux/types.h>
--#include <scsi/scsi_cmnd.h>
-+
-+#ifdef CONFIG_BLOCK
-+# include <scsi/scsi_cmnd.h>
-+#endif
- 
- /*
-  * The maximum number of SG segments that we will put inside a
-
+Hi Andy, I only dropped the "git" designator in cases where the URL
+protocol was git:// as in git://git.kernel.org
+I believe there is no ambiguity there. I did not touch the designator
+for something like quilt where http: is ambiguous.
+I could leave the git designator in but I don't think it adds any
+information, and it makes the line longer, and I'd rather avoid any
+line wrap.
