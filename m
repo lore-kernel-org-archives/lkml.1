@@ -1,84 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759205AbYGPHVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758310AbYGPH22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759205AbYGPHVj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 03:21:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbYGPHV3
+	id S1758310AbYGPH22 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 03:28:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbYGPH2U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 03:21:29 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:26795 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754202AbYGPHV2 (ORCPT
+	Wed, 16 Jul 2008 03:28:20 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:41110 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751939AbYGPH2T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 03:21:28 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=PB4kY9YPOUgo8S94fDr//7yY9CfAUOUSgW/wjm6OQeJQZw1nZZp/ceMujZY4Z9MSx
-	57ZHVCT+D6iK6TjubO5mA==
-Message-ID: <6599ad830807160021n2d09a7c3mfc3122e7be768db5@mail.gmail.com>
-Date: Wed, 16 Jul 2008 00:21:20 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Lai Jiangshan" <laijs@cn.fujitsu.com>
-Subject: Re: [PATCH 3/3] cpuset: two minor code-cleanups
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Paul Jackson" <pj@sgi.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <487D6E51.1000907@cn.fujitsu.com>
+	Wed, 16 Jul 2008 03:28:19 -0400
+Message-ID: <487DA383.1090503@keyaccess.nl>
+Date: Wed, 16 Jul 2008 09:30:11 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Rafael C. de Almeida" <almeidaraf@gmail.com>
+CC: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Stoyan Gaydarov <stoyboyker@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, gorcunov@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+Subject: Re: From 2.4 to 2.6 to 2.7?
+References: <6d291e080807141910m573b29b2t753ea7c4db09902d@mail.gmail.com> <alpine.LFD.1.10.0807141914280.3017@woody.linux-foundation.org> <487CE6CB.9090405@zytor.com> <487D7781.6000407@keyaccess.nl> <487D9B58.7070609@gmail.com>
+In-Reply-To: <487D9B58.7070609@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <487D6E51.1000907@cn.fujitsu.com>
+X-Spam-Score: -0.9 (/)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 8:43 PM, Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
-> in function cpuset_update_task_memory_state()
-> local variable
-> struct task_struct *tsk = current;
->
-> and local variable tsk is used 14 times and
-> statement task_cs(tsk) is used twice in this function.
-> So using task_cs(tsk) instead of task_cs(current) is
-> better for readability.
->
-> And "(struct cgroup_scanner *)&scan" is not good for
-> readability also. (and "container_of" is used in cpuset_do_move_task(),
-> not "(cpuset_hotplug_scanner *)scan")
->
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+On 16-07-08 08:55, Rafael C. de Almeida wrote:
 
-Acked-by: Paul Menage <menage@google.com>
+(and please don't drop CCs on linux-kernel. I for example in this case 
+would like the X as user thing to be noticed as I believe it's a nice 
+point as an "externally significant" thing)
 
-Thanks.
+> Rene Herman wrote:
 
-> ---
-> diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-> index 798b3ab..4513deb 100644
-> --- a/kernel/cpuset.c
-> +++ b/kernel/cpuset.c
-> @@ -369,7 +369,7 @@ void cpuset_update_task_memory_state(void)
->                my_cpusets_mem_gen = top_cpuset.mems_generation;
->        } else {
->                rcu_read_lock();
-> -               my_cpusets_mem_gen = task_cs(current)->mems_generation;
-> +               my_cpusets_mem_gen = task_cs(tsk)->mems_generation;
->                rcu_read_unlock();
->        }
->
-> @@ -1778,7 +1778,7 @@ static void move_member_tasks_to_cpuset(struct cpuset *from, struct cpuset *to)
->        scan.scan.heap = NULL;
->        scan.to = to->css.cgroup;
->
-> -       if (cgroup_scan_tasks((struct cgroup_scanner *)&scan))
-> +       if (cgroup_scan_tasks(&scan.scan))
->                printk(KERN_ERR "move_member_tasks_to_cpuset: "
->                                "cgroup_scan_tasks failed\n");
->  }
->
->
->
->
->
->
+>> I do believe the numbering scheme should at least ostensibly still be
+>> feature driven, not be a fully robotic date thing. With the latter, you
+>> definitely miss out on press-opportunities and that's not even meant
+>> cynical. There just is a bit of industry around Linux and the promotion
+>> opportunities of (say) "Linux 3" are really lots, lots bigger than
+>> anything boringly date based.
+> 
+> And that's why after the adoption of generics and a few things java all
+> the sudden became java 5. I don't like that. I hope the world gets used
+> to learning things instead of just being driven by a pretty number.
+
+I don't. I hate bores.
+
+More importantly though, that's really the kind of thing where you can
+argue about how life should and/or could be until you're blue in the
+face but if it isn't, it doesn't actually matter any. People intimately
+involved with a project like Linux (say, subscribers to this list)
+definitely look quite different at it than others and that's nothing
+bad. Communicating information to these people through shortcuts like
+version numbers isn't necesarily anything to avoid.
+
+There ARE features in the pipeline you could plan for that would warrant
+a version jump. I'd for example consider being able to run X not as root
+a very worthy goal for a version jump (be it 2.8 or 3.0). That's also a
+change in the area where those that are NOT intimately involved yet
+interested in a more than professional way are -- on the desktop.
+
+Really. I'd like it much better if the big cool feature of the all new
+Linux kernel would be running X as user, rather than when the big cool
+feature of X running as a user would require a version of Linux newer
+than the february 2010 release.
+
+If you get what I mean. Do trust me, you'll have time and opportunity
+enough in your lifetime to be boringly professional.
+
+Rene.
+
