@@ -1,83 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757610AbYGPTl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758473AbYGPTnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757610AbYGPTl2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 15:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbYGPTlU
+	id S1758473AbYGPTnT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 15:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753087AbYGPTnL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 15:41:20 -0400
-Received: from outbound-mail-03.bluehost.com ([69.89.21.13]:56644 "HELO
+	Wed, 16 Jul 2008 15:43:11 -0400
+Received: from outbound-mail-03.bluehost.com ([69.89.21.13]:41971 "HELO
 	outbound-mail-03.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753640AbYGPTlT (ORCPT
+	by vger.kernel.org with SMTP id S1752012AbYGPTnK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 15:41:19 -0400
+	Wed, 16 Jul 2008 15:43:10 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
 	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User:DomainKey-Status;
-	b=lHdRrZzZFw5Ps3RA47hEWz3NHK2wkt+PlS9qtsq64gqXg/JkeEYMCMoxRKK5NA5SHRNH3r5XNij+STQoIvqxxCZq0gwo1b4gRlsiL6Bf/duON0UCQpt4sBdqY0MnkYtK;
+	b=oFXRnVpr+r8qewi0mqrL9rM3jgigdTob3ZMlyxv7SCwvO24dGgPI+epPCfqdaSKm1qZ26qvt21KxXN7yA4nofJ3aXgurjP+XvJLPn7UNykkV023TD6k+qYuBREweEZdQ;
 From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Nick Kossifidis" <mickflemm@gmail.com>
-Subject: Re: [PATCH 5/5] Ath5k: suspend/resume fixes
-Date: Wed, 16 Jul 2008 12:41:02 -0700
+To: David Vrabel <david.vrabel@csr.com>
+Subject: Re: PCI: MSI interrupts masked using prohibited method
+Date: Wed, 16 Jul 2008 12:43:03 -0700
 User-Agent: KMail/1.9.9
-Cc: "Pavel Roskin" <proski@gnu.org>, "Jiri Slaby" <jirislaby@gmail.com>,
-       linville@tuxdriver.com, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@gmail.com>
-References: <1216136661-10930-1-git-send-email-jirislaby@gmail.com> <200807161141.59385.jbarnes@virtuousgeek.org> <40f31dec0807161227n4254b8adobbbcfdde540704fd@mail.gmail.com>
-In-Reply-To: <40f31dec0807161227n4254b8adobbbcfdde540704fd@mail.gmail.com>
+Cc: Kernel development list <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Matthew Wilcox <matthew@wil.cx>
+References: <4860D09D.4060801@csr.com> <4864DA54.6000205@csr.com> <200806271007.26248.jbarnes@virtuousgeek.org>
+In-Reply-To: <200806271007.26248.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807161241.04387.jbarnes@virtuousgeek.org>
+Message-Id: <200807161243.03360.jbarnes@virtuousgeek.org>
 X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, July 16, 2008 12:27 pm Nick Kossifidis wrote:
-> 2008/7/16 Jesse Barnes <jbarnes@virtuousgeek.org>:
-> > On Wednesday, July 16, 2008 10:35 am Pavel Roskin wrote:
-> >> On Wed, 2008-07-16 at 09:31 -0700, Jesse Barnes wrote:
-> >> > On Wednesday, July 16, 2008 9:15 am Nick Kossifidis wrote:
-> >> > > It's ok for now, but have in mind that on my upcoming patch series
-> >> > > i'm disabling msi (commented out) since it results no interrupts on
-> >> > > pci-e cards (seems there is a bug in kernel's msi implementation).
-> >> >
-> >> > Hm, would be good to get details here.  MSI is being used by other
-> >> > drivers successfully...
-> >>
-> >> That's true, but no driver uses the same interrupt handler with and
-> >> without MSI.  Either it's different handlers or the handler checks if
-> >> MSI is enabled and does something differently.
+On Friday, June 27, 2008 10:07 am Jesse Barnes wrote:
+> On Friday, June 27, 2008 5:17 am David Vrabel wrote:
+> > Jesse Barnes wrote:
+> > > On Tuesday, June 24, 2008 3:46 am David Vrabel wrote:
+> > >> PCI MSI interrupts are masked and unmasked using a method (by writing
+> > >> the MSI Enable capability bit) that is prohibited by the PCI
+> > >> specification.
+> > >
+> > > Yeah, it's probably quite a bit slower too (I assume you're talking
+> > > about io_apic_64's msi_mask_irq).  Seems like masking this at the
+> > > ioapic level would make more sense anyway...
+> > >
+> > >> This behaviour can cause missed interrupts with some devices if the
+> > >> interrupt is asserted by the hardware while MSI is disabled.
+> > >>
+> > >> I believe the interrupt should be masked/unmasked on the interrupt
+> > >> controller (the APIC on x86, for example).   I'm going to test this
+> > >> now and see if it works.
 > >
-> > Yeah, using MSI on your device can mean that you have to make some
-> > changes (like on Intel graphics you have to disable regular interrupts or
-> > bad things happen), but you can still share the handler or at least most
-> > of it in some cases.
->
-> Is there documentation for this somewhere ? Msi documentation
-> (MSI-HOWTO.txt) doesn't say anything about a different interrupt
-> handler etc.
-
-Matthew just rewrote MSI-HOWTO as part of his rework of the MSI code.  It 
-might be more helpful now (see 
-http://kerneltrap.org/mailarchive/linux-kernel/2008/7/1).
-
->
-> >> Checks is any interrupts are pending are different for MSI.  It may be
-> >> not hard to do (it's probably easier than for real interrupts), but it
-> >> has to be figured out.  Somebody has to do it right.  Until MSI is
-> >> supported by the interrupt handler, it should not be enabled by the
-> >> driver, or we get a non-functioning driver for AR5006.
+> > After further research it seems that MSI interrupts aren't routed via
+> > the IO-APIC, so this cannot be done.
 > >
-> > Sure, that's fine.  I just wanted to make sure that there weren't some
-> > weird generic MSI problems.
+> > I think the only solution is to not perform any sort of masking and rely
+> > on the device driver being able to handle this.
 >
-> I was referring to this post...
-> http://lkml.org/lkml/2008/6/24/150
+> On x86, they're targetted at the LAPIC block (see section 8 of the IA SDM);
+> maybe we could modify the message address or data such that it won't
+> generate an interrupt instead?  I think this latest approach is correct in
+> the sense that both the system and drivers have to take care that
+>   1) we don't miss interrupts, and
+>   2) we don't generate spurious unhandled interrupts (as might happen if we
+> disable MSI and the device generates a legacy IRQ on a different vector).
+>
+> But it looks like the real problem is in the system interrupt code that
+> handles MSIs.  We should only be disabling MSIs using the capability bit at
+> device enable or disable time, not during the normal course of interrupt
+> handling, since if we do we may miss device interrupts or have them routed
+> to the wrong (legacy) vector.
+>
+> Cc'ing Ingo & Thomas since they know the core interrupt code pretty well.
 
-Yeah, that's a real bug on x86; I don't know how widespread its effects are 
-though.  I'll ping Ingo & Thomas again.
+Ingo or Matthew, any ideas about this?  The fundamental issue is that if we go 
+poke at a device's MSI cap bits during interrupt handling, the device may 
+start using regular IRQs instead, potentially on a different vector.  It 
+would be good if we could come up with a better way of masking MSIs during 
+handling...
 
+Thanks,
 Jesse
