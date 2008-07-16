@@ -1,115 +1,293 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759229AbYGPXAW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759420AbYGPXB4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759229AbYGPXAW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 19:00:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756117AbYGPXAH
+	id S1759420AbYGPXB4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 19:01:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757918AbYGPXBl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 19:00:07 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59203 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755590AbYGPXAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 19:00:05 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: linux-next: Tree for July 11:  WARNING: at /home/rafael/src/linux-next/include/linux/blkdev.h:447
-Date: Thu, 17 Jul 2008 01:02:15 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Vegard Nossum" <vegard.nossum@gmail.com>,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	Wed, 16 Jul 2008 19:01:41 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:41187 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755496AbYGPXBi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 19:01:38 -0400
+Subject: Re: linux-next: Tree for July 16 (crash on quad core AMD)
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
        LKML <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
-       netdev@vger.kernel.org, "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       "Jens Axboe" <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <20080711182557.9b24df1f.sfr@canb.auug.org.au> <19f34abd0807121221n75fd7bb8x24fa484239773201@mail.gmail.com> <200807122226.10699.rjw@sisk.pl>
-In-Reply-To: <200807122226.10699.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       scsi <linux-scsi@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-ide <linux-ide@vger.kernel.org>
+In-Reply-To: <200807170053.36661.rjw@sisk.pl>
+References: <20080716235011.ac9643aa.sfr@canb.auug.org.au>
+	 <200807170053.36661.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Wed, 16 Jul 2008 18:01:32 -0500
+Message-Id: <1216249292.3358.66.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807170102.16302.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 12 of July 2008, Rafael J. Wysocki wrote:
-> On Saturday, 12 of July 2008, Vegard Nossum wrote:
-> > On Sat, Jul 12, 2008 at 8:51 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > and the second one is the following:
-[--snip--]
+On Thu, 2008-07-17 at 00:53 +0200, Rafael J. Wysocki wrote:
+> On Wednesday, 16 of July 2008, Stephen Rothwell wrote:
+> > Hi all,
+> > 
+> > Changes since next-20080715:
+> > 
+> > Temporarily dropped tree: ttydev (it gets too many patch failures).
+> > 
+> > Most of the differences were conflicts moving from tree to tree as some
+> > of the trees are now merged into Linus' tree.  Most have been inflicted
+> > on the driver-core and usb trees.  I have not notified these separately.
+> > 
+> > Because of the moving of conflicts around it is difficult to tell when
+> > they are going away (though I assume some are).
+> > 
+> > The usb.current tree lost its conflict against Linus' tree.
+> > 
+> > The usb tree gained a conflict against Linus' tree.
+> > 
+> > The cpus4096 tree gained a conflict against Linus' tree.
+> > 
+> > The pci tree lost one of its build fix patches.
+> > 
+> > The i2c tree lost a conflict against Linus' tree.
+> > 
+> > The ide tree gained a lot of conflicts against Linus' tree because part
+> > of it was merged into Linus' tree but the remaining pat modified many of
+> > the same files further.
+> > 
+> > The acpi tree gained a conflict against Linus' tree.
+> > 
+> > The net tree gained a conflict against each of Linus' tree and the
+> > powerpc tree.
+> > 
+> > The sparc tree gained conflicts against Linus' tree and the ide and
+> > sparc-current trees.
+> > 
+> > The rr tree gained conflict against the net tree.
+> > 
+> > The semaphore tree gained a conflict against the sparc tree.
+> > 
+> > The generic-ipi tree gained a conflict against the powerpc tree.
+> > 
+> > The ttydev series had many patches fail to apply, so it was dropped for
+> > today.
+> > 
+> > I have also applied the following patches for known problems:
+> > 
+> > 	sparc64: sysdev API change fallout
+> > 
+> > Patches no longer necessary:
+> > 
+> > 	s390: fix compile error due to smp_call_function
+> > 	powerpc: mman.h export fixups
+> > 	powerpc/stacktrace: EXPORT SYMBOL_GPL needs module.h
+> > 
+> > This tree fails to build for ARCH=sparc (i.e. 32bit) with a 64bit gcc
+> > v3.4.5 - it tries to use the 64bit header files.  This may be an artifact
+> > of one of my merge fixups, but I don't actually think so.
+> > 
+> > ----------------------------------------------------------------------------
 > 
-> It turns out that this happened before, but I've been overlooking it.  This is
-> a trace from the Friday's linux-next:
+> Crashes during boot on a box with Phenom X4 and AMD 790-based mainboard.
+> AFAICS, the Linus' tree is unaffected and linux-next from yesterday was fine
+> on the same box with the same .config.
+
+OK, that means that all the current SCSI patches were merged and it was
+still OK (they're all in linus and I haven't put together the next slice
+yet).  I'd suspect something in drivers/ata (cc ide list added).
+
+James
+
+
+> Full dmesg: http://www.sisk.pl/kernel/debug/next/20080716/crash-M3A32-MVP.log
+> Kernel config: http://www.sisk.pl/kernel/debug/next/20080716/M3A32-MVP-config
 > 
+> scsi scan: INQUIRY result too short (5), using 36
+> scsi 2:0:0:0: Direct-Access                                    PQ: 0 ANSI: 0
 > ------------[ cut here ]------------
-> WARNING: at /home/rafael/src/linux-next/include/linux/blkdev.h:447 blk_plug_device+0x9b/0xb0()
-> Modules linked in: rtc_cmos snd_hda_intel rtc_core snd_pcm sr_mod floppy snd_timer snd_page_alloc rtc_lib ohci1394 serio_raw cdrom ieee1394 snd_hwdep snd soundcore sky2 button wmi joydev evdev sg raid456 async_xor async_memcpy async_tx xor raid0 usbhid ff_memless ehci_hcd sd_mod ohci_hcd edd raid1 ext3 jbd fan pata_marvell pata_atiixp thermal processor
-> Pid: 2275, comm: kjournald Not tainted 2.6.26-rc9-next #40
+> kernel BUG at /home/rafael/src/linux-next/mm/slab.c:2822!
+> invalid opcode: 0000 [1] SMP
+> last sysfs file:
+> CPU 0
+> Modules linked in:
+> Pid: 1, comm: swapper Not tainted 2.6.26-next #51
+> RIP: 0010:[<ffffffff802b59e8>]  [<ffffffff802b59e8>] cache_free_debugcheck+0x288/0x2b0
+> RSP: 0018:ffff880127c81880  EFLAGS: 00010016
+> RAX: 00da9803898590c8 RBX: ffff880127c01880 RCX: 204a483235324448
+> RDX: 0000000000da9803 RSI: ffff880124488810 RDI: ffff880127c01880
+> RBP: ffff880127c818b0 R08: 0000000000000058 R09: 2222222222222222
+> R10: 2222222222222222 R11: 2222222222222222 R12: ffff880124488810
+> R13: 09f911029d74e35b R14: 09f911029d74e35b R15: ffff880124488000
+> FS:  0000000000000000(0000) GS:ffffffff806b7f40(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process swapper (pid: 1, threadinfo ffff880127c80000, task ffff880127c7e040)
+> Stack:  ffffffff803f9bcb ffff880127c01880 ffff880127c0bad0 ffff880124488818
+>  0000000000000282 ffff880124460000 ffff880127c818e0 ffffffff802b5c16
+>  0000000000000000 0000000000000002 ffffffff80627d9b 0000000000000000
+> Call Trace:
+>  [<ffffffff803f9bcb>] ? scsi_probe_and_add_lun+0x86b/0xc20
+>  [<ffffffff802b5c16>] kfree+0xd6/0x160
+>  [<ffffffff803f9bcb>] scsi_probe_and_add_lun+0x86b/0xc20
+>  [<ffffffff803fad4f>] __scsi_add_device+0xff/0x110
+>  [<ffffffff8040c99b>] ata_scsi_scan_host+0xdb/0x2b0
+>  [<ffffffff804094b3>] ata_host_register+0x243/0x2a0
+>  [<ffffffff8041b920>] ? ahci_interrupt+0x0/0x530
+>  [<ffffffff804095b4>] ata_host_activate+0xa4/0x110
+>  [<ffffffff8041b668>] ahci_init_one+0x9a8/0xc60
+>  [<ffffffff80378fb9>] pci_device_probe+0x79/0xa0
+>  [<ffffffff803e6aab>] driver_probe_device+0x9b/0x1a0
+>  [<ffffffff803e6c36>] __driver_attach+0x86/0x90
+>  [<ffffffff803e6bb0>] ? __driver_attach+0x0/0x90
+>  [<ffffffff803e5ffd>] bus_for_each_dev+0x5d/0x90
+>  [<ffffffff803e68ec>] driver_attach+0x1c/0x20
+>  [<ffffffff803e6525>] bus_add_driver+0xc5/0x250
+>  [<ffffffff803e6e0f>] driver_register+0x5f/0x140
+>  [<ffffffff8037927d>] __pci_register_driver+0x7d/0xc0
+>  [<ffffffff806f00c0>] ? ahci_init+0x0/0x20
+>  [<ffffffff806f00d9>] ahci_init+0x19/0x20
+>  [<ffffffff806c8a48>] kernel_init+0x128/0x310
+>  [<ffffffff8026167f>] ? trace_hardirqs_on_caller+0xbf/0x150
+>  [<ffffffff8026171d>] ? trace_hardirqs_on+0xd/0x10
+>  [<ffffffff804ff1eb>] ? _spin_unlock_irq+0x2b/0x40
+>  [<ffffffff804fea80>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+>  [<ffffffff8026167f>] ? trace_hardirqs_on_caller+0xbf/0x150
+>  [<ffffffff8020c6d9>] child_rip+0xa/0x11
+>  [<ffffffff8020bd0f>] ? restore_args+0x0/0x30
+>  [<ffffffff806c8920>] ? kernel_init+0x0/0x310
+>  [<ffffffff8020c6cf>] ? child_rip+0x0/0x11
+> 
+> 
+> Code: 48 8b 40 10 48 8b 08 f6 c5 40 0f 84 06 fe ff ff 48 8b 40 10 48 8b 08 e9 fa fd ff ff 0f 1f 80 00 00 00 00 0f 0b eb fe 0f 0b eb fe <0f> 0b eb fe 0f 1f 40 00 48
+> RIP  [<ffffffff802b59e8>] cache_free_debugcheck+0x288/0x2b0
+>  RSP <ffff880127c81880>
+> ---[ end trace c69efc8b7b1131cd ]---
+> Kernel panic - not syncing: Attempted to kill init!
+> Pid: 1, comm: swapper Tainted: G      D   2.6.26-next #51
 > 
 > Call Trace:
->  [<ffffffff8023cf9f>] warn_on_slowpath+0x5f/0x80
->  [<ffffffff80220030>] ? hpet_rtc_interrupt+0x100/0x380
->  [<ffffffff80263327>] ? __lock_acquire+0x8b7/0x1280
->  [<ffffffff80291461>] ? mempool_alloc_slab+0x11/0x20
->  [<ffffffff8035735b>] blk_plug_device+0x9b/0xb0
->  [<ffffffff8045377f>] bitmap_startwrite+0xbf/0x1b0
->  [<ffffffff802e8254>] ? bio_alloc_bioset+0x54/0xb0
->  [<ffffffffa004eafa>] make_request+0x39a/0x810 [raid1]
->  [<ffffffff802915cb>] ? mempool_alloc+0x5b/0x140
->  [<ffffffff802915cb>] ? mempool_alloc+0x5b/0x140
->  [<ffffffff803565ad>] generic_make_request+0x17d/0x2b0
->  [<ffffffff80357f5c>] submit_bio+0x6c/0xf0
->  [<ffffffff802e36d0>] submit_bh+0xf0/0x130
->  [<ffffffffa001cce0>] journal_commit_transaction+0xa40/0x1000 [jbd]
->  [<ffffffff802480d4>] ? try_to_del_timer_sync+0x44/0x90
->  [<ffffffffa0020967>] kjournald+0xe7/0x250 [jbd]
->  [<ffffffff80253ef0>] ? autoremove_wake_function+0x0/0x40
->  [<ffffffffa0020880>] ? kjournald+0x0/0x250 [jbd]
->  [<ffffffff80253a9d>] kthread+0x4d/0x80
->  [<ffffffff8020c6b9>] child_rip+0xa/0x11
->  [<ffffffff8020bcef>] ? restore_args+0x0/0x30
->  [<ffffffff80253a50>] ? kthread+0x0/0x80
->  [<ffffffff8020c6af>] ? child_rip+0x0/0x11
+>  [<ffffffff8023c240>] panic+0xa0/0x190
+>  [<ffffffff802577f9>] ? up+0x19/0x50
+>  [<ffffffff8023d0f7>] ? printk+0x67/0x70
+>  [<ffffffff803be042>] ? account+0xc2/0x100
+>  [<ffffffff803be1ee>] ? extract_entropy+0x7e/0xa0
+>  [<ffffffff8024063f>] do_exit+0x8bf/0x8d0
+>  [<ffffffff803be22b>] ? get_random_bytes+0x1b/0x20
+>  [<ffffffff8020cbd5>] oops_end+0x85/0x90
+>  [<ffffffff8020d84e>] die+0x5e/0x90
+>  [<ffffffff8020da30>] do_trap+0x130/0x150
+>  [<ffffffff8020e84c>] do_invalid_op+0x9c/0xc0
+>  [<ffffffff802b59e8>] ? cache_free_debugcheck+0x288/0x2b0
+>  [<ffffffff80311490>] ? sysfs_ilookup_test+0x0/0x20
+>  [<ffffffff804fede6>] ? _spin_unlock+0x26/0x30
+>  [<ffffffff803e9927>] ? attribute_container_device_trigger+0x27/0xd0
+>  [<ffffffff804ff54d>] error_exit+0x0/0xa9
+>  [<ffffffff802b59e8>] ? cache_free_debugcheck+0x288/0x2b0
+>  [<ffffffff803f9bcb>] ? scsi_probe_and_add_lun+0x86b/0xc20
+>  [<ffffffff802b5c16>] kfree+0xd6/0x160
+>  [<ffffffff803f9bcb>] scsi_probe_and_add_lun+0x86b/0xc20
+>  [<ffffffff803fad4f>] __scsi_add_device+0xff/0x110
+>  [<ffffffff8040c99b>] ata_scsi_scan_host+0xdb/0x2b0
+>  [<ffffffff804094b3>] ata_host_register+0x243/0x2a0
+>  [<ffffffff8041b920>] ? ahci_interrupt+0x0/0x530
+>  [<ffffffff804095b4>] ata_host_activate+0xa4/0x110
+>  [<ffffffff8041b668>] ahci_init_one+0x9a8/0xc60
+>  [<ffffffff80378fb9>] pci_device_probe+0x79/0xa0
+>  [<ffffffff803e6aab>] driver_probe_device+0x9b/0x1a0
+>  [<ffffffff803e6c36>] __driver_attach+0x86/0x90
+>  [<ffffffff803e6bb0>] ? __driver_attach+0x0/0x90
+>  [<ffffffff803e5ffd>] bus_for_each_dev+0x5d/0x90
+>  [<ffffffff803e68ec>] driver_attach+0x1c/0x20
+>  [<ffffffff803e6525>] bus_add_driver+0xc5/0x250
+>  [<ffffffff803e6e0f>] driver_register+0x5f/0x140
+>  [<ffffffff8037927d>] __pci_register_driver+0x7d/0xc0
+>  [<ffffffff806f00c0>] ? ahci_init+0x0/0x20
+>  [<ffffffff806f00d9>] ahci_init+0x19/0x20
+>  [<ffffffff806c8a48>] kernel_init+0x128/0x310
+>  [<ffffffff8026167f>] ? trace_hardirqs_on_caller+0xbf/0x150
+>  [<ffffffff8026171d>] ? trace_hardirqs_on+0xd/0x10
+>  [<ffffffff804ff1eb>] ? _spin_unlock_irq+0x2b/0x40
+>  [<ffffffff804fea80>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+>  [<ffffffff8026167f>] ? trace_hardirqs_on_caller+0xbf/0x150
+>  [<ffffffff8020c6d9>] child_rip+0xa/0x11
+>  [<ffffffff8020bd0f>] ? restore_args+0x0/0x30
+>  [<ffffffff806c8920>] ? kernel_init+0x0/0x310
+>  [<ffffffff8020c6cf>] ? child_rip+0x0/0x11
 > 
-> ---[ end trace bd85cedf792d0f08 ]---
+> ------------[ cut here ]------------
+> WARNING: at /home/rafael/src/linux-next/kernel/smp.c:288 smp_call_function_mask+0x198/0x1a0()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G      D   2.6.26-next #51
 > 
+> Call Trace:
+>  [<ffffffff8023beff>] warn_on_slowpath+0x5f/0x80
+>  [<ffffffff8020c6cf>] ? child_rip+0x0/0x11
+>  [<ffffffff802577f9>] ? up+0x19/0x50
+>  [<ffffffff8023d0f7>] ? printk+0x67/0x70
+>  [<ffffffff80267f48>] smp_call_function_mask+0x198/0x1a0
+>  [<ffffffff8020d063>] ? dump_trace+0x373/0x400
+>  [<ffffffff8020d14e>] ? show_trace+0x5e/0x80
+>  [<ffffffff80267f6b>] smp_call_function+0x1b/0x20
+>  [<ffffffff8021c4f0>] native_smp_send_stop+0x30/0x60
+>  [<ffffffff8023c24d>] panic+0xad/0x190
+>  [<ffffffff802577f9>] ? up+0x19/0x50
+>  [<ffffffff8023d0f7>] ? printk+0x67/0x70
+>  [<ffffffff803be042>] ? account+0xc2/0x100
+>  [<ffffffff803be1ee>] ? extract_entropy+0x7e/0xa0
+>  [<ffffffff8024063f>] do_exit+0x8bf/0x8d0
+>  [<ffffffff803be22b>] ? get_random_bytes+0x1b/0x20
+>  [<ffffffff8020cbd5>] oops_end+0x85/0x90
+>  [<ffffffff8020d84e>] die+0x5e/0x90
+>  [<ffffffff8020da30>] do_trap+0x130/0x150
+>  [<ffffffff8020e84c>] do_invalid_op+0x9c/0xc0
+>  [<ffffffff802b59e8>] ? cache_free_debugcheck+0x288/0x2b0
+>  [<ffffffff80311490>] ? sysfs_ilookup_test+0x0/0x20
+>  [<ffffffff804fede6>] ? _spin_unlock+0x26/0x30
+>  [<ffffffff803e9927>] ? attribute_container_device_trigger+0x27/0xd0
+>  [<ffffffff804ff54d>] error_exit+0x0/0xa9
+>  [<ffffffff802b59e8>] ? cache_free_debugcheck+0x288/0x2b0
+>  [<ffffffff803f9bcb>] ? scsi_probe_and_add_lun+0x86b/0xc20
+>  [<ffffffff802b5c16>] kfree+0xd6/0x160
+>  [<ffffffff803f9bcb>] scsi_probe_and_add_lun+0x86b/0xc20
+>  [<ffffffff803fad4f>] __scsi_add_device+0xff/0x110
+>  [<ffffffff8040c99b>] ata_scsi_scan_host+0xdb/0x2b0
+>  [<ffffffff804094b3>] ata_host_register+0x243/0x2a0
+>  [<ffffffff8041b920>] ? ahci_interrupt+0x0/0x530
+>  [<ffffffff804095b4>] ata_host_activate+0xa4/0x110
+>  [<ffffffff8041b668>] ahci_init_one+0x9a8/0xc60
+>  [<ffffffff80378fb9>] pci_device_probe+0x79/0xa0
+>  [<ffffffff803e6aab>] driver_probe_device+0x9b/0x1a0
+>  [<ffffffff803e6c36>] __driver_attach+0x86/0x90
+>  [<ffffffff803e6bb0>] ? __driver_attach+0x0/0x90
+>  [<ffffffff803e5ffd>] bus_for_each_dev+0x5d/0x90
+>  [<ffffffff803e68ec>] driver_attach+0x1c/0x20
+>  [<ffffffff803e6525>] bus_add_driver+0xc5/0x250
+>  [<ffffffff803e6e0f>] driver_register+0x5f/0x140
+>  [<ffffffff8037927d>] __pci_register_driver+0x7d/0xc0
+>  [<ffffffff806f00c0>] ? ahci_init+0x0/0x20
+>  [<ffffffff806f00d9>] ahci_init+0x19/0x20
+>  [<ffffffff806c8a48>] kernel_init+0x128/0x310
+>  [<ffffffff8026167f>] ? trace_hardirqs_on_caller+0xbf/0x150
+>  [<ffffffff8026171d>] ? trace_hardirqs_on+0xd/0x10
+>  [<ffffffff804ff1eb>] ? _spin_unlock_irq+0x2b/0x40
+>  [<ffffffff804fea80>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+>  [<ffffffff8026167f>] ? trace_hardirqs_on_caller+0xbf/0x150
+>  [<ffffffff8020c6d9>] child_rip+0xa/0x11
+>  [<ffffffff8020bd0f>] ? restore_args+0x0/0x30
+>  [<ffffffff806c8920>] ? kernel_init+0x0/0x310
+>  [<ffffffff8020c6cf>] ? child_rip+0x0/0x11
+> 
+> ---[ end trace c69efc8b7b1131cd ]---
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-This has now made it into the Linus' tree:
-
-------------[ cut here ]------------
-WARNING: at /home/rafael/src/linux-2.6/include/linux/blkdev.h:447 blk_plug_device+0x9b/0xb0()
-Modules linked in: rtc_cmos rtc_core sr_mod rtc_lib snd_hda_intel cdrom floppy snd_pcm snd_timer serio_raw snd_page_alloc ohci1394 snd_hwdep ieee1394 sky2 snd soundcore joydev button wmi evdev sg raid456 async_xor async_memcpy async_tx xor raid0 usbhid ff_memless ehci_hcd ohci_hcd sd_mod edd raid1 ext3 jbd fan pata_marvell pata_atiixp thermal processor
-Pid: 2264, comm: kjournald Not tainted 2.6.26-git #203
-
-Call Trace:
- [<ffffffff8023aadf>] warn_on_slowpath+0x5f/0x80
- [<ffffffff80261075>] ? __lock_acquire+0x8d5/0x1290
- [<ffffffff8028991b>] ? mempool_alloc+0x5b/0x140
- [<ffffffff8034e43b>] blk_plug_device+0x9b/0xb0
- [<ffffffff8044727f>] bitmap_startwrite+0xbf/0x1b0
- [<ffffffff802dff44>] ? bio_alloc_bioset+0x54/0xb0
- [<ffffffffa004ea9c>] make_request+0x39c/0x810 [raid1]
- [<ffffffff8028991b>] ? mempool_alloc+0x5b/0x140
- [<ffffffff8028991b>] ? mempool_alloc+0x5b/0x140
- [<ffffffff8034d68d>] generic_make_request+0x17d/0x2b0
- [<ffffffff8034f03c>] submit_bio+0x6c/0xf0
- [<ffffffff802db3c0>] submit_bh+0xf0/0x130
- [<ffffffffa001cce0>] journal_commit_transaction+0xa40/0x1000 [jbd]
- [<ffffffff80245c74>] ? try_to_del_timer_sync+0x44/0x90
- [<ffffffffa0020947>] kjournald+0xe7/0x250 [jbd]
- [<ffffffff80251a60>] ? autoremove_wake_function+0x0/0x40
- [<ffffffffa0020860>] ? kjournald+0x0/0x250 [jbd]
- [<ffffffff8025160d>] kthread+0x4d/0x80
- [<ffffffff8020c6c9>] child_rip+0xa/0x11
- [<ffffffff8020bcff>] ? restore_args+0x0/0x30
- [<ffffffff802515c0>] ? kthread+0x0/0x80
- [<ffffffff8020c6bf>] ? child_rip+0x0/0x11
-
----[ end trace a367ac91f145af0b ]---
-
-dmesg: http://www.sisk.pl/kernel/debug/mainline/a3cf859321486f69506326146ab3e2fd15c05c3f/dmesg-M3A32-MVP.log
-config: http://www.sisk.pl/kernel/debug/mainline/a3cf859321486f69506326146ab3e2fd15c05c3f/M3A32-MVP-config
-
-Thanks,
-Rafael
