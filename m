@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758226AbYGPNlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758446AbYGPNmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758226AbYGPNlp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 09:41:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756335AbYGPNlf
+	id S1758446AbYGPNmj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 09:42:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756474AbYGPNmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 09:41:35 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:49396 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756606AbYGPNle (ORCPT
+	Wed, 16 Jul 2008 09:42:31 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:1678 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756012AbYGPNmb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 09:41:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=CkYHl4xsNMRIITTtKCoGnI5RjJ9VO2xXx15zmcy7Us+82RXQw46xjCgdFyqI7YDTbm
-         0NNVJjg8og7HiKP6nvgG1Bo89AFxgZc/5Lf79qVV+1i7lZMVYWdP9Fuq5dMN6AIt6GNK
-         g9iJ9OtHDueelJ+9ggvn8dZpG4g/SxeI/2f/Q=
-Message-ID: <84144f020807160641u32dac56fq9b9a30f6e32a27ca@mail.gmail.com>
-Date: Wed, 16 Jul 2008 16:41:33 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: jacliburn@bellsouth.net
-Subject: Re: sendfile() broken with 2.6.26 + Apache 2 ?
-Cc: "Eric Dumazet" <dada1@cosmosbay.com>, "Ian Jeffray" <ian@jeffray.co.uk>,
-       linux-kernel@vger.kernel.org,
-       "Linux Netdev List" <netdev@vger.kernel.org>, csnook@redhat.com,
-       jeff@garzik.org
-In-Reply-To: <487DF9EC.9060202@bellsouth.net>
+	Wed, 16 Jul 2008 09:42:31 -0400
+Date: Wed, 16 Jul 2008 14:41:47 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: jkacur <jkacur@gmail.com>, akpm@linux-foundation.org,
+       Jan Engelhardt <jengelh@medozas.de>, Andy Whitcroft <apw@shadowen.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Make the git URL match usage
+Message-ID: <20080716134144.GA28848@sirena.org.uk>
+Mail-Followup-To: Adrian Bunk <bunk@kernel.org>, jkacur <jkacur@gmail.com>,
+	akpm@linux-foundation.org, Jan Engelhardt <jengelh@medozas.de>,
+	Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org
+References: <200807161500.08500.jkacur@gmail.com> <20080716133108.GC25557@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <487CD7A7.2080800@jeffray.co.uk> <487D893A.5080207@cosmosbay.com>
-	 <487DA388.3030104@jeffray.co.uk> <487DBA74.3090800@cosmosbay.com>
-	 <487DF9EC.9060202@bellsouth.net>
-X-Google-Sender-Auth: aef028f020b57d47
+In-Reply-To: <20080716133108.GC25557@cs181140183.pp.htv.fi>
+X-Cookie: Last week's pet, this week's special.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 16, 2008 at 4:38 PM, J. K. Cliburn <jcliburn@gmail.com> wrote:
->> Yes, maybe related to commit 9d90fb1ac9d97da86e24d9ea947bf2a2f333829a
->> In this patch, Jay Cliburn enabled TSO by default for atl1 driver.
->>
->> This might be a driver problem, or a generic sendfile() problem, I dont
->> know...
->
-> I'm currently traveling and unable to delve into this issue and its relation
-> to the atl1 driver.  I should be able to look at it this weekend when I get
-> back home.
+On Wed, Jul 16, 2008 at 04:31:08PM +0300, Adrian Bunk wrote:
+> On Wed, Jul 16, 2008 at 03:00:08PM +0200, jkacur wrote:
 
-Ehh... shouldn't we disable atl1 TSO by default for -stable, then?
+> > grep git:// MAINTAINERS | grep -v "\.git"
+
+...
+
+> > T:      git://opensource.wolfsonmicro.com/linux-2.6-asoc
+> > T:      git://opensource.wolfsonmicro.com/linux-2.6-touch
+> >...
+
+> With the default git-daemon configuration it doesn't matter whether or 
+> not you specify a .git postfix.
+
+For those two HTTP access currently requires that the .git be omitted.
+I could change that easily enough but TBH I prefer giving the link with
+the directory name that a clone would create anyway.
