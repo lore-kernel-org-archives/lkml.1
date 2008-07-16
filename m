@@ -1,78 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbYGPGGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757651AbYGPGHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757084AbYGPGGu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 02:06:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbYGPGGm
+	id S1757651AbYGPGHz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 02:07:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbYGPGHs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 02:06:42 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:33837 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751899AbYGPGGl (ORCPT
+	Wed, 16 Jul 2008 02:07:48 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47727 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752183AbYGPGHr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 02:06:41 -0400
-Date: Tue, 15 Jul 2008 22:49:11 -0700
-From: Greg KH <greg@kroah.com>
-To: David Vrabel <david.vrabel@csr.com>
-Cc: "Perez-Gonzalez, Inaky" <inaky.perez-gonzalez@intel.com>,
-       linux-usb <linux-usb@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Dropping WUSB/UWB from my patch queue
-Message-ID: <20080716054911.GA9806@kroah.com>
-References: <20080630180009.GA30833@kroah.com> <4871E9F0.60608@csr.com> <20080715155313.GA3075@kroah.com> <487CE2E7.90505@csr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <487CE2E7.90505@csr.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 16 Jul 2008 02:07:47 -0400
+Subject: Re: [PATCH] RCU: implement rcu_read_[un]lock_preempt()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: dipankar@in.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Paul E McKenney <paulmck@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <487AEAC6.60307@kernel.org>
+References: <487AEAC6.60307@kernel.org>
+Content-Type: text/plain
+Date: Wed, 16 Jul 2008 08:07:49 +0200
+Message-Id: <1216188469.5232.0.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 06:48:23PM +0100, David Vrabel wrote:
-> Greg KH wrote:
-> > On Mon, Jul 07, 2008 at 11:03:28AM +0100, David Vrabel wrote:
-> >> Greg KH wrote:
-> >>> Hi David,
-> > 
-> >>> In looking further at the WUSB/UWB code, it doesn't look like it is
-> >>> going to make it for the 2.6.27 kernel tree due to the reliance on some
-> >>> contriversial core USB changes as well as a total lack of documentation
-> >>> for the sysfs apis.
-> >> I assume you are referring to the usb_dev_reset_delayed() change here.
-> >> This is only required by the wire adapter code and should not prevent
-> >> the majority of the UWB and WUSB stack from being merged.
-> > 
-> > Ok, thanks for letting me know, I did not realize this.
-> > 
-> >> You should postpone:
-> >>
-> >> usb-add-usb_dev_reset_delayed.patch
-> >> wusb-add-the-wire-adapter-core.patch
-> >> wusb-add-hwa-hc-wireless-host-controller-driver.patch
-> >> wusb-wa-abort-rpipe-request-type-fix.patch
+On Mon, 2008-07-14 at 14:57 +0900, Tejun Heo wrote:
+> With the introduction of preemptible RCU, RCU doesn't gurantee that
+> its critical section runs on the CPU it started to run.  As there are
+> cases where non-preemptible RCU critical section makes sense, create
+> new RCU read lock variants which turns of preemption -
+> rcu_read_[un]lock_preempt() which are identical to rcu_read_[un]lock()
+> for classic implementation and have enclosing preempt disable/enable
+> for preemptible RCU.
 > 
-> I took another look at where usb_dev_reset_delayed() is used and there
-> are more places.  You will also need to postpone:
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+
+Sorry, NAK.
+
+If you need preempt off you need it for other reasons than RCU, so
+mixing it in the interface doesn't make sense to me.
+
+> ---
+> This will be used by following block layer updates.  If this and the
+> block changes get acked, it'll be best to push this through block
+> tree.
 > 
-> uwb/uwb-add-hwa-rc-radio-controller-driver.patch
-> uwb/uwb-i1480-driver.patch
-> uwb/uwb-i1480-wlp-driver.patch
-> uwb/uwb-disable-command-event-filtering-for-DUB-1210.patch
-> uwb/uwb-add-intel-i1480-hwa-to-the-uwb-rc-quirk-table.patch
+> Thanks.
 > 
-> And since there are now no drivers for WLP hardware you may also postpone:
+>  include/linux/rcuclassic.h |    2 ++
+>  include/linux/rcupdate.h   |   18 ++++++++++++++++++
+>  include/linux/rcupreempt.h |    6 ++++--
+>  3 files changed, 24 insertions(+), 2 deletions(-)
 > 
-> uwb/uwb-add-wimedia-llc-protocol-core.patch
-> uwb/uwb-wlp-messages.patch
-> uwb/uwb-wlp-wss.patch
-> uwb/uwb-wlp-build-system.patch
-> uwb/wusb-drivers-uwb-wlp-sysfs.c-move-misplaced-debug-statement.patch
+> diff --git a/include/linux/rcuclassic.h b/include/linux/rcuclassic.h
+> index b3aa05b..08c6153 100644
+> --- a/include/linux/rcuclassic.h
+> +++ b/include/linux/rcuclassic.h
+> @@ -136,6 +136,8 @@ extern struct lockdep_map rcu_lock_map;
+>  		__release(RCU); \
+>  		preempt_enable(); \
+>  	} while (0)
+> +#define __rcu_read_lock_preempt()	__rcu_read_lock()
+> +#define __rcu_read_unlock_preempt()	__rcu_read_unlock()
+>  #define __rcu_read_lock_bh() \
+>  	do { \
+>  		local_bh_disable(); \
+> diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+> index d42dbec..e0e3486 100644
+> --- a/include/linux/rcupdate.h
+> +++ b/include/linux/rcupdate.h
+> @@ -112,6 +112,24 @@ struct rcu_head {
+>  #define rcu_read_unlock() __rcu_read_unlock()
+>  
+>  /**
+> + * rcu_read_lock_preempt - mark the beginning of non-preemptible RCU
+> + *			   critical section
+> + *
+> + * Identical to rcu_read_lock() but the critical section is guaranteed
+> + * to be non-preemptible.  Note that this is identical to
+> + * rcu_read_lock() on classic RCU implementation.
+> + */
+> +#define rcu_read_lock_preempt() __rcu_read_lock_preempt()
+> +
+> +/**
+> + * rcu_read_unlock_preempt - mark the end of of non-preemptible RCU
+> + *			     critical section
+> + *
+> + * See rcu_read_lock_preempt() for more information.
+> + */
+> +#define rcu_read_unlock_preempt() __rcu_read_unlock_preempt()
+> +
+> +/**
+>   * rcu_read_lock_bh - mark the beginning of a softirq-only RCU critical section
+>   *
+>   * This is equivalent of rcu_read_lock(), but to be used when updates
+> diff --git a/include/linux/rcupreempt.h b/include/linux/rcupreempt.h
+> index 8a05c7e..b263ceb 100644
+> --- a/include/linux/rcupreempt.h
+> +++ b/include/linux/rcupreempt.h
+> @@ -49,8 +49,10 @@ extern void __rcu_read_unlock(void)	__releases(RCU);
+>  extern int rcu_pending(int cpu);
+>  extern int rcu_needs_cpu(int cpu);
+>  
+> -#define __rcu_read_lock_bh()	{ rcu_read_lock(); local_bh_disable(); }
+> -#define __rcu_read_unlock_bh()	{ local_bh_enable(); rcu_read_unlock(); }
+> +#define __rcu_read_lock_preempt()	{ rcu_read_lock(); preempt_disable(); }
+> +#define __rcu_read_unlock_preempt()	{ preempt_enable(); rcu_read_unlock(); }
+> +#define __rcu_read_lock_bh()		{ rcu_read_lock(); local_bh_disable(); }
+> +#define __rcu_read_unlock_bh()		{ local_bh_enable(); rcu_read_unlock(); }
+>  
+>  extern void __synchronize_sched(void);
+>  
 
-Ugh, so, what will end up getting merged?  Anything that people can
-actually use?  :)
-
-I'll poke at this on Friday and see what falls out.
-
-thanks,
-
-greg k-h
