@@ -1,66 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758128AbYGPAXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758655AbYGPAXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758128AbYGPAXK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 20:23:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754988AbYGPAWp
+	id S1758655AbYGPAXc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 20:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758273AbYGPAWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 20:22:45 -0400
-Received: from cpsmtpo-eml02.kpnxchange.com ([213.75.38.151]:10198 "EHLO
-	cpsmtpo-eml02.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757941AbYGPAWn (ORCPT
+	Tue, 15 Jul 2008 20:22:50 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:8513 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758247AbYGPAWs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 20:22:43 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel, use it in more drivers.
-Date: Wed, 16 Jul 2008 02:22:39 +0200
-User-Agent: KMail/1.9.9
-Cc: david@lang.hm, Marcel Holtmann <marcel@holtmann.org>,
-       David Woodhouse <dwmw2@infradead.org>, jeff@garzik.org,
-       arjan@infradead.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-References: <1216077806.27455.85.camel@shinybook.infradead.org> <alpine.DEB.1.10.0807151503310.16109@asgard.lang.hm> <alpine.LFD.1.10.0807151631260.2867@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807151631260.2867@woody.linux-foundation.org>
+	Tue, 15 Jul 2008 20:22:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent:from;
+        b=QzoK3gqj4Eeui7qJsZV+aLV7yT+vPyard7K0vgw2YLkIU4tnwlG2ErNcoiIWnxsim0
+         I2ZyZL7y/cidWjv3PIebO7sX8eRNY5L312QJrZc4TS4ozA6doqdY0VvBjTv3yS+7mPCI
+         uS2JuSNBeqgEsR32np9MZyEW81Ye0vxvAVPkA=
+Date: Wed, 16 Jul 2008 02:22:31 +0200
+To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: [PATCH 02/13] x86: add save_stack_trace_bp() for tracing from a
+	specific stack frame
+Message-ID: <20080716002231.GC12564@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807160222.40705.elendil@planet.nl>
-X-OriginalArrivalTime: 16 Jul 2008 00:22:41.0047 (UTC) FILETIME=[0F16CA70:01C8E6DA]
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 July 2008, Linus Torvalds wrote:
-> On Tue, 15 Jul 2008, david@lang.hm wrote:
-> > becouse the tools that wrote the initrd already put the modules in. I
-> > don't maintain those tools, they came with the distro. we're just
-> > asking to not require those tools to be updated immediatly.
->
-> But mkinitrd (which is the _only_ thing that people tend to use to
-> write initrd's - is there even anything else) has already been doing
-> this for years, as has been pointed out several times.
+>From 05b948089c63279690712028d2d75b89385048be Mon Sep 17 00:00:00 2001
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Date: Tue, 20 May 2008 11:15:43 +0200
+Subject: [PATCH 02/13] x86: add save_stack_trace_bp() for tracing from a specific stack frame
 
-Debian doe not have mkinitrd but initramfs-tools [1] and yaird [2]. The 
-status of the last is uncertain (not currently included for Lenny).
+This will help kmemcheck (and possibly other debugging tools) since we
+can now simply pass regs->bp to the stack tracer instead of specifying
+the number of stack frames to skip, which is unreliable if gcc decides
+to inline functions, etc.
 
-Where did you get this strange notion that mkinitrd is the _only_ (your 
-emphasis) thing people use?
-Point is that I find it really strange that - in the extremely rich and 
-varied world that is based on Linux - you seem so certain that every tool 
-out there already does the right thing for all cases, or can be trivially 
-updated to do so. I just don't believe that.
+Note that this makes the API incomplete for other architectures, but I
+expect that those can be updated lazily, e.g. when they need it.
 
-I even _know_ that yaird is broken wrt. firmware [3]. It's one of the 
-reasons it's unlikely to be included in Lenny.
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+---
+ arch/x86/kernel/stacktrace.c |    7 +++++++
+ include/linux/stacktrace.h   |    1 +
+ 2 files changed, 8 insertions(+), 0 deletions(-)
 
-But hell, I'll see if I can give this a try tomorrow. Get out of this 
-crazy make-belief discussion and provide some facts. Who knows, maybe 
-I'll be surprised and the existing Debian toolsets will do the right 
-thing. I seriously doubt it though.
+diff --git a/arch/x86/kernel/stacktrace.c b/arch/x86/kernel/stacktrace.c
+index c28c342..97202ad 100644
+--- a/arch/x86/kernel/stacktrace.c
++++ b/arch/x86/kernel/stacktrace.c
+@@ -75,6 +75,13 @@ void save_stack_trace(struct stack_trace *trace)
+ 		trace->entries[trace->nr_entries++] = ULONG_MAX;
+ }
+ 
++void save_stack_trace_bp(struct stack_trace *trace, unsigned long bp)
++{
++	dump_trace(current, NULL, NULL, bp, &save_stack_ops, trace);
++	if (trace->nr_entries < trace->max_entries)
++		trace->entries[trace->nr_entries++] = ULONG_MAX;
++}
++
+ void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
+ {
+ 	dump_trace(tsk, NULL, NULL, 0, &save_stack_ops_nosched, trace);
+diff --git a/include/linux/stacktrace.h b/include/linux/stacktrace.h
+index 5da9794..2a3cbe8 100644
+--- a/include/linux/stacktrace.h
++++ b/include/linux/stacktrace.h
+@@ -9,6 +9,7 @@ struct stack_trace {
+ };
+ 
+ extern void save_stack_trace(struct stack_trace *trace);
++extern void save_stack_trace_bp(struct stack_trace *trace, unsigned long bp);
+ extern void save_stack_trace_tsk(struct task_struct *tsk,
+ 				struct stack_trace *trace);
+ 
+-- 
+1.5.5.1
 
-[1] http://packages.debian.org/sid/initramfs-tools
-[2] http://packages.debian.org/sid/yaird
-[3] Only works if config files are edited manually which makes it useless
-    during e.g. new installs.
