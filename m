@@ -1,49 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758666AbYGPDIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758804AbYGPDLD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758666AbYGPDIo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 23:08:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757389AbYGPDId
+	id S1758804AbYGPDLD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 23:11:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758118AbYGPDKo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 23:08:33 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:43537 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757385AbYGPDIc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 23:08:32 -0400
-Message-ID: <487D660A.6090504@garzik.org>
-Date: Tue, 15 Jul 2008 23:07:54 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>, david@lang.hm,
-       Marcel Holtmann <marcel@holtmann.org>,
-       David Woodhouse <dwmw2@infradead.org>, Frans Pop <elendil@planet.nl>,
-       jeff@garzik.org, arjan@infradead.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from	in-kernel,
- use it in more drivers.
-References: <alpine.LFD.1.10.0807151223290.3351@woody.linux-foundation.org> <1216150616.27455.377.camel@shinybook.infradead.org> <alpine.LFD.1.10.0807151244320.3351@woody.linux-foundation.org> <1216151640.27242.90.camel@violet.holtmann.net> <alpine.LFD.1.10.0807151301130.2867@woody.linux-foundation.org> <alpine.DEB.1.10.0807151426021.16109@asgard.lang.hm> <alpine.LFD.1.10.0807151436400.2867@woody.linux-foundation.org> <alpine.DEB.1.10.0807151503310.16109@asgard.lang.hm> <alpine.LFD.1.10.0807151631260.2867@woody.linux-foundation.org> <20080716005133.GK8185@mit.edu> <20080716013619.GD17417@redhat.com>
-In-Reply-To: <20080716013619.GD17417@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 15 Jul 2008 23:10:44 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33502
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758105AbYGPDKn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 23:10:43 -0400
+Date: Tue, 15 Jul 2008 20:10:42 -0700 (PDT)
+Message-Id: <20080715.201042.193704915.davem@davemloft.net>
+To: fujita.tomonori@lab.ntt.co.jp
+Cc: andi@firstfloor.org, mpatocka@redhat.com, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+Subject: Re: [SUGGESTION]: drop virtual merge accounting in I/O requests
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080715024424R.fujita.tomonori@lab.ntt.co.jp>
+References: <20080714111917S.fujita.tomonori@lab.ntt.co.jp>
+	<20080713.202035.172246136.davem@davemloft.net>
+	<20080715024424R.fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-> Whilst it would be great for unified development on the tools that
-> create the early boot process, I think it's a non-starter due to the
-> fact that you can't really do it without throwing out everything you
-> already have today.  The same reason imo, that hpa's klibc work hasn't
-> gained mass-appeal from vendors.
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Date: Tue, 15 Jul 2008 02:45:03 +0900
 
-Quite true and IMO disappointing, because klibc would make great 
-infrastructure for rolling out things just like this.
+> dma_4u_map_sg() has:
+> 
+> if (segstart != s) {
+> 	/* We cannot merge if:
+> 	 * - allocated dma_addr isn't contiguous to previous allocation
+> 	 */
+> 	if ((dma_addr != dma_next) ||
+> 	    (outs->dma_length + s->length > max_seg_size) ||
+> 	    (is_span_boundary(out_entry, base_shift,
+> 		/* Can't merge: create a new segment */
+> 		segstart = s;
+> 		outcount++;
+> 		outs = sg_next(outs);
+> 
+> So if the IOMMU allocated dma_addr isn't contiguous to previous
+> allocation, it might not merge segments that the block layer expected
+> the IOMMU to merge.
+> 
+> We need kinda two phase merging code such as the old SPARC64 IOMMU
+> code and PARISC IOMMUs though I like the new simple SPARC64 IOMMU
+> code.
 
-	Jeff
+I see.
 
+I wonder if all that complexity is really worth it.  Also, all of this
+IOMMU allocation and mapping code runs under a spinlock with hw IRQs
+disabled.
 
-
+More and more I'm seeing that it's likely better to remove the VMERGE
+code.  I can't see what it really buys us anymore, and to make it work
+requires quite a large amount of complexity in the IOMMU layer.
