@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759370AbYGPIpD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757093AbYGPIph@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759370AbYGPIpD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 04:45:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754240AbYGPIoy
+	id S1757093AbYGPIph (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 04:45:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754901AbYGPIp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 04:44:54 -0400
-Received: from smtp.movial.fi ([62.236.91.34]:58170 "EHLO smtp.movial.fi"
+	Wed, 16 Jul 2008 04:45:27 -0400
+Received: from ditditdahdahdah-dahdahdahditdit.dl5rb.org.uk ([217.169.26.28]:53464
+	"EHLO ditditdahdahdah-dahdahdahditdit.dl5rb.org.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754201AbYGPIox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 04:44:53 -0400
-Message-ID: <487DB503.10105@movial.fi>
-Date: Wed, 16 Jul 2008 11:44:51 +0300
-From: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>
-Organization: Movial Creative Technologies
-User-Agent: Icedove 1.5.0.14eol (X11/20080509)
+	id S1754273AbYGPIp0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 04:45:26 -0400
+Date: Wed, 16 Jul 2008 09:45:22 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] [MIPS] fix missing prototypes in asm/fpu.h
+Message-ID: <20080716084522.GB22957@linux-mips.org>
+References: <1216141052-28005-1-git-send-email-dmitri.vorobiev@movial.fi> <1216141052-28005-3-git-send-email-dmitri.vorobiev@movial.fi>
 MIME-Version: 1.0
-To: Ralf Baechle <ralf@linux-mips.org>
-CC: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3 part 2] [MIPS] make the pcibios_max_latency	variable
- static
-References: <1216141052-28005-2-git-send-email-dmitri.vorobiev@movial.fi> <1216195309-13069-1-git-send-email-dmitri.vorobiev@movial.fi> <20080716084310.GA22957@linux-mips.org>
-In-Reply-To: <20080716084310.GA22957@linux-mips.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1216141052-28005-3-git-send-email-dmitri.vorobiev@movial.fi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ralf Baechle wrote:
-> On Wed, Jul 16, 2008 at 11:01:49AM +0300, Dmitri Vorobiev wrote:
-> 
->> Along with making the pcibios_max_latency variable static,
->> its declaration needs to be removed from the header file.
->>
->> Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>
->> ---
->>
->> Hi Ralf,
->>
->> Forgot about this one yesterday, sorry.
-> 
-> No big deal, lmo's internet connection was down for part of the afternoon
-> so I wasn't doing as much patch stuff as I was hoping to ...
-> 
-> I folded part 2 into part 1 of your patch and applied the result.
+On Tue, Jul 15, 2008 at 07:57:31PM +0300, Dmitri Vorobiev wrote:
 
-Thank you, Ralf.
-
-Regards,
-Dmitri
-
+> While building the Malta defconfig, sparse spat the following
+> warnings:
 > 
-> Thanks,
+> >>>>>>>>>>>>>>>>>>
+> arch/mips/math-emu/kernel_linkage.c:31:6: warning: symbol
+> 'fpu_emulator_init_fpu' was not declared. Should it be static?
 > 
->   Ralf
+> arch/mips/math-emu/kernel_linkage.c:54:5: warning: symbol
+> 'fpu_emulator_save_context' was not declared. Should it be
+> static?
 > 
+> arch/mips/math-emu/kernel_linkage.c:68:5: warning: symbol
+> 'fpu_emulator_restore_context' was not declared. Should it be
+> static?
+> >>>>>>>>>>>>>>>>>>
+> 
+> This patch fixes these errors by adding the proper prototypes
+> to the include/asm-mips/fpu.h header, and actually using this
+> header in the sparse-spotted source file.
 
+I'm not terribly fond of exporting these private prototypes by making
+their prototypes widely available.  I see it's need to make sparse a more
+productive tool, so I applied the patch though.
+
+Thanks,
+
+  Ralf
