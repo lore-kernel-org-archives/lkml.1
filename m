@@ -1,26 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761374AbYGPA2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761509AbYGPA2h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761374AbYGPA2V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 20:28:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758257AbYGPA0y
+	id S1761509AbYGPA2h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 20:28:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760578AbYGPA1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 20:26:54 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:64311 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760739AbYGPA0x (ORCPT
+	Tue, 15 Jul 2008 20:27:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34707 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758909AbYGPA1W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 20:26:53 -0400
-Date: Tue, 15 Jul 2008 20:26:50 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       john stultz <johnstul@us.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Clark Williams <clark.williams@gmail.com>
-Subject: [PATCH RT] rwlock: be more conservative in locking reader_lock_count
-Message-ID: <Pine.LNX.4.58.0807152023520.20814@gandalf.stny.rr.com>
+	Tue, 15 Jul 2008 20:27:22 -0400
+Date: Tue, 15 Jul 2008 17:26:34 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
+cc: David Woodhouse <dwmw2@infradead.org>, Willy Tarreau <w@1wt.eu>,
+       Jeff Garzik <jeff@garzik.org>, Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
+ use it in more drivers.
+In-Reply-To: <orskua1yek.fsf@oliva.athome.lsd.ic.unicamp.br>
+Message-ID: <alpine.LFD.1.10.0807151724330.2867@woody.linux-foundation.org>
+References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org> <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
+ <487C09EB.1050903@garzik.org> <alpine.LFD.1.10.0807141928540.3017@woody.linux-foundation.org> <487C1648.5070409@garzik.org> <alpine.LFD.1.10.0807142027140.3017@woody.linux-foundation.org> <20080715050654.GH1369@1wt.eu> <1216099930.27455.205.camel@shinybook.infradead.org>
+ <orskua1yek.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -28,64 +32,21 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-John Stultz was hitting one of the rwlock warnings. This was indeed a bug.
-The assumption of trying not to take locks was incorrect and prone to
-bugs.  This patch adds a few locks around the needed areas to correct the
-issue and make the code a bit more robust.
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/rtmutex.c |   16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+On Tue, 15 Jul 2008, Alexandre Oliva wrote:
+> 
+> Hey, how about a config option that turns firwmare files into
+> stand-alone kernel modules that register the blob into the
+> request_firmware internal list, and MODULE_FIRMWARE into a module
+> dependency?
 
-Index: linux-2.6.24.7-rt-73/kernel/rtmutex.c
-===================================================================
---- linux-2.6.24.7-rt-73.orig/kernel/rtmutex.c	2008-07-14 22:27:13.000000000 -0400
-+++ linux-2.6.24.7-rt-73/kernel/rtmutex.c	2008-07-14 22:30:54.000000000 -0400
-@@ -1137,16 +1137,13 @@ rt_rwlock_update_owner(struct rw_mutex *
- 	if (own == RT_RW_READER)
- 		return;
+I think that should work fine from a technical angle, and I don't disagree 
+per se, but it really is very ugly.
 
--	/*
--	 * We don't need to grab the pi_lock to look at the reader list
--	 * since we hold the rwm wait_lock. We only care about the pointer
--	 * to this lock, and we own the wait_lock, so that pointer
--	 * can't be changed.
--	 */
-+	spin_lock(&own->pi_lock);
- 	for (i = own->reader_lock_count - 1; i >= 0; i--) {
- 		if (own->owned_read_locks[i].lock == rwm)
- 			break;
- 	}
-+	spin_unlock(&own->pi_lock);
-+
- 	/* It is possible the owner didn't add it yet */
- 	if (i < 0)
- 		return;
-@@ -1453,7 +1450,6 @@ __rt_read_fasttrylock(struct rw_mutex *r
- 			current->owned_read_locks[reader_count].count = 1;
- 		} else
- 			WARN_ON_ONCE(1);
--		spin_unlock(&current->pi_lock);
- 		/*
- 		 * If this task is no longer the sole owner of the lock
- 		 * or someone is blocking, then we need to add the task
-@@ -1463,12 +1459,16 @@ __rt_read_fasttrylock(struct rw_mutex *r
- 			struct rt_mutex *mutex = &rwm->mutex;
- 			struct reader_lock_struct *rls;
+Wouldn't it be much simpler to just require people to have a reasonably 
+up-to-date mkinitrd. Apparently it's not available _everywhere_, but if we 
+check for this up-front (even if we can apparently only do so at "make 
+install" time due to the root requirements), wouldn't that really solve 
+the issue with much less work?
 
-+			/* preserve lock order, we only need wait_lock now */
-+			spin_unlock(&current->pi_lock);
-+
- 			spin_lock(&mutex->wait_lock);
- 			rls = &current->owned_read_locks[reader_count];
- 			if (!rls->list.prev || list_empty(&rls->list))
- 				list_add(&rls->list, &rwm->readers);
- 			spin_unlock(&mutex->wait_lock);
--		}
-+		} else
-+			spin_unlock(&current->pi_lock);
- 		local_irq_restore(flags);
- 		return 1;
- 	}
-
+			Linus
