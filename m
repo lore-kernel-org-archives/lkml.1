@@ -1,51 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759699AbYGPVrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759379AbYGPVsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759699AbYGPVrg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 17:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756039AbYGPVr2
+	id S1759379AbYGPVsb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 17:48:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756039AbYGPVsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 17:47:28 -0400
-Received: from de01egw02.freescale.net ([192.88.165.103]:50253 "EHLO
-	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754605AbYGPVr1 (ORCPT
+	Wed, 16 Jul 2008 17:48:23 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:44076 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756586AbYGPVsX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 17:47:27 -0400
-Date: Wed, 16 Jul 2008 16:47:23 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, davej@redhat.com, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc/ep8248e: Fix compile problem if !CONFIG_FS_ENET
-Message-ID: <20080716214722.GA6251@ld0162-tx32.am.freescale.net>
-References: <Pine.LNX.4.64.0807160838520.14127@blarg.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0807160838520.14127@blarg.am.freescale.net>
-User-Agent: Mutt/1.4.1i
+	Wed, 16 Jul 2008 17:48:23 -0400
+Date: Wed, 16 Jul 2008 23:48:22 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Morton Harrow <mharrow@linuxmail.org>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: GPL version 4
+In-Reply-To: <20080716180953.F408ACA586@ws5-11.us4.outblaze.com>
+Message-ID: <alpine.LNX.1.10.0807162346440.32031@fbirervta.pbzchgretzou.qr>
+References: <20080716180953.F408ACA586@ws5-11.us4.outblaze.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 16, 2008 at 08:39:12AM -0500, Kumar Gala wrote:
-> If we don't enable FS_ENET we get build issues:
-> 
-> arch/powerpc/platforms/built-in.o: In function `ep8248e_mdio_probe':
-> arch/powerpc/platforms/82xx/ep8248e.c:129: undefined reference to `alloc_mdio_bitbang'
-> arch/powerpc/platforms/82xx/ep8248e.c:143: undefined reference to `mdiobus_register'
 
-How is this possible?  CONFIG_EP8248E selects CONFIG_MDIO_BITBANG.
+On Wednesday 2008-07-16 20:09, Morton Harrow wrote:
 
-> +#ifdef CONFIG_FS_ENET_MDIO_FCC
->  static void ep8248e_set_mdc(struct mdiobb_ctrl *ctrl, int level)
->  {
->  	if (level)
-> @@ -164,6 +165,7 @@ static struct of_platform_driver ep8248e_mdio_driver = {
->  	.probe = ep8248e_mdio_probe,
->  	.remove = ep8248e_mdio_remove,
->  };
-> +#endif
+>We propose to release as soon as possible, version 4 of the General
+>Public License.
 
-This is wrong -- ep8248e doesn't use the FS_ENET_MDIO_FCC code.
-
--Scott
+Good luck with the FSF's lawyers.
