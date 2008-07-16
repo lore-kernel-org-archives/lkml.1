@@ -1,54 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759183AbYGPWQm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759011AbYGPWWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759183AbYGPWQm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 18:16:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756065AbYGPWQf
+	id S1759011AbYGPWWX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 18:22:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757430AbYGPWWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 18:16:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:32955 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754961AbYGPWQe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 18:16:34 -0400
-Date: Wed, 16 Jul 2008 15:16:26 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] MMC updates for 2.6.26
-In-Reply-To: <20080715160436.0f6ac19e@mjolnir.drzeus.cx>
-Message-ID: <alpine.LFD.1.10.0807161512030.2835@woody.linux-foundation.org>
-References: <20080715160436.0f6ac19e@mjolnir.drzeus.cx>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 16 Jul 2008 18:22:15 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:40490 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756023AbYGPWWP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 18:22:15 -0400
+Date: Thu, 17 Jul 2008 01:22:02 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.6.16.61
+Message-ID: <20080716222202.GJ17329@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Security fixes since 2.6.16.60:
+- CVE-2008-1669: fix SMP ordering hole in fcntl_setlk()
+- CVE-2008-1673: asn1: additional sanity checking during BER decoding
+- CVE-2008-2136: sit: Add missing kfree_skb() on pskb_may_pull() failure.
 
 
-On Tue, 15 Jul 2008, Pierre Ossman wrote:
->
->  45 files changed, 6054 insertions(+), 1320 deletions(-)
+Location:
+ftp://ftp.kernel.org/pub/linux/kernel/v2.6/
 
-If you had done the "--summary", you'd also have seen these bogus:
+git tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
 
-	 mode change 100644 => 100755 drivers/mmc/core/sdio_io.c
-	 mode change 100644 => 100755 include/linux/mmc/sdio_func.h
+RSS feed of the git tree:
+http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
 
-entries.
 
-I have no idea why you think those things should be executable, but it 
-happened in commit 6d37333163025b46afbcad434ec9a5f2e88e7254 ("mmc: fix 
-sdio_io sparse errors").
+Changes since 2.6.16.60:
 
-Anyway, there's a reason why I ask people to use
+3ware Inc (1):
+      3w-xxxx: Prevent data corruption
 
-	--diffstat --summary -M
+Adrian Bunk (3):
+      gcc >= 4.3 is not supported
+      Linux 2.6.16.61-rc1
+      Linux 2.6.16.61
 
-when generating the report. This is just part of it.
+Al Viro (1):
+      fix SMP ordering hole in fcntl_setlk() (CVE-2008-1669)
 
-I fixed it up in the merge, so it's ok in my tree, but I thought I'd point 
-it out.
+Chris Wright (1):
+      asn1: additional sanity checking during BER decoding (CVE-2008-1673)
 
-		Linus
+David S. Miller (2):
+      [NETFILTER]: Fix warnings in ip_nat_snmp_basic.c
+      sit: Add missing kfree_skb() on pskb_may_pull() failure. (CVE-2008-2136)
+
+Heiko Carstens (1):
+      Disable DETECT_SOFTLOCKUP for s390
+
+Juergen Beisert (1):
+      x86: Replace NSC/Cyrix specific chipset access macros by inlined functions.
+
+Oliver Neukum (1):
+      USB: race on disconnect in mdc800
+
+Patrick McHardy (1):
+      TCP: Fix shrinking windows with window scaling
+
+Thomas Graf (1):
+      [DECNet] fib: Fix out of bound access of dn_fib_props[]
+
+
+ Makefile                                  |    2 -
+ arch/i386/kernel/cpu/cpufreq/gx-suspmod.c |    1 
+ arch/i386/kernel/cpu/cyrix.c              |    2 -
+ arch/i386/kernel/cpu/mtrr/cyrix.c         |    1 
+ arch/i386/kernel/cpu/mtrr/state.c         |    1 
+ drivers/scsi/3w-xxxx.c                    |    8 ++---
+ drivers/usb/image/mdc800.c                |    4 ++
+ fs/cifs/asn1.c                            |   14 ++++++++++
+ fs/locks.c                                |   17 +++++++++++-
+ include/asm-i386/processor-cyrix.h        |   30 ++++++++++++++++++++++
+ include/asm-i386/processor.h              |   11 --------
+ include/asm-x86_64/processor-cyrix.h      |    2 +
+ include/asm-x86_64/processor.h            |   11 --------
+ include/linux/compiler.h                  |    4 ++
+ lib/Kconfig.debug                         |    2 -
+ net/decnet/dn_fib.c                       |    5 ++-
+ net/ipv4/netfilter/ip_nat_snmp_basic.c    |   19 +++++++++++++
+ net/ipv4/tcp_output.c                     |    2 -
+ net/ipv6/sit.c                            |    2 -
+ 19 files changed, 103 insertions(+), 35 deletions(-)
+
+
