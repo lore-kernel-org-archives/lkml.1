@@ -1,284 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759933AbYGPUGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759404AbYGPUIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759933AbYGPUGd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 16:06:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756451AbYGPUFe
+	id S1759404AbYGPUIg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 16:08:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbYGPUI1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 16:05:34 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:46517 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754107AbYGPUFd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 16:05:33 -0400
-Subject: [Patch 2/5]integrity: TPM internel kernel interface
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: James Morris <jmorris@namei.org>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       safford@watson.ibm.com, serue@linux.vnet.ibm.com, sailer@watson.ibm.com,
-       zohar@us.ibm.com, debora@linux.vnet.ibm.com, srajiv@linux.vnet.ibm.com
-In-Reply-To: <Xine.LNX.4.64.0807160910470.8360@us.intercode.com.au>
-References: <20080707192529.489789904@linux.vnet.ibm.com>
-	 <1215467789.27626.3.camel@localhost.localdomain>
-	 <Xine.LNX.4.64.0807160910470.8360@us.intercode.com.au>
-Content-Type: text/plain
-Date: Wed, 16 Jul 2008 16:05:06 -0400
-Message-Id: <1216238706.5886.27.camel@localhost.localdomain>
+	Wed, 16 Jul 2008 16:08:27 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:54190 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751742AbYGPUI1 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 16:08:27 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Cheradenine Zakalwe <sc.contact@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: The state of linux security
+In-Reply-To: Your message of "Wed, 16 Jul 2008 16:05:07 -0000."
+             <67b4e5f30807160905n224a7808tf346dd4d506edd25@mail.gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <67b4e5f30807160905n224a7808tf346dd4d506edd25@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: multipart/signed; boundary="==_Exmh_1216238905_16143P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Wed, 16 Jul 2008 16:08:25 -0400
+Message-ID: <29361.1216238905@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Resubmitting integrity-tpm-internal-kernel-interface.patch, which
-was previously Signed-off-by Kylene Hall.
-Updated per feedback.
+--==_Exmh_1216238905_16143P
+Content-Type: text/plain; charset=us-ascii
 
-Adds the following support: 
-- make internal kernel interface to transmit TPM commands global
-- adds reading a pcr value
-- adds extending a pcr value
-- adds lookup the tpm_chip for given chip number and type
+On Wed, 16 Jul 2008 16:05:07 -0000, Cheradenine Zakalwe said:
+> This (for most people I'd guess) is far more dangerous than simply
+> having their computers crash.  Also, I'd bet that many security bugs
+> aren't triggerable under any normal workload.  If my machines have
+> been running for 2 months why bother bringing them down in order to
+> bugfix something that doesn't seem to affect them anyway?
 
-Signed-off-by: Debora Velarde <debora@linux.vnet.ibm.com>
+You just convinced me that you've never *really* thought about it the way
+a security professional would.
 
-Reviewed-by: James Morris <jmorris@namei.org>
----
-Index: linux-2.6.26-git3/drivers/char/tpm/tpm.c
-===================================================================
---- linux-2.6.26-git3.orig/drivers/char/tpm/tpm.c
-+++ linux-2.6.26-git3/drivers/char/tpm/tpm.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2004 IBM Corporation
-+ * Copyright (C) 2004,2007,2008 IBM Corporation
-  *
-  * Authors:
-  * Leendert van Doorn <leendert@watson.ibm.com>
-@@ -29,6 +29,13 @@
- #include <linux/spinlock.h>
- #include <linux/smp_lock.h>
- 
-+#include <linux/mm.h>
-+#include <linux/slab.h>
-+#include <linux/string.h>
-+#include <linux/crypto.h>
-+#include <linux/fs.h>
-+#include <linux/scatterlist.h>
-+#include <asm/unaligned.h>
- #include "tpm.h"
- 
- enum tpm_const {
-@@ -51,6 +58,8 @@ enum tpm_duration {
- static LIST_HEAD(tpm_chip_list);
- static DEFINE_SPINLOCK(driver_lock);
- static DECLARE_BITMAP(dev_mask, TPM_NUM_DEVICES);
-+#define TPM_CHIP_NUM_MASK       0x0000ffff
-+#define TPM_CHIP_TYPE_SHIFT     16
- 
- /*
-  * Array with one entry per ordinal defining the maximum amount
-@@ -366,8 +375,7 @@ EXPORT_SYMBOL_GPL(tpm_calc_ordinal_durat
- /*
-  * tpm_transmit - internal kernel interface to transmit TPM commands
-  */
--static ssize_t tpm_transmit(struct tpm_chip *chip, const char *buf,
--			    size_t bufsiz)
-+ssize_t tpm_transmit(struct tpm_chip *chip, char *buf, size_t bufsiz)
- {
- 	ssize_t rc;
- 	u32 count, ordinal;
-@@ -423,6 +431,7 @@ out:
- 	mutex_unlock(&chip->tpm_mutex);
- 	return rc;
- }
-+EXPORT_SYMBOL_GPL(tpm_transmit);
- 
- #define TPM_DIGEST_SIZE 20
- #define TPM_ERROR_SIZE 10
-@@ -728,6 +737,102 @@ out:
- }
- EXPORT_SYMBOL_GPL(tpm_show_pcrs);
- 
-+/*
-+ * tpm_chip_lookup - return tpm_chip for given chip number and type
-+ */
-+static struct tpm_chip *tpm_chip_lookup(int chip_num, int chip_typ)
-+{
-+	struct tpm_chip *pos;
-+
-+	spin_lock(&driver_lock);
-+	list_for_each_entry(pos, &tpm_chip_list, list) {
-+		if ((chip_num == TPM_ANY_NUM || pos->dev_num == chip_num)
-+		    && (chip_typ == TPM_ANY_TYPE)) {
-+			spin_unlock(&driver_lock);
-+			return pos;
-+		}
-+	}
-+
-+	spin_unlock(&driver_lock);
-+	return NULL;
-+}
-+
-+/**
-+ * tpm_pcr_read - read a pcr value
-+ * @chip_id: 	tpm chip identifier
-+ * 		Upper 2 bytes: ANY, HW_ONLY or SW_ONLY
-+ * 		Lower 2 bytes: tpm idx # or AN&
-+ * @pcr_idx:	pcr idx to retrieve
-+ * @res_buf: 	TPM_PCR value
-+ * 		size of res_buf is 20 bytes (or NULL if you don't care)
-+ */
-+int tpm_pcr_read(u32 chip_id, int pcr_idx, u8 *res_buf)
-+{
-+	u8 data[READ_PCR_RESULT_SIZE];
-+	int rc;
-+	__be32 index;
-+	int chip_num = chip_id & TPM_CHIP_NUM_MASK;
-+	struct tpm_chip *chip;
-+
-+	chip = tpm_chip_lookup(chip_num, chip_id >> TPM_CHIP_TYPE_SHIFT);
-+	if (chip == NULL)
-+		return -ENODEV;
-+	BUILD_BUG_ON(sizeof(pcrread) > READ_PCR_RESULT_SIZE);
-+	memcpy(data, pcrread, sizeof(pcrread));
-+	index = cpu_to_be32(pcr_idx);
-+	memcpy(data + 10, &index, 4);
-+	rc = tpm_transmit(chip, data, sizeof(data));
-+	if (rc > 0)
-+		rc = get_unaligned_be32((__be32 *) (data + 6));
-+
-+	if (rc == 0 && res_buf)
-+		memcpy(res_buf, data + 10, TPM_DIGEST_SIZE);
-+
-+	return rc;
-+
-+}
-+EXPORT_SYMBOL_GPL(tpm_pcr_read);
-+
-+#define EXTEND_PCR_SIZE 34
-+static const u8 pcrextend[] = {
-+	0, 193,			/* TPM_TAG_RQU_COMMAND */
-+	0, 0, 0, 34,		/* length */
-+	0, 0, 0, 20,		/* TPM_ORD_Extend */
-+	0, 0, 0, 0		/* PCR index */
-+};
-+
-+/**
-+ * tpm_pcr_extend - extend pcr value with hash
-+ * @chip_id: 	tpm chip identifier
-+ * 		Upper 2 bytes: ANY, HW_ONLY or SW_ONLY
-+ * 		Lower 2 bytes: tpm idx # or AN&
-+ * @pcr_idx:	pcr idx to extend
-+ * @hash: 	hash value used to extend pcr value
-+ */
-+int tpm_pcr_extend(u32 chip_id, int pcr_idx, const u8 *hash)
-+{
-+	u8 data[EXTEND_PCR_SIZE];
-+	int rc;
-+	__be32 index;
-+	int chip_num = chip_id & TPM_CHIP_NUM_MASK;
-+	struct tpm_chip *chip;
-+
-+	chip = tpm_chip_lookup(chip_num, chip_id >> TPM_CHIP_TYPE_SHIFT);
-+	if (chip == NULL)
-+		return -ENODEV;
-+
-+	BUILD_BUG_ON(sizeof(pcrextend) > EXTEND_PCR_SIZE);
-+	memcpy(data, pcrextend, sizeof(pcrextend));
-+	index = cpu_to_be32(pcr_idx);
-+	memcpy(data + 10, &index, 4);
-+	memcpy(data + 14, hash, TPM_DIGEST_SIZE);
-+	rc = tpm_transmit(chip, data, sizeof(data));
-+	if (rc > 0)
-+		rc = get_unaligned_be32((__be32 *) (data + 6));
-+	return rc;
-+}
-+EXPORT_SYMBOL_GPL(tpm_pcr_extend);
-+
- #define  READ_PUBEK_RESULT_SIZE 314
- static const u8 readpubek[] = {
- 	0, 193,			/* TPM_TAG_RQU_COMMAND */
-Index: linux-2.6.26-git3/drivers/char/tpm/tpm.h
-===================================================================
---- linux-2.6.26-git3.orig/drivers/char/tpm/tpm.h
-+++ linux-2.6.26-git3/drivers/char/tpm/tpm.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2004 IBM Corporation
-+ * Copyright (C) 2004, 2007 IBM Corporation
-  *
-  * Authors:
-  * Leendert van Doorn <leendert@watson.ibm.com>
-@@ -26,6 +26,7 @@
- #include <linux/miscdevice.h>
- #include <linux/platform_device.h>
- #include <linux/io.h>
-+#include <linux/tpm.h>
- 
- enum tpm_timeout {
- 	TPM_TIMEOUT = 5,	/* msecs */
-@@ -128,6 +129,7 @@ extern void tpm_get_timeouts(struct tpm_
- extern void tpm_gen_interrupt(struct tpm_chip *);
- extern void tpm_continue_selftest(struct tpm_chip *);
- extern unsigned long tpm_calc_ordinal_duration(struct tpm_chip *, u32);
-+ssize_t tpm_transmit(struct tpm_chip *chip, char *buf, size_t bufsiz);
- extern struct tpm_chip* tpm_register_hardware(struct device *,
- 				 const struct tpm_vendor_specific *);
- extern int tpm_open(struct inode *, struct file *);
-Index: linux-2.6.26-git3/include/linux/tpm.h
-===================================================================
---- /dev/null
-+++ linux-2.6.26-git3/include/linux/tpm.h
-@@ -0,0 +1,49 @@
-+/*
-+ * Copyright (C) 2004,2007 IBM Corporation
-+ *
-+ * Authors:
-+ * Leendert van Doorn <leendert@watson.ibm.com>
-+ * Dave Safford <safford@watson.ibm.com>
-+ * Reiner Sailer <sailer@watson.ibm.com>
-+ * Kylene Hall <kjhall@us.ibm.com>
-+ * Debora Velarde <dvelarde@us.ibm.com>
-+ *
-+ * Maintained by: <tpmdd_devel@lists.sourceforge.net>
-+ *
-+ * Device driver for TCG/TCPA TPM (trusted platform module).
-+ * Specifications at www.trustedcomputinggroup.org
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation, version 2 of the
-+ * License.
-+ *
-+ */
-+#ifndef __LINUX_TPM_H__
-+#define __LINUX_TPM_H__
-+
-+#define PCI_DEVICE_ID_AMD_8111_LPC    0x7468
-+
-+/*
-+ * Chip type is one of these values in the upper two bytes of chip_id
-+ */
-+enum tpm_chip_type {
-+	TPM_HW_TYPE = 0x0,
-+	TPM_SW_TYPE = 0x1,
-+	TPM_ANY_TYPE = 0xFFFF,
-+};
-+
-+/*
-+ * Chip num is this value or a valid tpm idx in lower two bytes of chip_id
-+ */
-+enum tpm_chip_num {
-+	TPM_ANY_NUM = 0xFFFF,
-+};
-+
-+
-+#if defined(CONFIG_TCG_TPM) || defined(CONFIG_TCG_TPM_MODULE)
-+
-+extern int tpm_pcr_read(u32 chip_id, int pcr_idx, u8 *res_buf);
-+extern int tpm_pcr_extend(u32 chip_id, int pcr_idx, const u8 *hash);
-+#endif
-+#endif
+The key point you overlooked is that if it's only triggered under an abnormal
+workload, the attacker can usually *arrange* said workload.  Need at least
+10K processes for something to trigger, and there's usually only 400 on the
+box? No problem, just fork-bomb yourself 9,600 processes and then run the
+exploit.  You can only avoid the reboot for a bugfix if you can *prove*
+that the setup condition(s) cannot possibly happen on the system unless
+the security has already been breached (for example, "we don't need to
+reboot to fix this because there is a system-wide process limit of 1,250
+per user, there are only 7 userids on the system, and you need to already
+be root to reset the limit").
+
+Just woe unto you if you add an 8th userid before you reboot.. :)
+
+> Obfuscating the risk people are exposed to means you have no real
+> accountability and thus no incentive to not put so many security bugs
+> there in the first place.  If other developers or users don't know how
+> bad things are how can they make informed decisions about development
+> processes or where they can afford to deploy linux?
+
+If I wrote up a 'DoS Advisory' for every time I manage to find another way
+to oops or panic a -mm kernel, I'd probably have a a very large pile of
+advisories.  However, the fact that I managed to oops or panic their software
+has almost always been incentive enough for the maintainers to fix it, there's
+no need to add more.
+
+> know what I've been exposed to and for how long.  From the looks of
+> what the paxteam has been saying, it seems linux security is pretty
+> bad and has been getting worse.  This must be in no small part to you
+> putting your head in the sand, sticking your fingers in your ears and
+> going "lalalalala".
+
+It should however be noted that a number of people who take security seriously
+think the paxteam is totally out to lunch with some of their ideas.  The last
+time I looked at their "security patch" (admittedly, that was back around
+2.6.17 or so), a large chunk of it was pretty much cargo-cult security that
+addressed specific gotcha's that have in the past been used (like symlink races
+in /tmp), rather than address the *actual* security issue (for instance,
+"compilers shouldn't overwrite system config files") in a comprehensive manner.
+A big chunk of the rest was their version of execshield, which required
+cutting the available address space in half (a big issue for 32-bit archs).
+The telling point is that they didn't see this as being possibly a problem for
+some users.
+
+> If it turns out that the current development model has produced too
+> many security problems then the development model must change.
+
+You've apparently overlooked the fact that although there are probably still
+a lot of security bugs in the kernel, an attacker is *always* going to
+approach the path of least resistance. No sense in looking for a kernel
+exploit, when it's probably a lot easier to find one you can package up
+in Firefox, or OpenOffice, or the pcre library, or any of the zillions
+of other packages that get security advisories all the time...
+
+And tell me - how many is "too many"?  Who gets to judge?  You don't like
+the way Linus and Andrew handle it, there's this guy Theo, you can go talk
+to him....
+
+> One more thing I'd like to throw out there on the issue of
+> accountability is this:  How do I know that some developers have not
+> been paid to specifically introduce some obscure security flaw?
+
+Which is more likely - that somebody will manage to sneak a malicious patch
+past the relevant subsystem maintainer, and Andrew Morton, *and* Linus,
+without anybody being the wiser, or that they'll drop their malicious code
+into one of the *other* 5,932 packages currently in Fedora Rawhide?
+
+Go read up on the Underhanded C contest. Then go read Ken Thompson's Turing
+Award Lecture "On Trusting Trust" - and then go see if anybody's audited the
+gcc tree lately, while thinking about what Thompson wrote.  Or audited
+the *other 5,931 packages besides the kernel and gcc...
+
+(Incidentally, the "unnamed Air Force Document" that Ken mentions is none
+other than Karger&Schell's paper on Multics security - also a good read,
+as it discusses a *lot* of attack methods you may not have really thought
+about in detail...)
 
 
+
+
+
+
+--==_Exmh_1216238905_16143P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFIflU5cC3lWbTT17ARAuCAAJ4loaKEAWiu2G0YhxKM2Wl/qTEmowCgqt93
+sHSgbokbEZ+q8jkNLDcEn18=
+=t103
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1216238905_16143P--
