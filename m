@@ -1,83 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757358AbYGPBET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755661AbYGPBEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757358AbYGPBET (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 21:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755156AbYGPBEK
+	id S1755661AbYGPBEf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 21:04:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757507AbYGPBEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 21:04:10 -0400
-Received: from mercury.sdinet.de ([193.103.161.30]:43006 "EHLO
-	mercury.sdinet.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753085AbYGPBEJ (ORCPT
+	Tue, 15 Jul 2008 21:04:22 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:41760 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757362AbYGPBET (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 21:04:09 -0400
-X-Greylist: delayed 515 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Jul 2008 21:04:09 EDT
-Date: Wed, 16 Jul 2008 02:55:32 +0200 (CEST)
-From: Sven-Haegar Koch <haegar@sdinet.de>
-To: David Woodhouse <dwmw2@infradead.org>
-cc: Linux-Kernel-Mailinglist <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
- use it in more drivers.
-In-Reply-To: <1216159959.26991.48.camel@shinybook.infradead.org>
-Message-ID: <alpine.DEB.1.10.0807160241060.21568@mercury.sdinet.de>
-References: <alpine.LFD.1.10.0807141903260.3017@woody.linux-foundation.org>  <487C585C.2060002@garzik.org>  <alpine.LFD.1.10.0807150803580.3017@woody.linux-foundation.org>  <487CD7FE.9010209@garzik.org>  <alpine.LFD.1.10.0807151008450.3017@woody.linux-foundation.org>
-  <487CDEC0.3090004@garzik.org>  <alpine.LFD.1.10.0807151041080.3017@woody.linux-foundation.org>  <487CEA73.9000408@garzik.org>  <alpine.LFD.1.10.0807151124510.3017@woody.linux-foundation.org>  <487CF01E.6000208@garzik.org> <20080715185801.GH8185@mit.edu> 
- <487CF70C.1030309@garzik.org>  <alpine.LFD.1.10.0807151218460.3351@woody.linux-foundation.org>  <487D1327.7090805@garzik.org>  <alpine.LFD.1.10.0807151420550.2867@woody.linux-foundation.org>  <487D1925.50008@garzik.org>
- <1216159959.26991.48.camel@shinybook.infradead.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 15 Jul 2008 21:04:19 -0400
+Date: Tue, 15 Jul 2008 19:04:18 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 07/14] [POWERPC] Populate cpu_enabled_map
+Message-ID: <20080716010418.GH10919@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+	linux-acpi@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+References: <20080715023344.2528.1836.stgit@blender.achiang> <20080715023420.2528.44404.stgit@blender.achiang> <1216101095.7740.74.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1216101095.7740.74.camel@pasglop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jul 2008, David Woodhouse wrote:
-
-> On Tue, 2008-07-15 at 17:39 -0400, Jeff Garzik wrote:
+* Benjamin Herrenschmidt <benh@kernel.crashing.org>:
+> On Mon, 2008-07-14 at 20:34 -0600, Alex Chiang wrote:
+> > Populate the cpu_enabled_map correctly.
 > > 
-> > 'make modules_install && make install' will
-> >         * install modules in /lib
-> >         * install firmware in /lib      [2.6.27 only]
-> >         * install kernel
-> >         * update grub
-> >         * rebuild initrd
+> > Note that this patch does not actually make any decisions based
+> > on the contents of the map.
 > > 
-> > Do this, under both 2.6.26 and 2.6.27.
+> > However, as the map is presented via sysfs in:
 > > 
-> > 2.6.26 will put a working driver into initrd.
+> > 	/sys/devices/system/cpu/
 > > 
-> > 2.6.27 will put a dead driver into initrd (because no firmware got 
-> > copied into initrd image).
+> > It should be populated correctly.
 > 
-> I believe your claim is untrue. It uses the distribution's tool to
-> create the initrd, doesn't it? And those tools _do_ handle the
-> MODULE_FIRMWARE() tags and pull in appropriate firmware. They've had to
-> get that right for _years_ already.
+> Care to educate me on the difference between online_map and
+> enabled_map ?
 
-Something from the non-development world:
+enabled_map is closer conceptually to present_map than
+online_map.
 
-At least the initramfs-tools (which contains mkinitrd) of Debian Etch do 
-not do this (the current testing/development version Lenny does) - no 
-firmware support in the initrd at all - and not needed for booting until 
-now.
-(It has /lib/firmware support after the initrd for the not-so-important
-stuff like usb/sound/video/wireless)
+present_map are CPUs that are actually plugged in
 
-Yes, it may be nearly ancient by now, but for servers it contains all we 
-need, and most certainly would not want to use something that changes and 
-needs checking/hand-fixing every month - I expect this version to be still 
-in use a year from now, then just gradually being updated to the next 
-debian version.
+online_map are CPUs that have had cpu_up() called on them; ie.
+schedulable
 
-Currently we use 2.6.24, and I expect to use some newer kernel to support 
-newer replacement hardware before all installs are upgraded. So having the 
-firmware-inside-module support would be a help for us when modules are 
-starting to be needed for disk or network access, keeping from the need to 
-try backporting huge initrd/make-kpkg changes.
+enabled_map is somewhere inbetween -- the CPUs are plugged in,
+but we don't want to cpu_up() them. On hp ia64 systems, these
+CPUs are disabled by system firmware.
 
-c'ya
-sven
+Currently, a user can only configure/deconfigure the CPUs from
+the system firmware interface. By providing a sysfs interface for
+these CPUs, we can allow the user to configure/deconfigure them
+from userspace. More realistically, higher level managability
+software now has an OS-level interface to interact with these
+CPUs.
 
--- 
+Might this be useful for ppc and your hypervisor based
+architecture? I could imagine your hypervisor telling the kernel
+about all the physically present CPUs, but then you would be able
+to have finer grained control using the enabled_map.
 
-The Internet treats censorship as a routing problem, and routes around
-it. (John Gilmore on http://www.cygnus.com/~gnu/)
+I haven't studied your code in depth, so maybe you can just do
+everything with pure online/offline, but at least on my
+platforms, there are use-cases where we might want something
+in-between.
+
+Thanks.
+
+/ac
+
