@@ -1,129 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760794AbYGPA05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760935AbYGPA1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760794AbYGPA05 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 20:26:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758406AbYGPAZH
+	id S1760935AbYGPA1W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 20:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759173AbYGPAZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 20:25:07 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:8513 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759099AbYGPAZE (ORCPT
+	Tue, 15 Jul 2008 20:25:10 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48257 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759388AbYGPAZI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 20:25:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent:from;
-        b=pFAkuPewI6/9j+FQsBESTAxB4QQN/ufEWNaD1TDTLtUJVFpC5W7VeQaRi/GYgmiueN
-         9OjQnr/ADwPHvX7aQvMQaNG/3DSVS01WZFGH3Huq9MMAN6My6WPSJYkj3v35GNSQbI9I
-         EQ8OWhoDdYSIzyagOUdos4V/nAx42sUX9v0Yw=
-Date: Wed, 16 Jul 2008 02:24:44 +0200
-To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: [PATCH 12/13] slab: add hooks for kmemcheck
-Message-ID: <20080716002444.GM12564@localhost.localdomain>
+	Tue, 15 Jul 2008 20:25:08 -0400
+Date: Tue, 15 Jul 2008 17:24:20 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: pageexec@freemail.hu
+cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [stable] Linux 2.6.25.10
+In-Reply-To: <487D5729.14854.1CA5C3EB@pageexec.freemail.hu>
+Message-ID: <alpine.LFD.1.10.0807151716510.2867@woody.linux-foundation.org>
+References: <20080703185727.GA12617@suse.de>, <487D3C17.31467.1C3C0441@pageexec.freemail.hu>, <alpine.LFD.1.10.0807151620450.2867@woody.linux-foundation.org> <487D5729.14854.1CA5C3EB@pageexec.freemail.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 4676a60f81caf87e9c0e0e71af49bdaf83fbb567 Mon Sep 17 00:00:00 2001
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-Date: Fri, 9 May 2008 20:35:53 +0200
-Subject: [PATCH 12/13] slab: add hooks for kmemcheck
 
-We now have SLAB support for kmemcheck! This means that it doesn't matter
-whether one chooses SLAB or SLUB, or indeed whether Linus chooses to chuck
-SLAB or SLUB.. ;-)
 
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
----
- mm/slab.c |   20 ++++++++++++++++++--
- 1 files changed, 18 insertions(+), 2 deletions(-)
+On Wed, 16 Jul 2008, pageexec@freemail.hu wrote:
+> 
+> we went through this and you yourself said that security bugs are *not*
+> treated as normal bugs because you do omit relevant information from such
+> commits
 
-diff --git a/mm/slab.c b/mm/slab.c
-index 8986265..9c44366 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -111,6 +111,7 @@
- #include	<linux/rtmutex.h>
- #include	<linux/reciprocal_div.h>
- #include	<linux/debugobjects.h>
-+#include	<linux/kmemcheck.h>
- 
- #include	<asm/cacheflush.h>
- #include	<asm/tlbflush.h>
-@@ -176,13 +177,13 @@
- 			 SLAB_STORE_USER | \
- 			 SLAB_RECLAIM_ACCOUNT | SLAB_PANIC | \
- 			 SLAB_DESTROY_BY_RCU | SLAB_MEM_SPREAD | \
--			 SLAB_DEBUG_OBJECTS)
-+			 SLAB_DEBUG_OBJECTS | SLAB_NOTRACK)
- #else
- # define CREATE_MASK	(SLAB_HWCACHE_ALIGN | \
- 			 SLAB_CACHE_DMA | \
- 			 SLAB_RECLAIM_ACCOUNT | SLAB_PANIC | \
- 			 SLAB_DESTROY_BY_RCU | SLAB_MEM_SPREAD | \
--			 SLAB_DEBUG_OBJECTS)
-+			 SLAB_DEBUG_OBJECTS | SLAB_NOTRACK)
- #endif
- 
- /*
-@@ -1611,6 +1612,10 @@ static void *kmem_getpages(struct kmem_cache *cachep, gfp_t flags, int nodeid)
- 			NR_SLAB_UNRECLAIMABLE, nr_pages);
- 	for (i = 0; i < nr_pages; i++)
- 		__SetPageSlab(page + i);
-+
-+	if (kmemcheck_enabled && !(cachep->flags & SLAB_NOTRACK))
-+		kmemcheck_alloc_shadow(cachep, flags, nodeid, page, cachep->gfporder);
-+
- 	return page_address(page);
- }
- 
-@@ -1623,6 +1628,9 @@ static void kmem_freepages(struct kmem_cache *cachep, void *addr)
- 	struct page *page = virt_to_page(addr);
- 	const unsigned long nr_freed = i;
- 
-+	if (kmemcheck_page_is_tracked(page))
-+		kmemcheck_free_shadow(cachep, page, cachep->gfporder);
-+
- 	if (cachep->flags & SLAB_RECLAIM_ACCOUNT)
- 		sub_zone_page_state(page_zone(page),
- 				NR_SLAB_RECLAIMABLE, nr_freed);
-@@ -3340,6 +3348,9 @@ __cache_alloc_node(struct kmem_cache *cachep, gfp_t flags, int nodeid,
- 	local_irq_restore(save_flags);
- 	ptr = cache_alloc_debugcheck_after(cachep, flags, ptr, caller);
- 
-+	if (likely(ptr))
-+		kmemcheck_slab_alloc(cachep, flags, ptr, obj_size(cachep));
-+
- 	if (unlikely((flags & __GFP_ZERO) && ptr))
- 		memset(ptr, 0, obj_size(cachep));
- 
-@@ -3394,6 +3405,9 @@ __cache_alloc(struct kmem_cache *cachep, gfp_t flags, void *caller)
- 	objp = cache_alloc_debugcheck_after(cachep, flags, objp, caller);
- 	prefetchw(objp);
- 
-+	if (likely(objp))
-+		kmemcheck_slab_alloc(cachep, flags, objp, obj_size(cachep));
-+
- 	if (unlikely((flags & __GFP_ZERO) && objp))
- 		memset(objp, 0, obj_size(cachep));
- 
-@@ -3509,6 +3523,8 @@ static inline void __cache_free(struct kmem_cache *cachep, void *objp)
- 	check_irq_off();
- 	objp = cache_free_debugcheck(cachep, objp, __builtin_return_address(0));
- 
-+	kmemcheck_slab_free(cachep, objp, obj_size(cachep));
-+
- 	/*
- 	 * Skip calling cache_free_alien() when the platform is not numa.
- 	 * This will avoid cache misses that happen while accessing slabp (which
--- 
-1.5.5.1
+Actually, we disagree on one fundamental thing. We disagree on 
+that single word: "relevant".
 
+I do not think it's helpful _or_ relevant to explicitly point out how to 
+tigger a bug. It's very helpful and relevant when we're trying to chase 
+the bug down, but once it is fixed, it becomes irrelevant.
+
+You think that explicitly pointing something out as a security issue is 
+really important, so you think it's always "relevant". And I take mostly 
+the opposite view. I think pointing it out is actually likely to be 
+counter-productive.
+
+For example, the way I prefer to work is to have people send me and the 
+kernel list a patch for a fix, and then in the very next email send (in 
+private) an example exploit of the problem to the security mailing list 
+(and that one goes to the private security list just because we don't want 
+all the people at universities rushing in to test it). THAT is how things 
+should work.
+
+Should I document the exploit in the commit message? Hell no.  It's 
+private for a reason, even if it's real information. It was real 
+information for the developers to explain why a patch is needed, but once 
+explained, it shouldn't be spread around unnecessarily.
+
+			Linus
