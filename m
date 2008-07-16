@@ -1,51 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755425AbYGPIQG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759161AbYGPIRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755425AbYGPIQG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 04:16:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755603AbYGPIPt
+	id S1759161AbYGPIRA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 04:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbYGPIQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 04:15:49 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34614 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755554AbYGPIPs (ORCPT
+	Wed, 16 Jul 2008 04:16:45 -0400
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:13590 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754422AbYGPIQo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 04:15:48 -0400
-Message-ID: <487DAD7A.8080407@jp.fujitsu.com>
-Date: Wed, 16 Jul 2008 17:12:42 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Wed, 16 Jul 2008 04:16:44 -0400
+Date: Wed, 16 Jul 2008 10:15:27 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-s390@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] chsc headers userspace cleanup
+Message-ID: <20080716081527.GA4869@osiris.boeblingen.de.ibm.com>
+References: <20080715125817.GB24533@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Max Krasnyansky <maxk@qualcomm.com>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       virtualization@lists.linux-foundation.org,
-       Zachary Amsden <zach@vmware.com>
-Subject: Re: [PATCH] stopmachine: add stopmachine_timeout v3
-References: <487B05CE.1050508@jp.fujitsu.com>	 <487D78A3.6050105@jp.fujitsu.com> <487D93CD.1000007@qualcomm.com>	 <487D96A2.10904@jp.fujitsu.com>  <487D9A8B.5020005@jp.fujitsu.com> <1216193615.5232.11.camel@twins>
-In-Reply-To: <1216193615.5232.11.camel@twins>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080715125817.GB24533@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> I really don't like this, it means the system is really screwed up and
-> doesn't deserve to continue.
+On Tue, Jul 15, 2008 at 03:58:18PM +0300, Adrian Bunk wrote:
+> Kernel headers shouldn't expose functions to userspace.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-It can be said that after timeout we just back to previous state, where
-machine already limp(=partially screwed up), but have some degree of
-performance.  We might be able to do some recovery, such as killing
-process, restart or reset of subsystem and so on.  Even if a CPU get
-stuck, it might be possible to continue its service with remaining
-CPUs, ex. assume there are 1024 CPUs total.
-(I wish if we were able to force-reset such unstable CPU in future...)
+Makes sense. Applied -- Thanks.
 
-I agree that there are much amount of situation where this feature is
-not acceptable.  But there would be others.
+> BTW: For compile-testing my patches it would be nice if s390 had
+>      more defconfigs (e.g. also a non-64bit one).
 
-Thanks,
-H.Seto
+Yes, will consider that ;)
