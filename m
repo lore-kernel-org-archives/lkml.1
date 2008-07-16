@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760136AbYGPAZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759218AbYGPA0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760136AbYGPAZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 20:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759051AbYGPAYL
+	id S1759218AbYGPA0k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 20:26:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758758AbYGPAYs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 20:24:11 -0400
+	Tue, 15 Jul 2008 20:24:48 -0400
 Received: from ug-out-1314.google.com ([66.249.92.173]:8513 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759045AbYGPAYJ (ORCPT
+	with ESMTP id S1759312AbYGPAYq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 20:24:09 -0400
+	Tue, 15 Jul 2008 20:24:46 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:to:subject:message-id:mime-version:content-type
          :content-disposition:user-agent:from;
-        b=B3aPrej1rIo6g3KQc7RkQMkO4bCfGATL8cIWih6/29E15lVRVsZ8UDwWuac5fQ++qR
-         ALDomw3kfQFiScipIUlzzwzqEI7Blu/3Rk6r9iZIVcpjqvyXHhzGF/+mPSjje9xTLctJ
-         2+UeYutXiDeUlDpZJgXseOR3S3fdSZATDnvys=
-Date: Wed, 16 Jul 2008 02:23:42 +0200
+        b=SILgn1mkObpL6IiteKeeldl9+vxTtPkKJGooMF27OXKesoQmSqiLL0jgmolOMv5gvI
+         S+T6VkFgobazBJicWgTZutaXtsdFN/xVcpymXw/adL25+RRXyo1J6vJEI7c3m3K1W58H
+         GIXBctlOGG4xt5cSrEqynYCmCnsOnKdh+QBo4=
+Date: Wed, 16 Jul 2008 02:24:23 +0200
 To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: [PATCH 08/13] x86: add hooks for kmemcheck
-Message-ID: <20080716002342.GI12564@localhost.localdomain>
+Subject: [PATCH 11/13] slub: add hooks for kmemcheck
+Message-ID: <20080716002423.GL12564@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -32,118 +32,99 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 6cea44745d8c759e06c3c993e816377f7c270e62 Mon Sep 17 00:00:00 2001
+>From b147926bb9bfad0adf7872fd4ea4745ce9346aef Mon Sep 17 00:00:00 2001
 From: Vegard Nossum <vegard.nossum@gmail.com>
-Date: Fri, 4 Apr 2008 00:53:23 +0200
-Subject: [PATCH 08/13] x86: add hooks for kmemcheck
+Date: Fri, 4 Apr 2008 00:54:48 +0200
+Subject: [PATCH 11/13] slub: add hooks for kmemcheck
 
-The hooks that we modify are:
-- Page fault handler (to handle kmemcheck faults)
-- Debug exception handler (to hide pages after single-stepping
-  the instruction that caused the page fault)
-
-Also redefine memset() to use the optimized version if kmemcheck
-is enabled.
-
-(Thanks to Pekka Enberg for minimizing the impact on the page fault
- handler.)
+Parts of this patch were contributed by Pekka Enberg but merged for
+atomicity.
 
 Signed-off-by: Vegard Nossum <vegardno@ifi.uio.no>
 ---
- arch/x86/kernel/traps_32.c  |    9 +++++++++
- arch/x86/mm/fault.c         |   18 +++++++++++++++---
- include/asm-x86/string_32.h |    8 ++++++++
- 3 files changed, 32 insertions(+), 3 deletions(-)
+ mm/slub.c |   20 ++++++++++++++++++--
+ 1 files changed, 18 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
-index a4739a8..4ad88dd 100644
---- a/arch/x86/kernel/traps_32.c
-+++ b/arch/x86/kernel/traps_32.c
-@@ -57,6 +57,7 @@
- #include <asm/nmi.h>
- #include <asm/smp.h>
- #include <asm/io.h>
-+#include <asm/kmemcheck.h>
+diff --git a/mm/slub.c b/mm/slub.c
+index 315c392..dbbd455 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -23,6 +23,7 @@
+ #include <linux/kallsyms.h>
+ #include <linux/memory.h>
+ #include <linux/math64.h>
++#include <linux/kmemcheck.h>
  
- #include "mach_traps.h"
+ /*
+  * Lock order:
+@@ -174,7 +175,7 @@ static inline void ClearSlabDebug(struct page *page)
+ 		SLAB_TRACE | SLAB_DESTROY_BY_RCU)
  
-@@ -906,6 +907,14 @@ void __kprobes do_debug(struct pt_regs *regs, long error_code)
+ #define SLUB_MERGE_SAME (SLAB_DEBUG_FREE | SLAB_RECLAIM_ACCOUNT | \
+-		SLAB_CACHE_DMA)
++		SLAB_CACHE_DMA | SLAB_NOTRACK)
  
- 	get_debugreg(condition, 6);
+ #ifndef ARCH_KMALLOC_MINALIGN
+ #define ARCH_KMALLOC_MINALIGN __alignof__(unsigned long long)
+@@ -1122,6 +1123,13 @@ static struct page *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
  
-+	/* Catch kmemcheck conditions first of all! */
-+	if (condition & DR_STEP) {
-+		if (kmemcheck_active(regs)) {
-+			kmemcheck_hide(regs);
-+			return;
-+		}
+ 		stat(get_cpu_slab(s, raw_smp_processor_id()), ORDER_FALLBACK);
+ 	}
++
++	if (kmemcheck_enabled
++		&& !(s->flags & (SLAB_NOTRACK | DEBUG_DEFAULT_FLAGS)))
++	{
++		kmemcheck_alloc_shadow(s, flags, node, page, compound_order(page));
 +	}
 +
- 	/*
- 	 * The processor cleared BTF, so don't mark that we need it set.
- 	 */
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index 8bcb6f4..3717195 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -33,6 +33,7 @@
- #include <asm/smp.h>
- #include <asm/tlbflush.h>
- #include <asm/proto.h>
-+#include <asm/kmemcheck.h>
- #include <asm-generic/sections.h>
+ 	page->objects = oo_objects(oo);
+ 	mod_zone_page_state(page_zone(page),
+ 		(s->flags & SLAB_RECLAIM_ACCOUNT) ?
+@@ -1195,6 +1203,9 @@ static void __free_slab(struct kmem_cache *s, struct page *page)
+ 		ClearSlabDebug(page);
+ 	}
  
- /*
-@@ -604,6 +605,13 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
- 
- 	si_code = SEGV_MAPERR;
- 
-+	/*
-+	 * Detect and handle instructions that would cause a page fault for
-+	 * both a tracked kernel page and a userspace page.
-+	 */
-+	if(kmemcheck_active(regs))
-+		kmemcheck_hide(regs);
++	if (kmemcheck_page_is_tracked(page))
++		kmemcheck_free_shadow(s, page, compound_order(page));
 +
- 	if (notify_page_fault(regs))
- 		return;
+ 	mod_zone_page_state(page_zone(page),
+ 		(s->flags & SLAB_RECLAIM_ACCOUNT) ?
+ 		NR_SLAB_RECLAIMABLE : NR_SLAB_UNRECLAIMABLE,
+@@ -1647,6 +1658,7 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
+ 	if (unlikely((gfpflags & __GFP_ZERO) && object))
+ 		memset(object, 0, objsize);
  
-@@ -625,9 +633,13 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
- #else
- 	if (unlikely(address >= TASK_SIZE64)) {
- #endif
--		if (!(error_code & (PF_RSVD|PF_USER|PF_PROT)) &&
--		    vmalloc_fault(address) >= 0)
--			return;
-+		if (!(error_code & (PF_RSVD | PF_USER | PF_PROT))) {
-+			if (vmalloc_fault(address) >= 0)
-+				return;
-+
-+			if (kmemcheck_fault(regs, address, error_code))
-+				return;
-+		}
++	kmemcheck_slab_alloc(s, gfpflags, object, c->objsize);
+ 	return object;
+ }
  
- 		/* Can handle a stale RO->RW TLB */
- 		if (spurious_fault(address, error_code))
-diff --git a/include/asm-x86/string_32.h b/include/asm-x86/string_32.h
-index b49369a..fade185 100644
---- a/include/asm-x86/string_32.h
-+++ b/include/asm-x86/string_32.h
-@@ -262,6 +262,14 @@ __asm__  __volatile__( \
-  __constant_c_x_memset((s),(0x01010101UL*(unsigned char)(c)),(count)) : \
-  __memset((s),(c),(count)))
+@@ -1751,6 +1763,7 @@ static __always_inline void slab_free(struct kmem_cache *s,
  
-+/* If kmemcheck is enabled, our best bet is a custom memset() that disables
-+ * checking in order to save a whole lot of (unnecessary) page faults. */
-+#ifdef CONFIG_KMEMCHECK
-+void *kmemcheck_memset(void *s, int c, size_t n);
-+#undef memset
-+#define memset(s, c, n) kmemcheck_memset((s), (c), (n))
-+#endif
-+
- /*
-  * find the first occurrence of byte 'c', or 1 past the area if none
-  */
+ 	local_irq_save(flags);
+ 	c = get_cpu_slab(s, smp_processor_id());
++	kmemcheck_slab_free(s, object, c->objsize);
+ 	debug_check_no_locks_freed(object, c->objsize);
+ 	if (!(s->flags & SLAB_DEBUG_OBJECTS))
+ 		debug_check_no_obj_freed(object, s->objsize);
+@@ -2602,7 +2615,8 @@ static noinline struct kmem_cache *dma_kmalloc_cache(int index, gfp_t flags)
+ 
+ 	if (!s || !text || !kmem_cache_open(s, flags, text,
+ 			realsize, ARCH_KMALLOC_MINALIGN,
+-			SLAB_CACHE_DMA|__SYSFS_ADD_DEFERRED, NULL)) {
++			SLAB_CACHE_DMA|SLAB_NOTRACK|__SYSFS_ADD_DEFERRED,
++			NULL)) {
+ 		kfree(s);
+ 		kfree(text);
+ 		goto unlock_out;
+@@ -4308,6 +4322,8 @@ static char *create_unique_id(struct kmem_cache *s)
+ 		*p++ = 'a';
+ 	if (s->flags & SLAB_DEBUG_FREE)
+ 		*p++ = 'F';
++	if (!(s->flags & SLAB_NOTRACK))
++		*p++ = 't';
+ 	if (p != name + 1)
+ 		*p++ = '-';
+ 	p += sprintf(p, "%07d", s->size);
 -- 
 1.5.5.1
 
