@@ -1,28 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757651AbYGPGHz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbYGPGTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757651AbYGPGHz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 02:07:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbYGPGHs
+	id S1755927AbYGPGTW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 02:19:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYGPGTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 02:07:48 -0400
-Received: from casper.infradead.org ([85.118.1.10]:47727 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752183AbYGPGHr (ORCPT
+	Wed, 16 Jul 2008 02:19:10 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35724 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751807AbYGPGTF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 02:07:47 -0400
-Subject: Re: [PATCH] RCU: implement rcu_read_[un]lock_preempt()
+	Wed, 16 Jul 2008 02:19:05 -0400
+Subject: Re: [PATCH 05/10] block: always use __{disk|part|all}_stat_*() and
+	kill non-underbarred versions
 From: Peter Zijlstra <peterz@infradead.org>
 To: Tejun Heo <tj@kernel.org>
-Cc: dipankar@in.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Paul E McKenney <paulmck@linux.vnet.ibm.com>,
+Cc: jens.axboe@oracle.com, James.Bottomley@HansenPartnership.com,
+       bharrosh@panasas.com, greg.freemyer@gmail.com,
+       linux-scsi@vger.kernel.org, brking@linux.vnet.ibm.com, liml@rtr.ca,
+       viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Paul E McKenney <paulmck@linux.vnet.ibm.com>,
        Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <487AEAC6.60307@kernel.org>
-References: <487AEAC6.60307@kernel.org>
+In-Reply-To: <1216019534-29977-6-git-send-email-tj@kernel.org>
+References: <1216019534-29977-1-git-send-email-tj@kernel.org>
+	 <1216019534-29977-6-git-send-email-tj@kernel.org>
 Content-Type: text/plain
-Date: Wed, 16 Jul 2008 08:07:49 +0200
-Message-Id: <1216188469.5232.0.camel@twins>
+Date: Wed, 16 Jul 2008 08:19:05 +0200
+Message-Id: <1216189145.5232.3.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
@@ -30,91 +33,381 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-07-14 at 14:57 +0900, Tejun Heo wrote:
-> With the introduction of preemptible RCU, RCU doesn't gurantee that
-> its critical section runs on the CPU it started to run.  As there are
-> cases where non-preemptible RCU critical section makes sense, create
-> new RCU read lock variants which turns of preemption -
-> rcu_read_[un]lock_preempt() which are identical to rcu_read_[un]lock()
-> for classic implementation and have enclosing preempt disable/enable
-> for preemptible RCU.
+On Mon, 2008-07-14 at 16:12 +0900, Tejun Heo wrote:
+> There are two variants of stat functions - ones prefixed with double
+> underbars which don't care about preemption and ones without which
+> disable preemption before manipulating per-cpu counters.  It's unclear
+> whether the underbarred ones assume that preemtion is disabled on
+> entry as some callers don't do that.  In any case, stats are not
+> critical data and errors don't lead to critical failures.
 > 
+> However, consistently using the underbarred version and ensuring that
+> they are called with preemption disabled doesn't incur noticeable
+> overhead or even reduces overhead in some cases.
+> 
+> * part stat manipulations need disk_map_sector_rcu() which involves
+>   read locking RCU anyway.  Using rcu_read_lock_preempt() instead
+>   solves the problem nicely.  On rcuclassic, this means no extra
+>   overhead.
+> 
+> * Calls to the non-underbarred versions are converted to explicit
+>   preemtion disable and calls to respective underbarrded versions.  As
+>   all such users had more than one consecutive stat ops, this reduces
+>   extra preemption disable/enables.
+> 
+> * In drivers/md/dm.c::end_io_acct(), __disk_stat_add() call is moved
+>   into neighboring preemption disabled block.
+> 
+> The conversion makes the stats usage more consistent and IMHO the
+> added few preemption calls are well justified for that.
+> 
+> As this change makes non-underbarred versions useless, non-underbarred
+> stat functions and macros are killed.  The next patch will drop
+> underbars from the underbarred versions as it's superflous now.  This
+> is done as a separate step so that compile fails between this and the
+> next patch if someone's left behind.
+
+
+Aah, found what you use it for...
+
+See, you need the preempt-off for something different than the RCU
+usage, hence it doesn't make sense to mix that in. Use the regular
+get_cpu/put_cpu stuff to fiddle with the percpu counters already.
+
+So NAK on this one too.
+
+
 > Signed-off-by: Tejun Heo <tj@kernel.org>
-
-Sorry, NAK.
-
-If you need preempt off you need it for other reasons than RCU, so
-mixing it in the interface doesn't make sense to me.
-
 > ---
-> This will be used by following block layer updates.  If this and the
-> block changes get acked, it'll be best to push this through block
-> tree.
+>  block/blk-core.c           |   16 +++++++-------
+>  block/blk-merge.c          |    4 +-
+>  drivers/block/aoe/aoecmd.c |   12 +++++-----
+>  drivers/md/dm.c            |   10 +++++---
+>  drivers/md/linear.c        |    6 +++-
+>  drivers/md/multipath.c     |    6 +++-
+>  drivers/md/raid0.c         |    6 +++-
+>  drivers/md/raid1.c         |    6 +++-
+>  drivers/md/raid10.c        |    6 +++-
+>  drivers/md/raid5.c         |    6 +++-
+>  include/linux/genhd.h      |   48 --------------------------------------------
+>  11 files changed, 46 insertions(+), 80 deletions(-)
 > 
-> Thanks.
-> 
->  include/linux/rcuclassic.h |    2 ++
->  include/linux/rcupdate.h   |   18 ++++++++++++++++++
->  include/linux/rcupreempt.h |    6 ++++--
->  3 files changed, 24 insertions(+), 2 deletions(-)
-> 
-> diff --git a/include/linux/rcuclassic.h b/include/linux/rcuclassic.h
-> index b3aa05b..08c6153 100644
-> --- a/include/linux/rcuclassic.h
-> +++ b/include/linux/rcuclassic.h
-> @@ -136,6 +136,8 @@ extern struct lockdep_map rcu_lock_map;
->  		__release(RCU); \
->  		preempt_enable(); \
->  	} while (0)
-> +#define __rcu_read_lock_preempt()	__rcu_read_lock()
-> +#define __rcu_read_unlock_preempt()	__rcu_read_unlock()
->  #define __rcu_read_lock_bh() \
->  	do { \
->  		local_bh_disable(); \
-> diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-> index d42dbec..e0e3486 100644
-> --- a/include/linux/rcupdate.h
-> +++ b/include/linux/rcupdate.h
-> @@ -112,6 +112,24 @@ struct rcu_head {
->  #define rcu_read_unlock() __rcu_read_unlock()
+> diff --git a/block/blk-core.c b/block/blk-core.c
+> index 84292e1..3238ffe 100644
+> --- a/block/blk-core.c
+> +++ b/block/blk-core.c
+> @@ -60,7 +60,7 @@ static void drive_stat_acct(struct request *rq, int new_io)
+>  	if (!blk_fs_request(rq) || !rq->rq_disk)
+>  		return;
 >  
->  /**
-> + * rcu_read_lock_preempt - mark the beginning of non-preemptible RCU
-> + *			   critical section
-> + *
-> + * Identical to rcu_read_lock() but the critical section is guaranteed
-> + * to be non-preemptible.  Note that this is identical to
-> + * rcu_read_lock() on classic RCU implementation.
-> + */
-> +#define rcu_read_lock_preempt() __rcu_read_lock_preempt()
-> +
-> +/**
-> + * rcu_read_unlock_preempt - mark the end of of non-preemptible RCU
-> + *			     critical section
-> + *
-> + * See rcu_read_lock_preempt() for more information.
-> + */
-> +#define rcu_read_unlock_preempt() __rcu_read_unlock_preempt()
-> +
-> +/**
->   * rcu_read_lock_bh - mark the beginning of a softirq-only RCU critical section
->   *
->   * This is equivalent of rcu_read_lock(), but to be used when updates
-> diff --git a/include/linux/rcupreempt.h b/include/linux/rcupreempt.h
-> index 8a05c7e..b263ceb 100644
-> --- a/include/linux/rcupreempt.h
-> +++ b/include/linux/rcupreempt.h
-> @@ -49,8 +49,10 @@ extern void __rcu_read_unlock(void)	__releases(RCU);
->  extern int rcu_pending(int cpu);
->  extern int rcu_needs_cpu(int cpu);
+> -	rcu_read_lock();
+> +	rcu_read_lock_preempt();
 >  
-> -#define __rcu_read_lock_bh()	{ rcu_read_lock(); local_bh_disable(); }
-> -#define __rcu_read_unlock_bh()	{ local_bh_enable(); rcu_read_unlock(); }
-> +#define __rcu_read_lock_preempt()	{ rcu_read_lock(); preempt_disable(); }
-> +#define __rcu_read_unlock_preempt()	{ preempt_enable(); rcu_read_unlock(); }
-> +#define __rcu_read_lock_bh()		{ rcu_read_lock(); local_bh_disable(); }
-> +#define __rcu_read_unlock_bh()		{ local_bh_enable(); rcu_read_unlock(); }
+>  	part = disk_map_sector_rcu(rq->rq_disk, rq->sector);
+>  	if (!new_io)
+> @@ -74,7 +74,7 @@ static void drive_stat_acct(struct request *rq, int new_io)
+>  		}
+>  	}
 >  
->  extern void __synchronize_sched(void);
+> -	rcu_read_unlock();
+> +	rcu_read_unlock_preempt();
+>  }
 >  
+>  void blk_queue_congestion_threshold(struct request_queue *q)
+> @@ -1542,11 +1542,11 @@ static int __end_that_request_first(struct request *req, int error,
+>  		const int rw = rq_data_dir(req);
+>  		struct hd_struct *part;
+>  
+> -		rcu_read_lock();
+> +		rcu_read_lock_preempt();
+>  		part = disk_map_sector_rcu(req->rq_disk, req->sector);
+> -		all_stat_add(req->rq_disk, part, sectors[rw],
+> -				nr_bytes >> 9, req->sector);
+> -		rcu_read_unlock();
+> +		__all_stat_add(req->rq_disk, part, sectors[rw],
+> +			       nr_bytes >> 9, req->sector);
+> +		rcu_read_unlock_preempt();
+>  	}
+>  
+>  	total_bytes = bio_nbytes = 0;
+> @@ -1732,7 +1732,7 @@ static void end_that_request_last(struct request *req, int error)
+>  		const int rw = rq_data_dir(req);
+>  		struct hd_struct *part;
+>  
+> -		rcu_read_lock();
+> +		rcu_read_lock_preempt();
+>  
+>  		part = disk_map_sector_rcu(disk, req->sector);
+>  
+> @@ -1745,7 +1745,7 @@ static void end_that_request_last(struct request *req, int error)
+>  			part->in_flight--;
+>  		}
+>  
+> -		rcu_read_unlock();
+> +		rcu_read_unlock_preempt();
+>  	}
+>  
+>  	if (req->end_io)
+> diff --git a/block/blk-merge.c b/block/blk-merge.c
+> index 9be9b2f..55456c8 100644
+> --- a/block/blk-merge.c
+> +++ b/block/blk-merge.c
+> @@ -469,7 +469,7 @@ static int attempt_merge(struct request_queue *q, struct request *req,
+>  	if (req->rq_disk) {
+>  		struct hd_struct *part;
+>  
+> -		rcu_read_lock();
+> +		rcu_read_lock_preempt();
+>  
+>  		part = disk_map_sector_rcu(req->rq_disk, req->sector);
+>  		disk_round_stats(req->rq_disk);
+> @@ -479,7 +479,7 @@ static int attempt_merge(struct request_queue *q, struct request *req,
+>  			part->in_flight--;
+>  		}
+>  
+> -		rcu_read_unlock();
+> +		rcu_read_unlock_preempt();
+>  	}
+>  
+>  	req->ioprio = ioprio_best(req->ioprio, next->ioprio);
+> diff --git a/drivers/block/aoe/aoecmd.c b/drivers/block/aoe/aoecmd.c
+> index 50ef9ea..7bd8c98 100644
+> --- a/drivers/block/aoe/aoecmd.c
+> +++ b/drivers/block/aoe/aoecmd.c
+> @@ -757,15 +757,15 @@ diskstats(struct gendisk *disk, struct bio *bio, ulong duration, sector_t sector
+>  	const int rw = bio_data_dir(bio);
+>  	struct hd_struct *part;
+>  
+> -	rcu_read_lock();
+> +	rcu_read_lock_preempt();
+>  
+>  	part = disk_map_sector_rcu(disk, sector);
+> -	all_stat_inc(disk, part, ios[rw], sector);
+> -	all_stat_add(disk, part, ticks[rw], duration, sector);
+> -	all_stat_add(disk, part, sectors[rw], n_sect, sector);
+> -	all_stat_add(disk, part, io_ticks, duration, sector);
+> +	__all_stat_inc(disk, part, ios[rw], sector);
+> +	__all_stat_add(disk, part, ticks[rw], duration, sector);
+> +	__all_stat_add(disk, part, sectors[rw], n_sect, sector);
+> +	__all_stat_add(disk, part, io_ticks, duration, sector);
+>  
+> -	rcu_read_unlock();
+> +	rcu_read_unlock_preempt();
+>  }
+>  
+>  void
+> diff --git a/drivers/md/dm.c b/drivers/md/dm.c
+> index 923fea4..6918bb7 100644
+> --- a/drivers/md/dm.c
+> +++ b/drivers/md/dm.c
+> @@ -396,10 +396,10 @@ static int end_io_acct(struct dm_io *io)
+>  
+>  	preempt_disable();
+>  	disk_round_stats(dm_disk(md));
+> +	__disk_stat_add(dm_disk(md), ticks[rw], duration);
+>  	preempt_enable();
+> -	dm_disk(md)->in_flight = pending = atomic_dec_return(&md->pending);
+>  
+> -	disk_stat_add(dm_disk(md), ticks[rw], duration);
+> +	dm_disk(md)->in_flight = pending = atomic_dec_return(&md->pending);
+>  
+>  	return !pending;
+>  }
+> @@ -850,8 +850,10 @@ static int dm_request(struct request_queue *q, struct bio *bio)
+>  
+>  	down_read(&md->io_lock);
+>  
+> -	disk_stat_inc(dm_disk(md), ios[rw]);
+> -	disk_stat_add(dm_disk(md), sectors[rw], bio_sectors(bio));
+> +	preempt_disable();
+> +	__disk_stat_inc(dm_disk(md), ios[rw]);
+> +	__disk_stat_add(dm_disk(md), sectors[rw], bio_sectors(bio));
+> +	preempt_enable();
+>  
+>  	/*
+>  	 * If we're suspended we have to queue
+> diff --git a/drivers/md/linear.c b/drivers/md/linear.c
+> index 1074824..ec35b8b 100644
+> --- a/drivers/md/linear.c
+> +++ b/drivers/md/linear.c
+> @@ -322,8 +322,10 @@ static int linear_make_request (struct request_queue *q, struct bio *bio)
+>  		return 0;
+>  	}
+>  
+> -	disk_stat_inc(mddev->gendisk, ios[rw]);
+> -	disk_stat_add(mddev->gendisk, sectors[rw], bio_sectors(bio));
+> +	preempt_disable();
+> +	__disk_stat_inc(mddev->gendisk, ios[rw]);
+> +	__disk_stat_add(mddev->gendisk, sectors[rw], bio_sectors(bio));
+> +	preempt_enable();
+>  
+>  	tmp_dev = which_dev(mddev, bio->bi_sector);
+>  	block = bio->bi_sector >> 1;
+> diff --git a/drivers/md/multipath.c b/drivers/md/multipath.c
+> index e968116..aed8ea9 100644
+> --- a/drivers/md/multipath.c
+> +++ b/drivers/md/multipath.c
+> @@ -158,8 +158,10 @@ static int multipath_make_request (struct request_queue *q, struct bio * bio)
+>  	mp_bh->master_bio = bio;
+>  	mp_bh->mddev = mddev;
+>  
+> -	disk_stat_inc(mddev->gendisk, ios[rw]);
+> -	disk_stat_add(mddev->gendisk, sectors[rw], bio_sectors(bio));
+> +	preempt_disable();
+> +	__disk_stat_inc(mddev->gendisk, ios[rw]);
+> +	__disk_stat_add(mddev->gendisk, sectors[rw], bio_sectors(bio));
+> +	preempt_enable();
+>  
+>  	mp_bh->path = multipath_map(conf);
+>  	if (mp_bh->path < 0) {
+> diff --git a/drivers/md/raid0.c b/drivers/md/raid0.c
+> index 914c04d..d0cdfe1 100644
+> --- a/drivers/md/raid0.c
+> +++ b/drivers/md/raid0.c
+> @@ -403,8 +403,10 @@ static int raid0_make_request (struct request_queue *q, struct bio *bio)
+>  		return 0;
+>  	}
+>  
+> -	disk_stat_inc(mddev->gendisk, ios[rw]);
+> -	disk_stat_add(mddev->gendisk, sectors[rw], bio_sectors(bio));
+> +	preempt_disable();
+> +	__disk_stat_inc(mddev->gendisk, ios[rw]);
+> +	__disk_stat_add(mddev->gendisk, sectors[rw], bio_sectors(bio));
+> +	preempt_enable();
+>  
+>  	chunk_size = mddev->chunk_size >> 10;
+>  	chunk_sects = mddev->chunk_size >> 9;
+> diff --git a/drivers/md/raid1.c b/drivers/md/raid1.c
+> index c610b94..6687ffe 100644
+> --- a/drivers/md/raid1.c
+> +++ b/drivers/md/raid1.c
+> @@ -804,8 +804,10 @@ static int make_request(struct request_queue *q, struct bio * bio)
+>  
+>  	bitmap = mddev->bitmap;
+>  
+> -	disk_stat_inc(mddev->gendisk, ios[rw]);
+> -	disk_stat_add(mddev->gendisk, sectors[rw], bio_sectors(bio));
+> +	preempt_disable();
+> +	__disk_stat_inc(mddev->gendisk, ios[rw]);
+> +	__disk_stat_add(mddev->gendisk, sectors[rw], bio_sectors(bio));
+> +	preempt_enable();
+>  
+>  	/*
+>  	 * make_request() can abort the operation when READA is being
+> diff --git a/drivers/md/raid10.c b/drivers/md/raid10.c
+> index a71277b..1d644dc 100644
+> --- a/drivers/md/raid10.c
+> +++ b/drivers/md/raid10.c
+> @@ -838,8 +838,10 @@ static int make_request(struct request_queue *q, struct bio * bio)
+>  	 */
+>  	wait_barrier(conf);
+>  
+> -	disk_stat_inc(mddev->gendisk, ios[rw]);
+> -	disk_stat_add(mddev->gendisk, sectors[rw], bio_sectors(bio));
+> +	preempt_disable();
+> +	__disk_stat_inc(mddev->gendisk, ios[rw]);
+> +	__disk_stat_add(mddev->gendisk, sectors[rw], bio_sectors(bio));
+> +	preempt_enable();
+>  
+>  	r10_bio = mempool_alloc(conf->r10bio_pool, GFP_NOIO);
+>  
+> diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
+> index 3b27df5..a869e58 100644
+> --- a/drivers/md/raid5.c
+> +++ b/drivers/md/raid5.c
+> @@ -3580,8 +3580,10 @@ static int make_request(struct request_queue *q, struct bio * bi)
+>  
+>  	md_write_start(mddev, bi);
+>  
+> -	disk_stat_inc(mddev->gendisk, ios[rw]);
+> -	disk_stat_add(mddev->gendisk, sectors[rw], bio_sectors(bi));
+> +	preempt_disable();
+> +	__disk_stat_inc(mddev->gendisk, ios[rw]);
+> +	__disk_stat_add(mddev->gendisk, sectors[rw], bio_sectors(bi));
+> +	preempt_enable();
+>  
+>  	if (rw == READ &&
+>  	     mddev->reshape_position == MaxSector &&
+> diff --git a/include/linux/genhd.h b/include/linux/genhd.h
+> index 3e35945..87a338b 100644
+> --- a/include/linux/genhd.h
+> +++ b/include/linux/genhd.h
+> @@ -207,13 +207,6 @@ extern void disk_part_iter_stop(struct disk_part_iter *piter);
+>  extern struct hd_struct *disk_map_sector_rcu(struct gendisk *disk,
+>  					     sector_t sector);
+>  
+> -/* 
+> - * Macros to operate on percpu disk statistics:
+> - *
+> - * The __ variants should only be called in critical sections. The full
+> - * variants disable/enable preemption.
+> - */
+> -
+>  #ifdef	CONFIG_SMP
+>  #define __disk_stat_add(gendiskp, field, addnd) 	\
+>  	(per_cpu_ptr(gendiskp->dkstats, smp_processor_id())->field += addnd)
+> @@ -292,63 +285,22 @@ static inline void part_stat_set_all(struct hd_struct *part, int value)
+>  
+>  #endif /* CONFIG_SMP */
+>  
+> -#define disk_stat_add(gendiskp, field, addnd)			\
+> -	do {							\
+> -		preempt_disable();				\
+> -		__disk_stat_add(gendiskp, field, addnd);	\
+> -		preempt_enable();				\
+> -	} while (0)
+> -
+>  #define __disk_stat_dec(gendiskp, field) __disk_stat_add(gendiskp, field, -1)
+> -#define disk_stat_dec(gendiskp, field) disk_stat_add(gendiskp, field, -1)
+> -
+>  #define __disk_stat_inc(gendiskp, field) __disk_stat_add(gendiskp, field, 1)
+> -#define disk_stat_inc(gendiskp, field) disk_stat_add(gendiskp, field, 1)
+> -
+>  #define __disk_stat_sub(gendiskp, field, subnd) \
+>  		__disk_stat_add(gendiskp, field, -subnd)
+> -#define disk_stat_sub(gendiskp, field, subnd) \
+> -		disk_stat_add(gendiskp, field, -subnd)
+> -
+> -#define part_stat_add(gendiskp, field, addnd)		\
+> -	do {						\
+> -		preempt_disable();			\
+> -		__part_stat_add(gendiskp, field, addnd);\
+> -		preempt_enable();			\
+> -	} while (0)
+>  
+>  #define __part_stat_dec(gendiskp, field) __part_stat_add(gendiskp, field, -1)
+> -#define part_stat_dec(gendiskp, field) part_stat_add(gendiskp, field, -1)
+> -
+>  #define __part_stat_inc(gendiskp, field) __part_stat_add(gendiskp, field, 1)
+> -#define part_stat_inc(gendiskp, field) part_stat_add(gendiskp, field, 1)
+> -
+>  #define __part_stat_sub(gendiskp, field, subnd) \
+>  		__part_stat_add(gendiskp, field, -subnd)
+> -#define part_stat_sub(gendiskp, field, subnd) \
+> -		part_stat_add(gendiskp, field, -subnd)
+> -
+> -#define all_stat_add(gendiskp, part, field, addnd, sector)	\
+> -	do {							\
+> -		preempt_disable();				\
+> -		__all_stat_add(gendiskp, part, field, addnd, sector);	\
+> -		preempt_enable();				\
+> -	} while (0)
+>  
+>  #define __all_stat_dec(gendiskp, field, sector) \
+>  		__all_stat_add(gendiskp, field, -1, sector)
+> -#define all_stat_dec(gendiskp, field, sector) \
+> -		all_stat_add(gendiskp, field, -1, sector)
+> -
+>  #define __all_stat_inc(gendiskp, part, field, sector) \
+>  		__all_stat_add(gendiskp, part, field, 1, sector)
+> -#define all_stat_inc(gendiskp, part, field, sector) \
+> -		all_stat_add(gendiskp, part, field, 1, sector)
+> -
+>  #define __all_stat_sub(gendiskp, part, field, subnd, sector) \
+>  		__all_stat_add(gendiskp, part, field, -subnd, sector)
+> -#define all_stat_sub(gendiskp, part, field, subnd, sector) \
+> -		all_stat_add(gendiskp, part, field, -subnd, sector)
+>  
+>  /* Inlines to alloc and free disk stats in struct gendisk */
+>  #ifdef  CONFIG_SMP
 
