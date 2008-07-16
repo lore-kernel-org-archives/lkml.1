@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759623AbYGPWIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759904AbYGPWJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759623AbYGPWIl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 18:08:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756039AbYGPWId
+	id S1759904AbYGPWJU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 18:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757315AbYGPWJH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 18:08:33 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:40408 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755855AbYGPWIc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 18:08:32 -0400
-Date: Wed, 16 Jul 2008 23:08:26 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Morton Harrow <mharrow@linuxmail.org>
-Cc: Miod Vallat <miod@online.fr>, licensing@fsf.org,
-       linux-kernel@vger.kernel.org, rms@gnu.org, claire.newman@canonical.com,
-       announce@fsfeurope.org, misc@openbsd.org, ubuntu-users@lists.ubuntu.com,
-       fedora-list@redhat.com, netbsd-users@netbsd.org,
-       freebsd-questions@freebsd.org
-Subject: Re: GPL version 4
-Message-ID: <20080716220826.GL28946@ZenIV.linux.org.uk>
-References: <20080716213115.C747F7BC45@ws5-10.us4.outblaze.com>
+	Wed, 16 Jul 2008 18:09:07 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59060 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756023AbYGPWJG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 18:09:06 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: Please pull ACPI updates
+Date: Thu, 17 Jul 2008 00:11:11 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: torvalds@osdl.org, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
+References: <20080716214516.GA10777@basil.nowhere.org>
+In-Reply-To: <20080716214516.GA10777@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080716213115.C747F7BC45@ws5-10.us4.outblaze.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200807170011.12184.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 05:31:15AM +0800, Morton Harrow wrote:
+On Wednesday, 16 of July 2008, Andi Kleen wrote:
+> 
+> Linus,
+> 
+> Please pull from
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/ak/linux-acpi-merge-2.6 release-2.6.27
+> 
+> to get the initial ACPI updates for 2.6.27. We got a few more changes
+> dependent on yet unpulled trees and some other candidate patches,
+> but that's the bulk for the changes intended for 2.6.27. Most of that
+> has been collected by Len Brown before he went on sabbatical. I was
+> relatively conservative with additional changes so far.
 
-> In addition to the announcement of the GPLv4, I was trying to discuss
-> another point.
+Well, IMO it would be better to merge PCI first.
 
-Piss off.
-
-	1) if you read the text of GPL, you will notice that "later
-versions" are explicitly limited to the versions published by FSF.
-Which makes your version rather irrelevant.
-
-	2) in case you've managed to miss it, Linux is *NOT* under "v2 or
-later".
-
-	3) discussion of FSF, their mission, their ideals or their imaginary
-pet polka-dot goats does not belong here.
-
-	4) pain in your heart or in any other parts of your anatomy that might
-have been involved in the creation of that wankstain is, quite frankly, none of
-our concern.
+Thanks,
+Rafael
