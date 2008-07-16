@@ -1,74 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756756AbYGPAJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757537AbYGPAJy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756756AbYGPAJA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 20:09:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbYGPAIw
+	id S1757537AbYGPAJy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 20:09:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbYGPAJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 20:08:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38568 "EHLO mx1.redhat.com"
+	Tue, 15 Jul 2008 20:09:46 -0400
+Received: from r00tworld.com ([212.85.137.21]:59138 "EHLO r00tworld.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752189AbYGPAIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 20:08:51 -0400
-Date: Tue, 15 Jul 2008 20:00:38 -0400
-From: Dave Jones <davej@redhat.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Frans Pop <elendil@planet.nl>, arjan@infradead.org,
-       akpm@linux-foundation.org, dwmw2@infradead.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
-	in-kernel, use it in more drivers.
-Message-ID: <20080716000038.GB17417@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Jeff Garzik <jeff@garzik.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-	Frans Pop <elendil@planet.nl>, arjan@infradead.org,
-	akpm@linux-foundation.org, dwmw2@infradead.org,
-	alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-References: <20080715180535.GA6080@khazad-dum.debian.net> <487CE917.3000000@garzik.org> <alpine.LFD.1.10.0807151122010.3017@woody.linux-foundation.org> <487CF29E.5000009@garzik.org> <alpine.LFD.1.10.0807151159400.3351@woody.linux-foundation.org> <487D01B5.7020300@garzik.org> <alpine.LFD.1.10.0807151310370.2867@woody.linux-foundation.org> <487D0ED1.7010003@garzik.org> <20080715230204.GC10532@redhat.com> <487D36D9.6020105@garzik.org>
+	id S1752814AbYGPAJp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 20:09:45 -0400
+From: pageexec@freemail.hu
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 16 Jul 2008 02:04:25 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <487D36D9.6020105@garzik.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Subject: Re: [stable] Linux 2.6.25.10
+Reply-to: pageexec@freemail.hu
+CC: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Message-ID: <487D5729.14854.1CA5C3EB@pageexec.freemail.hu>
+In-reply-to: <alpine.LFD.1.10.0807151620450.2867@woody.linux-foundation.org>
+References: <20080703185727.GA12617@suse.de>, <487D3C17.31467.1C3C0441@pageexec.freemail.hu>, <alpine.LFD.1.10.0807151620450.2867@woody.linux-foundation.org>
+X-mailer: Pegasus Mail for Windows (4.41)
+Content-type: text/plain; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+Content-description: Mail message body
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Wed, 16 Jul 2008 02:05:10 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 07:46:33PM -0400, Jeff Garzik wrote:
- > Dave Jones wrote:
- > > On Tue, Jul 15, 2008 at 04:55:45PM -0400, Jeff Garzik wrote:
- > > 
- > >  > No, I spelled out a list of projects, what would break, and how it would 
- > >  > break.
- > >  > 
- > >  > Again,
- > >  > 
- > >  > * Red Hat driver disks.  The build process is unaware of the need to 
- > >  > bundle firmware.  Any use with Fedora (or, later, RHEL) will result in a 
- > >  > non-working driver, for the simple reason that firmware is not copied 
- > >  > onto the image.
- > > 
- > > For old RHEL - they won't support 2.6.27, so moot.
- > > For next-gen RHEL - they need fixing anyway.
- > > For Fedora, they don't (and hopefully won't) exist.
- > 
- > Grin,
- > http://docs.fedoraproject.org/fedora-install-guide-en/fc5/sn-bootoptions-hardware.html
+On 15 Jul 2008 at 16:28, Linus Torvalds wrote:
 
-I don't think any of this stuff has ever been actually used in a Fedora context.
-We certainly haven't released any official ones ttbomk.
+> On Wed, 16 Jul 2008, pageexec@freemail.hu wrote:
+> >
+> > you should check out the last few -stable releases then and see how
+> > the announcement doesn't ever mention the word 'security' while fixing
+> > security bugs
+> 
+> Umm. What part of "they are just normal bugs" did you have issues with?
 
- > Or DKMS, which should package firmware:
- > http://linux.dell.com/projects.shtml
+oh, we're back to that. i told you that already, here it is again (just
+quoting myself back):
 
-Not quite the same thing as a driver disk, but I'll humour you..
-That handles MODULE_FIRMWARE fine afaik.  Though again, this doesn't see much
-actual use in a Fedora context.
+  when you fix a bug, the commit describes what it fixes without omitting
+  anything relevant. when you fix a security bug, its commit doesn't say
+  what it fixes (not even that it's a security fix, never mind actual
+  impact information), that is, you omit relevant information (based on
+  some ill-conceived argument that i deconstructed at the beginning). in
+  other words, you're *not* treating security bugs as normal bugs. for
+  all intents and purposes, you cover them up. i *wish* you did treat
+  them as normal bugs however.
 
-	Dave
+we went through this and you yourself said that security bugs are *not*
+treated as normal bugs because you do omit relevant information from such
+commits whereas you do *not* omit relevant information from normal commits.
+for security bugs the fact that they fix a security issue is relevant
+information.
 
--- 
-http://www.codemonkey.org.uk
+> I expressly told you that security bugs should not be marked as such, 
+> because bugs are bugs. 
+
+repeating the same thing doesn't make the self-contradiction above go
+away. bugs are properly described in the commits, security bugs aren't
+(you said so yourself), therefore they can't be of the same category.
+
+what you're still trying to justify is why you are covering up security
+bugs, plain and simple.
+
+> > > I'm just saying that why mark things, when the marking have no meaning? 
+> > > People who believe in them are just _wrong_.
+> > 
+> > what is wrong in particular?
+> 
+> You have two cases:
+> 
+>  - people think the marking is somehow trustworthy.
+> 
+>    People are WRONG, and are misled by the partial markings, thinking that 
+>    unmarked bugfixes are "less important". They aren't.
+
+why would people think that unmarked bugfixes are less important? who are
+you to make that judgement for them anyway? the importance of bugs is
+*orthogonal* to their classification (security, etc). it's up to the people
+and their decision making processes to deal with that. all you should do
+is help them by not withholding relevant information. in case it wasn't
+clear, i'm not talking about just about any person like my grandma, but
+people whose work involves following kernel development, who can use all
+the extra information to make judgement calls about what to prioritize.
+they're certainly not dumb and would not think that only commits marked
+as such are security related.
+
+>  - People don't think it matters
+> 
+>    People are right, and the marking is pointless.
+
+you have yet to prove why it's pointless. the above attempt failed to do so.
+
+> In either case it's just stupid to mark them. I don't want to do it, 
+> because I don't want to perpetuate the myth of "security fixes" as a 
+> separate thing from "plain regular bug fixes".
+
+it's not a myth, it's called reality. a bugfix that gets my pc speaker beep
+again is very different from a fix that stops the tcp/ip stack sending out
+random kernel memory to the net (just made them up, before anyone starts
+looking). you're desperately trying to ignore the importance of security
+bugs but you're failing. the world has decided that security bugs *are*
+important and deserve special attention. and it's not as if you had to do
+any extra work, you already have the information, you should just not
+*withhold* it.
+
+> They're all fixes. They're all important. As are new features, for that 
+> matter.
+
+'importance' is not a big grey goo that applies equally to all fixes. you
+want to make it appear so, but that doesn't make it so.
+
+> > when you know that you're about to commit a patch that fixes a security 
+> > bug, why is it wrong to say so in the commit?
+> 
+> It's pointless and wrong because it makes people think that other bugs 
+> aren't potential security fixes.
+
+why does it make people think that? did you ask them? what if you told them
+as i suggested (and you conveniently skipped) what to expect? do you think
+people dealing with kernel maintenance at companies, distros, etc are that
+dumb?
+
+cheers,
+  PaX Team
+
