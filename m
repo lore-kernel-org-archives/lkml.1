@@ -1,50 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758832AbYGPRBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759923AbYGPRBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758832AbYGPRBT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 13:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757376AbYGPRBG
+	id S1759923AbYGPRBb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 13:01:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758058AbYGPRBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 13:01:06 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:13591 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757058AbYGPRBF (ORCPT
+	Wed, 16 Jul 2008 13:01:13 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:42227 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757874AbYGPRBL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 13:01:05 -0400
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [git pull] RCU updates for v2.6.27
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080714152045.GA29159@elte.hu>
-	<alpine.LFD.1.10.0807151037060.3017@woody.linux-foundation.org>
-	<19f34abd0807151314r7462ecc4n8483c7e9fd52769f@mail.gmail.com>
-Date: Wed, 16 Jul 2008 19:00:29 +0200
-In-Reply-To: <19f34abd0807151314r7462ecc4n8483c7e9fd52769f@mail.gmail.com> (Vegard Nossum's message of "Tue, 15 Jul 2008 22:14:39 +0200")
-Message-ID: <87abghydaq.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Wed, 16 Jul 2008 13:01:11 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5340"; a="4596717"
+Message-ID: <487E2950.7030905@qualcomm.com>
+Date: Wed, 16 Jul 2008 10:01:04 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 16 Jul 2008 17:00:27.0953 (UTC) FILETIME=[728BB210:01C8E765]
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Paul Menage <menage@google.com>, Paul Jackson <pj@sgi.com>,
+       miaox@cn.fujitsu.com, rostedt@goodmis.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: current linux-2.6.git: cpusets completely broken
+References: <alpine.LFD.1.10.0807121411350.2875@woody.linux-foundation.org>	 <b647ffbd0807141538g2004f245m5f54ec962f475ba5@mail.gmail.com>	 <alpine.LFD.1.10.0807141602250.3017@woody.linux-foundation.org>	 <b647ffbd0807141700s20e54fbewafb3d3e296e57f53@mail.gmail.com>	 <alpine.LFD.1.10.0807141707410.3017@woody.linux-foundation.org>	 <b647ffbd0807141921n13ffa59x416fc024c734ef02@mail.gmail.com>	 <487C1374.8020404@qualcomm.com>	 <alpine.LFD.1.10.0807142104250.3017@woody.linux-foundation.org>	 <20080715083223.GA2600@elte.hu> <487C62FB.6030304@qualcomm.com>	 <20080715085738.GA6325@elte.hu>  <487D96C9.7070502@qualcomm.com> <1216192222.5232.7.camel@twins>
+In-Reply-To: <1216192222.5232.7.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Vegard Nossum" <vegard.nossum@gmail.com> writes:
->
-> But yeah, I'll continue to improve it and hopefully get it in better
-> shape for next time, especially with regards to SMP support. Maybe we
-> can finally have Andrew's review too, if he's not too busy giving all
-> these talks and whatnot. Some of the things we've actually fixed up
-> since last time include impact on the slab code,
-> CodingStyle/checkpatch issues, and the splitting the huge single file
-> of code into its own directory to make it more manageable. Oh, and I
-> believe 64-bit support is new as well.
+Peter Zijlstra wrote:
+> On Tue, 2008-07-15 at 23:35 -0700, Max Krasnyansky wrote:
+>> There are now three patches that are outstanding (pending reviews, etc) on this:
+>>
+>> 1. cpu hotplug, sched: Introduce cpu_active_map and redo sched\
+>> 		    domain managment (take 2)
+>>
+>> 2. cpu hotplug: Make cpu_active_map synchronization dependency clear
+>>
+>> 3. cpuset: Make rebuild_sched_domains() usable from any context (take 2)
+>>
+>> Please review/ack/nak/etc.
+>>
+>> ----
+>> Linus ACKed #1 and Ingo seemed to be more or less ok with it. We need ACKs
+>> from Dmitry, Peter and Greg on the general approach and due to some
+>> non-trivial merges with their stuff. RT balancer cpupri thingy and and RT
+>> bandwidth handling.
+> 
+> ACK
+> 
+>> #2 Should be fairly straightforward.
+> 
+> Has a misformed comment, ACK when that's fixed.
+> 
+>> #3 Need ACKs from Paul J. and Paul M. overall they seemed ok with the first
+>> version, and new version implements the suggested workqueue based rebuild.
+> 
+> Has more misformed comments. Please use
+> 
+>  /*
+>   * this is a multiline
+>   * comment
+>   */
+> 
+> instead of
+> 
+>   /* this is a multiline
+>    * comment */
 
-Have the network (or likely general) IO false positives be fixed
-yet? That seemed like the largest design misfeature last time I looked.
-I suspect it needs integration into the PCI-DMA API.
+Got it. Will fix and resend.
 
--Andi
+Thanx for the ACKs and review.
+
+Max
+
+
