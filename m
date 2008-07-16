@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759407AbYGPAZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758706AbYGPA0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759407AbYGPAZl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 20:25:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759046AbYGPAYJ
+	id S1758706AbYGPA0X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 20:26:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759213AbYGPAY0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 20:24:09 -0400
+	Tue, 15 Jul 2008 20:24:26 -0400
 Received: from ug-out-1314.google.com ([66.249.92.173]:8513 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758839AbYGPAYH (ORCPT
+	with ESMTP id S1759210AbYGPAYY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 20:24:07 -0400
+	Tue, 15 Jul 2008 20:24:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:to:subject:message-id:mime-version:content-type
          :content-disposition:user-agent:from;
-        b=scGY9c0sD2wF3eBChtACBnN0Msd+uPVc4tiHJL43Wn/wUH/gYdrMld/1TcbVum3onA
-         qv62E4mW0nDhvADwB58A0cgpNpLghL2Gqi9+nDuA1obABxzL2A42i+CSz3pAfqJ1i3kG
-         FFUXlzTIMnjEKwoaZJbyZjMMfAuVmC+wSvyCc=
-Date: Wed, 16 Jul 2008 02:23:53 +0200
+        b=YY86aw5Q4YzLVOHuXLDbpMZhdMHZzOf4nYw8hTRTF0qsY2IwaaxGojvPVqKvApvSgE
+         mm3cSZMrU2JaGq51RRuPTl1a0un+X0kECpw+Wk72YrTta3kLRrp0F2Mm/G2y1BgC3RuH
+         0beXkuaiKCBsgt0o7zN8C5GnELWXhvPa+3RAA=
+Date: Wed, 16 Jul 2008 02:24:10 +0200
 To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: [PATCH 09/13] x86: add hooks for kmemcheck on x86_64
-Message-ID: <20080716002353.GJ12564@localhost.localdomain>
+Subject: [PATCH 10/13] kmemcheck: add mm functions
+Message-ID: <20080716002410.GK12564@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -32,77 +32,318 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From a01667599a005303eb3f54b45d31346964b47ebf Mon Sep 17 00:00:00 2001
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-Date: Fri, 4 Apr 2008 11:16:06 +0300
-Subject: [PATCH 09/13] x86: add hooks for kmemcheck on x86_64
+>From 11a1cb6127eb25c827468fe7c83dd92748d405b1 Mon Sep 17 00:00:00 2001
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Date: Sat, 31 May 2008 15:56:17 +0200
+Subject: [PATCH 10/13] kmemcheck: add mm functions
 
-This makes the necessary changes for kmemcheck to work on x86_64.
+With kmemcheck enabled, the slab allocator needs to do this:
 
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+1. Tell kmemcheck to allocate the shadow memory which stores the status of
+   each byte in the allocation proper, e.g. whether it is initialized or
+   uninitialized.
+2. Tell kmemcheck which parts of memory that should be marked uninitialized.
+   There are actually a few more states, such as "not yet allocated" and
+   "recently freed".
+
+If a slab cache is set up using the SLAB_NOTRACK flag, it will never return
+memory that can take page faults because of kmemcheck.
+
+If a slab cache is NOT set up using the SLAB_NOTRACK flag, callers can still
+request memory with the __GFP_NOTRACK flag. This does not prevent the page
+faults from occuring, however, but marks the object in question as being
+initialized so that no warnings will ever be produced for this object.
+
+Parts of this patch were contributed by Pekka Enberg but merged for
+atomicity.
+
 Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
 ---
- arch/x86/kernel/traps_64.c   |    9 +++++++++
- include/asm-x86/pgtable_64.h |    6 ++++++
- include/asm-x86/string_64.h  |    1 +
- 3 files changed, 16 insertions(+), 0 deletions(-)
+ arch/x86/kernel/process.c |    2 +-
+ include/linux/gfp.h       |    3 +-
+ include/linux/kmemcheck.h |   48 ++++++++++++++++++++++
+ include/linux/slab.h      |    7 +++
+ kernel/fork.c             |   16 ++++----
+ mm/Makefile               |    2 +-
+ mm/kmemcheck.c            |   97 +++++++++++++++++++++++++++++++++++++++++++++
+ 7 files changed, 164 insertions(+), 11 deletions(-)
+ create mode 100644 mm/kmemcheck.c
 
-diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
-index 552506c..97a8f52 100644
---- a/arch/x86/kernel/traps_64.c
-+++ b/arch/x86/kernel/traps_64.c
-@@ -53,6 +53,7 @@
- #include <asm/proto.h>
- #include <asm/nmi.h>
- #include <asm/stacktrace.h>
-+#include <asm/kmemcheck.h>
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index ba370dc..d61d452 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -42,7 +42,7 @@ void arch_task_cache_init(void)
+         task_xstate_cachep =
+         	kmem_cache_create("task_xstate", xstate_size,
+ 				  __alignof__(union thread_xstate),
+-				  SLAB_PANIC, NULL);
++				  SLAB_PANIC | SLAB_NOTRACK, NULL);
+ }
  
- asmlinkage void divide_error(void);
- asmlinkage void debug(void);
-@@ -911,6 +912,14 @@ asmlinkage void __kprobes do_debug(struct pt_regs * regs,
+ static void do_nothing(void *unused)
+diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+index b414be3..7c1db87 100644
+--- a/include/linux/gfp.h
++++ b/include/linux/gfp.h
+@@ -50,8 +50,9 @@ struct vm_area_struct;
+ #define __GFP_THISNODE	((__force gfp_t)0x40000u)/* No fallback, no policies */
+ #define __GFP_RECLAIMABLE ((__force gfp_t)0x80000u) /* Page is reclaimable */
+ #define __GFP_MOVABLE	((__force gfp_t)0x100000u)  /* Page is movable */
++#define __GFP_NOTRACK	((__force gfp_t)0x200000u)  /* Don't track with kmemcheck */
  
- 	get_debugreg(condition, 6);
+-#define __GFP_BITS_SHIFT 21	/* Room for 21 __GFP_FOO bits */
++#define __GFP_BITS_SHIFT 22	/* Room for 22 __GFP_FOO bits */
+ #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
  
-+	/* Catch kmemcheck conditions first of all! */
-+	if (condition & DR_STEP) {
-+		if (kmemcheck_active(regs)) {
-+			kmemcheck_hide(regs);
-+			return;
-+		}
-+	}
+ /* This equals 0, but use constants in case they ever change */
+diff --git a/include/linux/kmemcheck.h b/include/linux/kmemcheck.h
+index 266edbf..b2d83ef 100644
+--- a/include/linux/kmemcheck.h
++++ b/include/linux/kmemcheck.h
+@@ -9,6 +9,27 @@ extern int kmemcheck_enabled;
+ 
+ void kmemcheck_init(void);
+ 
++/* The slab-related functions. */
++void kmemcheck_alloc_shadow(struct kmem_cache *s, gfp_t flags, int node,
++			    struct page *page, int order);
++void kmemcheck_free_shadow(struct kmem_cache *s, struct page *page, int order);
++void kmemcheck_slab_alloc(struct kmem_cache *s, gfp_t gfpflags, void *object,
++			  size_t size);
++void kmemcheck_slab_free(struct kmem_cache *s, void *object, size_t size);
 +
- 	/*
- 	 * The processor cleared BTF, so don't mark that we need it set.
- 	 */
-diff --git a/include/asm-x86/pgtable_64.h b/include/asm-x86/pgtable_64.h
-index 1cc50d2..7836ccc 100644
---- a/include/asm-x86/pgtable_64.h
-+++ b/include/asm-x86/pgtable_64.h
-@@ -169,6 +169,12 @@ static inline int pmd_bad(pmd_t pmd)
- #define pte_none(x)	(!pte_val((x)))
- #define pte_present(x)	(pte_val((x)) & (_PAGE_PRESENT | _PAGE_PROTNONE))
++void kmemcheck_show_pages(struct page *p, unsigned int n);
++void kmemcheck_hide_pages(struct page *p, unsigned int n);
++
++bool kmemcheck_page_is_tracked(struct page *p);
++
++void kmemcheck_mark_unallocated(void *address, unsigned int n);
++void kmemcheck_mark_uninitialized(void *address, unsigned int n);
++void kmemcheck_mark_initialized(void *address, unsigned int n);
++void kmemcheck_mark_freed(void *address, unsigned int n);
++
++void kmemcheck_mark_unallocated_pages(struct page *p, unsigned int n);
++void kmemcheck_mark_uninitialized_pages(struct page *p, unsigned int n);
++
+ int kmemcheck_show_addr(unsigned long address);
+ int kmemcheck_hide_addr(unsigned long address);
+ #else
+@@ -17,6 +38,33 @@ int kmemcheck_hide_addr(unsigned long address);
+ static inline void kmemcheck_init(void)
+ {
+ }
++
++static inline void
++kmemcheck_alloc_shadow(struct kmem_cache *s, gfp_t flags, int node,
++		       struct page *page, int order)
++{
++}
++
++static inline void
++kmemcheck_free_shadow(struct kmem_cache *s, struct page *page, int order)
++{
++}
++
++static inline void
++kmemcheck_slab_alloc(struct kmem_cache *s, gfp_t gfpflags, void *object,
++		     size_t size)
++{
++}
++
++static inline void kmemcheck_slab_free(struct kmem_cache *s, void *object,
++				       size_t size)
++{
++}
++
++static inline bool kmemcheck_page_is_tracked(struct page *p)
++{
++	return false;
++}
+ #endif /* CONFIG_KMEMCHECK */
  
+ #endif /* LINUX_KMEMCHECK_H */
+diff --git a/include/linux/slab.h b/include/linux/slab.h
+index 9aa90a6..faff12b 100644
+--- a/include/linux/slab.h
++++ b/include/linux/slab.h
+@@ -34,6 +34,13 @@
+ # define SLAB_DEBUG_OBJECTS	0x00000000UL
+ #endif
+ 
++/* Don't track use of uninitialized memory */
 +#ifdef CONFIG_KMEMCHECK
-+#define pte_hidden(x)	(pte_val((x)) & (_PAGE_HIDDEN))
++# define SLAB_NOTRACK		0x00800000UL
 +#else
-+#define pte_hidden(x)	0
++# define SLAB_NOTRACK		0x00000000UL
 +#endif
 +
- #define pages_to_mb(x)	((x) >> (20 - PAGE_SHIFT))   /* FIXME: is this right? */
- #define pte_page(x)	pfn_to_page(pte_pfn((x)))
- #define pte_pfn(x)	((pte_val((x)) & __PHYSICAL_MASK) >> PAGE_SHIFT)
-diff --git a/include/asm-x86/string_64.h b/include/asm-x86/string_64.h
-index 52b5ab3..49874fd 100644
---- a/include/asm-x86/string_64.h
-+++ b/include/asm-x86/string_64.h
-@@ -45,6 +45,7 @@ extern void *__memcpy(void *to, const void *from, size_t len);
+ /* The following flags affect the page allocator grouping pages by mobility */
+ #define SLAB_RECLAIM_ACCOUNT	0x00020000UL		/* Objects are reclaimable */
+ #define SLAB_TEMPORARY		SLAB_RECLAIM_ACCOUNT	/* Objects are short-lived */
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 19908b2..25c2aa3 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -150,7 +150,7 @@ void __init fork_init(unsigned long mempages)
+ 	/* create a slab on which task_structs can be allocated */
+ 	task_struct_cachep =
+ 		kmem_cache_create("task_struct", sizeof(struct task_struct),
+-			ARCH_MIN_TASKALIGN, SLAB_PANIC, NULL);
++			ARCH_MIN_TASKALIGN, SLAB_PANIC | SLAB_NOTRACK, NULL);
+ #endif
  
- #define __HAVE_ARCH_MEMSET
- void *memset(void *s, int c, size_t n);
-+void *__memset(void *s, int c, size_t n);
+ 	/* do the arch specific task caches init */
+@@ -1415,23 +1415,23 @@ void __init proc_caches_init(void)
+ {
+ 	sighand_cachep = kmem_cache_create("sighand_cache",
+ 			sizeof(struct sighand_struct), 0,
+-			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_DESTROY_BY_RCU,
+-			sighand_ctor);
++			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_DESTROY_BY_RCU|
++			SLAB_NOTRACK, sighand_ctor);
+ 	signal_cachep = kmem_cache_create("signal_cache",
+ 			sizeof(struct signal_struct), 0,
+-			SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
++			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_NOTRACK, NULL);
+ 	files_cachep = kmem_cache_create("files_cache",
+ 			sizeof(struct files_struct), 0,
+-			SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
++			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_NOTRACK, NULL);
+ 	fs_cachep = kmem_cache_create("fs_cache",
+ 			sizeof(struct fs_struct), 0,
+-			SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
++			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_NOTRACK, NULL);
+ 	vm_area_cachep = kmem_cache_create("vm_area_struct",
+ 			sizeof(struct vm_area_struct), 0,
+-			SLAB_PANIC, NULL);
++			SLAB_PANIC|SLAB_NOTRACK, NULL);
+ 	mm_cachep = kmem_cache_create("mm_struct",
+ 			sizeof(struct mm_struct), ARCH_MIN_MMSTRUCT_ALIGN,
+-			SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
++			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_NOTRACK, NULL);
+ }
  
- #define __HAVE_ARCH_MEMMOVE
- void *memmove(void *dest, const void *src, size_t count);
+ /*
+diff --git a/mm/Makefile b/mm/Makefile
+index 18c143b..4801918 100644
+--- a/mm/Makefile
++++ b/mm/Makefile
+@@ -27,10 +27,10 @@ obj-$(CONFIG_TINY_SHMEM) += tiny-shmem.o
+ obj-$(CONFIG_SLOB) += slob.o
+ obj-$(CONFIG_SLAB) += slab.o
+ obj-$(CONFIG_SLUB) += slub.o
++obj-$(CONFIG_KMEMCHECK) += kmemcheck.o
+ obj-$(CONFIG_MEMORY_HOTPLUG) += memory_hotplug.o
+ obj-$(CONFIG_FS_XIP) += filemap_xip.o
+ obj-$(CONFIG_MIGRATION) += migrate.o
+ obj-$(CONFIG_SMP) += allocpercpu.o
+ obj-$(CONFIG_QUICKLIST) += quicklist.o
+ obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o
+-
+diff --git a/mm/kmemcheck.c b/mm/kmemcheck.c
+new file mode 100644
+index 0000000..4efdf1e
+--- /dev/null
++++ b/mm/kmemcheck.c
+@@ -0,0 +1,97 @@
++#include <linux/mm_types.h>
++#include <linux/mm.h>
++#include <linux/slab.h>
++#include <linux/kmemcheck.h>
++
++void kmemcheck_alloc_shadow(struct kmem_cache *s, gfp_t flags, int node,
++			   struct page *page, int order)
++{
++	struct page *shadow;
++	int pages;
++	int i;
++
++	pages = 1 << order;
++
++	/*
++	 * With kmemcheck enabled, we need to allocate a memory area for the
++	 * shadow bits as well.
++	 */
++	shadow = alloc_pages_node(node, flags, order);
++	if (!shadow) {
++		if (printk_ratelimit())
++			printk(KERN_ERR "kmemcheck: failed to allocate "
++				"shadow bitmap\n");
++		return;
++	}
++
++	for(i = 0; i < pages; ++i)
++		page[i].shadow = page_address(&shadow[i]);
++
++	/*
++	 * Mark it as non-present for the MMU so that our accesses to
++	 * this memory will trigger a page fault and let us analyze
++	 * the memory accesses.
++	 */
++	kmemcheck_hide_pages(page, pages);
++
++	/*
++	 * Objects from caches that have a constructor don't get
++	 * cleared when they're allocated, so we need to do it here.
++	 */
++	if (s->ctor)
++		kmemcheck_mark_uninitialized_pages(page, pages);
++	else
++		kmemcheck_mark_unallocated_pages(page, pages);
++}
++
++void kmemcheck_free_shadow(struct kmem_cache *s, struct page *page, int order)
++{
++	struct page *shadow;
++	int pages;
++	int i;
++
++	pages = 1 << order;
++
++	kmemcheck_show_pages(page, pages);
++
++	shadow = virt_to_page(page[0].shadow);
++
++	for(i = 0; i < pages; ++i)
++		page[i].shadow = NULL;
++
++	__free_pages(shadow, order);
++}
++
++void kmemcheck_slab_alloc(struct kmem_cache *s, gfp_t gfpflags, void *object,
++			  size_t size)
++{
++	if (gfpflags & __GFP_ZERO)
++		return;
++	if (s->flags & SLAB_NOTRACK)
++		return;
++
++	if (!kmemcheck_enabled || gfpflags & __GFP_NOTRACK) {
++		/*
++		 * Allow notracked objects to be allocated from
++		 * tracked caches. Note however that these objects
++		 * will still get page faults on access, they just
++		 * won't ever be flagged as uninitialized. If page
++		 * faults are not acceptable, the slab cache itself
++		 * should be marked NOTRACK.
++		 */
++		kmemcheck_mark_initialized(object, size);
++	} else if (!s->ctor) {
++		/*
++		 * New objects should be marked uninitialized before
++		 * they're returned to the called.
++		 */
++		kmemcheck_mark_uninitialized(object, size);
++	}
++}
++
++void kmemcheck_slab_free(struct kmem_cache *s, void *object, size_t size)
++{
++	/* TODO: RCU freeing is unsupported for now; hide false positives. */
++	if (!s->ctor && !(s->flags & SLAB_DESTROY_BY_RCU))
++		kmemcheck_mark_freed(object, size);
++}
 -- 
 1.5.5.1
 
