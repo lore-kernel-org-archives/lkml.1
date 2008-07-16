@@ -1,110 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759408AbYGPD2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759259AbYGPDc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759408AbYGPD2U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 23:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbYGPD2M
+	id S1759259AbYGPDc3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 23:32:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754128AbYGPDcV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 23:28:12 -0400
-Received: from smtp108.prem.mail.sp1.yahoo.com ([98.136.44.63]:22216 "HELO
-	smtp108.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754158AbYGPD2L (ORCPT
+	Tue, 15 Jul 2008 23:32:21 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:15685 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753749AbYGPDcV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 23:28:11 -0400
-X-YMail-OSG: Mi3bcq8VM1n__70jk39lr.dqMQuDoFITZQk77.i575eqQA6UaW5updyoWLMfRhoA7XYdnGC3HPLHZvjdoVtFB7q2mQbNG5RtgvBlAnBoOBNOIuP_tNYnt9J_hcwuCdWgs.dJdsugTh0rVsojWZryApGk
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <487D6AB9.7080700@schaufler-ca.com>
-Date: Tue, 15 Jul 2008 20:27:53 -0700
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Tue, 15 Jul 2008 23:32:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=crimOitJP3+u5+MEnKYrDjwFXcaPw3QjzGW1Fp10pdD9ZkedDBP/akhtmUiZAnm7+R
+         AsdGNFDdhyWZmEn37u9I30smc0X95ix1UKLUkZcKMEqwVejsKZPw3D0uwgUEaT2z8aF7
+         uBApNCB3yKiasXZMuMowRwT/s/jDm49E372U8=
+Message-ID: <3aa654a40807152032t774e1182vee32a1d3d381719a@mail.gmail.com>
+Date: Tue, 15 Jul 2008 20:32:19 -0700
+From: "Avuton Olrich" <avuton@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: s2disk: system powers up again after power off
+Cc: "Martin Michlmayr" <tbm@cyrius.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <200807160132.38814.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Tiago Assumpcao <tiago@assumpcao.org>
-CC: Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>, pageexec@freemail.hu,
-       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [stable] Linux 2.6.25.10
-References: <alpine.LFD.1.10.0807151425170.2867@woody.linux-foundation.org> <487D3C17.31467.1C3C0441@pageexec.freemail.hu> <alpine.LFD.1.10.0807151620450.2867@woody.linux-foundation.org> <487D3A13.3040507@assumpcao.org> <20080716010836.GL8185@mit.edu> <487D547C.7060909@assumpcao.org>
-In-Reply-To: <487D547C.7060909@assumpcao.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080715124733.GA4111@deprecation.cyrius.com>
+	 <200807160059.54886.rjw@sisk.pl>
+	 <3aa654a40807151609m70d6852ex7f85d60c438bb4d7@mail.gmail.com>
+	 <200807160132.38814.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tiago Assumpcao wrote:
-> Theodore Tso wrote:
->> Look if you want this, pay $$$ to a distribution and get their
->> supported distribution.  It costs time and effort to classify bugs as
->> security related (or not), (...)
->
-> That's fallacious. Assuming that you have good programmers, and you 
-> do, it's of very low cost the act of identifying what *is likely to 
-> be* a security bug.
-
-That is based on lots and lots of assumptions that are just not true.
-Ted Tso, Stephen Smalley and I are all recognized as security experts
-and we can't even agree on whether sockets are objects or not, much
-less what constitutes a security bug and even less what is likely to
-be a security bug. Goodness, there are some of us who would argue
-that since DNS is itself a security bug it is just not possible for
-DNS to have a security bug, as an example.
-
-> In most cases, they are easy to spot.
-
-Err, no, in the kernel environment a real security flaw is likely to
-be pretty subtle.
-
-> And, hey, we are not asking for an absurd amount of care. You must not 
-> pay $200 /hour for someone to review your software. All I, personally, 
-> ask for is that the basic attention is given. With this simple act, 
-> I'm sure you would cover the majority of the bugs.
->
->> It will cost you money, but hey, the people who want
->> this sort of thing typically are willing to pay for the service.
+On Tue, Jul 15, 2008 at 4:32 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Wednesday, 16 of July 2008, Avuton Olrich wrote:
+>> On Tue, Jul 15, 2008 at 3:59 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> > On Wednesday, 16 of July 2008, Avuton Olrich wrote:
+>> >> On Tue, Jul 15, 2008 at 1:24 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> >> > On Tuesday, 15 of July 2008, Avuton Olrich wrote:
+>> >> >> On Tue, Jul 15, 2008 at 5:47 AM, Martin Michlmayr <tbm@cyrius.com> wrote:
+>> >> >> > When I use s2disk to suspend my HP 2510p notebook, it writes
+>> >> >> > everything to disk, and powers off... but after 2-3 seconds it often
+>> >> >> > powers on again.  This doesn't happen all the time but quite
+>> >> >> > frequently (definitely in the majority of cases).
+>> >> >> >
+>> >> >> > I believe I've never seen this when I use "halt" to power off the
+>> >> >> > machine (but I don't use halt very often).
+>> >> >> >
+>> >> >> > Any idea?
+>> >> >>
+>> >> >> Ugh, this happens here too, this started occuring before 2.6.25 but
+>> >> >> every time I try to bisect it takes hours and I end up screwing up
+>> >> >> somewhere along the way, so I haven't had time to bisect this
+>> >> >> correctly.
+>> >> >
+>> >> > Please try to put "shutdown method = shutdown" into the s2disk's configuration
+>> >> > file and see what happens in that case.
+>> >>
+>> >> Anything a little less fancy? I use pm-hibernate, or gnome's Power
+>> >> Manager to hibernate; I don't even have s2disk installed, sorry I
+>> >> should have mentioned that.
+>> >
+>> > Martin mentioned s2disk in his original post.  Never mind.
+>> >
+>> > Please try to do "echo shutdown > /sys/power/disk" before hibernation and
+>> > see what happens.
 >>
+>> Well, that certainly works (powers off as expected). Should I be
+>> putting this in my startup scripts or is there something I need to do
+>> to help fix this problem, kernel-wise?
 >
-> So, only those willing to pay have the right of respect? Because, you 
-> see, this is rather a matter of respect with those who choose to use 
-> your solution. And, no, the "free will" argument does not qualify 
-> herein. My mother is not aware of your absurd acts.
->
->> I'll note that trying to classify bugs as being "security-related" at
->> the kernel.org level often doesn't help the distro's, since many of
->> these bugs won't even apply to whatever version of the kernel the
->> distro's snapshotted 9-18 months ago.  So if the distro snapshotted
-> > 2.6.18 in Fall 2006, and their next snapshot will be sometime two
->> years later in the fall of this year, they will have no use for some
->> potential local denial of service attack that was introduced by
->> accident in 2.6.24-rc3, and fixed in 2.6.25-rc1.  It just doesn't
->> matter to them.
->
-> I don't follow what you have just said. What is the problem with 
-> "versioning" and the strictness of its relation to bugs, security or not?
->
->>
->> So basically, if there are enough kernel.org users who care, they can
->> pay someone to classify and issue CVE numbers for each and every
->> potential "security bug" that might appear and then disappear.
->
-> I think, CVE registration or the alike would be too much for what I 
-> call "act of decency". A single parenthesis note on the bug itself 
-> would be of great help and of small effort.
->
->
-> --t
->
->
->
->
->
->
->
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
->
+> BTW, is the problem also present in linux-next?
 
+No, it appears to be fixed in linux-next, thanks!
+-- 
+avuton
+--
+ "I've got a fever. And the only prescription is more cowbell." --
+Christopher Walken
