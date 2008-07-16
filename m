@@ -1,85 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757706AbYGPBLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758081AbYGPBMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757706AbYGPBLz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 21:11:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755081AbYGPBLo
+	id S1758081AbYGPBMy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 21:12:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192AbYGPBMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 21:11:44 -0400
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:6819 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752326AbYGPBLn (ORCPT
+	Tue, 15 Jul 2008 21:12:46 -0400
+Received: from ax54.genwebserver.com ([72.18.156.50]:47719 "EHLO
+	ax54.genwebserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755081AbYGPBMp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 21:11:43 -0400
-Date: Tue, 15 Jul 2008 19:11:42 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linux-acpi@vger.kernel.org, linux-ia64@vger.kernel.org
-Subject: Re: [PATCH 01/14] Introduce cpu_enabled_map and friends
-Message-ID: <20080716011142.GI10919@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-	linux-acpi@vger.kernel.org, linux-ia64@vger.kernel.org
-References: <20080715023344.2528.1836.stgit@blender.achiang> <20080715023349.2528.9423.stgit@blender.achiang> <20080715031512.GF14894@parisc-linux.org> <87wsjnxy4w.fsf@basil.nowhere.org> <20080715102130.GA22866@flint.arm.linux.org.uk> <20080715175740.GB10919@ldl.fc.hp.com> <20080715181632.GG14894@parisc-linux.org> <20080715184822.GB29991@flint.arm.linux.org.uk>
+	Tue, 15 Jul 2008 21:12:45 -0400
+Message-ID: <487D4A7B.8090403@assumpcao.org>
+Date: Tue, 15 Jul 2008 22:10:19 -0300
+From: Tiago Assumpcao <tiago@assumpcao.org>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080715184822.GB29991@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: pageexec@freemail.hu, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [stable] Linux 2.6.25.10
+References: <20080703185727.GA12617@suse.de>, <487D3056.1183.1C0E1C47@pageexec.freemail.hu>, <alpine.LFD.1.10.0807151425170.2867@woody.linux-foundation.org> <487D3C17.31467.1C3C0441@pageexec.freemail.hu> <alpine.LFD.1.10.0807151620450.2867@woody.linux-foundation.org <alpine.LFD.1.10.0807151707450.2867@woody.linux-foundation.org> <487D4301.5080609@assumpcao.org> <alpine.LFD.1.10.0807151749570.2867@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807151749570.2867@woody.linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - ax54.genwebserver.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - assumpcao.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Russell King <rmk+lkml@arm.linux.org.uk>:
-> On Tue, Jul 15, 2008 at 12:16:32PM -0600, Matthew Wilcox wrote:
-> > On Tue, Jul 15, 2008 at 11:57:40AM -0600, Alex Chiang wrote:
-> > > My thought was that big SMP systems like ia64, possibly sparc and
-> > > ppc, and increasingly, x86, might find something like this
-> > > useful, as systems get larger and larger, and vendors are going
-> > > to want to do RAS-ish features, like the ability to keep CPUs in
-> > > firmware across reboots until told otherwise by the sysadmin.
-> > > 
-> > > Right now, a 'present' CPU strongly implies 'online' as well,
-> > > since we're calling cpu_up() for all 'present' CPUs in
-> > > smp_init(). But this hurts if:
-> > > 
-> > > 	- you don't actually want to bring up all 'present' CPUs
-> > > 	- you still want to interact with these weirdo zombie
-> > > 	  CPUs that are 'present' but not 'online'
-> > 
-> > Have you considered simply failing __cpu_up() for CPUs that are
-> > deconfigured by firmware?
+Linus Torvalds wrote:
 > 
-> But what if you want to have a system boot with, say, 4 CPUs and
-> then decide at run time to bring up another 4 CPUs when required?
+> Umm. And if the whole discussion it was hidden from us on some private 
+> vendor list, why should we then help track their hidden state?
 > 
-> How about having smp_init() call into arch code to query whether
-> it should bring up a not-already-online CPU?  Architectures that
-> want to do something special can then make the decision there and
-> everyone else can define the test completely away.
+> That's what you claimed we should do, wasn't it?
 
-I experimented today with an ia64-only solution, keeping track of
-'present' vs 'enabled' vs 'online' all in arch-specific code.
+How can I expect one to treat the unknown? If you are not aware of it, 
+you do nothing. Whenever a software organization is informed of a 
+problem in some product of their responsibility, they act upon it. On 
+the contrary, no, I don't expect any magic from you. Thanks for 
+bothering, though.
 
-The arch-specific stuff turns out to be more or less a wash; that
-is, it's not too hard to keep it all in ia64.
+> 
+>> Personally, I, too, have a major disgust for most crap seen in the so called
+>> info-sec world. I hand you my agreement on this one.
+>> Except, it changes in nothing your responsibilities.
+> 
+> My responsibility is to do a good job. And not pander to the people who 
+> want to turn security into a media circus.
 
-However, the problem is, I would still need a generic
-'enabled_map' to control whether 'online' and 'crash_notes'
-entries get created for /sys/devices/system/cpu/cpuN/.
+And I thank you for that. No to the "security media circus".
 
-So if other archs are at least neutral on this class of CPUs, I
-can work on another patchset that lowers the tax to a simple
-#define for archs that don't care.
+> 
+> Which is exactly what I'm doing. No media circus.
+> 
+> 		Linus
+> 
 
-But if people hate this idea of a new map, I'd like to know so
-that I'm not wasting my time and can work on a different solution
-(what that would be, I have no idea at the moment).
+Wrong. This is not "media circus".
+Whoever reads this thread with the basic understanding of software 
+development procedures, the reality of information security and with 
+legit judgment will clearly understand what you are doing and what 
+"pageexec" and I claim for. Further, I claim for decency from your part.
 
-Thanks.
+All I ask for is to receive the "There are updates available." message 
+as soon as one security problem is reported, understood and treated by 
+your development part. And that is, the sooner possible, if you please.
+Plus, if one bothers, to be able to know the exact location of this bug 
+and its characteristics.
 
-/ac
+However, for these to happen, we need your collaboration. Or, with two 
+words, your responsibility.
+
+
+Thanks,
+--t
 
