@@ -1,106 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757405AbYGPFyl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755905AbYGPGEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757405AbYGPFyl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 01:54:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbYGPFy3
+	id S1755905AbYGPGEU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 02:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbYGPGEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 01:54:29 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:34141 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751899AbYGPFy2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 01:54:28 -0400
-Subject: Re: Prosaic firmware issues
-From: David Woodhouse <dwmw2@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Frans Pop <elendil@planet.nl>, david@lang.hm,
-       Marcel Holtmann <marcel@holtmann.org>, arjan@infradead.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.1.10.0807151843240.2835@woody.linux-foundation.org>
-References: <1216077806.27455.85.camel@shinybook.infradead.org>
-	 <alpine.DEB.1.10.0807151503310.16109@asgard.lang.hm>
-	 <alpine.LFD.1.10.0807151631260.2867@woody.linux-foundation.org>
-	 <200807160222.40705.elendil@planet.nl>
-	 <alpine.LFD.1.10.0807151726520.2867@woody.linux-foundation.org>
-	 <487D441B.5010908@garzik.org>
-	 <20080716011140.GA30967@martell.zuzino.mipt.ru>
-	 <alpine.LFD.1.10.0807151843240.2835@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 22:54:04 -0700
-Message-Id: <1216187644.30898.7.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Wed, 16 Jul 2008 02:04:12 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:38303 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751465AbYGPGEL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 02:04:11 -0400
+Message-ID: <487D8F57.2060502@garzik.org>
+Date: Wed, 16 Jul 2008 02:04:07 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Chris Adams <cmadams@hiwaay.net>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
+  use it in more drivers.
+References: <aPHZW-47Y-17@gated-at.bofh.it> <aPIje-4ST-15@gated-at.bofh.it> <aPV6W-3jN-41@gated-at.bofh.it> <aPX8A-7qb-21@gated-at.bofh.it> <aPXii-7G3-25@gated-at.bofh.it> <aPXs2-7Vn-25@gated-at.bofh.it> <aPXUQ-aU-1@gated-at.bofh.it> <aPY4D-G7-23@gated-at.bofh.it> <aPZ0H-2ls-21@gated-at.bofh.it> <aPZap-2zq-15@gated-at.bofh.it> <20080716001038.GA1242918@hiwaay.net>
+In-Reply-To: <20080716001038.GA1242918@hiwaay.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-15 at 18:45 -0700, Linus Torvalds wrote:
+Chris Adams wrote:
+> Once upon a time, Jeff Garzik  <jeff@garzik.org> said:
+>> * Red Hat driver disks.  The build process is unaware of the need to 
+>> bundle firmware.  Any use with Fedora (or, later, RHEL) will result in a 
+>> non-working driver, for the simple reason that firmware is not copied 
+>> onto the image.
 > 
-> On Wed, 16 Jul 2008, Alexey Dobriyan wrote:
-> >
-> > Could somebody from firmware people fix boring stuff, please:
-> > 
-> > 1) after allyesconfig build, git-status show plenty of crap:
+> Then Red Hat driver disks are already broken, as there are current
+> modules (e.g. qla2xxx) that require external firmware.
+
+That doesn't change the problem any.  There are still users of this 
+thing, regardless of what appellations are attached.
+
+
+>> * Embedded projects like OpenWRT, that divide up kernel modules into 
+>> multiple packages.  Since it's not just one big package, you have to 
+>> update each package's list of files to include the newly split-out 
+>> firmwares.  Failure to do so results in a successful build set of 
+>> packages... of drivers that lack their firmware.
 > 
-> Something like the appended, perhaps?
-> 
-> (I'm not going to commit it, I want some firmware person to double-check 
-> it).
+> AFAIK OpenWRT and the like don't just throw in random new kernel
+> releases without at least reading release notes and testing.
 
-Generally sane, but wants a few more things added.
+Sure.  The difference here is that we usually take care to make sure 
+there is some way for the distributor to continue configuring their 
+system in the manner known to work, while developing and testing new stuff.
 
-> > 2) after "make mrproper" after allyesconfig, some files aren't removed,
-> >    use "git-ls-files -o" to see them.
-> 
-> Ok, that needs some Makefile magic. git magic I can do.
+But in this case, that option was not available to distributors (but 
+hopefully it will be, in another day or two).
 
-Ah, that's caused by a stray := where there should be a +=, so the
-firmware files listed before that get dropped from the list of files to
-be cleaned. 
+	Jeff
 
-Alexey, thanks for the report. Please could you verify that this fixes
-it for you?
-
-----
-Subject: Fix 'make clean' and .gitignore for firmware/ directory.
-
-Provide a .gitignore file, and fix a typo which prevented some of the
-generated binary files from being removed on 'make clean'.
-
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-
-diff --git a/firmware/.gitignore b/firmware/.gitignore
-new file mode 100644
-index 0000000..d9c6901
---- /dev/null
-+++ b/firmware/.gitignore
-@@ -0,0 +1,6 @@
-+*.gen.S
-+*.fw
-+*.bin
-+*.csp
-+*.dsp
-+ihex2fw
-diff --git a/firmware/Makefile b/firmware/Makefile
-index 981bd52..55ca321 100644
---- a/firmware/Makefile
-+++ b/firmware/Makefile
-@@ -73,7 +73,7 @@ fw-shipped-$(CONFIG_USB_SERIAL_KEYSPAN_USA28X) += keyspan/usa28x.fw
- fw-shipped-$(CONFIG_USB_SERIAL_KEYSPAN_USA49W) += keyspan/usa49w.fw
- fw-shipped-$(CONFIG_USB_SERIAL_KEYSPAN_USA49WLC) += keyspan/usa49wlc.fw
- else
--fw-shipped- := keyspan/mpr.fw keyspan/usa18x.fw keyspan/usa19.fw	\
-+fw-shipped- += keyspan/mpr.fw keyspan/usa18x.fw keyspan/usa19.fw	\
- 	keyspan/usa19qi.fw keyspan/usa19qw.fw keyspan/usa19w.fw		\
- 	keyspan/usa28.fw keyspan/usa28xa.fw keyspan/usa28xb.fw		\
- 	keyspan/usa28x.fw keyspan/usa49w.fw keyspan/usa49wlc.fw
-
-
--- 
-dwmw2
 
