@@ -1,128 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759527AbYGPTww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759134AbYGPTzB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759527AbYGPTww (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 15:52:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756705AbYGPTwl
+	id S1759134AbYGPTzB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 15:55:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756736AbYGPTyx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 15:52:41 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:53249 "EHLO gir.skynet.ie"
+	Wed, 16 Jul 2008 15:54:53 -0400
+Received: from mx2.suse.de ([195.135.220.15]:42391 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756289AbYGPTwl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 15:52:41 -0400
-Date: Wed, 16 Jul 2008 20:52:37 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Richard Kennedy <richard@rsk.demon.co.uk>, penberg@cs.helsinki.fi,
-       mpm@selenic.com, linux-mm <linux-mm@kvack.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][RFC] slub: increasing order reduces memory usage of some key caches
-Message-ID: <20080716195237.GA9127@csn.ul.ie>
-References: <1216211371.3122.46.camel@castor.localdomain> <487DF5D4.9070101@linux-foundation.org>
+	id S1755637AbYGPTyw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 15:54:52 -0400
+From: Thomas Renninger <trenn@suse.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] Re: AMD Mobile Semprons (3500+, 3600+,...) break with nohz and highres enabled
+Date: Wed, 16 Jul 2008 21:56:00 +0200
+User-Agent: KMail/1.9.9
+References: <1213638474.1684.21.camel@queen.suse.de> <200807161827.16898.trenn@suse.de> <alpine.LFD.1.10.0807162100380.4316@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.10.0807162100380.4316@apollo.tec.linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>, "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "andreas.herrmann3" <andreas.herrmann3@amd.com>,
+       Richard <tuxbox.guru@gmail.com>, eumaster@gmail.com,
+       uli.geins@geins-web.de
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <487DF5D4.9070101@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200807162156.00983.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (16/07/08 08:21), Christoph Lameter didst pronounce:
-> Richard Kennedy wrote:
-> 
-> 
-> > on my amd64 3 gb ram desktop typical numbers :-
-> > 
-> > [kernel,objects,pages/slab,slabs,total pages,diff]
-> > radix_tree_node
-> > 2.6.26 33922,2,2423 	4846
-> > +patch 33541,4,1165	4660,-186
-> > dentry
-> > 2.6.26	82136,1,4323	4323
-> > +patch	79482,2,2038	4076,-247
-> > the extra dentries would use 136 pages but that still leaves a saving of
-> > 111 pages.
-> 
-> Good numbers....
-> 
+On Wednesday 16 July 2008 09:03:12 pm you wrote:
+> On Wed, 16 Jul 2008, Thomas Renninger wrote:
+> > This is against Andi's (ak) release branch,
+> > hope that is ok...
+>
+> No idea what that is.
+The branch Andi will merge his ACPI stuff into 2.6.27.
+>
+> > Can this one be reviewed/added, pls.
+>
+> Reviewed yes. Added no.
+>
+> >  kernel/time/tick-sched.c |   31 +++++++++++++++++++++++++++++++
+> >  1 files changed, 31 insertions(+), 0 deletions(-)
+> >
+> > diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+> > index b854a89..bda0164 100644
+> > --- a/kernel/time/tick-sched.c
+> > +++ b/kernel/time/tick-sched.c
+> > @@ -589,6 +589,32 @@ static enum hrtimer_restart tick_sched_timer(struct
+> > hrtimer *timer)
+> >  	return HRTIMER_RESTART;
+> >  }
+> >
+> > +#if defined(CONFIG_X86) && defined(CONFIG_NO_HZ)
+> > +static __init int is_nohz_broken(void)
+> > +{
+>
+> We definitely do not add x86 quirks into the generic code.
+So the right solution (if nobody cares about this one) is to set 
+tick_no_hz_enabled global and disable it through:
+arch/x86/kernel/quirks.c
+is that correct?
+>
+> Is there really no other way to fix this problem ?
+I have no idea.
+Richard's last message:
+"I can help out as needed, just a work deadline I have to meet so I 
+haven't been able to dig further.  Just point me in the direction and 
+I'll gladly be someones hands on the beastly machine"
 
-Indeed. clearly internal fragmentation is a problem.
+has silently be ignored.
 
-> > Can anyone suggest any other tests that would be useful to run?
-> > & Is there any way to measure what impact this is having on
-> > fragmentation?
-> 
-> Mel would be able to tell you that but I think we better figure out what went wrong first.
-> 
+> Which chipset is 
+> involved here ? SB400/600 perhaps ?
+No, it is probably much older and I am pretty sure that it is not chipset 
+related, but related to the "Mobile" in the Mobile Sempron as this exactly 
+seem to hit 3500 and 3600 Mobile Sempron CPUs.
 
-For internal fragmentation, there is this crappy script:
-http://www.csn.ul.ie/~mel/intfrag_stat
+I can't help much further because:
+  - I have not such a machine
+  - I don't know these parts. I hoped to get some hints to help these guys
 
-run it as intfrag_stat -a and it should tell you what precentage of
-memory is being wasted for dentries. The patch should show a difference
-for the dentries.
-
-How it would affect external fragmentation is harder to guess. It will
-put more pressure for high-order allocations but at a glance, dentries
-are using GFP_KERNEL so it should not be a major problem.
-/proc/pagetypeinfo is the file to watch. If the count for "reclaimable"
-arenas is higher and climbing over time, it will indiate that external
-fragmentation would eventually become a problem.
-
-> 
-> > diff --git a/mm/slub.c b/mm/slub.c
-> > index 315c392..c365b04 100644
-> > --- a/mm/slub.c
-> > +++ b/mm/slub.c
-> > @@ -2301,6 +2301,14 @@ static int calculate_sizes(struct kmem_cache *s, int forced_order)
-> >  	if (order < 0)
-> >  		return 0;
-> >  
-> > +	if (order < slub_max_order ) {
-> > +		unsigned long waste = (PAGE_SIZE << order) % size;
-> > +		if ( waste *2 >= size ) {
-> > +			order++;
-> > +			printk ( KERN_INFO "SLUB: increasing order %s->[%d] [%ld]\n",s->name,order,size);
-> > +		}
-> > +	}
-> > +
-> >  	s->allocflags = 0;
-> >  	if (order)
-> >  		s->allocflags |= __GFP_COMP;
-> 
-> The order and waste calculation occurs in slab_order(). If modifications are needed then they need to occur in that function.
-> 
-> Looks like the existing code is not doing the best thing for dentries on your box?
-> 
-> On my 64 bit box dentries are 208 bytes long, 39 objects per page and 84 bytes
-> are lost per order 1 page. So this would not trigger your patch at all. There must be something special to your configuration.
-> 
-> 
-> /linux-2.6$ slabinfo dentry
-> 
-> Slabcache: dentry                Aliases:  0 Order :  1 Objects: 554209
-> ** Reclaim accounting active
-> 
-> Sizes (bytes)     Slabs              Debug                Memory
-> ------------------------------------------------------------------------
-> Object :     208  Total  :   14215   Sanity Checks : Off  Total: 116449280
-> SlabObj:     208  Full   :   14179   Redzoning     : Off  Used : 115275472
-> SlabSiz:    8192  Partial:      32   Poisoning     : Off  Loss : 1173808
-> Loss   :       0  CpuSlab:       4   Tracking      : Off  Lalig:       0
-> Align  :       8  Objects:      39   Tracing       : Off  Lpadd: 1137200
-> 
-> 
-> Can you post the slabinfo information about the caches that you are concerned with? Please a before and after state.
-> 
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+       Thomas
