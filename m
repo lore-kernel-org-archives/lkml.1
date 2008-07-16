@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756275AbYGPSD2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756295AbYGPSIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756275AbYGPSD2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 14:03:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbYGPSDR
+	id S1756295AbYGPSIZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 14:08:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752288AbYGPSIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 14:03:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33262 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751763AbYGPSDQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 14:03:16 -0400
-Date: Wed, 16 Jul 2008 14:02:27 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@devserv.devel.redhat.com
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, davem@davemloft.net,
-       linux-parisc@vger.kernel.org
-Subject: Re: [PATCH] block: fix q->max_segment_size checking in blk_recalc_rq_segments
- about VMERGE
-In-Reply-To: <20080716093456J.fujita.tomonori@lab.ntt.co.jp>
-Message-ID: <Pine.LNX.4.64.0807161359001.30207@devserv.devel.redhat.com>
-References: <Pine.LNX.4.64.0807151033040.25390@devserv.devel.redhat.com>
- <20080716003047P.fujita.tomonori@lab.ntt.co.jp>
- <Pine.LNX.4.64.0807151143050.29803@devserv.devel.redhat.com>
- <20080716093456J.fujita.tomonori@lab.ntt.co.jp>
+	Wed, 16 Jul 2008 14:08:17 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:51523 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752012AbYGPSIQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 14:08:16 -0400
+Date: Wed, 16 Jul 2008 14:08:09 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: pageexec@freemail.hu
+Cc: Greg KH <greg@kroah.com>, Tiago Assumpcao <tiago@assumpcao.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [stable] Linux 2.6.25.10
+Message-ID: <20080716180809.GH2167@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, pageexec@freemail.hu,
+	Greg KH <greg@kroah.com>, Tiago Assumpcao <tiago@assumpcao.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, stable@kernel.org
+References: <20080716162949.GA7480@kroah.com> <487E4B1D.24359.205EB2E5@pageexec.freemail.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <487E4B1D.24359.205EB2E5@pageexec.freemail.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Jul 2008, FUJITA Tomonori wrote:
+On Wed, Jul 16, 2008 at 07:25:17PM +0200, pageexec@freemail.hu wrote:
+> if you are not qualified to do this job then don't do it. noone forced
+> you to accept this task. look at Chris Wright, he has no problems with
+> disclosing the security issues and he actually publicly pledged to do
+> his best to do so (and i hope he won't revert his position now).
 
-> On Tue, 15 Jul 2008 11:46:46 -0400 (EDT)
-> Mikulas Patocka <mpatocka@redhat.com> wrote:
-> 
-> > >> Even if we fix it now, the question is: how long it will stay fixed? Until
-> > >> someone makes another change to struct device that restricts boundaries on
-> > >> some wacky hardware.
-> > >
-> > > I'm not sure how the boundary restriction of a device can break
-> > > the VMERGE accounting.
-> > 
-> > Because block layer code doesn't know anything about the device, pci 
-> > access restrictions and so on.
-> 
-> Not true, the block layer knows about the device restrictions like DMA
-> boundary.
-> 
-> But it's not the point here because the boundary restriction doesn't
-> matter for the VMERGE accounting. An IOMMU just returns an error if it
-> can't allocate an I/O space fit for the device restrictions.
-> 
-> 
-> Please give me an example how the boundary restriction of a device can
-> break the VMERGE accounting and an IOMMU if you aren't still sure.
+News flash: You have no right to tell someone what to do --- or not to
+do.
 
-You have dma_get_seg_boundary and dma_get_max_seg_size. On sparc64, adding 
-one of these broken VMERGE accounting (the VMERGE didn't happen past 64-kb 
-boundary and bio layer thought that VMERGE would be possible).
+All you can get to make decisions on is what you choose to do
+yourself.  If you want to compete with the very good job that Greg KH
+is doing, please feel free to do so.  Otherwise, please go away and
+perhaps take some classes or do some meditating on how to work with
+other people in a more constructive fashion.
 
-And if you fix this case, someone will break it again, sooner or later, by 
-adding new restriction.
-
-Mikulas
+						- Ted
