@@ -1,68 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759545AbYGPDos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757388AbYGPD4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759545AbYGPDos (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 23:44:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755386AbYGPDoN
+	id S1757388AbYGPD4w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 23:56:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbYGPD4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 23:44:13 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62866 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751226AbYGPDoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 23:44:12 -0400
-Message-ID: <487D6E51.1000907@cn.fujitsu.com>
-Date: Wed, 16 Jul 2008 11:43:13 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Paul Jackson <pj@sgi.com>, Paul Menage <menage@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/3] cpuset: two minor code-cleanups
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Jul 2008 23:56:45 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:6304 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751692AbYGPD4o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 23:56:44 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5339"; a="4747612"
+From: Max Krasnyansky <maxk@qualcomm.com>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       Max Krasnyansky <maxk@qualcomm.com>, dmitry.adamushko@gmail.com,
+       a.p.zijlstra@chello.nl, rostedt@goodmis.org, vegard.nossum@gmail.com
+Subject: [PATCH] cpu hotplug: Make cpu_active_map synchronization dependency clear
+Date: Tue, 15 Jul 2008 20:56:26 -0700
+Message-Id: <1216180586-8313-1-git-send-email-maxk@qualcomm.com>
+X-Mailer: git-send-email 1.5.5.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-in function cpuset_update_task_memory_state()
-local variable
-struct task_struct *tsk = current;
+This goes on top of the cpu_active_map (take 2) patch.
 
-and local variable tsk is used 14 times and
-statement task_cs(tsk) is used twice in this function.
-So using task_cs(tsk) instead of task_cs(current) is
-better for readability.
+Currently we depend on the stop_machine to provide nescessesary
+synchronization for the cpu_active_map updates.
+As Dmitry Adamushko pointed this is fragile and is not much clearer
+than the previous scheme. In other words we do not want to depend on
+the internal stop machine operation here.
+So make the synchronization rules clear by doing synchronize_sched()
+after clearing out cpu active bit.
 
-And "(struct cgroup_scanner *)&scan" is not good for
-readability also. (and "container_of" is used in cpuset_do_move_task(),
-not "(cpuset_hotplug_scanner *)scan")
+Tested on quad-Core2 with:
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+   while true; do
+      for i in 1 2 3; do
+        echo 0 > /sys/devices/system/cpu/cpu$i/online
+      done
+      for i in 1 2 3; do
+        echo 1 > /sys/devices/system/cpu/cpu$i/online
+      done
+   done
+and
+   stress -c 200
+
+No lockdep, preempt or other complaints.
+
+Signed-off-by: Max Krasnyansky <maxk@qualcomm.com>
+Cc: dmitry.adamushko@gmail.com
+Cc: a.p.zijlstra@chello.nl
+Cc: mingo@elte.hu
+Cc: rostedt@goodmis.org
+Cc: vegard.nossum@gmail.com
 ---
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-index 798b3ab..4513deb 100644
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -369,7 +369,7 @@ void cpuset_update_task_memory_state(void)
- 		my_cpusets_mem_gen = top_cpuset.mems_generation;
- 	} else {
- 		rcu_read_lock();
--		my_cpusets_mem_gen = task_cs(current)->mems_generation;
-+		my_cpusets_mem_gen = task_cs(tsk)->mems_generation;
- 		rcu_read_unlock();
- 	}
+ kernel/cpu.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 71c5c9d..541f78e 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -301,6 +301,14 @@ int __ref cpu_down(unsigned int cpu)
  
-@@ -1778,7 +1778,7 @@ static void move_member_tasks_to_cpuset(struct cpuset *from, struct cpuset *to)
- 	scan.scan.heap = NULL;
- 	scan.to = to->css.cgroup;
+ 	cpu_clear(cpu, cpu_active_map);
  
--	if (cgroup_scan_tasks((struct cgroup_scanner *)&scan))
-+	if (cgroup_scan_tasks(&scan.scan))
- 		printk(KERN_ERR "move_member_tasks_to_cpuset: "
- 				"cgroup_scan_tasks failed\n");
- }
-
-
-
-
++	/* Make sure the all cpus did the reschedule and are not
++	 * using stale version of the cpu_active_map.
++	 * This is not strictly necessary becuase stop_machine() 
++	 * that we run down the line already provides the required 
++	 * synchronization. But it's really a side effect and we do not 
++	 * want to depend on the innards of the stop_machine here. */
++	synchronize_sched();
++
+ 	err = _cpu_down(cpu, 0);
+ 
+ 	if (cpu_online(cpu))
+-- 
+1.5.5.1
 
