@@ -1,121 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755675AbYGPFUm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755263AbYGPF0z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755675AbYGPFUm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 01:20:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbYGPFUb
+	id S1755263AbYGPF0z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 01:26:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751090AbYGPF0r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 01:20:31 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:48020 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751692AbYGPFUa (ORCPT
+	Wed, 16 Jul 2008 01:26:47 -0400
+Received: from smtp104.prem.mail.sp1.yahoo.com ([98.136.44.59]:29829 "HELO
+	smtp104.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751087AbYGPF0q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 01:20:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
-         :mime-version:content-type:content-disposition
-         :content-transfer-encoding:in-reply-to:user-agent:from;
-        b=P1ZFHbHmg6PukmsU766WPVat9ziIYFhHhZUgZK3jE0kjuSAKMiaiYGFC41yA3HxWJb
-         oX+dyvTok+8JdfC/Jb3gMn3/nkpi1KbRq+2XMTLaQdYCR8Ps0OHQb4mFI0EOHxqMF8XE
-         EWSZrjsPIdluStXp50ojyelzpRUOIH+uU0ElQ=
-Date: Wed, 16 Jul 2008 07:20:47 +0200
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH] ide-floppy fix
-Message-ID: <20080716052047.GA12383@gollum.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-	stable@kernel.org
-References: <20080715053356.GA18628@gollum.tnic> <200807161759.16803.bzolnier@gmail.com> <20080715203913.GA23431@gollum.tnic> <200807152258.49462.bzolnier@gmail.com>
+	Wed, 16 Jul 2008 01:26:46 -0400
+X-YMail-OSG: j7XkAWIVM1my_XMGOSA7koOmJtp6sJLUnFoCJ16IZx3ApbcK68.WUgEn_oaeXAjjHfn1ZniZwB3yF9oWcrhHhlve0chRQw2Bx3dXyiZ.v1S3yLzm0fs6X84QzipucYd0wxg-
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <487D8687.7090003@schaufler-ca.com>
+Date: Tue, 15 Jul 2008 22:26:31 -0700
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200807152258.49462.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: Borislav Petkov <petkovbb@googlemail.com>
+To: Tiago Assumpcao <tiago@assumpcao.org>
+CC: Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>, pageexec@freemail.hu,
+       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [stable] Linux 2.6.25.10
+References: <alpine.LFD.1.10.0807151425170.2867@woody.linux-foundation.org> <487D3C17.31467.1C3C0441@pageexec.freemail.hu> <alpine.LFD.1.10.0807151620450.2867@woody.linux-foundation.org> <487D3A13.3040507@assumpcao.org> <20080716010836.GL8185@mit.edu> <487D547C.7060909@assumpcao.org> <487D6AB9.7080700@schaufler-ca.com> <487D756E.50506@assumpcao.org>
+In-Reply-To: <487D756E.50506@assumpcao.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 10:58:48PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> On Tuesday 15 July 2008, Borislav Petkov wrote:
-> > On Wed, Jul 16, 2008 at 05:59:16PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > > 
-> > > Hi,
-> > > 
-> > > On Tuesday 15 July 2008, Borislav Petkov wrote:
-> > > 
-> > > [...]
-> > > 
-> > > > On a different note, the current pata tree on top of v2.6.25-2125-g50515af blows
-> > > > up here with the following error:
-> > > > 
-> > > > [    4.296729] Uniform Multi-Platform E-IDE driver
-> > > > [    4.297905] ICH4: IDE controller (0x8086:0x24cb rev 0x02) at  PCI slot 0000:00:1f.1
-> > > > [    4.297986] ACPI: PCI Interrupt 0000:00:1f.1[A] -> GSI 18 (level, low) -> IRQ 18
-> > > > [    4.298153] ICH4: not 100% native mode: will probe irqs later
-> > > > [    4.298213]     ide0: BM-DMA at 0xfc00-0xfc07
-> > > > [    4.298282]     ide1: BM-DMA at 0xfc08-0xfc0f
-> > > > [    4.561768] hda: QUANTUM FIREBALLlct10 20, ATA DISK drive
-> > > > [    4.816724] hdb: SAMSUNG SP2014N, ATA DISK drive
-> > > > [    4.867959] hda: drive side 80-wire cable detection failed, limiting max speed to UDMA33
-> > > > [    4.868027] hda: UDMA/33 mode selected
-> > > > [    4.868441] hdb: UDMA/100 mode selected
-> > > > [    5.540683] hdc: IOMEGA ZIP 100 ATAPI, ATAPI FLOPPY drive
-> > > > [    5.795564] hdd: IC35L120AVV207-0, ATA DISK drive
-> > > > [    5.847295] hdd: host side 80-wire cable detection failed, limiting max speed to UDMA33
-> > > > [    5.847362] hdd: UDMA/33 mode selected
-> > > > [    5.847715] ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
-> > > > [    5.855487] ide1 at 0x170-0x177,0x376 on irq 15
-> > > > [    5.875927] ide_generic: please use "probe_mask=0x3f" module parameter for probing all legacy ISA IDE ports
-> > > > [    5.876012] ide_generic: I/O resource 0x1F0-0x1F7 not free.
-> > > > [    5.876074] ide_generic: I/O resource 0x170-0x177 not free.
-> > > > [   11.342504] hde: no response (status = 0xa1), resetting drive
-> > > > [   17.206535] hdf: no response (status = 0xa1), resetting drive
-> > > 
-> > > hde? hdf?
-> > > 
-> > > [...]
-> > 
-> > yep, looks strange to me too. Isn't that the MAX_HWIFS upper bound of a loop.. ?
-> 
-> Close, it is related to MAX_HWIFS being upper bound on hws[]
-> in ide_generic.c but now we loop for ARRAY_SIZE(legacy_bases).
-> 
-> IOW there is a memset(hws, 0, MAX_HWIFS) missing at the top of
-> ide_generic_init() (please re-test after adding it).
-> 
-> This may also explain the later problems with ide_host_register().
-> 
-> > > > From: Borislav Petkov <petkovbb@gmail.com>
-> > > > 
-> > > > Check the correct flags-location for set features.
-> > > > 
-> > > > Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
-> > > 
-> > > Thanks, I folded the fix into original patch (->dev_flags is not yet
-> > > upstream so -stable fix shouldn't be necessary).
-> > > 
-> > > While on it: I later noticed that there will be also need for common
-> > > ATA/ATAPI ->dev_flags in the future so I wonder whether current
-> > > ->dev_flags should be renamed to ->atapi_flags (& s/*DFLAG*/*AFLAG*/).
-> > > 
-> > > If there is agreement on this I'll fix it in pata tree.
-> > 
-> > ... or if there's room, use a single ->dev_flags for all possible flag settings?
-> 
-> Unfortunately there isn't enough room left (27 bits are occupied ATM)
-> and having u64 ->dev_flags sucks...
+Tiago Assumpcao wrote:
+> Casey Schaufler wrote:
+>> Ted Tso, Stephen Smalley and I are all recognized as security experts
+>> and we can't even agree on whether sockets are objects or not, much
+>> less what constitutes a security bug and even less what is likely to
+>> be a security bug. Goodness, there are some of us who would argue
+>> that since DNS is itself a security bug it is just not possible for
+>> DNS to have a security bug, as an example.
+>>
+>>> In most cases, they are easy to spot.
+>>
+>> Err, no, in the kernel environment a real security flaw is likely to
+>> be pretty subtle.
+>
+> You do not hesitate in categorizing yourself as something as obscure 
+> as... what's that term again? "Expert".
 
-I'm pretty sure some of the 27 will be removed later but yeah, u64 flags is
-kinda bad since it has to be always atomically updated and this has to be
-explicitly staged on 32bit cpus due to the wordsize. I guess two flags members
-are the easiest thing to do for now, you might add some comments to both so we
-know which is which.
+Actually, I always hesitate before calling myself an expert,
+in spite of the credentials I have to back the title. Too
+many people seem to think that if you disagree with their
+point of view you can't know what you're talking about.
 
--- 
-Regards/Gruß,
-    Boris.
+> But then you fail on basic pragmatism when attempting to define what, 
+> nearly always, is a true or false question?
+
+HeeHeeHee. Security questions are almost never true or false,
+black or white, on or off. SPAM is *the* major computer security
+issue and it has nothing at all to do with computers or security.
+Is a use of strcpy() a security vulnerability? Sure it can be,
+but in reality it almost never is, but the hysteria associated
+with buffer overruns gave it a bad oder.
+
+> Jeez ;)
+
+It's not so bad. We'll be OK. Really.
+
