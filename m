@@ -1,74 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755809AbYGPEjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756858AbYGPElm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755809AbYGPEjg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 00:39:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbYGPEj1
+	id S1756858AbYGPElm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 00:41:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYGPEle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 00:39:27 -0400
-Received: from sh.osrg.net ([192.16.179.4]:56053 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750997AbYGPEj0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 00:39:26 -0400
-Date: Wed, 16 Jul 2008 13:38:50 +0900
-To: davem@davemloft.net
-Cc: fujita.tomonori@lab.ntt.co.jp, andi@firstfloor.org, mpatocka@redhat.com,
-       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [SUGGESTION]: drop virtual merge accounting in I/O requests
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080715.201042.193704915.davem@davemloft.net>
-References: <20080713.202035.172246136.davem@davemloft.net>
-	<20080715024424R.fujita.tomonori@lab.ntt.co.jp>
-	<20080715.201042.193704915.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 16 Jul 2008 00:41:34 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:40379 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751235AbYGPEld (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 00:41:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:x-accept-language:mime-version:to
+         :subject:content-type:content-transfer-encoding;
+        b=S11JbKJCSWwXVjMrVjEhQ4V0+4sIfCBa0rNaHLv8qqPbgRKcc7LBIs5fTd35xa0iJj
+         aIl7xV8T6+bVAj/Rr0SjJ99sqi5TJpYcuh9PkLxISsunV8+QcM2TyMPVuRW3eF+lSYLk
+         Ywoy03m16gpdtg6HE9lQieXuqP4fECOZl9/q4=
+Message-ID: <487D7BF9.60509@gmail.com>
+Date: Tue, 15 Jul 2008 18:41:29 -1000
+From: Adam Greenblatt <adam.greenblatt@gmail.com>
+User-Agent: Mozilla Thunderbird 0.9 (X11/20041103)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: akpm@linux-foundation.org, jack@ucw.cz, linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.26] isofs: fix minor filesystem corruption
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080716133902W.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jul 2008 20:10:42 -0700 (PDT)
-David Miller <davem@davemloft.net> wrote:
+Some iso9660 images contain files with rockridge data that is either 
+incorrect or
+incompletely parsed.  Prior to commit 
+f2966632a134e865db3c819346a1dc7d96e05309,
+(included with kernel 2.6.13) the kernel ignored the rockridge data for 
+these files,
+while still allowing the files to be accessed under their non-rockridge 
+names.  That commit
+inadvertently changed things so that files with invalid rockridge data 
+could not be accessed
+at all.  (I ran across the problem when comparing some old CDs with hard 
+disk copies I had
+made long ago under kernel 2.4: a few of the files on the hard disk 
+copies were no longer
+visible on the CDs.)
 
-> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Date: Tue, 15 Jul 2008 02:45:03 +0900
-> 
-> > dma_4u_map_sg() has:
-> > 
-> > if (segstart != s) {
-> > 	/* We cannot merge if:
-> > 	 * - allocated dma_addr isn't contiguous to previous allocation
-> > 	 */
-> > 	if ((dma_addr != dma_next) ||
-> > 	    (outs->dma_length + s->length > max_seg_size) ||
-> > 	    (is_span_boundary(out_entry, base_shift,
-> > 		/* Can't merge: create a new segment */
-> > 		segstart = s;
-> > 		outcount++;
-> > 		outs = sg_next(outs);
-> > 
-> > So if the IOMMU allocated dma_addr isn't contiguous to previous
-> > allocation, it might not merge segments that the block layer expected
-> > the IOMMU to merge.
-> > 
-> > We need kinda two phase merging code such as the old SPARC64 IOMMU
-> > code and PARISC IOMMUs though I like the new simple SPARC64 IOMMU
-> > code.
-> 
-> I see.
-> 
-> I wonder if all that complexity is really worth it.  Also, all of this
-> IOMMU allocation and mapping code runs under a spinlock with hw IRQs
-> disabled.
-> 
-> More and more I'm seeing that it's likely better to remove the VMERGE
-> code.  I can't see what it really buys us anymore, and to make it work
-> requires quite a large amount of complexity in the IOMMU layer.
+This change reverts to the pre-2.6.13 behavior.
 
-Agreed, especially with modern HBAs, the VMERGE accounting isn't
-useful, I think. The recent IOMMU implementations, Intel VT-d and AMD
-virtualization one, don't do even virtual merging.
+Signed-off-by: Adam Greenblatt <adam.greenblatt@gmail.com>
+---
+--- linux-2.6.26/fs/isofs/rock.c.orig   2008-07-15 18:19:36.000000000 -1000
++++ linux-2.6.26/fs/isofs/rock.c        2008-07-15 18:16:56.000000000 -1000
+@@ -217,7 +217,7 @@ repeat:
+                rs.chr += rr->len;
+                rs.len -= rr->len;
+                if (rs.len < 0)
+-                       goto eio;       /* corrupted isofs */
++                       goto out;       /* corrupted isofs */
+ 
+                switch (sig) {
+                case SIG('R', 'R'):
 
-I'm fine with removing the VMERGE accounting in the block layer if
-Jens and the users are happy about it.
