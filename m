@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759115AbYGPS63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759203AbYGPS7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759115AbYGPS63 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 14:58:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757590AbYGPS6E
+	id S1759203AbYGPS7s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 14:59:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754816AbYGPS7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 14:58:04 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:39709 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755990AbYGPS6B (ORCPT
+	Wed, 16 Jul 2008 14:59:35 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:57177 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754705AbYGPS7d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 14:58:01 -0400
-Date: Wed, 16 Jul 2008 11:50:54 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>, dwmw2 <dwmw2@infradead.org>
-Cc: scsi <linux-scsi@vger.kernel.org>,
-       jejb <James.Bottomley@HansenPartnership.com>
-Subject: [PATCH -next] scsi: fix qla1280 printk format warnings
-Message-Id: <20080716115054.f13e9ae6.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Wed, 16 Jul 2008 14:59:33 -0400
+Subject: Re: [PATCH -next] scsi: fix advansys printk format warnings
+From: David Woodhouse <dwmw2@infradead.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>,
+       jejb <James.Bottomley@HansenPartnership.com>, jaswinder@infradead.org
+In-Reply-To: <20080716115057.47b3e117.randy.dunlap@oracle.com>
+References: <20080716115057.47b3e117.randy.dunlap@oracle.com>
+Content-Type: text/plain
+Date: Wed, 16 Jul 2008 11:59:33 -0700
+Message-Id: <1216234773.1862.6.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
-
-Fix printk format warnings (firmware-related):
-
-linux-next-20080716/drivers/scsi/qla1280.c:1654: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
-linux-next-20080716/drivers/scsi/qla1280.c:1713: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/scsi/qla1280.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
---- linux-next-20080716.orig/drivers/scsi/qla1280.c
-+++ linux-next-20080716/drivers/scsi/qla1280.c
-@@ -1650,7 +1650,7 @@ qla1280_load_firmware_pio(struct scsi_ql
- 		return err;
- 	}
- 	if ((fw->size % 2) || (fw->size < 6)) {
--		printk(KERN_ERR "Bogus length %d in image \"%s\"\n",
-+		printk(KERN_ERR "Bogus length %zu in image \"%s\"\n",
- 		       fw->size, ql1280_board_tbl[ha->devnum].fwname);
- 		err = -EINVAL;
- 		goto out;
-@@ -1709,7 +1709,7 @@ qla1280_load_firmware_dma(struct scsi_ql
- 		return err;
- 	}
- 	if ((fw->size % 2) || (fw->size < 6)) {
--		printk(KERN_ERR "Bogus length %d in image \"%s\"\n",
-+		printk(KERN_ERR "Bogus length %zu in image \"%s\"\n",
- 		       fw->size, ql1280_board_tbl[ha->devnum].fwname);
- 		err = -EINVAL;
- 		goto out;
+On Wed, 2008-07-16 at 11:50 -0700, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Fix printk format warnings (firmware-related):
+> 
+> linux-next-20080716/drivers/scsi/advansys.c:4788: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
+> linux-next-20080716/drivers/scsi/advansys.c:5117: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
+> linux-next-20080716/drivers/scsi/advansys.c:5631: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
+> linux-next-20080716/drivers/scsi/advansys.c:6131: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
 
 
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+Thanks. We'll roll those into the original patches, if that's OK with
+you.
+
+-- 
+dwmw2     @linux.intel.com
+
