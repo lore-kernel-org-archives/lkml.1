@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760140AbYGPOq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760027AbYGPOrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760140AbYGPOq3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 10:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760062AbYGPOqP
+	id S1760027AbYGPOrT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 10:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757348AbYGPOrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 10:46:15 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49735 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759893AbYGPOqN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 10:46:13 -0400
-Date: Wed, 16 Jul 2008 16:46:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+	Wed, 16 Jul 2008 10:47:11 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:43842 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756122AbYGPOrK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 10:47:10 -0400
+Date: Wed, 16 Jul 2008 07:43:47 -0700
+From: Greg KH <greg@kroah.com>
+To: pageexec@freemail.hu
+Cc: Tiago Assumpcao <tiago@assumpcao.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [build fix] Re: [GIT PATCH] SCSI part 1
-Message-ID: <20080716144602.GB4369@elte.hu>
-References: <1216138543.3312.60.camel@localhost.localdomain> <20080716101634.GA8494@elte.hu> <20080716103337.GA22931@elte.hu> <20080716131543.GA3673@elte.hu> <1216216320.3230.1.camel@localhost.localdomain> <20080716141805.GB22631@elte.hu> <20080716144106.GD25255@parisc-linux.org>
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [stable] Linux 2.6.25.10
+Message-ID: <20080716144347.GB13253@kroah.com>
+References: <20080716031319.GA7558@kroah.com> <487DD51F.15884.1E91CBD4@pageexec.freemail.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080716144106.GD25255@parisc-linux.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <487DD51F.15884.1E91CBD4@pageexec.freemail.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Matthew Wilcox <matthew@wil.cx> wrote:
-
-> On Wed, Jul 16, 2008 at 04:18:05PM +0200, Ingo Molnar wrote:
-> > btw., about the technical aspects of the solution, i'm not sure i like 
-> > these big #ifdef blocks:
+On Wed, Jul 16, 2008 at 11:01:51AM +0200, pageexec@freemail.hu wrote:
+> On 15 Jul 2008 at 20:13, Greg KH wrote:
 > 
-> It's partly the nature of the beast.  There's already several large
-> #ifdef blocks in compat_ioctl.c -- CONFIG_NET, CONFIG_VT, 
-> #CONFIG_SPARC, etc.  I think what would help is a bit more grouping so 
-> #individual blocks get bigger.
+> > On Tue, Jul 15, 2008 at 10:10:19PM -0300, Tiago Assumpcao wrote:
+> > >
+> > > All I ask for is to receive the "There are updates available." message as 
+> > > soon as one security problem is reported, understood and treated by your 
+> > > development part. And that is, the sooner possible, if you please.
+> > 
+> > Do we not already do this today?  I know I do this as soon as possible
+> > for any reported problem for the -stable tree, as soon as the fix is in
+> > Linus's tree.
+> > 
+> > See the 2.6.25.11 release for an example of this.
+> 
+> very good example of how you actually do *not* do what you claim. find me
+> the word 'security' in your announcement. it's not there. amazing, isn't it.
 
-yeah, that's OK - but why is scsi.h #ifdef-ed? For example we can 
-include blkdev.h without #ifdef CONFIG_BLOCK.
+No, it was a consious decision to do just to piss you off, glad to see
+it worked :)
 
-	Ingo
+Come on, give me a break, Tiago asked that we do releases as soon as we
+know about a security problem.  2.6.25.11 was released because of this,
+and all users were told to upgrade.  Is the fact that I add the magic
+word "security" in a sentance in the email some specific requirement
+that will make you happy?
+
+Take a look at the words I used, if someone can't determine if they
+should upgrade or not based on that, then they need to rely on a company
+to provide updates for them, and not be running their own kernels
+because they really have no clue about system management.
+
+Bah, what a joke.
+
+greg k-h
