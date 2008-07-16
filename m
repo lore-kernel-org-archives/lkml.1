@@ -1,87 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756773AbYGPGln@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758183AbYGPGm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756773AbYGPGln (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 02:41:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbYGPGlg
+	id S1758183AbYGPGm1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 02:42:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbYGPGmQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 02:41:36 -0400
-Received: from wx-out-0506.google.com ([66.249.82.231]:56516 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751427AbYGPGlf (ORCPT
+	Wed, 16 Jul 2008 02:42:16 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:48589 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752682AbYGPGmP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 02:41:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=mVQumupkepG7As4cZP8diUdXHx+StQpVVDIMBO7XI68LAkGh08ENNuO9sWyesb6qBn
-         uaRPpAGf2xb9aIECtsa6TOxRPXalMOEkYCHmqZ6awNxYBF1/UmMPos+SQQ8SwLO78xVV
-         hsFULJjoJXSQTCQtpk2Q7w6Av6C82HFVzGYss=
-Message-ID: <36ca99e90807152341h28ec137do76fbf85bd50a3abe@mail.gmail.com>
-Date: Wed, 16 Jul 2008 08:41:33 +0200
-From: "Bert Wesarg" <bert.wesarg@googlemail.com>
-To: "Mike Travis" <travis@sgi.com>
-Subject: Re: [PATCH 7/8] cpumask: Provide a generic set of CPUMASK_ALLOC macros
-Cc: "Rusty Russell" <rusty@rustcorp.com.au>, "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Christoph Lameter" <cl@linux-foundation.org>,
-       "Jack Steiner" <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       "Paul Jackson" <pj@sgi.com>
-In-Reply-To: <20080715211430.448714000@polaris-admin.engr.sgi.com>
+	Wed, 16 Jul 2008 02:42:15 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Tejun Heo <htejun@gmail.com>
+Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, linux-kernel@vger.kernel.org,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>,
+       Benjamin Thery <benjamin.thery@bull.net>, netdev@vger.kernel.org
+References: <m18wwiihbn.fsf_-_@frodo.ebiederm.org>
+	<m14p76ih9a.fsf_-_@frodo.ebiederm.org>
+	<m1zloyh2mb.fsf_-_@frodo.ebiederm.org>
+	<m1vdzmh2jr.fsf_-_@frodo.ebiederm.org>
+	<m1r6aah2hh.fsf_-_@frodo.ebiederm.org>
+	<m1mykyh2fu.fsf_-_@frodo.ebiederm.org>
+	<m1hcb6h2d2.fsf_-_@frodo.ebiederm.org> <486DD650.3000804@gmail.com>
+	<m1tzf593ny.fsf@frodo.ebiederm.org> <486E2C3B.6020603@gmail.com>
+	<20080704161200.GA1440@suse.de> <m1lk052ptp.fsf@frodo.ebiederm.org>
+	<487D6A24.9070001@gmail.com> <m17ibmbd39.fsf@frodo.ebiederm.org>
+	<487D8C0A.9060100@gmail.com>
+Date: Tue, 15 Jul 2008 23:32:24 -0700
+In-Reply-To: <487D8C0A.9060100@gmail.com> (Tejun Heo's message of "Wed, 16 Jul
+	2008 14:50:02 +0900")
+Message-ID: <m11w1u9w5j.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080715211429.454823000@polaris-admin.engr.sgi.com>
-	 <20080715211430.448714000@polaris-admin.engr.sgi.com>
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Tejun Heo <htejun@gmail.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
+	*      [score: 0.1710]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH 12/15] driver core: Implement tagged directory support for device classes.
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 23:14, Mike Travis <travis@sgi.com> wrote:
->  * Provide a generic set of CPUMASK_ALLOC macros patterned after the
->    SCHED_CPUMASK_ALLOC macros.  This is used where multiple cpumask_t
->    variables are declared on the stack to reduce the amount of stack
->    space required.
->
-> Based on linux-2.6.tip/master at the following commit:
->
->    commit 0a91813e16ebd5c2d9b5c2acd5b7c91742112c4f
->    Merge: 9a635fa... 724dce0...
->    Author: Ingo Molnar <mingo@elte.hu>
->    Date:   Tue Jul 15 14:55:17 2008 +0200
->
-> Signed-off-by: Mike Travis <travis@sgi.com>
-> Cc: Paul Jackson <pj@sgi.com>
-> ---
->  include/linux/cpumask.h |   21 +++++++++++++++++++++
->  1 file changed, 21 insertions(+)
->
-> --- linux-2.6.tip.orig/include/linux/cpumask.h
-> +++ linux-2.6.tip/include/linux/cpumask.h
-> @@ -75,6 +75,17 @@
->  * CPU_MASK_NONE                       Initializer - no bits set
->  * unsigned long *cpus_addr(mask)      Array of unsigned long's in mask
->  *
-> + *if NR_CPUS > BITS_PER_LONG
-> + *   CPUMASK_ALLOC(m)                  Declares and allocates struct m *m =
-> + *                                        (struct m *)kmalloc(sizeof(*m), ...)
-Shouldn't you mention the GFP_KERNEL flag? And the cast should not
-necessarily be mentioned in a comment.
+Tejun Heo <htejun@gmail.com> writes:
 
-> + *   CPUMASK_FREE(m)                   Macro for kfree(v)
-                                                    kfree(m)
+> It's a bit scary tho.  Working inode->i_dentry or dentry->d_alias
+> crosses multiple sb's.  sysfs isn't too greedy about dcache/icache.
+> Only open files and directories hold them and only single copy of
+> sysfs_dirent is there for most nodes.  Wouldn't it be better to stay on
+> the safer side and use separate inode hierarchy?
 
-> + *else
-> + *   CPUMASK_ALLOC(m)                  Declares struct m _m, *m = &_m
-> + *   CPUMASK_FREE(m)                   Nop
-> + *endif
-> + *   CPUMASK_VAR(v, m)                 Declares cpumask_t *v =
-> + *                                             m + offset(struct m, v)
-                                                      offsetof
-and why can't you use a &(m->v)?
+To do that I believe we would need to ensure sysfs does not use 
+the inode->i_mutex lock except to keep the VFS layer out.  Allowing us
+to safely change the directory structure, without holding it.
 
-Regards
-Bert
+You raise a good point about inode->i_dentry and dentry->d_alias.
+Generally they are used by fat like filesystems but I am starting to
+see uses in generic pieces of code.  I don't see any problems today
+but yes it would be good to do the refactoring to allow us to duplicate
+the inodes. 
+
+Eric
+
