@@ -1,122 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756060AbYGPA6E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757358AbYGPBET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756060AbYGPA6E (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 20:58:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbYGPA5y
+	id S1757358AbYGPBET (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 21:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755156AbYGPBEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 20:57:54 -0400
-Received: from r00tworld.com ([212.85.137.21]:37464 "EHLO r00tworld.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751288AbYGPA5y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 20:57:54 -0400
-From: pageexec@freemail.hu
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 16 Jul 2008 02:56:04 +0200
+	Tue, 15 Jul 2008 21:04:10 -0400
+Received: from mercury.sdinet.de ([193.103.161.30]:43006 "EHLO
+	mercury.sdinet.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753085AbYGPBEJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 21:04:09 -0400
+X-Greylist: delayed 515 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Jul 2008 21:04:09 EDT
+Date: Wed, 16 Jul 2008 02:55:32 +0200 (CEST)
+From: Sven-Haegar Koch <haegar@sdinet.de>
+To: David Woodhouse <dwmw2@infradead.org>
+cc: Linux-Kernel-Mailinglist <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
+ use it in more drivers.
+In-Reply-To: <1216159959.26991.48.camel@shinybook.infradead.org>
+Message-ID: <alpine.DEB.1.10.0807160241060.21568@mercury.sdinet.de>
+References: <alpine.LFD.1.10.0807141903260.3017@woody.linux-foundation.org>  <487C585C.2060002@garzik.org>  <alpine.LFD.1.10.0807150803580.3017@woody.linux-foundation.org>  <487CD7FE.9010209@garzik.org>  <alpine.LFD.1.10.0807151008450.3017@woody.linux-foundation.org>
+  <487CDEC0.3090004@garzik.org>  <alpine.LFD.1.10.0807151041080.3017@woody.linux-foundation.org>  <487CEA73.9000408@garzik.org>  <alpine.LFD.1.10.0807151124510.3017@woody.linux-foundation.org>  <487CF01E.6000208@garzik.org> <20080715185801.GH8185@mit.edu> 
+ <487CF70C.1030309@garzik.org>  <alpine.LFD.1.10.0807151218460.3351@woody.linux-foundation.org>  <487D1327.7090805@garzik.org>  <alpine.LFD.1.10.0807151420550.2867@woody.linux-foundation.org>  <487D1925.50008@garzik.org>
+ <1216159959.26991.48.camel@shinybook.infradead.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Subject: Re: [stable] Linux 2.6.25.10
-Reply-to: pageexec@freemail.hu
-CC: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Message-ID: <487D6344.18581.1CD50DA5@pageexec.freemail.hu>
-In-reply-to: <alpine.LFD.1.10.0807151716510.2867@woody.linux-foundation.org>
-References: <20080703185727.GA12617@suse.de>, <487D5729.14854.1CA5C3EB@pageexec.freemail.hu>, <alpine.LFD.1.10.0807151716510.2867@woody.linux-foundation.org>
-X-mailer: Pegasus Mail for Windows (4.41)
-Content-type: text/plain; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-Content-description: Mail message body
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Wed, 16 Jul 2008 02:56:50 +0200 (CEST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 15 Jul 2008 at 17:24, Linus Torvalds wrote:
+On Tue, 15 Jul 2008, David Woodhouse wrote:
 
-> On Wed, 16 Jul 2008, pageexec@freemail.hu wrote:
+> On Tue, 2008-07-15 at 17:39 -0400, Jeff Garzik wrote:
 > > 
-> > we went through this and you yourself said that security bugs are *not*
-> > treated as normal bugs because you do omit relevant information from such
-> > commits
+> > 'make modules_install && make install' will
+> >         * install modules in /lib
+> >         * install firmware in /lib      [2.6.27 only]
+> >         * install kernel
+> >         * update grub
+> >         * rebuild initrd
+> > 
+> > Do this, under both 2.6.26 and 2.6.27.
+> > 
+> > 2.6.26 will put a working driver into initrd.
+> > 
+> > 2.6.27 will put a dead driver into initrd (because no firmware got 
+> > copied into initrd image).
 > 
-> Actually, we disagree on one fundamental thing. We disagree on 
-> that single word: "relevant".
+> I believe your claim is untrue. It uses the distribution's tool to
+> create the initrd, doesn't it? And those tools _do_ handle the
+> MODULE_FIRMWARE() tags and pull in appropriate firmware. They've had to
+> get that right for _years_ already.
 
-we'll see :)
+Something from the non-development world:
 
-> I do not think it's helpful _or_ relevant to explicitly point out how to 
-> tigger a bug.
+At least the initramfs-tools (which contains mkinitrd) of Debian Etch do 
+not do this (the current testing/development version Lenny does) - no 
+firmware support in the initrd at all - and not needed for booting until 
+now.
+(It has /lib/firmware support after the initrd for the not-so-important
+stuff like usb/sound/video/wireless)
 
-nor did i say that (actually, what i said is that it didn't belong into
-the commit message, see below for more).
+Yes, it may be nearly ancient by now, but for servers it contains all we 
+need, and most certainly would not want to use something that changes and 
+needs checking/hand-fixing every month - I expect this version to be still 
+in use a year from now, then just gradually being updated to the next 
+debian version.
 
-> It's very helpful and relevant when we're trying to chase 
-> the bug down, but once it is fixed, it becomes irrelevant.
+Currently we use 2.6.24, and I expect to use some newer kernel to support 
+newer replacement hardware before all installs are upgraded. So having the 
+firmware-inside-module support would be a help for us when modules are 
+starting to be needed for disk or network access, keeping from the need to 
+try backporting huge initrd/make-kpkg changes.
 
-you're wrong on that however. it is important for many people to able
-to perform the same verification that you do. just imagine the backports
-to versions that you don't do yourselves. but organizing the dissemination
-of such code is not what i've been talking about all this time.
- 
-> You think that explicitly pointing something out as a security issue is 
-> really important, so you think it's always "relevant".
+c'ya
+sven
 
-don't mistake my presence in this thread as me, an invidual arguing for his
-own benefit. i already know when you fix security bugs, even when you don't
-sometimes. so when i say something is relevant, it's not merely my opinion,
-it's what most people dealing with security issues (both inside and outside
-the linux universe) think. with that said, let's move on:
+-- 
 
-> And I take mostly the opposite view. I think pointing it out is
-> actually likely to be counter-productive. 
-
-you keep saying that, but you don't explain *why*.
-
-> For example, the way I prefer to work is to have people send me and the 
-> kernel list a patch for a fix, and then in the very next email send (in 
-> private) an example exploit of the problem to the security mailing list 
-> (and that one goes to the private security list just because we don't want 
-> all the people at universities rushing in to test it). THAT is how things 
-> should work.
-
-fine with me, i wasn't talking about that at all though ;).
-
-> Should I document the exploit in the commit message? Hell no.
-
-fully understood and agreed. never even asked for that.
-
->  It's private for a reason, even if it's real information. It was real
-> information for the developers to explain why a patch is needed, but
-> once explained, it shouldn't be spread around unnecessarily. 
-
-agreed (with the same additonal thoughts as above on the trigger code).
-
-ok, so let's make it simpler for everyone to understand what is at issue
-here. it seems that we agree that there're several levels of information
-that exist when it comes to security bugs and we don't understand each
-other as to what should go into a commit and what should stay out. let
-me propose a categorization and you tell me what you think you would be
-willing to put into a commit (feel free to break them up further if that's
-what it takes).
-
-1. simple words/phrases that one can grep for (mentally or automated)
-   examples: 'security', 'exploitable', 'DoS', 'buffer overflow', etc
-
-2. simple sentence describing roughly what kind of security bug it is
-   example: fix exploitable null function pointer dereference in foo.
-
-3. sample code able to trigger the bug and cause an oops/crash but not
-   privilege elevation, no effort made to be 'weapons grade' (does not
-   support several archs, kernel versions, etc)
-
-4. proof-of-concept exploit that triggers the bug, and demonstrates its
-   effect (say privilege elevation) with manual tweaking (say, you look
-   up an address in System.map and the like, but nothing automated)
-
-5. full blown weaponized exploit
-
-i believe 3-5 are definitely not commit message material. 1 or 2 are.
-5 should never be published or disseminated, 3 and 4 may be distributed
-to interested parties.
-
-cheers,
-  PaX Team
-
+The Internet treats censorship as a routing problem, and routes around
+it. (John Gilmore on http://www.cygnus.com/~gnu/)
