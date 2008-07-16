@@ -1,73 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbYGPBmG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757265AbYGPBnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756728AbYGPBmG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 21:42:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbYGPBlz
+	id S1757265AbYGPBnd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 21:43:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbYGPBnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 21:41:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60954 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751227AbYGPBly (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 21:41:54 -0400
-Date: Tue, 15 Jul 2008 18:41:36 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Tiago Assumpcao <tiago@assumpcao.org>
-cc: pageexec@freemail.hu, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [stable] Linux 2.6.25.10
-In-Reply-To: <487D4A7B.8090403@assumpcao.org>
-Message-ID: <alpine.LFD.1.10.0807151832260.2835@woody.linux-foundation.org>
-References: <20080703185727.GA12617@suse.de>, <487D3056.1183.1C0E1C47@pageexec.freemail.hu>, <alpine.LFD.1.10.0807151425170.2867@woody.linux-foundation.org> <487D3C17.31467.1C3C0441@pageexec.freemail.hu> <alpine.LFD.1.10.0807151620450.2867@woody.linux-foundation.org
- <alpine.LFD.1.10.0807151707450.2867@woody.linux-foundation.org> <487D4301.5080609@assumpcao.org> <alpine.LFD.1.10.0807151749570.2867@woody.linux-foundation.org> <487D4A7B.8090403@assumpcao.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 15 Jul 2008 21:43:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:32999 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753470AbYGPBnV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jul 2008 21:43:21 -0400
+Date: Tue, 15 Jul 2008 21:36:19 -0400
+From: Dave Jones <davej@redhat.com>
+To: Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>, david@lang.hm,
+       Marcel Holtmann <marcel@holtmann.org>,
+       David Woodhouse <dwmw2@infradead.org>, Frans Pop <elendil@planet.nl>,
+       jeff@garzik.org, arjan@infradead.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
+	in-kernel, use it in more drivers.
+Message-ID: <20080716013619.GD17417@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Theodore Tso <tytso@mit.edu>,
+	Linus Torvalds <torvalds@linux-foundation.org>, david@lang.hm,
+	Marcel Holtmann <marcel@holtmann.org>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Frans Pop <elendil@planet.nl>, jeff@garzik.org, arjan@infradead.org,
+	akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+	linux-kernel@vger.kernel.org
+References: <alpine.LFD.1.10.0807151223290.3351@woody.linux-foundation.org> <1216150616.27455.377.camel@shinybook.infradead.org> <alpine.LFD.1.10.0807151244320.3351@woody.linux-foundation.org> <1216151640.27242.90.camel@violet.holtmann.net> <alpine.LFD.1.10.0807151301130.2867@woody.linux-foundation.org> <alpine.DEB.1.10.0807151426021.16109@asgard.lang.hm> <alpine.LFD.1.10.0807151436400.2867@woody.linux-foundation.org> <alpine.DEB.1.10.0807151503310.16109@asgard.lang.hm> <alpine.LFD.1.10.0807151631260.2867@woody.linux-foundation.org> <20080716005133.GK8185@mit.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080716005133.GK8185@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jul 15, 2008 at 08:51:33PM -0400, Theodore Tso wrote:
+ > For one reason, because there's more than one mkinitrd.  FC9 ships
+ > with mkinitrd 6.0.52; OpenSuSE ships with mkinitrd 2.1, and the
+ > sources don't look even vaguely similar to one another.
 
+Right. Other than name, they've historically shared nothing.
+Both have grown through the evolution of multiple distros, requiring
+different workarounds in each due to differences in CONFIG_ options
+in the kernel between vendors for eg.
 
-On Tue, 15 Jul 2008, Tiago Assumpcao wrote:
-> 
-> How can I expect one to treat the unknown? If you are not aware of it, you do
-> nothing.
+Whilst it would be great for unified development on the tools that
+create the early boot process, I think it's a non-starter due to the
+fact that you can't really do it without throwing out everything you
+already have today.  The same reason imo, that hpa's klibc work hasn't
+gained mass-appeal from vendors.
 
-Well, some people keep it secret and track it on vendor-sec or similar, 
-hidden from us.
+Even if we had a 'reference' mkinitrd in the kernel, it would be pretty much
+useless until it reached feature parity with every distros existing tools,
+and if everyone uses those instead of furthering the reference implementation,
+it fails on the starting blocks.
 
-But then when they are ready to announce it, they want our help to glorify 
-their corrupt process when they finally deign to let us know. And that 
-really irritates me.
+	Dave
 
-> All I ask for is to receive the "There are updates available." message as soon
-> as one security problem is reported, understood and treated by your
-> development part. And that is, the sooner possible, if you please.
-
-Umm. You're talking to _entirely_ the wrong person.
-
-The people who want to track security issues don't run my development 
-kernels. They usually don't even run the _stable_ kernels. They tend to 
-run the kernels from some commercial distribution, and usually one that is 
-more than six months old as far as I - and other kernel developers - are 
-concerned.
-
-IOW, when we fix security issues, it's simply not even appropriate or 
-relevant to you. More importantly, when we fix them, your vendor probably 
-won't have the fix for at least another week or two in most cases anyway.
-
-So ask yourself - what would happen if I actually made a big deal out of 
-every bug we find that could possibly be a security issue. HONESTLY now!
-
-We'd basically be announcing a bug that (a) may not be relevant to you, 
-but (b) _if_ it is relevant to you, you almost certainly won't actually 
-have fixed packages until a week or two later available to you!
-
-Do you see?
-
-I would not actually be helping you. I'd be helping the people you want to 
-protect against!
-
-			Linus
+-- 
+http://www.codemonkey.org.uk
