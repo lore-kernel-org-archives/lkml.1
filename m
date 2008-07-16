@@ -1,69 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757928AbYGPE60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbYGPFF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757928AbYGPE60 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 00:58:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbYGPE6S
+	id S1756197AbYGPFF1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 01:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbYGPFFQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 00:58:18 -0400
-Received: from usmail2.us.checkpoint.com ([216.200.240.146]:46063 "EHLO
-	us.checkpoint.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751289AbYGPE6R (ORCPT
+	Wed, 16 Jul 2008 01:05:16 -0400
+Received: from ax54.genwebserver.com ([72.18.156.50]:57506 "EHLO
+	ax54.genwebserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751592AbYGPFFP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 00:58:17 -0400
-X-Greylist: delayed 2587 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Jul 2008 00:58:17 EDT
-From: "Rodrigo Rubira Branco" <rbranco@la.checkpoint.com>
-To: <linux-kernel@vger.kernel.org>, <stable@kernel.org>
-Cc: <greg@kroah.com>, "'Justin Forbes'" <jmforbes@linuxtx.org>,
-       "'Zwane Mwaikambo'" <zwane@arm.linux.org.uk>,
-       "'Theodore Ts'o'" <tytso@mit.edu>,
-       "'Randy Dunlap'" <rdunlap@xenotime.net>,
-       "'Dave Jones'" <davej@redhat.com>,
-       "'Chuck Wolber'" <chuckw@quantumlinux.com>,
-       "'Chris Wedgwood'" <reviews@ml.cw.f00f.org>,
-       "'Michael Krufky'" <mkrufky@linuxtv.org>,
-       "'Chuck Ebbert'" <cebbert@redhat.com>,
-       "'Domenico Andreoli'" <cavokz@gmail.com>, "'Willy Tarreau'" <w@1wt.eu>,
-       <torvalds@linux-foundation.org>, <akpm@linux-foundation.org>,
-       <alan@lxorguk.ukuu.org.uk>, "'Alan Cox'" <alan@redhat.com>,
-       <caglar@pardus.org.tr>, "'Greg KH'" <gregkh@suse.de>,
-       <casey@schaufler-ca.com>
-References: <20080701151057.930340322@mini.kroah.org> <200807021257.47593.caglar@pardus.org.tr> <20080702144149.GA16850@suse.de> <200807021809.07679.caglar@pardus.org.tr>
-Subject: Re: [stable] Linux 2.6.25.10 (resume)
-Date: Wed, 16 Jul 2008 01:01:24 -0300
-Message-ID: <005001c8e6f8$ac0955f0$a6181fac@ad.checkpoint.com>
+	Wed, 16 Jul 2008 01:05:15 -0400
+Message-ID: <487D80E4.1090603@assumpcao.org>
+Date: Wed, 16 Jul 2008 02:02:28 -0300
+From: Tiago Assumpcao <tiago@assumpcao.org>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Casey Schaufler <casey@schaufler-ca.com>, Theodore Tso <tytso@mit.edu>,
+       pageexec@freemail.hu, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [stable] Linux 2.6.25.10
+References: <alpine.LFD.1.10.0807151425170.2867@woody.linux-foundation.org> <487D3C17.31467.1C3C0441@pageexec.freemail.hu> <alpine.LFD.1.10.0807151620450.2867@woody.linux-foundation.org> <487D3A13.3040507@assumpcao.org> <20080716010836.GL8185@mit.edu> <487D547C.7060909@assumpcao.org> <487D6AB9.7080700@schaufler-ca.com> <487D756E.50506@assumpcao.org> <alpine.LFD.1.10.0807152118320.2835@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807152118320.2835@woody.linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-In-Reply-To: <200807021809.07679.caglar@pardus.org.tr>
-Thread-Index: AcjcVYykqTF/NdeiRx+CPu6Sm7vNGwKock5A
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - ax54.genwebserver.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - assumpcao.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First of all sorry for copy many people who maybe are not in the initial
-discussion, but since I've not been copied I have no idea who are and who
-are not in that thread ;)
+Linus Torvalds wrote:
+> I would suggest you maintain your own kernel version, since you're so 
+> obviously more competent at it than we are.
 
-The point that many people are trying to make is that Linux has a policy
-defined in a document (Documentation/SecurityBugs) but are not following it.
+Raising an honest question and following with one, not less sincere, 
+debate makes me all that competent? I don't understand.
 
-Don't really matter to us what the policy is, but it's really important to
-follow it (many people, who are security professionals need that, and many
-others, who are NOT security professionals also).
+> I've actually been waiting for this moment for over fifteen years now: 
+> finding that person who can take over so that I don't have to bother any 
+> more. I'll continue to do my own maintenance in parallel while you get up 
+> to speed, but I expect that everybody will have dropped my feeble efforts 
+> soon enough, so you can probably just ignore that. 
+> 
+> Thanks,
+> 
+> 		Linus
+> 
 
-We all know (both sides) that it's impossible to know everything related to
-every bug and it's security impact.  But there is a lot of different
-situations well-known as a security problems (because the bug class is well
-know, because someone reported it with details to the devels, etc).  Hide it
-is an option, disclouse it is another.  Have a policy is what matters.  Say
-something and do another thing is always bad to everybody involved.
- 
+No, thank you. I'll stick up with poetry.
 
-P.S:  I'm talking by myself, not for the company that I work for.
-
-
-Rodrigo Rubira Branco (BSDaemon).
+--t
 
