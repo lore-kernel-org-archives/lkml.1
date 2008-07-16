@@ -1,97 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759688AbYGPOXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758762AbYGPOV6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759688AbYGPOXA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 10:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757715AbYGPOWm
+	id S1758762AbYGPOV6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 10:21:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756830AbYGPOVu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 10:22:42 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42906 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757520AbYGPOWm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 10:22:42 -0400
-Date: Wed, 16 Jul 2008 16:22:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] x86: more header fixes
-Message-ID: <20080716142225.GA19054@elte.hu>
-References: <20080618103006.GF15255@elte.hu> <19f34abd0806180919v5a8c21e7ua7e1f928d8a53ab4@mail.gmail.com> <20080626120202.GH29619@elte.hu> <19f34abd0806260953h504ff85dmf11a59171df3442b@mail.gmail.com> <20080701092820.GA31309@elte.hu> <20080716115137.GA8075@elte.hu> <19f34abd0807160550v68aacb58nbdd46b0fe74c4704@mail.gmail.com> <20080716130839.GA1296@elte.hu> <20080716131745.GA10266@elte.hu> <19f34abd0807160646t55aa7227t4ac53302345ee828@mail.gmail.com>
+	Wed, 16 Jul 2008 10:21:50 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:14661 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756816AbYGPOVt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 10:21:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=gJQylY/v39v9aCoqC7TLgoHXdmdE0lBO9Ad8T3/NU+SScVpbK0bPQrFuoZWi4PYxx2
+         078AAgNicYwEVR1IAet3nA+4zfQh6DbPYy2Nq9opDiX2ZC8nevDfA2sT4sO+8Ad7Kn4/
+         Flt4tOVlRL28MJyiyE7k/mAzU/S1OcQvPHxMc=
+Date: Wed, 16 Jul 2008 18:19:07 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>, Frans Pop <elendil@planet.nl>,
+       david@lang.hm, Marcel Holtmann <marcel@holtmann.org>,
+       arjan@infradead.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: Prosaic firmware issues
+Message-ID: <20080716141907.GA4540@martell.zuzino.mipt.ru>
+References: <1216077806.27455.85.camel@shinybook.infradead.org> <alpine.DEB.1.10.0807151503310.16109@asgard.lang.hm> <alpine.LFD.1.10.0807151631260.2867@woody.linux-foundation.org> <200807160222.40705.elendil@planet.nl> <alpine.LFD.1.10.0807151726520.2867@woody.linux-foundation.org> <487D441B.5010908@garzik.org> <20080716011140.GA30967@martell.zuzino.mipt.ru> <alpine.LFD.1.10.0807151843240.2835@woody.linux-foundation.org> <1216187644.30898.7.camel@shinybook.infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <19f34abd0807160646t55aa7227t4ac53302345ee828@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1216187644.30898.7.camel@shinybook.infradead.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
-
-> On Wed, Jul 16, 2008 at 3:17 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> >> thanks. I've picked up these changes and rebased them to -git. (that
-> >> way they can be maintained as a topic easier) The few files that were
-> >> left out due to conflicts we can do later on. I pushed the result out
-> >> into the tip/x86/header-guards topic branch - please double-check that
-> >> i merged it right.
-> >
-> > hm, doesnt work with:
-> >
-> > http://redhat.com/~mingo/misc/config-Wed_Jul_16_15_13_24_CEST_2008.bad
-> >
-> > include/asm/mpspec.h:39: error: 'MAX_MP_BUSSES' undeclared here (not in
-> > a function)
-> > In file included from include/asm/smp.h:15,
-> >                 from include/linux/smp.h:28,
-> >                 from include/asm/desc.h:8,
-> >                 from include/asm/elf.h:89,
-> >                 from include/linux/elf.h:7,
-> >                 from arch/x86/boot/compressed/misc.c:29:
-> > include/asm/io_apic.h:149: error: 'MAX_IRQ_SOURCES' undeclared here (not
-> > in a function)
-> >
-> > etc. Some of those header guards confused some other code i guess.
+On Tue, Jul 15, 2008 at 10:54:04PM -0700, David Woodhouse wrote:
+> On Tue, 2008-07-15 at 18:45 -0700, Linus Torvalds wrote:
+> > 
+> > On Wed, 16 Jul 2008, Alexey Dobriyan wrote:
+> > >
+> > > Could somebody from firmware people fix boring stuff, please:
+> > > 
+> > > 1) after allyesconfig build, git-status show plenty of crap:
+> > 
+> > Something like the appended, perhaps?
+> > 
+> > (I'm not going to commit it, I want some firmware person to double-check 
+> > it).
 > 
-> Yes, you are right. Check out this incredibly hideous hack of
-> arch/x86/boot/compressed/misc.c:
+> Generally sane, but wants a few more things added.
 > 
-> /*
->  * we have to be careful, because no indirections are allowed here, and
->  * paravirt_ops is a kind of one. As it will only run in baremetal anyway,
->  * we just keep it from happening
->  */
-> #undef CONFIG_PARAVIRT
-> #ifdef CONFIG_X86_32
-> #define _ASM_DESC_H_ 1
-> #endif
+> > > 2) after "make mrproper" after allyesconfig, some files aren't removed,
+> > >    use "git-ls-files -o" to see them.
+> > 
+> > Ok, that needs some Makefile magic. git magic I can do.
 > 
-> #ifdef CONFIG_X86_64
-> #define _LINUX_STRING_H_ 1
-> #define __LINUX_BITMAP_H 1
-> #endif
+> Ah, that's caused by a stray := where there should be a +=, so the
+> firmware files listed before that get dropped from the list of files to
+> be cleaned. 
 > 
-> I'm not sure how we should proceed with this. On one hand, we could 
-> just fix the issues as they come up and be done with it. On the other 
-> hand, this was exactly the thing I wanted to avoid by automatic it. I 
-> guess it can never be fully automated... The question is if there is 
-> any danger of *silent* (read: runtime) breakage, which would be much 
-> worse than compiler errors.
+> Alexey, thanks for the report. Please could you verify that this fixes
+> it for you?
 
-dont worry, lets fix the above hideous hack first, then i can merge the 
-guards fixes ontop of that fix. That's why we do testing, to catch the 
-cases where assumptions fail. Your script is just fine - it beats having 
-to edit 280+ files by hand ...
+It does, thank you.
 
-	Ingo
