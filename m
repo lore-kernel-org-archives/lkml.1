@@ -1,171 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760495AbYGPPWL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759512AbYGPPWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760495AbYGPPWL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 11:22:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760082AbYGPPTT
+	id S1759512AbYGPPWv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 11:22:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760142AbYGPPUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 11:19:19 -0400
-Received: from mho-01-bos.mailhop.org ([63.208.196.178]:61418 "EHLO
-	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760073AbYGPPTR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 11:19:17 -0400
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1+udWde2D/d00405J39FFRN
-From: Tony Lindgren <tony@atomide.com>
+	Wed, 16 Jul 2008 11:20:30 -0400
+Received: from mail.gmx.net ([213.165.64.20]:60716 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1760100AbYGPPU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 11:20:28 -0400
+X-Authenticated: #704063
+X-Provags-ID: V01U2FsdGVkX1/9vAdvYUj9JPe4HZ60Um7bRpB+p7wm20SSJcmmXV
+	B9TMdlD2UKvD0w
+Date: Wed, 16 Jul 2008 17:20:25 +0200
+From: Eric Sesterhenn <snakebyte@gmx.de>
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@lists.linux-foundation.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-omap@vger.kernel.org,
-       =?utf-8?q?H=C3=B6gander=20Jouni?= <jouni.hogander@nokia.com>,
-       Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 10/10] ARM: OMAP2: Clock: Combine 34xx l3_icks and l4_icks
-Date: Wed, 16 Jul 2008 18:19:15 +0300
-Message-Id: <1216221555-18958-11-git-send-email-tony@atomide.com>
-X-Mailer: git-send-email 1.5.6.rc3.21.g8c6b5
-In-Reply-To: <1216221555-18958-10-git-send-email-tony@atomide.com>
-References: <1216221555-18958-1-git-send-email-tony@atomide.com>
- <1216221555-18958-2-git-send-email-tony@atomide.com>
- <1216221555-18958-3-git-send-email-tony@atomide.com>
- <1216221555-18958-4-git-send-email-tony@atomide.com>
- <1216221555-18958-5-git-send-email-tony@atomide.com>
- <1216221555-18958-6-git-send-email-tony@atomide.com>
- <1216221555-18958-7-git-send-email-tony@atomide.com>
- <1216221555-18958-8-git-send-email-tony@atomide.com>
- <1216221555-18958-9-git-send-email-tony@atomide.com>
- <1216221555-18958-10-git-send-email-tony@atomide.com>
+Cc: adobriyan@gmail.com, akpm@linux-foundation.org
+Subject: /proc/*/pagemap oopses
+Message-ID: <20080716152025.GA23096@alice>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+X-Editor: Vim http://www.vim.org/
+X-Info: http://www.snake-basket.de
+X-Operating-System: Linux/2.6.26 (x86_64)
+X-Uptime: 17:08:20 up  9:24,  1 user,  load average: 0.04, 0.16, 0.43
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Högander Jouni <jouni.hogander@nokia.com>
+hi,
 
-E.g dss_l3_ick and dss_l4_ick have same gating control. Having own
-clock for both of them causes race condition between enable / disable.
+with current -git a "cat /proc/4260/pagemap"
+gives me the following oops:
 
-This patch combines this kind of clocks and names new clock as <module>_ick.
 
-Signed-off-by: Jouni Hogander <jouni.hogander@nokia.com>
-Acked-by: Paul Walmsley <paul@pwsan.com>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
+[   80.334016] general protection fault: fffc [#1] PREEMPT DEBUG_PAGEALLOC
+[   80.334402] Modules linked in:
+[   80.334654] 
+[   80.334765] Pid: 4744, comm: cat Not tainted (2.6.26-02962-g4515889 #5)
+[   80.334902] EIP: 0060:[<cb613f4b>] EFLAGS: 00010206 CPU: 0
+[   80.335093] EIP is at 0xcb613f4b
+[   80.335213] EAX: 96c26000 EBX: c013b06a ECX: 00400000 EDX: 00000000
+[   80.335347] ESI: cb613f44 EDI: fffffff2 EBP: c016d99c ESP: cb613f04
+[   80.335481]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+[   80.335672] Process cat (pid: 4744, ti=cb613000 task=cb59df40 task.ti=cb613000)
+[   80.335810] Stack: ffffffb0 bfffffff c0000000 00000000 cbb67000 00400000 00000001 00000000 
+[   80.336019]        fffffff2 cb613f74 c01abab0 0828a000 0828a400 cb408380 cb400fe0 cb4a6c80 
+[   80.336019]        c013b06a cb613f60 c01ab441 00000000 c01ab3af cb4a6c80 cb613f60 0828a000 
+[   80.336019] Call Trace:
+[   80.336019]  [<c01abab0>] ? pagemap_read+0x16a/0x1e3
+[   80.336019]  [<c013b06a>] ? put_lock_stats+0xd/0x21
+[   80.336019]  [<c01ab441>] ? pagemap_pte_range+0x0/0xdc
+[   80.336019]  [<c01ab3af>] ? pagemap_pte_hole+0x0/0x37
+[   80.336019]  [<c01ab946>] ? pagemap_read+0x0/0x1e3
+[   80.336019]  [<c017af1f>] ? vfs_read+0x8a/0x106
+[   80.336019]  [<c017b21f>] ? sys_read+0x3b/0x60
+[   80.336019]  [<c01038b1>] ? sysenter_past_esp+0x6a/0xa5
+[   80.336019]  =======================
+[   80.336019] Code: 00 00 00 00 f2 ff ff ff 74 3f 61 cb b0 ba 1a c0 00
+a0 28 08 00 a4 28 08 80 83 40 cb e0 0f 40 cb 80 6c 4a cb 6a b0 13 c0 60
+3f 61 <cb> 41 b4 1a c0 00 00 00 00 af b3 1a c0 80 6c 4a cb 60 3f 61 cb 
+[   80.336019] EIP: [<cb613f4b>] 0xcb613f4b SS:ESP 0068:cb613f04
+[   80.455182] ---[ end trace e2b2d610b672cbbc ]---
 
-diff --git a/arch/arm/mach-omap2/clock34xx.h b/arch/arm/mach-omap2/clock34xx.h
-index e8f22c4..a1db551 100644
---- a/arch/arm/mach-omap2/clock34xx.h
-+++ b/arch/arm/mach-omap2/clock34xx.h
-@@ -1189,27 +1189,34 @@ static const struct clksel gfx_l3_clksel[] = {
- 	{ .parent = NULL }
- };
- 
--static struct clk gfx_l3_fck = {
--	.name		= "gfx_l3_fck",
-+/* Virtual parent clock for gfx_l3_ick and gfx_l3_fck */
-+static struct clk gfx_l3_ck = {
-+	.name		= "gfx_l3_ck",
- 	.parent		= &l3_ick,
- 	.init		= &omap2_init_clksel_parent,
- 	.enable_reg	= OMAP_CM_REGADDR(GFX_MOD, CM_ICLKEN),
- 	.enable_bit	= OMAP_EN_GFX_SHIFT,
-+	.flags		= CLOCK_IN_OMAP3430ES1,
-+	.recalc		= &followparent_recalc,
-+};
-+
-+static struct clk gfx_l3_fck = {
-+	.name		= "gfx_l3_fck",
-+	.parent		= &gfx_l3_ck,
-+	.init		= &omap2_init_clksel_parent,
- 	.clksel_reg	= OMAP_CM_REGADDR(GFX_MOD, CM_CLKSEL),
- 	.clksel_mask	= OMAP_CLKSEL_GFX_MASK,
- 	.clksel		= gfx_l3_clksel,
--	.flags		= CLOCK_IN_OMAP3430ES1 | RATE_PROPAGATES,
-+	.flags		= CLOCK_IN_OMAP3430ES1 | RATE_PROPAGATES |
-+				PARENT_CONTROLS_CLOCK,
- 	.clkdm_name	= "gfx_3430es1_clkdm",
- 	.recalc		= &omap2_clksel_recalc,
- };
- 
- static struct clk gfx_l3_ick = {
- 	.name		= "gfx_l3_ick",
--	.parent		= &l3_ick,
--	.init		= &omap2_init_clk_clkdm,
--	.enable_reg	= OMAP_CM_REGADDR(GFX_MOD, CM_ICLKEN),
--	.enable_bit	= OMAP_EN_GFX_SHIFT,
--	.flags		= CLOCK_IN_OMAP3430ES1,
-+	.parent		= &gfx_l3_ck,
-+	.flags		= CLOCK_IN_OMAP3430ES1 | PARENT_CONTROLS_CLOCK,
- 	.clkdm_name	= "gfx_3430es1_clkdm",
- 	.recalc		= &followparent_recalc,
- };
-@@ -2153,19 +2160,9 @@ static struct clk cam_mclk = {
- 	.recalc		= &omap2_clksel_recalc,
- };
- 
--static struct clk cam_l3_ick = {
--	.name		= "cam_l3_ick",
--	.parent		= &l3_ick,
--	.init		= &omap2_init_clk_clkdm,
--	.enable_reg	= OMAP_CM_REGADDR(OMAP3430_CAM_MOD, CM_ICLKEN),
--	.enable_bit	= OMAP3430_EN_CAM_SHIFT,
--	.flags		= CLOCK_IN_OMAP343X,
--	.clkdm_name	= "cam_clkdm",
--	.recalc		= &followparent_recalc,
--};
--
--static struct clk cam_l4_ick = {
--	.name		= "cam_l4_ick",
-+static struct clk cam_ick = {
-+	/* Handles both L3 and L4 clocks */
-+	.name		= "cam_ick",
- 	.parent		= &l4_ick,
- 	.init		= &omap2_init_clk_clkdm,
- 	.enable_reg	= OMAP_CM_REGADDR(OMAP3430_CAM_MOD, CM_ICLKEN),
-@@ -2199,19 +2196,9 @@ static struct clk usbhost_48m_fck = {
- 	.recalc		= &followparent_recalc,
- };
- 
--static struct clk usbhost_l3_ick = {
--	.name		= "usbhost_l3_ick",
--	.parent		= &l3_ick,
--	.init		= &omap2_init_clk_clkdm,
--	.enable_reg	= OMAP_CM_REGADDR(OMAP3430ES2_USBHOST_MOD, CM_ICLKEN),
--	.enable_bit	= OMAP3430ES2_EN_USBHOST_SHIFT,
--	.flags		= CLOCK_IN_OMAP3430ES2,
--	.clkdm_name	= "usbhost_clkdm",
--	.recalc		= &followparent_recalc,
--};
--
--static struct clk usbhost_l4_ick = {
--	.name		= "usbhost_l4_ick",
-+static struct clk usbhost_ick = {
-+	/* Handles both L3 and L4 clocks */
-+	.name		= "usbhost_ick",
- 	.parent		= &l4_ick,
- 	.init		= &omap2_init_clk_clkdm,
- 	.enable_reg	= OMAP_CM_REGADDR(OMAP3430ES2_USBHOST_MOD, CM_ICLKEN),
-@@ -3093,6 +3080,7 @@ static struct clk *onchip_34xx_clks[] __initdata = {
- 	&l3_ick,
- 	&l4_ick,
- 	&rm_ick,
-+	&gfx_l3_ck,
- 	&gfx_l3_fck,
- 	&gfx_l3_ick,
- 	&gfx_cg1_ck,
-@@ -3174,12 +3162,10 @@ static struct clk *onchip_34xx_clks[] __initdata = {
- 	&dss2_alwon_fck,
- 	&dss_ick,
- 	&cam_mclk,
--	&cam_l3_ick,
--	&cam_l4_ick,
-+	&cam_ick,
- 	&usbhost_120m_fck,
- 	&usbhost_48m_fck,
--	&usbhost_l3_ick,
--	&usbhost_l4_ick,
-+	&usbhost_ick,
- 	&usbhost_sar_fck,
- 	&usim_fck,
- 	&gpt1_fck,
+
+doing this again gives a slightly different oops
+
+[  156.814961] BUG: unable to handle kernel NULL pointer dereference at 00000002
+[  156.815288] IP: [<00000002>]
+[  156.815482] *pde = 00000000 
+[  156.815704] Oops: 0000 [#2] PREEMPT DEBUG_PAGEALLOC
+[  156.816079] Modules linked in:
+[  156.816255] 
+[  156.816368] Pid: 4765, comm: cat Tainted: G      D (2.6.26-02962-g4515889 #5)
+[  156.816608] EIP: 0060:[<00000002>] EFLAGS: 00010202 CPU: 0
+[  156.816739] EIP is at 0x2
+[  156.816854] EAX: cbb67000 EBX: 00000002 ECX: 00400000 EDX: 00000000
+[  156.816989] ESI: cb61ef44 EDI: fffffff2 EBP: cb61ef28 ESP: cb61ef00
+[  156.817183]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+[  156.817314] Process cat (pid: 4765, ti=cb61e000 task=cb626f20 task.ti=cb61e000)
+[  156.817455] Stack: c016d99c cb61ef44 bfffffff c0000000 00000000 cbb67000 00400000 00000001 
+[  156.818028]        00000000 fffffff2 cb61ef74 c01abab0 09740000 09740400 cb4083b8 cb400fe0 
+[  156.818028]        cb4a6c80 00000002 00000000 c01ab441 00000001 c01ab3af cb4a6c80 cb61ef60 
+[  156.818028] Call Trace:
+[  156.818028]  [<c016d99c>] ? walk_page_range+0x70/0x180
+[  156.818028]  [<c01abab0>] ? pagemap_read+0x16a/0x1e3
+[  156.818028]  [<c01ab441>] ? pagemap_pte_range+0x0/0xdc
+[  156.818028]  [<c01ab3af>] ? pagemap_pte_hole+0x0/0x37
+[  156.818028]  [<c01ab946>] ? pagemap_read+0x0/0x1e3
+[  156.818028]  [<c017af1f>] ? vfs_read+0x8a/0x106
+[  156.818028]  [<c017b21f>] ? sys_read+0x3b/0x60
+[  156.818028]  [<c01038b1>] ? sysenter_past_esp+0x6a/0xa5
+[  156.818028]  =======================
+[  156.818028] Code:  Bad EIP value.
+[  156.818028] EIP: [<00000002>] 0x2 SS:ESP 0068:cb61ef00
+[  156.823465] ---[ end trace e2b2d610b672cbbc ]---
+
+Greetings, Eric
