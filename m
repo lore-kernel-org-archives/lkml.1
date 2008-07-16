@@ -1,47 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759455AbYGPKJQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759316AbYGPKLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759455AbYGPKJQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 06:09:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755233AbYGPKI7
+	id S1759316AbYGPKLk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 06:11:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755936AbYGPKLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 06:08:59 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40086
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753040AbYGPKI6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 06:08:58 -0400
-Date: Wed, 16 Jul 2008 03:08:57 -0700 (PDT)
-Message-Id: <20080716.030857.261411379.davem@davemloft.net>
-To: pageexec@freemail.hu
-Cc: tiago@assumpcao.org, torvalds@linux-foundation.org, greg@kroah.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [stable] Linux 2.6.25.10
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <487DE059.15123.1EBDA558@pageexec.freemail.hu>
-References: <487D4A7B.8090403@assumpcao.org>
-	<alpine.LFD.1.10.0807151832260.2835@woody.linux-foundation.org>
-	<487DE059.15123.1EBDA558@pageexec.freemail.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 16 Jul 2008 06:11:32 -0400
+Received: from gw.goop.org ([64.81.55.164]:55515 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755927AbYGPKLb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 06:11:31 -0400
+Message-ID: <487DC943.5060202@goop.org>
+Date: Wed, 16 Jul 2008 03:11:15 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+CC: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       virtualization@lists.linux-foundation.org,
+       Zachary Amsden <zach@vmware.com>, Max Krasnyansky <maxk@qualcomm.com>
+Subject: Re: [PATCH] stopmachine: add stopmachine_timeout v2
+References: <487B05CE.1050508@jp.fujitsu.com> <487D78A3.6050105@jp.fujitsu.com>
+In-Reply-To: <487D78A3.6050105@jp.fujitsu.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: pageexec@freemail.hu
-Date: Wed, 16 Jul 2008 11:49:45 +0200
+Hidetoshi Seto wrote:
+> +#ifdef CONFIG_STOP_MACHINE
+> +extern unsigned long stopmachine_timeout;
+> +#endif
+>   
 
-> why? what makes you think that a bug fixed in 2.6.26 is not relevant to
-> 2.6.20? do you or anyone else personally verify that? color me impressed
-> if you do that on every single fix you commit.
+No externs in C files. Put it in an appropriate header.
 
-Many people who do kernel development do exactly this for the vendor
-they work for.
+I'll do a proper review soon.
 
-The SCTP socket option overflow fix got into various dist releases not
-by chance and not because of some utterly pointless "security" tag in
-the commit message.
-
-
+J
