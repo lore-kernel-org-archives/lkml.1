@@ -1,57 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbYGPRNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753298AbYGPRP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754484AbYGPRNR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 13:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752114AbYGPRNB
+	id S1753298AbYGPRP6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 13:15:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbYGPRPu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 13:13:01 -0400
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:3124 "EHLO
-	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751947AbYGPRNA (ORCPT
+	Wed, 16 Jul 2008 13:15:50 -0400
+Received: from mga05.intel.com ([192.55.52.89]:7887 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751406AbYGPRPu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 13:13:00 -0400
-Subject: Re: BUG: unable to handle kernel NULL pointer dereference at
-	000000000000000e (reset_prng_context)
-From: Joe Perches <joe@perches.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: David Miller <davem@davemloft.net>, mingo@elte.hu, nhorman@tuxdriver.com,
-       simon@fire.lp0.eu, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, herbert@gondor.apana.org.au
-In-Reply-To: <20080715214929.GA18268@martell.zuzino.mipt.ru>
-References: <487BE071.80101@simon.arlott.org.uk>
-	 <20080715020428.GA27463@hmsendeavour.rdu.redhat.com>
-	 <20080715113304.GA30565@elte.hu>
-	 <20080715.134407.150543177.davem@davemloft.net>
-	 <20080715214929.GA18268@martell.zuzino.mipt.ru>
-Content-Type: text/plain
-Date: Wed, 16 Jul 2008 09:57:26 -0700
-Message-Id: <1216227446.8292.37.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3-1.3mdv2008.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Jul 2008 13:15:50 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.30,374,1212390000"; 
+   d="scan'208";a="362128093"
+Date: Wed, 16 Jul 2008 10:15:47 -0700
+From: mark gross <mgross@linux.intel.com>
+To: "Jakub W. Jozwicki" <jozwicki@aster.pl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.25.10] pm_qos_params: change spinlock to rwlock
+Message-ID: <20080716171547.GA13478@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <200807130119.19663.jozwicki@aster.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200807130119.19663.jozwicki@aster.pl>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-OriginalArrivalTime: 16 Jul 2008 17:15:47.0114 (UTC) FILETIME=[966888A0:01C8E767]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-16 at 01:49 +0400, Alexey Dobriyan wrote:
-> On Tue, Jul 15, 2008 at 01:44:07PM -0700, David Miller wrote:
-> > From: Ingo Molnar <mingo@elte.hu>
-> > > Note that the new crypto/prng.c driver has very bad quality:
-> > I think we should merge new drivers as aggressively as possible.
-> Well, I don't have strong opinion about this exact statement, but
-> Ingo, COULD YOU PLEASE [...] STOP THIS
-> CHECKPATCH.PL-AS-INDICATOR HORSESHIT !
+nack.
 
-Coding style conformity (easy and clinical) and quality
-(hard and emotional) are only weakly correlated in software.
 
-I think that Ingo sometimes conflates them and he should be more
-selective when using the "quality" term.
+On Sun, Jul 13, 2008 at 01:19:19AM +0200, Jakub W. Jozwicki wrote:
+> Concurrent calls to pm_qos_requirement shouldn't block each other. This patch 
+> changes spinlock to rwlock and fixes issues with PREEMPT_RT.
+>  
+> Signed-off-by:  Jakub Jozwicki <jozwicki@aster.pl>
+> 
+> --- linux-2.6.25.10/kernel/pm_qos_params.c	2008-07-03 05:46:47.000000000 +0200
+> +++ linux-2.6.25.10-rt7/kernel/pm_qos_params.c	2008-07-12 23:18:20.696615771 
+> +0200
+> @@ -110,7 +110,7 @@
+>  	&network_throughput_pm_qos
+>  };
+>  
+> -static DEFINE_SPINLOCK(pm_qos_lock);
+> +static DEFINE_RWLOCK(pm_qos_lock);
 
-I think he recognizes this, he just hasn't done much about it.
-http://lkml.org/lkml/2008/2/22/307
+I don't see a problem with using spinlocks, and as this issues only
+shows up running the PREEMPT-RT I feel that perhaps this would be better
+in the RT tree.
 
-Ingo, could you please just substitute conformity for quality
-in these sorts of posts?  Perhaps you could also change the
-name of your code-quality script to style-conformity?
+Sorry,
 
+--mgross
+
+
+>  
+>  static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
+>  		size_t count, loff_t *f_pos);
+> @@ -142,7 +142,7 @@
+>  	unsigned long flags;
+>  	int call_notifier = 0;
+>  
+> -	spin_lock_irqsave(&pm_qos_lock, flags);
+> +	write_lock_irqsave(&pm_qos_lock, flags);
+>  	extreme_value = pm_qos_array[target]->default_value;
+>  	list_for_each_entry(node,
+>  			&pm_qos_array[target]->requirements.list, list) {
+> @@ -155,7 +155,7 @@
+>  		pr_debug(KERN_ERR "new target for qos %d is %d\n", target,
+>  			pm_qos_array[target]->target_value);
+>  	}
+> -	spin_unlock_irqrestore(&pm_qos_lock, flags);
+> +	write_unlock_irqrestore(&pm_qos_lock, flags);
+>  
+>  	if (call_notifier)
+>  		blocking_notifier_call_chain(pm_qos_array[target]->notifiers,
+> @@ -195,9 +195,9 @@
+>  	int ret_val;
+>  	unsigned long flags;
+>  
+> -	spin_lock_irqsave(&pm_qos_lock, flags);
+> +	read_lock_irqsave(&pm_qos_lock, flags);
+>  	ret_val = pm_qos_array[pm_qos_class]->target_value;
+> -	spin_unlock_irqrestore(&pm_qos_lock, flags);
+> +	read_unlock_irqrestore(&pm_qos_lock, flags);
+>  
+>  	return ret_val;
+>  }
+> @@ -228,10 +228,10 @@
+>  		if (!dep->name)
+>  			goto cleanup;
+>  
+> -		spin_lock_irqsave(&pm_qos_lock, flags);
+> +		write_lock_irqsave(&pm_qos_lock, flags);
+>  		list_add(&dep->list,
+>  			&pm_qos_array[pm_qos_class]->requirements.list);
+> -		spin_unlock_irqrestore(&pm_qos_lock, flags);
+> +		write_unlock_irqrestore(&pm_qos_lock, flags);
+>  		update_target(pm_qos_class);
+>  
+>  		return 0;
+> @@ -260,7 +260,7 @@
+>  	struct requirement_list *node;
+>  	int pending_update = 0;
+>  
+> -	spin_lock_irqsave(&pm_qos_lock, flags);
+> +	write_lock_irqsave(&pm_qos_lock, flags);
+>  	list_for_each_entry(node,
+>  		&pm_qos_array[pm_qos_class]->requirements.list, list) {
+>  		if (strcmp(node->name, name) == 0) {
+> @@ -273,7 +273,7 @@
+>  			break;
+>  		}
+>  	}
+> -	spin_unlock_irqrestore(&pm_qos_lock, flags);
+> +	write_unlock_irqrestore(&pm_qos_lock, flags);
+>  	if (pending_update)
+>  		update_target(pm_qos_class);
+>  
+> @@ -295,7 +295,7 @@
+>  	struct requirement_list *node;
+>  	int pending_update = 0;
+>  
+> -	spin_lock_irqsave(&pm_qos_lock, flags);
+> +	write_lock_irqsave(&pm_qos_lock, flags);
+>  	list_for_each_entry(node,
+>  		&pm_qos_array[pm_qos_class]->requirements.list, list) {
+>  		if (strcmp(node->name, name) == 0) {
+> @@ -306,7 +306,7 @@
+>  			break;
+>  		}
+>  	}
+> -	spin_unlock_irqrestore(&pm_qos_lock, flags);
+> +	write_unlock_irqrestore(&pm_qos_lock, flags);
+>  	if (pending_update)
+>  		update_target(pm_qos_class);
+>  }
