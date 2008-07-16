@@ -1,48 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759203AbYGPS7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758546AbYGPTDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759203AbYGPS7s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 14:59:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754816AbYGPS7f
+	id S1758546AbYGPTDy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 15:03:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755700AbYGPTDr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 14:59:35 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:57177 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754705AbYGPS7d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 14:59:33 -0400
-Subject: Re: [PATCH -next] scsi: fix advansys printk format warnings
-From: David Woodhouse <dwmw2@infradead.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>,
-       jejb <James.Bottomley@HansenPartnership.com>, jaswinder@infradead.org
-In-Reply-To: <20080716115057.47b3e117.randy.dunlap@oracle.com>
-References: <20080716115057.47b3e117.randy.dunlap@oracle.com>
-Content-Type: text/plain
-Date: Wed, 16 Jul 2008 11:59:33 -0700
-Message-Id: <1216234773.1862.6.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 16 Jul 2008 15:03:47 -0400
+Received: from www.tglx.de ([62.245.132.106]:56172 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755639AbYGPTDq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 15:03:46 -0400
+Date: Wed, 16 Jul 2008 21:03:12 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Thomas Renninger <trenn@suse.de>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>,
+       "andreas.herrmann3" <andreas.herrmann3@amd.com>,
+       Richard <tuxbox.guru@gmail.com>, eumaster@gmail.com,
+       uli.geins@geins-web.de
+Subject: Re: [PATCH] Re: AMD Mobile Semprons (3500+, 3600+,...) break with
+ nohz and highres enabled
+In-Reply-To: <200807161827.16898.trenn@suse.de>
+Message-ID: <alpine.LFD.1.10.0807162100380.4316@apollo.tec.linutronix.de>
+References: <1213638474.1684.21.camel@queen.suse.de> <200807161827.16898.trenn@suse.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-16 at 11:50 -0700, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+On Wed, 16 Jul 2008, Thomas Renninger wrote:
+
+> This is against Andi's (ak) release branch,
+> hope that is ok...
+
+No idea what that is.
+
+> Can this one be reviewed/added, pls.
+
+Reviewed yes. Added no.
+
+>  kernel/time/tick-sched.c |   31 +++++++++++++++++++++++++++++++
+>  1 files changed, 31 insertions(+), 0 deletions(-)
 > 
-> Fix printk format warnings (firmware-related):
-> 
-> linux-next-20080716/drivers/scsi/advansys.c:4788: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
-> linux-next-20080716/drivers/scsi/advansys.c:5117: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
-> linux-next-20080716/drivers/scsi/advansys.c:5631: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
-> linux-next-20080716/drivers/scsi/advansys.c:6131: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
+> diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+> index b854a89..bda0164 100644
+> --- a/kernel/time/tick-sched.c
+> +++ b/kernel/time/tick-sched.c
+> @@ -589,6 +589,32 @@ static enum hrtimer_restart tick_sched_timer(struct 
+> hrtimer *timer)
+>  	return HRTIMER_RESTART;
+>  }
+>  
+> +#if defined(CONFIG_X86) && defined(CONFIG_NO_HZ)
+> +static __init int is_nohz_broken(void)
+> +{
 
+We definitely do not add x86 quirks into the generic code. 
 
-Thanks. We'll roll those into the original patches, if that's OK with
-you.
+Is there really no other way to fix this problem ? Which chipset is
+involved here ? SB400/600 perhaps ?
 
--- 
-dwmw2     @linux.intel.com
+Thanks,
+
+	tglx
+
 
