@@ -1,95 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756275AbYGPHjA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756836AbYGPHow@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756275AbYGPHjA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 03:39:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbYGPHiw
+	id S1756836AbYGPHow (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 03:44:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbYGPHon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 03:38:52 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36293 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752539AbYGPHiv (ORCPT
+	Wed, 16 Jul 2008 03:44:43 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:24693 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751618AbYGPHon (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 03:38:51 -0400
-Date: Wed, 16 Jul 2008 16:43:46 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org
-Subject: Re: mmotm 2008-07-15-15-39 uploaded
-Message-Id: <20080716164346.35c6a692.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <200807152240.m6FMeErt024703@imap1.linux-foundation.org>
-References: <200807152240.m6FMeErt024703@imap1.linux-foundation.org>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 16 Jul 2008 03:44:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=arHAoq6aSL0CIrLcFJ73/W/OTd8DY+8i5tJaXDW8VscXnRkI3AjAlRBNEaVdGnLInw
+         C3nEtWVUj9Tk4TdV7VABA6GA0MRB6WXqj11xK4eoKzJSvSpp4rKA9DFewh7SI2wC8V30
+         OXkNmHXzoYqRbGoWSrNpi8o4NanKbWWdK30KI=
+Message-ID: <86802c440807160044ge504cacl419b6cbcad5f0f9d@mail.gmail.com>
+Date: Wed, 16 Jul 2008 00:44:42 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jack Howarth" <howarth@bromo.msbb.uc.edu>
+Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Justin Mattock" <justinmattock@gmail.com>
+In-Reply-To: <dd18b0c30807152230u39ef9c18v78b48d1c7b9ddd17@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <dd18b0c30807151252w7edcea19t8cec5ec5f958c7c0@mail.gmail.com>
+	 <20080715231118.GA26807@bromo.msbb.uc.edu>
+	 <dd18b0c30807151726i622dabceve31828460085ee57@mail.gmail.com>
+	 <20080716012427.GA27398@bromo.msbb.uc.edu>
+	 <dd18b0c30807152005g3c58001br7182f7670d6247db@mail.gmail.com>
+	 <20080716035830.GA27935@bromo.msbb.uc.edu>
+	 <dd18b0c30807152230u39ef9c18v78b48d1c7b9ddd17@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jul 2008 15:40:14 -0700
-akpm@linux-foundation.org wrote:
+I looked at your dmesg from 2.6.25.10
 
-> The mm-of-the-moment snapshot 2008-07-15-15-39 has been uploaded to
-> 
->    http://userweb.kernel.org/~akpm/mmotm/
-> 
-> It contains the following patches against 2.6.26:
-> 
+it tried to use mmconfig, and later fall back to conf1, because
+1. your MCFG said it support bus [0,255], and range will be
+[0xf0000000, 0xffffffff]
+2. firmware only reserve [0xf0000000, 0xf4000000)
 
-booted succesfully with my usual config.
-but not with allmodconfig. (I'm now trying various configs.)
+and 2.5.25 will not check acp reserved range.
 
-Compile time trouble is here.
+from 2.6.26, it will check if the [0xf0000000, 0xffffffff] is reserved
+via acpi dsdt _crs?
+it will fail too.
 
-allmodconfig complile report on x86-64.
-==
-compile troubles.
+So MCFG table is broken.
 
-- CONFIG_MOXA_SMARTIO .......no idea.
+You need to get firmware update from your vendor.
 
-  CC [M]  drivers/char/mxser.o
-drivers/char/mxser.c: In function 'mxser_flush_chars':
-drivers/char/mxser.c:1306: error: 'struct mxser_port' has no member named 'xmit_buf'
-drivers/char/mxser.c: In function 'mxser_ioctl_special':
-drivers/char/mxser.c:1640: error: 'GMStatus' undeclared (first use in this function)
-drivers/char/mxser.c:1640: error: (Each undeclared identifier is reported only once
-drivers/char/mxser.c:1640: error: for each function it appears in.)
-drivers/char/mxser.c:1701: error: 'mon_data_ext' undeclared (first use in this function)
-drivers/char/mxser.c:1720: error: 'me' undeclared (first use in this function)
-drivers/char/mxser.c:1678: warning: unused variable 'shiftbit'
-make[2]: *** [drivers/char/mxser.o] Error 1
+or we need to put that system on DMI check to change end_bus_number
+from 0xff to 0x3f
 
-CONFIG_FB_EINK_APOLLO .... seems only for ARM ?
-  CC [M]  drivers/video/eink_apollofb.o
-drivers/video/eink_apollofb.c:36:32: error: asm/arch/regs-gpio.h: No such file or directory
-drivers/video/eink_apollofb.c:37:26: error: asm/hardware.h: No such file or dire#tory
+ps: mem=2g will not work, it will can not change mcfg table etc... you
+need take out 1G ram out.
 
-CONFIG_MFD_TC6393XB  .....seems only for ARM ?
-  CC      drivers/mfd/tc6393xb.o
-drivers/mfd/tc6393xb.c: In function 'tc6393xb_attach_irq':
-drivers/mfd/tc6393xb.c:324: error: implicit declaration of function 'set_irq_flags'
-drivers/mfd/tc6393xb.c:324: error: 'IRQF_VALID' undeclared (first use in this function)
-drivers/mfd/tc6393xb.c:324: error: (Each undeclared identifier is reported only once
-drivers/mfd/tc6393xb.c:324: error: for each function it appears in.)
-drivers/mfd/tc6393xb.c:324: error: 'IRQF_PROBE' undeclared (first use in this function)
-drivers/mfd/tc6393xb.c:327: error: 'IRQT_FALLING' undeclared (first use in this function)
-make[2]: *** [drivers/mfd/tc6393xb.o] Error 1
-
-
-Seems failed to catch this change.
-patches/dma-mapping-add-the-device-argument-to-dma_mapping_error.patch
-
-drivers/mmc/host/sdhci.c: In function 'sdhci_adma_table_pre':
-drivers/mmc/host/sdhci.c:363: warning: passing argument 1 of 'dma_mapping_error' makes pointer from integer without a cast
-drivers/mmc/host/sdhci.c:363: error: too few arguments to function 'dma_mapping_error'
-drivers/mmc/host/sdhci.c:464: warning: passing argument 1 of 'dma_mapping_error' makes pointer from integer without a cast
-drivers/mmc/host/sdhci.c:464: error: too few arguments to function 'dma_mapping_error'
-make[3]: *** [drivers/mmc/host/sdhci.o] Error 1
-
-==
-
-Regards,
--Kame
-
-
+YH
