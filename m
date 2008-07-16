@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759939AbYGPXqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759925AbYGPXvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759939AbYGPXqV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 19:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754744AbYGPXqM
+	id S1759925AbYGPXvR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 19:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753716AbYGPXvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 19:46:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36227 "EHLO
+	Wed, 16 Jul 2008 19:51:05 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33725 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753314AbYGPXqL (ORCPT
+	by vger.kernel.org with ESMTP id S1752621AbYGPXvD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 19:46:11 -0400
-Date: Wed, 16 Jul 2008 16:45:32 -0700 (PDT)
+	Wed, 16 Jul 2008 19:51:03 -0400
+Date: Wed, 16 Jul 2008 16:50:33 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
 To: Jesse Barnes <jbarnes@virtuousgeek.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Andi Kleen <andi@firstfloor.org>,
-       torvalds@linuxfoundation.org, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: Please pull ACPI updates
-In-Reply-To: <200807161633.01375.jbarnes@virtuousgeek.org>
-Message-ID: <alpine.LFD.1.10.0807161639090.2835@woody.linux-foundation.org>
-References: <20080716214516.GA10777@basil.nowhere.org> <200807170011.12184.rjw@sisk.pl> <200807161633.01375.jbarnes@virtuousgeek.org>
+cc: linux-kernel@vger.kernel.org,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Subject: Re: [git pull] PCI pull request for 2.6.27
+In-Reply-To: <200807161639.24289.jbarnes@virtuousgeek.org>
+Message-ID: <alpine.LFD.1.10.0807161647470.2835@woody.linux-foundation.org>
+References: <200807161639.24289.jbarnes@virtuousgeek.org>
 User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -31,24 +30,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Wed, 16 Jul 2008, Jesse Barnes wrote:
 > 
-> Yeah, they're interdependent (I pulled from Len's tree, hopefully Andi 
-> preserved the changesets).
+> Miklos Vajna (1):
+>       x86/PCI: janitor work in irq.c
 
-Andi did not. The whole series I pulled was rebased today at 2PM.
+Please don't take patches like this.
 
-I was going to complain about it, because Len's trees were always a 
-pleasure to pull with clearly delineated topic branches etc, and pulling 
-from Andi was such a let-down in comparison.
+If it's janitor work, the end result should be better. But it's not. This 
+patch is full of stuff like
 
-But I decided to let it slide, because quite frankly, Len had done better 
-than the average bear, and I didn't realize that the commits Andi had 
-rebased had actually been in Len's tree in the _good_ format.
+-	for(addr = (u8 *) __va(0xf0000); addr < (u8 *) __va(0x100000); addr += 16) {
++	for (addr = (u8 *) __va(0xf0000); addr < (u8 *) __va(0x100000);
++		addr += 16) {
+ 		rt = pirq_check_routing_table(addr);
 
-It seems I was wrong - I should _not_ have let it slide, and it appears 
-that Andi had actually destroyed Len's pretty tree.
+Which just brings negative value. The code is _harder_ to look at, not 
+easier.
 
-Andi. This can _not_ continue. You need to learn how to use topic 
-branches, and how to not screw up other peoples trees. Otherwise I'll just 
-have to stop pulling from you. AGAIN.
+The 80-character limit is less important than making code look obvious and 
+indentation being readable. Splitting the for(;;) loop just made the 
+indentation look like total crap.
 
-			Linus
+I'm fixing it up (since it also caused trivial conflicts), but I'd ask 
+people to just ignore that sh*t-for-brains that is the long-line warning 
+when trying to fix it may silence a warning, but results in worse code!
+
+		Linus
