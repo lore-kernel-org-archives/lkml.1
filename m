@@ -1,88 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbYGPExx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758193AbYGPEyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757527AbYGPExx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 00:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbYGPExp
+	id S1758193AbYGPEyx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 00:54:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751628AbYGPEyp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 00:53:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56206 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751427AbYGPExo (ORCPT
+	Wed, 16 Jul 2008 00:54:45 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:35220 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751573AbYGPEyo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 00:53:44 -0400
-Date: Tue, 15 Jul 2008 21:51:53 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, davem@davemloft.net, mingo@elte.hu,
-       nhorman@tuxdriver.com, simon@fire.lp0.eu, linux-kernel@vger.kernel.org
-Subject: Re: BUG: unable to handle kernel NULL pointer dereference at
- 000000000000000e (reset_prng_context)
-Message-Id: <20080715215153.16ba2594.akpm@linux-foundation.org>
-In-Reply-To: <20080716043312.GA12765@gondor.apana.org.au>
-References: <487BE071.80101@simon.arlott.org.uk>
-	<20080715020428.GA27463@hmsendeavour.rdu.redhat.com>
-	<20080715113304.GA30565@elte.hu>
-	<20080715.134407.150543177.davem@davemloft.net>
-	<20080715214929.GA18268@martell.zuzino.mipt.ru>
-	<20080715151110.d7a17c89.akpm@linux-foundation.org>
-	<20080716040701.GA12570@gondor.apana.org.au>
-	<20080715212549.1c41c1d0.akpm@linux-foundation.org>
-	<20080716043312.GA12765@gondor.apana.org.au>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 16 Jul 2008 00:54:44 -0400
+Message-ID: <487D7F5C.9020503@keyaccess.nl>
+Date: Wed, 16 Jul 2008 06:55:56 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>, david@lang.hm,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from	in-kernel,
+ use it in more drivers.
+References: <alpine.LFD.1.10.0807141903260.3017@woody.linux-foundation.org> <487C585C.2060002@garzik.org> <alpine.LFD.1.10.0807150803580.3017@woody.linux-foundation.org> <487CD7FE.9010209@garzik.org> <alpine.LFD.1.10.0807151008450.3017@woody.linux-foundation.org> <487CDEC0.3090004@garzik.org> <alpine.LFD.1.10.0807151041080.3017@woody.linux-foundation.org> <487CEA73.9000408@garzik.org> <alpine.LFD.1.10.0807151124510.3017@woody.linux-foundation.org> <487CF01E.6000208@garzik.org> <20080715185801.GH8185@mit.edu> <487CF70C.1030309@garzik.org>
+In-Reply-To: <487CF70C.1030309@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Jul 2008 12:33:12 +0800 Herbert Xu <herbert@gondor.apana.org.au> wrote:
+On 15-07-08 21:14, Jeff Garzik wrote:
 
-> On Tue, Jul 15, 2008 at 09:25:49PM -0700, Andrew Morton wrote:
-> > On Wed, 16 Jul 2008 12:07:01 +0800 Herbert Xu <herbert@gondor.apana.org.au> wrote:
-> > 
-> > > On Tue, Jul 15, 2008 at 03:11:10PM -0700, Andrew Morton wrote:
-> > > >
-> > > > Except that such a high density of coding-style errors is an indication
-> > > > that the code was not closely and critically reviewed by an experienced
-> > > > kernel developer.
-> > > > 
-> > > > > Every damn single warning in this case is about whitespace or 80 column limit.
-> > > > > 
-> > > > > Every damn single one!
-> > > 
-> > > Indeed, I apologise for reviewing the code on a monitor that is wider
-> > > than yours.  If only we could make sure that all Linux developers
-> > > used smaller monitors then the code quality would surely improve!
-> > > 
-> > 
-> > Remaining within 80 cols is a big deal indeed for those who choose to
-> > use, or who are forced to use 80-col displays.  Try resizing to 70 cols
-> > for a while, see how you get on.
+> Theodore Tso wrote:
+
+>> If so, may I suggest you start implementing, instead of sending
+>> e-mails?  For all the time people have spent arguing about it, 
+>> maybe it could have been implemented already.
 > 
-> Sure, I totally understand the 80-column requirement and support
-> it too.
-> 
-> However, I fail to see how one could draw the conclusion that a
-> piece of code that breaks the 80-column rule has not been closely
-> or critically reviewed.
+> Already started, in fact, since Linus said he would not reject it out
+> of hands.
 
-I said "indication".  I came to no conclusion.
+Great, as I really hope this gets in. Was looking but am very scared of 
+the linker goo...
 
-And I agree with me.  I fail to see how someone who is familiar with
-kernel code and who is reviewing a submission could let something like
+I'm going to like the feature in itself once it has grown the ability 
+for firmware in the module and really do not right now. One of the 
+drivers I care about (old ISA SB16 CSP code) was also affected and my 
+old 486 system with the hardware in it is _still_ lauging its little 
+balls of at the people stating that "if you have userspace to load the 
+module you have userspace to support at the hotplug/udev goo to load the 
+firmware".
 
-	for (i=DEFAULT_BLK_SZ-1;i>0;i--) {
+Given that one needs to be rather irrelevant to care about the SB16 CSP 
+in the first place it wasn't enough to complain really, but yes, I'm 
+really quite sure that I'm going to use the feature of building it into 
+the module more than once while running around with floppies trying to 
+support that old stuff.
 
-pass without comment.
-
-> Excuse me for not focusing on white-space or code-width issues
-> when reviewing code.
-
-Please do so?  You hopefully only need to do it once per submitter
-and we now have a tool which people can use to aid the process.  It's
-hardly a large burden.
-
-btw, I've searched my linux-kernel archives and netdev archives and the
-linux-crypto web archives and can find no sign of any submission or
-discussion of this patch.  Am I looking in the wrong places?
+Rene.
