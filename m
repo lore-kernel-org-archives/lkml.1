@@ -1,104 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759257AbYGPVzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759088AbYGPV6J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759257AbYGPVzk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 17:55:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755619AbYGPVzc
+	id S1759088AbYGPV6J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 17:58:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755639AbYGPV54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 17:55:32 -0400
-Received: from rn-out-0910.google.com ([64.233.170.184]:5459 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755010AbYGPVzb (ORCPT
+	Wed, 16 Jul 2008 17:57:56 -0400
+Received: from fk-out-0910.google.com ([209.85.128.188]:58171 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753157AbYGPV5z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 17:55:31 -0400
+	Wed, 16 Jul 2008 17:57:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=BxIBpy0BgKf8xKf/ZyS5zqVGsIwUg7pgV+/iFGmHprAOGQ44W05FUZrCfxyNejUwbe
-         cGgvuAKK5dftShvZ5SnLJU5pNlngyxCYUhPluFZqlSqSU5BTt4G4fAL87d2Sm5adYFj2
-         7M4liK9D+ePNHJ2Y/Ni/n8HzGPyW52eOpfeE0=
-Message-ID: <b647ffbd0807161455gf9b36ddwea8a843832adf66b@mail.gmail.com>
-Date: Wed, 16 Jul 2008 23:55:30 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Max Krasnyansky" <maxk@qualcomm.com>
-Subject: Re: [PATCH] cpu hotplug, sched: Introduce cpu_active_map and redo sched domain managment (take 2)
-Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, torvalds@linux-foundation.org,
-       pj@sgi.com, ghaskins@novell.com, linux-kernel@vger.kernel.org
-In-Reply-To: <487E5A15.8030302@qualcomm.com>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=ILJewGwoezupbKaxAJ5wJ2TR/KU+llqQ8d0+NDzYNo1mi6Li7YA0wDd5jkWBN6irvZ
+         /TbsdmvTEUVBm4QRcFFdLkNeoA8q0N4QOBwvMwYrtBwMH3vaUKUOfqHUmT8lQzMUoSfW
+         hLfrvfmjUYKaExEU4Z62dj4B+gLMkwWqtqIso=
+Message-ID: <487E6EDF.7050905@gmail.com>
+Date: Wed, 16 Jul 2008 23:57:51 +0200
+From: =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1216122229-4865-1-git-send-email-maxk@qualcomm.com>
-	 <b647ffbd0807160157maba3934vef9b9d74680d6508@mail.gmail.com>
-	 <487E5A15.8030302@qualcomm.com>
+To: Thomas Meyer <thomas@m3y3r.de>
+CC: Takashi Iwai <tiwai@suse.de>,
+       =?UTF-8?B?VMO2csO2ayBFZHdpbg==?= <edwintorok@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org
+Subject: Re: today's linux-next fails to boot
+References: <4877400B.1000400@gmail.com>  <s5hy747rvpr.wl%tiwai@suse.de> <1216242664.3218.14.camel@dhcppc2>
+In-Reply-To: <1216242664.3218.14.camel@dhcppc2>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/7/16 Max Krasnyansky <maxk@qualcomm.com>:
->
->
-> Dmitry Adamushko wrote:
->> 2008/7/15 Max Krasnyansky <maxk@qualcomm.com>:
->>> From: Max Krasnyanskiy <maxk@qualcomm.com>
+Thomas Meyer a écrit :
+> Am Samstag, den 12.07.2008, 17:03 +0200 schrieb Takashi Iwai:
+>   
+>> At Fri, 11 Jul 2008 14:12:11 +0300,
+>> Török Edwin wrote:
+>>     
+>>> Today's linux-next tree (commit
+>>> 93847083e4791567931bd17c039cc35881cdad29) fails to boot:
+>>> [built with gcc-4.2.4-3]
 >>>
->>> Addressed Ingo's comments and merged on top of latest Linus's tree.
+>>> BUG: Int 14: CR2 b0049dea
+>>>      EDI 00000082 ESI 00000000 EBP c059be88 ESP c059be5c
+>>>      EBX f000ec62 EDX 0000000e ECX c0595480 EAX f000ec62
+>>>      err 00000000 EIP c0181ca0  CS 00000060 flg 00010082
+>>> Stack:   00000040 c06a2ba0 000080d0 c0595480 c0000f19c c000f180 c0581120
+>>> c059bea8
+>>>          c02bf19b 00000000 00000080 c059beb8 c0000f194 c000f180 0000000a
+>>> c059beb8
+>>>          c03a1059 00000000 00000000 c059bed8 c05c4c7c  0009efff 00000000
+>>> c04f4df4
+>>>
+>>> I get this as soon as I boot from grub2, strangely the error message is
+>>> at the bottom of the screen, and I can't see the full message (scrolling
+>>> won't work).
+>>>
+>>> The last kernel I built & booted was 2.6.26-rc8 from Linus's tree. I
+>>> will try to built&boot 2.6.26-rc9, and then bisect.
+>>>
+>>> This happens on 32-bit Dell Inspiron 6400 (Intel Core Duo T2300 @1.66
+>>> Ghz CPU),  Intel ICH-7 chipset, and a seagate SATA drive. 
+>>> I will provide  full hardware details once I bisected the problem.
+>>>
+>>> Meanwhile, if somebody has an idea as to what is wrong?
+>>>       
+>> [Added Ingo to Cc]
 >>
->> a few remarks:
+>> I get the boot problem on i386 with 2008-07-11 linux-next tree, too.
+>> In my case, no error appears on the screen, just staying blank and
+>> dead.  It seems stopping at the very beginning, soon after GRUB, so
+>> could be the same reason.
 >>
->> (1) in __migrate_task(), a test for !cpu_active(dest_cpu) should be
->> done after double_rq_lock() [ or add the second one ]
+>> The same config worked fine with yesterday's tree (2008-07-10) on the
+>> same machine. 
+>> Also, today's tree works on x86-64 (but on another machine).
 >>
->> migration_thread() calls __migrate_task() with disabled interrupts (no
->> rq-locks held), i.e. if we merely rely on rq-locks for
->> synchronization, this can race with cpu_down(dest_cpu).
->>
->> [ assume, the test was done in __migration_task() and it's about to
->> take double_lock()... and at this time, down_cpu(dest_cpu) starts and
->> completes on another CPU ]
->>
->> note, we may still take the rq-lock for a "dead" cpu in this case and
->> then only do a check (remark: in fact, not with stop_machine() in
->> place _but_ I consider that we don't make any assumptions on its
->> behavior);
-> Hmm, as you suggested I added synchronize_sched() after clearing the active
-> bit (see below). Is that not nought enough ? I mean you mentioned that
-> stop_machine syncs things up, I assume synchronize_sched does too.
-
-Yes, sorry for the noise here.
-
- * synchronize_sched - block until all CPUs have exited any non-preemptive
- * kernel code sequences
-
-so "any non-preemptive" sections, not just the ones with run-queue
-locks being held.
-
-
->> (2) it's worth to take a look at the use of any_online_cpu():
->>
->> many places are ok, because there will be an additional check against
->> cpu_active_mask later on, but e.g.
->>
->> set_cpus_allowed_ptr() ->
->> migrate_task(p, any_online_cpu(mask), ...) ->
->> migrate_task(p, dest_cpu)
->>
->> doesn't seem to have any verifications wrt cpu_active_map.
-> How about we just introduce any_active_cpu() and replace all the usages of
-> any_online_cpu() in the scheduler ?
-
-I think, at least for places related to task placement (like
-migrate_task(..., any_online_cpu()) it would make sense,
-consistency-wise.
-
-
-
+>>     
 >
-> Max
+> I have got the same problem as Edwin TÖRÖK: From next-20080710 to next-20080711 the kernel fails to boot.
+> EIP seems to be in function kmem_cache_alloc.
 >
+> This is also true for next-20080716.
+> I didn't try the kernels > next-20080711 and < next-20080716.
+>
+> Any news on this bug?
+>   
+Yes a fix has been released:
+http://article.gmane.org/gmane.linux.kernel.kexec/1882
 
--- 
-Best regards,
-Dmitry Adamushko
+But I don't know when it will be applied....
