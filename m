@@ -1,78 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758709AbYGPQqD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759765AbYGPQqp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758709AbYGPQqD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 12:46:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757346AbYGPQpw
+	id S1759765AbYGPQqp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 12:46:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757346AbYGPQqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 12:45:52 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:56418 "EHLO smtp6.pp.htv.fi"
+	Wed, 16 Jul 2008 12:46:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34018 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756969AbYGPQpw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 12:45:52 -0400
-Date: Wed, 16 Jul 2008 19:45:40 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>, lethal@linux-sh.org
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] fix sh ptep_get_and_clear breakage
-Message-ID: <20080716164540.GF17329@cs181140183.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1755836AbYGPQqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 12:46:34 -0400
+Date: Wed, 16 Jul 2008 10:44:51 -0600
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: Julia Lawall <julia@diku.dk>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] drivers/usb/class/usblp.c: adjust error handling code
+Message-Id: <20080716104451.a4c6d06c.zaitcev@redhat.com>
+In-Reply-To: <Pine.LNX.4.64.0807161717220.28783@ask.diku.dk>
+References: <Pine.LNX.4.64.0807161717220.28783@ask.diku.dk>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.13.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 1ea0704e0da65b2b46f9142ff1391163aac24060
-(mm: add a ptep_modify_prot transaction abstraction)
-triggered on sh build errors like the following:
+On Wed, 16 Jul 2008 17:17:42 +0200 (CEST), Julia Lawall <julia@diku.dk> wrote:
 
-<--  snip  -->
+> In this code, it is possible to tell statically whether usblp will
+> be NULL in the error handling code.
 
-...
-  CC      arch/sh/mm/pg-sh4.o
-cc1: warnings being treated as errors
-include2/asm/pgtable.h:139: error: 'ptep_get_and_clear' declared inline after being called
-include2/asm/pgtable.h:139: error: previous declaration of 'ptep_get_and_clear' was here
-make[2]: *** [arch/sh/mm/pg-sh4.o] Error 1
+I think it's fine. Not much benefit IMHO.
 
-<--  snip  -->
-
-Since there's no good reason for marking these global functions as 
-"inline" this patch therefore removes the inline's.
-
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
----
-
- arch/sh/mm/pg-sh4.c    |    2 +-
- arch/sh/mm/pg-sh7705.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-c11efb5cb7b6455f6478b3f300c96b7a6778450c 
-diff --git a/arch/sh/mm/pg-sh4.c b/arch/sh/mm/pg-sh4.c
-index 8c7a9ca..38870e0 100644
---- a/arch/sh/mm/pg-sh4.c
-+++ b/arch/sh/mm/pg-sh4.c
-@@ -111,7 +111,7 @@ EXPORT_SYMBOL(copy_user_highpage);
- /*
-  * For SH-4, we have our own implementation for ptep_get_and_clear
-  */
--inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
-+pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
- {
- 	pte_t pte = *ptep;
- 
-diff --git a/arch/sh/mm/pg-sh7705.c b/arch/sh/mm/pg-sh7705.c
-index 7f885b7..eaf2514 100644
---- a/arch/sh/mm/pg-sh7705.c
-+++ b/arch/sh/mm/pg-sh7705.c
-@@ -118,7 +118,7 @@ void copy_user_page(void *to, void *from, unsigned long address, struct page *pg
-  * For SH7705, we have our own implementation for ptep_get_and_clear
-  * Copied from pg-sh4.c
-  */
--inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
-+pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
- {
- 	pte_t pte = *ptep;
- 
+-- Pete
