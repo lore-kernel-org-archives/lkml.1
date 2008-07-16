@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756905AbYGPESd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756932AbYGPEUr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756905AbYGPESd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 00:18:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbYGPES0
+	id S1756932AbYGPEUr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 00:20:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbYGPEUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 00:18:26 -0400
-Received: from ax54.genwebserver.com ([72.18.156.50]:58743 "EHLO
-	ax54.genwebserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751254AbYGPESZ (ORCPT
+	Wed, 16 Jul 2008 00:20:39 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:56107 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751402AbYGPEUi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 00:18:25 -0400
-Message-ID: <487D7600.4000603@assumpcao.org>
-Date: Wed, 16 Jul 2008 01:16:00 -0300
-From: Tiago Assumpcao <tiago@assumpcao.org>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Wed, 16 Jul 2008 00:20:38 -0400
+Message-ID: <487D7781.6000407@keyaccess.nl>
+Date: Wed, 16 Jul 2008 06:22:25 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Theodore Tso <tytso@mit.edu>, pageexec@freemail.hu,
-       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [stable] Linux 2.6.25.10
-References: <alpine.LFD.1.10.0807151425170.2867@woody.linux-foundation.org> <487D3C17.31467.1C3C0441@pageexec.freemail.hu> <alpine.LFD.1.10.0807151620450.2867@woody.linux-foundation.org> <487D3A13.3040507@assumpcao.org> <20080716010836.GL8185@mit.edu> <487D547C.7060909@assumpcao.org> <alpine.LFD.1.10.0807151859270.2835@woody.linux-foundation.org> <487D5EBB.40704@assumpcao.org> <alpine.LFD.1.10.0807152106380.2835@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807152106380.2835@woody.linux-foundation.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Stoyan Gaydarov <stoyboyker@gmail.com>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, gorcunov@gmail.com,
+       akpm@linux-foundation.org, mingo@elte.hu
+Subject: Re: From 2.4 to 2.6 to 2.7?
+References: <6d291e080807141910m573b29b2t753ea7c4db09902d@mail.gmail.com> <alpine.LFD.1.10.0807141914280.3017@woody.linux-foundation.org> <487CE6CB.9090405@zytor.com>
+In-Reply-To: <487CE6CB.9090405@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - ax54.genwebserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - assumpcao.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+X-Spam-Score: -0.9 (/)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> Oh, so only your opinion matters? And only _your_ "practical matters" is 
-> what people should care about?
-> 
-Nah, just follow what was pointed out by "pageexec": it's the world that 
-claims for security measures.
+On 15-07-08 20:04, H. Peter Anvin wrote:
 
-Enough said. It's your project. Do with it whatever you find the better.
+> Clearly, the 2. prefix has long outlived its usefulness as far as Linux 
+> is concerned, and probably the 6 as well.
 
+Been calling the -stable branches v20, v21, v22, ... here.
 
-Best wishes,
---t
+I do believe the numbering scheme should at least ostensibly still be 
+feature driven, not be a fully robotic date thing. With the latter, you 
+definitely miss out on press-opportunities and that's not even meant 
+cynical. There just is a bit of industry around Linux and the promotion 
+opportunities of (say) "Linux 3" are really lots, lots bigger than 
+anything boringly date based.
+
+That even holds for things like books -- I just bet that a "all new, 
+covers Linux 3!" blurp on the cover sells lots more copies than a "all 
+new, covers the march 21st 2009 version of Linux!" one.
+
+But yes, the current monotic increase is definitely getting a bit boring 
+as well. The kernel as of 2.6.26 is quite different from the kernel that 
+was known as 2.6.0 so just be creative I'd say and set a 2.8 goal. Next 
+version can be 2.9 (should be clear enough by then) and then watch world 
+domination happen with the big 3.0 release.
+
+Linux 2010.5? Boooooooooring....
+
+Rene.
+
