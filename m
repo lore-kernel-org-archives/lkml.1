@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbYGPFfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756209AbYGPFlF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755907AbYGPFfv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 01:35:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbYGPFfn
+	id S1756209AbYGPFlF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 01:41:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbYGPFkx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 01:35:43 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:41120 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751778AbYGPFfn (ORCPT
+	Wed, 16 Jul 2008 01:40:53 -0400
+Received: from mga06.intel.com ([134.134.136.21]:41901 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751716AbYGPFkw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 01:35:43 -0400
-Date: Wed, 16 Jul 2008 13:34:59 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, davem@davemloft.net, mingo@elte.hu,
-       nhorman@tuxdriver.com, simon@fire.lp0.eu, linux-kernel@vger.kernel.org
-Subject: Re: BUG: unable to handle kernel NULL pointer dereference at 000000000000000e (reset_prng_context)
-Message-ID: <20080716053459.GA13097@gondor.apana.org.au>
-References: <487BE071.80101@simon.arlott.org.uk> <20080715020428.GA27463@hmsendeavour.rdu.redhat.com> <20080715113304.GA30565@elte.hu> <20080715.134407.150543177.davem@davemloft.net> <20080715214929.GA18268@martell.zuzino.mipt.ru> <20080715151110.d7a17c89.akpm@linux-foundation.org> <20080716040701.GA12570@gondor.apana.org.au> <20080715212549.1c41c1d0.akpm@linux-foundation.org> <20080716043312.GA12765@gondor.apana.org.au> <20080715215153.16ba2594.akpm@linux-foundation.org>
+	Wed, 16 Jul 2008 01:40:52 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.30,371,1212390000"; 
+   d="scan'208";a="418600072"
+Message-ID: <487D89E3.9070604@linux.intel.com>
+Date: Wed, 16 Jul 2008 07:40:51 +0200
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080715215153.16ba2594.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: akataria@vmware.com, Ingo Molnar <mingo@elte.hu>,
+       "Brown, Len" <len.brown@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       TJ <linux@tjworld.net>
+Subject: Re: acpi based pci gap calculation  - v3
+References: <1216148382.6135.21.camel@alok-dev1> <200807151328.00739.jbarnes@virtuousgeek.org> <1216155256.6135.25.camel@alok-dev1> <200807151553.41403.jbarnes@virtuousgeek.org>
+In-Reply-To: <200807151553.41403.jbarnes@virtuousgeek.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 09:51:53PM -0700, Andrew Morton wrote:
->
-> And I agree with me.  I fail to see how someone who is familiar with
-> kernel code and who is reviewing a submission could let something like
+Jesse Barnes wrote:
+> On Tuesday, July 15, 2008 1:54 pm Alok Kataria wrote:
+>> I have tested it with couple of different BIOS settings and it seems to
+>> work as it should.
+>>
+>>> Most of the PCI bugs we
+>>> have at the moment are related to PCI resource allocation failures.  My
+>>> hope is that finding more space will fix most of them.  Assuming this
+>>> patch doesn't have any dependencies, I can put it in my linux-next
+>>> branch.
+>> No dependencies, I had added a function e820_search_gap which is used by
+>> this patch. This function is already in the mainline tree.
+>> Thanks for applying.
 > 
-> 	for (i=DEFAULT_BLK_SZ-1;i>0;i--) {
-> 
-> pass without comment.
+> Ok, I stuffed it in my linux-next branch.  I'll let it sit there for a day or 
+> so though, just to shake out any build problems etc. in linux-next before 
+> asking Linus to pull the whole lot.
 
-Well here is the code in question in its entirety:
+For me it seems a little risky to push up that early. I think it would 
+be better to let it sit longer in linux-next for this. After all this is 
+a major change how IO resources are allocated. That is why I didn't pull
+it into the ACPI release branch.
 
+-Andi
 
-        /*
-         * Now update our DT value
-         */
-        for (i=DEFAULT_BLK_SZ-1;i>0;i--) {
-                ctx->DT[i] = ctx->DT[i-1];
-        }
-
-I'm afraid that I simply don't see your point.
-
-> btw, I've searched my linux-kernel archives and netdev archives and the
-> linux-crypto web archives and can find no sign of any submission or
-> discussion of this patch.  Am I looking in the wrong places?
-
-http://www.mail-archive.com/linux-crypto@vger.kernel.org/msg02082.html
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
