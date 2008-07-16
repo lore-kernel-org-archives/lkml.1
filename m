@@ -1,69 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755263AbYGPF0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246AbYGPFbM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755263AbYGPF0z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 01:26:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751090AbYGPF0r
+	id S1755246AbYGPFbM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 01:31:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbYGPFa6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 01:26:47 -0400
-Received: from smtp104.prem.mail.sp1.yahoo.com ([98.136.44.59]:29829 "HELO
-	smtp104.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751087AbYGPF0q (ORCPT
+	Wed, 16 Jul 2008 01:30:58 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:6647 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750944AbYGPFa5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 01:26:46 -0400
-X-YMail-OSG: j7XkAWIVM1my_XMGOSA7koOmJtp6sJLUnFoCJ16IZx3ApbcK68.WUgEn_oaeXAjjHfn1ZniZwB3yF9oWcrhHhlve0chRQw2Bx3dXyiZ.v1S3yLzm0fs6X84QzipucYd0wxg-
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <487D8687.7090003@schaufler-ca.com>
-Date: Tue, 15 Jul 2008 22:26:31 -0700
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Wed, 16 Jul 2008 01:30:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=j2VHbl8hbjmIEmmek9YzzgO2I8jOTcGp4wIifTVCHTC2eMWX/bRAszv17fzeXqPb+4
+         9zrzRNyFohRan6Mq3Vs7onpzW+gfeh8IXpW6KMeYkQ+v7pPi00sNu7o8tl1WyMDb6WVf
+         qISyqni0HbOQ7ZT+g5yv/0EdpXYzuzGehuaw8=
+Message-ID: <dd18b0c30807152230u39ef9c18v78b48d1c7b9ddd17@mail.gmail.com>
+Date: Wed, 16 Jul 2008 05:30:55 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Jack Howarth" <howarth@bromo.msbb.uc.edu>
+Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080716035830.GA27935@bromo.msbb.uc.edu>
 MIME-Version: 1.0
-To: Tiago Assumpcao <tiago@assumpcao.org>
-CC: Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>, pageexec@freemail.hu,
-       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [stable] Linux 2.6.25.10
-References: <alpine.LFD.1.10.0807151425170.2867@woody.linux-foundation.org> <487D3C17.31467.1C3C0441@pageexec.freemail.hu> <alpine.LFD.1.10.0807151620450.2867@woody.linux-foundation.org> <487D3A13.3040507@assumpcao.org> <20080716010836.GL8185@mit.edu> <487D547C.7060909@assumpcao.org> <487D6AB9.7080700@schaufler-ca.com> <487D756E.50506@assumpcao.org>
-In-Reply-To: <487D756E.50506@assumpcao.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <dd18b0c30807151252w7edcea19t8cec5ec5f958c7c0@mail.gmail.com>
+	 <20080715231118.GA26807@bromo.msbb.uc.edu>
+	 <dd18b0c30807151726i622dabceve31828460085ee57@mail.gmail.com>
+	 <20080716012427.GA27398@bromo.msbb.uc.edu>
+	 <dd18b0c30807152005g3c58001br7182f7670d6247db@mail.gmail.com>
+	 <20080716035830.GA27935@bromo.msbb.uc.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tiago Assumpcao wrote:
-> Casey Schaufler wrote:
->> Ted Tso, Stephen Smalley and I are all recognized as security experts
->> and we can't even agree on whether sockets are objects or not, much
->> less what constitutes a security bug and even less what is likely to
->> be a security bug. Goodness, there are some of us who would argue
->> that since DNS is itself a security bug it is just not possible for
->> DNS to have a security bug, as an example.
->>
->>> In most cases, they are easy to spot.
->>
->> Err, no, in the kernel environment a real security flaw is likely to
->> be pretty subtle.
+On Wed, Jul 16, 2008 at 3:58 AM, Jack Howarth <howarth@bromo.msbb.uc.edu> wrote:
+> Justin,
+>     At the moment I am not really certain what the problem is.
+> I have heard that Macintel machines (because of EFI) can't boot
+> without resorting to MMCONFIG. If that is true, the problem I
+> am seeing would appear to start with the fact that the boot
+> proceeds with "Not using MMCONFIG". I plan on trying to add
+> some printk statements in arch/x86/pci/mmconfig-shared.c to
+> puzzle out why this is failing. The code in question is...
 >
-> You do not hesitate in categorizing yourself as something as obscure 
-> as... what's that term again? "Expert".
+>
+>                if (!early)
+>                        printk(KERN_ERR "PCI: BIOS Bug: MCFG area at %Lx is not"
+>                               " reserved in ACPI motherboard resources\n",
+>                               cfg->address);
+>                /* Don't try to do this check unless configuration
+>                   type 1 is available. how about type 2 ?*/
+>                if (raw_pci_ops && e820_all_mapped(cfg->address,
+>                                                  cfg->address + size - 1,
+>                                                  E820_RESERVED)) {
+>                        printk(KERN_NOTICE
+>                               "PCI: MCFG area at %Lx reserved in E820\n",
+>                               cfg->address);
+>                        valid = 1;
+>                }
+>
+>                if (!valid)
+>                        goto reject;
+>        }
+>
+>        return;
+>
+> reject:
+>        printk(KERN_ERR "PCI: Not using MMCONFIG.\n");
+>        pci_mmcfg_arch_free();
+>        kfree(pci_mmcfg_config);
+>        pci_mmcfg_config = NULL;
+>        pci_mmcfg_config_num = 0;
+> }
+>
+> I've verified that test for raw_pci_ops is passing but it appears
+> that the e820_all_mapped() test is failing (at least on
+> my machine).
+>                        Jack
+>
+> On Wed, Jul 16, 2008 at 03:05:23AM +0000, Justin Mattock wrote:
+>> On Wed, Jul 16, 2008 at 1:24 AM, Jack Howarth <howarth@bromo.msbb.uc.edu> wrote:
+>> > Justin,
+>> >    You also download the x86_64 iso instead from...
+>> >
+>> > http://mirrors.kernel.org/fedora/development/x86_64/os/images/
+>> >
+>> > Both should give you the same kernel boot freeze that I am
+>> > seeing (assuming that the kernel boots up with the message
+>> > "Not using MMCONFIG". At this point I am just trying to find
+>> > out if anyone else can reproduce this issue on a MacBook Pro
+>> > (second generation). Otherwise I am going to be out of luck
+>> > when distros switch to 2.6.26.
+>> >                          Jack
+>> > ps I am currently guessing that thet actual freeze is
+>> > occuring in the code that is executed right after...
+>> >
+>> > pci 0000:00:1f.0: quirk: region 0400-047f claimed by ICH6 ACPI/GPIO/TCO
+>> > pci 0000:00:1f.0: quirk: region 0500-053f claimed by ICH6 GPIO
+>> >
+>> > but before...
+>> >
+>> > PCI: Transparent bridge - 0000:00:1e.0
+>> >
+>> > ...which never appears here under 2.6.26.
+>> >
+>> >
+>> >
+>> >
+>> > On Wed, Jul 16, 2008 at 12:26:05AM +0000, Justin Mattock wrote:
+>> >> >
+>> >>
+>> >> Ah I see, so this is from a fresh .iso image
+>> >> I can give you're suggestion a try(need to locate a blank cd)
+>> >> keep in mind the .iso might not have x86 support i.g.
+>> >> I use nubuntu(why: it's small) one of the problems I was facing was
+>> >> the alpha release, which did not support x86(when using that .iso image
+>> >> it would start booting and then spit out a bunch of messages vertically,
+>> >> but a few month's later they released there .iso with support thus
+>> >> giving me the opportunity to use it.
+>> >> This might be what you are dealing with.
+>> >> regards;
+>> >>
+>> >> --
+>> >> Justin P. Mattock
+>> >
+>>
+>> I have not yet tried the .iso's yet.
+>> (busy with other things at the moment),
+>> from what you're telling me it seems they must have left out
+>> something in the .config. "Shit" this means you can't even load the .iso itself
+>> for the initial install. Maybe you should let them know about this(I
+>> don't use fedora that much)
+>> If need be, try a stable version of the O.S(fedora). so you can load
+>> 2.6.26, and then if time permits
+>> you, update to that of the development version.(that is until you get
+>> an answer from the
+>> maintainers of this .iso with the issue).
+>> regards;
+>>
+>> --
+>> Justin P. Mattock
+>
 
-Actually, I always hesitate before calling myself an expert,
-in spite of the credentials I have to back the title. Too
-many people seem to think that if you disagree with their
-point of view you can't know what you're talking about.
+Hello;
+One of my weaknesses right now is pulling code out of my ass
+(maybe in a few years from now), but from what you are showing me
+This is what is causing the NULL(if that's right to say)
 
-> But then you fail on basic pragmatism when attempting to define what, 
-> nearly always, is a true or false question?
+ if (!valid)
+                       goto reject;
 
-HeeHeeHee. Security questions are almost never true or false,
-black or white, on or off. SPAM is *the* major computer security
-issue and it has nothing at all to do with computers or security.
-Is a use of strcpy() a security vulnerability? Sure it can be,
-but in reality it almost never is, but the hysteria associated
-with buffer overruns gave it a bad oder.
+So the question is, is how to have a valid
+"something" to prevent going to NULL
+maybe a boot param i.g. acpi_osi=Darwin,
+or another option to make a "good" !valid
+So you don't:   goto reject;
 
-> Jeez ;)
+Or take the whole reject mechanism out
+just so you can boot up, and then asses the situation from there.
+regards;
 
-It's not so bad. We'll be OK. Really.
 
+-- 
+Justin P. Mattock
