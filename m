@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758977AbYGPPOh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758832AbYGPPRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758977AbYGPPOh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 11:14:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755985AbYGPPOa
+	id S1758832AbYGPPRA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 11:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756672AbYGPPQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 11:14:30 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:46456 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755257AbYGPPO3 (ORCPT
+	Wed, 16 Jul 2008 11:16:53 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:50368 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751595AbYGPPQx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 11:14:29 -0400
-Subject: Re: [PATCH] drivers/base/Kconfig spelling: usees
-From: David Woodhouse <dwmw2@infradead.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Dominik Brodowski <linux@dominikbrodowski.net>
-In-Reply-To: <Pine.LNX.4.64.0807161645100.31409@anakin>
-References: <Pine.LNX.4.64.0807161645100.31409@anakin>
-Content-Type: text/plain
-Date: Wed, 16 Jul 2008 08:14:24 -0700
-Message-Id: <1216221264.30898.32.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 16 Jul 2008 11:16:53 -0400
+Date: Wed, 16 Jul 2008 17:16:51 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+cc: Adrian Bunk <bunk@kernel.org>, jkacur <jkacur@gmail.com>,
+       akpm@linux-foundation.org, Andy Whitcroft <apw@shadowen.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Make the git URL match usage
+In-Reply-To: <20080716134144.GA28848@sirena.org.uk>
+Message-ID: <alpine.LNX.1.10.0807161714410.32031@fbirervta.pbzchgretzou.qr>
+References: <200807161500.08500.jkacur@gmail.com> <20080716133108.GC25557@cs181140183.pp.htv.fi> <20080716134144.GA28848@sirena.org.uk>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-16 at 16:45 +0200, Geert Uytterhoeven wrote:
-> s/usees/uses/
 
-Thanks.... but you're the second person to send me that patch, without
-fixing the second typo on the same line.
+On Wednesday 2008-07-16 15:41, Mark Brown wrote:
+>
+>> > T:      git://opensource.wolfsonmicro.com/linux-2.6-asoc
+>> > T:      git://opensource.wolfsonmicro.com/linux-2.6-touch
+>> >...
+>
+>> With the default git-daemon configuration it doesn't matter whether or 
+>> not you specify a .git postfix.
+>
+>For those two HTTP access currently requires that the .git be omitted.
+>I could change that easily enough but TBH I prefer giving the link with
+>the directory name that a clone would create anyway.
 
-Dominik did follow up with a two-spelling-fix patch already :)
-
--- 
-dwmw2
-
+I also don't see the usefulness of having .git postfixes (it does have a
+*point* though, it just does not convince me) in hives that are
+obviously bare. Like, if you go into /srv/git, you would expect bare
+repos, as is the case when doing a fetch from git:// or
+ssh://server/srv/git/...  For storing bare git repos in ~, a .git suffix
+can be helpful.
