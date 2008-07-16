@@ -1,100 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758192AbYGPR5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756275AbYGPSD2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758192AbYGPR5K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 13:57:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbYGPR44
+	id S1756275AbYGPSD2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 14:03:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbYGPSDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 13:56:56 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:49608 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751018AbYGPR44 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 13:56:56 -0400
-Date: Wed, 16 Jul 2008 19:56:54 +0200
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-To: Joel Becker <Joel.Becker@oracle.com>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: Re: [BUGFIX][PATCH v2 0/2] configfs: Fix cleanup after mkdir()
-	failure
-Message-ID: <20080716175654.GA19577@hawkmoon.kerlabs.com>
-Reply-To: Louis.Rilling@kerlabs.com
-References: <1215183366-17479-1-git-send-email-louis.rilling@kerlabs.com> <20080711220740.GC22577@mail.oracle.com> <20080716130821.GF3801@hawkmoon.kerlabs.com> <20080716172703.GA18105@ca-server1.us.oracle.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-11417-1216230906-0001-2"
-Content-Disposition: inline
-In-Reply-To: <20080716172703.GA18105@ca-server1.us.oracle.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 16 Jul 2008 14:03:17 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33262 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751763AbYGPSDQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 14:03:16 -0400
+Date: Wed, 16 Jul 2008 14:02:27 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@devserv.devel.redhat.com
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, davem@davemloft.net,
+       linux-parisc@vger.kernel.org
+Subject: Re: [PATCH] block: fix q->max_segment_size checking in blk_recalc_rq_segments
+ about VMERGE
+In-Reply-To: <20080716093456J.fujita.tomonori@lab.ntt.co.jp>
+Message-ID: <Pine.LNX.4.64.0807161359001.30207@devserv.devel.redhat.com>
+References: <Pine.LNX.4.64.0807151033040.25390@devserv.devel.redhat.com>
+ <20080716003047P.fujita.tomonori@lab.ntt.co.jp>
+ <Pine.LNX.4.64.0807151143050.29803@devserv.devel.redhat.com>
+ <20080716093456J.fujita.tomonori@lab.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Wed, 16 Jul 2008, FUJITA Tomonori wrote:
 
---=_bohort-11417-1216230906-0001-2
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> On Tue, 15 Jul 2008 11:46:46 -0400 (EDT)
+> Mikulas Patocka <mpatocka@redhat.com> wrote:
+> 
+> > >> Even if we fix it now, the question is: how long it will stay fixed? Until
+> > >> someone makes another change to struct device that restricts boundaries on
+> > >> some wacky hardware.
+> > >
+> > > I'm not sure how the boundary restriction of a device can break
+> > > the VMERGE accounting.
+> > 
+> > Because block layer code doesn't know anything about the device, pci 
+> > access restrictions and so on.
+> 
+> Not true, the block layer knows about the device restrictions like DMA
+> boundary.
+> 
+> But it's not the point here because the boundary restriction doesn't
+> matter for the VMERGE accounting. An IOMMU just returns an error if it
+> can't allocate an I/O space fit for the device restrictions.
+> 
+> 
+> Please give me an example how the boundary restriction of a device can
+> break the VMERGE accounting and an IOMMU if you aren't still sure.
 
-On Wed, Jul 16, 2008 at 10:27:03AM -0700, Joel Becker wrote:
-> On Wed, Jul 16, 2008 at 03:08:21PM +0200, Louis Rilling wrote:
-> > There is still a few things in flight:
-> > - error handling in config_*_init_type_name(): has rather low priority =
-in my
-> >   TODO list, will come back to it probably in a few weeks.
->=20
-> 	I thought we did this already.  Perhaps I didn't include it?
-> Did we have another change to make?
+You have dma_get_seg_boundary and dma_get_max_seg_size. On sparc64, adding 
+one of these broken VMERGE accounting (the VMERGE didn't happen past 64-kb 
+boundary and bio layer thought that VMERGE would be possible).
 
-You requested me to move a BUG_ON() earlier (before the actual memory
-allocation), and to update documentation. I'm quite in a hurry on other thi=
-ngs,
-so I'm delaying this (especially the documentation part for which I feel li=
-ke a
-new paragraph is needed).
+And if you fix this case, someone will break it again, sooner or later, by 
+adding new restriction.
 
->=20
-> > - a small locking cleanup in configfs_rmdir(): will do at the same time=
- as
-> >   lockdep stuff.
->=20
-> 	What sort of change?  I suppose I'll see it when it arrives.
-
-You may look at the retry loop in configfs_rmdir() and see=A0that locks nee=
-d only
-to be taken inside the loop, not outside. This would result in fewer lines =
-for
-exactly the same behavior.
-
-> 	I figure this new stuff will probably miss the .27 window, but
-> it sounds like that's fine - nothing too serious, and it will make .28.
-
-Sorry for not being responsive enough. As mentioned above, I have more urge=
-nt
-things to work on right now.
-
-Thanks,
-
-Louis
-
---=20
-Dr Louis Rilling			Kerlabs
-Skype: louis.rilling			Batiment Germanium
-Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-http://www.kerlabs.com/			35700 Rennes
-
---=_bohort-11417-1216230906-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIfjZmVKcRuvQ9Q1QRAp1HAKCYKCwF3HDpy+YsL+nqfN1rJzLQcwCgzzOp
-fzY32aZdJ84ZEcczQHxySgI=
-=2/uW
------END PGP SIGNATURE-----
-
---=_bohort-11417-1216230906-0001-2--
+Mikulas
