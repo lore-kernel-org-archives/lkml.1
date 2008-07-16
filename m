@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756932AbYGPEUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757750AbYGPEWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756932AbYGPEUr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 00:20:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbYGPEUj
+	id S1757750AbYGPEWu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 00:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750971AbYGPEWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 00:20:39 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:56107 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751402AbYGPEUi (ORCPT
+	Wed, 16 Jul 2008 00:22:42 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51995 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750772AbYGPEWm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 00:20:38 -0400
-Message-ID: <487D7781.6000407@keyaccess.nl>
-Date: Wed, 16 Jul 2008 06:22:25 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Wed, 16 Jul 2008 00:22:42 -0400
+Date: Tue, 15 Jul 2008 21:21:59 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Tiago Assumpcao <tiago@assumpcao.org>
+cc: Casey Schaufler <casey@schaufler-ca.com>, Theodore Tso <tytso@mit.edu>,
+       pageexec@freemail.hu, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [stable] Linux 2.6.25.10
+In-Reply-To: <487D756E.50506@assumpcao.org>
+Message-ID: <alpine.LFD.1.10.0807152118320.2835@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0807151425170.2867@woody.linux-foundation.org> <487D3C17.31467.1C3C0441@pageexec.freemail.hu> <alpine.LFD.1.10.0807151620450.2867@woody.linux-foundation.org> <487D3A13.3040507@assumpcao.org> <20080716010836.GL8185@mit.edu>
+ <487D547C.7060909@assumpcao.org> <487D6AB9.7080700@schaufler-ca.com> <487D756E.50506@assumpcao.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Stoyan Gaydarov <stoyboyker@gmail.com>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, gorcunov@gmail.com,
-       akpm@linux-foundation.org, mingo@elte.hu
-Subject: Re: From 2.4 to 2.6 to 2.7?
-References: <6d291e080807141910m573b29b2t753ea7c4db09902d@mail.gmail.com> <alpine.LFD.1.10.0807141914280.3017@woody.linux-foundation.org> <487CE6CB.9090405@zytor.com>
-In-Reply-To: <487CE6CB.9090405@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -0.9 (/)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 15-07-08 20:04, H. Peter Anvin wrote:
 
-> Clearly, the 2. prefix has long outlived its usefulness as far as Linux 
-> is concerned, and probably the 6 as well.
 
-Been calling the -stable branches v20, v21, v22, ... here.
+On Wed, 16 Jul 2008, Tiago Assumpcao wrote:
+> 
+> You do not hesitate in categorizing yourself as something as obscure as...
+> what's that term again? "Expert". But then you fail on basic pragmatism when
+> attempting to define what, nearly always, is a true or false question?
 
-I do believe the numbering scheme should at least ostensibly still be 
-feature driven, not be a fully robotic date thing. With the latter, you 
-definitely miss out on press-opportunities and that's not even meant 
-cynical. There just is a bit of industry around Linux and the promotion 
-opportunities of (say) "Linux 3" are really lots, lots bigger than 
-anything boringly date based.
+I would suggest you maintain your own kernel version, since you're so 
+obviously more competent at it than we are. 
 
-That even holds for things like books -- I just bet that a "all new, 
-covers Linux 3!" blurp on the cover sells lots more copies than a "all 
-new, covers the march 21st 2009 version of Linux!" one.
+Then, when you inevitably show your superiority, people will start using 
+your version of the kernel. That's the point of open source, after all. It 
+keeps us all honest - at any point, we can be overtaken by somebody 
+better.
 
-But yes, the current monotic increase is definitely getting a bit boring 
-as well. The kernel as of 2.6.26 is quite different from the kernel that 
-was known as 2.6.0 so just be creative I'd say and set a 2.8 goal. Next 
-version can be 2.9 (should be clear enough by then) and then watch world 
-domination happen with the big 3.0 release.
+I've actually been waiting for this moment for over fifteen years now: 
+finding that person who can take over so that I don't have to bother any 
+more. I'll continue to do my own maintenance in parallel while you get up 
+to speed, but I expect that everybody will have dropped my feeble efforts 
+soon enough, so you can probably just ignore that. 
 
-Linux 2010.5? Boooooooooring....
+Thanks,
 
-Rene.
-
+		Linus
