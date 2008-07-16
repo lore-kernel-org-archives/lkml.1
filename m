@@ -1,119 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758669AbYGPWf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758462AbYGPWlo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758669AbYGPWf3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 18:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754136AbYGPWfU
+	id S1758462AbYGPWlo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 18:41:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbYGPWlg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 18:35:20 -0400
-Received: from rn-out-0910.google.com ([64.233.170.190]:40615 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753662AbYGPWfS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 18:35:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Wf40wi83M2jVfKtRxesuKl8O3PLlnwOPuatycuEPKgD+9ISBwRdfNLte5l6uGyVaG4
-         Q99g7lsk41whyVYZp+UaUwkHcksuEZj8Ggz/WjAM/gL4clBASRQVztOa7UDslJ+mbci8
-         mI0VYOK66SdetWUQV8mXgE9Va3087IGp41Tgo=
-Message-ID: <86802c440807161535n3a4d6891n6f7c16bd4e1f19c3@mail.gmail.com>
-Date: Wed, 16 Jul 2008 15:35:17 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Jack Howarth" <howarth@bromo.msbb.uc.edu>
-Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
-Cc: "Justin Mattock" <justinmattock@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <86802c440807161029n7e0dac98x1ec260879204b6f0@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <dd18b0c30807151252w7edcea19t8cec5ec5f958c7c0@mail.gmail.com>
-	 <20080716012427.GA27398@bromo.msbb.uc.edu>
-	 <dd18b0c30807152005g3c58001br7182f7670d6247db@mail.gmail.com>
-	 <20080716035830.GA27935@bromo.msbb.uc.edu>
-	 <dd18b0c30807152230u39ef9c18v78b48d1c7b9ddd17@mail.gmail.com>
-	 <86802c440807160044ge504cacl419b6cbcad5f0f9d@mail.gmail.com>
-	 <dd18b0c30807160050r5b10908fiffc2a4b464abe5f3@mail.gmail.com>
-	 <86802c440807160136m6af981b2u6a37cabb8e33a629@mail.gmail.com>
-	 <20080716140810.GA2861@bromo.msbb.uc.edu>
-	 <86802c440807161029n7e0dac98x1ec260879204b6f0@mail.gmail.com>
+	Wed, 16 Jul 2008 18:41:36 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:55952 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751944AbYGPWlf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 18:41:35 -0400
+Date: Thu, 17 Jul 2008 00:41:27 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] MMC updates for 2.6.26
+Message-ID: <20080717004127.388aa574@mjolnir.drzeus.cx>
+In-Reply-To: <alpine.LFD.1.10.0807161512030.2835@woody.linux-foundation.org>
+References: <20080715160436.0f6ac19e@mjolnir.drzeus.cx>
+	<alpine.LFD.1.10.0807161512030.2835@woody.linux-foundation.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-32181-1216248092-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 16, 2008 at 10:29 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> On Wed, Jul 16, 2008 at 7:08 AM, Jack Howarth <howarth@bromo.msbb.uc.edu> wrote:
->> Yunghai,
->>   I had partial success with your proposed patch. The MacPro2
->> identifier doesn't appear to be correct for a second generation
->> MacBook Pro so I had to comment out the line...
->>
->>                     DMI_MATCH(DMI_PRODUCT_NAME, "MacPro2"),
->>
->> With that change, a patched 2.6.26-git2 kernel now uses MMCONFIG.
->> However I still see the same hang. The boot messages I see on
->> screen are...
->>
->> ACPI: bus type pci registered
->> PCI: MCFG configuration 0: base f0000000 segment 0 buses 0 - 63
->> PCI: MCFG area at f0000000 reserved in E820
->> PCI: Using MMCONFIG at f0000000 - f3ffffff
->> PCI: Using configuration type 1 for base access
->> ACPI: EC: EC description table is found, configuring boot EC
->> ACPI: EC: non-query interrupt received, switching to interrupt mode
->
-> something wrong here
->
->> ACPI: BIOS_OSI(Linux) query ignored via DMI
->> ACPI: Interpreter enabled
->> ACPI: (S0 S3 S4 S5)
->> ACPI: Using IOAPIC for interrupt routing
->> ACPI: EC: GPE = 0x17, I/O: command/status = 0x66, data = 0x62
->> ACPI: EC: drivers started in interrupt mode
->> ACPI: PCI Root Bridge [PCI0] (0000.00)
->> pci 0000:00:1f.00 : quirk region 0400-047f claimed by ICH6 ACPI/GPIO/TCO
->> pci 0000.00:1f:00 : quirk region 0500-053f claimed by ICH6 GPIO
->>
->> ...at which the boot hangs. On the positive side, I was able to fully
->> boot if I passed 'pci=noacpi' to the kernel options (which never worked
->> before with 2.6.26).
->> I can post the dmesg from a noacpi boot of the
->> patched kernel to my bugzilla report tonight if it would help debug the
->> issues we are still seeing with ACPI.
->
-> that will help.
->
->>   One thing I notice with the patched kernel (without noacpi) is that I
->> only see buses 0 - 63. A normal boot of 2.6.25.10 on this machine (or
->> 2.6.26 reportedly on a MacMini) always shows buses 0 - 255.
->
-> that is right
->
->> Could this
->> be related to the ACPI breakage? Let me know if I can do anything
->> else to debug the ACPI issues under MMCONFIG.
->
-> please boot with
-> debug apic=verbose pci=routeirq
->
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-please check latest linus tree.
+--=_freyr.drzeus.cx-32181-1216248092-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-the commit could be related.
+On Wed, 16 Jul 2008 15:16:26 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-commit c91d924e3af08d4f98eab6ebf81f2b8ce132448f
-Author: Bob Moore <robert.moore@intel.com>
-Date:   Tue Jun 10 12:38:10 2008 +0800
+>=20
+>=20
+> On Tue, 15 Jul 2008, Pierre Ossman wrote:
+> >
+> >  45 files changed, 6054 insertions(+), 1320 deletions(-)
+>=20
+> If you had done the "--summary", you'd also have seen these bogus:
+>=20
+> 	 mode change 100644 =3D> 100755 drivers/mmc/core/sdio_io.c
+> 	 mode change 100644 =3D> 100755 include/linux/mmc/sdio_func.h
+>=20
+> entries.
+>=20
+> I have no idea why you think those things should be executable, but it=20
+> happened in commit 6d37333163025b46afbcad434ec9a5f2e88e7254 ("mmc: fix=20
+> sdio_io sparse errors").
+>=20
 
-    ACPICA: Fix for hang on GPE method invocation
+Ouch. It was in the patch submitted to me, but I overlooked the mode
+changes there. I wasn't fully aware git could express such things in
+the patches. :)
 
-    Fixes problem where the new method argument count validation mechanism
-    will enter an infinite loop when a GPE method is dispatched.
-    Problem fixed be removing the obsolete code that passes GPE block
-    information to the notify handler via the control method parameter pointer.
+> Anyway, there's a reason why I ask people to use
+>=20
+> 	--diffstat --summary -M
+>=20
+> when generating the report. This is just part of it.
+>=20
+> I fixed it up in the merge, so it's ok in my tree, but I thought I'd poin=
+t=20
+> it out.
+>=20
 
-YH
+Thanks. I have changed my scripts and hopefully I'll notice such
+silliness in the future.
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-32181-1216248092-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkh+eRsACgkQ7b8eESbyJLj7VgCg4kPO/Tqk2xYs5zd557cBZVKJ
+44IAoJoN2nLUm+DU5q4kZdvQKdVp4GYi
+=CjMp
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-32181-1216248092-0001-2--
