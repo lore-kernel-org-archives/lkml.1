@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761509AbYGPA2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760003AbYGPA30@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761509AbYGPA2h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jul 2008 20:28:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760578AbYGPA1Y
+	id S1760003AbYGPA30 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jul 2008 20:29:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754404AbYGPA3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jul 2008 20:27:24 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34707 "EHLO
+	Tue, 15 Jul 2008 20:29:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35394 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758909AbYGPA1W (ORCPT
+	by vger.kernel.org with ESMTP id S1753085AbYGPA3P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jul 2008 20:27:22 -0400
-Date: Tue, 15 Jul 2008 17:26:34 -0700 (PDT)
+	Tue, 15 Jul 2008 20:29:15 -0400
+Date: Tue, 15 Jul 2008 17:28:17 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
-cc: David Woodhouse <dwmw2@infradead.org>, Willy Tarreau <w@1wt.eu>,
-       Jeff Garzik <jeff@garzik.org>, Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org
+To: Frans Pop <elendil@planet.nl>
+cc: david@lang.hm, Marcel Holtmann <marcel@holtmann.org>,
+       David Woodhouse <dwmw2@infradead.org>, jeff@garzik.org,
+       arjan@infradead.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
 Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
  use it in more drivers.
-In-Reply-To: <orskua1yek.fsf@oliva.athome.lsd.ic.unicamp.br>
-Message-ID: <alpine.LFD.1.10.0807151724330.2867@woody.linux-foundation.org>
-References: <1216077806.27455.85.camel@shinybook.infradead.org> <20080714164119.99c33d5b.akpm@linux-foundation.org> <20080714165956.7fe2d4ee@infradead.org> <487C0365.5030203@garzik.org> <alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
- <487C09EB.1050903@garzik.org> <alpine.LFD.1.10.0807141928540.3017@woody.linux-foundation.org> <487C1648.5070409@garzik.org> <alpine.LFD.1.10.0807142027140.3017@woody.linux-foundation.org> <20080715050654.GH1369@1wt.eu> <1216099930.27455.205.camel@shinybook.infradead.org>
- <orskua1yek.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <200807160222.40705.elendil@planet.nl>
+Message-ID: <alpine.LFD.1.10.0807151726520.2867@woody.linux-foundation.org>
+References: <1216077806.27455.85.camel@shinybook.infradead.org> <alpine.DEB.1.10.0807151503310.16109@asgard.lang.hm> <alpine.LFD.1.10.0807151631260.2867@woody.linux-foundation.org> <200807160222.40705.elendil@planet.nl>
 User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -33,20 +31,15 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Tue, 15 Jul 2008, Alexandre Oliva wrote:
+On Wed, 16 Jul 2008, Frans Pop wrote:
 > 
-> Hey, how about a config option that turns firwmare files into
-> stand-alone kernel modules that register the blob into the
-> request_firmware internal list, and MODULE_FIRMWARE into a module
-> dependency?
+> Where did you get this strange notion that mkinitrd is the _only_ (your 
+> emphasis) thing people use?
 
-I think that should work fine from a technical angle, and I don't disagree 
-per se, but it really is very ugly.
+Heh. Maybe from the fact that I don't personally use modules or initrd at 
+all, and have no interest in doing so ;)
 
-Wouldn't it be much simpler to just require people to have a reasonably 
-up-to-date mkinitrd. Apparently it's not available _everywhere_, but if we 
-check for this up-front (even if we can apparently only do so at "make 
-install" time due to the root requirements), wouldn't that really solve 
-the issue with much less work?
+Ok, so people use other things. Grr. I guess we can't just require updated 
+tools, because we don't know what the tools are.
 
 			Linus
