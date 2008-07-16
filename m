@@ -1,77 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759202AbYGPN4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759303AbYGPN5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759202AbYGPN4o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 09:56:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755390AbYGPN4g
+	id S1759303AbYGPN5t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 09:57:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755221AbYGPN5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 09:56:36 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:22518 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753548AbYGPN4f (ORCPT
+	Wed, 16 Jul 2008 09:57:41 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:1459 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753088AbYGPN5l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 09:56:35 -0400
+	Wed, 16 Jul 2008 09:57:41 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=v7lXPZIUDbm8BOM/hKHamneR1njN76VXlS7V5wTWKJ1IErQC65d67LMVB5IJC4p830
-         oPUM5uTbs22f8kbXv81s21+KnAzDeQ6a6rkYMl9Ay9Y3h7KUEk3YJ50NdwbjTobyp075
-         hSsmBX3o596PrWt97J7FCOPpTn0cwU3+M+TTU=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [git pull] x86 changes for v2.6.27
-Date: Wed, 16 Jul 2008 15:52:53 +0200
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20080714135034.GA7013@elte.hu>
-In-Reply-To: <20080714135034.GA7013@elte.hu>
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Apya5+CQzWSXR90UbG6GtXMc+g1k5ZD2hjpBuDHqXqYdCMOhUfvamLNLSrKgmfIPZN
+         /SlH61Qst7/a4WCwrNRn/iBJ2afU8jeSQt2hkV9DxG2JvV0Q8u7t5fkFQht3M676AVkn
+         U/4+YIJT+GflVG9qFmCnhKSt5KZMHKWZUjq0Q=
+Message-ID: <c61f462d0807160657p206fb29dt5a2d68c0493aab49@mail.gmail.com>
+Date: Wed, 16 Jul 2008 19:27:38 +0530
+From: "Unmil Tambe" <catchunmil@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Sync_page_io() call hangs when called from make_request (2.6.25)
+In-Reply-To: <c61f462d0807160656y4b36edeftc86b02fc7fce6a6b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200807161552.53427.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <c61f462d0807160656y4b36edeftc86b02fc7fce6a6b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-Hi,
+I am writing a stacking block device driver which writes some metadata
+on a block device before redirecting the data bio to underlying disk.
+For this I have been using sync_page_io from raid/md.h to do the
+metadata write synchronously.
 
-On Monday 14 July 2008, Ingo Molnar wrote:
-> Linus,
-> 
-> Please pull the latest x86 git tree from:
-> 
->    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86/for-linus
-> 
-> this is our first merge window since we migrated over to a pure Git 
-> based patch management setup and integrated x86.git into the -tip tree. 
-> Going from Quilt to Git was quite hard for this 
-> 1000-patches-per-kernel-cycle tree, so please bear with us :-)
+This worked fine in 2.6.18.2 kernel. I am now trying to port the
+driver to 2.6.25 kernel, but even in a basic stacking driver in this
+kernel, the sync_page_io call does not return. The process (dd in this
+case) never returns. The machine does not freeze, nor is there an OOPS
+generated. It is as if waiting on a lock.
 
-I see that fix patches are no longer folded into the guilty patch
-and it makes me a bit worried about kernel bisectability (on which
-many people depend on for hunting regressions)...
+All I could find in my search was this msg at:
+http://repo.ugm.ac.id/linux/ChangeLog-2.6.22.12
 
-Random example (amongst many others) of what I mean:
+"Author: Milan Broz <mbroz@redhat.com>
+Date:   Thu Jul 12 17:28:00 2007 +0100
 
-[...]
+   dm snapshot: fix invalidation deadlock
 
->       x86: introduce max_low_pfn_mapped for 64-bit
->       x86: max_low_pfn_mapped fix, #1
->       x86: max_low_pfn_mapped fix, #2
->       x86: max_low_pfn_mapped fix, #3
+   patch fcac03abd325e4f7a4cc8fe05fea2793b1c8eb75 in mainline
 
-There is also a _ton_ of build fixes which could have been easily
-folded into guilty patches.
+   Process persistent exception store metadata IOs in a separate thread.
 
-Could you please consider adding this additional step into your
-development process before push to Linus?
+   A snapshot may become invalid while inside generic_make_request().
+   A synchronous write is then needed to update the metadata while still
+   inside that function.  Since the introduction of
+   md-dm-reduce-stack-usage-with-stacked-block-devices.patch this has to
+   be performed by a separate thread to avoid deadlock. "
+
+
+I dont really know whether this is related to my problem or not. Any ideas?
 
 Thanks,
-Bart
+Unmil
