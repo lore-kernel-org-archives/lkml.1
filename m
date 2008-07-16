@@ -1,64 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755905AbYGPGEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbYGPGGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755905AbYGPGEU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 02:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbYGPGEM
+	id S1757084AbYGPGGu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 02:06:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbYGPGGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 02:04:12 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:38303 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751465AbYGPGEL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 02:04:11 -0400
-Message-ID: <487D8F57.2060502@garzik.org>
-Date: Wed, 16 Jul 2008 02:04:07 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 16 Jul 2008 02:06:42 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:33837 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751899AbYGPGGl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 02:06:41 -0400
+Date: Tue, 15 Jul 2008 22:49:11 -0700
+From: Greg KH <greg@kroah.com>
+To: David Vrabel <david.vrabel@csr.com>
+Cc: "Perez-Gonzalez, Inaky" <inaky.perez-gonzalez@intel.com>,
+       linux-usb <linux-usb@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Dropping WUSB/UWB from my patch queue
+Message-ID: <20080716054911.GA9806@kroah.com>
+References: <20080630180009.GA30833@kroah.com> <4871E9F0.60608@csr.com> <20080715155313.GA3075@kroah.com> <487CE2E7.90505@csr.com>
 MIME-Version: 1.0
-To: Chris Adams <cmadams@hiwaay.net>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel,
-  use it in more drivers.
-References: <aPHZW-47Y-17@gated-at.bofh.it> <aPIje-4ST-15@gated-at.bofh.it> <aPV6W-3jN-41@gated-at.bofh.it> <aPX8A-7qb-21@gated-at.bofh.it> <aPXii-7G3-25@gated-at.bofh.it> <aPXs2-7Vn-25@gated-at.bofh.it> <aPXUQ-aU-1@gated-at.bofh.it> <aPY4D-G7-23@gated-at.bofh.it> <aPZ0H-2ls-21@gated-at.bofh.it> <aPZap-2zq-15@gated-at.bofh.it> <20080716001038.GA1242918@hiwaay.net>
-In-Reply-To: <20080716001038.GA1242918@hiwaay.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <487CE2E7.90505@csr.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Adams wrote:
-> Once upon a time, Jeff Garzik  <jeff@garzik.org> said:
->> * Red Hat driver disks.  The build process is unaware of the need to 
->> bundle firmware.  Any use with Fedora (or, later, RHEL) will result in a 
->> non-working driver, for the simple reason that firmware is not copied 
->> onto the image.
+On Tue, Jul 15, 2008 at 06:48:23PM +0100, David Vrabel wrote:
+> Greg KH wrote:
+> > On Mon, Jul 07, 2008 at 11:03:28AM +0100, David Vrabel wrote:
+> >> Greg KH wrote:
+> >>> Hi David,
+> > 
+> >>> In looking further at the WUSB/UWB code, it doesn't look like it is
+> >>> going to make it for the 2.6.27 kernel tree due to the reliance on some
+> >>> contriversial core USB changes as well as a total lack of documentation
+> >>> for the sysfs apis.
+> >> I assume you are referring to the usb_dev_reset_delayed() change here.
+> >> This is only required by the wire adapter code and should not prevent
+> >> the majority of the UWB and WUSB stack from being merged.
+> > 
+> > Ok, thanks for letting me know, I did not realize this.
+> > 
+> >> You should postpone:
+> >>
+> >> usb-add-usb_dev_reset_delayed.patch
+> >> wusb-add-the-wire-adapter-core.patch
+> >> wusb-add-hwa-hc-wireless-host-controller-driver.patch
+> >> wusb-wa-abort-rpipe-request-type-fix.patch
 > 
-> Then Red Hat driver disks are already broken, as there are current
-> modules (e.g. qla2xxx) that require external firmware.
-
-That doesn't change the problem any.  There are still users of this 
-thing, regardless of what appellations are attached.
-
-
->> * Embedded projects like OpenWRT, that divide up kernel modules into 
->> multiple packages.  Since it's not just one big package, you have to 
->> update each package's list of files to include the newly split-out 
->> firmwares.  Failure to do so results in a successful build set of 
->> packages... of drivers that lack their firmware.
+> I took another look at where usb_dev_reset_delayed() is used and there
+> are more places.  You will also need to postpone:
 > 
-> AFAIK OpenWRT and the like don't just throw in random new kernel
-> releases without at least reading release notes and testing.
+> uwb/uwb-add-hwa-rc-radio-controller-driver.patch
+> uwb/uwb-i1480-driver.patch
+> uwb/uwb-i1480-wlp-driver.patch
+> uwb/uwb-disable-command-event-filtering-for-DUB-1210.patch
+> uwb/uwb-add-intel-i1480-hwa-to-the-uwb-rc-quirk-table.patch
+> 
+> And since there are now no drivers for WLP hardware you may also postpone:
+> 
+> uwb/uwb-add-wimedia-llc-protocol-core.patch
+> uwb/uwb-wlp-messages.patch
+> uwb/uwb-wlp-wss.patch
+> uwb/uwb-wlp-build-system.patch
+> uwb/wusb-drivers-uwb-wlp-sysfs.c-move-misplaced-debug-statement.patch
 
-Sure.  The difference here is that we usually take care to make sure 
-there is some way for the distributor to continue configuring their 
-system in the manner known to work, while developing and testing new stuff.
+Ugh, so, what will end up getting merged?  Anything that people can
+actually use?  :)
 
-But in this case, that option was not available to distributors (but 
-hopefully it will be, in another day or two).
+I'll poke at this on Friday and see what falls out.
 
-	Jeff
+thanks,
 
-
+greg k-h
