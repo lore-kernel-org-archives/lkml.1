@@ -1,70 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758996AbYGPTO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbYGPTUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758996AbYGPTO5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 15:14:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755012AbYGPTOs
+	id S1758242AbYGPTUw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 15:20:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752253AbYGPTUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 15:14:48 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:33047 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752279AbYGPTOr (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 15:14:47 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Morton Harrow <mharrow@linuxmail.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: GPL version 4
-In-Reply-To: Your message of "Thu, 17 Jul 2008 02:09:53 +0800."
-             <20080716180953.F408ACA586@ws5-11.us4.outblaze.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20080716180953.F408ACA586@ws5-11.us4.outblaze.com>
+	Wed, 16 Jul 2008 15:20:43 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:64782 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752163AbYGPTUm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 15:20:42 -0400
+Date: Wed, 16 Jul 2008 12:20:18 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>,
+       jejb <James.Bottomley@HansenPartnership.com>, jaswinder@infradead.org
+Subject: Re: [PATCH -next] scsi: fix advansys printk format warnings
+Message-Id: <20080716122018.7720fda5.randy.dunlap@oracle.com>
+In-Reply-To: <1216234773.1862.6.camel@shinybook.infradead.org>
+References: <20080716115057.47b3e117.randy.dunlap@oracle.com>
+	<1216234773.1862.6.camel@shinybook.infradead.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1216235685_16143P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Wed, 16 Jul 2008 15:14:45 -0400
-Message-ID: <26606.1216235685@turing-police.cc.vt.edu>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1216235685_16143P
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Wed, 16 Jul 2008 11:59:33 -0700 David Woodhouse wrote:
 
-On Thu, 17 Jul 2008 02:09:53 +0800, Morton Harrow said:
+> On Wed, 2008-07-16 at 11:50 -0700, Randy Dunlap wrote:
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > 
+> > Fix printk format warnings (firmware-related):
+> > 
+> > linux-next-20080716/drivers/scsi/advansys.c:4788: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
+> > linux-next-20080716/drivers/scsi/advansys.c:5117: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
+> > linux-next-20080716/drivers/scsi/advansys.c:5631: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
+> > linux-next-20080716/drivers/scsi/advansys.c:6131: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
+> 
+> 
+> Thanks. We'll roll those into the original patches, if that's OK with
+> you.
 
-> The GPL version 4 will accept every other license, accepted by the Open=
+Ack.
 
-> Source Initiative as open source. Corporate usage of GPL released softw=
-are
-> should be possible without restrictions. Linking from closed source sof=
-tware to
-> GPLv4 software and libraries will be permitted. GPLv4 software can be s=
-hipped
-> in (commercial) closed source software. Only this and the original auth=
-ors need
-> to be mentioned. Also, I believe the copyright of the FSF software shou=
-ld be
-> transferred to the United Nations. As =93human knowledge belongs to the=
- world.=94
-
-You might want to check your DNS server for cache poisoning.  I think you=
-
-meant to send this to a *bsd.org list, but it ended up at vger.kernel.org=
-
-by accident...
-
---==_Exmh_1216235685_16143P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFIfkilcC3lWbTT17ARAlvLAJ4o0h+/3RovBQaidppn2SCNqfWrWACgyOT1
-9yGCxqAdXGidbS741hO5S9U=
-=0myO
------END PGP SIGNATURE-----
-
---==_Exmh_1216235685_16143P--
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
