@@ -1,80 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757916AbYGPGzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757251AbYGPHDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757916AbYGPGzf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 02:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbYGPGz0
+	id S1757251AbYGPHDY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 03:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753373AbYGPHDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 02:55:26 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:30084 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751090AbYGPGz0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 02:55:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references
-         :in-reply-to:content-type:content-transfer-encoding;
-        b=sAilwZcSy2XUHJI3AJ35SOyVUgr1fpQiAxCHKGUJPVSdqkdI1pTu5jg4FTRAJJH3gF
-         a6L42JFujphz5xkyc7ilC/QoLebT4rlBeQp+kN3pDfTPP4C7hylVuZyjFilm0Gz5hgwH
-         PQYyGezeiwykIxBcSJUG5RILZ38iy1tT4nI+w=
-Message-ID: <487D9B58.7070609@gmail.com>
-Date: Wed, 16 Jul 2008 03:55:20 -0300
-From: "Rafael C. de Almeida" <almeidaraf@gmail.com>
-User-Agent: Icedove 1.5.0.14eol (X11/20080509)
+	Wed, 16 Jul 2008 03:03:13 -0400
+Received: from ns2.suse.de ([195.135.220.15]:33097 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752034AbYGPHDM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 03:03:12 -0400
+Message-ID: <487D9D0C.3060105@suse.de>
+Date: Wed, 16 Jul 2008 16:02:36 +0900
+From: Tejun Heo <teheo@suse.de>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: From 2.4 to 2.6 to 2.7?
-References: <6d291e080807141910m573b29b2t753ea7c4db09902d@mail.gmail.com> <alpine.LFD.1.10.0807141914280.3017@woody.linux-foundation.org> <487CE6CB.9090405@zytor.com> <487D7781.6000407@keyaccess.nl>
-In-Reply-To: <487D7781.6000407@keyaccess.nl>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8bit
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, linux-kernel@vger.kernel.org,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>,
+       Benjamin Thery <benjamin.thery@bull.net>, netdev@vger.kernel.org
+Subject: Re: [PATCH 12/15] driver core: Implement tagged directory support
+ for device classes.
+References: <m18wwiihbn.fsf_-_@frodo.ebiederm.org>	<m14p76ih9a.fsf_-_@frodo.ebiederm.org>	<m1zloyh2mb.fsf_-_@frodo.ebiederm.org>	<m1vdzmh2jr.fsf_-_@frodo.ebiederm.org>	<m1r6aah2hh.fsf_-_@frodo.ebiederm.org>	<m1mykyh2fu.fsf_-_@frodo.ebiederm.org>	<m1hcb6h2d2.fsf_-_@frodo.ebiederm.org> <486DD650.3000804@gmail.com>	<m1tzf593ny.fsf@frodo.ebiederm.org> <486E2C3B.6020603@gmail.com>	<20080704161200.GA1440@suse.de> <m1lk052ptp.fsf@frodo.ebiederm.org>	<487D6A24.9070001@gmail.com> <m17ibmbd39.fsf@frodo.ebiederm.org>	<487D8C0A.9060100@gmail.com> <m11w1u9w5j.fsf@frodo.ebiederm.org> <487D99C7.708@gmail.com>
+In-Reply-To: <487D99C7.708@gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman wrote:
-> On 15-07-08 20:04, H. Peter Anvin wrote:
+Tejun Heo wrote:
+> Hello, Eric.
 > 
->> Clearly, the 2. prefix has long outlived its usefulness as far as
->> Linux is concerned, and probably the 6 as well.
+> Eric W. Biederman wrote:
+>> Tejun Heo <htejun@gmail.com> writes:
+>>
+>>> It's a bit scary tho.  Working inode->i_dentry or dentry->d_alias
+>>> crosses multiple sb's.  sysfs isn't too greedy about dcache/icache.
+>>> Only open files and directories hold them and only single copy of
+>>> sysfs_dirent is there for most nodes.  Wouldn't it be better to stay on
+>>> the safer side and use separate inode hierarchy?
+>> To do that I believe we would need to ensure sysfs does not use 
+>> the inode->i_mutex lock except to keep the VFS layer out.  Allowing us
+>> to safely change the directory structure, without holding it.
 > 
-> Been calling the -stable branches v20, v21, v22, ... here.
+> I don't think sysfs is depending on i_mutex anymore but I need to go
+> through the code to make sure.
 > 
-> I do believe the numbering scheme should at least ostensibly still be
-> feature driven, not be a fully robotic date thing. With the latter, you
-> definitely miss out on press-opportunities and that's not even meant
-> cynical. There just is a bit of industry around Linux and the promotion
-> opportunities of (say) "Linux 3" are really lots, lots bigger than
-> anything boringly date based.
+>> You raise a good point about inode->i_dentry and dentry->d_alias.
+>> Generally they are used by fat like filesystems but I am starting to
+>> see uses in generic pieces of code.  I don't see any problems today
+>> but yes it would be good to do the refactoring to allow us to duplicate
+>> the inodes. 
+> 
+> Yeah, I can't spot any place which can cause actual problem yet but it's
+> still scary as we're breaking a vfs assumption and even if it's not a
+> problem now, future seemingly unrelated changes can break things subtly.
 
-And that's why after the adoption of generics and a few things java all
-the sudden became java 5. I don't like that. I hope the world gets used
-to learning things instead of just being driven by a pretty number. And
-I think that not using marketing numbers on a popular software is a good
-step into helping people realise that version numbers are meant to keep
-track of the changes not to look cool.
+Okay, one small problem spotted.  It seems invalidate_inodes() can fail
+which will make generic_shutdown_super() complain.  It's not a fatal
+failure tho.
 
-> That even holds for things like books -- I just bet that a "all new,
-> covers Linux 3!" blurp on the cover sells lots more copies than a "all
-> new, covers the march 21st 2009 version of Linux!" one.
-
-I rather just have good books around. I can bet that all -- or at least
-most of -- those new "LINUX 3!" books would suck. So it's better if they
-sell little or not sell at all.
-
-> But yes, the current monotic increase is definitely getting a bit boring
-> as well. The kernel as of 2.6.26 is quite different from the kernel that
-> was known as 2.6.0 so just be creative I'd say and set a 2.8 goal. Next
-> version can be 2.9 (should be clear enough by then) and then watch world
-> domination happen with the big 3.0 release.
-
-Well, if 2.6.0 was 3.0 (2003.0) then people would easily realise that
-they're missing 5 years of kernel development. Given that hint, if they
-take a look on a few Changelogs they'll soon find out they're missing on
-quite a lot.
-
-> Linux 2010.5? Boooooooooring....
-
-Well, it is software versioning and not Gisele Bündchen taking off her top.
-
-> Rene.
+-- 
+tejun
