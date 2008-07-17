@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761139AbYGQWkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760190AbYGQWkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761139AbYGQWkk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 18:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758965AbYGQWkT
+	id S1760190AbYGQWkz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 18:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758292AbYGQWkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 18:40:19 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:16652 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758280AbYGQWkR (ORCPT
+	Thu, 17 Jul 2008 18:40:43 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:38792 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932118AbYGQWkm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 18:40:17 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AjwBADBmf0h5LFxAiGdsb2JhbACSPQEBAQ8gngk
-X-IronPort-AV: E=Sophos;i="4.31,205,1215354600"; 
-   d="scan'208";a="151816808"
-Date: Fri, 18 Jul 2008 08:40:12 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Eric Sandeen <sandeen@redhat.com>, Tim Shimmin <xfs-masters@oss.sgi.com>,
-       xfs@oss.sgi.com, linux-kernel@vger.kernel.org,
-       Johannes Weiner <hannes@saeurebad.de>
-Subject: Re: latest -git: kernel BUG at fs/xfs/support/debug.c:54!
-Message-ID: <20080717224012.GH29319@disturbed>
-Mail-Followup-To: Vegard Nossum <vegard.nossum@gmail.com>,
-	Eric Sandeen <sandeen@redhat.com>,
-	Tim Shimmin <xfs-masters@oss.sgi.com>, xfs@oss.sgi.com,
-	linux-kernel@vger.kernel.org, Johannes Weiner <hannes@saeurebad.de>
-References: <19f34abd0807171046j425bebc6m8d8eb80a641e0e5b@mail.gmail.com> <487F980F.7070708@redhat.com> <19f34abd0807171218u3de86ddbt506b0b4fa0548406@mail.gmail.com> <19f34abd0807171229p724cc44ese3cb064a65fbd2c0@mail.gmail.com>
+	Thu, 17 Jul 2008 18:40:42 -0400
+Date: Thu, 17 Jul 2008 18:40:41 -0400
+To: Alastair Stevens <alastair@altrux.me.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: From 2.4 to 2.6 to 2.7?
+Message-ID: <20080717224041.GM31126@csclub.uwaterloo.ca>
+References: <487FC213.9030604@altrux.me.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <19f34abd0807171229p724cc44ese3cb064a65fbd2c0@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <487FC213.9030604@altrux.me.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 09:29:39PM +0200, Vegard Nossum wrote:
-> On Thu, Jul 17, 2008 at 9:18 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> > Thanks, you are right. I have adjusted my configuration, but I am
-> > still able to produce this:
-> >
-> > BUG: unable to handle kernel paging request at b62a66e0
-> > IP: [<c030ef88>] xfs_alloc_fix_freelist+0x28/0x490
+On Thu, Jul 17, 2008 at 11:05:07PM +0100, Alastair Stevens wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
 > 
-> FWIW, this is fs/xfs/xfs_alloc.c:1817:
+> Forgive me if I missed it, but I've not seen any suggestions along the lines
+> of this: how about just dropping the now-meaningless '.6' from the version
+> string and retaining the rest. In other words:
 > 
->         if (!pag->pagf_init) {
+>    2.27
+>    2.27.1
+>    ...
+>    2.28
+>    2.28.1
+>    2.28.2
+> 
+> That way you continue the series in a meaningful way, whilst reverting to a
+> neater 3-level numbering scheme again. Perhaps you could make 2.[6.]30 the
+> switchover point....
 
-Which kind of implies that we've got a bogus fsbno
-that we're using as the basis of allocation.....
+So what makes the 6 meaningless and the 2 meaningful and worth keeping?
 
-What is the corruption you are inducing? Can you produce
-a xfs_metadump image of the filesystem and put it up somewhere
-that we can access it?
+It does nothing for Linus's dislike of large numbers either.
 
-I suspect that we are not validating the block numbers coming
-out of the various btrees as landing inside the filesystem....
-
-Cheers,
-
-Dave.
 -- 
-Dave Chinner
-david@fromorbit.com
+Len Sorensen
