@@ -1,54 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932151AbYGQSaK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760821AbYGQSah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932151AbYGQSaK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 14:30:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757683AbYGQS35
+	id S1760821AbYGQSah (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 14:30:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758892AbYGQSa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 14:29:57 -0400
-Received: from 82-39-188-205.cable.ubr03.benw.blueyonder.co.uk ([82.39.188.205]:38853
-	"EHLO the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757311AbYGQS34 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 14:29:56 -0400
-Date: Tue, 15 Jul 2008 13:42:46 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
- in-kernel, use it in more drivers.
-Message-ID: <20080715134246.7bee32b1@the-village.bc.nu>
-In-Reply-To: <487C500F.8000109@garzik.org>
-References: <1216077806.27455.85.camel@shinybook.infradead.org>
-	<20080714164119.99c33d5b.akpm@linux-foundation.org>
-	<20080714165956.7fe2d4ee@infradead.org>
-	<487C0365.5030203@garzik.org>
-	<alpine.LFD.1.10.0807141911270.3017@woody.linux-foundation.org>
-	<487C09EB.1050903@garzik.org>
-	<alpine.LFD.1.10.0807141928540.3017@woody.linux-foundation.org>
-	<487C1648.5070409@garzik.org>
-	<alpine.LFD.1.10.0807142027140.3017@woody.linux-foundation.org>
-	<487C500F.8000109@garzik.org>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Jul 2008 14:30:27 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:2296 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757683AbYGQSaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 14:30:25 -0400
+Date: Thu, 17 Jul 2008 14:30:12 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Cc: davem@davemloft.net, herbert@gondor.apana.org.au, nhorman@tuxdriver.com
+Subject: [PATCH] crypto: Cleaning some more minor nits in prng
+Message-ID: <20080717183012.GF17892@hmsendeavour.rdu.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> * the legal subtext of these changes was not mentioned at all
 
-The only legal subtext has been some mad fantasy proposed by Dave Miller
-that David Woodhouse current employer and previous one were both in some
-conspiracy to push firmware elsewhere. It would be very helpful if you
-stuck to the real world.
+ Clean up a few more minor nits in the prng
+    
+ Now that we use a plain cipher instead of a blkcipher, we don't need an iv
+ anymore, so remove that parameter from the reset_prng_context function.  Make
+ it instead with a legngth parameter, so that we can treat the key as a blob,
+ rather than a string.  Also change the get_prng_bytes function to make nbytes
+ a size_t, so we don't have to worry about signed math there
+    
+ Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
 
-The only legal agenda people I know actually don't like request_firmware
-because it makes it easier to have non-free firmware files. In their
-strange world they'd rather delete the driver
+ prng.c |   11 +++++++----
+ prng.h |    4 ++--
+ 2 files changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/crypto/prng.c b/crypto/prng.c
+index 9e2d277..0b1831e 100644
+--- a/crypto/prng.c
++++ b/crypto/prng.c
+@@ -189,7 +189,7 @@ static int _get_more_prng_bytes(struct prng_context *ctx)
+ }
+ 
+ /* Our exported functions */
+-int get_prng_bytes(char *buf, int nbytes, struct prng_context *ctx)
++int get_prng_bytes(char *buf, size_t nbytes, struct prng_context *ctx)
+ {
+ 	unsigned long flags;
+ 	unsigned char *ptr = buf;
+@@ -284,7 +284,7 @@ struct prng_context *alloc_prng_context(void)
+ 
+ 	spin_lock_init(&ctx->prng_lock);
+ 
+-	if (reset_prng_context(ctx, NULL, NULL, NULL, NULL)) {
++	if (reset_prng_context(ctx, NULL, DEFAULT_PRNG_KSZ, NULL, NULL)) {
+ 		kfree(ctx);
+ 		ctx = NULL;
+ 	}
+@@ -302,7 +302,7 @@ void free_prng_context(struct prng_context *ctx)
+ EXPORT_SYMBOL_GPL(free_prng_context);
+ 
+ int reset_prng_context(struct prng_context *ctx,
+-		       unsigned char *key, unsigned char *iv,
++		       unsigned char *key, size_t klen,
+ 		       unsigned char *V, unsigned char *DT)
+ {
+ 	int ret;
+@@ -313,6 +313,9 @@ int reset_prng_context(struct prng_context *ctx,
+ 
+ 	prng_key = (key != NULL) ? key : (unsigned char *)DEFAULT_PRNG_KEY;
+ 
++	if (!key)
++		klen = DEFAULT_PRNG_KSZ;
++
+ 	if (V)
+ 		memcpy(ctx->V, V, DEFAULT_BLK_SZ);
+ 	else
+@@ -339,7 +342,7 @@ int reset_prng_context(struct prng_context *ctx,
+ 
+ 	ctx->rand_data_valid = DEFAULT_BLK_SZ;
+ 
+-	ret = crypto_cipher_setkey(ctx->tfm, prng_key, strlen(prng_key));
++	ret = crypto_cipher_setkey(ctx->tfm, prng_key, klen);
+ 	if (ret) {
+ 		dbgprint(KERN_CRIT "PRNG: setkey() failed flags=%x\n",
+ 			crypto_cipher_get_flags(ctx->tfm));
+diff --git a/crypto/prng.h b/crypto/prng.h
+index 1ac9be5..a6ad203 100644
+--- a/crypto/prng.h
++++ b/crypto/prng.h
+@@ -15,10 +15,10 @@
+ #define _PRNG_H_
+ struct prng_context;
+ 
+-int get_prng_bytes(char *buf, int nbytes, struct prng_context *ctx);
++int get_prng_bytes(char *buf, size_t nbytes, struct prng_context *ctx);
+ struct prng_context *alloc_prng_context(void);
+ int reset_prng_context(struct prng_context *ctx,
+-			unsigned char *key, unsigned char *iv,
++			unsigned char *key, size_t klen,
+ 			unsigned char *V,
+ 			unsigned char *DT);
+ void free_prng_context(struct prng_context *ctx);
+-- 
+/***************************************************
+ *Neil Horman
+ *nhorman@tuxdriver.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
