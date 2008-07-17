@@ -1,79 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932955AbYGQT0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932558AbYGQT0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932955AbYGQT0y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 15:26:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759980AbYGQTXA
+	id S932558AbYGQT0j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 15:26:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932393AbYGQTW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 15:23:00 -0400
-Received: from monty.telenet-ops.be ([195.130.132.56]:49837 "EHLO
+	Thu, 17 Jul 2008 15:22:58 -0400
+Received: from monty.telenet-ops.be ([195.130.132.56]:49824 "EHLO
 	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932279AbYGQTWw (ORCPT
+	with ESMTP id S932179AbYGQTWv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 15:22:52 -0400
-Message-Id: <20080717191758.556975996@mail.of.borg>
+	Thu, 17 Jul 2008 15:22:51 -0400
+Message-Id: <20080717191755.958079386@mail.of.borg>
 References: <20080717191607.955742542@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Thu, 17 Jul 2008 21:16:36 +0200
+Date: Thu, 17 Jul 2008 21:16:30 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 29/29] initrd: Fix virtual/physical mix-up in overwrite test
-Content-Disposition: inline; filename=m68k-initrd-fix.diff
+Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Adrian Bunk <bunk@kernel.org>
+Subject: [patch 23/29] m68k/Mac: remove the unused ADB_KEYBOARD option
+Content-Disposition: inline; filename=m68k-mac-remove-the-unused-ADB_KEYBOARD-option.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Adrian Bunk <bunk@kernel.org>
 
-On recent kernels, I get the following error when using an initrd:
+When the driver was removed back in 2002 the option was forgotten.
 
-| initrd overwritten (0x00b78000 < 0x07668000) - disabling it.
-
-My Amiga 4000 has 12 MiB of RAM at physical address 0x07400000 (virtual
-0x00000000).
-The initrd is located at the end of RAM: 0x00b78000 - 0x00c00000 (virtual).
-The overwrite test compares the (virtual) initrd location to the (physical)
-first available memory location, which fails.
-
-This patch converts initrd_start to a page frame number, so it can safely be
-compared with min_low_pfn.
-
-Before the introduction of discontiguous memory support on m68k
-(12d810c1b8c2b913d48e629e2b5c01d105029839), min_low_pfn was just left
-untouched by the m68k-specific code (zero, I guess), and everything worked
-fine.
-
+Reported-by: Robert P. J. Day <rpjday@crashcourse.ca>
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
-On several platforms, initrd_below_start_ok is set to 1:
+ arch/m68k/Kconfig |   12 ------------
+ 1 file changed, 12 deletions(-)
 
-| arch/mips/kernel/setup.c:       initrd_below_start_ok = 1;
-| arch/parisc/mm/init.c:                  initrd_below_start_ok = 1;
-| arch/powerpc/kernel/prom.c:                     initrd_below_start_ok = 1;
-| arch/ppc/platforms/hdpu.c:                      initrd_below_start_ok = 1;
-| arch/xtensa/kernel/setup.c:             initrd_below_start_ok = 1;
-
-Some of these may be workarounds for this bug. Please check.
-
- init/main.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
---- a/init/main.c
-+++ b/init/main.c
-@@ -630,9 +630,10 @@ asmlinkage void __init start_kernel(void
+--- a/arch/m68k/Kconfig
++++ b/arch/m68k/Kconfig
+@@ -578,18 +578,6 @@ config MAC_HID
+ 	depends on INPUT_ADBHID
+ 	default y
  
- #ifdef CONFIG_BLK_DEV_INITRD
- 	if (initrd_start && !initrd_below_start_ok &&
--			initrd_start < min_low_pfn << PAGE_SHIFT) {
-+	    page_to_pfn(virt_to_page(initrd_start)) < min_low_pfn) {
- 		printk(KERN_CRIT "initrd overwritten (0x%08lx < 0x%08lx) - "
--		    "disabling it.\n",initrd_start,min_low_pfn << PAGE_SHIFT);
-+		    "disabling it.\n",
-+		    page_to_pfn(virt_to_page(initrd_start)), min_low_pfn);
- 		initrd_start = 0;
- 	}
- #endif
+-config ADB_KEYBOARD
+-	bool "Support for ADB keyboard (old driver)"
+-	depends on MAC && !INPUT_ADBHID
+-	help
+-	  This option allows you to use an ADB keyboard attached to your
+-	  machine. Note that this disables any other (ie. PS/2) keyboard
+-	  support, even if your machine is physically capable of using both at
+-	  the same time.
+-
+-	  If you use an ADB keyboard (4 pin connector), say Y here.
+-	  If you use a PS/2 keyboard (6 pin connector), say N here.
+-
+ config HPDCA
+ 	tristate "HP DCA serial support"
+ 	depends on DIO && SERIAL_8250
 
 -- 
 Gr{oetje,eeting}s,
