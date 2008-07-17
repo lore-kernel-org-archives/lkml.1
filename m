@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760071AbYGQB7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760052AbYGQCCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760071AbYGQB7j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 21:59:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754401AbYGQB7c
+	id S1760052AbYGQCCq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 22:02:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754401AbYGQCCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 21:59:32 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38833 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753884AbYGQB7b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 21:59:31 -0400
-Date: Thu, 17 Jul 2008 10:57:56 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Subject: Re: [PATCH] Limit irq nesting
-Cc: kosaki.motohiro@jp.fujitsu.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0807162128060.24301@devserv.devel.redhat.com>
-References: <Pine.LNX.4.64.0807162128060.24301@devserv.devel.redhat.com>
-Message-Id: <20080717105532.157E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 16 Jul 2008 22:02:38 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:60037 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753649AbYGQCCh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 22:02:37 -0400
+Message-ID: <487EA7D2.6080706@cn.fujitsu.com>
+Date: Thu, 17 Jul 2008 10:00:50 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Dan Williams <dan.j.williams@intel.com>
+CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] async_tx: list_for_each_entry_rcu() cleanup
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mikulas,
+In the rcu update side, don't use list_for_each_entry_rcu().
 
-> ---
->  include/linux/interrupt.h |    7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6.26-rc8/include/linux/interrupt.h
-> ===================================================================
-> --- linux-2.6.26-rc8.orig/include/linux/interrupt.h	2008-06-25 03:58:20.000000000 +0200
-> +++ linux-2.6.26-rc8/include/linux/interrupt.h	2008-07-01 17:42:44.000000000 +0200
-> @@ -16,6 +16,11 @@
->  #include <asm/system.h>
->  
->  /*
-> + * Max number of interrupt handlers on a stack. To prevent stack overflow.
-> + */
-> +#define MAX_NESTED_INTERRUPTS	2
-> +
-> +/*
->   * These correspond to the IORESOURCE_IRQ_* defines in
->   * linux/ioport.h to select the interrupt line behaviour.  When
->   * requesting an interrupt without specifying a IRQF_TRIGGER, the
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ crypto/async_tx/async_tx.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I have no objection to your approach.
-but I don't know MAX_NESTED_INTERRUPTS is properly or not.
-
-Could you explain why MAX_NESTED_INTERRUPTS is two?
-Is it architecture independent properly number?
-
-
-
-> @@ -95,7 +100,7 @@ extern void devm_free_irq(struct device 
->  #ifdef CONFIG_LOCKDEP
->  # define local_irq_enable_in_hardirq()	do { } while (0)
->  #else
-> -# define local_irq_enable_in_hardirq()	local_irq_enable()
-> +# define local_irq_enable_in_hardirq()	do { if (hardirq_count() < (MAX_NESTED_INTERRUPTS << HARDIRQ_SHIFT)) local_irq_enable(); } while (0)
->  #endif
->  
->  extern void disable_irq_nosync(unsigned int irq);
-
+diff --git a/crypto/async_tx/async_tx.c b/crypto/async_tx/async_tx.c
+index 095c798..17834e5 100644
+--- a/crypto/async_tx/async_tx.c
++++ b/crypto/async_tx/async_tx.c
+@@ -295,7 +295,7 @@ dma_channel_add_remove(struct dma_client *client,
+ 	case DMA_RESOURCE_REMOVED:
+ 		found = 0;
+ 		spin_lock_irqsave(&async_tx_lock, flags);
+-		list_for_each_entry_rcu(ref, &async_tx_master_list, node)
++		list_for_each_entry(ref, &async_tx_master_list, node)
+ 			if (ref->chan == chan) {
+ 				/* permit backing devices to go away */
+ 				dma_chan_put(ref->chan);
+-- 
+1.5.4.rc3
 
