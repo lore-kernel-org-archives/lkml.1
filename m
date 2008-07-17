@@ -1,74 +1,207 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758700AbYGQHqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759556AbYGQHrF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758700AbYGQHqb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 03:46:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbYGQHqV
+	id S1759556AbYGQHrF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 03:47:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754922AbYGQHqx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 03:46:21 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:34321 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753570AbYGQHqT (ORCPT
+	Thu, 17 Jul 2008 03:46:53 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:11508 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754667AbYGQHqw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 03:46:19 -0400
-Date: Thu, 17 Jul 2008 15:46:15 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       davem@davemloft.net
-Subject: Re: [PATCH] prng: fix a few misc bugs in prng
-Message-ID: <20080717074615.GA23621@gondor.apana.org.au>
-References: <20080716202916.GA1648@hmsreliant.think-freely.org>
+	Thu, 17 Jul 2008 03:46:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=CupCF+iFkgtAmAPUpy6ATQyT314manAtuXmIwsd/NEhYVnQlfUMI9Mw4snRwO2EJEk
+         k7hWvgM0GaXn17I739z/qu4bPuaE0gekaNM6PIC1cILTX9Nrn4tfVW6x1zm+MMLYMdu1
+         qQjqgZwmAzrLdkpUL+KY0+ZPpfuhoL7h6kvto=
+Message-ID: <84144f020807170046j2fae2f41k7c80dba4e388677b@mail.gmail.com>
+Date: Thu, 17 Jul 2008 10:46:51 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Eduard - Gabriel Munteanu" <eduard.munteanu@linux360.ro>
+Subject: Re: [RFC PATCH 3/4] kmemtrace: SLUB hooks.
+Cc: cl@linux-foundation.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <017a63e6be64502c36ede4733f0cc4e5ede75db2.1216255035.git.eduard.munteanu@linux360.ro>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080716202916.GA1648@hmsreliant.think-freely.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <cover.1216255034.git.eduard.munteanu@linux360.ro>
+	 <017a63e6be64502c36ede4733f0cc4e5ede75db2.1216255035.git.eduard.munteanu@linux360.ro>
+X-Google-Sender-Auth: ba1dad8ae7e6ad7a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 16, 2008 at 04:29:16PM -0400, Neil Horman wrote:
-> 
->  Fixing a few misc bugs in prng.c:
->  - Remove prng_key/prng_iv from prng_context (both kept in tfm ptr)
->  - Making _get_more_prng_bytes return meaningful err codes (not just -1/0)
->     
->  Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+On Thu, Jul 17, 2008 at 3:46 AM, Eduard - Gabriel Munteanu
+<eduard.munteanu@linux360.ro> wrote:
+> This adds hooks for the SLUB allocator, to allow tracing with kmemtrace.
+>
+> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+> ---
+>  include/linux/slub_def.h |    9 +++++++-
+>  mm/slub.c                |   47 ++++++++++++++++++++++++++++++++++++++++-----
+>  2 files changed, 49 insertions(+), 7 deletions(-)
+>
+> diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
+> index d117ea2..0cef121 100644
+> --- a/include/linux/slub_def.h
+> +++ b/include/linux/slub_def.h
+> @@ -10,6 +10,7 @@
+>  #include <linux/gfp.h>
+>  #include <linux/workqueue.h>
+>  #include <linux/kobject.h>
+> +#include <linux/kmemtrace.h>
+>
+>  enum stat_item {
+>        ALLOC_FASTPATH,         /* Allocation from cpu slab */
+> @@ -205,7 +206,13 @@ void *__kmalloc(size_t size, gfp_t flags);
+>
+>  static __always_inline void *kmalloc_large(size_t size, gfp_t flags)
+>  {
+> -       return (void *)__get_free_pages(flags | __GFP_COMP, get_order(size));
+> +       unsigned int order = get_order(size);
+> +       void *ret = (void *) __get_free_pages(flags, order);
+> +
+> +       kmemtrace_mark_alloc(KMEMTRACE_TYPE_KERNEL, _THIS_IP_, ret,
+> +                            size, PAGE_SIZE << order, flags);
+> +
+> +       return ret;
+>  }
+>
+>  static __always_inline void *kmalloc(size_t size, gfp_t flags)
+> diff --git a/mm/slub.c b/mm/slub.c
+> index 315c392..a6f930f 100644
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> @@ -23,6 +23,7 @@
+>  #include <linux/kallsyms.h>
+>  #include <linux/memory.h>
+>  #include <linux/math64.h>
+> +#include <linux/kmemtrace.h>
+>
+>  /*
+>  * Lock order:
+> @@ -1652,14 +1653,25 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
+>
+>  void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
+>  {
+> -       return slab_alloc(s, gfpflags, -1, __builtin_return_address(0));
+> +       void *ret = slab_alloc(s, gfpflags, -1, __builtin_return_address(0));
+> +
+> +       kmemtrace_mark_alloc(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
+> +                            s->objsize, s->size, gfpflags);
+> +
+> +       return ret;
+>  }
+>  EXPORT_SYMBOL(kmem_cache_alloc);
+>
+>  #ifdef CONFIG_NUMA
+>  void *kmem_cache_alloc_node(struct kmem_cache *s, gfp_t gfpflags, int node)
+>  {
+> -       return slab_alloc(s, gfpflags, node, __builtin_return_address(0));
+> +       void *ret = slab_alloc(s, gfpflags, node,
+> +                              __builtin_return_address(0));
+> +
+> +       kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
+> +                                 s->objsize, s->size, gfpflags, node);
+> +
+> +       return ret;
+>  }
+>  EXPORT_SYMBOL(kmem_cache_alloc_node);
+>  #endif
+> @@ -1771,6 +1783,8 @@ void kmem_cache_free(struct kmem_cache *s, void *x)
+>        page = virt_to_head_page(x);
+>
+>        slab_free(s, page, x, __builtin_return_address(0));
+> +
+> +       kmemtrace_mark_free(KMEMTRACE_TYPE_CACHE, _RET_IP_, x);
+>  }
+>  EXPORT_SYMBOL(kmem_cache_free);
+>
+> @@ -2676,6 +2690,7 @@ static struct kmem_cache *get_slab(size_t size, gfp_t flags)
+>  void *__kmalloc(size_t size, gfp_t flags)
+>  {
+>        struct kmem_cache *s;
+> +       void *ret;
+>
+>        if (unlikely(size > PAGE_SIZE))
+>                return kmalloc_large(size, flags);
+> @@ -2685,7 +2700,12 @@ void *__kmalloc(size_t size, gfp_t flags)
+>        if (unlikely(ZERO_OR_NULL_PTR(s)))
+>                return s;
+>
+> -       return slab_alloc(s, flags, -1, __builtin_return_address(0));
+> +       ret = slab_alloc(s, flags, -1, __builtin_return_address(0));
+> +
+> +       kmemtrace_mark_alloc(KMEMTRACE_TYPE_KERNEL, _RET_IP_, ret,
+> +                            size, (size_t) s->size, (unsigned long) flags);
 
-Applied to cryptodev-2.6.
+What are these casts doing here? I think you can just drop them, no?
 
-> @@ -369,8 +362,7 @@ int reset_prng_context(struct prng_context *ctx,
->  
->  	ctx->rand_data_valid = DEFAULT_BLK_SZ;
->  
-> -	ret = crypto_blkcipher_setkey(ctx->tfm, ctx->prng_key,
-> -					strlen(ctx->prng_key));
-> +	ret = crypto_blkcipher_setkey(ctx->tfm, prng_key, strlen(prng_key));
+> +
+> +       return ret;
+>  }
+>  EXPORT_SYMBOL(__kmalloc);
+>
+> @@ -2704,16 +2724,29 @@ static void *kmalloc_large_node(size_t size, gfp_t flags, int node)
+>  void *__kmalloc_node(size_t size, gfp_t flags, int node)
+>  {
+>        struct kmem_cache *s;
+> +       void *ret;
+>
+> -       if (unlikely(size > PAGE_SIZE))
+> -               return kmalloc_large_node(size, flags, node);
+> +       if (unlikely(size > PAGE_SIZE)) {
+> +               ret = kmalloc_large_node(size, flags, node);
+> +
+> +               kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KERNEL, _RET_IP_, ret,
+> +                                         size, PAGE_SIZE << get_order(size),
+> +                                         (unsigned long) flags, node);
 
-Please make the length a parameter instead as it's much more
-convenient to use a blob as a key rather than a string.
+Don't cast flags to unsigned long. The kmemtrace core should use gfp_t
+as the parameter type.
 
-> diff --git a/firmware/Makefile b/firmware/Makefile
-> index 809a526..3515814 100644
-> --- a/firmware/Makefile
-> +++ b/firmware/Makefile
-> @@ -34,8 +34,8 @@ fw-shipped-$(CONFIG_SND_SB16_CSP) += sb16/mulaw_main.csp sb16/alaw_main.csp \
->  				     sb16/ima_adpcm_capture.csp
->  fw-shipped-$(CONFIG_SND_YMFPCI) += yamaha/ds1_ctrl.fw yamaha/ds1_dsp.fw \
->  				   yamaha/ds1e_ctrl.fw
-> -fw-shipped-$(CONFIG_TIGON3) += tigon/tg3.bin tigon/tg3_tso.bin \
-> -			       tigon/tg3_tso5.bin
-> +#fw-shipped-$(CONFIG_TIGON3) += tigon/tg3.bin tigon/tg3_tso.bin \
-> +#			       tigon/tg3_tso5.bin
->  fw-shipped-$(CONFIG_USB_DABUSB) += dabusb/firmware.fw dabusb/bitstream.bin
->  fw-shipped-$(CONFIG_USB_EMI26) += emi26/loader.fw emi26/firmware.fw \
->  				  emi26/bitstream.fw
+> +
+> +               return ret;
+> +       }
+>
+>        s = get_slab(size, flags);
+>
+>        if (unlikely(ZERO_OR_NULL_PTR(s)))
+>                return s;
+>
+> -       return slab_alloc(s, flags, node, __builtin_return_address(0));
+> +       ret = slab_alloc(s, flags, node, __builtin_return_address(0));
+> +
+> +       kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KERNEL, _RET_IP_, ret,
+> +                                 size, s->size, (unsigned long) flags, node);
 
-The dreaded firmware makes a comeback :)
+Another cast here.
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+> +
+> +       return ret;
+>  }
+>  EXPORT_SYMBOL(__kmalloc_node);
+>  #endif
+> @@ -2771,6 +2804,8 @@ void kfree(const void *x)
+>                return;
+>        }
+>        slab_free(page->slab, page, object, __builtin_return_address(0));
+> +
+> +       kmemtrace_mark_free(KMEMTRACE_TYPE_KERNEL, _RET_IP_, x);
+>  }
+>  EXPORT_SYMBOL(kfree);
+>
+> --
+> 1.5.6.1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
