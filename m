@@ -1,57 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760173AbYGQADY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760295AbYGQADn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760173AbYGQADY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 20:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758897AbYGQADJ
+	id S1760295AbYGQADn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 20:03:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758897AbYGQADb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 20:03:09 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:36725 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753907AbYGQADG (ORCPT
+	Wed, 16 Jul 2008 20:03:31 -0400
+Received: from outbound-mail-105.bluehost.com ([69.89.18.5]:59055 "HELO
+	outbound-mail-105.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760211AbYGQAD2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 20:03:06 -0400
-Date: Wed, 16 Jul 2008 18:03:01 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: Byron Stanoszek <bstanoszek@comtime.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Stoyan Gaydarov <stoyboyker@gmail.com>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, gorcunov@gmail.com,
-       akpm@linux-foundation.org, mingo@elte.hu
-Subject: Re: From 2.4 to 2.6 to 2.7?
-Message-ID: <20080717000301.GD22919@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-	Byron Stanoszek <bstanoszek@comtime.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Stoyan Gaydarov <stoyboyker@gmail.com>,
-	linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	gorcunov@gmail.com, akpm@linux-foundation.org, mingo@elte.hu
-References: <6d291e080807141910m573b29b2t753ea7c4db09902d@mail.gmail.com> <alpine.LFD.1.10.0807141914280.3017@woody.linux-foundation.org> <Pine.LNX.4.64.0807150938280.12665@winds.org> <20080716211427.GH31126@csclub.uwaterloo.ca>
+	Wed, 16 Jul 2008 20:03:28 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User:DomainKey-Status;
+	b=p+KGMxsk4Z8o9RDflTTsPjPLNeYeKiLrMIKapXE/eYv9tOYCPDLtW3O5YO3uEg9/Z98QMLog1pgAOWcJbu24jBG7X+6wHyDF3CfypFseMM4GoVMMwT4bW0I90Z+CjiuE;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Andi Kleen <ak@linux.intel.com>
+Subject: Re: acpi based pci gap calculation  - v3
+Date: Wed, 16 Jul 2008 17:03:11 -0700
+User-Agent: KMail/1.9.9
+Cc: akataria@vmware.com, Ingo Molnar <mingo@elte.hu>,
+       "Brown, Len" <len.brown@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       TJ <linux@tjworld.net>
+References: <1216148382.6135.21.camel@alok-dev1> <200807160906.43632.jbarnes@virtuousgeek.org> <487E22EA.8030005@linux.intel.com>
+In-Reply-To: <487E22EA.8030005@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080716211427.GH31126@csclub.uwaterloo.ca>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Message-Id: <200807161703.11572.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Lennart Sorensen <lsorense@csclub.uwaterloo.ca>:
-> 
-> Didn't HP-UX 11 come out around a decade ago?  Did they stop
-> development?
+On Wednesday, July 16, 2008 9:33 am Andi Kleen wrote:
+> > The only problem there is that linux-next doesn't get nearly the sort of
+> > testing coverage we need for this kind of change.
+>
+> Normally I tend to wait for one -mm release, which seems to be tested
+> by a reasonable number of people. If it survives that it is good
+> to be tested in Linus' tree.
+>
+> Just stuffing this in in literally the last minute doesn't seem
+> like a good idea.
 
-The short answer is that HP-UX decided to keep major number 11 as
-a branding decision, and has released updates such as 11i, 11i v1,
-11i v2, etc.
+Well it's hardly last minute given that the merge window only opened a couple 
+of days ago...
 
-Most recent release was 11i v3, and if you do a uname -a, you'll
-see that you get a "real" version, like 11.31.
+But beyond that, now that I've thought about it a bit more I'm not even sure 
+the patch is really correct (though it works on my test machines).  Shouldn't 
+we be looking at _PRS not _CRS?  And ideally we should try to find even more 
+space, not less.  This patch made one of my machines lose quite a bit of 
+space:
 
-	http://en.wikipedia.org/wiki/Hpux#Versions
+...
+Allocating PCI resources starting at c0000000 (gap: bf000000:40f00000)
+...
+ACPI: PCI resources should start at c0000000 (gap: bf000000:31000000)
+...
 
-/ac
+which is a step backwards.  With that in mind, I reverted the patch before 
+asking Linus to pull; I'm hopeful we can do better though.  I'd love to never 
+see "resource allocation failed" messages anymore.
 
+Thanks,
+Jesse
