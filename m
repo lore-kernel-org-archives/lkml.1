@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758922AbYGQRWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758959AbYGQRZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758922AbYGQRWn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 13:22:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756611AbYGQRWf
+	id S1758959AbYGQRZY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 13:25:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757104AbYGQRZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 13:22:35 -0400
-Received: from ns.hanzlici.cz ([212.158.159.56]:40336 "EHLO franta.hanzlici.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756397AbYGQRWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 13:22:35 -0400
-X-Greylist: delayed 588 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Jul 2008 13:22:34 EDT
-Message-ID: <487F7D7B.5040803@hanzlici.cz>
-Date: Thu, 17 Jul 2008 19:12:27 +0200
-From: Frantisek Hanzlik <franta@hanzlici.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.9.0.2pre) Gecko/2008071601 SeaMonkey/2.0a1pre
+	Thu, 17 Jul 2008 13:25:10 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:52125 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756112AbYGQRZJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 13:25:09 -0400
+Date: Thu, 17 Jul 2008 19:25:07 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Stoyan Gaydarov <stoyboyker@gmail.com>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, gorcunov@gmail.com,
+       akpm@linux-foundation.org, mingo@elte.hu
+Subject: Re: From 2.4 to 2.6 to 2.7?
+In-Reply-To: <alpine.LNX.1.10.0807150851040.13215@fbirervta.pbzchgretzou.qr>
+Message-ID: <alpine.LNX.1.10.0807171920010.12734@fbirervta.pbzchgretzou.qr>
+References: <6d291e080807141910m573b29b2t753ea7c4db09902d@mail.gmail.com>  <alpine.LFD.1.10.0807141914280.3017@woody.linux-foundation.org> <6d291e080807141931g3080c94cic94f503c1a18523b@mail.gmail.com> <alpine.LFD.1.10.0807141939410.3017@woody.linux-foundation.org>
+ <alpine.LNX.1.10.0807150851040.13215@fbirervta.pbzchgretzou.qr>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: serverworks CSB5 IDE: DMA disabled on secondary channel
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Server with Intel SHG2 board, servervorks CSB5 rev. 93: After
-upgrade from kernel 2.6.22 (IDE serverworks driver) to 2.6.25
-(Fedora 9: libata+pata_serverworks driver), SW RAID1 performance
-is very bad. Problem is probably with secondary IDE channel,
-which has disabled DMA:
 
-# hdparm -Tt /dev/sda
-/dev/sda:
-  Timing cached reads:   828 MB in  2.00 seconds = 414.26 MB/sec
-  Timing buffered disk reads:  210 MB in  3.01 seconds =  69.83 MB/sec
+On Tuesday 2008-07-15 09:49, Jan Engelhardt wrote:
+>Sometime on Tuesday 2008-07-15, Linus Torvalds wrote:
+>
+>>We don't do releases based on "features" any more, so why should we do 
+>>version _numbering_ based on "features"?
+>>
+>>For example, I don't see any individual feature that would merit a jump 
+>>from 2.x to 3.x or even from 2.6.x to 2.8.x. So maybe those version 
+>>jumps should be done by a time-based model too - matching how we 
+>>actually do releases anyway.
+>
+>Maybe not individual feature, but as a whole. We probably should have 
+>jumped when the new model was introduced. Ok, that did not happen, but 
+>over time, the kernel's abilities increased and then sometime, there 
+>was a release where you would say (as of today) "yes, that kernel back 
+>there has been a really good one" where a version jump would have been 
+>warranted at the same time. For me, these are 2.6.18, .22, .23 or .25 
+>(pick one). However, there also needs to be a bit of time between minor 
+>number bumps, so if 2.6.18 were 2.7.0, 2.6.25 would be the earliest to 
+>qualify for a 2.8.0.
 
-# hdparm -Tt /dev/sdb
-/dev/sdb:
-  Timing cached reads:   408 MB in  2.00 seconds = 203.72 MB/sec
-  Timing buffered disk reads:    6 MB in  3.05 seconds =   1.96 MB/sec
+Continuing on that thought..
 
-dmesg output:
-...
-libata version 3.00 loaded.
-PCI: Setting latency timer of device 0000:00:0f.1 to 64
-scsi0 : pata_serverworks
-scsi1 : pata_serverworks
-ata1: PATA max UDMA/100 cmd 0x1f0 ctl 0x3f6 bmdma 0x2440 irq 14
-ata2: PATA max UDMA/100 cmd 0x170 ctl 0x376 bmdma 0x2448 irq 15
-ata1.00: ATA-7: ST3400620A, 3.AAE, max UDMA/100
-ata1.00: 781422768 sectors, multi 16: LBA48
-ata1.01: ATAPI: TOSHIBA DVD-ROM SD-M1612, 1004, max UDMA/33
-ata1.00: configured for UDMA/100
-ata1.01: configured for UDMA/33
-ata2.00: ATA-7: ST3400620A, 3.AAE, max UDMA/100
-ata2.00: 781422768 sectors, multi 16: LBA48
-ata2.01: ATAPI: CD-W540E, 1.0D, max UDMA/33
-ata2.00: simplex DMA is claimed by other device, disabling DMA
-ata2.01: simplex DMA is claimed by other device, disabling DMA
-ata2.00: configured for PIO4
-ata2.01: configured for PIO4
-...
+Incrementing the minor number once every 6 to 8 releases or so
+(resetting the micro number to 0 of course) would nicely mark a group
+of featureful kernels.
 
-# lsmod|grep ata
-pata_serverworks       10496  8
-pata_acpi               8320  0
-libata                127328  2 pata_serverworks,pata_acpi
-scsi_mod              120948  4 sg,sr_mod,libata,sd_mod
-
-It's some sort of pata_serverworks bug, or is needed any special
-setup for this driver to work?
-What is "simplex DMA" term?
-
-Thanks, Franta Hanzlik
