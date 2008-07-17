@@ -1,144 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932256AbYGQTtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933039AbYGQTtr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932256AbYGQTtT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 15:49:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757815AbYGQTtF
+	id S933039AbYGQTtr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 15:49:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760292AbYGQTth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 15:49:05 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:58241 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757721AbYGQTtE (ORCPT
+	Thu, 17 Jul 2008 15:49:37 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:59114 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757815AbYGQTtg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 15:49:04 -0400
-Date: Thu, 17 Jul 2008 13:48:46 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: David Vrabel <david.vrabel@csr.com>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: PCI: MSI interrupts masked using prohibited method
-Message-ID: <20080717194846.GU25255@parisc-linux.org>
-References: <4860D09D.4060801@csr.com> <4864DA54.6000205@csr.com> <200806271007.26248.jbarnes@virtuousgeek.org> <200807161243.03360.jbarnes@virtuousgeek.org> <20080716195853.GL25255@parisc-linux.org> <487F45C0.2080201@csr.com> <20080717153917.GR25255@parisc-linux.org> <alpine.LFD.1.10.0807171745270.4316@apollo.tec.linutronix.de> <20080717165630.GT25255@parisc-linux.org> <487F7DFA.10101@csr.com>
+	Thu, 17 Jul 2008 15:49:36 -0400
+Message-ID: <487FA24B.9060803@firstfloor.org>
+Date: Thu, 17 Jul 2008 21:49:31 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <487F7DFA.10101@csr.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Ray Lee <ray-lk@madrabbit.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, torvalds@linuxfoundation.org,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: Please pull ACPI updates
+References: <20080716214516.GA10777@basil.nowhere.org>	 <200807170011.12184.rjw@sisk.pl>	 <200807161633.01375.jbarnes@virtuousgeek.org>	 <487EEAEB.4050009@firstfloor.org>	 <alpine.LFD.1.10.0807170807040.2959@woody.linux-foundation.org>	 <alpine.LFD.1.10.0807170835320.2959@woody.linux-foundation.org>	 <487F71E8.9050705@firstfloor.org> <2c0942db0807171211s39e2653fwdc50f92d9c3020d2@mail.gmail.com>
+In-Reply-To: <2c0942db0807171211s39e2653fwdc50f92d9c3020d2@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 06:14:34PM +0100, David Vrabel wrote:
-> Obviously io_apic_32.c will also need a similar change, and are there
-> other architectures that will also need fixing similarly?
 
-Yes, several.
+> It matters to us end-testers when we do a git bisect. If you leave the
+> history intact 
 
-> >  		} else {
-> > -			msi_set_enable(entry->dev, !flag);
-> > +			return 0;
-[...]
-> >  	entry->msi_attrib.masked = !!flag;
-> > +	return 1;
-> >  }
-[...]
-> > +/*
-> > + * If we can't mask the MSI, decline to ack it.  This has the same
-> > + * effect, only masking in the interrupt controller instead of the
-> > + * device.  In order to unmask it, we have to ack the interrupt.
-> > + */
-> > +void mask_ack_msi_irq(unsigned int irq)
-> > +{
-> > +	struct irq_desc *desc = irq_desc + irq;
-> > +	if (msi_set_mask_bits(irq, 1, 1))
-> > +		return;
-> > +	desc->chip->ack(irq);
-> > +}
-> 
-> This code doesn't match the comment. Since msi_set_mask_bits() returns
-> true if it masked.
-> 
-> I think you want
-> 
-> 	if (!msi_set_mask_bits(irq, 1, 1))
-> 		return;
-> 	desc->chip->ack(irq);
+The whole point of the exercise of cleaning up/rewriting the history is to make
+the tree as bisectable as possible.
 
-Quite right.  Somehow I managed to test and then send out an earlier
-version of this patch.
+Otherwise e.g. if I submitted patch + fixup + fixup + revert + fixup etc.
+everyone doing a bisect would go crazy or rather hit many points
+with various subtle breakages.
 
-Unfortunately, testing the right patch results in my machine locking up.
-The Intel System Programming Guide, volume 3A points out that x86
-interrupts really do have priorities associated with them.  And since
-EOI simply clears the highest priority bit, delaying calling ->ack()
-just isn't possible.
+and let the merging happen at Linus' end (or, at least
+> at merge time), then there is a point in history of your tree that
+> someone (or git bisect) can check out and try, validating the patch,
+> and therefore fingering a failed merge.
 
-I've also found some other distressing facts about LAPICs in the guide:
+Why would you care about the merge and not about the individual patches?
+Note that these quilt merges don't have conflicts.
 
-  If more than one interrupt is generated with the same vector number,
-  the local APIC can set the bit for the vector both in the IRR and
-  the ISR. This means that for the Pentium 4 and Intel Xeon processors,
-  the IRR and ISR can queue two interrupts for each interrupt vector:
-  one in the IRR and one in the ISR. Any additional interrupts issued for
-  the same interrupt vector are collapsed into the single bit in the IRR.
+> It's the difference between having tested patches and an untested
+> merge, or untested new patches
 
-  For the P6 family and Pentium processors, the IRR and ISR registers can
-  queue no more than two interrupts per priority level, and will reject
-  other interrupts that are received within the same priority level.
+The patches are as tested individually as they were before. I don't see
+how you can call something that was in linux-next for some time and also
+in my test tree "untested". The completely merged tree is not tested
+well [1] in both cases (unless after some time of course) as far as I can see,
+no difference.
 
-So I think I'll disable multiple MSI for processors predating the P4.
+[1] I do some basic testing as in building and test booting on a few
+machines on each merge, so calling it completely untested is not
+true.
 
-I think David's original patch (just declining to mask the interrupt)
-is the best approach to take.  Perhaps architectures with saner
-interrupt hardware would like to try the approach I've mentioned here.
+> and an untested merge. 
 
-I don't like the comment in http://lkml.org/lkml/2008/6/27/199 as it's
-not prohibited ... just a bad idea.  How about this patch?
+So when I do a rebase versus Linus doing a merge (end result
+the same code base) how is that more untested?
 
----
+Your point is
+> the end result is untested either way. The other way to look at it is
+> *how much* untested history ends up in the tree. In Linus' version,
+> just the point from the merge onward is untested. In your version,
+> everything is new.
 
-David Vrabel points out that using the MSI Enable bit to disable
-interrupts is a bad idea when the PCI device doesn't implement the INTx
-disable bit.  It will cause spurious interrupts to be generated on the
-INTx pin.
+Sorry I still don't see the difference. AFAIK the only difference
+is that I do the merge vs Linus doing it and that it looks slightly
+different in the history, but apart from that (as in what
+actually ends up in the source tree) it's all the same.
 
-Masking the interrupt is simply a performance optimisation; we can
-happily let the device continue to interrupt us.  In order to support
-future optimisations, report success / failure from msi_set_mask_bits().
+-Andi
 
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
 
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index 8c61304..ba0fd05 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -123,7 +123,7 @@ static void msix_flush_writes(unsigned int irq)
- 	}
- }
- 
--static void msi_set_mask_bits(unsigned int irq, u32 mask, u32 flag)
-+static int msi_set_mask_bits(unsigned int irq, u32 mask, u32 flag)
- {
- 	struct msi_desc *entry;
- 
-@@ -141,7 +141,7 @@ static void msi_set_mask_bits(unsigned int irq, u32 mask, u32 flag)
- 			mask_bits |= flag & mask;
- 			pci_write_config_dword(entry->dev, pos, mask_bits);
- 		} else {
--			msi_set_enable(entry->dev, !flag);
-+			return 0;
- 		}
- 		break;
- 	case PCI_CAP_ID_MSIX:
-@@ -157,6 +157,7 @@ static void msi_set_mask_bits(unsigned int irq, u32 mask, u32 flag)
- 		break;
- 	}
- 	entry->msi_attrib.masked = !!flag;
-+	return 1;
- }
- 
- void read_msi_msg(unsigned int irq, struct msi_msg *msg)
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
