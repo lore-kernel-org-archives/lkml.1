@@ -1,178 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933371AbYGQTii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933671AbYGQTjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933371AbYGQTii (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 15:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932799AbYGQThm
+	id S933671AbYGQTjB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 15:39:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760949AbYGQTiE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 15:37:42 -0400
-Received: from proxy1.bredband.net ([195.54.101.71]:53760 "EHLO
-	proxy1.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932848AbYGQThj (ORCPT
+	Thu, 17 Jul 2008 15:38:04 -0400
+Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:36313 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933270AbYGQTiD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 15:37:39 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqczAHc8f0jVchRXPGdsb2JhbACBWZBaAQEBAS0BngA
-Message-ID: <58550.192.168.102.6.1216323456.squirrel@intranet>
-Date: Thu, 17 Jul 2008 21:37:36 +0200 (CEST)
-Subject: [PATCH 1/1] signal: Introduce kill_pid_ns_info
-From: "Daniel Hokka Zakrisson" <daniel@hozac.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Pavel Emelyanov" <xemul@openvz.org>, sukadev@us.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       oleg@tv-sign.ru, akpm@linux-foundation.org
-User-Agent: SquirrelMail/1.4.10a-1.fc6
-MIME-Version: 1.0
+	Thu, 17 Jul 2008 15:38:03 -0400
+X-Greylist: delayed 628 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Jul 2008 15:38:02 EDT
+Date: Thu, 17 Jul 2008 19:55:01 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Fred ." <eldmannen@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Please add ZFS support (from GPL sources)
+Message-ID: <20080717195501.44f90aa3@the-village.bc.nu>
+In-Reply-To: <f188924b0807171213q43f10b09j47b34674fc8aaa38@mail.gmail.com>
+References: <f188924b0807171213q43f10b09j47b34674fc8aaa38@mail.gmail.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-References: In-Reply-To: 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Author: Eric W. Biederman <ebiederm@xmission.com>
+On Thu, 17 Jul 2008 21:13:55 +0200
+"Fred ." <eldmannen@gmail.com> wrote:
 
-Implement the basic helper function that walks all of the processes in a
-pid namespace and sends them all a signal.
+> Previously we have not been able to have ZFS support due to it being
+> licensed under the CDDL and the kernel under the GPL.
+> 
+> Sun have contributed ZFS support to GRUB under the GPL license. We
+> could now use that code to implement support for ZFS in the Linux
+> kernel.
 
-Both locations that could use this functions are also updated to use this
-function.
+No we can't. The GPL ZFS bits don't include the various methods that
+would violate the patent so there is no grant. I've several times asked
+Sun to simply give permission and they don't even answer. I can only read
+the Sun motiviation one way - they want to look open but know that ZFS is
+about the only thing that might save Solaris as a product in the data
+centre so are not truely prepared to let Linus use it.
 
-I use find_ge_pid instead of for_each_process because it has a chance of
-not touching every process in the system.
+This is now further complicated by the fact Sun and NetApp are in
+litigation so ZFS is basically "toxic" for the moment and we'd need
+permission from both sets of patent holders to proceed.
 
-[daniel@hozac.com: Optimize away nr <= 1 check, against latest Linus tree]
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-Signed-off-by: Daniel Hokka Zakrisson <daniel@hozac.com>
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index ba2f859..83597f8 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1778,6 +1778,8 @@ extern void release_task(struct task_struct * p);
- extern int send_sig_info(int, struct siginfo *, struct task_struct *);
-extern int force_sigsegv(int, struct task_struct *);
- extern int force_sig_info(int, struct siginfo *, struct task_struct *);
-+extern int __kill_pid_ns_info(int sig, struct siginfo *info, struct
-pid_namespace *ns);
-+extern int kill_pid_ns_info(int sig, struct siginfo *info, struct
-pid_namespace *ns);
- extern int __kill_pgrp_info(int sig, struct siginfo *info, struct pid
-*pgrp);
- extern int kill_pid_info(int sig, struct siginfo *info, struct pid *pid);
-extern int kill_pid_info_as_uid(int, struct siginfo *, struct pid *,
-uid_t, uid_t, u32);
-diff --git a/kernel/pid_namespace.c b/kernel/pid_namespace.c
-index 98702b4..9226423 100644
---- a/kernel/pid_namespace.c
-+++ b/kernel/pid_namespace.c
-@@ -153,29 +153,14 @@ void free_pid_ns(struct kref *kref)
-
- void zap_pid_ns_processes(struct pid_namespace *pid_ns)
- {
--	int nr;
- 	int rc;
-
- 	/*
- 	 * The last thread in the cgroup-init thread group is terminating. *
-Find remaining pid_ts in the namespace, signal and wait for them * to
-exit.
--	 *
--	 * Note:  This signals each threads in the namespace - even those that
--	 * 	  belong to the same thread group, To avoid this, we would have -	 *
-	  to walk the entire tasklist looking a processes in this
--	 * 	  namespace, but that could be unnecessarily expensive if the -	 * 	
- pid namespace has just a few processes. Or we need to
--	 * 	  maintain a tasklist for each pid namespace.
--	 *
- 	 */
--	read_lock(&tasklist_lock);
--	nr = next_pidmap(pid_ns, 1);
--	while (nr > 0) {
--		kill_proc_info(SIGKILL, SEND_SIG_PRIV, nr);
--		nr = next_pidmap(pid_ns, nr);
--	}
--	read_unlock(&tasklist_lock);
-+	kill_pid_ns_info(SIGKILL, SEND_SIG_PRIV, pid_ns);
-
- 	do {
- 		clear_thread_flag(TIF_SIGPENDING);
-diff --git a/kernel/signal.c b/kernel/signal.c
-index 6c0958e..fc42428 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -1118,6 +1118,45 @@ out_unlock:
- }
- EXPORT_SYMBOL_GPL(kill_pid_info_as_uid);
-
-+int __kill_pid_ns_info(int sig, struct siginfo *info, struct
-pid_namespace *ns)
-+{
-+	int retval = 0, count = 0;
-+	struct task_struct *p;
-+	struct pid *pid;
-+	int nr;
-+
-+	/* Since there isn't a pid namespace list of tasks use the closest +	 *
-approximation we have: find_ge_pid.
-+	 */
-+	nr = 1;
-+	while ((pid = find_ge_pid(nr + 1, ns))) {
-+		int err;
-+
-+		nr = pid_nr_ns(pid, ns);
-+		p = pid_task(pid, PIDTYPE_PID);
-+		if (!p || (nr <= 1) || !thread_group_leader(p) ||
-+		    same_thread_group(p, current))
-+			continue;
-+
-+		err = group_send_sig_info(sig, info, p);
-+		++count;
-+		if (err != -EPERM)
-+			retval = err;
-+	}
-+	return count ? retval : -ESRCH;
-+}
-+
-+int kill_pid_ns_info(int sig, struct siginfo *info, struct pid_namespace
-*ns)
-+{
-+	int retval;
-+
-+	read_lock(&tasklist_lock);
-+	retval = __kill_pid_ns_info(sig, info, ns);
-+	read_unlock(&tasklist_lock);
-+
-+	return retval;
-+}
-+
- /*
-  * kill_something_info() interprets pid in interesting ways just like
-kill(2).
-  *
-@@ -1141,18 +1180,7 @@ static int kill_something_info(int sig, struct
-siginfo *info, int pid)
- 		ret = __kill_pgrp_info(sig, info,
- 				pid ? find_vpid(-pid) : task_pgrp(current));
- 	} else {
--		int retval = 0, count = 0;
--		struct task_struct * p;
--
--		for_each_process(p) {
--			if (p->pid > 1 && !same_thread_group(p, current)) {
--				int err = group_send_sig_info(sig, info, p);
--				++count;
--				if (err != -EPERM)
--					retval = err;
--			}
--		}
--		ret = count ? retval : -ESRCH;
-+		ret = __kill_pid_ns_info(sig, info, task_active_pid_ns(current));
- 	}
- 	read_unlock(&tasklist_lock);
-
--- 
-1.5.5.1
-
-
+Alan
