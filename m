@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933014AbYGQXoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760855AbYGQXoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933014AbYGQXoT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 19:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757620AbYGQXoK
+	id S1760855AbYGQXoh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 19:44:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932818AbYGQXoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 19:44:10 -0400
-Received: from jade.aracnet.com ([216.99.193.136]:43174 "EHLO jade.aracnet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757445AbYGQXoJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 19:44:09 -0400
-X-Greylist: delayed 480 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Jul 2008 19:44:09 EDT
-Message-ID: <487FD74C.4080603@BitWagon.com>
-Date: Thu, 17 Jul 2008 16:35:40 -0700
-From: John Reiser <jreiser@BitWagon.com>
-Organization: -
-User-Agent: Mozilla Thunderbird 1.0.8-1.1.fc4 (X11/20060501)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
+	Thu, 17 Jul 2008 19:44:19 -0400
+Received: from avexch1.qlogic.com ([198.70.193.115]:51011 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932757AbYGQXoS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 19:44:18 -0400
+Date: Thu, 17 Jul 2008 16:44:16 -0700
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: Nathan Lynch <ntl@pobox.com>, benh@kernel.crashing.org,
-       torvalds@linux-foundation.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, roland@redhat.com
-Subject: Re: [PATCH v3] elf loader support for auxvec base platform string
-References: <1216166331-14810-1-git-send-email-ntl@pobox.com>	<1216166331-14810-2-git-send-email-ntl@pobox.com>	<1216276539.7740.309.camel@pasglop>	<20080717000951.5f8cab37.akpm@linux-foundation.org>	<20080717221932.GL9594@localdomain> <20080717154218.8981035c.akpm@linux-foundation.org>
-In-Reply-To: <20080717154218.8981035c.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.92.0.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Cc: akinobu.mita@gmail.com, linux-kernel@vger.kernel.org,
+       linux-driver@qlogic.com, James.Bottomley@HansenPartnership.com,
+       seokmann.ju@qlogic.com
+Subject: Re: [patch -mmotm 2/6] fix
+	qla2xxx-use-memory_read_from_buffer.patch
+Message-ID: <20080717234416.GB1763@n8027av35btxc1.qlogic.org>
+References: <20080714025631.338886297@gmail.com> <20080714025742.370469321@gmail.com> <20080717231235.GR64690@n8027av35btxc1.qlogic.org> <20080717162849.57ddedb8.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080717162849.57ddedb8.akpm@linux-foundation.org>
+Organization: QLogic Corporation
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-OriginalArrivalTime: 17 Jul 2008 23:44:17.0437 (UTC) FILETIME=[06DB4CD0:01C8E867]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 17 Jul 2008 17:19:32 -0500
-> Nathan Lynch <ntl@pobox.com> wrote:
+On Thu, 17 Jul 2008, Andrew Morton wrote:
+
+> > On Mon, 14 Jul 2008, Akinobu Mita wrote:
+> > 
+> > > Now memory_read_from_buffer() belongs in string.h
+> > > 
+> > > Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> > > Cc: Andrew Vasquez <linux-driver@qlogic.com>
+> > > Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
+> > > Cc: Andrew Vasquez <andrew.vasquez@qlogic.com>
+> > > Cc: Seokmann Ju <seokmann.ju@qlogic.com>
+> > 
+> > If needed:
+> > 
+> > Acked-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
 > 
+> Thanks. So we now have tested-by:you and acked-by:you.  That'll do ;)
 > 
->> [snip]
->> A new aux vector entry, AT_BASE_PLATFORM, will denote the actual hardware.
-[snip]
-
-> OK.
+> > BTW: is the memory_read_from_buffer() work for qla2xxx going in
+> > through the mm tree submission path???
 > 
-> But it conflicts directly with the already-queued
-> execve-filename-document-and-export-via-auxiliary-vector.patch
+> FSVO "through", yeah.  It's appeared on linux-scsi four times so far. 
+> Last time James complained about the fs.h inclusion so Akinobu raised a
+> patch "move memory_read_from_buffer() from fs.h to string.h" which I
+> just merged.
+> 
+> I'll just keep pressing send - it'll get there sometime.  Or you can
+> merge it if you like.
 
-[snip]
-
-It seems to me that most of the patch conflicts are mechanical
-and could be merged mechanically.
-
-However I believe that the documentation change to this comment is important:
------
->  #ifdef __KERNEL__
-> -#define AT_VECTOR_SIZE_BASE (14 + 2) /* NEW_AUX_ENT entries in auxiliary table */
-> +#define AT_VECTOR_SIZE_BASE 17 /* NEW_AUX_ENT entries in auxiliary table */
-> +  /* number of "#define AT_.*" above, minus {AT_NULL, AT_IGNORE, AT_NOTELF} */
->  #endif
------
-I scratched my head for a while to figure out that AT_NOTELF also was
-a subtraction as far as AT_VECTOR_SIZE_BASE was concerned.
-
-
--- 
-John Reiser, jreiser@BitWagon.com
+Would it too bothersome if I were to just collapse the two patches and
+submit the composite with the my next set of patches???  Seems silly
+to add the oneliner to the history...
