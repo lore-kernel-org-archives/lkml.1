@@ -1,52 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760648AbYGQPVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758965AbYGQPYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760648AbYGQPVn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 11:21:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755479AbYGQPVf
+	id S1758965AbYGQPYv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 11:24:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbYGQPYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 11:21:35 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:37527 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753043AbYGQPVf (ORCPT
+	Thu, 17 Jul 2008 11:24:42 -0400
+Received: from proxy3.bredband.net ([195.54.101.73]:44065 "EHLO
+	proxy3.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753679AbYGQPYm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 11:21:35 -0400
-Subject: RE: Large increase in context switch rate
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Alex Nixon (Intern)" <Alex.Nixon@eu.citrix.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ian Campbell <Ian.Campbell@eu.citrix.com>
-In-Reply-To: <0E902970173AF84089673FA54B7FE78A32906B@lonpexch01.citrite.net>
-References: <487E43D9.7080703@goop.org> <1216286250.5232.67.camel@twins>
-	 <487F5F15.4050208@goop.org>
-	 <0E902970173AF84089673FA54B7FE78A32906B@lonpexch01.citrite.net>
-Content-Type: text/plain
-Date: Thu, 17 Jul 2008 17:21:43 +0200
-Message-Id: <1216308103.5232.96.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Jul 2008 11:24:42 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Av8yALgAf0jVchRXPGdsb2JhbACBWYZziWYBAQEBLQGdRg
+Message-ID: <43011.192.168.102.6.1216308280.squirrel@intranet>
+In-Reply-To: <487F5EDB.1000008@openvz.org>
+References: <487F5D6B.1090007@hozac.com> <487F5EDB.1000008@openvz.org>
+Date: Thu, 17 Jul 2008 17:24:40 +0200 (CEST)
+Subject: Re: [PATCH 1/2] signals: kill(-1) should only signal processes in 
+     the same namespace
+From: "Daniel Hokka Zakrisson" <daniel@hozac.com>
+To: "Pavel Emelyanov" <xemul@openvz.org>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       oleg@tv-sign.ru, ebiederm@xmission.com, akpm@linux-foundation.org
+User-Agent: SquirrelMail/1.4.10a-1.fc6
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-17 at 16:14 +0100, Alex Nixon (Intern) wrote:
-> Yeah I've checked - the number of context switches seems to be around
-> 60k regardless of whether CONFIG_PARAVIRT is switched on, and regardless
-> of whether it's running in domu or native (-j4 on dual core)
+Pavel Emelyanov wrote:
+> Daniel Hokka Zakrisson wrote:
+>> While moving Linux-VServer to using pid namespaces, I noticed that
+>> kill(-1) from inside a pid namespace is currently signalling every
+>> process in the entire system, including processes that are otherwise
+>> unreachable from the current process.
+>
+> This is not a "news" actually, buy anyway - thanks :)
 
-I'm seeing:
+And yet nobody's fixed it... Kind of a critical thing, if you actually
+want to use them, since most distribution's rc-scripts do a kill(-1,
+SIGTERM), followed by kill(-1, SIGKILL) when halting (which, needless to
+say, would be very bad).
 
-procs -----------memory---------- ---swap-- -----io---- --system-- -----cpu------
- r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
+>> This patch fixes it by making sure that only processes which are in
+>> the same pid namespace as current get signalled.
+>
+> This is to be done, indeed, but I do not like the proposed implementation,
+> since you have to walk all the tasks in the system (under tasklist_lock,
+> by the way) to search for a couple of interesting ones. Better look at how
+> zap_pid_ns_processes works (by the way - I saw some patch doing so some
+> time ago).
 
- 4  0      0 1148916 120340 472040    0    0     0  1912 2225 3662 78 22  0  0  0
- 4  0      0 1130192 120556 489844    0    0     0  1974 2220 3461 77 22  0  0  0
+The way zap_pid_ns_processes does it is worse, since it signals every
+thread in the namespace rather than every thread group. So either we walk
+the global tasklist, or we create a per-namespace one. Is that what we
+want?
 
-doing make -j4
+>> Signed-off-by: Daniel Hokka Zakrisson <daniel@hozac.com>
+>>
+>> diff --git a/include/linux/pid_namespace.h
+>> b/include/linux/pid_namespace.h
+>> index caff528..4cf41bd 100644
+>> --- a/include/linux/pid_namespace.h
+>> +++ b/include/linux/pid_namespace.h
+>> @@ -40,6 +40,8 @@ static inline struct pid_namespace *get_pid_ns(struct
+>> pid_namespace *ns)
+>>   extern struct pid_namespace *copy_pid_ns(unsigned long flags, struct
+>> pid_namespace *ns);
+>>   extern void free_pid_ns(struct kref *kref);
+>>   extern void zap_pid_ns_processes(struct pid_namespace *pid_ns);
+>> +extern int task_in_pid_ns(struct task_struct *tsk,
+>> +			  struct pid_namespace *pid_ns);
+>>
+>>   static inline void put_pid_ns(struct pid_namespace *ns)
+>>   {
+>> @@ -72,6 +74,12 @@ static inline void zap_pid_ns_processes(struct
+>> pid_namespace *ns)
+>>   {
+>>   	BUG();
+>>   }
+>> +
+>> +static inline int task_in_pid_ns(struct task_struct *tsk,
+>> +				  struct pid_namespace *ns)
+>> +{
+>> +	return 1;
+>> +}
+>>   #endif /* CONFIG_PID_NS */
+>>
+>>   static inline struct pid_namespace *task_active_pid_ns(struct
+>> task_struct *tsk)
+>> diff --git a/kernel/pid_namespace.c b/kernel/pid_namespace.c
+>> index 98702b4..3e71011 100644
+>> --- a/kernel/pid_namespace.c
+>> +++ b/kernel/pid_namespace.c
+>> @@ -188,6 +188,26 @@ void zap_pid_ns_processes(struct pid_namespace
+>> *pid_ns)
+>>   	return;
+>>   }
+>>
+>> +/*
+>> + * Checks whether tsk has a pid in the pid namespace ns.
+>> + * Must be called with tasklist_lock read-locked or under
+>> rcu_read_lock()
+>> + */
+>> +int task_in_pid_ns(struct task_struct *tsk, struct pid_namespace *ns)
+>> +{
+>> +	struct pid *pid = task_pid(tsk);
+>> +
+>> +	if (!pid)
+>> +		return 0;
+>> +
+>> +	if (pid->level < ns->level)
+>> +		return 0;
+>> +
+>> +	if (pid->numbers[ns->level].ns != ns)
+>> +		return 0;
+>> +
+>> +	return 1;
+>> +}
+>> +
+>>   static __init int pid_namespaces_init(void)
+>>   {
+>>   	pid_ns_cachep = KMEM_CACHE(pid_namespace, SLAB_PANIC);
+>> diff --git a/kernel/signal.c b/kernel/signal.c
+>> index 6c0958e..93713a5 100644
+>> --- a/kernel/signal.c
+>> +++ b/kernel/signal.c
+>> @@ -1145,7 +1145,8 @@ static int kill_something_info(int sig, struct
+>> siginfo *info, int pid)
+>>   		struct task_struct * p;
+>>
+>>   		for_each_process(p) {
+>> -			if (p->pid > 1 && !same_thread_group(p, current)) {
+>> +			if (p->pid > 1 && !same_thread_group(p, current) &&
+>> +			    task_in_pid_ns(p, current->nsproxy->pid_ns)) {
+>>   				int err = group_send_sig_info(sig, info, p);
+>>   				++count;
+>>   				if (err != -EPERM)
 
-This is on x86_64 SMP PREEMPT HZ=1000 !PARAVIRT 
-(Linus' tree as of somewhere earlier today)
-
-
-
+-- 
+Daniel Hokka Zakrisson
