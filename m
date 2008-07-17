@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759008AbYGQOTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759655AbYGQOUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759008AbYGQOTs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 10:19:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755640AbYGQOTl
+	id S1759655AbYGQOUo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 10:20:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756915AbYGQOUg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 10:19:41 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:49706 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754401AbYGQOTk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 10:19:40 -0400
-Date: Thu, 17 Jul 2008 10:19:18 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Florian Weimer <fw@deneb.enyo.de>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Elias Oltmanns <eo@nebensachen.de>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Clark Williams <clark.williams@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jon Masters <jonathan@jonmasters.org>
-Subject: Re: [PATCH -v2] ftrace: Documentation
-Message-ID: <20080717141918.GA13741@infradead.org>
-References: <Pine.LNX.4.58.0807101242070.3740@gandalf.stny.rr.com> <87zlop7bp6.fsf@denkblock.local> <20080710132832.38cc5048.randy.dunlap@oracle.com> <Pine.LNX.4.58.0807101956120.7719@gandalf.stny.rr.com> <Pine.LNX.4.58.0807102035550.7719@gandalf.stny.rr.com> <871w1u5edg.fsf@mid.deneb.enyo.de> <Pine.LNX.4.58.0807160737250.31086@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0807160737250.31086@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 17 Jul 2008 10:20:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37766 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755640AbYGQOUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 10:20:35 -0400
+Date: Thu, 17 Jul 2008 10:20:25 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Chris Snook <csnook@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Eric Rannaud <eric.rannaud@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: madvise(2) MADV_SEQUENTIAL behavior
+Message-ID: <20080717102025.6b7f0e40@cuia.bos.redhat.com>
+In-Reply-To: <487E628A.3050207@redhat.com>
+References: <1216163022.3443.156.camel@zenigma>
+	<1216210495.5232.47.camel@twins>
+	<20080716105025.2daf5db2@cuia.bos.redhat.com>
+	<487E628A.3050207@redhat.com>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 16, 2008 at 07:39:23AM -0400, Steven Rostedt wrote:
-> 
-> On Wed, 16 Jul 2008, Florian Weimer wrote:
-> 
-> >
-> > * Steven Rostedt:
-> >
-> > > +  License:   The GNU Free Documentation License, Version 1.2
-> >
-> > Is it really a good idea to put files under GPL-incompatible licenses
-> > into the tree?
-> >
-> 
-> The document is not code. The GPL is not appropriate for it. I had this
-> discussion when I wrote the rt-mutex-design.txt file, and the conclussion
-> was that the GFDL was an appropriate license.
+On Wed, 16 Jul 2008 17:05:14 -0400
+Chris Snook <csnook@redhat.com> wrote:
 
-The GFDL is never appropriate, and certainly not for the kernel tree.
-We had some files under it in the past and we decided to relicense them
-after talking to the authors. 
+> > I believe that for mmap MADV_SEQUENTIAL, we will have to do
+> > an unmap-behind from the fault path.  Not every time, but
+> > maybe once per megabyte, unmapping the megabyte behind us.
+> > 
+> > That way the normal page cache policies (use once, etc) can
+> > take care of page eviction, which should help if the file
+> > is also in use by another process.
+> 
+> Wouldn't it just be easier to not move pages to the active list when 
+> they're referenced via an MADV_SEQUENTIAL mapping?  
+
+You want to check the MADV_SEQUENTIAL hint at pageout time and
+discard the referenced bit from the pte?
+
+> If we keep them on the inactive list, they'll be candidates for
+> reclaiming
+
+Only if we ignore the referenced bit.  Which I guess we can do.
+
+-- 
+All Rights Reversed
