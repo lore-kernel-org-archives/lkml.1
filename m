@@ -1,79 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759249AbYGQOF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758313AbYGQOG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759249AbYGQOF3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 10:05:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757189AbYGQOFV
+	id S1758313AbYGQOG2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 10:06:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756800AbYGQOGT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 10:05:21 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:9497 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757128AbYGQOFU (ORCPT
+	Thu, 17 Jul 2008 10:06:19 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:53841 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756323AbYGQOGS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 10:05:20 -0400
-Date: Thu, 17 Jul 2008 18:05:19 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Trent Piepho <tpiepho@freescale.com>, Richard Purdie <rpurdie@rpsys.net>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Kumar Gala <galak@kernel.crashing.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v3] leds: implement OpenFirmare GPIO LED driver
-Message-ID: <20080717140519.GA32617@polina.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <1216133032.5345.73.camel@dax.rpnet.com> <20080715151917.GA30607@polina.dev.rtsoft.ru> <Pine.LNX.4.64.0807161546010.12709@t2.domain.actdsltmp> <20080717041531.GA27243@secretlab.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20080717041531.GA27243@secretlab.ca>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 17 Jul 2008 10:06:18 -0400
+Subject: Re: KVM overflows the stack
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Avi Kivity <avi@qumranet.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       kvm-devel <kvm@vger.kernel.org>,
+       "Anthony N. Liguori [imap]" <aliguori@us.ibm.com>
+In-Reply-To: <ada4p6p9h6m.fsf@cisco.com>
+References: <1206479576.7562.21.camel@nimitz.home.sr71.net>
+	 <47EA1C63.8010202@qumranet.com>
+	 <1206550329.7883.5.camel@nimitz.home.sr71.net>
+	 <47EA80AC.4070204@qumranet.com>
+	 <1206551794.7883.7.camel@nimitz.home.sr71.net>
+	 <47EB6AAC.3040607@qumranet.com> <47EB7281.6070300@qumranet.com>
+	 <1206629709.7883.30.camel@nimitz.home.sr71.net>
+	 <47EBB63E.2060306@qumranet.com>
+	 <1212445810.8211.9.camel@nimitz.home.sr71.net>
+	 <48469BDA.3050206@qumranet.com> <1212738105.7837.3.camel@nimitz>
+	 <48512028.3070104@qumranet.com> <1216148242.25942.6.camel@nimitz>
+	 <1216244660.8711.6.camel@nimitz> <1216248527.11664.9.camel@nimitz>
+	 <487EDE26.8040201@qumranet.com>  <ada4p6p9h6m.fsf@cisco.com>
+Content-Type: text/plain
+Date: Thu, 17 Jul 2008 07:06:01 -0700
+Message-Id: <1216303561.11664.52.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 16, 2008 at 10:15:31PM -0600, Grant Likely wrote:
-> On Wed, Jul 16, 2008 at 04:18:52PM -0700, Trent Piepho wrote:
-> > On Tue, 15 Jul 2008, Anton Vorontsov wrote:
-> > > Despite leds-gpio and leds-openfirmware-gpio similar purposes, there
-> > > is not much code can be shared between the two drivers (both are mostly
-> > > driver bindings anyway).
-> > 
-> > Why can't this driver use the existing gpio-led driver?  Basically, do
-> > something like this:
-> > 
-> > of_gpio_leds_probe(...)
-> > {
-> >  	gpio = of_get_gpio(np, 0);
-> >  	label = of_get_property(np, "label", NULL);
-> > 
-> >  	struct gpio_led led = {
-> >  		.name = label,
-> >  		.gpio = gpio,
-> >  	};
-> > 
-> >  	pdev = platform_device_register_simple("leds-gpio", 0, NULL, 0);
-> >  	platform_device_add_data(pdev, &led, sizeof(led));
-> > }
+On Wed, 2008-07-16 at 23:08 -0700, Roland Dreier wrote:
+>  > Yes, things like kvm_lapic_state are way too big to be on the
+> stack.
 > 
-> Ugh; that means registering *2* 'struct device' with the kernel instead of
-> one.  One as a platform device and one as an of_platform device.
-> It's bad enough that the LED scheme we're using for OF bindings has a
-> separate registration for every single LED.
-> 
-> Now that it comes to it, I worry that this driver takes the wrong
-> approach.  The number of resources dedicated per LED in this driver
-> seems pretty loony to me (one of_platform device per LED).  The fact
-> that the binding specifies one node per LED makes of_platform not a very
-> efficient solution.
-> 
-> I think it would be better to have a module that scans the device tree
-> for LED nodes and registers a single leds-gpio platform device for the
-> whole lot.
-> 
-> Thoughts?
+> I had a quick look at the code, and my worry about dynamic allocation
+> would be that handling allocation failure seems like it might get
+> tricky.  Eg for handling struct kvm_pv_mmu_op_buffer (which is 528 bytes
+> on the stack in kvm_pv_mmu_op()) can you deal with an mmu op failing?
 
-I like the idea, thanks.
+Well, you *better* be able to deal with it.  :)
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+This code is also doing a *ton* of copy_to/from_user().  If userspace
+had one of its input buffers swapped out (or one of its output buffers
+not faulted in yet) and we're out of memory enough to be failing
+kmallocs() then we're sure as heck also going to failing the user
+copies.
+
+I think it's a non-issue.
+
+-- Dave
+
