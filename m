@@ -1,196 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758355AbYGQOgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760247AbYGQOhB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758355AbYGQOgq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 10:36:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755640AbYGQOgh
+	id S1760247AbYGQOhB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 10:37:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760231AbYGQOgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 10:36:37 -0400
-Received: from p01c12o141.mxlogic.net ([208.65.145.64]:45215 "EHLO
-	p01c12o141.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753471AbYGQOgg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 10:36:36 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 17 Jul 2008 10:36:48 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39283 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758843AbYGQOgr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 10:36:47 -0400
+Date: Thu, 17 Jul 2008 10:16:55 -0400
+From: Josef Bacik <jbacik@redhat.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Josef Bacik <jbacik@redhat.com>, Josef Bacik <josef@toxicpanda.com>,
+       linux-ext4@vger.kernel.org, sct@redhat.com, akpm@linux-foundation.org,
+       adilger@sun.com, Johannes Weiner <hannes@saeurebad.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: ext3 on latest -git: BUG: unable to handle kernel NULL pointer
+	dereference at 0000000c
+Message-ID: <20080717141655.GD14133@unused.rdu.redhat.com>
+References: <19f34abd0807170551q4fbb862bu270297cfd76a69be@mail.gmail.com> <1b7401870807170613y747baa7by158177047cc7e28@mail.gmail.com> <19f34abd0807170620g39ab942bl592ea3fa3fa0dab@mail.gmail.com> <1b7401870807170634u14492a53k3931ddcddbd1e098@mail.gmail.com> <19f34abd0807170639p838d14blc9a13d2104313f38@mail.gmail.com> <20080717135746.GB14133@unused.rdu.redhat.com> <19f34abd0807170725p13e81e3dq4daad32ad2a83931@mail.gmail.com> <20080717141333.GC14133@unused.rdu.redhat.com> <19f34abd0807170735p5d2cba31kec3fb65c5b8c7b3f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: why doesn't /proc/self/maps mtime change when memory's allocated?
-Date: Thu, 17 Jul 2008 15:36:33 +0100
-Message-ID: <0F10A59FDFFDFD4E9BEBD7365DE6725502007EFA@uk-email.terastack.bluearc.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: why doesn't /proc/self/maps mtime change when memory's allocated?
-Thread-Index: AcjoGoKAoiDi7NPdQ7KoiGnqAhezDg==
-From: "Andy Chittenden" <andyc@bluearc.com>
-To: <linux-kernel@vger.kernel.org>
-X-Spam: [F=0.1000000000; S=0.100(2008062001)]
-X-MAIL-FROM: <andyc@bluearc.com>
-X-SOURCE-IP: [62.190.48.218]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19f34abd0807170735p5d2cba31kec3fb65c5b8c7b3f@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's a ruby script that when run on 2.6.25 demonstrates that although
-the contents of /proc/self/maps changes, its mtime doesn't.
+On Thu, Jul 17, 2008 at 04:35:16PM +0200, Vegard Nossum wrote:
+> On Thu, Jul 17, 2008 at 4:13 PM, Josef Bacik <jbacik@redhat.com> wrote:
+> > On Thu, Jul 17, 2008 at 04:25:49PM +0200, Vegard Nossum wrote:
+> >> On Thu, Jul 17, 2008 at 3:57 PM, Josef Bacik <jbacik@redhat.com> wrote:
+> >> > Can you try this patch out and see if it fixes the problem?  I didn't compile
+> >> > test it, so you may need to tweak somethings, but it should work.  Thanks,
+> >> >
+> >> > Signed-off-by: Josef Bacik <jbacik@redhat.com>
+> >>
+> >> Nope, seems to be the same problem:
+> >>
+> >> kjournald starting.  Commit interval 5 seconds
+> >> EXT3-fs warning: mounting fs with errors, running e2fsck is recommended
+> >> EXT3 FS on loop0, internal journal
+> >> EXT3-fs: mounted filesystem with ordered data mode.
+> >> EXT3-fs error (device loop0): ext3_free_blocks: Freeing blocks in
+> >> system zones - Block = 16, count = 1
+> >> EXT3-fs error (device loop0): ext3_free_blocks: Freeing blocks in
+> >> system zones - Block = 32, count = 1
+> >> EXT3-fs error (device loop0): ext3_free_blocks: Freeing blocks not in
+> >> datazone - block = 262144, count = 1
+> >> BUG: unable to handle kernel NULL pointer dereference at 0000000c
+> >> IP: [<c01fd210>] journal_dirty_metadata+0xa0/0x160
+> >>
+> >> Full log at http://folk.uio.no/vegardno/linux/log-1216304953.txt
+> >>
+> >>
+> >
+> > Ok, this should do it then.  Thanks,
+> 
+> Hm, it doesn't apply. Should I revert the previous patch?
+>
 
---- start ruby script ---
-#!/usr/bin/ruby -w
+Yeah sorry about that.
 
-mapfile = "/proc/self/maps"
-
-oldmtime = File.stat(mapfile).mtime
-oldmaps = File.read(mapfile)
-
-arr = Array.new()
-
-for k in 1...10*1024*1024
-    arr.push(k)
-end
-
-newmaps = File.read(mapfile)
-newmtime = File.stat(mapfile).mtime
-
-if (oldmaps != newmaps)
-    if (oldmtime == newmtime)
-        puts("oldmaps mtime = #{oldmtime}")
-        puts(oldmaps)
-        puts("newmaps mtime = #{newmtime}")
-        puts(newmaps)
-    end
-end
---- end ruby script ---
-
-When I run it, I get this output (the lines with the word [heap] against
-them are different (along with others)):
-
-# ./checkmaps.rb 
-oldmaps mtime = Thu Jul 17 15:32:53 +0100 2008
-00400000-00401000 r-xp 00000000 08:01 832446
-/usr/bin/ruby1.8
-00600000-00601000 rw-p 00000000 08:01 832446
-/usr/bin/ruby1.8
-00694000-006f7000 rw-p 00694000 00:00 0
-[heap]
-7f7f64de9000-7f7f64f33000 r-xp 00000000 08:01 57195
-/lib/libc-2.7.so
-7f7f64f33000-7f7f65133000 ---p 0014a000 08:01 57195
-/lib/libc-2.7.so
-7f7f65133000-7f7f65136000 r--p 0014a000 08:01 57195
-/lib/libc-2.7.so
-7f7f65136000-7f7f65138000 rw-p 0014d000 08:01 57195
-/lib/libc-2.7.so
-7f7f65138000-7f7f6513d000 rw-p 7f7f65138000 00:00 0 
-7f7f6513d000-7f7f651bf000 r-xp 00000000 08:01 57184
-/lib/libm-2.7.so
-7f7f651bf000-7f7f653be000 ---p 00082000 08:01 57184
-/lib/libm-2.7.so
-7f7f653be000-7f7f653c0000 rw-p 00081000 08:01 57184
-/lib/libm-2.7.so
-7f7f653c0000-7f7f653c8000 r-xp 00000000 08:01 57196
-/lib/libcrypt-2.7.so
-7f7f653c8000-7f7f655c8000 ---p 00008000 08:01 57196
-/lib/libcrypt-2.7.so
-7f7f655c8000-7f7f655ca000 rw-p 00008000 08:01 57196
-/lib/libcrypt-2.7.so
-7f7f655ca000-7f7f655f8000 rw-p 7f7f655ca000 00:00 0 
-7f7f655f8000-7f7f655fa000 r-xp 00000000 08:01 57197
-/lib/libdl-2.7.so
-7f7f655fa000-7f7f657fa000 ---p 00002000 08:01 57197
-/lib/libdl-2.7.so
-7f7f657fa000-7f7f657fc000 rw-p 00002000 08:01 57197
-/lib/libdl-2.7.so
-7f7f657fc000-7f7f65812000 r-xp 00000000 08:01 57199
-/lib/libpthread-2.7.so
-7f7f65812000-7f7f65a12000 ---p 00016000 08:01 57199
-/lib/libpthread-2.7.so
-7f7f65a12000-7f7f65a14000 rw-p 00016000 08:01 57199
-/lib/libpthread-2.7.so
-7f7f65a14000-7f7f65a18000 rw-p 7f7f65a14000 00:00 0 
-7f7f65a18000-7f7f65afa000 r-xp 00000000 08:01 831874
-/usr/lib/libruby1.8.so.1.8.7
-7f7f65afa000-7f7f65cfa000 ---p 000e2000 08:01 831874
-/usr/lib/libruby1.8.so.1.8.7
-7f7f65cfa000-7f7f65cfe000 rw-p 000e2000 08:01 831874
-/usr/lib/libruby1.8.so.1.8.7
-7f7f65cfe000-7f7f65d1c000 rw-p 7f7f65cfe000 00:00 0 
-7f7f65d1c000-7f7f65d38000 r-xp 00000000 08:01 57191
-/lib/ld-2.7.so
-7f7f65eb6000-7f7f65f1c000 rw-p 7f7f65eb6000 00:00 0 
-7f7f65f33000-7f7f65f37000 rw-p 7f7f65f33000 00:00 0 
-7f7f65f37000-7f7f65f39000 rw-p 0001b000 08:01 57191
-/lib/ld-2.7.so
-7fff6df23000-7fff6df39000 rw-p 7ffffffe9000 00:00 0
-[stack]
-7fff6dffe000-7fff6e000000 r-xp 7fff6dffe000 00:00 0
-[vdso]
-ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0
-[vsyscall]
-newmaps mtime = Thu Jul 17 15:32:53 +0100 2008
-00400000-00401000 r-xp 00000000 08:01 832446
-/usr/bin/ruby1.8
-00600000-00601000 rw-p 00000000 08:01 832446
-/usr/bin/ruby1.8
-00694000-00714000 rw-p 00694000 00:00 0
-[heap]
-7f7f590e7000-7f7f5fa09000 rw-p 7f7f65e8d000 00:00 0 
-7f7f64de9000-7f7f64f33000 r-xp 00000000 08:01 57195
-/lib/libc-2.7.so
-7f7f64f33000-7f7f65133000 ---p 0014a000 08:01 57195
-/lib/libc-2.7.so
-7f7f65133000-7f7f65136000 r--p 0014a000 08:01 57195
-/lib/libc-2.7.so
-7f7f65136000-7f7f65138000 rw-p 0014d000 08:01 57195
-/lib/libc-2.7.so
-7f7f65138000-7f7f6513d000 rw-p 7f7f65138000 00:00 0 
-7f7f6513d000-7f7f651bf000 r-xp 00000000 08:01 57184
-/lib/libm-2.7.so
-7f7f651bf000-7f7f653be000 ---p 00082000 08:01 57184
-/lib/libm-2.7.so
-7f7f653be000-7f7f653c0000 rw-p 00081000 08:01 57184
-/lib/libm-2.7.so
-7f7f653c0000-7f7f653c8000 r-xp 00000000 08:01 57196
-/lib/libcrypt-2.7.so
-7f7f653c8000-7f7f655c8000 ---p 00008000 08:01 57196
-/lib/libcrypt-2.7.so
-7f7f655c8000-7f7f655ca000 rw-p 00008000 08:01 57196
-/lib/libcrypt-2.7.so
-7f7f655ca000-7f7f655f8000 rw-p 7f7f655ca000 00:00 0 
-7f7f655f8000-7f7f655fa000 r-xp 00000000 08:01 57197
-/lib/libdl-2.7.so
-7f7f655fa000-7f7f657fa000 ---p 00002000 08:01 57197
-/lib/libdl-2.7.so
-7f7f657fa000-7f7f657fc000 rw-p 00002000 08:01 57197
-/lib/libdl-2.7.so
-7f7f657fc000-7f7f65812000 r-xp 00000000 08:01 57199
-/lib/libpthread-2.7.so
-7f7f65812000-7f7f65a12000 ---p 00016000 08:01 57199
-/lib/libpthread-2.7.so
-7f7f65a12000-7f7f65a14000 rw-p 00016000 08:01 57199
-/lib/libpthread-2.7.so
-7f7f65a14000-7f7f65a18000 rw-p 7f7f65a14000 00:00 0 
-7f7f65a18000-7f7f65afa000 r-xp 00000000 08:01 831874
-/usr/lib/libruby1.8.so.1.8.7
-7f7f65afa000-7f7f65cfa000 ---p 000e2000 08:01 831874
-/usr/lib/libruby1.8.so.1.8.7
-7f7f65cfa000-7f7f65cfe000 rw-p 000e2000 08:01 831874
-/usr/lib/libruby1.8.so.1.8.7
-7f7f65cfe000-7f7f65d1c000 rw-p 7f7f65cfe000 00:00 0 
-7f7f65d1c000-7f7f65d38000 r-xp 00000000 08:01 57191
-/lib/ld-2.7.so
-7f7f65eb6000-7f7f65f1c000 rw-p 7f7f65eb6000 00:00 0 
-7f7f65f33000-7f7f65f37000 rw-p 7f7f65f33000 00:00 0 
-7f7f65f37000-7f7f65f39000 rw-p 0001b000 08:01 57191
-/lib/ld-2.7.so
-7fff6df23000-7fff6df39000 rw-p 7ffffffe9000 00:00 0
-[stack]
-7fff6dffe000-7fff6e000000 r-xp 7fff6dffe000 00:00 0
-[vdso]
-ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0
-[vsyscall]
-
--- 
-Andy, BlueArc Engineering
-
-
+Josef 
