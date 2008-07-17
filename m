@@ -1,102 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932186AbYGQV5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760790AbYGQWCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932186AbYGQV5S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 17:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757058AbYGQV5F
+	id S1760790AbYGQWCO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 18:02:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754770AbYGQWB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 17:57:05 -0400
-Received: from wx-out-0506.google.com ([66.249.82.229]:6499 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754525AbYGQV5E (ORCPT
+	Thu, 17 Jul 2008 18:01:59 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:10740 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754586AbYGQWB6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 17:57:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=MNK3TUUbROj2kV4pDxDhFYuj3f6z/bxb94YUvnhjGpRtcbxBKXvEBGiRhGvywfCXp7
-         dNiGFfnevH3R/XeXNGsVhMkmzQ4o3eDBtykMseoA6OVfJNJO2v2sJ9lYf+k+Z+qdm8RK
-         5WrhXU7flb/R68hyYUiOrBBU6GXj7yH2sRlXI=
-Subject: [PATCH] mtd: diskonchip.c fix sparse endian warnings
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 17 Jul 2008 14:57:01 -0700
-Message-Id: <1216331821.6029.35.camel@brick>
+	Thu, 17 Jul 2008 18:01:58 -0400
+Date: Thu, 17 Jul 2008 14:52:52 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: David Fries <david@fries.net>
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 29/30] W1: Documentation/w1/masters/ds2490 update
+Message-Id: <20080717145252.ee6fcb19.randy.dunlap@oracle.com>
+In-Reply-To: <20080715021656.GQ5621@spacedout.fries.net>
+References: <12157843054074-git-send-email-johnpol@2ka.mipt.ru>
+	<12157843071043-git-send-email-johnpol@2ka.mipt.ru>
+	<20080714134002.e5dfaaae.randy.dunlap@oracle.com>
+	<20080715021656.GQ5621@spacedout.fries.net>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+On Mon, 14 Jul 2008 21:16:56 -0500 David Fries wrote:
+
+> On Mon, Jul 14, 2008 at 01:40:02PM -0700, Randy Dunlap wrote:
+> > > +- The number of USB bus transactions could be reduced if w1_reset_send
+> > > +  was added to the API.  The name is just a suggestion.  It would take
+> > > +  a write buffer and a read buffer (along with sizes) as arguments.
+> > > +  It would add match rom and rom to the send buffer, reset the bus,
+> >                   ~~~~~~~~~~~~~~~~~
+> > Can you clarify above?
+> 
+> I re-wrote the paragraph.  In the one wire protocol a bus reset is
+> followed by a one byte command, in this case match rom which tells all
+> the devices on the bus to expect an 8byte rom (slave device id) and
+> only the slave device that matches the rom is to respond to the
+> following message.  I was assuming people reading it would be familiar
+> with the one wire bus protocol.  Do you have any of the one wire
+> hardware?
+
+No. :(
+
+> - The number of USB bus transactions could be reduced if w1_reset_send
+>   was added to the API.  The name is just a suggestion.  It would take
+>   a write buffer and a read buffer (along with sizes) as arguments.
+>   The ds2490 block I/O command supports reset, write buffer, read
+>   buffer, and strong pullup all in one command, instead of the current
+>   1 reset bus, 2 write the match rom command and slave rom id, 3 block
+>   write and read data.  The write buffer needs to have the match rom
+>   command and slave rom id prepended to the front of the requested
+>   write buffer, both of which are known to the driver.  
+> 
+> The next paragraph was removed, I decided that listing the commands
+> giong from three to one was enough, I didn't need to count all the USB
+> bus transactions.
+> 
+> I'll send the patch again in the next e-mail.
+
+Thanks.
+
 ---
-Al, I know you won't like this for the same reasons as the dlm patch,
-but I had it already done.
-
- drivers/mtd/nand/diskonchip.c |   30 +++++++++++++++---------------
- 1 files changed, 15 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/mtd/nand/diskonchip.c b/drivers/mtd/nand/diskonchip.c
-index 765d4f0..e4226e0 100644
---- a/drivers/mtd/nand/diskonchip.c
-+++ b/drivers/mtd/nand/diskonchip.c
-@@ -1125,9 +1125,9 @@ static inline int __init nftl_partscan(struct mtd_info *mtd, struct mtd_partitio
- 		goto out;
- 	mh = (struct NFTLMediaHeader *)buf;
- 
--	mh->NumEraseUnits = le16_to_cpu(mh->NumEraseUnits);
--	mh->FirstPhysicalEUN = le16_to_cpu(mh->FirstPhysicalEUN);
--	mh->FormattedSize = le32_to_cpu(mh->FormattedSize);
-+	le16_to_cpus(&mh->NumEraseUnits);
-+	le16_to_cpus(&mh->FirstPhysicalEUN);
-+	le32_to_cpus(&mh->FormattedSize);
- 
- 	printk(KERN_INFO "    DataOrgID        = %s\n"
- 			 "    NumEraseUnits    = %d\n"
-@@ -1235,12 +1235,12 @@ static inline int __init inftl_partscan(struct mtd_info *mtd, struct mtd_partiti
- 	doc->mh1_page = doc->mh0_page + (4096 >> this->page_shift);
- 	mh = (struct INFTLMediaHeader *)buf;
- 
--	mh->NoOfBootImageBlocks = le32_to_cpu(mh->NoOfBootImageBlocks);
--	mh->NoOfBinaryPartitions = le32_to_cpu(mh->NoOfBinaryPartitions);
--	mh->NoOfBDTLPartitions = le32_to_cpu(mh->NoOfBDTLPartitions);
--	mh->BlockMultiplierBits = le32_to_cpu(mh->BlockMultiplierBits);
--	mh->FormatFlags = le32_to_cpu(mh->FormatFlags);
--	mh->PercentUsed = le32_to_cpu(mh->PercentUsed);
-+	le32_to_cpus(&mh->NoOfBootImageBlocks);
-+	le32_to_cpus(&mh->NoOfBinaryPartitions);
-+	le32_to_cpus(&mh->NoOfBDTLPartitions);
-+	le32_to_cpus(&mh->BlockMultiplierBits);
-+	le32_to_cpus(&mh->FormatFlags);
-+	le32_to_cpus(&mh->PercentUsed);
- 
- 	printk(KERN_INFO "    bootRecordID          = %s\n"
- 			 "    NoOfBootImageBlocks   = %d\n"
-@@ -1277,12 +1277,12 @@ static inline int __init inftl_partscan(struct mtd_info *mtd, struct mtd_partiti
- 	/* Scan the partitions */
- 	for (i = 0; (i < 4); i++) {
- 		ip = &(mh->Partitions[i]);
--		ip->virtualUnits = le32_to_cpu(ip->virtualUnits);
--		ip->firstUnit = le32_to_cpu(ip->firstUnit);
--		ip->lastUnit = le32_to_cpu(ip->lastUnit);
--		ip->flags = le32_to_cpu(ip->flags);
--		ip->spareUnits = le32_to_cpu(ip->spareUnits);
--		ip->Reserved0 = le32_to_cpu(ip->Reserved0);
-+		le32_to_cpus(&ip->virtualUnits);
-+		le32_to_cpus(&ip->firstUnit);
-+		le32_to_cpus(&ip->lastUnit);
-+		le32_to_cpus(&ip->flags);
-+		le32_to_cpus(&ip->spareUnits);
-+		le32_to_cpus(&ip->Reserved0);
- 
- 		printk(KERN_INFO	"    PARTITION[%d] ->\n"
- 			"        virtualUnits    = %d\n"
--- 
-1.5.6.3.569.ga9185
-
-
-
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
