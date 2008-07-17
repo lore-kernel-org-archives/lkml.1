@@ -1,62 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758866AbYGQPBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759447AbYGQPCZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758866AbYGQPBb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 11:01:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755871AbYGQPBU
+	id S1759447AbYGQPCZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 11:02:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756246AbYGQPCR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 11:01:20 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:58232 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751663AbYGQPBT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 11:01:19 -0400
-Date: Thu, 17 Jul 2008 18:01:02 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Peter Palfrader <peter@palfrader.org>
-cc: Adam Langley <agl@imperialviolet.org>, LKML <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.25.6: warn_on_slowpath in tcp_input.c
-In-Reply-To: <20080701073833.GT16698@anguilla.noreply.org>
-Message-ID: <Pine.LNX.4.64.0807171744130.13775@wrl-59.cs.helsinki.fi>
-References: <20080630230954.GS16698@anguilla.noreply.org>
- <396556a20806301656ydc44e3ey6deb229ab69904@mail.gmail.com>
- <20080701073833.GT16698@anguilla.noreply.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 17 Jul 2008 11:02:17 -0400
+Received: from sacred.ru ([62.205.161.221]:37700 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756112AbYGQPCQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 11:02:16 -0400
+Message-ID: <487F5EDB.1000008@openvz.org>
+Date: Thu, 17 Jul 2008 19:01:47 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Daniel Hokka Zakrisson <daniel@hozac.com>
+CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       oleg@tv-sign.ru, ebiederm@xmission.com, akpm@linux-foundation.org
+Subject: Re: [PATCH 1/2] signals: kill(-1) should only signal processes in
+ the same namespace
+References: <487F5D6B.1090007@hozac.com>
+In-Reply-To: <487F5D6B.1090007@hozac.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 17 Jul 2008 19:01:42 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Jul 2008, Peter Palfrader wrote:
+Daniel Hokka Zakrisson wrote:
+> While moving Linux-VServer to using pid namespaces, I noticed that
+> kill(-1) from inside a pid namespace is currently signalling every
+> process in the entire system, including processes that are otherwise
+> unreachable from the current process.
 
-> On Mon, 30 Jun 2008, Adam Langley wrote:
+This is not a "news" actually, buy anyway - thanks :)
+
+> This patch fixes it by making sure that only processes which are in
+> the same pid namespace as current get signalled.
+
+This is to be done, indeed, but I do not like the proposed implementation,
+since you have to walk all the tasks in the system (under tasklist_lock,
+by the way) to search for a couple of interesting ones. Better look at how
+zap_pid_ns_processes works (by the way - I saw some patch doing so some
+time ago).
+
+> Signed-off-by: Daniel Hokka Zakrisson <daniel@hozac.com>
 > 
-> > On Mon, Jun 30, 2008 at 4:09 PM, Peter Palfrader <peter@palfrader.org> wrote:
-> > > I've had 13 or so of them since upgrading the machine to a 2.6.25 kernel
-> > > 20 days ago.
-> > >
-> > > Linux saens 2.6.25.6-dl380 #2 SMP Tue Jun 10 17:54:44 CEST 2008 i686 GNU/Linux
-> >
-> > Which kernel was it running before?
+> diff --git a/include/linux/pid_namespace.h b/include/linux/pid_namespace.h
+> index caff528..4cf41bd 100644
+> --- a/include/linux/pid_namespace.h
+> +++ b/include/linux/pid_namespace.h
+> @@ -40,6 +40,8 @@ static inline struct pid_namespace *get_pid_ns(struct 
+> pid_namespace *ns)
+>   extern struct pid_namespace *copy_pid_ns(unsigned long flags, struct 
+> pid_namespace *ns);
+>   extern void free_pid_ns(struct kref *kref);
+>   extern void zap_pid_ns_processes(struct pid_namespace *pid_ns);
+> +extern int task_in_pid_ns(struct task_struct *tsk,
+> +			  struct pid_namespace *pid_ns);
 > 
-> It was running 2.6.22.17 (+ the splice fix) before that.
+>   static inline void put_pid_ns(struct pid_namespace *ns)
+>   {
+> @@ -72,6 +74,12 @@ static inline void zap_pid_ns_processes(struct 
+> pid_namespace *ns)
+>   {
+>   	BUG();
+>   }
+> +
+> +static inline int task_in_pid_ns(struct task_struct *tsk,
+> +				  struct pid_namespace *ns)
+> +{
+> +	return 1;
+> +}
+>   #endif /* CONFIG_PID_NS */
+> 
+>   static inline struct pid_namespace *task_active_pid_ns(struct 
+> task_struct *tsk)
+> diff --git a/kernel/pid_namespace.c b/kernel/pid_namespace.c
+> index 98702b4..3e71011 100644
+> --- a/kernel/pid_namespace.c
+> +++ b/kernel/pid_namespace.c
+> @@ -188,6 +188,26 @@ void zap_pid_ns_processes(struct pid_namespace *pid_ns)
+>   	return;
+>   }
+> 
+> +/*
+> + * Checks whether tsk has a pid in the pid namespace ns.
+> + * Must be called with tasklist_lock read-locked or under rcu_read_lock()
+> + */
+> +int task_in_pid_ns(struct task_struct *tsk, struct pid_namespace *ns)
+> +{
+> +	struct pid *pid = task_pid(tsk);
+> +
+> +	if (!pid)
+> +		return 0;
+> +
+> +	if (pid->level < ns->level)
+> +		return 0;
+> +
+> +	if (pid->numbers[ns->level].ns != ns)
+> +		return 0;
+> +
+> +	return 1;
+> +}
+> +
+>   static __init int pid_namespaces_init(void)
+>   {
+>   	pid_ns_cachep = KMEM_CACHE(pid_namespace, SLAB_PANIC);
+> diff --git a/kernel/signal.c b/kernel/signal.c
+> index 6c0958e..93713a5 100644
+> --- a/kernel/signal.c
+> +++ b/kernel/signal.c
+> @@ -1145,7 +1145,8 @@ static int kill_something_info(int sig, struct 
+> siginfo *info, int pid)
+>   		struct task_struct * p;
+> 
+>   		for_each_process(p) {
+> -			if (p->pid > 1 && !same_thread_group(p, current)) {
+> +			if (p->pid > 1 && !same_thread_group(p, current) &&
+> +			    task_in_pid_ns(p, current->nsproxy->pid_ns)) {
+>   				int err = group_send_sig_info(sig, info, p);
+>   				++count;
+>   				if (err != -EPERM)
 
-Thanks for the report, I've been away for a while, thus the late response.
-Please update to get this relevant fix and some other TCP fixes (if you 
-haven't yet):
-
- releases/2.6.25.7/tcp-fix-skb-vs-fack_count-out-of-sync-condition.patch
-
-...If you still get them afterwards, please do rereport (and include me 
-as recipient :-)). ...I know there are couple of cases still after that 
-fix where TCP invariant checks trigger but they've been rare enough to 
-evade any of my debugging attempts (2.6.22.17 won't warn you anyway when 
-it breaks an invariant though I already know a handful violations that 
-do occur with it too but there's just plain silence because I only later 
-on added those warning).
-
-
--- 
- i.
