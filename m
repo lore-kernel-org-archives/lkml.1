@@ -1,97 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757671AbYGQSj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760737AbYGQSkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757671AbYGQSj2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 14:39:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756566AbYGQSjR
+	id S1760737AbYGQSkL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 14:40:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758046AbYGQSj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 14:39:17 -0400
-Received: from proxy1.bredband.net ([195.54.101.71]:37490 "EHLO
-	proxy1.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757378AbYGQSjQ (ORCPT
+	Thu, 17 Jul 2008 14:39:57 -0400
+Received: from an-out-0708.google.com ([209.85.132.241]:24641 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757671AbYGQSj4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 14:39:16 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqczABsvf0jVchRXPGdsb2JhbACBWpBaAQEBAS0BnjI
-Message-ID: <33935.192.168.102.6.1216319954.squirrel@intranet>
-In-Reply-To: <m13am8wgk6.fsf@frodo.ebiederm.org>
-References: <487F5D6B.1090007@hozac.com> <487F5EDB.1000008@openvz.org>
-    <43011.192.168.102.6.1216308280.squirrel@intranet>
-    <m13am8wgk6.fsf@frodo.ebiederm.org>
-Date: Thu, 17 Jul 2008 20:39:14 +0200 (CEST)
-Subject: Re: [PATCH 1/2] signals: kill(-1) should only signal processes in  
-     the same namespace
-From: "Daniel Hokka Zakrisson" <daniel@hozac.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Pavel Emelyanov" <xemul@openvz.org>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, oleg@tv-sign.ru,
-       akpm@linux-foundation.org
-User-Agent: SquirrelMail/1.4.10a-1.fc6
+	Thu, 17 Jul 2008 14:39:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=yD5GaoRie0Km//T7ui0bRz1GSDkSPWwq36bgludFcwgG5ErDMr0v4pk/1JPRZl0EQ5
+         +GiMyf9ayO50jKRvebtGEI1zDtSUfb5sgnxKJqWs4+QDChETzx2k0yWaTQ6g34d7k2nf
+         ampuMIP6nlRRAnfnGjmWuqBfJiUDTcTaxd+Yc=
+Message-ID: <dd18b0c30807171139r77caf0d5vee7c6eff1a6b9157@mail.gmail.com>
+Date: Thu, 17 Jul 2008 18:39:55 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
+Cc: "Jack Howarth" <howarth@bromo.msbb.uc.edu>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <86802c440807170942k387c7d73o838584d99457bd30@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <86802c440807161029n7e0dac98x1ec260879204b6f0@mail.gmail.com>
+	 <86802c440807161749u2f5c1eben618e05c6e254fedd@mail.gmail.com>
+	 <20080717023538.GA18329@bromo.msbb.uc.edu>
+	 <86802c440807161959s10666027k5297af1d657ff4fa@mail.gmail.com>
+	 <20080717034418.GA18951@bromo.msbb.uc.edu>
+	 <86802c440807162113g4cea3bd9ic71210330417032b@mail.gmail.com>
+	 <20080717061825.GA19582@bromo.msbb.uc.edu>
+	 <86802c440807162348m6d05b912x7b3f655d7f9efb93@mail.gmail.com>
+	 <20080717162622.GA26835@bromo.msbb.uc.edu>
+	 <86802c440807170942k387c7d73o838584d99457bd30@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> "Daniel Hokka Zakrisson" <daniel@hozac.com> writes:
+On Thu, Jul 17, 2008 at 4:42 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> On Thu, Jul 17, 2008 at 9:26 AM, Jack Howarth <howarth@bromo.msbb.uc.edu> wrote:
+>> YH,
+>>   I am wondering if it might be worthwhile for me to
+>> try the various rc releases of 2.6.26 (starting with rc1-git1)
+>> to see if I can identify at what point 2.6.26 was broken
+>> with regards to booting on my MacBook Pro? In case that
+>> would point us towards the checkin of a specific set of
+>> patches as the problem.
 >
->> Pavel Emelyanov wrote:
->>> Daniel Hokka Zakrisson wrote:
->>>> While moving Linux-VServer to using pid namespaces, I noticed that
->>>> kill(-1) from inside a pid namespace is currently signalling every
->>>> process in the entire system, including processes that are otherwise
->>>> unreachable from the current process.
->>>
->>> This is not a "news" actually, buy anyway - thanks :)
->>
->> And yet nobody's fixed it... Kind of a critical thing, if you actually
->> want to use them, since most distribution's rc-scripts do a kill(-1,
->> SIGTERM), followed by kill(-1, SIGKILL) when halting (which, needless to
->> say, would be very bad).
->>
->>>> This patch fixes it by making sure that only processes which are in
->>>> the same pid namespace as current get signalled.
->>>
->>> This is to be done, indeed, but I do not like the proposed
->>> implementation,
->>> since you have to walk all the tasks in the system (under
->>> tasklist_lock,
->>> by the way) to search for a couple of interesting ones. Better look at
->>> how
->>> zap_pid_ns_processes works (by the way - I saw some patch doing so some
->>> time ago).
->>
->> The way zap_pid_ns_processes does it is worse, since it signals every
->> thread in the namespace rather than every thread group. So either we
->> walk
->> the global tasklist, or we create a per-namespace one. Is that what we
->> want?
+> try 2.6.26-rc1,..rc2
 >
-> Can you please introduce kill_pidns_info and have both
-> kill_something_info and zap_pid_ns_processes call this common
-> function?
+> YH
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-Looks like you've already done that. :-) (Referring to Sukadev's email.)
-Is there any reason we don't just merge that patch?
+O.K. I tried MMCONFIG and it seems
+to be giving me a: kernel panic
+VFS: cannot open device sda1 or unkown block (0,0)
 
-> We want to walk the set of all pids in a pid namespace.  /proc does
-> this and it is the recommended idiom.  If walking all of the pids in a
-> pid namespace is not fast enough we can accelerate that.
->
-> You are correct signalling every thread in a namespace is worse, in
-> fact it is semantically incorrect.  zap_pid_ns_processes gets away
-> with it because it is sending SIGKILL.   Therefore kill_pidns_info
-> should skip sending a signal to every task that is not the
-> thread_group_leader.
->
-> We need to hold the tasklist_lock to prevent new processes from
-> joining the list of all processes.  Otherwise we could run the code
-> under the rcu_read_lock.
->
-> Eric
+from what I remember I noticed this as far back as 2.6.22
 
 -- 
-Daniel Hokka Zakrisson
+Justin P. Mattock
