@@ -1,76 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757805AbYGQK4K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757611AbYGQLAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757805AbYGQK4K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 06:56:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755461AbYGQKz5
+	id S1757611AbYGQLAO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 07:00:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755843AbYGQLAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 06:55:57 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:55202 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752818AbYGQKz5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 06:55:57 -0400
-Date: Thu, 17 Jul 2008 12:55:44 +0200
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: ARM Linux Mailing List <linux-arm-kernel@lists.arm.linux.org.uk>,
-       Andrew Victor <linux@maxim.org.za>, Ville Syrjala <syrjala@sci.fi>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] at91_mci: Enable MMC_CAP_SDIO_IRQ only when it
- actually works
-Message-ID: <20080717125544.36f41947@mjolnir.drzeus.cx>
-In-Reply-To: <487F120F.2050305@atmel.com>
-References: <487F120F.2050305@atmel.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.4; i386-redhat-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
-X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-5940-1216292151-0001-2"
+	Thu, 17 Jul 2008 07:00:00 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:39442 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752868AbYGQK77 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 06:59:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=x5DGBIOSMr4uB8J4H7+F3ZbvFsJrs2Gjr0Sze9NwSk1j1r6+c7GKYnFo+dlElhCXQe
+         0B16RbkGhSjH9LdwLFme/OVJtlL8DFvB1YXEzPfBNvXQoT0GiJ1MnTU9CmsqdVzkTxE+
+         HMPZ/YmWmfbQYc+622wVJkpVY5Qb0I+XJ2nik=
+Message-ID: <487F33F2.2060202@gmail.com>
+Date: Thu, 17 Jul 2008 11:58:42 +0000
+From: Richard <tuxbox.guru@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080614)
+MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Thomas Renninger <trenn@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "andreas.herrmann3" <andreas.herrmann3@amd.com>, eumaster@gmail.com,
+       uli.geins@geins-web.de
+Subject: Re: [PATCH] Re: AMD Mobile Semprons (3500+, 3600+,...) break with
+ nohz and highres enabled
+References: <1213638474.1684.21.camel@queen.suse.de> <200807161827.16898.trenn@suse.de> <alpine.LFD.1.10.0807162100380.4316@apollo.tec.linutronix.de> <200807162156.00983.trenn@suse.de> <487EECDF.1040401@gmail.com> <alpine.LFD.1.10.0807171211310.4316@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.10.0807171211310.4316@apollo.tec.linutronix.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Thomas Gleixner wrote:
+> ouch.
+>
+> I read the whole thread and also checked the suse bugzilla, which
+> confuses the hell out of me as there is reported that kubuntu with
+> 2.6.24 works and everything suse > 2.6.20 does not.
+>
+> Can you please tell me the symptoms of vanilla 2.6.25 without nohz=off
+> on the kernel command line ?
+>
+> Thanks,
+>
+> 	tglx
+>
+>   
+The Short story... it was a dark and rainy night :-P oops, wrong mailing 
+list.... so here goes
 
---=_freyr.drzeus.cx-5940-1216292151-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+The kernel boots and when init.d starts, the screen switches off, the 
+CPU fan goes to Max speed, and a few minutes later all goes quiet and it 
+appears to have powered off.
 
-On Thu, 17 Jul 2008 11:34:07 +0200
-Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
+I usually boot with noapictimer and if I disable ACPI totally, the clock 
+references don't work and the timebase goes wrong. (Playing a MP3 is 
+quite an entertaining event as it sounds like an old vinyl record player 
+with a slipping drive belt)
 
-> According to the datasheets AT91SAM9261 does not support
-> SDIO interrupts, and AT91SAM9260/9263 have an erratum
-> requiring 4bit mode while using slot B for the interrupt
-> to work.
->=20
-> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-> ---
+Richard
 
-Not all SDIO cards use 4-bit mode, so it looks to me like you have to
-disable it completely (unless there's a third revision where it works
-without any fine print?).
 
-Rgds
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-5940-1216292151-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkh/JTYACgkQ7b8eESbyJLjZJQCg/CRzIWN9+BW5BgnEeecIPC+y
-fKMAn3s5Hw/+yO2l7TYcgRZ28Qa+LTCP
-=xBTO
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-5940-1216292151-0001-2--
