@@ -1,222 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932782AbYGQVl5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933294AbYGQVmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932782AbYGQVl5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 17:41:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758527AbYGQVls
+	id S933294AbYGQVmz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 17:42:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754793AbYGQVmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 17:41:48 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53368 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758219AbYGQVlq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 17:41:46 -0400
-Date: Thu, 17 Jul 2008 14:40:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thomas Renninger <trenn@suse.de>
-Cc: arekm@maven.pl, linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk,
-       gnorton@novell.com, miguel@novell.com, linux-acpi@vger.kernel.org,
-       davej@redhat.com, stable@kernel.org
-Subject: Re: [PATCH] Re: cpufreq limits avilable frequencies to 800MHz on
- git kernel
-Message-Id: <20080717144000.5a577985.akpm@linux-foundation.org>
-In-Reply-To: <200807171548.04584.trenn@suse.de>
-References: <200805231944.57320.arekm@maven.pl>
-	<200805261815.40601.arekm@maven.pl>
-	<200805261823.03140.arekm@maven.pl>
-	<200807171548.04584.trenn@suse.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Jul 2008 17:42:44 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43681 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751582AbYGQVmm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 17:42:42 -0400
+Date: Thu, 17 Jul 2008 23:42:22 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison overwritten
+Message-ID: <20080717214222.GA29449@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jul 2008 15:48:02 +0200
-Thomas Renninger <trenn@suse.de> wrote:
 
-> Hi,
-> 
-> maybe I found something..., can someone review/test this.
-> 
-> Thanks,
-> 
->          Thomas
-> 
-> ------------
-> CPUFREQ ACPI: Only call _PPC after cpufreq ACPI init funcs got called already
-> 
-> Ingo Molnar provided a fix to not call _PPC at processor driver initialization 
-> time.
-> Git commit #e4233dec749a3519069d9390561b5636a75c7579
-> 
-> But it can still happen that _PPC is called at  processor driver 
-> initialization time.
-> 
-> This patch should make sure that this is not possible anymore.
+A regression to v2.6.26:
 
-There is no actual description of what this fixes, is there?  Do
-machines go oops, or what?
+I started getting this skb-head corruption message today, on a T60 
+laptop with e1000:
 
-How do we proceed from here with this patch?  Who should review it, who
-should test it, who should ack it and who should merge it?
+PM: Removing info for No Bus:vcs11
+device: 'vcs11': device_create_release
+=============================================================================
+BUG skbuff_head_cache: Poison overwritten
+-----------------------------------------------------------------------------
 
-e4233dec749a3519069d9390561b5636a75c7579 was in January so this patch
-is applicable to 2.6.25.x and to 2.6.26.x.  But is it needed there? 
-Insufficient info.
+INFO: 0xf658ae9c-0xf658ae9c. First byte 0x6a instead of 0x6b
+INFO: Allocated in __alloc_skb+0x2c/0x110 age=0 cpu=0 pid=5098
+INFO: Freed in __kfree_skb+0x31/0x80 age=0 cpu=1 pid=4440
+INFO: Slab 0xc16cc140 objects=16 used=1 fp=0xf658ae00 flags=0x400000c3
+INFO: Object 0xf658ae00 @offset=3584 fp=0xf658af00
 
-Ho hum.  I queued it, tagged as needed-in-2.6.25.x and 2.6.26.x.  But I
-am unsure about that.
+Bytes b4 0xf658adf0:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a ZZZZZZZZZZZZZZZZ
+  Object 0xf658ae00:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+  Object 0xf658ae10:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+  Object 0xf658ae20:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+  Object 0xf658ae30:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+  Object 0xf658ae40:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+  Object 0xf658ae50:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+  Object 0xf658ae60:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+  Object 0xf658ae70:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+ Redzone 0xf658aea0:  bb bb bb bb                                     ����            
+ Padding 0xf658aec8:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a ZZZZZZZZZZZZZZZZ
+ Padding 0xf658aed8:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a ZZZZZZZZZZZZZZZZ
+ Padding 0xf658aee8:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a ZZZZZZZZZZZZZZZZ
+ Padding 0xf658aef8:  5a 5a 5a 5a 5a 5a 5a 5a                         ZZZZZZZZ        
+Pid: 5098, comm: gdm-binary Not tainted 2.6.26-tip #3094
+ [<c0186f99>] print_trailer+0xa9/0xf0
+ [<c018707b>] check_bytes_and_report+0x9b/0xc0
+ [<c01874ae>] check_object+0x19e/0x1e0
+ [<c0187ef1>] __slab_alloc+0x371/0x4e0
+ [<c0188552>] kmem_cache_alloc+0xb2/0xc0
+ [<c06732dc>] ? __alloc_skb+0x2c/0x110
+ [<c06732dc>] ? __alloc_skb+0x2c/0x110
+ [<c06732dc>] __alloc_skb+0x2c/0x110
+ [<c0685b6c>] find_skb+0x3c/0x80
+ [<c068624b>] netpoll_send_udp+0x2b/0x1f0
+ [<c0322e62>] ? notify_update+0x22/0x30
+ [<c046d405>] write_msg+0x95/0xe0
+ [<c046d370>] ? write_msg+0x0/0xe0
+ [<c012df70>] __call_console_drivers+0x60/0x70
+ [<c012dff9>] _call_console_drivers+0x79/0x90
+ [<c012e3f4>] release_console_sem+0xc4/0x1f0
+ [<c012e89e>] vprintk+0x15e/0x3b0
+ [<c01ce683>] ? release_sysfs_dirent+0x43/0xa0
+ [<c01ce683>] ? release_sysfs_dirent+0x43/0xa0
+ [<c01ce683>] ? release_sysfs_dirent+0x43/0xa0
+ [<c012eb0b>] printk+0x1b/0x20
+ [<c0367597>] device_create_release+0x27/0x40
+ [<c0367955>] device_release+0x15/0x70
+ [<c02b1d29>] kobject_release+0x39/0x80
+ [<c02b1cf0>] ? kobject_release+0x0/0x80
+ [<c02b2a0d>] kref_put+0x2d/0x70
+ [<c02b1c30>] kobject_put+0x20/0x50
+ [<c02b1ce2>] ? kobject_del+0x22/0x30
+ [<c03680f3>] ? device_del+0x123/0x140
+ [<c0367b7f>] put_device+0xf/0x20
+ [<c0368145>] device_unregister+0x35/0x40
+ [<c0368179>] device_destroy+0x29/0x30
+ [<c031e66c>] vcs_remove_sysfs+0x1c/0x40
+ [<c032480e>] con_close+0x5e/0x70
+ [<c0317289>] release_dev+0x139/0x600
+ [<c0188222>] ? __slab_free+0x1c2/0x240
+ [<c019fd59>] ? destroy_inode+0x39/0x40
+ [<c019d4d3>] ? __d_free+0x23/0x30
+ [<c019d4d3>] ? __d_free+0x23/0x30
+ [<c019d4d3>] ? __d_free+0x23/0x30
+ [<c0317762>] tty_release+0x12/0x20
+ [<c018dba2>] __fput+0xb2/0x1d0
+ [<c018dfe9>] fput+0x19/0x20
+ [<c018ad59>] filp_close+0x49/0x70
+ [<c018c3a6>] sys_close+0x66/0xb0
+ [<c0103d01>] sysenter_past_esp+0x6a/0x99
+ =======================
+FIX skbuff_head_cache: Restoring 0xf658ae9c-0xf658ae9c=0x6b
 
-Please help to clarify these things.
+FIX skbuff_head_cache: Marking all objects used
+device: 'vcsa11': device_unregister
+PM: Removing info for No Bus:vcsa11
+device: 'vcsa11': device_create_release
 
-> Signed-off-by: Thomas Renninger <trenn@suse.de>
-> ---
->  arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c |    6 ++++++
->  drivers/acpi/processor_perflib.c              |   13 ++++++++++++-
->  drivers/cpufreq/cpufreq.c                     |    3 +++
->  include/linux/cpufreq.h                       |    1 +
->  4 files changed, 22 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c 
-> b/arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c
-> index 69288f6..3233fe8 100644
-> --- a/arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c
-> +++ b/arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c
-> @@ -96,6 +96,12 @@ static int pmi_notifier(struct notifier_block *nb,
->  	struct cpufreq_frequency_table *cbe_freqs;
->  	u8 node;
->  
-> +	/* Should this really be called for CPUFREQ_ADJUST, CPUFREQ_INCOMPATIBLE
-> +	 * and CPUFREQ_NOTIFY policy events?)
-> +	 */
-> +	if (event == CPUFREQ_START)
-> +		return 0;
-> +
->  	cbe_freqs = cpufreq_frequency_get_table(policy->cpu);
->  	node = cbe_cpu_to_node(policy->cpu);
->  
-> diff --git a/drivers/acpi/processor_perflib.c 
-> b/drivers/acpi/processor_perflib.c
-> index b474996..63ccf80 100644
-> --- a/drivers/acpi/processor_perflib.c
-> +++ b/drivers/acpi/processor_perflib.c
-> @@ -72,7 +72,13 @@ MODULE_PARM_DESC(ignore_ppc, "If the frequency of your 
-> machine gets wrongly" \
->  #define PPC_REGISTERED   1
->  #define PPC_IN_USE       2
->  
-> -static int acpi_processor_ppc_status = 0;
-> +/* ignore_ppc:
-> + * -1 -> cpufreq low level drivers not initialized -> _PSS, etc. not called 
-> yet
+With this config:
 
-I am going to start hanging around in dark alleys in the hope of
-meeting the person who invented wordwrapping.
+   http://redhat.com/~mingo/misc/config-Thu_Jul_17_20_24_45_CEST_2008.bad
+	
+The box uses netconsole.
 
+Suspected range of breakage is v2.6.26..a3cf859, or around 3000 commits. 
+But a fair portion of those commit were tested on this box before.
 
-Here it is again, fixed:
+Perhaps SLUB debugging got smarter?
 
-
-From: Thomas Renninger <trenn@suse.de>
-
-Ingo Molnar provided a fix to not call _PPC at processor driver
-initialization time.  Git commit #e4233dec749a3519069d9390561b5636a75c7579
-
-But it can still happen that _PPC is called at processor driver
-initialization time.
-
-This patch should make sure that this is not possible anymore.
-
-Signed-off-by: Thomas Renninger <trenn@suse.de>
-Cc: Dave Jones <davej@redhat.com>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Chandra Seetharaman <sekharan@us.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Arkadiusz Miskiewicz <arekm@maven.pl>
-Cc: <gnorton@novell.com>
-Cc: <miguel@novell.com>
-Cc: <stable@kernel.org>		[2.6.25.x, 2.6.26.x]
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c |    6 ++++++
- drivers/acpi/processor_perflib.c              |   13 ++++++++++++-
- drivers/cpufreq/cpufreq.c                     |    3 +++
- include/linux/cpufreq.h                       |    1 +
- 4 files changed, 22 insertions(+), 1 deletion(-)
-
-diff -puN arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c~cpufreq-acpi-only-call-_ppc-after-cpufreq-acpi-init-funcs-got-called-already arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c
---- a/arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c~cpufreq-acpi-only-call-_ppc-after-cpufreq-acpi-init-funcs-got-called-already
-+++ a/arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c
-@@ -96,6 +96,12 @@ static int pmi_notifier(struct notifier_
- 	struct cpufreq_frequency_table *cbe_freqs;
- 	u8 node;
- 
-+	/* Should this really be called for CPUFREQ_ADJUST, CPUFREQ_INCOMPATIBLE
-+	 * and CPUFREQ_NOTIFY policy events?)
-+	 */
-+	if (event == CPUFREQ_START)
-+		return 0;
-+
- 	cbe_freqs = cpufreq_frequency_get_table(policy->cpu);
- 	node = cbe_cpu_to_node(policy->cpu);
- 
-diff -puN drivers/acpi/processor_perflib.c~cpufreq-acpi-only-call-_ppc-after-cpufreq-acpi-init-funcs-got-called-already drivers/acpi/processor_perflib.c
---- a/drivers/acpi/processor_perflib.c~cpufreq-acpi-only-call-_ppc-after-cpufreq-acpi-init-funcs-got-called-already
-+++ a/drivers/acpi/processor_perflib.c
-@@ -72,7 +72,13 @@ MODULE_PARM_DESC(ignore_ppc, "If the fre
- #define PPC_REGISTERED   1
- #define PPC_IN_USE       2
- 
--static int acpi_processor_ppc_status = 0;
-+/* ignore_ppc:
-+ * -1 -> cpufreq low level drivers not initialized -> _PSS, etc. not called yet
-+ *       ignore _PPC
-+ *  0 -> cpufreq low level drivers initialized -> consider _PPC values
-+ *  1 -> ignore _PPC totally -> forced by user through boot param
-+ */
-+static int acpi_processor_ppc_status = -1;
- 
- static int acpi_processor_ppc_notifier(struct notifier_block *nb,
- 				       unsigned long event, void *data)
-@@ -81,6 +87,11 @@ static int acpi_processor_ppc_notifier(s
- 	struct acpi_processor *pr;
- 	unsigned int ppc = 0;
- 
-+	if (event == CPUFREQ_START && ignore_ppc <= 0) {
-+		ignore_ppc = 0;
-+		return 0;
-+	}
-+
- 	if (ignore_ppc)
- 		return 0;
- 
-diff -puN drivers/cpufreq/cpufreq.c~cpufreq-acpi-only-call-_ppc-after-cpufreq-acpi-init-funcs-got-called-already drivers/cpufreq/cpufreq.c
---- a/drivers/cpufreq/cpufreq.c~cpufreq-acpi-only-call-_ppc-after-cpufreq-acpi-init-funcs-got-called-already
-+++ a/drivers/cpufreq/cpufreq.c
-@@ -825,6 +825,9 @@ static int cpufreq_add_dev(struct sys_de
- 	policy->user_policy.min = policy->cpuinfo.min_freq;
- 	policy->user_policy.max = policy->cpuinfo.max_freq;
- 
-+	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
-+				     CPUFREQ_START, policy);
-+
- #ifdef CONFIG_SMP
- 
- #ifdef CONFIG_HOTPLUG_CPU
-diff -puN include/linux/cpufreq.h~cpufreq-acpi-only-call-_ppc-after-cpufreq-acpi-init-funcs-got-called-already include/linux/cpufreq.h
---- a/include/linux/cpufreq.h~cpufreq-acpi-only-call-_ppc-after-cpufreq-acpi-init-funcs-got-called-already
-+++ a/include/linux/cpufreq.h
-@@ -106,6 +106,7 @@ struct cpufreq_policy {
- #define CPUFREQ_ADJUST		(0)
- #define CPUFREQ_INCOMPATIBLE	(1)
- #define CPUFREQ_NOTIFY		(2)
-+#define CPUFREQ_START		(3)
- 
- #define CPUFREQ_SHARED_TYPE_NONE (0) /* None */
- #define CPUFREQ_SHARED_TYPE_HW	 (1) /* HW does needed coordination */
-_
-
+	Ingo
