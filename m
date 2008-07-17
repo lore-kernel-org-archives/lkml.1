@@ -1,153 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758767AbYGQRH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758886AbYGQRKJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758767AbYGQRH0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 13:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756096AbYGQRHQ
+	id S1758886AbYGQRKJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 13:10:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756246AbYGQRJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 13:07:16 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52512 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754052AbYGQRHO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 13:07:14 -0400
-Date: Thu, 17 Jul 2008 19:06:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaroslav Kysela <perex@perex.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       ALSA development <alsa-devel@alsa-project.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Rene Herman <rene.herman@gmail.com>,
-       Takashi Iwai <tiwai@suse.de>, Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: [boot crash, bisected] in 9f240a55 "ALSA: opti93x: use cs4231 lib"
-Message-ID: <20080717170657.GA14593@elte.hu>
-References: <Pine.LNX.4.61.0807141105150.7676@tm8103-a.perex-int.cz>
-MIME-Version: 1.0
+	Thu, 17 Jul 2008 13:09:57 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:45398 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755668AbYGQRJ5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 13:09:57 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AjgFACQYf0hMRKxB/2dsb2JhbACBWq5h
+Date: Thu, 17 Jul 2008 13:04:53 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Anthony Liguori <anthony@codemonkey.ws>
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       Avi Kivity <avi@qumranet.com>, kvm@vger.kernel.org,
+       "Feng(Eric) Liu" <eric.e.liu@intel.com>
+Subject: Re: [patch 4/4] KVM-trace port to tracepoints
+Message-ID: <20080717170453.GA29855@Krystal>
+References: <20080717155724.897537670@polymtl.ca> <20080717160003.359557938@polymtl.ca> <487F78DB.2070303@codemonkey.ws>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.61.0807141105150.7676@tm8103-a.perex-int.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <487F78DB.2070303@codemonkey.ws>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:58:53 up 42 days, 21:39,  5 users,  load average: 1.31, 0.67,
+	0.59
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Anthony Liguori (anthony@codemonkey.ws) wrote:
+> Hi Mathieu,
+>
 
-hi Jaroslav, et al,
+Hi Anthony,
 
-* Jaroslav Kysela <perex@perex.cz> wrote:
+> It's difficult to review your patches because they aren't inlined.
+>
+> At any rate, this patches are unusable with SVM.  They try to execute VT 
+> instructions unconditionally.  For instance, you changed:
+>>
+>> -    KVMTRACE_1D(INTR, vcpu, vmcs_read32(VM_EXIT_INTR_INFO), handler);
+>> +    trace_kvm_intr(vcpu);
+>
+> Which lived in VT-specific code (vmx.c)
+>
+> To:
+>
+>> +static void probe_kvm_intr(struct kvm_vcpu *vcpu)
+>> +{
+>> +    kvm_add_trace(KVM_TRC_INTR, vcpu, 1,
+>> +        (u32 []){ vmcs_read32(VM_EXIT_INTR_INFO) });
+>> +}
+>> +
+>
+> Which lives in common code (kvm_trace.c).  But vmcs_read32() is VT-specific 
+> and should not be used in common code so this motion is wrong.  Why not 
+> just pass more arguments to probe_kvm_intr()?  Then your first two patches 
+> can be dropped completely.
+>
 
->       ALSA: opti93x: use cs4231 lib
+Yes, I just noticed that I made a small mistake : the probe code should
+actually go in arch/x86/kvm/kvm_trace_probes.c, which is x86-specific.
 
--tip testing found the following bootup crash on latest -git:
-    
-    [   44.827459] calling  alsa_card_opti9xx_init+0x0/0x20
-    [   44.830435] bus: 'isa': add driver opti93x
-    [   44.833503] device: 'opti93x.0': device_add
-    [   44.837804] bus: 'isa': add device opti93x.0
-    [   44.841820] bus: 'isa': driver_probe_device: matched device opti93x.0 with driver opti93x
-    [   44.845327] bus: 'isa': really_probe: probing driver opti93x with device opti93x.0
-    [   44.851601] BUG: unable to handle kernel NULL pointer dereference at 00000010
-    [   44.855329] IP: [<786c0782>] snd_card_opti9xx_free+0x12/0x40
-    [   44.859370] *pde = 00000000
-    [   44.862651] Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
-    [   44.862651]
-    [   44.862651] Pid: 1, comm: swapper Not tainted (2.6.26-00085-g9f240a5-dirty #20182)
-    [   44.862651] EIP: 0060:[<786c0782>] EFLAGS: 00010286 CPU: 0
-    [   44.862651] EIP is at snd_card_opti9xx_free+0x12/0x40
-    [   44.862651] EAX: 96892000 EBX: 00000000 ECX: 96892140 EDX: 786c0770
-    [   44.862651] ESI: 9689229c EDI: 9689229c EBP: 9782fe10 ESP: 9782fe08
-    [   44.862651]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-    [   44.862651] Process swapper (pid: 1, ti=9782f000 task=97848000 task.ti=9782f000)
-    [   44.862651] Stack: 96892000 00000286 9782fe1c 786a2b5b 96892000 9782fe48 786a349d 00000000
-    [   44.862651]        00000286 78b34028 9688a100 00000286 9689229c fffff000 00000286 9689229c
-    [   44.862651]        9782fe84 787f4b18 968922c0 9689229f 9688dc00 96892000 00000004 00000000
-    [   44.862651] Call Trace:
-    [   44.862651]  [<786a2b5b>] ? snd_card_do_free+0x4b/0x120
-    [   44.862651]  [<786a349d>] ? snd_card_free+0x7d/0x90
-    [   44.862651]  [<787f4b18>] ? snd_opti9xx_isa_probe+0x158/0xa30
-    [   44.862651]  [<787f49c0>] ? snd_opti9xx_isa_probe+0x0/0xa30
-    [   44.862651]  [<7832580d>] ? isa_bus_probe+0x1d/0x30
-    [   44.862651]  [<783229c0>] ? driver_probe_device+0xa0/0x1c0
-    [   44.862651]  [<78322b58>] ? __device_attach+0x8/0x10
-    [   44.862651]  [<78321d60>] ? bus_for_each_drv+0x40/0x80
-    [   44.862651]  [<78322c04>] ? device_attach+0x84/0xa0
-    [   44.862651]  [<78322b50>] ? __device_attach+0x0/0x10
-    [   44.862651]  [<78321b97>] ? bus_attach_device+0x47/0x50
-    [   44.862651]  [<78320877>] ? device_add+0x3a7/0x500
-    [   44.862651]  [<783209e2>] ? device_register+0x12/0x20
-    [   44.862651]  [<783259c2>] ? isa_register_driver+0xa2/0x120
-    [   44.862651]  [<78153631>] ? ktime_get+0x11/0x30
-    [   44.862651]  [<78b78852>] ? alsa_card_opti9xx_init+0x12/0x20
-    [   44.862651]  [<78b3d679>] ? kernel_init+0x1d9/0x300
-    [   44.862651]  [<78b78840>] ? alsa_card_opti9xx_init+0x0/0x20
-    [   44.862651]  [<781192ce>] ? syscall_exit+0x8/0x28
-    [   44.862651]  [<78b3d4a0>] ? kernel_init+0x0/0x300
-    [   44.862651]  [<78b3d4a0>] ? kernel_init+0x0/0x300
-    [   44.862651]  [<7811a4e7>] ? kernel_thread_helper+0x7/0x10
-    [   44.862651]  =======================
-    [   44.862651] Code: e8 8b 03 e8 11 e5 a9 ff 8b 03 5b 5d c3 b8 ff ff ff ff 5b 5d c3 8d 74 26 00 55 89 e5 56 53 8b b0 38 01 00 00 85 f6 74 21 8b 5e 1c <8b> 43 10 85 c0 7e 0f e8 32 5a aa ff 8b 43 10 89 da e8 68 5a aa
-    [   44.862651] EIP: [<786c0782>] snd_card_opti9xx_free+0x12/0x40 SS:ESP 0068:9782fe08
-    [   44.866056] Kernel panic - not syncing: Fatal exception
-    
-i've bisected it down to:
-    
-    | 9f240a558f94bea839e14c46c8fccf93bdd35ef6 is first bad commit
-    | commit 9f240a558f94bea839e14c46c8fccf93bdd35ef6
-    | Author: Krzysztof Helt <krzysztof.h1@wp.pl>
-    | Date:   Wed Jun 11 12:26:32 2008 +0200
-    |
-    |     ALSA: opti93x: use cs4231 lib
-    
-The bisection log is:
+The reason why I would try to move the vmcs_read32(VM_EXIT_INTR_INFO) to
+the probe code is because, unlike the Markers, when a function call with
+potential side-effects is put within the arguments, it's really an
+argument to a static inline function. In the markers, since it was a
+parameter passed to a macro, I could shuffle it into the branch and it
+would not be executed when markers were disabled.
 
-# bad : [a3cf859f] Merge branch 'i2c-for-linus' of git://jdelvare.pck.nerim.net/jdelvare-2.6
-# good: [bce7f795] Linux 2.6.26
-# bad : [d1794f2a] Merge branch 'bkl-removal' of git://git.lwn.net/linux-2.6
-# good: [e30a44f3] x86: merge put_user.
-# bad : [6c118e4c] Merge git://git.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6
-# bad : [fe0a3fed] ALSA: Release v1.0.17
-# bad : [dbac7cbe] ALSA: ASoC: Add missing includes
-# good: [f2690025] [ALSA] hda - Add support of Teradici controller
-# good: [f10485eb] [ALSA] ASoC: Add WM8990 driver
-# good: [0a1b42d5] sound: sound/oss/dmasound/: cleanups
-# good: [a6a950a4] ALSA: hda - Add a warning if pending IRQ is found
-# bad : [d751b231] ALSA: ASoC: Fix register cache sizes for Wolfson codecs
-# bad : [9f240a56] ALSA: opti93x: use cs4231 lib
-# good: [abf1f5af] ALSA: opti93x: add support for Opti93x codec in cs4231-lib
-    
-the patch below is a temporary workaround to keep my tests running.
+However, we don't have this with tracepoints.
 
-Can send more info about the system in question - it has ISA (it's an 
-old Pentium-3-Coppermine based laptop) but otherwise it doesnt have 
-opti93x hw so the crash should be reproducible elsewhere as well.
+kvm-move-register-read-write-to-system-headers.patch becomes
+obsolete since I put the probe code in arch/x86/kvm/.
 
-Thanks,
+But it would still be required to move vmcs read and encodings to
+headers, either to include/asm-x86 or arch/x86/kvm.
 
-	Ingo
-    
----
- sound/isa/Kconfig |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+Mathieu
 
-diff --git a/sound/isa/Kconfig b/sound/isa/Kconfig
-index 5769a13..a63df4f 100644
---- a/sound/isa/Kconfig
-+++ b/sound/isa/Kconfig
-@@ -305,6 +305,12 @@ config SND_OPTI93X
- 	select SND_OPL3_LIB
- 	select SND_MPU401_UART
- 	select SND_CS4231_LIB
-+	#
-+	# Crashes on bootup with this config:
-+	#
-+	# http://redhat.com/~mingo/misc/config-Thu_Jul_17_17_54_09_CEST_2008.bad
-+	#
-+	depends on 0
- 	help
- 	  Say Y here to include support for soundcards based on Opti
- 	  82C93x chips.
+> Regards,
+>
+> Anthony Liguori
+>
+> Mathieu Desnoyers wrote:
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
