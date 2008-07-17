@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932626AbYGQWXm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932535AbYGQWaO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932626AbYGQWXm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 18:23:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758204AbYGQWXb
+	id S932535AbYGQWaO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 18:30:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759899AbYGQWaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 18:23:31 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37202 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757296AbYGQWXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 18:23:30 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel, use it in more drivers.
-Date: Fri, 18 Jul 2008 00:25:33 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-       sam@ravnborg.org
-References: <1216077806.27455.85.camel@shinybook.infradead.org> <200807172242.51251.rjw@sisk.pl> <1216329939.6672.2.camel@shinybook.infradead.org>
-In-Reply-To: <1216329939.6672.2.camel@shinybook.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Thu, 17 Jul 2008 18:30:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35345 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759890AbYGQW37 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 18:29:59 -0400
+Date: Thu, 17 Jul 2008 15:28:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: wenji.huang@oracle.com, roland@redhat.com, t-nishiie@np.css.fujitsu.com,
+       ltt-dev@lists.casi.polymtl.ca, systemtap@sources.redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix markers duplicate modpost entry (update)
+Message-Id: <20080717152837.8982fe8a.akpm@linux-foundation.org>
+In-Reply-To: <20080717145217.GA24496@Krystal>
+References: <20080715024754.GA26471@Krystal>
+	<000001c8e7aa$b9548600$2bfd9200$@css.fujitsu.com>
+	<20080717024550.GA22869@Krystal>
+	<487ED503.2060503@oracle.com>
+	<20080717070321.GB26035@Krystal>
+	<20080717001613.8fe204df.akpm@linux-foundation.org>
+	<20080717145217.GA24496@Krystal>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807180025.33834.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 17 of July 2008, David Woodhouse wrote:
-> On Thu, 2008-07-17 at 22:42 +0200, Rafael J. Wysocki wrote:
-> > 
-> >   HOSTCC  firmware/ihex2fw - due to: FORCE
-> > /home/rafael/src/linux-next/firmware/ihex2fw.c:268: fatal error:
-> > opening dependency file firmware/.ihex2fw.d: Read-only file system
-> > compilation terminated.
-> 
-> I'm very confused. I can do this...
-> 
->  make INSTALL_FW_PATH=/tmp/foo firmware_install
->  su otheruser
->  touch firmware/.ihex2fw.cmd  (gives EPERM as expected)
->  make INSTALL_FW_PATH=/tmp/foo2 firmware_install
-> 
-> And it _works_ for me, after I've made that change in
-> scripts/Makefile.fwinst. But I don't have .ihex2fw.d -- I
-> have .ihex2fw.cmd. What is in your .ihex2fw.d?
+On Thu, 17 Jul 2008 10:52:17 -0400
+Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
 
-There's no '.ihex2fw.d' under 'firmware' in my O= path.
+> Subject: Re: [PATCH] Fix markers duplicate modpost entry (update)
 
-I just do 'make modules_install' on the NFS client, after I have run
-'make O=... ... firmware_install' on the server and it prints the above error
-message.
+Please prepare the patch titles along the lines of
 
-Should I add anything to the 'make modules_install' command line?
+	[patch] subsystem-identifer: what i did to it
 
-Rafael
+so this one would have been
+
+	[patch] markers: fix markers duplicate modpost entry
+
+
+It's for consistency, and for ease of reading commits mailing lists and
+gitk titles and git-shortlog output, etc.
+
+Thanks.
