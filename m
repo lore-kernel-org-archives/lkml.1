@@ -1,62 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757929AbYGQDWm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757369AbYGQDZz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757929AbYGQDWm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 23:22:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084AbYGQDWe
+	id S1757369AbYGQDZz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 23:25:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbYGQDZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 23:22:34 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38080 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753670AbYGQDWe (ORCPT
+	Wed, 16 Jul 2008 23:25:47 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:52558 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752654AbYGQDZq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 23:22:34 -0400
-Date: Thu, 17 Jul 2008 12:27:51 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "linux-mm@kvack.org" <linux-mm@kvack.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: [mmtom][BUGFIX]
- vmscan-second-chance-replacement-for-anonymous-pages-fix.patch
-Message-Id: <20080717122751.92525032.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 16 Jul 2008 23:25:46 -0400
+Message-ID: <487EBC2F.9010208@keyaccess.nl>
+Date: Thu, 17 Jul 2008 05:27:43 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: unused Kconfig vars under drivers/
+References: <alpine.LFD.1.10.0807161639510.13507@localhost.localdomain>
+In-Reply-To: <alpine.LFD.1.10.0807161639510.13507@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Under memcg, active anon tend not to go to inactive anon.
-This will cause OOM in memcg easily when tons of anon was used at once.
-This check was lacked in split-lru.
+On 16-07-08 22:41, Robert P. J. Day wrote:
 
-This patch is a fix agaisnt
-vmscan-second-chance-replacement-for-anonymous-pages.patch
+[ snip ]
 
+FWIW, ">" is not a good line prefix and several of them are worse. Some 
+mailers show it as equally many levels of quoted reply.
 
-Changelog: v1 -> v2:
- - avoid adding "else".
-
-Signed-off-by:KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Acked-by: Rik van Riel <riel@redhat.com>
-
- mm/vmscan.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: mmtom-stamp-2008-07-15-15-39/mm/vmscan.c
-===================================================================
---- mmtom-stamp-2008-07-15-15-39.orig/mm/vmscan.c
-+++ mmtom-stamp-2008-07-15-15-39/mm/vmscan.c
-@@ -1351,7 +1351,7 @@ static unsigned long shrink_zone(int pri
- 	 * Even if we did not try to evict anon pages at all, we want to
- 	 * rebalance the anon lru active/inactive ratio.
- 	 */
--	if (scan_global_lru(sc) && inactive_anon_is_low(zone))
-+	if (!scan_global_lru(sc) || inactive_anon_is_low(zone))
- 		shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
- 
- 	throttle_vm_writeout(sc->gfp_mask);
-
+Rene.
