@@ -1,134 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbYGQLEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758484AbYGQLG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756075AbYGQLEk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 07:04:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757688AbYGQLEY
+	id S1758484AbYGQLG2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 07:06:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbYGQLGT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 07:04:24 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:50446 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756649AbYGQLEX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 07:04:23 -0400
-Date: Thu, 17 Jul 2008 12:04:03 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: Pierre Ossman <drzeus@drzeus.cx>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Victor <linux@maxim.org.za>, Ville Syrjala <syrjala@sci.fi>,
-       Marc Pignat <marc.pignat@hevs.ch>
-Subject: Re: [PATCH 3/3] at91_mci: introduce per-mci-revision conditional
-	code
-Message-ID: <20080717110403.GH24620@fluff.org.uk>
-References: <487F13E9.2060601@atmel.com>
+	Thu, 17 Jul 2008 07:06:19 -0400
+Received: from www.tglx.de ([62.245.132.106]:50829 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751941AbYGQLGS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 07:06:18 -0400
+Date: Thu, 17 Jul 2008 13:05:43 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Richard <tuxbox.guru@gmail.com>
+cc: Thomas Renninger <trenn@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "andreas.herrmann3" <andreas.herrmann3@amd.com>, eumaster@gmail.com,
+       uli.geins@geins-web.de
+Subject: Re: [PATCH] Re: AMD Mobile Semprons (3500+, 3600+,...) break with
+ nohz and highres enabled
+In-Reply-To: <487F309D.20709@gmail.com>
+Message-ID: <alpine.LFD.1.10.0807171255320.4316@apollo.tec.linutronix.de>
+References: <1213638474.1684.21.camel@queen.suse.de> <200807161827.16898.trenn@suse.de> <alpine.LFD.1.10.0807162100380.4316@apollo.tec.linutronix.de> <200807171232.46542.trenn@suse.de> <487F309D.20709@gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <487F13E9.2060601@atmel.com>
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 11:42:01AM +0200, Nicolas Ferre wrote:
-> We used to manage features and differences on a per-cpu basis. As several
-> cpus share the same mci revision, this patch aggregates cpus that have the
-> same IP revision in one defined constant.
->
-> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-> ---
-> drivers/mmc/host/at91_mci.c |   21 +++++++++++++--------
-> 1 files changed, 13 insertions(+), 8 deletions(-)
->
-> diff --git a/drivers/mmc/host/at91_mci.c b/drivers/mmc/host/at91_mci.c
-> index 4e3edf3..a95529c 100644
-> --- a/drivers/mmc/host/at91_mci.c
-> +++ b/drivers/mmc/host/at91_mci.c
-> @@ -80,6 +80,11 @@
->
-> #define DRIVER_NAME "at91_mci"
->
-> +#define AT91MCI_REV2	(  cpu_is_at91sam9260() \
-> +			|| cpu_is_at91sam9263() \
-> +			|| cpu_is_at91cap9() \
-> +			|| cpu_is_at91sam9rl())
-> +
+On Thu, 17 Jul 2008, Richard wrote:
+> > north-bridge: nvidia c51mv
+> > south-bridge: nvidia mcp51m
+> > 
+> > Also both are MSI laptops:
+> >   - MSI-M670, modell MS-1632
+> >   - MSI S430x
+> > (This could also be a chipset or even an MSI specific BIOS bug?
+> > Richard could you compare with your HW, pls if still possible).
+> > 
+> > Some more info:
+> >   - things break entering C2 or deeper
+> >   - noapictimer workaround helps to come a bit further, but results in sever
+> >     other errors, disk(dma error), keyboad, mouse etc., also see:
 
-How about making it an inline function to avoid the horrible
-upper-case all throughtout?
+Hmm, I don't see how the apic timer is related to that, but it might
+be a problem with the hpet.
 
-> #define FL_SENT_COMMAND	(1 << 0)
-> #define FL_SENT_STOP	(1 << 1)
->
-> @@ -202,8 +207,8 @@ static inline void at91_mci_sg_to_dma(struct at91mci_host *host, struct mmc_data
-> 	size = data->blksz * data->blocks;
-> 	len = data->sg_len;
->
-> -	/* AT91SAM926[0/3] Data Write Operation and number of bytes erratum */
-> -	if (cpu_is_at91sam9260() || cpu_is_at91sam9263())
-> +	/* AT91MCI_REV2 Data Write Operation and number of bytes erratum */
-> +	if (AT91MCI_REV2)
-> 		if (host->total_length == 12)
-> 			memset(dmabuf, 0, 12);
->
-> @@ -463,7 +468,7 @@ static void at91_mci_enable(struct at91mci_host *host)
-> 	at91_mci_write(host, AT91_MCI_DTOR, AT91_MCI_DTOMUL_1M | AT91_MCI_DTOCYC);
-> 	mr = AT91_MCI_PDCMODE | 0x34a;
->
-> -	if (cpu_is_at91sam9260() || cpu_is_at91sam9263())
-> +	if (AT91MCI_REV2)
-> 		mr |= AT91_MCI_RDPROOF | AT91_MCI_WRPROOF;
->
-> 	at91_mci_write(host, AT91_MCI_MR, mr);
-> @@ -616,10 +621,10 @@ static void at91_mci_send_command(struct at91mci_host *host, struct mmc_command
-> 				 */
-> 				host->total_length = block_length * blocks;
-> 				/*
-> -				 * AT91SAM926[0/3] Data Write Operation and
-> +				 * AT91MCI_REV2 Data Write Operation and
-> 				 * number of bytes erratum
-> 				 */
-> -				if (cpu_is_at91sam9260 () || cpu_is_at91sam9263())
-> +				if (AT91MCI_REV2)
-> 					if (host->total_length < 12)
-> 						host->total_length = 12;
-> 				host->buffer = dma_alloc_coherent(NULL,
-> @@ -1010,7 +1015,7 @@ static int __init at91_mci_probe(struct platform_device *pdev)
-> 	host->bus_mode = 0;
-> 	host->board = pdev->dev.platform_data;
-> 	if (host->board->wire4) {
-> -		if (cpu_is_at91sam9260() || cpu_is_at91sam9263())
-> +		if (AT91MCI_REV2)
-> 			mmc->caps |= MMC_CAP_4_BIT_DATA;
-> 		else
-> 			dev_warn(&pdev->dev, "4 wire bus mode not supported"
-> @@ -1018,8 +1023,8 @@ static int __init at91_mci_probe(struct platform_device *pdev)
-> 	}
->
-> 	/* Add SDIO capability when  available */
-> -	if (cpu_is_at91sam9260() || cpu_is_at91sam9263()) {
-> -		/* AT91SAM9260/9263 erratum */
-> +	if (AT91MCI_REV2) {
-> +		/* AT91MCI_REV2 sdio interrupt erratum */
-> 		if (host->board->wire4 || !host->board->slot_b)
-> 			mmc->caps |= MMC_CAP_SDIO_IRQ;
-> 	}
-> -- 
-> 1.5.3.7
->
->
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Does "noapictimer nohz=off" work ?
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+> >     https://bugzilla.novell.com/show_bug.cgi?id=396220#c13
+> >   - "nohz=off" works (tested on 2.6.25.4-8-pae and 2.6.22.17-0.1-default
+> > SUSE kernels)
+> >   - processor.max_cstate=1 works
 
-  'a smiley only costs 4 bytes'
+Why does it work with 2.6.24 on kubuntu 8.04 ? 
+
+How does a 2.6.24/25/26 vanilla kernel behave on those systems ?
+
+> > 00:09.0 RAM memory: nVidia Corporation MCP51 Host Bridge (rev a2)
+> 
+> Here is a dump from lspci.... looks completely different :-P and here i was
+> blaming ATI :-)
+> 
+> 00:00.0 Host bridge: ATI Technologies Inc RS690 Host Bridge
+
+Oh, that's a different beast, but it might be also a problem with the
+timer interrupt routing.
+
+Thanks,
+
+	tglx
