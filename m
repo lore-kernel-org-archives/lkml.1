@@ -1,413 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932724AbYGQVG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932611AbYGQVI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932724AbYGQVG6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 17:06:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758767AbYGQVGt
+	id S932611AbYGQVI5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 17:08:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758784AbYGQVIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 17:06:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56854 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757890AbYGQVGs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 17:06:48 -0400
-Date: Thu, 17 Jul 2008 17:05:32 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: Dominik Brodowski <linux@dominikbrodowski.net>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       joe@perches.com, greg@kroah.com, nick@nick-andrew.net,
-       randy.dunlap@oracle.com
-Subject: Re: [PATCH 6/7] dynamic debug v2 - convert cpufreq
-Message-ID: <20080717210531.GA13252@redhat.com>
-References: <20080715213613.GG23331@redhat.com> <20080715230731.GA15208@isilmar.linta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 17 Jul 2008 17:08:49 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:7256 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755222AbYGQVIs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 17:08:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=PzhZbxttyQ8zN/6/hQVXaPvHXvrRI8IlrEbuKRaTT4YDNV3l1hrKkezYOxm9YWG8/W
+         TkrLGyeMYo0GNX6VPiBA1rykfzWAL5eXCgz8rsxjebiOyNBob6UGQSl2T1qi0hrxG7HC
+         KpbR9eTINdXY69CdcI2MGh+V7ejx0VgO1x1K0=
+Message-ID: <c8b4dbe10807171408m1c8da2a4ga573f133d6beb86f@mail.gmail.com>
+Date: Thu, 17 Jul 2008 22:08:47 +0100
+From: "Aidan Thornton" <makosoft@googlemail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [stable] Linux 2.6.25.10
+Cc: pageexec@freemail.hu, "Greg KH" <greg@kroah.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+In-Reply-To: <alpine.LFD.1.10.0807150907480.3017@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080715230731.GA15208@isilmar.linta.de>
-User-Agent: Mutt/1.4.1i
+References: <20080703185727.GA12617@suse.de>
+	 <487C242B.19490.17F690F7@pageexec.freemail.hu>
+	 <alpine.LFD.1.10.0807141924020.3017@woody.linux-foundation.org>
+	 <487CDEDD.21049.1ACFDAEA@pageexec.freemail.hu>
+	 <alpine.LFD.1.10.0807150904290.3017@woody.linux-foundation.org>
+	 <alpine.LFD.1.10.0807150907480.3017@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 16, 2008 at 01:07:31AM +0200, Dominik Brodowski wrote:
-> 
-> Hi,
-> 
-> On Tue, Jul 15, 2008 at 05:36:13PM -0400, Jason Baron wrote:
-> > +#include <linux/dynamic_debug_cpufreq.h>
-> 
-> what's contained in this file (couldn't find it in this or one of the other
-> diffs, but may have missed it).
-> 
+On 7/15/08, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>
+>
+> On Tue, 15 Jul 2008, Linus Torvalds wrote:
+>> 
+>> So as far as I'm concerned, "disclosing" is the fixing of the bug. It's 
+>> the "look at the source" approach.
+>
+> Btw, and you may not like this, since you are so focused on security, one 
+> reason I refuse to bother with the whole security circus is that I think 
+> it glorifies - and thus encourages - the wrong behavior.
+>
+> It makes "heroes" out of security people, as if the people who don't just 
+> fix normal bugs aren't as important.
+>
+> In fact, all the boring normal bugs are _way_ more important, just because 
+> there's a lot more of them. I don't think some spectacular security hole 
+> should be glorified or cared about as being any more "special" than a 
+> random spectacular crash due to bad locking.
 
-i forgot to include it. A full patch is found below.
+I hate to state the obvious, but there's a reason security holes are treated differently - because they're *not* *obvious*. If a system is crashing spectacularly, generally someone notices and tries to fix it. On the other hand, security holes are usually invisible in normal operation until a hacker uses one to walk off with tens of thousands of people's credit card details. That's why there's so much effort put into tracking them.
 
-> > -#define dprintk(msg...) cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, "cpufreq-nforce2", msg)
-> > +#define dprintk(msg...) do { \
-> > +	if (dynamic_dbg_enabled(TYPE_FLAG, CPUFREQ_DEBUG_DRIVER, cpufreq_debug)) \
-> > +		cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, "cpufreq-nforce2", msg); \
-> > +	} while (0)
-> 
-> Hm.... What about leaving this as it is, renaming the
-> drivers/cpufreq/cpufreq.c function to __cpufreq_debug_printk(), and then
-> adding to include/linux/cpufreq.h
-> 
-> #define cpufreq_debug_printk(type, prefix, msg...) do { \
-> 	if (dynamic_dbg_enabled(TYPE_FLAG, type, cpufreq_debug))
-> 		cpufreq_debug_printk(type, prefix, msg); \
-> 	} while (0)
-> 
+> Security people are often the black-and-white kind of people that I can't 
+> stand. I think the OpenBSD crowd is a bunch of masturbating monkeys, in 
+> that they make such a big deal about concentrating on security to the 
+> point where they pretty much admit that nothing else matters to them.
+>
+> To me, security is important. But it's no less important than everything 
+> *else* that is also important!
 
-i agree that would be a bit cleaner. the new patch below includes this suggestion.
+True, there are other serious types of bugs (silent data corruption is one particularly nasty one). However, for *any* serious bug, it's important to be clear on what the likely impact is and what's affected. This goes particularly for the ones that might otherwise not be obvious to the person affected until it's too late, such as security and silent data corruption bugs, but really it applies to all serious bugs. I'm not convinced these descriptions are clear enough.
 
-
-> > +#if defined(CONFIG_CPU_FREQ_DEBUG) || defined (CONFIG_DYNAMIC_PRINTK_DEBUG)
-> ...
-> > +#if defined(CONFIG_CPU_FREQ_DEBUG) || defined (CONFIG_DYNAMIC_PRINTK_DEBUG)
-> 
-> can't we just depend on thing on another?
-> 
-
-We could make CONFIG_CPU_FREQ_DEBUG force CONFIG_DYNAMIC_PRINTK_DEBUG to be on.
-However, i'm trying to allow CONFIG_CPU_FREQ_DEBUG to be turned on without
-enabling CONFIG_DYNAMIC_PRINTK_DEBUG. That's consistent with how i'm trying to
-do this patch series. That is, individual subsystems can turn their respective
-debugging on without forcing on CONFIG_DYNAMIC_PRINTK_DEBUG.
-
-> > -module_param(debug, uint, 0644);
-> > -MODULE_PARM_DESC(debug, "CPUfreq debugging: add 1 to debug core,"
-> > +module_param(cpufreq_debug, uint, 0644);
-> > +MODULE_PARM_DESC(cpufreq_debug, "CPUfreq debugging: add 1 to debug core,"
-> >  			" 2 to debug drivers, and 4 to debug governors.");
-> 
-> cpufreq.cpufreq_debug is ugly and not backwards compatible... what about 
-> 
-> module_param_named(debug, cpufreq_debug, uint, 0644) [or the other way
-> around, I always forget...])
-> 
-
-makes sense. 
-
-thanks,
-
--Jason
-
-
-diff --git a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-index e2d870d..549edbd 100644
---- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-+++ b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-@@ -25,6 +25,7 @@
-  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  */
- 
-+#include <linux/dynamic_debug_cpufreq.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/init.h>
-diff --git a/arch/x86/kernel/cpu/cpufreq/cpufreq-nforce2.c b/arch/x86/kernel/cpu/cpufreq/cpufreq-nforce2.c
-index f03e915..3eb343d 100644
---- a/arch/x86/kernel/cpu/cpufreq/cpufreq-nforce2.c
-+++ b/arch/x86/kernel/cpu/cpufreq/cpufreq-nforce2.c
-@@ -7,6 +7,7 @@
-  *  BIG FAT DISCLAIMER: Work in progress code. Possibly *dangerous*
-  */
- 
-+#include <linux/dynamic_debug_cpufreq.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/moduleparam.h>
-diff --git a/arch/x86/kernel/cpu/cpufreq/gx-suspmod.c b/arch/x86/kernel/cpu/cpufreq/gx-suspmod.c
-index 9d9eae8..212204f 100644
---- a/arch/x86/kernel/cpu/cpufreq/gx-suspmod.c
-+++ b/arch/x86/kernel/cpu/cpufreq/gx-suspmod.c
-@@ -73,6 +73,7 @@
-  *			Suspend Modulation - Definitions		*
-  ************************************************************************/
- 
-+#include <linux/dynamic_debug_cpufreq.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/init.h>
-diff --git a/arch/x86/kernel/cpu/cpufreq/longhaul.c b/arch/x86/kernel/cpu/cpufreq/longhaul.c
-index 06fcce5..b910935 100644
---- a/arch/x86/kernel/cpu/cpufreq/longhaul.c
-+++ b/arch/x86/kernel/cpu/cpufreq/longhaul.c
-@@ -21,6 +21,7 @@
-  *  BIG FAT DISCLAIMER: Work in progress code. Possibly *dangerous*
-  */
- 
-+#include <linux/dynamic_debug_cpufreq.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/moduleparam.h>
-diff --git a/arch/x86/kernel/cpu/cpufreq/longrun.c b/arch/x86/kernel/cpu/cpufreq/longrun.c
-index af4a867..11ce4fa 100644
---- a/arch/x86/kernel/cpu/cpufreq/longrun.c
-+++ b/arch/x86/kernel/cpu/cpufreq/longrun.c
-@@ -6,6 +6,7 @@
-  *  BIG FAT DISCLAIMER: Work in progress code. Possibly *dangerous*
-  */
- 
-+#include <linux/dynamic_debug_cpufreq.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/init.h>
-diff --git a/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c b/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
-index 199e4e0..868cda4 100644
---- a/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
-+++ b/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
-@@ -20,6 +20,7 @@
-  *
-  */
- 
-+#include <linux/dynamic_debug_cpufreq.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/init.h>
-diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k7.c b/arch/x86/kernel/cpu/cpufreq/powernow-k7.c
-index 0a61159..1305afb 100644
---- a/arch/x86/kernel/cpu/cpufreq/powernow-k7.c
-+++ b/arch/x86/kernel/cpu/cpufreq/powernow-k7.c
-@@ -12,6 +12,7 @@
-  * - We disable half multipliers if ACPI is used on A0 stepping CPUs.
-  */
- 
-+#include <linux/dynamic_debug_cpufreq.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/moduleparam.h>
-diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-index 46d4034..d18f9bd 100644
---- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-+++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-@@ -24,6 +24,7 @@
-  *     http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/30430.pdf
-  */
- 
-+#include <linux/dynamic_debug_cpufreq.h>
- #include <linux/kernel.h>
- #include <linux/smp.h>
- #include <linux/module.h>
-diff --git a/arch/x86/kernel/cpu/cpufreq/sc520_freq.c b/arch/x86/kernel/cpu/cpufreq/sc520_freq.c
-index 42da9bd..7da87dd 100644
---- a/arch/x86/kernel/cpu/cpufreq/sc520_freq.c
-+++ b/arch/x86/kernel/cpu/cpufreq/sc520_freq.c
-@@ -13,6 +13,7 @@
-  *	2005-03-30: - initial revision
-  */
- 
-+#include <linux/dynamic_debug_cpufreq.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/init.h>
-diff --git a/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c b/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
-index 908dd34..6fcd23f 100644
---- a/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
-+++ b/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
-@@ -13,6 +13,7 @@
-  * Copyright (C) 2003 Jeremy Fitzhardinge <jeremy@goop.org>
-  */
- 
-+#include <linux/dynamic_debug_cpufreq.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/init.h>
-diff --git a/arch/x86/kernel/cpu/cpufreq/speedstep-ich.c b/arch/x86/kernel/cpu/cpufreq/speedstep-ich.c
-index 1b50244..43dd80e 100644
---- a/arch/x86/kernel/cpu/cpufreq/speedstep-ich.c
-+++ b/arch/x86/kernel/cpu/cpufreq/speedstep-ich.c
-@@ -18,6 +18,7 @@
-  *                        SPEEDSTEP - DEFINITIONS                    *
-  *********************************************************************/
- 
-+#include <linux/dynamic_debug_cpufreq.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/init.h>
-diff --git a/arch/x86/kernel/cpu/cpufreq/speedstep-smi.c b/arch/x86/kernel/cpu/cpufreq/speedstep-smi.c
-index 8a85c93..8aef4bf 100644
---- a/arch/x86/kernel/cpu/cpufreq/speedstep-smi.c
-+++ b/arch/x86/kernel/cpu/cpufreq/speedstep-smi.c
-@@ -12,6 +12,7 @@
-  *                        SPEEDSTEP - DEFINITIONS                    *
-  *********************************************************************/
- 
-+#include <linux/dynamic_debug_cpufreq.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/moduleparam.h>
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 35a26a3..c4b0666 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -15,6 +15,7 @@
-  *
-  */
- 
-+#include <linux/dynamic_debug_cpufreq.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/init.h>
-@@ -179,10 +180,7 @@ EXPORT_SYMBOL_GPL(cpufreq_cpu_put);
- /*********************************************************************
-  *                     UNIFIED DEBUG HELPERS                         *
-  *********************************************************************/
--#ifdef CONFIG_CPU_FREQ_DEBUG
--
--/* what part(s) of the CPUfreq subsystem are debugged? */
--static unsigned int debug;
-+#if defined(CONFIG_CPU_FREQ_DEBUG) || defined (CONFIG_DYNAMIC_PRINTK_DEBUG)
- 
- /* is the debug output ratelimit'ed using printk_ratelimit? User can
-  * set or modify this value.
-@@ -215,7 +213,7 @@ static void cpufreq_debug_disable_ratelimit(void)
- 	spin_unlock_irqrestore(&disable_ratelimit_lock, flags);
- }
- 
--void cpufreq_debug_printk(unsigned int type, const char *prefix,
-+void __cpufreq_debug_printk(unsigned int type, const char *prefix,
- 							const char *fmt, ...)
- {
- 	char s[256];
-@@ -224,32 +222,32 @@ void cpufreq_debug_printk(unsigned int type, const char *prefix,
- 	unsigned long flags;
- 
- 	WARN_ON(!prefix);
--	if (type & debug) {
--		spin_lock_irqsave(&disable_ratelimit_lock, flags);
--		if (!disable_ratelimit && debug_ratelimit
--					&& !printk_ratelimit()) {
--			spin_unlock_irqrestore(&disable_ratelimit_lock, flags);
--			return;
--		}
-+	spin_lock_irqsave(&disable_ratelimit_lock, flags);
-+	if (!disable_ratelimit && debug_ratelimit
-+				&& !printk_ratelimit()) {
- 		spin_unlock_irqrestore(&disable_ratelimit_lock, flags);
-+		return;
-+	}	
-+	spin_unlock_irqrestore(&disable_ratelimit_lock, flags);
- 
--		len = snprintf(s, 256, KERN_DEBUG "%s: ", prefix);
-+	len = snprintf(s, 256, KERN_DEBUG "%s: ", prefix);
- 
--		va_start(args, fmt);
--		len += vsnprintf(&s[len], (256 - len), fmt, args);
--		va_end(args);
-+	va_start(args, fmt);
-+	len += vsnprintf(&s[len], (256 - len), fmt, args);
-+	va_end(args);
- 
--		printk(s);
-+	printk(s);
- 
--		WARN_ON(len < 5);
--	}
-+	WARN_ON(len < 5);
- }
--EXPORT_SYMBOL(cpufreq_debug_printk);
-+EXPORT_SYMBOL(__cpufreq_debug_printk);
- 
- 
--module_param(debug, uint, 0644);
-+unsigned int cpufreq_debug;
-+EXPORT_SYMBOL_GPL(cpufreq_debug);
-+module_param_named(debug, cpufreq_debug, uint, 0644);
- MODULE_PARM_DESC(debug, "CPUfreq debugging: add 1 to debug core,"
--			" 2 to debug drivers, and 4 to debug governors.");
-+				" 2 to debug drivers, and 4 to debug governors.");
- 
- module_param(debug_ratelimit, uint, 0644);
- MODULE_PARM_DESC(debug_ratelimit, "CPUfreq debugging:"
-diff --git a/drivers/cpufreq/cpufreq_performance.c b/drivers/cpufreq/cpufreq_performance.c
-index e8e1451..cee0e66 100644
---- a/drivers/cpufreq/cpufreq_performance.c
-+++ b/drivers/cpufreq/cpufreq_performance.c
-@@ -10,6 +10,7 @@
-  *
-  */
- 
-+#include <linux/dynamic_debug_cpufreq.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/cpufreq.h>
-diff --git a/drivers/cpufreq/cpufreq_powersave.c b/drivers/cpufreq/cpufreq_powersave.c
-index 13fe06b..4680ccc 100644
---- a/drivers/cpufreq/cpufreq_powersave.c
-+++ b/drivers/cpufreq/cpufreq_powersave.c
-@@ -10,6 +10,7 @@
-  *
-  */
- 
-+#include <linux/dynamic_debug_cpufreq.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/cpufreq.h>
-diff --git a/drivers/cpufreq/cpufreq_userspace.c b/drivers/cpufreq/cpufreq_userspace.c
-index cb2ac01..8a33636 100644
---- a/drivers/cpufreq/cpufreq_userspace.c
-+++ b/drivers/cpufreq/cpufreq_userspace.c
-@@ -11,6 +11,7 @@
-  *
-  */
- 
-+#include <linux/dynamic_debug_cpufreq.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/smp.h>
-diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-index ae6cd60..506cc33 100644
---- a/drivers/cpufreq/freq_table.c
-+++ b/drivers/cpufreq/freq_table.c
-@@ -4,6 +4,7 @@
-  * Copyright (C) 2002 - 2003 Dominik Brodowski
-  */
- 
-+#include <linux/dynamic_debug_cpufreq.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/init.h>
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index ddd8652..74ce70f 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -366,14 +366,19 @@ void cpufreq_frequency_table_put_attr(unsigned int cpu);
- #define CPUFREQ_DEBUG_DRIVER	2
- #define CPUFREQ_DEBUG_GOVERNOR	4
- 
--#ifdef CONFIG_CPU_FREQ_DEBUG
-+#define cpufreq_debug_printk(flag, name, msg...) do { \
-+	if (dynamic_dbg_enabled(TYPE_FLAG, flag, cpufreq_debug)) \
-+		__cpufreq_debug_printk(flag, name, msg); \
-+	} while (0)
- 
--extern void cpufreq_debug_printk(unsigned int type, const char *prefix, 
--				 const char *fmt, ...);
-+#if defined(CONFIG_CPU_FREQ_DEBUG) || defined (CONFIG_DYNAMIC_PRINTK_DEBUG)
- 
-+extern unsigned int cpufreq_debug;
-+extern void __cpufreq_debug_printk(unsigned int type, const char *prefix, 
-+				 const char *fmt, ...);
- #else
- 
--#define cpufreq_debug_printk(msg...) do { } while(0)
-+#define __cpufreq_debug_printk(msg...) do { } while(0)
- 
- #endif /* CONFIG_CPU_FREQ_DEBUG */
- 
-diff --git a/include/linux/dynamic_debug_cpufreq.h b/include/linux/dynamic_debug_cpufreq.h
-new file mode 100644
-index 0000000..b0cff6d
---- /dev/null
-+++ b/include/linux/dynamic_debug_cpufreq.h
-@@ -0,0 +1,8 @@
-+#define DYNAMIC_DEBUG_NUM_FLAGS "3"
-+#define DYNAMIC_DEBUG_FLAG_NAMES "CPUFREQ_DEBUG_CORE,CPUFREQ_DEBUG_DRIVER,CPUFREQ_DEBUG_GOVERNOR"
-+#define DYNAMIC_DEBUG_TYPE "2"
-+#define DYNAMIC_DEBUG_MODNAME "cpufreq_shared"
-+
-+#ifdef CONFIG_CPU_FREQ_DEBUG
-+#define DEBUG 1
-+#endif
-
-
-
+Aidan
