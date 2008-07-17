@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759655AbYGQOUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759688AbYGQOVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759655AbYGQOUo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 10:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756915AbYGQOUg
+	id S1759688AbYGQOVy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 10:21:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757130AbYGQOVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 10:20:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37766 "EHLO mx1.redhat.com"
+	Thu, 17 Jul 2008 10:21:43 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:53330 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755640AbYGQOUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 10:20:35 -0400
-Date: Thu, 17 Jul 2008 10:20:25 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Chris Snook <csnook@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Eric Rannaud <eric.rannaud@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: madvise(2) MADV_SEQUENTIAL behavior
-Message-ID: <20080717102025.6b7f0e40@cuia.bos.redhat.com>
-In-Reply-To: <487E628A.3050207@redhat.com>
-References: <1216163022.3443.156.camel@zenigma>
-	<1216210495.5232.47.camel@twins>
-	<20080716105025.2daf5db2@cuia.bos.redhat.com>
-	<487E628A.3050207@redhat.com>
-Organization: Red Hat, Inc
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; i386-redhat-linux-gnu)
+	id S1756579AbYGQOVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 10:21:42 -0400
+Date: Thu, 17 Jul 2008 18:21:33 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Octavian Purdila <opurdila@ixiacom.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tcp: do not promote SPLICE_F_NONBLOCK to socket O_NONBLOCK
+Message-ID: <20080717142132.GA11702@2ka.mipt.ru>
+References: <200807171633.49791.opurdila@ixiacom.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200807171633.49791.opurdila@ixiacom.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Jul 2008 17:05:14 -0400
-Chris Snook <csnook@redhat.com> wrote:
+Hi Octavian.
 
-> > I believe that for mmap MADV_SEQUENTIAL, we will have to do
-> > an unmap-behind from the fault path.  Not every time, but
-> > maybe once per megabyte, unmapping the megabyte behind us.
-> > 
-> > That way the normal page cache policies (use once, etc) can
-> > take care of page eviction, which should help if the file
-> > is also in use by another process.
-> 
-> Wouldn't it just be easier to not move pages to the active list when 
-> they're referenced via an MADV_SEQUENTIAL mapping?  
+On Thu, Jul 17, 2008 at 04:33:49PM +0300, Octavian Purdila (opurdila@ixiacom.com) wrote:
+>     This patch changes tcp_splice_read to the behavior implied by man 2
+>     splice:
+>     
+>          SPLICE_F_NONBLOCK - Do not block on I/O. This makes the splice
+>          pipe operations non-blocking, but splice() may nevertheless block
+>          because the file descriptors that are spliced to/from may block
+>          (unless they have the O_NONBLOCK flag set).
+>     
+>     This approach also provides a simple solution to the splice
+>     transfer size problem. Say we have the following common sequence:
+>     
+>          splice(socket, pipe);
+>          splice(pipe, file);
+>     
+>     Unless we specify SPLICE_F_NONBLOCK, we can't use arbitrarily large
+>     transfer sizes with the 1st splice since otherwise we will deadlock
+>     due to pipe being full.  But if we use SPLICE_F_NONBLOCK, the current
+>     implementation will make the underlying socket non-blocking and thus
+>     will force us use poll or other async I/O notification mechanism.
 
-You want to check the MADV_SEQUENTIAL hint at pageout time and
-discard the referenced bit from the pte?
+Existing behaviour was selected to be able to have a progress if socket
+does not have enough data to fill the pipe. With your change if socket
+is not opened with non-blocking mode reading will block not matter if
+SPLICE_F_NONBLOCK is set or not. This is a quite serious break of the
+overall idea behind SPLICE_F_NONBLOCK.
 
-> If we keep them on the inactive list, they'll be candidates for
-> reclaiming
-
-Only if we ignore the referenced bit.  Which I guess we can do.
+Socket will not be marked as non-blocking if SPLICE_F_NONBLOCK is
+specified, only splicing will used non-blocking reading, any read via
+recv() will use existing socket flags.
 
 -- 
-All Rights Reversed
+	Evgeniy Polyakov
