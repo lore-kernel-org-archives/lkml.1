@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760190AbYGQWkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757262AbYGQWl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760190AbYGQWkz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 18:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758292AbYGQWkn
+	id S1757262AbYGQWl0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 18:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757017AbYGQWlK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 18:40:43 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:38792 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932118AbYGQWkm (ORCPT
+	Thu, 17 Jul 2008 18:41:10 -0400
+Received: from simmts12.bellnexxia.net ([206.47.199.141]:48109 "EHLO
+	simmts12-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756120AbYGQWlJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 18:40:42 -0400
-Date: Thu, 17 Jul 2008 18:40:41 -0400
-To: Alastair Stevens <alastair@altrux.me.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: From 2.4 to 2.6 to 2.7?
-Message-ID: <20080717224041.GM31126@csclub.uwaterloo.ca>
-References: <487FC213.9030604@altrux.me.uk>
+	Thu, 17 Jul 2008 18:41:09 -0400
+X-Greylist: delayed 1779 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Jul 2008 18:41:08 EDT
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEANtff0jP5+wq/2dsb2JhbACwaA
+Date: Thu, 17 Jul 2008 19:11:20 -0300 (ADT)
+From: Thomas Lucaw <aj881@chebucto.ns.ca>
+X-X-Sender: ve1ttl@ttl.localnet
+Reply-To: Thomas Lucaw <aj881@chebucto.ns.ca>
+To: linux-kernel@vger.kernel.org
+Subject: ide-cd or ide-scsi dmesg contradiction
+Message-ID: <Pine.LNX.4.64.0807171844330.1320@ttl.localnet>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <487FC213.9030604@altrux.me.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 11:05:07PM +0100, Alastair Stevens wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> Forgive me if I missed it, but I've not seen any suggestions along the lines
-> of this: how about just dropping the now-meaningless '.6' from the version
-> string and retaining the rest. In other words:
-> 
->    2.27
->    2.27.1
->    ...
->    2.28
->    2.28.1
->    2.28.2
-> 
-> That way you continue the series in a meaningful way, whilst reverting to a
-> neater 3-level numbering scheme again. Perhaps you could make 2.[6.]30 the
-> switchover point....
+Hi, for some time I've noticed
 
-So what makes the 6 meaningless and the 2 meaningful and worth keeping?
+giving the cmdline (to kernel at boot) "hdd=ide-scsi ..." I get
 
-It does nothing for Linus's dislike of large numbers either.
+	ide-scsi is deprecated for cd burning! Use ide-cd and give dev=/dev/hdX as device
 
--- 
-Len Sorensen
+then changing to the suggested "hdd=ide-cd ..." I get
+
+	ide_setup: hdc=ide-cd -- OBSOLETE OPTION, WILL BE REMOVED SOON!
+
+Rather illogical to me :-)
+
+I guess neither should be used, I can make my cdrom and dvd devices work 
+without ok.
+
+kernel 2.6.26
+
+	Tom
+
