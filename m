@@ -1,134 +1,296 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759910AbYGQBuH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759572AbYGQB5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759910AbYGQBuH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 21:50:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbYGQBt4
+	id S1759572AbYGQB5z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 21:57:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbYGQB5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 21:49:56 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:45136 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752033AbYGQBtz (ORCPT
+	Wed, 16 Jul 2008 21:57:46 -0400
+Received: from gateway.crfreenet.org ([81.92.146.254]:56560 "EHLO
+	mail.crfreenet.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751290AbYGQB5p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 21:49:55 -0400
-Subject: Re: [RFC] systemtap: begin the process of using proper kernel APIs
-	(part1: use kprobe symbol_name/offset instead of address)
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
-In-Reply-To: <487E8CE4.70105@redhat.com>
-References: <1216146802.3312.95.camel@localhost.localdomain>
-	 <487E78ED.30804@redhat.com>
-	 <1216249383.3358.69.camel@localhost.localdomain>
-	 <487E8CE4.70105@redhat.com>
-Content-Type: text/plain
-Date: Wed, 16 Jul 2008 20:49:51 -0500
-Message-Id: <1216259391.3358.85.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Jul 2008 21:57:45 -0400
+X-Greylist: delayed 1104 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Jul 2008 21:57:45 EDT
+Date: Thu, 17 Jul 2008 03:39:18 +0200
+From: Ondrej Zajicek <santiago@crfreenet.org>
+To: MadLoisae@gmx.net
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: kernel oops with framebuffer device vt8623fb
+Message-ID: <20080717013917.GA1695@localhost.localdomain>
+References: <487E2911.5090701@gmx.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <487E2911.5090701@gmx.net>
+X-Operating-System: Debian GNU/Linux 4.0 (Etch)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-16 at 20:05 -0400, Masami Hiramatsu wrote:
-> James Bottomley wrote:
-> > On Wed, 2008-07-16 at 18:40 -0400, Masami Hiramatsu wrote:
-> >> James Bottomley wrote:
-> >>> One of the big nasties of systemtap is the way it tries to embed
-> >>> virtually the entirety of the kernel symbol table in the probe modules
-> >>> it constructs.  This is highly undesirable because it represents a
-> >>> subversion of the kernel API to gain access to unexported symbols.  At
-> >>> least for kprobes, the correct way to do this is to specify the probe
-> >>> point by symbol and offset.
-> >>>
-> >>> This patch converts systemtap to use the correct kprobe
-> >>> symbol_name/offset pair to identify the probe location.
-> >> Hi James,
-> >>
-> >> I think your suggestion is a good step. Of course, it might
-> >> have to solve some issues.
-> >>
-> >> Unfortunately, current kprobe's symbol_name interface is not
-> >> so clever. For example, if you specify a static function
-> >> which is defined at several places in the kernel(ex. do_open),
-> >> it always pick up the first one in kallsyms, even if systemtap
-> >> can find all of those functions.
-> >> (you can find many duplicated symbols in /proc/kallsyms)
-> > 
-> > Right, but realistically only functions which have a strict existence
-> > (i.e. those for whom an address could be taken) can be used; functions
-> > which are fully inlined (as in have no separate existence) can't.
-> > That's why the patch finds the closest function with an address to match
-> > on.
+On Wed, Jul 16, 2008 at 07:00:02PM +0200, MadLoisae@gmx.net wrote:
+> Hi!
 > 
-> Sure, inlined functions are embedded in a caller function, so the
-> closest function is the correct owner.
+> I've updated my machine from 2.6.25.11 to 2.6.26 and I think I've found 
+> a problem.
 > 
-> However, I meant local-scope functions can have same name if
-> they are defined in different scope. And even though, both of
-> them are shown in kallsyms. This mean, you can see the functions
-> which have real different existence but have same symbol.
-> 
-> Would you mean systemtap should not probe those name-conflicted
-> functions?
+> If I load the module vt8623fb i get a kernel oops, if the VIA 8623 
+> display framebuffer driver is compiled direct into kernel the system 
+> hangs up very early at booting the kernel.
 
-Actually, I wasn't aware we had any.
+I am sorry for mistake, here is a patch for 2.6.26 fixing the bug:
 
-> >> So, we might better improve kallsyms to treat this case
-> >> and find what is a better way to specify symbols and addresses.
-> > 
-> > Well, both the dwarf and the kallsyms know which are the functions that
-> > have a real existence, so the tool can work it out.  It has a real
-> > meaning too because the chosen symbol must be the parent routine of all
-> > the nested inlines.
-> 
-> Hmm, here is what I got with your patch;
-> $ stap --kelf -e 'probe kernel.function("do_open"){}' -p2
-> # probes
-> kernel.function("do_open@arch/x86/kernel/apm_32.c:1557") /* pc=<do_open+0x0> */ /* <- kernel.function("do_open") */
-> kernel.function("do_open@fs/block_dev.c:928") /* pc=<do_open+0x0> */ /* <- kernel.function("do_open") */
-> kernel.function("do_open@fs/nfsctl.c:24") /* pc=<sys_nfsservctl+0x55> */ /* <- kernel.function("do_open") */
-> kernel.function("do_open@ipc/mqueue.c:630") /* pc=<do_open+0x0> */ /* <- kernel.function("do_open") */
-> 
-> Without your patch;
-> $ stap -e 'probe kernel.function("do_open"){}' -p2
-> # probes
-> kernel.function("do_open@arch/x86/kernel/apm_32.c:1557") /* pc=0x10382 */ /* <- kernel.function("do_open") */
-> kernel.function("do_open@fs/block_dev.c:928") /* pc=0xa0750 */ /* <- kernel.function("do_open") */
-> kernel.function("do_open@fs/nfsctl.c:24") /* pc=0xa6411 */ /* <- kernel.function("do_open") */
-> kernel.function("do_open@ipc/mqueue.c:630") /* pc=0xc55a6 */ /* <- kernel.function("do_open") */
-> 
-> Obviously, the 3rd "do_open" is fully inlined, so it can be
-> correctly handled by kprobes, because it has different
-> symbol(sys_nfsservctl). However, other "do_open" have
-> same symbol(do_open). these will be put on same
-> address (at the first symbol on kallsyms list).
-> 
-> So, we need a bridge for the gap of function addresses
-> between kallsyms and dwarf.
+Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
 
-You mean this particular problem:
+diff -uprN -X linux-2.6.26-orig/Documentation/dontdiff linux-2.6.26-orig/drivers/video/arkfb.c linux-2.6.26/drivers/video/arkfb.c
+--- linux-2.6.26-orig/drivers/video/arkfb.c	2008-07-13 23:51:29.000000000 +0200
++++ linux-2.6.26/drivers/video/arkfb.c	2008-07-16 22:56:34.000000000 +0200
+@@ -958,20 +958,20 @@ static int __devinit ark_pci_probe(struc
+ 	/* Prepare PCI device */
+ 	rc = pci_enable_device(dev);
+ 	if (rc < 0) {
+-		dev_err(info->dev, "cannot enable PCI device\n");
++		dev_err(info->device, "cannot enable PCI device\n");
+ 		goto err_enable_device;
+ 	}
+ 
+ 	rc = pci_request_regions(dev, "arkfb");
+ 	if (rc < 0) {
+-		dev_err(info->dev, "cannot reserve framebuffer region\n");
++		dev_err(info->device, "cannot reserve framebuffer region\n");
+ 		goto err_request_regions;
+ 	}
+ 
+ 	par->dac = ics5342_init(ark_dac_read_regs, ark_dac_write_regs, info);
+ 	if (! par->dac) {
+ 		rc = -ENOMEM;
+-		dev_err(info->dev, "RAMDAC initialization failed\n");
++		dev_err(info->device, "RAMDAC initialization failed\n");
+ 		goto err_dac;
+ 	}
+ 
+@@ -982,7 +982,7 @@ static int __devinit ark_pci_probe(struc
+ 	info->screen_base = pci_iomap(dev, 0, 0);
+ 	if (! info->screen_base) {
+ 		rc = -ENOMEM;
+-		dev_err(info->dev, "iomap for framebuffer failed\n");
++		dev_err(info->device, "iomap for framebuffer failed\n");
+ 		goto err_iomap;
+ 	}
+ 
+@@ -1004,19 +1004,19 @@ static int __devinit ark_pci_probe(struc
+ 	rc = fb_find_mode(&(info->var), info, mode_option, NULL, 0, NULL, 8);
+ 	if (! ((rc == 1) || (rc == 2))) {
+ 		rc = -EINVAL;
+-		dev_err(info->dev, "mode %s not found\n", mode_option);
++		dev_err(info->device, "mode %s not found\n", mode_option);
+ 		goto err_find_mode;
+ 	}
+ 
+ 	rc = fb_alloc_cmap(&info->cmap, 256, 0);
+ 	if (rc < 0) {
+-		dev_err(info->dev, "cannot allocate colormap\n");
++		dev_err(info->device, "cannot allocate colormap\n");
+ 		goto err_alloc_cmap;
+ 	}
+ 
+ 	rc = register_framebuffer(info);
+ 	if (rc < 0) {
+-		dev_err(info->dev, "cannot register framebugger\n");
++		dev_err(info->device, "cannot register framebugger\n");
+ 		goto err_reg_fb;
+ 	}
+ 
+@@ -1090,7 +1090,7 @@ static int ark_pci_suspend (struct pci_d
+ 	struct fb_info *info = pci_get_drvdata(dev);
+ 	struct arkfb_info *par = info->par;
+ 
+-	dev_info(info->dev, "suspend\n");
++	dev_info(info->device, "suspend\n");
+ 
+ 	acquire_console_sem();
+ 	mutex_lock(&(par->open_lock));
+@@ -1121,7 +1121,7 @@ static int ark_pci_resume (struct pci_de
+ 	struct fb_info *info = pci_get_drvdata(dev);
+ 	struct arkfb_info *par = info->par;
+ 
+-	dev_info(info->dev, "resume\n");
++	dev_info(info->device, "resume\n");
+ 
+ 	acquire_console_sem();
+ 	mutex_lock(&(par->open_lock));
+diff -uprN -X linux-2.6.26-orig/Documentation/dontdiff linux-2.6.26-orig/drivers/video/s3fb.c linux-2.6.26/drivers/video/s3fb.c
+--- linux-2.6.26-orig/drivers/video/s3fb.c	2008-07-13 23:51:29.000000000 +0200
++++ linux-2.6.26/drivers/video/s3fb.c	2008-07-16 22:44:19.000000000 +0200
+@@ -903,13 +903,13 @@ static int __devinit s3_pci_probe(struct
+ 	/* Prepare PCI device */
+ 	rc = pci_enable_device(dev);
+ 	if (rc < 0) {
+-		dev_err(info->dev, "cannot enable PCI device\n");
++		dev_err(info->device, "cannot enable PCI device\n");
+ 		goto err_enable_device;
+ 	}
+ 
+ 	rc = pci_request_regions(dev, "s3fb");
+ 	if (rc < 0) {
+-		dev_err(info->dev, "cannot reserve framebuffer region\n");
++		dev_err(info->device, "cannot reserve framebuffer region\n");
+ 		goto err_request_regions;
+ 	}
+ 
+@@ -921,7 +921,7 @@ static int __devinit s3_pci_probe(struct
+ 	info->screen_base = pci_iomap(dev, 0, 0);
+ 	if (! info->screen_base) {
+ 		rc = -ENOMEM;
+-		dev_err(info->dev, "iomap for framebuffer failed\n");
++		dev_err(info->device, "iomap for framebuffer failed\n");
+ 		goto err_iomap;
+ 	}
+ 
+@@ -965,19 +965,19 @@ static int __devinit s3_pci_probe(struct
+ 	rc = fb_find_mode(&(info->var), info, mode_option, NULL, 0, NULL, 8);
+ 	if (! ((rc == 1) || (rc == 2))) {
+ 		rc = -EINVAL;
+-		dev_err(info->dev, "mode %s not found\n", mode_option);
++		dev_err(info->device, "mode %s not found\n", mode_option);
+ 		goto err_find_mode;
+ 	}
+ 
+ 	rc = fb_alloc_cmap(&info->cmap, 256, 0);
+ 	if (rc < 0) {
+-		dev_err(info->dev, "cannot allocate colormap\n");
++		dev_err(info->device, "cannot allocate colormap\n");
+ 		goto err_alloc_cmap;
+ 	}
+ 
+ 	rc = register_framebuffer(info);
+ 	if (rc < 0) {
+-		dev_err(info->dev, "cannot register framebuffer\n");
++		dev_err(info->device, "cannot register framebuffer\n");
+ 		goto err_reg_fb;
+ 	}
+ 
+@@ -1053,7 +1053,7 @@ static int s3_pci_suspend(struct pci_dev
+ 	struct fb_info *info = pci_get_drvdata(dev);
+ 	struct s3fb_info *par = info->par;
+ 
+-	dev_info(info->dev, "suspend\n");
++	dev_info(info->device, "suspend\n");
+ 
+ 	acquire_console_sem();
+ 	mutex_lock(&(par->open_lock));
+@@ -1085,7 +1085,7 @@ static int s3_pci_resume(struct pci_dev*
+ 	struct s3fb_info *par = info->par;
+ 	int err;
+ 
+-	dev_info(info->dev, "resume\n");
++	dev_info(info->device, "resume\n");
+ 
+ 	acquire_console_sem();
+ 	mutex_lock(&(par->open_lock));
+@@ -1102,7 +1102,7 @@ static int s3_pci_resume(struct pci_dev*
+ 	if (err) {
+ 		mutex_unlock(&(par->open_lock));
+ 		release_console_sem();
+-		dev_err(info->dev, "error %d enabling device for resume\n", err);
++		dev_err(info->device, "error %d enabling device for resume\n", err);
+ 		return err;
+ 	}
+ 	pci_set_master(dev);
+diff -uprN -X linux-2.6.26-orig/Documentation/dontdiff linux-2.6.26-orig/drivers/video/vt8623fb.c linux-2.6.26/drivers/video/vt8623fb.c
+--- linux-2.6.26-orig/drivers/video/vt8623fb.c	2008-07-13 23:51:29.000000000 +0200
++++ linux-2.6.26/drivers/video/vt8623fb.c	2008-07-16 22:57:05.000000000 +0200
+@@ -677,13 +677,13 @@ static int __devinit vt8623_pci_probe(st
+ 
+ 	rc = pci_enable_device(dev);
+ 	if (rc < 0) {
+-		dev_err(info->dev, "cannot enable PCI device\n");
++		dev_err(info->device, "cannot enable PCI device\n");
+ 		goto err_enable_device;
+ 	}
+ 
+ 	rc = pci_request_regions(dev, "vt8623fb");
+ 	if (rc < 0) {
+-		dev_err(info->dev, "cannot reserve framebuffer region\n");
++		dev_err(info->device, "cannot reserve framebuffer region\n");
+ 		goto err_request_regions;
+ 	}
+ 
+@@ -696,14 +696,14 @@ static int __devinit vt8623_pci_probe(st
+ 	info->screen_base = pci_iomap(dev, 0, 0);
+ 	if (! info->screen_base) {
+ 		rc = -ENOMEM;
+-		dev_err(info->dev, "iomap for framebuffer failed\n");
++		dev_err(info->device, "iomap for framebuffer failed\n");
+ 		goto err_iomap_1;
+ 	}
+ 
+ 	par->mmio_base = pci_iomap(dev, 1, 0);
+ 	if (! par->mmio_base) {
+ 		rc = -ENOMEM;
+-		dev_err(info->dev, "iomap for MMIO failed\n");
++		dev_err(info->device, "iomap for MMIO failed\n");
+ 		goto err_iomap_2;
+ 	}
+ 
+@@ -714,7 +714,7 @@ static int __devinit vt8623_pci_probe(st
+ 	if ((16 <= memsize1) && (memsize1 <= 64) && (memsize1 == memsize2))
+ 		info->screen_size = memsize1 << 20;
+ 	else {
+-		dev_err(info->dev, "memory size detection failed (%x %x), suppose 16 MB\n", memsize1, memsize2);
++		dev_err(info->device, "memory size detection failed (%x %x), suppose 16 MB\n", memsize1, memsize2);
+ 		info->screen_size = 16 << 20;
+ 	}
+ 
+@@ -731,19 +731,19 @@ static int __devinit vt8623_pci_probe(st
+ 	rc = fb_find_mode(&(info->var), info, mode_option, NULL, 0, NULL, 8);
+ 	if (! ((rc == 1) || (rc == 2))) {
+ 		rc = -EINVAL;
+-		dev_err(info->dev, "mode %s not found\n", mode_option);
++		dev_err(info->device, "mode %s not found\n", mode_option);
+ 		goto err_find_mode;
+ 	}
+ 
+ 	rc = fb_alloc_cmap(&info->cmap, 256, 0);
+ 	if (rc < 0) {
+-		dev_err(info->dev, "cannot allocate colormap\n");
++		dev_err(info->device, "cannot allocate colormap\n");
+ 		goto err_alloc_cmap;
+ 	}
+ 
+ 	rc = register_framebuffer(info);
+ 	if (rc < 0) {
+-		dev_err(info->dev, "cannot register framebugger\n");
++		dev_err(info->device, "cannot register framebugger\n");
+ 		goto err_reg_fb;
+ 	}
+ 
+@@ -817,7 +817,7 @@ static int vt8623_pci_suspend(struct pci
+ 	struct fb_info *info = pci_get_drvdata(dev);
+ 	struct vt8623fb_info *par = info->par;
+ 
+-	dev_info(info->dev, "suspend\n");
++	dev_info(info->device, "suspend\n");
+ 
+ 	acquire_console_sem();
+ 	mutex_lock(&(par->open_lock));
+@@ -848,7 +848,7 @@ static int vt8623_pci_resume(struct pci_
+ 	struct fb_info *info = pci_get_drvdata(dev);
+ 	struct vt8623fb_info *par = info->par;
+ 
+-	dev_info(info->dev, "resume\n");
++	dev_info(info->device, "resume\n");
+ 
+ 	acquire_console_sem();
+ 	mutex_lock(&(par->open_lock));
 
-hobholes:/home/jejb/git/BUILD-2.6# grep do_open /proc/kallsyms 
-c01af160 t do_open
-c01d5d40 t do_open
-
-It's certainly a material defect in the current API.  I'll think about
-it and see if I can come up with a solution.
-
-> [...]
-> >> Could we provide a separated GPL'd interface to access named global
-> >> symbols which is based on kallsyms?
-> > 
-> > Yes, I think so ... it's just a case of working out what and how; but to
-> > do that we need a consumer of the interface.
-> 
-> I agree with you, we need to change both of systemtap and kernel.
-> 
-> Thank you,
-
-You're welcome.
-
-James
 
 
+
+-- 
+Elen sila lumenn' omentielvo
+
+Ondrej 'SanTiago' Zajicek (email: santiago@crfreenet.org)
+OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
+"To err is human -- to blame it on a computer is even more so."
