@@ -1,40 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932314AbYGQTOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760631AbYGQTRO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932314AbYGQTOR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 15:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758093AbYGQTN6
+	id S1760631AbYGQTRO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 15:17:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757378AbYGQTQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 15:13:58 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:51091 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760846AbYGQTN5 (ORCPT
+	Thu, 17 Jul 2008 15:16:57 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49746 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754916AbYGQTQ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 15:13:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=iNTS9OBeeEG/B2rbHD9SVCXgdmgdMZvjI8MkfVd0Twuj9+nW/IvI8B3QQe1hqGyWvg
-         GkuUt8GTvM8fdfo+TdrMc3txx/XGahDuF1LfVIRxVy1sHmiU44TxpvnH47uSSgShuAjF
-         03lS9l0yUK+j0zIrUIiqR4E7HY/MYxUt/RQwk=
-Message-ID: <f188924b0807171213q43f10b09j47b34674fc8aaa38@mail.gmail.com>
-Date: Thu, 17 Jul 2008 21:13:55 +0200
-From: "Fred ." <eldmannen@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Please add ZFS support (from GPL sources)
+	Thu, 17 Jul 2008 15:16:56 -0400
+Date: Thu, 17 Jul 2008 12:16:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Len Brown <lenb@kernel.org>
+cc: Andi Kleen <andi@firstfloor.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: Re: Please pull ACPI updates
+In-Reply-To: <alpine.LFD.1.10.0807171154560.2959@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0807171212500.2959@woody.linux-foundation.org>
+References: <20080716214516.GA10777@basil.nowhere.org> <200807170011.12184.rjw@sisk.pl> <200807161633.01375.jbarnes@virtuousgeek.org> <alpine.LFD.1.10.0807161639090.2835@woody.linux-foundation.org> <487EE940.1050007@firstfloor.org>
+ <alpine.LFD.1.10.0807170752190.2959@woody.linux-foundation.org> <alpine.LFD.1.10.0807171402110.2965@localhost.localdomain> <alpine.LFD.1.10.0807171154560.2959@woody.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Previously we have not been able to have ZFS support due to it being
-licensed under the CDDL and the kernel under the GPL.
 
-Sun have contributed ZFS support to GRUB under the GPL license. We
-could now use that code to implement support for ZFS in the Linux
-kernel.
 
-http://blogs.sun.com/darren/entry/zfs_under_gplv2_already_exists
+On Thu, 17 Jul 2008, Linus Torvalds wrote:
+> 
+> No, what others do (if they know the tricks) is to say something like:
+> 
+> 	git rebase -i <starting-point>
+
+Oh, and before anybody goes any further with this: it's a very convenient 
+feature, but it _is_ still technically nothing but a very nice interface 
+to cherry-picking and rebasing history. 
+
+So all the caveats about _not_ doing this with public history that others 
+have already seen and possibly merged are still in place. That part 
+doesn't change at all.
+
+So it's great to do with private changes to clean them up before 
+publicizing them, or possibly with branches that you have explicitly told 
+people are _not_ stable, but it is still very much about creating a 
+totally new history.
+
+			Linus
