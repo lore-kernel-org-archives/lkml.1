@@ -1,76 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754442AbYGQEPA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755079AbYGQEPX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754442AbYGQEPA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 00:15:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750821AbYGQEOu
+	id S1755079AbYGQEPX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 00:15:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbYGQEO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 00:14:50 -0400
-Received: from sh.osrg.net ([192.16.179.4]:53615 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750749AbYGQEOt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 00:14:49 -0400
-Date: Thu, 17 Jul 2008 13:14:18 +0900
-To: mpatocka@redhat.com
-Cc: fujita.tomonori@lab.ntt.co.jp, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       davem@davemloft.net, linux-parisc@vger.kernel.org
-Subject: Re: [PATCH] block: fix q->max_segment_size checking in
- blk_recalc_rq_segments about VMERGE
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <Pine.LNX.4.64.0807161359001.30207@devserv.devel.redhat.com>
-References: <Pine.LNX.4.64.0807151143050.29803@devserv.devel.redhat.com>
-	<20080716093456J.fujita.tomonori@lab.ntt.co.jp>
-	<Pine.LNX.4.64.0807161359001.30207@devserv.devel.redhat.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 17 Jul 2008 00:14:59 -0400
+Received: from mail8.sea5.speakeasy.net ([69.17.117.10]:47715 "EHLO
+	mail8.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752915AbYGQEO5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 00:14:57 -0400
+X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Jul 2008 00:14:57 EDT
+From: Vadim Lobanov <vlobanov@speakeasy.net>
+To: Soumyadip Das Mahapatra <soumya.linux@yahoo.com>
+Subject: Re: [PATCH] : A better approach to compute int_sqrt in lib/int_sqrt.c
+Date: Wed, 16 Jul 2008 21:08:14 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <848307.13278.qm@web59505.mail.ac4.yahoo.com>
+In-Reply-To: <848307.13278.qm@web59505.mail.ac4.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080717131444K.fujita.tomonori@lab.ntt.co.jp>
+Content-Disposition: inline
+Message-Id: <200807162108.14349.vlobanov@speakeasy.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Jul 2008 14:02:27 -0400 (EDT)
-Mikulas Patocka <mpatocka@redhat.com> wrote:
+On Wednesday 16 July 2008 02:35:56 pm Soumyadip Das Mahapatra wrote:
+> > >   */
+> > >  unsigned long int_sqrt(unsigned long x)
+> > >  {
+> > > -    unsigned long op, res, one;
+> > > -
+> > > -    op = x;
+> > > -    res = 0;
+> > > -
+> > > -    one = 1UL << (BITS_PER_LONG - 2);
+> > > -    while (one > op)
+> > > -        one >>= 2;
+> > > -
+> > > -    while (one != 0) {
+> > > -        if (op >= res + one) {
+> > > -            op = op - (res + one);
+> > > -            res = res +  2 * one;
+> > > -        }
+> > > -        res /= 2;
+> > > -        one /= 4;
+> > > -    }
+> > > -    return res;
+> > > +    unsigned long ub, lb, m;
+> > > +    lb = 1;                /* lower bound */
+> > > +    ub = (x >> 5) + 8;        /* upper bound */
+> > > +    do {
+> > > +        m = (ub + lb) >>  1;    /* middle value */
+> > > +        if((m * m) > x)
+> > > +            ub = m - 1;
+> > > +        else
+> > > +            lb = m + 1;
+> > > +    } while(ub >= lb);
+> > > +
+> > > +    return lb - 1;
+> > >  }
+> > >  EXPORT_SYMBOL(int_sqrt);
+>
+> 0 It is better because
+>          o contains no division operator (older version has two)
+>             which are surely comparatively slow task in computer
 
-> On Wed, 16 Jul 2008, FUJITA Tomonori wrote:
-> 
-> > On Tue, 15 Jul 2008 11:46:46 -0400 (EDT)
-> > Mikulas Patocka <mpatocka@redhat.com> wrote:
-> > 
-> > > >> Even if we fix it now, the question is: how long it will stay fixed? Until
-> > > >> someone makes another change to struct device that restricts boundaries on
-> > > >> some wacky hardware.
-> > > >
-> > > > I'm not sure how the boundary restriction of a device can break
-> > > > the VMERGE accounting.
-> > > 
-> > > Because block layer code doesn't know anything about the device, pci 
-> > > access restrictions and so on.
-> > 
-> > Not true, the block layer knows about the device restrictions like DMA
-> > boundary.
-> > 
-> > But it's not the point here because the boundary restriction doesn't
-> > matter for the VMERGE accounting. An IOMMU just returns an error if it
-> > can't allocate an I/O space fit for the device restrictions.
-> > 
-> > 
-> > Please give me an example how the boundary restriction of a device can
-> > break the VMERGE accounting and an IOMMU if you aren't still sure.
-> 
-> You have dma_get_seg_boundary and dma_get_max_seg_size. On sparc64, adding 
-> one of these broken VMERGE accounting (the VMERGE didn't happen past 64-kb 
-> boundary and bio layer thought that VMERGE would be possible).
+Actually, the old version has zero division operators; those are simply 
+right-shifts.
 
-If the device has 64KB boundary restriction, the device also has
-max_seg_size restriction of 64KB or under. So the vmerge acounting
-works (though we need to fix it to handle max_seg_size, as discussed).
-
-
-> And if you fix this case, someone will break it again, sooner or later, by 
-> adding new restriction.
-
-What is your new restriction?
-
-All restrictions that IOMMUs need to know are dma_get_seg_boundary and
-dma_get_max_seg_size.
+-- Vadim Lobanov
