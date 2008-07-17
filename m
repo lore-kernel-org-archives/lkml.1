@@ -1,63 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932907AbYGQTca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933051AbYGQTcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932907AbYGQTca (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 15:32:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932444AbYGQTXa
+	id S933051AbYGQTcu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 15:32:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932446AbYGQTXc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 15:23:30 -0400
-Received: from nelson.telenet-ops.be ([195.130.133.66]:34888 "EHLO
-	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759824AbYGQTWr (ORCPT
+	Thu, 17 Jul 2008 15:23:32 -0400
+Received: from winston.telenet-ops.be ([195.130.137.75]:35521 "EHLO
+	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759801AbYGQTWr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 17 Jul 2008 15:22:47 -0400
-Message-Id: <20080717191753.310200688@mail.of.borg>
+Message-Id: <20080717191751.920132090@mail.of.borg>
 References: <20080717191607.955742542@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Thu, 17 Jul 2008 21:16:21 +0200
+Date: Thu, 17 Jul 2008 21:16:16 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Adrian Bunk <bunk@kernel.org>
-Subject: [patch 14/29] export amiga_vblank
-Content-Disposition: inline; filename=m68k-export-amiga_vblank.diff
+       "Robert P. J. Day" <rpjday@crashcourse.ca>
+Subject: [patch 09/29] ZORRO: Replace deprecated __initcall with equivalent device_initcall.
+Content-Disposition: inline; filename=zorro-replace-deprecated-__initcall-with-equivalent-device_initcall.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@kernel.org>
+From: Robert P. J. Day <rpjday@crashcourse.ca>
 
-This patch fixes the following build error:
+ZORRO: Replace deprecated __initcall with equivalent device_initcall.
 
-<--  snip  -->
-
-..
-  Building modules, stage 2.
-  MODPOST 1203 modules
-ERROR: "amiga_vblank" [drivers/video/amifb.ko] undefined!
-..
-make[2]: *** [__modpost] Error 1
-
-<--  snip  -->
-
-Reported-by: Adrian Bunk <bunk@kernel.org>
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- arch/m68k/amiga/config.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/zorro/proc.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/m68k/amiga/config.c
-+++ b/arch/m68k/amiga/config.c
-@@ -51,6 +51,8 @@ unsigned long amiga_chipset;
- EXPORT_SYMBOL(amiga_chipset);
+--- a/drivers/zorro/proc.c
++++ b/drivers/zorro/proc.c
+@@ -158,4 +158,4 @@ static int __init zorro_proc_init(void)
+ 	return 0;
+ }
  
- unsigned char amiga_vblank;
-+EXPORT_SYMBOL(amiga_vblank);
-+
- unsigned char amiga_psfreq;
- 
- struct amiga_hw_present amiga_hw_present;
+-__initcall(zorro_proc_init);
++device_initcall(zorro_proc_init);
 
 -- 
 Gr{oetje,eeting}s,
