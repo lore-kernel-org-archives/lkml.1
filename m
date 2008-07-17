@@ -1,60 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759737AbYGQPpH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760186AbYGQPpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759737AbYGQPpH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 11:45:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755178AbYGQPox
+	id S1760186AbYGQPpo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 11:45:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755178AbYGQPph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 11:44:53 -0400
-Received: from mail.vyatta.com ([216.93.170.194]:53657 "EHLO mail.vyatta.com"
+	Thu, 17 Jul 2008 11:45:37 -0400
+Received: from gw.goop.org ([64.81.55.164]:39081 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754052AbYGQPow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 11:44:52 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -1.666
-Date: Thu, 17 Jul 2008 08:44:50 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: <jie.yang@atheros.com>
-Cc: <jeff@garzik.org>, <yjwei@cn.fujitsu.com>, <rdreier@cisco.com>,
-       <davem@davemloft.net>, <jcliburn@gmail.com>, <parag.warudkar@gmail.com>,
-       <w@1wt.eu>, <oliver.schuster@schweigstill.de>, <netdev@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH net-next] atl1e: Atheros L1E Gigabit Ethernet driver
-Message-ID: <20080717084450.42ceca96@extreme>
-In-Reply-To: <12162854952457-git-send-email-jie.yang@atheros.com>
-References: <12162854952457-git-send-email-jie.yang@atheros.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1754498AbYGQPpg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 11:45:36 -0400
+Message-ID: <487F6913.2000602@goop.org>
+Date: Thu, 17 Jul 2008 08:45:23 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: "Alex Nixon (Intern)" <Alex.Nixon@eu.citrix.com>
+CC: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ian Campbell <Ian.Campbell@eu.citrix.com>
+Subject: Re: Large increase in context switch rate
+References: <487E43D9.7080703@goop.org> <1216286250.5232.67.camel@twins> <487F5F15.4050208@goop.org> <0E902970173AF84089673FA54B7FE78A32906B@lonpexch01.citrite.net>
+In-Reply-To: <0E902970173AF84089673FA54B7FE78A32906B@lonpexch01.citrite.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alex Nixon (Intern) wrote:
+> Yeah I've checked - the number of context switches seems to be around
+> 60k regardless of whether CONFIG_PARAVIRT is switched on, and regardless
+> of whether it's running in domu or native (-j4 on dual core)
+>   
 
-> +/*
-> + * atl1e_check_options - Range Checking for Command Line Parameters
-> + * @adapter: board private structure
-> + *
-> + * This routine checks all command line parameters for valid user
-> + * input.  If an invalid value is given, or if no user specified
-> + * value exists, a default value is used.  The final value is stored
-> + * in a variable in the adapter structure.
-> + */
-> +void __devinit atl1e_check_options(struct atl1e_adapter *adapter)
-> +{
-> +	struct pci_dev *pdev = adapter->pdev;
-> +	int bd = adapter->bd_number;
-> +	if (bd >= ATL1E_MAX_NIC) {
-> +		dev_notice(&pdev->dev, "no configuration for board #%i\n", bd);
-> +		dev_notice(&pdev->dev, "Using defaults for all values\n");
-> +	}
+OK, just to be sure we're talking about the same thing, is kernbench 
+displaying the context switch *rate*, or the total number of context 
+switches during the build?
 
+Peter is looking at vmstat, which is showing cs/sec.
 
-The use of module parameters to set options is discouraged, especially
-when there are better choices. All these parameter should be controllable by ethtool.
-The reason is that users (and tools) shouldn't have to know the
-special parameters that are specific to that hardware.
-
-This version is okay as is for initial inclusion, but the parameters should
-be removed later.
+    J
