@@ -1,113 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758149AbYGQJmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757995AbYGQJnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758149AbYGQJmV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 05:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754725AbYGQJmM
+	id S1757995AbYGQJnw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 05:43:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754400AbYGQJnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 05:42:12 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:55686 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754668AbYGQJmM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 05:42:12 -0400
-Message-ID: <487F13E9.2060601@atmel.com>
-Date: Thu, 17 Jul 2008 11:42:01 +0200
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Thu, 17 Jul 2008 05:43:42 -0400
+Received: from de01egw02.freescale.net ([192.88.165.103]:33471 "EHLO
+	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753707AbYGQJnl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 05:43:41 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus@drzeus.cx>
-CC: ARM Linux Mailing List <linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Victor <linux@maxim.org.za>, Ville Syrjala <syrjala@sci.fi>,
-       Marc Pignat <marc.pignat@hevs.ch>
-Subject: [PATCH 3/3] at91_mci: introduce per-mci-revision conditional code
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 00/11] fsl_usb2_udc: A number of bug fixes and cleanups.
+Date: Thu, 17 Jul 2008 17:43:29 +0800
+Message-ID: <989B956029373F45A0B8AF0297081890027C4EC2@zch01exm26.fsl.freescale.net>
+In-Reply-To: <1216135490-21656-1-git-send-email-will.newton@imgtec.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 00/11] fsl_usb2_udc: A number of bug fixes and cleanups.
+Thread-Index: AcjmjvLBvmE+1lUjT8alBu37+/18BgBYG7lA
+References: <1216135490-21656-1-git-send-email-will.newton@imgtec.com>
+From: "Li Yang" <LeoLi@freescale.com>
+To: "Will Newton" <will.newton@imgtec.com>, <linux-kernel@vger.kernel.org>
+Cc: <linux-usb@vger.kernel.org>, "Jiang Bo" <tanya.jiang@freescale.com>,
+       <gregkh@suse.de>, "Will Newton" <will.newton@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We used to manage features and differences on a per-cpu basis. As several
-cpus share the same mci revision, this patch aggregates cpus that have the
-same IP revision in one defined constant.
+> -----Original Message-----
+> From: Will Newton [mailto:will.newton@imgtec.com] 
+> Sent: Tuesday, July 15, 2008 11:25 PM
+> To: linux-kernel@vger.kernel.org
+> Cc: linux-usb@vger.kernel.org; Li Yang; Jiang Bo; 
+> gregkh@suse.de; Will Newton
+> Subject: [PATCH 00/11] fsl_usb2_udc: A number of bug fixes 
+> and cleanups.
+> 
+> From: Will Newton <will.newton@gmail.com>
+> 
+> Hi,
+> 
+> These patches fix a couple of small bugs and cleanup parts of 
+> the fsl_usb2_udc USB gadget driver. I've split them up quite 
+> finely for ease of reviewing and to separate functional 
+> changes. Any comments would be appreciated.
+> 
+> I would also appreciate it if someone with real Freescale 
+> hardware could test these changes, I'm testing this driver 
+> with a different SoC containing the same TDI/ARC/ChipIdea IP block.
 
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
----
- drivers/mmc/host/at91_mci.c |   21 +++++++++++++--------
- 1 files changed, 13 insertions(+), 8 deletions(-)
+Thanks for the patches.  Looks like they are ok, but I still need to
+test them later.
 
-diff --git a/drivers/mmc/host/at91_mci.c b/drivers/mmc/host/at91_mci.c
-index 4e3edf3..a95529c 100644
---- a/drivers/mmc/host/at91_mci.c
-+++ b/drivers/mmc/host/at91_mci.c
-@@ -80,6 +80,11 @@
- 
- #define DRIVER_NAME "at91_mci"
- 
-+#define AT91MCI_REV2	(  cpu_is_at91sam9260() \
-+			|| cpu_is_at91sam9263() \
-+			|| cpu_is_at91cap9() \
-+			|| cpu_is_at91sam9rl())
-+
- #define FL_SENT_COMMAND	(1 << 0)
- #define FL_SENT_STOP	(1 << 1)
- 
-@@ -202,8 +207,8 @@ static inline void at91_mci_sg_to_dma(struct at91mci_host *host, struct mmc_data
- 	size = data->blksz * data->blocks;
- 	len = data->sg_len;
- 
--	/* AT91SAM926[0/3] Data Write Operation and number of bytes erratum */
--	if (cpu_is_at91sam9260() || cpu_is_at91sam9263())
-+	/* AT91MCI_REV2 Data Write Operation and number of bytes erratum */
-+	if (AT91MCI_REV2)
- 		if (host->total_length == 12)
- 			memset(dmabuf, 0, 12);
- 
-@@ -463,7 +468,7 @@ static void at91_mci_enable(struct at91mci_host *host)
- 	at91_mci_write(host, AT91_MCI_DTOR, AT91_MCI_DTOMUL_1M | AT91_MCI_DTOCYC);
- 	mr = AT91_MCI_PDCMODE | 0x34a;
- 
--	if (cpu_is_at91sam9260() || cpu_is_at91sam9263())
-+	if (AT91MCI_REV2)
- 		mr |= AT91_MCI_RDPROOF | AT91_MCI_WRPROOF;
- 
- 	at91_mci_write(host, AT91_MCI_MR, mr);
-@@ -616,10 +621,10 @@ static void at91_mci_send_command(struct at91mci_host *host, struct mmc_command
- 				 */
- 				host->total_length = block_length * blocks;
- 				/*
--				 * AT91SAM926[0/3] Data Write Operation and
-+				 * AT91MCI_REV2 Data Write Operation and
- 				 * number of bytes erratum
- 				 */
--				if (cpu_is_at91sam9260 () || cpu_is_at91sam9263())
-+				if (AT91MCI_REV2)
- 					if (host->total_length < 12)
- 						host->total_length = 12;
- 				host->buffer = dma_alloc_coherent(NULL,
-@@ -1010,7 +1015,7 @@ static int __init at91_mci_probe(struct platform_device *pdev)
- 	host->bus_mode = 0;
- 	host->board = pdev->dev.platform_data;
- 	if (host->board->wire4) {
--		if (cpu_is_at91sam9260() || cpu_is_at91sam9263())
-+		if (AT91MCI_REV2)
- 			mmc->caps |= MMC_CAP_4_BIT_DATA;
- 		else
- 			dev_warn(&pdev->dev, "4 wire bus mode not supported"
-@@ -1018,8 +1023,8 @@ static int __init at91_mci_probe(struct platform_device *pdev)
- 	}
- 
- 	/* Add SDIO capability when  available */
--	if (cpu_is_at91sam9260() || cpu_is_at91sam9263()) {
--		/* AT91SAM9260/9263 erratum */
-+	if (AT91MCI_REV2) {
-+		/* AT91MCI_REV2 sdio interrupt erratum */
- 		if (host->board->wire4 || !host->board->slot_b)
- 			mmc->caps |= MMC_CAP_SDIO_IRQ;
- 	}
--- 
-1.5.3.7
+What's the SoC you have tested with the driver?  Maybe you could also
+update the Kconfig for that.
 
-
-
-
+- Leo
+> 
+> Thanks,
+> 
+> Will Newton (11):
+>   fsl_usb2_udc: Make dr_ep_setup function static.
+>   fsl_usb2_udc: Remove check for udc == NULL in dr_controller_setup.
+>   fsl_usb2_udc: Fix some sparse warnings and remove redundant code.
+>   fsl_usb2_udc: Clean up whitespace in errors and warnings.
+>   fsl_usb2_udc: Clean up whitespace in /proc debugging output.
+>   fsl_usb2_udc: Initialize spinlock earlier.
+>   fsl_usb2_udc: Rename the arguments of the fsl_writel macro.
+>   fsl_usb2_udc: Uninline udc_reset_ep_queue.
+>   fsl_usb2_udc: Make fsl_queue_td return type void.
+>   fsl_usb2_udc: Add a wmb before priming endpoint.
+>   fsl_usb2_udc: Fix oops on probe failure.
+> 
+>  drivers/usb/gadget/fsl_usb2_udc.c |  176 
+> ++++++++++++++++--------------------
+>  drivers/usb/gadget/fsl_usb2_udc.h |   21 +----
+>  2 files changed, 80 insertions(+), 117 deletions(-)
+> 
+> -
+> This message is subject to Imagination Technologies' e-mail 
+> terms: http://www.imgtec.com/e-mail.htm
+> -
+> 
+> 
