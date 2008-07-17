@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933525AbYGQXXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932269AbYGQXXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933525AbYGQXXc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 19:23:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759624AbYGQXXW
+	id S932269AbYGQXXx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 19:23:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932118AbYGQXXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 17 Jul 2008 19:23:23 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54005 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760839AbYGQXXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 17 Jul 2008 19:23:22 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:37634 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760790AbYGQXXV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 19:23:21 -0400
-Date: Fri, 18 Jul 2008 01:23:20 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Thomas Lucaw <aj881@chebucto.ns.ca>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: ide-cd or ide-scsi dmesg contradiction
-In-Reply-To: <Pine.LNX.4.64.0807171844330.1320@ttl.localnet>
-Message-ID: <alpine.LNX.1.10.0807180119460.12734@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.64.0807171844330.1320@ttl.localnet>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+Date: Fri, 18 Jul 2008 01:23:11 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: empty smpcommon_32.c
+Message-ID: <20080717232311.GA2065@elte.hu>
+References: <86802c440807171618hdecfe4cyebba5bd65d28d894@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440807171618hdecfe4cyebba5bd65d28d894@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.2.3
+	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
+	[score: 0.2486]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 2008-07-18 00:11, Thomas Lucaw wrote:
 
->Hi, for some time I've noticed
->
->giving the cmdline (to kernel at boot) "hdd=ide-scsi ..." I get
->
->	ide-scsi is deprecated for cd burning! Use ide-cd and give
->	dev=/dev/hdX as device
->
->then changing to the suggested "hdd=ide-cd ..." I get
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-There is a subtle difference between dev=/dev/hdX and hdd=ide-cd.
+> it is renamed to smpcommon.c
+> 
+> but old one with one blank line still sit the tree.
 
->	ide_setup: hdc=ide-cd -- OBSOLETE OPTION, WILL BE REMOVED SOON!
->
->Rather illogical to me :-)
->
->I guess neither should be used, I can make my cdrom and dvd devices work 
->without ok.
+thanks, zapped it.
 
-Right, neither.
-
-	cdrecord dev=/dev/sr0 (or dev=/dev/hdc) whichever is appropriate
-
-is all one needs. I guess you can even use /dev/sg0.
-Care to send a patch?
+	Ingo
