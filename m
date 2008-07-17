@@ -1,78 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932130AbYGQQDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932125AbYGQQEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932130AbYGQQDS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 12:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760895AbYGQQCr
+	id S932125AbYGQQEc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 12:04:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756410AbYGQQEX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 12:02:47 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50006 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761085AbYGQQCq (ORCPT
+	Thu, 17 Jul 2008 12:04:23 -0400
+Received: from smtp.eu.citrix.com ([62.200.22.115]:52863 "EHLO
+	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755043AbYGQQEW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 12:02:46 -0400
-Date: Thu, 17 Jul 2008 09:02:38 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-cc: Jesse Barnes <jbarnes@virtuousgeek.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: Re: Please pull ACPI updates
-In-Reply-To: <alpine.LFD.1.10.0807170835320.2959@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0807170850470.2959@woody.linux-foundation.org>
-References: <20080716214516.GA10777@basil.nowhere.org> <200807170011.12184.rjw@sisk.pl> <200807161633.01375.jbarnes@virtuousgeek.org> <487EEAEB.4050009@firstfloor.org> <alpine.LFD.1.10.0807170807040.2959@woody.linux-foundation.org>
- <alpine.LFD.1.10.0807170835320.2959@woody.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 17 Jul 2008 12:04:22 -0400
+X-IronPort-AV: E=Sophos;i="4.31,204,1215388800"; 
+   d="scan'208";a="1061975"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Large increase in context switch rate
+Date: Thu, 17 Jul 2008 17:04:20 +0100
+Message-ID: <0E902970173AF84089673FA54B7FE78A32906C@lonpexch01.citrite.net>
+In-Reply-To: <487F6913.2000602@goop.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Large increase in context switch rate
+Thread-Index: AcjoJCliOfdZ9QeeQNap3DTg4zs5aAAAOP2Q
+References: <487E43D9.7080703@goop.org> <1216286250.5232.67.camel@twins> <487F5F15.4050208@goop.org> <0E902970173AF84089673FA54B7FE78A32906B@lonpexch01.citrite.net> <487F6913.2000602@goop.org>
+From: "Alex Nixon (Intern)" <Alex.Nixon@eu.citrix.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Cc: "Peter Zijlstra" <peterz@infradead.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Ian Campbell" <Ian.Campbell@eu.citrix.com>
+X-OriginalArrivalTime: 17 Jul 2008 16:04:21.0248 (UTC) FILETIME=[C63F0800:01C8E826]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I'm talking about total number of context switches - kernbench gets it
+from
+
+time -f "%c" make -j 4
+
+Dividing through it gives me a rate of around 250/sec (vs Peters 3000),
+but I've set CONFIG_HZ=100 (vs Peters 1000), so they don't wildly
+conflict.
+
+Well spotted :-)
+
+- Alex
 
 
-On Thu, 17 Jul 2008, Linus Torvalds wrote:
-> 
-> But I *really* hate pulling from somebody, and seeing commit dates that 
-> are from five minutes ago, and based on something that I had just pushed 
-> out (which was essentially the case for this round of ACPI changes).
+-----Original Message-----
+From: Jeremy Fitzhardinge [mailto:jeremy@goop.org] 
+Sent: 17 July 2008 16:45
+To: Alex Nixon (Intern)
+Cc: Peter Zijlstra; Ingo Molnar; Linux Kernel Mailing List; Ian Campbell
+Subject: Re: Large increase in context switch rate
 
-And Andi, before this goes any further, I'd like to say that (a) no, I 
-don't hate you and (b) sorry in advance and in retrospect for my obviously 
-abrasive personality and just being harsh.
+Alex Nixon (Intern) wrote:
+> Yeah I've checked - the number of context switches seems to be around
+> 60k regardless of whether CONFIG_PARAVIRT is switched on, and
+regardless
+> of whether it's running in domu or native (-j4 on dual core)
+>   
 
-In particular, this is something that I have gone through with a _lot_ of 
-maintainers. So you don't need to feel bad about it. Ingo and Thomas 
-obviously did the very same thing not that long ago.
+OK, just to be sure we're talking about the same thing, is kernbench 
+displaying the context switch *rate*, or the total number of context 
+switches during the build?
 
-And Davem had the same issue in the networking tree - most of the times 
-when I pulled, I could tell that he had _just_ rebased the whole series, 
-and I just knew that it had gotten effectively zero testing in that 
-particular configuration.
+Peter is looking at vmstat, which is showing cs/sec.
 
-For other trees it's still ongoing: you can generally trivially tell by 
-looking at the merges and the dates of the commits relative to them and 
-'base' they are done on top of. 
-
-So you're definitely not alone. There are people who have done the same 
-thing, and in many cases they did it for months. I'll happily try to help 
-you with any git issues, and we can even change git itself to help with 
-some things (historically we certainly have - I certainly hope that the 
-need for it is going away, though). 
-
-And I can also report that the people who then re-learnt their workflow 
-and got used to maintaining several queues and not always working at the 
-top of the tree and rebasing on top of whatever "random Linus kernel of 
-the moment" (in order to actually work with and test what they eventually 
-ask me to pull!) have so far been pretty enthusiastic about the workflow 
-they learn once they pick it up.
-
-And to give them credit for being smarter them me, others (like Jeff) 
-started doing the whole "many different branches" thing long before I 
-personally even realized how helpful it is.
-
-And as mentioned, some still use the "queue on top of the most recent 
-version" model, and when it's something fairly far away in the periphery 
-and doesn't impact others, I don't really care. If it hadn't been for the 
-PCI merge bringing up the issue, I'd have ignored the ACPI case too.
-
-			Linus
+    J
