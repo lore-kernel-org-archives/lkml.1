@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759022AbYGQSvE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761048AbYGQSwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759022AbYGQSvE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 14:51:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758239AbYGQSuk
+	id S1761048AbYGQSwb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 14:52:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757832AbYGQSwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 14:50:40 -0400
-Received: from winston.telenet-ops.be ([195.130.137.75]:37960 "EHLO
-	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757890AbYGQSui (ORCPT
+	Thu, 17 Jul 2008 14:52:22 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:57335 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757604AbYGQSwV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 14:50:38 -0400
-X-Greylist: delayed 101107 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Jul 2008 14:50:38 EDT
-Date: Thu, 17 Jul 2008 20:50:35 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
-cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: [Linux-fbdev-devel] [PATCH] [RESEND] fbcon: simple text blinking
- implementation
-In-Reply-To: <487F4E20.6090802@eu.citrix.com>
-Message-ID: <Pine.LNX.4.64.0807172047340.20605@anakin>
-References: <487F4E20.6090802@eu.citrix.com>
+	Thu, 17 Jul 2008 14:52:21 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Daniel Hokka Zakrisson" <daniel@hozac.com>
+Cc: "Pavel Emelyanov" <xemul@openvz.org>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, oleg@tv-sign.ru,
+       akpm@linux-foundation.org
+References: <487F5D6B.1090007@hozac.com> <487F5EDB.1000008@openvz.org>
+	<43011.192.168.102.6.1216308280.squirrel@intranet>
+	<m13am8wgk6.fsf@frodo.ebiederm.org>
+	<33935.192.168.102.6.1216319954.squirrel@intranet>
+Date: Thu, 17 Jul 2008 11:45:28 -0700
+In-Reply-To: <33935.192.168.102.6.1216319954.squirrel@intranet> (Daniel Hokka
+	Zakrisson's message of "Thu, 17 Jul 2008 20:39:14 +0200 (CEST)")
+Message-ID: <m1r69stkmv.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;"Daniel Hokka Zakrisson" <daniel@hozac.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
+	*      [score: 0.4779]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH 1/2] signals: kill(-1) should only signal processes in   the same namespace
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jul 2008, Stefano Stabellini wrote:
-> at the moment blinking is not supported in fbcon but it is supported in
-> vgacon.
-> Since userspace applications don't distinguish between the two, they just
-> assume that the linux terminal is always capable of blinking text.
-> However implementing blinking in fbcon is not so difficult: this patch
-> provides a very simple (too simple?) implementation of that.
-> I am using the flashcursor function to scan the buffer for blinking text.
-> For the sake of efficiency I added a simple flag mechanism to disable the scan
-> when I am sure that there are no blinking characters on the screen.
+"Daniel Hokka Zakrisson" <daniel@hozac.com> writes:
 
-Ehrm, there's already blinking support on some platforms?
+> Looks like you've already done that. :-) (Referring to Sukadev's email.)
+> Is there any reason we don't just merge that patch?
 
-Gr{oetje,eeting}s,
+I knew I had done something like that.  Sure let's revive the patch and send
+it.   I don't know why it got lost the first time.
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Eric
