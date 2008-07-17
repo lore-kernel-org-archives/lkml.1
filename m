@@ -1,104 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758794AbYGQNgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758243AbYGQNjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758794AbYGQNgR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 09:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756324AbYGQNf7
+	id S1758243AbYGQNjf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 09:39:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756103AbYGQNj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 09:35:59 -0400
-Received: from ixia01.ro.gtsce.net ([212.146.94.66]:4390 "EHLO
-	ixro-ex1.ixiacom.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756086AbYGQNf6 (ORCPT
+	Thu, 17 Jul 2008 09:39:27 -0400
+Received: from rn-out-0910.google.com ([64.233.170.187]:19688 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754882AbYGQNj0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 09:35:58 -0400
-From: Octavian Purdila <opurdila@ixiacom.com>
-Organization: IXIA
-To: netdev@vger.kernel.org
-Subject: [PATCH] tcp: do not promote SPLICE_F_NONBLOCK to socket O_NONBLOCK
-Date: Thu, 17 Jul 2008 16:33:49 +0300
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
+	Thu, 17 Jul 2008 09:39:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=fdcx7IfLtvyj4hpXZiLTUG4l1Q38nc5nXwu8agBAcdU0LtU0hWMfhij/5S9ahjbZP4
+         1ma0VgGsCgAnSV8o5NuK67anV5+5rWA8ZpnQIofWodwOQtCcK9dTFTFLdG08vw58HNz1
+         mXTwAFTHa9MrJUByF9U//MJmRwrj4tRiqGJRg=
+Message-ID: <19f34abd0807170639p838d14blc9a13d2104313f38@mail.gmail.com>
+Date: Thu, 17 Jul 2008 15:39:24 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Josef Bacik" <josef@toxicpanda.com>
+Subject: Re: ext3 on latest -git: BUG: unable to handle kernel NULL pointer dereference at 0000000c
+Cc: linux-ext4@vger.kernel.org, sct@redhat.com, akpm@linux-foundation.org,
+       adilger@sun.com, "Johannes Weiner" <hannes@saeurebad.de>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1b7401870807170634u14492a53k3931ddcddbd1e098@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_9o0fI22l6Bbv13m"
-Message-Id: <200807171633.49791.opurdila@ixiacom.com>
-X-OriginalArrivalTime: 17 Jul 2008 13:37:51.0146 (UTC) FILETIME=[4EEFE8A0:01C8E812]
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <19f34abd0807170551q4fbb862bu270297cfd76a69be@mail.gmail.com>
+	 <1b7401870807170613y747baa7by158177047cc7e28@mail.gmail.com>
+	 <19f34abd0807170620g39ab942bl592ea3fa3fa0dab@mail.gmail.com>
+	 <1b7401870807170634u14492a53k3931ddcddbd1e098@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_9o0fI22l6Bbv13m
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Thu, Jul 17, 2008 at 3:34 PM, Josef Bacik <josef@toxicpanda.com> wrote:
+>> Yeah, the full log exists at
+>>
+>>    http://folk.uio.no/vegardno/linux/log-1216293934.txt
+>>
+>> I think this is the interesting part:
+>
+> Hmm well the journal should have aborted, but it looks like it didn't,
+> are you mounting with errors=continue by any chance?  Thanks much,
+
+No, this is the command I used:
+
+        mount -o loop disk mnt
+
+I think this looks interesting:
+
+EXT3-fs error (device loop0) in ext3_reserve_inode_write: IO failure
+
+The code in ext3_reserve_inode_write() is here:
+
+        err = ext3_journal_get_write_access(handle, iloc->bh);
+        if (err) {
+                brelse(iloc->bh);
+                iloc->bh = NULL;
+        }
+
+Maybe it should do something different here?
+
+But I don't know :-)
+
+Thanks for helping out!
 
 
+Vegard
 
---Boundary-00=_9o0fI22l6Bbv13m
-Content-Type: text/plain;
-  charset="us-ascii";
-  name="x"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="x"
-
-commit 11134aa8499b6fd67569e8fd21bde6fc481898d1
-Author: Octavian Purdila <opurdila@ixiacom.com>
-Date:   Thu Jul 17 16:25:23 2008 +0300
-
-    tcp: do not promote SPLICE_F_NONBLOCK to socket O_NONBLOCK
-    
-    This patch changes tcp_splice_read to the behavior implied by man 2
-    splice:
-    
-         SPLICE_F_NONBLOCK - Do not block on I/O. This makes the splice
-         pipe operations non-blocking, but splice() may nevertheless block
-         because the file descriptors that are spliced to/from may block
-         (unless they have the O_NONBLOCK flag set).
-    
-    This approach also provides a simple solution to the splice
-    transfer size problem. Say we have the following common sequence:
-    
-         splice(socket, pipe);
-         splice(pipe, file);
-    
-    Unless we specify SPLICE_F_NONBLOCK, we can't use arbitrarily large
-    transfer sizes with the 1st splice since otherwise we will deadlock
-    due to pipe being full.  But if we use SPLICE_F_NONBLOCK, the current
-    implementation will make the underlying socket non-blocking and thus
-    will force us use poll or other async I/O notification mechanism.
-    
-    Choosing a splice transfer size that won't deadlock is not trivial: we
-    need to stay under PIPE_BUFFERS packets and since packets can have
-    arbitrary sizes we will need to be conservative and use a small
-    transfer size. That can degrade performance due to excessive system
-    calls.
-    
-    Signed-off-by: Octavian Purdila <opurdila@ixiacom.com>
-
-diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
-index 56a133c..cc5082b 100644
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -570,7 +570,7 @@ ssize_t tcp_splice_read(struct socket *sock, loff_t *ppos,
- 
- 	lock_sock(sk);
- 
--	timeo = sock_rcvtimeo(sk, flags & SPLICE_F_NONBLOCK);
-+	timeo = sock_rcvtimeo(sk, sock->file->f_flags & O_NONBLOCK);
- 	while (tss.len) {
- 		ret = __tcp_splice_read(sk, &tss);
- 		if (ret < 0)
-@@ -578,10 +578,6 @@ ssize_t tcp_splice_read(struct socket *sock, loff_t *ppos,
- 		else if (!ret) {
- 			if (spliced)
- 				break;
--			if (flags & SPLICE_F_NONBLOCK) {
--				ret = -EAGAIN;
--				break;
--			}
- 			if (sock_flag(sk, SOCK_DONE))
- 				break;
- 			if (sk->sk_err) {
-
---Boundary-00=_9o0fI22l6Bbv13m--
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
