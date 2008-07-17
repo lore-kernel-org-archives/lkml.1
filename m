@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932537AbYGQVO1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932782AbYGQVQc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932537AbYGQVO1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 17:14:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760272AbYGQVOT
+	id S932782AbYGQVQc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 17:16:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757890AbYGQVQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 17:14:19 -0400
-Received: from xenotime.net ([66.160.160.81]:42962 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1760233AbYGQVOS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 17:14:18 -0400
-Date: Thu, 17 Jul 2008 14:14:09 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: <Solofo.Ramangalahy@bull.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
-       Matt Helsley <matthltc@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Nadia Derbey <Nadia.Derbey@bull.net>,
-       Manfred Spraul <manfred@colorfullife.com>
-Subject: Re: [PATCH -mm v2 3/3] sysv ipc: use auto_msgmnb to desactivate and
- reactivate msgmnb recomputation
-Message-Id: <20080717141409.2edcb7be.rdunlap@xenotime.net>
-In-Reply-To: <20080715211408.381111371@bull.net>
-References: <20080715211407.423625725@bull.net>
-	<20080715211408.381111371@bull.net>
-Organization: YPO4
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Thu, 17 Jul 2008 17:16:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49040 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755222AbYGQVQX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 17:16:23 -0400
+Date: Thu, 17 Jul 2008 14:10:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Daniel Hokka Zakrisson" <daniel@hozac.com>
+Cc: ebiederm@xmission.com, xemul@openvz.org, sukadev@us.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       oleg@tv-sign.ru
+Subject: Re: [PATCH 1/1] signal: Introduce kill_pid_ns_info
+Message-Id: <20080717141005.5534fbc2.akpm@linux-foundation.org>
+In-Reply-To: <58550.192.168.102.6.1216323456.squirrel@intranet>
+References: <58550.192.168.102.6.1216323456.squirrel@intranet>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -31,78 +28,58 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jul 2008 23:14:10 +0200 Solofo.Ramangalahy@bull.net wrote:
+On Thu, 17 Jul 2008 21:37:36 +0200 (CEST)
+"Daniel Hokka Zakrisson" <daniel@hozac.com> wrote:
 
-> From: Solofo Ramangalahy <Solofo.Ramangalahy@bull.net>
+> Author: Eric W. Biederman <ebiederm@xmission.com>
 > 
-> Add /proc/sys/kernel/auto_msgmnb to control automatic recomputation of
-> /proc/sys/kernel/msgmnb (msg_ctlmnb).
+> Implement the basic helper function that walks all of the processes in a
+> pid namespace and sends them all a signal.
 > 
-> Signed-off-by: Solofo Ramangalahy <Solofo.Ramangalahy@bull.net>
-> ---
->  Documentation/sysctl/kernel.txt |   35 ++++++++++++++++
->  include/linux/ipc_namespace.h   |    5 ++
->  ipc/ipc_sysctl.c                |   87 ++++++++++++++++++++++++++++++++++++----
->  ipc/ipcns_notifier.c            |   62 +++++++++++++++++++++++++++-
->  ipc/namespace.c                 |    2 
->  ipc/util.c                      |    1 
->  6 files changed, 183 insertions(+), 9 deletions(-)
+> Both locations that could use this functions are also updated to use this
+> function.
 > 
-> Index: linux-2.6.26-rc8-mm1-MSGMNB3/Documentation/sysctl/kernel.txt
-> ===================================================================
-> --- linux-2.6.26-rc8-mm1-MSGMNB3.orig/Documentation/sysctl/kernel.txt
-> +++ linux-2.6.26-rc8-mm1-MSGMNB3/Documentation/sysctl/kernel.txt
-> @@ -179,6 +179,41 @@ kernel stack.
->  
->  ==============================================================
->  
-> +msgmnb
-> +
-> +Maximum size in bytes, not in message count, of a single SystemV IPC
-> +message queue (b stands for bytes).
-> +
-> +This value is dynamic and depends on the online cpu count of the
-> +machine (taking cpu hotplug into account).
+> I use find_ge_pid instead of for_each_process because it has a chance of
+> not touching every process in the system.
+> 
+> [daniel@hozac.com: Optimize away nr <= 1 check, against latest Linus tree]
+> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+> Signed-off-by: Daniel Hokka Zakrisson <daniel@hozac.com>
+> 
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index ba2f859..83597f8 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -1778,6 +1778,8 @@ extern void release_task(struct task_struct * p);
+>  extern int send_sig_info(int, struct siginfo *, struct task_struct *);
+> extern int force_sigsegv(int, struct task_struct *);
 
-Prefer "CPU" to "cpu".
+Space-stuffed
 
-> +
-> +Computed values are between MSGMNB and MSGMNB*MSG_CPU_SCALE #define
-> +constants (currently [16384,65536]).
-> +
-> +The exact value is automatically (re)computed, but:
-> +
-> +. If the value is positioned from user space (via procfs or sysctl()),
+>  extern int force_sig_info(int, struct siginfo *, struct task_struct *);
+> +extern int __kill_pid_ns_info(int sig, struct siginfo *info, struct
+> pid_namespace *ns);
 
-s/positioned/specified/ or set
+word-wrapped
 
-> +  then the automatic recomputation is disabled. E.g.:
-> +
-> +  # echo 16384 > /proc/sys/kernel/msgmnb
-> +
-> +. The automatic recomputation can also be disabled via auto_msgmnb,
-> +  e.g.:
-> +
-> +  # echo 0 > /proc/sys/kernel/auto_msgmnb
-> +
-> +. When disabled, the automatic recomputation can be reenabled via
-> +  auto_msgmnb, e.g.:
-> +
-> +  # echo 1 > /proc/sys/kernel/auto_msgmnb
-> +
-> +The msgmnb and auto_msgmnb values in each (ipc) namespace are
-> +independent.
-> +
+> +extern int kill_pid_ns_info(int sig, struct siginfo *info, struct
+> pid_namespace *ns);
+>  extern int __kill_pgrp_info(int sig, struct siginfo *info, struct pid
+> *pgrp);
+>  extern int kill_pid_info(int sig, struct siginfo *info, struct pid *pid);
+> extern int kill_pid_info_as_uid(int, struct siginfo *, struct pid *,
+> uid_t, uid_t, u32);
+> diff --git a/kernel/pid_namespace.c b/kernel/pid_namespace.c
+> index 98702b4..9226423 100644
+> --- a/kernel/pid_namespace.c
+> +++ b/kernel/pid_namespace.c
+> @@ -153,29 +153,14 @@ void free_pid_ns(struct kref *kref)
+> 
+>  void zap_pid_ns_processes(struct pid_namespace *pid_ns)
+>  {
+> -	int nr;
+>  	int rc;
 
-Prefer IPC instead of ipc (above and below).
+but at least the tabs weren't replaced with spaces!
 
-> +Initially, the msgmnb value is computed automatically: at boot time
-> +and (ipc) namespace creation.
-> +
-> +==============================================================
-
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+Fix and resend, please.
