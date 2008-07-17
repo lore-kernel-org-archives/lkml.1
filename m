@@ -1,65 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932836AbYGQUUH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933196AbYGQUUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932836AbYGQUUH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 16:20:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760579AbYGQUTw
+	id S933196AbYGQUUe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 16:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932141AbYGQUTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 16:19:52 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:15988 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932907AbYGQUTv (ORCPT
+	Thu, 17 Jul 2008 16:19:53 -0400
+Received: from az33egw01.freescale.net ([192.88.158.102]:33048 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760584AbYGQUTw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 16:19:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:bcc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Iop3k31poI2nRIFUJ8qhV4P9zgawUGmjE9kQSALeUUo/a73a7RafBMFzzACKp2u5f6
-         qRJXa0GgW+ZOHIgPHda+5b0Xgcb5AbDpbwI8FekK65/Dx4ZvKx2cUKHaoNU/M8X9uYYN
-         UhWkPW1VzZYGbf2ItInS3SocoHawkI/yUdQu8=
-Date: Fri, 18 Jul 2008 00:17:03 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@osdl.org, mpm@selenic.com
-Cc: linux-kernel@vger.kernel.org, pagexec@freemail.hu
-Subject: Re: *sigh* /proc/*/pagemap
-Message-ID: <20080717201703.GA23775@martell.zuzino.mipt.ru>
-References: <b6fcc0a0807041807p24cce461m419d7b54fce72d34@mail.gmail.com> <20080704185312.052e7145.akpm@linux-foundation.org> <b6fcc0a0807050044g7a34a688s903e74848ab14b92@mail.gmail.com> <28fa9c5e0807161906q68411e9bn5975dc277f67b086@mail.gmail.com>
+	Thu, 17 Jul 2008 16:19:52 -0400
+Date: Thu, 17 Jul 2008 13:18:18 -0700 (PDT)
+From: Trent Piepho <tpiepho@freescale.com>
+X-X-Sender: xyzzy@t2.domain.actdsltmp
+To: Grant Likely <grant.likely@secretlab.ca>
+cc: avorontsov@ru.mvista.com, Richard Purdie <rpurdie@rpsys.net>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Kumar Gala <galak@kernel.crashing.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v3] leds: implement OpenFirmare GPIO LED driver
+In-Reply-To: <fa686aa40807171105m22dda41dqb334dd5f7b2634d8@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0807171302190.27902@t2.domain.actdsltmp>
+References: <1216133032.5345.73.camel@dax.rpnet.com> 
+ <20080715151917.GA30607@polina.dev.rtsoft.ru> 
+ <Pine.LNX.4.64.0807161546010.12709@t2.domain.actdsltmp> 
+ <20080717041531.GA27243@secretlab.ca>  <20080717140519.GA32617@polina.dev.rtsoft.ru>
+  <20080717141335.GA2219@polina.dev.rtsoft.ru>  <20080717150422.GC31932@secretlab.ca>
+  <20080717152006.GA26120@polina.dev.rtsoft.ru>
+ <fa686aa40807171105m22dda41dqb334dd5f7b2634d8@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <28fa9c5e0807161906q68411e9bn5975dc277f67b086@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > >> 5) check with microscope allocation there -- page-aligned address and
-> > size
-> > >> == 0
-> > >>     should allocate 0 bytes, and
-> > >
-> > > Where?
-> >
-> > kmalloc() in pagemap_read(). kmalloc(0)  and integer wraparound look
-> > possible.
+On Thu, 17 Jul 2008, Grant Likely wrote:
+> Alternately, I would also be okay with a scheme where all LED nodes
+> have a common parent and an of_platform driver would bind against the
+> parent node; not the individual children.  Then the leds-gpio driver
+> could be refactored to have both platform and of_platform bus
+> bindings.
 
-Now that I unsuccessfully tried to reproduce multiplication wraparound (on 32-bit),
-integer wraparound in kmalloc() simply can't happen here.
+Basically what I did then in my patch then, refactor leds-gpio so most of
+it is shared and there is a block of code that does platform binding and
+another block that does of_platform binding.
 
-Relevant code from pagemap_read():
+I didn't change the OF platform binding syntax so as not to complicate the
+example, but that's easy to do.  Something like:
 
-	uaddr = (unsigned long)buf & PAGE_MASK;
-	uend = (unsigned long)(buf + count);
-	pagecount = (PAGE_ALIGN(uend) - uaddr) / PAGE_SIZE;
-	pages = kmalloc(pagecount * sizeof(struct page *), GFP_KERNEL);
+leds {
+ 	compatible = "gpio-led";
+ 	gpios = <&mpc8572 6 0
+ 	         &mpc8572 7 0>;
+ 	labels = "red", "green";
+};
 
+Or like this, which needs a little more code to parse:
 
-pagecount is effectively "count / PAGE_SIZE", where "count" is size_t.
-kmalloc() takes size_t as first argument, so one has to overflow
+leds {
+ 	compatible = "gpio-led";
+ 	led@6 {
+ 		gpios = <&mpc8572 6 0>;
+ 		label = "red";
+ 	};
+ 	led@7 {
+ 		gpios = <&mpc8572 7 0>;
+ 		label = "green";
+ 	};
+};
 
-	count / PAGE_SIZE * sizeof(pointer).
-
-For sure, page is bigger than pointer.
-
-Anyone still see holes?
-
+I like the first better.  It follows the example from the docs about how
+devices with multiple gpios should work too.
