@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755719AbYGQHFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbYGQHHM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755719AbYGQHFv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 03:05:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751060AbYGQHFo
+	id S1756237AbYGQHHM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 03:07:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbYGQHG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 03:05:44 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:36099 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750990AbYGQHFn (ORCPT
+	Thu, 17 Jul 2008 03:06:59 -0400
+Received: from wx-out-0506.google.com ([66.249.82.237]:61114 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751555AbYGQHG7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 03:05:43 -0400
-Date: Thu, 17 Jul 2008 00:01:03 -0700
-From: Greg KH <greg@kroah.com>
-To: Jason Baron <jbaron@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, joe@perches.com,
-       nick@nick-andrew.net, randy.dunlap@oracle.com
-Subject: Re: [PATCH 1/7] dynamic debug v2 - infrastructure
-Message-ID: <20080717070103.GA21961@kroah.com>
-References: <20080715213108.GB23331@redhat.com>
+	Thu, 17 Jul 2008 03:06:59 -0400
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] Fix collateral damage to top level Makefile
+To: petkovbb@googlemail.com, jrigby@freescale.com,
+       linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
+       torvalds@linux-foundation.org
+Date: Thu, 17 Jul 2008 01:06:55 -0600
+Message-ID: <20080717070549.30755.13083.stgit@trillian.secretlab.ca>
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080715213108.GB23331@redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 05:31:08PM -0400, Jason Baron wrote:
-> diff --git a/include/linux/device.h b/include/linux/device.h
-> index 1a06026..fb03dbc 100644
-> --- a/include/linux/device.h
-> +++ b/include/linux/device.h
-> @@ -592,7 +592,11 @@ extern const char *dev_driver_string(struct device *dev);
->  #define dev_info(dev, format, arg...)		\
->  	dev_printk(KERN_INFO , dev , format , ## arg)
->  
-> -#ifdef DEBUG
-> +#if defined(CONFIG_DYNAMIC_PRINTK_DEBUG)
-> +#define dev_dbg(dev, format, ...) do { \
-> +	dynamic_dev_dbg(dev, format, ##__VA_ARGS__); \
-> +	} while (0)
-> +#elif defined(DEBUG)
->  #define dev_dbg(dev, format, arg...)		\
->  	dev_printk(KERN_DEBUG , dev , format , ## arg)
->  #else
+From: Grant Likely <grant.likely@secretlab.ca>
 
-In looking at your follow-on patches, where you add this to subsystems,
-it seems that you have to add a lot of #include <linux/dynamic_printk.h>
-lines.
+The patch named "powerpc/mpc5121: Add clock driver", also contained
+an unrelated and bogus change to the top-level makefile.  This patch
+backs out the bad bit.
 
-And in looking at this modification to device.h, I think lots of the
-kernel should break, but you are getting it "for free" by including the
-.h file within kernel.h.
+SHA1 of offending patch: 137e95906e294913fab02162e8a1948ade49acb5)
 
-Why not also include it here in device.h?
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-Also, with this change, code that is already using dev_dbg() today is
-instantly converted over to this logic now, right?
+If the maintainer who picked up this patch (Grant Likely) had done
+his job, this cack-up never would have happened.  Why do we still
+have to deal with such sloppy individuals?
 
-Anyway, this looks great, no objections from me at all, very good work.
+Ben/Linus;  I assume one of you will want to pick this up soonish?
+Otherwise, I'll add it to my tree and it will be part of my next
+pull request.
 
-thanks,
+g.
 
-greg k-h
+ Makefile |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 1564577..6192922 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,4 +1,3 @@
+-FRED=42
+ VERSION = 2
+ PATCHLEVEL = 6
+ SUBLEVEL = 26
+
