@@ -1,79 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760154AbYGQOec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757831AbYGQOf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760154AbYGQOec (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 10:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756263AbYGQOeX
+	id S1757831AbYGQOf3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 10:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756263AbYGQOfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 10:34:23 -0400
-Received: from mercury.realtime.net ([205.238.132.86]:50949 "EHLO
-	ruth.realtime.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755978AbYGQOeW (ORCPT
+	Thu, 17 Jul 2008 10:35:18 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:6467 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754052AbYGQOfR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 10:34:22 -0400
-In-Reply-To: <20080717070759.GE22090@kroah.com>
-References: <for-27-patch1-0@bga.com> <for-27-patch9@bga.com> <20080712041137.GA5933@kroah.com> <e6b3109a0ab047bea58ceecb8734761d@bga.com> <0a67ecbf69649dce778db1b463e59c3a@bga.com> <ad61f8387a737bc410e9d6dc3a8a5b63@bga.com> <20080717070759.GE22090@kroah.com>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <8c10c96094849c022d42a9d7d625e525@bga.com>
+	Thu, 17 Jul 2008 10:35:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=gvjlK+9+xM0WYWvI/FmZKwtEoWf16qtrfW4kqwyIF4+WOUqkez/D64wGTv+jWvQVGA
+         ltuEckteI9jOWo1ugK+TNJqb0ZaS0m1qMZ/MDejFZ4WnGv6G+1u5EsEndqx1wlKl57mW
+         uEpvpL4VOXi156hhBc4HI3584GxeK54ovg8XA=
+Message-ID: <19f34abd0807170735p5d2cba31kec3fb65c5b8c7b3f@mail.gmail.com>
+Date: Thu, 17 Jul 2008 16:35:16 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Josef Bacik" <jbacik@redhat.com>
+Subject: Re: ext3 on latest -git: BUG: unable to handle kernel NULL pointer dereference at 0000000c
+Cc: "Josef Bacik" <josef@toxicpanda.com>, linux-ext4@vger.kernel.org,
+       sct@redhat.com, akpm@linux-foundation.org, adilger@sun.com,
+       "Johannes Weiner" <hannes@saeurebad.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080717141333.GC14133@unused.rdu.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Cc: Michael Ellerman <michael@ellerman.id.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org,
-       Jean Delvare <khali@linux-fr.org>, Greg KH <gregkh@suse.de>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH/RFC] pci: dynids.use_driver_data considered harmful
-Date: Thu, 17 Jul 2008 09:36:14 -0500
-To: Greg KH <greg@kroah.com>
-X-Mailer: Apple Mail (2.624)
-X-Originating-IP: 216.126.174.57
+Content-Disposition: inline
+References: <19f34abd0807170551q4fbb862bu270297cfd76a69be@mail.gmail.com>
+	 <1b7401870807170613y747baa7by158177047cc7e28@mail.gmail.com>
+	 <19f34abd0807170620g39ab942bl592ea3fa3fa0dab@mail.gmail.com>
+	 <1b7401870807170634u14492a53k3931ddcddbd1e098@mail.gmail.com>
+	 <19f34abd0807170639p838d14blc9a13d2104313f38@mail.gmail.com>
+	 <20080717135746.GB14133@unused.rdu.redhat.com>
+	 <19f34abd0807170725p13e81e3dq4daad32ad2a83931@mail.gmail.com>
+	 <20080717141333.GC14133@unused.rdu.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Jul 17, 2008, at 2:07 AM, Greg KH wrote:
-
-> On Wed, Jul 16, 2008 at 05:18:18AM -0500, Milton Miller wrote:
+On Thu, Jul 17, 2008 at 4:13 PM, Josef Bacik <jbacik@redhat.com> wrote:
+> On Thu, Jul 17, 2008 at 04:25:49PM +0200, Vegard Nossum wrote:
+>> On Thu, Jul 17, 2008 at 3:57 PM, Josef Bacik <jbacik@redhat.com> wrote:
+>> > Can you try this patch out and see if it fixes the problem?  I didn't compile
+>> > test it, so you may need to tweak somethings, but it should work.  Thanks,
+>> >
+>> > Signed-off-by: Josef Bacik <jbacik@redhat.com>
 >>
->> Greg,
+>> Nope, seems to be the same problem:
 >>
->> Please respond to this email and explain why the patch
+>> kjournald starting.  Commit interval 5 seconds
+>> EXT3-fs warning: mounting fs with errors, running e2fsck is recommended
+>> EXT3 FS on loop0, internal journal
+>> EXT3-fs: mounted filesystem with ordered data mode.
+>> EXT3-fs error (device loop0): ext3_free_blocks: Freeing blocks in
+>> system zones - Block = 16, count = 1
+>> EXT3-fs error (device loop0): ext3_free_blocks: Freeing blocks in
+>> system zones - Block = 32, count = 1
+>> EXT3-fs error (device loop0): ext3_free_blocks: Freeing blocks not in
+>> datazone - block = 262144, count = 1
+>> BUG: unable to handle kernel NULL pointer dereference at 0000000c
+>> IP: [<c01fd210>] journal_dirty_metadata+0xa0/0x160
 >>
->> pci: dynids.use_driver_data considered harmful
+>> Full log at http://folk.uio.no/vegardno/linux/log-1216304953.txt
 >>
->> http://www.ussg.iu.edu/hypermail/linux/kernel/0807.1/index.html#2188
 >>
->> should not be applied.   I am not arguing the correctness of
->> the removed code, rather its utility and benefit to the linux
->> community.
->>
->> As far as I can tell, the code only succeeds in limiting the
->> usefulness of the pci dynamic id addition mechanism.
-...
 >
-> Sorry, I'm on the road right now and will not get back until Friday.
-> Then I have the big merges with Linus to get through.  I'll try to get
-> to this by Monday, but my original point still stands, this was
-> implemented for a reason, saying that not enough drivers use it 
-> properly
-> does not make the need for it to go away.  It is required for them, so
-> perhaps the other 419 drivers also need to have the flag set.  That's
-> pretty trivial to do, right?
->
+> Ok, this should do it then.  Thanks,
 
-Fine, I'll give you a little time.  But I want to hear specifics how it
-helps drivers.   I have shown how it hurts many drivers.   My arguement
-is that once we set the flag on the drivers, we will end up with it set
-on all drivers or the remaining drivers will not care.   There were 413+
-drivers in linux-next that were compiled by allyesconfig, about 150 used
-driver data.
+Hm, it doesn't apply. Should I revert the previous patch?
 
-If the purpose is to enforce range checking, then I'll start working on
-patches for those 100 drivers to do that.   But I don't see why a binary
-flag helps any driver.   The flag is not "I will accept a additional id
-table", its "I will accept the additional driver data that I need to
-operate" on my dynamically added id table.
 
-milton
+Vegard
 
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
