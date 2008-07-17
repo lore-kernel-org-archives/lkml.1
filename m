@@ -1,84 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757831AbYGQOf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760288AbYGQOfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757831AbYGQOf3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 10:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756263AbYGQOfS
+	id S1760288AbYGQOfs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 10:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757414AbYGQOfi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 10:35:18 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:6467 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754052AbYGQOfR (ORCPT
+	Thu, 17 Jul 2008 10:35:38 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:57911 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756263AbYGQOfh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 10:35:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=gvjlK+9+xM0WYWvI/FmZKwtEoWf16qtrfW4kqwyIF4+WOUqkez/D64wGTv+jWvQVGA
-         ltuEckteI9jOWo1ugK+TNJqb0ZaS0m1qMZ/MDejFZ4WnGv6G+1u5EsEndqx1wlKl57mW
-         uEpvpL4VOXi156hhBc4HI3584GxeK54ovg8XA=
-Message-ID: <19f34abd0807170735p5d2cba31kec3fb65c5b8c7b3f@mail.gmail.com>
-Date: Thu, 17 Jul 2008 16:35:16 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Josef Bacik" <jbacik@redhat.com>
-Subject: Re: ext3 on latest -git: BUG: unable to handle kernel NULL pointer dereference at 0000000c
-Cc: "Josef Bacik" <josef@toxicpanda.com>, linux-ext4@vger.kernel.org,
-       sct@redhat.com, akpm@linux-foundation.org, adilger@sun.com,
-       "Johannes Weiner" <hannes@saeurebad.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080717141333.GC14133@unused.rdu.redhat.com>
+	Thu, 17 Jul 2008 10:35:37 -0400
+Message-ID: <487F58B6.5040309@suse.de>
+Date: Thu, 17 Jul 2008 18:35:34 +0400
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: alan-jenkins@tuffmail.co.uk
+CC: linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] acpi: Avoid dropping rapid hotkey events (or other GPEs)
+ on Asus EeePC
+References: <487D23C3.5070301@student.cs.york.ac.uk>
+In-Reply-To: <487D23C3.5070301@student.cs.york.ac.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <19f34abd0807170551q4fbb862bu270297cfd76a69be@mail.gmail.com>
-	 <1b7401870807170613y747baa7by158177047cc7e28@mail.gmail.com>
-	 <19f34abd0807170620g39ab942bl592ea3fa3fa0dab@mail.gmail.com>
-	 <1b7401870807170634u14492a53k3931ddcddbd1e098@mail.gmail.com>
-	 <19f34abd0807170639p838d14blc9a13d2104313f38@mail.gmail.com>
-	 <20080717135746.GB14133@unused.rdu.redhat.com>
-	 <19f34abd0807170725p13e81e3dq4daad32ad2a83931@mail.gmail.com>
-	 <20080717141333.GC14133@unused.rdu.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 4:13 PM, Josef Bacik <jbacik@redhat.com> wrote:
-> On Thu, Jul 17, 2008 at 04:25:49PM +0200, Vegard Nossum wrote:
->> On Thu, Jul 17, 2008 at 3:57 PM, Josef Bacik <jbacik@redhat.com> wrote:
->> > Can you try this patch out and see if it fixes the problem?  I didn't compile
->> > test it, so you may need to tweak somethings, but it should work.  Thanks,
->> >
->> > Signed-off-by: Josef Bacik <jbacik@redhat.com>
->>
->> Nope, seems to be the same problem:
->>
->> kjournald starting.  Commit interval 5 seconds
->> EXT3-fs warning: mounting fs with errors, running e2fsck is recommended
->> EXT3 FS on loop0, internal journal
->> EXT3-fs: mounted filesystem with ordered data mode.
->> EXT3-fs error (device loop0): ext3_free_blocks: Freeing blocks in
->> system zones - Block = 16, count = 1
->> EXT3-fs error (device loop0): ext3_free_blocks: Freeing blocks in
->> system zones - Block = 32, count = 1
->> EXT3-fs error (device loop0): ext3_free_blocks: Freeing blocks not in
->> datazone - block = 262144, count = 1
->> BUG: unable to handle kernel NULL pointer dereference at 0000000c
->> IP: [<c01fd210>] journal_dirty_metadata+0xa0/0x160
->>
->> Full log at http://folk.uio.no/vegardno/linux/log-1216304953.txt
->>
->>
->
-> Ok, this should do it then.  Thanks,
+Hi Alan,
 
-Hm, it doesn't apply. Should I revert the previous patch?
+Could you please test if your patch works with the last patch in #10919?
+
+Thanks,
+Alex.
 
 
-Vegard
+Alan Jenkins wrote:
+> It looks like this EC clears the SMI_EVT bit after every query, even if there
+> are more events pending.  The workaround is to repeatedly query the EC until
+> it reports that no events remain.
+> 
+> This fixes a regression in 2.6.26 (from 2.6.25.3).  Initially reported as
+> "Asus Eee PC hotkeys stop working if pressed quickly" in bugzilla
+> <http://bugzilla.kernel.org/show_bug.cgi?id=11089>.
+> 
+> The regression was caused by a recently added check for interrupt storms.
+> The Eee PC triggers this check and switches to polling.  When multiple events
+> arrive between polling intervals, only one is fetched from the EC.  This causes
+> erroneous behaviour; ultimately events stop being delivered altogether when the
+> EC buffer overflows.
+> 
+> Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+> 
+> ---
+> diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
+> index 5622aee..2b4c5a2 100644
+> --- a/drivers/acpi/ec.c
+> +++ b/drivers/acpi/ec.c
+> @@ -459,14 +459,10 @@ void acpi_ec_remove_query_handler(struct acpi_ec *ec, u8 query_bit)
+>  
+>  EXPORT_SYMBOL_GPL(acpi_ec_remove_query_handler);
+>  
+> -static void acpi_ec_gpe_query(void *ec_cxt)
+> +static void acpi_ec_gpe_run_handler(struct acpi_ec *ec, u8 value)
+>  {
+> -	struct acpi_ec *ec = ec_cxt;
+> -	u8 value = 0;
+>  	struct acpi_ec_query_handler *handler, copy;
+>  
+> -	if (!ec || acpi_ec_query(ec, &value))
+> -		return;
+>  	mutex_lock(&ec->lock);
+>  	list_for_each_entry(handler, &ec->list, node) {
+>  		if (value == handler->query_bit) {
+> @@ -484,6 +480,18 @@ static void acpi_ec_gpe_query(void *ec_cxt)
+>  	mutex_unlock(&ec->lock);
+>  }
+>  
+> +static void acpi_ec_gpe_query(void *ec_cxt)
+> +{
+> +	struct acpi_ec *ec = ec_cxt;
+> +	u8 value = 0;
+> +
+> +	if (!ec)
+> +		return;
+> +
+> +	while (!acpi_ec_query(ec, &value))
+> +		acpi_ec_gpe_run_handler(ec, value);
+> +}
+> +
+>  static u32 acpi_ec_gpe_handler(void *data)
+>  {
+>  	acpi_status status = AE_OK;
+> 
+> 
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
