@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933342AbYGQVYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933190AbYGQVZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933342AbYGQVYz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 17:24:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760404AbYGQVYY
+	id S933190AbYGQVZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 17:25:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760322AbYGQVZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 17:24:24 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:40631 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933134AbYGQVYX (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 17:24:23 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-Cc: David Collier-Brown <davecb@sun.com>,
-       Morton Harrow <mharrow@linuxmail.org>, Miod Vallat <miod@online.fr>,
-       Linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: GPL version 4
-In-Reply-To: Your message of "Thu, 17 Jul 2008 17:17:46 EDT."
-             <Pine.LNX.4.61.0807171716030.2133@chaos.analogic.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20080716213115.C747F7BC45@ws5-10.us4.outblaze.com> <487E70E6.4030908@sun.com>
-            <Pine.LNX.4.61.0807171716030.2133@chaos.analogic.com>
+	Thu, 17 Jul 2008 17:25:46 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50437 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758824AbYGQVZp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 17:25:45 -0400
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
+	in-kernel, use it in more drivers.
+From: David Woodhouse <dwmw2@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
+       sam@ravnborg.org
+In-Reply-To: <200807172242.51251.rjw@sisk.pl>
+References: <1216077806.27455.85.camel@shinybook.infradead.org>
+	 <200807162328.37754.rjw@sisk.pl>
+	 <1216248152.1862.21.camel@shinybook.infradead.org>
+	 <200807172242.51251.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Thu, 17 Jul 2008 14:25:39 -0700
+Message-Id: <1216329939.6672.2.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1216329859_4044P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Date: Thu, 17 Jul 2008 17:24:19 -0400
-Message-ID: <11069.1216329859@turing-police.cc.vt.edu>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1216329859_4044P
-Content-Type: text/plain; charset=us-ascii
+On Thu, 2008-07-17 at 22:42 +0200, Rafael J. Wysocki wrote:
+> 
+>   HOSTCC  firmware/ihex2fw - due to: FORCE
+> /home/rafael/src/linux-next/firmware/ihex2fw.c:268: fatal error:
+> opening dependency file firmware/.ihex2fw.d: Read-only file system
+> compilation terminated.
 
-On Thu, 17 Jul 2008 17:17:46 EDT, "linux-os (Dick Johnson)" said:
+I'm very confused. I can do this...
 
-> Nah. Should be
-> GPL V-infinity
-> That way there won't be any more.
+ make INSTALL_FW_PATH=/tmp/foo firmware_install
+ su otheruser
+ touch firmware/.ihex2fw.cmd  (gives EPERM as expected)
+ make INSTALL_FW_PATH=/tmp/foo2 firmware_install
 
-Any mathematician worth their salt will point out you have that bass-ackwards.
+And it _works_ for me, after I've made that change in
+scripts/Makefile.fwinst. But I don't have .ihex2fw.d -- I
+have .ihex2fw.cmd. What is in your .ihex2fw.d? And does it work if you
+include _that_ from firmware/Makefile?
 
-infinity means there is *always* one more.
+/me wonders where Sam is hiding...
 
---==_Exmh_1216329859_4044P
-Content-Type: application/pgp-signature
+-- 
+dwmw2
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFIf7iDcC3lWbTT17ARApIoAJ9oWSS/ZJDI17mKo2hzQxiyuKS1YwCeL3P9
-y02uyiKXnPBsWa5iAYaLAp8=
-=5Pma
------END PGP SIGNATURE-----
-
---==_Exmh_1216329859_4044P--
