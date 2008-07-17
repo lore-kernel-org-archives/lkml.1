@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760088AbYGQAxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760219AbYGQAyo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760088AbYGQAxv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 20:53:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752227AbYGQAxn
+	id S1760219AbYGQAyo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 20:54:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbYGQAye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 20:53:43 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:42577 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751427AbYGQAxm (ORCPT
+	Wed, 16 Jul 2008 20:54:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42050 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752227AbYGQAye (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 20:53:42 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Message-id: <487E9815.6060803@gmail.com>
-Date: Wed, 16 Jul 2008 20:53:41 -0400
-From: Marc Dionne <marc.c.dionne@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-To: eparis@redhat.com, LKML <linux-kernel@vger.kernel.org>
-Subject: /proc/mounts unreadable - bisected
+	Wed, 16 Jul 2008 20:54:34 -0400
+Date: Wed, 16 Jul 2008 17:53:55 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: Please pull ACPI updates
+In-Reply-To: <alpine.LFD.1.10.0807161728560.2835@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0807161751490.2959@woody.linux-foundation.org>
+References: <20080716214516.GA10777@basil.nowhere.org> <200807161633.01375.jbarnes@virtuousgeek.org> <alpine.LFD.1.10.0807161639090.2835@woody.linux-foundation.org> <200807161651.44990.jbarnes@virtuousgeek.org>
+ <alpine.LFD.1.10.0807161728560.2835@woody.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With current git, /proc/mounts is unreadable on my system, with any attempts to 
-read it returning EINVAL.  This breaks many init scripts, among other things.
 
-I bisected it down to this commit:
 
-commit 2069f457848f846cb31149c9aa29b330a6b66d1b
-Author: Eric Paris <eparis@redhat.com>
-Date:   Fri Jul 4 09:47:13 2008 +1000
+On Wed, 16 Jul 2008, Linus Torvalds wrote:
+>
+> Well, I haven't actually seen Len's original tree, so maybe the stuff Andi 
+> pushed was just the stuff he had queued up independently. I guess I 
+> shouldn't judge before I'm sure.
 
-     LSM/SELinux: show LSM mount options in /proc/mounts
+No, he rebased it - the three commits you shared are now separate ones. 
 
-     This patch causes SELinux mount options to show up in /proc/mounts.  As
-     with other code in the area seq_put errors are ignored.  Other LSM's
-     will not have their mount options displayed until they fill in their own
-     security_sb_show_options() function.
+Most of the conflicts seem to have been due tot he x86 tree changes 
+though. But it seems I didn't mess up too much: at least the result booted 
+for me without complaints. So I pushed out my resolution.
 
-In my case, selinux_get_mnt_opts() never gets very far because 
-sbsec->initialized never becomes true, and the function systematically returns 
-EINVAL which is then passed back up to the reader of /proc/mounts.
+Jesse, can you please double-check it?
 
-Changing show_sb_opts() to always return 0 (it was a void function before this 
-commit) makes the system behave normally.
-
-Now it's possible that my selinux config is hosed - I have it enabled in 
-permissive mode but I don't pay much attention to it - but the failure mode in 
-that case should probably be more graceful.  Seems like it would be better to 
-print out the available mount info minus the LSM options than to bail out 
-completely?
-
-Thanks,
-Marc
+			Linus
