@@ -1,77 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933027AbYGQVYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933244AbYGQVYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933027AbYGQVYT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 17:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755222AbYGQVYI
+	id S933244AbYGQVYh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 17:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932978AbYGQVYS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 17:24:08 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:53633 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932141AbYGQVYF (ORCPT
+	Thu, 17 Jul 2008 17:24:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48694 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932902AbYGQVYR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 17:24:05 -0400
-Date: Thu, 17 Jul 2008 14:20:38 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Mark Fasheh <mfasheh@suse.com>, linux-kernel@vger.kernel.org,
-       ocfs2-devel@oss.oracle.com, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [git patches] Ocfs2 and Configfs updates for 2.6.27
-Message-ID: <20080717212038.GA8283@ca-server1.us.oracle.com>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	Mark Fasheh <mfasheh@suse.com>, linux-kernel@vger.kernel.org,
-	ocfs2-devel@oss.oracle.com,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <20080717175146.GH28014@wotan.suse.de> <alpine.LFD.1.10.0807171056520.2959@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807171056520.2959@woody.linux-foundation.org>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 17 Jul 2008 17:24:17 -0400
+Date: Thu, 17 Jul 2008 14:23:14 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: linux-kernel@vger.kernel.org, Davide Libenzi <davidel@xmailserver.org>,
+       stable@kernel.org
+Subject: Re: [PATCH] Fix build on COMPAT platforms when CONFIG_EPOLL is
+ disabled.
+Message-Id: <20080717142314.1aeb2f58.akpm@linux-foundation.org>
+In-Reply-To: <20080718.003108.128619119.anemo@mba.ocn.ne.jp>
+References: <20080718.003108.128619119.anemo@mba.ocn.ne.jp>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 11:01:40AM -0700, Linus Torvalds wrote:
-> .. I really dislike how this was done.
+On Fri, 18 Jul 2008 00:31:08 +0900 (JST)
+Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
 
-	Argh!
-
-> This commit:
+> Add missing cond_syscall() entry for compat_sys_epoll_pwait.
 > 
-> 11c3b79218390a139f2d474ee1e983a672d5839a ("configfs: Allow ->make_item() 
-> and ->make_group() to return detailed errors.")
-> 
-> is just ugly. Returning one value by passing a pointer to a pointer, and 
-> the error value by returning an 'int' errno is _not_ how we do things in 
-> the kernel.
+> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+> ---
+> diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
+> index 5b9b467..0fea0ee 100644
+> --- a/kernel/sys_ni.c
+> +++ b/kernel/sys_ni.c
+> @@ -59,6 +59,7 @@ cond_syscall(sys_epoll_create);
+>  cond_syscall(sys_epoll_ctl);
+>  cond_syscall(sys_epoll_wait);
+>  cond_syscall(sys_epoll_pwait);
+> +cond_syscall(compat_sys_epoll_pwait);
+>  cond_syscall(sys_semget);
+>  cond_syscall(sys_semop);
+>  cond_syscall(sys_semtimedop);
 
-	See, I coded it up with PTR_ERR() first, and everyone I showed
-it to said "I hate PTR_ERR()!".
-
-> I pulled it, but I want to register my protest.
-
-	I wish you hadn't, because it won't be to difficult to go back
-to PTR_ERR().  However, don't revert it - that affects some of the
-follow-on patches that were affected by the change.
-	I'll spin up a new PTR_ERR() change.  I have some more cleanups
-coming too, they need to finish their time in linux-next.
-
-Joel
-
--- 
-
-"The cynics are right nine times out of ten."  
-        - H. L. Mencken
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+Interesting.  It appears that both 2.6.25.x and 2.6.26.x need this
+fix as well.
