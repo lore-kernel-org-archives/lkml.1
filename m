@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760919AbYGQVbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933329AbYGQVcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760919AbYGQVbr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 17:31:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933210AbYGQVbc
+	id S933329AbYGQVcf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 17:32:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760272AbYGQVc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 17:31:32 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50733
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S933193AbYGQVbb (ORCPT
+	Thu, 17 Jul 2008 17:32:26 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:6894 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760551AbYGQVcZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 17:31:31 -0400
-Date: Thu, 17 Jul 2008 14:31:31 -0700 (PDT)
-Message-Id: <20080717.143131.06782831.davem@davemloft.net>
-To: alan@lxorguk.ukuu.org.uk
-Cc: jeff@garzik.org, torvalds@linux-foundation.org, arjan@infradead.org,
-       akpm@linux-foundation.org, dwmw2@infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
- in-kernel, use it in more drivers.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080715134246.7bee32b1@the-village.bc.nu>
-References: <alpine.LFD.1.10.0807142027140.3017@woody.linux-foundation.org>
-	<487C500F.8000109@garzik.org>
-	<20080715134246.7bee32b1@the-village.bc.nu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Jul 2008 17:32:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Tc6uBB/v+dcYDXdIgz7lZt8cT64JgoVZRWmjRvmWbQDGM40o88YOit0GfNBMKjOM/Y
+         OPlCF1poul2G597iJfKagroLCRViwW7S/mwdp3Z1R3n84Tv5j6oNtEwv3N+9VMF8k5Eb
+         knvH6nBXi5V2skkDMBGTbXnfyk2zI0lOBHrr8=
+Date: Fri, 18 Jul 2008 01:29:39 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-kernel@vger.kernel.org,
+       Davide Libenzi <davidel@xmailserver.org>, stable@kernel.org
+Subject: Re: [PATCH] Fix build on COMPAT platforms when CONFIG_EPOLL is
+	disabled.
+Message-ID: <20080717212939.GA9945@martell.zuzino.mipt.ru>
+References: <20080718.003108.128619119.anemo@mba.ocn.ne.jp> <20080717142314.1aeb2f58.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080717142314.1aeb2f58.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date: Tue, 15 Jul 2008 13:42:46 +0100
-
-> > * the legal subtext of these changes was not mentioned at all
+On Thu, Jul 17, 2008 at 02:23:14PM -0700, Andrew Morton wrote:
+> On Fri, 18 Jul 2008 00:31:08 +0900 (JST)
+> Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
 > 
-> The only legal subtext has been some mad fantasy proposed by Dave Miller
-> that David Woodhouse current employer and previous one were both in some
-> conspiracy to push firmware elsewhere. It would be very helpful if you
-> stuck to the real world.
+> > Add missing cond_syscall() entry for compat_sys_epoll_pwait.
+> > 
+> > Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+> > ---
+> > diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
+> > index 5b9b467..0fea0ee 100644
+> > --- a/kernel/sys_ni.c
+> > +++ b/kernel/sys_ni.c
+> > @@ -59,6 +59,7 @@ cond_syscall(sys_epoll_create);
+> >  cond_syscall(sys_epoll_ctl);
+> >  cond_syscall(sys_epoll_wait);
+> >  cond_syscall(sys_epoll_pwait);
+> > +cond_syscall(compat_sys_epoll_pwait);
+> >  cond_syscall(sys_semget);
+> >  cond_syscall(sys_semop);
+> >  cond_syscall(sys_semtimedop);
+> 
+> Interesting.  It appears that both 2.6.25.x and 2.6.26.x need this
+> fix as well.
 
-That was wrong, but there have been other legal subtexts.
+IIRC, this happens for other syscalls as well. IIRC, timerfd ones.
 
-request_firmware() itself, although partially done for technical reasons,
-had some very real legal impetus.
-
-Linus has even said that in this thread.
