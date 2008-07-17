@@ -1,81 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759668AbYGQQpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758472AbYGQQs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759668AbYGQQpq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 12:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756397AbYGQQpf
+	id S1758472AbYGQQs1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 12:48:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755178AbYGQQsS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 12:45:35 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:54620 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756309AbYGQQpe (ORCPT
+	Thu, 17 Jul 2008 12:48:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52140 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754052AbYGQQsS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 12:45:34 -0400
-Message-ID: <487F772C.1070806@suse.de>
-Date: Thu, 17 Jul 2008 20:45:32 +0400
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Thu, 17 Jul 2008 12:48:18 -0400
+Date: Thu, 17 Jul 2008 09:47:45 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Short update and pause in 2.6.27 merge window
+Message-ID: <alpine.LFD.1.10.0807170919370.2959@woody.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-CC: linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] acpi: Avoid dropping rapid hotkey events (or other GPEs)
- on Asus EeePC
-References: <487D23C3.5070301@student.cs.york.ac.uk> <487F58B6.5040309@suse.de> <487F6D2E.2040501@tuffmail.co.uk>
-In-Reply-To: <487F6D2E.2040501@tuffmail.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Jenkins wrote:
-> Alexey Starikovskiy wrote:
->> Hi Alan,
->>
->> Could you please test if your patch works with the last patch in #10919?
->>
->> Thanks,
->> Alex.
-> Vacuously so.
-> 
-> My patch still applies, but #10919 makes it obsolete.
-Not so, there are two polls in ec.c, first is poll for change in status register,
-which gave the name to the mode, and still exists; the other is for event
-in embedded controller, which was introduced to properly solve #9998, and part of
-it is removed by patch in #10919.
->  My patch fixed a
-> bug that shows up in polling mode.  #10919 kills polling mode.
 
-> 
-> I've tested v2.6.26 + #10919 and it works fine (except for spamming the
-> kernel log - please read my Bugzilla comment).
-> 
-> 
-> It appears that interrupt mode suffered from a race which is very
-> similar to my original problem.  If two GPE interrupts arrive before the
-> workqueue runs, then the second interrupt will be ignored because
-> EC_FLAGS_QUERY_PENDING is still set.  This will happen with any EC if
-> interrupts are very close together, right?
-The notion of queue in embedded controller is new, it was never mentioned in
-ACPI spec, so the driver was written with assumption that new query interrupt should
-not arrive before we service previous one. There is even a chart in how interrupts
-should occur near the EC query command...
-> 
-> I think my patch also fixes this theoretical problem.
-I think, this is not a theoretical problem, but the problem we've tried to solve in
-#9998, #10724, and so on.
-> But I'd rather
-> you took over on this.  I was already confused by ec.c in v2.6.26, and
-> with #10919 I understand it even less.  E.g. why is
-> ec_switch_to_poll_mode() still present; what does it do now do_ec_poll()
-> is removed?
-See above, I still disable EC GPE for the time than we have pending query,
-so we better not wait for it to check the status register
-> 
-> I'm happy to work on this with you, but I'd need to be able understand
-> the code first :-(.
-Well, with this patch of yours, I guess, we will not have too many problems in EC left :-)
-> 
-> Alan
+This is just a quick note to let people know that I'll be off for an 
+extended weekend starting later today, so the next few days will be very 
+quiet from a merge standpoint.
 
-Thanks again,
-Alex.
+Feel free to send the merge requests, just don't get worried when I don't 
+act on them ;)
+
+(There's also a few merge requests that I didn't act on yet just because I 
+wanted to take a closer look - but if you're worried about it there is 
+nothing wrong with re-sending it. I _do_ just drop requests in the 
+bottomless pit that is my mailbox at times)
+
+We seem to be roughly half-way through the merge window, judging purely by 
+number of commits, although part of my calculations there is that I'm 
+actually hoping/expecting that because a number of people are on vacation 
+etc, this merge window might be smaller than some of the other recent ones 
+(2.6.25-rc1 in particular was huge).
+
+In the last couple of days I _have_ merged 50+ trees, and while there's 
+been some 'heated discussion' about some of them (you know who you are ;), 
+I'm hoping that we're actually in reasonably good shape even though it's 
+in the middle of the merge window, and that people will test out the 
+snapshot kernels even though I'm not ready to do a -rc1 release.
+
+So go out and test.
+
+The fact that much of it has been in linux-next may or may not have 
+helped, but it definitely meant that people knew of _some_ problems early. 
+Let's see how people feel about that after the whole release is done, but 
+it certainly doesn't seem to have hurt.
+
+My personal favorite merge is the BKL pushdown, which while not likely to 
+matter hugely in practice for lots of people is nice to finally see. We 
+kind of dropped the ball on the BKL once it got to be small enough that it 
+wasn't very high on peoples radar any more. Now the most noticeable user 
+of the BKL in "core" kernel code seems to be fs/locks.c.
+
+Hint, hint. I think somebody had some patches for that one too. Matthew?
+
+But we've had lots of other things (in fact, the BKL changes ended up 
+being much smaller than I expected), and the dirstat so far is
+
+	   4.7% arch/arm/
+	   3.3% arch/mips/
+	   3.5% arch/ppc/platforms/
+	  14.9% arch/ppc/
+	   3.3% arch/x86/
+	  29.3% arch/
+	   8.3% drivers/char/drm/
+	   9.3% drivers/char/
+	   7.3% drivers/gpu/drm/
+	   7.3% drivers/gpu/
+	   3.3% drivers/s390/
+	  10.4% drivers/usb/misc/
+	   6.0% drivers/usb/serial/
+	  17.2% drivers/usb/
+	  45.0% drivers/
+	   7.1% firmware/
+	   4.3% fs/ubifs/
+	   5.0% fs/
+	   6.7% include/
+	   3.3% sound/
+
+where some of those percentages are a bit misleading (the "gpu" part, for 
+example, goes away if you enable renames, since that was all really just 
+moving files around from drivers/char/ - but at the same time it's one of 
+the things people may notice more, so I chose the non-rename version of 
+dirstat on purpose).
+
+No network or driver core/USB merges yet (the USB stuff in the dirstat is 
+from the ARM, BKL and firmware merges) so there are complete big 
+subsystems lacking still, but it would be good to have people test the 
+things we _have_ merged.
+
+			Linus
+
+PS. And to get wider distribution for this message: Digg users - you're 
+all a bunch of Wanking Walruses. And you can quote me on that.
