@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759586AbYGQA2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759584AbYGQAca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759586AbYGQA2b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 20:28:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbYGQA2X
+	id S1759584AbYGQAca (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 20:32:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbYGQAcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 20:28:23 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36751 "EHLO
+	Wed, 16 Jul 2008 20:32:17 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41881 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751663AbYGQA2W (ORCPT
+	by vger.kernel.org with ESMTP id S1751467AbYGQAcQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 20:28:22 -0400
-Date: Wed, 16 Jul 2008 17:28:20 -0700 (PDT)
+	Wed, 16 Jul 2008 20:32:16 -0400
+Date: Wed, 16 Jul 2008 17:32:00 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
 To: Jesse Barnes <jbarnes@virtuousgeek.org>
-cc: linux-kernel@vger.kernel.org,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Subject: Re: [git pull] PCI pull request for 2.6.27
-In-Reply-To: <200807161639.24289.jbarnes@virtuousgeek.org>
-Message-ID: <alpine.LFD.1.10.0807161715250.2835@woody.linux-foundation.org>
-References: <200807161639.24289.jbarnes@virtuousgeek.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: Please pull ACPI updates
+In-Reply-To: <200807161651.44990.jbarnes@virtuousgeek.org>
+Message-ID: <alpine.LFD.1.10.0807161728560.2835@woody.linux-foundation.org>
+References: <20080716214516.GA10777@basil.nowhere.org> <200807161633.01375.jbarnes@virtuousgeek.org> <alpine.LFD.1.10.0807161639090.2835@woody.linux-foundation.org> <200807161651.44990.jbarnes@virtuousgeek.org>
 User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -29,42 +29,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 On Wed, 16 Jul 2008, Jesse Barnes wrote:
+> >
+> > Andi did not. The whole series I pulled was rebased today at 2PM.
 > 
-> I'm open to suggestions here about a couple of caveats with this pull:
->   - it's not merged up to master (though the conflicts are fairly trivial,
->     you can check out my linux-next-merge branch to see how I handled them)
+> Ugg, when Andi took over we talked about it; I thought we had agreed that he 
+> would stick with Len's tree.  I guess I was wrong.
 
-Ok, I handled them without checking your branch, just because I actually 
-like feeling like I know what I'm doing.
+Well, I haven't actually seen Len's original tree, so maybe the stuff Andi 
+pushed was just the stuff he had queued up independently. I guess I 
+shouldn't judge before I'm sure.
 
-That said, when I inevitably fail, just humor me, and send me a patch to 
-fix it up, mentioning how I missed a really "subtle" thing, and the fact 
-that it didn't even compile wasn't really my fault.
+> Is a topic branch flow like what Len uses documented somewhere that you know 
+> of?  I know my process could use some improvement; I'd rather not have to 
+> wait for Len to come back to ask him. :)
 
-I'm special. My mom told me so. And I want the re-assurance.
+Len wrote it up at one point, but I can't for the life of me remember 
+where. 
 
->   - it contains a revert for a patch I thought might be ready but have since
->     chickened out on.  I didn't want to rebase since I'm carrying some
->     changes from the ACPI tree
+He's not the onyl one to ask, though - Ingo and Thomas seem to have picked 
+up topic branches pretty well (I had some issues with a couple of the 
+topics, but they weren't fundamental and the major one was probably 
+because Ingo tried a bit too hard to make sure that I never saw any 
+conflicts at all).
 
-That's fine. 
+Other topic branch users include Jeff Garzik and rmk. There's definitely 
+people around who should be able to talk about what they are doing.
 
-But do double-check the end result. There's lots of small details (for 
-example, I did try to just undo the damage from the "overlong lines caused 
-somebody to violate all the _other_ coding style rules" patch), but this 
-code from setup_64.c:
-
-	+#ifdef CONFIG_PCI
-	+	if (pci_early_dump_regs)
-	+		early_dump_pci_devices();
-	+#endif
-
-that your branch had added I put in the new shared 'setup.c', and while I 
-think I put it in the right place, somebody needs to double-check it.
-
-Anyway, I've committed what I think is the right resolve, and it's 
-compiled etc, but I want to reboot it before I push out (so if there is 
-something seriously broken I can just holler for help or perhaps try to 
-fixure it out myself before publicising it), so it's not there yet.
-
-			Linus
+		Linus
