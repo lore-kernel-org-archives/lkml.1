@@ -1,56 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760521AbYGQXBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932704AbYGQXBp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760521AbYGQXBR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 19:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757017AbYGQXBD
+	id S932704AbYGQXBp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 19:01:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757017AbYGQXBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 19:01:03 -0400
-Received: from mga01.intel.com ([192.55.52.88]:7562 "EHLO mga01.intel.com"
+	Thu, 17 Jul 2008 19:01:36 -0400
+Received: from mail.lang.hm ([64.81.33.126]:52386 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754168AbYGQXBC convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 19:01:02 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,206,1215414000"; 
-   d="scan'208";a="362555882"
-From: "Stone, Joshua I" <joshua.i.stone@intel.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       "systemtap@sourceware.org" <systemtap@sourceware.org>
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Date: Thu, 17 Jul 2008 16:00:39 -0700
-Subject: RE: [PATCH] systemtap: fix up on_each_cpu() for kernels 2.6.26+
-Thread-Topic: [PATCH] systemtap: fix up on_each_cpu() for kernels 2.6.26+
-Thread-Index: AcjoLW7uy1FgTr2RRkyN9EGUvgcaWAAMX0Bw
-Message-ID: <60BA3EDE80604C4BAEE4AAF7FF714D185813FCF4@orsmsx504.amr.corp.intel.com>
-References: <1216313476.5515.16.camel@localhost.localdomain>
-In-Reply-To: <1216313476.5515.16.camel@localhost.localdomain>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1751943AbYGQXBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 19:01:34 -0400
+Date: Thu, 17 Jul 2008 16:02:44 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: el es <el_es_cr@yahoo.co.uk>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Kernel version : what about s.yy.ww.tt scheme ?
+In-Reply-To: <loom.20080717T083755-676@post.gmane.org>
+Message-ID: <alpine.DEB.1.10.0807171558450.17859@asgard.lang.hm>
+References: <loom.20080717T083755-676@post.gmane.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> In kernel 2.6.26, this patch
->
-> commit 15c8b6c1aaaf1c4edd67e2f02e4d8e1bd1a51c0d
-> Author: Jens Axboe <jens.axboe@oracle.com>
-> Date:   Fri May 9 09:39:44 2008 +0200
->
->     on_each_cpu(): kill unused 'retry' parameter
->
-> means that runtime/time.c is now using the wrong calling conventions.
-> Fix this up and surround it by kernel versioning #ifdefs.
+On Thu, 17 Jul 2008, el es wrote:
 
-On a closer look, the referenced commit wasn't actually merged until
-sometime between v2.6.26-git2 and -git3.  The released v2.6.26 still
-has 'retry' in on_each_cpu(), so we'll either have to use an autoconf
-test to detect the change, or wait and key the #ifdef on 2.6.27.
+> Hello,
+> inspired by the bikeshed painting contest, I got the following idea :
+>
+> The scheme to be s.yy.ww.tt, that is :
+>
+> s - series, as it is now (freedom to Linus to bump it to 3 when BKL is removed
+> for example ;) )
+>
+> yy - two (in a hundred years, three) digits of the year
+>
+> Now the interesting part begins which is
+>
+> ww - the number of the week of the release. This will be between 1 and 52 (53)
+>
+> tt - the number of the week of stable release. As above.
+>
+> I see it like :
+>
+> Take a hypotetical new-scheme 2.8.30 release (roughly the current 2.6.26, didn't
+> count these weeks). Linus starts to accumulate patches for 2.8.30-rcX as usual,
+> and when he is ready to release, puts the release week number instead of 30 -
+> let's assume it is a 2.8.40 then, more or less. By the time, the stable team
+> produces 2.8.30.[32,34,36,38,40 and so on]. If the weeks leap into the next
+> year, stable team puts e.g. 2.8.30.9.01 (yy.ww). This scheme would reflect the
+> fast pace of development quite good, and also have the information, when the
+> code in question was produced actually. I think the weekly granularity is quite
+> good idea anyway.
+>
+> What do you think ?
 
-Josh
+it means that you cannot know what version of the kernel you are getting 
+ready to release.
+
+today we can talk that we are working on 2.6.27 or 'this feature was 
+accepted and will be in 2.6.27' any scheme that uses the date of the 
+release means that we can't do this.
+
+I see this as a big problem with a fine-grained date scheme.
+
+if we use the year in a date-based scheme and have a near end-of-year 
+release slip into the next year (2008.4 is released in Jan 2009) I don't 
+see this as a major problem (the bulk of the work was done in 2008 even if 
+the final release hit in 2009) under the current development cycle it's 
+not like this will end up with 'version 2009.2 released in 2011' type 
+emberrasements.
+
+David Lang
