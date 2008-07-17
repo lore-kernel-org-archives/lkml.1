@@ -1,47 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933045AbYGQXNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933151AbYGQXNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933045AbYGQXNL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 19:13:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933008AbYGQXMq
+	id S933151AbYGQXNc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 19:13:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760806AbYGQXMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 19:12:46 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:48211 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760668AbYGQXMp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 19:12:45 -0400
-Message-ID: <487FD1D9.9020100@kernel.org>
-Date: Thu, 17 Jul 2008 16:12:25 -0700
-From: "H. Peter Anvin" <hpa@kernel.org>
-Organization: Linux Kernel Organization, Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 17 Jul 2008 19:12:54 -0400
+Received: from www.tglx.de ([62.245.132.106]:42536 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760721AbYGQXMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 19:12:52 -0400
+Date: Fri, 18 Jul 2008 01:11:38 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andi Kleen <andi@firstfloor.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] Revert duplicate "dock: bay: Don't call acpi_walk_namespace()
+ when ACPI is disabled" commit (was: Please pull ACPI updates)
+In-Reply-To: <alpine.LFD.1.10.0807170752190.2959@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0807180013190.4316@apollo.tec.linutronix.de>
+References: <20080716214516.GA10777@basil.nowhere.org> <200807170011.12184.rjw@sisk.pl> <200807161633.01375.jbarnes@virtuousgeek.org> <alpine.LFD.1.10.0807161639090.2835@woody.linux-foundation.org> <487EE940.1050007@firstfloor.org>
+ <alpine.LFD.1.10.0807170752190.2959@woody.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Denys Vlasenko <vda.linux@googlemail.com>
-CC: Ingo Molnar <mingo@elte.hu>, x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: do not grow initial process stack so much
-References: <200807162332.37741.vda.linux@googlemail.com>
-In-Reply-To: <200807162332.37741.vda.linux@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Denys Vlasenko wrote:
+On Thu, 17 Jul 2008, Linus Torvalds wrote:
+> On Thu, 17 Jul 2008, Andi Kleen wrote:
+> > 
+> > My plan was to keep everything in quilt and just regenerate for the pull.
+> > Please let me know if it's now not allowed anymore to use quilt.
 > 
-> I do not see, though, why this can be useful for x86. The pages
-> are not mapped anyway, so accessing them still causes page faults.
-> No speedup for, say, rapidly spawning processes which need ~60k
-> of stack right away. They will still fault in kernel, right?
+> End-point developers can use quilt all thei like.
 > 
+> But people cannot and *MUST NOT* destroy other peoples work with quilt, 
+> nor make it harder for people to share commits.
+> 
+> Len had apparently left a nice topic tree for you. You took that work, and 
+> then destroyed it. And yes, it is noticeable: Jesse had shared some of the 
+> work from Len by pulling one of the branches (the 'suspend' branch), and 
+> then you literally re-wrote _public_ history, so now tohose patches are 
+> duplicated.
 
-They will fault in the kernel, but only to fill the page tables, so it 
-would cut down on latency.
+It's not only about destroying work and history, it can be worse than that.
 
-I do *NOT* believe we should make this an x86-only change.  If it should 
-be architecture-dependent I'd rather find the architectures that do need it.
+For example look at commits:
 
-However, before changing this I really want to see some of the history 
-about why it's that way in the first place.
+816c2eda3ce8fa7eb62f22e01e2ec7a3f7d677c0 (merged between 2.6.26-rc8 and -rc9)
+and
+cc7e51666d82aedfd6b9a033ca1a10d71c21f1ca (merged now)
 
-	-hpa
+The export to quilt and the lazy default fuzz setting of quilt added
+aside of Andi's Signed-off-by the following gem:
+
+commit cc7e51666d82aedfd6b9a033ca1a10d71c21f1ca
+Author: Len Brown <len.brown@intel.com>
+Date:   Tue Jun 24 22:57:12 2008 -0400
+
+    dock: bay: Don't call acpi_walk_namespace() when ACPI is disabled.
+    
+    Signed-off-by: Len Brown <len.brown@intel.com>
+    Signed-off-by: Andi Kleen <ak@linux.intel.com>
+
+diff --git a/drivers/acpi/bay.c b/drivers/acpi/bay.c
+index 61b6c5b..e6caf5d 100644
+--- a/drivers/acpi/bay.c
++++ b/drivers/acpi/bay.c
+@@ -380,6 +380,9 @@ static int __init bay_init(void)
+ 	if (acpi_disabled)
+ 		return -ENODEV;
+ 
++	if (acpi_disabled)
++		return -ENODEV;
++
+ 	/* look for dockable drive bays */
+ 	acpi_walk_namespace(ACPI_TYPE_DEVICE, ACPI_ROOT_OBJECT,
+ 		ACPI_UINT32_MAX, find_bay, &bays, NULL);
+diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
+index bb7c51f..1e872e7 100644
+--- a/drivers/acpi/dock.c
++++ b/drivers/acpi/dock.c
+@@ -920,6 +920,9 @@ static int __init dock_init(void)
+ 	if (acpi_disabled)
+ 		return 0;
+ 
++	if (acpi_disabled)
++		return 0;
++
+ 	/* look for a dock station */
+ 	acpi_walk_namespace(ACPI_TYPE_DEVICE, ACPI_ROOT_OBJECT,
+ 			    ACPI_UINT32_MAX, find_dock, &num, NULL);
+
+[ Note the code duplication in both files ]
+
+I stumbled accross this incidentally while looking at the recent merge
+commits.
+
+While this one looks odd but harmless, probably a full audit of all
+the affected commits should be done.
+
+Please revert the one I happened to notice. Patch below.
+
+Thanks,
+
+	tglx
+
+----------->
+Subject: APCI: revert duplicated patch
+From: Thomas Gleixner <tglx@linutronix.de>
+
+commit 816c2eda3ce8fa7eb62f22e01e2ec7a3f7d677c0
+    dock: bay: Don't call acpi_walk_namespace() when ACPI is disabled.  
+
+was merged between 2.6.26-rc8 and -rc9)
+
+Due to rebasing the ACPI tree via quilt the same patch got applied
+again via 
+
+commit cc7e51666d82aedfd6b9a033ca1a10d71c21f1ca
+    dock: bay: Don't call acpi_walk_namespace() when ACPI is disabled.  
+
+Revert it, as it is obviously bogus.
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+
+---
+diff --git a/drivers/acpi/bay.c b/drivers/acpi/bay.c
+index e6caf5d..61b6c5b 100644
+--- a/drivers/acpi/bay.c
++++ b/drivers/acpi/bay.c
+@@ -380,9 +380,6 @@ static int __init bay_init(void)
+ 	if (acpi_disabled)
+ 		return -ENODEV;
+ 
+-	if (acpi_disabled)
+-		return -ENODEV;
+-
+ 	/* look for dockable drive bays */
+ 	acpi_walk_namespace(ACPI_TYPE_DEVICE, ACPI_ROOT_OBJECT,
+ 		ACPI_UINT32_MAX, find_bay, &bays, NULL);
+diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
+index 1e872e7..bb7c51f 100644
+--- a/drivers/acpi/dock.c
++++ b/drivers/acpi/dock.c
+@@ -920,9 +920,6 @@ static int __init dock_init(void)
+ 	if (acpi_disabled)
+ 		return 0;
+ 
+-	if (acpi_disabled)
+-		return 0;
+-
+ 	/* look for a dock station */
+ 	acpi_walk_namespace(ACPI_TYPE_DEVICE, ACPI_ROOT_OBJECT,
+ 			    ACPI_UINT32_MAX, find_dock, &num, NULL);
