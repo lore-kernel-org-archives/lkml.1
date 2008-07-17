@@ -1,69 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757611AbYGQLAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758019AbYGQLCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757611AbYGQLAO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 07:00:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755843AbYGQLAA
+	id S1758019AbYGQLCW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 07:02:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754769AbYGQLCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 07:00:00 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:39442 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752868AbYGQK77 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 06:59:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=x5DGBIOSMr4uB8J4H7+F3ZbvFsJrs2Gjr0Sze9NwSk1j1r6+c7GKYnFo+dlElhCXQe
-         0B16RbkGhSjH9LdwLFme/OVJtlL8DFvB1YXEzPfBNvXQoT0GiJ1MnTU9CmsqdVzkTxE+
-         HMPZ/YmWmfbQYc+622wVJkpVY5Qb0I+XJ2nik=
-Message-ID: <487F33F2.2060202@gmail.com>
-Date: Thu, 17 Jul 2008 11:58:42 +0000
-From: Richard <tuxbox.guru@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080614)
+	Thu, 17 Jul 2008 07:02:12 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:2483 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752818AbYGQLCL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 07:02:11 -0400
+Date: Thu, 17 Jul 2008 07:02:00 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+       davem@davemloft.net
+Subject: Re: [PATCH] prng: fix a few misc bugs in prng
+Message-ID: <20080717110200.GB17892@hmsendeavour.rdu.redhat.com>
+References: <20080716202916.GA1648@hmsreliant.think-freely.org> <20080717074615.GA23621@gondor.apana.org.au>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Thomas Renninger <trenn@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "andreas.herrmann3" <andreas.herrmann3@amd.com>, eumaster@gmail.com,
-       uli.geins@geins-web.de
-Subject: Re: [PATCH] Re: AMD Mobile Semprons (3500+, 3600+,...) break with
- nohz and highres enabled
-References: <1213638474.1684.21.camel@queen.suse.de> <200807161827.16898.trenn@suse.de> <alpine.LFD.1.10.0807162100380.4316@apollo.tec.linutronix.de> <200807162156.00983.trenn@suse.de> <487EECDF.1040401@gmail.com> <alpine.LFD.1.10.0807171211310.4316@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.10.0807171211310.4316@apollo.tec.linutronix.de>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080717074615.GA23621@gondor.apana.org.au>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> ouch.
->
-> I read the whole thread and also checked the suse bugzilla, which
-> confuses the hell out of me as there is reported that kubuntu with
-> 2.6.24 works and everything suse > 2.6.20 does not.
->
-> Can you please tell me the symptoms of vanilla 2.6.25 without nohz=off
-> on the kernel command line ?
->
+On Thu, Jul 17, 2008 at 03:46:15PM +0800, Herbert Xu wrote:
+> On Wed, Jul 16, 2008 at 04:29:16PM -0400, Neil Horman wrote:
+> > 
+> >  Fixing a few misc bugs in prng.c:
+> >  - Remove prng_key/prng_iv from prng_context (both kept in tfm ptr)
+> >  - Making _get_more_prng_bytes return meaningful err codes (not just -1/0)
+> >     
+> >  Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> 
+> Applied to cryptodev-2.6.
+> 
+Thank you!
+
+> > @@ -369,8 +362,7 @@ int reset_prng_context(struct prng_context *ctx,
+> >  
+> >  	ctx->rand_data_valid = DEFAULT_BLK_SZ;
+> >  
+> > -	ret = crypto_blkcipher_setkey(ctx->tfm, ctx->prng_key,
+> > -					strlen(ctx->prng_key));
+> > +	ret = crypto_blkcipher_setkey(ctx->tfm, prng_key, strlen(prng_key));
+> 
+> Please make the length a parameter instead as it's much more
+> convenient to use a blob as a key rather than a string.
+> 
+Copy that, I'll send a patch shortly.
+
+> > diff --git a/firmware/Makefile b/firmware/Makefile
+> > index 809a526..3515814 100644
+> > --- a/firmware/Makefile
+> > +++ b/firmware/Makefile
+> > @@ -34,8 +34,8 @@ fw-shipped-$(CONFIG_SND_SB16_CSP) += sb16/mulaw_main.csp sb16/alaw_main.csp \
+> >  				     sb16/ima_adpcm_capture.csp
+> >  fw-shipped-$(CONFIG_SND_YMFPCI) += yamaha/ds1_ctrl.fw yamaha/ds1_dsp.fw \
+> >  				   yamaha/ds1e_ctrl.fw
+> > -fw-shipped-$(CONFIG_TIGON3) += tigon/tg3.bin tigon/tg3_tso.bin \
+> > -			       tigon/tg3_tso5.bin
+> > +#fw-shipped-$(CONFIG_TIGON3) += tigon/tg3.bin tigon/tg3_tso.bin \
+> > +#			       tigon/tg3_tso5.bin
+> >  fw-shipped-$(CONFIG_USB_DABUSB) += dabusb/firmware.fw dabusb/bitstream.bin
+> >  fw-shipped-$(CONFIG_USB_EMI26) += emi26/loader.fw emi26/firmware.fw \
+> >  				  emi26/bitstream.fw
+> 
+> The dreaded firmware makes a comeback :)
+> 
+Doh!  Ment to remove that!  My bad :)
+Thanks
+Neil
+
 > Thanks,
->
-> 	tglx
->
->   
-The Short story... it was a dark and rainy night :-P oops, wrong mailing 
-list.... so here goes
+> -- 
+> Visit Openswan at http://www.openswan.org/
+> Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+> Home Page: http://gondor.apana.org.au/~herbert/
+> PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
 
-The kernel boots and when init.d starts, the screen switches off, the 
-CPU fan goes to Max speed, and a few minutes later all goes quiet and it 
-appears to have powered off.
-
-I usually boot with noapictimer and if I disable ACPI totally, the clock 
-references don't work and the timebase goes wrong. (Playing a MP3 is 
-quite an entertaining event as it sounds like an old vinyl record player 
-with a slipping drive belt)
-
-Richard
-
-
+-- 
+/***************************************************
+ *Neil Horman
+ *nhorman@tuxdriver.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
