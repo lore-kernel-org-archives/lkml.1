@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933115AbYGQTgM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933536AbYGQTg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933115AbYGQTgM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 15:36:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933165AbYGQT3l
+	id S933536AbYGQTg6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 15:36:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760916AbYGQTf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 15:29:41 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:4581 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932786AbYGQT3j (ORCPT
+	Thu, 17 Jul 2008 15:35:29 -0400
+Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:53019 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760714AbYGQTfZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 15:29:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=X04TWe+iQLeoo8CCdBeL5nfsbiGbkaEqWHa+H6w4Gtaf6oubIXr/hG8S6uO90Coea7
-         CFSkjCAhD86QjteYVthxdMsgZWMKyfT2kG9E4e/OEyc+6bUhwVkvNLA+q6dgul1kRF8l
-         ToHPMpGJdJtgIvtQZvdaIIV+6bTIB3fvsPpv0=
-Message-ID: <19f34abd0807171229p724cc44ese3cb064a65fbd2c0@mail.gmail.com>
-Date: Thu, 17 Jul 2008 21:29:39 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Eric Sandeen" <sandeen@redhat.com>
-Subject: Re: latest -git: kernel BUG at fs/xfs/support/debug.c:54!
-Cc: "Tim Shimmin" <xfs-masters@oss.sgi.com>, xfs@oss.sgi.com,
-       linux-kernel@vger.kernel.org, "Johannes Weiner" <hannes@saeurebad.de>
-In-Reply-To: <19f34abd0807171218u3de86ddbt506b0b4fa0548406@mail.gmail.com>
+	Thu, 17 Jul 2008 15:35:25 -0400
+Date: Thu, 17 Jul 2008 14:35:16 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, roland@redhat.com
+Subject: Re: [PATCH] elf loader support for auxvec base platform string
+Message-ID: <20080717193516.GH9594@localdomain>
+References: <1216166331-14810-1-git-send-email-ntl@pobox.com>
+ <1216166331-14810-2-git-send-email-ntl@pobox.com>
+ <1216276539.7740.309.camel@pasglop>
+ <alpine.LFD.1.10.0807170908060.2959@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <19f34abd0807171046j425bebc6m8d8eb80a641e0e5b@mail.gmail.com>
-	 <487F980F.7070708@redhat.com>
-	 <19f34abd0807171218u3de86ddbt506b0b4fa0548406@mail.gmail.com>
+In-Reply-To: <alpine.LFD.1.10.0807170908060.2959@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Pobox-Relay-ID: 803257F4-5437-11DD-A7B3-3113EBD4C077-04752483!a-sasl-quonix.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 9:18 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> Thanks, you are right. I have adjusted my configuration, but I am
-> still able to produce this:
->
-> BUG: unable to handle kernel paging request at b62a66e0
-> IP: [<c030ef88>] xfs_alloc_fix_freelist+0x28/0x490
+Linus Torvalds wrote:
+> 
+> 
+> On Thu, 17 Jul 2008, Benjamin Herrenschmidt wrote:
+> > 
+> > Should I seek somebody's ack before merging a patch like the one below ?
+> > 
+> > I'm a bit reluctant to merge via the powerpc.git tree some changes to
+> > generic files without at least an ack from somebody else :-)
+> 
+> Gaah. Generally we don't, but you're right to ask. The ELF loading keeps 
+> on accumulating these things, and I'm not sure we have the right process 
+> for things like this. They're all individually small and insignificant, 
+> and they are all individually never going away and making the ELF loader 
+> messier and messier.
 
-FWIW, this is fs/xfs/xfs_alloc.c:1817:
-
-        if (!pag->pagf_init) {
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+FWIW, I was initially reluctant to do it this way, but the ELF aux
+vector seems to be the only reasonable mechanism for getting this
+information to all interested users.  And the only reason the patch
+touches the generic code is because we have to copy a string to
+userspace (just like AT_PLATFORM).  Otherwise it could be done in
+powerpc's ARCH_DLINFO.
