@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757189AbYGQKPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757932AbYGQKQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757189AbYGQKPL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 06:15:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbYGQKO7
+	id S1757932AbYGQKQW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 06:16:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754738AbYGQKQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 06:14:59 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:58835 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752012AbYGQKO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 06:14:59 -0400
-Message-ID: <487F1B38.3050100@cn.fujitsu.com>
-Date: Thu, 17 Jul 2008 18:13:12 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 17 Jul 2008 06:16:10 -0400
+Received: from an-out-0708.google.com ([209.85.132.244]:40677 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751972AbYGQKQI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 06:16:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=wvYasa4jDbN9n0YsrlGsK9Fah1UUBU3JdCIn/jO8zUvi4s8iySwSwas/1mpVZHT3Uv
+         Px0LxjbvttY5Jc+UOZFFK79mBPoukn5PodQK47ds4GplRNPg+4X/Qx83C57cFPco4JwY
+         pd9kiUXjaIHFTd9+lqpdpXkrbNUizsc7csIAs=
+Message-ID: <43e72e890807170316xcd6528cpcef4a8f669a22d08@mail.gmail.com>
+Date: Thu, 17 Jul 2008 03:16:07 -0700
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: 2nd REVISED AGENDA -- Re: Linux Wireless Mini-Summit -- Ottawa -- July 22, 2008
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080716184803.GB3232@tuxdriver.com>
 MIME-Version: 1.0
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-CC: Paul Jackson <pj@sgi.com>, LKML <linux-kernel@vger.kernel.org>,
-       Paul Menage <menage@google.com>, Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>
-Subject: Re: [RFC] [PATCH] cpuset: fix wrong calculation of relax domain level
-References: <487EFDD0.2060101@cn.fujitsu.com> <487F0996.9010904@jp.fujitsu.com>
-In-Reply-To: <487F0996.9010904@jp.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080709190915.GA8238@tuxdriver.com>
+	 <20080715182654.GA5969@tuxdriver.com>
+	 <20080716184803.GB3232@tuxdriver.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hidetoshi Seto wrote:
-> Li Zefan wrote:
->> When multiple cpusets are overlapping in their 'cpus' and hence they
->> form a single sched domain, the largest sched_relax_domain_level among
->> those should be used. But when top_cpuset's sched_load_balance is
->> set, its sched_relax_domain_level is used regardless other sub-cpusets'.
->>
->> There are several proposals to solve this:
->>
->> 1) Travel the cpuset hierarchy to find the largest relax_domain_level
->>    in rebuild_sched_domains(). But cpuset avoids hierarchy travelling
->>    when top_cpuset.sched_load_balance is set.
->>
->> 2) Remember the largest relax_domain_level when we update a cpuset's
->>    sched_load_balance, sched_relax_domain_level and cpus. This should
->>    work, but seems a bit tricky and a bit ugly. (As this patch shows)
->>
->> 3) Don't treat this as a bug, but document this behavior.
-> 
-> I think 1) is correct way.
-> 
-> There was a special short path for the top_cpuset's case, but now it is
-> disappeared. I think there are no need to treat the top_cpuset as VIP,
-> so 2) is excessive nurturing.
-> 
+On Wed, Jul 16, 2008 at 11:48 AM, John W. Linville
+<linville@tuxdriver.com> wrote:
 
-If we all agree on this, I'll send a new patch to fix this.
+> I'm still looking for more/different topics
 
+A couple I can think of:
 
+* Compat-wireless, this can be discussed after new MQ patch. We may
+have to freeze mac80211 for old kernels for compat-wireless after the
+MQ patch goes through and only leave in it fixes moving forward. This
+consideration is because porting the MQ patch may be very difficult to
+maintain. It was expected though that the first MQ patch could not be
+ported though so we'll see, we just might be able to port this
+properly. We can talk about this further at the summit.
+
+* Testing -- lets get serious about automation of testing. The Orbit
+grid is still available, we just need to put together scripts and test
+scenarios.
+
+* Rate control cleanup -- this needs to a good review and cleanup.
+Probably not high on our priority list though. We can talk about this
+further during the "rate scaling algs" section on the agenda.
+
+  Luis
