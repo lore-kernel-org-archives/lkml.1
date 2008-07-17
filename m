@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759972AbYGQPLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758757AbYGQPOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759972AbYGQPLS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 11:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753044AbYGQPLI
+	id S1758757AbYGQPOS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 11:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbYGQPOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 11:11:08 -0400
-Received: from el-out-1112.google.com ([209.85.162.180]:37471 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752334AbYGQPLF (ORCPT
+	Thu, 17 Jul 2008 11:14:08 -0400
+Received: from smtp.eu.citrix.com ([62.200.22.115]:29004 "EHLO
+	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754792AbYGQPOH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 11:11:05 -0400
-Date: Thu, 17 Jul 2008 09:11:01 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: petkovbb@gmail.com
-Cc: benh@kernel.crashing.org, Paul Mundt <lethal@linux-sh.org>,
-       jrigby@freescale.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH] Fix collateral damage to top level Makefile
-Message-ID: <20080717151101.GE31932@secretlab.ca>
-References: <20080717070549.30755.13083.stgit@trillian.secretlab.ca> <20080717072731.GB12273@linux-sh.org> <1216284624.7740.326.camel@pasglop> <9ea470500807170249h5fc7ce46q3c2ef7473a22b0ba@mail.gmail.com>
+	Thu, 17 Jul 2008 11:14:07 -0400
+X-IronPort-AV: E=Sophos;i="4.31,204,1215388800"; 
+   d="scan'208";a="1060817"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9ea470500807170249h5fc7ce46q3c2ef7473a22b0ba@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Large increase in context switch rate
+Date: Thu, 17 Jul 2008 16:14:00 +0100
+Message-ID: <0E902970173AF84089673FA54B7FE78A32906B@lonpexch01.citrite.net>
+In-Reply-To: <487F5F15.4050208@goop.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Large increase in context switch rate
+Thread-Index: AcjoHjPhZrXBdx+zS4Ku5Hz4k7xi3AAABRRA
+References: <487E43D9.7080703@goop.org> <1216286250.5232.67.camel@twins> <487F5F15.4050208@goop.org>
+From: "Alex Nixon (Intern)" <Alex.Nixon@eu.citrix.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Peter Zijlstra" <peterz@infradead.org>
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Ian Campbell" <Ian.Campbell@eu.citrix.com>
+X-OriginalArrivalTime: 17 Jul 2008 15:14:01.0872 (UTC) FILETIME=[BE8ED100:01C8E81F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 11:49:30AM +0200, Boris Petkov wrote:
-> On Thu, Jul 17, 2008 at 10:50 AM, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
-> > On Thu, 2008-07-17 at 16:27 +0900, Paul Mundt wrote:
-> >> On Thu, Jul 17, 2008 at 01:06:55AM -0600, Grant Likely wrote:
-> > Well, it's partially my fault for not spotting it when pulling in
-> > Grant's git and pushing out to Linus.
-> >
-> > Anyway, it's a mistake, shit happens, I doubt Grant will do that one
-> > twice :-)
-> 
-> Oh come on, don't scare the guy more than he is - now he'll be staring
-> frantically at each +-diff line before submitting :). And it's not like it's the
-> end of the world, it's just that Fred has turned 42 or similar :)
-> 
-> P.S. If I only knew how such an innocent thing would destroy a man's
-> life i never would've
-> reported it in the first place :). Sorry Grant.
+Yeah I've checked - the number of context switches seems to be around
+60k regardless of whether CONFIG_PARAVIRT is switched on, and regardless
+of whether it's running in domu or native (-j4 on dual core)
 
-Heh, oh please, I've got a thicker skin that that.  I appreciate the
-error being pointed out.
+-----Original Message-----
+From: Jeremy Fitzhardinge [mailto:jeremy@goop.org] 
+Sent: 17 July 2008 16:03
+To: Peter Zijlstra
+Cc: Ingo Molnar; Linux Kernel Mailing List; Alex Nixon (Intern); Ian
+Campbell
+Subject: Re: Large increase in context switch rate
 
-But Ben's right.  That mistake will not happen again!  :-)
+Peter Zijlstra wrote:
+> Is this specific to Xen?, as a native kernel doesn't do more than ~3k
+> cs/s with make -j3 on my dual core.
+>   
 
-Cheers,
-g.
+No, it doesn't seem to be.  A CONFIG_PARAVIRT kernel running on bare 
+hardware shows the same context switch rate.  Merely turning 
+CONFIG_PARAVIRT on should have no effect on context switch rate (though,
+
+Alex, it would be worth double-checking, just to be sure).
+
+    J
