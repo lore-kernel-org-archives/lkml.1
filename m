@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933407AbYGQVng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933058AbYGQVoD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933407AbYGQVng (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 17:43:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756709AbYGQVn2
+	id S933058AbYGQVoD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 17:44:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760543AbYGQVns
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 17:43:28 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:13514 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754793AbYGQVn1 (ORCPT
+	Thu, 17 Jul 2008 17:43:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60222 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760490AbYGQVnr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 17:43:27 -0400
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "Alex Nixon (Intern)" <Alex.Nixon@eu.citrix.com>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ian Campbell <Ian.Campbell@eu.citrix.com>
-Subject: Re: Large increase in context switch rate
-From: Andi Kleen <andi@firstfloor.org>
-References: <487E43D9.7080703@goop.org> <1216286250.5232.67.camel@twins>
-	<487F5F15.4050208@goop.org>
-	<0E902970173AF84089673FA54B7FE78A32906B@lonpexch01.citrite.net>
-	<487F6913.2000602@goop.org>
-	<0E902970173AF84089673FA54B7FE78A32906C@lonpexch01.citrite.net>
-	<487F6F1F.2030808@goop.org>
-Date: Thu, 17 Jul 2008 23:43:24 +0200
-In-Reply-To: <487F6F1F.2030808@goop.org> (Jeremy Fitzhardinge's message of "Thu, 17 Jul 2008 09:11:11 -0700")
-Message-ID: <87mykgrxtv.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 17 Jul 2008 21:43:23.0304 (UTC) FILETIME=[230E7280:01C8E856]
+	Thu, 17 Jul 2008 17:43:47 -0400
+Date: Thu, 17 Jul 2008 14:42:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: anemo@mba.ocn.ne.jp, linux-kernel@vger.kernel.org, davidel@xmailserver.org,
+       stable@kernel.org
+Subject: Re: [PATCH] Fix build on COMPAT platforms when CONFIG_EPOLL is
+ disabled.
+Message-Id: <20080717144237.f31618ca.akpm@linux-foundation.org>
+In-Reply-To: <20080717212939.GA9945@martell.zuzino.mipt.ru>
+References: <20080718.003108.128619119.anemo@mba.ocn.ne.jp>
+	<20080717142314.1aeb2f58.akpm@linux-foundation.org>
+	<20080717212939.GA9945@martell.zuzino.mipt.ru>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
->
-> OK, but that still doesn't account for the relatively large increase
-> from 2.6.18 -> 2.6.26.  You're using HZ=100 in both cases, I presume.
->
-> The other variable is NOHZ and highres timers.  You could try turning
-> those off in 2.6.26.  Also, CONFIG_PREEMPT could well make a
-> difference.  2.6.18-xen doesn't support CONFIG_PREEMPT at all, but
-> pvops(-xen) does.
+On Fri, 18 Jul 2008 01:29:39 +0400
+Alexey Dobriyan <adobriyan@gmail.com> wrote:
 
-If it's that easily reproducible you could just bisect it?
+> On Thu, Jul 17, 2008 at 02:23:14PM -0700, Andrew Morton wrote:
+> > On Fri, 18 Jul 2008 00:31:08 +0900 (JST)
+> > Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
+> > 
+> > > Add missing cond_syscall() entry for compat_sys_epoll_pwait.
+> > > 
+> > > Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+> > > ---
+> > > diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
+> > > index 5b9b467..0fea0ee 100644
+> > > --- a/kernel/sys_ni.c
+> > > +++ b/kernel/sys_ni.c
+> > > @@ -59,6 +59,7 @@ cond_syscall(sys_epoll_create);
+> > >  cond_syscall(sys_epoll_ctl);
+> > >  cond_syscall(sys_epoll_wait);
+> > >  cond_syscall(sys_epoll_pwait);
+> > > +cond_syscall(compat_sys_epoll_pwait);
+> > >  cond_syscall(sys_semget);
+> > >  cond_syscall(sys_semop);
+> > >  cond_syscall(sys_semtimedop);
+> > 
+> > Interesting.  It appears that both 2.6.25.x and 2.6.26.x need this
+> > fix as well.
+> 
+> IIRC, this happens for other syscalls as well. IIRC, timerfd ones.
 
--Andi
+Well it _did_ do this.  But I fixed about four such build errors.
+Please check?
