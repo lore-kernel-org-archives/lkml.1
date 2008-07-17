@@ -1,61 +1,269 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760246AbYGQHtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760576AbYGQHtf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760246AbYGQHtQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 03:49:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755382AbYGQHs7
+	id S1760576AbYGQHtf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 03:49:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755674AbYGQHtZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 03:48:59 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:46138 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753671AbYGQHs6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 03:48:58 -0400
-Date: Thu, 17 Jul 2008 15:48:56 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       davem@davemloft.net
-Subject: Re: [PATCH] prng; bring prng into better alignment with specification
-Message-ID: <20080717074856.GB23621@gondor.apana.org.au>
-References: <20080716203200.GB1648@hmsreliant.think-freely.org>
+	Thu, 17 Jul 2008 03:49:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42482 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755382AbYGQHtY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 03:49:24 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080716203200.GB1648@hmsreliant.think-freely.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org
+X-Fcc: ~/Mail/linus
+Subject: [PATCH 3/6] x86: tracehook: asm/syscall.h
+In-Reply-To: Roland McGrath's message of  Thursday, 17 July 2008 00:45:50 -0700 <20080717074550.EE1E215411D@magilla.localdomain>
+References: <20080717074550.EE1E215411D@magilla.localdomain>
+X-Windows: even your dog won't like it.
+Message-Id: <20080717074852.4DE5A15411D@magilla.localdomain>
+Date: Thu, 17 Jul 2008 00:48:52 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 16, 2008 at 04:32:00PM -0400, Neil Horman wrote:
->  Bring prng into better alignment with specificaion:
->     
->  - Convert to using Generic AES 128 bit cipher
->  - Convert DT to be a non-shifted counter, increasing counter period
->     
->  Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+Add asm/syscall.h for x86 with all the required entry points.
+This will allow arch-independent tracing code for system calls.
 
-Applied to cryptodev-2.6.
->
-> @@ -325,17 +306,13 @@ int reset_prng_context(struct prng_context *ctx,
->  		       unsigned char *V, unsigned char *DT)
->  	int ret;
-> -	int iv_len;
->  	int rc = -EFAULT;
->  	unsigned char *prng_key;
-> -	unsigned char *prng_iv;
->  	spin_lock(&ctx->prng_lock);
->  	ctx->flags |= PRNG_NEED_RESET;
->  
->  	prng_key = (key != NULL) ? key : (unsigned char *)DEFAULT_PRNG_KEY;
->  
-> -	prng_iv = iv ? iv : (unsigned char *)DEFAULT_PRNG_IV;
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ include/asm-x86/ptrace.h  |    5 +
+ include/asm-x86/syscall.h |  210 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 215 insertions(+), 0 deletions(-)
 
-We can now kill the iv parameter too.
-
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+diff --git a/include/asm-x86/ptrace.h b/include/asm-x86/ptrace.h
+index 8a71db8..91a77f5 100644
+--- a/include/asm-x86/ptrace.h
++++ b/include/asm-x86/ptrace.h
+@@ -213,6 +213,11 @@ static inline unsigned long frame_pointer(struct pt_regs *regs)
+ 	return regs->bp;
+ }
+ 
++static inline unsigned long user_stack_pointer(struct pt_regs *regs)
++{
++	return regs->sp;
++}
++
+ /*
+  * These are defined as per linux/ptrace.h, which see.
+  */
+diff --git a/include/asm-x86/syscall.h b/include/asm-x86/syscall.h
+new file mode 100644
+index 0000000..7de35f0
+--- /dev/null
++++ b/include/asm-x86/syscall.h
+@@ -0,0 +1,210 @@
++/*
++ * Access to user system call parameters and results
++ *
++ * Copyright (C) 2008 Red Hat, Inc.  All rights reserved.
++ *
++ * This copyrighted material is made available to anyone wishing to use,
++ * modify, copy, or redistribute it subject to the terms and conditions
++ * of the GNU General Public License v.2.
++ *
++ * See asm-generic/syscall.h for descriptions of what we must do here.
++ */
++
++#ifndef _ASM_SYSCALL_H
++#define _ASM_SYSCALL_H	1
++
++#include <linux/sched.h>
++
++static inline long syscall_get_nr(struct task_struct *task,
++				  struct pt_regs *regs)
++{
++	/*
++	 * We always sign-extend a -1 value being set here,
++	 * so this is always either -1L or a syscall number.
++	 */
++	return regs->orig_ax;
++}
++
++static inline void syscall_rollback(struct task_struct *task,
++				    struct pt_regs *regs)
++{
++	regs->ax = regs->orig_ax;
++}
++
++static inline long syscall_get_error(struct task_struct *task,
++				     struct pt_regs *regs)
++{
++	unsigned long error = regs->ax;
++#ifdef CONFIG_IA32_EMULATION
++	/*
++	 * TS_COMPAT is set for 32-bit syscall entries and then
++	 * remains set until we return to user mode.
++	 */
++	if (task_thread_info(task)->status & TS_COMPAT)
++		/*
++		 * Sign-extend the value so (int)-EFOO becomes (long)-EFOO
++		 * and will match correctly in comparisons.
++		 */
++		error = (long) (int) error;
++#endif
++	return error >= -4095L ? error : 0;
++}
++
++static inline long syscall_get_return_value(struct task_struct *task,
++					    struct pt_regs *regs)
++{
++	return regs->ax;
++}
++
++static inline void syscall_set_return_value(struct task_struct *task,
++					    struct pt_regs *regs,
++					    int error, long val)
++{
++	regs->ax = (long) error ?: val;
++}
++
++#ifdef CONFIG_X86_32
++
++static inline void syscall_get_arguments(struct task_struct *task,
++					 struct pt_regs *regs,
++					 unsigned int i, unsigned int n,
++					 unsigned long args[n])
++{
++	BUG_ON(i + n > 6);
++	memcpy(args, &regs->bx + i, n * sizeof(args[0]));
++}
++
++static inline void syscall_set_arguments(struct task_struct *task,
++					 struct pt_regs *regs,
++					 unsigned int i, unsigned int n,
++					 const unsigned long args[n])
++{
++	BUG_ON(i + n > 6);
++	memcpy(&regs->bx + i, args, n * sizeof(args[0]));
++}
++
++#else	 /* CONFIG_X86_64 */
++
++static inline void syscall_get_arguments(struct task_struct *task,
++					 struct pt_regs *regs,
++					 unsigned int i, unsigned int n,
++					 unsigned long *args)
++{
++# ifdef CONFIG_IA32_EMULATION
++	if (task_thread_info(task)->status & TS_COMPAT)
++		switch (i + n) {
++		case 6:
++			if (!n--) break;
++			*args++ = regs->bp;
++		case 5:
++			if (!n--) break;
++			*args++ = regs->di;
++		case 4:
++			if (!n--) break;
++			*args++ = regs->si;
++		case 3:
++			if (!n--) break;
++			*args++ = regs->dx;
++		case 2:
++			if (!n--) break;
++			*args++ = regs->cx;
++		case 1:
++			if (!n--) break;
++			*args++ = regs->bx;
++		case 0:
++			if (!n--) break;
++		default:
++			BUG();
++			break;
++		}
++	else
++# endif
++		switch (i + n) {
++		case 6:
++			if (!n--) break;
++			*args++ = regs->r9;
++		case 5:
++			if (!n--) break;
++			*args++ = regs->r8;
++		case 4:
++			if (!n--) break;
++			*args++ = regs->r10;
++		case 3:
++			if (!n--) break;
++			*args++ = regs->dx;
++		case 2:
++			if (!n--) break;
++			*args++ = regs->si;
++		case 1:
++			if (!n--) break;
++			*args++ = regs->di;
++		case 0:
++			if (!n--) break;
++		default:
++			BUG();
++			break;
++		}
++}
++
++static inline void syscall_set_arguments(struct task_struct *task,
++					 struct pt_regs *regs,
++					 unsigned int i, unsigned int n,
++					 const unsigned long *args)
++{
++# ifdef CONFIG_IA32_EMULATION
++	if (task_thread_info(task)->status & TS_COMPAT)
++		switch (i + n) {
++		case 6:
++			if (!n--) break;
++			regs->bp = *args++;
++		case 5:
++			if (!n--) break;
++			regs->di = *args++;
++		case 4:
++			if (!n--) break;
++			regs->si = *args++;
++		case 3:
++			if (!n--) break;
++			regs->dx = *args++;
++		case 2:
++			if (!n--) break;
++			regs->cx = *args++;
++		case 1:
++			if (!n--) break;
++			regs->bx = *args++;
++		case 0:
++			if (!n--) break;
++		default:
++			BUG();
++		}
++	else
++# endif
++		switch (i + n) {
++		case 6:
++			if (!n--) break;
++			regs->r9 = *args++;
++		case 5:
++			if (!n--) break;
++			regs->r8 = *args++;
++		case 4:
++			if (!n--) break;
++			regs->r10 = *args++;
++		case 3:
++			if (!n--) break;
++			regs->dx = *args++;
++		case 2:
++			if (!n--) break;
++			regs->si = *args++;
++		case 1:
++			if (!n--) break;
++			regs->di = *args++;
++		case 0:
++			if (!n--) break;
++		default:
++			BUG();
++		}
++}
++
++#endif	/* CONFIG_X86_32 */
++
++#endif	/* _ASM_SYSCALL_H */
