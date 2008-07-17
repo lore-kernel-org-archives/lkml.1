@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933242AbYGQX2O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933067AbYGQX3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933242AbYGQX2O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 19:28:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758061AbYGQX14
+	id S933067AbYGQX3b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 19:29:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760272AbYGQX3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 19:27:56 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:38273 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753619AbYGQX1z (ORCPT
+	Thu, 17 Jul 2008 19:29:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53692 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759624AbYGQX3W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 19:27:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=IAz8dg9ts25gATojLM0N+vRCVZ0X/g8baptMLTsyhzGGSUn2/RDhHcaMxJzWCBHZdJ
-         VNkA9UevpVGdLzULnZEMJEltQzp9JRDBbFcsK7+V0T0DSGPJ4Rf2uuRsC1cAXK9B4HTF
-         2lGLWDtkYaFM5MkD3K26Zl7VCBQrWgyBwupzw=
-Message-ID: <19f34abd0807171627t1dd0ac5bx26535b5e19606835@mail.gmail.com>
-Date: Fri, 18 Jul 2008 01:27:54 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison overwritten
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <20080717214222.GA29449@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 17 Jul 2008 19:29:22 -0400
+Date: Thu, 17 Jul 2008 16:28:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Cc: akinobu.mita@gmail.com, linux-kernel@vger.kernel.org,
+       linux-driver@qlogic.com, James.Bottomley@HansenPartnership.com,
+       seokmann.ju@qlogic.com
+Subject: Re: [patch -mmotm 2/6] fix
+ qla2xxx-use-memory_read_from_buffer.patch
+Message-Id: <20080717162849.57ddedb8.akpm@linux-foundation.org>
+In-Reply-To: <20080717231235.GR64690@n8027av35btxc1.qlogic.org>
+References: <20080714025631.338886297@gmail.com>
+	<20080714025742.370469321@gmail.com>
+	<20080717231235.GR64690@n8027av35btxc1.qlogic.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080717214222.GA29449@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 11:42 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> With this config:
->
->   http://redhat.com/~mingo/misc/config-Thu_Jul_17_20_24_45_CEST_2008.bad
->
+On Thu, 17 Jul 2008 16:12:35 -0700
+Andrew Vasquez <andrew.vasquez@qlogic.com> wrote:
 
-It doesn't actually work. The config says
+> On Mon, 14 Jul 2008, Akinobu Mita wrote:
+> 
+> > Now memory_read_from_buffer() belongs in string.h
+> > 
+> > Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> > Cc: Andrew Vasquez <linux-driver@qlogic.com>
+> > Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
+> > Cc: Andrew Vasquez <andrew.vasquez@qlogic.com>
+> > Cc: Seokmann Ju <seokmann.ju@qlogic.com>
+> 
+> If needed:
+> 
+> Acked-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
 
-    # head: 088fcf34
+Thanks. So we now have tested-by:you and acked-by:you.  That'll do ;)
 
-and I checked out this from the tip tree. But kernel-config still
-complains about unknown config options... What went wrong?
+> BTW: is the memory_read_from_buffer() work for qla2xxx going in
+> through the mm tree submission path???
 
+FSVO "through", yeah.  It's appeared on linux-scsi four times so far. 
+Last time James complained about the fs.h inclusion so Akinobu raised a
+patch "move memory_read_from_buffer() from fs.h to string.h" which I
+just merged.
 
-Vegard
+I'll just keep pressing send - it'll get there sometime.  Or you can
+merge it if you like.
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
