@@ -1,65 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759363AbYGQRNp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758113AbYGQRUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759363AbYGQRNp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 13:13:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755668AbYGQRNh
+	id S1758113AbYGQRUf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 13:20:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbYGQRU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 13:13:37 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:18127 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752288AbYGQRNg (ORCPT
+	Thu, 17 Jul 2008 13:20:26 -0400
+Received: from mga14.intel.com ([143.182.124.37]:44533 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752288AbYGQRUZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 13:13:36 -0400
-Date: Thu, 17 Jul 2008 11:13:32 -0600
-From: Alex Chiang <achiang@hp.com>
-To: jbarnes@virtuousgeek.org
-Cc: juha_motorsportcom@luukku.com, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] PCI: hotplug: fix error path in pci_slot's register_slot
-Message-ID: <20080717171332.GD24683@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>, jbarnes@virtuousgeek.org,
-	juha_motorsportcom@luukku.com, linux-pci@vger.kernel.org,
-	linux-kernel@vger.kernel.org
+	Thu, 17 Jul 2008 13:20:25 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,204,1215414000"; 
+   d="scan'208";a="21641359"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: ACPI WARNING: at drivers/acpi/tables/tbfadt.c:348acpi_tb_create_local_fadt+0x147/0x2f4()
+Date: Thu, 17 Jul 2008 10:20:07 -0700
+Message-ID: <9D39833986E69849A2A8E74C1078B6B3ADFA66@orsmsx415.amr.corp.intel.com>
+In-reply-to: <487F81A6.76E4.0078.0@novell.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: ACPI WARNING: at drivers/acpi/tables/tbfadt.c:348acpi_tb_create_local_fadt+0x147/0x2f4()
+Thread-Index: AcjoIfa5y7O/whIyQMCtj69+k1RLAwADueng
+References: <76366b180807161929i4eb9462exc3d2255e0ec881e8@mail.gmail.com> <76366b180807162034y1e725b15t7658c331bb89b52@mail.gmail.com> <487F2629.76E4.0078.0@novell.com> <487F0B85.4030202@linux.intel.com> <487F29B2.76E4.0078.0@novell.com> <487F3AFA.7090908@linux.intel.com> <76366b180807170603qaf669a5q625fc166a2045756@mail.gmail.com> <487F6C32.76E4.0078.0@novell.com> <76366b180807170732i112d54bcl49f630a3064f87f@mail.gmail.com> <487F81A6.76E4.0078.0@novell.com>
+From: "Moore, Robert" <robert.moore@intel.com>
+To: "Jan Beulich" <jbeulich@novell.com>,
+       "Andrew Paprocki" <andrew@ishiboo.com>
+Cc: "Len Brown" <lenb@kernel.org>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Andi Kleen" <ak@linux.intel.com>,
+       "LKML" <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 17 Jul 2008 17:20:08.0369 (UTC) FILETIME=[5C8AA210:01C8E831]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Juha Leppänen noticed that an error path in register_slot()
-wasn't returning appropriately, leading to a condition where we
-might access a kfree'ed pointer, so let's fix that.
+So far, in the number of the cases like this that I've seen, it's the v2
+fields that have problems. Perhaps the heuristic should be something
+like "if there is an inconsistency between the v1 and v2 fields, fall
+back to v1". 
 
-Additionally, fix up the copyright information in the file while
-we're in there.
+Bob
 
-Signed-off-by: Alex Chiang <achiang@hp.com>
 
-diff --git a/drivers/acpi/pci_slot.c b/drivers/acpi/pci_slot.c
-index b9ab030..dd376f7 100644
---- a/drivers/acpi/pci_slot.c
-+++ b/drivers/acpi/pci_slot.c
-@@ -6,8 +6,8 @@
-  *  Thanks to Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> for code
-  *  review and fixes.
-  *
-- *  Copyright (C) 2007 Alex Chiang <achiang@hp.com>
-- *  Copyright (C) 2007 Hewlett-Packard Development Company, L.P.
-+ *  Copyright (C) 2007-2008 Hewlett-Packard Development Company, L.P.
-+ *  	Alex Chiang <achiang@hp.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify it
-  *  under the terms and conditions of the GNU General Public License,
-@@ -158,6 +158,7 @@ register_slot(acpi_handle handle, u32 lvl, void *context, void **rv)
- 	if (IS_ERR(pci_slot)) {
- 		err("pci_create_slot returned %ld\n", PTR_ERR(pci_slot));
- 		kfree(slot);
-+		return AE_OK;
- 	}
- 
- 	slot->root_handle = parent_context->root_handle;
+>-----Original Message-----
+>From: Jan Beulich [mailto:jbeulich@novell.com]
+>Sent: Thursday, July 17, 2008 8:30 AM
+>To: Andrew Paprocki
+>Cc: Moore, Robert; Len Brown; Andrew Morton; Andi Kleen; LKML
+>Subject: Re: ACPI WARNING: at
+>drivers/acpi/tables/tbfadt.c:348acpi_tb_create_local_fadt+0x147/0x2f4()
+>
+>>>> "Andrew Paprocki" <andrew@ishiboo.com> 17.07.08 16:32 >>>
+>>On Thu, Jul 17, 2008 at 9:58 AM, Jan Beulich <jbeulich@novell.com>
+wrote:
+>>>>>> "Andrew Paprocki" <andrew@ishiboo.com> 17.07.08 15:03 >>>
+>>>>On Thu, Jul 17, 2008 at 8:28 AM, Andi Kleen <ak@linux.intel.com>
+wrote:
+>>>>> Ok, but we can just get that from a table dump.
+>>>>
+>>>>Output from acpidump is attached.
+>>>
+>>> Just as I suspected - the v1 field says 4 bytes, but the v2 field
+says 8
+>bits.
+>>
+>>So does the BIOS owner need to fix the table? If you could give me the
+>>exact text to pass along to the mobo mfr, I will forward it and I can
+>>get them to release a new BIOS rev.
+>
+>I'm not sure how else to express what I already said above: They simply
+>need to get (in ACPI spec terms) the FADT's X_PM1a_EVT_BLK in sync
+>with PM1_EVT_LEN (and they should at once make sure other
+>X_PM*_BLK and X_GPE?_BLK fields are in sync with their respective
+>legacy fields, too - while looking at the dump, it seemed there were
+more
+>inconsistencies).
+>
+>Jan
+
