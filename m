@@ -1,76 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932704AbYGQXBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932257AbYGQXDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932704AbYGQXBp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 19:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757017AbYGQXBg
+	id S932257AbYGQXDy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 19:03:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757875AbYGQXDo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 19:01:36 -0400
-Received: from mail.lang.hm ([64.81.33.126]:52386 "EHLO bifrost.lang.hm"
+	Thu, 17 Jul 2008 19:03:44 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37347 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751943AbYGQXBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 19:01:34 -0400
-Date: Thu, 17 Jul 2008 16:02:44 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: el es <el_es_cr@yahoo.co.uk>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Kernel version : what about s.yy.ww.tt scheme ?
-In-Reply-To: <loom.20080717T083755-676@post.gmane.org>
-Message-ID: <alpine.DEB.1.10.0807171558450.17859@asgard.lang.hm>
-References: <loom.20080717T083755-676@post.gmane.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S1757273AbYGQXDn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 19:03:43 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: Tree for July 17: early crash on x86-64
+Date: Fri, 18 Jul 2008 01:06:07 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <20080718012842.690b8346.sfr@canb.auug.org.au>
+In-Reply-To: <20080718012842.690b8346.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807180106.08328.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jul 2008, el es wrote:
+On Thursday, 17 of July 2008, Stephen Rothwell wrote:
+> Hi all,
+> 
+> Changes since next-20080716:
+> 
+> Temporarily dropped tree: ttydev (it gets too many patch failures).
+> 
+> Changed trees: the security-testing tree was moved later in the merge in
+> anticipation of majo merge problems that have been delayed.
+> 	The vfs tree changed branch names.
+> 
+> Most of the differences were conflicts moving from tree to tree as some
+> of the trees are now merged into Linus' tree.  Most have been inflicted
+> on the driver-core and usb trees.  I have not notified these separately.
+> 
+> Because of the moving of conflicts around it is difficult to tell when
+> they are going away (though I assume some are).
+> 
+> The driver-core tree gained two build fixes from the scsi tree (since
+> that went into Linus' tree).
+> 
+> The usb tree gained a conflict from the firmware tree (ditto).
+> 
+> The x86 tree gained an expected conflict against the stackprotector and a
+> build failure that required a revert of a commit.
+> 
+> The pci tree needed another build fix patch.
+> 
+> The ide tree had more conflicts with its parts that have been merged into
+> Linus' tree.
+> 
+> The acpi had various merge problems - maybe because I am pulling a
+> different tree than what was merged into Linus' tree.
+> 
+> The galak tree gained a conflict against the net tree.
+> 
+> The ubifs tree also had merge problems because a different version was
+> sent to Linus.
+> 
+> I have also applied the following patches for known problems:
+> 
+> 	sparc64: sysdev API change fallout
+> 
+> This tree fails to build for ARCH=sparc (i.e. 32bit) with a 64bit gcc
+> v3.4.5 - it tries to use the 64bit header files.  This may be an artifact
+> of one of my merge fixups, but I don't actually think so.
 
-> Hello,
-> inspired by the bikeshed painting contest, I got the following idea :
->
-> The scheme to be s.yy.ww.tt, that is :
->
-> s - series, as it is now (freedom to Linus to bump it to 3 when BKL is removed
-> for example ;) )
->
-> yy - two (in a hundred years, three) digits of the year
->
-> Now the interesting part begins which is
->
-> ww - the number of the week of the release. This will be between 1 and 52 (53)
->
-> tt - the number of the week of stable release. As above.
->
-> I see it like :
->
-> Take a hypotetical new-scheme 2.8.30 release (roughly the current 2.6.26, didn't
-> count these weeks). Linus starts to accumulate patches for 2.8.30-rcX as usual,
-> and when he is ready to release, puts the release week number instead of 30 -
-> let's assume it is a 2.8.40 then, more or less. By the time, the stable team
-> produces 2.8.30.[32,34,36,38,40 and so on]. If the weeks leap into the next
-> year, stable team puts e.g. 2.8.30.9.01 (yy.ww). This scheme would reflect the
-> fast pace of development quite good, and also have the information, when the
-> code in question was produced actually. I think the weekly granularity is quite
-> good idea anyway.
->
-> What do you think ?
+This one crashes all of my x86-64 test boxes early during boot.
 
-it means that you cannot know what version of the kernel you are getting 
-ready to release.
+The Linus' tree is not affected.
 
-today we can talk that we are working on 2.6.27 or 'this feature was 
-accepted and will be in 2.6.27' any scheme that uses the date of the 
-release means that we can't do this.
+Failing configs:
+http://www.sisk.pl/kernel/debug/next/20080717/HPC_nx6325-config
+http://www.sisk.pl/kernel/debug/next/20080717/M3A32-MVP-config
 
-I see this as a big problem with a fine-grained date scheme.
+It's not very likely that I'll be able to bisect this issue before OLS, so most
+probably I won't be testing linux-next in the next several days.
 
-if we use the year in a date-based scheme and have a near end-of-year 
-release slip into the next year (2008.4 is released in Jan 2009) I don't 
-see this as a major problem (the bulk of the work was done in 2008 even if 
-the final release hit in 2009) under the current development cycle it's 
-not like this will end up with 'version 2009.2 released in 2011' type 
-emberrasements.
-
-David Lang
+Thanks,
+Rafael
