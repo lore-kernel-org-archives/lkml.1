@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756734AbYGQC1K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757787AbYGQC3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756734AbYGQC1K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 22:27:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbYGQC04
+	id S1757787AbYGQC3U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 22:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbYGQC3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 22:26:56 -0400
-Received: from outbound-mail-106.bluehost.com ([69.89.22.6]:52400 "HELO
-	outbound-mail-106.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752779AbYGQC0z (ORCPT
+	Wed, 16 Jul 2008 22:29:05 -0400
+Received: from an-out-0708.google.com ([209.85.132.244]:1609 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753294AbYGQC3D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 22:26:55 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User:DomainKey-Status;
-	b=rSRcHuoQDKptPNMFIt6Flv/92QXe8dmPoaYs/b2nBxnL5/CxTfOBXRZgNMzhjclSkwoj8yJT7mtOdSQB4EGIKBjSd7TqJYuaQtvFm96JSeFFjUyPXwHsO0l6VTF81g0Y;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Please pull ACPI updates
-Date: Wed, 16 Jul 2008 19:26:45 -0700
-User-Agent: KMail/1.9.9
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-References: <20080716214516.GA10777@basil.nowhere.org> <alpine.LFD.1.10.0807161728560.2835@woody.linux-foundation.org> <alpine.LFD.1.10.0807161751490.2959@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807161751490.2959@woody.linux-foundation.org>
+	Wed, 16 Jul 2008 22:29:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=TWsut6SwXg7HohMvxgnGvo7bMweawux/7juq/EtShZ9YHld5Cnpvy85wiS5ZKx5Q+G
+         lLv4zFmQqIuFJ1UcVvG/ckIhmQ68JMIP1tNCHwOBgHenqb+ZH78Ba01VP+qrLL1Jkr9V
+         n9B1CeuzkrjwAm99tKJt1EwJ6jW5QbQHMqG10=
+Message-ID: <76366b180807161929i4eb9462exc3d2255e0ec881e8@mail.gmail.com>
+Date: Wed, 16 Jul 2008 22:29:02 -0400
+From: "Andrew Paprocki" <andrew@ishiboo.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: ACPI WARNING: at drivers/acpi/tables/tbfadt.c:348 acpi_tb_create_local_fadt+0x147/0x2f4()
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807161926.45975.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
+X-Google-Sender-Auth: f7398d4113dcb412
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, July 16, 2008 5:53:55 pm Linus Torvalds wrote:
-> On Wed, 16 Jul 2008, Linus Torvalds wrote:
-> > Well, I haven't actually seen Len's original tree, so maybe the stuff
-> > Andi pushed was just the stuff he had queued up independently. I guess I
-> > shouldn't judge before I'm sure.
->
-> No, he rebased it - the three commits you shared are now separate ones.
+I just saw this for the first time using a kernel built from the git
+head. This is all the ACPI related printk info around the warning. If
+more information is needed to figure out what this is, please let me
+know.
 
-Well, I could have misunderstood what we talked about; I guess I just assumed 
-Andi & I would chat before sending out our pull requests.  I'll be sure to 
-coordinate better next time.
-
-> Most of the conflicts seem to have been due tot he x86 tree changes
-> though. But it seems I didn't mess up too much: at least the result booted
-> for me without complaints. So I pushed out my resolution.
->
-> Jesse, can you please double-check it?
-
-Just looked, seems fine.  I'd pat you on the head to reassure you about it, 
-but my arms aren't quite long enough...
-
-I'll dig around some more for git best practices too.  Based on what I've seen 
-of the x86 tree I don't have nearly enough branches (though on the plus side, 
-I almost never rebase since I don't want to hose any downstream users, and I 
-don't merge from your tree until after you've pulled to avoid cluttering up 
-the log).
-
-Thanks,
-Jesse
+[    0.000000] ACPI: RSDP 000F7CE0, 0024 (r2 RS690 )
+[    0.000000] ACPI: XSDT 3DFE30C0, 004C (r1 RS690  AWRDACPI 42302E31 AWRD  0)
+[    0.000000] ACPI: FACP 3DFE7400, 00F4 (r3 RS690  AWRDACPI 42302E31 AWRD  0)
+[    0.000000] ------------[ cut here ]------------
+[    0.000000] WARNING: at drivers/acpi/tables/tbfadt.c:348
+acpi_tb_create_local_fadt+0x147/0x2f4()
+[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.26 #1
+[    0.000000]  [<c01171bb>] warn_on_slowpath+0x3b/0x74
+[    0.000000]  [<c01ede36>] acpi_os_vprintf+0x1d/0x20
+[    0.000000]  [<c01ede46>] acpi_os_printf+0xd/0xe
+[    0.000000]  [<c020120e>] acpi_ut_info+0x21/0x24
+[    0.000000]  [<c0200016>] acpi_tb_print_table_header+0x96/0x9c
+[    0.000000]  [<c020032b>] acpi_tb_create_local_fadt+0x147/0x2f4
+[    0.000000]  [<c0200508>] acpi_tb_parse_fadt+0x30/0x6c
+[    0.000000]  [<c03eeda5>] acpi_tb_parse_root_table+0x264/0x2ab
+[    0.000000]  [<c03ee469>] acpi_table_init+0x14/0x6d
+[    0.000000]  [<c03e3b28>] acpi_boot_table_init+0x2b/0xc3
+[    0.000000]  [<c03dfcf4>] setup_arch+0x3fa/0x557
+[    0.000000]  [<c03de7a9>] start_kernel+0x41/0x1ec
+[    0.000000]  =======================
+[    0.000000] ---[ end trace 4eaa2a86a8e2da22 ]---
+[    0.000000] ACPI: DSDT 3DFE3240, 4146 (r1 RS690  AWRDACPI     1000
+MSFT  100000E)
+[    0.000000] ACPI: FACS 3DFE0000, 0040
+[    0.000000] ACPI: SSDT 3DFE7600, 0136 (r1 PTLTD  POWERNOW        1  LTP  1)
+[    0.000000] ACPI: HPET 3DFE7780, 0038 (r1 RS690  AWRDACPI 42302E31 AWRD 98)
+[    0.000000] ACPI: MCFG 3DFE7800, 003C (r1 RS690  AWRDACPI 42302E31 AWRD  0)
+[    0.000000] ACPI: APIC 3DFE7540, 0068 (r1 RS690  AWRDACPI 42302E31 AWRD  0)
