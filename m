@@ -1,64 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932248AbYGQTXG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932476AbYGQTXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932248AbYGQTXG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 15:23:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759399AbYGQTWo
+	id S932476AbYGQTXq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 15:23:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932108AbYGQTWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 15:22:44 -0400
-Received: from nelson.telenet-ops.be ([195.130.133.66]:34827 "EHLO
-	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758745AbYGQTWn (ORCPT
+	Thu, 17 Jul 2008 15:22:46 -0400
+Received: from harold.telenet-ops.be ([195.130.133.65]:50702 "EHLO
+	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758786AbYGQTWn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 17 Jul 2008 15:22:43 -0400
-Message-Id: <20080717191607.955742542@mail.of.borg>
+Message-Id: <20080717191749.690710739@mail.of.borg>
+References: <20080717191607.955742542@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Thu, 17 Jul 2008 21:16:07 +0200
+Date: Thu, 17 Jul 2008 21:16:08 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 00/29] m68k patches for 2.6.27
+Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Adrian Bunk <bunk@kernel.org>
+Subject: [patch 01/29] m68k: remove CVS keywords
+Content-Disposition: inline; filename=m68k-remove-CVS-keywords.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Hi Linus, Andrew,
+From: Adrian Bunk <bunk@kernel.org>
 
-Here are the m68k patches for 2.6.27:
-  [01] m68k: remove CVS keywords
-  [02] ariadne: use netstats in net_device structure
-  [03] m68k: Return -ENODEV if no device is found
-  [04] m68k: vmlinux-std/sun3.lds.S cleanup - use PAGE_SIZE macro
-  [05] m68k: Allow no CPU/platform type for allnoconfig
-  [06] m68k: remove -traditional [RFC patch 4/9] Re: [PATCH] Stringify support commas
-  [07] m68k: make multi_defconfig the default defconfig
-  [08] m68k: remove AP1000 code
-  [09] ZORRO: Replace deprecated __initcall with equivalent device_initcall.
-  [10] zorro: use memory_read_from_buffer
-  [11] amifb: Register Amiga-specific video modes with sysfs
-  [12] atafb: Register Atari-specific video modes with sysfs
-  [13] drivers/video/c2p.c: add MODULE_LICENSE
-  [14] export amiga_vblank
-  [15] export c2p
-  [16] m68k/amiga/: possible cleanups
-  [17] m68k/atari/debug.c: possible cleanups
-  [18] m68k/mac/: possible cleanups
-  [19] m68k/q40/config.c: make functions static
-  [20] m68k/sun3/: possible cleanups
-  [21] m68k: remove stale ARCH_SUN4 #define
-  [22] m68k/apollo: Add missing call to apollo_parse_bootinfo()
-  [23] m68k/Mac: remove the unused ADB_KEYBOARD option
-  [24] m68k/Atari: remove the dead ATARI_SCC{,_DMA} options
-  [25] m68k/Apollo: remove the unused APOLLO_ELPLUS option
-  [26] arch/m68k/mm/motorola.c: Eliminate NULL test and memset after alloc_bootmem
-  [27] arch/m68k/mm/sun3mmu.c: Eliminate NULL test and memset after alloc_bootmem
-  [28] dio: use dio_match_device() in dio_bus_match()
-  [29] initrd: Fix virtual/physical mix-up in overwrite test
+This patch removes CVS keywords that weren't updated for a long time 
+from comments.
 
-All of them have been submitted for review before. Please apply.
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ arch/m68k/sun3/idprom.c       |    2 +-
+ arch/m68k/sun3/prom/Makefile  |    1 -
+ arch/m68k/sun3/prom/console.c |    2 +-
+ arch/m68k/sun3/prom/init.c    |    2 +-
+ arch/m68k/sun3/prom/misc.c    |    2 +-
+ arch/m68k/sun3/prom/printf.c  |    2 +-
+ drivers/zorro/proc.c          |    2 --
+ drivers/zorro/zorro.c         |    2 --
+ drivers/zorro/zorro.ids       |    2 --
+ include/asm-m68k/apollodma.h  |    2 +-
+ include/asm-m68k/dvma.h       |    2 +-
+ include/asm-m68k/machines.h   |    2 +-
+ include/asm-m68k/md.h         |    2 +-
+ include/asm-m68k/openprom.h   |    1 -
+ include/asm-m68k/oplib.h      |    2 +-
+ include/asm-m68k/sun3-head.h  |    1 -
+ 16 files changed, 10 insertions(+), 19 deletions(-)
 
-Thanks a lot!
+ee8fd7a1ce8ef99adde70ee370963c29bebdde2a diff --git a/arch/m68k/sun3/idprom.c b/arch/m68k/sun3/idprom.c
+index dca6ab6..6c5336d 100644
+--- a/arch/m68k/sun3/idprom.c
++++ b/arch/m68k/sun3/idprom.c
+@@ -1,4 +1,4 @@
+-/* $Id: idprom.c,v 1.22 1996/11/13 05:09:25 davem Exp $
++/*
+  * idprom.c: Routines to load the idprom into kernel addresses and
+  *           interpret the data contained within.
+  *
+--- a/arch/m68k/sun3/prom/Makefile
++++ b/arch/m68k/sun3/prom/Makefile
+@@ -1,4 +1,3 @@
+-# $Id: Makefile,v 1.5 1995/11/25 00:59:48 davem Exp $
+ # Makefile for the Sun Boot PROM interface library under
+ # Linux.
+ #
+--- a/arch/m68k/sun3/prom/console.c
++++ b/arch/m68k/sun3/prom/console.c
+@@ -1,4 +1,4 @@
+-/* $Id: console.c,v 1.10 1996/12/18 06:46:54 tridge Exp $
++/*
+  * console.c: Routines that deal with sending and receiving IO
+  *            to/from the current console device using the PROM.
+  *
+--- a/arch/m68k/sun3/prom/init.c
++++ b/arch/m68k/sun3/prom/init.c
+@@ -1,4 +1,4 @@
+-/* $Id: init.c,v 1.9 1996/12/18 06:46:55 tridge Exp $
++/*
+  * init.c:  Initialize internal variables used by the PROM
+  *          library functions.
+  *
+--- a/arch/m68k/sun3/prom/misc.c
++++ b/arch/m68k/sun3/prom/misc.c
+@@ -1,4 +1,4 @@
+-/* $Id: misc.c,v 1.15 1997/05/14 20:45:00 davem Exp $
++/*
+  * misc.c:  Miscellaneous prom functions that don't belong
+  *          anywhere else.
+  *
+--- a/arch/m68k/sun3/prom/printf.c
++++ b/arch/m68k/sun3/prom/printf.c
+@@ -1,4 +1,4 @@
+-/* $Id: printf.c,v 1.5 1996/04/04 16:31:07 tridge Exp $
++/*
+  * printf.c:  Internal prom library printf facility.
+  *
+  * Copyright (C) 1995 David S. Miller (davem@caip.rutgers.edu)
+--- a/drivers/zorro/proc.c
++++ b/drivers/zorro/proc.c
+@@ -1,6 +1,4 @@
+ /*
+- *	$Id: proc.c,v 1.1.2.1 1998/06/07 23:21:01 geert Exp $
+- *
+  *	Procfs interface for the Zorro bus.
+  *
+  *	Copyright (C) 1998-2003 Geert Uytterhoeven
+--- a/drivers/zorro/zorro.c
++++ b/drivers/zorro/zorro.c
+@@ -1,6 +1,4 @@
+ /*
+- *    $Id: zorro.c,v 1.1.2.1 1998/06/07 23:21:02 geert Exp $
+- *
+  *    Zorro Bus Services
+  *
+  *    Copyright (C) 1995-2003 Geert Uytterhoeven
+--- a/drivers/zorro/zorro.ids
++++ b/drivers/zorro/zorro.ids
+@@ -4,8 +4,6 @@
+ #	Maintained by Geert Uytterhoeven <zorro@linux-m68k.org>
+ #	If you have any new entries, please send them to the maintainer.
+ #
+-#	$Id: zorro.ids,v 1.19 2002/10/14 13:08:58 geert Exp $
+-#
+ 
+ # Manufacturers and Products. Please keep sorted.
+ 
+--- a/include/asm-m68k/apollodma.h
++++ b/include/asm-m68k/apollodma.h
+@@ -1,4 +1,4 @@
+-/* $Id: dma.h,v 1.7 1992/12/14 00:29:34 root Exp root $
++/*
+  * linux/include/asm/dma.h: Defines for using and allocating dma channels.
+  * Written by Hennus Bergman, 1992.
+  * High DMA channel support & info by Hannu Savolainen
+--- a/include/asm-m68k/dvma.h
++++ b/include/asm-m68k/dvma.h
+@@ -1,4 +1,4 @@
+-/* $Id: dvma.h,v 1.4 1999/03/27 20:23:41 tsbogend Exp $
++/*
+  * include/asm-m68k/dma.h
+  *
+  * Copyright 1995 (C) David S. Miller (davem@caip.rutgers.edu)
+--- a/include/asm-m68k/machines.h
++++ b/include/asm-m68k/machines.h
+@@ -1,4 +1,4 @@
+-/* $Id: machines.h,v 1.4 1995/11/25 02:31:58 davem Exp $
++/*
+  * machines.h:  Defines for taking apart the machine type value in the
+  *              idprom and determining the kind of machine we are on.
+  *
+--- a/include/asm-m68k/md.h
++++ b/include/asm-m68k/md.h
+@@ -1,4 +1,4 @@
+-/* $Id: md.h,v 1.1 1997/12/15 15:12:04 jj Exp $
++/*
+  * md.h: High speed xor_block operation for RAID4/5
+  *
+  */
+--- a/include/asm-m68k/openprom.h
++++ b/include/asm-m68k/openprom.h
+@@ -1,4 +1,3 @@
+-/* $Id: openprom.h,v 1.19 1996/09/25 03:51:08 davem Exp $ */
+ #ifndef __SPARC_OPENPROM_H
+ #define __SPARC_OPENPROM_H
+ 
+--- a/include/asm-m68k/oplib.h
++++ b/include/asm-m68k/oplib.h
+@@ -1,4 +1,4 @@
+-/* $Id: oplib.h,v 1.12 1996/10/31 06:29:13 davem Exp $
++/*
+  * oplib.h:  Describes the interface and available routines in the
+  *           Linux Prom library.
+  *
+--- a/include/asm-m68k/sun3-head.h
++++ b/include/asm-m68k/sun3-head.h
+@@ -1,4 +1,3 @@
+-/* $Id: head.h,v 1.32 1996/12/04 00:12:48 ecd Exp $ */
+ #ifndef __SUN3_HEAD_H
+ #define __SUN3_HEAD_H
+ 
 
+-- 
 Gr{oetje,eeting}s,
 
 						Geert
