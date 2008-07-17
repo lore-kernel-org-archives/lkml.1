@@ -1,53 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760631AbYGQTRO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932194AbYGQTRu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760631AbYGQTRO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 15:17:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757378AbYGQTQ5
+	id S932194AbYGQTRu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 15:17:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757378AbYGQTRl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 15:16:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49746 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754916AbYGQTQ4 (ORCPT
+	Thu, 17 Jul 2008 15:17:41 -0400
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:53764 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758691AbYGQTRk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 15:16:56 -0400
-Date: Thu, 17 Jul 2008 12:16:18 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Len Brown <lenb@kernel.org>
-cc: Andi Kleen <andi@firstfloor.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: Re: Please pull ACPI updates
-In-Reply-To: <alpine.LFD.1.10.0807171154560.2959@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0807171212500.2959@woody.linux-foundation.org>
-References: <20080716214516.GA10777@basil.nowhere.org> <200807170011.12184.rjw@sisk.pl> <200807161633.01375.jbarnes@virtuousgeek.org> <alpine.LFD.1.10.0807161639090.2835@woody.linux-foundation.org> <487EE940.1050007@firstfloor.org>
- <alpine.LFD.1.10.0807170752190.2959@woody.linux-foundation.org> <alpine.LFD.1.10.0807171402110.2965@localhost.localdomain> <alpine.LFD.1.10.0807171154560.2959@woody.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 17 Jul 2008 15:17:40 -0400
+Message-ID: <487F9ACB.3080109@linux.vnet.ibm.com>
+Date: Thu, 17 Jul 2008 14:17:31 -0500
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080515)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [mmtom][BUGFIX] vmscan-second-chance-replacement-for-anonymous-pages-fix.patch
+References: <20080717122751.92525032.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080717122751.92525032.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 17 Jul 2008, Linus Torvalds wrote:
+KAMEZAWA Hiroyuki wrote:
+> Under memcg, active anon tend not to go to inactive anon.
+> This will cause OOM in memcg easily when tons of anon was used at once.
+> This check was lacked in split-lru.
 > 
-> No, what others do (if they know the tricks) is to say something like:
+> This patch is a fix agaisnt
+> vmscan-second-chance-replacement-for-anonymous-pages.patch
 > 
-> 	git rebase -i <starting-point>
+> 
+> Changelog: v1 -> v2:
+>  - avoid adding "else".
+> 
+> Signed-off-by:KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Acked-by: Rik van Riel <riel@redhat.com>
+> 
+>  mm/vmscan.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: mmtom-stamp-2008-07-15-15-39/mm/vmscan.c
+> ===================================================================
+> --- mmtom-stamp-2008-07-15-15-39.orig/mm/vmscan.c
+> +++ mmtom-stamp-2008-07-15-15-39/mm/vmscan.c
+> @@ -1351,7 +1351,7 @@ static unsigned long shrink_zone(int pri
+>  	 * Even if we did not try to evict anon pages at all, we want to
+>  	 * rebalance the anon lru active/inactive ratio.
+>  	 */
+> -	if (scan_global_lru(sc) && inactive_anon_is_low(zone))
+> +	if (!scan_global_lru(sc) || inactive_anon_is_low(zone))
+>  		shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
+> 
+>  	throttle_vm_writeout(sc->gfp_mask);
 
-Oh, and before anybody goes any further with this: it's a very convenient 
-feature, but it _is_ still technically nothing but a very nice interface 
-to cherry-picking and rebasing history. 
+I have not seen this, but looks good to me
 
-So all the caveats about _not_ doing this with public history that others 
-have already seen and possibly merged are still in place. That part 
-doesn't change at all.
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
-So it's great to do with private changes to clean them up before 
-publicizing them, or possibly with branches that you have explicitly told 
-people are _not_ stable, but it is still very much about creating a 
-totally new history.
-
-			Linus
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
