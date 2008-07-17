@@ -1,91 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760631AbYGQSAY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760631AbYGQSC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760631AbYGQSAY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 14:00:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757493AbYGQSAM
+	id S1760631AbYGQSC2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 14:02:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756031AbYGQSCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 14:00:12 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:59362 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756305AbYGQSAK (ORCPT
+	Thu, 17 Jul 2008 14:02:20 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:58449 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752846AbYGQSCT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 14:00:10 -0400
-Date: Thu, 17 Jul 2008 14:00:09 -0400
-To: Soumyadip Das Mahapatra <soumya.linux@yahoo.com>
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] : A better approach to compute int_sqrt in lib/int_sqrt.c
-Message-ID: <20080717180008.GK31126@csclub.uwaterloo.ca>
-References: <848307.13278.qm@web59505.mail.ac4.yahoo.com> <20080716220556.GI31126@csclub.uwaterloo.ca>
+	Thu, 17 Jul 2008 14:02:19 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Daniel Hokka Zakrisson <daniel@hozac.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       oleg@tv-sign.ru, xemul@openvz.org, akpm@linux-foundation.org
+References: <487F5DA1.6000107@hozac.com>
+Date: Thu, 17 Jul 2008 10:55:15 -0700
+In-Reply-To: <487F5DA1.6000107@hozac.com> (Daniel Hokka Zakrisson's message of
+	"Thu, 17 Jul 2008 10:56:33 -0400")
+Message-ID: <m14p6ov1j0.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080716220556.GI31126@csclub.uwaterloo.ca>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Daniel Hokka Zakrisson <daniel@hozac.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.2 BAYES_40 BODY: Bayesian spam probability is 20 to 40%
+	*      [score: 0.3870]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH 2/2] signals: replace p->pid == 1 check with a check for task_child_reaper
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 16, 2008 at 06:05:56PM -0400, Lennart Sorensen wrote:
-> It is also very inaccurate:
-> 
-> int_sqrt(9380489) returns 3062 with the old code and 146574 with the new
-> code.  I wonder which one is closer to right.  It seems as soon as the
-> input is 2^22 or higher, the new code goes all to hell and starts
-> returning 2^16-1 or similarly silly values rather than 2^11-1 or
-> similar.
-> 
-> Here is how I tested:
-> 
-> (compiled with gcc -Wall -O2 -std=c99)
-> 
-> #include <stdio.h>
-> #include <unistd.h>
-> #include <stdlib.h>
-> 
-> #define BITS_PER_LONG 32
-> 
-> unsigned long old_int_sqrt(unsigned long x) {
-> 	unsigned long op, res, one;
-> 
-> 	op = x;
-> 	res = 0;
-> 
-> 	one = 1UL << (BITS_PER_LONG - 2);
-> 	while (one > op)
-> 		one >>= 2;
-> 
-> 	while (one != 0) {
-> 		if (op >= res + one) {
-> 			op = op - (res + one);
-> 			res = res +  2 * one;
-> 		}
-> 		res /= 2;
-> 		one /= 4;
-> 	}
-> 	return res;
-> }
-> 
-> unsigned long new_int_sqrt(unsigned long x) {
-> 	unsigned long ub, lb, m;
-> 	lb = 1;				/* lower bound */
-> 	ub = (x >> 5) + 8;		/* upper bound */
-> 	do {
-> 		m = (ub + lb) >>  1;	/* middle value */
-> 		if((m * m) > x)
-This line overflows while the result is good if changed to:
- 		if(((unsigned long long)m * (unsigned long long)m) > (unsigned long long)x)
+Daniel Hokka Zakrisson <daniel@hozac.com> writes:
 
-Perhaps there is a better way to do this.
+> p->pid == 1 is insufficient when there are multiple pid namespaces.
+> Instead, check whether the task is in the current task's
+> child reaper's thread group.
 
-> 			ub = m - 1;
-> 		else
-> 			lb = m + 1;
-> 	} while(ub >= lb);
-> 
-> 	return lb - 1;
-> }
-> 
+We should just drop the check for init as it is redundant.
 
--- 
-Len Sorensen
+Eric
+
