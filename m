@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760086AbYGQOWm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758555AbYGQO0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760086AbYGQOWm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 10:22:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbYGQOWe
+	id S1758555AbYGQO0A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 10:26:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756566AbYGQOZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 10:22:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38019 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752157AbYGQOWd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 10:22:33 -0400
-Date: Thu, 17 Jul 2008 10:21:48 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Eric Rannaud <eric.rannaud@gmail.com>, Chris Snook <csnook@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: madvise(2) MADV_SEQUENTIAL behavior
-Message-ID: <20080717102148.6bc52e94@cuia.bos.redhat.com>
-In-Reply-To: <200807171614.29594.nickpiggin@yahoo.com.au>
-References: <1216163022.3443.156.camel@zenigma>
-	<487E628A.3050207@redhat.com>
-	<1216252910.3443.247.camel@zenigma>
-	<200807171614.29594.nickpiggin@yahoo.com.au>
-Organization: Red Hat, Inc
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 17 Jul 2008 10:25:50 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:62098 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755978AbYGQOZu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 10:25:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=jJ023IIOSjSTzC/oQrhuFiemOJgOM0i+D0+xer/HWSTcEJibsRiuJlH8T9PsvbG1n3
+         gzrIgYeu+Oa3PG7X3QOzt1v/lNBoGSSxnOT4ZT4HRUiXiZniYUFr7CY/MVHG6LzPChPj
+         2hKe754A2McF454I2RLjRN2jTyJj6+ShdV5ds=
+Message-ID: <19f34abd0807170725p13e81e3dq4daad32ad2a83931@mail.gmail.com>
+Date: Thu, 17 Jul 2008 16:25:49 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Josef Bacik" <jbacik@redhat.com>
+Subject: Re: ext3 on latest -git: BUG: unable to handle kernel NULL pointer dereference at 0000000c
+Cc: "Josef Bacik" <josef@toxicpanda.com>, linux-ext4@vger.kernel.org,
+       sct@redhat.com, akpm@linux-foundation.org, adilger@sun.com,
+       "Johannes Weiner" <hannes@saeurebad.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080717135746.GB14133@unused.rdu.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <19f34abd0807170551q4fbb862bu270297cfd76a69be@mail.gmail.com>
+	 <1b7401870807170613y747baa7by158177047cc7e28@mail.gmail.com>
+	 <19f34abd0807170620g39ab942bl592ea3fa3fa0dab@mail.gmail.com>
+	 <1b7401870807170634u14492a53k3931ddcddbd1e098@mail.gmail.com>
+	 <19f34abd0807170639p838d14blc9a13d2104313f38@mail.gmail.com>
+	 <20080717135746.GB14133@unused.rdu.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jul 2008 16:14:29 +1000
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+On Thu, Jul 17, 2008 at 3:57 PM, Josef Bacik <jbacik@redhat.com> wrote:
+> Can you try this patch out and see if it fixes the problem?  I didn't compile
+> test it, so you may need to tweak somethings, but it should work.  Thanks,
+>
+> Signed-off-by: Josef Bacik <jbacik@redhat.com>
 
-> > It might encourage user space applications to start using
-> > FADV_SEQUENTIAL or FADV_NOREUSE more often (as it would become
-> > worthwhile to do so), and if they do (especially cron jobs), the problem
-> > of the slow desktop in the morning would progressively solve itself.
-> 
-> The slow desktop in the morning should not happen even without such a
-> call, because the kernel should not throw out frequently used data (even
-> if it is not quite so recent) in favour of streaming data.
-> 
-> OK, I figure it doesn't do such a good job now, which is sad, 
+Nope, seems to be the same problem:
 
-Do you have any tests in mind that we could use to decide
-whether the patch I posted Tuesday would do a decent job
-at protecting frequently used data from streaming data?
+kjournald starting.  Commit interval 5 seconds
+EXT3-fs warning: mounting fs with errors, running e2fsck is recommended
+EXT3 FS on loop0, internal journal
+EXT3-fs: mounted filesystem with ordered data mode.
+EXT3-fs error (device loop0): ext3_free_blocks: Freeing blocks in
+system zones - Block = 16, count = 1
+EXT3-fs error (device loop0): ext3_free_blocks: Freeing blocks in
+system zones - Block = 32, count = 1
+EXT3-fs error (device loop0): ext3_free_blocks: Freeing blocks not in
+datazone - block = 262144, count = 1
+BUG: unable to handle kernel NULL pointer dereference at 0000000c
+IP: [<c01fd210>] journal_dirty_metadata+0xa0/0x160
 
-http://lkml.org/lkml/2008/7/15/465
+Full log at http://folk.uio.no/vegardno/linux/log-1216304953.txt
+
+
+Vegard
 
 -- 
-All Rights Reversed
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
