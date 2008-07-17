@@ -1,58 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760565AbYGQPv2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759226AbYGQPy6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760565AbYGQPv2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 11:51:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756545AbYGQPvT
+	id S1759226AbYGQPy6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 11:54:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755079AbYGQPyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 11:51:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:32905 "EHLO mx1.redhat.com"
+	Thu, 17 Jul 2008 11:54:50 -0400
+Received: from sacred.ru ([62.205.161.221]:51428 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754603AbYGQPvS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 11:51:18 -0400
-Date: Thu, 17 Jul 2008 10:43:42 -0400
-From: Josef Bacik <jbacik@redhat.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Josef Bacik <jbacik@redhat.com>, Josef Bacik <josef@toxicpanda.com>,
-       linux-ext4@vger.kernel.org, sct@redhat.com, akpm@linux-foundation.org,
-       adilger@sun.com, Johannes Weiner <hannes@saeurebad.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: ext3 on latest -git: BUG: unable to handle kernel NULL pointer
-	dereference at 0000000c
-Message-ID: <20080717144342.GA15844@unused.rdu.redhat.com>
-References: <1b7401870807170634u14492a53k3931ddcddbd1e098@mail.gmail.com> <19f34abd0807170639p838d14blc9a13d2104313f38@mail.gmail.com> <20080717135746.GB14133@unused.rdu.redhat.com> <19f34abd0807170725p13e81e3dq4daad32ad2a83931@mail.gmail.com> <20080717141333.GC14133@unused.rdu.redhat.com> <19f34abd0807170735p5d2cba31kec3fb65c5b8c7b3f@mail.gmail.com> <20080717141655.GD14133@unused.rdu.redhat.com> <19f34abd0807170744r79e46a78odfcfbd67687d2ceb@mail.gmail.com> <20080717143332.GE14133@unused.rdu.redhat.com> <19f34abd0807170800q13cc021dyed27c665c25ac520@mail.gmail.com>
+	id S1753412AbYGQPyt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 11:54:49 -0400
+Message-ID: <487F6B2E.40101@openvz.org>
+Date: Thu, 17 Jul 2008 19:54:22 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19f34abd0807170800q13cc021dyed27c665c25ac520@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Daniel Hokka Zakrisson <daniel@hozac.com>
+CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       oleg@tv-sign.ru, ebiederm@xmission.com, akpm@linux-foundation.org
+Subject: Re: [PATCH 1/2] signals: kill(-1) should only signal processes in
+      the same namespace
+References: <487F5D6B.1090007@hozac.com> <487F5EDB.1000008@openvz.org> <43011.192.168.102.6.1216308280.squirrel@intranet>
+In-Reply-To: <43011.192.168.102.6.1216308280.squirrel@intranet>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 17 Jul 2008 19:54:18 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 05:00:07PM +0200, Vegard Nossum wrote:
-> On Thu, Jul 17, 2008 at 4:33 PM, Josef Bacik <jbacik@redhat.com> wrote:
-> > Ok run dumpe2fs -h on your image and see if you have a line that says
-> >
-> > Errors behavior:          Continue
-> >
-> > if you do run tune2fs -e remount-ro and then do the mount.  That would explain
-> > why you are still having panics even though we should be aborting the journal.
-> > Thanks,
+Daniel Hokka Zakrisson wrote:
+> Pavel Emelyanov wrote:
+>> Daniel Hokka Zakrisson wrote:
+>>> While moving Linux-VServer to using pid namespaces, I noticed that
+>>> kill(-1) from inside a pid namespace is currently signalling every
+>>> process in the entire system, including processes that are otherwise
+>>> unreachable from the current process.
+>> This is not a "news" actually, buy anyway - thanks :)
 > 
-> Ahh, that probably explains it. I didn't realize there was such a thing.
+> And yet nobody's fixed it... Kind of a critical thing, if you actually
+> want to use them, since most distribution's rc-scripts do a kill(-1,
+> SIGTERM), followed by kill(-1, SIGKILL) when halting (which, needless to
+> say, would be very bad).
 > 
-> I am doing random-corruption tests, so it is quite possible that this
-> bit gets set anywhere along the road...
+>>> This patch fixes it by making sure that only processes which are in
+>>> the same pid namespace as current get signalled.
+>> This is to be done, indeed, but I do not like the proposed implementation,
+>> since you have to walk all the tasks in the system (under tasklist_lock,
+>> by the way) to search for a couple of interesting ones. Better look at how
+>> zap_pid_ns_processes works (by the way - I saw some patch doing so some
+>> time ago).
 > 
-> But even so, is it correct that the kernel should crash? It seems
-> quite possible that error behaviour can change (like this) even with
-> "normal" corruption, e.g. outside my test scripts.
->
+> The way zap_pid_ns_processes does it is worse, since it signals every
+> thread in the namespace rather than every thread group. So either we walk
 
-Yeah thats a hard to answer question, one that I will leave up to others who
-have been doing this much longer than I.  My thought is remount-ro is there to
-keep you from crashing, so if you have errors=continue then you expect to live
-with the consequences.  Course if that bit gets flipped via corruption thats not
-good either.  Thanks,
+It's questionable whether there are more "threads in a pid namespace" than
+"processes in a system".
 
-Josef
+E.g. on my notebook there are ~110 processes and ~150 threads. So having 
+this setup launched in 10 containers you'll have to walk 1100 tasks, while
+zap_pid_ns_processes only 150 ;)
+
+Some real-life example with containers: on one of our servers with 10 
+containers serving as git repo, bulding system and some other stuff there 
+are ~200 process totally and ~20 threads in each container. See?
+
+I tend to believe that walking threads in a container is cheaper then
+walking processes in a system...
+
+> the global tasklist, or we create a per-namespace one. Is that what we
+> want?
+
+We want to kill all tasks in current pid namespace. There are variants of 
+how to do this. You particular implementation of handling this case seems
+poor to me for the reasons described above.
+
+>>> Signed-off-by: Daniel Hokka Zakrisson <daniel@hozac.com>
+>>>
+>>> diff --git a/include/linux/pid_namespace.h
+>>> b/include/linux/pid_namespace.h
+>>> index caff528..4cf41bd 100644
+>>> --- a/include/linux/pid_namespace.h
+>>> +++ b/include/linux/pid_namespace.h
+>>> @@ -40,6 +40,8 @@ static inline struct pid_namespace *get_pid_ns(struct
+>>> pid_namespace *ns)
+>>>   extern struct pid_namespace *copy_pid_ns(unsigned long flags, struct
+>>> pid_namespace *ns);
+>>>   extern void free_pid_ns(struct kref *kref);
+>>>   extern void zap_pid_ns_processes(struct pid_namespace *pid_ns);
+>>> +extern int task_in_pid_ns(struct task_struct *tsk,
+>>> +			  struct pid_namespace *pid_ns);
+>>>
+>>>   static inline void put_pid_ns(struct pid_namespace *ns)
+>>>   {
+>>> @@ -72,6 +74,12 @@ static inline void zap_pid_ns_processes(struct
+>>> pid_namespace *ns)
+>>>   {
+>>>   	BUG();
+>>>   }
+>>> +
+>>> +static inline int task_in_pid_ns(struct task_struct *tsk,
+>>> +				  struct pid_namespace *ns)
+>>> +{
+>>> +	return 1;
+>>> +}
+>>>   #endif /* CONFIG_PID_NS */
+>>>
+>>>   static inline struct pid_namespace *task_active_pid_ns(struct
+>>> task_struct *tsk)
+>>> diff --git a/kernel/pid_namespace.c b/kernel/pid_namespace.c
+>>> index 98702b4..3e71011 100644
+>>> --- a/kernel/pid_namespace.c
+>>> +++ b/kernel/pid_namespace.c
+>>> @@ -188,6 +188,26 @@ void zap_pid_ns_processes(struct pid_namespace
+>>> *pid_ns)
+>>>   	return;
+>>>   }
+>>>
+>>> +/*
+>>> + * Checks whether tsk has a pid in the pid namespace ns.
+>>> + * Must be called with tasklist_lock read-locked or under
+>>> rcu_read_lock()
+>>> + */
+>>> +int task_in_pid_ns(struct task_struct *tsk, struct pid_namespace *ns)
+>>> +{
+>>> +	struct pid *pid = task_pid(tsk);
+>>> +
+>>> +	if (!pid)
+>>> +		return 0;
+>>> +
+>>> +	if (pid->level < ns->level)
+>>> +		return 0;
+>>> +
+>>> +	if (pid->numbers[ns->level].ns != ns)
+>>> +		return 0;
+>>> +
+>>> +	return 1;
+>>> +}
+>>> +
+>>>   static __init int pid_namespaces_init(void)
+>>>   {
+>>>   	pid_ns_cachep = KMEM_CACHE(pid_namespace, SLAB_PANIC);
+>>> diff --git a/kernel/signal.c b/kernel/signal.c
+>>> index 6c0958e..93713a5 100644
+>>> --- a/kernel/signal.c
+>>> +++ b/kernel/signal.c
+>>> @@ -1145,7 +1145,8 @@ static int kill_something_info(int sig, struct
+>>> siginfo *info, int pid)
+>>>   		struct task_struct * p;
+>>>
+>>>   		for_each_process(p) {
+>>> -			if (p->pid > 1 && !same_thread_group(p, current)) {
+>>> +			if (p->pid > 1 && !same_thread_group(p, current) &&
+>>> +			    task_in_pid_ns(p, current->nsproxy->pid_ns)) {
+>>>   				int err = group_send_sig_info(sig, info, p);
+>>>   				++count;
+>>>   				if (err != -EPERM)
+> 
+
