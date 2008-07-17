@@ -1,79 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757310AbYGQLx0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757856AbYGQL4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757310AbYGQLx0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 07:53:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754496AbYGQLxS
+	id S1757856AbYGQL4Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 07:56:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754865AbYGQL4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 07:53:18 -0400
-Received: from sinclair.provo.novell.com ([137.65.248.137]:34607 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751972AbYGQLxR convert rfc822-to-8bit (ORCPT
+	Thu, 17 Jul 2008 07:56:17 -0400
+Received: from bromo.msbb.uc.edu ([129.137.3.146]:55401 "HELO
+	bromo.msbb.uc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751114AbYGQL4R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 07:53:17 -0400
-Message-Id: <487EFB71.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Thu, 17 Jul 2008 05:57:37 -0600
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Max Krasnyansky" <maxk@qualcomm.com>
-Cc: <a.p.zijlstra@chello.nl>, <mingo@elte.hu>, <dmitry.adamushko@gmail.com>,
-       <torvalds@linux-foundation.org>, <pj@sgi.com>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cpu hotplug, sched: Introduce
-	cpu_active_map	and	redoscheddomain managment (take 2)
-References: <1216122229-4865-1-git-send-email-maxk@qualcomm.com>
- <487DAD86.BA47.005A.0@novell.com> <487E6BD7.3020006@qualcomm.com>
- <487E7B6C.BA47.005A.0@novell.com> <487EF1E9.2040101@qualcomm.com>
-In-Reply-To: <487EF1E9.2040101@qualcomm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Thu, 17 Jul 2008 07:56:17 -0400
+Date: Thu, 17 Jul 2008 07:56:14 -0400
+From: Jack Howarth <howarth@bromo.msbb.uc.edu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
+Message-ID: <20080717115614.GA22423@bromo.msbb.uc.edu>
+References: <86802c440807161029n7e0dac98x1ec260879204b6f0@mail.gmail.com> <86802c440807161535n3a4d6891n6f7c16bd4e1f19c3@mail.gmail.com> <20080717004004.GA17792@bromo.msbb.uc.edu> <86802c440807161749u2f5c1eben618e05c6e254fedd@mail.gmail.com> <20080717023538.GA18329@bromo.msbb.uc.edu> <86802c440807161959s10666027k5297af1d657ff4fa@mail.gmail.com> <20080717034418.GA18951@bromo.msbb.uc.edu> <86802c440807162113g4cea3bd9ic71210330417032b@mail.gmail.com> <20080717061825.GA19582@bromo.msbb.uc.edu> <86802c440807162348m6d05b912x7b3f655d7f9efb93@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <86802c440807162348m6d05b912x7b3f655d7f9efb93@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Thu, Jul 17, 2008 at  3:16 AM, in message <487EF1E9.2040101@qualcomm.com>,
-Max Krasnyansky <maxk@qualcomm.com> wrote: 
-
+YH,
+  I have CONFIG_PCIEASPM=y set in .config (since I am using
+Fedora 9, I copied the .config from the redhat 2.6.26 rpm build
+as my .config and ran 'make oldconfig'). I'll try rebuilding the
+kernel with CONFIG_PCIEASPM_DEBUG=y and see if that provides
+any insights.
+                     Jack
+On Wed, Jul 16, 2008 at 11:48:19PM -0700, Yinghai Lu wrote:
+> On Wed, Jul 16, 2008 at 11:18 PM, Jack Howarth
+> <howarth@bromo.msbb.uc.edu> wrote:
+> > YH,
+> >  Using the debug patches and your mmconfig patch as well as the kernel
+> > options 'debug initcall_debug apic=verbose pci=routeirq", I see the following
+> > messages that don't scroll off screen...
+> >
+> > PCI: 0000:00:1f.1 reg 10 io port: [ 40d8, 40df]
+> > PCI: 0000:00:1f.1 reg 14 io port: [ 40ec, 40ef]
+> > PCI: 0000:00:1f.1 reg 18 io port: [ 40d0, 40d7]
+> > PCI: 0000:00:1f.1 reg 1c io port: [ 40e8, 40eb]
+> > PCI: 0000:00:1f.1 reg 20 io port: [ 40b0, 40bf]
+> > pci 0000:00.1f.1: calling pci_fixup_transparent_bridge+0x0/0x2a
+> > PCI: Found 0000:00:1f.2 [8086/27c4] 000101 00
+> > PCI: 0000:00:1f.2 reg 10 io port: [ 40c8, 40cf]
+> > PCI: 0000:00:1f.2 reg 14 io port: [ 40e4, 40e7]
+> > PCI: 0000:00:1f.2 reg 18 io port: [ 40c0, 40c7]
+> > PCI: 0000:00:1f.2 reg 1c io port: [ 40e0, 40e3]
+> > PCI: 0000:00:1f.2 reg 20 io port: [ 40a0, 40af]
+> > PCI: 0000:00:1f.2 reg 24 32bit mmio: [d8405000, d84053ff]
+> > pci: 0000:00:1f.2 calling pci_fixup_transparent_bridge+0x0/0x2a
+> > PCI: Found 0000:00:1f.3 [8086/27da] 000c05 00
+> > PCI: 0000:00:1f.3 reg 20 io port: [ efa0, efbf]
+> > PCI: 0000:00:1f.3: calling pci_fixup_transparent_bridge+0x0/0x2a
+> > PCI: Fixups for bus 0000:00
+> > PCI: Scanning behind PCI bridge 0000:00:01.0, config 010100, pass 0
+> > PCI: Scanning bus 0000:01
+> > PCI: Found 0000:01:00.0 [1002/71c5] 000300 00
+> > PCI: 0000:00:01:00.0 reg 10 32bit mmio: [c0000000, cfffffff]
+> > PCI: 0000:00:01:00.0 reg 14 io port: [ 3000, 30ff]
+> > PCI: 0000:00:01:00.0 reg 18 32bit mmio: [d8300000, d830ffff]
+> >
+> should get
+> PCI: Fixups for bus 0000:01
+> PCI: Transparent bridge - 0000:00:01.0
+> PCI: bridge 0000:00:01.0 io port: [3000, 3fff]
+> PCI: bridge 0000:00:01.0 32bit mmio: ...
+> PCI: Bus scan for 0000:01 returning with max=01
 > 
-> Gregory Haskins wrote:
->> Well, admittedly I am not entirely clear on what problem is being solved as
->> I was not part of the original thread with Linus.  My impression of what you
->> were trying to solve was to eliminate the need to rebuild the domains for a
->> hotplug event (which I think is a good problem to solve), thus eliminating
->> some complexity and (iiuc) races there.
->> 
->> However, based on what you just said, I am not sure I've got that entirely
->> right anymore.  Can you clarify the intent (or point me at the original 
-> thread)
->> so we are on the same page?
-> Here is the link to the original thread
-> 	http://lkml.org/lkml/2008/7/11/328
-> And here is where Linus explained the idea
-> 	http://lkml.org/lkml/2008/7/12/137
+> Do you have CONFIG_PCIEASPM in your config?
 > 
-> I'll reply to the rest of your email tomorrow (can't keep my yes open any
-> longer :)).
-> 
-> Max
-
-Hi Max,
-  Thanks for the pointers.  I see that I did indeed misunderstand the intent of the patch.
-It seems you already solved the rebuild problem, and were just trying to solve the
-"migrate to a dead cpu" problem that Linus mentions as a solution with cpu_active_map.
-
-In that case, note that rq->rd->online already fits the bill, I believe.  In a nutshell,
-rq->rd->span contains all the cpus within your disjoint cpuset, and rq->rd->online,
-contains the subset of rq->rd->span that are online.  The online bit is cleared at the
-earliest point in cpu hotplug removal (DYING), and it is set at the very latest point on
-insertion (ONLINE).  Therefore it is redundant with the cpus_active_map concept.
-
-I think the simplest solution is to make sure that we cpus_and against rq->rd->online
-before allowing a migration.  This is how I intended the mask to be used, anyway.  Its
-what the RT scheduler does.  It sounds like we just need to touch up the few places
-in the CFS side that were causing those oops.
-
-Thoughts?
-
--Greg 
-
+> YH
