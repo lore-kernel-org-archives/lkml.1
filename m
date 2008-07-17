@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757832AbYGQRcl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760756AbYGQRdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757832AbYGQRcl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 13:32:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757900AbYGQRc2
+	id S1760756AbYGQRdR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 13:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756928AbYGQRdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 13:32:28 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60219 "EHLO mx3.mail.elte.hu"
+	Thu, 17 Jul 2008 13:33:05 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60325 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757879AbYGQRc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 13:32:27 -0400
-Date: Thu, 17 Jul 2008 19:32:10 +0200
+	id S1755050AbYGQRdD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 13:33:03 -0400
+Date: Thu, 17 Jul 2008 19:32:48 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: [git pull] tracing fixes
-Message-ID: <20080717173210.GA12828@elte.hu>
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [git pull] x86 fixes
+Message-ID: <20080717173248.GA13376@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,90 +34,74 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest tracing fixes git tree from:
+Please pull the latest x86 fixes git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git tracing-fixes-for-linus
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
 
 Thanks,
 
 	Ingo
 
 ------------------>
-Ingo Molnar (4):
-      ftrace: fix merge buglet
-      ftrace: fix lockup with MAXSMP
-      ftrace: do not trace scheduler functions
-      ftrace: do not trace library functions
+Jack Steiner (1):
+      x86: fix kernel_physical_mapping_init() for large x86 systems
+
+Rusty Russell (1):
+      x86: fix asm/e820.h for userspace inclusion
+
+Yinghai Lu (1):
+      x86: fix numaq_tsc_disable
 
 
- arch/x86/kernel/Makefile |    3 +--
- kernel/Makefile          |    3 +--
- lib/Makefile             |   14 +++++---------
- 3 files changed, 7 insertions(+), 13 deletions(-)
+ arch/x86/kernel/numaq_32.c |    2 +-
+ arch/x86/mm/init_64.c      |    2 +-
+ include/asm-x86/e820.h     |    3 ++-
+ 3 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index 5112c84..da14061 100644
---- a/arch/x86/kernel/Makefile
-+++ b/arch/x86/kernel/Makefile
-@@ -8,8 +8,7 @@ CPPFLAGS_vmlinux.lds += -U$(UTS_MACHINE)
+diff --git a/arch/x86/kernel/numaq_32.c b/arch/x86/kernel/numaq_32.c
+index 5b20a5e..a23e823 100644
+--- a/arch/x86/kernel/numaq_32.c
++++ b/arch/x86/kernel/numaq_32.c
+@@ -96,7 +96,7 @@ int __init get_memcfg_numaq(void)
+ void __init numaq_tsc_disable(void)
+ {
+ 	if (!found_numaq)
+-		return -1;
++		return;
  
- ifdef CONFIG_FTRACE
- # Do not profile debug utilities
--CFLAGS_REMOVE_tsc_64.o = -pg
--CFLAGS_REMOVE_tsc_32.o = -pg
-+CFLAGS_REMOVE_tsc.o = -pg
- CFLAGS_REMOVE_rtc.o = -pg
- endif
+ 	if (num_online_nodes() > 1) {
+ 		printk(KERN_DEBUG "NUMAQ: disabling TSC\n");
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index 27de243..306049e 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -644,7 +644,7 @@ static unsigned long __init kernel_physical_mapping_init(unsigned long start,
+ 		unsigned long pud_phys;
+ 		pud_t *pud;
  
-diff --git a/kernel/Makefile b/kernel/Makefile
-index 0a7ed83..985ddb7 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -11,8 +11,6 @@ obj-y     = sched.o fork.o exec_domain.o panic.o printk.o profile.o \
- 	    hrtimer.o rwsem.o nsproxy.o srcu.o semaphore.o \
- 	    notifier.o ksysfs.o pm_qos_params.o sched_clock.o
+-		next = start + PGDIR_SIZE;
++		next = (start + PGDIR_SIZE) & PGDIR_MASK;
+ 		if (next > end)
+ 			next = end;
  
--CFLAGS_REMOVE_sched.o = -mno-spe
+diff --git a/include/asm-x86/e820.h b/include/asm-x86/e820.h
+index 33e793e..06633b0 100644
+--- a/include/asm-x86/e820.h
++++ b/include/asm-x86/e820.h
+@@ -59,6 +59,7 @@ struct e820map {
+ 	struct e820entry map[E820_X_MAX];
+ };
+ 
++#ifdef __KERNEL__
+ /* see comment in arch/x86/kernel/e820.c */
+ extern struct e820map e820;
+ extern struct e820map e820_saved;
+@@ -115,7 +116,7 @@ extern void setup_memory_map(void);
+ extern char *default_machine_specific_memory_setup(void);
+ extern char *machine_specific_memory_setup(void);
+ extern char *memory_setup(void);
 -
- ifdef CONFIG_FTRACE
- # Do not trace debug files and internal ftrace files
- CFLAGS_REMOVE_lockdep.o = -pg
-@@ -21,6 +19,7 @@ CFLAGS_REMOVE_mutex-debug.o = -pg
- CFLAGS_REMOVE_rtmutex-debug.o = -pg
- CFLAGS_REMOVE_cgroup-debug.o = -pg
- CFLAGS_REMOVE_sched_clock.o = -pg
-+CFLAGS_REMOVE_sched.o = -mno-spe -pg
- endif
++#endif /* __KERNEL__ */
+ #endif /* __ASSEMBLY__ */
  
- obj-$(CONFIG_SYSCTL_SYSCALL_CHECK) += sysctl_check.o
-diff --git a/lib/Makefile b/lib/Makefile
-index 2c62a9c..818c4d4 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -2,21 +2,17 @@
- # Makefile for some libs needed in the kernel.
- #
- 
-+ifdef CONFIG_FTRACE
-+ORIG_CFLAGS := $(KBUILD_CFLAGS)
-+KBUILD_CFLAGS = $(subst -pg,,$(ORIG_CFLAGS))
-+endif
-+
- lib-y := ctype.o string.o vsprintf.o cmdline.o \
- 	 rbtree.o radix-tree.o dump_stack.o \
- 	 idr.o int_sqrt.o extable.o prio_tree.o \
- 	 sha1.o irq_regs.o reciprocal_div.o argv_split.o \
- 	 proportions.o prio_heap.o ratelimit.o
- 
--ifdef CONFIG_FTRACE
--# Do not profile string.o, since it may be used in early boot or vdso
--CFLAGS_REMOVE_string.o = -pg
--# Also do not profile any debug utilities
--CFLAGS_REMOVE_spinlock_debug.o = -pg
--CFLAGS_REMOVE_list_debug.o = -pg
--CFLAGS_REMOVE_debugobjects.o = -pg
--endif
--
- lib-$(CONFIG_MMU) += ioremap.o
- lib-$(CONFIG_SMP) += cpumask.o
- 
+ #define ISA_START_ADDRESS	0xa0000
