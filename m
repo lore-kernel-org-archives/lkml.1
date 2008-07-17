@@ -1,88 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932086AbYGQXVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933406AbYGQXWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932086AbYGQXVw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 19:21:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760859AbYGQXVK
+	id S933406AbYGQXWS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 19:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932288AbYGQXVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 19:21:10 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45462 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760821AbYGQXVJ (ORCPT
+	Thu, 17 Jul 2008 19:21:16 -0400
+Received: from brinza.cc.columbia.edu ([128.59.29.8]:47721 "EHLO
+	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932116AbYGQXVP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 19:21:09 -0400
-Date: Thu, 17 Jul 2008 16:20:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Magnus Damm" <magnus.damm@gmail.com>
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
-Subject: Re: [PATCH 04/04] resource: add new IORESOURCE_CLK type
-Message-Id: <20080717162032.f5dca88d.akpm@linux-foundation.org>
-In-Reply-To: <aec7e5c30807150119r160a104en5780c3288d50c60d@mail.gmail.com>
-References: <20080709115428.14144.7121.sendpatchset@rx1.opensource.se>
-	<20080709115502.14144.49264.sendpatchset@rx1.opensource.se>
-	<20080711121813.acc71327.akpm@linux-foundation.org>
-	<aec7e5c30807150119r160a104en5780c3288d50c60d@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 17 Jul 2008 19:21:15 -0400
+Message-ID: <487FD251.9090204@cs.columbia.edu>
+Date: Thu, 17 Jul 2008 19:14:25 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Kirill Korotaev <dev@parallels.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Nadia.Derbey@bull.net, Andrew Morton <akpm@linux-foundation.org>,
+       nick@nick-andrew.net, Alexey Dobriyan <adobriyan@gmail.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: Re: Checkpoint/restart (was Re: [PATCH 0/4] - v2 - Object creation
+ with a specified id)
+References: <20080418054459.891481000@bull.net>	 <20080422193612.GA15835@martell.zuzino.mipt.ru>	 <1208890580.17117.14.camel@nimitz.home.sr71.net>	 <20080422210130.GA15937@martell.zuzino.mipt.ru>	 <1208904967.17117.51.camel@nimitz.home.sr71.net>	 <480ED9D5.1010906@parallels.com> <480FE037.2010302@cs.columbia.edu>	 <m1y74a7b4w.fsf@frodo.ebiederm.org> <1215709949.9398.15.camel@nimitz>
+In-Reply-To: <1215709949.9398.15.camel@nimitz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jul 2008 17:19:24 +0900
-"Magnus Damm" <magnus.damm@gmail.com> wrote:
 
-> Hi Andrew,
-> 
-> Thanks for picking up my patches.
-> 
-> On Sat, Jul 12, 2008 at 4:18 AM, Andrew Morton
-> <akpm@linux-foundation.org> wrote:
-> > On Wed, 09 Jul 2008 20:55:02 +0900 Magnus Damm <magnus.damm@gmail.com> wrote:
-> >
-> >> This patch rearranges the values of the IORESOURCE_TYPE_BITS from
-> >> one bit per type to a 4-bit counter. Also, IORESOURCE_CLK is added.
-> >> Not sure if it is better to start counting from 0 instead of 1.
-> >>
-> >
-> > I don't believe this is an adequate changelog.  It contains the "what" but
-> > not the "why".
-> 
-> Yeah, sorry about that. I should have been more clear.
-> 
-> > Why did we switch from one-bit to four-bits?
-> 
-> The 4-bit encoding is there because I thought it was a waste of bits
-> to use one bit per type. =)
-> 
-> I wanted to add IORESOURCE_CLK and while at it I was playing around
-> with changing the code to use a 4-bit value for resource type. We may
-> already have spare bits available that are more suitable for new types
-> though.
-> 
-> > Why did we add IORESOURCE_CLK?
-> 
-> Currently we use struct resource with the types
-> IORESOURCE_MEM/IORESOURCE_IO and IORESOUCE_IRQ to pass I/O and
-> interrupt parameters to platform drivers. That works fine, but I'd
-> like to extend this so we also pass clock information. Basically a
-> string that tells the platform driver which clock that should be used
-> with clk_get() for a certain driver instance.
-> 
-> I'm sure there are other ways to do this, but I'd like to have a
-> generic way to pass a clock string to platform devices. Using a hard
-> coded string in the device driver won't do since we may have multiple
-> instances of drivers that need to use different clocks. Extending
-> struct resource seems to be the easiest way to do this IMO.
 
-umm, has there been any comment on all of this yet?
+Dave Hansen wrote:
+> On Wed, 2008-07-09 at 18:58 -0700, Eric W. Biederman wrote:
+>> In the worst case today we can restore a checkpoint by replaying all of
+>> the user space actions that took us to get there.  That is a tedious
+>> and slow approach.
+> 
+> Yes, tedious and slow, *and* minimally invasive in the kernel.  Once we
+> have a tedious and slow process, we'll have some really good points when
 
-Perhaps you should just send everything again with clearer/completer
-descriptions.
+"Replaying all of the user space actions that took us to get there" -
+this task is not even always possible without deterministic log/replay
+mechanism :(
 
-> If people are happy with this idea then i'd be more than happy to fix
-> up and resend this patch.
+Oren.
 
-We're all asleep.  Please do whatever you think is best and we'll merge
-it - that'll wake 'em up.
-
+> we try to push the next set of patches to make it less slow and tedious.
+> We'll be able to describe an _actual_ set of problems to our fellow
+> kernel hackers.
+> 
+> So, the checkpoint-as-a-corefile idea sounds good to me, but it
+> definitely leaves a lot of questions about exactly how we'll need to do
+> the restore.
+> 
+> -- Dave
+> 
