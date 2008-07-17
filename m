@@ -1,98 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760605AbYGQHft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760672AbYGQHgH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760605AbYGQHft (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 03:35:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759775AbYGQHbc
+	id S1760672AbYGQHgH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 03:36:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759996AbYGQHbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 03:31:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42844 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759981AbYGQHba (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 03:31:30 -0400
-Date: Thu, 17 Jul 2008 00:30:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] ptrace children revamp
-Message-Id: <20080717003050.87f96ab0.akpm@linux-foundation.org>
-In-Reply-To: <20080717071322.B80F315411D@magilla.localdomain>
-References: <20080717071141.012BD15411D@magilla.localdomain>
-	<20080717071322.B80F315411D@magilla.localdomain>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 17 Jul 2008 03:31:37 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53639 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759986AbYGQHbg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 03:31:36 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+X-Fcc: ~/Mail/linus
+Subject: [PATCH 18/23] tracehook: TIF_NOTIFY_RESUME
+In-Reply-To: Roland McGrath's message of  Thursday, 17 July 2008 00:25:41 -0700 <20080717072541.F390E15411D@magilla.localdomain>
+References: <20080717072541.F390E15411D@magilla.localdomain>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20080717073101.E62B515411D@magilla.localdomain>
+Date: Thu, 17 Jul 2008 00:31:01 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jul 2008 00:13:22 -0700 (PDT) Roland McGrath <roland@redhat.com> wrote:
+This adds tracehook.h inlines to enable a new arch feature in support
+of user debugging/tracing.  This is not used yet, but it lays the
+groundwork for a debugger to be able to wrangle a task that's possibly
+running, without interrupting its syscalls in progress.
 
-> ptrace no longer fiddles with the children/sibling links, and the
-> old ptrace_children list is gone.  Now ptrace, whether of one's own
-> children or another's via PTRACE_ATTACH, just uses the new ptraced
-> list instead.
-> 
-> There should be no user-visible difference that matters.  The only
-> change is the order in which do_wait() sees multiple stopped
-> children and stopped ptrace attachees.  Since wait_task_stopped()
-> was changed earlier so it no longer reorders the children list, we
-> already know this won't cause any new problems.
-> 
-> ...
->
-> +repeat:
->  	task_lock(current);
->  	if (!(current->ptrace & PT_PTRACED)) {
-> +		/*
-> +		 * See ptrace_attach() comments about the locking here.
-> +		 */
+Each arch should define TIF_NOTIFY_RESUME, and in their entry.S code
+treat it much like TIF_SIGPENDING.  That is, it causes you to take the
+slow path when returning to user mode, where you get the full user-mode
+state accessible as for signal handling or ptrace.  The arch code
+should check TIF_NOTIFY_RESUME after handling TIF_SIGPENDING.
+When it's set, clear it and then call tracehook_notify_resume().
 
-	/*
-	 * Nasty, nasty.
-	 *
-	 * We want to hold both the task-lock and the
-	 * tasklist_lock for writing at the same time.
-	 * But that's against the rules (tasklist_lock
-	 * is taken for reading by interrupts on other
-	 * cpu's that may have task_lock).
-	 */
+In future, tracing code will call set_notify_resume() when it
+wants to get a callback in tracehook_notify_resume().
 
-> +		unsigned long flags;
-> +		if (!write_trylock_irqsave(&tasklist_lock, flags)) {
-> +			task_unlock(current);
-> +			do {
-> +				cpu_relax();
-> +			} while (!write_can_lock(&tasklist_lock));
-> +			goto repeat;
-> +		}
-> +
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ include/linux/tracehook.h |   34 ++++++++++++++++++++++++++++++++++
+ 1 files changed, 34 insertions(+), 0 deletions(-)
 
-hm, copying this code didn't do much to improve the world.
-
-Is there any prospect of "fixing" this somehow?
-
-Perhaps this code should be pulled up into a separate function, not
-that this will help things a lot.
-
-
->  		ret = security_ptrace(current->parent, current,
->  				      PTRACE_MODE_ATTACH);
-> +
->  		/*
->  		 * Set the ptrace bit in the process ptrace flags.
-> +		 * Then link us on our parent's ptraced list.
->  		 */
-> -		if (!ret)
-> +		if (!ret) {
->  			current->ptrace |= PT_PTRACED;
-> +			__ptrace_link(current, current->real_parent);
-> +		}
-> +
-> +		write_unlock_irqrestore(&tasklist_lock, flags);
->  	}
->  	task_unlock(current);
->  	return ret;
+diff --git a/include/linux/tracehook.h b/include/linux/tracehook.h
+index 43bc51b..32867ab 100644
+--- a/include/linux/tracehook.h
++++ b/include/linux/tracehook.h
+@@ -537,4 +537,38 @@ static inline void tracehook_report_death(struct task_struct *task,
+ {
+ }
+ 
++#ifdef TIF_NOTIFY_RESUME
++/**
++ * set_notify_resume - cause tracehook_notify_resume() to be called
++ * @task:		task that will call tracehook_notify_resume()
++ *
++ * Calling this arranges that @task will call tracehook_notify_resume()
++ * before returning to user mode.  If it's already running in user mode,
++ * it will enter the kernel and call tracehook_notify_resume() soon.
++ * If it's blocked, it will not be woken.
++ */
++static inline void set_notify_resume(struct task_struct *task)
++{
++	if (!test_and_set_tsk_thread_flag(task, TIF_NOTIFY_RESUME))
++		kick_process(task);
++}
++
++/**
++ * tracehook_notify_resume - report when about to return to user mode
++ * @regs:		user-mode registers of @current task
++ *
++ * This is called when %TIF_NOTIFY_RESUME has been set.  Now we are
++ * about to return to user mode, and the user state in @regs can be
++ * inspected or adjusted.  The caller in arch code has cleared
++ * %TIF_NOTIFY_RESUME before the call.  If the flag gets set again
++ * asynchronously, this will be called again before we return to
++ * user mode.
++ *
++ * Called without locks.
++ */
++static inline void tracehook_notify_resume(struct pt_regs *regs)
++{
++}
++#endif	/* TIF_NOTIFY_RESUME */
++
+ #endif	/* <linux/tracehook.h> */
