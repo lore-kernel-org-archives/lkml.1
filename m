@@ -1,58 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758015AbYGQLLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756475AbYGQLWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758015AbYGQLLr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 07:11:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754275AbYGQLLj
+	id S1756475AbYGQLWT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 07:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbYGQLWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 07:11:39 -0400
-Received: from www.tglx.de ([62.245.132.106]:38966 "EHLO www.tglx.de"
+	Thu, 17 Jul 2008 07:22:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58595 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753543AbYGQLLj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 07:11:39 -0400
-Date: Thu, 17 Jul 2008 13:11:09 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Richard <tuxbox.guru@gmail.com>
-cc: Thomas Renninger <trenn@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "andreas.herrmann3" <andreas.herrmann3@amd.com>, eumaster@gmail.com,
-       uli.geins@geins-web.de
-Subject: Re: [PATCH] Re: AMD Mobile Semprons (3500+, 3600+,...) break with
- nohz and highres enabled
-In-Reply-To: <487F33F2.2060202@gmail.com>
-Message-ID: <alpine.LFD.1.10.0807171306110.4316@apollo.tec.linutronix.de>
-References: <1213638474.1684.21.camel@queen.suse.de> <200807161827.16898.trenn@suse.de> <alpine.LFD.1.10.0807162100380.4316@apollo.tec.linutronix.de> <200807162156.00983.trenn@suse.de> <487EECDF.1040401@gmail.com> <alpine.LFD.1.10.0807171211310.4316@apollo.tec.linutronix.de>
- <487F33F2.2060202@gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	id S1752334AbYGQLWJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 07:22:09 -0400
+To: "Morton Harrow" <mharrow@linuxmail.org>
+Cc: "Miod Vallat" <miod@online.fr>, licensing@fsf.org,
+       linux-kernel@vger.kernel.org, rms@gnu.org, claire.newman@canonical.com,
+       announce@fsfeurope.org, misc@openbsd.org, ubuntu-users@lists.ubuntu.com,
+       fedora-list@redhat.com, netbsd-users@netbsd.org,
+       freebsd-questions@freebsd.org
+Subject: Re: GPL version 4
+References: <20080716213115.C747F7BC45@ws5-10.us4.outblaze.com>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat Operating System Tools Group
+Date: Thu, 17 Jul 2008 08:21:28 -0300
+In-Reply-To: <20080716213115.C747F7BC45@ws5-10.us4.outblaze.com> (Morton Harrow's message of "Thu\, 17 Jul 2008 05\:31\:15 +0800")
+Message-ID: <orprpcu56v.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jul 2008, Richard wrote:
-> The Short story... it was a dark and rainy night :-P oops, wrong mailing
-> list.... so here goes
+On Jul 16, 2008, "Morton Harrow" <mharrow@linuxmail.org> wrote:
 
-Hehe
+> I see with pain in my heart that the GPLv3 doesn't actually give the
+> users of GPLv3 software the liberty and freedom the FSF has been
+> fighting for. Instead they are forced to play by the strict set of
+> terms the GPLv3 provides.
 
-> The kernel boots and when init.d starts, the screen switches off, the CPU fan
-> goes to Max speed, and a few minutes later all goes quiet and it appears to
-> have powered off.
-> 
-> I usually boot with noapictimer and if I disable ACPI totally, the clock
-> references don't work and the timebase goes wrong. (Playing a MP3 is quite an
-> entertaining event as it sounds like an old vinyl record player with a
-> slipping drive belt)
+> For example, as a liberated computer user, I might like to incorporate
+> a high quality piece of GPLv3 software in a commercial product,
 
-That's with 2.6.25 vanilla, right ? 
+You can do that.  There are lots of commercial products containing
+GPLv3 software out there.
 
-Can you provide a bootlog from that kernel with noapictimer on the
-kernel command line ?
+> which for bussiness strategic reasons happens to be closed source software.
+> But the GPLv3 denies my claim for this freedom to do this.
 
-Also as it reaches at least init it would be great to get a bootlog
-for a boot w/o any command line options via netconsole (see
-Documentation/networking/netconsole.txt)
+You are mistaken in several levels.
 
-Thanks,
+1. Disrespecting others' freedoms is not a matter of freedom, it's a
+matter of power.
 
-	tglx
+2. Nothing in the GPL prevents you from doing any of this.  If there
+is something that prevents you from doing this, it's copyright law.
+You won't find prohibitions in the GPL.
+
+3. If you're unable to combine third-party GPL-incompatible software
+with GPL software, it's because the third party prevented you from
+doing this, and you accepted it.  Don't blame the GPL for your
+acceptance of such terms.
+
+4. If you decide to not release your own code under the GPL, even
+though this stops you from releasing the program you wrote with help
+from other authors who chose the GPL, that's your decision.  Don't
+blame the GPL for the consequences of your own decisions.
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+FSFLA Board Member       ¡Sé Libre! => http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
