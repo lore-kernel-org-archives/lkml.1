@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760101AbYGQQLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760724AbYGQQLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760101AbYGQQLd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 12:11:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbYGQQLY
+	id S1760724AbYGQQLr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 12:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757078AbYGQQL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 12:11:24 -0400
-Received: from gw.goop.org ([64.81.55.164]:54127 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753412AbYGQQLY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 12:11:24 -0400
-Message-ID: <487F6F1F.2030808@goop.org>
-Date: Thu, 17 Jul 2008 09:11:11 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 17 Jul 2008 12:11:26 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:55010 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756283AbYGQQLZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 12:11:25 -0400
+Date: Thu, 17 Jul 2008 10:11:09 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: David Vrabel <david.vrabel@csr.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: PCI: MSI interrupts masked using prohibited method
+Message-ID: <20080717161108.GS25255@parisc-linux.org>
+References: <4860D09D.4060801@csr.com> <4864DA54.6000205@csr.com> <200806271007.26248.jbarnes@virtuousgeek.org> <200807161243.03360.jbarnes@virtuousgeek.org> <20080716195853.GL25255@parisc-linux.org> <487F45C0.2080201@csr.com> <20080717153917.GR25255@parisc-linux.org> <alpine.LFD.1.10.0807171745270.4316@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-To: "Alex Nixon (Intern)" <Alex.Nixon@eu.citrix.com>
-CC: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ian Campbell <Ian.Campbell@eu.citrix.com>
-Subject: Re: Large increase in context switch rate
-References: <487E43D9.7080703@goop.org> <1216286250.5232.67.camel@twins> <487F5F15.4050208@goop.org> <0E902970173AF84089673FA54B7FE78A32906B@lonpexch01.citrite.net> <487F6913.2000602@goop.org> <0E902970173AF84089673FA54B7FE78A32906C@lonpexch01.citrite.net>
-In-Reply-To: <0E902970173AF84089673FA54B7FE78A32906C@lonpexch01.citrite.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0807171745270.4316@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Don't top-post.)
+On Thu, Jul 17, 2008 at 05:58:26PM +0200, Thomas Gleixner wrote:
+> > This is a good thought, let's follow it through.  What if we simply make
+> > ->mask a no-op for devices which don't support mask bits?
+> 
+> Yep. You can also use fasteoi_handler, which just calls ->eoi() after
+> the handler.
 
-Alex Nixon (Intern) wrote:
-> I'm talking about total number of context switches - kernbench gets it
-> from
->
-> time -f "%c" make -j 4
->
-> Dividing through it gives me a rate of around 250/sec (vs Peters 3000),
-> but I've set CONFIG_HZ=100 (vs Peters 1000), so they don't wildly
-> conflict.
->
-> Well spotted :-)
->   
+I think that exposes us to a race.
 
-OK, but that still doesn't account for the relatively large increase 
-from 2.6.18 -> 2.6.26.  You're using HZ=100 in both cases, I presume.
+CPU takes the first interrupt, calls handle_fasteoi_irq().  That
+calls handle_IRQ_event() which calls the device's interrupt handler.
+Interrupt handler reads status register to determine what to do next.
+Device generates second interrupt and changes status register.  Second
+interrupt is never delivered because the ->eoi hasn't been called yet.
 
-The other variable is NOHZ and highres timers.  You could try turning 
-those off in 2.6.26.  Also, CONFIG_PREEMPT could well make a 
-difference.  2.6.18-xen doesn't support CONFIG_PREEMPT at all, but 
-pvops(-xen) does.
+I plan to keep using the edge handler which solves this race by
+calling mask_ack().  For MSIs without mask bits, it will do nothing.
+Then when it calls unmask (before handling the second interrupt), we
+call the chip->ack() for that IRQ.  We'll never miss a pending interrupt.
+The machine has booted ... let's see if it'll work under stress.
 
-    J
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
