@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932544AbYGQUX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932375AbYGQU2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932544AbYGQUX3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 16:23:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758745AbYGQUXR
+	id S932375AbYGQU2o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 16:28:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760212AbYGQU2g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 16:23:17 -0400
-Received: from smarthost03.mail.mbr-roch.zen.net.uk ([212.23.3.142]:51012 "EHLO
-	smarthost03.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757312AbYGQUXR (ORCPT
+	Thu, 17 Jul 2008 16:28:36 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43904 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759655AbYGQU2f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 16:23:17 -0400
-X-Greylist: delayed 77617 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Jul 2008 16:23:16 EDT
-Date: Thu, 17 Jul 2008 21:23:01 +0100
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Cc: jie.yang@atheros.com, jeff@garzik.org, yjwei@cn.fujitsu.com,
-       rdreier@cisco.com, shemminger@vyatta.com, davem@davemloft.net,
-       jcliburn@gmail.com, parag.warudkar@gmail.com, w@1wt.eu,
-       oliver.schuster@schweigstill.de, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH net-next] atl1e: Atheros L1E Gigabit Ethernet driver
-Message-ID: <20080717202259.GE19302@solarflare.com>
-References: <12162854952457-git-send-email-jie.yang@atheros.com> <200807172204.15342.m.kozlowski@tuxland.pl>
+	Thu, 17 Jul 2008 16:28:35 -0400
+Date: Thu, 17 Jul 2008 15:28:33 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: seto.hidetoshi@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       menage@google.com, peterz@infradead.org, akpm@linux-foundation.org,
+       laijs@cn.fujitsu.com
+Subject: Re: [RFC] [PATCH] cpuset: fix wrong calculation of relax domain
+ level
+Message-Id: <20080717152833.1e14a1c4.pj@sgi.com>
+In-Reply-To: <487EFDD0.2060101@cn.fujitsu.com>
+References: <487EFDD0.2060101@cn.fujitsu.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200807172204.15342.m.kozlowski@tuxland.pl>
-User-Agent: Mutt/1.4.1i
-X-Originating-Smarthost03-IP: [82.69.137.158]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mariusz Kozlowski wrote:
-> Hello,
-> 
-> > +#define SPEED_0		   0xffff
-> > +#define SPEED_10           10
-> > +#define SPEED_100          100
-> > +#define SPEED_100          100
-> 
-> Small thing - double define for SPEED_100.
-> 
-> > +#define SPEED_1000         1000
+Li Zefan wrote:
+> When multiple cpusets are overlapping in their 'cpus' and hence they
+> form a single sched domain, the largest sched_relax_domain_level among
+> those should be used. But when top_cpuset's sched_load_balance is
+> set, its sched_relax_domain_level is used regardless other sub-cpusets'.
 
-In fact these are all duplicates of macros defined in <linux/ethtool.h>
-(except SPEED_0, whatever that means).
+This code has gotten too complicated for my modest brain ;).
 
-Ben.
+Question:
+
+    In the case that the top_cpuset's sched_load_balance is -not- set,
+    is there code already present that sets the sched_relax_domain_level
+    in overlapping cpusets to the largest value in any of the overlapping
+    cpusets?
+
+    If so, where is that code?
 
 -- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
