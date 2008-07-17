@@ -1,187 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932476AbYGQTXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932555AbYGQTYB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932476AbYGQTXq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 15:23:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932108AbYGQTWq
+	id S932555AbYGQTYB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 15:24:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932236AbYGQTWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 15:22:46 -0400
-Received: from harold.telenet-ops.be ([195.130.133.65]:50702 "EHLO
-	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758786AbYGQTWn (ORCPT
+	Thu, 17 Jul 2008 15:22:47 -0400
+Received: from nelson.telenet-ops.be ([195.130.133.66]:34835 "EHLO
+	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758959AbYGQTWn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 17 Jul 2008 15:22:43 -0400
-Message-Id: <20080717191749.690710739@mail.of.borg>
+Message-Id: <20080717191749.977933994@mail.of.borg>
 References: <20080717191607.955742542@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Thu, 17 Jul 2008 21:16:08 +0200
+Date: Thu, 17 Jul 2008 21:16:09 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Adrian Bunk <bunk@kernel.org>
-Subject: [patch 01/29] m68k: remove CVS keywords
-Content-Disposition: inline; filename=m68k-remove-CVS-keywords.diff
+       linux-net@vger.kernel.org,
+       Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
+Subject: [patch 02/29] ariadne: use netstats in net_device structure
+Content-Disposition: inline; filename=m68k-ariadne-use-netstats-in-net_device-structure.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@kernel.org>
+From: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
 
-This patch removes CVS keywords that weren't updated for a long time 
-from comments.
+Use net_device_stats from net_device structure instead of local.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- arch/m68k/sun3/idprom.c       |    2 +-
- arch/m68k/sun3/prom/Makefile  |    1 -
- arch/m68k/sun3/prom/console.c |    2 +-
- arch/m68k/sun3/prom/init.c    |    2 +-
- arch/m68k/sun3/prom/misc.c    |    2 +-
- arch/m68k/sun3/prom/printf.c  |    2 +-
- drivers/zorro/proc.c          |    2 --
- drivers/zorro/zorro.c         |    2 --
- drivers/zorro/zorro.ids       |    2 --
- include/asm-m68k/apollodma.h  |    2 +-
- include/asm-m68k/dvma.h       |    2 +-
- include/asm-m68k/machines.h   |    2 +-
- include/asm-m68k/md.h         |    2 +-
- include/asm-m68k/openprom.h   |    1 -
- include/asm-m68k/oplib.h      |    2 +-
- include/asm-m68k/sun3-head.h  |    1 -
- 16 files changed, 10 insertions(+), 19 deletions(-)
+ drivers/net/ariadne.c |   47 ++++++++++++++++++++++-------------------------
+ 1 file changed, 22 insertions(+), 25 deletions(-)
 
-ee8fd7a1ce8ef99adde70ee370963c29bebdde2a diff --git a/arch/m68k/sun3/idprom.c b/arch/m68k/sun3/idprom.c
-index dca6ab6..6c5336d 100644
---- a/arch/m68k/sun3/idprom.c
-+++ b/arch/m68k/sun3/idprom.c
-@@ -1,4 +1,4 @@
--/* $Id: idprom.c,v 1.22 1996/11/13 05:09:25 davem Exp $
-+/*
-  * idprom.c: Routines to load the idprom into kernel addresses and
-  *           interpret the data contained within.
-  *
---- a/arch/m68k/sun3/prom/Makefile
-+++ b/arch/m68k/sun3/prom/Makefile
-@@ -1,4 +1,3 @@
--# $Id: Makefile,v 1.5 1995/11/25 00:59:48 davem Exp $
- # Makefile for the Sun Boot PROM interface library under
- # Linux.
- #
---- a/arch/m68k/sun3/prom/console.c
-+++ b/arch/m68k/sun3/prom/console.c
-@@ -1,4 +1,4 @@
--/* $Id: console.c,v 1.10 1996/12/18 06:46:54 tridge Exp $
-+/*
-  * console.c: Routines that deal with sending and receiving IO
-  *            to/from the current console device using the PROM.
-  *
---- a/arch/m68k/sun3/prom/init.c
-+++ b/arch/m68k/sun3/prom/init.c
-@@ -1,4 +1,4 @@
--/* $Id: init.c,v 1.9 1996/12/18 06:46:55 tridge Exp $
-+/*
-  * init.c:  Initialize internal variables used by the PROM
-  *          library functions.
-  *
---- a/arch/m68k/sun3/prom/misc.c
-+++ b/arch/m68k/sun3/prom/misc.c
-@@ -1,4 +1,4 @@
--/* $Id: misc.c,v 1.15 1997/05/14 20:45:00 davem Exp $
-+/*
-  * misc.c:  Miscellaneous prom functions that don't belong
-  *          anywhere else.
-  *
---- a/arch/m68k/sun3/prom/printf.c
-+++ b/arch/m68k/sun3/prom/printf.c
-@@ -1,4 +1,4 @@
--/* $Id: printf.c,v 1.5 1996/04/04 16:31:07 tridge Exp $
-+/*
-  * printf.c:  Internal prom library printf facility.
-  *
-  * Copyright (C) 1995 David S. Miller (davem@caip.rutgers.edu)
---- a/drivers/zorro/proc.c
-+++ b/drivers/zorro/proc.c
-@@ -1,6 +1,4 @@
- /*
-- *	$Id: proc.c,v 1.1.2.1 1998/06/07 23:21:01 geert Exp $
-- *
-  *	Procfs interface for the Zorro bus.
-  *
-  *	Copyright (C) 1998-2003 Geert Uytterhoeven
---- a/drivers/zorro/zorro.c
-+++ b/drivers/zorro/zorro.c
-@@ -1,6 +1,4 @@
- /*
-- *    $Id: zorro.c,v 1.1.2.1 1998/06/07 23:21:02 geert Exp $
-- *
-  *    Zorro Bus Services
-  *
-  *    Copyright (C) 1995-2003 Geert Uytterhoeven
---- a/drivers/zorro/zorro.ids
-+++ b/drivers/zorro/zorro.ids
-@@ -4,8 +4,6 @@
- #	Maintained by Geert Uytterhoeven <zorro@linux-m68k.org>
- #	If you have any new entries, please send them to the maintainer.
- #
--#	$Id: zorro.ids,v 1.19 2002/10/14 13:08:58 geert Exp $
--#
+--- a/drivers/net/ariadne.c
++++ b/drivers/net/ariadne.c
+@@ -98,7 +98,6 @@ struct ariadne_private {
+     volatile u_short *rx_buff[RX_RING_SIZE];
+     int cur_tx, cur_rx;			/* The next free ring entry */
+     int dirty_tx;			/* The ring entries to be free()ed. */
+-    struct net_device_stats stats;
+     char tx_full;
+ };
  
- # Manufacturers and Products. Please keep sorted.
+@@ -378,20 +377,19 @@ static void ariadne_init_ring(struct net
  
---- a/include/asm-m68k/apollodma.h
-+++ b/include/asm-m68k/apollodma.h
-@@ -1,4 +1,4 @@
--/* $Id: dma.h,v 1.7 1992/12/14 00:29:34 root Exp root $
-+/*
-  * linux/include/asm/dma.h: Defines for using and allocating dma channels.
-  * Written by Hennus Bergman, 1992.
-  * High DMA channel support & info by Hannu Savolainen
---- a/include/asm-m68k/dvma.h
-+++ b/include/asm-m68k/dvma.h
-@@ -1,4 +1,4 @@
--/* $Id: dvma.h,v 1.4 1999/03/27 20:23:41 tsbogend Exp $
-+/*
-  * include/asm-m68k/dma.h
-  *
-  * Copyright 1995 (C) David S. Miller (davem@caip.rutgers.edu)
---- a/include/asm-m68k/machines.h
-+++ b/include/asm-m68k/machines.h
-@@ -1,4 +1,4 @@
--/* $Id: machines.h,v 1.4 1995/11/25 02:31:58 davem Exp $
-+/*
-  * machines.h:  Defines for taking apart the machine type value in the
-  *              idprom and determining the kind of machine we are on.
-  *
---- a/include/asm-m68k/md.h
-+++ b/include/asm-m68k/md.h
-@@ -1,4 +1,4 @@
--/* $Id: md.h,v 1.1 1997/12/15 15:12:04 jj Exp $
-+/*
-  * md.h: High speed xor_block operation for RAID4/5
-  *
-  */
---- a/include/asm-m68k/openprom.h
-+++ b/include/asm-m68k/openprom.h
-@@ -1,4 +1,3 @@
--/* $Id: openprom.h,v 1.19 1996/09/25 03:51:08 davem Exp $ */
- #ifndef __SPARC_OPENPROM_H
- #define __SPARC_OPENPROM_H
+ static int ariadne_close(struct net_device *dev)
+ {
+-    struct ariadne_private *priv = netdev_priv(dev);
+     volatile struct Am79C960 *lance = (struct Am79C960*)dev->base_addr;
  
---- a/include/asm-m68k/oplib.h
-+++ b/include/asm-m68k/oplib.h
-@@ -1,4 +1,4 @@
--/* $Id: oplib.h,v 1.12 1996/10/31 06:29:13 davem Exp $
-+/*
-  * oplib.h:  Describes the interface and available routines in the
-  *           Linux Prom library.
-  *
---- a/include/asm-m68k/sun3-head.h
-+++ b/include/asm-m68k/sun3-head.h
-@@ -1,4 +1,3 @@
--/* $Id: head.h,v 1.32 1996/12/04 00:12:48 ecd Exp $ */
- #ifndef __SUN3_HEAD_H
- #define __SUN3_HEAD_H
+     netif_stop_queue(dev);
+ 
+     lance->RAP = CSR112;	/* Missed Frame Count */
+-    priv->stats.rx_missed_errors = swapw(lance->RDP);
++    dev->stats.rx_missed_errors = swapw(lance->RDP);
+     lance->RAP = CSR0;		/* PCnet-ISA Controller Status */
+ 
+     if (ariadne_debug > 1) {
+ 	printk(KERN_DEBUG "%s: Shutting down ethercard, status was %2.2x.\n",
+ 	       dev->name, lance->RDP);
+ 	printk(KERN_DEBUG "%s: %lu packets missed\n", dev->name,
+-	       priv->stats.rx_missed_errors);
++	       dev->stats.rx_missed_errors);
+     }
+ 
+     /* We stop the LANCE here -- it occasionally polls memory if we don't. */
+@@ -502,16 +500,16 @@ static irqreturn_t ariadne_interrupt(int
+ 		if (status & TF_ERR) {
+ 		    /* There was an major error, log it. */
+ 		    int err_status = priv->tx_ring[entry]->TMD3;
+-		    priv->stats.tx_errors++;
++		    dev->stats.tx_errors++;
+ 		    if (err_status & EF_RTRY)
+-			priv->stats.tx_aborted_errors++;
++			dev->stats.tx_aborted_errors++;
+ 		    if (err_status & EF_LCAR)
+-			priv->stats.tx_carrier_errors++;
++			dev->stats.tx_carrier_errors++;
+ 		    if (err_status & EF_LCOL)
+-			priv->stats.tx_window_errors++;
++			dev->stats.tx_window_errors++;
+ 		    if (err_status & EF_UFLO) {
+ 			/* Ackk!  On FIFO errors the Tx unit is turned off! */
+-			priv->stats.tx_fifo_errors++;
++			dev->stats.tx_fifo_errors++;
+ 			/* Remove this verbosity later! */
+ 			printk(KERN_ERR "%s: Tx FIFO error! Status %4.4x.\n",
+ 			       dev->name, csr0);
+@@ -520,8 +518,8 @@ static irqreturn_t ariadne_interrupt(int
+ 		    }
+ 		} else {
+ 		    if (status & (TF_MORE|TF_ONE))
+-			priv->stats.collisions++;
+-		    priv->stats.tx_packets++;
++			dev->stats.collisions++;
++		    dev->stats.tx_packets++;
+ 		}
+ 		dirty_tx++;
+ 	    }
+@@ -547,11 +545,11 @@ static irqreturn_t ariadne_interrupt(int
+ 	/* Log misc errors. */
+ 	if (csr0 & BABL) {
+ 	    handled = 1;
+-	    priv->stats.tx_errors++;	/* Tx babble. */
++	    dev->stats.tx_errors++;	/* Tx babble. */
+ 	}
+ 	if (csr0 & MISS) {
+ 	    handled = 1;
+-	    priv->stats.rx_errors++;	/* Missed a Rx frame. */
++	    dev->stats.rx_errors++;	/* Missed a Rx frame. */
+ 	}
+ 	if (csr0 & MERR) {
+ 	    handled = 1;
+@@ -672,7 +670,7 @@ static int ariadne_start_xmit(struct sk_
+ 	priv->cur_tx -= TX_RING_SIZE;
+ 	priv->dirty_tx -= TX_RING_SIZE;
+     }
+-    priv->stats.tx_bytes += len;
++    dev->stats.tx_bytes += len;
+ 
+     /* Trigger an immediate send poll. */
+     lance->RAP = CSR0;		/* PCnet-ISA Controller Status */
+@@ -707,15 +705,15 @@ static int ariadne_rx(struct net_device 
+ 		buffers, with only the last correctly noting the error. */
+ 	    if (status & RF_ENP)
+ 		/* Only count a general error at the end of a packet.*/
+-		priv->stats.rx_errors++;
++		dev->stats.rx_errors++;
+ 	    if (status & RF_FRAM)
+-		priv->stats.rx_frame_errors++;
++		dev->stats.rx_frame_errors++;
+ 	    if (status & RF_OFLO)
+-		priv->stats.rx_over_errors++;
++		dev->stats.rx_over_errors++;
+ 	    if (status & RF_CRC)
+-		priv->stats.rx_crc_errors++;
++		dev->stats.rx_crc_errors++;
+ 	    if (status & RF_BUFF)
+-		priv->stats.rx_fifo_errors++;
++		dev->stats.rx_fifo_errors++;
+ 	    priv->rx_ring[entry]->RMD1 &= 0xff00|RF_STP|RF_ENP;
+ 	} else {
+ 	    /* Malloc up new buffer, compatible with net-3. */
+@@ -731,7 +729,7 @@ static int ariadne_rx(struct net_device 
+ 			break;
+ 
+ 		if (i > RX_RING_SIZE-2) {
+-		    priv->stats.rx_dropped++;
++		    dev->stats.rx_dropped++;
+ 		    priv->rx_ring[entry]->RMD1 |= RF_OWN;
+ 		    priv->cur_rx++;
+ 		}
+@@ -764,8 +762,8 @@ static int ariadne_rx(struct net_device 
+ 
+ 	    netif_rx(skb);
+ 	    dev->last_rx = jiffies;
+-	    priv->stats.rx_packets++;
+-	    priv->stats.rx_bytes += pkt_len;
++	    dev->stats.rx_packets++;
++	    dev->stats.rx_bytes += pkt_len;
+ 	}
+ 
+ 	priv->rx_ring[entry]->RMD1 |= RF_OWN;
+@@ -783,7 +781,6 @@ static int ariadne_rx(struct net_device 
+ 
+ static struct net_device_stats *ariadne_get_stats(struct net_device *dev)
+ {
+-    struct ariadne_private *priv = netdev_priv(dev);
+     volatile struct Am79C960 *lance = (struct Am79C960*)dev->base_addr;
+     short saved_addr;
+     unsigned long flags;
+@@ -791,11 +788,11 @@ static struct net_device_stats *ariadne_
+     local_irq_save(flags);
+     saved_addr = lance->RAP;
+     lance->RAP = CSR112;		/* Missed Frame Count */
+-    priv->stats.rx_missed_errors = swapw(lance->RDP);
++    dev->stats.rx_missed_errors = swapw(lance->RDP);
+     lance->RAP = saved_addr;
+     local_irq_restore(flags);
+ 
+-    return &priv->stats;
++    return &dev->stats;
+ }
+ 
  
 
 -- 
