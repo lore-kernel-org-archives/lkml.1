@@ -1,72 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758484AbYGQLG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758842AbYGQLHG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758484AbYGQLG2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 07:06:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbYGQLGT
+	id S1758842AbYGQLHG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 07:07:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756204AbYGQLGz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 07:06:19 -0400
-Received: from www.tglx.de ([62.245.132.106]:50829 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751941AbYGQLGS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 07:06:18 -0400
-Date: Thu, 17 Jul 2008 13:05:43 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Richard <tuxbox.guru@gmail.com>
-cc: Thomas Renninger <trenn@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "andreas.herrmann3" <andreas.herrmann3@amd.com>, eumaster@gmail.com,
-       uli.geins@geins-web.de
-Subject: Re: [PATCH] Re: AMD Mobile Semprons (3500+, 3600+,...) break with
- nohz and highres enabled
-In-Reply-To: <487F309D.20709@gmail.com>
-Message-ID: <alpine.LFD.1.10.0807171255320.4316@apollo.tec.linutronix.de>
-References: <1213638474.1684.21.camel@queen.suse.de> <200807161827.16898.trenn@suse.de> <alpine.LFD.1.10.0807162100380.4316@apollo.tec.linutronix.de> <200807171232.46542.trenn@suse.de> <487F309D.20709@gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 17 Jul 2008 07:06:55 -0400
+Received: from styx.suse.cz ([82.119.242.94]:42915 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755892AbYGQLGy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 07:06:54 -0400
+Subject: Re: [PATCH 01/23] tracehook: add linux/tracehook.h
+From: Petr Tesarik <ptesarik@suse.cz>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       hch@infradead.org
+In-Reply-To: <20080717084818.GA5637@martell.zuzino.mipt.ru>
+References: <20080717072541.F390E15411D@magilla.localdomain>
+	 <20080717072755.E2FBC15411D@magilla.localdomain>
+	 <20080717084818.GA5637@martell.zuzino.mipt.ru>
+Content-Type: text/plain
+Organization: SUSE LINUX
+Date: Thu, 17 Jul 2008 13:06:52 +0200
+Message-Id: <1216292812.28485.6.camel@elijah.suse.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jul 2008, Richard wrote:
-> > north-bridge: nvidia c51mv
-> > south-bridge: nvidia mcp51m
+On Thu, 2008-07-17 at 12:48 +0400, Alexey Dobriyan wrote:
+> On Thu, Jul 17, 2008 at 12:27:55AM -0700, Roland McGrath wrote:
+> > The aim is to formalize and consolidate all the places that the core
+> > kernel code and the arch code now ties into the ptrace implementation.
 > > 
-> > Also both are MSI laptops:
-> >   - MSI-M670, modell MS-1632
-> >   - MSI S430x
-> > (This could also be a chipset or even an MSI specific BIOS bug?
-> > Richard could you compare with your HW, pls if still possible).
-> > 
-> > Some more info:
-> >   - things break entering C2 or deeper
-> >   - noapictimer workaround helps to come a bit further, but results in sever
-> >     other errors, disk(dma error), keyboad, mouse etc., also see:
-
-Hmm, I don't see how the apic timer is related to that, but it might
-be a problem with the hpet.
-
-Does "noapictimer nohz=off" work ?
-
-> >     https://bugzilla.novell.com/show_bug.cgi?id=396220#c13
-> >   - "nohz=off" works (tested on 2.6.25.4-8-pae and 2.6.22.17-0.1-default
-> > SUSE kernels)
-> >   - processor.max_cstate=1 works
-
-Why does it work with 2.6.24 on kubuntu 8.04 ? 
-
-How does a 2.6.24/25/26 vanilla kernel behave on those systems ?
-
-> > 00:09.0 RAM memory: nVidia Corporation MCP51 Host Bridge (rev a2)
+> > These patches mostly don't cause any functional change.  They just
+> > move the details of ptrace logic out of core code into tracehook.h
+> > inlines, where they are mostly compiled away to the same as before.
 > 
-> Here is a dump from lspci.... looks completely different :-P and here i was
-> blaming ATI :-)
+> > All that changes is that everything is thoroughly documented
 > 
-> 00:00.0 Host bridge: ATI Technologies Inc RS690 Host Bridge
+> This is fine.
+> 
+> > and any future reworking of ptrace, or addition of something new,
+> > would not have to touch core code all over, just change the tracehook.h
+> > inlines.
+> 
+> And this is suprising wish given one can't predict how exactly those
+> "future reworking" will look like.
+> 
+> > The new linux/ptrace.h inlines are used by the following patches in the
+> > new tracehook_*() inlines.  Using these helpers for the ptrace event
+> > stops makes it simple to change or disable the old ptrace implementation
+> > of these stops conditionally later.
+> 
+> Call them "utrace_*" from the start?
 
-Oh, that's a different beast, but it might be also a problem with the
-timer interrupt routing.
+Ah, maybe justified, because I don't expect any other re-implementation
+of the same after utrace is finished, but -- there's still the old
+ptrace implementation, so _not_ mentioning utrace seems a bit better to
+me.
 
-Thanks,
+> > --- a/include/linux/ptrace.h
+> > +++ b/include/linux/ptrace.h
+> > @@ -121,6 +121,39 @@ static inline void ptrace_unlink(struct task_struct *child)
+> >  int generic_ptrace_peekdata(struct task_struct *tsk, long addr, long data);
+> >  int generic_ptrace_pokedata(struct task_struct *tsk, long addr, long data);
+> >  
+> > +/**
+> > + * task_ptrace - return %PT_* flags that apply to a task
+> > + * @task:	pointer to &task_struct in question
+> > + *
+> > + * Returns the %PT_* flags that apply to @task.
+> > + */
+> > +static inline int task_ptrace(struct task_struct *task)
+> > +{
+> > +	return task->ptrace;
+> > +}
+> 
+> Pointless 1:1 wrapper unless you're going to #ifdef ->ptrace later.
 
-	tglx
+And that's exactly what's going to happen. Look at Roland's git. ;)
+
+Petr
+
+
