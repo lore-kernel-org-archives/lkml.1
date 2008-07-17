@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760800AbYGQRm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760909AbYGQRms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760800AbYGQRm2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 13:42:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756218AbYGQRmR
+	id S1760909AbYGQRms (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 13:42:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760845AbYGQRmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 13:42:17 -0400
-Received: from relay.2ka.mipt.ru ([194.85.80.65]:50961 "EHLO 2ka.mipt.ru"
+	Thu, 17 Jul 2008 13:42:38 -0400
+Received: from mga14.intel.com ([143.182.124.37]:27152 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756077AbYGQRmQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 13:42:16 -0400
-Date: Thu, 17 Jul 2008 21:41:56 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Octavian Purdila <opurdila@ixiacom.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tcp: do not promote SPLICE_F_NONBLOCK to socket O_NONBLOCK
-Message-ID: <20080717174150.GA24002@2ka.mipt.ru>
-References: <200807171633.49791.opurdila@ixiacom.com> <20080717142132.GA11702@2ka.mipt.ru> <200807171747.27775.opurdila@ixiacom.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200807171747.27775.opurdila@ixiacom.com>
-User-Agent: Mutt/1.5.9i
+	id S1759177AbYGQRmh convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 13:42:37 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,204,1215414000"; 
+   d="scan'208";a="21650160"
+From: "Stone, Joshua I" <joshua.i.stone@intel.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       "systemtap@sourceware.org" <systemtap@sourceware.org>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Date: Thu, 17 Jul 2008 10:42:33 -0700
+Subject: RE: [PATCH] systemtap: fix up on_each_cpu() for kernels 2.6.26+
+Thread-Topic: [PATCH] systemtap: fix up on_each_cpu() for kernels 2.6.26+
+Thread-Index: AcjoLbR+Fg5JZnWqRPuYo3suwnzlywABAwxQ
+Message-ID: <60BA3EDE80604C4BAEE4AAF7FF714D185813F8C3@orsmsx504.amr.corp.intel.com>
+References: <1216313476.5515.16.camel@localhost.localdomain>
+ <1216313591.5515.19.camel@localhost.localdomain>
+In-Reply-To: <1216313591.5515.19.camel@localhost.localdomain>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 05:47:27PM +0300, Octavian Purdila (opurdila@ixiacom.com) wrote:
-> > Existing behaviour was selected to be able to have a progress if socket
-> > does not have enough data to fill the pipe. With your change if socket
-> > is not opened with non-blocking mode reading will block not matter if
-> > SPLICE_F_NONBLOCK is set or not. 
-> 
-> I am probably missing some usecases here, but usually if you want to use 
-> non-blocking I/O you need to use special approach anyway (e.g. code the 
-> poll/epoll/select bits) so then you could open the socket with O_NONBLOCK.
+James Bottomley wrote:
+> On Thu, 2008-07-17 at 11:51 -0500, James Bottomley wrote:
+>> In kernel 2.6.26, this patch
+>>
+>> commit 15c8b6c1aaaf1c4edd67e2f02e4d8e1bd1a51c0d
+>> Author: Jens Axboe <jens.axboe@oracle.com>
+>> Date:   Fri May 9 09:39:44 2008 +0200
+>>
+>>     on_each_cpu(): kill unused 'retry' parameter
+>>
+>> means that runtime/time.c is now using the wrong calling conventions.
+>> Fix this up and surround it by kernel versioning #ifdefs.
+>
+> By the way, this is a classic illustration of the fragility problem
+> in holding the systemtap runtime outside of the kernel.  If it had
+> been in-kernel, all this would be fixed up and running and no-one
+> would even have noticed.
 
-It depends. Splice clearly states that it tries to be nonblocking with
-given flag being set, and its reading will be non-blocking indeed.
+Believe it or not, we really do understand this sentiment.
 
-> > This is a quite serious break of the 
-> > overall idea behind SPLICE_F_NONBLOCK.
-> >
-> 
-> I don't know... the man page explicitly says that even when you use 
-> SPLICE_F_NONBLOCK splice may block because of the underlying fd blocking.
+The whole runtime/time.c in particular is a fairly ugly way for us to
+get a call-anywhere gettimeofday.  I would love to see an in-kernel
+replacement for this, but I don't have the expertise to know how to
+approach it myself.
 
-Yes, but reading from the network will not.
-
-> But more importantly, how can we solve the deadlock issue described in the 
-> patch? Do we need all of the complications of async I/O for such a simple and 
-> common usecase?
-
-I'm not sure I understand how it can deadlock, please explain it in more
-details.
-
--- 
-	Evgeniy Polyakov
+Josh
