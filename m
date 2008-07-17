@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759621AbYGQHaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbYGQHbI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759621AbYGQHaq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 03:30:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753817AbYGQH3m
+	id S1756029AbYGQHbI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 03:31:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757519AbYGQH3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 03:29:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53547 "EHLO mx1.redhat.com"
+	Thu, 17 Jul 2008 03:29:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53548 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755109AbYGQH3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754616AbYGQH3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 17 Jul 2008 03:29:41 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -17,68 +17,170 @@ To: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
 X-Fcc: ~/Mail/linus
-Subject: [PATCH 06/23] tracehook: vfork-done
+Subject: [PATCH 08/23] tracehook: tracehook_tracer_task
 In-Reply-To: Roland McGrath's message of  Thursday, 17 July 2008 00:25:41 -0700 <20080717072541.F390E15411D@magilla.localdomain>
 References: <20080717072541.F390E15411D@magilla.localdomain>
-X-Shopping-List: (1) Mexican Ambition guilt
-   (2) Nonsensical ablutions
-   (3) Stimulating surprise ashes
-   (4) Giant beef checks
-Message-Id: <20080717072906.45D9815422E@magilla.localdomain>
-Date: Thu, 17 Jul 2008 00:29:06 -0700 (PDT)
+X-Shopping-List: (1) Tedious extravagant ants
+   (2) Notorious chic money
+   (3) Global commendation omissions
+   (4) Mexican Piano bums
+Message-Id: <20080717072935.D501C15411D@magilla.localdomain>
+Date: Thu, 17 Jul 2008 00:29:35 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This moves the PTRACE_EVENT_VFORK_DONE tracing into a tracehook.h inline,
-tracehook_report_vfork_done().  The change has no effect, just clean-up.
+This adds the tracehook_tracer_task() hook to consolidate all forms of
+"Who is using ptrace on me?" logic.  This is used for "TracerPid:" in
+/proc and for permission checks.  We also clean up the selinux code
+the called an identical accessor.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
+ fs/proc/array.c           |    9 +++++++--
+ fs/proc/base.c            |   13 +++++++++----
  include/linux/tracehook.h |   18 ++++++++++++++++++
- kernel/fork.c             |    5 +----
- 2 files changed, 19 insertions(+), 4 deletions(-)
+ security/selinux/hooks.c  |   22 +++-------------------
+ 4 files changed, 37 insertions(+), 25 deletions(-)
 
+diff --git a/fs/proc/array.c b/fs/proc/array.c
+index 797d775..0d6eb33 100644
+--- a/fs/proc/array.c
++++ b/fs/proc/array.c
+@@ -80,6 +80,7 @@
+ #include <linux/delayacct.h>
+ #include <linux/seq_file.h>
+ #include <linux/pid_namespace.h>
++#include <linux/tracehook.h>
+ 
+ #include <asm/pgtable.h>
+ #include <asm/processor.h>
+@@ -168,8 +169,12 @@ static inline void task_state(struct seq_file *m, struct pid_namespace *ns,
+ 	rcu_read_lock();
+ 	ppid = pid_alive(p) ?
+ 		task_tgid_nr_ns(rcu_dereference(p->real_parent), ns) : 0;
+-	tpid = pid_alive(p) && p->ptrace ?
+-		task_pid_nr_ns(rcu_dereference(p->parent), ns) : 0;
++	tpid = 0;
++	if (pid_alive(p)) {
++		struct task_struct *tracer = tracehook_tracer_task(p);
++		if (tracer)
++			tpid = task_pid_nr_ns(tracer, ns);
++	}
+ 	seq_printf(m,
+ 		"State:\t%s\n"
+ 		"Tgid:\t%d\n"
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 58c3e6a..6f21daa 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -69,6 +69,7 @@
+ #include <linux/mount.h>
+ #include <linux/security.h>
+ #include <linux/ptrace.h>
++#include <linux/tracehook.h>
+ #include <linux/cgroup.h>
+ #include <linux/cpuset.h>
+ #include <linux/audit.h>
+@@ -231,10 +232,14 @@ static int check_mem_permission(struct task_struct *task)
+ 	 * If current is actively ptrace'ing, and would also be
+ 	 * permitted to freshly attach with ptrace now, permit it.
+ 	 */
+-	if (task->parent == current && (task->ptrace & PT_PTRACED) &&
+-	    task_is_stopped_or_traced(task) &&
+-	    ptrace_may_access(task, PTRACE_MODE_ATTACH))
+-		return 0;
++	if (task_is_stopped_or_traced(task)) {
++		int match;
++		rcu_read_lock();
++		match = (tracehook_tracer_task(task) == current);
++		rcu_read_unlock();
++		if (match && ptrace_may_access(task, PTRACE_MODE_ATTACH))
++			return 0;
++	}
+ 
+ 	/*
+ 	 * Noone else is allowed.
 diff --git a/include/linux/tracehook.h b/include/linux/tracehook.h
-index 3ebc58b..830e6e1 100644
+index 9a5b3be..6468ca0 100644
 --- a/include/linux/tracehook.h
 +++ b/include/linux/tracehook.h
-@@ -210,4 +210,22 @@ static inline void tracehook_report_clone_complete(int trace,
- 		ptrace_event(0, trace, pid);
+@@ -73,6 +73,24 @@ static inline int tracehook_unsafe_exec(struct task_struct *task)
  }
  
-+/**
-+ * tracehook_report_vfork_done - vfork parent's child has exited or exec'd
-+ * @child:		child task, already running
-+ * @pid:		new child's PID in the parent's namespace
+ /**
++ * tracehook_tracer_task - return the task that is tracing the given task
++ * @tsk:		task to consider
 + *
-+ * Called after a %CLONE_VFORK parent has waited for the child to complete.
-+ * The clone/vfork system call will return immediately after this.
-+ * The @child pointer may be invalid if a self-reaping child died and
-+ * tracehook_report_clone() took no action to prevent it from self-reaping.
++ * Returns NULL if noone is tracing @task, or the &struct task_struct
++ * pointer to its tracer.
 + *
-+ * Called with no locks held.
++ * Must called under rcu_read_lock().  The pointer returned might be kept
++ * live only by RCU.  During exec, this may be called with task_lock()
++ * held on @task, still held from when tracehook_unsafe_exec() was called.
 + */
-+static inline void tracehook_report_vfork_done(struct task_struct *child,
-+					       pid_t pid)
++static inline struct task_struct *tracehook_tracer_task(struct task_struct *tsk)
 +{
-+	ptrace_event(PT_TRACE_VFORK_DONE, PTRACE_EVENT_VFORK_DONE, pid);
++	if (task_ptrace(tsk) & PT_PTRACED)
++		return rcu_dereference(tsk->parent);
++	return NULL;
 +}
 +
- #endif	/* <linux/tracehook.h> */
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 56b6ab0..5345b7d 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -1376,10 +1376,7 @@ long do_fork(unsigned long clone_flags,
- 			freezer_do_not_count();
- 			wait_for_completion(&vfork);
- 			freezer_count();
--			if (unlikely (current->ptrace & PT_TRACE_VFORK_DONE)) {
--				current->ptrace_message = nr;
--				ptrace_notify ((PTRACE_EVENT_VFORK_DONE << 8) | SIGTRAP);
--			}
-+			tracehook_report_vfork_done(p, nr);
- 		}
- 	} else {
- 		nr = PTR_ERR(p);
++/**
+  * tracehook_report_exec - a successful exec was completed
+  * @fmt:		&struct linux_binfmt that performed the exec
+  * @bprm:		&struct linux_binprm containing exec details
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index 63f131f..3481cde 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -25,7 +25,7 @@
+ 
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+-#include <linux/ptrace.h>
++#include <linux/tracehook.h>
+ #include <linux/errno.h>
+ #include <linux/sched.h>
+ #include <linux/security.h>
+@@ -1971,22 +1971,6 @@ static int selinux_vm_enough_memory(struct mm_struct *mm, long pages)
+ 	return __vm_enough_memory(mm, pages, cap_sys_admin);
+ }
+ 
+-/**
+- * task_tracer_task - return the task that is tracing the given task
+- * @task:		task to consider
+- *
+- * Returns NULL if noone is tracing @task, or the &struct task_struct
+- * pointer to its tracer.
+- *
+- * Must be called under rcu_read_lock().
+- */
+-static struct task_struct *task_tracer_task(struct task_struct *task)
+-{
+-	if (task->ptrace & PT_PTRACED)
+-		return rcu_dereference(task->parent);
+-	return NULL;
+-}
+-
+ /* binprm security operations */
+ 
+ static int selinux_bprm_alloc_security(struct linux_binprm *bprm)
+@@ -2238,7 +2222,7 @@ static void selinux_bprm_apply_creds(struct linux_binprm *bprm, int unsafe)
+ 			u32 ptsid = 0;
+ 
+ 			rcu_read_lock();
+-			tracer = task_tracer_task(current);
++			tracer = tracehook_tracer_task(current);
+ 			if (likely(tracer != NULL)) {
+ 				sec = tracer->security;
+ 				ptsid = sec->sid;
+@@ -5247,7 +5231,7 @@ static int selinux_setprocattr(struct task_struct *p,
+ 		   Otherwise, leave SID unchanged and fail. */
+ 		task_lock(p);
+ 		rcu_read_lock();
+-		tracer = task_tracer_task(p);
++		tracer = tracehook_tracer_task(p);
+ 		if (tracer != NULL) {
+ 			struct task_security_struct *ptsec = tracer->security;
+ 			u32 ptsid = ptsec->sid;
