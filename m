@@ -1,99 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018AbYGQGot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756278AbYGQGp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756018AbYGQGot (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 02:44:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbYGQGol
+	id S1756278AbYGQGp7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 02:45:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753341AbYGQGpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 02:44:41 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50694 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751626AbYGQGol (ORCPT
+	Thu, 17 Jul 2008 02:45:50 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60800 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752788AbYGQGpt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 02:44:41 -0400
-Subject: Re: {build fail} firmware: latest Linus tree modules_install fail
-From: David Woodhouse <dwmw2@infradead.org>
-To: Wang Chen <wangchen@cn.fujitsu.com>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <487ED5E3.1060900@cn.fujitsu.com>
-References: <487ED5E3.1060900@cn.fujitsu.com>
-Content-Type: text/plain
-Date: Wed, 16 Jul 2008 23:44:32 -0700
-Message-Id: <1216277072.2480.4.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Thu, 17 Jul 2008 02:45:49 -0400
+Message-ID: <487EEA9B.4030808@firstfloor.org>
+Date: Thu, 17 Jul 2008 08:45:47 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: Please pull ACPI updates
+References: <20080716214516.GA10777@basil.nowhere.org> <200807161633.01375.jbarnes@virtuousgeek.org> <alpine.LFD.1.10.0807161639090.2835@woody.linux-foundation.org> <200807161651.44990.jbarnes@virtuousgeek.org> <alpine.LFD.1.10.0807161728560.2835@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807161728560.2835@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-17 at 13:17 +0800, Wang Chen wrote:
-> make[1]: *** No rule to make target `/lib/firmware/$(dir', needed by `/lib/firmware/ttusb-budget/dspbootcode.bin'.  Stop.
-> make: *** [_modinst_post] Error 2
+Linus Torvalds wrote:
 > 
-> This error was outputed when I build the latest git tree of Linus's linux-2.6.
+> On Wed, 16 Jul 2008, Jesse Barnes wrote:
+>>> Andi did not. The whole series I pulled was rebased today at 2PM.
+>> Ugg, when Andi took over we talked about it; I thought we had agreed that he 
+>> would stick with Len's tree.  I guess I was wrong.
+> 
+> Well, I haven't actually seen Len's original tree, so maybe the stuff Andi 
+> pushed was just the stuff he had queued up independently. I guess I 
+> shouldn't judge before I'm sure.
 
-Thank you for the report. Please could you confirm that this fixes it
-for you?
+I originally started with topic branches and imported a few patches
+this way, but then eventually realized they don't really match my
+working style. In particular I tend to edit and sometimes
+delete old patches and that seems to be quite painful with
+the topic branch setup (or perhaps I just haven't figured out
+how to do it nicely). Also tried it with guilt, but that
+also ran into some issues (in particular after merges one
+cannot manage the patches as a guilt stack anymore)
 
-----
-Subject: Update scripts/Makefile.fwinst to cope with older make
+What I did then was to export Len's tree to quilt, do all the touchups
+etc, merged some more patches and then regenerated a quilt tree for
+the merge request. That is how the old x86-64 tree used to work.
 
-Also fix unwanted rebuilds of the firmware/ihex2fw tool by including
-the .ihex2fw.cmd file when present.
-
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-
-diff --git a/scripts/Makefile.fwinst b/scripts/Makefile.fwinst
-index 3d2f460..92305a3 100644
---- a/scripts/Makefile.fwinst
-+++ b/scripts/Makefile.fwinst
-@@ -28,18 +28,39 @@ endif
- installed-fw := $(addprefix $(INSTALL_FW_PATH)/,$(fw-shipped-all))
- installed-fw-dirs := $(sort $(dir $(installed-fw))) $(INSTALL_FW_PATH)/.
- 
-+# Workaround for make < 3.81, where .SECONDEXPANSION doesn't work.
-+PHONY += $(INSTALL_FW_PATH)/$$(%) install-all-dirs
-+$(INSTALL_FW_PATH)/$$(%): install-all-dirs
-+	@true
-+install-all-dirs: $(installed-fw-dirs)
-+	@true
-+
- quiet_cmd_install = INSTALL $(subst $(srctree)/,,$@)
-       cmd_install = $(INSTALL) -m0644 $< $@
- 
- $(installed-fw-dirs):
- 	$(call cmd,mkdir)
- 
--$(installed-fw): $(INSTALL_FW_PATH)/%: $(obj)/% | $(INSTALL_FW_PATH)/$$(dir %)/
-+$(installed-fw): $(INSTALL_FW_PATH)/%: $(obj)/% | $(INSTALL_FW_PATH)/$$(dir %)
- 	$(call cmd,install)
- 
--.PHONY: __fw_install __fw_modinst FORCE
-+PHONY +=  __fw_install __fw_modinst FORCE
-+
-+.PHONY: $(PHONY)
- 
- __fw_install: $(installed-fw)
- __fw_modinst: $(mod-fw)
- 
- FORCE:
-+
-+# Read all saved command lines and dependencies for the $(targets) we
-+# may be building using $(if_changed{,_dep}). As an optimization, we 
-+# don't need to read them if the target does not exist; we will rebuild
-+# anyway in that case.
-+
-+targets := $(wildcard $(sort $(targets)))
-+cmd_files := $(wildcard $(foreach f,$(targets),$(dir $(f)).$(notdir $(f)).cmd))
-+
-+ifneq ($(cmd_files),)
-+  include $(cmd_files)
-+endif
-
-
--- 
-dwmw2
-
+-Andi
