@@ -1,100 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933337AbYGQVeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932773AbYGQVfn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933337AbYGQVeq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 17:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759034AbYGQVeh
+	id S932773AbYGQVfn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 17:35:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759034AbYGQVfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 17:34:37 -0400
-Received: from xenotime.net ([66.160.160.81]:33338 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1758024AbYGQVeg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 17:34:36 -0400
-Date: Thu, 17 Jul 2008 14:34:34 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: penberg@cs.helsinki.fi, cl@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 1/4] kmemtrace: Core implementation.
-Message-Id: <20080717143434.79b33fe9.rdunlap@xenotime.net>
-In-Reply-To: <4472a3f883b0d9026bb2d8c490233b3eadf9b55e.1216255035.git.eduard.munteanu@linux360.ro>
-References: <cover.1216255034.git.eduard.munteanu@linux360.ro>
-	<4472a3f883b0d9026bb2d8c490233b3eadf9b55e.1216255035.git.eduard.munteanu@linux360.ro>
-Organization: YPO4
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Thu, 17 Jul 2008 17:35:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51092 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758024AbYGQVfd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 17:35:33 -0400
+Date: Thu, 17 Jul 2008 17:33:55 -0400
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
+Subject: Re: [RFC] systemtap: begin the process of using proper kernel APIs (part1: use kprobe symbol_name/offset instead of address)
+Message-ID: <20080717213355.GJ18295@redhat.com>
+References: <487E78ED.30804@redhat.com> <1216249383.3358.69.camel@localhost.localdomain> <487E8CE4.70105@redhat.com> <1216259391.3358.85.camel@localhost.localdomain> <1216304290.5515.11.camel@localhost.localdomain> <1216313914.5515.25.camel__21144.9282979176$1216314027$gmane$org@localhost.localdomain> <y0m7ibkjrcj.fsf@ton.toronto.redhat.com> <1216325546.5515.63.camel@localhost.localdomain> <20080717202634.GI18295@redhat.com> <1216328769.5515.78.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1216328769.5515.78.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jul 2008 03:46:45 +0300 Eduard - Gabriel Munteanu wrote:
+Hi -
 
-> kmemtrace provides tracing for slab allocator functions, such as kmalloc,
-> kfree, kmem_cache_alloc, kmem_cache_free etc.. Collected data is then fed
-> to the userspace application in order to analyse allocation hotspots,
-> internal fragmentation and so on, making it possible to see how well an
-> allocator performs, as well as debug and profile kernel code.
+
+On Thu, Jul 17, 2008 at 04:06:09PM -0500, James Bottomley wrote:
+
+> [...]
+> > My point is that the proposed effort to identify a nearby function
+> > symbol to use as a base for each probe's symbol+offset calculation is
+> > wasted.
 > 
-> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-> ---
->  Documentation/kernel-parameters.txt |    6 +
->  Documentation/vm/kmemtrace.txt      |   96 ++++++++++++++++
->  MAINTAINERS                         |    6 +
->  include/linux/kmemtrace.h           |  110 ++++++++++++++++++
->  init/main.c                         |    2 +
->  lib/Kconfig.debug                   |    4 +
->  mm/Makefile                         |    2 +-
->  mm/kmemtrace.c                      |  208 +++++++++++++++++++++++++++++++++++
->  8 files changed, 433 insertions(+), 1 deletions(-)
->  create mode 100644 Documentation/vm/kmemtrace.txt
->  create mode 100644 include/linux/kmemtrace.h
->  create mode 100644 mm/kmemtrace.c
+> It's not exactly wasted ... the calculations have to be done anyway for
+> modules.
+
+Not really - we just anchor off a different (per-module) reference
+symbol or address.  At the moment, we use the .text* section bases.
+
+
+> > > you've lost access to the symbols in the sections that start before _stext.  
+> > 
+> > What's between _text and _stext appears to consist of kernel boot-time
+> > functions that are unmapped the time anything like systemtap could
+> > run.
 > 
-> diff --git a/Documentation/vm/kmemtrace.txt b/Documentation/vm/kmemtrace.txt
-> new file mode 100644
-> index 0000000..1147ecb
-> --- /dev/null
-> +++ b/Documentation/vm/kmemtrace.txt
+> Well, no, they're the head code.  It's actually used in CPU boot and
+> tear down, one of the things it's useful to probe, I think.
 
-> +II. Quick usage guide
-> +=====================
-> +
-> +1) Get a kernel that supports kmemtrace and build it accordingly (i.e. enable
-> +CONFIG_KMEMTRACE).
-> +
-> +2) Get the userspace tool and build it:
-> +$ git-clone git://repo.or.cz/kmemtrace-user.git		# current repository
-> +$ cd kmemtrace-user/
-> +$ autoreconf
-> +$ ./configure		# Supply KERNEL_SOURCES=/path/to/sources/ if you're
-> +			# _not_ running this on a kmemtrace-enabled kernel.
-> +$ make
-> +
-> +3) Boot the kmemtrace-enabled kernel if you haven't, preferably in the
-> +'single' runlevel (so that relay buffers don't fill up easily), and run
-> +kmemtrace:
-> +# '$' does not mean user, but root here.
-> +$ mount -t debugfs none /debug
+Fair enough - conceivably probing that stuff is useful, as is module
+initialization.  We don't try to do it yet (and indeed kprobes blocks
+it all).
 
-Please mount at /sys/kernel/debug, i.e., the expected debugfs mount point.
-
-> +$ mount -t proc none /proc
-> +$ cd path/to/kmemtrace-user/
-> +$ ./kmemtraced
-> +Wait a bit, then stop it with CTRL+C.
-> +$ cat /debug/kmemtrace/total_overruns	# Check if we didn't overrun, should
-> +					# be zero.
-> +$ (Optionally) [Run kmemtrace_check separately on each cpu[0-9]*.out file to
-> +		check its correctness]
-> +$ ./kmemtrace-report
-> +
-> +Now you should have a nice and short summary of how the allocator performs.
+In any case, the method of probe address calculation doesn't affect
+that issue.  We can calculate .init* addresses relative to any
+convenient reference in exactly the same way as non-.init addresses.
 
 
-Otherwise looks nice.  Thanks.
+> > > Assuming you meant _text (which is dangerous because it's a define
+> > > in the kernel linker script and could change).
+> > 
+> > By "dangerous" do you only mean that it may require a one-liner
+> > catch-up patch in systemtap if the kernel linker scripts change?
+> 
+> Dangerous as in it's not necessarily part of the kernel linker scripts.
+> [...]
+> The point, really, is to remove some of the fragile dependencies between
+> systemtap and the kernel.
 
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+Yes, that is generally desirable - each case is usually a question of
+cost/benefit.  One significant requirement for us is to keep working
+with older kernels.
+
+
+- FChE
