@@ -1,85 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932782AbYGQVQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932235AbYGQVQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932782AbYGQVQc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 17:16:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757890AbYGQVQY
+	id S932235AbYGQVQt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 17:16:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757890AbYGQVQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 17:16:24 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49040 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755222AbYGQVQX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 17:16:23 -0400
-Date: Thu, 17 Jul 2008 14:10:05 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Daniel Hokka Zakrisson" <daniel@hozac.com>
-Cc: ebiederm@xmission.com, xemul@openvz.org, sukadev@us.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       oleg@tv-sign.ru
-Subject: Re: [PATCH 1/1] signal: Introduce kill_pid_ns_info
-Message-Id: <20080717141005.5534fbc2.akpm@linux-foundation.org>
-In-Reply-To: <58550.192.168.102.6.1216323456.squirrel@intranet>
-References: <58550.192.168.102.6.1216323456.squirrel@intranet>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Jul 2008 17:16:35 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:60374 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932814AbYGQVQe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 17:16:34 -0400
+Date: Thu, 17 Jul 2008 17:15:34 -0400
+To: Len Brown <lenb@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: Re: Please pull ACPI updates
+Message-ID: <20080717211534.GB19066@fieldses.org>
+References: <20080716214516.GA10777@basil.nowhere.org> <200807170011.12184.rjw@sisk.pl> <200807161633.01375.jbarnes@virtuousgeek.org> <alpine.LFD.1.10.0807161639090.2835@woody.linux-foundation.org> <487EE940.1050007@firstfloor.org> <alpine.LFD.1.10.0807170752190.2959@woody.linux-foundation.org> <alpine.LFD.1.10.0807171402110.2965@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0807171402110.2965@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jul 2008 21:37:36 +0200 (CEST)
-"Daniel Hokka Zakrisson" <daniel@hozac.com> wrote:
+On Thu, Jul 17, 2008 at 02:49:04PM -0400, Len Brown wrote:
+> One thing I wish I had in git is a way to make this sequence easier...
 
-> Author: Eric W. Biederman <ebiederm@xmission.com>
+Linus's answer (with rebase -i) is probably better, but my habit is to
+do what you describe, with some minor shortcuts:
+
+> Say I have a big topic branch with 30 patches in it.
+> The 3rd patch turns out to have a bug in it, but the
+> rest of the series is okay.  Today I invoke gitk on
+> the branch and keep that open.
+> Then I create a new topic branch at the broken patch.
 > 
-> Implement the basic helper function that walks all of the processes in a
-> pid namespace and sends them all a signal.
+> I always consult ~/src/git/Documentation/git-reset.txt
+> so I can remember the following sequence...
 > 
-> Both locations that could use this functions are also updated to use this
-> function.
+> $ git reset --soft HEAD^
+> $ edit
+> $ git commit -a -c ORIG_HEAD
+
+Instead of the above three steps, you can do just:
+
+  $ edit
+  $ git commit -a --amend
+
+> Now I've got the fixed 3rd patch checked in,
+> but 27 patches in the original branch are hanging
+> off the original broken 3rd patch.
+> So I git-cherry-pick 27 patches
+> I hope I get them in the right order and don't miss any...
 > 
-> I use find_ge_pid instead of for_each_process because it has a chance of
-> not touching every process in the system.
-> 
-> [daniel@hozac.com: Optimize away nr <= 1 check, against latest Linus tree]
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-> Signed-off-by: Daniel Hokka Zakrisson <daniel@hozac.com>
-> 
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index ba2f859..83597f8 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -1778,6 +1778,8 @@ extern void release_task(struct task_struct * p);
->  extern int send_sig_info(int, struct siginfo *, struct task_struct *);
-> extern int force_sigsegv(int, struct task_struct *);
+> It would be nice if we could somehow git rebase those
+> 27 patches in a single command, but if we do,
+> that pulls with it the broken 3rd patch.
 
-Space-stuffed
+At this point I do
 
->  extern int force_sig_info(int, struct siginfo *, struct task_struct *);
-> +extern int __kill_pid_ns_info(int sig, struct siginfo *info, struct
-> pid_namespace *ns);
+	git rebase --onto HEAD old-sha1 name-of-branch-to-rebase
 
-word-wrapped
+(where old-sha1 is the name of the commit we just replaced, which I
+usually cut-n-paste out of gitk).  That rebases the commits in the range
+old-sha1...name-of-branch-to-rebase onto the new HEAD commit that you
+just created, and replaces the named branch with the result.
 
-> +extern int kill_pid_ns_info(int sig, struct siginfo *info, struct
-> pid_namespace *ns);
->  extern int __kill_pgrp_info(int sig, struct siginfo *info, struct pid
-> *pgrp);
->  extern int kill_pid_info(int sig, struct siginfo *info, struct pid *pid);
-> extern int kill_pid_info_as_uid(int, struct siginfo *, struct pid *,
-> uid_t, uid_t, u32);
-> diff --git a/kernel/pid_namespace.c b/kernel/pid_namespace.c
-> index 98702b4..9226423 100644
-> --- a/kernel/pid_namespace.c
-> +++ b/kernel/pid_namespace.c
-> @@ -153,29 +153,14 @@ void free_pid_ns(struct kref *kref)
-> 
->  void zap_pid_ns_processes(struct pid_namespace *pid_ns)
->  {
-> -	int nr;
->  	int rc;
+> come to think of it, I can probably export 4..27 as
+> an mbox and then import it on top of the new 3,
+> maybe that is what others do.
 
-but at least the tabs weren't replaced with spaces!
+That works too.
 
-Fix and resend, please.
+--b.
