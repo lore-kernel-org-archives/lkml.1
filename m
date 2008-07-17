@@ -1,87 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759031AbYGQHTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbYGQH02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759031AbYGQHTj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 03:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755622AbYGQHT2
+	id S1756075AbYGQH02 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 03:26:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbYGQH0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 03:19:28 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:19618 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753484AbYGQHT1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 03:19:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=YcHRJc2yRX64UE8f5VKENdsVN7yuaJHR8CCi6lzk8Ev/PNwmBwmwR8WwRnahfDSjm/
-         nEN8Ilyvm/oATVDjS/+G7eDnY7utZY304HbtMDGm4nYFTRhmJT4d53Q4QmnEDLj2nYUH
-         zUCozoeVwaKiqw7aIyoekf9Gsz2jnDFMmM+9s=
-Message-ID: <487EF279.2050704@gmail.com>
-Date: Thu, 17 Jul 2008 04:19:21 -0300
-From: "Rafael C. de Almeida" <almeidaraf@gmail.com>
-User-Agent: Icedove 1.5.0.14eol (X11/20080509)
+	Thu, 17 Jul 2008 03:26:20 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41190 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751780AbYGQH0T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 03:26:19 -0400
 MIME-Version: 1.0
-To: pageexec@freemail.hu
-CC: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [stable] Linux 2.6.25.10
-References: <20080703185727.GA12617@suse.de>, <487D2371.10258.1BDBBC00@pageexec.freemail.hu>, <alpine.LFD.1.10.0807151331110.2867@woody.linux-foundation.org> <487D3056.1183.1C0E1C47@pageexec.freemail.hu>
-In-Reply-To: <487D3056.1183.1C0E1C47@pageexec.freemail.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+X-Fcc: ~/Mail/linus
+Subject: [PATCH 00/23] tracehook
+X-Shopping-List: (1) Esoteric reservations
+   (2) Romantic bees
+   (3) Intransigent ghost-melt yarns
+   (4) Orgiastic digressions
+Message-Id: <20080717072541.F390E15411D@magilla.localdomain>
+Date: Thu, 17 Jul 2008 00:25:41 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pageexec@freemail.hu wrote:
-> On 15 Jul 2008 at 13:42, Linus Torvalds wrote:
-> 
->> On Tue, 15 Jul 2008, pageexec@freemail.hu wrote:
->>> i understand and i think noone expects that. in fact, i know how much
->>> expertise and time it takes to determine that. but what happens when
->>> you do figure out the security relevance of a bug during bug submission
->> The issue is that I think it's then _misleading_ to mark that kind of 
->> commit specially, when I actually believe that it's in the minority.
->>
->> If people think that they are safer for only applying (or upgrading to) 
->> certain patches that are marked as being security-specific, they are 
->> missing all the ones that weren't marked as such.
-> 
-> and how is that different from today's situation where they aren't told
-> at all? in other words, they already learned to live with that risk. if
-> you tell them about a security bug, they will build that knowledge into
-> their risk assessment process (which is what security is all about in
-> the end). anything you omit will skew their decision making process (in
-> particular, expose them to exploits if they fail to apply a fix because
-> they make a bad judgement call).
-> 
-> in other words, you should not be worrying about people not learning about
-> all security fixes, they already know it's not possible to provide such
-> information. however sharing your knowledge that you do have will *help*
-> them because 1. they can know for sure it's something important to apply
-> (no need to use their limited human resources to make that judgement),
-> 2. they can spend more of their resources on analyzing the *other* unmarked
-> fixes. overall this can only improve everyone's security.
+This patch series introduces the "tracehook" interface layer of inlines
+in <linux/tracehook.h>.  There are more details in the log entry for
+patch 01/23 and in the header file comments inside that patch.
+Most of these changes move code around with little or no change,
+and they should not break anything or change any behavior.
 
-Hey, I have a crazy idea! What if they just mark all the bugs as a
-security bug (after all they all kinda are for some definition of
-security anyway)? That way people just apply all the patches and do not
-have to analyze anything, therefore not wasting their limited human
-resources at all!
+This sets a new standard for uniform arch support to enable clean
+arch-independent implementations of new debugging and tracing stuff,
+denoted by CONFIG_HAVE_ARCH_TRACEHOOK.  Patch 20/23 adds that symbol to
+arch/Kconfig, with comments listing everything an arch has to do before
+setting "select HAVE_ARCH_TRACEHOOK".  These are elaborted a bit at:
+	http://sourceware.org/systemtap/wiki/utrace/arch/HowTo
+The new inlines that arch code must define or call have detailed
+kerneldoc comments in the generic header files that say what is required.
 
-Linus' point is exactly that they shouldn't be treated differently, so
-you shouldn't allocate human resources to other bugs and just apply the
-security ones. If you want to convince someone you must tell us *why*
-those so-called security bugs are more important. Also, you need to tell
-us what you consider to be a security bug. That's not clear to me at least.
+No arch is obligated to do any work, and no arch's build should be
+broken by these changes.  There are several steps that each arch should
+take so it can set HAVE_ARCH_TRACEHOOK.  Most of these are simple.
+Providing this support will let new things people add for doing
+debugging and tracing of user-level threads "just work" for your arch
+in the future.  For an arch that does not provide HAVE_ARCH_TRACEHOOK,
+some new options for such features will not be available for config.
 
-> what you're afraid of is that people will take your 'we mark security
-> fixes we learn about' as 'we mark ALL security fixes that are such'. well,
-> make that very clear in a public document (Documentation/SecurityBugs is
-> a good place) and that's it, people will know you're doing a best effort
-> disclosure and not more.
-> 
-> cheers,
->   PaX Team
+I have done some arch work and will submit this to the arch maintainers
+after the generic tracehook series settles in.  For now, that work is
+available in my GIT repositories, and in patch and mbox-of-patches form
+at http://people.redhat.com/roland/utrace/2.6-current/
+
+This paves the way for my "utrace" work, to be submitted later.  But it
+is not innately tied to that.  I hope that the tracehook series can go
+in soon regardless of what eventually does or doesn't go on top of it.
+For anyone implementing any kind of new tracing/debugging plan, or just
+understanding all the context of the existing ptrace implementation,
+having tracehook.h makes things much easier to find and understand.
+
+This series must be applied after the "ptrace & wait cleanup" series,
+but only because of patch conflicts.  They can be reviewed separately.
+
+This series of patches is also available in GIT at the URL below, and in a
+mail folder of patch messages (use git-am or formail -s patch -p1) at:
+	http://people.redhat.com/roland/utrace/2.6-current/tracehook.mbox
+
+The following changes since commit 666f164f4fbfa78bd00fb4b74788b42a39842c64:
+  Roland McGrath (1):
+        fix dangling zombie when new parent ignores children
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/frob/linux-2.6-utrace.git tracehook
+
+Roland McGrath (23):
+      tracehook: add linux/tracehook.h
+      tracehook: exec
+      tracehook: unexport ptrace_notify
+      tracehook: exit
+      tracehook: clone
+      tracehook: vfork-done
+      tracehook: release_task
+      tracehook: tracehook_tracer_task
+      tracehook: tracehook_expect_breakpoints
+      tracehook: tracehook_signal_handler
+      tracehook: tracehook_consider_ignored_signal
+      tracehook: tracehook_consider_fatal_signal
+      tracehook: syscall
+      tracehook: get_signal_to_deliver
+      tracehook: job control
+      tracehook: death
+      tracehook: force signal_pending()
+      tracehook: TIF_NOTIFY_RESUME
+      tracehook: asm/syscall.h
+      tracehook: CONFIG_HAVE_ARCH_TRACEHOOK
+      tracehook: wait_task_inactive
+      task_current_syscall
+      /proc/PID/syscall
+
+ arch/Kconfig                  |   18 ++
+ arch/ia64/kernel/perfmon.c    |    4 +-
+ arch/x86/ia32/ia32_aout.c     |    6 -
+ fs/binfmt_aout.c              |    6 -
+ fs/binfmt_elf.c               |    6 -
+ fs/binfmt_elf_fdpic.c         |    7 -
+ fs/binfmt_flat.c              |    3 -
+ fs/binfmt_som.c               |    2 -
+ fs/exec.c                     |   12 +-
+ fs/proc/array.c               |    9 +-
+ fs/proc/base.c                |   39 +++-
+ include/asm-generic/syscall.h |  141 ++++++++++
+ include/linux/ptrace.h        |   72 +++++
+ include/linux/sched.h         |   10 +-
+ include/linux/tracehook.h     |  575 +++++++++++++++++++++++++++++++++++++++++
+ kernel/exit.c                 |   53 ++---
+ kernel/fork.c                 |   74 ++----
+ kernel/kthread.c              |    2 +-
+ kernel/ptrace.c               |    2 +-
+ kernel/sched.c                |   29 ++-
+ kernel/signal.c               |   99 +++++---
+ lib/Makefile                  |    2 +
+ lib/syscall.c                 |   75 ++++++
+ mm/nommu.c                    |    4 +-
+ security/selinux/hooks.c      |   22 +--
+ 25 files changed, 1084 insertions(+), 188 deletions(-)
+ create mode 100644 include/asm-generic/syscall.h
+ create mode 100644 include/linux/tracehook.h
+ create mode 100644 lib/syscall.c
+
+
+Thanks,
+Roland
