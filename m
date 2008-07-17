@@ -1,79 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932825AbYGQUh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932786AbYGQUkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932825AbYGQUh7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 16:37:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753761AbYGQUhv
+	id S932786AbYGQUkg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 16:40:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757545AbYGQUk3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 16:37:51 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:21371 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753409AbYGQUht (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 16:37:49 -0400
-From: Daniel Walker <dwalker@mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] sched: sched_rt.c unused struct rq warning fix
-Date: Thu, 17 Jul 2008 13:37:39 -0700
-Message-Id: <1216327059-22706-1-git-send-email-dwalker@mvista.com>
-X-Mailer: git-send-email 1.5.5.1.32.gba7d2
+	Thu, 17 Jul 2008 16:40:29 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36802 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754388AbYGQUk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 16:40:28 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from in-kernel, use it in more drivers.
+Date: Thu, 17 Jul 2008 22:42:50 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
+       sam@ravnborg.org
+References: <1216077806.27455.85.camel@shinybook.infradead.org> <200807162328.37754.rjw@sisk.pl> <1216248152.1862.21.camel@shinybook.infradead.org>
+In-Reply-To: <1216248152.1862.21.camel@shinybook.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807172242.51251.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-following warning,
+On Thursday, 17 of July 2008, David Woodhouse wrote:
+> On Wed, 2008-07-16 at 23:28 +0200, Rafael J. Wysocki wrote:
+> > On Wednesday, 16 of July 2008, David Woodhouse wrote:
+> > > On Tue, 2008-07-15 at 13:49 -0700, David Woodhouse wrote:
+> > > > I need to hassle Sam about that.
+> > > 
+> > > I think I have it. Rafael, does _this_ fix it for you?
+> > 
+> > No, but the error message seems to be different:
+> > 
+> >   HOSTCC  firmware/ihex2fw
+> > /home/rafael/src/linux-next/firmware/ihex2fw.c:268: fatal error: opening dependency file firmware/.ihex2fw.d: Read-only file system
+> > compilation terminated.
+> 
+> Hm, can you do that again with V=2?
 
-In file included from /localuser/dwalker/linus/kernel/sched.c:1675:
-/localuser/dwalker/linus/kernel/sched_rt.c: In function ‘inc_rt_tasks’:
-/localuser/dwalker/linus/kernel/sched_rt.c:508: warning: unused variable ‘rq’
+  HOSTCC  firmware/ihex2fw - due to: FORCE
+/home/rafael/src/linux-next/firmware/ihex2fw.c:268: fatal error: opening dependency file firmware/.ihex2fw.d: Read-only file system
+compilation terminated.
 
-looks to be caused by,
-
-commit 1100ac91b6af02d8639d518fad5b434b1bf44ed6
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Thu Jun 5 12:25:37 2008 +0200
-
-    sched: fix cpuprio build bug
-
-    this patch was not built on !SMP:
-
-     kernel/sched_rt.c: In function 'inc_rt_tasks':
-     kernel/sched_rt.c:404: error: 'struct rq' has no member named 'online'
-
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-Only in the case that group scheduling is on, but SMP is off..
-
-Signed-off-by: Daniel Walker <dwalker@mvista.com>
----
- kernel/sched_rt.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 47ceac9..7280277 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -505,14 +505,14 @@ void inc_rt_tasks(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
- 	rt_rq->rt_nr_running++;
- #if defined CONFIG_SMP || defined CONFIG_RT_GROUP_SCHED
- 	if (rt_se_prio(rt_se) < rt_rq->highest_prio) {
--		struct rq *rq = rq_of_rt_rq(rt_rq);
--
--		rt_rq->highest_prio = rt_se_prio(rt_se);
- #ifdef CONFIG_SMP
-+		struct rq *rq = rq_of_rt_rq(rt_rq);
- 		if (rq->online)
- 			cpupri_set(&rq->rd->cpupri, rq->cpu,
- 				   rt_se_prio(rt_se));
- #endif
-+
-+		rt_rq->highest_prio = rt_se_prio(rt_se);
- 	}
- #endif
- #ifdef CONFIG_SMP
--- 
-1.5.5.1.32.gba7d2
-
+Thanks,
+Rafael
