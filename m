@@ -1,159 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759226AbYGQPy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760275AbYGQP4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759226AbYGQPy6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 11:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755079AbYGQPyu
+	id S1760275AbYGQP4X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 11:56:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756543AbYGQP4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 11:54:50 -0400
-Received: from sacred.ru ([62.205.161.221]:51428 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753412AbYGQPyt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 11:54:49 -0400
-Message-ID: <487F6B2E.40101@openvz.org>
-Date: Thu, 17 Jul 2008 19:54:22 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 17 Jul 2008 11:56:15 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:31177 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756665AbYGQP4O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 11:56:14 -0400
+Date: Thu, 17 Jul 2008 17:55:58 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org
+Subject: [GIT PULL] more s390 updates for 2.6.27
+Message-ID: <20080717155558.GB9422@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-To: Daniel Hokka Zakrisson <daniel@hozac.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       oleg@tv-sign.ru, ebiederm@xmission.com, akpm@linux-foundation.org
-Subject: Re: [PATCH 1/2] signals: kill(-1) should only signal processes in
-      the same namespace
-References: <487F5D6B.1090007@hozac.com> <487F5EDB.1000008@openvz.org> <43011.192.168.102.6.1216308280.squirrel@intranet>
-In-Reply-To: <43011.192.168.102.6.1216308280.squirrel@intranet>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 17 Jul 2008 19:54:18 +0400 (MSD)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Hokka Zakrisson wrote:
-> Pavel Emelyanov wrote:
->> Daniel Hokka Zakrisson wrote:
->>> While moving Linux-VServer to using pid namespaces, I noticed that
->>> kill(-1) from inside a pid namespace is currently signalling every
->>> process in the entire system, including processes that are otherwise
->>> unreachable from the current process.
->> This is not a "news" actually, buy anyway - thanks :)
-> 
-> And yet nobody's fixed it... Kind of a critical thing, if you actually
-> want to use them, since most distribution's rc-scripts do a kill(-1,
-> SIGTERM), followed by kill(-1, SIGKILL) when halting (which, needless to
-> say, would be very bad).
-> 
->>> This patch fixes it by making sure that only processes which are in
->>> the same pid namespace as current get signalled.
->> This is to be done, indeed, but I do not like the proposed implementation,
->> since you have to walk all the tasks in the system (under tasklist_lock,
->> by the way) to search for a couple of interesting ones. Better look at how
->> zap_pid_ns_processes works (by the way - I saw some patch doing so some
->> time ago).
-> 
-> The way zap_pid_ns_processes does it is worse, since it signals every
-> thread in the namespace rather than every thread group. So either we walk
+Hi Linus,
 
-It's questionable whether there are more "threads in a pid namespace" than
-"processes in a system".
+please pull from 'for-linus' branch of
 
-E.g. on my notebook there are ~110 processes and ~150 threads. So having 
-this setup launched in 10 containers you'll have to walk 1100 tasks, while
-zap_pid_ns_processes only 150 ;)
+	git://git390.osdl.marist.edu/pub/scm/linux-2.6.git for-linus
 
-Some real-life example with containers: on one of our servers with 10 
-containers serving as git repo, bulding system and some other stuff there 
-are ~200 process totally and ~20 threads in each container. See?
+Besides a couple of small bugfixes this contains our rewritten qdio driver.
+This should be the last large s390 patch for this merge window.
 
-I tend to believe that walking threads in a container is cheaper then
-walking processes in a system...
+Thanks.
 
-> the global tasklist, or we create a per-namespace one. Is that what we
-> want?
+Adrian Bunk (1):
+      [S390] chsc headers userspace cleanup
 
-We want to kill all tasks in current pid namespace. There are variants of 
-how to do this. You particular implementation of handling this case seems
-poor to me for the reasons described above.
+Cornelia Huck (2):
+      [S390] dasd: Fix cleanup in dasd_{fba,diag}_check_characteristics().
+      [S390] cio: Export chsc_error_from_response().
 
->>> Signed-off-by: Daniel Hokka Zakrisson <daniel@hozac.com>
->>>
->>> diff --git a/include/linux/pid_namespace.h
->>> b/include/linux/pid_namespace.h
->>> index caff528..4cf41bd 100644
->>> --- a/include/linux/pid_namespace.h
->>> +++ b/include/linux/pid_namespace.h
->>> @@ -40,6 +40,8 @@ static inline struct pid_namespace *get_pid_ns(struct
->>> pid_namespace *ns)
->>>   extern struct pid_namespace *copy_pid_ns(unsigned long flags, struct
->>> pid_namespace *ns);
->>>   extern void free_pid_ns(struct kref *kref);
->>>   extern void zap_pid_ns_processes(struct pid_namespace *pid_ns);
->>> +extern int task_in_pid_ns(struct task_struct *tsk,
->>> +			  struct pid_namespace *pid_ns);
->>>
->>>   static inline void put_pid_ns(struct pid_namespace *ns)
->>>   {
->>> @@ -72,6 +74,12 @@ static inline void zap_pid_ns_processes(struct
->>> pid_namespace *ns)
->>>   {
->>>   	BUG();
->>>   }
->>> +
->>> +static inline int task_in_pid_ns(struct task_struct *tsk,
->>> +				  struct pid_namespace *ns)
->>> +{
->>> +	return 1;
->>> +}
->>>   #endif /* CONFIG_PID_NS */
->>>
->>>   static inline struct pid_namespace *task_active_pid_ns(struct
->>> task_struct *tsk)
->>> diff --git a/kernel/pid_namespace.c b/kernel/pid_namespace.c
->>> index 98702b4..3e71011 100644
->>> --- a/kernel/pid_namespace.c
->>> +++ b/kernel/pid_namespace.c
->>> @@ -188,6 +188,26 @@ void zap_pid_ns_processes(struct pid_namespace
->>> *pid_ns)
->>>   	return;
->>>   }
->>>
->>> +/*
->>> + * Checks whether tsk has a pid in the pid namespace ns.
->>> + * Must be called with tasklist_lock read-locked or under
->>> rcu_read_lock()
->>> + */
->>> +int task_in_pid_ns(struct task_struct *tsk, struct pid_namespace *ns)
->>> +{
->>> +	struct pid *pid = task_pid(tsk);
->>> +
->>> +	if (!pid)
->>> +		return 0;
->>> +
->>> +	if (pid->level < ns->level)
->>> +		return 0;
->>> +
->>> +	if (pid->numbers[ns->level].ns != ns)
->>> +		return 0;
->>> +
->>> +	return 1;
->>> +}
->>> +
->>>   static __init int pid_namespaces_init(void)
->>>   {
->>>   	pid_ns_cachep = KMEM_CACHE(pid_namespace, SLAB_PANIC);
->>> diff --git a/kernel/signal.c b/kernel/signal.c
->>> index 6c0958e..93713a5 100644
->>> --- a/kernel/signal.c
->>> +++ b/kernel/signal.c
->>> @@ -1145,7 +1145,8 @@ static int kill_something_info(int sig, struct
->>> siginfo *info, int pid)
->>>   		struct task_struct * p;
->>>
->>>   		for_each_process(p) {
->>> -			if (p->pid > 1 && !same_thread_group(p, current)) {
->>> +			if (p->pid > 1 && !same_thread_group(p, current) &&
->>> +			    task_in_pid_ns(p, current->nsproxy->pid_ns)) {
->>>   				int err = group_send_sig_info(sig, info, p);
->>>   				++count;
->>>   				if (err != -EPERM)
-> 
+Frank Munzert (2):
+      [S390] zfcpdump: Make SCSI disk dump tool recognize storage holes
+      [S390] vmur: Fix return code handling.
 
+Heiko Carstens (2):
+      [S390] Increase default warning stacksize.
+      [S390] Fix stacktrace compile bug.
+
+Jan Glauber (1):
+      [S390] qdio: new qdio driver.
+
+Stefan Haberland (2):
+      [S390] dasd: fix unsolicited SIM handling.
+      [S390] dasd: use -EOPNOTSUPP instead of -ENOTSUPP
+
+ arch/s390/Kconfig                 |    2 +-
+ arch/s390/kernel/stacktrace.c     |    1 +
+ drivers/s390/block/dasd_diag.c    |   25 +-
+ drivers/s390/block/dasd_eckd.c    |    4 +-
+ drivers/s390/block/dasd_fba.c     |    7 +-
+ drivers/s390/char/vmur.c          |   10 +-
+ drivers/s390/char/zcore.c         |  101 +-
+ drivers/s390/cio/Makefile         |    2 +
+ drivers/s390/cio/chsc.c           |    9 +-
+ drivers/s390/cio/chsc.h           |    2 +
+ drivers/s390/cio/qdio.c           | 3929 -------------------------------------
+ drivers/s390/cio/qdio.h           |  835 +++------
+ drivers/s390/cio/qdio_debug.c     |  240 +++
+ drivers/s390/cio/qdio_debug.h     |   91 +
+ drivers/s390/cio/qdio_main.c      | 1755 +++++++++++++++++
+ drivers/s390/cio/qdio_perf.c      |  151 ++
+ drivers/s390/cio/qdio_perf.h      |   54 +
+ drivers/s390/cio/qdio_setup.c     |  521 +++++
+ drivers/s390/cio/qdio_thinint.c   |  380 ++++
+ drivers/s390/net/qeth_core.h      |   12 +-
+ drivers/s390/net/qeth_core_main.c |   87 +-
+ drivers/s390/net/qeth_l2_main.c   |   26 +-
+ drivers/s390/net/qeth_l3_main.c   |   25 +-
+ drivers/s390/scsi/zfcp_dbf.c      |   12 +-
+ drivers/s390/scsi/zfcp_dbf.h      |    2 -
+ drivers/s390/scsi/zfcp_ext.h      |    5 +-
+ drivers/s390/scsi/zfcp_qdio.c     |   42 +-
+ include/asm-s390/Kbuild           |    2 +-
+ include/asm-s390/chpid.h          |    6 +-
+ include/asm-s390/qdio.h           |  646 +++----
+ include/asm-s390/schid.h          |    3 +
+ include/asm-s390/setup.h          |    2 +-
+ 32 files changed, 4019 insertions(+), 4970 deletions(-)
+ delete mode 100644 drivers/s390/cio/qdio.c
+ create mode 100644 drivers/s390/cio/qdio_debug.c
+ create mode 100644 drivers/s390/cio/qdio_debug.h
+ create mode 100644 drivers/s390/cio/qdio_main.c
+ create mode 100644 drivers/s390/cio/qdio_perf.c
+ create mode 100644 drivers/s390/cio/qdio_perf.h
+ create mode 100644 drivers/s390/cio/qdio_setup.c
+ create mode 100644 drivers/s390/cio/qdio_thinint.c
