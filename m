@@ -1,57 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760565AbYGQPUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757688AbYGQPUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760565AbYGQPUV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 11:20:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755979AbYGQPUJ
+	id S1757688AbYGQPUk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 11:20:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760592AbYGQPUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 11:20:09 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:9646 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755814AbYGQPUI (ORCPT
+	Thu, 17 Jul 2008 11:20:25 -0400
+Received: from ti-out-0910.google.com ([209.85.142.191]:3770 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760581AbYGQPUX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 11:20:08 -0400
-Date: Thu, 17 Jul 2008 19:20:06 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Trent Piepho <tpiepho@freescale.com>, Richard Purdie <rpurdie@rpsys.net>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Kumar Gala <galak@kernel.crashing.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v3] leds: implement OpenFirmare GPIO LED driver
-Message-ID: <20080717152006.GA26120@polina.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <1216133032.5345.73.camel@dax.rpnet.com> <20080715151917.GA30607@polina.dev.rtsoft.ru> <Pine.LNX.4.64.0807161546010.12709@t2.domain.actdsltmp> <20080717041531.GA27243@secretlab.ca> <20080717140519.GA32617@polina.dev.rtsoft.ru> <20080717141335.GA2219@polina.dev.rtsoft.ru> <20080717150422.GC31932@secretlab.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20080717150422.GC31932@secretlab.ca>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 17 Jul 2008 11:20:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer;
+        b=w1Emp1sGr9TdSUV/frVxIu69bWCiR4XgvD/OisKvyA5V/8sPxJeRk5jBwyIx8+qU10
+         mLfW6lmxXkHX0siy82FAKFeo+3r9UfTZdJVZ0j0X4qPYZjJV2xB7Xat+P7JQ5twbT4RC
+         ST07aJWrXU73ne32RkIXtDHZI12rYaQhZ3GDQ=
+Subject: [PATCH AVAIL.]ivtv:Crash  2.6.26 with KUROTOSIKOU CX23416-STVLP
+From: Kyuma Ohta <whatisthis.sowhat@gmail.com>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: Video4Linux ML <video4linux-list@redhat.com>,
+       ivtv-devel ML <ivtv-devel@ivtvdriver.org>, whatisthis.sowhat@gmail.com
+Content-Type: multipart/mixed; boundary="=-682TPPIcspAw5D2NTCcu"
+Date: Fri, 18 Jul 2008 00:20:14 +0900
+Message-Id: <1216308014.1146.22.camel@melchior>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 09:04:22AM -0600, Grant Likely wrote:
-> On Thu, Jul 17, 2008 at 06:13:35PM +0400, Anton Vorontsov wrote:
-> > On Thu, Jul 17, 2008 at 06:05:19PM +0400, Anton Vorontsov wrote:
-> > [...]
-> > > > I think it would be better to have a module that scans the device tree
-> > > > for LED nodes and registers a single leds-gpio platform device for the
-> > > > whole lot.
-> > > > 
-> > > > Thoughts?
-> > > 
-> > > I like the idea, thanks.
-> > 
-> > Ugh, no. The idea sounds good, but in practice it isn't, since we'll
-> > have to handle suspend/resume ops ourselves. When we stick with the
-> > device/driver model we're getting all this for free.
-> 
-> Won't the leds-gpio driver give you suspend/resume support?
 
-Ah. I just wrongly read your message. You're purposing to use gpio
-leds platform driver... I think this is doable, yes.
+--=-682TPPIcspAw5D2NTCcu
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Hi,
+I'm testing 2.6.26/amd64 with Athlon64 x2 Box with
+KUROTOSIKOU CX23416-STVLP,always crash ivtv driver
+when loading upd64083 driver.
+I checked crash dump,this issue cause of loading 
+upd64083.ko with i2c_probed_new_device().
+So,I fixed ivtv-i2c.c of 2.6.26 vanilla,and
+fixed *pretty* differnce memory allocation,structure
+of upd64083.c.
+I'm running patched 2.6.26 vanilla with below attached
+patches over 24hrs,and over 10hrs recording from ivtv,
+not happend anything;-)
+Please apply below to 2.6.26.x..
+
+Best regards, 
+Ohta.
+
+E-Mail: whatisthis.sowhat@gmail.com (Public)
+Home Page: http://d.hatena.ne.jp/artane/ 
+  (Sorry,not maintaining,and written in Japanese only...)
+Twitter: Artanejp (Mainly Japanese)
+ICQ: 366538955
+KEYID: 6B79F95F
+FINGERPRINT:
+9AB3 8569 6033 FDBE 352B  CB6D DBFA B9E2 6B79 F95F
+
+
+
+--=-682TPPIcspAw5D2NTCcu
+Content-Disposition: attachment; filename=2.6.26-ivtv-cards-fix-includes.patch
+Content-Type: text/x-patch; name=2.6.26-ivtv-cards-fix-includes.patch; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
+
+diff -urN a/drivers/media/video/ivtv/ivtv-cards.c b/drivers/media/video/ivtv/ivtv-cards.c
+--- a/drivers/media/video/ivtv/ivtv-cards.c	2008-07-14 06:51:29.000000000 +0900
++++ b/drivers/media/video/ivtv/ivtv-cards.c	2008-07-15 23:00:41.286531980 +0900
+@@ -28,6 +28,7 @@
+ #include <media/cs53l32a.h>
+ #include <media/cx25840.h>
+ #include <media/upd64031a.h>
++#include <media/upd64083.h> // Fix 20080715 K.Ohta
+ 
+ #define MSP_TUNER  MSP_INPUT(MSP_IN_SCART1, MSP_IN_TUNER1, \
+ 				MSP_DSP_IN_TUNER, MSP_DSP_IN_TUNER)
+
+--=-682TPPIcspAw5D2NTCcu
+Content-Disposition: attachment; filename=2.6.26-ivtv-i2c-fix-probing-upd64083.patch
+Content-Type: text/x-patch; name=2.6.26-ivtv-i2c-fix-probing-upd64083.patch; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
+
+diff -urN a/drivers/media/video/ivtv/ivtv-i2c.c b/drivers/media/video/ivtv/ivtv-i2c.c
+--- a/drivers/media/video/ivtv/ivtv-i2c.c	2008-07-14 06:51:29.000000000 +0900
++++ b/drivers/media/video/ivtv/ivtv-i2c.c	2008-07-16 20:57:47.196653657 +0900
+@@ -177,10 +177,9 @@
+ 	}
+ 
+ 	if (id != I2C_DRIVERID_TUNER) {
+-		if (id == I2C_DRIVERID_UPD64031A ||
+-		    id == I2C_DRIVERID_UPD64083) {
++		if (id == I2C_DRIVERID_UPD64031A ) { // Apply only upd64031a 20080716
+ 			unsigned short addrs[2] = { info.addr, I2C_CLIENT_END };
+-
++		   
+ 			c = i2c_new_probed_device(&itv->i2c_adap, &info, addrs);
+ 		} else
+ 			c = i2c_new_device(&itv->i2c_adap, &info);
+
+--=-682TPPIcspAw5D2NTCcu
+Content-Disposition: attachment; filename=2.6.26-upd64083-fix-allocation.patch
+Content-Type: text/x-patch; name=2.6.26-upd64083-fix-allocation.patch; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
+
+diff -urN a/drivers/media/video/upd64083.c b/drivers/media/video/upd64083.c
+--- a/drivers/media/video/upd64083.c	2008-07-14 06:51:29.000000000 +0900
++++ b/drivers/media/video/upd64083.c	2008-07-16 20:54:05.702773275 +0900
+@@ -51,9 +51,9 @@
+ };
+ 
+ struct upd64083_state {
++   	u8 regs[TOT_REGS];
+ 	u8 mode;
+ 	u8 ext_y_adc;
+-	u8 regs[TOT_REGS];
+ };
+ 
+ /* Initial values when used in combination with the
+@@ -178,20 +178,19 @@
+ 	struct upd64083_state *state;
+ 	int i;
+ 
+-	if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE_DATA))
++        if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE_DATA))
+ 		return -EIO;
+-
+ 	v4l_info(client, "chip found @ 0x%x (%s)\n",
+ 			client->addr << 1, client->adapter->name);
+ 
+-	state = kmalloc(sizeof(struct upd64083_state), GFP_KERNEL);
++	state = kzalloc(sizeof(struct upd64083_state), GFP_KERNEL); // Fix 20080716
+ 	if (state == NULL)
+ 		return -ENOMEM;
+ 	i2c_set_clientdata(client, state);
+ 	/* Initially assume that a ghost reduction chip is present */
+ 	state->mode = 0;  /* YCS mode */
+ 	state->ext_y_adc = (1 << 5);
+-	memcpy(state->regs, upd64083_init, TOT_REGS);
++	memcpy(state->regs, upd64083_init, sizeof(state->regs)); // Fix 20080716
+ 	for (i = 0; i < TOT_REGS; i++)
+ 		upd64083_write(client, i, state->regs[i]);
+ 	return 0;
+@@ -217,5 +216,6 @@
+ 	.command = upd64083_command,
+ 	.probe = upd64083_probe,
+ 	.remove = upd64083_remove,
++        .legacy_class = I2C_CLASS_TV_ANALOG | I2C_CLASS_TV_DIGITAL , // Add 20080716
+ 	.id_table = upd64083_id,
+ };
+
+--=-682TPPIcspAw5D2NTCcu
+Content-Disposition: attachment; filename=2.6.26-upd64031a-fix-allocation.patch
+Content-Type: text/x-patch; name=2.6.26-upd64031a-fix-allocation.patch; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
+
+diff -urN a/drivers/media/video/upd64031a.c b/drivers/media/video/upd64031a.c
+--- a/drivers/media/video/upd64031a.c	2008-07-14 06:51:29.000000000 +0900
++++ b/drivers/media/video/upd64031a.c	2008-07-16 20:55:44.692759552 +0900
+@@ -207,7 +207,7 @@
+ 	v4l_info(client, "chip found @ 0x%x (%s)\n",
+ 			client->addr << 1, client->adapter->name);
+ 
+-	state = kmalloc(sizeof(struct upd64031a_state), GFP_KERNEL);
++	state = kzalloc(sizeof(struct upd64031a_state), GFP_KERNEL); // Fix 20080716
+ 	if (state == NULL)
+ 		return -ENOMEM;
+ 	i2c_set_clientdata(client, state);
+@@ -239,6 +239,7 @@
+ 	.driverid = I2C_DRIVERID_UPD64031A,
+ 	.command = upd64031a_command,
+ 	.probe = upd64031a_probe,
+-	.remove = upd64031a_remove,
++       .legacy_class = I2C_CLASS_TV_ANALOG | I2C_CLASS_TV_DIGITAL , // Add 20080716
++       .remove = upd64031a_remove,
+ 	.id_table = upd64031a_id,
+ };
+
+--=-682TPPIcspAw5D2NTCcu--
+
