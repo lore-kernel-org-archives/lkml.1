@@ -1,91 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933295AbYGQV2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932918AbYGQVb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933295AbYGQV2T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 17:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760620AbYGQV2D
+	id S932918AbYGQVb2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 17:31:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760598AbYGQVbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 17:28:03 -0400
-Received: from vms042pub.verizon.net ([206.46.252.42]:62500 "EHLO
-	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760609AbYGQV2B (ORCPT
+	Thu, 17 Jul 2008 17:31:17 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:49102 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757762AbYGQVbP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 17:28:01 -0400
-Date: Thu, 17 Jul 2008 17:27:32 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-Subject: Linux Power Management Mini-Summit -- Ottawa -- July 22, 2008
-X-X-Sender: lenb@localhost.localdomain
-To: Linux Power Management List <linux-pm@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Message-id: <alpine.LFD.1.10.0807171724070.16742@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 17 Jul 2008 17:31:15 -0400
+Subject: Re: acpi based pci gap calculation  - v3
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Andi Kleen <ak@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       "Brown, Len" <len.brown@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       TJ <linux@tjworld.net>
+In-Reply-To: <200807161703.11572.jbarnes@virtuousgeek.org>
+References: <1216148382.6135.21.camel@alok-dev1>
+	 <200807160906.43632.jbarnes@virtuousgeek.org>
+	 <487E22EA.8030005@linux.intel.com>
+	 <200807161703.11572.jbarnes@virtuousgeek.org>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Thu, 17 Jul 2008 14:31:12 -0700
+Message-Id: <1216330272.32324.26.camel@alok-dev1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We'll be in The Rideau Suite in Les-Suites
-Tuesday July 22nd 8:30-18:30.
+Hi Jesse,
 
-Thanks to HP for sponsoring
-lunch at 12:30 as well as snacks at 10:00 and 15:30.
-We'll wing it for dinner.
+On Wed, 2008-07-16 at 17:03 -0700, Jesse Barnes wrote:
+> On Wednesday, July 16, 2008 9:33 am Andi Kleen wrote:
+> > > The only problem there is that linux-next doesn't get nearly the sort of
+> > > testing coverage we need for this kind of change.
+> >
+> > Normally I tend to wait for one -mm release, which seems to be tested
+> > by a reasonable number of people. If it survives that it is good
+> > to be tested in Linus' tree.
+> >
+> > Just stuffing this in in literally the last minute doesn't seem
+> > like a good idea.
+> 
+> Well it's hardly last minute given that the merge window only opened a couple
+> of days ago...
+> 
+> But beyond that, now that I've thought about it a bit more I'm not even sure
+> the patch is really correct (though it works on my test machines).  Shouldn't
+> we be looking at _PRS not _CRS? 
 
-On linux-pm (sorry, on sabbatical I've been
-bad about keeping up on email) I've seen
-intent to attend from:
+IMO, the current resource allocations will give us a better idea of
+which region is free.
+Besides, from what i read PRS is optional and not all BIOS's may export
+that.
 
-Len Brown <len.brown@intel.com>
-Alan Stern <stern@rowland.harvard.edu>
-Dipankar Sarma <dipankar@in.ibm.com>
-Rafael J. Wysocki <rjw@sisk.pl>
-"Woodruff, Richard" <r-woodruff2@ti.com>
-Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Matt Domsch <Matt_Domsch@dell.com>
-Jarod Wilson <jwilson@redhat.com>
-Tim Bird <tim.bird@am.sony.com>
-Paul Mundt <lethal@linux-sh.org>
-Hiroyuki Machida <Hiroyuki.Mach@gmail.com>
+>  And ideally we should try to find even more
+> space, not less.  This patch made one of my machines lose quite a bit of
+> space:
+> 
+> ...
+> Allocating PCI resources starting at c0000000 (gap: bf000000:40f00000)
+> ...
+> ACPI: PCI resources should start at c0000000 (gap: bf000000:31000000)
+> ...
+> 
 
-Several send their regrets:
-Dave Jones
-Pavel Machek
-Arjan van de Ven
+Yep, we should try to find more space but we should also make sure that
+this space doesn't clash with any other resource.
+As explained in my first mail while posting v1 of these patches, the
+kernel ignores the memory hotplug range while calculating this gap for
+PCI, and consequently these regions collide. 
+With this patch we have put some constraints like looking only in the
+producer regions rather than all regions which are right now not
+reserved/used by the e820 map.
 
-If you plan to attend, please let me know,
-because the folks at OLS want to know,
-to simplify OLS registration.
+However, looking back again i think we can improve this further in some
+cases.
+I have made some more changes in the e820_search_gap algorithm to find
+the *biggest* un-utilized gap in the 32bit address range, and have added
+some debug print messages.
+Can you please try this patch on your system and mail me your full
+dmesg.
 
-thanks,
--Len
+Thanks,
+Alok
+
 ---
 
-We are again planning a Linux Power Management Mini-Summit preceding OLS.
-This year we are looking at a single day, Tuesday July 22nd.
+ arch/x86/kernel/e820.c |   19 +++++++++++++++++++
+ arch/x86/pci/acpi.c    |    4 ++++
+ 2 files changed, 23 insertions(+), 0 deletions(-)
 
-OLS is generously supporting mini-summits by providing the room
-and projector: http://www.linuxsymposium.org/2008/minisummits.php
 
-If you are interested in sponsoring the food or
-other forum needs, please let me know.
+diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+index a5383ae..298aeec 100644
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -539,6 +539,8 @@ __init int e820_search_gap(unsigned long *gapstart, unsigned long *gapsize,
+ 
+ 	last = (end_addr && end_addr < MAX_GAP_END) ? end_addr : MAX_GAP_END;
+ 
++	printk("E820_DEBUG: Searching for gap between (0x%08lx - 0x%08llx)\n",
++							 start_addr, end_addr);
+ 	while (--i >= 0) {
+ 		unsigned long long start = e820.map[i].addr;
+ 		unsigned long long end = start + e820.map[i].size;
+@@ -556,9 +558,26 @@ __init int e820_search_gap(unsigned long *gapstart, unsigned long *gapsize,
+ 			if (gap >= *gapsize) {
+ 				*gapsize = gap;
+ 				*gapstart = end;
++				printk("E820_DEBUG: Found gap starting at "
++					"0x%08llx size 0x%08llx\n", end, gap);
+ 				found = 1;
+ 			}
+ 		}
++		if (start > start_addr) {
++			unsigned long gap, prev_end;
++			prev_end = e820.map[i-1].addr + e820.map[i-1].size;
++			if (start_addr > prev_end) {
++				gap = start - start_addr;
++				if (gap >=*gapsize) {
++					*gapsize = gap;
++                                *gapstart = start_addr;
++                                printk("E820_DEBUG: Found gap at start starting at "
++                                        "0x%08llx size 0x%08llx\n", end, gap);
++                                found = 1;
++				start = start_addr;
++                        	}
++			}
++		}
+ 		if (start < last)
+ 			last = start;
+ 	}
+diff --git a/arch/x86/pci/acpi.c b/arch/x86/pci/acpi.c
+index fff2c42..1a88149 100644
+--- a/arch/x86/pci/acpi.c
++++ b/arch/x86/pci/acpi.c
+@@ -131,8 +131,12 @@ static acpi_status search_gap(struct acpi_resource *resource, void *data)
+ 		/*
+ 		 * We want space only in the 32bit address range
+ 		 */
++		printk("ACPI_DEBUG start_addr 0x%08lx gapsize 0x%08lx "
++			"address_length 0x%08lx\n", start_addr, gap->gapsize,
++			addr.address_length);
+ 		if (start_addr < UINT_MAX) {
+ 			end_addr = start_addr + addr.address_length;
++			printk("\t\tend_addr is 0x%08lx\n", end_addr);
+ 			e820_search_gap(&gap->gapstart, &gap->gapsize,
+ 					start_addr, end_addr);
+ 		}
 
-Minutes from last year's meeting can be found here:
-http://lwn.net/Articles/249019
-
-If you have feedback on last year's meeting that
-we can use to improve this year's, please speak up.
-
-The feedback at the time was pretty positive, so I'm thinking
-that unless there are new best-known-methods, that we'll stick
-with the same open method of self-nominated attendees,
-an agenda provoked by discussion on linux-pm ahead of time
-and consensus of attendees, and a forum small enough to support
-a single focused discussion.
-
-(yes, one improvement I plan on this year is to publish minutes immediately.
- OLS was sort of hectic for me last year and that caused a delay)
-
-thanks,
--Len
 
