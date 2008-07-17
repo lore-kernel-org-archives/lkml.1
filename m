@@ -1,143 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760426AbYGQWTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761089AbYGQWUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760426AbYGQWTu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 18:19:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbYGQWTm
+	id S1761089AbYGQWUg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 18:20:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757828AbYGQWU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 18:19:42 -0400
-Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:55482 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755318AbYGQWTl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 18:19:41 -0400
-Date: Thu, 17 Jul 2008 17:19:32 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: benh@kernel.crashing.org, Linus Torvalds <torvalds@linux-foundation.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       roland@redhat.com
-Subject: [PATCH v3] elf loader support for auxvec base platform string
-Message-ID: <20080717221932.GL9594@localdomain>
-References: <1216166331-14810-1-git-send-email-ntl@pobox.com>
- <1216166331-14810-2-git-send-email-ntl@pobox.com>
- <1216276539.7740.309.camel@pasglop>
- <20080717000951.5f8cab37.akpm@linux-foundation.org>
+	Thu, 17 Jul 2008 18:20:27 -0400
+Received: from isilmar.linta.de ([213.133.102.198]:52823 "EHLO linta.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755363AbYGQWU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 18:20:26 -0400
+Date: Fri, 18 Jul 2008 00:20:24 +0200
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: Jason Baron <jbaron@redhat.com>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, joe@perches.com, nick@nick-andrew.net,
+       randy.dunlap@oracle.com
+Subject: Re: [PATCH 6/7] dynamic debug v2 - convert cpufreq
+Message-ID: <20080717222024.GA21960@isilmar.linta.de>
+Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
+	Jason Baron <jbaron@redhat.com>, Greg KH <greg@kroah.com>,
+	linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+	joe@perches.com, nick@nick-andrew.net, randy.dunlap@oracle.com
+References: <20080715213613.GG23331@redhat.com> <20080715230731.GA15208@isilmar.linta.de> <20080717210531.GA13252@redhat.com> <20080717211531.GA16569@kroah.com> <20080717214651.GC13252@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080717000951.5f8cab37.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Pobox-Relay-ID: 721BB234-544E-11DD-8BE0-CE28B26B55AE-04752483!a-sasl-fastnet.pobox.com
+In-Reply-To: <20080717214651.GC13252@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some IBM POWER-based platforms have the ability to run in a
-mode which mostly appears to the OS as a different processor from the
-actual hardware.  For example, a Power6 system may appear to be a
-Power5+, which makes the AT_PLATFORM value "power5+".  This means that
-programs are restricted to the ISA supported by Power5+;
-Power6-specific instructions are treated as illegal.
+On Thu, Jul 17, 2008 at 05:46:51PM -0400, Jason Baron wrote:
+> Then why not just put the
+> > _cpufreq.h stuff in the current cpufreq.h file(s)?
+> > 
+> 
+> 1) cpufreq.h is included by other subsystems, and thus those other subsystems
+> potentially have the wrong debugging information.
 
-However, some applications (virtual machines, optimized libraries) can
-benefit from knowledge of the underlying CPU model.  A new aux vector
-entry, AT_BASE_PLATFORM, will denote the actual hardware.  For
-example, on a Power6 system in Power5+ compatibility mode, AT_PLATFORM
-will be "power5+" and AT_BASE_PLATFORM will be "power6".  The idea is
-that AT_PLATFORM indicates the instruction set supported, while
-AT_BASE_PLATFORM indicates the underlying microarchitecture.
+...
 
-If the architecture has defined ELF_BASE_PLATFORM, copy that value to
-the user stack in the same manner as ELF_PLATFORM.
+> If we could pull the subsystem specific header in dynamic_printk.h for each 
+> subsytem that would do the trick and be really clean, but i'm not sure of an
+> easy way to do that...
 
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
+<within all cpufreq drivers>
+#define DYNAMIC_DEBUG_CPU_FREQ 1
 
----
+<dynamic_printk.h>
+#ifdef DYNAMIC_DEBUG_CPU_FREQ
+#define DYNAMIC_DEBUG_NUM_FLAGS "3"
+...
+#else
+...
+...
+#endif
 
-Added comment explaining ELF_BASE_PLATFORM.
 
- fs/binfmt_elf.c        |   28 ++++++++++++++++++++++++++++
- include/linux/auxvec.h |    5 ++++-
- 2 files changed, 32 insertions(+), 1 deletions(-)
+or -- even better -- could we determine the definition of
+DYNAMIC_DEBUG_CPU_FREQ on the fly? It needs to be set to true for exactly all
+"modules" which contain a call to cpufreq_debug_printk()...
 
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index d48ff5f..d8a7cc0 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -131,6 +131,15 @@ static int padzero(unsigned long elf_bss)
- #define STACK_ALLOC(sp, len) ({ sp -= len ; sp; })
- #endif
- 
-+#ifndef ELF_BASE_PLATFORM
-+/*
-+ * AT_BASE_PLATFORM indicates the "real" hardware/microarchitecture.
-+ * If the arch defines ELF_BASE_PLATFORM (in asm/elf.h), the value
-+ * will be copied to the user stack in the same manner as AT_PLATFORM.
-+ */
-+#define ELF_BASE_PLATFORM NULL
-+#endif
-+
- static int
- create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
- 		unsigned long load_addr, unsigned long interp_load_addr)
-@@ -142,7 +151,9 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
- 	elf_addr_t __user *envp;
- 	elf_addr_t __user *sp;
- 	elf_addr_t __user *u_platform;
-+	elf_addr_t __user *u_base_platform;
- 	const char *k_platform = ELF_PLATFORM;
-+	const char *k_base_platform = ELF_BASE_PLATFORM;
- 	int items;
- 	elf_addr_t *elf_info;
- 	int ei_index = 0;
-@@ -172,6 +183,19 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
- 			return -EFAULT;
- 	}
- 
-+	/*
-+	 * If this architecture has a "base" platform capability
-+	 * string, copy it to userspace.
-+	 */
-+	u_base_platform = NULL;
-+	if (k_base_platform) {
-+		size_t len = strlen(k_base_platform) + 1;
-+
-+		u_base_platform = (elf_addr_t __user *)STACK_ALLOC(p, len);
-+		if (__copy_to_user(u_base_platform, k_base_platform, len))
-+			return -EFAULT;
-+	}
-+
- 	/* Create the ELF interpreter info */
- 	elf_info = (elf_addr_t *)current->mm->saved_auxv;
- 	/* update AT_VECTOR_SIZE_BASE if the number of NEW_AUX_ENT() changes */
-@@ -208,6 +232,10 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
- 		NEW_AUX_ENT(AT_PLATFORM,
- 			    (elf_addr_t)(unsigned long)u_platform);
- 	}
-+	if (k_base_platform) {
-+		NEW_AUX_ENT(AT_BASE_PLATFORM,
-+			    (elf_addr_t)(unsigned long)u_base_platform);
-+	}
- 	if (bprm->interp_flags & BINPRM_FLAGS_EXECFD) {
- 		NEW_AUX_ENT(AT_EXECFD, bprm->interp_data);
- 	}
-diff --git a/include/linux/auxvec.h b/include/linux/auxvec.h
-index ad89545..1adc61d 100644
---- a/include/linux/auxvec.h
-+++ b/include/linux/auxvec.h
-@@ -26,8 +26,11 @@
- 
- #define AT_SECURE 23   /* secure mode boolean */
- 
-+#define AT_BASE_PLATFORM 38	/* string identifying real platform, may
-+				 * differ from AT_PLATFORM. */
-+
- #ifdef __KERNEL__
--#define AT_VECTOR_SIZE_BASE (14 + 2) /* NEW_AUX_ENT entries in auxiliary table */
-+#define AT_VECTOR_SIZE_BASE (14 + 3) /* NEW_AUX_ENT entries in auxiliary table */
- #endif
- 
- #endif /* _LINUX_AUXVEC_H */
--- 
-1.5.6.2
+> 2) For the case where CONFIG_CPU_FREQ_DEBUG is set and 
+> CONFIG_DYNAMIC_PRINTK_DEBUG is not set i need to be able get the proper
+> definition of 'dynamic_dbg_enabled()' out of dynamic_print.h (included by
+> kernel.h). This proper definition is obtained by setting 'DEBUG', and
+> thus i need to define this before the kernel.h include. 
+> 
+> We can solve #2 by defining an explicit definition for dynamic_dbg_enabled() 
+> when only CONFIG_CPU_FREQ_DEBUG within cpufreq.h. roughly:
+> 
+> #ifdef CONFIG_CPU_FREQ_DEBUG
+> #define cpufreq_debug_printk(flag) 
+> 	if (cpufreq_debug & flag)
+> 		 __cpufreq_debug_printk()
+> 
+> However, the way i have it now I don't need two definitions for 
+> cpufreq_debug_printk....
 
+Not that much of a nuiseance, IMO. Or SELECT CONFIG_DYNAMIC_PRINTK_DEBUG
+when CONFIG_CPU_FREQ_DEBUG is enabled (if davej agrees ;) )
+
+Best,
+	Dominik
