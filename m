@@ -1,275 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760013AbYGQAs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760392AbYGQAtZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760013AbYGQAs6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 20:48:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759243AbYGQAsZ
+	id S1760392AbYGQAtZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 20:49:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759939AbYGQAs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 20:48:25 -0400
+	Wed, 16 Jul 2008 20:48:29 -0400
 Received: from ag-out-0708.google.com ([72.14.246.249]:37632 "EHLO
 	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758670AbYGQAsX (ORCPT
+	with ESMTP id S1759598AbYGQAs2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 20:48:23 -0400
+	Wed, 16 Jul 2008 20:48:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
          :sender;
-        b=HsvoKoHmPdDk+U2iVw6ONkEKTUGHRUY7eTwLHdqIqfXvqX2TdjUra+5Slv2/9IbYTH
-         Pu0x72QDkSgsJfttL4H7W8Qwmt1lh1k+iIpxsbr3+oGluYOjKTwSw2qenoaAGKfQ2YM0
-         rziVIFnvQaRzRyxUTcI5KRKMjHNkSHr3/iJuA=
+        b=bMZe4S+uGvp58Lb5LWS5PGY71q33h3GAWfX6IBwXcWaUoGu6/68sLcUTxLim87gRJ/
+         W5Nqd9f3Pbso9CaXl59YFiHkQ6EfXJRZYxr/nHN4ibmOMQv83vRx9SMprFP2lk1oaINv
+         Ez+lLs+b1N3Tlig7v5foiFAuHpUXvTcf0KApo=
 From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 To: penberg@cs.helsinki.fi
 Cc: cl@linux-foundation.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 2/4] kmemtrace: SLAB hooks.
-Date: Thu, 17 Jul 2008 03:46:46 +0300
-Message-Id: <99a4b0edd280049b57a400b5934714ad66ea5788.1216255035.git.eduard.munteanu@linux360.ro>
+Subject: [RFC PATCH 3/4] kmemtrace: SLUB hooks.
+Date: Thu, 17 Jul 2008 03:46:47 +0300
+Message-Id: <017a63e6be64502c36ede4733f0cc4e5ede75db2.1216255035.git.eduard.munteanu@linux360.ro>
 X-Mailer: git-send-email 1.5.6.1
-In-Reply-To: <4472a3f883b0d9026bb2d8c490233b3eadf9b55e.1216255035.git.eduard.munteanu@linux360.ro>
+In-Reply-To: <99a4b0edd280049b57a400b5934714ad66ea5788.1216255035.git.eduard.munteanu@linux360.ro>
 References: <cover.1216255034.git.eduard.munteanu@linux360.ro>
  <4472a3f883b0d9026bb2d8c490233b3eadf9b55e.1216255035.git.eduard.munteanu@linux360.ro>
+ <99a4b0edd280049b57a400b5934714ad66ea5788.1216255035.git.eduard.munteanu@linux360.ro>
 In-Reply-To: <cover.1216255034.git.eduard.munteanu@linux360.ro>
 References: <cover.1216255034.git.eduard.munteanu@linux360.ro>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds hooks for the SLAB allocator, to allow tracing with kmemtrace.
+This adds hooks for the SLUB allocator, to allow tracing with kmemtrace.
 
 Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 ---
- include/linux/slab_def.h |   56 +++++++++++++++++++++++++++++++++++++-----
- mm/slab.c                |   61 +++++++++++++++++++++++++++++++++++++++++----
- 2 files changed, 104 insertions(+), 13 deletions(-)
+ include/linux/slub_def.h |    9 +++++++-
+ mm/slub.c                |   47 ++++++++++++++++++++++++++++++++++++++++-----
+ 2 files changed, 49 insertions(+), 7 deletions(-)
 
-diff --git a/include/linux/slab_def.h b/include/linux/slab_def.h
-index 39c3a5e..77b8045 100644
---- a/include/linux/slab_def.h
-+++ b/include/linux/slab_def.h
-@@ -14,6 +14,7 @@
- #include <asm/page.h>		/* kmalloc_sizes.h needs PAGE_SIZE */
- #include <asm/cache.h>		/* kmalloc_sizes.h needs L1_CACHE_BYTES */
- #include <linux/compiler.h>
+diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
+index d117ea2..0cef121 100644
+--- a/include/linux/slub_def.h
++++ b/include/linux/slub_def.h
+@@ -10,6 +10,7 @@
+ #include <linux/gfp.h>
+ #include <linux/workqueue.h>
+ #include <linux/kobject.h>
 +#include <linux/kmemtrace.h>
  
- /* Size description struct for general caches. */
- struct cache_sizes {
-@@ -28,8 +29,20 @@ extern struct cache_sizes malloc_sizes[];
- void *kmem_cache_alloc(struct kmem_cache *, gfp_t);
- void *__kmalloc(size_t size, gfp_t flags);
+ enum stat_item {
+ 	ALLOC_FASTPATH,		/* Allocation from cpu slab */
+@@ -205,7 +206,13 @@ void *__kmalloc(size_t size, gfp_t flags);
  
-+#ifdef CONFIG_KMEMTRACE
-+extern void *kmem_cache_alloc_notrace(struct kmem_cache *cachep, gfp_t flags);
-+#else
-+static inline void *kmem_cache_alloc_notrace(struct kmem_cache *cachep,
-+					     gfp_t flags)
-+{
-+	return kmem_cache_alloc(cachep, flags);
-+}
-+#endif
-+
- static inline void *kmalloc(size_t size, gfp_t flags)
+ static __always_inline void *kmalloc_large(size_t size, gfp_t flags)
  {
-+	void *ret;
+-	return (void *)__get_free_pages(flags | __GFP_COMP, get_order(size));
++	unsigned int order = get_order(size);
++	void *ret = (void *) __get_free_pages(flags, order);
 +
- 	if (__builtin_constant_p(size)) {
- 		int i = 0;
- 
-@@ -50,10 +63,17 @@ static inline void *kmalloc(size_t size, gfp_t flags)
- found:
- #ifdef CONFIG_ZONE_DMA
- 		if (flags & GFP_DMA)
--			return kmem_cache_alloc(malloc_sizes[i].cs_dmacachep,
--						flags);
-+			ret = kmem_cache_alloc_notrace(
-+				malloc_sizes[i].cs_dmacachep, flags);
-+		else
- #endif
--		return kmem_cache_alloc(malloc_sizes[i].cs_cachep, flags);
-+			ret = kmem_cache_alloc_notrace(
-+				malloc_sizes[i].cs_cachep, flags);
++	kmemtrace_mark_alloc(KMEMTRACE_TYPE_KERNEL, _THIS_IP_, ret,
++			     size, PAGE_SIZE << order, flags);
 +
-+		kmemtrace_mark_alloc(KMEMTRACE_TYPE_KERNEL, _THIS_IP_, ret,
-+				     size, malloc_sizes[i].cs_size, flags);
-+
-+		return ret;
- 	}
- 	return __kmalloc(size, flags);
++	return ret;
  }
-@@ -62,8 +82,23 @@ found:
- extern void *__kmalloc_node(size_t size, gfp_t flags, int node);
- extern void *kmem_cache_alloc_node(struct kmem_cache *, gfp_t flags, int node);
  
-+#ifdef CONFIG_KMEMTRACE
-+extern void *kmem_cache_alloc_node_notrace(struct kmem_cache *cachep,
-+					   gfp_t flags,
-+					   int nodeid);
-+#else
-+static inline void *kmem_cache_alloc_node_notrace(struct kmem_cache *cachep,
-+						  gfp_t flags,
-+						  int nodeid)
-+{
-+	return kmem_cache_alloc_node(cachep, flags, nodeid);
-+}
-+#endif
-+
- static inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+ static __always_inline void *kmalloc(size_t size, gfp_t flags)
+diff --git a/mm/slub.c b/mm/slub.c
+index 315c392..a6f930f 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -23,6 +23,7 @@
+ #include <linux/kallsyms.h>
+ #include <linux/memory.h>
+ #include <linux/math64.h>
++#include <linux/kmemtrace.h>
+ 
+ /*
+  * Lock order:
+@@ -1652,14 +1653,25 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
+ 
+ void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
  {
-+	void *ret;
-+
- 	if (__builtin_constant_p(size)) {
- 		int i = 0;
- 
-@@ -84,11 +119,18 @@ static inline void *kmalloc_node(size_t size, gfp_t flags, int node)
- found:
- #ifdef CONFIG_ZONE_DMA
- 		if (flags & GFP_DMA)
--			return kmem_cache_alloc_node(malloc_sizes[i].cs_dmacachep,
--						flags, node);
-+			ret = kmem_cache_alloc_node_notrace(
-+				malloc_sizes[i].cs_dmacachep, flags, node);
-+		else
- #endif
--		return kmem_cache_alloc_node(malloc_sizes[i].cs_cachep,
--						flags, node);
-+			ret = kmem_cache_alloc_node_notrace(
-+				malloc_sizes[i].cs_cachep, flags, node);
-+
-+		kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KERNEL, _THIS_IP_,
-+					  ret, size, malloc_sizes[i].cs_size,
-+					  flags, node);
-+
-+		return ret;
- 	}
- 	return __kmalloc_node(size, flags, node);
- }
-diff --git a/mm/slab.c b/mm/slab.c
-index 046607f..e9a61ac 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -111,6 +111,7 @@
- #include	<linux/rtmutex.h>
- #include	<linux/reciprocal_div.h>
- #include	<linux/debugobjects.h>
-+#include	<linux/kmemtrace.h>
- 
- #include	<asm/cacheflush.h>
- #include	<asm/tlbflush.h>
-@@ -3621,10 +3622,23 @@ static inline void __cache_free(struct kmem_cache *cachep, void *objp)
-  */
- void *kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
- {
--	return __cache_alloc(cachep, flags, __builtin_return_address(0));
-+	void *ret = __cache_alloc(cachep, flags, __builtin_return_address(0));
+-	return slab_alloc(s, gfpflags, -1, __builtin_return_address(0));
++	void *ret = slab_alloc(s, gfpflags, -1, __builtin_return_address(0));
 +
 +	kmemtrace_mark_alloc(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
-+			     obj_size(cachep), obj_size(cachep), flags);
++			     s->objsize, s->size, gfpflags);
 +
 +	return ret;
  }
  EXPORT_SYMBOL(kmem_cache_alloc);
  
-+#ifdef CONFIG_KMEMTRACE
-+void *kmem_cache_alloc_notrace(struct kmem_cache *cachep, gfp_t flags)
-+{
-+	return __cache_alloc(cachep, flags, __builtin_return_address(0));
-+}
-+EXPORT_SYMBOL(kmem_cache_alloc_notrace);
-+#endif
-+
- /**
-  * kmem_ptr_validate - check if an untrusted pointer might be a slab entry.
-  * @cachep: the cache we're checking against
-@@ -3669,20 +3683,44 @@ out:
  #ifdef CONFIG_NUMA
- void *kmem_cache_alloc_node(struct kmem_cache *cachep, gfp_t flags, int nodeid)
+ void *kmem_cache_alloc_node(struct kmem_cache *s, gfp_t gfpflags, int node)
  {
--	return __cache_alloc_node(cachep, flags, nodeid,
--			__builtin_return_address(0));
-+	void *ret = __cache_alloc_node(cachep, flags, nodeid,
-+				       __builtin_return_address(0));
+-	return slab_alloc(s, gfpflags, node, __builtin_return_address(0));
++	void *ret = slab_alloc(s, gfpflags, node,
++			       __builtin_return_address(0));
 +
 +	kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
-+				  obj_size(cachep), obj_size(cachep),
-+				  flags, nodeid);
++				  s->objsize, s->size, gfpflags, node);
 +
 +	return ret;
  }
  EXPORT_SYMBOL(kmem_cache_alloc_node);
+ #endif
+@@ -1771,6 +1783,8 @@ void kmem_cache_free(struct kmem_cache *s, void *x)
+ 	page = virt_to_head_page(x);
  
-+#ifdef CONFIG_KMEMTRACE
-+void *kmem_cache_alloc_node_notrace(struct kmem_cache *cachep,
-+				    gfp_t flags,
-+				    int nodeid)
-+{
-+	return __cache_alloc_node(cachep, flags, nodeid,
-+				  __builtin_return_address(0));
-+}
-+EXPORT_SYMBOL(kmem_cache_alloc_node_notrace);
-+#endif
+ 	slab_free(s, page, x, __builtin_return_address(0));
 +
- static __always_inline void *
- __do_kmalloc_node(size_t size, gfp_t flags, int node, void *caller)
- {
- 	struct kmem_cache *cachep;
-+	void *ret;
- 
- 	cachep = kmem_find_general_cachep(size, flags);
- 	if (unlikely(ZERO_OR_NULL_PTR(cachep)))
- 		return cachep;
--	return kmem_cache_alloc_node(cachep, flags, node);
-+	ret = kmem_cache_alloc_node_notrace(cachep, flags, node);
-+
-+	kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KERNEL,
-+				  (unsigned long) caller, ret,
-+				  size, cachep->buffer_size, flags, node);
-+
-+	return ret;
- }
- 
- #ifdef CONFIG_DEBUG_SLAB
-@@ -3718,6 +3756,7 @@ static __always_inline void *__do_kmalloc(size_t size, gfp_t flags,
- 					  void *caller)
- {
- 	struct kmem_cache *cachep;
-+	void *ret;
- 
- 	/* If you want to save a few bytes .text space: replace
- 	 * __ with kmem_.
-@@ -3727,11 +3766,17 @@ static __always_inline void *__do_kmalloc(size_t size, gfp_t flags,
- 	cachep = __find_general_cachep(size, flags);
- 	if (unlikely(ZERO_OR_NULL_PTR(cachep)))
- 		return cachep;
--	return __cache_alloc(cachep, flags, caller);
-+	ret = __cache_alloc(cachep, flags, caller);
-+
-+	kmemtrace_mark_alloc(KMEMTRACE_TYPE_KERNEL,
-+			     (unsigned long) caller, ret,
-+			     size, cachep->buffer_size, flags);
-+
-+	return ret;
- }
- 
- 
--#ifdef CONFIG_DEBUG_SLAB
-+#if defined(CONFIG_DEBUG_SLAB) || defined(CONFIG_KMEMTRACE)
- void *__kmalloc(size_t size, gfp_t flags)
- {
- 	return __do_kmalloc(size, flags, __builtin_return_address(0));
-@@ -3770,6 +3815,8 @@ void kmem_cache_free(struct kmem_cache *cachep, void *objp)
- 		debug_check_no_obj_freed(objp, obj_size(cachep));
- 	__cache_free(cachep, objp);
- 	local_irq_restore(flags);
-+
-+	kmemtrace_mark_free(KMEMTRACE_TYPE_CACHE, _RET_IP_, objp);
++	kmemtrace_mark_free(KMEMTRACE_TYPE_CACHE, _RET_IP_, x);
  }
  EXPORT_SYMBOL(kmem_cache_free);
  
-@@ -3796,6 +3843,8 @@ void kfree(const void *objp)
- 	debug_check_no_obj_freed(objp, obj_size(c));
- 	__cache_free(c, (void *)objp);
- 	local_irq_restore(flags);
+@@ -2676,6 +2690,7 @@ static struct kmem_cache *get_slab(size_t size, gfp_t flags)
+ void *__kmalloc(size_t size, gfp_t flags)
+ {
+ 	struct kmem_cache *s;
++	void *ret;
+ 
+ 	if (unlikely(size > PAGE_SIZE))
+ 		return kmalloc_large(size, flags);
+@@ -2685,7 +2700,12 @@ void *__kmalloc(size_t size, gfp_t flags)
+ 	if (unlikely(ZERO_OR_NULL_PTR(s)))
+ 		return s;
+ 
+-	return slab_alloc(s, flags, -1, __builtin_return_address(0));
++	ret = slab_alloc(s, flags, -1, __builtin_return_address(0));
 +
-+	kmemtrace_mark_free(KMEMTRACE_TYPE_KERNEL, _RET_IP_, objp);
++	kmemtrace_mark_alloc(KMEMTRACE_TYPE_KERNEL, _RET_IP_, ret,
++			     size, (size_t) s->size, (unsigned long) flags);
++
++	return ret;
+ }
+ EXPORT_SYMBOL(__kmalloc);
+ 
+@@ -2704,16 +2724,29 @@ static void *kmalloc_large_node(size_t size, gfp_t flags, int node)
+ void *__kmalloc_node(size_t size, gfp_t flags, int node)
+ {
+ 	struct kmem_cache *s;
++	void *ret;
+ 
+-	if (unlikely(size > PAGE_SIZE))
+-		return kmalloc_large_node(size, flags, node);
++	if (unlikely(size > PAGE_SIZE)) {
++		ret = kmalloc_large_node(size, flags, node);
++
++		kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KERNEL, _RET_IP_, ret,
++					  size, PAGE_SIZE << get_order(size),
++					  (unsigned long) flags, node);
++
++		return ret;
++	}
+ 
+ 	s = get_slab(size, flags);
+ 
+ 	if (unlikely(ZERO_OR_NULL_PTR(s)))
+ 		return s;
+ 
+-	return slab_alloc(s, flags, node, __builtin_return_address(0));
++	ret = slab_alloc(s, flags, node, __builtin_return_address(0));
++
++	kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KERNEL, _RET_IP_, ret,
++				  size, s->size, (unsigned long) flags, node);
++
++	return ret;
+ }
+ EXPORT_SYMBOL(__kmalloc_node);
+ #endif
+@@ -2771,6 +2804,8 @@ void kfree(const void *x)
+ 		return;
+ 	}
+ 	slab_free(page->slab, page, object, __builtin_return_address(0));
++
++	kmemtrace_mark_free(KMEMTRACE_TYPE_KERNEL, _RET_IP_, x);
  }
  EXPORT_SYMBOL(kfree);
  
