@@ -1,47 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757823AbYGQQMG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758093AbYGQQWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757823AbYGQQMG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 12:12:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757613AbYGQQLq
+	id S1758093AbYGQQWx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 12:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754894AbYGQQWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 12:11:46 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47459 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932109AbYGQQLp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 12:11:45 -0400
-Date: Thu, 17 Jul 2008 09:10:05 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, roland@redhat.com,
-       Nathan Lynch <ntl@pobox.com>
-Subject: Re: [PATCH] elf loader support for auxvec base platform string
-In-Reply-To: <1216276539.7740.309.camel@pasglop>
-Message-ID: <alpine.LFD.1.10.0807170908060.2959@woody.linux-foundation.org>
-References: <1216166331-14810-1-git-send-email-ntl@pobox.com>  <1216166331-14810-2-git-send-email-ntl@pobox.com> <1216276539.7740.309.camel@pasglop>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 17 Jul 2008 12:22:45 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:39925 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753028AbYGQQWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 12:22:45 -0400
+Date: Thu, 17 Jul 2008 18:22:42 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org
+Subject: Re: MMC: s3cmci: ensure host stopped on machine shutdown
+Message-ID: <20080717182242.598ff68a@mjolnir.drzeus.cx>
+In-Reply-To: <20080717155037.GI24620@fluff.org.uk>
+References: <20080717143253.823429733@fluff.org.uk>
+	<20080717172945.3481eefa@mjolnir.drzeus.cx>
+	<20080717155037.GI24620@fluff.org.uk>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 17 Jul 2008 16:50:37 +0100
+Ben Dooks <ben-linux@fluff.org> wrote:
 
-
-On Thu, 17 Jul 2008, Benjamin Herrenschmidt wrote:
+> On Thu, Jul 17, 2008 at 05:29:45PM +0200, Pierre Ossman wrote:
+> > 
+> > The core can send requests your way until mmc_remove_host() returns so
+> > you can't remove the interrupt before then.
 > 
-> Should I seek somebody's ack before merging a patch like the one below ?
+> I'm only removing the card-detect interrupt, the main host one
+> is not being disabled here.
 > 
-> I'm a bit reluctant to merge via the powerpc.git tree some changes to
-> generic files without at least an ack from somebody else :-)
 
-Gaah. Generally we don't, but you're right to ask. The ELF loading keeps 
-on accumulating these things, and I'm not sure we have the right process 
-for things like this. They're all individually small and insignificant, 
-and they are all individually never going away and making the ELF loader 
-messier and messier.
+Ah, I see. Then it should be just fine. I'll have it queued up.
 
-I dunno. 
+Rgds
+-- 
+     -- Pierre Ossman
 
-		Linus
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
