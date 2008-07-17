@@ -1,119 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933498AbYGQXWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933551AbYGQXWz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933498AbYGQXWg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 19:22:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933395AbYGQXVj
+	id S933551AbYGQXWz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 19:22:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760175AbYGQXWn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 19:21:39 -0400
-Received: from casper.infradead.org ([85.118.1.10]:39912 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760657AbYGQXVi (ORCPT
+	Thu, 17 Jul 2008 19:22:43 -0400
+Received: from serrano.cc.columbia.edu ([128.59.29.6]:58842 "EHLO
+	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760724AbYGQXWm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 19:21:38 -0400
-Date: Thu, 17 Jul 2008 16:21:38 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: rusty@rustcorp.com.au
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH] modules: extend initcall_debug functionality to the module
- loader
-Message-ID: <20080717162138.50a57cb1@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 17 Jul 2008 19:22:42 -0400
+Message-ID: <487FD397.5040905@cs.columbia.edu>
+Date: Thu, 17 Jul 2008 19:19:51 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Kirill Korotaev <dev@parallels.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Nadia.Derbey@bull.net, Andrew Morton <akpm@linux-foundation.org>,
+       nick@nick-andrew.net, Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: Checkpoint/restart (was Re: [PATCH 0/4] - v2 - Object creation
+ with a specified id)
+References: <20080418054459.891481000@bull.net>	 <20080422193612.GA15835@martell.zuzino.mipt.ru>	 <1208890580.17117.14.camel@nimitz.home.sr71.net>	 <20080422210130.GA15937@martell.zuzino.mipt.ru>	 <1208904967.17117.51.camel@nimitz.home.sr71.net>	 <480ED9D5.1010906@parallels.com> <480FE037.2010302@cs.columbia.edu>	 <m1y74a7b4w.fsf@frodo.ebiederm.org> <1215709949.9398.15.camel@nimitz>	 <20080710173246.GA1857@us.ibm.com> <m163rd1sd5.fsf@frodo.ebiederm.org>	 <1215716794.9398.41.camel@nimitz>  <m14p6xy27s.fsf@frodo.ebiederm.org> <1215719252.9398.53.camel@nimitz>
+In-Reply-To: <1215719252.9398.53.camel@nimitz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: [PATCH] modules: extend initcall_debug functionality to the module loader
+Dave Hansen wrote:
+> On Thu, 2008-07-10 at 12:21 -0700, Eric W. Biederman wrote:
+>>> Are we talking about the VMA itself, or the memory backing the VMA?
+>> The memory backing the VMA.  We need to store the page protections
+>> that the memory was mapped with as well now that you point it out.  A
+>> VMA is not user space visible, which is why we can arbitrarily split
+>> and merge VMAs.
+> 
+> It is visible with /proc/$pid/{maps,smaps,numamaps?}.  That's the only
+> efficient way I know of from userspace to figure out where userspace's
+> memory is and if it *is* file backed, and what the permissions are.
+> 
+> We also can't truly split them arbitrarily because the memory cost of
+> the VMAs themselves might become too heavy (the remap_file_pages()
+> problem).
+> 
+> It gets trickier when things are also private mappings in addition to
+> being in a file-backed VMA.  We *do* need to checkpoint those, but only
+> the pages to which there was a write.
+> 
+> There's also the problem of restoring things read-only, but VM_MAYWRITE.
+> If there's a high level of (non-COW'd) sharing of these anonymous areas,
+> we may not be able to even restore the set of processes unless we can
+> replicate the sharing.  We might run out of memory if the sharing isn't
+> replicated.
+> 
+> Memory is fun! :)
 
-The kernel has this really nice facility where if you put "initcall_debug"
-on the kernel commandline, it'll print which function it's going to execute
-just before calling an initcall, and then after the call completes it will
-1) print if it had an error code
-2) checks for a few simple bugs (like leaving irqs off)
-and
-3) print how long the init call took in milliseconds.
+Heh .. and it can get much worse.  By all means, the functions that analyze
+and save the VMAs during checkpoint and later reconstruct them during restart
+are the most complicated logic. The good news, however, is that it works :)
 
-While trying to optimize the boot speed of my laptop, I have been loving
-number 3 to figure out what to optimize...
-... and then I wished that the same thing was done for module loading.
+Oren.
 
-This patch makes the module loader use this exact same functionality;
-it's a logical extension in my view (since modules are just sort of
-late binding initcalls anyway) and so far I've found it quite useful
-in finding where things are too slow in my boot.
-
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- include/linux/init.h |    2 ++
- init/main.c          |    6 ++++--
- kernel/module.c      |    2 +-
- 3 files changed, 7 insertions(+), 3 deletions(-)
-
-diff --git a/include/linux/init.h b/include/linux/init.h
-index 21d658c..e875fcc 100644
---- a/include/linux/init.h
-+++ b/include/linux/init.h
-@@ -142,6 +142,8 @@ extern initcall_t __security_initcall_start[], __security_initcall_end[];
- extern char __initdata boot_command_line[];
- extern char *saved_command_line;
- extern unsigned int reset_devices;
-+extern int do_one_initcall(initcall_t fn);
-+
- 
- /* used by init/main.c */
- void setup_arch(char **);
-diff --git a/init/main.c b/init/main.c
-index edeace0..4480ca7 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -685,7 +685,7 @@ asmlinkage void __init start_kernel(void)
- 	rest_init();
- }
- 
--static int __initdata initcall_debug;
-+static int initcall_debug;
- 
- static int __init initcall_debug_setup(char *str)
- {
-@@ -694,7 +694,7 @@ static int __init initcall_debug_setup(char *str)
- }
- __setup("initcall_debug", initcall_debug_setup);
- 
--static void __init do_one_initcall(initcall_t fn)
-+int do_one_initcall(initcall_t fn)
- {
- 	int count = preempt_count();
- 	ktime_t t0, t1, delta;
-@@ -734,6 +734,8 @@ static void __init do_one_initcall(initcall_t fn)
- 		print_fn_descriptor_symbol(KERN_WARNING "initcall %s", fn);
- 		printk(" returned with %s\n", msgbuf);
- 	}
-+
-+	return result;
- }
- 
- 
-diff --git a/kernel/module.c b/kernel/module.c
-index 5f80478..b69ac29 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -2220,7 +2220,7 @@ sys_init_module(void __user *umod,
- 
- 	/* Start the module */
- 	if (mod->init != NULL)
--		ret = mod->init();
-+		ret = do_one_initcall(mod->init);
- 	if (ret < 0) {
- 		/* Init routine failed: abort.  Try to protect us from
-                    buggy refcounters. */
--- 
-1.5.5.1
-
+> 
+> -- Dave
+> 
