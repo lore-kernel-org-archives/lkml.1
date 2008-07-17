@@ -1,91 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbYGQO2N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758093AbYGQOca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759301AbYGQO2N (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 10:28:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756894AbYGQO16
+	id S1758093AbYGQOca (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 10:32:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755895AbYGQOcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 10:27:58 -0400
-Received: from wx-out-0506.google.com ([66.249.82.237]:59670 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755640AbYGQO15 (ORCPT
+	Thu, 17 Jul 2008 10:32:22 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:5037 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753471AbYGQOcW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 10:27:57 -0400
+	Thu, 17 Jul 2008 10:32:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=O+WQcssMHHk+DzwyYKNb8xZok1DbnIxF0Zn4cnAOUEIhvp7aVPn4ewv3TkvMmPg+Oz
-         PkdhsYYpyUFn5SFoUmLMM79abuTs2TJ189IXC0VO83HGPLRSM50ylnN/k/VRplawFruk
-         MDTT17bVbr06WwBQ6MU66vxpOPKC+JqsRpdTs=
-Message-ID: <dd18b0c30807170727t4c20eb32v5e6378d844ae0376@mail.gmail.com>
-Date: Thu, 17 Jul 2008 14:27:56 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "el es" <el_es_cr@yahoo.co.uk>
-Subject: Re: Kernel version : what about s.yy.ww.tt scheme ?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <loom.20080717T100809-415@post.gmane.org>
+         :references:x-google-sender-auth;
+        b=r/mt+f5Yb/tGqMgj5MminXCRboYkFAgsY9wy12nTRNZQSv1cI5Q7IW0bn+XHD0yGya
+         ZC3f1qOUpib04tYILe0zbz36M6uKe0uwoMD8wF4MJZLXP+ywXhPggt1erFNxFgH4UJs+
+         MCNH+ftNDapT4aIu3xoRnJ+A9pHSVQGNU1XOU=
+Message-ID: <76366b180807170732i112d54bcl49f630a3064f87f@mail.gmail.com>
+Date: Thu, 17 Jul 2008 10:32:21 -0400
+From: "Andrew Paprocki" <andrew@ishiboo.com>
+To: "Jan Beulich" <jbeulich@novell.com>
+Subject: Re: ACPI WARNING: at drivers/acpi/tables/tbfadt.c:348 acpi_tb_create_local_fadt+0x147/0x2f4()
+Cc: "Andi Kleen" <ak@linux.intel.com>, robert.moore@intel.com,
+       "Len Brown" <lenb@kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <487F6C32.76E4.0078.0@novell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <loom.20080717T083755-676@post.gmane.org>
-	 <alpine.LNX.1.10.0807171140030.18697@fbirervta.pbzchgretzou.qr>
-	 <loom.20080717T100809-415@post.gmane.org>
+References: <76366b180807161929i4eb9462exc3d2255e0ec881e8@mail.gmail.com>
+	 <76366b180807162034y1e725b15t7658c331bb89b52@mail.gmail.com>
+	 <487F2629.76E4.0078.0@novell.com> <487F0B85.4030202@linux.intel.com>
+	 <487F29B2.76E4.0078.0@novell.com> <487F3AFA.7090908@linux.intel.com>
+	 <76366b180807170603qaf669a5q625fc166a2045756@mail.gmail.com>
+	 <487F6C32.76E4.0078.0@novell.com>
+X-Google-Sender-Auth: e3b413a3c8b9b10f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 10:38 AM, el es <el_es_cr@yahoo.co.uk> wrote:
-> Jan Engelhardt <jengelh <at> medozas.de> writes:
->
->> >The scheme to be s.yy.ww.tt, that is :
->> >
->> >s - series, as it is now (freedom to Linus to bump it to 3 when BKL is removed
->> >for example ;) )
->> >yy - two (in a hundred years, three) digits of the year
->> >Now the interesting part begins which is
->> >ww - the number of the week of the release. This will be between 1 and 52 (53)
->> >tt - the number of the week of stable release. As above.
+On Thu, Jul 17, 2008 at 9:58 AM, Jan Beulich <jbeulich@novell.com> wrote:
+>>>> "Andrew Paprocki" <andrew@ishiboo.com> 17.07.08 15:03 >>>
+>>On Thu, Jul 17, 2008 at 8:28 AM, Andi Kleen <ak@linux.intel.com> wrote:
+>>> Ok, but we can just get that from a table dump.
 >>
->> Interesting idea.
->>
+>>Output from acpidump is attached.
 >
-> Thanks :)
->
->> -stable usually overlaps with master. But I don't like version
->> numbers long as binutils and "2.8.30.9.01" have.
->
-> Yes, master and stable accumulate the same patches, I know. Only master takes
-> new code, whereas -stable does not.
->
-> This however tells how long did it take to produce the -stable release out of
-> Linus's release ;) And it does not break the current habits - just abuses them a
-> bit ;)
-> And tells you how long the version was around there without another -stable
-> release too. Just by looking onto the version string, quick, sortable in
-> meaningful way, all sorts of pluses there ;)
->
-> IMO, the kernel is so mature already, and the development is so fast, and the
-> changes not always so fundamental, that the version in the old sense becomes
-> irrelevant - it is not the 2.4->2.6 transition days any more ;)
->
->
->
-> Regards,
-> Lukasz (btw sorry I forgot to sign myself last time ;)
->
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+> Just as I suspected - the v1 field says 4 bytes, but the v2 field says 8 bits.
 
-What about how porsch does it
-i.g. 911, 912, 913, 914
+So does the BIOS owner need to fix the table? If you could give me the
+exact text to pass along to the mobo mfr, I will forward it and I can
+get them to release a new BIOS rev.
 
--- 
-Justin P. Mattock
+Thanks,
+-Andrew
