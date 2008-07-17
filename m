@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933122AbYGQTbP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760898AbYGQTbe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933122AbYGQTbP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 15:31:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932434AbYGQTX0
+	id S1760898AbYGQTbe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 15:31:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932437AbYGQTX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 15:23:26 -0400
-Received: from monty.telenet-ops.be ([195.130.132.56]:49793 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932066AbYGQTWs (ORCPT
+	Thu, 17 Jul 2008 15:23:27 -0400
+Received: from wilson.telenet-ops.be ([195.130.132.42]:53964 "EHLO
+	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759937AbYGQTWs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 17 Jul 2008 15:22:48 -0400
-Message-Id: <20080717191754.149215226@mail.of.borg>
+Message-Id: <20080717191753.849409197@mail.of.borg>
 References: <20080717191607.955742542@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Thu, 17 Jul 2008 21:16:24 +0200
+Date: Thu, 17 Jul 2008 21:16:23 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
        Adrian Bunk <bunk@kernel.org>
-Subject: [patch 17/29] m68k/atari/debug.c: possible cleanups
-Content-Disposition: inline; filename=m68k-atari-debug.c-possible-cleanups.diff
+Subject: [patch 16/29] m68k/amiga/: possible cleanups
+Content-Disposition: inline; filename=m68k-amiga-possible-cleanups.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -28,134 +28,136 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Adrian Bunk <bunk@kernel.org>
 
 This patch contains the following possible cleanups:
-- make the following needlessly global functions (always) static:
-  - atari_mfp_console_write()
-  - atari_scc_console_write()
-  - atari_midi_console_write()
-  - atari_init_mfp_port()
-  - atari_init_scc_port()
-  - atari_init_midi_port()
+- amiints.c: add a proper prototype for amiga_init_IRQ() in 
+             include/asm-m68k/amigaints.h
+- make the following needlessly global code static:
+  - config.c: amiga_model
+  - config.c: amiga_psfreq
+  - config.c: amiga_serial_console_write()
 - #if 0 the following unused functions:
-  - atari_mfp_console_wait_key()
-  - atari_scc_console_wait_key()
-  - atari_midi_console_wait_key()
-- remove the following unused variables:
-  - atari_MFP_init_done
-  - atari_SCC_init_done
+  - config.c: amiga_serial_puts()
+  - config.c: amiga_serial_console_wait_key()
+  - config.c: amiga_serial_gets()
+- remove the following unused variable:
+  - config.c: amiga_masterclock
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- arch/m68k/atari/debug.c |   37 +++++++------------------------------
- 1 file changed, 7 insertions(+), 30 deletions(-)
+ arch/m68k/amiga/config.c     |   20 ++++++--------------
+ include/asm-m68k/amigahw.h   |    4 ----
+ include/asm-m68k/amigaints.h |    2 ++
+ 3 files changed, 8 insertions(+), 18 deletions(-)
 
---- a/arch/m68k/atari/debug.c
-+++ b/arch/m68k/atari/debug.c
-@@ -20,14 +20,6 @@
- #include <asm/atarihw.h>
- #include <asm/atariints.h>
+--- a/arch/m68k/amiga/config.c
++++ b/arch/m68k/amiga/config.c
+@@ -36,14 +36,11 @@
+ #include <asm/machdep.h>
+ #include <asm/io.h>
  
--/* Flag that Modem1 port is already initialized and used */
--int atari_MFP_init_done;
--EXPORT_SYMBOL(atari_MFP_init_done);
+-unsigned long amiga_model;
+-EXPORT_SYMBOL(amiga_model);
++static unsigned long amiga_model;
+ 
+ unsigned long amiga_eclock;
+ EXPORT_SYMBOL(amiga_eclock);
+ 
+-unsigned long amiga_masterclock;
 -
--/* Flag that Modem1 port is already initialized and used */
--int atari_SCC_init_done;
--EXPORT_SYMBOL(atari_SCC_init_done);
--
- /* Can be set somewhere, if a SCC master reset has already be done and should
-  * not be repeated; used by kgdb */
- int atari_SCC_reset_done;
-@@ -47,8 +39,8 @@ static inline void ata_mfp_out(char c)
- 	mfp.usart_dta = c;
+ unsigned long amiga_colorclock;
+ EXPORT_SYMBOL(amiga_colorclock);
+ 
+@@ -53,7 +50,7 @@ EXPORT_SYMBOL(amiga_chipset);
+ unsigned char amiga_vblank;
+ EXPORT_SYMBOL(amiga_vblank);
+ 
+-unsigned char amiga_psfreq;
++static unsigned char amiga_psfreq;
+ 
+ struct amiga_hw_present amiga_hw_present;
+ EXPORT_SYMBOL(amiga_hw_present);
+@@ -94,8 +91,6 @@ static char *amiga_models[] __initdata =
+ static char amiga_model_name[13] = "Amiga ";
+ 
+ static void amiga_sched_init(irq_handler_t handler);
+-/* amiga specific irq functions */
+-extern void amiga_init_IRQ(void);
+ static void amiga_get_model(char *model);
+ static int amiga_get_hardware_list(char *buffer);
+ /* amiga specific timer functions */
+@@ -109,8 +104,6 @@ static void amiga_reset(void);
+ extern void amiga_init_sound(void);
+ static void amiga_mem_console_write(struct console *co, const char *b,
+ 				    unsigned int count);
+-void amiga_serial_console_write(struct console *co, const char *s,
+-				unsigned int count);
+ #ifdef CONFIG_HEARTBEAT
+ static void amiga_heartbeat(int on);
+ #endif
+@@ -420,8 +413,7 @@ void __init config_amiga(void)
+ 	mach_heartbeat = amiga_heartbeat;
+ #endif
+ 
+-	/* Fill in the clock values (based on the 700 kHz E-Clock) */
+-	amiga_masterclock = 40*amiga_eclock;	/* 28 MHz */
++	/* Fill in the clock value (based on the 700 kHz E-Clock) */
+ 	amiga_colorclock = 5*amiga_eclock;	/* 3.5 MHz */
+ 
+ 	/* clear all DMA bits */
+@@ -819,8 +811,8 @@ static void amiga_serial_putc(char c)
+ 		;
  }
  
--void atari_mfp_console_write(struct console *co, const char *str,
--			     unsigned int count)
-+static void atari_mfp_console_write(struct console *co, const char *str,
-+				    unsigned int count)
+-void amiga_serial_console_write(struct console *co, const char *s,
+-				unsigned int count)
++static void amiga_serial_console_write(struct console *co, const char *s,
++				       unsigned int count)
  {
  	while (count--) {
- 		if (*str == '\n')
-@@ -66,8 +58,8 @@ static inline void ata_scc_out(char c)
- 	scc.cha_b_data = c;
- }
- 
--void atari_scc_console_write(struct console *co, const char *str,
--			     unsigned int count)
-+static void atari_scc_console_write(struct console *co, const char *str,
-+				    unsigned int count)
- {
- 	while (count--) {
- 		if (*str == '\n')
-@@ -83,8 +75,8 @@ static inline void ata_midi_out(char c)
- 	acia.mid_data = c;
- }
- 
--void atari_midi_console_write(struct console *co, const char *str,
--			      unsigned int count)
-+static void atari_midi_console_write(struct console *co, const char *str,
-+				     unsigned int count)
- {
- 	while (count--) {
- 		if (*str == '\n')
-@@ -136,7 +128,7 @@ static void atari_par_console_write(stru
+ 		if (*s == '\n')
+@@ -829,7 +821,7 @@ void amiga_serial_console_write(struct c
  	}
  }
  
 -#ifdef CONFIG_SERIAL_CONSOLE
 +#if 0
- int atari_mfp_console_wait_key(struct console *co)
+ void amiga_serial_puts(const char *s)
  {
- 	while (!(mfp.rcv_stat & 0x80))	/* wait for rx buf filled */
-@@ -166,11 +158,7 @@ int atari_midi_console_wait_key(struct c
-  * SCC serial ports. They're used by the debugging interface, kgdb, and the
-  * serial console code.
-  */
--#ifndef CONFIG_SERIAL_CONSOLE
- static void __init atari_init_mfp_port(int cflag)
--#else
--void atari_init_mfp_port(int cflag)
--#endif
- {
- 	/*
- 	 * timer values for 1200...115200 bps; > 38400 select 110, 134, or 150
-@@ -193,8 +181,6 @@ void atari_init_mfp_port(int cflag)
- 	mfp.tim_dt_d = baud_table[baud];
- 	mfp.tim_ct_cd |= 0x01;		/* start timer D, 1:4 */
- 	mfp.trn_stat |= 0x01;		/* enable TX */
+ 	amiga_serial_console_write(NULL, s, strlen(s));
+--- a/include/asm-m68k/amigahw.h
++++ b/include/asm-m68k/amigahw.h
+@@ -22,8 +22,6 @@
+      *  Different Amiga models
+      */
+ 
+-extern unsigned long amiga_model;
 -
--	atari_MFP_init_done = 1;
- }
+ #define AMI_UNKNOWN	(0)
+ #define AMI_500		(1)
+ #define AMI_500PLUS	(2)
+@@ -59,11 +57,9 @@ extern unsigned long amiga_chipset;
+      */
  
- #define SCC_WRITE(reg, val)				\
-@@ -214,11 +200,7 @@ void atari_init_mfp_port(int cflag)
- 			MFPDELAY();			\
- 	} while (0)
+ extern unsigned long amiga_eclock;	/* 700 kHz E Peripheral Clock */
+-extern unsigned long amiga_masterclock;	/* 28 MHz Master Clock */
+ extern unsigned long amiga_colorclock;	/* 3.5 MHz Color Clock */
+ extern unsigned long amiga_chip_size;	/* Chip RAM Size (bytes) */
+ extern unsigned char amiga_vblank;	/* VBLANK Frequency */
+-extern unsigned char amiga_psfreq;	/* Power Supply Frequency */
  
--#ifndef CONFIG_SERIAL_CONSOLE
- static void __init atari_init_scc_port(int cflag)
--#else
--void atari_init_scc_port(int cflag)
--#endif
- {
- 	extern int atari_SCC_reset_done;
- 	static int clksrc_table[9] =
-@@ -277,14 +259,9 @@ void atari_init_scc_port(int cflag)
- 	SCC_WRITE(5, reg5 | 8);
  
- 	atari_SCC_reset_done = 1;
--	atari_SCC_init_done = 1;
- }
+ #define AMIGAHW_DECLARE(name)	unsigned name : 1
+--- a/include/asm-m68k/amigaints.h
++++ b/include/asm-m68k/amigaints.h
+@@ -98,6 +98,8 @@
+ #define CIA_ICR_ALL	0x1f
+ #define CIA_ICR_SETCLR	0x80
  
--#ifndef CONFIG_SERIAL_CONSOLE
- static void __init atari_init_midi_port(int cflag)
--#else
--void atari_init_midi_port(int cflag)
--#endif
- {
- 	int baud = cflag & CBAUD;
- 	int csize = ((cflag & CSIZE) == CS8) ? 0x10 : 0x00;
++extern void amiga_init_IRQ(void);
++
+ /* to access the interrupt control registers of CIA's use only
+ ** these functions, they behave exactly like the amiga os routines
+ */
 
 -- 
 Gr{oetje,eeting}s,
