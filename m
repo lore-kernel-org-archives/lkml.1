@@ -1,125 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760621AbYGQSil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757671AbYGQSj2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760621AbYGQSil (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 14:38:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758759AbYGQSid
+	id S1757671AbYGQSj2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 14:39:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756566AbYGQSjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 14:38:33 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:43459 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758183AbYGQSic convert rfc822-to-8bit (ORCPT
+	Thu, 17 Jul 2008 14:39:17 -0400
+Received: from proxy1.bredband.net ([195.54.101.71]:37490 "EHLO
+	proxy1.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757378AbYGQSjQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 14:38:32 -0400
+	Thu, 17 Jul 2008 14:39:16 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqczABsvf0jVchRXPGdsb2JhbACBWpBaAQEBAS0BnjI
+Message-ID: <33935.192.168.102.6.1216319954.squirrel@intranet>
+In-Reply-To: <m13am8wgk6.fsf@frodo.ebiederm.org>
+References: <487F5D6B.1090007@hozac.com> <487F5EDB.1000008@openvz.org>
+    <43011.192.168.102.6.1216308280.squirrel@intranet>
+    <m13am8wgk6.fsf@frodo.ebiederm.org>
+Date: Thu, 17 Jul 2008 20:39:14 +0200 (CEST)
+Subject: Re: [PATCH 1/2] signals: kill(-1) should only signal processes in  
+     the same namespace
+From: "Daniel Hokka Zakrisson" <daniel@hozac.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Pavel Emelyanov" <xemul@openvz.org>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, oleg@tv-sign.ru,
+       akpm@linux-foundation.org
+User-Agent: SquirrelMail/1.4.10a-1.fc6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-ID: <18559.37282.156032.998661@harpo.it.uu.se>
-Date: Thu, 17 Jul 2008 20:38:26 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Loic Grenie <loic.grenie@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Typecast problems in SKFP driver
-In-Reply-To: <20080717173149.GA5040@cognac.dyndns.org>
-References: <20080717173149.GA5040@cognac.dyndns.org>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Loic Grenie writes:
- >     I've just compiled the 2.6.26-git5 kernel and the SKFP driver
- >     compilation produces complaints about typecasts. These complaints
- >     disappear with the following patch.
+Eric W. Biederman wrote:
+> "Daniel Hokka Zakrisson" <daniel@hozac.com> writes:
+>
+>> Pavel Emelyanov wrote:
+>>> Daniel Hokka Zakrisson wrote:
+>>>> While moving Linux-VServer to using pid namespaces, I noticed that
+>>>> kill(-1) from inside a pid namespace is currently signalling every
+>>>> process in the entire system, including processes that are otherwise
+>>>> unreachable from the current process.
+>>>
+>>> This is not a "news" actually, buy anyway - thanks :)
+>>
+>> And yet nobody's fixed it... Kind of a critical thing, if you actually
+>> want to use them, since most distribution's rc-scripts do a kill(-1,
+>> SIGTERM), followed by kill(-1, SIGKILL) when halting (which, needless to
+>> say, would be very bad).
+>>
+>>>> This patch fixes it by making sure that only processes which are in
+>>>> the same pid namespace as current get signalled.
+>>>
+>>> This is to be done, indeed, but I do not like the proposed
+>>> implementation,
+>>> since you have to walk all the tasks in the system (under
+>>> tasklist_lock,
+>>> by the way) to search for a couple of interesting ones. Better look at
+>>> how
+>>> zap_pid_ns_processes works (by the way - I saw some patch doing so some
+>>> time ago).
+>>
+>> The way zap_pid_ns_processes does it is worse, since it signals every
+>> thread in the namespace rather than every thread group. So either we
+>> walk
+>> the global tasklist, or we create a per-namespace one. Is that what we
+>> want?
+>
+> Can you please introduce kill_pidns_info and have both
+> kill_something_info and zap_pid_ns_processes call this common
+> function?
 
-NAK, this needs to be done by someone with better understanding of C.
+Looks like you've already done that. :-) (Referring to Sukadev's email.)
+Is there any reason we don't just merge that patch?
 
- > 
- >       Thanks,
- > 
- >           Loïc Grenié
- > diff --git a/drivers/net/skfp/ess.c b/drivers/net/skfp/ess.c
- > index 889f987..d3a8afc 100644
- > --- a/drivers/net/skfp/ess.c
- > +++ b/drivers/net/skfp/ess.c
- > @@ -510,7 +510,7 @@ static void ess_send_response(struct s_smc *smc, struct smt_header *sm,
- >  	chg->path.para.p_type = SMT_P320B ;
- >  	chg->path.para.p_len = sizeof(struct smt_p_320b) - PARA_LEN ;
- >  	chg->path.mib_index = SBAPATHINDEX ;
- > -	chg->path.path_pad = (u_short)NULL ;
- > +	chg->path.path_pad = (u_short)(long)NULL ;
- >  	chg->path.path_index = PRIMARY_RING ;
+> We want to walk the set of all pids in a pid namespace.  /proc does
+> this and it is the recommended idiom.  If walking all of the pids in a
+> pid namespace is not fast enough we can accelerate that.
+>
+> You are correct signalling every thread in a namespace is worse, in
+> fact it is semantically incorrect.  zap_pid_ns_processes gets away
+> with it because it is sending SIGKILL.   Therefore kill_pidns_info
+> should skip sending a signal to every task that is not the
+> thread_group_leader.
+>
+> We need to hold the tasklist_lock to prevent new processes from
+> joining the list of all processes.  Otherwise we could run the code
+> under the rcu_read_lock.
+>
+> Eric
 
-Putting NULL (a pointer type) in an u_short field is utterly
-and completely broken. My guess is that the code really wants:
-
-	chg->path.path_pad = 0;
-
- >  	/* set P320F */
- > @@ -606,7 +606,7 @@ static void ess_send_alc_req(struct s_smc *smc)
- >  	req->path.para.p_type = SMT_P320B ;
- >  	req->path.para.p_len = sizeof(struct smt_p_320b) - PARA_LEN ;
- >  	req->path.mib_index = SBAPATHINDEX ;
- > -	req->path.path_pad = (u_short)NULL ;
- > +	req->path.path_pad = (u_short)(long)NULL ;
- >  	req->path.path_index = PRIMARY_RING ;
-
-ditto
-
- >  
- >  	/* set P0017 */
- > @@ -636,7 +636,7 @@ static void ess_send_alc_req(struct s_smc *smc)
- >  	/* set P19 */
- >  	req->a_addr.para.p_type = SMT_P0019 ;
- >  	req->a_addr.para.p_len = sizeof(struct smt_p_0019) - PARA_LEN ;
- > -	req->a_addr.sba_pad = (u_short)NULL ;
- > +	req->a_addr.sba_pad = (u_short)(long)NULL ;
- >  	req->a_addr.alloc_addr = null_addr ;
-
-ditto
-
- >  
- >  	/* set P1A */
- > diff --git a/drivers/net/skfp/pmf.c b/drivers/net/skfp/pmf.c
- > index ea85de9..5798be4 100644
- > --- a/drivers/net/skfp/pmf.c
- > +++ b/drivers/net/skfp/pmf.c
- > @@ -44,17 +44,17 @@ static SMbuf *smt_build_pmf_response(struct s_smc *smc, struct smt_header *req,
- >  				     int set, int local);
- >  static int port_to_mib(struct s_smc *smc, int p);
- >  
- > -#define MOFFSS(e)	((int)&(((struct fddi_mib *)0)->e))
- > -#define MOFFSA(e)	((int) (((struct fddi_mib *)0)->e))
- > +#define MOFFSS(e)	((long)&(((struct fddi_mib *)0)->e))
- > +#define MOFFSA(e)	((long) (((struct fddi_mib *)0)->e))
-
-NAK, use offsetof().
-
-How is the MOFFSA() used? As written it makes no sense at all
-as evaluating it as an r-value will oops.
-
- >  
- > -#define MOFFMS(e)	((int)&(((struct fddi_mib_m *)0)->e))
- > -#define MOFFMA(e)	((int) (((struct fddi_mib_m *)0)->e))
- > +#define MOFFMS(e)	((long)&(((struct fddi_mib_m *)0)->e))
- > +#define MOFFMA(e)	((long) (((struct fddi_mib_m *)0)->e))
-
-ditto
-
- >  
- > -#define MOFFAS(e)	((int)&(((struct fddi_mib_a *)0)->e))
- > -#define MOFFAA(e)	((int) (((struct fddi_mib_a *)0)->e))
- > +#define MOFFAS(e)	((long)&(((struct fddi_mib_a *)0)->e))
- > +#define MOFFAA(e)	((long) (((struct fddi_mib_a *)0)->e))
-
-ditto
-
- >  
- > -#define MOFFPS(e)	((int)&(((struct fddi_mib_p *)0)->e))
- > -#define MOFFPA(e)	((int) (((struct fddi_mib_p *)0)->e))
- > +#define MOFFPS(e)	((long)&(((struct fddi_mib_p *)0)->e))
- > +#define MOFFPA(e)	((long) (((struct fddi_mib_p *)0)->e))
-
-ditto
-
-To be fair, the original code is crap, but your changes don't
-make it any better.
+-- 
+Daniel Hokka Zakrisson
