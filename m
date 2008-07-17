@@ -1,105 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760598AbYGQTGM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760899AbYGQTHX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760598AbYGQTGM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 15:06:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757932AbYGQTF5
+	id S1760899AbYGQTHX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 15:07:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758959AbYGQTHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 15:05:57 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41387 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757678AbYGQTF5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 15:05:57 -0400
-Message-ID: <487F980F.7070708@redhat.com>
-Date: Thu, 17 Jul 2008 14:05:51 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
+	Thu, 17 Jul 2008 15:07:08 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:50127 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758872AbYGQTHG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 15:07:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding
+         :sender;
+        b=LLbTue5n6xZ9fm1v/DaZBh8H5Oq9+oDF5Mcl1lr92oUo450D7JWvvdwcFKAOIFq6l2
+         rHZo+0VIwyLOLtIYVW3jnAzt9fPJqd+qTjBmqeUobdJNBth2TvOJ0y44W9jBp4hTp2FM
+         /lVfZm74s3ueowE/gLgDirESLlpEHxsKNGcyM=
+Message-ID: <487F986A.3070504@tuffmail.co.uk>
+Date: Thu, 17 Jul 2008 20:07:22 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: Tim Shimmin <xfs-masters@oss.sgi.com>, xfs@oss.sgi.com,
-       linux-kernel@vger.kernel.org, Johannes Weiner <hannes@saeurebad.de>
-Subject: Re: latest -git: kernel BUG at fs/xfs/support/debug.c:54!
-References: <19f34abd0807171046j425bebc6m8d8eb80a641e0e5b@mail.gmail.com>
-In-Reply-To: <19f34abd0807171046j425bebc6m8d8eb80a641e0e5b@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+CC: Alexey Starikovskiy <astarikovskiy@suse.de>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] acpi: Avoid dropping rapid hotkey events (or other GPEs)
+ on Asus EeePC
+References: <487D23C3.5070301@student.cs.york.ac.uk> <487F31D7.30803@suse.de> <20080717121309.GF31732@khazad-dum.debian.net> <487F3B6D.3090507@suse.de> <20080717162628.GB18457@khazad-dum.debian.net> <487F7724.5080905@tuffmail.co.uk> <20080717185032.GD18457@khazad-dum.debian.net>
+In-Reply-To: <20080717185032.GD18457@khazad-dum.debian.net>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vegard Nossum wrote:
-> Hi,
-> 
-> I got this with an intentionally corrupted filesystem:
-> 
-> Filesystem "loop1": Disabling barriers, not supported by the underlying device
-> XFS mounting filesystem loop1
-> Ending clean XFS mount for filesystem: loop1
-> Device loop1 - bad inode magic/vsn daddr 9680 #30 (magic=4946)
-> ------------[ cut here ]------------
-> kernel BUG at fs/xfs/support/debug.c:54!
+Henrique de Moraes Holschuh wrote:
+> On Thu, 17 Jul 2008, Alan Jenkins wrote:
+>   
+>> Actually Alexey has another patch in bugzilla (#10919) which resolves
+>> this issue in a better way.  It avoids polling altogether, which is good
+>> because it means you get events immediately.  My laptop has backlight
+>> adjustment hotkeys with hardware autorepeat, so it looks really jerky
+>> with polling.
+>>     
+>
+> We need to get ALL pending events from the EC, whether in polling mode or in
+> interrupt mode 
 
-running a debug XFS will turn all sorts of tests into panics that would
-not otherwise crash and burn that way.
+> (and we must make sure that we ARE going to queue any new
+> interrupt before we stop checking for an empty pending event queue,
+> otherwise there is a small window where a new event might get queued, and we
+> are still masking the GPE and don't notice it).  As long as the fix does
+> that, it is all I care :-)
+>   
+OK, I forgot about that. I need to do some reading on kernel
+programming, workqueues in particular, and redo my patch again. Sorry,
+Alexey! AFAICS there's still this (very) small window where events could
+be dropped.
 
-I think normally when testing intentionally corrupted filesystems, you
-expect corruptions to be handled gracefully.  But in xfs's flavor of
-debug, I'm not sure it's quite as true.
-
-Perhaps the debug variant should not BUG() on disk corruption either,
-but it'd probably be more relevent to test this on a non-debug build.
-
-Does this corrupted fs survive better on non-debug xfs?
-
--Eric
-
-> invalid opcode: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
-> Pid: 12849, comm: grep Not tainted (2.6.26-03414-g33af79d #43)
-> EIP: 0060:[<c0386d89>] EFLAGS: 00210246 CPU: 1
-> EIP is at cmn_err+0x99/0xa0
-> EAX: ed75e000 EBX: c089047c ECX: ed75e000 EDX: 00000000
-> ESI: 00000000 EDI: 00200286 EBP: ed75fbbc ESP: ed75fba4
->  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> Process grep (pid: 12849, ti=ed75e000 task=f1ee9fe0 task.ti=ed75e000)
-> Stack: c0855099 c0846a0d c0d0e8c0 00004946 df92a8f0 0000001e ed75fc2c c03540d4
->        00000000 c089047c ed75fbfc 000025d0 00000000 0000001e 00004946 ed75fc54
->        00000000 df92a8f0 df92abd8 000025d0 00000000 00000000 706f6f6c 00000031
-> Call Trace:
->  [<c03540d4>] ? xfs_imap_to_bp+0x164/0x250
->  [<c015ad76>] ? trace_hardirqs_on_caller+0x116/0x170
->  [<c0354250>] ? xfs_itobp+0x90/0x180
->  [<c0356e51>] ? xfs_iread+0xa1/0x280
->  [<c034f216>] ? xfs_iget_core+0x1c6/0x6e0
->  [<c034f82a>] ? xfs_iget+0xfa/0x170
->  [<c0377546>] ? xfs_lookup+0xb6/0xc0
->  [<c0382fba>] ? xfs_vn_lookup+0x4a/0x90
->  [<c01ac110>] ? do_lookup+0x160/0x1b0
->  [<c01adc38>] ? __link_path_walk+0x208/0xdc0
->  [<c014f916>] ? up_read+0x16/0x30
->  [<c034eabe>] ? xfs_iunlock+0xee/0x110
->  [<c0382bdf>] ? xfs_vn_follow_link+0x3f/0x80
->  [<c01ae327>] ? __link_path_walk+0x8f7/0xdc0
->  [<c015906b>] ? trace_hardirqs_off+0xb/0x10
->  [<c01ae844>] ? path_walk+0x54/0xb0
->  [<c01aea45>] ? do_path_lookup+0x85/0x230
->  [<c01af7a8>] ? __user_walk_fd+0x38/0x50
->  [<c01a7fb1>] ? vfs_stat_fd+0x21/0x50
->  [<c01590cd>] ? put_lock_stats+0xd/0x30
->  [<c01bc81d>] ? mntput_no_expire+0x1d/0x110
->  [<c01a8081>] ? vfs_stat+0x11/0x20
->  [<c01a80a4>] ? sys_stat64+0x14/0x30
->  [<c01a5a8f>] ? fput+0x1f/0x30
->  [<c044a0f8>] ? trace_hardirqs_on_thunk+0xc/0x10
->  [<c015ad76>] ? trace_hardirqs_on_caller+0x116/0x170
->  [<c044a0f8>] ? trace_hardirqs_on_thunk+0xc/0x10
->  [<c010407f>] ? sysenter_past_esp+0x78/0xc5
->  =======================
-> Code: 04 e8 00 eb 3d 00 89 fa b8 40 4a 92 c0 e8 70 d0 3d 00 85 f6 74
-> 15 83 c4 0c 5b 5e 5f 5d c3 8d 74 26 00 c6 81 c0 e8 d0 c0 00 eb bc <0f>
-> 0b eb fe 90 90 90 55 b9 04 00 00 00 89 e5 57 89 c7 31 c0 f3
-> EIP: [<c0386d89>] cmn_err+0x99/0xa0 SS:ESP 0068:ed75fba4
-> Kernel panic - not syncing: Fatal exception
-> 
-> 
-> Vegard
-> 
-
+Alan
