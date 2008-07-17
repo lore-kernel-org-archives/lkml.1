@@ -1,54 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759265AbYGQRpk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760821AbYGQRqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759265AbYGQRpk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 13:45:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932147AbYGQRpW
+	id S1760821AbYGQRqx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 13:46:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758371AbYGQRqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 13:45:22 -0400
-Received: from isilmar.linta.de ([213.133.102.198]:40369 "EHLO linta.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932134AbYGQRpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 13:45:20 -0400
-Date: Thu, 17 Jul 2008 19:42:48 +0200
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: torvalds@osdl.org, akpm@osdl.org
-Cc: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [git pull] PCMCIA bugfixes for 2.6.27
-Message-ID: <20080717174248.GA6802@comet.dominikbrodowski.net>
-Mail-Followup-To: torvalds@osdl.org, akpm@osdl.org,
-	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
+	Thu, 17 Jul 2008 13:46:45 -0400
+Received: from rn-out-0910.google.com ([64.233.170.184]:52414 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758148AbYGQRqo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 13:46:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=DrOzkoGwLdRe8eIYLJCiUhsXHF9ZixCr82wIVJk5BDRU/cqzurxgpkPervC05pBIC1
+         SmJMb64iF9wcIgLsIkyUX6GWAzw5debgKl9XoTsdtbOk/+NzhKyw+fkYioVdQMDYPvTC
+         I94QL2D5XbRvzJJX6P23ceAItwRc+pboHc0Rw=
+Message-ID: <19f34abd0807171046j425bebc6m8d8eb80a641e0e5b@mail.gmail.com>
+Date: Thu, 17 Jul 2008 19:46:42 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Tim Shimmin" <xfs-masters@oss.sgi.com>, xfs@oss.sgi.com
+Subject: latest -git: kernel BUG at fs/xfs/support/debug.c:54!
+Cc: linux-kernel@vger.kernel.org, "Johannes Weiner" <hannes@saeurebad.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Hi,
 
-There are a few PCMCIA bugfixes for 2.6.27 available at
+I got this with an intentionally corrupted filesystem:
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/brodo/pcmcia-fixes-2.6/
+Filesystem "loop1": Disabling barriers, not supported by the underlying device
+XFS mounting filesystem loop1
+Ending clean XFS mount for filesystem: loop1
+Device loop1 - bad inode magic/vsn daddr 9680 #30 (magic=4946)
+------------[ cut here ]------------
+kernel BUG at fs/xfs/support/debug.c:54!
+invalid opcode: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
+Pid: 12849, comm: grep Not tainted (2.6.26-03414-g33af79d #43)
+EIP: 0060:[<c0386d89>] EFLAGS: 00210246 CPU: 1
+EIP is at cmn_err+0x99/0xa0
+EAX: ed75e000 EBX: c089047c ECX: ed75e000 EDX: 00000000
+ESI: 00000000 EDI: 00200286 EBP: ed75fbbc ESP: ed75fba4
+ DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+Process grep (pid: 12849, ti=ed75e000 task=f1ee9fe0 task.ti=ed75e000)
+Stack: c0855099 c0846a0d c0d0e8c0 00004946 df92a8f0 0000001e ed75fc2c c03540d4
+       00000000 c089047c ed75fbfc 000025d0 00000000 0000001e 00004946 ed75fc54
+       00000000 df92a8f0 df92abd8 000025d0 00000000 00000000 706f6f6c 00000031
+Call Trace:
+ [<c03540d4>] ? xfs_imap_to_bp+0x164/0x250
+ [<c015ad76>] ? trace_hardirqs_on_caller+0x116/0x170
+ [<c0354250>] ? xfs_itobp+0x90/0x180
+ [<c0356e51>] ? xfs_iread+0xa1/0x280
+ [<c034f216>] ? xfs_iget_core+0x1c6/0x6e0
+ [<c034f82a>] ? xfs_iget+0xfa/0x170
+ [<c0377546>] ? xfs_lookup+0xb6/0xc0
+ [<c0382fba>] ? xfs_vn_lookup+0x4a/0x90
+ [<c01ac110>] ? do_lookup+0x160/0x1b0
+ [<c01adc38>] ? __link_path_walk+0x208/0xdc0
+ [<c014f916>] ? up_read+0x16/0x30
+ [<c034eabe>] ? xfs_iunlock+0xee/0x110
+ [<c0382bdf>] ? xfs_vn_follow_link+0x3f/0x80
+ [<c01ae327>] ? __link_path_walk+0x8f7/0xdc0
+ [<c015906b>] ? trace_hardirqs_off+0xb/0x10
+ [<c01ae844>] ? path_walk+0x54/0xb0
+ [<c01aea45>] ? do_path_lookup+0x85/0x230
+ [<c01af7a8>] ? __user_walk_fd+0x38/0x50
+ [<c01a7fb1>] ? vfs_stat_fd+0x21/0x50
+ [<c01590cd>] ? put_lock_stats+0xd/0x30
+ [<c01bc81d>] ? mntput_no_expire+0x1d/0x110
+ [<c01a8081>] ? vfs_stat+0x11/0x20
+ [<c01a80a4>] ? sys_stat64+0x14/0x30
+ [<c01a5a8f>] ? fput+0x1f/0x30
+ [<c044a0f8>] ? trace_hardirqs_on_thunk+0xc/0x10
+ [<c015ad76>] ? trace_hardirqs_on_caller+0x116/0x170
+ [<c044a0f8>] ? trace_hardirqs_on_thunk+0xc/0x10
+ [<c010407f>] ? sysenter_past_esp+0x78/0xc5
+ =======================
+Code: 04 e8 00 eb 3d 00 89 fa b8 40 4a 92 c0 e8 70 d0 3d 00 85 f6 74
+15 83 c4 0c 5b 5e 5f 5d c3 8d 74 26 00 c6 81 c0 e8 d0 c0 00 eb bc <0f>
+0b eb fe 90 90 90 55 b9 04 00 00 00 89 e5 57 89 c7 31 c0 f3
+EIP: [<c0386d89>] cmn_err+0x99/0xa0 SS:ESP 0068:ed75fba4
+Kernel panic - not syncing: Fatal exception
 
-Please pull from that location. The diffstat and list of changes follows,
-the individual diffs are sent (at least) to the linux-pcmcia list.
 
-Thanks,
-        Dominik
+Vegard
 
-----
- drivers/char/pcmcia/cm4000_cs.c |    2 +-
- drivers/ide/legacy/ide-cs.c     |    2 --
- drivers/pcmcia/cistpl.c         |    2 +-
- 3 files changed, 2 insertions(+), 4 deletions(-)
-----
-Dominik Brodowski (1):
-      pcmcia: fix return value in cm4000_cs.c
-
-Larry Finger (1):
-      pcmcia: ide-cs: Remove outdated comment
-
-Marc Zyngier (1):
-      pcmcia: fix cisinfo_t removal
-
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
