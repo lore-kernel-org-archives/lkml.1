@@ -1,121 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932760AbYGQTZh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932624AbYGQTZz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932760AbYGQTZh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 15:25:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932355AbYGQTWy
+	id S932624AbYGQTZz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 15:25:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932359AbYGQTWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 15:22:54 -0400
-Received: from nelson.telenet-ops.be ([195.130.133.66]:34861 "EHLO
-	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759291AbYGQTWp (ORCPT
+	Thu, 17 Jul 2008 15:22:55 -0400
+Received: from edna.telenet-ops.be ([195.130.132.58]:52624 "EHLO
+	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759373AbYGQTWp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 17 Jul 2008 15:22:45 -0400
-Message-Id: <20080717191751.642436641@mail.of.borg>
+Message-Id: <20080717191751.090161391@mail.of.borg>
 References: <20080717191607.955742542@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Thu, 17 Jul 2008 21:16:15 +0200
+Date: Thu, 17 Jul 2008 21:16:13 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Adrian Bunk <bunk@kernel.org>
-Subject: [patch 08/29] m68k: remove AP1000 code
-Content-Disposition: inline; filename=m68k-remove-AP1000-code.diff
+       Sam Ravnborg <sam@ravnborg.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch 06/29] m68k: remove -traditional
+Content-Disposition: inline; filename=m68k-remove-traditional.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@kernel.org>
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
-Unless I miss something that's code for a sparc machine even the sparc 
-code no longer supports that got copied to m68k when these files were 
-copied.
+Subject: [patch 06/29] [RFC patch 4/9] Re: [PATCH] Stringify support commas
+ > This is a no-no for those archs that still use -traditional.
+ > > I dunno if this is a problem for you at the moment and the
+ > > right fix is anyway to nuke -traditional.
+ > > 
+ > >     Sam
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- arch/m68k/sun3/prom/console.c |    4 ----
- arch/m68k/sun3/prom/init.c    |    9 ---------
- arch/m68k/sun3/prom/printf.c  |    5 -----
- include/asm-m68k/oplib.h      |    1 -
- 4 files changed, 19 deletions(-)
+ arch/m68k/fpsp040/Makefile  |    1 -
+ arch/m68k/ifpsp060/Makefile |    1 -
+ arch/m68k/kernel/Makefile   |    2 --
+ arch/m68k/lib/Makefile      |    2 --
+ arch/m68k/math-emu/Makefile |    2 --
+ 5 files changed, 8 deletions(-)
 
---- a/arch/m68k/sun3/prom/console.c
-+++ b/arch/m68k/sun3/prom/console.c
-@@ -104,8 +104,6 @@ prom_query_input_device()
- 				return PROMDEV_ITTYB;
- 		}
- 		return PROMDEV_I_UNK;
--	case PROM_AP1000:
--		return PROMDEV_I_UNK;
- 	};
- }
- #endif
-@@ -166,8 +164,6 @@ prom_query_output_device()
- 			};
- 		}
- 		break;
--	case PROM_AP1000:
--		return PROMDEV_I_UNK;
- 	};
- 	return PROMDEV_O_UNK;
- }
---- a/arch/m68k/sun3/prom/init.c
-+++ b/arch/m68k/sun3/prom/init.c
-@@ -31,11 +31,6 @@ extern void prom_ranges_init(void);
+--- a/arch/m68k/fpsp040/Makefile
++++ b/arch/m68k/fpsp040/Makefile
+@@ -10,7 +10,6 @@ obj-y    := bindec.o binstr.o decbin.o d
+ 	    x_bsun.o x_fline.o x_operr.o x_ovfl.o x_snan.o x_store.o \
+ 	    x_unfl.o x_unimp.o x_unsupp.o bugfix.o skeleton.o
  
- void __init prom_init(struct linux_romvec *rp)
- {
--#ifdef CONFIG_AP1000
--	extern struct linux_romvec *ap_prom_init(void);
--	rp = ap_prom_init();
--#endif
+-EXTRA_AFLAGS := -traditional
+ EXTRA_LDFLAGS := -x
+ 
+ $(OS_OBJS): fpsp.h
+--- a/arch/m68k/ifpsp060/Makefile
++++ b/arch/m68k/ifpsp060/Makefile
+@@ -6,5 +6,4 @@
+ 
+ obj-y := fskeleton.o iskeleton.o os.o
+ 
+-EXTRA_AFLAGS := -traditional
+ EXTRA_LDFLAGS := -x
+--- a/arch/m68k/kernel/Makefile
++++ b/arch/m68k/kernel/Makefile
+@@ -16,5 +16,3 @@ devres-y = ../../../kernel/irq/devres.o
+ 
+ obj-$(CONFIG_PCI)	+= bios32.o
+ obj-y$(CONFIG_MMU_SUN3) += dma.o	# no, it's not a typo
 -
- 	romvec = rp;
- #ifndef CONFIG_SUN3
- 	switch(romvec->pv_romvers) {
-@@ -53,10 +48,6 @@ void __init prom_init(struct linux_romve
- 		prom_printf("PROMLIB: Sun IEEE Prom not supported yet\n");
- 		prom_halt();
- 		break;
--	case 42: /* why not :-) */
--		prom_vers = PROM_AP1000;
--		break;
+-EXTRA_AFLAGS := -traditional
+--- a/arch/m68k/lib/Makefile
++++ b/arch/m68k/lib/Makefile
+@@ -2,7 +2,5 @@
+ # Makefile for m68k-specific library files..
+ #
+ 
+-EXTRA_AFLAGS := -traditional
 -
- 	default:
- 		prom_printf("PROMLIB: Bad PROM version %d\n",
- 			    romvec->pv_romvers);
---- a/arch/m68k/sun3/prom/printf.c
-+++ b/arch/m68k/sun3/prom/printf.c
-@@ -37,10 +37,6 @@ prom_printf(char *fmt, ...)
+ lib-y	:= ashldi3.o ashrdi3.o lshrdi3.o muldi3.o \
+ 	   checksum.o string.o uaccess.o
+--- a/arch/m68k/math-emu/Makefile
++++ b/arch/m68k/math-emu/Makefile
+@@ -2,8 +2,6 @@
+ # Makefile for the linux kernel.
+ #
  
- 	bptr = ppbuf;
- 
--#ifdef CONFIG_AP1000
--        ap_write(1,bptr,strlen(bptr));
--#else
+-EXTRA_AFLAGS := -traditional
 -
- #ifdef CONFIG_KGDB
- 	if (kgdb_initialized) {
- 		printk("kgdb_initialized = %d\n", kgdb_initialized);
-@@ -54,7 +50,6 @@ prom_printf(char *fmt, ...)
- 		prom_putchar(ch);
- 	}
- #endif
--#endif
- 	va_end(args);
- 	return;
- }
---- a/include/asm-m68k/oplib.h
-+++ b/include/asm-m68k/oplib.h
-@@ -19,7 +19,6 @@ enum prom_major_version {
- 	PROM_V2,      /* sun4c and early sun4m V2 prom */
- 	PROM_V3,      /* sun4m and later, up to sun4d/sun4e machines V3 */
- 	PROM_P1275,   /* IEEE compliant ISA based Sun PROM, only sun4u */
--        PROM_AP1000,  /* actually no prom at all */
- };
+ #EXTRA_AFLAGS += -DFPU_EMU_DEBUG
+ #EXTRA_CFLAGS += -DFPU_EMU_DEBUG
  
- extern enum prom_major_version prom_vers;
 
 -- 
 Gr{oetje,eeting}s,
