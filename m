@@ -1,142 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932151AbYGQTYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932760AbYGQTZh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932151AbYGQTYp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 15:24:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932319AbYGQTWv
+	id S932760AbYGQTZh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 15:25:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932355AbYGQTWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 15:22:51 -0400
-Received: from monty.telenet-ops.be ([195.130.132.56]:49742 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759206AbYGQTWo (ORCPT
+	Thu, 17 Jul 2008 15:22:54 -0400
+Received: from nelson.telenet-ops.be ([195.130.133.66]:34861 "EHLO
+	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759291AbYGQTWp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 15:22:44 -0400
-Message-Id: <20080717191750.804735376@mail.of.borg>
+	Thu, 17 Jul 2008 15:22:45 -0400
+Message-Id: <20080717191751.642436641@mail.of.borg>
 References: <20080717191607.955742542@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Thu, 17 Jul 2008 21:16:12 +0200
+Date: Thu, 17 Jul 2008 21:16:15 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 05/29] m68k: Allow no CPU/platform type for allnoconfig
-Content-Disposition: inline; filename=m68k-allnoconfig.diff
+Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Adrian Bunk <bunk@kernel.org>
+Subject: [patch 08/29] m68k: remove AP1000 code
+Content-Disposition: inline; filename=m68k-remove-AP1000-code.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Adrian Bunk <bunk@kernel.org>
 
-Allow no CPU/platform type for allnoconfig
-  - Provide a dummy value for FPSTATESIZE if no CPU type was selected
-  - Provide a dummy value for NR_IRQS if no platform type was selected
-  - Warn the user if no CPU or platform type was selected
+Unless I miss something that's code for a sparc machine even the sparc 
+code no longer supports that got copied to m68k when these files were 
+copied.
 
-Note: you still cannot build an allnoconfig kernel, as CONFIG_SWAP=n doesn't
-build and we cannot easily fix that
-(http://groups.google.com/group/linux.kernel/browse_thread/thread/d430c78b07e1827b)
-
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- arch/m68k/kernel/setup.c    |    6 ++++++
- include/asm-m68k/fpu.h      |   10 +++++-----
- include/asm-m68k/irq.h      |    2 +-
- include/asm-m68k/tlbflush.h |    8 ++++----
- 4 files changed, 16 insertions(+), 10 deletions(-)
+ arch/m68k/sun3/prom/console.c |    4 ----
+ arch/m68k/sun3/prom/init.c    |    9 ---------
+ arch/m68k/sun3/prom/printf.c  |    5 -----
+ include/asm-m68k/oplib.h      |    1 -
+ 4 files changed, 19 deletions(-)
 
---- a/arch/m68k/kernel/setup.c
-+++ b/arch/m68k/kernel/setup.c
-@@ -26,6 +26,7 @@
- 
- #include <asm/bootinfo.h>
- #include <asm/setup.h>
-+#include <asm/fpu.h>
- #include <asm/irq.h>
- #include <asm/io.h>
- #include <asm/machdep.h>
-@@ -40,6 +41,11 @@
- #include <asm/dvma.h>
- #endif
- 
-+#if !FPSTATESIZE || !NR_IRQS
-+#warning No CPU/platform type selected, your kernel will not work!
-+#warning Are you building an allnoconfig kernel?
-+#endif
-+
- unsigned long m68k_machtype;
- EXPORT_SYMBOL(m68k_machtype);
- unsigned long m68k_cputype;
---- a/include/asm-m68k/fpu.h
-+++ b/include/asm-m68k/fpu.h
-@@ -7,15 +7,15 @@
-  */
- 
- #if defined(CONFIG_M68020) || defined(CONFIG_M68030)
--#define FPSTATESIZE (216/sizeof(unsigned char))
-+#define FPSTATESIZE (216)
- #elif defined(CONFIG_M68040)
--#define FPSTATESIZE (96/sizeof(unsigned char))
-+#define FPSTATESIZE (96)
- #elif defined(CONFIG_M68KFPU_EMU)
--#define FPSTATESIZE (28/sizeof(unsigned char))
-+#define FPSTATESIZE (28)
- #elif defined(CONFIG_M68060)
--#define FPSTATESIZE (12/sizeof(unsigned char))
-+#define FPSTATESIZE (12)
- #else
--#define FPSTATESIZE error no_cpu_type_configured
-+#define FPSTATESIZE (0)
- #endif
- 
- #endif /* __M68K_FPU_H */
---- a/include/asm-m68k/irq.h
-+++ b/include/asm-m68k/irq.h
-@@ -24,7 +24,7 @@
- #elif defined(CONFIG_HP300)
- #define NR_IRQS	8
- #else
--#error unknown nr of irqs
-+#define NR_IRQS	0
- #endif
- 
- /*
---- a/include/asm-m68k/tlbflush.h
-+++ b/include/asm-m68k/tlbflush.h
-@@ -16,7 +16,7 @@ static inline void flush_tlb_kernel_page
- 				     ".chip 68k"
- 				     : : "a" (addr));
- 		set_fs(old_fs);
--	} else
-+	} else if (CPU_IS_020_OR_030)
- 		__asm__ __volatile__("pflush #4,#4,(%0)" : : "a" (addr));
+--- a/arch/m68k/sun3/prom/console.c
++++ b/arch/m68k/sun3/prom/console.c
+@@ -104,8 +104,6 @@ prom_query_input_device()
+ 				return PROMDEV_ITTYB;
+ 		}
+ 		return PROMDEV_I_UNK;
+-	case PROM_AP1000:
+-		return PROMDEV_I_UNK;
+ 	};
  }
- 
-@@ -29,7 +29,7 @@ static inline void __flush_tlb(void)
- 		__asm__ __volatile__(".chip 68040\n\t"
- 				     "pflushan\n\t"
- 				     ".chip 68k");
--	else
-+	else if (CPU_IS_020_OR_030)
- 		__asm__ __volatile__("pflush #0,#4");
+ #endif
+@@ -166,8 +164,6 @@ prom_query_output_device()
+ 			};
+ 		}
+ 		break;
+-	case PROM_AP1000:
+-		return PROMDEV_I_UNK;
+ 	};
+ 	return PROMDEV_O_UNK;
  }
+--- a/arch/m68k/sun3/prom/init.c
++++ b/arch/m68k/sun3/prom/init.c
+@@ -31,11 +31,6 @@ extern void prom_ranges_init(void);
  
-@@ -45,7 +45,7 @@ static inline void __flush_tlb_one(unsig
+ void __init prom_init(struct linux_romvec *rp)
  {
- 	if (CPU_IS_040_OR_060)
- 		__flush_tlb040_one(addr);
--	else
-+	else if (CPU_IS_020_OR_030)
- 		__asm__ __volatile__("pflush #0,#4,(%0)" : : "a" (addr));
- }
+-#ifdef CONFIG_AP1000
+-	extern struct linux_romvec *ap_prom_init(void);
+-	rp = ap_prom_init();
+-#endif
+-
+ 	romvec = rp;
+ #ifndef CONFIG_SUN3
+ 	switch(romvec->pv_romvers) {
+@@ -53,10 +48,6 @@ void __init prom_init(struct linux_romve
+ 		prom_printf("PROMLIB: Sun IEEE Prom not supported yet\n");
+ 		prom_halt();
+ 		break;
+-	case 42: /* why not :-) */
+-		prom_vers = PROM_AP1000;
+-		break;
+-
+ 	default:
+ 		prom_printf("PROMLIB: Bad PROM version %d\n",
+ 			    romvec->pv_romvers);
+--- a/arch/m68k/sun3/prom/printf.c
++++ b/arch/m68k/sun3/prom/printf.c
+@@ -37,10 +37,6 @@ prom_printf(char *fmt, ...)
  
-@@ -60,7 +60,7 @@ static inline void flush_tlb_all(void)
- 		__asm__ __volatile__(".chip 68040\n\t"
- 				     "pflusha\n\t"
- 				     ".chip 68k");
--	else
-+	else if (CPU_IS_020_OR_030)
- 		__asm__ __volatile__("pflusha");
- }
+ 	bptr = ppbuf;
  
+-#ifdef CONFIG_AP1000
+-        ap_write(1,bptr,strlen(bptr));
+-#else
+-
+ #ifdef CONFIG_KGDB
+ 	if (kgdb_initialized) {
+ 		printk("kgdb_initialized = %d\n", kgdb_initialized);
+@@ -54,7 +50,6 @@ prom_printf(char *fmt, ...)
+ 		prom_putchar(ch);
+ 	}
+ #endif
+-#endif
+ 	va_end(args);
+ 	return;
+ }
+--- a/include/asm-m68k/oplib.h
++++ b/include/asm-m68k/oplib.h
+@@ -19,7 +19,6 @@ enum prom_major_version {
+ 	PROM_V2,      /* sun4c and early sun4m V2 prom */
+ 	PROM_V3,      /* sun4m and later, up to sun4d/sun4e machines V3 */
+ 	PROM_P1275,   /* IEEE compliant ISA based Sun PROM, only sun4u */
+-        PROM_AP1000,  /* actually no prom at all */
+ };
+ 
+ extern enum prom_major_version prom_vers;
 
 -- 
 Gr{oetje,eeting}s,
