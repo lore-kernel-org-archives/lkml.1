@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755517AbYGQGSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755231AbYGQGZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755517AbYGQGSh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 02:18:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYGQGS2
+	id S1755231AbYGQGZm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 02:25:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752298AbYGQGZc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 02:18:28 -0400
-Received: from bromo.msbb.uc.edu ([129.137.3.146]:52990 "HELO
-	bromo.msbb.uc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752645AbYGQGS2 (ORCPT
+	Thu, 17 Jul 2008 02:25:32 -0400
+Received: from smtp113.mail.mud.yahoo.com ([209.191.84.66]:37187 "HELO
+	smtp113.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751864AbYGQGZb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 02:18:28 -0400
-Date: Thu, 17 Jul 2008 02:18:25 -0400
-From: Jack Howarth <howarth@bromo.msbb.uc.edu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
-Message-ID: <20080717061825.GA19582@bromo.msbb.uc.edu>
-References: <86802c440807160136m6af981b2u6a37cabb8e33a629@mail.gmail.com> <20080716140810.GA2861@bromo.msbb.uc.edu> <86802c440807161029n7e0dac98x1ec260879204b6f0@mail.gmail.com> <86802c440807161535n3a4d6891n6f7c16bd4e1f19c3@mail.gmail.com> <20080717004004.GA17792@bromo.msbb.uc.edu> <86802c440807161749u2f5c1eben618e05c6e254fedd@mail.gmail.com> <20080717023538.GA18329@bromo.msbb.uc.edu> <86802c440807161959s10666027k5297af1d657ff4fa@mail.gmail.com> <20080717034418.GA18951@bromo.msbb.uc.edu> <86802c440807162113g4cea3bd9ic71210330417032b@mail.gmail.com>
+	Thu, 17 Jul 2008 02:25:31 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=OjyGE4xyL2K8qf2EFZFeMs3m0/bAmtWG5XQZIx6TRMvq956spveruCY/g2itppz7ieiAw7CaJx1lJslrIW8x4LrN9vb6xN1i6zfJEj8TvH3WYgee21tHr2vZPZS+WtgRKdxiZPkB8JCGuumq1wkPlJS6pGrKGtJP8MwFV9/WePA=  ;
+X-YMail-OSG: _sUKu.kVM1mZ8ISAjFxclMARH259Hm..MUKTyy46kwmSsBkkkONnmVyHaMxPA2VCNL6wu3BDWQ0vTtREp3ozlAj1iDsxcuG7A5Uef634XLteNuU8p2a4Gjo.FtJD3afk1Ds-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [patch 09/17] LTTng instrumentation - filemap
+Date: Thu, 17 Jul 2008 16:25:24 +1000
+User-Agent: KMail/1.9.5
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>, linux-mm@kvack.org,
+       Dave Hansen <haveblue@us.ibm.com>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Hideo AOKI <haoki@redhat.com>,
+       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+References: <20080715222604.331269462@polymtl.ca> <20080715222748.002421557@polymtl.ca>
+In-Reply-To: <20080715222748.002421557@polymtl.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <86802c440807162113g4cea3bd9ic71210330417032b@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200807171625.25302.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-YH,
-  Using the debug patches and your mmconfig patch as well as the kernel
-options 'debug initcall_debug apic=verbose pci=routeirq", I see the following
-messages that don't scroll off screen...
+On Wednesday 16 July 2008 08:26, Mathieu Desnoyers wrote:
+> Instrumentation of waits caused by memory accesses on mmap regions.
+>
+> Those tracepoints are used by LTTng.
+>
+> About the performance impact of tracepoints (which is comparable to
+> markers), even without immediate values optimizations, tests done by Hideo
+> Aoki on ia64 show no regression. His test case was using hackbench on a
+> kernel where scheduler instrumentation (about 5 events in code scheduler
+> code) was added. See the "Tracepoints" patch header for performance result
+> detail.
 
-PCI: 0000:00:1f.1 reg 10 io port: [ 40d8, 40df]
-PCI: 0000:00:1f.1 reg 14 io port: [ 40ec, 40ef]
-PCI: 0000:00:1f.1 reg 18 io port: [ 40d0, 40d7]
-PCI: 0000:00:1f.1 reg 1c io port: [ 40e8, 40eb]
-PCI: 0000:00:1f.1 reg 20 io port: [ 40b0, 40bf]
-pci 0000:00.1f.1: calling pci_fixup_transparent_bridge+0x0/0x2a
-PCI: Found 0000:00:1f.2 [8086/27c4] 000101 00
-PCI: 0000:00:1f.2 reg 10 io port: [ 40c8, 40cf]
-PCI: 0000:00:1f.2 reg 14 io port: [ 40e4, 40e7]
-PCI: 0000:00:1f.2 reg 18 io port: [ 40c0, 40c7]
-PCI: 0000:00:1f.2 reg 1c io port: [ 40e0, 40e3]
-PCI: 0000:00:1f.2 reg 20 io port: [ 40a0, 40af]
-PCI: 0000:00:1f.2 reg 24 32bit mmio: [d8405000, d84053ff]
-pci: 0000:00:1f.2 calling pci_fixup_transparent_bridge+0x0/0x2a
-PCI: Found 0000:00:1f.3 [8086/27da] 000c05 00
-PCI: 0000:00:1f.3 reg 20 io port: [ efa0, efbf]
-PCI: 0000:00:1f.3: calling pci_fixup_transparent_bridge+0x0/0x2a
-PCI: Fixups for bus 0000:00
-PCI: Scanning behind PCI bridge 0000:00:01.0, config 010100, pass 0
-PCI: Scanning bus 0000:01
-PCI: Found 0000:01:00.0 [1002/71c5] 000300 00
-PCI: 0000:00:01:00.0 reg 10 32bit mmio: [c0000000, cfffffff]
-PCI: 0000:00:01:00.0 reg 14 io port: [ 3000, 30ff]
-PCI: 0000:00:01:00.0 reg 18 32bit mmio: [d8300000, d830ffff]
+BTW. this sort of test is practically useless to measure overhead. If
+a modern CPU is executing out of primed insn/data and branch prediction
+cache, then yes this sort of thing is pretty well free.
 
-...at which point the boot freezes.
-                          Jack
+I see *real* workloads that have got continually and incrementally slower
+eg from 2.6.5 to 2.6.20+ as "features" get added. Surprisingly, none of
+them ever showed up individually on a microbenchmark.
+
+OK, for this case if you can configure it out, I guess that's fine. But
+let's not pretend that adding code and branches and function calls are
+ever free.
