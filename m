@@ -1,76 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759487AbYGQBnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760168AbYGQBnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759487AbYGQBnS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 21:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbYGQBnH
+	id S1760168AbYGQBnq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 21:43:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754442AbYGQBnh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 21:43:07 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56824 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752033AbYGQBnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 21:43:06 -0400
-Date: Wed, 16 Jul 2008 21:42:59 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@devserv.devel.redhat.com
-To: torvalds@linux-foundation.org
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Limit irq nesting
-Message-ID: <Pine.LNX.4.64.0807162128060.24301@devserv.devel.redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 16 Jul 2008 21:43:37 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:57623 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753106AbYGQBng (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 21:43:36 -0400
+To: a.p.zijlstra@chello.nl
+Cc: kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org, menage@google.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][RFC] dirty balancing for cgroups
+In-Reply-To: Your message of "Mon, 14 Jul 2008 15:49:04 +0200"
+	<1216043344.12595.89.camel@twins>
+References: <1216043344.12595.89.camel@twins>
+X-Mailer: Cue version 0.8 (080625-0732/takashi)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20080717014335.ED78A5A22@siro.lan>
+Date: Thu, 17 Jul 2008 10:43:35 +0900 (JST)
+From: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+hi,
 
-During examination of stack-overflows on sparc64, it was found that there 
-is no limit for a number of nested IRQ handlers. Sparc64 is especially 
-stack-hungry architecture, minimum frame size is 192 bytes and after 75 
-frames it overflows.
+> Now the problem this patch tries to address...
+> 
+> As you can see you'd need p_{bdi,cgroup,task} for it to work, and the
+> obvious approximation p_bdi * p_cgroup * p_task will get even more
+> coarse.
+> 
+> You could possibly attempt to do p_{bdi,cgroup} * p_task since the bdi
+> and cgroup set are pretty static, but still that would be painful.
 
-If someone provides a legitimate reason for more than 2 nested handlers, 
-you could increase the constant in the patch --- but there really should 
-be some limit, so that many simultaneous interrupts can't blow the stack.
+i chose min(p_bdi * p_cgroup, p_bdi * p_task) because i couldn't imagine
+a case where p_bdi * p_cgroup * p_task is better.
 
-Mikulas
+> So, could you please give some more justification for this work, I'm not
+> seeing the value in complicating all this just yet.
 
----
+a simple example for which my patch can make some sense is:
 
-IRQs without IRQF_DISABLED could nest to arbitrary level.
+	while :;do dd if=/dev/zero of=file conv=notrunc bs=4096 count=1;done
 
-At worst this would mean having as many IRQ handlers stack frames, as there
-are interrupts registered --- enough to cause a stack overflow.
-
-This patch makes a limit to have at most two handlers on the stack.
-
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
----
- include/linux/interrupt.h |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.26-rc8/include/linux/interrupt.h
-===================================================================
---- linux-2.6.26-rc8.orig/include/linux/interrupt.h	2008-06-25 03:58:20.000000000 +0200
-+++ linux-2.6.26-rc8/include/linux/interrupt.h	2008-07-01 17:42:44.000000000 +0200
-@@ -16,6 +16,11 @@
- #include <asm/system.h>
- 
- /*
-+ * Max number of interrupt handlers on a stack. To prevent stack overflow.
-+ */
-+#define MAX_NESTED_INTERRUPTS	2
-+
-+/*
-  * These correspond to the IORESOURCE_IRQ_* defines in
-  * linux/ioport.h to select the interrupt line behaviour.  When
-  * requesting an interrupt without specifying a IRQF_TRIGGER, the
-@@ -95,7 +100,7 @@ extern void devm_free_irq(struct device 
- #ifdef CONFIG_LOCKDEP
- # define local_irq_enable_in_hardirq()	do { } while (0)
- #else
--# define local_irq_enable_in_hardirq()	local_irq_enable()
-+# define local_irq_enable_in_hardirq()	do { if (hardirq_count() < (MAX_NESTED_INTERRUPTS << HARDIRQ_SHIFT)) local_irq_enable(); } while (0)
- #endif
- 
- extern void disable_irq_nosync(unsigned int irq);
+YAMAMOTO Takashi
