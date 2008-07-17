@@ -1,62 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758183AbYGQOPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758189AbYGQORv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758183AbYGQOPe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 10:15:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755744AbYGQOPZ
+	id S1758189AbYGQORv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 10:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756583AbYGQORm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 10:15:25 -0400
-Received: from il.qumranet.com ([212.179.150.194]:50037 "EHLO il.qumranet.com"
+	Thu, 17 Jul 2008 10:17:42 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43376 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755043AbYGQOPY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 10:15:24 -0400
-Message-ID: <487F53FB.20708@qumranet.com>
-Date: Thu, 17 Jul 2008 17:15:23 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1756253AbYGQORl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 10:17:41 -0400
+Date: Thu, 17 Jul 2008 09:57:46 -0400
+From: Josef Bacik <jbacik@redhat.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Josef Bacik <josef@toxicpanda.com>, linux-ext4@vger.kernel.org,
+       sct@redhat.com, akpm@linux-foundation.org, adilger@sun.com,
+       Johannes Weiner <hannes@saeurebad.de>, linux-kernel@vger.kernel.org
+Subject: Re: ext3 on latest -git: BUG: unable to handle kernel NULL pointer
+	dereference at 0000000c
+Message-ID: <20080717135746.GB14133@unused.rdu.redhat.com>
+References: <19f34abd0807170551q4fbb862bu270297cfd76a69be@mail.gmail.com> <1b7401870807170613y747baa7by158177047cc7e28@mail.gmail.com> <19f34abd0807170620g39ab942bl592ea3fa3fa0dab@mail.gmail.com> <1b7401870807170634u14492a53k3931ddcddbd1e098@mail.gmail.com> <19f34abd0807170639p838d14blc9a13d2104313f38@mail.gmail.com>
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: Roland Dreier <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       kvm-devel <kvm@vger.kernel.org>,
-       "Anthony N. Liguori [imap]" <aliguori@us.ibm.com>
-Subject: Re: KVM overflows the stack
-References: <1206479576.7562.21.camel@nimitz.home.sr71.net>	 <47EA1C63.8010202@qumranet.com>	 <1206550329.7883.5.camel@nimitz.home.sr71.net>	 <47EA80AC.4070204@qumranet.com>	 <1206551794.7883.7.camel@nimitz.home.sr71.net>	 <47EB6AAC.3040607@qumranet.com> <47EB7281.6070300@qumranet.com>	 <1206629709.7883.30.camel@nimitz.home.sr71.net>	 <47EBB63E.2060306@qumranet.com>	 <1212445810.8211.9.camel@nimitz.home.sr71.net>	 <48469BDA.3050206@qumranet.com> <1212738105.7837.3.camel@nimitz>	 <48512028.3070104@qumranet.com> <1216148242.25942.6.camel@nimitz>	 <1216244660.8711.6.camel@nimitz> <1216248527.11664.9.camel@nimitz>	 <487EDE26.8040201@qumranet.com>  <ada4p6p9h6m.fsf@cisco.com> <1216303561.11664.52.camel@nimitz>
-In-Reply-To: <1216303561.11664.52.camel@nimitz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19f34abd0807170639p838d14blc9a13d2104313f38@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hansen wrote:
-> On Wed, 2008-07-16 at 23:08 -0700, Roland Dreier wrote:
->   
->>  > Yes, things like kvm_lapic_state are way too big to be on the
->> stack.
->>
->> I had a quick look at the code, and my worry about dynamic allocation
->> would be that handling allocation failure seems like it might get
->> tricky.  Eg for handling struct kvm_pv_mmu_op_buffer (which is 528 bytes
->> on the stack in kvm_pv_mmu_op()) can you deal with an mmu op failing?
->>     
+On Thu, Jul 17, 2008 at 03:39:24PM +0200, Vegard Nossum wrote:
+> On Thu, Jul 17, 2008 at 3:34 PM, Josef Bacik <josef@toxicpanda.com> wrote:
+> >> Yeah, the full log exists at
+> >>
+> >>    http://folk.uio.no/vegardno/linux/log-1216293934.txt
+> >>
+> >> I think this is the interesting part:
+> >
+> > Hmm well the journal should have aborted, but it looks like it didn't,
+> > are you mounting with errors=continue by any chance?  Thanks much,
+> 
+> No, this is the command I used:
+> 
+>         mount -o loop disk mnt
+> 
+> I think this looks interesting:
+> 
+> EXT3-fs error (device loop0) in ext3_reserve_inode_write: IO failure
+> 
+> The code in ext3_reserve_inode_write() is here:
+> 
+>         err = ext3_journal_get_write_access(handle, iloc->bh);
+>         if (err) {
+>                 brelse(iloc->bh);
+>                 iloc->bh = NULL;
+>         }
+> 
+> Maybe it should do something different here?
+> 
+> But I don't know :-)
+> 
+> Thanks for helping out!
+> 
 >
-> Well, you *better* be able to deal with it.  :)
->
-> This code is also doing a *ton* of copy_to/from_user().  If userspace
-> had one of its input buffers swapped out (or one of its output buffers
-> not faulted in yet) and we're out of memory enough to be failing
-> kmallocs() then we're sure as heck also going to failing the user
-> copies.
->
-> I think it's a non-issue.
->
->   
 
-Yes, it's designed to be restartable.  Returning 0 should be fine.
+Can you try this patch out and see if it fixes the problem?  I didn't compile
+test it, so you may need to tweak somethings, but it should work.  Thanks,
 
-We can reduce the buffer size to 256 though.  I wouldn't want an 
-allocation in this hot path.
+Signed-off-by: Josef Bacik <jbacik@redhat.com>
 
--- 
-error compiling committee.c: too many arguments to function
-
+ 
+Index: linux-2.6/fs/ext3/inode.c
+===================================================================
+--- linux-2.6.orig/fs/ext3/inode.c
++++ linux-2.6/fs/ext3/inode.c
+@@ -2023,13 +2023,27 @@ static void ext3_clear_blocks(handle_t *
+ 		unsigned long count, __le32 *first, __le32 *last)
+ {
+ 	__le32 *p;
++	int ret;
++
+ 	if (try_to_extend_transaction(handle, inode)) {
+ 		if (bh) {
+ 			BUFFER_TRACE(bh, "call ext3_journal_dirty_metadata");
+-			ext3_journal_dirty_metadata(handle, bh);
++			ret = ext3_journal_dirty_metadata(handle, bh);
++			if (ret) {
++				ext3_std_error(inode->i_sb, ret);
++				return;
++			}
+ 		}
+-		ext3_mark_inode_dirty(handle, inode);
+-		ext3_journal_test_restart(handle, inode);
++		ret = ext3_mark_inode_dirty(handle, inode);
++		if (ret)
++			return;
++
++		ret = ext3_journal_test_restart(handle, inode);
++		if (ret) {
++			ext3_std_error(inode->i_sb, ret);
++			return;
++		}
++
+ 		if (bh) {
+ 			BUFFER_TRACE(bh, "retaking write access");
+ 			ext3_journal_get_write_access(handle, bh);
