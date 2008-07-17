@@ -1,70 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761287AbYGQW70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760521AbYGQXBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761287AbYGQW70 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 18:59:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755338AbYGQW7T
+	id S1760521AbYGQXBR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 19:01:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757017AbYGQXBD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 18:59:19 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:59110 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753740AbYGQW7S (ORCPT
+	Thu, 17 Jul 2008 19:01:03 -0400
+Received: from mga01.intel.com ([192.55.52.88]:7562 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754168AbYGQXBC convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 18:59:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=CeyeD3wDWyI43jLF2LkHIGXhCcKBnNLnAKDsaGjuvbK0uZavbmX1sTa+q5wRsq2gfy
-         ew5i+xfEPJX2QdUiXYM5wFnMunRNamEMW8f3iYXf13ww6j4JjqNZQb+2HB2SNSoY1srw
-         3/L7lsf757GKCNNt68pt2ZP5ecjAzWU9Ba41A=
-Date: Fri, 18 Jul 2008 02:56:32 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 23/23] /proc/PID/syscall
-Message-ID: <20080717225632.GA16887@martell.zuzino.mipt.ru>
-References: <20080717072541.F390E15411D@magilla.localdomain> <20080717073144.5A28715411D@magilla.localdomain>
+	Thu, 17 Jul 2008 19:01:02 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,206,1215414000"; 
+   d="scan'208";a="362555882"
+From: "Stone, Joshua I" <joshua.i.stone@intel.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       "systemtap@sourceware.org" <systemtap@sourceware.org>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Date: Thu, 17 Jul 2008 16:00:39 -0700
+Subject: RE: [PATCH] systemtap: fix up on_each_cpu() for kernels 2.6.26+
+Thread-Topic: [PATCH] systemtap: fix up on_each_cpu() for kernels 2.6.26+
+Thread-Index: AcjoLW7uy1FgTr2RRkyN9EGUvgcaWAAMX0Bw
+Message-ID: <60BA3EDE80604C4BAEE4AAF7FF714D185813FCF4@orsmsx504.amr.corp.intel.com>
+References: <1216313476.5515.16.camel@localhost.localdomain>
+In-Reply-To: <1216313476.5515.16.camel@localhost.localdomain>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080717073144.5A28715411D@magilla.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 12:31:44AM -0700, Roland McGrath wrote:
-> This adds /proc/PID/syscall and /proc/PID/task/TID/syscall magic files.
-> These use task_current_syscall() to show the task's current system call
-> number and argument registers, stack pointer and PC.
+James Bottomley wrote:
+> In kernel 2.6.26, this patch
+>
+> commit 15c8b6c1aaaf1c4edd67e2f02e4d8e1bd1a51c0d
+> Author: Jens Axboe <jens.axboe@oracle.com>
+> Date:   Fri May 9 09:39:44 2008 +0200
+>
+>     on_each_cpu(): kill unused 'retry' parameter
+>
+> means that runtime/time.c is now using the wrong calling conventions.
+> Fix this up and surround it by kernel versioning #ifdefs.
 
-> --- a/fs/proc/base.c
-> +++ b/fs/proc/base.c
-> @@ -509,6 +509,26 @@ static int proc_pid_limits(struct task_struct *task, char *buffer)
->  	return count;
->  }
->  
-> +#ifdef CONFIG_HAVE_ARCH_TRACEHOOK
-> +static int proc_pid_syscall(struct task_struct *task, char *buffer)
-> +{
-> +	long nr;
-> +	unsigned long args[6], sp, pc;
-> +
-> +	if (task_current_syscall(task, &nr, args, 6, &sp, &pc))
-> +		return sprintf(buffer, "running\n");
-> +
-> +	if (nr < 0)
-> +		return sprintf(buffer, "%ld 0x%lx 0x%lx\n", nr, sp, pc);
-> +
-> +	return sprintf(buffer,
-> +		       "%ld 0x%lx 0x%lx 0x%lx 0x%lx 0x%lx 0x%lx 0x%lx 0x%lx\n",
-> +		       nr,
-> +		       args[0], args[1], args[2], args[3], args[4], args[5],
-> +		       sp, pc);
-> +}
-> +#endif /* CONFIG_HAVE_ARCH_TRACEHOOK */
+On a closer look, the referenced commit wasn't actually merged until
+sometime between v2.6.26-git2 and -git3.  The released v2.6.26 still
+has 'retry' in on_each_cpu(), so we'll either have to use an autoconf
+test to detect the change, or wait and key the #ifdef on 2.6.27.
 
-My gut feeling this code needs ptrace_may_access() checks.
-
+Josh
