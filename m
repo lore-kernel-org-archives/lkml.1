@@ -1,41 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933011AbYGQTfs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933115AbYGQTgM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933011AbYGQTfs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 15:35:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933089AbYGQT2v
+	id S933115AbYGQTgM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 15:36:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933165AbYGQT3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 15:28:51 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:38069 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932783AbYGQT2u (ORCPT
+	Thu, 17 Jul 2008 15:29:41 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:4581 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932786AbYGQT3j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 15:28:50 -0400
-Message-ID: <487F9D6D.7090808@zytor.com>
-Date: Thu, 17 Jul 2008 12:28:45 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 17 Jul 2008 15:29:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=X04TWe+iQLeoo8CCdBeL5nfsbiGbkaEqWHa+H6w4Gtaf6oubIXr/hG8S6uO90Coea7
+         CFSkjCAhD86QjteYVthxdMsgZWMKyfT2kG9E4e/OEyc+6bUhwVkvNLA+q6dgul1kRF8l
+         ToHPMpGJdJtgIvtQZvdaIIV+6bTIB3fvsPpv0=
+Message-ID: <19f34abd0807171229p724cc44ese3cb064a65fbd2c0@mail.gmail.com>
+Date: Thu, 17 Jul 2008 21:29:39 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Eric Sandeen" <sandeen@redhat.com>
+Subject: Re: latest -git: kernel BUG at fs/xfs/support/debug.c:54!
+Cc: "Tim Shimmin" <xfs-masters@oss.sgi.com>, xfs@oss.sgi.com,
+       linux-kernel@vger.kernel.org, "Johannes Weiner" <hannes@saeurebad.de>
+In-Reply-To: <19f34abd0807171218u3de86ddbt506b0b4fa0548406@mail.gmail.com>
 MIME-Version: 1.0
-To: "Fred ." <eldmannen@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Please add ZFS support (from GPL sources)
-References: <f188924b0807171213q43f10b09j47b34674fc8aaa38@mail.gmail.com>
-In-Reply-To: <f188924b0807171213q43f10b09j47b34674fc8aaa38@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <19f34abd0807171046j425bebc6m8d8eb80a641e0e5b@mail.gmail.com>
+	 <487F980F.7070708@redhat.com>
+	 <19f34abd0807171218u3de86ddbt506b0b4fa0548406@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fred . wrote:
-> Previously we have not been able to have ZFS support due to it being
-> licensed under the CDDL and the kernel under the GPL.
-> 
-> Sun have contributed ZFS support to GRUB under the GPL license. We
-> could now use that code to implement support for ZFS in the Linux
-> kernel.
-> 
-> http://blogs.sun.com/darren/entry/zfs_under_gplv2_already_exists
+On Thu, Jul 17, 2008 at 9:18 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> Thanks, you are right. I have adjusted my configuration, but I am
+> still able to produce this:
+>
+> BUG: unable to handle kernel paging request at b62a66e0
+> IP: [<c030ef88>] xfs_alloc_fix_freelist+0x28/0x490
 
- From what I can see, it is an absolutely-minimal readonly implementation.
+FWIW, this is fs/xfs/xfs_alloc.c:1817:
 
-	-hpa
+        if (!pag->pagf_init) {
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
