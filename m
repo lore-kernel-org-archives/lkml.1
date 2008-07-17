@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933026AbYGQXMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933045AbYGQXNL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933026AbYGQXMr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 19:12:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755248AbYGQXMi
+	id S933045AbYGQXNL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 19:13:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933008AbYGQXMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 19:12:38 -0400
-Received: from avexch1.qlogic.com ([198.70.193.115]:46031 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753740AbYGQXMh (ORCPT
+	Thu, 17 Jul 2008 19:12:46 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:48211 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760668AbYGQXMp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 19:12:37 -0400
-Date: Thu, 17 Jul 2008 16:12:35 -0700
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Andrew Vasquez <linux-driver@qlogic.com>,
-       "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-       Seokmann Ju <seokmann.ju@qlogic.com>
-Subject: Re: [patch -mmotm 2/6] fix
-	qla2xxx-use-memory_read_from_buffer.patch
-Message-ID: <20080717231235.GR64690@n8027av35btxc1.qlogic.org>
-References: <20080714025631.338886297@gmail.com> <20080714025742.370469321@gmail.com>
+	Thu, 17 Jul 2008 19:12:45 -0400
+Message-ID: <487FD1D9.9020100@kernel.org>
+Date: Thu, 17 Jul 2008 16:12:25 -0700
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080714025742.370469321@gmail.com>
-Organization: QLogic Corporation
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-OriginalArrivalTime: 17 Jul 2008 23:12:36.0783 (UTC) FILETIME=[99FA83F0:01C8E862]
+To: Denys Vlasenko <vda.linux@googlemail.com>
+CC: Ingo Molnar <mingo@elte.hu>, x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: do not grow initial process stack so much
+References: <200807162332.37741.vda.linux@googlemail.com>
+In-Reply-To: <200807162332.37741.vda.linux@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Jul 2008, Akinobu Mita wrote:
-
-> Now memory_read_from_buffer() belongs in string.h
+Denys Vlasenko wrote:
 > 
-> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-> Cc: Andrew Vasquez <linux-driver@qlogic.com>
-> Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
-> Cc: Andrew Vasquez <andrew.vasquez@qlogic.com>
-> Cc: Seokmann Ju <seokmann.ju@qlogic.com>
+> I do not see, though, why this can be useful for x86. The pages
+> are not mapped anyway, so accessing them still causes page faults.
+> No speedup for, say, rapidly spawning processes which need ~60k
+> of stack right away. They will still fault in kernel, right?
+> 
 
-If needed:
+They will fault in the kernel, but only to fill the page tables, so it 
+would cut down on latency.
 
-Acked-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
+I do *NOT* believe we should make this an x86-only change.  If it should 
+be architecture-dependent I'd rather find the architectures that do need it.
 
-BTW: is the memory_read_from_buffer() work for qla2xxx going in
-through the mm tree submission path???
+However, before changing this I really want to see some of the history 
+about why it's that way in the first place.
+
+	-hpa
