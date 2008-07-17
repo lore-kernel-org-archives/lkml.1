@@ -1,171 +1,304 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759617AbYGQNxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758590AbYGQN4B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759617AbYGQNxw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 09:53:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755750AbYGQNxo
+	id S1758590AbYGQN4B (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 09:56:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756947AbYGQNzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 09:53:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46454 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755408AbYGQNxn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 09:53:43 -0400
-Date: Thu, 17 Jul 2008 09:47:36 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Kazunaga Ikeno <k-ikeno@ak.jp.nec.com>
-Cc: "'David Collier-Brown'" <davecb@sun.com>,
-       "'KAMEZAWA Hiroyuki'" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "'Rik van Riel'" <riel@redhat.com>, "'Paul Menage'" <menage@google.com>,
-       "'linux kernel mailing list'" <linux-kernel@vger.kernel.org>,
-       "'Libcg Devel Mailing List'" <libcg-devel@lists.sourceforge.net>,
-       "'Balbir Singh'" <balbir@linux.vnet.ibm.com>,
-       "'Dhaval Giani'" <dhaval@linux.vnet.ibm.com>,
-       "'Peter Zijlstra'" <pzijlstr@redhat.com>,
-       "'Morton Andrew Morton'" <akpm@linux-foundation.org>,
-       "'Thomas Graf'" <tgraf@redhat.com>,
-       "'Ulrich Drepper'" <drepper@redhat.com>
-Subject: Re: [RFC] How to handle the rules engine for cgroups
-Message-ID: <20080717134736.GA11420@redhat.com>
-References: <20080703101957.b3856904.kamezawa.hiroyu@jp.fujitsu.com> <20080703155446.GB9275@redhat.com> <6599ad830807100223m2453963cwcfbe6eb1ad54d517@mail.gmail.com> <20080710104852.797fe79c@cuia.bos.redhat.com> <20080710154035.GA12043@redhat.com> <20080711095501.cefff6df.kamezawa.hiroyu@jp.fujitsu.com> <20080714135719.GE16673@redhat.com> <487B665B.9080205@sun.com> <20080714152142.GJ16673@redhat.com> <004201c8e7db$783480e0$cc7d220a@kid0000>
+	Thu, 17 Jul 2008 09:55:46 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:9435 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755633AbYGQNzo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 09:55:44 -0400
+Date: Thu, 17 Jul 2008 17:55:42 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Trent Piepho <tpiepho@freescale.com>
+Cc: Grant Likely <grant.likely@secretlab.ca>,
+       Richard Purdie <rpurdie@rpsys.net>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Kumar Gala <galak@kernel.crashing.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v3] leds: implement OpenFirmare GPIO LED driver
+Message-ID: <20080717135542.GA15503@polina.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <1216133032.5345.73.camel@dax.rpnet.com> <20080715151917.GA30607@polina.dev.rtsoft.ru> <Pine.LNX.4.64.0807161546010.12709@t2.domain.actdsltmp> <20080717041531.GA27243@secretlab.ca> <Pine.LNX.4.64.0807162143460.26314@t2.domain.actdsltmp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-In-Reply-To: <004201c8e7db$783480e0$cc7d220a@kid0000>
+In-Reply-To: <Pine.LNX.4.64.0807162143460.26314@t2.domain.actdsltmp>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 04:05:17PM +0900, Kazunaga Ikeno wrote:
-> Vivek Goyal wrote:
-> > On Mon, Jul 14, 2008 at 10:44:43AM -0400, David Collier-Brown wrote:
-> > > Vivek Goyal wrote:
-> > >> If admin has decided to group applications and has written the rules for
-> > >> it then applications should not know anything about grouping. So I think
-> > >> application writing an script for being placed into the right group should
-> > >> be out of question. Now how does an admin write a wrapper around existing
-> > >> application without breaking anything else.
-> > >
-> > > In the Solaris world, processes are placed into cgroups (projects) by
-> > > one of two mechanisms:
-> > >
-> > > 1) inheritance, with everything I create in my existing project.
-> > >   To get this started, there is a mechanism under login/getty/whatever
-> > > reading the /etc/projects file and, for example, tossing user davecb
-> > > into a "user.davecb" project.
-> > >
-> > 
-> > Placing the login sessions in right cgroup based on uid/gid rules is
-> > probably easy as check needs to be placed only on system entry upon login
-> > (Pam plugin should do).  And after that any job started by the user
-> > will automatically start in the same cgroup.
-> > 
-> > > 2) explicit placement with newtask, which starts a program or moves
-> > >   a process into a project/cgroup
-> > >
-> > 
-> > explicit placement of task based on application type will be tricky.
-> > 
-> > > I have a "bg" project which I use for limiting resource consumption of
-> > > background jobs, and a background command which either starts or moves
-> > > jobs, thusly:
-> > >
-> > > case "$1" in
-> > > [0-9]*) # It's a pid
-> > >         newtask -p bg -c $1
-> > 
-> > Ok, this is moving of tasks from one cgroup to other based on pid. This
-> > is really easy to do through cgroup file system. Just a matter of writing
-> > to task file.
-> > 
-> > >         ;;
-> > >  *) # It's a command-line
-> > >         newtask -p bg "$@" &
-> > >         ;;
-> > 
-> > So here a user explicitly invokes the wrapper passing it the targeted
-> > cgroup and the application to be launched in that cgroup. This should work
-> > if there is a facility if user has created its own cgroups (lets say
-> > under user controlled cgroup dir in the hierarchy) and user explicitly
-> > wants to control the resources of applications under its dir. For example,
-> > 
-> >  		/mnt/cgroup
-> > 		|	|
-> > 		gid1	gid2
-> > 		|  |	|  |
-> > 	      uid1 uid2	uid3 uid4
-> > 	     |  |
-> > 	 proj1  proj2
-> > 
-> > Here probably admin can write the rules for how users are allocated the
-> > resources and give ability to users to create subdirs under their cgroups
-> > where users can create more cgroups and can do their own resource
-> > management based on application tasks and place applications in the right
-> > cgroup by writing wrappers as mentioned by you "newtask".
-> > 
-> > But here there is no discrimination of application type by admin. Admin
-> > controls resource divisions only based on uid/gid. And users can manage
-> > applications within their user groups. In fact I am having hard time thinking
-> > in what kind of scenarios, there is a need for an admin to control
-> > resource based on application type? Do we really need setups like, on
-> > a system databases should get network bandwidth of 30%. If yes, then
-> > it becomes tricky where admin need to write a wrapper to place the task
-> > in right cgroup without application/user knowing it.
+On Wed, Jul 16, 2008 at 10:13:06PM -0700, Trent Piepho wrote:
+> on Wed, 16 Jul 2008, Grant Likely wrote:
+> > On Wed, Jul 16, 2008 at 04:18:52PM -0700, Trent Piepho wrote:
+> >> On Tue, 15 Jul 2008, Anton Vorontsov wrote:
+> >>> Despite leds-gpio and leds-openfirmware-gpio similar purposes, there
+> >>> is not much code can be shared between the two drivers (both are mostly
+> >>> driver bindings anyway).
+> >>
+> >> Why can't this driver use the existing gpio-led driver?  Basically, do
+> >> something like this:
+> >>
+> >
+> > Ugh; that means registering *2* 'struct device' with the kernel instead of
+> > one.  One as a platform device and one as an of_platform device.
+> > It's bad enough that the LED scheme we're using for OF bindings has a
+> > separate registration for every single LED.
 > 
-> I think a wrapper (move to right group and calls exec) will run by user, not by admin.
-> In explicit placement, user knows what a type of application he/she launch.
+> Ok, how about adding code the existing leds-gpio driver so that it can creates
+> LEDs from of_platform devices too?
+
+Few comments below.
+
+> I've made a patch to do this and it works ok.  The code added to leds-gpio is
+> about half what was involved in Anton's new driver. 
+
+This isn't true.
+
+> What I did was re-factor
+> the existing platform device probe function to use a new function that creates
+> a single led.  Then a new of_platform probe function can use it too.  That way
+> most of the probe code is shared.  remove, suspend and resume aren't shared,
+> but they're short.  And the existing code to actually drive the led gets
+> reused as is.
 > 
->  		/mnt/cgroup
-> 		|	|
-> 		gid1	gid2
-> 		|  |	|  |
-> 	      uid1 uid2	uid3 uid4
-> 	     |  |
-> 	 proj1  proj2
+> There is still one of_platform device per led because of how the bindings work
+> (but that could be changed with new bindings), but there are zero extra
+> platform devices created.
+
+You didn't count extra platform driver. You can't #ifdef it. The only way
+you can avoid this is creating leds-gpio-base.c or something, and place the
+helper functions there.
+
+> Here's an example patch.  It won't apply to the git kernel as is, but should
+> make it clear how this works.
 > 
-
-This is the easy to handle situation and I am hoping it will work in many
-of the cases.
-
-Currently I am writting a patch for libcg which allows querying the
-destination cgroup based on uid/gid and libcg will also migrate the
-application there. I am also writing a pam plugin which will move
-all the login sessions to respective cgroup (as mentioned by rule file).
-Will also modify "init" so that all the system services to into cgroup
-belonging to root.
-
-Once user is logged in and running into his resource group, he can manage
-further subgroups at his own based on his application requirements (as you
-mentioned proj1 and proj2 here).
-
-> [uid1/gid1]% newtask.sh proj1app
-> ... proj1app run under /mnt/cgroup/gid1/uid1
+> diff --git a/drivers/leds/leds-gpio.c b/drivers/leds/leds-gpio.c
+> index a4a2838..12e681e 100644
+> --- a/drivers/leds/leds-gpio.c
+> +++ b/drivers/leds/leds-gpio.c
+> @@ -71,11 +71,45 @@ static int gpio_blink_set(struct led_classdev *led_cdev,
+>   	return led_dat->platform_gpio_blink_set(led_dat->gpio, delay_on, delay_off);
+>   }
 > 
+> +static int create_gpio_led(struct gpio_led *cur_led,
 
-Yes, so if a user does not specifically launch an application targetted
-for a particular cgroup, then it will run into default group for that
-user (as specified by rule file). In this case under /mnt/cgroup/gid1/uid1.
+The create_gpio_led() interface is also quite weird, since it implies that
+we have to pass two GPIO LED "handles": struct gpio_led_data (that we
+allocated) and temporary struct gpio_led. And this helper function will
+just assign things from one struct to another, and then will register the
+led.
 
-> [uid1/gid1]% newtask.sh --type proj1type proj1app
-> ... proj1app run under /mnt/cgroup/gid1/uid1/proj1
->  
+With OF driver I don't need "struct gpio_led". Only the platform driver
+need this so platforms could pass gpio led info through it, while with OF
+we're getting all information from the device tree.
 
-IOW, probably a user can say.
+I'm not opposed to another struct used in the OF driver though, I'm rather
+opposed to the indirectness it introduces. But I also believe that we
+can refactor the code so it will look neat. I just don't want to do
+all this churn to save mere 30 lines of code.
 
-newtask.sh --cgrp /mnt/cgroup/gid1/uid1/proj1/  proj1app
+> +	struct gpio_led_data *led_dat, struct device *parent,
+> +	int (*blink_set)(unsigned, unsigned long *, unsigned long *))
 
-> In this case, admin sets up limitation of proj1type.
+We don't need blink_set. Personally I think that accepting blink
+support in leds-gpio driver was... um, not right. In OF driver we'll
+never use it. We support just GPIO LEDs, not PWM LEDs.
 
-I think admin should setup the limits only til /mnt/cgroup/gid1/uid1.
-After that how resources allocated to uid1 are subdivided between various
-user applications should be controller by user. So resources under
-proj1 and proj2 will be full controlled by user.
+> +
+> +{
+> +	int ret;
+> +
+> +	ret = gpio_request(cur_led->gpio, cur_led->name);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	led_dat->cdev.name = cur_led->name;
+> +	led_dat->cdev.default_trigger = cur_led->default_trigger;
+> +	led_dat->gpio = cur_led->gpio;
+> +	led_dat->can_sleep = gpio_cansleep(cur_led->gpio);
+> +	led_dat->active_low = cur_led->active_low;
+> +	if (blink_set) {
+> +		led_dat->platform_gpio_blink_set = blink_set;
+> +		led_dat->cdev.blink_set = gpio_blink_set;
+> +	}
+> +	led_dat->cdev.brightness_set = gpio_led_set;
+> +	led_dat->cdev.brightness = cur_led->start_on ? LED_FULL : LED_OFF;
+> +
+> +	gpio_direction_output(led_dat->gpio,
+> +			      led_dat->active_low ^ cur_led->start_on);
+> +
+> +	INIT_WORK(&led_dat->work, gpio_led_work);
+> +
+> +	ret = led_classdev_register(parent, &led_dat->cdev);
+> +	if (ret < 0)
+> +		gpio_free(led_dat->gpio);
+> +
+> +	return ret;
+> +}
+> +
+>   static int gpio_led_probe(struct platform_device *pdev)
+>   {
+>   	struct gpio_led_platform_data *pdata = pdev->dev.platform_data;
+> -	struct gpio_led *cur_led;
+> -	struct gpio_led_data *leds_data, *led_dat;
+> +	struct gpio_led_data *leds_data;
+>   	int i, ret = 0;
+> 
+>   	if (!pdata)
+> @@ -87,36 +121,10 @@ static int gpio_led_probe(struct platform_device *pdev)
+>   		return -ENOMEM;
+> 
+>   	for (i = 0; i < pdata->num_leds; i++) {
+> -		cur_led = &pdata->leds[i];
+> -		led_dat = &leds_data[i];
+> -
+> -		ret = gpio_request(cur_led->gpio, cur_led->name);
+> +		ret = create_gpio_led(&pdata->leds[i], &leds_data[i],
+> +				      &pdev->dev, pdata->gpio_blink_set);
+>   		if (ret < 0)
+>   			goto err;
+> -
+> -		led_dat->cdev.name = cur_led->name;
+> -		led_dat->cdev.default_trigger = cur_led->default_trigger;
+> -		led_dat->gpio = cur_led->gpio;
+> -		led_dat->can_sleep = gpio_cansleep(cur_led->gpio);
+> -		led_dat->active_low = cur_led->active_low;
+> -		if (pdata->gpio_blink_set) {
+> -			led_dat->platform_gpio_blink_set = pdata->gpio_blink_set;
+> -			led_dat->cdev.blink_set = gpio_blink_set;
+> -		}
+> -		led_dat->cdev.brightness_set = gpio_led_set;
+> -		led_dat->cdev.brightness =
+> -			cur_led->start_on ? LED_FULL : LED_OFF;
+> -
+> -		gpio_direction_output(led_dat->gpio,
+> -				      led_dat->active_low ^ cur_led->start_on);
+> -
+> -		INIT_WORK(&led_dat->work, gpio_led_work);
+> -
+> -		ret = led_classdev_register(&pdev->dev, &led_dat->cdev);
+> -		if (ret < 0) {
+> -			gpio_free(led_dat->gpio);
+> -			goto err;
+> -		}
+>   	}
+> 
+>   	platform_set_drvdata(pdev, leds_data);
+> @@ -217,3 +225,105 @@ MODULE_AUTHOR("Raphael Assenat <raph@8d.com>");
+>   MODULE_DESCRIPTION("GPIO LED driver");
+>   MODULE_LICENSE("GPL");
+>   MODULE_ALIAS("platform:leds-gpio");
+> +
+> +
+> +/* #ifdef CONFIG_LEDS_GPIO_OF */
 
-> Also I guess proj1type has ownership (ex: proj1type allows gid1).
-> Isn't this enough?
+Heh.
 
-I think to begin with and to get some kind of simple functionality
-going it might be good. I am sure others will target for more complex
-configurations and usages.
+> +/* OpenFirmware bindings */
+> +#include <linux/of_platform.h>
+> +
+> +/* crap for old kernel, ignore */
+> +static inline const char *dev_name(struct device *dev)
+> +{ return dev->bus_id; }
+> +int of_get_gpio(struct device_node *np, int index)
+> +{ const u32 *pp = of_get_property(np, "gpio", NULL); return pp ? *pp : -1; }
+> +
+> +static int __devinit of_gpio_leds_probe(struct of_device *ofdev,
+> +					const struct of_device_id *match)
+> +{
+> +	struct device_node *np = ofdev->node;
+> +	struct gpio_led led;
+> +	struct gpio_led_data *led_dat;
+> +	int ret;
+> +
+> +	led_dat = kzalloc(sizeof(*led_dat), GFP_KERNEL);
+> +	if (!led_dat)
+> +		return -ENOMEM;
+> +
+> +	memset(&led, 0, sizeof(led));
+> +	led.gpio = of_get_gpio(np, 0);
+> +	led.name = of_get_property(np, "label", NULL);
+> +	if (!led.name)
+> +		led.name = dev_name(&ofdev->dev);
+> +
+> +	ret = create_gpio_led(&led, led_dat, &ofdev->dev, NULL);
+> +	if (ret < 0) {
+> +		kfree(led_dat);
+> +		return ret;
+> +	}
+> +
+> +	dev_set_drvdata(&ofdev->dev, led_dat);
+> +
+> +	return 0;
+> +}
+> +
+> +static int __devexit of_gpio_leds_remove(struct of_device *ofdev)
+> +{
+> +	struct gpio_led_data *led = dev_get_drvdata(&ofdev->dev);
+> +
+> +	led_classdev_unregister(&led->cdev);
+> +	cancel_work_sync(&led->work);
+> +	gpio_free(led->gpio);
+> +	kfree(led);
+> +
+> +	return 0;
+> +}
+> +
+> +#ifdef CONFIG_PM
+> +static int of_gpio_led_suspend(struct of_device *ofdev, pm_message_t state)
+> +{
+> +	struct gpio_led_data *led = dev_get_drvdata(&ofdev->dev);
+> +
+> +	led_classdev_suspend(&led->cdev);
+> +	return 0;
+> +}
+> +
+> +static int of_gpio_led_resume(struct of_device *ofdev)
+> +{
+> +	struct gpio_led_data *led = dev_get_drvdata(&ofdev->dev);
+> +
+> +	led_classdev_resume(&led->cdev);
+> +	return 0;
+> +}
+> +#else
+> +#define of_gpio_led_suspend NULL
+> +#define of_gpio_led_resume NULL
+> +#endif /* CONFIG_PM */
+> +
+> +static const struct of_device_id of_gpio_leds_match[] = {
+> +	{ .compatible = "gpio-led", },
+> +	{},
+> +};
+> +
+> +static struct of_platform_driver of_gpio_leds_driver = {
+> +	.driver = {
+> +		.name = "of_gpio_leds",
+> +		.owner = THIS_MODULE,
+> +	},
+> +	.match_table = of_gpio_leds_match,
+> +	.probe = of_gpio_leds_probe,
+> +	.remove = __devexit_p(of_gpio_leds_remove),
+> +	.suspend = of_gpio_led_suspend,
+> +	.resume = of_gpio_led_resume,
+> +};
+> +
+> +static int __init of_gpio_leds_init(void)
+> +{
+> +	return of_register_platform_driver(&of_gpio_leds_driver);
+> +}
+> +module_init(of_gpio_leds_init);
+> +
+> +static void __exit of_gpio_leds_exit(void)
+> +{
+> +	of_unregister_platform_driver(&of_gpio_leds_driver);
+> +}
+> +module_exit(of_gpio_leds_exit);
 
-Thanks
-Vivek
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
