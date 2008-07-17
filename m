@@ -1,80 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932309AbYGQSf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760621AbYGQSil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932309AbYGQSf2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 14:35:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757715AbYGQSfS
+	id S1760621AbYGQSil (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 14:38:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758759AbYGQSid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 14:35:18 -0400
-Received: from el-out-1112.google.com ([209.85.162.179]:44522 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757378AbYGQSfR (ORCPT
+	Thu, 17 Jul 2008 14:38:33 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:43459 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758183AbYGQSic convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 14:35:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=BYKRyRjE+xMVYjtMRCV0icgkc61yM+z45/Fb0MpklpbZEIDFTXeaT524KGKyRJ8bBJ
-         EHroAVicViXA2MZfJmUlD0T37zwAYBQLOMBOvdPDPOitcJWKnvnnSa3g/GUj+bwWY+M5
-         67KTiH/3IZL+LyyXo+QEiLj2GM39xNEw+bAew=
-Message-ID: <19f34abd0807171135m4a3b39e6v4065ed676720ae46@mail.gmail.com>
-Date: Thu, 17 Jul 2008 20:35:15 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Dave Kleikamp" <shaggy@austin.ibm.com>,
-       jfs-discussion@lists.sourceforge.net
-Subject: latest -git: BUG at fs/jfs/namei.c:512 assert(ip->i_nlink)
-Cc: "Johannes Weiner" <hannes@saeurebad.de>, linux-kernel@vger.kernel.org
+	Thu, 17 Jul 2008 14:38:32 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-ID: <18559.37282.156032.998661@harpo.it.uu.se>
+Date: Thu, 17 Jul 2008 20:38:26 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Loic Grenie <loic.grenie@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Typecast problems in SKFP driver
+In-Reply-To: <20080717173149.GA5040@cognac.dyndns.org>
+References: <20080717173149.GA5040@cognac.dyndns.org>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Loic Grenie writes:
+ >     I've just compiled the 2.6.26-git5 kernel and the SKFP driver
+ >     compilation produces complaints about typecasts. These complaints
+ >     disappear with the following patch.
 
-I got this on latest -git with an intentionally corrupted filesystem image:
+NAK, this needs to be done by someone with better understanding of C.
 
-BUG at fs/jfs/namei.c:512 assert(ip->i_nlink)
-------------[ cut here ]------------
-kernel BUG at fs/jfs/namei.c:512!
-invalid opcode: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
-Pid: 4408, comm: rm Not tainted (2.6.26-03414-g33af79d #43)
-EIP: 0060:[<c02df988>] EFLAGS: 00210286 CPU: 1
-EIP is at jfs_unlink+0x418/0x430
-EAX: 00000031 EBX: 00000000 ECX: f2d16000 EDX: 00000000
-ESI: 0000004c EDI: f43b12dc EBP: f2d17f20 ESP: f2d17ed0
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process rm (pid: 4408, ti=f2d16000 task=f4b73fc0 task.ti=f2d16000)
-Stack: c086269e c08626ce 00000200 c0862725 00000000 00000002 f43ba83c f43b10c8
-       f43ba628 f43b108c f43b1008 f43ba568 f43ba83c f43b12dc 0000000a f6d33500
-       0000005b 00000000 f43ba83c f4281c30 f2d17f3c c01ad04b c1fb0480 f2d17f3c
-Call Trace:
- [<c01ad04b>] ? vfs_unlink+0xab/0x100
- [<c01af22b>] ? do_unlinkat+0x15b/0x170
- [<c01b185b>] ? vfs_readdir+0x6b/0xa0
- [<c01b1540>] ? filldir64+0x0/0xf0
- [<c044a0f8>] ? trace_hardirqs_on_thunk+0xc/0x10
- [<c015ad76>] ? trace_hardirqs_on_caller+0x116/0x170
- [<c01af383>] ? sys_unlinkat+0x23/0x50
- [<c010407f>] ? sysenter_past_esp+0x78/0xc5
- =======================
-Code: 5f 48 00 0f 0b eb fe c7 44 24 0c 25 27 86 c0 c7 44 24 08 00 02
-00 00 c7 44 24 04 ce 26 86 c0 c7 04 24 9e 26 86 c0 e8 dc 5e 48 00 <0f>
-0b eb fe ba 01 00 00 00 89 f0 e8 08 d5 01 00 e9 f2 fc ff ff
-EIP: [<c02df988>] jfs_unlink+0x418/0x430 SS:ESP 0068:f2d17ed0
-Kernel panic - not syncing: Fatal exception
+ > 
+ >       Thanks,
+ > 
+ >           Loïc Grenié
+ > diff --git a/drivers/net/skfp/ess.c b/drivers/net/skfp/ess.c
+ > index 889f987..d3a8afc 100644
+ > --- a/drivers/net/skfp/ess.c
+ > +++ b/drivers/net/skfp/ess.c
+ > @@ -510,7 +510,7 @@ static void ess_send_response(struct s_smc *smc, struct smt_header *sm,
+ >  	chg->path.para.p_type = SMT_P320B ;
+ >  	chg->path.para.p_len = sizeof(struct smt_p_320b) - PARA_LEN ;
+ >  	chg->path.mib_index = SBAPATHINDEX ;
+ > -	chg->path.path_pad = (u_short)NULL ;
+ > +	chg->path.path_pad = (u_short)(long)NULL ;
+ >  	chg->path.path_index = PRIMARY_RING ;
 
-Full log at http://folk.uio.no/vegardno/linux/log-1216318656.txt, but
-I think the preceding messages are just left-overs from previous
-mount/remount attempts. I can test patches.
+Putting NULL (a pointer type) in an u_short field is utterly
+and completely broken. My guess is that the code really wants:
 
+	chg->path.path_pad = 0;
 
-Vegard
+ >  	/* set P320F */
+ > @@ -606,7 +606,7 @@ static void ess_send_alc_req(struct s_smc *smc)
+ >  	req->path.para.p_type = SMT_P320B ;
+ >  	req->path.para.p_len = sizeof(struct smt_p_320b) - PARA_LEN ;
+ >  	req->path.mib_index = SBAPATHINDEX ;
+ > -	req->path.path_pad = (u_short)NULL ;
+ > +	req->path.path_pad = (u_short)(long)NULL ;
+ >  	req->path.path_index = PRIMARY_RING ;
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+ditto
+
+ >  
+ >  	/* set P0017 */
+ > @@ -636,7 +636,7 @@ static void ess_send_alc_req(struct s_smc *smc)
+ >  	/* set P19 */
+ >  	req->a_addr.para.p_type = SMT_P0019 ;
+ >  	req->a_addr.para.p_len = sizeof(struct smt_p_0019) - PARA_LEN ;
+ > -	req->a_addr.sba_pad = (u_short)NULL ;
+ > +	req->a_addr.sba_pad = (u_short)(long)NULL ;
+ >  	req->a_addr.alloc_addr = null_addr ;
+
+ditto
+
+ >  
+ >  	/* set P1A */
+ > diff --git a/drivers/net/skfp/pmf.c b/drivers/net/skfp/pmf.c
+ > index ea85de9..5798be4 100644
+ > --- a/drivers/net/skfp/pmf.c
+ > +++ b/drivers/net/skfp/pmf.c
+ > @@ -44,17 +44,17 @@ static SMbuf *smt_build_pmf_response(struct s_smc *smc, struct smt_header *req,
+ >  				     int set, int local);
+ >  static int port_to_mib(struct s_smc *smc, int p);
+ >  
+ > -#define MOFFSS(e)	((int)&(((struct fddi_mib *)0)->e))
+ > -#define MOFFSA(e)	((int) (((struct fddi_mib *)0)->e))
+ > +#define MOFFSS(e)	((long)&(((struct fddi_mib *)0)->e))
+ > +#define MOFFSA(e)	((long) (((struct fddi_mib *)0)->e))
+
+NAK, use offsetof().
+
+How is the MOFFSA() used? As written it makes no sense at all
+as evaluating it as an r-value will oops.
+
+ >  
+ > -#define MOFFMS(e)	((int)&(((struct fddi_mib_m *)0)->e))
+ > -#define MOFFMA(e)	((int) (((struct fddi_mib_m *)0)->e))
+ > +#define MOFFMS(e)	((long)&(((struct fddi_mib_m *)0)->e))
+ > +#define MOFFMA(e)	((long) (((struct fddi_mib_m *)0)->e))
+
+ditto
+
+ >  
+ > -#define MOFFAS(e)	((int)&(((struct fddi_mib_a *)0)->e))
+ > -#define MOFFAA(e)	((int) (((struct fddi_mib_a *)0)->e))
+ > +#define MOFFAS(e)	((long)&(((struct fddi_mib_a *)0)->e))
+ > +#define MOFFAA(e)	((long) (((struct fddi_mib_a *)0)->e))
+
+ditto
+
+ >  
+ > -#define MOFFPS(e)	((int)&(((struct fddi_mib_p *)0)->e))
+ > -#define MOFFPA(e)	((int) (((struct fddi_mib_p *)0)->e))
+ > +#define MOFFPS(e)	((long)&(((struct fddi_mib_p *)0)->e))
+ > +#define MOFFPA(e)	((long) (((struct fddi_mib_p *)0)->e))
+
+ditto
+
+To be fair, the original code is crap, but your changes don't
+make it any better.
