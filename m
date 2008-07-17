@@ -1,119 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760181AbYGQPQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760544AbYGQPQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760181AbYGQPQS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 11:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756204AbYGQPQF
+	id S1760544AbYGQPQw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 11:16:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753304AbYGQPQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 11:16:05 -0400
-Received: from proxy2.bredband.net ([195.54.101.72]:60462 "EHLO
-	proxy2.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755880AbYGQPQE (ORCPT
+	Thu, 17 Jul 2008 11:16:41 -0400
+Received: from wf-out-1314.google.com ([209.85.200.169]:53820 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755479AbYGQPQk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 11:16:04 -0400
-X-Greylist: delayed 1214 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Jul 2008 11:16:04 EDT
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Av8yAOj6fkjVchRXPGdsb2JhbACBWYZziWkBAQEBLQGdWw
-Message-ID: <487F5D6B.1090007@hozac.com>
-Date: Thu, 17 Jul 2008 10:55:39 -0400
-From: Daniel Hokka Zakrisson <daniel@hozac.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 17 Jul 2008 11:16:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=T9KEv0FNiXG/irjyA7rPelrAydWCRcZY/oEeY/DWgJ8cWQDJz2BiPeFIgyq/yhAgjR
+         gOFE19r0MyJnP9aC6Cf1TVqAXSEXc6PH7j6hYOVSYJh+uzSc0+7R2fF+cVDxZO4VUsR+
+         jofvl1VUqVJV/syykCTIhT40XXQk9+SvAr2Zg=
+Message-ID: <19f34abd0807170816p4788a352qc35b42fd7647d00f@mail.gmail.com>
+Date: Thu, 17 Jul 2008 17:16:39 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Theodore Tso" <tytso@mit.edu>, "Vegard Nossum" <vegard.nossum@gmail.com>,
+       "Josef Bacik" <jbacik@redhat.com>, "Josef Bacik" <josef@toxicpanda.com>,
+       linux-ext4@vger.kernel.org, sct@redhat.com, akpm@linux-foundation.org,
+       adilger@sun.com, "Johannes Weiner" <hannes@saeurebad.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: ext3 on latest -git: BUG: unable to handle kernel NULL pointer dereference at 0000000c
+In-Reply-To: <20080717150812.GU2167@mit.edu>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: containers@lists.linux-foundation.org, oleg@tv-sign.ru,
-       ebiederm@xmission.com, xemul@openvz.org, akpm@linux-foundation.org
-Subject: [PATCH 1/2] signals: kill(-1) should only signal processes in the
- same namespace
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1b7401870807170613y747baa7by158177047cc7e28@mail.gmail.com>
+	 <1b7401870807170634u14492a53k3931ddcddbd1e098@mail.gmail.com>
+	 <19f34abd0807170639p838d14blc9a13d2104313f38@mail.gmail.com>
+	 <20080717135746.GB14133@unused.rdu.redhat.com>
+	 <19f34abd0807170725p13e81e3dq4daad32ad2a83931@mail.gmail.com>
+	 <20080717141333.GC14133@unused.rdu.redhat.com>
+	 <19f34abd0807170735p5d2cba31kec3fb65c5b8c7b3f@mail.gmail.com>
+	 <20080717141655.GD14133@unused.rdu.redhat.com>
+	 <19f34abd0807170744r79e46a78odfcfbd67687d2ceb@mail.gmail.com>
+	 <20080717150812.GU2167@mit.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While moving Linux-VServer to using pid namespaces, I noticed that
-kill(-1) from inside a pid namespace is currently signalling every
-process in the entire system, including processes that are otherwise
-unreachable from the current process.
+On Thu, Jul 17, 2008 at 5:08 PM, Theodore Tso <tytso@mit.edu> wrote:
+> Vegard,
+>
+> How big is the filesystem?  Is there any chance you can make a
+> compressed e2image of the file?  (This will not include file contents,
+> but does reveal the names of the file.)  Given the nature of the bug
+> which you are reporting, it should be safe to scramble the names of
+> the filenames using the -s option if that would make you feel more
+> comfortable.
 
-This patch fixes it by making sure that only processes which are in
-the same pid namespace as current get signalled.
+Oh, just 2M. It doesn't contain anything but copies of /bin/bash.
 
-Signed-off-by: Daniel Hokka Zakrisson <daniel@hozac.com>
+I basically just made a crash-tester script that corrupts a dummy
+filesystem on purpose. But it seems that it might be partly my own
+fault for not protecting the bits in the filesystem image that say
+"oh, proceed on error". But I do have a feeling that the filesystem
+should not be able to say this in the first place. Because those bits
+can be corrupted legitimately in other ways too!
 
-diff --git a/include/linux/pid_namespace.h b/include/linux/pid_namespace.h
-index caff528..4cf41bd 100644
---- a/include/linux/pid_namespace.h
-+++ b/include/linux/pid_namespace.h
-@@ -40,6 +40,8 @@ static inline struct pid_namespace *get_pid_ns(struct 
-pid_namespace *ns)
-  extern struct pid_namespace *copy_pid_ns(unsigned long flags, struct 
-pid_namespace *ns);
-  extern void free_pid_ns(struct kref *kref);
-  extern void zap_pid_ns_processes(struct pid_namespace *pid_ns);
-+extern int task_in_pid_ns(struct task_struct *tsk,
-+			  struct pid_namespace *pid_ns);
+http://folk.uio.no/vegardno/linux/corrupt.tar.bz2
 
-  static inline void put_pid_ns(struct pid_namespace *ns)
-  {
-@@ -72,6 +74,12 @@ static inline void zap_pid_ns_processes(struct 
-pid_namespace *ns)
-  {
-  	BUG();
-  }
-+
-+static inline int task_in_pid_ns(struct task_struct *tsk,
-+				  struct pid_namespace *ns)
-+{
-+	return 1;
-+}
-  #endif /* CONFIG_PID_NS */
+Is there a way to override the
 
-  static inline struct pid_namespace *task_active_pid_ns(struct 
-task_struct *tsk)
-diff --git a/kernel/pid_namespace.c b/kernel/pid_namespace.c
-index 98702b4..3e71011 100644
---- a/kernel/pid_namespace.c
-+++ b/kernel/pid_namespace.c
-@@ -188,6 +188,26 @@ void zap_pid_ns_processes(struct pid_namespace *pid_ns)
-  	return;
-  }
+    "Errors behavior:          Continue"
 
-+/*
-+ * Checks whether tsk has a pid in the pid namespace ns.
-+ * Must be called with tasklist_lock read-locked or under rcu_read_lock()
-+ */
-+int task_in_pid_ns(struct task_struct *tsk, struct pid_namespace *ns)
-+{
-+	struct pid *pid = task_pid(tsk);
-+
-+	if (!pid)
-+		return 0;
-+
-+	if (pid->level < ns->level)
-+		return 0;
-+
-+	if (pid->numbers[ns->level].ns != ns)
-+		return 0;
-+
-+	return 1;
-+}
-+
-  static __init int pid_namespaces_init(void)
-  {
-  	pid_ns_cachep = KMEM_CACHE(pid_namespace, SLAB_PANIC);
-diff --git a/kernel/signal.c b/kernel/signal.c
-index 6c0958e..93713a5 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -1145,7 +1145,8 @@ static int kill_something_info(int sig, struct 
-siginfo *info, int pid)
-  		struct task_struct * p;
+information which is present in the filesystem?
 
-  		for_each_process(p) {
--			if (p->pid > 1 && !same_thread_group(p, current)) {
-+			if (p->pid > 1 && !same_thread_group(p, current) &&
-+			    task_in_pid_ns(p, current->nsproxy->pid_ns)) {
-  				int err = group_send_sig_info(sig, info, p);
-  				++count;
-  				if (err != -EPERM)
+
+Vegard
+
 -- 
-1.5.5.1
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
