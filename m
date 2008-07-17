@@ -1,65 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759366AbYGQDPQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758430AbYGQDRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759366AbYGQDPQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 23:15:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753542AbYGQDPF
+	id S1758430AbYGQDRb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 23:17:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753794AbYGQDRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 23:15:05 -0400
-Received: from bromo.msbb.uc.edu ([129.137.3.146]:35981 "HELO
-	bromo.msbb.uc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752654AbYGQDPE (ORCPT
+	Wed, 16 Jul 2008 23:17:23 -0400
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:59448 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753514AbYGQDRX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 23:15:04 -0400
-Date: Wed, 16 Jul 2008 23:15:02 -0400
-From: Jack Howarth <howarth@bromo.msbb.uc.edu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
-Message-ID: <20080717031502.GA18760@bromo.msbb.uc.edu>
-References: <86802c440807160044ge504cacl419b6cbcad5f0f9d@mail.gmail.com> <dd18b0c30807160050r5b10908fiffc2a4b464abe5f3@mail.gmail.com> <86802c440807160136m6af981b2u6a37cabb8e33a629@mail.gmail.com> <20080716140810.GA2861@bromo.msbb.uc.edu> <86802c440807161029n7e0dac98x1ec260879204b6f0@mail.gmail.com> <86802c440807161535n3a4d6891n6f7c16bd4e1f19c3@mail.gmail.com> <20080717004004.GA17792@bromo.msbb.uc.edu> <86802c440807161749u2f5c1eben618e05c6e254fedd@mail.gmail.com> <20080717023538.GA18329@bromo.msbb.uc.edu> <86802c440807161959s10666027k5297af1d657ff4fa@mail.gmail.com>
-MIME-Version: 1.0
+	Wed, 16 Jul 2008 23:17:23 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AugEAKtUfkhMRKxB/2dsb2JhbACBWq5l
+Date: Wed, 16 Jul 2008 23:17:21 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Ingo Molnar <mingo@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH ftrace.git] Immedate Values Optimized Jump Fix
+Message-ID: <20080717031721.GA24504@Krystal>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <86802c440807161959s10666027k5297af1d657ff4fa@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 23:14:13 up 42 days,  7:55,  5 users,  load average: 0.34, 0.73,
+	0.67
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-YH,
-   I meant that pci=nommconf doesn't allow the boot to complete
-under 2.6.26. I haven't tried that under 2.6.25.10, however the
-2.6.5.10 kernel should be using mmconfig since I see...
+Hi Ingo,
 
-PCI: Using MMCONFIG at f0000000 - ffffffff
-PCI: Using configuration type 1
-ACPI: EC: EC description table is found, configuring boot EC
-ACPI: EC: non-query interrupt received, switching to interrupt mode
-ACPI: BIOS _OSI(Linux) query ignored via DMI
-ACPI: Interpreter enabled
-ACPI: (supports S0 S3 S4 S5)
-ACPI: Using IOAPIC for interrupt routing
-ACPI: EC: GPE = 0x17, I/O: command/status = 0x66, data = 0x62
-ACPI: EC: driver started in poll mode
-ACPI: PCI Root Bridge [PCI0] (0000:00)
-pci 0000:00:1f.0: quirk: region 0400-047f claimed by ICH6 ACPI/GPIO/TCO
-pci 0000:00:1f.0: quirk: region 0500-053f claimed by ICH6 GPIO
-PCI: Transparent bridge - 0000:00:1e.0
+This fix would apply to the ftrace tree which contains the jump-based
+immediate values. I don't know if this tree is still under active
+development, but I guess that it wouldn't hurt to fix it.
 
-                          Jack
+Caused a kernel OOPS when loading the tracepoint probes once in a while
+on a 8-way x86_64.
 
-On Wed, Jul 16, 2008 at 07:59:16PM -0700, Yinghai Lu wrote:
-> On Wed, Jul 16, 2008 at 7:35 PM, Jack Howarth <howarth@bromo.msbb.uc.edu> wrote:
-> > Yinghai,
-> >   As I expected pci=mmconf doesn't allow the MacBook Pro to boot.
-> 
-> you mean pci=nommconf doesn't work too?
-> 
-> 2.6.25 is not using mmconf in your system.
-> 
-> lspci -vvxxxx could tell, if it print out 256 or 4096 pci conf space.
-> 
-> YH
+
+Immedate Values Optimized Jump Fix
+
+Fix the immediate values optimized jump fallback, which parameters were wrong
+following the last changes. It should be a 5 bytes instruction (not 2) with a 4
+bytes operand.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ arch/x86/kernel/immediate.c |    2 +-
+ include/asm-x86/immediate.h |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-2.6-lttng/arch/x86/kernel/immediate.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/x86/kernel/immediate.c	2008-07-16 22:50:35.000000000 -0400
++++ linux-2.6-lttng/arch/x86/kernel/immediate.c	2008-07-16 22:51:07.000000000 -0400
+@@ -500,7 +500,7 @@ __kprobes int arch_imv_update(struct __i
+ 				"Jump target fallback at %lX, nr fail %d\n",
+ 				imv->imv, ++nr_fail);
+ #endif
+-			imv->size = 1;
++			imv->size = 4;	/* Fallback on movl */
+ 		} else {
+ #ifdef DEBUG_IMMEDIATE
+ 			static int nr_success;
+Index: linux-2.6-lttng/include/asm-x86/immediate.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-x86/immediate.h	2008-07-16 22:49:19.000000000 -0400
++++ linux-2.6-lttng/include/asm-x86/immediate.h	2008-07-16 22:51:07.000000000 -0400
+@@ -132,7 +132,7 @@ struct __imv {
+ 		BUILD_BUG_ON(sizeof(__typeof__(name##__imv)) > 1);	\
+ 		asm (".section __imv,\"aw\",@progbits\n\t"		\
+ 			_ASM_PTR "%c1, (3f)-4\n\t"			\
+-			".byte 0, 2\n\t"				\
++			".byte 0, 5\n\t"				\
+ 			".previous\n\t"					\
+ 			"mov $0,%0\n\t"					\
+ 			"3:\n\t"					\
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
