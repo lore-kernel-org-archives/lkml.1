@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759688AbYGQOVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760086AbYGQOWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759688AbYGQOVy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 10:21:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757130AbYGQOVn
+	id S1760086AbYGQOWm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 10:22:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbYGQOWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 10:21:43 -0400
-Received: from relay.2ka.mipt.ru ([194.85.80.65]:53330 "EHLO 2ka.mipt.ru"
+	Thu, 17 Jul 2008 10:22:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38019 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756579AbYGQOVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 10:21:42 -0400
-Date: Thu, 17 Jul 2008 18:21:33 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Octavian Purdila <opurdila@ixiacom.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tcp: do not promote SPLICE_F_NONBLOCK to socket O_NONBLOCK
-Message-ID: <20080717142132.GA11702@2ka.mipt.ru>
-References: <200807171633.49791.opurdila@ixiacom.com>
+	id S1752157AbYGQOWd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 10:22:33 -0400
+Date: Thu, 17 Jul 2008 10:21:48 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Eric Rannaud <eric.rannaud@gmail.com>, Chris Snook <csnook@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: madvise(2) MADV_SEQUENTIAL behavior
+Message-ID: <20080717102148.6bc52e94@cuia.bos.redhat.com>
+In-Reply-To: <200807171614.29594.nickpiggin@yahoo.com.au>
+References: <1216163022.3443.156.camel@zenigma>
+	<487E628A.3050207@redhat.com>
+	<1216252910.3443.247.camel@zenigma>
+	<200807171614.29594.nickpiggin@yahoo.com.au>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200807171633.49791.opurdila@ixiacom.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Octavian.
+On Thu, 17 Jul 2008 16:14:29 +1000
+Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-On Thu, Jul 17, 2008 at 04:33:49PM +0300, Octavian Purdila (opurdila@ixiacom.com) wrote:
->     This patch changes tcp_splice_read to the behavior implied by man 2
->     splice:
->     
->          SPLICE_F_NONBLOCK - Do not block on I/O. This makes the splice
->          pipe operations non-blocking, but splice() may nevertheless block
->          because the file descriptors that are spliced to/from may block
->          (unless they have the O_NONBLOCK flag set).
->     
->     This approach also provides a simple solution to the splice
->     transfer size problem. Say we have the following common sequence:
->     
->          splice(socket, pipe);
->          splice(pipe, file);
->     
->     Unless we specify SPLICE_F_NONBLOCK, we can't use arbitrarily large
->     transfer sizes with the 1st splice since otherwise we will deadlock
->     due to pipe being full.  But if we use SPLICE_F_NONBLOCK, the current
->     implementation will make the underlying socket non-blocking and thus
->     will force us use poll or other async I/O notification mechanism.
+> > It might encourage user space applications to start using
+> > FADV_SEQUENTIAL or FADV_NOREUSE more often (as it would become
+> > worthwhile to do so), and if they do (especially cron jobs), the problem
+> > of the slow desktop in the morning would progressively solve itself.
+> 
+> The slow desktop in the morning should not happen even without such a
+> call, because the kernel should not throw out frequently used data (even
+> if it is not quite so recent) in favour of streaming data.
+> 
+> OK, I figure it doesn't do such a good job now, which is sad, 
 
-Existing behaviour was selected to be able to have a progress if socket
-does not have enough data to fill the pipe. With your change if socket
-is not opened with non-blocking mode reading will block not matter if
-SPLICE_F_NONBLOCK is set or not. This is a quite serious break of the
-overall idea behind SPLICE_F_NONBLOCK.
+Do you have any tests in mind that we could use to decide
+whether the patch I posted Tuesday would do a decent job
+at protecting frequently used data from streaming data?
 
-Socket will not be marked as non-blocking if SPLICE_F_NONBLOCK is
-specified, only splicing will used non-blocking reading, any read via
-recv() will use existing socket flags.
+http://lkml.org/lkml/2008/7/15/465
 
 -- 
-	Evgeniy Polyakov
+All Rights Reversed
