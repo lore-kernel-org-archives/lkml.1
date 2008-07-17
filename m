@@ -1,53 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932375AbYGQU2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933138AbYGQU3B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932375AbYGQU2o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 16:28:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760212AbYGQU2g
+	id S933138AbYGQU3B (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 16:29:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760499AbYGQU2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 16:28:36 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43904 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759655AbYGQU2f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 16:28:37 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33659 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758586AbYGQU2f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 17 Jul 2008 16:28:35 -0400
-Date: Thu, 17 Jul 2008 15:28:33 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: seto.hidetoshi@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       menage@google.com, peterz@infradead.org, akpm@linux-foundation.org,
-       laijs@cn.fujitsu.com
-Subject: Re: [RFC] [PATCH] cpuset: fix wrong calculation of relax domain
- level
-Message-Id: <20080717152833.1e14a1c4.pj@sgi.com>
-In-Reply-To: <487EFDD0.2060101@cn.fujitsu.com>
-References: <487EFDD0.2060101@cn.fujitsu.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Date: Thu, 17 Jul 2008 16:26:34 -0400
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
+Subject: Re: [RFC] systemtap: begin the process of using proper kernel APIs (part1: use kprobe symbol_name/offset instead of address)
+Message-ID: <20080717202634.GI18295@redhat.com>
+References: <1216146802.3312.95.camel@localhost.localdomain> <487E78ED.30804@redhat.com> <1216249383.3358.69.camel@localhost.localdomain> <487E8CE4.70105@redhat.com> <1216259391.3358.85.camel@localhost.localdomain> <1216304290.5515.11.camel@localhost.localdomain> <1216313914.5515.25.camel__21144.9282979176$1216314027$gmane$org@localhost.localdomain> <y0m7ibkjrcj.fsf@ton.toronto.redhat.com> <1216325546.5515.63.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1216325546.5515.63.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> When multiple cpusets are overlapping in their 'cpus' and hence they
-> form a single sched domain, the largest sched_relax_domain_level among
-> those should be used. But when top_cpuset's sched_load_balance is
-> set, its sched_relax_domain_level is used regardless other sub-cpusets'.
+Hi -
 
-This code has gotten too complicated for my modest brain ;).
+On Thu, Jul 17, 2008 at 03:12:26PM -0500, James Bottomley wrote:
+> [...]
+> > Can you explain in detail how you believe this is materially
+> > different from offsetting from _stext?
+> 
+> Basically because _stext is an incredibly dangerous symbol; being linker
+> generated it doesn't actually get put in the right place if you look:
 
-Question:
+Thank you for your response.
 
-    In the case that the top_cpuset's sched_load_balance is -not- set,
-    is there code already present that sets the sched_relax_domain_level
-    in overlapping cpusets to the largest value in any of the overlapping
-    cpusets?
+> jejb@sparkweed> nm vmlinux |egrep -w '_stext|_text'
+> ffffffff80209000 T _stext
+> ffffffff80200000 A _text
+> 
+> Since we can't do negative offsets
 
-    If so, where is that code?
+Actually, "we" as in systemtap could do it just fine if that were
+desired.  And really _stext is therefore an arbitrary choice - it
+could be any other reference.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+My point is that the proposed effort to identify a nearby function
+symbol to use as a base for each probe's symbol+offset calculation is
+wasted.
+
+
+> you've lost access to the symbols in the sections that start before _stext.  
+
+What's between _text and _stext appears to consist of kernel boot-time
+functions that are unmapped the time anything like systemtap could
+run.
+
+
+> Assuming you meant _text (which is dangerous because it's a define
+> in the kernel linker script and could change).
+
+By "dangerous" do you only mean that it may require a one-liner
+catch-up patch in systemtap if the kernel linker scripts change?
+
+
+> Then you can't offset into other sections, like init sections or
+> modules.
+
+Kernel init sections are unprobeable by definition, so that doesn't
+matter.  Modules are also irrelevant, since their addresses are
+relative to their relocation bases / sections, not to a kernel
+(vmlinux) symbol.
+
+
+- FChE
