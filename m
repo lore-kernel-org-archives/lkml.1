@@ -1,115 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758340AbYGQOw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759176AbYGQOxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758340AbYGQOw3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 10:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755640AbYGQOwV
+	id S1759176AbYGQOxP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 10:53:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755640AbYGQOw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 10:52:21 -0400
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:49482 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753679AbYGQOwU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 10:52:20 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AugEAFjzfkhMRKxB/2dsb2JhbACBWq57
-Date: Thu, 17 Jul 2008 10:52:17 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Wenji Huang <wenji.huang@oracle.com>, Roland McGrath <roland@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       ltt-dev@lists.casi.polymtl.ca, systemtap@sources.redhat.com,
+	Thu, 17 Jul 2008 10:52:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44035 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753471AbYGQOw5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 10:52:57 -0400
+Date: Thu, 17 Jul 2008 10:33:32 -0400
+From: Josef Bacik <jbacik@redhat.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Josef Bacik <jbacik@redhat.com>, Josef Bacik <josef@toxicpanda.com>,
+       linux-ext4@vger.kernel.org, sct@redhat.com, akpm@linux-foundation.org,
+       adilger@sun.com, Johannes Weiner <hannes@saeurebad.de>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix markers duplicate modpost entry (update)
-Message-ID: <20080717145217.GA24496@Krystal>
-References: <20080715024754.GA26471@Krystal> <000001c8e7aa$b9548600$2bfd9200$@css.fujitsu.com> <20080717024550.GA22869@Krystal> <487ED503.2060503@oracle.com> <20080717070321.GB26035@Krystal> <20080717001613.8fe204df.akpm@linux-foundation.org>
-Mime-Version: 1.0
+Subject: Re: ext3 on latest -git: BUG: unable to handle kernel NULL pointer
+	dereference at 0000000c
+Message-ID: <20080717143332.GE14133@unused.rdu.redhat.com>
+References: <1b7401870807170613y747baa7by158177047cc7e28@mail.gmail.com> <19f34abd0807170620g39ab942bl592ea3fa3fa0dab@mail.gmail.com> <1b7401870807170634u14492a53k3931ddcddbd1e098@mail.gmail.com> <19f34abd0807170639p838d14blc9a13d2104313f38@mail.gmail.com> <20080717135746.GB14133@unused.rdu.redhat.com> <19f34abd0807170725p13e81e3dq4daad32ad2a83931@mail.gmail.com> <20080717141333.GC14133@unused.rdu.redhat.com> <19f34abd0807170735p5d2cba31kec3fb65c5b8c7b3f@mail.gmail.com> <20080717141655.GD14133@unused.rdu.redhat.com> <19f34abd0807170744r79e46a78odfcfbd67687d2ceb@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080717001613.8fe204df.akpm@linux-foundation.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 10:41:52 up 42 days, 19:22,  6 users,  load average: 0.91, 1.60,
-	1.29
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <19f34abd0807170744r79e46a78odfcfbd67687d2ceb@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When a kernel was rebuilt, the previous Module.markers was not cleared. It
-caused markers with different format strings to appear as duplicates when a
-markers was changed. This problem is present since scripts/mod/modpost.c started
-to generate Module.markers,
-commit b2e3e658b344c6bcfb8fb694100ab2f2b5b2edb0
+On Thu, Jul 17, 2008 at 04:44:47PM +0200, Vegard Nossum wrote:
+> On Thu, Jul 17, 2008 at 4:16 PM, Josef Bacik <jbacik@redhat.com> wrote:
+> > On Thu, Jul 17, 2008 at 04:35:16PM +0200, Vegard Nossum wrote:
+> >> On Thu, Jul 17, 2008 at 4:13 PM, Josef Bacik <jbacik@redhat.com> wrote:
+> >> > On Thu, Jul 17, 2008 at 04:25:49PM +0200, Vegard Nossum wrote:
+> >> >> On Thu, Jul 17, 2008 at 3:57 PM, Josef Bacik <jbacik@redhat.com> wrote:
+> >> >> > Can you try this patch out and see if it fixes the problem?  I didn't compile
+> >> >> > test it, so you may need to tweak somethings, but it should work.  Thanks,
+> >> >> >
+> >> >> > Signed-off-by: Josef Bacik <jbacik@redhat.com>
+> >> >>
+> >> >> Nope, seems to be the same problem:
+> >> >>
+> >> >> kjournald starting.  Commit interval 5 seconds
+> >> >> EXT3-fs warning: mounting fs with errors, running e2fsck is recommended
+> >> >> EXT3 FS on loop0, internal journal
+> >> >> EXT3-fs: mounted filesystem with ordered data mode.
+> >> >> EXT3-fs error (device loop0): ext3_free_blocks: Freeing blocks in
+> >> >> system zones - Block = 16, count = 1
+> >> >> EXT3-fs error (device loop0): ext3_free_blocks: Freeing blocks in
+> >> >> system zones - Block = 32, count = 1
+> >> >> EXT3-fs error (device loop0): ext3_free_blocks: Freeing blocks not in
+> >> >> datazone - block = 262144, count = 1
+> >> >> BUG: unable to handle kernel NULL pointer dereference at 0000000c
+> >> >> IP: [<c01fd210>] journal_dirty_metadata+0xa0/0x160
+> >> >>
+> >> >> Full log at http://folk.uio.no/vegardno/linux/log-1216304953.txt
+> >> >>
+> >> >>
+> >> >
+> >> > Ok, this should do it then.  Thanks,
+> 
+> -ENOLUCK
+> 
+> EXT3-fs error (device loop0): ext3_free_blocks: Freeing blocks not in
+> datazone - block = 524288, count = 1
+> EXT3-fs error (device loop0) in ext3_free_blocks_sb: IO failure
+> BUG: unable to handle kernel NULL pointer dereference at 0000000c
+> IP: [<c01fd200>] journal_dirty_metadata+0xa0/0x160
+> 
+> It did seem to get further, though.
+> 
+> http://folk.uio.no/vegardno/linux/log-1216306142.txt
+>
 
-It therefore applies to 2.6.25, 2.6.26 and linux-next.
+Ok run dumpe2fs -h on your image and see if you have a line that says
 
-I merely merged the patches from Roland, Wenji and Takashi here.
+Errors behavior:          Continue
 
-Credits to
-Roland McGrath <roland@redhat.com>
-Wenji Huang <wenji.huang@oracle.com> 
-and
-Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
+if you do run tune2fs -e remount-ro and then do the mount.  That would explain
+why you are still having panics even though we should be aborting the journal.
+Thanks,
 
-for providing the individual fixes.
-
-- Changelog :
-  - Integrated Takashi's Makefile modification to clear Module.markers upon
-    make clean.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Roland McGrath <roland@redhat.com>
-CC: Wenji Huang <wenji.huang@oracle.com>
-CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
-CC: akpm@linux-foundation.org
----
- Makefile                 |    3 ++-
- scripts/Makefile.modpost |    1 +
- scripts/mod/modpost.c    |    3 ++-
- 3 files changed, 5 insertions(+), 2 deletions(-)
-
-Index: linux-2.6-lttng/scripts/Makefile.modpost
-===================================================================
---- linux-2.6-lttng.orig/scripts/Makefile.modpost	2008-07-17 02:47:44.000000000 -0400
-+++ linux-2.6-lttng/scripts/Makefile.modpost	2008-07-17 02:48:17.000000000 -0400
-@@ -101,6 +101,7 @@ quiet_cmd_kernel-mod = MODPOST $@
-       cmd_kernel-mod = $(modpost) $@
- 
- vmlinux.o: FORCE
-+	@rm -fr $(kernelmarkersfile)
- 	$(call cmd,kernel-mod)
- 
- # Declare generated files as targets for modpost
-Index: linux-2.6-lttng/scripts/mod/modpost.c
-===================================================================
---- linux-2.6-lttng.orig/scripts/mod/modpost.c	2008-07-17 02:49:33.000000000 -0400
-+++ linux-2.6-lttng/scripts/mod/modpost.c	2008-07-17 02:50:10.000000000 -0400
-@@ -1992,7 +1992,8 @@ static void read_markers(const char *fna
- 			mod->skip = 1;
- 		}
- 
--		add_marker(mod, marker, fmt);
-+		if (!mod->skip)
-+			add_marker(mod, marker, fmt);
- 	}
- 	return;
- fail:
-Index: linux-2.6-lttng/Makefile
-===================================================================
---- linux-2.6-lttng.orig/Makefile	2008-07-17 10:37:44.000000000 -0400
-+++ linux-2.6-lttng/Makefile	2008-07-17 10:38:34.000000000 -0400
-@@ -1133,7 +1133,8 @@ clean: archclean $(clean-dirs)
- 	@find . $(RCS_FIND_IGNORE) \
- 		\( -name '*.[oas]' -o -name '*.ko' -o -name '.*.cmd' \
- 		-o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \
--		-o -name '*.symtypes' -o -name 'modules.order' \) \
-+		-o -name '*.symtypes' -o -name 'modules.order' \
-+		-o -name 'Module.markers' \) \
- 		-type f -print | xargs rm -f
- 
- # mrproper - Delete all generated files, including .config
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Josef 
