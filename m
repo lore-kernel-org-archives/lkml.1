@@ -1,143 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759031AbYGQNsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759479AbYGQNt6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759031AbYGQNsU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 09:48:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756884AbYGQNsJ
+	id S1759479AbYGQNt6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 09:49:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756086AbYGQNtu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 09:48:09 -0400
-Received: from mx2.suse.de ([195.135.220.15]:54182 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756549AbYGQNsH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 09:48:07 -0400
-From: Thomas Renninger <trenn@suse.de>
-Organization: SUSE Linux - Novell
-To: Arkadiusz Miskiewicz <arekm@maven.pl>
-Subject: [PATCH] Re: cpufreq limits avilable frequencies to 800MHz on git kernel
-Date: Thu, 17 Jul 2008 15:48:02 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk,
-       Andrew Morton <akpm@linux-foundation.org>, gnorton@novell.com,
-       miguel@novell.com, "linux-acpi" <linux-acpi@vger.kernel.org>,
-       Dave Jones <davej@redhat.com>
-References: <200805231944.57320.arekm@maven.pl> <200805261815.40601.arekm@maven.pl> <200805261823.03140.arekm@maven.pl>
-In-Reply-To: <200805261823.03140.arekm@maven.pl>
+	Thu, 17 Jul 2008 09:49:50 -0400
+Received: from smtp.ctxuk.citrix.com ([62.200.22.115]:58099 "EHLO
+	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754424AbYGQNtt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 09:49:49 -0400
+X-IronPort-AV: E=Sophos;i="4.31,203,1215388800"; 
+   d="scan'208";a="1058496"
+Message-ID: <487F4E20.6090802@eu.citrix.com>
+Date: Thu, 17 Jul 2008 14:50:24 +0100
+From: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: linux-kernel@vger.kernel.org
+CC: Stefano Stabellini <Stefano.Stabellini@eu.citrix.com>,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: [PATCH] [RESEND] fbcon: simple text blinking implementation
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807171548.04584.trenn@suse.de>
+X-OriginalArrivalTime: 17 Jul 2008 13:49:47.0729 (UTC) FILETIME=[FA0DCC10:01C8E813]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi all,
+at the moment blinking is not supported in fbcon but it is supported in
+vgacon.
+Since userspace applications don't distinguish between the two, they just
+assume that the linux terminal is always capable of blinking text.
+However implementing blinking in fbcon is not so difficult: this patch
+provides a very simple (too simple?) implementation of that.
+I am using the flashcursor function to scan the buffer for blinking text.
+For the sake of efficiency I added a simple flag mechanism to disable the scan
+when I am sure that there are no blinking characters on the screen.
 
-maybe I found something..., can someone review/test this.
+Signed-off-by: stefano.stabellini@eu.citrix.com
 
-Thanks,
-
-         Thomas
-
-------------
-CPUFREQ ACPI: Only call _PPC after cpufreq ACPI init funcs got called already
-
-Ingo Molnar provided a fix to not call _PPC at processor driver initialization 
-time.
-Git commit #e4233dec749a3519069d9390561b5636a75c7579
-
-But it can still happen that _PPC is called at  processor driver 
-initialization time.
-
-This patch should make sure that this is not possible anymore.
-
-Signed-off-by: Thomas Renninger <trenn@suse.de>
 ---
- arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c |    6 ++++++
- drivers/acpi/processor_perflib.c              |   13 ++++++++++++-
- drivers/cpufreq/cpufreq.c                     |    3 +++
- include/linux/cpufreq.h                       |    1 +
- 4 files changed, 22 insertions(+), 1 deletions(-)
+ drivers/video/console/fbcon.c |   62 +++++++++++++++++++++++++++++++++-------
+ 1 files changed, 51 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c 
-b/arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c
-index 69288f6..3233fe8 100644
---- a/arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c
-+++ b/arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c
-@@ -96,6 +96,12 @@ static int pmi_notifier(struct notifier_block *nb,
- 	struct cpufreq_frequency_table *cbe_freqs;
- 	u8 node;
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 97aff8d..163b37a 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -152,6 +152,8 @@ static int fbcon_has_sysfs;
  
-+	/* Should this really be called for CPUFREQ_ADJUST, CPUFREQ_INCOMPATIBLE
-+	 * and CPUFREQ_NOTIFY policy events?)
-+	 */
-+	if (event == CPUFREQ_START)
-+		return 0;
+ static const struct consw fb_con;
+ 
++static int blink_flag = 1;
 +
- 	cbe_freqs = cpufreq_frequency_get_table(policy->cpu);
- 	node = cbe_cpu_to_node(policy->cpu);
+ #define CM_SOFTBACK	(8)
  
-diff --git a/drivers/acpi/processor_perflib.c 
-b/drivers/acpi/processor_perflib.c
-index b474996..63ccf80 100644
---- a/drivers/acpi/processor_perflib.c
-+++ b/drivers/acpi/processor_perflib.c
-@@ -72,7 +72,13 @@ MODULE_PARM_DESC(ignore_ppc, "If the frequency of your 
-machine gets wrongly" \
- #define PPC_REGISTERED   1
- #define PPC_IN_USE       2
+ #define advance_row(p, delta) (unsigned short *)((unsigned long)(p) + (delta) * vc->vc_size_row)
+@@ -402,24 +404,58 @@ static void fb_flashcursor(struct work_struct *work)
+ 	struct vc_data *vc = NULL;
+ 	int c;
+ 	int mode;
++	unsigned short *s;
++	int x = 0, y = 0;
++	static int show_blink = 1;
  
--static int acpi_processor_ppc_status = 0;
-+/* ignore_ppc:
-+ * -1 -> cpufreq low level drivers not initialized -> _PSS, etc. not called 
-yet
-+ *       ignore _PPC
-+ *  0 -> cpufreq low level drivers initialized -> consider _PPC values
-+ *  1 -> ignore _PPC totally -> forced by user through boot param
-+ */
-+static int acpi_processor_ppc_status = -1;
+ 	acquire_console_sem();
+ 	if (ops && ops->currcon != -1)
+ 		vc = vc_cons[ops->currcon].d;
  
- static int acpi_processor_ppc_notifier(struct notifier_block *nb,
- 				       unsigned long event, void *data)
-@@ -81,6 +87,11 @@ static int acpi_processor_ppc_notifier(struct 
-notifier_block *nb,
- 	struct acpi_processor *pr;
- 	unsigned int ppc = 0;
+ 	if (!vc || !CON_IS_VISIBLE(vc) ||
+- 	    registered_fb[con2fb_map[vc->vc_num]] != info ||
+-	    vc->vc_deccm != 1) {
++	    registered_fb[con2fb_map[vc->vc_num]] != info) {
+ 		release_console_sem();
+ 		return;
+ 	}
  
-+	if (event == CPUFREQ_START && ignore_ppc <= 0) {
-+		ignore_ppc = 0;
-+		return 0;
+ 	p = &fb_display[vc->vc_num];
+-	c = scr_readw((u16 *) vc->vc_pos);
+-	mode = (!ops->cursor_flash || ops->cursor_state.enable) ?
+-		CM_ERASE : CM_DRAW;
+-	ops->cursor(vc, info, mode, softback_lines, get_color(vc, info, c, 1),
+-		    get_color(vc, info, c, 0));
++	if (vc->vc_deccm == 1 && !(vc->vc_cursor_type & 0x10)) {
++		c = scr_readw((u16 *) vc->vc_pos);
++		mode = (!ops->cursor_flash || ops->cursor_state.enable) ?
++			CM_ERASE : CM_DRAW;
++		ops->cursor(vc, info, mode, softback_lines,
++				get_color(vc, info, c, 1),
++				get_color(vc, info, c, 0));
 +	}
 +
- 	if (ignore_ppc)
- 		return 0;
++	if (vc->vc_hi_font_mask || !blink_flag) {
++		release_console_sem();
++		return;
++	}
++	if (!softback_lines)
++		s = (u16 *) vc->vc_origin;
++	else
++		s = (u16 *) softback_curr;
++	while (y < vc->vc_rows) {
++		while (x < vc->vc_cols) {
++			c = scr_readw(s);
++			if (attr_blink(c)) {
++				blink_flag = 1;
++				if (!show_blink)
++					c = (c & 0xf4ff) | (attr_bgcol(12, c) << 8);
++				fbcon_putc(vc, c, y, x);
++			}
++			s++;
++			x++;
++		}
++		x = 0;
++		y++;
++		if (s == (u16 *) softback_end)
++			s = (u16 *) softback_buf;
++		if (s == (u16 *) softback_in)
++			s = (u16 *) vc->vc_origin;
++	}
++	show_blink = show_blink ? 0 : 1;
+ 	release_console_sem();
+ }
  
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 1d41496..0471ef5 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -825,6 +825,9 @@ static int cpufreq_add_dev(struct sys_device *sys_dev)
- 	policy->user_policy.min = policy->cpuinfo.min_freq;
- 	policy->user_policy.max = policy->cpuinfo.max_freq;
+@@ -1331,6 +1367,8 @@ static void fbcon_putcs(struct vc_data *vc, const unsigned short *s,
+ 	struct display *p = &fb_display[vc->vc_num];
+ 	struct fbcon_ops *ops = info->fbcon_par;
  
-+	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
-+				     CPUFREQ_START, policy);
++	if (!vc->vc_hi_font_mask && (vc->vc_attr & 0x80))
++		blink_flag = 1;
+ 	if (!fbcon_is_inactive(vc, info))
+ 		ops->putcs(vc, info, s, count, real_y(p, ypos), xpos,
+ 			   get_color(vc, info, scr_readw(s), 1),
+@@ -1350,6 +1388,7 @@ static void fbcon_clear_margins(struct vc_data *vc, int bottom_only)
+ 	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
+ 	struct fbcon_ops *ops = info->fbcon_par;
+ 
++	blink_flag = 1;
+ 	if (!fbcon_is_inactive(vc, info))
+ 		ops->clear_margins(vc, info, bottom_only);
+ }
+@@ -1364,10 +1403,7 @@ static void fbcon_cursor(struct vc_data *vc, int mode)
+ 	if (fbcon_is_inactive(vc, info) || vc->vc_deccm != 1)
+ 		return;
+ 
+-	if (vc->vc_cursor_type & 0x10)
+-		fbcon_del_cursor_timer(info);
+-	else
+-		fbcon_add_cursor_timer(info);
++	fbcon_add_cursor_timer(info);
+ 
+ 	ops->cursor_flash = (mode == CM_ERASE) ? 0 : 1;
+ 	if (mode & CM_SOFTBACK) {
+@@ -1860,6 +1896,7 @@ static int fbcon_scroll(struct vc_data *vc, int t, int b, int dir,
+ 		return -EINVAL;
+ 
+ 	fbcon_cursor(vc, CM_ERASE);
++	blink_flag = 1;
+ 
+ 	/*
+ 	 * ++Geert: Only use ywrap/ypan if the console is in text mode
+@@ -2074,6 +2111,8 @@ static void fbcon_bmove(struct vc_data *vc, int sy, int sx, int dy, int dx,
+ 	if (!width || !height)
+ 		return;
+ 
++	blink_flag = 1;
 +
- #ifdef CONFIG_SMP
+ 	/*  Split blits that cross physical y_wrap case.
+ 	 *  Pathological case involves 4 blits, better to use recursive
+ 	 *  code rather than unrolled case
+@@ -2811,6 +2850,7 @@ static int fbcon_scrolldelta(struct vc_data *vc, int lines)
+ 	struct display *disp = &fb_display[fg_console];
+ 	int offset, limit, scrollback_old;
  
- #ifdef CONFIG_HOTPLUG_CPU
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index e7e91db..07cb761 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -109,6 +109,7 @@ struct cpufreq_policy {
- #define CPUFREQ_ADJUST		(0)
- #define CPUFREQ_INCOMPATIBLE	(1)
- #define CPUFREQ_NOTIFY		(2)
-+#define CPUFREQ_START		(3)
- 
- #define CPUFREQ_SHARED_TYPE_NONE (0) /* None */
- #define CPUFREQ_SHARED_TYPE_HW	 (1) /* HW does needed coordination */
--- 
-1.5.4.5
++	blink_flag = 1;
+ 	if (softback_top) {
+ 		if (vc->vc_num != fg_console)
+ 			return 0;
 
