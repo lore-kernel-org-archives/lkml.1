@@ -1,81 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757856AbYGQL4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758126AbYGQL54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757856AbYGQL4Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 07:56:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754865AbYGQL4R
+	id S1758126AbYGQL54 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 07:57:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbYGQL5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 07:56:17 -0400
-Received: from bromo.msbb.uc.edu ([129.137.3.146]:55401 "HELO
-	bromo.msbb.uc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751114AbYGQL4R (ORCPT
+	Thu, 17 Jul 2008 07:57:46 -0400
+Received: from smtp-01.mandic.com.br ([200.225.81.132]:37627 "EHLO
+	smtp-01.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751972AbYGQL5p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 07:56:17 -0400
-Date: Thu, 17 Jul 2008 07:56:14 -0400
-From: Jack Howarth <howarth@bromo.msbb.uc.edu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
-Message-ID: <20080717115614.GA22423@bromo.msbb.uc.edu>
-References: <86802c440807161029n7e0dac98x1ec260879204b6f0@mail.gmail.com> <86802c440807161535n3a4d6891n6f7c16bd4e1f19c3@mail.gmail.com> <20080717004004.GA17792@bromo.msbb.uc.edu> <86802c440807161749u2f5c1eben618e05c6e254fedd@mail.gmail.com> <20080717023538.GA18329@bromo.msbb.uc.edu> <86802c440807161959s10666027k5297af1d657ff4fa@mail.gmail.com> <20080717034418.GA18951@bromo.msbb.uc.edu> <86802c440807162113g4cea3bd9ic71210330417032b@mail.gmail.com> <20080717061825.GA19582@bromo.msbb.uc.edu> <86802c440807162348m6d05b912x7b3f655d7f9efb93@mail.gmail.com>
+	Thu, 17 Jul 2008 07:57:45 -0400
+Message-ID: <487F33A7.4040809@diamondcut.com.br>
+Date: Thu, 17 Jul 2008 08:57:27 -0300
+From: "Renato S. Yamane" <yamane@diamondcut.com.br>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440807162348m6d05b912x7b3f655d7f9efb93@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Robert M. Albrecht" <romal@gmx.de>
+CC: linux-acpi@vger.kernel.org, pavel@suse.cz, linux-kernel@vger.kernel.org,
+       gregkh@suse.de
+Subject: Re: Toshiba - Documentation for Linux Developers
+References: <4855971D.90004@diamondcut.com.br> <20080616221443.GA760@kroah.com>	 <b170af450807130654m2f800b10ybcba4b2c5c7cf329@mail.gmail.com>	 <487A1534.3000307@diamondcut.com.br>	 <b170af450807150017u248d4255i3800c10cb11df319@mail.gmail.com>	 <487C865C.5060303@diamondcut.com.br> <b170af450807150446l555e9bbfx3f388d3ebe9cb11f@mail.gmail.com> <487E5130.9040208@gmx.de>
+In-Reply-To: <487E5130.9040208@gmx.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-YH,
-  I have CONFIG_PCIEASPM=y set in .config (since I am using
-Fedora 9, I copied the .config from the redhat 2.6.26 rpm build
-as my .config and ran 'make oldconfig'). I'll try rebuilding the
-kernel with CONFIG_PCIEASPM_DEBUG=y and see if that provides
-any insights.
-                     Jack
-On Wed, Jul 16, 2008 at 11:48:19PM -0700, Yinghai Lu wrote:
-> On Wed, Jul 16, 2008 at 11:18 PM, Jack Howarth
-> <howarth@bromo.msbb.uc.edu> wrote:
-> > YH,
-> >  Using the debug patches and your mmconfig patch as well as the kernel
-> > options 'debug initcall_debug apic=verbose pci=routeirq", I see the following
-> > messages that don't scroll off screen...
-> >
-> > PCI: 0000:00:1f.1 reg 10 io port: [ 40d8, 40df]
-> > PCI: 0000:00:1f.1 reg 14 io port: [ 40ec, 40ef]
-> > PCI: 0000:00:1f.1 reg 18 io port: [ 40d0, 40d7]
-> > PCI: 0000:00:1f.1 reg 1c io port: [ 40e8, 40eb]
-> > PCI: 0000:00:1f.1 reg 20 io port: [ 40b0, 40bf]
-> > pci 0000:00.1f.1: calling pci_fixup_transparent_bridge+0x0/0x2a
-> > PCI: Found 0000:00:1f.2 [8086/27c4] 000101 00
-> > PCI: 0000:00:1f.2 reg 10 io port: [ 40c8, 40cf]
-> > PCI: 0000:00:1f.2 reg 14 io port: [ 40e4, 40e7]
-> > PCI: 0000:00:1f.2 reg 18 io port: [ 40c0, 40c7]
-> > PCI: 0000:00:1f.2 reg 1c io port: [ 40e0, 40e3]
-> > PCI: 0000:00:1f.2 reg 20 io port: [ 40a0, 40af]
-> > PCI: 0000:00:1f.2 reg 24 32bit mmio: [d8405000, d84053ff]
-> > pci: 0000:00:1f.2 calling pci_fixup_transparent_bridge+0x0/0x2a
-> > PCI: Found 0000:00:1f.3 [8086/27da] 000c05 00
-> > PCI: 0000:00:1f.3 reg 20 io port: [ efa0, efbf]
-> > PCI: 0000:00:1f.3: calling pci_fixup_transparent_bridge+0x0/0x2a
-> > PCI: Fixups for bus 0000:00
-> > PCI: Scanning behind PCI bridge 0000:00:01.0, config 010100, pass 0
-> > PCI: Scanning bus 0000:01
-> > PCI: Found 0000:01:00.0 [1002/71c5] 000300 00
-> > PCI: 0000:00:01:00.0 reg 10 32bit mmio: [c0000000, cfffffff]
-> > PCI: 0000:00:01:00.0 reg 14 io port: [ 3000, 30ff]
-> > PCI: 0000:00:01:00.0 reg 18 32bit mmio: [d8300000, d830ffff]
-> >
-> should get
-> PCI: Fixups for bus 0000:01
-> PCI: Transparent bridge - 0000:00:01.0
-> PCI: bridge 0000:00:01.0 io port: [3000, 3fff]
-> PCI: bridge 0000:00:01.0 32bit mmio: ...
-> PCI: Bus scan for 0000:01 returning with max=01
+[cc'ed Greg KH]
+
+Only to remember: Toshiba website to Linux Developers is:
+<http://linux.toshiba-dme.co.jp/linux/eng/develop.htm>
+
+Best regards,
+Renato S. Yamane
+
+
+Robert M. Albrecht wrote:
+> Hi,
 > 
-> Do you have CONFIG_PCIEASPM in your config?
+> both Toshiba types (original and compal-oem machines) are basically
+> unsupported for Linux.
 > 
-> YH
+> The omnibook-module for compal-systems was maintained outside the kernel
+> and stalled for some time now.
+> 
+> The toshiba_acpi included in the kernel is outdated (there is a newer
+> release, that fixes some bugs). Toshiba_acpi does only work on 32 bit
+> systems, it breaks on 64 bit systems.
+> 
+> If anyone is interested in some hacking I can provide shell-access to
+> both types of machines.
+> 
+> For some Tecra machines, Toshiba has provided some Vista-compatible
+> BIOSes, they seem to enhance acpi-stuff for Linux too. So you might look
+> for a bios-update.
+> 
+> cu romal
+> 
+> www.romal.de
+> blog.romal.de
+> 
+> Rafał Miłecki schrieb:
+>> 2008/7/15, Renato S. Yamane <yamane@diamondcut.com.br>:
+>>> Rafał Miłecki wrote:
+>>>  > The newest version is packed for openSUSE fortunately. But it doesn't
+>>>  > for my notebook
+>>>
+>>> Try compile SVN version as commented in my last e-mail
+>>
+>> OK, I tried version from SVN. Nothing changed :|
+>>
+>>
+>>>  > dmesg is:
+>>>  > omnibook: Driver version 2.20070211-trunk.
+>>>  > omnibook: Unknown model.
+>>>
+>>>
+>>> Try force recognize with ectype parameter.
+>>>  #modprobe omnibook ectype=x
+>>
+>> Sure, I tried every ectype between 1 and 15 before (omnibook from
+>> package) and now (version from SVN) again. I checked two files (when
+>> existed): lcd and temperature. Temperature (if file existed for forced
+>> ectype) was always 0 and lcd always had some random values. Inserting
+>> other values (1, 7) didn't change anything.
