@@ -1,76 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932611AbYGQVI5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932537AbYGQVO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932611AbYGQVI5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 17:08:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758784AbYGQVIt
+	id S932537AbYGQVO1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 17:14:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760272AbYGQVOT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 17:08:49 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:7256 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755222AbYGQVIs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 17:08:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=PzhZbxttyQ8zN/6/hQVXaPvHXvrRI8IlrEbuKRaTT4YDNV3l1hrKkezYOxm9YWG8/W
-         TkrLGyeMYo0GNX6VPiBA1rykfzWAL5eXCgz8rsxjebiOyNBob6UGQSl2T1qi0hrxG7HC
-         KpbR9eTINdXY69CdcI2MGh+V7ejx0VgO1x1K0=
-Message-ID: <c8b4dbe10807171408m1c8da2a4ga573f133d6beb86f@mail.gmail.com>
-Date: Thu, 17 Jul 2008 22:08:47 +0100
-From: "Aidan Thornton" <makosoft@googlemail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: [stable] Linux 2.6.25.10
-Cc: pageexec@freemail.hu, "Greg KH" <greg@kroah.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-In-Reply-To: <alpine.LFD.1.10.0807150907480.3017@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 17 Jul 2008 17:14:19 -0400
+Received: from xenotime.net ([66.160.160.81]:42962 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1760233AbYGQVOS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 17:14:18 -0400
+Date: Thu, 17 Jul 2008 14:14:09 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: <Solofo.Ramangalahy@bull.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
+       Matt Helsley <matthltc@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Nadia Derbey <Nadia.Derbey@bull.net>,
+       Manfred Spraul <manfred@colorfullife.com>
+Subject: Re: [PATCH -mm v2 3/3] sysv ipc: use auto_msgmnb to desactivate and
+ reactivate msgmnb recomputation
+Message-Id: <20080717141409.2edcb7be.rdunlap@xenotime.net>
+In-Reply-To: <20080715211408.381111371@bull.net>
+References: <20080715211407.423625725@bull.net>
+	<20080715211408.381111371@bull.net>
+Organization: YPO4
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080703185727.GA12617@suse.de>
-	 <487C242B.19490.17F690F7@pageexec.freemail.hu>
-	 <alpine.LFD.1.10.0807141924020.3017@woody.linux-foundation.org>
-	 <487CDEDD.21049.1ACFDAEA@pageexec.freemail.hu>
-	 <alpine.LFD.1.10.0807150904290.3017@woody.linux-foundation.org>
-	 <alpine.LFD.1.10.0807150907480.3017@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/15/08, Linus Torvalds <torvalds@linux-foundation.org> wrote:
->
->
-> On Tue, 15 Jul 2008, Linus Torvalds wrote:
->> 
->> So as far as I'm concerned, "disclosing" is the fixing of the bug. It's 
->> the "look at the source" approach.
->
-> Btw, and you may not like this, since you are so focused on security, one 
-> reason I refuse to bother with the whole security circus is that I think 
-> it glorifies - and thus encourages - the wrong behavior.
->
-> It makes "heroes" out of security people, as if the people who don't just 
-> fix normal bugs aren't as important.
->
-> In fact, all the boring normal bugs are _way_ more important, just because 
-> there's a lot more of them. I don't think some spectacular security hole 
-> should be glorified or cared about as being any more "special" than a 
-> random spectacular crash due to bad locking.
+On Tue, 15 Jul 2008 23:14:10 +0200 Solofo.Ramangalahy@bull.net wrote:
 
-I hate to state the obvious, but there's a reason security holes are treated differently - because they're *not* *obvious*. If a system is crashing spectacularly, generally someone notices and tries to fix it. On the other hand, security holes are usually invisible in normal operation until a hacker uses one to walk off with tens of thousands of people's credit card details. That's why there's so much effort put into tracking them.
+> From: Solofo Ramangalahy <Solofo.Ramangalahy@bull.net>
+> 
+> Add /proc/sys/kernel/auto_msgmnb to control automatic recomputation of
+> /proc/sys/kernel/msgmnb (msg_ctlmnb).
+> 
+> Signed-off-by: Solofo Ramangalahy <Solofo.Ramangalahy@bull.net>
+> ---
+>  Documentation/sysctl/kernel.txt |   35 ++++++++++++++++
+>  include/linux/ipc_namespace.h   |    5 ++
+>  ipc/ipc_sysctl.c                |   87 ++++++++++++++++++++++++++++++++++++----
+>  ipc/ipcns_notifier.c            |   62 +++++++++++++++++++++++++++-
+>  ipc/namespace.c                 |    2 
+>  ipc/util.c                      |    1 
+>  6 files changed, 183 insertions(+), 9 deletions(-)
+> 
+> Index: linux-2.6.26-rc8-mm1-MSGMNB3/Documentation/sysctl/kernel.txt
+> ===================================================================
+> --- linux-2.6.26-rc8-mm1-MSGMNB3.orig/Documentation/sysctl/kernel.txt
+> +++ linux-2.6.26-rc8-mm1-MSGMNB3/Documentation/sysctl/kernel.txt
+> @@ -179,6 +179,41 @@ kernel stack.
+>  
+>  ==============================================================
+>  
+> +msgmnb
+> +
+> +Maximum size in bytes, not in message count, of a single SystemV IPC
+> +message queue (b stands for bytes).
+> +
+> +This value is dynamic and depends on the online cpu count of the
+> +machine (taking cpu hotplug into account).
 
-> Security people are often the black-and-white kind of people that I can't 
-> stand. I think the OpenBSD crowd is a bunch of masturbating monkeys, in 
-> that they make such a big deal about concentrating on security to the 
-> point where they pretty much admit that nothing else matters to them.
->
-> To me, security is important. But it's no less important than everything 
-> *else* that is also important!
+Prefer "CPU" to "cpu".
 
-True, there are other serious types of bugs (silent data corruption is one particularly nasty one). However, for *any* serious bug, it's important to be clear on what the likely impact is and what's affected. This goes particularly for the ones that might otherwise not be obvious to the person affected until it's too late, such as security and silent data corruption bugs, but really it applies to all serious bugs. I'm not convinced these descriptions are clear enough.
+> +
+> +Computed values are between MSGMNB and MSGMNB*MSG_CPU_SCALE #define
+> +constants (currently [16384,65536]).
+> +
+> +The exact value is automatically (re)computed, but:
+> +
+> +. If the value is positioned from user space (via procfs or sysctl()),
 
-Aidan
+s/positioned/specified/ or set
+
+> +  then the automatic recomputation is disabled. E.g.:
+> +
+> +  # echo 16384 > /proc/sys/kernel/msgmnb
+> +
+> +. The automatic recomputation can also be disabled via auto_msgmnb,
+> +  e.g.:
+> +
+> +  # echo 0 > /proc/sys/kernel/auto_msgmnb
+> +
+> +. When disabled, the automatic recomputation can be reenabled via
+> +  auto_msgmnb, e.g.:
+> +
+> +  # echo 1 > /proc/sys/kernel/auto_msgmnb
+> +
+> +The msgmnb and auto_msgmnb values in each (ipc) namespace are
+> +independent.
+> +
+
+Prefer IPC instead of ipc (above and below).
+
+> +Initially, the msgmnb value is computed automatically: at boot time
+> +and (ipc) namespace creation.
+> +
+> +==============================================================
+
+
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
