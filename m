@@ -1,73 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760886AbYGQQCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760463AbYGQQCx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760886AbYGQQCc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 12:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760710AbYGQQB7
+	id S1760463AbYGQQCx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 12:02:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760641AbYGQQCl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 12:01:59 -0400
-Received: from az33egw01.freescale.net ([192.88.158.102]:41390 "EHLO
-	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760997AbYGQQB6 (ORCPT
+	Thu, 17 Jul 2008 12:02:41 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:2036 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760203AbYGQQCj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 12:01:58 -0400
-Message-ID: <487F6CE8.8090203@freescale.com>
-Date: Thu, 17 Jul 2008 10:01:44 -0600
-From: John Rigby <jrigby@freescale.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080505)
+	Thu, 17 Jul 2008 12:02:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding
+         :sender;
+        b=dj2OHdOyQSrqSdXVB15nqh7jVZX9Xhp9WLUNi9w8fy+SrPBFrI+GwCBQ9t9l/Ib/6I
+         4DUff9OC3GO4CIz6ZJjyCbTp1/Z1Qm3MmGAN4Duq48+TzzzA0Uhd6CMMzOV0CiHizJOP
+         CLzpQFegV2bMTPNUGtxZ8Q+c3YtwmSrMNThlA=
+Message-ID: <487F6D2E.2040501@tuffmail.co.uk>
+Date: Thu, 17 Jul 2008 17:02:54 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-CC: petkovbb@googlemail.com, linux-kernel@vger.kernel.org,
-       benh@kernel.crashing.org, torvalds@linux-foundation.org
-Subject: Re: [PATCH] Fix collateral damage to top level Makefile
-References: <20080717070549.30755.13083.stgit@trillian.secretlab.ca>
-In-Reply-To: <20080717070549.30755.13083.stgit@trillian.secretlab.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Alexey Starikovskiy <astarikovskiy@suse.de>
+CC: linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] acpi: Avoid dropping rapid hotkey events (or other GPEs)
+ on Asus EeePC
+References: <487D23C3.5070301@student.cs.york.ac.uk> <487F58B6.5040309@suse.de>
+In-Reply-To: <487F58B6.5040309@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Grant,
+Alexey Starikovskiy wrote:
+> Hi Alan,
+>
+> Could you please test if your patch works with the last patch in #10919?
+>
+> Thanks,
+> Alex.
+Vacuously so.
 
-I owe you on this one.  Sorry.
+My patch still applies, but #10919 makes it obsolete.  My patch fixed a
+bug that shows up in polling mode.  #10919 kills polling mode.
 
-John
+I've tested v2.6.26 + #10919 and it works fine (except for spamming the
+kernel log - please read my Bugzilla comment).
 
-Grant Likely wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
->
-> The patch named "powerpc/mpc5121: Add clock driver", also contained
-> an unrelated and bogus change to the top-level makefile.  This patch
-> backs out the bad bit.
->
-> SHA1 of offending patch: 137e95906e294913fab02162e8a1948ade49acb5)
->
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
->
-> If the maintainer who picked up this patch (Grant Likely) had done
-> his job, this cack-up never would have happened.  Why do we still
-> have to deal with such sloppy individuals?
->
-> Ben/Linus;  I assume one of you will want to pick this up soonish?
-> Otherwise, I'll add it to my tree and it will be part of my next
-> pull request.
->
-> g.
->
->  Makefile |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
->
-> diff --git a/Makefile b/Makefile
-> index 1564577..6192922 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -1,4 +1,3 @@
-> -FRED=42
->  VERSION = 2
->  PATCHLEVEL = 6
->  SUBLEVEL = 26
->
->
->   
 
+It appears that interrupt mode suffered from a race which is very
+similar to my original problem.  If two GPE interrupts arrive before the
+workqueue runs, then the second interrupt will be ignored because
+EC_FLAGS_QUERY_PENDING is still set.  This will happen with any EC if
+interrupts are very close together, right?
+
+I think my patch also fixes this theoretical problem.  But I'd rather
+you took over on this.  I was already confused by ec.c in v2.6.26, and
+with #10919 I understand it even less.  E.g. why is
+ec_switch_to_poll_mode() still present; what does it do now do_ec_poll()
+is removed?
+
+I'm happy to work on this with you, but I'd need to be able understand
+the code first :-(.
+
+Alan
