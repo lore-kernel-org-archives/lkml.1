@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933654AbYGQTgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932940AbYGQThn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933654AbYGQTgh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 15:36:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760314AbYGQTdM
+	id S932940AbYGQThn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 15:37:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933615AbYGQTgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 15:33:12 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:53739 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932941AbYGQTdK (ORCPT
+	Thu, 17 Jul 2008 15:36:10 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:52509 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933584AbYGQTgJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 15:33:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=vSwkjq5m/KjQpKQhDCzLDieU9Qji65npJ/V5OoxAO9a4YzpE2tvK+gZadr0enh5gZE
-         xcbSVvgDr6Qhs63cHf3aVTzwhvST7GNRfR42H6PzH55SxhVGK0JIrSiIrP94T85O5mtk
-         Uxchl1hdDfv+3r4gU9+I6viEunPeMVFX8bqxw=
-Date: Thu, 17 Jul 2008 23:30:24 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: "Fred ." <eldmannen@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Please add ZFS support (from GPL sources)
-Message-ID: <20080717193024.GA17916@martell.zuzino.mipt.ru>
-References: <f188924b0807171213q43f10b09j47b34674fc8aaa38@mail.gmail.com>
+	Thu, 17 Jul 2008 15:36:09 -0400
+Message-ID: <487F9FA1.7020101@keyaccess.nl>
+Date: Thu, 17 Jul 2008 21:38:09 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f188924b0807171213q43f10b09j47b34674fc8aaa38@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Takashi Iwai <tiwai@suse.de>
+CC: Ingo Molnar <mingo@elte.hu>, Jaroslav Kysela <perex@perex.cz>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ALSA development <alsa-devel@alsa-project.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Rene Herman <rene.herman@gmail.com>,
+       Krzysztof Helt <krzysztof.h1@wp.pl>
+Subject: Re: [boot crash, bisected] in 9f240a55 "ALSA: opti93x: use cs4231
+ lib"
+References: <Pine.LNX.4.61.0807141105150.7676@tm8103-a.perex-int.cz>	<20080717170657.GA14593@elte.hu> <s5h3am8jqvy.wl%tiwai@suse.de> <487F9B9B.2010905@keyaccess.nl>
+In-Reply-To: <487F9B9B.2010905@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 09:13:55PM +0200, Fred . wrote:
-> Previously we have not been able to have ZFS support due to it being
-> licensed under the CDDL and the kernel under the GPL.
+On 17-07-08 21:20, Rene Herman wrote:
 
-Wrong. License is the last of your problems.
-
-> Sun have contributed ZFS support to GRUB under the GPL license.
-
-Only read-only.
-
-> We could now use that code to implement support for ZFS in the Linux
-> kernel.
+> On 17-07-08 20:40, Takashi Iwai wrote:
 > 
-> http://blogs.sun.com/darren/entry/zfs_under_gplv2_already_exists
+>> Could you try the patch below?
+> 
+> No, please hang on, it's much simpler. Above commit isn't actually 
+> itself guilty. Have a patch ready, but am testing a bit.
 
-And I have some sketches. Not yet ready to send anywhere.
+I retract that. Your patch should fix things.
+
+I would like to place something on top to make the init isa/pnp choice 
+look more generic but I'll submit that tomorrow.
+
+Rene.
+
+
 
