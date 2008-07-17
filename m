@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760839AbYGQSHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932101AbYGQSJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760839AbYGQSHv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 14:07:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757978AbYGQSHm
+	id S932101AbYGQSJS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 14:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756031AbYGQSJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 14:07:42 -0400
-Received: from ag-out-0708.google.com ([72.14.246.243]:61240 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757781AbYGQSHl (ORCPT
+	Thu, 17 Jul 2008 14:09:06 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:46095 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754603AbYGQSJF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 14:07:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=qjRoMtSfhGg59kWM/GS+Y5VIuRY52OVXbQJanN9sRERHWztsFlxrnGcZ4gvHyWatj3
-         ypc45Ng07CA5J6PhMQTWul5lYhqbPSqL1I3gtzUb9ceUd4VKaW3cIbJGH69qIsApZpYe
-         BzFgDpVHI3h54EbUc0WKDVKyfY2Vp/rWulGcU=
-Date: Thu, 17 Jul 2008 21:06:16 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: cl@linux-foundation.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 3/4] kmemtrace: SLUB hooks.
-Message-ID: <20080717180615.GA5360@localhost>
-References: <cover.1216255034.git.eduard.munteanu@linux360.ro> <017a63e6be64502c36ede4733f0cc4e5ede75db2.1216255035.git.eduard.munteanu@linux360.ro> <84144f020807170046j2fae2f41k7c80dba4e388677b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f020807170046j2fae2f41k7c80dba4e388677b@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 17 Jul 2008 14:09:05 -0400
+Subject: Re: madvise(2) MADV_SEQUENTIAL behavior
+From: Peter Zijlstra <peterz@infradead.org>
+To: Chris Snook <csnook@redhat.com>
+Cc: Rik van Riel <riel@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Eric Rannaud <eric.rannaud@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <487F89AE.9070007@redhat.com>
+References: <1216163022.3443.156.camel@zenigma>
+	 <487E628A.3050207@redhat.com>	<1216252910.3443.247.camel@zenigma>
+	 <200807171614.29594.nickpiggin@yahoo.com.au>
+	 <20080717102148.6bc52e94@cuia.bos.redhat.com> <487F89AE.9070007@redhat.com>
+Content-Type: text/plain
+Date: Thu, 17 Jul 2008 20:09:31 +0200
+Message-Id: <1216318171.5232.98.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 10:46:51AM +0300, Pekka Enberg wrote:
-> On Thu, Jul 17, 2008 at 3:46 AM, Eduard - Gabriel Munteanu
-> <eduard.munteanu@linux360.ro> wrote:
-> > This adds hooks for the SLUB allocator, to allow tracing with kmemtrace.
-> >
-> > Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-> > ---
-> >  include/linux/slub_def.h |    9 +++++++-
-> >  mm/slub.c                |   47 ++++++++++++++++++++++++++++++++++++++++-----
-> >  2 files changed, 49 insertions(+), 7 deletions(-)
-> 
-> What are these casts doing here? I think you can just drop them, no?
+Sorry can't resist...
 
-Yes, I should cut all these casts off. Will resubmit soon.
+On Thu, 2008-07-17 at 14:04 -0400, Chris Snook wrote:
 
+> 1) start up a memory-hogging Java app
 
-	Eduard
+Is there any other kind? :-)
+
 
