@@ -1,52 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932940AbYGQThn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933390AbYGQTiP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932940AbYGQThn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 15:37:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933615AbYGQTgK
+	id S933390AbYGQTiP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 15:38:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932258AbYGQThl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 15:36:10 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:52509 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933584AbYGQTgJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 15:36:09 -0400
-Message-ID: <487F9FA1.7020101@keyaccess.nl>
-Date: Thu, 17 Jul 2008 21:38:09 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: Ingo Molnar <mingo@elte.hu>, Jaroslav Kysela <perex@perex.cz>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ALSA development <alsa-devel@alsa-project.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Rene Herman <rene.herman@gmail.com>,
-       Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: Re: [boot crash, bisected] in 9f240a55 "ALSA: opti93x: use cs4231
- lib"
-References: <Pine.LNX.4.61.0807141105150.7676@tm8103-a.perex-int.cz>	<20080717170657.GA14593@elte.hu> <s5h3am8jqvy.wl%tiwai@suse.de> <487F9B9B.2010905@keyaccess.nl>
-In-Reply-To: <487F9B9B.2010905@keyaccess.nl>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Thu, 17 Jul 2008 15:37:41 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:63503 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932799AbYGQThj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 15:37:39 -0400
+Date: Thu, 17 Jul 2008 21:14:06 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Pierre Ossman <drzeus@drzeus.cx>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] fix avr32 build errors
+Message-ID: <20080717211406.17c46637@siona.local>
+In-Reply-To: <20080717134511.GA18502@cs181140183.pp.htv.fi>
+References: <20080717134511.GA18502@cs181140183.pp.htv.fi>
+Organization: Atmel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+X-OriginalArrivalTime: 17 Jul 2008 19:14:09.0933 (UTC) FILETIME=[4A6E73D0:01C8E841]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 17-07-08 21:20, Rene Herman wrote:
+On Thu, 17 Jul 2008 16:45:11 +0300
+Adrian Bunk <bunk@kernel.org> wrote:
 
-> On 17-07-08 20:40, Takashi Iwai wrote:
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/avr32/boards/atstk1000/atstk1003.c:157: error: too few arguments to function 'at32_add_device_mci'
+> make[2]: *** [arch/avr32/boards/atstk1000/atstk1003.o] Error 1
 > 
->> Could you try the patch below?
+> <--  snip  -->
 > 
-> No, please hang on, it's much simpler. Above commit isn't actually 
-> itself guilty. Have a patch ready, but am testing a bit.
+> Reported-by: Adrian Bunk <bunk@kernel.org>
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-I retract that. Your patch should fix things.
+Applied, thanks a lot. Shame on me for not testing all defconfigs
+before submitting.
 
-I would like to place something on top to make the init isa/pnp choice 
-look more generic but I'll submit that tomorrow.
-
-Rene.
-
-
-
+Haavard
