@@ -1,58 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbYGQGm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018AbYGQGot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755929AbYGQGm2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 02:42:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbYGQGmT
+	id S1756018AbYGQGot (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 02:44:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbYGQGol
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 02:42:19 -0400
-Received: from il.qumranet.com ([212.179.150.194]:57745 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751296AbYGQGmS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 02:42:18 -0400
-Message-ID: <487EE9C9.2050108@qumranet.com>
-Date: Thu, 17 Jul 2008 09:42:17 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       kvm-devel <kvm@vger.kernel.org>,
-       "Anthony N. Liguori [imap]" <aliguori@us.ibm.com>
-Subject: Re: KVM overflows the stack
-References: <1206479576.7562.21.camel@nimitz.home.sr71.net>	 <47EA1C63.8010202@qumranet.com>	 <1206550329.7883.5.camel@nimitz.home.sr71.net>	 <47EA80AC.4070204@qumranet.com>	 <1206551794.7883.7.camel@nimitz.home.sr71.net>	 <47EB6AAC.3040607@qumranet.com>  <47EB7281.6070300@qumranet.com>	 <1206629709.7883.30.camel@nimitz.home.sr71.net>	 <47EBB63E.2060306@qumranet.com>	 <1212445810.8211.9.camel@nimitz.home.sr71.net>	 <48469BDA.3050206@qumranet.com> <1212738105.7837.3.camel@nimitz>	 <48512028.3070104@qumranet.com>  <1216148242.25942.6.camel@nimitz>	 <1216244660.8711.6.camel@nimitz> <1216248527.11664.9.camel@nimitz>	 <487EDE26.8040201@qumranet.com> <1216275288.11664.13.camel@nimitz>
-In-Reply-To: <1216275288.11664.13.camel@nimitz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 17 Jul 2008 02:44:41 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50694 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751626AbYGQGol (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 02:44:41 -0400
+Subject: Re: {build fail} firmware: latest Linus tree modules_install fail
+From: David Woodhouse <dwmw2@infradead.org>
+To: Wang Chen <wangchen@cn.fujitsu.com>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <487ED5E3.1060900@cn.fujitsu.com>
+References: <487ED5E3.1060900@cn.fujitsu.com>
+Content-Type: text/plain
+Date: Wed, 16 Jul 2008 23:44:32 -0700
+Message-Id: <1216277072.2480.4.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hansen wrote:
->   
->> switch (...) {
->>     case x: {
->>          struct medium a;
->>          ...
->>     }
->>     case y:
->>           struct medium b;
->>           ...
->>     }
->> };
->>
->> These could be solved either by stack allocation, or by moving into 
->> functions marked noinline.  Whichever is easier.
->>     
->
-> Did you mean dynamic allocation? :)
->
->   
+On Thu, 2008-07-17 at 13:17 +0800, Wang Chen wrote:
+> make[1]: *** No rule to make target `/lib/firmware/$(dir', needed by `/lib/firmware/ttusb-budget/dspbootcode.bin'.  Stop.
+> make: *** [_modinst_post] Error 2
+> 
+> This error was outputed when I build the latest git tree of Linus's linux-2.6.
 
-Yeah.  Too early in the morning for me.
+Thank you for the report. Please could you confirm that this fixes it
+for you?
 
-Roland's trick might be easier than either, though.
+----
+Subject: Update scripts/Makefile.fwinst to cope with older make
+
+Also fix unwanted rebuilds of the firmware/ihex2fw tool by including
+the .ihex2fw.cmd file when present.
+
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+
+diff --git a/scripts/Makefile.fwinst b/scripts/Makefile.fwinst
+index 3d2f460..92305a3 100644
+--- a/scripts/Makefile.fwinst
++++ b/scripts/Makefile.fwinst
+@@ -28,18 +28,39 @@ endif
+ installed-fw := $(addprefix $(INSTALL_FW_PATH)/,$(fw-shipped-all))
+ installed-fw-dirs := $(sort $(dir $(installed-fw))) $(INSTALL_FW_PATH)/.
+ 
++# Workaround for make < 3.81, where .SECONDEXPANSION doesn't work.
++PHONY += $(INSTALL_FW_PATH)/$$(%) install-all-dirs
++$(INSTALL_FW_PATH)/$$(%): install-all-dirs
++	@true
++install-all-dirs: $(installed-fw-dirs)
++	@true
++
+ quiet_cmd_install = INSTALL $(subst $(srctree)/,,$@)
+       cmd_install = $(INSTALL) -m0644 $< $@
+ 
+ $(installed-fw-dirs):
+ 	$(call cmd,mkdir)
+ 
+-$(installed-fw): $(INSTALL_FW_PATH)/%: $(obj)/% | $(INSTALL_FW_PATH)/$$(dir %)/
++$(installed-fw): $(INSTALL_FW_PATH)/%: $(obj)/% | $(INSTALL_FW_PATH)/$$(dir %)
+ 	$(call cmd,install)
+ 
+-.PHONY: __fw_install __fw_modinst FORCE
++PHONY +=  __fw_install __fw_modinst FORCE
++
++.PHONY: $(PHONY)
+ 
+ __fw_install: $(installed-fw)
+ __fw_modinst: $(mod-fw)
+ 
+ FORCE:
++
++# Read all saved command lines and dependencies for the $(targets) we
++# may be building using $(if_changed{,_dep}). As an optimization, we 
++# don't need to read them if the target does not exist; we will rebuild
++# anyway in that case.
++
++targets := $(wildcard $(sort $(targets)))
++cmd_files := $(wildcard $(foreach f,$(targets),$(dir $(f)).$(notdir $(f)).cmd))
++
++ifneq ($(cmd_files),)
++  include $(cmd_files)
++endif
+
 
 -- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+dwmw2
 
