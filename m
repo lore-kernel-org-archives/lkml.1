@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933244AbYGQVYh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933342AbYGQVYz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933244AbYGQVYh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 17:24:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932978AbYGQVYS
+	id S933342AbYGQVYz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 17:24:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760404AbYGQVYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 17:24:18 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48694 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932902AbYGQVYR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 17:24:17 -0400
-Date: Thu, 17 Jul 2008 14:23:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: linux-kernel@vger.kernel.org, Davide Libenzi <davidel@xmailserver.org>,
-       stable@kernel.org
-Subject: Re: [PATCH] Fix build on COMPAT platforms when CONFIG_EPOLL is
- disabled.
-Message-Id: <20080717142314.1aeb2f58.akpm@linux-foundation.org>
-In-Reply-To: <20080718.003108.128619119.anemo@mba.ocn.ne.jp>
-References: <20080718.003108.128619119.anemo@mba.ocn.ne.jp>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 17 Jul 2008 17:24:24 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:40631 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933134AbYGQVYX (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 17:24:23 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Cc: David Collier-Brown <davecb@sun.com>,
+       Morton Harrow <mharrow@linuxmail.org>, Miod Vallat <miod@online.fr>,
+       Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: GPL version 4
+In-Reply-To: Your message of "Thu, 17 Jul 2008 17:17:46 EDT."
+             <Pine.LNX.4.61.0807171716030.2133@chaos.analogic.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20080716213115.C747F7BC45@ws5-10.us4.outblaze.com> <487E70E6.4030908@sun.com>
+            <Pine.LNX.4.61.0807171716030.2133@chaos.analogic.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; boundary="==_Exmh_1216329859_4044P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Thu, 17 Jul 2008 17:24:19 -0400
+Message-ID: <11069.1216329859@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Jul 2008 00:31:08 +0900 (JST)
-Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
+--==_Exmh_1216329859_4044P
+Content-Type: text/plain; charset=us-ascii
 
-> Add missing cond_syscall() entry for compat_sys_epoll_pwait.
-> 
-> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-> ---
-> diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
-> index 5b9b467..0fea0ee 100644
-> --- a/kernel/sys_ni.c
-> +++ b/kernel/sys_ni.c
-> @@ -59,6 +59,7 @@ cond_syscall(sys_epoll_create);
->  cond_syscall(sys_epoll_ctl);
->  cond_syscall(sys_epoll_wait);
->  cond_syscall(sys_epoll_pwait);
-> +cond_syscall(compat_sys_epoll_pwait);
->  cond_syscall(sys_semget);
->  cond_syscall(sys_semop);
->  cond_syscall(sys_semtimedop);
+On Thu, 17 Jul 2008 17:17:46 EDT, "linux-os (Dick Johnson)" said:
 
-Interesting.  It appears that both 2.6.25.x and 2.6.26.x need this
-fix as well.
+> Nah. Should be
+> GPL V-infinity
+> That way there won't be any more.
+
+Any mathematician worth their salt will point out you have that bass-ackwards.
+
+infinity means there is *always* one more.
+
+--==_Exmh_1216329859_4044P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFIf7iDcC3lWbTT17ARApIoAJ9oWSS/ZJDI17mKo2hzQxiyuKS1YwCeL3P9
+y02uyiKXnPBsWa5iAYaLAp8=
+=5Pma
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1216329859_4044P--
