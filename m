@@ -1,97 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760288AbYGQOfs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758355AbYGQOgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760288AbYGQOfs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 10:35:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757414AbYGQOfi
+	id S1758355AbYGQOgq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 10:36:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755640AbYGQOgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 10:35:38 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:57911 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756263AbYGQOfh (ORCPT
+	Thu, 17 Jul 2008 10:36:37 -0400
+Received: from p01c12o141.mxlogic.net ([208.65.145.64]:45215 "EHLO
+	p01c12o141.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753471AbYGQOgg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 10:35:37 -0400
-Message-ID: <487F58B6.5040309@suse.de>
-Date: Thu, 17 Jul 2008 18:35:34 +0400
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Thu, 17 Jul 2008 10:36:36 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: alan-jenkins@tuffmail.co.uk
-CC: linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] acpi: Avoid dropping rapid hotkey events (or other GPEs)
- on Asus EeePC
-References: <487D23C3.5070301@student.cs.york.ac.uk>
-In-Reply-To: <487D23C3.5070301@student.cs.york.ac.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: why doesn't /proc/self/maps mtime change when memory's allocated?
+Date: Thu, 17 Jul 2008 15:36:33 +0100
+Message-ID: <0F10A59FDFFDFD4E9BEBD7365DE6725502007EFA@uk-email.terastack.bluearc.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: why doesn't /proc/self/maps mtime change when memory's allocated?
+Thread-Index: AcjoGoKAoiDi7NPdQ7KoiGnqAhezDg==
+From: "Andy Chittenden" <andyc@bluearc.com>
+To: <linux-kernel@vger.kernel.org>
+X-Spam: [F=0.1000000000; S=0.100(2008062001)]
+X-MAIL-FROM: <andyc@bluearc.com>
+X-SOURCE-IP: [62.190.48.218]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan,
+Here's a ruby script that when run on 2.6.25 demonstrates that although
+the contents of /proc/self/maps changes, its mtime doesn't.
 
-Could you please test if your patch works with the last patch in #10919?
+--- start ruby script ---
+#!/usr/bin/ruby -w
 
-Thanks,
-Alex.
+mapfile = "/proc/self/maps"
 
+oldmtime = File.stat(mapfile).mtime
+oldmaps = File.read(mapfile)
 
-Alan Jenkins wrote:
-> It looks like this EC clears the SMI_EVT bit after every query, even if there
-> are more events pending.  The workaround is to repeatedly query the EC until
-> it reports that no events remain.
-> 
-> This fixes a regression in 2.6.26 (from 2.6.25.3).  Initially reported as
-> "Asus Eee PC hotkeys stop working if pressed quickly" in bugzilla
-> <http://bugzilla.kernel.org/show_bug.cgi?id=11089>.
-> 
-> The regression was caused by a recently added check for interrupt storms.
-> The Eee PC triggers this check and switches to polling.  When multiple events
-> arrive between polling intervals, only one is fetched from the EC.  This causes
-> erroneous behaviour; ultimately events stop being delivered altogether when the
-> EC buffer overflows.
-> 
-> Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-> 
-> ---
-> diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
-> index 5622aee..2b4c5a2 100644
-> --- a/drivers/acpi/ec.c
-> +++ b/drivers/acpi/ec.c
-> @@ -459,14 +459,10 @@ void acpi_ec_remove_query_handler(struct acpi_ec *ec, u8 query_bit)
->  
->  EXPORT_SYMBOL_GPL(acpi_ec_remove_query_handler);
->  
-> -static void acpi_ec_gpe_query(void *ec_cxt)
-> +static void acpi_ec_gpe_run_handler(struct acpi_ec *ec, u8 value)
->  {
-> -	struct acpi_ec *ec = ec_cxt;
-> -	u8 value = 0;
->  	struct acpi_ec_query_handler *handler, copy;
->  
-> -	if (!ec || acpi_ec_query(ec, &value))
-> -		return;
->  	mutex_lock(&ec->lock);
->  	list_for_each_entry(handler, &ec->list, node) {
->  		if (value == handler->query_bit) {
-> @@ -484,6 +480,18 @@ static void acpi_ec_gpe_query(void *ec_cxt)
->  	mutex_unlock(&ec->lock);
->  }
->  
-> +static void acpi_ec_gpe_query(void *ec_cxt)
-> +{
-> +	struct acpi_ec *ec = ec_cxt;
-> +	u8 value = 0;
-> +
-> +	if (!ec)
-> +		return;
-> +
-> +	while (!acpi_ec_query(ec, &value))
-> +		acpi_ec_gpe_run_handler(ec, value);
-> +}
-> +
->  static u32 acpi_ec_gpe_handler(void *data)
->  {
->  	acpi_status status = AE_OK;
-> 
-> 
+arr = Array.new()
+
+for k in 1...10*1024*1024
+    arr.push(k)
+end
+
+newmaps = File.read(mapfile)
+newmtime = File.stat(mapfile).mtime
+
+if (oldmaps != newmaps)
+    if (oldmtime == newmtime)
+        puts("oldmaps mtime = #{oldmtime}")
+        puts(oldmaps)
+        puts("newmaps mtime = #{newmtime}")
+        puts(newmaps)
+    end
+end
+--- end ruby script ---
+
+When I run it, I get this output (the lines with the word [heap] against
+them are different (along with others)):
+
+# ./checkmaps.rb 
+oldmaps mtime = Thu Jul 17 15:32:53 +0100 2008
+00400000-00401000 r-xp 00000000 08:01 832446
+/usr/bin/ruby1.8
+00600000-00601000 rw-p 00000000 08:01 832446
+/usr/bin/ruby1.8
+00694000-006f7000 rw-p 00694000 00:00 0
+[heap]
+7f7f64de9000-7f7f64f33000 r-xp 00000000 08:01 57195
+/lib/libc-2.7.so
+7f7f64f33000-7f7f65133000 ---p 0014a000 08:01 57195
+/lib/libc-2.7.so
+7f7f65133000-7f7f65136000 r--p 0014a000 08:01 57195
+/lib/libc-2.7.so
+7f7f65136000-7f7f65138000 rw-p 0014d000 08:01 57195
+/lib/libc-2.7.so
+7f7f65138000-7f7f6513d000 rw-p 7f7f65138000 00:00 0 
+7f7f6513d000-7f7f651bf000 r-xp 00000000 08:01 57184
+/lib/libm-2.7.so
+7f7f651bf000-7f7f653be000 ---p 00082000 08:01 57184
+/lib/libm-2.7.so
+7f7f653be000-7f7f653c0000 rw-p 00081000 08:01 57184
+/lib/libm-2.7.so
+7f7f653c0000-7f7f653c8000 r-xp 00000000 08:01 57196
+/lib/libcrypt-2.7.so
+7f7f653c8000-7f7f655c8000 ---p 00008000 08:01 57196
+/lib/libcrypt-2.7.so
+7f7f655c8000-7f7f655ca000 rw-p 00008000 08:01 57196
+/lib/libcrypt-2.7.so
+7f7f655ca000-7f7f655f8000 rw-p 7f7f655ca000 00:00 0 
+7f7f655f8000-7f7f655fa000 r-xp 00000000 08:01 57197
+/lib/libdl-2.7.so
+7f7f655fa000-7f7f657fa000 ---p 00002000 08:01 57197
+/lib/libdl-2.7.so
+7f7f657fa000-7f7f657fc000 rw-p 00002000 08:01 57197
+/lib/libdl-2.7.so
+7f7f657fc000-7f7f65812000 r-xp 00000000 08:01 57199
+/lib/libpthread-2.7.so
+7f7f65812000-7f7f65a12000 ---p 00016000 08:01 57199
+/lib/libpthread-2.7.so
+7f7f65a12000-7f7f65a14000 rw-p 00016000 08:01 57199
+/lib/libpthread-2.7.so
+7f7f65a14000-7f7f65a18000 rw-p 7f7f65a14000 00:00 0 
+7f7f65a18000-7f7f65afa000 r-xp 00000000 08:01 831874
+/usr/lib/libruby1.8.so.1.8.7
+7f7f65afa000-7f7f65cfa000 ---p 000e2000 08:01 831874
+/usr/lib/libruby1.8.so.1.8.7
+7f7f65cfa000-7f7f65cfe000 rw-p 000e2000 08:01 831874
+/usr/lib/libruby1.8.so.1.8.7
+7f7f65cfe000-7f7f65d1c000 rw-p 7f7f65cfe000 00:00 0 
+7f7f65d1c000-7f7f65d38000 r-xp 00000000 08:01 57191
+/lib/ld-2.7.so
+7f7f65eb6000-7f7f65f1c000 rw-p 7f7f65eb6000 00:00 0 
+7f7f65f33000-7f7f65f37000 rw-p 7f7f65f33000 00:00 0 
+7f7f65f37000-7f7f65f39000 rw-p 0001b000 08:01 57191
+/lib/ld-2.7.so
+7fff6df23000-7fff6df39000 rw-p 7ffffffe9000 00:00 0
+[stack]
+7fff6dffe000-7fff6e000000 r-xp 7fff6dffe000 00:00 0
+[vdso]
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0
+[vsyscall]
+newmaps mtime = Thu Jul 17 15:32:53 +0100 2008
+00400000-00401000 r-xp 00000000 08:01 832446
+/usr/bin/ruby1.8
+00600000-00601000 rw-p 00000000 08:01 832446
+/usr/bin/ruby1.8
+00694000-00714000 rw-p 00694000 00:00 0
+[heap]
+7f7f590e7000-7f7f5fa09000 rw-p 7f7f65e8d000 00:00 0 
+7f7f64de9000-7f7f64f33000 r-xp 00000000 08:01 57195
+/lib/libc-2.7.so
+7f7f64f33000-7f7f65133000 ---p 0014a000 08:01 57195
+/lib/libc-2.7.so
+7f7f65133000-7f7f65136000 r--p 0014a000 08:01 57195
+/lib/libc-2.7.so
+7f7f65136000-7f7f65138000 rw-p 0014d000 08:01 57195
+/lib/libc-2.7.so
+7f7f65138000-7f7f6513d000 rw-p 7f7f65138000 00:00 0 
+7f7f6513d000-7f7f651bf000 r-xp 00000000 08:01 57184
+/lib/libm-2.7.so
+7f7f651bf000-7f7f653be000 ---p 00082000 08:01 57184
+/lib/libm-2.7.so
+7f7f653be000-7f7f653c0000 rw-p 00081000 08:01 57184
+/lib/libm-2.7.so
+7f7f653c0000-7f7f653c8000 r-xp 00000000 08:01 57196
+/lib/libcrypt-2.7.so
+7f7f653c8000-7f7f655c8000 ---p 00008000 08:01 57196
+/lib/libcrypt-2.7.so
+7f7f655c8000-7f7f655ca000 rw-p 00008000 08:01 57196
+/lib/libcrypt-2.7.so
+7f7f655ca000-7f7f655f8000 rw-p 7f7f655ca000 00:00 0 
+7f7f655f8000-7f7f655fa000 r-xp 00000000 08:01 57197
+/lib/libdl-2.7.so
+7f7f655fa000-7f7f657fa000 ---p 00002000 08:01 57197
+/lib/libdl-2.7.so
+7f7f657fa000-7f7f657fc000 rw-p 00002000 08:01 57197
+/lib/libdl-2.7.so
+7f7f657fc000-7f7f65812000 r-xp 00000000 08:01 57199
+/lib/libpthread-2.7.so
+7f7f65812000-7f7f65a12000 ---p 00016000 08:01 57199
+/lib/libpthread-2.7.so
+7f7f65a12000-7f7f65a14000 rw-p 00016000 08:01 57199
+/lib/libpthread-2.7.so
+7f7f65a14000-7f7f65a18000 rw-p 7f7f65a14000 00:00 0 
+7f7f65a18000-7f7f65afa000 r-xp 00000000 08:01 831874
+/usr/lib/libruby1.8.so.1.8.7
+7f7f65afa000-7f7f65cfa000 ---p 000e2000 08:01 831874
+/usr/lib/libruby1.8.so.1.8.7
+7f7f65cfa000-7f7f65cfe000 rw-p 000e2000 08:01 831874
+/usr/lib/libruby1.8.so.1.8.7
+7f7f65cfe000-7f7f65d1c000 rw-p 7f7f65cfe000 00:00 0 
+7f7f65d1c000-7f7f65d38000 r-xp 00000000 08:01 57191
+/lib/ld-2.7.so
+7f7f65eb6000-7f7f65f1c000 rw-p 7f7f65eb6000 00:00 0 
+7f7f65f33000-7f7f65f37000 rw-p 7f7f65f33000 00:00 0 
+7f7f65f37000-7f7f65f39000 rw-p 0001b000 08:01 57191
+/lib/ld-2.7.so
+7fff6df23000-7fff6df39000 rw-p 7ffffffe9000 00:00 0
+[stack]
+7fff6dffe000-7fff6e000000 r-xp 7fff6dffe000 00:00 0
+[vdso]
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0
+[vsyscall]
+
+-- 
+Andy, BlueArc Engineering
+
 
