@@ -1,83 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755674AbYGQHCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756064AbYGQHDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755674AbYGQHCU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 03:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751173AbYGQHCL
+	id S1756064AbYGQHDe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 03:03:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbYGQHD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 03:02:11 -0400
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:33916 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751001AbYGQHCJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 03:02:09 -0400
+	Thu, 17 Jul 2008 03:03:26 -0400
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:34972 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751173AbYGQHD0 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 03:03:26 -0400
 X-IronPort-Anti-Spam-Filtered: true
 X-IronPort-Anti-Spam-Result: AugEAOCJfkhMRKxB/2dsb2JhbACBWq5b
-Date: Thu, 17 Jul 2008 03:02:07 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>, linux-mm@kvack.org,
-       Dave Hansen <haveblue@us.ibm.com>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: Re: [patch 09/17] LTTng instrumentation - filemap
-Message-ID: <20080717070207.GA30312@Krystal>
-References: <20080715222604.331269462@polymtl.ca> <20080715222748.002421557@polymtl.ca> <200807171625.25302.nickpiggin@yahoo.com.au>
-Mime-Version: 1.0
+Date: Thu, 17 Jul 2008 03:03:21 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: akpm@linux-foundation.org, Wenji Huang <wenji.huang@oracle.com>
+Cc: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
+       ltt-dev@lists.casi.polymtl.ca, systemtap@sources.redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix markers duplicate modpost entry
+Message-ID: <20080717070321.GB26035@Krystal>
+References: <20080715024754.GA26471@Krystal> <000001c8e7aa$b9548600$2bfd9200$@css.fujitsu.com> <20080717024550.GA22869@Krystal> <487ED503.2060503@oracle.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200807171625.25302.nickpiggin@yahoo.com.au>
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <487ED503.2060503@oracle.com>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 02:58:07 up 42 days, 11:39,  5 users,  load average: 3.19, 1.31,
-	1.13
+X-Uptime: 02:53:11 up 42 days, 11:34,  4 users,  load average: 0.74, 0.84,
+	1.07
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Nick Piggin (nickpiggin@yahoo.com.au) wrote:
-> On Wednesday 16 July 2008 08:26, Mathieu Desnoyers wrote:
-> > Instrumentation of waits caused by memory accesses on mmap regions.
-> >
-> > Those tracepoints are used by LTTng.
-> >
-> > About the performance impact of tracepoints (which is comparable to
-> > markers), even without immediate values optimizations, tests done by Hideo
-> > Aoki on ia64 show no regression. His test case was using hackbench on a
-> > kernel where scheduler instrumentation (about 5 events in code scheduler
-> > code) was added. See the "Tracepoints" patch header for performance result
-> > detail.
-> 
-> BTW. this sort of test is practically useless to measure overhead. If
-> a modern CPU is executing out of primed insn/data and branch prediction
-> cache, then yes this sort of thing is pretty well free.
-> 
-> I see *real* workloads that have got continually and incrementally slower
-> eg from 2.6.5 to 2.6.20+ as "features" get added. Surprisingly, none of
-> them ever showed up individually on a microbenchmark.
-> 
-> OK, for this case if you can configure it out, I guess that's fine. But
-> let's not pretend that adding code and branches and function calls are
-> ever free.
+When a kernel was rebuilt, the previous Module.markers was not cleared. It
+caused markers with different format strings to appear as duplicates when a
+markers was changed.
 
-I never pretended anything like that. Actually, that's what the
-"immediate values" are for : they allow to patch load immediate value
-instead of a memory read to decrease d-cache impact. They now allow to
-patch a jump instead of the memory read/immediate value read + test +
-conditional branch to skip the function call with fairly minimal impact.
-I agree with you that eating precious d-cache and jump prediction buffer
-entries can eventually slow down the system. But this will be _hard_ to
-show on a single macro benchmark, and the microbenchmark showing it will
-have to be taken in conditions which will exacerbate the d-cache and BPB
-impact.
+I merely merged the patches from Roland and Wenji here. It applies to
+mainline (and is not intrusive, so will also apply to linux-next).
 
-Mathieu
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+From: Roland McGrath <roland@redhat dot com>
+From: Wenji Huang <wenji.huang@oracle.com>
+CC: akpm@linux-foundation.org
+---
+ scripts/Makefile.modpost |    1 +
+ scripts/mod/modpost.c    |    3 ++-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+Index: linux-2.6-lttng/scripts/Makefile.modpost
+===================================================================
+--- linux-2.6-lttng.orig/scripts/Makefile.modpost	2008-07-17 02:47:44.000000000 -0400
++++ linux-2.6-lttng/scripts/Makefile.modpost	2008-07-17 02:48:17.000000000 -0400
+@@ -101,6 +101,7 @@ quiet_cmd_kernel-mod = MODPOST $@
+       cmd_kernel-mod = $(modpost) $@
+ 
+ vmlinux.o: FORCE
++	@rm -fr $(kernelmarkersfile)
+ 	$(call cmd,kernel-mod)
+ 
+ # Declare generated files as targets for modpost
+Index: linux-2.6-lttng/scripts/mod/modpost.c
+===================================================================
+--- linux-2.6-lttng.orig/scripts/mod/modpost.c	2008-07-17 02:49:33.000000000 -0400
++++ linux-2.6-lttng/scripts/mod/modpost.c	2008-07-17 02:50:10.000000000 -0400
+@@ -1992,7 +1992,8 @@ static void read_markers(const char *fna
+ 			mod->skip = 1;
+ 		}
+ 
+-		add_marker(mod, marker, fmt);
++		if (!mod->skip)
++			add_marker(mod, marker, fmt);
+ 	}
+ 	return;
+ fail:
 
 -- 
 Mathieu Desnoyers
