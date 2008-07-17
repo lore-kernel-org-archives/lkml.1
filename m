@@ -1,66 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757787AbYGQC3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760168AbYGQC3e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757787AbYGQC3U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 22:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbYGQC3F
+	id S1760168AbYGQC3e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 22:29:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757415AbYGQC3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 22:29:05 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:1609 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753294AbYGQC3D (ORCPT
+	Wed, 16 Jul 2008 22:29:19 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:53795 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756179AbYGQC3S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 22:29:03 -0400
+	Wed, 16 Jul 2008 22:29:18 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=TWsut6SwXg7HohMvxgnGvo7bMweawux/7juq/EtShZ9YHld5Cnpvy85wiS5ZKx5Q+G
-         lLv4zFmQqIuFJ1UcVvG/ckIhmQ68JMIP1tNCHwOBgHenqb+ZH78Ba01VP+qrLL1Jkr9V
-         n9B1CeuzkrjwAm99tKJt1EwJ6jW5QbQHMqG10=
-Message-ID: <76366b180807161929i4eb9462exc3d2255e0ec881e8@mail.gmail.com>
-Date: Wed, 16 Jul 2008 22:29:02 -0400
-From: "Andrew Paprocki" <andrew@ishiboo.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: ACPI WARNING: at drivers/acpi/tables/tbfadt.c:348 acpi_tb_create_local_fadt+0x147/0x2f4()
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=OEmet6F6KFeoDbBMuD07A8kzNIW7Sb8Qjdv9jO/nIkwkTicE2YnyuggiktAzJ4FyKS
+         ewB5+GXzOZxnMblrt5F95vZc/yYZSCpjCq+RkxUtaxGfXKliE0oJy08SF0ljAAxMg4fJ
+         NToeKH5ARoiAjRXdKutY8G0hczXLrxFmEfw+M=
+Message-ID: <86802c440807161929m4f876926m1697a9b69147f42@mail.gmail.com>
+Date: Wed, 16 Jul 2008 19:29:16 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jack Howarth" <howarth@bromo.msbb.uc.edu>
+Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <20080717012128.GA18013@bromo.msbb.uc.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Google-Sender-Auth: f7398d4113dcb412
+References: <20080716035830.GA27935@bromo.msbb.uc.edu>
+	 <86802c440807160044ge504cacl419b6cbcad5f0f9d@mail.gmail.com>
+	 <dd18b0c30807160050r5b10908fiffc2a4b464abe5f3@mail.gmail.com>
+	 <86802c440807160136m6af981b2u6a37cabb8e33a629@mail.gmail.com>
+	 <20080716140810.GA2861@bromo.msbb.uc.edu>
+	 <86802c440807161029n7e0dac98x1ec260879204b6f0@mail.gmail.com>
+	 <86802c440807161535n3a4d6891n6f7c16bd4e1f19c3@mail.gmail.com>
+	 <20080717004004.GA17792@bromo.msbb.uc.edu>
+	 <86802c440807161749u2f5c1eben618e05c6e254fedd@mail.gmail.com>
+	 <20080717012128.GA18013@bromo.msbb.uc.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just saw this for the first time using a kernel built from the git
-head. This is all the ACPI related printk info around the warning. If
-more information is needed to figure out what this is, please let me
-know.
+On Wed, Jul 16, 2008 at 6:21 PM, Jack Howarth <howarth@bromo.msbb.uc.edu> wrote:
+> On Wed, Jul 16, 2008 at 05:49:39PM -0700, Yinghai Lu wrote:
+>>
+>> please boot with
+>> debug initcall_debug apic=verbose pci=routeirq?
+>>
+>> and try pci=nommconf
+>>
+>> I suspect that could be pci bridge is using 0xf0000000-0xf400000 too
+>> after Linus merge pci tree, please try to boot with
+>> pci=early_config_dump
+>> to see if it is true.
+>>
+>> please don't drop the cc list.
+>>
+>> YH
+>
+> Yinghai,
+>    Here is what I see with 'debug initcall_debug apci=verbose pci=routeirq'.
+> Hopefully nothing important scrolled off the top of the screen (I've not found
+> a higher resolution vga kernel option that works on my MacBook Pro yet).
+>
+> calling blk_ioc_init+0x0/0x2a
+> initcall blk_ioc_init+0x0/0x2a returned 0 after 0 msecs
+> calling genhd_device_init+0x0/0x55
+> initcall genhd_device_init+0x0/0x55 returned 0 after 0 msecs
+> calling fbmem_init+0x0/0x8a
+> initcall fbmem_init+0x0/0x8a returned 0 after 0 msecs
+> calling acpi_init+0x0/0x221
+> ACPI: EC: EC description table is found, configuring boot EC
+> ACPI: EC: non-query interrupt received, switching to interrupt mode
+> ACPI: BIOS_IOS(Linux) query ignored via DMI
+> ACPI: Interpreter enabled
+> ACPI: (supports S0 S3 S4 S5)
+> ACPI: Using IOAPIC for interrupt routing
+> initcall acpi_init+0x0/0x221 returned 0 after 16 msecs
+> calling acpi_scan_init+0x0/0x10a
+> initcall acpi_scan_init+0x0/0x10a returned 0 after 35 msecs
+> calling acpi_ec_init+0x0/0x61
+> ACPI: EC: GPE = 0x17, I/O: command/status = 0x66, data = 0x62
+> ACPI: EC: driver started in interrupt mode
+> initcall acpi_ec_init+0x0/0x61 returned 0 after 0 msecs
+> calling acpi_pci_root+init+0x0/0x28
+> ACPI: PCI Root Bridge [PCI0] (0000:00)
+> pci 0000:00:1f.0 :quirk: region 0400-047f claimed by ICH6 ACPI/GPIO/TCO
+> pci 0000:00.1f.0 :quirk: region 0500-053f claimed by ICH6 GPIO
+>
 
-[    0.000000] ACPI: RSDP 000F7CE0, 0024 (r2 RS690 )
-[    0.000000] ACPI: XSDT 3DFE30C0, 004C (r1 RS690  AWRDACPI 42302E31 AWRD  0)
-[    0.000000] ACPI: FACP 3DFE7400, 00F4 (r3 RS690  AWRDACPI 42302E31 AWRD  0)
-[    0.000000] ------------[ cut here ]------------
-[    0.000000] WARNING: at drivers/acpi/tables/tbfadt.c:348
-acpi_tb_create_local_fadt+0x147/0x2f4()
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.26 #1
-[    0.000000]  [<c01171bb>] warn_on_slowpath+0x3b/0x74
-[    0.000000]  [<c01ede36>] acpi_os_vprintf+0x1d/0x20
-[    0.000000]  [<c01ede46>] acpi_os_printf+0xd/0xe
-[    0.000000]  [<c020120e>] acpi_ut_info+0x21/0x24
-[    0.000000]  [<c0200016>] acpi_tb_print_table_header+0x96/0x9c
-[    0.000000]  [<c020032b>] acpi_tb_create_local_fadt+0x147/0x2f4
-[    0.000000]  [<c0200508>] acpi_tb_parse_fadt+0x30/0x6c
-[    0.000000]  [<c03eeda5>] acpi_tb_parse_root_table+0x264/0x2ab
-[    0.000000]  [<c03ee469>] acpi_table_init+0x14/0x6d
-[    0.000000]  [<c03e3b28>] acpi_boot_table_init+0x2b/0xc3
-[    0.000000]  [<c03dfcf4>] setup_arch+0x3fa/0x557
-[    0.000000]  [<c03de7a9>] start_kernel+0x41/0x1ec
-[    0.000000]  =======================
-[    0.000000] ---[ end trace 4eaa2a86a8e2da22 ]---
-[    0.000000] ACPI: DSDT 3DFE3240, 4146 (r1 RS690  AWRDACPI     1000
-MSFT  100000E)
-[    0.000000] ACPI: FACS 3DFE0000, 0040
-[    0.000000] ACPI: SSDT 3DFE7600, 0136 (r1 PTLTD  POWERNOW        1  LTP  1)
-[    0.000000] ACPI: HPET 3DFE7780, 0038 (r1 RS690  AWRDACPI 42302E31 AWRD 98)
-[    0.000000] ACPI: MCFG 3DFE7800, 003C (r1 RS690  AWRDACPI 42302E31 AWRD  0)
-[    0.000000] ACPI: APIC 3DFE7540, 0068 (r1 RS690  AWRDACPI 42302E31 AWRD  0)
+ok, please out lspci -vvxxx under 2.6.25.10
+
+YH
