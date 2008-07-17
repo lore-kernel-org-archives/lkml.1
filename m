@@ -1,109 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932619AbYGQUTr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932836AbYGQUUH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932619AbYGQUTr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 16:19:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758949AbYGQUTj
+	id S932836AbYGQUUH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 16:20:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760579AbYGQUTw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 16:19:39 -0400
-Received: from el-out-1112.google.com ([209.85.162.180]:43233 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758316AbYGQUTi (ORCPT
+	Thu, 17 Jul 2008 16:19:52 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:15988 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932907AbYGQUTv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 16:19:38 -0400
+	Thu, 17 Jul 2008 16:19:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=LaTAM5QZNnX6KiVOfHKHc/e1tXTH4MDq2hgsuAwLKqogsrXRopkGdWRmGEwCYx8O2B
-         LIynC1dkvhiiwlZp4w4QYYFMHQCHckMA1lSFkzDjeYtlXWUjprC5MwWXr7M8dbcR0Xdh
-         n6lVlzaR3AT0t66DOQMhl8qn6X0qFMA7+pb1Q=
-Subject: [RESEND-PATCH] olpc: olpc_battery.c sparse endian annotations
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 17 Jul 2008 13:19:33 -0700
-Message-Id: <1216325973.6029.15.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+        h=date:from:to:cc:bcc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Iop3k31poI2nRIFUJ8qhV4P9zgawUGmjE9kQSALeUUo/a73a7RafBMFzzACKp2u5f6
+         qRJXa0GgW+ZOHIgPHda+5b0Xgcb5AbDpbwI8FekK65/Dx4ZvKx2cUKHaoNU/M8X9uYYN
+         UhWkPW1VzZYGbf2ItInS3SocoHawkI/yUdQu8=
+Date: Fri, 18 Jul 2008 00:17:03 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@osdl.org, mpm@selenic.com
+Cc: linux-kernel@vger.kernel.org, pagexec@freemail.hu
+Subject: Re: *sigh* /proc/*/pagemap
+Message-ID: <20080717201703.GA23775@martell.zuzino.mipt.ru>
+References: <b6fcc0a0807041807p24cce461m419d7b54fce72d34@mail.gmail.com> <20080704185312.052e7145.akpm@linux-foundation.org> <b6fcc0a0807050044g7a34a688s903e74848ab14b92@mail.gmail.com> <28fa9c5e0807161906q68411e9bn5975dc277f67b086@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <28fa9c5e0807161906q68411e9bn5975dc277f67b086@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-David, akpm?
+> > >> 5) check with microscope allocation there -- page-aligned address and
+> > size
+> > >> == 0
+> > >>     should allocate 0 bytes, and
+> > >
+> > > Where?
+> >
+> > kmalloc() in pagemap_read(). kmalloc(0)  and integer wraparound look
+> > possible.
 
- drivers/power/olpc_battery.c |   20 ++++++++------------
- 1 files changed, 8 insertions(+), 12 deletions(-)
+Now that I unsuccessfully tried to reproduce multiplication wraparound (on 32-bit),
+integer wraparound in kmalloc() simply can't happen here.
 
-diff --git a/drivers/power/olpc_battery.c b/drivers/power/olpc_battery.c
-index 32570af..5fbca26 100644
---- a/drivers/power/olpc_battery.c
-+++ b/drivers/power/olpc_battery.c
-@@ -205,9 +205,9 @@ static int olpc_bat_get_property(struct power_supply *psy,
- 				 union power_supply_propval *val)
- {
- 	int ret = 0;
--	int16_t ec_word;
-+	__be16 ec_word;
- 	uint8_t ec_byte;
--	uint64_t ser_buf;
-+	__be64 ser_buf;
- 
- 	ret = olpc_ec_cmd(EC_BAT_STATUS, NULL, 0, &ec_byte, 1);
- 	if (ret)
-@@ -257,16 +257,14 @@ static int olpc_bat_get_property(struct power_supply *psy,
- 		if (ret)
- 			return ret;
- 
--		ec_word = be16_to_cpu(ec_word);
--		val->intval = ec_word * 9760L / 32;
-+		val->intval = (int)be16_to_cpu(ec_word) * 9760L / 32;
- 		break;
- 	case POWER_SUPPLY_PROP_CURRENT_AVG:
- 		ret = olpc_ec_cmd(EC_BAT_CURRENT, NULL, 0, (void *)&ec_word, 2);
- 		if (ret)
- 			return ret;
- 
--		ec_word = be16_to_cpu(ec_word);
--		val->intval = ec_word * 15625L / 120;
-+		val->intval = (int)be16_to_cpu(ec_word) * 15625L / 120;
- 		break;
- 	case POWER_SUPPLY_PROP_CAPACITY:
- 		ret = olpc_ec_cmd(EC_BAT_SOC, NULL, 0, &ec_byte, 1);
-@@ -278,24 +276,22 @@ static int olpc_bat_get_property(struct power_supply *psy,
- 		ret = olpc_ec_cmd(EC_BAT_TEMP, NULL, 0, (void *)&ec_word, 2);
- 		if (ret)
- 			return ret;
--		ec_word = be16_to_cpu(ec_word);
--		val->intval = ec_word * 100 / 256;
-+
-+		val->intval = (int)be16_to_cpu(ec_word) * 100 / 256;
- 		break;
- 	case POWER_SUPPLY_PROP_TEMP_AMBIENT:
- 		ret = olpc_ec_cmd(EC_AMB_TEMP, NULL, 0, (void *)&ec_word, 2);
- 		if (ret)
- 			return ret;
- 
--		ec_word = be16_to_cpu(ec_word);
--		val->intval = ec_word * 100 / 256;
-+		val->intval = (int)be16_to_cpu(ec_word) * 100 / 256;
- 		break;
- 	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
- 		ret = olpc_ec_cmd(EC_BAT_ACR, NULL, 0, (void *)&ec_word, 2);
- 		if (ret)
- 			return ret;
- 
--		ec_word = be16_to_cpu(ec_word);
--		val->intval = ec_word * 6250 / 15;
-+		val->intval = (int)be16_to_cpu(ec_word) * 6250 / 15;
- 		break;
- 	case POWER_SUPPLY_PROP_SERIAL_NUMBER:
- 		ret = olpc_ec_cmd(EC_BAT_SERIAL, NULL, 0, (void *)&ser_buf, 8);
--- 
-1.5.6.1.281.g1087e
+Relevant code from pagemap_read():
 
+	uaddr = (unsigned long)buf & PAGE_MASK;
+	uend = (unsigned long)(buf + count);
+	pagecount = (PAGE_ALIGN(uend) - uaddr) / PAGE_SIZE;
+	pages = kmalloc(pagecount * sizeof(struct page *), GFP_KERNEL);
+
+
+pagecount is effectively "count / PAGE_SIZE", where "count" is size_t.
+kmalloc() takes size_t as first argument, so one has to overflow
+
+	count / PAGE_SIZE * sizeof(pointer).
+
+For sure, page is bigger than pointer.
+
+Anyone still see holes?
 
