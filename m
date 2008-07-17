@@ -1,90 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758430AbYGQDRb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757929AbYGQDWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758430AbYGQDRb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 23:17:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753794AbYGQDRX
+	id S1757929AbYGQDWm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 23:22:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084AbYGQDWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 23:17:23 -0400
-Received: from tomts16.bellnexxia.net ([209.226.175.4]:59448 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753514AbYGQDRX (ORCPT
+	Wed, 16 Jul 2008 23:22:34 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38080 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753670AbYGQDWe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 23:17:23 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AugEAKtUfkhMRKxB/2dsb2JhbACBWq5l
-Date: Wed, 16 Jul 2008 23:17:21 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Ingo Molnar <mingo@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH ftrace.git] Immedate Values Optimized Jump Fix
-Message-ID: <20080717031721.GA24504@Krystal>
+	Wed, 16 Jul 2008 23:22:34 -0400
+Date: Thu, 17 Jul 2008 12:27:51 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-mm@kvack.org" <linux-mm@kvack.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
+Subject: [mmtom][BUGFIX]
+ vmscan-second-chance-replacement-for-anonymous-pages-fix.patch
+Message-Id: <20080717122751.92525032.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 23:14:13 up 42 days,  7:55,  5 users,  load average: 0.34, 0.73,
-	0.67
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+Under memcg, active anon tend not to go to inactive anon.
+This will cause OOM in memcg easily when tons of anon was used at once.
+This check was lacked in split-lru.
 
-This fix would apply to the ftrace tree which contains the jump-based
-immediate values. I don't know if this tree is still under active
-development, but I guess that it wouldn't hurt to fix it.
-
-Caused a kernel OOPS when loading the tracepoint probes once in a while
-on a 8-way x86_64.
+This patch is a fix agaisnt
+vmscan-second-chance-replacement-for-anonymous-pages.patch
 
 
-Immedate Values Optimized Jump Fix
+Changelog: v1 -> v2:
+ - avoid adding "else".
 
-Fix the immediate values optimized jump fallback, which parameters were wrong
-following the last changes. It should be a 5 bytes instruction (not 2) with a 4
-bytes operand.
+Signed-off-by:KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Acked-by: Rik van Riel <riel@redhat.com>
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
----
- arch/x86/kernel/immediate.c |    2 +-
- include/asm-x86/immediate.h |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ mm/vmscan.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux-2.6-lttng/arch/x86/kernel/immediate.c
+Index: mmtom-stamp-2008-07-15-15-39/mm/vmscan.c
 ===================================================================
---- linux-2.6-lttng.orig/arch/x86/kernel/immediate.c	2008-07-16 22:50:35.000000000 -0400
-+++ linux-2.6-lttng/arch/x86/kernel/immediate.c	2008-07-16 22:51:07.000000000 -0400
-@@ -500,7 +500,7 @@ __kprobes int arch_imv_update(struct __i
- 				"Jump target fallback at %lX, nr fail %d\n",
- 				imv->imv, ++nr_fail);
- #endif
--			imv->size = 1;
-+			imv->size = 4;	/* Fallback on movl */
- 		} else {
- #ifdef DEBUG_IMMEDIATE
- 			static int nr_success;
-Index: linux-2.6-lttng/include/asm-x86/immediate.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-x86/immediate.h	2008-07-16 22:49:19.000000000 -0400
-+++ linux-2.6-lttng/include/asm-x86/immediate.h	2008-07-16 22:51:07.000000000 -0400
-@@ -132,7 +132,7 @@ struct __imv {
- 		BUILD_BUG_ON(sizeof(__typeof__(name##__imv)) > 1);	\
- 		asm (".section __imv,\"aw\",@progbits\n\t"		\
- 			_ASM_PTR "%c1, (3f)-4\n\t"			\
--			".byte 0, 2\n\t"				\
-+			".byte 0, 5\n\t"				\
- 			".previous\n\t"					\
- 			"mov $0,%0\n\t"					\
- 			"3:\n\t"					\
+--- mmtom-stamp-2008-07-15-15-39.orig/mm/vmscan.c
++++ mmtom-stamp-2008-07-15-15-39/mm/vmscan.c
+@@ -1351,7 +1351,7 @@ static unsigned long shrink_zone(int pri
+ 	 * Even if we did not try to evict anon pages at all, we want to
+ 	 * rebalance the anon lru active/inactive ratio.
+ 	 */
+-	if (scan_global_lru(sc) && inactive_anon_is_low(zone))
++	if (!scan_global_lru(sc) || inactive_anon_is_low(zone))
+ 		shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
+ 
+ 	throttle_vm_writeout(sc->gfp_mask);
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
