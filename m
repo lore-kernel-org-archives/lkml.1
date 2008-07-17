@@ -1,159 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756579AbYGQHnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757336AbYGQHqF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756579AbYGQHnZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 03:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753817AbYGQHnQ
+	id S1757336AbYGQHqF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 03:46:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754507AbYGQHpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 03:43:16 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:8928 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751060AbYGQHnP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 03:43:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=H+3O/jdTt90YYc9Rh1YNtxoGnszzS0pMOIdE1Go4Wl3EEkgs4zmLhwRjnOZVtRzBFM
-         urlIXST2a5GCC5Gkq9XRXIOH9U/RaPYywcWKPqZJI2Q/VVjT7oi7s5j424enF/0llh2I
-         RmtU15LXu3ZT7LOPCEl2952Vy25IO08mfzRGU=
-Message-ID: <84144f020807170043w725769e5i7c24402613711690@mail.gmail.com>
-Date: Thu, 17 Jul 2008 10:43:14 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Eduard - Gabriel Munteanu" <eduard.munteanu@linux360.ro>
-Subject: Re: [RFC PATCH 4/4] kmemtrace: SLOB hooks.
-Cc: cl@linux-foundation.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       "Matt Mackall" <mpm@selenic.com>
-In-Reply-To: <9e4ab51fe29754243e4577dec4649c5522ddd4f8.1216255036.git.eduard.munteanu@linux360.ro>
+	Thu, 17 Jul 2008 03:45:54 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49306 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753966AbYGQHpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 03:45:54 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <cover.1216255034.git.eduard.munteanu@linux360.ro>
-	 <9e4ab51fe29754243e4577dec4649c5522ddd4f8.1216255036.git.eduard.munteanu@linux360.ro>
-X-Google-Sender-Auth: 178435659d500080
+From: Roland McGrath <roland@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org
+X-Fcc: ~/Mail/linus
+Subject: [PATCH 0/6] x86 tracehook patches
+X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
+Message-Id: <20080717074550.EE1E215411D@magilla.localdomain>
+Date: Thu, 17 Jul 2008 00:45:50 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi!  Here is the x86 arch work that goes with the "tracehook" patch
+series that I posted for the generic code.  I don't know how the
+merging will go with that.  But when there is a tree containing all
+that to base it on, you can merge these arch patches on top of that.
+You can't take these without the generic tracehook series, some will
+break the build until the generic file is there.
 
-[Adding Matt as cc.]
+This series also requires as a baseline what you have in tip/x86/step.
 
-On Thu, Jul 17, 2008 at 3:46 AM, Eduard - Gabriel Munteanu
-<eduard.munteanu@linux360.ro> wrote:
-> This adds hooks for the SLOB allocator, to allow tracing with kmemtrace.
->
-> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+The following changes since commit dc2cda6931dd54cd02b05da3a5bc969032e10992:
+  Roland McGrath (1):
+        x86 ptrace: user-sets-TF nits
 
-Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
+are available in the git repository at:
 
-> ---
->  mm/slob.c |   37 +++++++++++++++++++++++++++++++------
->  1 files changed, 31 insertions(+), 6 deletions(-)
->
-> diff --git a/mm/slob.c b/mm/slob.c
-> index a3ad667..0335c01 100644
-> --- a/mm/slob.c
-> +++ b/mm/slob.c
-> @@ -65,6 +65,7 @@
->  #include <linux/module.h>
->  #include <linux/rcupdate.h>
->  #include <linux/list.h>
-> +#include <linux/kmemtrace.h>
->  #include <asm/atomic.h>
->
->  /*
-> @@ -463,27 +464,38 @@ void *__kmalloc_node(size_t size, gfp_t gfp, int node)
->  {
->        unsigned int *m;
->        int align = max(ARCH_KMALLOC_MINALIGN, ARCH_SLAB_MINALIGN);
-> +       void *ret;
->
->        if (size < PAGE_SIZE - align) {
->                if (!size)
->                        return ZERO_SIZE_PTR;
->
->                m = slob_alloc(size + align, gfp, align, node);
-> +
->                if (!m)
->                        return NULL;
->                *m = size;
-> -               return (void *)m + align;
-> +               ret = (void *)m + align;
-> +
-> +               kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KERNEL,
-> +                                         _RET_IP_, ret,
-> +                                         size, size + align, gfp, node);
->        } else {
-> -               void *ret;
-> +               unsigned int order = get_order(size);
->
-> -               ret = slob_new_page(gfp | __GFP_COMP, get_order(size), node);
-> +               ret = slob_new_page(gfp | __GFP_COMP, order, node);
->                if (ret) {
->                        struct page *page;
->                        page = virt_to_page(ret);
->                        page->private = size;
->                }
-> -               return ret;
-> +
-> +               kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KERNEL,
-> +                                         _RET_IP_, ret,
-> +                                         size, PAGE_SIZE << order, gfp, node);
->        }
-> +
-> +       return ret;
->  }
->  EXPORT_SYMBOL(__kmalloc_node);
->
-> @@ -501,6 +513,8 @@ void kfree(const void *block)
->                slob_free(m, *m + align);
->        } else
->                put_page(&sp->page);
-> +
-> +       kmemtrace_mark_free(KMEMTRACE_TYPE_KERNEL, _RET_IP_, block);
->  }
->  EXPORT_SYMBOL(kfree);
->
-> @@ -569,10 +583,19 @@ void *kmem_cache_alloc_node(struct kmem_cache *c, gfp_t flags, int node)
->  {
->        void *b;
->
-> -       if (c->size < PAGE_SIZE)
-> +       if (c->size < PAGE_SIZE) {
->                b = slob_alloc(c->size, flags, c->align, node);
-> -       else
-> +               kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_CACHE,
-> +                                         _RET_IP_, b, c->size,
-> +                                         SLOB_UNITS(c->size) * SLOB_UNIT,
-> +                                         flags, node);
-> +       } else {
->                b = slob_new_page(flags, get_order(c->size), node);
-> +               kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_CACHE,
-> +                                         _RET_IP_, b, c->size,
-> +                                         PAGE_SIZE << get_order(c->size),
-> +                                         flags, node);
-> +       }
->
->        if (c->ctor)
->                c->ctor(c, b);
-> @@ -608,6 +631,8 @@ void kmem_cache_free(struct kmem_cache *c, void *b)
->        } else {
->                __kmem_cache_free(b, c->size);
->        }
-> +
-> +       kmemtrace_mark_free(KMEMTRACE_TYPE_CACHE, _RET_IP_, b);
->  }
->  EXPORT_SYMBOL(kmem_cache_free);
->
-> --
-> 1.5.6.1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+  git://git.kernel.org/pub/scm/linux/kernel/git/frob/linux-2.6-utrace.git x86-tracehook
+
+Roland McGrath (6):
+      x86: tracehook_signal_handler
+      x86: tracehook syscall
+      x86: tracehook: asm/syscall.h
+      x86 signals: use asm/syscall.h
+      x86: tracehook: TIF_NOTIFY_RESUME
+      x86: tracehook: CONFIG_HAVE_ARCH_TRACEHOOK
+
+ arch/x86/Kconfig              |    1 +
+ arch/x86/kernel/ptrace.c      |   34 +------
+ arch/x86/kernel/signal_32.c   |   11 ++-
+ arch/x86/kernel/signal_64.c   |   49 +++-------
+ include/asm-x86/ptrace.h      |    5 +
+ include/asm-x86/syscall.h     |  210 +++++++++++++++++++++++++++++++++++++++++
+ include/asm-x86/thread_info.h |    4 +-
+ 7 files changed, 248 insertions(+), 66 deletions(-)
+ create mode 100644 include/asm-x86/syscall.h
+
+
+Thanks,
+Roland
