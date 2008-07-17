@@ -1,99 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759948AbYGQQXY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758283AbYGQQ0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759948AbYGQQXY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 12:23:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753412AbYGQQXJ
+	id S1758283AbYGQQ0f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 12:26:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756283AbYGQQ00
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 12:23:09 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:50647 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756241AbYGQQXH (ORCPT
+	Thu, 17 Jul 2008 12:26:26 -0400
+Received: from bromo.msbb.uc.edu ([129.137.3.146]:33403 "HELO
+	bromo.msbb.uc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756214AbYGQQ00 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 12:23:07 -0400
-Message-ID: <487F71E8.9050705@firstfloor.org>
-Date: Thu, 17 Jul 2008 18:23:04 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Thu, 17 Jul 2008 12:26:26 -0400
+Date: Thu, 17 Jul 2008 12:26:22 -0400
+From: Jack Howarth <howarth@bromo.msbb.uc.edu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
+Message-ID: <20080717162622.GA26835@bromo.msbb.uc.edu>
+References: <86802c440807161029n7e0dac98x1ec260879204b6f0@mail.gmail.com> <86802c440807161535n3a4d6891n6f7c16bd4e1f19c3@mail.gmail.com> <20080717004004.GA17792@bromo.msbb.uc.edu> <86802c440807161749u2f5c1eben618e05c6e254fedd@mail.gmail.com> <20080717023538.GA18329@bromo.msbb.uc.edu> <86802c440807161959s10666027k5297af1d657ff4fa@mail.gmail.com> <20080717034418.GA18951@bromo.msbb.uc.edu> <86802c440807162113g4cea3bd9ic71210330417032b@mail.gmail.com> <20080717061825.GA19582@bromo.msbb.uc.edu> <86802c440807162348m6d05b912x7b3f655d7f9efb93@mail.gmail.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       torvalds@linuxfoundation.org, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: Please pull ACPI updates
-References: <20080716214516.GA10777@basil.nowhere.org> <200807170011.12184.rjw@sisk.pl> <200807161633.01375.jbarnes@virtuousgeek.org> <487EEAEB.4050009@firstfloor.org> <alpine.LFD.1.10.0807170807040.2959@woody.linux-foundation.org> <alpine.LFD.1.10.0807170835320.2959@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807170835320.2959@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440807162348m6d05b912x7b3f655d7f9efb93@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Thu, 17 Jul 2008, Linus Torvalds wrote:
->> That's the whole point of topic branches. They allow you to separate out 
->> work to different areas, so that people who are interested in (say) the 
->> PCI-impacting ones can merge with one part, without having to wait for the 
->> other parts to stabilize.
-> 
-> Btw, you don't really have to have a lot of them.
-> 
-> When it comes to ACPI in particular, I would really prefer to see at least 
-> the ACPICA stuff in a separate topic branch. It comes in from a different 
-> source, it's maintained separately, and when it causes problems(*) it ends 
-> up usually being handled differently too.
-
-Ok I can do that one separately.
-
-I think my main problem was that it seemed so painful to change old
-commits and I ended up accumulating ugly reverts and incremental changes,
-but perhaps I just need to do better frontend scripts to make
-that easier.
-
-> So one reason I reacted strongly to the ACPI change was definitely just 
-> that ACPI used to be one of the really nicely done subsystems (not just 
-> from a git standpoint, but the whole git flow was part of it). There were 
-> some issues very early on in git usage, but I gave a shout-out to Len at 
-> the last kernel summit for a reason.
-
-Well, at least for this summer the ACPI tree will have some Andi flavor.
-
-> And in that sense it's definitely unfair to require quite _that_ level of 
-> separation. I'm really not expecting it. 
-> 
-> But I *really* hate pulling from somebody, and seeing commit dates that 
-> are from five minutes ago, and based on something that I had just pushed 
-> out (which was essentially the case for this round of ACPI changes).
-> 
-> That literally shows that the code was hardly tested _at_all_ in that 
-> exact configuration. It may have gotten testing based on some earlier 
-> kernel version, but then it very clearly got rebased (or just quilt 
-> imported) on top of a totally new kernel base, and was not tested in that 
-> version very much if at all.
-
-Hmm, perhaps I'm thick, but for me the only difference seems to be
-that the submitter does the merge that you would do (and safes
-himself a yelling at if it doesn't build or crashes at boot or similar...).
-
-In both  cases there's a "untested in that configuration" end configuration
-in the end, but there's nothing much that can be done against it,
-can't it?
-
-> 
-> So even if you end up using quilt, I'd suggest you do so on a specific 
-> base, rather than on some random "kernel-of-the-moment-in-the-middle- 
-> of-the-merge-window". 
-
-That is what I usually do. I use the last -git* snapshot. I just updated
-the git tree shortly before I generate the merge tree just to make
-sure it still builds in your current tree.
-
-Given it won't be tested much in that newer configuration then (I actually
-test booted it on a few systems at least[1]), but that would be the same on your
-side, wouldn't it?
-
--Andi
-
-[1] which was quite painful this time because I ran into several problems
-outside ACPI. e.g. DMAR oopsed and the x86 defconfigs were totally broken
-and some other issues.
+YH,
+   I am wondering if it might be worthwhile for me to
+try the various rc releases of 2.6.26 (starting with rc1-git1)
+to see if I can identify at what point 2.6.26 was broken
+with regards to booting on my MacBook Pro? In case that
+would point us towards the checkin of a specific set of
+patches as the problem.
+                      Jack
