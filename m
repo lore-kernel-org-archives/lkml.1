@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757928AbYGQHOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757928AbYGQHPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757928AbYGQHOv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 03:14:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755434AbYGQHOd
+	id S1757928AbYGQHPa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 03:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751060AbYGQHPR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 03:14:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52979 "EHLO mx1.redhat.com"
+	Thu, 17 Jul 2008 03:15:17 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52998 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754721AbYGQHOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 03:14:32 -0400
+	id S1750776AbYGQHPP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 03:15:15 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -18,96 +18,82 @@ To: Andrew Morton <akpm@linux-foundation.org>,
 Cc: Oleg Nesterov <oleg@tv-sign.ru>
 Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
 X-Fcc: ~/Mail/linus
-Subject: [PATCH 3/4] do_wait: return security_task_wait() error code in place of -ECHILD
+Subject: [PATCH 4/4] fix dangling zombie when new parent ignores children
 In-Reply-To: Roland McGrath's message of  Thursday, 17 July 2008 00:11:40 -0700 <20080717071141.012BD15411D@magilla.localdomain>
 References: <20080717071141.012BD15411D@magilla.localdomain>
-X-Antipastobozoticataclysm: Bariumenemanilow
-Message-Id: <20080717071356.A5A2C15411D@magilla.localdomain>
-Date: Thu, 17 Jul 2008 00:13:56 -0700 (PDT)
+Emacs: the only text editor known to get indigestion.
+Message-Id: <20080717071435.911A415411D@magilla.localdomain>
+Date: Thu, 17 Jul 2008 00:14:35 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This reverts the effect of commit f2cc3eb133baa2e9dc8efd40f417106b2ee520f3
-"do_wait: fix security checks".  That change reverted the effect of commit
-73243284463a761e04d69d22c7516b2be7de096c.  The rationale for the original
-commit still stands.  The inconsistent treatment of children hidden by
-ptrace was an unintended omission in the original change and in no way
-invalidates its purpose.
-
-This makes do_wait return the error returned by security_task_wait()
-(usually -EACCES) in place of -ECHILD when there are some children the
-caller would be able to wait for if not for the permission failure.  A
-permission error will give the user a clue to look for security policy
-problems, rather than for mysterious wait bugs.
+This fixes an arcane bug that we think was a regression introduced
+by commit b2b2cbc4b2a2f389442549399a993a8306420baf.  When a parent
+ignores SIGCHLD (or uses SA_NOCLDWAIT), its children would self-reap
+but they don't if it's using ptrace on them.  When the parent thread
+later exits and ceases to ptrace a child but leaves other live
+threads in the parent's thread group, any zombie children are left
+dangling.  The fix makes them self-reap then, as they would have
+done earlier if ptrace had not been in use.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- kernel/exit.c |   30 ++++++++++++++++++++----------
- 1 files changed, 20 insertions(+), 10 deletions(-)
+ kernel/exit.c |   26 ++++++++++++++++++++++++++
+ 1 files changed, 26 insertions(+), 0 deletions(-)
 
 diff --git a/kernel/exit.c b/kernel/exit.c
-index 1e90982..a2af6ca 100644
+index a2af6ca..93d2711 100644
 --- a/kernel/exit.c
 +++ b/kernel/exit.c
-@@ -1199,14 +1199,10 @@ static int eligible_child(enum pid_type type, struct pid *pid, int options,
- 		return 0;
- 
- 	err = security_task_wait(p);
--	if (likely(!err))
--		return 1;
-+	if (err)
-+		return err;
- 
--	if (type != PIDTYPE_PID)
--		return 0;
--	/* This child was explicitly requested, abort */
--	read_unlock(&tasklist_lock);
--	return err;
-+	return 1;
+@@ -703,6 +703,23 @@ static void exit_mm(struct task_struct * tsk)
  }
  
- static int wait_noreap_copyout(struct task_struct *p, pid_t pid, uid_t uid,
-@@ -1536,7 +1532,8 @@ static int wait_task_continued(struct task_struct *p, int options,
-  * -ECHILD should be in *@notask_error before the first call.
-  * Returns nonzero for a final return, when we have unlocked tasklist_lock.
-  * Returns zero if the search for a child should continue;
-- * then *@notask_error is 0 if @p is an eligible child, or still -ECHILD.
-+ * then *@notask_error is 0 if @p is an eligible child,
-+ * or another error from security_task_wait(), or still -ECHILD.
-  */
- static int wait_consider_task(struct task_struct *parent, int ptrace,
- 			      struct task_struct *p, int *notask_error,
-@@ -1545,9 +1542,21 @@ static int wait_consider_task(struct task_struct *parent, int ptrace,
- 			      int __user *stat_addr, struct rusage __user *ru)
- {
- 	int ret = eligible_child(type, pid, options, p);
--	if (ret <= 0)
-+	if (!ret)
- 		return ret;
- 
-+	if (unlikely(ret < 0)) {
-+		/*
-+		 * If we have not yet seen any eligible child,
-+		 * then let this error code replace -ECHILD.
-+		 * A permission error will give the user a clue
-+		 * to look for security policy problems, rather
-+		 * than for mysterious wait bugs.
-+		 */
-+		if (*notask_error)
-+			*notask_error = ret;
-+	}
+ /*
++ * Return nonzero if @parent's children should reap themselves.
++ *
++ * Called with write_lock_irq(&tasklist_lock) held.
++ */
++static int ignoring_children(struct task_struct *parent)
++{
++	int ret;
++	struct sighand_struct *psig = parent->sighand;
++	unsigned long flags;
++	spin_lock_irqsave(&psig->siglock, flags);
++	ret = (psig->action[SIGCHLD-1].sa.sa_handler == SIG_IGN ||
++	       (psig->action[SIGCHLD-1].sa.sa_flags & SA_NOCLDWAIT));
++	spin_unlock_irqrestore(&psig->siglock, flags);
++	return ret;
++}
 +
- 	if (likely(!ptrace) && unlikely(p->ptrace)) {
- 		/*
- 		 * This child is hidden by ptrace.
-@@ -1585,7 +1594,8 @@ static int wait_consider_task(struct task_struct *parent, int ptrace,
-  * -ECHILD should be in *@notask_error before the first call.
-  * Returns nonzero for a final return, when we have unlocked tasklist_lock.
-  * Returns zero if the search for a child should continue; then
-- * *@notask_error is 0 if there were any eligible children, or still -ECHILD.
-+ * *@notask_error is 0 if there were any eligible children,
-+ * or another error from security_task_wait(), or still -ECHILD.
-  */
- static int do_wait_thread(struct task_struct *tsk, int *notask_error,
- 			  enum pid_type type, struct pid *pid, int options,
++/*
+  * Detach all tasks we were using ptrace on.
+  * Any that need to be release_task'd are put on the @dead list.
+  *
+@@ -711,6 +728,7 @@ static void exit_mm(struct task_struct * tsk)
+ static void ptrace_exit(struct task_struct *parent, struct list_head *dead)
+ {
+ 	struct task_struct *p, *n;
++	int ign = -1;
+ 
+ 	list_for_each_entry_safe(p, n, &parent->ptraced, ptrace_entry) {
+ 		__ptrace_unlink(p);
+@@ -726,10 +744,18 @@ static void ptrace_exit(struct task_struct *parent, struct list_head *dead)
+ 		 * release_task() here because we already hold tasklist_lock.
+ 		 *
+ 		 * If it's our own child, there is no notification to do.
++		 * But if our normal children self-reap, then this child
++		 * was prevented by ptrace and we must reap it now.
+ 		 */
+ 		if (!task_detached(p) && thread_group_empty(p)) {
+ 			if (!same_thread_group(p->real_parent, parent))
+ 				do_notify_parent(p, p->exit_signal);
++			else {
++				if (ign < 0)
++					ign = ignoring_children(parent);
++				if (ign)
++					p->exit_signal = -1;
++			}
+ 		}
+ 
+ 		if (task_detached(p)) {
