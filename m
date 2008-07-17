@@ -1,174 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758627AbYGQVzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757392AbYGQVzD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758627AbYGQVzc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 17:55:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757273AbYGQVzC
+	id S1757392AbYGQVzD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 17:55:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbYGQVys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 17:55:02 -0400
-Received: from proxy2.bredband.net ([195.54.101.72]:51834 "EHLO
-	proxy2.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932246AbYGQVzB (ORCPT
+	Thu, 17 Jul 2008 17:54:48 -0400
+Received: from ixia01.ro.gtsce.net ([212.146.94.66]:3771 "EHLO
+	ixro-ex1.ixiacom.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761089AbYGQVyp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 17:55:01 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqczAM9cf0jVchRXPGdsb2JhbACBWpBZAQEBAS0BnXY
-Message-ID: <487FBFAA.8090102@hozac.com>
-Date: Thu, 17 Jul 2008 17:54:50 -0400
-From: Daniel Hokka Zakrisson <daniel@hozac.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 17 Jul 2008 17:54:45 -0400
+From: Octavian Purdila <opurdila@ixiacom.com>
+Organization: IXIA
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [PATCH] tcp: do not promote SPLICE_F_NONBLOCK to socket O_NONBLOCK
+Date: Fri, 18 Jul 2008 00:52:33 +0300
+User-Agent: KMail/1.9.9
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200807171633.49791.opurdila@ixiacom.com> <200807171747.27775.opurdila@ixiacom.com> <20080717174150.GA24002@2ka.mipt.ru>
+In-Reply-To: <20080717174150.GA24002@2ka.mipt.ru>
 MIME-Version: 1.0
-To: akpm@linux-foundation.org
-CC: ebiederm@xmission.com, xemul@openvz.org, sukadev@us.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       oleg@tv-sign.ru
-Subject: [PATCH] signal: Introduce kill_pid_ns_info
-References: <20080717141005.5534fbc2.akpm@linux-foundation.org>
-In-Reply-To: <20080717141005.5534fbc2.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807180052.33918.opurdila@ixiacom.com>
+X-OriginalArrivalTime: 17 Jul 2008 21:56:36.0016 (UTC) FILETIME=[FB8CB300:01C8E857]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm sorry Andrew, this should look better.
+On Thursday 17 July 2008, Evgeniy Polyakov wrote:
+> >
+> > I am probably missing some usecases here, but usually if you want to use
+> > non-blocking I/O you need to use special approach anyway (e.g. code the
+> > poll/epoll/select bits) so then you could open the socket with
+> > O_NONBLOCK.
+>
+> It depends. Splice clearly states that it tries to be nonblocking with 
+> given flag being set, and its reading will be non-blocking indeed.
+>
+> > > This is a quite serious break of the
+> > > overall idea behind SPLICE_F_NONBLOCK.
+> >
+> > I don't know... the man page explicitly says that even when you use
+> > SPLICE_F_NONBLOCK splice may block because of the underlying fd blocking.
+>
+> Yes, but reading from the network will not.
+>
 
-Author: Eric W. Biederman <ebiederm@xmission.com>
+You lost me here :)
 
-Implement the basic helper function that walks all of the processes in a
-pid namespace and sends them all a signal.
+The way I interpret the man page text is that it is ok for splice to block, 
+even if SPLICE_F_NONBLOCK is set. The comments near SPLICE_F_NONBLOCK says 
+the same thing:
 
-Both locations that could use this functions are also updated to use this
-function.
+#define SPLICE_F_NONBLOCK (0x02) /* don't block on the pipe splicing (but */
+                                 /* we may still block on the fd we splice */
+                                 /* from/to, of course */
 
-I use find_ge_pid instead of for_each_process because it has a chance of
-not touching every process in the system.
+Am I missing something?
 
-[daniel@hozac.com: Optimize away nr <= 1 check, against latest Linus tree]
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-Signed-off-by: Daniel Hokka Zakrisson <daniel@hozac.com>
----
-  include/linux/sched.h  |    2 +
-  kernel/pid_namespace.c |   17 +--------------
-  kernel/signal.c        |   52 ++++++++++++++++++++++++++++++++++++-----------
-  3 files changed, 43 insertions(+), 28 deletions(-)
+> > But more importantly, how can we solve the deadlock issue described in
+> > the patch? Do we need all of the complications of async I/O for such a
+> > simple and common usecase?
+>
+> I'm not sure I understand how it can deadlock, please explain it in more
+> details.
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index ba2f859..83597f8 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1778,6 +1778,8 @@ extern void release_task(struct task_struct * p);
-  extern int send_sig_info(int, struct siginfo *, struct task_struct *);
-  extern int force_sigsegv(int, struct task_struct *);
-  extern int force_sig_info(int, struct siginfo *, struct task_struct *);
-+extern int __kill_pid_ns_info(int sig, struct siginfo *info, struct pid_namespace *ns);
-+extern int kill_pid_ns_info(int sig, struct siginfo *info, struct pid_namespace *ns);
-  extern int __kill_pgrp_info(int sig, struct siginfo *info, struct pid *pgrp);
-  extern int kill_pid_info(int sig, struct siginfo *info, struct pid *pid);
-  extern int kill_pid_info_as_uid(int, struct siginfo *, struct pid *, uid_t, uid_t, u32);
-diff --git a/kernel/pid_namespace.c b/kernel/pid_namespace.c
-index 98702b4..9226423 100644
---- a/kernel/pid_namespace.c
-+++ b/kernel/pid_namespace.c
-@@ -153,29 +153,14 @@ void free_pid_ns(struct kref *kref)
+For this "program":
 
-  void zap_pid_ns_processes(struct pid_namespace *pid_ns)
-  {
--	int nr;
-  	int rc;
+x=splice(socket, pipe, size, flags=0); 
+if (x > 0)
+	splice(pipe, file, x, flags=0);
 
-  	/*
-  	 * The last thread in the cgroup-init thread group is terminating.
-  	 * Find remaining pid_ts in the namespace, signal and wait for them
-  	 * to exit.
--	 *
--	 * Note:  This signals each threads in the namespace - even those that
--	 * 	  belong to the same thread group, To avoid this, we would have
--	 * 	  to walk the entire tasklist looking a processes in this
--	 * 	  namespace, but that could be unnecessarily expensive if the
--	 * 	  pid namespace has just a few processes. Or we need to
--	 * 	  maintain a tasklist for each pid namespace.
--	 *
-  	 */
--	read_lock(&tasklist_lock);
--	nr = next_pidmap(pid_ns, 1);
--	while (nr > 0) {
--		kill_proc_info(SIGKILL, SEND_SIG_PRIV, nr);
--		nr = next_pidmap(pid_ns, nr);
--	}
--	read_unlock(&tasklist_lock);
-+	kill_pid_ns_info(SIGKILL, SEND_SIG_PRIV, pid_ns);
+it is hard to come up with a non tiny value for size that does not deadlock 
+the program, because the pipe size is measured in packets and not bytes and 
+we have no control over the packet sizes.
 
-  	do {
-  		clear_thread_flag(TIF_SIGPENDING);
-diff --git a/kernel/signal.c b/kernel/signal.c
-index 6c0958e..96d469a 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -1118,6 +1118,45 @@ out_unlock:
-  }
-  EXPORT_SYMBOL_GPL(kill_pid_info_as_uid);
+For example, if we set size=17 and we are unlucky and get 16 packets of 1 byte 
+in a row, at the right time, the first splice call will block - and the 
+program will deadlock since we can't reach the consumer. 
 
-+int __kill_pid_ns_info(int sig, struct siginfo *info, struct pid_namespace *ns)
-+{
-+	int retval = 0, count = 0;
-+	struct task_struct *p;
-+	struct pid *pid;
-+	int nr;
-+
-+	/* Since there isn't a pid namespace list of tasks use the closest
-+	 * approximation we have: find_ge_pid.
-+	 */
-+	nr = 1;
-+	while ((pid = find_ge_pid(nr + 1, ns))) {
-+		int err;
-+
-+		nr = pid_nr_ns(pid, ns);
-+		p = pid_task(pid, PIDTYPE_PID);
-+		if (!p || !thread_group_leader(p) ||
-+		    same_thread_group(p, current))
-+			continue;
-+
-+		err = group_send_sig_info(sig, info, p);
-+		++count;
-+		if (err != -EPERM)
-+			retval = err;
-+	}
-+	return count ? retval : -ESRCH;
-+}
-+
-+int kill_pid_ns_info(int sig, struct siginfo *info, struct pid_namespace *ns)
-+{
-+	int retval;
-+
-+	read_lock(&tasklist_lock);
-+	retval = __kill_pid_ns_info(sig, info, ns);
-+	read_unlock(&tasklist_lock);
-+
-+	return retval;
-+}
-+
-  /*
-   * kill_something_info() interprets pid in interesting ways just like kill(2).
-   *
-@@ -1141,18 +1180,7 @@ static int kill_something_info(int sig, struct siginfo *info, int pid)
-  		ret = __kill_pgrp_info(sig, info,
-  				pid ? find_vpid(-pid) : task_pgrp(current));
-  	} else {
--		int retval = 0, count = 0;
--		struct task_struct * p;
--
--		for_each_process(p) {
--			if (p->pid > 1 && !same_thread_group(p, current)) {
--				int err = group_send_sig_info(sig, info, p);
--				++count;
--				if (err != -EPERM)
--					retval = err;
--			}
--		}
--		ret = count ? retval : -ESRCH;
-+		ret = __kill_pid_ns_info(sig, info, task_active_pid_ns(current));
-  	}
-  	read_unlock(&tasklist_lock);
-
--- 
-1.5.5.1
+Thanks,
+tavi
