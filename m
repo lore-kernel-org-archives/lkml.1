@@ -1,41 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932929AbYGQVpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933445AbYGQVqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932929AbYGQVpZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 17:45:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759047AbYGQVpH
+	id S933445AbYGQVqL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 17:46:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756944AbYGQVp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 17:45:07 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41466
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757273AbYGQVpF (ORCPT
+	Thu, 17 Jul 2008 17:45:56 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:64766 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757287AbYGQVpz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 17:45:05 -0400
-Date: Thu, 17 Jul 2008 14:45:04 -0700 (PDT)
-Message-Id: <20080717.144504.96425101.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, rjw@sisk.pl
-Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison
- overwritten
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080717214222.GA29449@elte.hu>
-References: <20080717214222.GA29449@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Jul 2008 17:45:55 -0400
+Date: Thu, 17 Jul 2008 14:45:12 -0700
+From: Joel Becker <Joel.Becker@ORACLE.COM>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Mark Fasheh <mfasheh@suse.com>, linux-kernel@vger.kernel.org,
+       ocfs2-devel@oss.oracle.com, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Ocfs2-devel] [git patches] Ocfs2 and Configfs updates for
+	2.6.27
+Message-ID: <20080717214512.GB8283@ca-server1.us.oracle.com>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Mark Fasheh <mfasheh@suse.com>, linux-kernel@vger.kernel.org,
+	ocfs2-devel@oss.oracle.com,
+	Andrew Morton <akpm@linux-foundation.org>
+References: <20080717175146.GH28014@wotan.suse.de> <alpine.LFD.1.10.0807171056520.2959@woody.linux-foundation.org> <20080717212038.GA8283@ca-server1.us.oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080717212038.GA8283@ca-server1.us.oracle.com>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Thu, 17 Jul 2008 23:42:22 +0200
-
+On Thu, Jul 17, 2008 at 02:20:38PM -0700, Joel Becker wrote:
+> On Thu, Jul 17, 2008 at 11:01:40AM -0700, Linus Torvalds wrote:
+> > I pulled it, but I want to register my protest.
 > 
-> A regression to v2.6.26:
-> 
-> I started getting this skb-head corruption message today, on a T60 
-> laptop with e1000:
+> 	I wish you hadn't, because it won't be to difficult to go back
+> to PTR_ERR().  However, don't revert it - that affects some of the
+> follow-on patches that were affected by the change.
 
-This is very unlikely to be added by us networking folks, no
-networking merges have happened for the 2.6.27 merge window yet :-)
+	I lied.  I'll cleanup the fallout.  You can revert it or wait
+for my revert + PTR_ERR.  Let me know if you revert it.
+
+Joel
+
+-- 
+
+"Against stupidity the Gods themselves contend in vain."
+	- Friedrich von Schiller
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
