@@ -1,86 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757392AbYGQVzD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932186AbYGQV5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757392AbYGQVzD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 17:55:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbYGQVys
+	id S932186AbYGQV5S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 17:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757058AbYGQV5F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 17:54:48 -0400
-Received: from ixia01.ro.gtsce.net ([212.146.94.66]:3771 "EHLO
-	ixro-ex1.ixiacom.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761089AbYGQVyp (ORCPT
+	Thu, 17 Jul 2008 17:57:05 -0400
+Received: from wx-out-0506.google.com ([66.249.82.229]:6499 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754525AbYGQV5E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 17:54:45 -0400
-From: Octavian Purdila <opurdila@ixiacom.com>
-Organization: IXIA
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [PATCH] tcp: do not promote SPLICE_F_NONBLOCK to socket O_NONBLOCK
-Date: Fri, 18 Jul 2008 00:52:33 +0300
-User-Agent: KMail/1.9.9
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200807171633.49791.opurdila@ixiacom.com> <200807171747.27775.opurdila@ixiacom.com> <20080717174150.GA24002@2ka.mipt.ru>
-In-Reply-To: <20080717174150.GA24002@2ka.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 17 Jul 2008 17:57:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=MNK3TUUbROj2kV4pDxDhFYuj3f6z/bxb94YUvnhjGpRtcbxBKXvEBGiRhGvywfCXp7
+         dNiGFfnevH3R/XeXNGsVhMkmzQ4o3eDBtykMseoA6OVfJNJO2v2sJ9lYf+k+Z+qdm8RK
+         5WrhXU7flb/R68hyYUiOrBBU6GXj7yH2sRlXI=
+Subject: [PATCH] mtd: diskonchip.c fix sparse endian warnings
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 17 Jul 2008 14:57:01 -0700
+Message-Id: <1216331821.6029.35.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807180052.33918.opurdila@ixiacom.com>
-X-OriginalArrivalTime: 17 Jul 2008 21:56:36.0016 (UTC) FILETIME=[FB8CB300:01C8E857]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 17 July 2008, Evgeniy Polyakov wrote:
-> >
-> > I am probably missing some usecases here, but usually if you want to use
-> > non-blocking I/O you need to use special approach anyway (e.g. code the
-> > poll/epoll/select bits) so then you could open the socket with
-> > O_NONBLOCK.
->
-> It depends. Splice clearly states that it tries to be nonblocking with 
-> given flag being set, and its reading will be non-blocking indeed.
->
-> > > This is a quite serious break of the
-> > > overall idea behind SPLICE_F_NONBLOCK.
-> >
-> > I don't know... the man page explicitly says that even when you use
-> > SPLICE_F_NONBLOCK splice may block because of the underlying fd blocking.
->
-> Yes, but reading from the network will not.
->
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Al, I know you won't like this for the same reasons as the dlm patch,
+but I had it already done.
 
-You lost me here :)
+ drivers/mtd/nand/diskonchip.c |   30 +++++++++++++++---------------
+ 1 files changed, 15 insertions(+), 15 deletions(-)
 
-The way I interpret the man page text is that it is ok for splice to block, 
-even if SPLICE_F_NONBLOCK is set. The comments near SPLICE_F_NONBLOCK says 
-the same thing:
+diff --git a/drivers/mtd/nand/diskonchip.c b/drivers/mtd/nand/diskonchip.c
+index 765d4f0..e4226e0 100644
+--- a/drivers/mtd/nand/diskonchip.c
++++ b/drivers/mtd/nand/diskonchip.c
+@@ -1125,9 +1125,9 @@ static inline int __init nftl_partscan(struct mtd_info *mtd, struct mtd_partitio
+ 		goto out;
+ 	mh = (struct NFTLMediaHeader *)buf;
+ 
+-	mh->NumEraseUnits = le16_to_cpu(mh->NumEraseUnits);
+-	mh->FirstPhysicalEUN = le16_to_cpu(mh->FirstPhysicalEUN);
+-	mh->FormattedSize = le32_to_cpu(mh->FormattedSize);
++	le16_to_cpus(&mh->NumEraseUnits);
++	le16_to_cpus(&mh->FirstPhysicalEUN);
++	le32_to_cpus(&mh->FormattedSize);
+ 
+ 	printk(KERN_INFO "    DataOrgID        = %s\n"
+ 			 "    NumEraseUnits    = %d\n"
+@@ -1235,12 +1235,12 @@ static inline int __init inftl_partscan(struct mtd_info *mtd, struct mtd_partiti
+ 	doc->mh1_page = doc->mh0_page + (4096 >> this->page_shift);
+ 	mh = (struct INFTLMediaHeader *)buf;
+ 
+-	mh->NoOfBootImageBlocks = le32_to_cpu(mh->NoOfBootImageBlocks);
+-	mh->NoOfBinaryPartitions = le32_to_cpu(mh->NoOfBinaryPartitions);
+-	mh->NoOfBDTLPartitions = le32_to_cpu(mh->NoOfBDTLPartitions);
+-	mh->BlockMultiplierBits = le32_to_cpu(mh->BlockMultiplierBits);
+-	mh->FormatFlags = le32_to_cpu(mh->FormatFlags);
+-	mh->PercentUsed = le32_to_cpu(mh->PercentUsed);
++	le32_to_cpus(&mh->NoOfBootImageBlocks);
++	le32_to_cpus(&mh->NoOfBinaryPartitions);
++	le32_to_cpus(&mh->NoOfBDTLPartitions);
++	le32_to_cpus(&mh->BlockMultiplierBits);
++	le32_to_cpus(&mh->FormatFlags);
++	le32_to_cpus(&mh->PercentUsed);
+ 
+ 	printk(KERN_INFO "    bootRecordID          = %s\n"
+ 			 "    NoOfBootImageBlocks   = %d\n"
+@@ -1277,12 +1277,12 @@ static inline int __init inftl_partscan(struct mtd_info *mtd, struct mtd_partiti
+ 	/* Scan the partitions */
+ 	for (i = 0; (i < 4); i++) {
+ 		ip = &(mh->Partitions[i]);
+-		ip->virtualUnits = le32_to_cpu(ip->virtualUnits);
+-		ip->firstUnit = le32_to_cpu(ip->firstUnit);
+-		ip->lastUnit = le32_to_cpu(ip->lastUnit);
+-		ip->flags = le32_to_cpu(ip->flags);
+-		ip->spareUnits = le32_to_cpu(ip->spareUnits);
+-		ip->Reserved0 = le32_to_cpu(ip->Reserved0);
++		le32_to_cpus(&ip->virtualUnits);
++		le32_to_cpus(&ip->firstUnit);
++		le32_to_cpus(&ip->lastUnit);
++		le32_to_cpus(&ip->flags);
++		le32_to_cpus(&ip->spareUnits);
++		le32_to_cpus(&ip->Reserved0);
+ 
+ 		printk(KERN_INFO	"    PARTITION[%d] ->\n"
+ 			"        virtualUnits    = %d\n"
+-- 
+1.5.6.3.569.ga9185
 
-#define SPLICE_F_NONBLOCK (0x02) /* don't block on the pipe splicing (but */
-                                 /* we may still block on the fd we splice */
-                                 /* from/to, of course */
 
-Am I missing something?
 
-> > But more importantly, how can we solve the deadlock issue described in
-> > the patch? Do we need all of the complications of async I/O for such a
-> > simple and common usecase?
->
-> I'm not sure I understand how it can deadlock, please explain it in more
-> details.
-
-For this "program":
-
-x=splice(socket, pipe, size, flags=0); 
-if (x > 0)
-	splice(pipe, file, x, flags=0);
-
-it is hard to come up with a non tiny value for size that does not deadlock 
-the program, because the pipe size is measured in packets and not bytes and 
-we have no control over the packet sizes.
-
-For example, if we set size=17 and we are unlucky and get 16 packets of 1 byte 
-in a row, at the right time, the first splice call will block - and the 
-program will deadlock since we can't reach the consumer. 
-
-Thanks,
-tavi
