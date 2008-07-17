@@ -1,190 +1,277 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760186AbYGQHhK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760505AbYGQHjE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760186AbYGQHhK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 03:37:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759285AbYGQHcL
+	id S1760505AbYGQHjE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 03:39:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755508AbYGQHiv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 03:32:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53651 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759357AbYGQHcI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 03:32:08 -0400
+	Thu, 17 Jul 2008 03:38:51 -0400
+Received: from rv-out-0506.google.com ([209.85.198.225]:6846 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755282AbYGQHiu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 03:38:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=wctiAPXBBq6gC3OOSx74B2eaTKhWZFcpK2NZtYYTSW5e+ZhRRobMzPhsaMub6WA5Le
+         dHUfp7J57a4gj/ODtGIVQMF0c7Z4QVPwVeKOQG3ZlowBgWl5XkfhxKKRndbpm1LC8ZoT
+         T5LHd+l4UeXc7B1kEpJBJwe1KcdMzO0U99hxs=
+Message-ID: <84144f020807170038p67614992j256f1507f14d0ba0@mail.gmail.com>
+Date: Thu, 17 Jul 2008 10:38:49 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Eduard - Gabriel Munteanu" <eduard.munteanu@linux360.ro>
+Subject: Re: [RFC PATCH 2/4] kmemtrace: SLAB hooks.
+Cc: cl@linux-foundation.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <99a4b0edd280049b57a400b5934714ad66ea5788.1216255035.git.eduard.munteanu@linux360.ro>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-X-Fcc: ~/Mail/linus
-Subject: [PATCH 21/23] tracehook: wait_task_inactive
-In-Reply-To: Roland McGrath's message of  Thursday, 17 July 2008 00:25:41 -0700 <20080717072541.F390E15411D@magilla.localdomain>
-References: <20080717072541.F390E15411D@magilla.localdomain>
-X-Shopping-List: (1) Global mechanical retarders
-   (2) Unopened eggplants
-   (3) Would-be pharmaceutical detectors
-   (4) Sulfurous flying chasers
-Message-Id: <20080717073127.EE3CB1541A5@magilla.localdomain>
-Date: Thu, 17 Jul 2008 00:31:27 -0700 (PDT)
+Content-Disposition: inline
+References: <cover.1216255034.git.eduard.munteanu@linux360.ro>
+	 <99a4b0edd280049b57a400b5934714ad66ea5788.1216255035.git.eduard.munteanu@linux360.ro>
+X-Google-Sender-Auth: dc0aa62e924dc562
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This extends wait_task_inactive() with a new argument so it
-can be used in a "soft" mode where it will check for the task
-changing state unexpectedly and back off.  There is no change
-to existing callers.  This lays the groundwork to allow robust,
-noninvasive tracing that can try to sample a blocked thread but
-back off safely if it wakes up.
+Hi Eduard-Gabriel,
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- arch/ia64/kernel/perfmon.c |    4 ++--
- include/linux/sched.h      |    8 ++++++--
- kernel/kthread.c           |    2 +-
- kernel/ptrace.c            |    2 +-
- kernel/sched.c             |   29 +++++++++++++++++++++++++++--
- 5 files changed, 37 insertions(+), 8 deletions(-)
+On Thu, Jul 17, 2008 at 3:46 AM, Eduard - Gabriel Munteanu
+<eduard.munteanu@linux360.ro> wrote:
+> This adds hooks for the SLAB allocator, to allow tracing with kmemtrace.
+>
+> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+> ---
+>  include/linux/slab_def.h |   56 +++++++++++++++++++++++++++++++++++++-----
+>  mm/slab.c                |   61 +++++++++++++++++++++++++++++++++++++++++----
+>  2 files changed, 104 insertions(+), 13 deletions(-)
+>
+> diff --git a/include/linux/slab_def.h b/include/linux/slab_def.h
+> index 39c3a5e..77b8045 100644
+> --- a/include/linux/slab_def.h
+> +++ b/include/linux/slab_def.h
+> @@ -14,6 +14,7 @@
+>  #include <asm/page.h>          /* kmalloc_sizes.h needs PAGE_SIZE */
+>  #include <asm/cache.h>         /* kmalloc_sizes.h needs L1_CACHE_BYTES */
+>  #include <linux/compiler.h>
+> +#include <linux/kmemtrace.h>
+>
+>  /* Size description struct for general caches. */
+>  struct cache_sizes {
+> @@ -28,8 +29,20 @@ extern struct cache_sizes malloc_sizes[];
+>  void *kmem_cache_alloc(struct kmem_cache *, gfp_t);
+>  void *__kmalloc(size_t size, gfp_t flags);
+>
+> +#ifdef CONFIG_KMEMTRACE
+> +extern void *kmem_cache_alloc_notrace(struct kmem_cache *cachep, gfp_t flags);
+> +#else
+> +static inline void *kmem_cache_alloc_notrace(struct kmem_cache *cachep,
+> +                                            gfp_t flags)
+> +{
+> +       return kmem_cache_alloc(cachep, flags);
+> +}
+> +#endif
+> +
+>  static inline void *kmalloc(size_t size, gfp_t flags)
+>  {
+> +       void *ret;
+> +
+>        if (__builtin_constant_p(size)) {
+>                int i = 0;
+>
+> @@ -50,10 +63,17 @@ static inline void *kmalloc(size_t size, gfp_t flags)
+>  found:
+>  #ifdef CONFIG_ZONE_DMA
+>                if (flags & GFP_DMA)
+> -                       return kmem_cache_alloc(malloc_sizes[i].cs_dmacachep,
+> -                                               flags);
+> +                       ret = kmem_cache_alloc_notrace(
+> +                               malloc_sizes[i].cs_dmacachep, flags);
+> +               else
+>  #endif
+> -               return kmem_cache_alloc(malloc_sizes[i].cs_cachep, flags);
+> +                       ret = kmem_cache_alloc_notrace(
+> +                               malloc_sizes[i].cs_cachep, flags);
+> +
+> +               kmemtrace_mark_alloc(KMEMTRACE_TYPE_KERNEL, _THIS_IP_, ret,
+> +                                    size, malloc_sizes[i].cs_size, flags);
 
-diff --git a/arch/ia64/kernel/perfmon.c b/arch/ia64/kernel/perfmon.c
-index 19d4493..fc8f350 100644
---- a/arch/ia64/kernel/perfmon.c
-+++ b/arch/ia64/kernel/perfmon.c
-@@ -2626,7 +2626,7 @@ pfm_task_incompatible(pfm_context_t *ctx, struct task_struct *task)
- 	/*
- 	 * make sure the task is off any CPU
- 	 */
--	wait_task_inactive(task);
-+	wait_task_inactive(task, 0);
- 
- 	/* more to come... */
- 
-@@ -4774,7 +4774,7 @@ recheck:
- 
- 		UNPROTECT_CTX(ctx, flags);
- 
--		wait_task_inactive(task);
-+		wait_task_inactive(task, 0);
- 
- 		PROTECT_CTX(ctx, flags);
- 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index c58e8ab..48832a2 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1872,9 +1872,13 @@ extern void set_task_comm(struct task_struct *tsk, char *from);
- extern char *get_task_comm(char *to, struct task_struct *tsk);
- 
- #ifdef CONFIG_SMP
--extern void wait_task_inactive(struct task_struct * p);
-+extern unsigned long wait_task_inactive(struct task_struct *, long match_state);
- #else
--#define wait_task_inactive(p)	do { } while (0)
-+static inline unsigned long wait_task_inactive(struct task_struct *p,
-+					       long match_state)
-+{
-+	return 1;
-+}
- #endif
- 
- #define next_task(p)	list_entry(rcu_dereference((p)->tasks.next), struct task_struct, tasks)
-diff --git a/kernel/kthread.c b/kernel/kthread.c
-index ac3fb73..88538db 100644
---- a/kernel/kthread.c
-+++ b/kernel/kthread.c
-@@ -176,7 +176,7 @@ void kthread_bind(struct task_struct *k, unsigned int cpu)
- 		return;
- 	}
- 	/* Must have done schedule() in kthread() before we set_task_cpu */
--	wait_task_inactive(k);
-+	wait_task_inactive(k, 0);
- 	set_task_cpu(k, cpu);
- 	k->cpus_allowed = cpumask_of_cpu(cpu);
- 	k->rt.nr_cpus_allowed = 1;
-diff --git a/kernel/ptrace.c b/kernel/ptrace.c
-index 8392a9d..082b3fc 100644
---- a/kernel/ptrace.c
-+++ b/kernel/ptrace.c
-@@ -107,7 +107,7 @@ int ptrace_check_attach(struct task_struct *child, int kill)
- 	read_unlock(&tasklist_lock);
- 
- 	if (!ret && !kill)
--		wait_task_inactive(child);
-+		ret = wait_task_inactive(child, TASK_TRACED) ? 0 : -ESRCH;
- 
- 	/* All systems go.. */
- 	return ret;
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 99e6d85..33aec6d 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1946,16 +1946,24 @@ migrate_task(struct task_struct *p, int dest_cpu, struct migration_req *req)
- /*
-  * wait_task_inactive - wait for a thread to unschedule.
-  *
-+ * If @match_state is nonzero, it's the @p->state value just checked and
-+ * not expected to change.  If it changes, i.e. @p might have woken up,
-+ * then return zero.  When we succeed in waiting for @p to be off its CPU,
-+ * we return a positive number (its total switch count).  If a second call
-+ * a short while later returns the same number, the caller can be sure that
-+ * @p has remained unscheduled the whole time.
-+ *
-  * The caller must ensure that the task *will* unschedule sometime soon,
-  * else this function might spin for a *long* time. This function can't
-  * be called with interrupts off, or it may introduce deadlock with
-  * smp_call_function() if an IPI is sent by the same process we are
-  * waiting to become inactive.
-  */
--void wait_task_inactive(struct task_struct *p)
-+unsigned long wait_task_inactive(struct task_struct *p, long match_state)
- {
- 	unsigned long flags;
- 	int running, on_rq;
-+	unsigned long ncsw;
- 	struct rq *rq;
- 
- 	for (;;) {
-@@ -1978,8 +1986,11 @@ void wait_task_inactive(struct task_struct *p)
- 		 * return false if the runqueue has changed and p
- 		 * is actually now running somewhere else!
- 		 */
--		while (task_running(rq, p))
-+		while (task_running(rq, p)) {
-+			if (match_state && unlikely(p->state != match_state))
-+				return 0;
- 			cpu_relax();
-+		}
- 
- 		/*
- 		 * Ok, time to look more closely! We need the rq
-@@ -1989,9 +2000,21 @@ void wait_task_inactive(struct task_struct *p)
- 		rq = task_rq_lock(p, &flags);
- 		running = task_running(rq, p);
- 		on_rq = p->se.on_rq;
-+		ncsw = 0;
-+		if (!match_state || p->state == match_state) {
-+			ncsw = p->nivcsw + p->nvcsw;
-+			if (unlikely(!ncsw))
-+				ncsw = 1;
-+		}
- 		task_rq_unlock(rq, &flags);
- 
- 		/*
-+		 * If it changed from the expected state, bail out now.
-+		 */
-+		if (unlikely(!ncsw))
-+			break;
-+
-+		/*
- 		 * Was it really running after all now that we
- 		 * checked with the proper locks actually held?
- 		 *
-@@ -2023,6 +2046,8 @@ void wait_task_inactive(struct task_struct *p)
- 		 */
- 		break;
- 	}
-+
-+	return ncsw;
- }
- 
- /***
+We have malloc_sizes[i].cs_size here as the _allocated_ size (which
+seems wrong to be btw).
+
+> +
+> +               return ret;
+>        }
+>        return __kmalloc(size, flags);
+>  }
+> @@ -62,8 +82,23 @@ found:
+>  extern void *__kmalloc_node(size_t size, gfp_t flags, int node);
+>  extern void *kmem_cache_alloc_node(struct kmem_cache *, gfp_t flags, int node);
+>
+> +#ifdef CONFIG_KMEMTRACE
+> +extern void *kmem_cache_alloc_node_notrace(struct kmem_cache *cachep,
+> +                                          gfp_t flags,
+> +                                          int nodeid);
+> +#else
+> +static inline void *kmem_cache_alloc_node_notrace(struct kmem_cache *cachep,
+> +                                                 gfp_t flags,
+> +                                                 int nodeid)
+> +{
+> +       return kmem_cache_alloc_node(cachep, flags, nodeid);
+> +}
+> +#endif
+> +
+>  static inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+>  {
+> +       void *ret;
+> +
+>        if (__builtin_constant_p(size)) {
+>                int i = 0;
+>
+> @@ -84,11 +119,18 @@ static inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+>  found:
+>  #ifdef CONFIG_ZONE_DMA
+>                if (flags & GFP_DMA)
+> -                       return kmem_cache_alloc_node(malloc_sizes[i].cs_dmacachep,
+> -                                               flags, node);
+> +                       ret = kmem_cache_alloc_node_notrace(
+> +                               malloc_sizes[i].cs_dmacachep, flags, node);
+> +               else
+>  #endif
+> -               return kmem_cache_alloc_node(malloc_sizes[i].cs_cachep,
+> -                                               flags, node);
+> +                       ret = kmem_cache_alloc_node_notrace(
+> +                               malloc_sizes[i].cs_cachep, flags, node);
+> +
+> +               kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KERNEL, _THIS_IP_,
+> +                                         ret, size, malloc_sizes[i].cs_size,
+> +                                         flags, node);
+
+And here.
+
+> +
+> +               return ret;
+>        }
+>        return __kmalloc_node(size, flags, node);
+>  }
+>
+> +#ifdef CONFIG_KMEMTRACE
+> +void *kmem_cache_alloc_node_notrace(struct kmem_cache *cachep,
+> +                                   gfp_t flags,
+> +                                   int nodeid)
+> +{
+> +       return __cache_alloc_node(cachep, flags, nodeid,
+> +                                 __builtin_return_address(0));
+> +}
+> +EXPORT_SYMBOL(kmem_cache_alloc_node_notrace);
+> +#endif
+> +
+>  static __always_inline void *
+>  __do_kmalloc_node(size_t size, gfp_t flags, int node, void *caller)
+>  {
+>        struct kmem_cache *cachep;
+> +       void *ret;
+>
+>        cachep = kmem_find_general_cachep(size, flags);
+>        if (unlikely(ZERO_OR_NULL_PTR(cachep)))
+>                return cachep;
+> -       return kmem_cache_alloc_node(cachep, flags, node);
+> +       ret = kmem_cache_alloc_node_notrace(cachep, flags, node);
+> +
+> +       kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KERNEL,
+> +                                 (unsigned long) caller, ret,
+> +                                 size, cachep->buffer_size, flags, node);
+
+But here we use cachep->buffer_size and...
+
+> +
+> +       return ret;
+>  }
+>
+>  #ifdef CONFIG_DEBUG_SLAB
+> @@ -3718,6 +3756,7 @@ static __always_inline void *__do_kmalloc(size_t size, gfp_t flags,
+>                                          void *caller)
+>  {
+>        struct kmem_cache *cachep;
+> +       void *ret;
+>
+>        /* If you want to save a few bytes .text space: replace
+>         * __ with kmem_.
+> @@ -3727,11 +3766,17 @@ static __always_inline void *__do_kmalloc(size_t size, gfp_t flags,
+>        cachep = __find_general_cachep(size, flags);
+>        if (unlikely(ZERO_OR_NULL_PTR(cachep)))
+>                return cachep;
+> -       return __cache_alloc(cachep, flags, caller);
+> +       ret = __cache_alloc(cachep, flags, caller);
+> +
+> +       kmemtrace_mark_alloc(KMEMTRACE_TYPE_KERNEL,
+> +                            (unsigned long) caller, ret,
+> +                            size, cachep->buffer_size, flags);
+
+...here as well. Why?
+
+Also,
+
+> diff --git a/mm/slab.c b/mm/slab.c
+> index 046607f..e9a61ac 100644
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -111,6 +111,7 @@
+>  #include       <linux/rtmutex.h>
+>  #include       <linux/reciprocal_div.h>
+>  #include       <linux/debugobjects.h>
+> +#include       <linux/kmemtrace.h>
+>
+>  #include       <asm/cacheflush.h>
+>  #include       <asm/tlbflush.h>
+> @@ -3621,10 +3622,23 @@ static inline void __cache_free(struct kmem_cache *cachep, void *objp)
+>  */
+>  void *kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
+>  {
+> -       return __cache_alloc(cachep, flags, __builtin_return_address(0));
+> +       void *ret = __cache_alloc(cachep, flags, __builtin_return_address(0));
+> +
+> +       kmemtrace_mark_alloc(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
+> +                            obj_size(cachep), obj_size(cachep), flags);
+
+Here....
+
+> +
+> +       return ret;
+>  }
+>  EXPORT_SYMBOL(kmem_cache_alloc);
+>
+> +#ifdef CONFIG_KMEMTRACE
+> +void *kmem_cache_alloc_notrace(struct kmem_cache *cachep, gfp_t flags)
+> +{
+> +       return __cache_alloc(cachep, flags, __builtin_return_address(0));
+> +}
+> +EXPORT_SYMBOL(kmem_cache_alloc_notrace);
+> +#endif
+> +
+>  /**
+>  * kmem_ptr_validate - check if an untrusted pointer might be a slab entry.
+>  * @cachep: the cache we're checking against
+> @@ -3669,20 +3683,44 @@ out:
+>  #ifdef CONFIG_NUMA
+>  void *kmem_cache_alloc_node(struct kmem_cache *cachep, gfp_t flags, int nodeid)
+>  {
+> -       return __cache_alloc_node(cachep, flags, nodeid,
+> -                       __builtin_return_address(0));
+> +       void *ret = __cache_alloc_node(cachep, flags, nodeid,
+> +                                      __builtin_return_address(0));
+> +
+> +       kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
+> +                                 obj_size(cachep), obj_size(cachep),
+> +                                 flags, nodeid);
+
+...and here, we use obj_size().
+
+> +
+> +       return ret;
+>  }
+>  EXPORT_SYMBOL(kmem_cache_alloc_node);
+
+AFAICT, you should always use ->buffer_size as the_allocated_ size. Hmm?
