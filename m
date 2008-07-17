@@ -1,125 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758059AbYGQRjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760807AbYGQRju@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758059AbYGQRjU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 13:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758198AbYGQRiw
+	id S1760807AbYGQRju (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 13:39:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757183AbYGQRjk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 13:38:52 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:38119
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758041AbYGQRiv (ORCPT
+	Thu, 17 Jul 2008 13:39:40 -0400
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:65019 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757077AbYGQRjj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 13:38:51 -0400
-Subject: [PATCH] synclink_gt add rx DMA buffer fill level control
-From: Paul Fulghum <paulkf@microgate.com>
+	Thu, 17 Jul 2008 13:39:39 -0400
+Date: Thu, 17 Jul 2008 12:39:30 -0500
+From: Nathan Lynch <ntl@pobox.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 17 Jul 2008 11:37:51 -0500
-Message-Id: <1216312671.3842.22.camel@x2.microgate.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+Cc: benh@kernel.crashing.org, Linus Torvalds <torvalds@linux-foundation.org>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       roland@redhat.com
+Subject: Re: [PATCH] elf loader support for auxvec base platform string
+Message-ID: <20080717173930.GG9594@localdomain>
+References: <1216166331-14810-1-git-send-email-ntl@pobox.com>
+ <1216166331-14810-2-git-send-email-ntl@pobox.com>
+ <1216276539.7740.309.camel@pasglop>
+ <20080717000951.5f8cab37.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080717000951.5f8cab37.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Pobox-Relay-ID: 53A82714-5427-11DD-83BB-CE28B26B55AE-04752483!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add run time control for receive DMA buffer fill level
-to allow application to control receive latency when using
-stream oriented serial protocols that pass receive data
-to application only after a DMA buffer fills. This was
-previously a compile time option, but run time control
-is needed when application changes data rate (and latency
-requirements) or uses different data rates on different ports.
+Andrew Morton wrote:
+> > On Tue, 2008-07-15 at 18:58 -0500, Nathan Lynch wrote:
+> > > diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+> > > index d48ff5f..834c2c4 100644
+> > > --- a/fs/binfmt_elf.c
+> > > +++ b/fs/binfmt_elf.c
+> > > @@ -131,6 +131,10 @@ static int padzero(unsigned long elf_bss)
+> > >  #define STACK_ALLOC(sp, len) ({ sp -= len ; sp; })
+> > >  #endif
+> > >  
+> > > +#ifndef ELF_BASE_PLATFORM
+> > > +#define ELF_BASE_PLATFORM NULL
+> > > +#endif
+> 
+> Please add a comment which explains what this is.
+> 
+> Please also add a comment telling the world in which header file the
+> architecture *must* define this macro and then ensure that that header is
+> included into this file by reliable means.  asm/elf.h looks OK.
 
-Signed-off-by: Paul Fulghum <paulkf@microgate.com>
-
---- a/drivers/char/synclink_gt.c	2008-07-17 08:39:06.000000000 -0500
-+++ b/drivers/char/synclink_gt.c	2008-07-17 11:18:27.000000000 -0500
-@@ -310,7 +310,7 @@ struct slgt_info {
- 	u32 idle_mode;
- 	u32 max_frame_size;       /* as set by device config */
- 
--	unsigned int raw_rx_size;
-+	unsigned int rbuf_fill_level;
- 	unsigned int if_mode;
- 
- 	/* device status */
-@@ -2690,8 +2690,29 @@ static int tx_abort(struct slgt_info *in
- static int rx_enable(struct slgt_info *info, int enable)
- {
-  	unsigned long flags;
--	DBGINFO(("%s rx_enable(%d)\n", info->device_name, enable));
-+	unsigned int rbuf_fill_level;
-+	DBGINFO(("%s rx_enable(%08x)\n", info->device_name, enable));
- 	spin_lock_irqsave(&info->lock,flags);
-+	/*
-+	 * enable[31..16] = receive DMA buffer fill level
-+	 * 0 = noop (leave fill level unchanged)
-+	 * fill level must be multiple of 4 and <= buffer size
-+	 */
-+	rbuf_fill_level = ((unsigned int)enable) >> 16;
-+	if (rbuf_fill_level) {
-+		if ((rbuf_fill_level > DMABUFSIZE) || (rbuf_fill_level % 4))
-+			return -EINVAL;
-+		info->rbuf_fill_level = rbuf_fill_level;
-+		rx_stop(info); /* restart receiver to use new fill level */
-+	}
-+
-+	/*
-+	 * enable[1..0] = receiver enable command
-+	 * 0 = disable
-+	 * 1 = enable
-+	 * 2 = enable or force hunt mode if already enabled
-+	 */
-+	enable &= 3;
- 	if (enable) {
- 		if (!info->rx_enabled)
- 			rx_start(info);
-@@ -3457,7 +3478,7 @@ static struct slgt_info *alloc_dev(int a
- 		info->magic = MGSL_MAGIC;
- 		INIT_WORK(&info->task, bh_handler);
- 		info->max_frame_size = 4096;
--		info->raw_rx_size = DMABUFSIZE;
-+		info->rbuf_fill_level = DMABUFSIZE;
- 		info->close_delay = 5*HZ/10;
- 		info->closing_wait = 30*HZ;
- 		init_waitqueue_head(&info->open_wait);
-@@ -4468,16 +4489,7 @@ static void free_rbufs(struct slgt_info 
- 	while(!done) {
- 		/* reset current buffer for reuse */
- 		info->rbufs[i].status = 0;
--		switch(info->params.mode) {
--		case MGSL_MODE_RAW:
--		case MGSL_MODE_MONOSYNC:
--		case MGSL_MODE_BISYNC:
--			set_desc_count(info->rbufs[i], info->raw_rx_size);
--			break;
--		default:
--			set_desc_count(info->rbufs[i], DMABUFSIZE);
--		}
--
-+		set_desc_count(info->rbufs[i], info->rbuf_fill_level);
- 		if (i == last)
- 			done = 1;
- 		if (++i == info->rbuf_count)
-@@ -4585,7 +4597,7 @@ check_again:
- 
- 	DBGBH(("%s rx frame status=%04X size=%d\n",
- 		info->device_name, status, framesize));
--	DBGDATA(info, info->rbufs[start].buf, min_t(int, framesize, DMABUFSIZE), "rx");
-+	DBGDATA(info, info->rbufs[start].buf, min_t(int, framesize, info->rbuf_fill_level), "rx");
- 
- 	if (framesize) {
- 		if (!(info->params.crc_type & HDLC_CRC_RETURN_EX)) {
-@@ -4605,7 +4617,7 @@ check_again:
- 			info->icount.rxok++;
- 
- 			while(copy_count) {
--				int partial_count = min(copy_count, DMABUFSIZE);
-+				int partial_count = min_t(int, copy_count, info->rbuf_fill_level);
- 				memcpy(p, info->rbufs[i].buf, partial_count);
- 				p += partial_count;
- 				copy_count -= partial_count;
+Okay.
 
 
+> > > @@ -172,6 +178,19 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
+> > >  			return -EFAULT;
+> > >  	}
+> > >  
+> > > +	/*
+> > > +	 * If this architecture has a "base" platform capability
+> > > +	 * string, copy it to userspace.
+> > > +	 */
+> > > +	u_base_platform = NULL;
+> > > +	if (k_base_platform) {
+> > > +		size_t len = strlen(k_base_platform) + 1;
+> > > +
+> > > +		u_base_platform = (elf_addr_t __user *)STACK_ALLOC(p, len);
+> > > +		if (__copy_to_user(u_base_platform, k_base_platform, len))
+> > > +			return -EFAULT;
+> > > +	}
+> 
+> >From my reading, this change will result in no additional code
+> generation on non-powerpc architectures.  This is good.  If poss, could
+> you please verify that theory and perhaps drop a note in the changelog
+> about that?
+
+That was the intent, yes.  However:
+
+$ scripts/bloat-o-meter vmlinux-x86-{before,after}
+add/remove: 0/0 grow/shrink: 2/0 up/down: 18/0 (18)
+function                                     old     new   delta
+init_mm                                      784     800     +16
+load_elf_binary                            11946   11948      +2
+
+(x86_64_defconfig, gcc 4.2.3)
+
+The init_mm/mm_struct bloat is expected (although I'd like to avoid
+that), but evidently it has some small effect on load_elf_binary.
