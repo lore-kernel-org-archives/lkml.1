@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759316AbYGQM04@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758861AbYGQM2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759316AbYGQM04 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 08:26:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752337AbYGQM0r
+	id S1758861AbYGQM2y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 08:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753889AbYGQM2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 08:26:47 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:51881 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751659AbYGQM0r (ORCPT
+	Thu, 17 Jul 2008 08:28:46 -0400
+Received: from mga06.intel.com ([134.134.136.21]:39692 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753118AbYGQM2q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 08:26:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=CcnPCV8P83tTegunSBKRR4dRW8XHPB2ovWyb5pQNddMhBuKJUv3J7WRxi1Ywbprr1t
-         ROSsYepdJndmAtwjJLgSfHLMBRsnqr4MCm1gbl0rVX1Bx8Co2HhoTIE/X1UBhdf9JUpE
-         zTikdOj8QPUFodz8AonO1QDCsauRTC5wzyFMY=
-Message-ID: <84144f020807170526x6f013357i29280595f65a67f4@mail.gmail.com>
-Date: Thu, 17 Jul 2008 15:26:46 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Robin Holt" <holt@sgi.com>
-Subject: Re: SLUB: simplify re on_each_cpu()
-Cc: "Alexey Dobriyan" <adobriyan@gmail.com>, cl@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080717113826.GG8534@sgi.com>
+	Thu, 17 Jul 2008 08:28:46 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,203,1215414000"; 
+   d="scan'208";a="419017312"
+Message-ID: <487F3AFA.7090908@linux.intel.com>
+Date: Thu, 17 Jul 2008 14:28:42 +0200
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jan Beulich <jbeulich@novell.com>
+CC: robert.moore@intel.com, Andrew Paprocki <andrew@ishiboo.com>,
+       Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: ACPI WARNING: at	drivers/acpi/tables/tbfadt.c:348	acpi_tb_create_local_fadt+0x147/0x2f4()
+References: <76366b180807161929i4eb9462exc3d2255e0ec881e8@mail.gmail.com> <76366b180807162034y1e725b15t7658c331bb89b52@mail.gmail.com> <487F2629.76E4.0078.0@novell.com> <487F0B85.4030202@linux.intel.com> <487F29B2.76E4.0078.0@novell.com>
+In-Reply-To: <487F29B2.76E4.0078.0@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080716172902.GA5176@martell.zuzino.mipt.ru>
-	 <20080717113826.GG8534@sgi.com>
-X-Google-Sender-Auth: 1a2a3e406a6cbba2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Robin,
+Jan Beulich wrote:
+>> The question is just if the hardware is really 8 bits or if the table
+>> is not just wrong. What does lspci say?
+> 
+> What would lspci have to do with this? 
 
-On Wed, Jul 16, 2008 at 09:29:02PM +0400, Alexey Dobriyan wrote:
->> on_each_cpu() expands to function call on UP, too.
+When it's an chipset with available data sheets one could check that.
 
-On Thu, Jul 17, 2008 at 2:38 PM, Robin Holt <holt@sgi.com> wrote:
-> It looks to me like on_each_cpu is a #define for !SMP.  Are you certain
-> of the need for this change?  Are you looking at a different tree than
-> Linus'?
+> /proc/acpi/fadt (from an older
+> kernel if the new one fails to come up) would seem to help somewhat,
+> as that would allow comparing the v1 (byte-width) and v2 (bit-width)
+> values - if they're out of sync (and they likely are if the system worked
+> flawlessly with previous kernels), I'd be certain the tables are wrong.
 
-I think it's actually you who is looking at an older tree.
+Ok, but we can just get that from a table dump.
 
-However, while double-checking this, I noticed that for UP,
-on_each_cpu() enables interrupts unconditionally with
-local_irq_enable() whereas the call while the old code in SLUB did a
-local_irq_restore() that preserves the irq mask. Looking at the
-callers of flush_all() in mm/slub.c, the change looks okay, but it's
-still bit strange on_each_cpu() works that way on UP.
+-Andi
 
-                          Pekka
