@@ -1,64 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757336AbYGQHqF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758700AbYGQHqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757336AbYGQHqF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 03:46:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754507AbYGQHpy
+	id S1758700AbYGQHqb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 03:46:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbYGQHqV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 03:45:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49306 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753966AbYGQHpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 03:45:54 -0400
+	Thu, 17 Jul 2008 03:46:21 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:34321 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753570AbYGQHqT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 03:46:19 -0400
+Date: Thu, 17 Jul 2008 15:46:15 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+       davem@davemloft.net
+Subject: Re: [PATCH] prng: fix a few misc bugs in prng
+Message-ID: <20080717074615.GA23621@gondor.apana.org.au>
+References: <20080716202916.GA1648@hmsreliant.think-freely.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org
-X-Fcc: ~/Mail/linus
-Subject: [PATCH 0/6] x86 tracehook patches
-X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
-Message-Id: <20080717074550.EE1E215411D@magilla.localdomain>
-Date: Thu, 17 Jul 2008 00:45:50 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20080716202916.GA1648@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!  Here is the x86 arch work that goes with the "tracehook" patch
-series that I posted for the generic code.  I don't know how the
-merging will go with that.  But when there is a tree containing all
-that to base it on, you can merge these arch patches on top of that.
-You can't take these without the generic tracehook series, some will
-break the build until the generic file is there.
+On Wed, Jul 16, 2008 at 04:29:16PM -0400, Neil Horman wrote:
+> 
+>  Fixing a few misc bugs in prng.c:
+>  - Remove prng_key/prng_iv from prng_context (both kept in tfm ptr)
+>  - Making _get_more_prng_bytes return meaningful err codes (not just -1/0)
+>     
+>  Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
 
-This series also requires as a baseline what you have in tip/x86/step.
+Applied to cryptodev-2.6.
 
-The following changes since commit dc2cda6931dd54cd02b05da3a5bc969032e10992:
-  Roland McGrath (1):
-        x86 ptrace: user-sets-TF nits
+> @@ -369,8 +362,7 @@ int reset_prng_context(struct prng_context *ctx,
+>  
+>  	ctx->rand_data_valid = DEFAULT_BLK_SZ;
+>  
+> -	ret = crypto_blkcipher_setkey(ctx->tfm, ctx->prng_key,
+> -					strlen(ctx->prng_key));
+> +	ret = crypto_blkcipher_setkey(ctx->tfm, prng_key, strlen(prng_key));
 
-are available in the git repository at:
+Please make the length a parameter instead as it's much more
+convenient to use a blob as a key rather than a string.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/frob/linux-2.6-utrace.git x86-tracehook
+> diff --git a/firmware/Makefile b/firmware/Makefile
+> index 809a526..3515814 100644
+> --- a/firmware/Makefile
+> +++ b/firmware/Makefile
+> @@ -34,8 +34,8 @@ fw-shipped-$(CONFIG_SND_SB16_CSP) += sb16/mulaw_main.csp sb16/alaw_main.csp \
+>  				     sb16/ima_adpcm_capture.csp
+>  fw-shipped-$(CONFIG_SND_YMFPCI) += yamaha/ds1_ctrl.fw yamaha/ds1_dsp.fw \
+>  				   yamaha/ds1e_ctrl.fw
+> -fw-shipped-$(CONFIG_TIGON3) += tigon/tg3.bin tigon/tg3_tso.bin \
+> -			       tigon/tg3_tso5.bin
+> +#fw-shipped-$(CONFIG_TIGON3) += tigon/tg3.bin tigon/tg3_tso.bin \
+> +#			       tigon/tg3_tso5.bin
+>  fw-shipped-$(CONFIG_USB_DABUSB) += dabusb/firmware.fw dabusb/bitstream.bin
+>  fw-shipped-$(CONFIG_USB_EMI26) += emi26/loader.fw emi26/firmware.fw \
+>  				  emi26/bitstream.fw
 
-Roland McGrath (6):
-      x86: tracehook_signal_handler
-      x86: tracehook syscall
-      x86: tracehook: asm/syscall.h
-      x86 signals: use asm/syscall.h
-      x86: tracehook: TIF_NOTIFY_RESUME
-      x86: tracehook: CONFIG_HAVE_ARCH_TRACEHOOK
-
- arch/x86/Kconfig              |    1 +
- arch/x86/kernel/ptrace.c      |   34 +------
- arch/x86/kernel/signal_32.c   |   11 ++-
- arch/x86/kernel/signal_64.c   |   49 +++-------
- include/asm-x86/ptrace.h      |    5 +
- include/asm-x86/syscall.h     |  210 +++++++++++++++++++++++++++++++++++++++++
- include/asm-x86/thread_info.h |    4 +-
- 7 files changed, 248 insertions(+), 66 deletions(-)
- create mode 100644 include/asm-x86/syscall.h
-
+The dreaded firmware makes a comeback :)
 
 Thanks,
-Roland
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
