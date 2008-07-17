@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933551AbYGQXWz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933525AbYGQXXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933551AbYGQXWz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 19:22:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760175AbYGQXWn
+	id S933525AbYGQXXc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 19:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759624AbYGQXXW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 19:22:43 -0400
-Received: from serrano.cc.columbia.edu ([128.59.29.6]:58842 "EHLO
-	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760724AbYGQXWm (ORCPT
+	Thu, 17 Jul 2008 19:23:22 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:37634 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760790AbYGQXXV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 19:22:42 -0400
-Message-ID: <487FD397.5040905@cs.columbia.edu>
-Date: Thu, 17 Jul 2008 19:19:51 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Thu, 17 Jul 2008 19:23:21 -0400
+Date: Fri, 18 Jul 2008 01:23:20 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Thomas Lucaw <aj881@chebucto.ns.ca>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: ide-cd or ide-scsi dmesg contradiction
+In-Reply-To: <Pine.LNX.4.64.0807171844330.1320@ttl.localnet>
+Message-ID: <alpine.LNX.1.10.0807180119460.12734@fbirervta.pbzchgretzou.qr>
+References: <Pine.LNX.4.64.0807171844330.1320@ttl.localnet>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Kirill Korotaev <dev@parallels.com>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Nadia.Derbey@bull.net, Andrew Morton <akpm@linux-foundation.org>,
-       nick@nick-andrew.net, Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: Checkpoint/restart (was Re: [PATCH 0/4] - v2 - Object creation
- with a specified id)
-References: <20080418054459.891481000@bull.net>	 <20080422193612.GA15835@martell.zuzino.mipt.ru>	 <1208890580.17117.14.camel@nimitz.home.sr71.net>	 <20080422210130.GA15937@martell.zuzino.mipt.ru>	 <1208904967.17117.51.camel@nimitz.home.sr71.net>	 <480ED9D5.1010906@parallels.com> <480FE037.2010302@cs.columbia.edu>	 <m1y74a7b4w.fsf@frodo.ebiederm.org> <1215709949.9398.15.camel@nimitz>	 <20080710173246.GA1857@us.ibm.com> <m163rd1sd5.fsf@frodo.ebiederm.org>	 <1215716794.9398.41.camel@nimitz>  <m14p6xy27s.fsf@frodo.ebiederm.org> <1215719252.9398.53.camel@nimitz>
-In-Reply-To: <1215719252.9398.53.camel@nimitz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 2008-07-18 00:11, Thomas Lucaw wrote:
 
+>Hi, for some time I've noticed
+>
+>giving the cmdline (to kernel at boot) "hdd=ide-scsi ..." I get
+>
+>	ide-scsi is deprecated for cd burning! Use ide-cd and give
+>	dev=/dev/hdX as device
+>
+>then changing to the suggested "hdd=ide-cd ..." I get
 
-Dave Hansen wrote:
-> On Thu, 2008-07-10 at 12:21 -0700, Eric W. Biederman wrote:
->>> Are we talking about the VMA itself, or the memory backing the VMA?
->> The memory backing the VMA.  We need to store the page protections
->> that the memory was mapped with as well now that you point it out.  A
->> VMA is not user space visible, which is why we can arbitrarily split
->> and merge VMAs.
-> 
-> It is visible with /proc/$pid/{maps,smaps,numamaps?}.  That's the only
-> efficient way I know of from userspace to figure out where userspace's
-> memory is and if it *is* file backed, and what the permissions are.
-> 
-> We also can't truly split them arbitrarily because the memory cost of
-> the VMAs themselves might become too heavy (the remap_file_pages()
-> problem).
-> 
-> It gets trickier when things are also private mappings in addition to
-> being in a file-backed VMA.  We *do* need to checkpoint those, but only
-> the pages to which there was a write.
-> 
-> There's also the problem of restoring things read-only, but VM_MAYWRITE.
-> If there's a high level of (non-COW'd) sharing of these anonymous areas,
-> we may not be able to even restore the set of processes unless we can
-> replicate the sharing.  We might run out of memory if the sharing isn't
-> replicated.
-> 
-> Memory is fun! :)
+There is a subtle difference between dev=/dev/hdX and hdd=ide-cd.
 
-Heh .. and it can get much worse.  By all means, the functions that analyze
-and save the VMAs during checkpoint and later reconstruct them during restart
-are the most complicated logic. The good news, however, is that it works :)
+>	ide_setup: hdc=ide-cd -- OBSOLETE OPTION, WILL BE REMOVED SOON!
+>
+>Rather illogical to me :-)
+>
+>I guess neither should be used, I can make my cdrom and dvd devices work 
+>without ok.
 
-Oren.
+Right, neither.
 
-> 
-> -- Dave
-> 
+	cdrecord dev=/dev/sr0 (or dev=/dev/hdc) whichever is appropriate
+
+is all one needs. I guess you can even use /dev/sg0.
+Care to send a patch?
