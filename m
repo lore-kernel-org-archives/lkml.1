@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759526AbYGQWRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761190AbYGQWRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759526AbYGQWRT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 18:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756501AbYGQWRK
+	id S1761190AbYGQWRc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 18:17:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757632AbYGQWRL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 18:17:10 -0400
-Received: from xes-mad.com ([216.165.139.214]:49431 "EHLO xes-mad.com"
+	Thu, 17 Jul 2008 18:17:11 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:32958 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755070AbYGQWRJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 18:17:09 -0400
-X-Greylist: delayed 2500 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Jul 2008 18:17:08 EDT
-Subject: Re: [PATCH v3] leds: implement OpenFirmare GPIO LED driver
-From: Nate Case <ncase@xes-inc.com>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Richard Purdie <rpurdie@rpsys.net>, linuxppc-dev@ozlabs.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080715151917.GA30607@polina.dev.rtsoft.ru>
-References: <1216133032.5345.73.camel@dax.rpnet.com>
-	 <20080715151917.GA30607@polina.dev.rtsoft.ru>
-Content-Type: text/plain
-Date: Thu, 17 Jul 2008 16:29:01 -0500
-Message-Id: <1216330141.7559.950.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	id S1755070AbYGQWRK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 18:17:10 -0400
+Date: Fri, 18 Jul 2008 01:16:52 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Stoyan Gaydarov <stoyboyker@gmail.com>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, gorcunov@gmail.com,
+       akpm@linux-foundation.org, mingo@elte.hu
+Subject: Re: From 2.4 to 2.6 to 2.7?
+Message-ID: <20080717221652.GF18326@cs181140183.pp.htv.fi>
+References: <6d291e080807141910m573b29b2t753ea7c4db09902d@mail.gmail.com> <alpine.LFD.1.10.0807141914280.3017@woody.linux-foundation.org> <6d291e080807141931g3080c94cic94f503c1a18523b@mail.gmail.com> <alpine.LFD.1.10.0807141939410.3017@woody.linux-foundation.org> <20080715204320.GJ24533@cs181140183.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080715204320.GJ24533@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-15 at 19:19 +0400, Anton Vorontsov wrote:
-> +       led->cdev.name = of_get_property(np, "label", NULL);
-> +       if (!led->cdev.name)
-> +               led->cdev.name = dev_name(&ofdev->dev);
+Another point that came into my mind:
 
-How about also supporting a "trigger" property which would set
-cdev.default_trigger in the same manner?  It would be useful for boards
-to be able to specify this in the device tree (e.g., if a certain LED is
-meant to be used as a "heartbeat").
+How many scripts and programs out there parse the kernel version number,
+know about the 2.6 prefix, and might need an update if it changes?
+
+Not a big deal if a change would indicate a big change like with the old 
+development model - but IMHO not worth it if there's no compelling 
+reason why we have to change the numbering at all.
+
+cu
+Adrian
 
 -- 
-Nate Case <ncase@xes-inc.com>
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
