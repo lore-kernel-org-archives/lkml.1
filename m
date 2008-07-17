@@ -1,110 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759249AbYGQAfd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759926AbYGQAia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759249AbYGQAfd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 20:35:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbYGQAfX
+	id S1759926AbYGQAia (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 20:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbYGQAiV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 20:35:23 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:39703 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751720AbYGQAfW (ORCPT
+	Wed, 16 Jul 2008 20:38:21 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55086 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751449AbYGQAiU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 20:35:22 -0400
-Subject: [scsi_dh] [PATCH] Verify "dev" is a sdev before accessing it.
-From: Chandra Seetharaman <sekharan@us.ibm.com>
-Reply-To: sekharan@us.ibm.com
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       "James.Bottomley" <James.Bottomley@HansenPartnership.com>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Organization: IBM
-Date: Wed, 16 Jul 2008 17:35:08 -0700
-Message-Id: <1216254908.27507.245.camel@chandra-ubuntu>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Jul 2008 20:38:20 -0400
+Date: Wed, 16 Jul 2008 17:38:11 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+cc: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Subject: Re: [git pull] PCI pull request for 2.6.27
+In-Reply-To: <Pine.LNX.4.55.0807170109470.30858@cliff.in.clinika.pl>
+Message-ID: <alpine.LFD.1.10.0807161732510.2835@woody.linux-foundation.org>
+References: <200807161639.24289.jbarnes@virtuousgeek.org> <alpine.LFD.1.10.0807161647470.2835@woody.linux-foundation.org> <200807161654.55699.jbarnes@virtuousgeek.org> <Pine.LNX.4.55.0807170109470.30858@cliff.in.clinika.pl>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Before accessing the device data structure in hardware handlers,
-make sure it is a indeed a sdev device.
-
-Yinghai Lu <yhlu.kernel@gmail.com> found the bug on Jul 16, 2008,
-and later tested/verified the following fix.
-
-Signed-off-by: Chandra Seetharaman <sekharan@us.ibm.com>
---
-
-Index: linux2.6.26-git3/drivers/scsi/device_handler/scsi_dh_rdac.c
-===================================================================
---- linux2.6.26-git3.orig/drivers/scsi/device_handler/scsi_dh_rdac.c
-+++ linux2.6.26-git3/drivers/scsi/device_handler/scsi_dh_rdac.c
-@@ -608,12 +608,17 @@ static int rdac_bus_notify(struct notifi
- 			    unsigned long action, void *data)
- {
- 	struct device *dev = data;
--	struct scsi_device *sdev = to_scsi_device(dev);
-+	struct scsi_device *sdev;
- 	struct scsi_dh_data *scsi_dh_data;
- 	struct rdac_dh_data *h;
- 	int i, found = 0;
- 	unsigned long flags;
- 
-+	if (!scsi_is_sdev_device(dev))
-+		return 0;
-+
-+	sdev = to_scsi_device(dev);
-+
- 	if (action == BUS_NOTIFY_ADD_DEVICE) {
- 		for (i = 0; rdac_dev_list[i].vendor; i++) {
- 			if (!strncmp(sdev->vendor, rdac_dev_list[i].vendor,
-Index: linux2.6.26-git3/drivers/scsi/device_handler/scsi_dh_emc.c
-===================================================================
---- linux2.6.26-git3.orig/drivers/scsi/device_handler/scsi_dh_emc.c
-+++ linux2.6.26-git3/drivers/scsi/device_handler/scsi_dh_emc.c
-@@ -416,12 +416,17 @@ static int clariion_bus_notify(struct no
- 				unsigned long action, void *data)
- {
- 	struct device *dev = data;
--	struct scsi_device *sdev = to_scsi_device(dev);
-+	struct scsi_device *sdev;
- 	struct scsi_dh_data *scsi_dh_data;
- 	struct clariion_dh_data *h;
- 	int i, found = 0;
- 	unsigned long flags;
- 
-+	if (!scsi_is_sdev_device(dev))
-+		return 0;
-+
-+	sdev = to_scsi_device(dev);
-+
- 	if (action == BUS_NOTIFY_ADD_DEVICE) {
- 		for (i = 0; clariion_dev_list[i].vendor; i++) {
- 			if (!strncmp(sdev->vendor, clariion_dev_list[i].vendor,
-Index: linux2.6.26-git3/drivers/scsi/device_handler/scsi_dh_hp_sw.c
-===================================================================
---- linux2.6.26-git3.orig/drivers/scsi/device_handler/scsi_dh_hp_sw.c
-+++ linux2.6.26-git3/drivers/scsi/device_handler/scsi_dh_hp_sw.c
-@@ -131,11 +131,16 @@ static int hp_sw_bus_notify(struct notif
- 			    unsigned long action, void *data)
- {
- 	struct device *dev = data;
--	struct scsi_device *sdev = to_scsi_device(dev);
-+	struct scsi_device *sdev;
- 	struct scsi_dh_data *scsi_dh_data;
- 	int i, found = 0;
- 	unsigned long flags;
- 
-+	if (!scsi_is_sdev_device(dev))
-+		return 0;
-+
-+	sdev = to_scsi_device(dev);
-+
- 	if (action == BUS_NOTIFY_ADD_DEVICE) {
- 		for (i = 0; hp_sw_dh_data_list[i].vendor; i++) {
- 			if (!strncmp(sdev->vendor, hp_sw_dh_data_list[i].vendor,
 
 
+On Thu, 17 Jul 2008, Maciej W. Rozycki wrote:
+> 
+>  Conveniently "for" is short enough for indentation like this:
+> 
+> 	for (addr = (u8 *) __va(0xf0000);
+> 	     addr < (u8 *) __va(0x100000);
+> 	     addr += 16) {
+>                 rt = pirq_check_routing_table(addr);
+
+I don't actually like that one very much either.
+
+It's perfectly readable when looking at things closely, but it's not very 
+nice when quickly "scanning" code visually. It looks like two separate 
+indents.
+
+Btw, that "code scanning" is not necessarily a bad idea. It's actually 
+pretty interesting to print code out in a 2-point font (or just open a 
+terminal and do "ctrl -" several times to make the code basically 
+unreadable). See if the code flow makes sense from 10,000 feet - you can 
+pick up overlong functions and various other dubious practices really 
+clearly (#ifdef's in code etc).
+
+(IOW, the whole point of the exercise is to _not_ be able to actually read 
+the code, but just look at the _shape_ of it).
+
+Btw, that commit also did things like change the coding style to a 
+non-kernel coding style by changing
+
+	static int function(xyz..)
+
+to
+
+	static int
+	function(xyz..)
+
+just to make lines shorter. Again - introducing bigger problems than it 
+actually fixes.
+
+				Linus
