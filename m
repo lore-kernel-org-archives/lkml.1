@@ -1,54 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932535AbYGQWaO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932717AbYGQWbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932535AbYGQWaO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 18:30:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759899AbYGQWaA
+	id S932717AbYGQWbT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 18:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbYGQWbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 18:30:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35345 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759890AbYGQW37 (ORCPT
+	Thu, 17 Jul 2008 18:31:06 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:22795 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753981AbYGQWbE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 18:29:59 -0400
-Date: Thu, 17 Jul 2008 15:28:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: wenji.huang@oracle.com, roland@redhat.com, t-nishiie@np.css.fujitsu.com,
-       ltt-dev@lists.casi.polymtl.ca, systemtap@sources.redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix markers duplicate modpost entry (update)
-Message-Id: <20080717152837.8982fe8a.akpm@linux-foundation.org>
-In-Reply-To: <20080717145217.GA24496@Krystal>
-References: <20080715024754.GA26471@Krystal>
-	<000001c8e7aa$b9548600$2bfd9200$@css.fujitsu.com>
-	<20080717024550.GA22869@Krystal>
-	<487ED503.2060503@oracle.com>
-	<20080717070321.GB26035@Krystal>
-	<20080717001613.8fe204df.akpm@linux-foundation.org>
-	<20080717145217.GA24496@Krystal>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Jul 2008 18:31:04 -0400
+Date: Thu, 17 Jul 2008 15:30:18 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Mark Fasheh <mfasheh@suse.com>, linux-kernel@vger.kernel.org,
+       ocfs2-devel@oss.oracle.com, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Ocfs2-devel] [git patches] Ocfs2 and Configfs updates for
+	2.6.27
+Message-ID: <20080717223018.GC8283@ca-server1.us.oracle.com>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Mark Fasheh <mfasheh@suse.com>, linux-kernel@vger.kernel.org,
+	ocfs2-devel@oss.oracle.com,
+	Andrew Morton <akpm@linux-foundation.org>
+References: <20080717175146.GH28014@wotan.suse.de> <alpine.LFD.1.10.0807171056520.2959@woody.linux-foundation.org> <20080717212038.GA8283@ca-server1.us.oracle.com> <20080717214512.GB8283@ca-server1.us.oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080717214512.GB8283@ca-server1.us.oracle.com>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jul 2008 10:52:17 -0400
-Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
+On Thu, Jul 17, 2008 at 02:45:12PM -0700, Joel Becker wrote:
+> On Thu, Jul 17, 2008 at 02:20:38PM -0700, Joel Becker wrote:
+> > On Thu, Jul 17, 2008 at 11:01:40AM -0700, Linus Torvalds wrote:
+> > > I pulled it, but I want to register my protest.
+> > 
+> > 	I wish you hadn't, because it won't be to difficult to go back
+> > to PTR_ERR().  However, don't revert it - that affects some of the
+> > follow-on patches that were affected by the change.
+> 
+> 	I lied.  I'll cleanup the fallout.  You can revert it or wait
+> for my revert + PTR_ERR.  Let me know if you revert it.
 
-> Subject: Re: [PATCH] Fix markers duplicate modpost entry (update)
+Linus,
+	Pull this to get the revert and the PTR_ERR() version:
 
-Please prepare the patch titles along the lines of
+git://oss.oracle.com/git/jlbec/linux-2.6.git configfs-fixup-ptr-error
 
-	[patch] subsystem-identifer: what i did to it
+It's tested with the same testing I did before - ocfs2 and netconsole.
 
-so this one would have been
+Joel
 
-	[patch] markers: fix markers duplicate modpost entry
+-- 
 
+"But all my words come back to me
+ In shades of mediocrity.
+ Like emptiness in harmony
+ I need someone to comfort me."
 
-It's for consistency, and for ease of reading commits mailing lists and
-gitk titles and git-shortlog output, etc.
-
-Thanks.
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
