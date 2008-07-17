@@ -1,78 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758180AbYGQPAX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758866AbYGQPBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758180AbYGQPAX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 11:00:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755235AbYGQPAL
+	id S1758866AbYGQPBb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 11:01:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755871AbYGQPBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 11:00:11 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:10345 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755104AbYGQPAJ (ORCPT
+	Thu, 17 Jul 2008 11:01:20 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:58232 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751663AbYGQPBT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 11:00:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=nU1Vt7v4B7f6FtkkMEecjnE3VSee+3RCJnulY+7Ww18R7VvGDsOSObAJIPGAgXSarj
-         T4JN2Aqvv/TcT/1bSOmhXpA4KfXLTjmEBpbYx2Zx/ePqZuES9vYRUzNBPvA4K83qIptt
-         TMIKjxO6WysZPPLrejRmgg2x/T/RIshyxnnqg=
-Message-ID: <19f34abd0807170800q13cc021dyed27c665c25ac520@mail.gmail.com>
-Date: Thu, 17 Jul 2008 17:00:07 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Josef Bacik" <jbacik@redhat.com>
-Subject: Re: ext3 on latest -git: BUG: unable to handle kernel NULL pointer dereference at 0000000c
-Cc: "Josef Bacik" <josef@toxicpanda.com>, linux-ext4@vger.kernel.org,
-       sct@redhat.com, akpm@linux-foundation.org, adilger@sun.com,
-       "Johannes Weiner" <hannes@saeurebad.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080717143332.GE14133@unused.rdu.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 17 Jul 2008 11:01:19 -0400
+Date: Thu, 17 Jul 2008 18:01:02 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Peter Palfrader <peter@palfrader.org>
+cc: Adam Langley <agl@imperialviolet.org>, LKML <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>
+Subject: Re: 2.6.25.6: warn_on_slowpath in tcp_input.c
+In-Reply-To: <20080701073833.GT16698@anguilla.noreply.org>
+Message-ID: <Pine.LNX.4.64.0807171744130.13775@wrl-59.cs.helsinki.fi>
+References: <20080630230954.GS16698@anguilla.noreply.org>
+ <396556a20806301656ydc44e3ey6deb229ab69904@mail.gmail.com>
+ <20080701073833.GT16698@anguilla.noreply.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1b7401870807170613y747baa7by158177047cc7e28@mail.gmail.com>
-	 <1b7401870807170634u14492a53k3931ddcddbd1e098@mail.gmail.com>
-	 <19f34abd0807170639p838d14blc9a13d2104313f38@mail.gmail.com>
-	 <20080717135746.GB14133@unused.rdu.redhat.com>
-	 <19f34abd0807170725p13e81e3dq4daad32ad2a83931@mail.gmail.com>
-	 <20080717141333.GC14133@unused.rdu.redhat.com>
-	 <19f34abd0807170735p5d2cba31kec3fb65c5b8c7b3f@mail.gmail.com>
-	 <20080717141655.GD14133@unused.rdu.redhat.com>
-	 <19f34abd0807170744r79e46a78odfcfbd67687d2ceb@mail.gmail.com>
-	 <20080717143332.GE14133@unused.rdu.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 4:33 PM, Josef Bacik <jbacik@redhat.com> wrote:
-> Ok run dumpe2fs -h on your image and see if you have a line that says
->
-> Errors behavior:          Continue
->
-> if you do run tune2fs -e remount-ro and then do the mount.  That would explain
-> why you are still having panics even though we should be aborting the journal.
-> Thanks,
+On Tue, 1 Jul 2008, Peter Palfrader wrote:
 
-Ahh, that probably explains it. I didn't realize there was such a thing.
+> On Mon, 30 Jun 2008, Adam Langley wrote:
+> 
+> > On Mon, Jun 30, 2008 at 4:09 PM, Peter Palfrader <peter@palfrader.org> wrote:
+> > > I've had 13 or so of them since upgrading the machine to a 2.6.25 kernel
+> > > 20 days ago.
+> > >
+> > > Linux saens 2.6.25.6-dl380 #2 SMP Tue Jun 10 17:54:44 CEST 2008 i686 GNU/Linux
+> >
+> > Which kernel was it running before?
+> 
+> It was running 2.6.22.17 (+ the splice fix) before that.
 
-I am doing random-corruption tests, so it is quite possible that this
-bit gets set anywhere along the road...
+Thanks for the report, I've been away for a while, thus the late response.
+Please update to get this relevant fix and some other TCP fixes (if you 
+haven't yet):
 
-But even so, is it correct that the kernel should crash? It seems
-quite possible that error behaviour can change (like this) even with
-"normal" corruption, e.g. outside my test scripts.
+ releases/2.6.25.7/tcp-fix-skb-vs-fack_count-out-of-sync-condition.patch
 
-But I cannot even run dumpe2fs on my image (even with -f switch):
+...If you still get them afterwards, please do rereport (and include me 
+as recipient :-)). ...I know there are couple of cases still after that 
+fix where TCP invariant checks trigger but they've been rare enough to 
+evade any of my debugging attempts (2.6.22.17 won't warn you anyway when 
+it breaks an invariant though I already know a handful violations that 
+do occur with it too but there's just plain silence because I only later 
+on added those warning).
 
-dumpe2fs: Bad magic number in super-block while trying to open disk
-
-
-
-Vegard
 
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+ i.
