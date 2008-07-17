@@ -1,81 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbYGQI2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755818AbYGQIbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755131AbYGQI2y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 04:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753229AbYGQI2q
+	id S1755818AbYGQIbX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 04:31:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbYGQIbO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 04:28:46 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:48609 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753112AbYGQI2o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 04:28:44 -0400
-Date: Thu, 17 Jul 2008 18:28:35 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Timothy Shimmin <tes@sgi.com>
-Cc: Christoph Hellwig <hch@lst.de>, xfs-masters@oss.sgi.com,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [xfs-masters] Re: linux-next: Tree for June 24 (XFS x2)
-Message-Id: <20080717182835.55405e63.sfr@canb.auug.org.au>
-In-Reply-To: <487ED7F2.3040505@sgi.com>
-References: <20080624175612.cdf29651.sfr@canb.auug.org.au>
-	<20080624171809.42bbdf68.randy.dunlap@oracle.com>
-	<20080625003751.GP29319@disturbed>
-	<20080627132317.GB23854@lst.de>
-	<20080716071922.GA16777@lst.de>
-	<487ED7F2.3040505@sgi.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	Thu, 17 Jul 2008 04:31:14 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51919 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752999AbYGQIbN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 04:31:13 -0400
+Date: Thu, 17 Jul 2008 01:30:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/23] tracehook
+Message-Id: <20080717013013.e3f7d7cf.akpm@linux-foundation.org>
+In-Reply-To: <20080717081121.DEB6015411D@magilla.localdomain>
+References: <20080717072541.F390E15411D@magilla.localdomain>
+	<20080717003959.edf6531c.akpm@linux-foundation.org>
+	<20080717081121.DEB6015411D@magilla.localdomain>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__17_Jul_2008_18_28_35_+1000_hPccPYELA=A9DKCS"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__17_Jul_2008_18_28_35_+1000_hPccPYELA=A9DKCS
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 17 Jul 2008 01:11:21 -0700 (PDT) Roland McGrath <roland@redhat.com> wrote:
 
-On Thu, 17 Jul 2008 15:26:10 +1000 Timothy Shimmin <tes@sgi.com> wrote:
->
-> Christoph Hellwig wrote:
-> > On Fri, Jun 27, 2008 at 03:23:17PM +0200, Christoph Hellwig wrote:
-> >> The tree is still messed up.  This original [XFS] commit is still ther=
-e,
-> >> but also a revert of it.  but no patch with the actual changes again (=
-?)
-> >>
-> >> Also my patch to switch to the generic xattr code is attributed to
-> >> Lachlan and appears twice in the commit list.  I think this whole git
-> >> tree needs to be regenerated.
-> >=20
-> > Could this please get fixed before the 2.6.27 pull?  The xfs.git tree
-> > now has Linus' latest changes pulled but this still doesn't look
-> > fixed up.
->=20
-> Yep, I believe Lachlan is planning to regenerate the xfs git tree before
-> the pull request.
+> > It's a strange time to be sending this.
+> 
+> I've never managed to understand how the timing of your cycles works
+> exactly, and I really just work on the "send it when you can" principle.
 
-When that happens, could you please make sure that the linux-next tree is
-updated as well ... I have had a couple of trees where what was merged to
-Linus did not match what is in linux-next - and that causes me no end of
-pain when I have to merge the two ...
+It's pretty simple - it's just piplining.  During the -rc's we
+accumulate stuff for the next release in linux-next and in -mm.  During
+the 2.6.x->2.6.x+1-rc1 merge window we transfer that material into
+mainline then the cycle starts again.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+So new code which turns up during the merge window is a problem.  It
+should be reviewed, integrated on top of the already-pending work and
+should get some testing in linux-next.  But during the patch-merging
+chaos nobody has the time or a suitable tree upon which to be doing
+that.
 
---Signature=_Thu__17_Jul_2008_18_28_35_+1000_hPccPYELA=A9DKCS
-Content-Type: application/pgp-signature
+> To be honest all I really know is that stuff is going in now, and that
+> I think this stuff of mine is ready to go.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Yes, but all the stuff which is going in now has been reviewed and has
+had testing in linux-next and/or -mm.  (In theory).
 
-iEYEARECAAYFAkh/ArMACgkQjjKRsyhoI8xRWQCfcz+yY6tObbYzrknUZ2UapMzT
-DBgAn1rYAsAyCL2H5xRIrIXR/bHyVkNG
-=s9sP
------END PGP SIGNATURE-----
+> > That being said, the impact on existing code is fairly modest and we
+> > could perhaps slip it into 2.6.27-rc1.  I haven't looked at it yet.
+> 
+> I really hope this can be merged in soon (for 2.6.27).  I do think its
+> impact is low.  The sooner this goes in, the sooner arch folks can round
+> out all their bits and the more time folks like me can spend on actually
+> making something new and interesting happen in this area.
+> 
+> I am happy to do whatever merging/rebasing work helps that happen the
+> soonest.  If there is a different GIT tree to branch a rebase from,
+> that is easy for me to do.
+> 
 
---Signature=_Thu__17_Jul_2008_18_28_35_+1000_hPccPYELA=A9DKCS--
+erk.
+
+Well I got it all merged up relatively easily but I don't know what it
+does and I haven't looked at it yet.
+
+It will take some urgent effort from reviewers and, it appears, arch
+maintainers to be able to get this over the line.  Even then it wom't
+have had any linux-next testing.  This should all have started weeks
+ago!
+
