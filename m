@@ -1,62 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932872AbYGQXJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932944AbYGQXJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932872AbYGQXJU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 19:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757100AbYGQXJJ
+	id S932944AbYGQXJm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 19:09:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760527AbYGQXJa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 19:09:09 -0400
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:42791 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754168AbYGQXJI (ORCPT
+	Thu, 17 Jul 2008 19:09:30 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:52308 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758781AbYGQXJ2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 19:09:08 -0400
-Date: Thu, 17 Jul 2008 17:09:05 -0600
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: ext3 on latest -git: BUG: unable to handle kernel NULL pointer
-	dereference at 0000000c
-In-reply-to: <20080717144342.GA15844@unused.rdu.redhat.com>
-To: Josef Bacik <jbacik@redhat.com>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>,
-       Josef Bacik <josef@toxicpanda.com>, linux-ext4@vger.kernel.org,
-       sct@redhat.com, akpm@linux-foundation.org,
+	Thu, 17 Jul 2008 19:09:28 -0400
+Subject: Re: latest -git: BUG at fs/jfs/namei.c:512 assert(ip->i_nlink)
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: jfs-discussion@lists.sourceforge.net,
        Johannes Weiner <hannes@saeurebad.de>, linux-kernel@vger.kernel.org
-Message-id: <20080717230905.GI6239@webber.adilger.int>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <19f34abd0807170639p838d14blc9a13d2104313f38@mail.gmail.com>
- <20080717135746.GB14133@unused.rdu.redhat.com>
- <19f34abd0807170725p13e81e3dq4daad32ad2a83931@mail.gmail.com>
- <20080717141333.GC14133@unused.rdu.redhat.com>
- <19f34abd0807170735p5d2cba31kec3fb65c5b8c7b3f@mail.gmail.com>
- <20080717141655.GD14133@unused.rdu.redhat.com>
- <19f34abd0807170744r79e46a78odfcfbd67687d2ceb@mail.gmail.com>
- <20080717143332.GE14133@unused.rdu.redhat.com>
- <19f34abd0807170800q13cc021dyed27c665c25ac520@mail.gmail.com>
- <20080717144342.GA15844@unused.rdu.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <19f34abd0807171135m4a3b39e6v4065ed676720ae46@mail.gmail.com>
+References: <19f34abd0807171135m4a3b39e6v4065ed676720ae46@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 17 Jul 2008 18:09:24 -0500
+Message-Id: <1216336164.32175.3.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jul 17, 2008  10:43 -0400, Josef Bacik wrote:
-> Yeah thats a hard to answer question, one that I will leave up to others
-> who have been doing this much longer than I.  My thought is remount-ro
-> is there to keep you from crashing, so if you have errors=continue then
-> you expect to live with the consequences.  Course if that bit gets flipped
-> via corruption thats not good either.
+On Thu, 2008-07-17 at 20:35 +0200, Vegard Nossum wrote:
+> Hi,
+> 
+> I got this on latest -git with an intentionally corrupted filesystem image:
+> 
+> BUG at fs/jfs/namei.c:512 assert(ip->i_nlink)
 
-It shouldn't cause the kernel to crash, but it should definitely return
-an error to the application.  This is probably one of the code paths
-that the Coverity folks were reporting on in FAST this year where on-disk
-errors are not propagated to the application.
+This assert shouldn't be here.  It would be better to handle this with
+jfs_error(), which will mark the superblock dirty, and take appropriate
+action.
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+> Full log at http://folk.uio.no/vegardno/linux/log-1216318656.txt, but
+> I think the preceding messages are just left-overs from previous
+> mount/remount attempts. I can test patches.
+
+How about this one?  So far, compile tested only.
+
+JFS: The kernel shouldn't trap when deleting a file with nlink == 0.
+
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+
+diff --git a/fs/jfs/namei.c b/fs/jfs/namei.c
+index 2aba823..10340be 100644
+--- a/fs/jfs/namei.c
++++ b/fs/jfs/namei.c
+@@ -508,33 +508,35 @@ static int jfs_unlink(struct inode *dip, struct dentry *dentry)
+ 		IWRITE_UNLOCK(ip);
+ 		goto out1;
+ 	}
+-
+-	ASSERT(ip->i_nlink);
+-
+ 	ip->i_ctime = dip->i_ctime = dip->i_mtime = CURRENT_TIME;
+ 	mark_inode_dirty(dip);
+ 
+-	/* update target's inode */
+-	inode_dec_link_count(ip);
++	if (ip->i_nlink == 0)
++		jfs_error(dip->i_sb, "jfs_unlink: i_nlink already zero");
++	else {
++		/* update target's inode */
++		inode_dec_link_count(ip);
+ 
+-	/*
+-	 *	commit zero link count object
+-	 */
+-	if (ip->i_nlink == 0) {
+-		assert(!test_cflag(COMMIT_Nolink, ip));
+-		/* free block resources */
+-		if ((new_size = commitZeroLink(tid, ip)) < 0) {
+-			txAbort(tid, 1);	/* Marks FS Dirty */
+-			txEnd(tid);
+-			mutex_unlock(&JFS_IP(ip)->commit_mutex);
+-			mutex_unlock(&JFS_IP(dip)->commit_mutex);
+-			IWRITE_UNLOCK(ip);
+-			rc = new_size;
+-			goto out1;
++		/*
++		 *	commit zero link count object
++		 */
++		if (ip->i_nlink == 0) {
++			assert(!test_cflag(COMMIT_Nolink, ip));
++			/* free block resources */
++			new_size = commitZeroLink(tid, ip);
++			if (new_size < 0) {
++				txAbort(tid, 1);	/* Marks FS Dirty */
++				txEnd(tid);
++				mutex_unlock(&JFS_IP(ip)->commit_mutex);
++				mutex_unlock(&JFS_IP(dip)->commit_mutex);
++				IWRITE_UNLOCK(ip);
++				rc = new_size;
++				goto out1;
++			}
++			tblk = tid_to_tblock(tid);
++			tblk->xflag |= COMMIT_DELETE;
++			tblk->u.ip = ip;
+ 		}
+-		tblk = tid_to_tblock(tid);
+-		tblk->xflag |= COMMIT_DELETE;
+-		tblk->u.ip = ip;
+ 	}
+ 
+ 	/*
+
+-- 
+David Kleikamp
+IBM Linux Technology Center
 
