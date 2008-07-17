@@ -1,114 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760821AbYGQSah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932209AbYGQSaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760821AbYGQSah (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 14:30:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758892AbYGQSa1
+	id S932209AbYGQSaw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 14:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758933AbYGQSa3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 14:30:27 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:2296 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757683AbYGQSaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 14:30:25 -0400
-Date: Thu, 17 Jul 2008 14:30:12 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-Cc: davem@davemloft.net, herbert@gondor.apana.org.au, nhorman@tuxdriver.com
-Subject: [PATCH] crypto: Cleaning some more minor nits in prng
-Message-ID: <20080717183012.GF17892@hmsendeavour.rdu.redhat.com>
+	Thu, 17 Jul 2008 14:30:29 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:35832 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758759AbYGQSa0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 14:30:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=XPkI8iR4hZ63PaD90ikkW9+ve8Q1dlIp9JiOSO+Eg4Vo8xUiKCVsAX2WwauT3c0Wsg
+         rcfDPC0aPiellUgxKFhedqXYNpZ58KndCcVpoRfcWneQHU2i0kcpzQYl9mwQGY7ysgPz
+         fQ+GYVgy5XipztT+6mX9SkOlDmWKJGthOj2dQ=
+Message-ID: <8bfdd4d60807171130h75ae940btc3f5bb05b81246f4@mail.gmail.com>
+Date: Thu, 17 Jul 2008 14:30:24 -0400
+From: "Jason mclaughlin" <mcjason@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: seems right on anyhow
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+a crude way to tell it maybe....
 
- Clean up a few more minor nits in the prng
-    
- Now that we use a plain cipher instead of a blkcipher, we don't need an iv
- anymore, so remove that parameter from the reset_prng_context function.  Make
- it instead with a legngth parameter, so that we can treat the key as a blob,
- rather than a string.  Also change the get_prng_bytes function to make nbytes
- a size_t, so we don't have to worry about signed math there
-    
- Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-
- prng.c |   11 +++++++----
- prng.h |    4 ++--
- 2 files changed, 9 insertions(+), 6 deletions(-)
-
-diff --git a/crypto/prng.c b/crypto/prng.c
-index 9e2d277..0b1831e 100644
---- a/crypto/prng.c
-+++ b/crypto/prng.c
-@@ -189,7 +189,7 @@ static int _get_more_prng_bytes(struct prng_context *ctx)
- }
- 
- /* Our exported functions */
--int get_prng_bytes(char *buf, int nbytes, struct prng_context *ctx)
-+int get_prng_bytes(char *buf, size_t nbytes, struct prng_context *ctx)
- {
- 	unsigned long flags;
- 	unsigned char *ptr = buf;
-@@ -284,7 +284,7 @@ struct prng_context *alloc_prng_context(void)
- 
- 	spin_lock_init(&ctx->prng_lock);
- 
--	if (reset_prng_context(ctx, NULL, NULL, NULL, NULL)) {
-+	if (reset_prng_context(ctx, NULL, DEFAULT_PRNG_KSZ, NULL, NULL)) {
- 		kfree(ctx);
- 		ctx = NULL;
- 	}
-@@ -302,7 +302,7 @@ void free_prng_context(struct prng_context *ctx)
- EXPORT_SYMBOL_GPL(free_prng_context);
- 
- int reset_prng_context(struct prng_context *ctx,
--		       unsigned char *key, unsigned char *iv,
-+		       unsigned char *key, size_t klen,
- 		       unsigned char *V, unsigned char *DT)
- {
- 	int ret;
-@@ -313,6 +313,9 @@ int reset_prng_context(struct prng_context *ctx,
- 
- 	prng_key = (key != NULL) ? key : (unsigned char *)DEFAULT_PRNG_KEY;
- 
-+	if (!key)
-+		klen = DEFAULT_PRNG_KSZ;
-+
- 	if (V)
- 		memcpy(ctx->V, V, DEFAULT_BLK_SZ);
- 	else
-@@ -339,7 +342,7 @@ int reset_prng_context(struct prng_context *ctx,
- 
- 	ctx->rand_data_valid = DEFAULT_BLK_SZ;
- 
--	ret = crypto_cipher_setkey(ctx->tfm, prng_key, strlen(prng_key));
-+	ret = crypto_cipher_setkey(ctx->tfm, prng_key, klen);
- 	if (ret) {
- 		dbgprint(KERN_CRIT "PRNG: setkey() failed flags=%x\n",
- 			crypto_cipher_get_flags(ctx->tfm));
-diff --git a/crypto/prng.h b/crypto/prng.h
-index 1ac9be5..a6ad203 100644
---- a/crypto/prng.h
-+++ b/crypto/prng.h
-@@ -15,10 +15,10 @@
- #define _PRNG_H_
- struct prng_context;
- 
--int get_prng_bytes(char *buf, int nbytes, struct prng_context *ctx);
-+int get_prng_bytes(char *buf, size_t nbytes, struct prng_context *ctx);
- struct prng_context *alloc_prng_context(void);
- int reset_prng_context(struct prng_context *ctx,
--			unsigned char *key, unsigned char *iv,
-+			unsigned char *key, size_t klen,
- 			unsigned char *V,
- 			unsigned char *DT);
- void free_prng_context(struct prng_context *ctx);
--- 
-/***************************************************
- *Neil Horman
- *nhorman@tuxdriver.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
+http://groups.google.com/group/comp.lang.c/msg/073812010e0516a4
