@@ -1,51 +1,42 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756722AbYGQIqD (ORCPT <rfc822;ralf@linux-mips.org>);
-	Thu, 17 Jul 2008 04:46:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbYGQIpw
+	id S1760535AbYGQRDl (ORCPT <rfc822;ralf@linux-mips.org>);
+	Thu, 17 Jul 2008 13:03:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756674AbYGQRDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 04:45:52 -0400
-Received: from ip83.conference8th.com ([76.76.120.83]:40375 "HELO
-	ip83.conference8th.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752981AbYGQIpw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 04:45:52 -0400
-Date: Thu, 17 Jul 2008 04:39:03 -0400
-From: "Michael Anderson" <michael_anderson@conference8th.com>
-To: linux-kernel@vger.kernel.org
-Subject: personal invitation 
+	Thu, 17 Jul 2008 13:03:31 -0400
+Received: from tomts37-srv.bellnexxia.net ([209.226.175.94]:48577 "EHLO
+	tomts37-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756309AbYGQRDa convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 13:03:30 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aht8ABYSf0jR4q/5/2dsb2JhbACJcoFAn14
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+X-Originating-IP: [81.199.172.184]
+From: Bmw Online Promo <sheilal@nb.sympatico.ca>
+Reply-To: bmw.claimsunit@btinternet.com
+Organization: Bmw Online Promo
+To: <info@bmw.com>
+Subject: Congratulations!
+Date: Thu, 17 Jul 2008 13:03:20 -0400
 MIME-Version: 1.0
-X-Mailer: uoz v8.3.3.1000.5359131
-Reply-To: r.425.5359131@conference8th.com
-Message-Id: <20080717034501.zrftuqcnyq@conference8th.com>
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Message-Id: <20080717170328.NFTP1724.tomts37-srv.bellnexxia.net@toip41-bus.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1756722AbYGQIqD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1760535AbYGQRDl@vger.kernel.org>
 
-thinking of going into hard money?
+Attn: We are please to inform You won the sum of =A3750,000.00 GBP and =
+BMW 5 Series Car in our Seasonal E-mail Programme Award.Fill the detail=
+s:Full Name,Country,Tel,Sex,Occupation Contact(bmw_claimsunit@btinterne=
+t.com)for claims
+Regards
 
-I would like to personally invite you to the largest national event on private money in the country. The contacts you will make will be priceless.
-
-Where? Hard Rock Hotel, Las Vegas - Nevada
-
-When? Nov 13th 2008
-
-Please go the link provided for addional information.
-
-http://biggestnationalevent.com/
-
-or call today: 858 736 7788 
-
-to be unsubscribed from our list please: 
-http://biggestnationalevent.com/bye/ or, send us a letter to: 
-PBMSII, 5451 Weuery Ave., La JoIIa, CA 92037
-
---------------------------------------------
-. 
-
-
-
-
-
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
+ in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
