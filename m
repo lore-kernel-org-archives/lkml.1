@@ -1,119 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758821AbYGQNOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759249AbYGQNPh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758821AbYGQNOl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 09:14:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbYGQNOd
+	id S1759249AbYGQNPh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 09:15:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754724AbYGQNP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 09:14:33 -0400
-Received: from mail.windriver.com ([147.11.1.11]:38238 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751941AbYGQNOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 09:14:32 -0400
-Message-ID: <487F45B8.4010708@windriver.com>
-Date: Thu, 17 Jul 2008 08:14:32 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
+	Thu, 17 Jul 2008 09:15:29 -0400
+Received: from cluster-g.mailcontrol.com ([208.87.233.190]:42251 "EHLO
+	cluster-g.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752339AbYGQNP3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 09:15:29 -0400
+Message-ID: <487F45C0.2080201@csr.com>
+Date: Thu, 17 Jul 2008 14:14:40 +0100
+From: David Vrabel <david.vrabel@csr.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-To: ZC Miao <hellwolf.misty@gmail.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Usage of kgdb in v2.6.26
-References: <1216245603.3664.29.camel@hellwolf-sony.freehell.org>
-In-Reply-To: <1216245603.3664.29.camel@hellwolf-sony.freehell.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Jul 2008 13:14:30.0195 (UTC) FILETIME=[0BE7C030:01C8E80F]
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: PCI: MSI interrupts masked using prohibited method
+References: <4860D09D.4060801@csr.com> <4864DA54.6000205@csr.com> <200806271007.26248.jbarnes@virtuousgeek.org> <200807161243.03360.jbarnes@virtuousgeek.org> <20080716195853.GL25255@parisc-linux.org>
+In-Reply-To: <20080716195853.GL25255@parisc-linux.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 17 Jul 2008 13:14:40.0723 (UTC) FILETIME=[122E3230:01C8E80F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Matthew Wilcox wrote:
+> On Wed, Jul 16, 2008 at 12:43:03PM -0700, Jesse Barnes wrote:
+>> On Friday, June 27, 2008 10:07 am Jesse Barnes wrote:
+>>> On Friday, June 27, 2008 5:17 am David Vrabel wrote:
+>>>> Jesse Barnes wrote:
+>>>>> On Tuesday, June 24, 2008 3:46 am David Vrabel wrote:
+>>>>>> PCI MSI interrupts are masked and unmasked using a method (by writing
+>>>>>> the MSI Enable capability bit) that is prohibited by the PCI
+>>>>>> specification.
+>>>>> Yeah, it's probably quite a bit slower too (I assume you're talking
+>>>>> about io_apic_64's msi_mask_irq).  Seems like masking this at the
+>>>>> ioapic level would make more sense anyway...
+>>>>>
+>>>>>> This behaviour can cause missed interrupts with some devices if the
+>>>>>> interrupt is asserted by the hardware while MSI is disabled.
+>>>>>>
+>>>>>> I believe the interrupt should be masked/unmasked on the interrupt
+>>>>>> controller (the APIC on x86, for example).   I'm going to test this
+>>>>>> now and see if it works.
+>>>> After further research it seems that MSI interrupts aren't routed via
+>>>> the IO-APIC, so this cannot be done.
+>>>>
+>>>> I think the only solution is to not perform any sort of masking and rely
+>>>> on the device driver being able to handle this.
+>>> On x86, they're targetted at the LAPIC block (see section 8 of the IA SDM);
+>>> maybe we could modify the message address or data such that it won't
+>>> generate an interrupt instead?  I think this latest approach is correct in
+>>> the sense that both the system and drivers have to take care that
+>>>   1) we don't miss interrupts, and
+>>>   2) we don't generate spurious unhandled interrupts (as might happen if we
+>>> disable MSI and the device generates a legacy IRQ on a different vector).
+>>>
+>>> But it looks like the real problem is in the system interrupt code that
+>>> handles MSIs.  We should only be disabling MSIs using the capability bit at
+>>> device enable or disable time, not during the normal course of interrupt
+>>> handling, since if we do we may miss device interrupts or have them routed
+>>> to the wrong (legacy) vector.
+>>>
+>>> Cc'ing Ingo & Thomas since they know the core interrupt code pretty well.
+>> Ingo or Matthew, any ideas about this?  The fundamental issue is that if we go 
+>> poke at a device's MSI cap bits during interrupt handling, the device may 
+>> start using regular IRQs instead, potentially on a different vector.  It 
+>> would be good if we could come up with a better way of masking MSIs during 
+>> handling...
+> 
+> OK, I didn't see the initial report, but I've looked at the PCI MSI
+> masking a little bit due to the multiple MSI work.
+> 
+> The first thing is that some MSI implementations permit masking on the
+> PCI device.  That's handled through the
+> 
+>                 if (entry->msi_attrib.maskbit) {
+> 
+> part of msi_set_mask_bits() in drivers/pci/msi.c.
+> 
+> David's clearly talking about devices which don't support mask bits.
+> For these devices, we call
+>                         msi_set_enable(entry->dev, !flag);
+> 
+> which turns off the PCI_MSI_FLAGS_ENABLE bit.  I'm not sure I see the
+> bit in the PCI spec that says devices are then allowed to ignore the
+> Interrupt Disable bit in the device control register, but I concede such
+> devices may be out there.
 
+>From the PCI spec:
 
-Do you have CONFIG_DEBUG_RODATA=y in your kernel config?
+"This bit disables the device/function from asserting INTx#. A value of
+0 enables the assertion of its INTx# signal. A value of 1 disables the
+assertion of its INTx# signal. This bit’s state after RST# is 0. Refer
+to Section 6.8.1.3 for control of MSI."
 
-There is a presently a known problem where breakpoints will silently
-fail to plant when this is turned on.
+So the interrupt disable bit is only for the line interrupts, and not MSI.
 
-Jason.
+> We have some infrastructure for resending IRQs, so we could soft-mask an
+> MSI and resend it when the irq is unmasked, if it has triggered.
 
-ZC Miao wrote:
-> I tried to use the kgdb from v2.6.26, but met few problems.
-> I use :
-> 1. gdb 6.8 (gdb-6.8-11.fc9.i386)
-> 2. kernel v2.6.26 source code
-> 3. Qemu 0.9.1 (qemu-0.9.1-5.fc9.i386)
-> 4. Host is : 2.6.25.10-86.fc9.i686
-> 5. Cpu : Intel(R) Core(TM)2 Duo CPU     T5450  @ 1.66GHz
->
->
-> * Firstly I compile kernel 2.6.26 with kgdb support :
-> CONFIG_KGDB=y
-> CONFIG_KGDB_SERIAL_CONSOLE=y
->
-> * Then I use qemu to boot my kernel along with a rootfs that I created,
-> with a qemu option that makes a local tcp port a listening service as a
-> serial port for the emulated system. The kernel arguments I gave is :
-> nfsroot=192.168.200.1:/path/to/rootfs,udp,nolock ip=dhcp root=/dev/nfs
-> ro single kgdboc=ttyS0,115200 kgdbwait
->
-> * After the kernel loaded and boot for a while, the gdb receives a
-> signal and hangs the kernel :
-> kgdb_register_io_module (new_kgdb_io_ops=<value optimized out>)
->     at /data/home/hellwolf/mydoc/prog/linux/linux-2.6/kernel/kgdb.c:1674
-> (gdb) 
->
-> Question 1 :
-> * If I type "b sys_read", and then "c", the kernel continues until I
-> get :
->
-> ---------------------------------------------------------------
-> [New Thread 1]
-> Cannot remove breakpoints because program is no longer writable.
-> It might be running in another process.
-> Further execution is probably impossible.
->
-> Breakpoint 1, sys_read (fd=3, buf=0xbfdb31dc "", count=512)
->
-> at /data/home/hellwolf/mydoc/prog/linux/linux-2.6/fs/read_write.c:360
-> (gdb) 
-> ---------------------------------------------------------------
->
-> Why "program is no longer writable" happens here?
->
-> Question 2 :
-> * If I directly type "c" when kgdbwait triggered. And use Sys-Rq+G to
-> interrupt the kernel, I will get :
-> ---------------------------------------------------------------
-> [New Thread -1]
->
-> Program received signal SIGTRAP, Trace/breakpoint trap.
-> [Switching to Thread -1]
-> sysrq_handle_gdb (key=103, tty=0xc78f6400)
->     at /data/home/hellwolf/mydoc/prog/linux/linux-2.6/kernel/kgdb.c:167
-> (gdb)  
-> ---------------------------------------------------------------
-> Here if I type "c sys_read" and "c", it never actually makes any break
-> points, I will never receive a break from gdb.
->
->
-> I don't know if I made anything wrong, or I missed any important thing,
-> so I post here and would like to get some help from you.
->
-> Thanks. 
->
-> --
-> ZC Miao (hellwolf.misty@gmail.com)
-> Blog http://hellwolf.cublog.cn
->
-> gpg --keyserver pgp.mit.edu --recv-key 0x6B174C6F
->
-> Most people deserve each other.
-> 		-- Shirley
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->   
+Is this really necessary?  Any PCI device with MSI that doesn't have the
+hardware MSI mask bits must have some sort of device specific
+handshaking for managing when MSIs can be generated.
 
+Regardless, doesn't __do_IRQ() handle this already anyway?
+
+David
+-- 
+David Vrabel, Senior Software Engineer, Drivers
+CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
+Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
