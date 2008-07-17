@@ -1,93 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760620AbYGQAt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760088AbYGQAxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760620AbYGQAt7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 20:49:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760253AbYGQAtn
+	id S1760088AbYGQAxv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 20:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752227AbYGQAxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 20:49:43 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:28746 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760544AbYGQAtk (ORCPT
+	Wed, 16 Jul 2008 20:53:43 -0400
+Received: from relais.videotron.ca ([24.201.245.36]:42577 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751427AbYGQAxm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 20:49:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Y5pzmfjhIY05sbqIJJwN8eUfsE+tdExr23C2Kxn1TGG5jYS260wIv4VqEYIGGJghY6
-         ZY1XHoLlcQyCn/6FS1mNg3/5lR+a72Afs2O0yMkaGyIGZ/5CVRQXHahaDn4uZzWwPURe
-         0O0royGcdec0LQ0K7dNgWJDQBbIKdmSjLkCr0=
-Message-ID: <86802c440807161749u2f5c1eben618e05c6e254fedd@mail.gmail.com>
-Date: Wed, 16 Jul 2008 17:49:39 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Jack Howarth" <howarth@bromo.msbb.uc.edu>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
-In-Reply-To: <20080717004004.GA17792@bromo.msbb.uc.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080716012427.GA27398@bromo.msbb.uc.edu>
-	 <20080716035830.GA27935@bromo.msbb.uc.edu>
-	 <dd18b0c30807152230u39ef9c18v78b48d1c7b9ddd17@mail.gmail.com>
-	 <86802c440807160044ge504cacl419b6cbcad5f0f9d@mail.gmail.com>
-	 <dd18b0c30807160050r5b10908fiffc2a4b464abe5f3@mail.gmail.com>
-	 <86802c440807160136m6af981b2u6a37cabb8e33a629@mail.gmail.com>
-	 <20080716140810.GA2861@bromo.msbb.uc.edu>
-	 <86802c440807161029n7e0dac98x1ec260879204b6f0@mail.gmail.com>
-	 <86802c440807161535n3a4d6891n6f7c16bd4e1f19c3@mail.gmail.com>
-	 <20080717004004.GA17792@bromo.msbb.uc.edu>
+	Wed, 16 Jul 2008 20:53:42 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Message-id: <487E9815.6060803@gmail.com>
+Date: Wed, 16 Jul 2008 20:53:41 -0400
+From: Marc Dionne <marc.c.dionne@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+To: eparis@redhat.com, LKML <linux-kernel@vger.kernel.org>
+Subject: /proc/mounts unreadable - bisected
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 16, 2008 at 5:40 PM, Jack Howarth <howarth@bromo.msbb.uc.edu> wrote:
-> On Wed, Jul 16, 2008 at 03:35:17PM -0700, Yinghai Lu wrote:
->> please check latest linus tree.
->>
->> the commit could be related.
->>
->> commit c91d924e3af08d4f98eab6ebf81f2b8ce132448f
->> Author: Bob Moore <robert.moore@intel.com>
->> Date:   Tue Jun 10 12:38:10 2008 +0800
->>
->>     ACPICA: Fix for hang on GPE method invocation
->>
->>     Fixes problem where the new method argument count validation mechanism
->>     will enter an infinite loop when a GPE method is dispatched.
->>     Problem fixed be removing the obsolete code that passes GPE block
->>     information to the notify handler via the control method parameter pointer.
->>
->> YH
->
-> Yinghai,
->   The latest linus tree doesn't eliminate the hangs in 2.6.26 with your
-> mmconfig patch. Also, I've been unable to repeat the boot with pci=noacpi using
-> the mmconfig patch under 2.6.26. I've uploaded a dmesg file though from
-> the 2.6.25.10 kernel booted with apic=verbose in case that sheds any light
-> on these problems.
->
-> http://bugzilla.kernel.org/show_bug.cgi?id=11087
->
-> Also, I assume you meant earlier that is bad that with your mmconfig patch
-> that I only see 0 - 63 buses. Any idea how we might fix that (in case it
-> is related to the hang)?
+With current git, /proc/mounts is unreadable on my system, with any attempts to 
+read it returning EINVAL.  This breaks many init scripts, among other things.
 
-please boot with
-debug initcall_debug apic=verbose pci=routeirq?
+I bisected it down to this commit:
 
-and try pci=nommconf
+commit 2069f457848f846cb31149c9aa29b330a6b66d1b
+Author: Eric Paris <eparis@redhat.com>
+Date:   Fri Jul 4 09:47:13 2008 +1000
 
-I suspect that could be pci bridge is using 0xf0000000-0xf400000 too
-after Linus merge pci tree, please try to boot with
-pci=early_config_dump
-to see if it is true.
+     LSM/SELinux: show LSM mount options in /proc/mounts
 
-please don't drop the cc list.
+     This patch causes SELinux mount options to show up in /proc/mounts.  As
+     with other code in the area seq_put errors are ignored.  Other LSM's
+     will not have their mount options displayed until they fill in their own
+     security_sb_show_options() function.
 
-YH
+In my case, selinux_get_mnt_opts() never gets very far because 
+sbsec->initialized never becomes true, and the function systematically returns 
+EINVAL which is then passed back up to the reader of /proc/mounts.
+
+Changing show_sb_opts() to always return 0 (it was a void function before this 
+commit) makes the system behave normally.
+
+Now it's possible that my selinux config is hosed - I have it enabled in 
+permissive mode but I don't pay much attention to it - but the failure mode in 
+that case should probably be more graceful.  Seems like it would be better to 
+print out the available mount info minus the LSM options than to bail out 
+completely?
+
+Thanks,
+Marc
