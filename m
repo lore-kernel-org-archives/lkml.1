@@ -1,75 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932194AbYGQTRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932171AbYGQTTQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932194AbYGQTRu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 15:17:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757378AbYGQTRl
+	id S932171AbYGQTTQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 15:19:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758871AbYGQTTD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 15:17:41 -0400
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:53764 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758691AbYGQTRk (ORCPT
+	Thu, 17 Jul 2008 15:19:03 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:20113 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755050AbYGQTTA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 15:17:40 -0400
-Message-ID: <487F9ACB.3080109@linux.vnet.ibm.com>
-Date: Thu, 17 Jul 2008 14:17:31 -0500
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080515)
+	Thu, 17 Jul 2008 15:19:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=H+7+ouXpd3XsZ1mTreAADYl/mf22KmSWWM5gFEntbHSzok0/tG9fqbHl9qSTUGlNzO
+         2j/4pkeBMDtG7IbaPVJMdI2lbA/UAYHw3t/D3A6s1tyJGLjVjL4LOM4FcAX0TzHLul2u
+         OkbVVyBXqnE3Wg5T46hSdD0Um9Bey+pojwtm4=
+Message-ID: <19f34abd0807171218u3de86ddbt506b0b4fa0548406@mail.gmail.com>
+Date: Thu, 17 Jul 2008 21:18:59 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Eric Sandeen" <sandeen@redhat.com>
+Subject: Re: latest -git: kernel BUG at fs/xfs/support/debug.c:54!
+Cc: "Tim Shimmin" <xfs-masters@oss.sgi.com>, xfs@oss.sgi.com,
+       linux-kernel@vger.kernel.org, "Johannes Weiner" <hannes@saeurebad.de>
+In-Reply-To: <487F980F.7070708@redhat.com>
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [mmtom][BUGFIX] vmscan-second-chance-replacement-for-anonymous-pages-fix.patch
-References: <20080717122751.92525032.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080717122751.92525032.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <19f34abd0807171046j425bebc6m8d8eb80a641e0e5b@mail.gmail.com>
+	 <487F980F.7070708@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> Under memcg, active anon tend not to go to inactive anon.
-> This will cause OOM in memcg easily when tons of anon was used at once.
-> This check was lacked in split-lru.
-> 
-> This patch is a fix agaisnt
-> vmscan-second-chance-replacement-for-anonymous-pages.patch
-> 
-> 
-> Changelog: v1 -> v2:
->  - avoid adding "else".
-> 
-> Signed-off-by:KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Acked-by: Rik van Riel <riel@redhat.com>
-> 
->  mm/vmscan.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: mmtom-stamp-2008-07-15-15-39/mm/vmscan.c
-> ===================================================================
-> --- mmtom-stamp-2008-07-15-15-39.orig/mm/vmscan.c
-> +++ mmtom-stamp-2008-07-15-15-39/mm/vmscan.c
-> @@ -1351,7 +1351,7 @@ static unsigned long shrink_zone(int pri
->  	 * Even if we did not try to evict anon pages at all, we want to
->  	 * rebalance the anon lru active/inactive ratio.
->  	 */
-> -	if (scan_global_lru(sc) && inactive_anon_is_low(zone))
-> +	if (!scan_global_lru(sc) || inactive_anon_is_low(zone))
->  		shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
-> 
->  	throttle_vm_writeout(sc->gfp_mask);
+On Thu, Jul 17, 2008 at 9:05 PM, Eric Sandeen <sandeen@redhat.com> wrote:
+>> Hi,
+>>
+>> I got this with an intentionally corrupted filesystem:
+>>
+>> Filesystem "loop1": Disabling barriers, not supported by the underlying device
+>> XFS mounting filesystem loop1
+>> Ending clean XFS mount for filesystem: loop1
+>> Device loop1 - bad inode magic/vsn daddr 9680 #30 (magic=4946)
+>> ------------[ cut here ]------------
+>> kernel BUG at fs/xfs/support/debug.c:54!
+>
+> running a debug XFS will turn all sorts of tests into panics that would
+> not otherwise crash and burn that way.
+>
+> I think normally when testing intentionally corrupted filesystems, you
+> expect corruptions to be handled gracefully.  But in xfs's flavor of
+> debug, I'm not sure it's quite as true.
+>
+> Perhaps the debug variant should not BUG() on disk corruption either,
+> but it'd probably be more relevent to test this on a non-debug build.
+>
+> Does this corrupted fs survive better on non-debug xfs?
 
-I have not seen this, but looks good to me
+Thanks, you are right. I have adjusted my configuration, but I am
+still able to produce this:
 
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+BUG: unable to handle kernel paging request at b62a66e0
+IP: [<c030ef88>] xfs_alloc_fix_freelist+0x28/0x490
+*pde = 00000000
+Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
+Pid: 4174, comm: rm Not tainted (2.6.26-03414-g33af79d #44)
+EIP: 0060:[<c030ef88>] EFLAGS: 00210296 CPU: 0
+EIP is at xfs_alloc_fix_freelist+0x28/0x490
+EAX: f63e8830 EBX: f490a000 ECX: f48e8000 EDX: b62a66e0
+ESI: 00000000 EDI: f48e9d8c EBP: f48e9d6c ESP: f48e9ccc
+ DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+Process rm (pid: 4174, ti=f48e8000 task=f63d5fa0 task.ti=f48e8000)
+Stack: 00000000 f63e8ac0 f63d5fa0 f63d64cc 00000002 00000000 f63d5fa0 f63e8830
+       b62a66e0 f490a000 f73a3e10 c0b57c78 f49f2be0 c0ce8048 f49f24c0 00200046
+       00000002 f48e9d20 c015908e f48e9d20 c01590cd f48e9d50 00200246 f63d6010
+Call Trace:
+ [<c015908e>] ? get_lock_stats+0x1e/0x50
+ [<c01590cd>] ? put_lock_stats+0xd/0x30
+ [<c030f453>] ? xfs_free_extent+0x63/0xd0
+ [<c074955b>] ? down_read+0x5b/0x80
+ [<c030f470>] ? xfs_free_extent+0x80/0xd0
+ [<c0361f1a>] ? kmem_zone_alloc+0x7a/0xc0
+ [<c0361f1a>] ? kmem_zone_alloc+0x7a/0xc0
+ [<c03201ca>] ? xfs_bmap_finish+0x13a/0x180
+ [<c03428d8>] ? xfs_itruncate_finish+0x1b8/0x400
+ [<c035fa2b>] ? xfs_inactive+0x3bb/0x4e0
+ [<c036b87a>] ? xfs_fs_clear_inode+0x8a/0xe0
+ [<c01b962c>] ? clear_inode+0x7c/0x160
+ [<c01b9c2e>] ? generic_delete_inode+0x10e/0x120
+ [<c01b9d67>] ? generic_drop_inode+0x127/0x180
+ [<c01b8be7>] ? iput+0x47/0x50
+ [<c01af1bc>] ? do_unlinkat+0xec/0x170
+ [<c0430938>] ? trace_hardirqs_on_thunk+0xc/0x10
+ [<c0104174>] ? restore_nocheck_notrace+0x0/0xe
+ [<c0430938>] ? trace_hardirqs_on_thunk+0xc/0x10
+ [<c015ad76>] ? trace_hardirqs_on_caller+0x116/0x170
+ [<c01af383>] ? sys_unlinkat+0x23/0x50
+ [<c010407f>] ? sysenter_past_esp+0x78/0xc5
+ =======================
+Code: 8d 76 00 55 89 e5 57 89 c7 56 53 81 ec 94 00 00 00 8b 1f 89 95
+70 ff ff ff 8b 57 0c 8b 40 04 89 5d 84 89 55 80 89 85 7c ff ff ff <80>
+3a 00 0f 84 e7 02 00 00 c7 45 f0 00 00 00 00 8b 55 80 80 7a
+EIP: [<c030ef88>] xfs_alloc_fix_freelist+0x28/0x490 SS:ESP 0068:f48e9ccc
+Kernel panic - not syncing: Fatal exception
+
+(Full log at http://folk.uio.no/vegardno/linux/log-1216322418.txt has
+some more details.)
+
+
+Vegard
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
