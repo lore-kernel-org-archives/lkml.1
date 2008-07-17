@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932109AbYGQScU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757966AbYGQSdY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932109AbYGQScU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 14:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbYGQScH
+	id S1757966AbYGQSdY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 14:33:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758169AbYGQSdO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 14:32:07 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49422 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756566AbYGQScF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 14:32:05 -0400
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
-Subject: Re: [RFC] systemtap: begin the process of using proper kernel APIs 	(part1: use kprobe symbol_name/offset instead of address)
-References: <1216146802.3312.95.camel@localhost.localdomain>
-	<487E78ED.30804@redhat.com>
-	<1216249383.3358.69.camel@localhost.localdomain>
-	<487E8CE4.70105@redhat.com>
-	<1216259391.3358.85.camel@localhost.localdomain>
-	<1216304290.5515.11.camel@localhost.localdomain>
-	<1216313914.5515.25.camel__21144.9282979176$1216314027$gmane$org@localhost.localdomain>
-From: fche@redhat.com (Frank Ch. Eigler)
-Date: Thu, 17 Jul 2008 14:30:36 -0400
-In-Reply-To: <1216313914.5515.25.camel__21144.9282979176$1216314027$gmane$org@localhost.localdomain> (James Bottomley's message of "Thu, 17 Jul 2008 11:58:34 -0500")
-Message-ID: <y0m7ibkjrcj.fsf@ton.toronto.redhat.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Thu, 17 Jul 2008 14:33:14 -0400
+Received: from 206-248-169-182.dsl.ncf.ca ([206.248.169.182]:39680 "EHLO
+	phobos.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757604AbYGQSdM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 14:33:12 -0400
+Date: Thu, 17 Jul 2008 14:33:11 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Guy Martin <gmsoft@tuxicoman.be>
+Cc: linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org
+Subject: Re: 64bit kernel not booting with CONFIG_PRINTK_TIME=y
+Message-ID: <20080717183311.GA17111@phobos.i.cabal.ca>
+References: <20080716204552.56270e7c@tuxicoman.be> <20080716185627.GC22716@phobos.i.cabal.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080716185627.GC22716@phobos.i.cabal.ca>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley <James.Bottomley@HansenPartnership.com> writes:
+On Wed, Jul 16, 2008 at 02:56:27PM -0400, Kyle McMartin wrote:
+> On Wed, Jul 16, 2008 at 08:45:52PM +0200, Guy Martin wrote:
+> > 
+> > This is the output of my L2000 when trying to do so :
+> > 
+> > Information: No console specified on kernel command line. This is
+> > normal. PALO will choose the console currently used by firmware
+> > (serial). Command line for kernel: 'root=/dev/md1 console=ttyS0
+> > palo_kernel=2/vmlinux' Selected kernel: /vmlinux from partition 2
+> > ELF64 executable
+> > Entry 00100000 first 00100000 n 2
+> > Segment 0 load 00100000 size 4997120 mediaptr 0x1000
+> > Segment 1 load 00634000 size 640576 mediaptr 0x4c5000
+> > Branching to kernel entry point 0x00100000.  If this is the last
+> > message you see, you may need to switch your console.  This is
+> > a common symptom -- search the FAQ and mailing list at parisc-linux.org
+> > 
+> 
 
-> [...]
-> Just by way of illustration, this is systemtap fixed up according to
-> suggestion number 1.  You can see now using your test case that we get:
->
-> # probes
-> kernel.function("do_open@fs/block_dev.c:929") /* pc=<lookup_bdev+0x90> */ /* <- kernel.function("do_open") */
-> kernel.function("do_open@fs/nfsctl.c:24") /* pc=<sys_nfsservctl+0x6a> */ /* <- kernel.function("do_open") */
-> kernel.function("do_open@ipc/mqueue.c:642") /* pc=<sys_mq_unlink+0x130> */ /* <- kernel.function("do_open") */
-> [...]
+How about if you boot with printk_time=0, whilst CONFIG_PRINTK_TIME=y?
 
-Can you explain in detail how you believe this is materially
-different from offsetting from _stext?
-
-- FChE
+r, Kyle
