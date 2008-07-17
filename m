@@ -1,86 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761089AbYGQWUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932170AbYGQWXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761089AbYGQWUg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 18:20:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757828AbYGQWU1
+	id S932170AbYGQWXS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 18:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757157AbYGQWXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 18:20:27 -0400
-Received: from isilmar.linta.de ([213.133.102.198]:52823 "EHLO linta.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755363AbYGQWU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 18:20:26 -0400
-Date: Fri, 18 Jul 2008 00:20:24 +0200
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: Jason Baron <jbaron@redhat.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, joe@perches.com, nick@nick-andrew.net,
-       randy.dunlap@oracle.com
-Subject: Re: [PATCH 6/7] dynamic debug v2 - convert cpufreq
-Message-ID: <20080717222024.GA21960@isilmar.linta.de>
-Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
-	Jason Baron <jbaron@redhat.com>, Greg KH <greg@kroah.com>,
-	linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-	joe@perches.com, nick@nick-andrew.net, randy.dunlap@oracle.com
-References: <20080715213613.GG23331@redhat.com> <20080715230731.GA15208@isilmar.linta.de> <20080717210531.GA13252@redhat.com> <20080717211531.GA16569@kroah.com> <20080717214651.GC13252@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080717214651.GC13252@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 17 Jul 2008 18:23:07 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:20686 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756220AbYGQWXG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 18:23:06 -0400
+Date: Thu, 17 Jul 2008 15:21:31 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for July 17 (sysctl/syscall)
+Message-Id: <20080717152131.13ada1fc.randy.dunlap@oracle.com>
+In-Reply-To: <20080718012842.690b8346.sfr@canb.auug.org.au>
+References: <20080718012842.690b8346.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 05:46:51PM -0400, Jason Baron wrote:
-> Then why not just put the
-> > _cpufreq.h stuff in the current cpufreq.h file(s)?
-> > 
-> 
-> 1) cpufreq.h is included by other subsystems, and thus those other subsystems
-> potentially have the wrong debugging information.
 
-...
+Who is making patches to kernel/sysctl.c ?
 
-> If we could pull the subsystem specific header in dynamic_printk.h for each 
-> subsytem that would do the trick and be really clean, but i'm not sure of an
-> easy way to do that...
+With
+CONFIG_SYSCTL=y
+# CONFIG_SYSCTL_SYSCALL is not set
 
-<within all cpufreq drivers>
-#define DYNAMIC_DEBUG_CPU_FREQ 1
+linux-next-20080717 produces:
 
-<dynamic_printk.h>
-#ifdef DYNAMIC_DEBUG_CPU_FREQ
-#define DYNAMIC_DEBUG_NUM_FLAGS "3"
-...
-#else
-...
-...
-#endif
+linux-next-20080717/kernel/sysctl.c:2970: error: redefinition of 'setup_sysctl_set'
+linux-next-20080717/kernel/sysctl.c:1963: error: previous definition of 'setup_sysctl_set' was here
+
+because one definition of it is bounded by CONFIG_SYSCTL and another definition
+of it is bounded by CONFIG_SYSCTL_SYSCALL... :(
 
 
-or -- even better -- could we determine the definition of
-DYNAMIC_DEBUG_CPU_FREQ on the fly? It needs to be set to true for exactly all
-"modules" which contain a call to cpufreq_debug_printk()...
-
-> 2) For the case where CONFIG_CPU_FREQ_DEBUG is set and 
-> CONFIG_DYNAMIC_PRINTK_DEBUG is not set i need to be able get the proper
-> definition of 'dynamic_dbg_enabled()' out of dynamic_print.h (included by
-> kernel.h). This proper definition is obtained by setting 'DEBUG', and
-> thus i need to define this before the kernel.h include. 
-> 
-> We can solve #2 by defining an explicit definition for dynamic_dbg_enabled() 
-> when only CONFIG_CPU_FREQ_DEBUG within cpufreq.h. roughly:
-> 
-> #ifdef CONFIG_CPU_FREQ_DEBUG
-> #define cpufreq_debug_printk(flag) 
-> 	if (cpufreq_debug & flag)
-> 		 __cpufreq_debug_printk()
-> 
-> However, the way i have it now I don't need two definitions for 
-> cpufreq_debug_printk....
-
-Not that much of a nuiseance, IMO. Or SELECT CONFIG_DYNAMIC_PRINTK_DEBUG
-when CONFIG_CPU_FREQ_DEBUG is enabled (if davej agrees ;) )
-
-Best,
-	Dominik
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
