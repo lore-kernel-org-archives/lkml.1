@@ -1,64 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759801AbYGQSxI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932389AbYGQSxc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759801AbYGQSxI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 14:53:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759671AbYGQSwZ
+	id S932389AbYGQSxc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 14:53:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760519AbYGQSxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 14:52:25 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:57343 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759231AbYGQSwX (ORCPT
+	Thu, 17 Jul 2008 14:53:05 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:2628 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932351AbYGQSxC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 14:52:23 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: sukadev@us.ibm.com
-Cc: Daniel Hokka Zakrisson <daniel@hozac.com>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, xemul@openvz.org,
-       oleg@tv-sign.ru, akpm@linux-foundation.org, ebiederm@xmission.com
-References: <487F5D6B.1090007@hozac.com> <20080717181313.GA2289@us.ibm.com>
-Date: Thu, 17 Jul 2008 11:46:23 -0700
-In-Reply-To: <20080717181313.GA2289@us.ibm.com> (sukadev@us.ibm.com's message
-	of "Thu, 17 Jul 2008 11:13:13 -0700")
-Message-ID: <m1mykgtklc.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 17 Jul 2008 14:53:02 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5340"; a="4809693"
+Message-ID: <487F9509.9050802@qualcomm.com>
+Date: Thu, 17 Jul 2008 11:52:57 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: *****;sukadev@us.ibm.com
-X-Spam-Relay-Country: 
-X-Spam-Report: *  7.0 XM_URI_RBL URI's domain appears in surbl.xmission.com
-	*      [URIs: linux-foundation.org]
-	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.2 BAYES_40 BODY: Bayesian spam probability is 20 to 40%
-	*      [score: 0.2780]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 1/2] signals: kill(-1) should only signal processes in the same namespace
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+To: Gregory Haskins <ghaskins@novell.com>
+CC: a.p.zijlstra@chello.nl, mingo@elte.hu, dmitry.adamushko@gmail.com,
+       torvalds@linux-foundation.org, pj@sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cpu hotplug, sched: Introduce	cpu_active_map	and	redoscheddomain
+ managment (take 2)
+References: <1216122229-4865-1-git-send-email-maxk@qualcomm.com> <487DAD86.BA47.005A.0@novell.com> <487E6BD7.3020006@qualcomm.com> <487E7B6C.BA47.005A.0@novell.com> <487EF1E9.2040101@qualcomm.com> <487EFB71.BA47.005A.0@novell.com>
+In-Reply-To: <487EFB71.BA47.005A.0@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sukadev@us.ibm.com writes:
->
+Gregory Haskins wrote:
+>>>> On Thu, Jul 17, 2008 at  3:16 AM, in message <487EF1E9.2040101@qualcomm.com>,
+> Max Krasnyansky <maxk@qualcomm.com> wrote: 
+> 
+>> Gregory Haskins wrote:
+>>> Well, admittedly I am not entirely clear on what problem is being solved as
+>>> I was not part of the original thread with Linus.  My impression of what you
+>>> were trying to solve was to eliminate the need to rebuild the domains for a
+>>> hotplug event (which I think is a good problem to solve), thus eliminating
+>>> some complexity and (iiuc) races there.
+>>>
+>>> However, based on what you just said, I am not sure I've got that entirely
+>>> right anymore.  Can you clarify the intent (or point me at the original 
+>> thread)
+>>> so we are on the same page?
+>> Here is the link to the original thread
+>> 	http://lkml.org/lkml/2008/7/11/328
+>> And here is where Linus explained the idea
+>> 	http://lkml.org/lkml/2008/7/12/137
+>>
+>> I'll reply to the rest of your email tomorrow (can't keep my yes open any
+>> longer :)).
+>>
+>> Max
+> 
+> Hi Max,
+>   Thanks for the pointers.  I see that I did indeed misunderstand the intent of the patch.
+> It seems you already solved the rebuild problem, and were just trying to solve the
+> "migrate to a dead cpu" problem that Linus mentions as a solution with cpu_active_map.
+Yes. btw they are definitely related, because the reason we were blowing away
+the domains is to avoid "migration to a dead cpu". ie We were relying on the
+fact that domain masks never contain cpus that are either dying or already dead.
 
-> Like Pavel said, we had couple of attempts to fix the larger problem of
-> signal semantics in containers but did not have a consensus on handling
-> blocked/unhandled signals to container-init.
+> In that case, note that rq->rd->online already fits the bill, I believe.  In a nutshell,
+> rq->rd->span contains all the cpus within your disjoint cpuset, and rq->rd->online,
+> contains the subset of rq->rd->span that are online.  The online bit is cleared at the
+> earliest point in cpu hotplug removal (DYING), and it is set at the very latest point on
+> insertion (ONLINE).  Therefore it is redundant with the cpus_active_map concept.
+> 
+> I think the simplest solution is to make sure that we cpus_and against rq->rd->online
+> before allowing a migration.  This is how I intended the mask to be used, anyway.  Its
+> what the RT scheduler does.  It sounds like we just need to touch up the few places
+> in the CFS side that were causing those oops.
+> 
+> Thoughts?
+None at this point :). I need to run right now and will try to look at this
+later today. My knowledge of the internal sched structs is definitely lacking
+so I need to look at the rq->rd thing to have and opinion.
 
-Oh.  I thought we were pretty close then I or somebody ran out of steam.
+Thanx
+Max
 
-> It would still be good to fix this "kill -1" problem.
->
-> Eric had a slightly optimized interface, 'pid_in_pid_ns()' in following
-> patchset. Maybe we could use that ?
->
-> https://lists.linux-foundation.org/pipermail/containers/2007-December/009174.html
-
-Eric
 
