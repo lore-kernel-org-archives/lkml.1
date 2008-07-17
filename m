@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932780AbYGQWdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932404AbYGQWei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932780AbYGQWdc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 18:33:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757815AbYGQWdY
+	id S932404AbYGQWei (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 18:34:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757296AbYGQWe1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 18:33:24 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:21200 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760190AbYGQWdX (ORCPT
+	Thu, 17 Jul 2008 18:34:27 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:18432 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753981AbYGQWe1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 18:33:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:cc:references
-         :in-reply-to:mime-version:content-disposition:message-id
-         :content-type:content-transfer-encoding;
-        b=KSy9nbFlTOmfome0PyYJQDiyh0ruT1dpc+UnW8V66XZ4KNKcOTP41QcvaZG0klW5Rt
-         TCNDX0s1RuQ1J+k6+P47NFTpZXviBVHTefhwbU4VWAgPonZKAK/ncKcKlU9hDyLdXNaZ
-         iKqbuGnGRfZzoZkBhGrOjyc5e47axu1GlPDfs=
-From: Mihai =?utf-8?q?Don=C8=9Bu?= <mihai.dontu@gmail.com>
-Organization: Home
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Please add ZFS support (from GPL sources)
-Date: Fri, 18 Jul 2008 01:33:18 +0300
-User-Agent: KMail/1.9.9
-Cc: "Fred ." <eldmannen@gmail.com>, linux-kernel@vger.kernel.org
-References: <f188924b0807171213q43f10b09j47b34674fc8aaa38@mail.gmail.com> <487F9D6D.7090808@zytor.com>
-In-Reply-To: <487F9D6D.7090808@zytor.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200807180133.19191.mihai.dontu@gmail.com>
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	Thu, 17 Jul 2008 18:34:27 -0400
+Date: Thu, 17 Jul 2008 15:34:00 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for July 17 (net_namespace)
+Message-Id: <20080717153400.e9ef066a.randy.dunlap@oracle.com>
+In-Reply-To: <20080718012842.690b8346.sfr@canb.auug.org.au>
+References: <20080718012842.690b8346.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 17 July 2008, H. Peter Anvin wrote:
-> Fred . wrote:
-> > Previously we have not been able to have ZFS support due to it being
-> > licensed under the CDDL and the kernel under the GPL.
-> >
-> > Sun have contributed ZFS support to GRUB under the GPL license. We
-> > could now use that code to implement support for ZFS in the Linux
-> > kernel.
-> >
-> > http://blogs.sun.com/darren/entry/zfs_under_gplv2_already_exists
->
->  From what I can see, it is an absolutely-minimal readonly implementation.
+With PROC_FS=n, PROC_SYSCTL=n, SYSCTL_SYSCALL=n, the <sysctls> field of
+struct net in include/net/net_namespace.h has problems:
 
-There are a number of fs drivers in the kernel which provide read-only 
-support. The GPL-ed code might not be much (I haven't looked at it), but if 
-someone would spend some time to write a nice, clean patch which can be 
-easily improved, I think there would be at least one user out there who would 
-find it useful.
 
-Of course, this could open a door for all kinds of incomplete drivers, but 
-these days people seem nuts about ZFS.
+In file included from /local/linsrc/linux-next-20080717/include/linux/init_task.h:12,
+                 from /local/linsrc/linux-next-20080717/kernel/pid.c:37:
+/local/linsrc/linux-next-20080717/include/net/net_namespace.h:40: error: field 'sysctls' has incomplete type
 
-In second thoughts, maybe a fuse based driver would be better. :)
 
--- 
-Mihai Donțu
+In file included from /local/linsrc/linux-next-20080717/include/linux/netdevice.h:44,
+                 from /local/linsrc/linux-next-20080717/include/linux/if_bridge.h:105,
+                 from /local/linsrc/linux-next-20080717/fs/compat_ioctl.c:24:
+/local/linsrc/linux-next-20080717/include/net/net_namespace.h:40: error: field 'sysctls' has incomplete type
+
+
+In file included from /local/linsrc/linux-next-20080717/include/linux/init_task.h:12,
+                 from /local/linsrc/linux-next-20080717/arch/x86/kernel/init_task.c:5:
+/local/linsrc/linux-next-20080717/include/net/net_namespace.h:40: error: field 'sysctls' has incomplete type
+
+
+
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
