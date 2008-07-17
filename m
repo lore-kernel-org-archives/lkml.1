@@ -1,87 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760954AbYGQSOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760657AbYGQSRs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760954AbYGQSOy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 14:14:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760657AbYGQSOo
+	id S1760657AbYGQSRs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 14:17:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758153AbYGQSRk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 14:14:44 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:57668 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758082AbYGQSOn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 14:14:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=Oohp72Hp7W56btHyEjGHB2/D+F0mIV3wO+/+jjKNPUbSFxo2q8LaemBPLhVoV7zlJd
-         d8wWqJm3ecwtZ4V/lGNSO8AoaqJR3wJGCQDfpqaJrsJgA33m4y6sXC7DCd4p4uApfKPo
-         PEu6s3XalzJEkA4JaRLNQxej6hebpWkUdZ+c4=
-Message-ID: <19f34abd0807171114i5201f41cs9f222e0e49592573@mail.gmail.com>
-Date: Thu, 17 Jul 2008 20:14:41 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: reiserfs-devel@vger.kernel.org
-Subject: latest -git: assertion !(n_file_size > ROUND_UP(n_new_file_size)) failed at fs/reiserfs/stree.c:1903
-Cc: "Johannes Weiner" <hannes@saeurebad.de>, linux-kernel@vger.kernel.org
+	Thu, 17 Jul 2008 14:17:40 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:41721 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758036AbYGQSRj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 14:17:39 -0400
+Date: Thu, 17 Jul 2008 13:16:50 -0500
+From: Michael Halcrow <mhalcrow@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Eric Sandeen <sandeen@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       "David J. Kleikamp" <shaggy@us.ibm.com>
+Subject: [PATCH] eCryptfs: Make all persistent file opens delayed
+Message-ID: <20080717181650.GB6773@halcrowt61p.austin.ibm.com>
+Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+There is no good reason to immediately open the lower file, and that
+can cause problems with files that the user does not intend to
+immediately open, such as device nodes.
 
-I just got this with an intentionally corrupted disk image:
+This patch removes the persistent file open from the interpose step
+and pushes that to the locations where eCryptfs really does need the
+lower persistent file, such as just before reading or writing the
+metadata stored in the lower file header.
 
-ReiserFS: loop0: found reiserfs format "3.6" with standard journal
-ReiserFS: loop0: warning: CONFIG_REISERFS_CHECK is set ON
-ReiserFS: loop0: warning: - it is slow mode for debugging.
-ReiserFS: loop0: using ordered data mode
-ReiserFS: loop0: journal params: device loop0, size 8192, journal
-first block 18, max trans len 1024, max batch 900, max commit age 30,
-max trans age 30
-ReiserFS: loop0: checking transaction log (loop0)
-ReiserFS: loop0: journal-1153: found in header: first_unflushed_offset
-81, last_flushed_trans_id 27
-ReiserFS: loop0: journal-1206: Starting replay from offset
-120259084369, trans_id 1024
-ReiserFS: loop0: journal-1299: Setting newest_mount_id to 13
-ReiserFS: loop0: Using r5 hash to sort names
-Pid: 4274, comm: rm Not tainted 2.6.26-03414-g33af79d #43
- [<c020a2ea>] reiserfs_panic+0x1a/0x50
- [<c0216d0b>] reiserfs_do_truncate+0x56b/0x6a0
- [<c015ad76>] ? trace_hardirqs_on_caller+0x116/0x170
- [<c0216e72>] reiserfs_delete_object+0x32/0x70
- [<c01fefd6>] reiserfs_delete_inode+0xb6/0x110
- [<c01fef20>] ? reiserfs_delete_inode+0x0/0x110
- [<c01b9ba1>] generic_delete_inode+0x81/0x120
- [<c01b9d67>] generic_drop_inode+0x127/0x180
- [<c01b8be7>] iput+0x47/0x50
- [<c01af1bc>] do_unlinkat+0xec/0x170
- [<c01b185b>] ? vfs_readdir+0x6b/0xa0
- [<c01b1540>] ? filldir64+0x0/0xf0
- [<c044a0f8>] ? trace_hardirqs_on_thunk+0xc/0x10
- [<c015ad76>] ? trace_hardirqs_on_caller+0x116/0x170
- [<c01af383>] sys_unlinkat+0x23/0x50
- [<c010407f>] sysenter_past_esp+0x78/0xc5
- =======================
-Kernel panic - not syncing: <0>REISERFS: panic (device Null
-superblock): reiserfs[4274]: assertion !(n_file_size >
-ROUND_UP(n_new_file_size)) failed at
-fs/reiserfs/stree.c:1903:reiserfs_do_truncate: PAP-5680: truncate did
-not finish: new_file_size 0, current 2147483648, oid 96
+Two functions are jumping to out_dput when they should just be jumping
+to out on error paths. This patch also fixes these.
 
-(Where did the register dump go? Will this get picked up by kerneloops.org?)
+Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
+---
+ fs/ecryptfs/ecryptfs_kernel.h |    2 --
+ fs/ecryptfs/file.c            |    4 ----
+ fs/ecryptfs/inode.c           |   27 +++++++++++++++++++++++----
+ fs/ecryptfs/main.c            |   16 ----------------
+ 4 files changed, 23 insertions(+), 26 deletions(-)
 
-I can test patches.
-
-
-Vegard
-
+diff --git a/fs/ecryptfs/ecryptfs_kernel.h b/fs/ecryptfs/ecryptfs_kernel.h
+index b0727f9..b73fb75 100644
+--- a/fs/ecryptfs/ecryptfs_kernel.h
++++ b/fs/ecryptfs/ecryptfs_kernel.h
+@@ -235,7 +235,6 @@ struct ecryptfs_crypt_stat {
+ #define ECRYPTFS_METADATA_IN_XATTR  0x00000100
+ #define ECRYPTFS_VIEW_AS_ENCRYPTED  0x00000200
+ #define ECRYPTFS_KEY_SET            0x00000400
+-#define ECRYPTFS_DELAY_PERSISTENT   0x00000800
+ 	u32 flags;
+ 	unsigned int file_version;
+ 	size_t iv_bytes;
+@@ -576,7 +575,6 @@ struct ecryptfs_open_req {
+ };
+ 
+ #define ECRYPTFS_INTERPOSE_FLAG_D_ADD                 0x00000001
+-#define ECRYPTFS_INTERPOSE_FLAG_DELAY_PERSISTENT_FILE 0x00000002
+ int ecryptfs_interpose(struct dentry *hidden_dentry,
+ 		       struct dentry *this_dentry, struct super_block *sb,
+ 		       u32 flags);
+diff --git a/fs/ecryptfs/file.c b/fs/ecryptfs/file.c
+index 2c2d60d..9244d65 100644
+--- a/fs/ecryptfs/file.c
++++ b/fs/ecryptfs/file.c
+@@ -200,10 +200,6 @@ static int ecryptfs_open(struct inode *inode, struct file *file)
+ 		goto out;
+ 	}
+ 	if (!ecryptfs_inode_to_private(inode)->lower_file) {
+-		BUG_ON(!(crypt_stat->flags & ECRYPTFS_DELAY_PERSISTENT));
+-		mutex_lock(&crypt_stat->cs_mutex);
+-		crypt_stat->flags &= ~(ECRYPTFS_ENCRYPTED);
+-		mutex_unlock(&crypt_stat->cs_mutex);
+ 		rc = ecryptfs_init_persistent_file(ecryptfs_dentry);
+ 		if (rc) {
+ 			printk(KERN_ERR "%s: Error attempting to initialize "
+diff --git a/fs/ecryptfs/inode.c b/fs/ecryptfs/inode.c
+index 4ec8161..0326ba3 100644
+--- a/fs/ecryptfs/inode.c
++++ b/fs/ecryptfs/inode.c
+@@ -188,6 +188,16 @@ static int ecryptfs_initialize_file(struct dentry *ecryptfs_dentry)
+ 				"context; rc = [%d]\n", rc);
+ 		goto out;
+ 	}
++	if (!ecryptfs_inode_to_private(ecryptfs_dentry->d_inode)->lower_file) {
++		rc = ecryptfs_init_persistent_file(ecryptfs_dentry);
++		if (rc) {
++			printk(KERN_ERR "%s: Error attempting to initialize "
++			       "the persistent file for the dentry with name "
++			       "[%s]; rc = [%d]\n", __func__,
++			       ecryptfs_dentry->d_name.name, rc);
++			goto out;
++		}
++	}
+ 	rc = ecryptfs_write_metadata(ecryptfs_dentry);
+ 	if (rc) {
+ 		printk(KERN_ERR "Error writing headers; rc = [%d]\n", rc);
+@@ -311,7 +321,7 @@ static struct dentry *ecryptfs_lookup(struct inode *dir, struct dentry *dentry,
+ 				ECRYPTFS_INTERPOSE_FLAG_D_ADD);
+ 	if (rc) {
+ 		ecryptfs_printk(KERN_ERR, "Error interposing\n");
+-		goto out_dput;
++		goto out;
+ 	}
+ 	if (S_ISDIR(lower_inode->i_mode)) {
+ 		ecryptfs_printk(KERN_DEBUG, "Is a directory; returning\n");
+@@ -337,11 +347,21 @@ static struct dentry *ecryptfs_lookup(struct inode *dir, struct dentry *dentry,
+ 		rc = -ENOMEM;
+ 		ecryptfs_printk(KERN_ERR,
+ 				"Cannot ecryptfs_kmalloc a page\n");
+-		goto out_dput;
++		goto out;
+ 	}
+ 	crypt_stat = &ecryptfs_inode_to_private(dentry->d_inode)->crypt_stat;
+ 	if (!(crypt_stat->flags & ECRYPTFS_POLICY_APPLIED))
+ 		ecryptfs_set_default_sizes(crypt_stat);
++	if (!ecryptfs_inode_to_private(dentry->d_inode)->lower_file) {
++		rc = ecryptfs_init_persistent_file(dentry);
++		if (rc) {
++			printk(KERN_ERR "%s: Error attempting to initialize "
++			       "the persistent file for the dentry with name "
++			       "[%s]; rc = [%d]\n", __func__,
++			       dentry->d_name.name, rc);
++			goto out;
++		}
++	}
+ 	rc = ecryptfs_read_and_validate_header_region(page_virt,
+ 						      dentry->d_inode);
+ 	if (rc) {
+@@ -538,8 +558,7 @@ ecryptfs_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t dev)
+ 	rc = vfs_mknod(lower_dir_dentry->d_inode, lower_dentry, mode, dev);
+ 	if (rc || !lower_dentry->d_inode)
+ 		goto out;
+-	rc = ecryptfs_interpose(lower_dentry, dentry, dir->i_sb,
+-				ECRYPTFS_INTERPOSE_FLAG_DELAY_PERSISTENT_FILE);
++	rc = ecryptfs_interpose(lower_dentry, dentry, dir->i_sb, 0);
+ 	if (rc)
+ 		goto out;
+ 	fsstack_copy_attr_times(dir, lower_dir_dentry->d_inode);
+diff --git a/fs/ecryptfs/main.c b/fs/ecryptfs/main.c
+index 32d9b59..155caa2 100644
+--- a/fs/ecryptfs/main.c
++++ b/fs/ecryptfs/main.c
+@@ -201,22 +201,6 @@ int ecryptfs_interpose(struct dentry *lower_dentry, struct dentry *dentry,
+ 	/* This size will be overwritten for real files w/ headers and
+ 	 * other metadata */
+ 	fsstack_copy_inode_size(inode, lower_inode);
+-	if (!(flags & ECRYPTFS_INTERPOSE_FLAG_DELAY_PERSISTENT_FILE)) {
+-		rc = ecryptfs_init_persistent_file(dentry);
+-		if (rc) {
+-			printk(KERN_ERR "%s: Error attempting to initialize "
+-			       "the persistent file for the dentry with name "
+-			       "[%s]; rc = [%d]\n", __func__,
+-			       dentry->d_name.name, rc);
+-			goto out;
+-		}
+-	} else {
+-		struct ecryptfs_inode_info *inode_info =
+-			ecryptfs_inode_to_private(dentry->d_inode);
+-
+-		inode_info->lower_file = NULL;
+-		inode_info->crypt_stat.flags |= ECRYPTFS_DELAY_PERSISTENT;
+-	}
+ out:
+ 	return rc;
+ }
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+1.5.3.6
+
