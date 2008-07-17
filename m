@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756239AbYGQGPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755517AbYGQGSh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756239AbYGQGPa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 02:15:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755316AbYGQGOy
+	id S1755517AbYGQGSh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 02:18:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYGQGS2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 02:14:54 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:60744 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755273AbYGQGOw (ORCPT
+	Thu, 17 Jul 2008 02:18:28 -0400
+Received: from bromo.msbb.uc.edu ([129.137.3.146]:52990 "HELO
+	bromo.msbb.uc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752645AbYGQGS2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 02:14:52 -0400
-Subject: Re: KVM overflows the stack
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Avi Kivity <avi@qumranet.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       kvm-devel <kvm@vger.kernel.org>,
-       "Anthony N. Liguori [imap]" <aliguori@us.ibm.com>
-In-Reply-To: <487EDE26.8040201@qumranet.com>
-References: <1206479576.7562.21.camel@nimitz.home.sr71.net>
-	 <47EA1C63.8010202@qumranet.com>
-	 <1206550329.7883.5.camel@nimitz.home.sr71.net>
-	 <47EA80AC.4070204@qumranet.com>
-	 <1206551794.7883.7.camel@nimitz.home.sr71.net>
-	 <47EB6AAC.3040607@qumranet.com>  <47EB7281.6070300@qumranet.com>
-	 <1206629709.7883.30.camel@nimitz.home.sr71.net>
-	 <47EBB63E.2060306@qumranet.com>
-	 <1212445810.8211.9.camel@nimitz.home.sr71.net>
-	 <48469BDA.3050206@qumranet.com> <1212738105.7837.3.camel@nimitz>
-	 <48512028.3070104@qumranet.com>  <1216148242.25942.6.camel@nimitz>
-	 <1216244660.8711.6.camel@nimitz> <1216248527.11664.9.camel@nimitz>
-	 <487EDE26.8040201@qumranet.com>
-Content-Type: text/plain
-Date: Wed, 16 Jul 2008 23:14:48 -0700
-Message-Id: <1216275288.11664.13.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Jul 2008 02:18:28 -0400
+Date: Thu, 17 Jul 2008 02:18:25 -0400
+From: Jack Howarth <howarth@bromo.msbb.uc.edu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
+Message-ID: <20080717061825.GA19582@bromo.msbb.uc.edu>
+References: <86802c440807160136m6af981b2u6a37cabb8e33a629@mail.gmail.com> <20080716140810.GA2861@bromo.msbb.uc.edu> <86802c440807161029n7e0dac98x1ec260879204b6f0@mail.gmail.com> <86802c440807161535n3a4d6891n6f7c16bd4e1f19c3@mail.gmail.com> <20080717004004.GA17792@bromo.msbb.uc.edu> <86802c440807161749u2f5c1eben618e05c6e254fedd@mail.gmail.com> <20080717023538.GA18329@bromo.msbb.uc.edu> <86802c440807161959s10666027k5297af1d657ff4fa@mail.gmail.com> <20080717034418.GA18951@bromo.msbb.uc.edu> <86802c440807162113g4cea3bd9ic71210330417032b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440807162113g4cea3bd9ic71210330417032b@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-17 at 08:52 +0300, Avi Kivity wrote:
-> Dave Hansen wrote:
-> > Avi, how would you like this fixed?  I'd be happy to prepare some
-> > patches.  Do you have a particular approach that you think we should
-> > use?  Just make the big objects dynamically allocated?
-> >   
-> 
-> Yes, things like kvm_lapic_state are way too big to be on the stack.  
-> There's an additional problem here, that apparently your gcc (which 
-> version?) doesn't fold objects in a switch statement into the same stack 
-> slot:
+YH,
+  Using the debug patches and your mmconfig patch as well as the kernel
+options 'debug initcall_debug apic=verbose pci=routeirq", I see the following
+messages that don't scroll off screen...
 
-$ gcc -v
-gcc version 3.4.6 (Ubuntu 3.4.6-6ubuntu5)
+PCI: 0000:00:1f.1 reg 10 io port: [ 40d8, 40df]
+PCI: 0000:00:1f.1 reg 14 io port: [ 40ec, 40ef]
+PCI: 0000:00:1f.1 reg 18 io port: [ 40d0, 40d7]
+PCI: 0000:00:1f.1 reg 1c io port: [ 40e8, 40eb]
+PCI: 0000:00:1f.1 reg 20 io port: [ 40b0, 40bf]
+pci 0000:00.1f.1: calling pci_fixup_transparent_bridge+0x0/0x2a
+PCI: Found 0000:00:1f.2 [8086/27c4] 000101 00
+PCI: 0000:00:1f.2 reg 10 io port: [ 40c8, 40cf]
+PCI: 0000:00:1f.2 reg 14 io port: [ 40e4, 40e7]
+PCI: 0000:00:1f.2 reg 18 io port: [ 40c0, 40c7]
+PCI: 0000:00:1f.2 reg 1c io port: [ 40e0, 40e3]
+PCI: 0000:00:1f.2 reg 20 io port: [ 40a0, 40af]
+PCI: 0000:00:1f.2 reg 24 32bit mmio: [d8405000, d84053ff]
+pci: 0000:00:1f.2 calling pci_fixup_transparent_bridge+0x0/0x2a
+PCI: Found 0000:00:1f.3 [8086/27da] 000c05 00
+PCI: 0000:00:1f.3 reg 20 io port: [ efa0, efbf]
+PCI: 0000:00:1f.3: calling pci_fixup_transparent_bridge+0x0/0x2a
+PCI: Fixups for bus 0000:00
+PCI: Scanning behind PCI bridge 0000:00:01.0, config 010100, pass 0
+PCI: Scanning bus 0000:01
+PCI: Found 0000:01:00.0 [1002/71c5] 000300 00
+PCI: 0000:00:01:00.0 reg 10 32bit mmio: [c0000000, cfffffff]
+PCI: 0000:00:01:00.0 reg 14 io port: [ 3000, 30ff]
+PCI: 0000:00:01:00.0 reg 18 32bit mmio: [d8300000, d830ffff]
 
-> switch (...) {
->     case x: {
->          struct medium a;
->          ...
->     }
->     case y:
->           struct medium b;
->           ...
->     }
-> };
-> 
-> These could be solved either by stack allocation, or by moving into 
-> functions marked noinline.  Whichever is easier.
-
-Did you mean dynamic allocation? :)
-
--- Dave
-
+...at which point the boot freezes.
+                          Jack
