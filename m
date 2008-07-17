@@ -1,122 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756530AbYGQOOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758183AbYGQOPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756530AbYGQOOT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 10:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755849AbYGQOOB
+	id S1758183AbYGQOPe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 10:15:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755744AbYGQOPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 10:14:01 -0400
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:60520 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756081AbYGQOOA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 10:14:00 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AugEAOTufkhMRKxB/2dsb2JhbACBWq56
-Date: Thu, 17 Jul 2008 10:13:58 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Wenji Huang <wenji.huang@oracle.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       ltt-dev@lists.casi.polymtl.ca, systemtap@sources.redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix markers duplicate modpost entry
-Message-ID: <20080717141358.GA22860@Krystal>
-References: <20080715024754.GA26471@Krystal> <000001c8e7aa$b9548600$2bfd9200$@css.fujitsu.com> <20080717024550.GA22869@Krystal> <487ED503.2060503@oracle.com> <20080717070321.GB26035@Krystal> <20080717001613.8fe204df.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 17 Jul 2008 10:15:25 -0400
+Received: from il.qumranet.com ([212.179.150.194]:50037 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755043AbYGQOPY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 10:15:24 -0400
+Message-ID: <487F53FB.20708@qumranet.com>
+Date: Thu, 17 Jul 2008 17:15:23 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: Roland Dreier <rdreier@cisco.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       kvm-devel <kvm@vger.kernel.org>,
+       "Anthony N. Liguori [imap]" <aliguori@us.ibm.com>
+Subject: Re: KVM overflows the stack
+References: <1206479576.7562.21.camel@nimitz.home.sr71.net>	 <47EA1C63.8010202@qumranet.com>	 <1206550329.7883.5.camel@nimitz.home.sr71.net>	 <47EA80AC.4070204@qumranet.com>	 <1206551794.7883.7.camel@nimitz.home.sr71.net>	 <47EB6AAC.3040607@qumranet.com> <47EB7281.6070300@qumranet.com>	 <1206629709.7883.30.camel@nimitz.home.sr71.net>	 <47EBB63E.2060306@qumranet.com>	 <1212445810.8211.9.camel@nimitz.home.sr71.net>	 <48469BDA.3050206@qumranet.com> <1212738105.7837.3.camel@nimitz>	 <48512028.3070104@qumranet.com> <1216148242.25942.6.camel@nimitz>	 <1216244660.8711.6.camel@nimitz> <1216248527.11664.9.camel@nimitz>	 <487EDE26.8040201@qumranet.com>  <ada4p6p9h6m.fsf@cisco.com> <1216303561.11664.52.camel@nimitz>
+In-Reply-To: <1216303561.11664.52.camel@nimitz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20080717001613.8fe204df.akpm@linux-foundation.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 10:10:49 up 42 days, 18:51,  4 users,  load average: 0.87, 0.85,
-	0.63
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton (akpm@linux-foundation.org) wrote:
-> On Thu, 17 Jul 2008 03:03:21 -0400 Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
-> 
-> > When a kernel was rebuilt, the previous Module.markers was not cleared. It
-> > caused markers with different format strings to appear as duplicates when a
-> > markers was changed.
-> > 
-> > I merely merged the patches from Roland and Wenji here. It applies to
-> > mainline (and is not intrusive, so will also apply to linux-next).
-> 
-> Is this fix needed in 2.6.26.x?  2.6.25.x?
-> 
+Dave Hansen wrote:
+> On Wed, 2008-07-16 at 23:08 -0700, Roland Dreier wrote:
+>   
+>>  > Yes, things like kvm_lapic_state are way too big to be on the
+>> stack.
+>>
+>> I had a quick look at the code, and my worry about dynamic allocation
+>> would be that handling allocation failure seems like it might get
+>> tricky.  Eg for handling struct kvm_pv_mmu_op_buffer (which is 528 bytes
+>> on the stack in kvm_pv_mmu_op()) can you deal with an mmu op failing?
+>>     
+>
+> Well, you *better* be able to deal with it.  :)
+>
+> This code is also doing a *ton* of copy_to/from_user().  If userspace
+> had one of its input buffers swapped out (or one of its output buffers
+> not faulted in yet) and we're out of memory enough to be failing
+> kmallocs() then we're sure as heck also going to failing the user
+> copies.
+>
+> I think it's a non-issue.
+>
+>   
 
-Yes, it's needed in 2.6.26.x and 2.6.25, but I doubt it is critical :
-only needed for systemtap users which use markers and rebuild their
-kernel after having changed a marker format string.
+Yes, it's designed to be restartable.  Returning 0 should be fine.
 
-> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> > From: Roland McGrath <roland@redhat dot com>
-> > From: Wenji Huang <wenji.huang@oracle.com>
-> > CC: akpm@linux-foundation.org
-> 
-> whoa, what's all that about?
-> 
-> Patches can only have one Author: in git, and we indicate that in
-> emails by putting a From: line right at the top of the changelog. 
-> (Additional credits can and should be mentioned in the changelog text
-> of course).  When that From: line is missing we take the authorship
-> info from the email headers.
-> 
-> So according to the above, this patch has three authors.  Geeze, even I
-> can type faster than that!
-> 
-
-hehehe :)
-
-> Who wrote it?
-> 
-
-I took the diffs Roland and Wenji sent in separate emails and created
-this patch. They are the ones who actually identified the solution. So I
-guess I should be the author, with credits to them, if they are ok with
-that.
-
-Mathieu
-
-
-> > ---
-> >  scripts/Makefile.modpost |    1 +
-> >  scripts/mod/modpost.c    |    3 ++-
-> >  2 files changed, 3 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6-lttng/scripts/Makefile.modpost
-> > ===================================================================
-> > --- linux-2.6-lttng.orig/scripts/Makefile.modpost	2008-07-17 02:47:44.000000000 -0400
-> > +++ linux-2.6-lttng/scripts/Makefile.modpost	2008-07-17 02:48:17.000000000 -0400
-> > @@ -101,6 +101,7 @@ quiet_cmd_kernel-mod = MODPOST $@
-> >        cmd_kernel-mod = $(modpost) $@
-> >  
-> >  vmlinux.o: FORCE
-> > +	@rm -fr $(kernelmarkersfile)
-> >  	$(call cmd,kernel-mod)
-> >  
-> >  # Declare generated files as targets for modpost
-> > Index: linux-2.6-lttng/scripts/mod/modpost.c
-> > ===================================================================
-> > --- linux-2.6-lttng.orig/scripts/mod/modpost.c	2008-07-17 02:49:33.000000000 -0400
-> > +++ linux-2.6-lttng/scripts/mod/modpost.c	2008-07-17 02:50:10.000000000 -0400
-> > @@ -1992,7 +1992,8 @@ static void read_markers(const char *fna
-> >  			mod->skip = 1;
-> >  		}
-> >  
-> > -		add_marker(mod, marker, fmt);
-> > +		if (!mod->skip)
-> > +			add_marker(mod, marker, fmt);
-> >  	}
-> >  	return;
-> >  fail:
-> 
+We can reduce the buffer size to 256 though.  I wouldn't want an 
+allocation in this hot path.
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+error compiling committee.c: too many arguments to function
+
