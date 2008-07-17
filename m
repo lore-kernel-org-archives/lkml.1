@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757432AbYGQKGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757189AbYGQKPL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757432AbYGQKGS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 06:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755239AbYGQKGA
+	id S1757189AbYGQKPL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 06:15:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbYGQKO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 06:06:00 -0400
-Received: from an-out-0708.google.com ([209.85.132.250]:31714 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754793AbYGQKF7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 06:05:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=N2Ufhpm9bymr0Qp454NWoyPVE3OR8LbNhMlF+OavNM/zSPa2st5RPhS2LboA4Xxp4X
-         9yEbL+vzd8U6GWddJ6jhkVJkjW3W/nfY1Sw3zZJC4DXqz5ME5rgQLmvBuyLyK4kqM+YI
-         d6mjql3ceOP4bTngMQH9tkexPPCjf2ZvopUbA=
-Message-ID: <43e72e890807170305o491e598cl1b27c8d7bf820765@mail.gmail.com>
-Date: Thu, 17 Jul 2008 03:05:58 -0700
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-To: "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: 2nd REVISED AGENDA -- Re: Linux Wireless Mini-Summit -- Ottawa -- July 22, 2008
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080716184803.GB3232@tuxdriver.com>
+	Thu, 17 Jul 2008 06:14:59 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:58835 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752012AbYGQKO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 06:14:59 -0400
+Message-ID: <487F1B38.3050100@cn.fujitsu.com>
+Date: Thu, 17 Jul 2008 18:13:12 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+CC: Paul Jackson <pj@sgi.com>, LKML <linux-kernel@vger.kernel.org>,
+       Paul Menage <menage@google.com>, Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>
+Subject: Re: [RFC] [PATCH] cpuset: fix wrong calculation of relax domain level
+References: <487EFDD0.2060101@cn.fujitsu.com> <487F0996.9010904@jp.fujitsu.com>
+In-Reply-To: <487F0996.9010904@jp.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080709190915.GA8238@tuxdriver.com>
-	 <20080715182654.GA5969@tuxdriver.com>
-	 <20080716184803.GB3232@tuxdriver.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 16, 2008 at 11:48 AM, John W. Linville
-<linville@tuxdriver.com> wrote:
+Hidetoshi Seto wrote:
+> Li Zefan wrote:
+>> When multiple cpusets are overlapping in their 'cpus' and hence they
+>> form a single sched domain, the largest sched_relax_domain_level among
+>> those should be used. But when top_cpuset's sched_load_balance is
+>> set, its sched_relax_domain_level is used regardless other sub-cpusets'.
+>>
+>> There are several proposals to solve this:
+>>
+>> 1) Travel the cpuset hierarchy to find the largest relax_domain_level
+>>    in rebuild_sched_domains(). But cpuset avoids hierarchy travelling
+>>    when top_cpuset.sched_load_balance is set.
+>>
+>> 2) Remember the largest relax_domain_level when we update a cpuset's
+>>    sched_load_balance, sched_relax_domain_level and cpus. This should
+>>    work, but seems a bit tricky and a bit ugly. (As this patch shows)
+>>
+>> 3) Don't treat this as a bug, but document this behavior.
+> 
+> I think 1) is correct way.
+> 
+> There was a special short path for the top_cpuset's case, but now it is
+> disappeared. I think there are no need to treat the top_cpuset as VIP,
+> so 2) is excessive nurturing.
+> 
 
->        - regulatory enforcement (802.11d, CRDA)
+If we all agree on this, I'll send a new patch to fix this.
 
-I'll cover this. If we can't cover this well in the time frame
-provided we can discuss this over the course of the week in impromptu
-sessions.
 
-  Luis
