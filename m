@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759997AbYGQA7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760405AbYGQA7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759997AbYGQA7Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jul 2008 20:59:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754367AbYGQA7M
+	id S1760405AbYGQA7x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jul 2008 20:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757467AbYGQA7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jul 2008 20:59:12 -0400
-Received: from oker.escape.de ([194.120.234.254]:42561 "EHLO oker.escape.de"
+	Wed, 16 Jul 2008 20:59:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55005 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754231AbYGQA7L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jul 2008 20:59:11 -0400
-X-Greylist: delayed 9125 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Jul 2008 20:59:11 EDT
-Date: Thu, 17 Jul 2008 00:23:23 +0200
-From: Matthias Kilian <kili@outback.escape.de>
-To: Valdis.Kletnieks@vt.edu
-Cc: Morton Harrow <mharrow@linuxmail.org>, Miod Vallat <miod@online.fr>,
-       licensing@fsf.org, linux-kernel@vger.kernel.org, rms@gnu.org,
-       claire.newman@canonical.com, announce@fsfeurope.org, misc@openbsd.org,
-       ubuntu-users@lists.ubuntu.com, fedora-list@redhat.com,
-       netbsd-users@netbsd.org, freebsd-questions@freebsd.org
-Subject: Re: GPL version 4
-Message-ID: <20080716222323.GA3440@petunia.outback.escape.de>
-Mail-Followup-To: Valdis.Kletnieks@vt.edu,
-	Morton Harrow <mharrow@linuxmail.org>, Miod Vallat <miod@online.fr>,
-	licensing@fsf.org, linux-kernel@vger.kernel.org, rms@gnu.org,
-	claire.newman@canonical.com, announce@fsfeurope.org,
-	misc@openbsd.org, ubuntu-users@lists.ubuntu.com,
-	fedora-list@redhat.com, netbsd-users@netbsd.org,
-	freebsd-questions@freebsd.org
-References: <20080716213115.C747F7BC45@ws5-10.us4.outblaze.com> <33958.1216244510@turing-police.cc.vt.edu>
+	id S1757230AbYGQA7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jul 2008 20:59:37 -0400
+Subject: Re: /proc/mounts unreadable - bisected
+From: Eric Paris <eparis@redhat.com>
+To: Marc Dionne <marc.c.dionne@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, jmorris@namei.org, sds@tycho.nsa.gov
+In-Reply-To: <487E9815.6060803@gmail.com>
+References: <487E9815.6060803@gmail.com>
+Content-Type: text/plain
+Date: Wed, 16 Jul 2008 20:59:31 -0400
+Message-Id: <1216256371.3070.66.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <33958.1216244510@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.4.2.3i
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 16, 2008 at 05:41:50PM -0400, Valdis.Kletnieks@vt.edu wrote:
-> You missed an important philosophical point.  In Richard Stallman's
-> world view, it isn't the user's freedoms that matter, it's the
-> *software*s freedom.
+On Wed, 2008-07-16 at 20:53 -0400, Marc Dionne wrote:
+> With current git, /proc/mounts is unreadable on my system, with any attempts to 
+> read it returning EINVAL.  This breaks many init scripts, among other things.
+> 
+> I bisected it down to this commit:
+> 
+> commit 2069f457848f846cb31149c9aa29b330a6b66d1b
+> Author: Eric Paris <eparis@redhat.com>
+> Date:   Fri Jul 4 09:47:13 2008 +1000
+> 
+>      LSM/SELinux: show LSM mount options in /proc/mounts
+> 
+>      This patch causes SELinux mount options to show up in /proc/mounts.  As
+>      with other code in the area seq_put errors are ignored.  Other LSM's
+>      will not have their mount options displayed until they fill in their own
+>      security_sb_show_options() function.
+> 
+> In my case, selinux_get_mnt_opts() never gets very far because 
+> sbsec->initialized never becomes true, and the function systematically returns 
+> EINVAL which is then passed back up to the reader of /proc/mounts.
+> 
+> Changing show_sb_opts() to always return 0 (it was a void function before this 
+> commit) makes the system behave normally.
+> 
+> Now it's possible that my selinux config is hosed - I have it enabled in 
+> permissive mode but I don't pay much attention to it - but the failure mode in 
+> that case should probably be more graceful.  Seems like it would be better to 
+> print out the available mount info minus the LSM options than to bail out 
+> completely?
 
-Oh, great. First poeple bend the term "freedom" (like FSF does),
-then they talk about the freedom of bits and bytes (software).
+Yes, your SELinux config is hosed.  But I'll agree that we should just
+pass over the LSM options in that case (since clearly there aren't any)
+and not fail the read altogether.  Patch will be forthcoming.
 
-Now let's start a "free teapots" campaign.
+-Eric
+
