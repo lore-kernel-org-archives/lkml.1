@@ -1,92 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759257AbYGQNwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759617AbYGQNxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759257AbYGQNwn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 09:52:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756841AbYGQNwe
+	id S1759617AbYGQNxw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 09:53:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755750AbYGQNxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 09:52:34 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:45605 "EHLO mail.screens.ru"
+	Thu, 17 Jul 2008 09:53:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46454 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755515AbYGQNwd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 09:52:33 -0400
-Date: Thu, 17 Jul 2008 17:55:56 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Mark McLoughlin <markmc@redhat.com>
-Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-       Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] posix-timers: Do not modify an already queued timer signal
-Message-ID: <20080717135556.GA770@tv-sign.ru>
-References: <1216219846-663-1-git-send-email-markmc@redhat.com> <20080716162131.GA1785@tv-sign.ru> <1216292911.28332.12.camel@muff>
-Mime-Version: 1.0
+	id S1755408AbYGQNxn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 09:53:43 -0400
+Date: Thu, 17 Jul 2008 09:47:36 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Kazunaga Ikeno <k-ikeno@ak.jp.nec.com>
+Cc: "'David Collier-Brown'" <davecb@sun.com>,
+       "'KAMEZAWA Hiroyuki'" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "'Rik van Riel'" <riel@redhat.com>, "'Paul Menage'" <menage@google.com>,
+       "'linux kernel mailing list'" <linux-kernel@vger.kernel.org>,
+       "'Libcg Devel Mailing List'" <libcg-devel@lists.sourceforge.net>,
+       "'Balbir Singh'" <balbir@linux.vnet.ibm.com>,
+       "'Dhaval Giani'" <dhaval@linux.vnet.ibm.com>,
+       "'Peter Zijlstra'" <pzijlstr@redhat.com>,
+       "'Morton Andrew Morton'" <akpm@linux-foundation.org>,
+       "'Thomas Graf'" <tgraf@redhat.com>,
+       "'Ulrich Drepper'" <drepper@redhat.com>
+Subject: Re: [RFC] How to handle the rules engine for cgroups
+Message-ID: <20080717134736.GA11420@redhat.com>
+References: <20080703101957.b3856904.kamezawa.hiroyu@jp.fujitsu.com> <20080703155446.GB9275@redhat.com> <6599ad830807100223m2453963cwcfbe6eb1ad54d517@mail.gmail.com> <20080710104852.797fe79c@cuia.bos.redhat.com> <20080710154035.GA12043@redhat.com> <20080711095501.cefff6df.kamezawa.hiroyu@jp.fujitsu.com> <20080714135719.GE16673@redhat.com> <487B665B.9080205@sun.com> <20080714152142.GJ16673@redhat.com> <004201c8e7db$783480e0$cc7d220a@kid0000>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1216292911.28332.12.camel@muff>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <004201c8e7db$783480e0$cc7d220a@kid0000>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/17, Mark McLoughlin wrote:
->
-> On Wed, 2008-07-16 at 20:21 +0400, Oleg Nesterov wrote:
-> > On 07/16, Mark McLoughlin wrote:
+On Thu, Jul 17, 2008 at 04:05:17PM +0900, Kazunaga Ikeno wrote:
+> Vivek Goyal wrote:
+> > On Mon, Jul 14, 2008 at 10:44:43AM -0400, David Collier-Brown wrote:
+> > > Vivek Goyal wrote:
+> > >> If admin has decided to group applications and has written the rules for
+> > >> it then applications should not know anything about grouping. So I think
+> > >> application writing an script for being placed into the right group should
+> > >> be out of question. Now how does an admin write a wrapper around existing
+> > >> application without breaking anything else.
 > > >
-> > > When a timer fires, posix_timer_event() zeroes out its
-> > > pre-allocated siginfo structure, initialises it and then
-> > > queues up the signal with send_sigqueue().
+> > > In the Solaris world, processes are placed into cgroups (projects) by
+> > > one of two mechanisms:
 > > >
-> > > However, we may have previously queued up this signal, in
-> > > which case we only want to increment si_overrun and
-> > > re-initialising the siginfo structure is incorrect.
-> >
-> > Quoting Roland McGrath:
-> > 	>
-> > 	> I'm not clear on how the already-queued case could ever happen.  Do we
-> > 	> really need that check at all?  It shouldn't be possible for the timer to
-> > 	> be firing when it's already queued, because it won't have been reloaded.
-> > 	> It only reloads via do_schedule_next_timer after it's dequeued, or because
-> > 	> a 1 return value said it never was queued.
->
-> The app can reload the timer itself before the signal has been dequeued
-> via signalfd ...
+> > > 1) inheritance, with everything I create in my existing project.
+> > >   To get this started, there is a mechanism under login/getty/whatever
+> > > reading the /etc/projects file and, for example, tossing user davecb
+> > > into a "user.davecb" project.
+> > >
+> > 
+> > Placing the login sessions in right cgroup based on uid/gid rules is
+> > probably easy as check needs to be placed only on system entry upon login
+> > (Pam plugin should do).  And after that any job started by the user
+> > will automatically start in the same cgroup.
+> > 
+> > > 2) explicit placement with newtask, which starts a program or moves
+> > >   a process into a project/cgroup
+> > >
+> > 
+> > explicit placement of task based on application type will be tricky.
+> > 
+> > > I have a "bg" project which I use for limiting resource consumption of
+> > > background jobs, and a background command which either starts or moves
+> > > jobs, thusly:
+> > >
+> > > case "$1" in
+> > > [0-9]*) # It's a pid
+> > >         newtask -p bg -c $1
+> > 
+> > Ok, this is moving of tasks from one cgroup to other based on pid. This
+> > is really easy to do through cgroup file system. Just a matter of writing
+> > to task file.
+> > 
+> > >         ;;
+> > >  *) # It's a command-line
+> > >         newtask -p bg "$@" &
+> > >         ;;
+> > 
+> > So here a user explicitly invokes the wrapper passing it the targeted
+> > cgroup and the application to be launched in that cgroup. This should work
+> > if there is a facility if user has created its own cgroups (lets say
+> > under user controlled cgroup dir in the hierarchy) and user explicitly
+> > wants to control the resources of applications under its dir. For example,
+> > 
+> >  		/mnt/cgroup
+> > 		|	|
+> > 		gid1	gid2
+> > 		|  |	|  |
+> > 	      uid1 uid2	uid3 uid4
+> > 	     |  |
+> > 	 proj1  proj2
+> > 
+> > Here probably admin can write the rules for how users are allocated the
+> > resources and give ability to users to create subdirs under their cgroups
+> > where users can create more cgroups and can do their own resource
+> > management based on application tasks and place applications in the right
+> > cgroup by writing wrappers as mentioned by you "newtask".
+> > 
+> > But here there is no discrimination of application type by admin. Admin
+> > controls resource divisions only based on uid/gid. And users can manage
+> > applications within their user groups. In fact I am having hard time thinking
+> > in what kind of scenarios, there is a need for an admin to control
+> > resource based on application type? Do we really need setups like, on
+> > a system databases should get network bandwidth of 30%. If yes, then
+> > it becomes tricky where admin need to write a wrapper to place the task
+> > in right cgroup without application/user knowing it.
+> 
+> I think a wrapper (move to right group and calls exec) will run by user, not by admin.
+> In explicit placement, user knows what a type of application he/she launch.
+> 
+>  		/mnt/cgroup
+> 		|	|
+> 		gid1	gid2
+> 		|  |	|  |
+> 	      uid1 uid2	uid3 uid4
+> 	     |  |
+> 	 proj1  proj2
+> 
 
-Indeed! Thanks Mark.
+This is the easy to handle situation and I am hoping it will work in many
+of the cases.
 
-Thomas, Roland, could you take a look?
+Currently I am writting a patch for libcg which allows querying the
+destination cgroup based on uid/gid and libcg will also migrate the
+application there. I am also writing a pam plugin which will move
+all the login sessions to respective cgroup (as mentioned by rule file).
+Will also modify "init" so that all the system services to into cgroup
+belonging to root.
 
+Once user is logged in and running into his resource group, he can manage
+further subgroups at his own based on his application requirements (as you
+mentioned proj1 and proj2 here).
 
-> > If we need this fix, perhaps it is better to modify posix_timer_event()
-> > to check !list_empty()?
->
-> Yeah, I had considered that, but it's a tad more invasive. See below.
->
-> I mainly don't like this patch
+> [uid1/gid1]% newtask.sh proj1app
+> ... proj1app run under /mnt/cgroup/gid1/uid1
+> 
 
-Agreed, this one looks worse.
+Yes, so if a user does not specifically launch an application targetted
+for a particular cgroup, then it will run into default group for that
+user (as specified by rule file). In this case under /mnt/cgroup/gid1/uid1.
 
+> [uid1/gid1]% newtask.sh --type proj1type proj1app
+> ... proj1app run under /mnt/cgroup/gid1/uid1/proj1
+>  
 
-I forgot (if ever knew ;) this code completely, but can't we make a simpler
-fix? posix_timer_event() can check list_empty() lockless,
+IOW, probably a user can say.
 
-	posix_timer_event()
-	{
-		if (!list_emtpy(sigq->list))
-			return 0;
+newtask.sh --cgrp /mnt/cgroup/gid1/uid1/proj1/  proj1app
 
-		... fill and send ->sigq...
-	}
+> In this case, admin sets up limitation of proj1type.
 
-When the signal will be dequeued, schedule_next_timer() should afaics
-set ->it_overrun_last which is copied to ->si_overrun then. Or we can
-increment timr->it_overrun before return if I misread hrtimer_forward().
+I think admin should setup the limits only til /mnt/cgroup/gid1/uid1.
+After that how resources allocated to uid1 are subdivided between various
+user applications should be controller by user. So resources under
+proj1 and proj2 will be full controlled by user.
 
-What do you think?
+> Also I guess proj1type has ownership (ex: proj1type allows gid1).
+> Isn't this enough?
 
+I think to begin with and to get some kind of simple functionality
+going it might be good. I am sure others will target for more complex
+configurations and usages.
 
-Another possible fix... we can change sys_timer_settime() to do
-sigqueue_free() and re-alloc ->sigq when it is pending. Not that
-I like this very much though.
-
-Oleg.
-
+Thanks
+Vivek
