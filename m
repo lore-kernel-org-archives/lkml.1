@@ -1,65 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760909AbYGQRms@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932138AbYGQRpU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760909AbYGQRms (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 13:42:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760845AbYGQRmi
+	id S932138AbYGQRpU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 13:45:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756779AbYGQRpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 13:42:38 -0400
-Received: from mga14.intel.com ([143.182.124.37]:27152 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759177AbYGQRmh convert rfc822-to-8bit (ORCPT
+	Thu, 17 Jul 2008 13:45:05 -0400
+Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:36177 "HELO
+	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757474AbYGQRpD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 13:42:37 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,204,1215414000"; 
-   d="scan'208";a="21650160"
-From: "Stone, Joshua I" <joshua.i.stone@intel.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       "systemtap@sourceware.org" <systemtap@sourceware.org>
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Date: Thu, 17 Jul 2008 10:42:33 -0700
-Subject: RE: [PATCH] systemtap: fix up on_each_cpu() for kernels 2.6.26+
-Thread-Topic: [PATCH] systemtap: fix up on_each_cpu() for kernels 2.6.26+
-Thread-Index: AcjoLbR+Fg5JZnWqRPuYo3suwnzlywABAwxQ
-Message-ID: <60BA3EDE80604C4BAEE4AAF7FF714D185813F8C3@orsmsx504.amr.corp.intel.com>
-References: <1216313476.5515.16.camel@localhost.localdomain>
- <1216313591.5515.19.camel@localhost.localdomain>
-In-Reply-To: <1216313591.5515.19.camel@localhost.localdomain>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Thu, 17 Jul 2008 13:45:03 -0400
+X-Yahoo-Newman-Property: ymail-3
+Subject: [ANNOUNCE] - VHACS-VM x86_64 Alpha Preview - FOLLOWUP
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Jerome Martin <tramjoe.merin@gmail.com>
+Cc: Ming Zhang <blackmagic02881@gmail.com>,
+       "Ross S. W. Walker" <rwalker@medallion.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andrew Morton <akpm@osdl.org>,
+       "Ted Ts'o" <tytso@thunk.org>, Christoph Hellwig <hch@lst.de>,
+       Mike Mazarick <mazarick@bellsouth.net>,
+       Rafiu Fakunle <rafiu@openfiler.com>, Hannes Reinecke <hare@suse.de>,
+       Grant Grundler <grundler@google.com>,
+       "Love, Robert W" <robert.w.love@intel.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Beekhof <abeekhof@suse.de>,
+       Michael Shiloh <michael@openmoko.org>, Bryan Black <bdblinux@gmail.com>,
+       Sig Lange <sig.lange@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>,
+       Open iSCSI <open-iscsi@googlegroups.com>,
+       OpenFabrics-General <general@lists.openfabrics.org>
+In-Reply-To: <1216058533.21408.83.camel@haakon2.linux-iscsi.org>
+References: <1216058533.21408.83.camel@haakon2.linux-iscsi.org>
+Content-Type: text/plain
+Date: Thu, 17 Jul 2008 10:44:57 -0700
+Message-Id: <1216316697.7988.78.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Thu, 2008-07-17 at 11:51 -0500, James Bottomley wrote:
->> In kernel 2.6.26, this patch
->>
->> commit 15c8b6c1aaaf1c4edd67e2f02e4d8e1bd1a51c0d
->> Author: Jens Axboe <jens.axboe@oracle.com>
->> Date:   Fri May 9 09:39:44 2008 +0200
->>
->>     on_each_cpu(): kill unused 'retry' parameter
->>
->> means that runtime/time.c is now using the wrong calling conventions.
->> Fix this up and surround it by kernel versioning #ifdefs.
->
-> By the way, this is a classic illustration of the fragility problem
-> in holding the systemtap runtime outside of the kernel.  If it had
-> been in-kernel, all this would be fixed up and running and no-one
-> would even have noticed.
+Greetings all,
 
-Believe it or not, we really do understand this sentiment.
+Just a quick couple of updates since the VHACS-VM announcement (which
+happened to be a day after after v2.6.26. ;):
 
-The whole runtime/time.c in particular is a fairly ugly way for us to
-get a call-anywhere gettimeofday.  I would love to see an in-kernel
-replacement for this, but I don't have the expertise to know how to
-approach it myself.
+I) The two VHACS-VM x86_64 images, have been split into 2 compressed
+~300 MB images (for the running demo), and a 800 MB BUILD .vmdk disk
+image containing the source for VHACS v0.8.15.  The three archives can
+be found at the same location:
 
-Josh
+http://linux-iscsi.org/builds/VHACS-VM/x86_64/vmware6/
+
+II) lio-core-2.6.git has been updated to v2.6.26 and loaded successfully
+on 32-bit x86 VM.  Only a very minor change to get things compiled on
+v2.6.26.  Please see
+
+http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=summary
+
+for more information.
+
+III) VHACS-VM has now successfully been able to handle node failures and
+restart failed cluster resource allocations (RA) on the active node,
+across multiple platforms using x86_64 hardware virtualization.  :-)
+
+Lots of things going on this week.  More to come soon.  Please keep
+checking the http://Linux-iSCSI.org site for the latest information.
+
+Many thanks for your most valuable of time,
+
+--nab
+
+On Mon, 2008-07-14 at 11:02 -0700, Nicholas A. Bellinger wrote:
+> Greetings all,
+> 
+> I am pleased to announce the Alpha availibility of VHACS-VM Demo for
+> Hardware Virtualized x86_64 running (initially) on VMWare Workstation 6.
+> The VHACS cluster stack also obviously runs on 'bare-metal' hardware,
+> but today VHACS-VM is the easiest method to get your own open storage
+> cloud up and running.
+> 
+> What is VHACS..?
+> 
+> VHACS is a Cloud Storage implementation running on Linux v2.6. VHACS is
+> an acrynom for Virtualization, High Availibility, and Cluster Storage.
+> VHACS is a combination of at least eight (8) long term OSS/Linux based
+> projects, along with a CLI management interface for controlling VHACS
+> nodes, clouds, and vservers within the VHACS cluster.  Here is a quick
+> rundown of the projects (so far) that make up the VHACS cluster stack:
+> 
+> CLUSTER:
+> 
+>       * ) Pacemaker The scalable High-Availability cluster resource
+>         manager formerly part of Heartbeat
+>       * ) OpenAIS The OpenAIS Standards Based Cluster Framework is an
+>         OSI Certified implementation of the Service Availability Forum
+>         Application Interface Specification (AIS)
+> 
+> SERVER:
+> 
+>       * ) LIO-Target w/ IBLOCK LIO-Core subsystem plugin for iSCSI
+>         Target mode export
+>       * ) DRBD Distributed Replicated Block device for Network RAID 1
+>         Mirrors
+>       * ) Linux Logical Volume Manager (LVM) ('vhacs' volume group for
+>         creation of VHACS clouds)
+> 
+> CLIENT:
+> 
+>       * ) Open/iSCSI iSCSI Initiator client
+>       * ) Ext3 filesystem
+>       * ) Linux-Vserver Linux Virtualization Layer
+> 
+> I am happy to report that VHACS-VM Alpha Demo x86_64 is running 0.8.15
+> VHACS code, along with the many other pieces of open source
+> infrastructure that the VHACS cloud builds upon, and providing
+> Active/Active H/A with Synchronous Data Replication iSCSI Target ERL=2 /
+> MC/2 export that makes up the SERVER side of the VHACS cloud.  The
+> CLIENT side of the VHACS cloud is also running an iSCSI Initiator ext3
+> mounted filesystem with Open/iSCSI on top of Intel 45 nanometer
+> 'Wolfdale' microprocessor silicon and DDR2 800 memory.
+> 
+> Futhermore, using commerically available x86 virtualization technology
+> on open/closed platforms, I am very happy to report that VHACS-VM 2x
+> node clusters are now up and running across both OPEN (Linux x86_64) and
+> CLOSED (win32) x86 platforms on top of the 45nm chips with the VMMU/VMX
+> parts enabled.  The first OS independent storage clouds running on top
+> of v2.6.25.9-kdb are now a reality.
+> 
+> Here is a link to the code, screenshots, and all the goodies:
+> 
+> http://linux-iscsi.org/index.php/VHACS-VM
+> http://linux-iscsi.org/index.php/VHACS
+> 
+> The VHACS-VM x86_64 system images, which contain a Debian Etch system
+> iamges running the very latest compontents that make up the VHACS
+> cluster stack.  Also included in the vhac64-west and vhacs64-east system
+> images is a complete development environment, including a KDB enabled
+> kernel that will allow the developer to pause the running image at any
+> time, examine memory, or setup a breakpoint to track down a problem.
+> The x86_64 system images currently require hardware x86 virtualization,
+> please see the wiki for more information about hardware requirements.
+> They are available from:
+> 
+> http://linux-iscsi.org/builds/VHACS-VM/x86_64/vmware6/
+> 
+> Also, there is great interest to see VHACS-VM running on KVM and QEMU
+> Virtualization platforms.  This is something that should not be too
+> difficult as long as the virtualization platform supports execution of
+> x86_64 system images.  i386 system images are also in the works to bring
+> the storage cloud to legacy environments without hardware x86_64
+> virtualization.
+> 
+> Enjoy,
+> 
+> --nab
+> 
+
