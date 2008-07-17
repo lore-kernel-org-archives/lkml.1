@@ -1,185 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757688AbYGQPUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760648AbYGQPVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757688AbYGQPUk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 11:20:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760592AbYGQPUZ
+	id S1760648AbYGQPVn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 11:21:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755479AbYGQPVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 11:20:25 -0400
-Received: from ti-out-0910.google.com ([209.85.142.191]:3770 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760581AbYGQPUX (ORCPT
+	Thu, 17 Jul 2008 11:21:35 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37527 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753043AbYGQPVf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 11:20:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer;
-        b=w1Emp1sGr9TdSUV/frVxIu69bWCiR4XgvD/OisKvyA5V/8sPxJeRk5jBwyIx8+qU10
-         mLfW6lmxXkHX0siy82FAKFeo+3r9UfTZdJVZ0j0X4qPYZjJV2xB7Xat+P7JQ5twbT4RC
-         ST07aJWrXU73ne32RkIXtDHZI12rYaQhZ3GDQ=
-Subject: [PATCH AVAIL.]ivtv:Crash  2.6.26 with KUROTOSIKOU CX23416-STVLP
-From: Kyuma Ohta <whatisthis.sowhat@gmail.com>
-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-Cc: Video4Linux ML <video4linux-list@redhat.com>,
-       ivtv-devel ML <ivtv-devel@ivtvdriver.org>, whatisthis.sowhat@gmail.com
-Content-Type: multipart/mixed; boundary="=-682TPPIcspAw5D2NTCcu"
-Date: Fri, 18 Jul 2008 00:20:14 +0900
-Message-Id: <1216308014.1146.22.camel@melchior>
+	Thu, 17 Jul 2008 11:21:35 -0400
+Subject: RE: Large increase in context switch rate
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Alex Nixon (Intern)" <Alex.Nixon@eu.citrix.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ian Campbell <Ian.Campbell@eu.citrix.com>
+In-Reply-To: <0E902970173AF84089673FA54B7FE78A32906B@lonpexch01.citrite.net>
+References: <487E43D9.7080703@goop.org> <1216286250.5232.67.camel@twins>
+	 <487F5F15.4050208@goop.org>
+	 <0E902970173AF84089673FA54B7FE78A32906B@lonpexch01.citrite.net>
+Content-Type: text/plain
+Date: Thu, 17 Jul 2008 17:21:43 +0200
+Message-Id: <1216308103.5232.96.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2008-07-17 at 16:14 +0100, Alex Nixon (Intern) wrote:
+> Yeah I've checked - the number of context switches seems to be around
+> 60k regardless of whether CONFIG_PARAVIRT is switched on, and regardless
+> of whether it's running in domu or native (-j4 on dual core)
 
---=-682TPPIcspAw5D2NTCcu
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+I'm seeing:
 
-Hi,
-I'm testing 2.6.26/amd64 with Athlon64 x2 Box with
-KUROTOSIKOU CX23416-STVLP,always crash ivtv driver
-when loading upd64083 driver.
-I checked crash dump,this issue cause of loading 
-upd64083.ko with i2c_probed_new_device().
-So,I fixed ivtv-i2c.c of 2.6.26 vanilla,and
-fixed *pretty* differnce memory allocation,structure
-of upd64083.c.
-I'm running patched 2.6.26 vanilla with below attached
-patches over 24hrs,and over 10hrs recording from ivtv,
-not happend anything;-)
-Please apply below to 2.6.26.x..
+procs -----------memory---------- ---swap-- -----io---- --system-- -----cpu------
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
 
-Best regards, 
-Ohta.
+ 4  0      0 1148916 120340 472040    0    0     0  1912 2225 3662 78 22  0  0  0
+ 4  0      0 1130192 120556 489844    0    0     0  1974 2220 3461 77 22  0  0  0
 
-E-Mail: whatisthis.sowhat@gmail.com (Public)
-Home Page: http://d.hatena.ne.jp/artane/ 
-  (Sorry,not maintaining,and written in Japanese only...)
-Twitter: Artanejp (Mainly Japanese)
-ICQ: 366538955
-KEYID: 6B79F95F
-FINGERPRINT:
-9AB3 8569 6033 FDBE 352B  CB6D DBFA B9E2 6B79 F95F
+doing make -j4
+
+This is on x86_64 SMP PREEMPT HZ=1000 !PARAVIRT 
+(Linus' tree as of somewhere earlier today)
 
 
-
---=-682TPPIcspAw5D2NTCcu
-Content-Disposition: attachment; filename=2.6.26-ivtv-cards-fix-includes.patch
-Content-Type: text/x-patch; name=2.6.26-ivtv-cards-fix-includes.patch; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
-
-diff -urN a/drivers/media/video/ivtv/ivtv-cards.c b/drivers/media/video/ivtv/ivtv-cards.c
---- a/drivers/media/video/ivtv/ivtv-cards.c	2008-07-14 06:51:29.000000000 +0900
-+++ b/drivers/media/video/ivtv/ivtv-cards.c	2008-07-15 23:00:41.286531980 +0900
-@@ -28,6 +28,7 @@
- #include <media/cs53l32a.h>
- #include <media/cx25840.h>
- #include <media/upd64031a.h>
-+#include <media/upd64083.h> // Fix 20080715 K.Ohta
- 
- #define MSP_TUNER  MSP_INPUT(MSP_IN_SCART1, MSP_IN_TUNER1, \
- 				MSP_DSP_IN_TUNER, MSP_DSP_IN_TUNER)
-
---=-682TPPIcspAw5D2NTCcu
-Content-Disposition: attachment; filename=2.6.26-ivtv-i2c-fix-probing-upd64083.patch
-Content-Type: text/x-patch; name=2.6.26-ivtv-i2c-fix-probing-upd64083.patch; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
-
-diff -urN a/drivers/media/video/ivtv/ivtv-i2c.c b/drivers/media/video/ivtv/ivtv-i2c.c
---- a/drivers/media/video/ivtv/ivtv-i2c.c	2008-07-14 06:51:29.000000000 +0900
-+++ b/drivers/media/video/ivtv/ivtv-i2c.c	2008-07-16 20:57:47.196653657 +0900
-@@ -177,10 +177,9 @@
- 	}
- 
- 	if (id != I2C_DRIVERID_TUNER) {
--		if (id == I2C_DRIVERID_UPD64031A ||
--		    id == I2C_DRIVERID_UPD64083) {
-+		if (id == I2C_DRIVERID_UPD64031A ) { // Apply only upd64031a 20080716
- 			unsigned short addrs[2] = { info.addr, I2C_CLIENT_END };
--
-+		   
- 			c = i2c_new_probed_device(&itv->i2c_adap, &info, addrs);
- 		} else
- 			c = i2c_new_device(&itv->i2c_adap, &info);
-
---=-682TPPIcspAw5D2NTCcu
-Content-Disposition: attachment; filename=2.6.26-upd64083-fix-allocation.patch
-Content-Type: text/x-patch; name=2.6.26-upd64083-fix-allocation.patch; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
-
-diff -urN a/drivers/media/video/upd64083.c b/drivers/media/video/upd64083.c
---- a/drivers/media/video/upd64083.c	2008-07-14 06:51:29.000000000 +0900
-+++ b/drivers/media/video/upd64083.c	2008-07-16 20:54:05.702773275 +0900
-@@ -51,9 +51,9 @@
- };
- 
- struct upd64083_state {
-+   	u8 regs[TOT_REGS];
- 	u8 mode;
- 	u8 ext_y_adc;
--	u8 regs[TOT_REGS];
- };
- 
- /* Initial values when used in combination with the
-@@ -178,20 +178,19 @@
- 	struct upd64083_state *state;
- 	int i;
- 
--	if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE_DATA))
-+        if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE_DATA))
- 		return -EIO;
--
- 	v4l_info(client, "chip found @ 0x%x (%s)\n",
- 			client->addr << 1, client->adapter->name);
- 
--	state = kmalloc(sizeof(struct upd64083_state), GFP_KERNEL);
-+	state = kzalloc(sizeof(struct upd64083_state), GFP_KERNEL); // Fix 20080716
- 	if (state == NULL)
- 		return -ENOMEM;
- 	i2c_set_clientdata(client, state);
- 	/* Initially assume that a ghost reduction chip is present */
- 	state->mode = 0;  /* YCS mode */
- 	state->ext_y_adc = (1 << 5);
--	memcpy(state->regs, upd64083_init, TOT_REGS);
-+	memcpy(state->regs, upd64083_init, sizeof(state->regs)); // Fix 20080716
- 	for (i = 0; i < TOT_REGS; i++)
- 		upd64083_write(client, i, state->regs[i]);
- 	return 0;
-@@ -217,5 +216,6 @@
- 	.command = upd64083_command,
- 	.probe = upd64083_probe,
- 	.remove = upd64083_remove,
-+        .legacy_class = I2C_CLASS_TV_ANALOG | I2C_CLASS_TV_DIGITAL , // Add 20080716
- 	.id_table = upd64083_id,
- };
-
---=-682TPPIcspAw5D2NTCcu
-Content-Disposition: attachment; filename=2.6.26-upd64031a-fix-allocation.patch
-Content-Type: text/x-patch; name=2.6.26-upd64031a-fix-allocation.patch; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
-
-diff -urN a/drivers/media/video/upd64031a.c b/drivers/media/video/upd64031a.c
---- a/drivers/media/video/upd64031a.c	2008-07-14 06:51:29.000000000 +0900
-+++ b/drivers/media/video/upd64031a.c	2008-07-16 20:55:44.692759552 +0900
-@@ -207,7 +207,7 @@
- 	v4l_info(client, "chip found @ 0x%x (%s)\n",
- 			client->addr << 1, client->adapter->name);
- 
--	state = kmalloc(sizeof(struct upd64031a_state), GFP_KERNEL);
-+	state = kzalloc(sizeof(struct upd64031a_state), GFP_KERNEL); // Fix 20080716
- 	if (state == NULL)
- 		return -ENOMEM;
- 	i2c_set_clientdata(client, state);
-@@ -239,6 +239,7 @@
- 	.driverid = I2C_DRIVERID_UPD64031A,
- 	.command = upd64031a_command,
- 	.probe = upd64031a_probe,
--	.remove = upd64031a_remove,
-+       .legacy_class = I2C_CLASS_TV_ANALOG | I2C_CLASS_TV_DIGITAL , // Add 20080716
-+       .remove = upd64031a_remove,
- 	.id_table = upd64031a_id,
- };
-
---=-682TPPIcspAw5D2NTCcu--
 
