@@ -1,168 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932229AbYGQTEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760598AbYGQTGM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932229AbYGQTEo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 15:04:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757823AbYGQTEf
+	id S1760598AbYGQTGM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 15:06:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757932AbYGQTF5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 15:04:35 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:47514 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756501AbYGQTEe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 15:04:34 -0400
-Message-ID: <487F9677.4060001@suse.de>
-Date: Thu, 17 Jul 2008 22:59:03 +0400
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Thu, 17 Jul 2008 15:05:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41387 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757678AbYGQTF5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 15:05:57 -0400
+Message-ID: <487F980F.7070708@redhat.com>
+Date: Thu, 17 Jul 2008 14:05:51 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
 MIME-Version: 1.0
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-CC: linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: [PATCH] acpi: Avoid dropping rapid hotkey events (or other GPEs)
- on Asus EeePC
-References: <487D23C3.5070301@student.cs.york.ac.uk> <487F58B6.5040309@suse.de> <487F6D2E.2040501@tuffmail.co.uk> <487F772C.1070806@suse.de> <487F9592.1060003@tuffmail.co.uk>
-In-Reply-To: <487F9592.1060003@tuffmail.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: Tim Shimmin <xfs-masters@oss.sgi.com>, xfs@oss.sgi.com,
+       linux-kernel@vger.kernel.org, Johannes Weiner <hannes@saeurebad.de>
+Subject: Re: latest -git: kernel BUG at fs/xfs/support/debug.c:54!
+References: <19f34abd0807171046j425bebc6m8d8eb80a641e0e5b@mail.gmail.com>
+In-Reply-To: <19f34abd0807171046j425bebc6m8d8eb80a641e0e5b@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Jenkins wrote:
-> Alexey Starikovskiy wrote:
->> Alan Jenkins wrote:
->>> Alexey Starikovskiy wrote:
->>>> Hi Alan,
->>>>
->>>> Could you please test if your patch works with the last patch in
->>>> #10919?
->>>>
->>>> Thanks,
->>>> Alex.
->>> Vacuously so.
->>>
->>> My patch still applies, but #10919 makes it obsolete.
->> Not so, there are two polls in ec.c, first is poll for change in
->> status register,
->> which gave the name to the mode, and still exists; the other is for event
->> in embedded controller, which was introduced to properly solve #9998,
->> and part of
->> it is removed by patch in #10919.
->>>  My patch fixed a
->>> bug that shows up in polling mode.  #10919 kills polling mode.
->>> I've tested v2.6.26 + #10919 and it works fine (except for spamming the
->>> kernel log - please read my Bugzilla comment).
->>>
->>>
->>> It appears that interrupt mode suffered from a race which is very
->>> similar to my original problem.  If two GPE interrupts arrive before the
->>> workqueue runs, then the second interrupt will be ignored because
->>> EC_FLAGS_QUERY_PENDING is still set.  This will happen with any EC if
->>> interrupts are very close together, right?
->> The notion of queue in embedded controller is new, it was never
->> mentioned in
->> ACPI spec, so the driver was written with assumption that new query
->> interrupt should
->> not arrive before we service previous one. There is even a chart in
->> how interrupts
->> should occur near the EC query command...
->>> I think my patch also fixes this theoretical problem.
->> I think, this is not a theoretical problem, but the problem we've
->> tried to solve in
->> #9998, #10724, and so on.
->>> But I'd rather
->>> you took over on this.  I was already confused by ec.c in v2.6.26, and
->>> with #10919 I understand it even less.  E.g. why is
->>> ec_switch_to_poll_mode() still present; what does it do now do_ec_poll()
->>> is removed?
->> See above, I still disable EC GPE for the time than we have pending
->> query,
->> so we better not wait for it to check the status register
->>> I'm happy to work on this with you, but I'd need to be able understand
->>> the code first :-(.
->> Well, with this patch of yours, I guess, we will not have too many
->> problems in EC left :-)
+Vegard Nossum wrote:
+> Hi,
 > 
-> OK, I'm happy now.
+> I got this with an intentionally corrupted filesystem:
 > 
-> However, I'm now worried that I broke the semantics for
-> EC_FLAGS_QUERY_PENDING.  In my patch it gets cleared after the first
-> query, even though I'm running queries in a loop until nothing is left. 
-> It doesn't cause a problem in my patch, but it's unclean and might cause
-> confusion later on.  It'd be better to clear it after the loop has
-> completed.
-Right.
-> 
-> Can I fix my patch?  If you ACK the new code below, then I'll resend
-> with a proper changelog, S-o-B, CC's from the -mm mail (including
-> stable@kernel.org) and grovel to akpm, etc.
-ACK
-> 
-> You're latest (quieter) work still applies on top and works fine.
-Good.
-> 
-> Thanks
-> Alan
-Thanks,
-Alex.
-> 
-> ---
-> 
-> From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-> Tested-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-> 
-> diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
-> index 5622aee..2a42392 100644
-> --- a/drivers/acpi/ec.c
-> +++ b/drivers/acpi/ec.c
-> @@ -230,8 +230,7 @@ static int acpi_ec_transaction_unlocked(struct acpi_ec *ec, u8 command,
->  			       "finish-write timeout, command = %d\n", command);
->  			goto end;
->  		}
-> -	} else if (command == ACPI_EC_COMMAND_QUERY)
-> -		clear_bit(EC_FLAGS_QUERY_PENDING, &ec->flags);
-> +	}
->  
->  	for (; rdata_len > 0; --rdata_len) {
->  		result = acpi_ec_wait(ec, ACPI_EC_EVENT_OBF_1, force_poll);
-> @@ -459,14 +458,10 @@ void acpi_ec_remove_query_handler(struct acpi_ec *ec, u8 query_bit)
->  
->  EXPORT_SYMBOL_GPL(acpi_ec_remove_query_handler);
->  
-> -static void acpi_ec_gpe_query(void *ec_cxt)
-> +static void acpi_ec_gpe_run_handler(struct acpi_ec *ec, u8 value)
->  {
-> -	struct acpi_ec *ec = ec_cxt;
-> -	u8 value = 0;
->  	struct acpi_ec_query_handler *handler, copy;
->  
-> -	if (!ec || acpi_ec_query(ec, &value))
-> -		return;
->  	mutex_lock(&ec->lock);
->  	list_for_each_entry(handler, &ec->list, node) {
->  		if (value == handler->query_bit) {
-> @@ -484,6 +479,20 @@ static void acpi_ec_gpe_query(void *ec_cxt)
->  	mutex_unlock(&ec->lock);
->  }
->  
-> +static void acpi_ec_gpe_query(void *ec_cxt)
-> +{
-> +	struct acpi_ec *ec = ec_cxt;
-> +	u8 value = 0;
-> +
-> +	if (!ec)
-> +		return;
-> +
-> +	while (acpi_ec_query(ec, &value) != 0)
-> +		acpi_ec_gpe_run_handler(ec, value);
-> +
-> +	clear_bit(EC_FLAGS_QUERY_PENDING, &ec->flags);
-> +}
-> +
->  static u32 acpi_ec_gpe_handler(void *data)
->  {
->  	acpi_status status = AE_OK;
+> Filesystem "loop1": Disabling barriers, not supported by the underlying device
+> XFS mounting filesystem loop1
+> Ending clean XFS mount for filesystem: loop1
+> Device loop1 - bad inode magic/vsn daddr 9680 #30 (magic=4946)
+> ------------[ cut here ]------------
+> kernel BUG at fs/xfs/support/debug.c:54!
+
+running a debug XFS will turn all sorts of tests into panics that would
+not otherwise crash and burn that way.
+
+I think normally when testing intentionally corrupted filesystems, you
+expect corruptions to be handled gracefully.  But in xfs's flavor of
+debug, I'm not sure it's quite as true.
+
+Perhaps the debug variant should not BUG() on disk corruption either,
+but it'd probably be more relevent to test this on a non-debug build.
+
+Does this corrupted fs survive better on non-debug xfs?
+
+-Eric
+
+> invalid opcode: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
+> Pid: 12849, comm: grep Not tainted (2.6.26-03414-g33af79d #43)
+> EIP: 0060:[<c0386d89>] EFLAGS: 00210246 CPU: 1
+> EIP is at cmn_err+0x99/0xa0
+> EAX: ed75e000 EBX: c089047c ECX: ed75e000 EDX: 00000000
+> ESI: 00000000 EDI: 00200286 EBP: ed75fbbc ESP: ed75fba4
+>  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> Process grep (pid: 12849, ti=ed75e000 task=f1ee9fe0 task.ti=ed75e000)
+> Stack: c0855099 c0846a0d c0d0e8c0 00004946 df92a8f0 0000001e ed75fc2c c03540d4
+>        00000000 c089047c ed75fbfc 000025d0 00000000 0000001e 00004946 ed75fc54
+>        00000000 df92a8f0 df92abd8 000025d0 00000000 00000000 706f6f6c 00000031
+> Call Trace:
+>  [<c03540d4>] ? xfs_imap_to_bp+0x164/0x250
+>  [<c015ad76>] ? trace_hardirqs_on_caller+0x116/0x170
+>  [<c0354250>] ? xfs_itobp+0x90/0x180
+>  [<c0356e51>] ? xfs_iread+0xa1/0x280
+>  [<c034f216>] ? xfs_iget_core+0x1c6/0x6e0
+>  [<c034f82a>] ? xfs_iget+0xfa/0x170
+>  [<c0377546>] ? xfs_lookup+0xb6/0xc0
+>  [<c0382fba>] ? xfs_vn_lookup+0x4a/0x90
+>  [<c01ac110>] ? do_lookup+0x160/0x1b0
+>  [<c01adc38>] ? __link_path_walk+0x208/0xdc0
+>  [<c014f916>] ? up_read+0x16/0x30
+>  [<c034eabe>] ? xfs_iunlock+0xee/0x110
+>  [<c0382bdf>] ? xfs_vn_follow_link+0x3f/0x80
+>  [<c01ae327>] ? __link_path_walk+0x8f7/0xdc0
+>  [<c015906b>] ? trace_hardirqs_off+0xb/0x10
+>  [<c01ae844>] ? path_walk+0x54/0xb0
+>  [<c01aea45>] ? do_path_lookup+0x85/0x230
+>  [<c01af7a8>] ? __user_walk_fd+0x38/0x50
+>  [<c01a7fb1>] ? vfs_stat_fd+0x21/0x50
+>  [<c01590cd>] ? put_lock_stats+0xd/0x30
+>  [<c01bc81d>] ? mntput_no_expire+0x1d/0x110
+>  [<c01a8081>] ? vfs_stat+0x11/0x20
+>  [<c01a80a4>] ? sys_stat64+0x14/0x30
+>  [<c01a5a8f>] ? fput+0x1f/0x30
+>  [<c044a0f8>] ? trace_hardirqs_on_thunk+0xc/0x10
+>  [<c015ad76>] ? trace_hardirqs_on_caller+0x116/0x170
+>  [<c044a0f8>] ? trace_hardirqs_on_thunk+0xc/0x10
+>  [<c010407f>] ? sysenter_past_esp+0x78/0xc5
+>  =======================
+> Code: 04 e8 00 eb 3d 00 89 fa b8 40 4a 92 c0 e8 70 d0 3d 00 85 f6 74
+> 15 83 c4 0c 5b 5e 5f 5d c3 8d 74 26 00 c6 81 c0 e8 d0 c0 00 eb bc <0f>
+> 0b eb fe 90 90 90 55 b9 04 00 00 00 89 e5 57 89 c7 31 c0 f3
+> EIP: [<c0386d89>] cmn_err+0x99/0xa0 SS:ESP 0068:ed75fba4
+> Kernel panic - not syncing: Fatal exception
 > 
 > 
+> Vegard
 > 
 
