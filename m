@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760576AbYGQHtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbYGQHuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760576AbYGQHtf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 03:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755674AbYGQHtZ
+	id S1755548AbYGQHuY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 03:50:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbYGQHuL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 03:49:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42482 "EHLO mx1.redhat.com"
+	Thu, 17 Jul 2008 03:50:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42525 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755382AbYGQHtY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 03:49:24 -0400
+	id S1752828AbYGQHuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 03:50:09 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -16,254 +16,84 @@ From: Roland McGrath <roland@redhat.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 Cc: linux-kernel@vger.kernel.org
 X-Fcc: ~/Mail/linus
-Subject: [PATCH 3/6] x86: tracehook: asm/syscall.h
+Subject: [PATCH 5/6] x86: tracehook: TIF_NOTIFY_RESUME
 In-Reply-To: Roland McGrath's message of  Thursday, 17 July 2008 00:45:50 -0700 <20080717074550.EE1E215411D@magilla.localdomain>
 References: <20080717074550.EE1E215411D@magilla.localdomain>
-X-Windows: even your dog won't like it.
-Message-Id: <20080717074852.4DE5A15411D@magilla.localdomain>
-Date: Thu, 17 Jul 2008 00:48:52 -0700 (PDT)
+Emacs: Lovecraft was an optimist.
+Message-Id: <20080717075001.8C62C1541A5@magilla.localdomain>
+Date: Thu, 17 Jul 2008 00:50:01 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add asm/syscall.h for x86 with all the required entry points.
-This will allow arch-independent tracing code for system calls.
+This adds TIF_NOTIFY_RESUME support for x86, both 64-bit and 32-bit.
+When set, we call tracehook_notify_resume() on the way to user mode.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- include/asm-x86/ptrace.h  |    5 +
- include/asm-x86/syscall.h |  210 +++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 215 insertions(+), 0 deletions(-)
+ arch/x86/kernel/signal_32.c   |    5 +++++
+ arch/x86/kernel/signal_64.c   |    5 +++++
+ include/asm-x86/thread_info.h |    4 +++-
+ 3 files changed, 13 insertions(+), 1 deletions(-)
 
-diff --git a/include/asm-x86/ptrace.h b/include/asm-x86/ptrace.h
-index 8a71db8..91a77f5 100644
---- a/include/asm-x86/ptrace.h
-+++ b/include/asm-x86/ptrace.h
-@@ -213,6 +213,11 @@ static inline unsigned long frame_pointer(struct pt_regs *regs)
- 	return regs->bp;
- }
+diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
+index 3ffb88f..c17c0cb 100644
+--- a/arch/x86/kernel/signal_32.c
++++ b/arch/x86/kernel/signal_32.c
+@@ -663,6 +663,11 @@ do_notify_resume(struct pt_regs *regs, void *unused, __u32 thread_info_flags)
+ 	if (thread_info_flags & _TIF_SIGPENDING)
+ 		do_signal(regs);
  
-+static inline unsigned long user_stack_pointer(struct pt_regs *regs)
-+{
-+	return regs->sp;
-+}
++	if (thread_info_flags & _TIF_NOTIFY_RESUME) {
++		clear_thread_flag(TIF_NOTIFY_RESUME);
++		tracehook_notify_resume(regs);
++	}
 +
- /*
-  * These are defined as per linux/ptrace.h, which see.
+ 	if (thread_info_flags & _TIF_HRTICK_RESCHED)
+ 		hrtick_resched();
+ 
+diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
+index e78b97f..f65ece6 100644
+--- a/arch/x86/kernel/signal_64.c
++++ b/arch/x86/kernel/signal_64.c
+@@ -471,6 +471,11 @@ void do_notify_resume(struct pt_regs *regs, void *unused,
+ 	if (thread_info_flags & _TIF_SIGPENDING)
+ 		do_signal(regs);
+ 
++	if (thread_info_flags & _TIF_NOTIFY_RESUME) {
++		clear_thread_flag(TIF_NOTIFY_RESUME);
++		tracehook_notify_resume(regs);
++	}
++
+ 	if (thread_info_flags & _TIF_HRTICK_RESCHED)
+ 		hrtick_resched();
+ }
+diff --git a/include/asm-x86/thread_info.h b/include/asm-x86/thread_info.h
+index 0a8f27d..6ed4362 100644
+--- a/include/asm-x86/thread_info.h
++++ b/include/asm-x86/thread_info.h
+@@ -71,6 +71,7 @@ struct thread_info {
+  * Warning: layout of LSW is hardcoded in entry.S
   */
-diff --git a/include/asm-x86/syscall.h b/include/asm-x86/syscall.h
-new file mode 100644
-index 0000000..7de35f0
---- /dev/null
-+++ b/include/asm-x86/syscall.h
-@@ -0,0 +1,210 @@
-+/*
-+ * Access to user system call parameters and results
-+ *
-+ * Copyright (C) 2008 Red Hat, Inc.  All rights reserved.
-+ *
-+ * This copyrighted material is made available to anyone wishing to use,
-+ * modify, copy, or redistribute it subject to the terms and conditions
-+ * of the GNU General Public License v.2.
-+ *
-+ * See asm-generic/syscall.h for descriptions of what we must do here.
-+ */
-+
-+#ifndef _ASM_SYSCALL_H
-+#define _ASM_SYSCALL_H	1
-+
-+#include <linux/sched.h>
-+
-+static inline long syscall_get_nr(struct task_struct *task,
-+				  struct pt_regs *regs)
-+{
-+	/*
-+	 * We always sign-extend a -1 value being set here,
-+	 * so this is always either -1L or a syscall number.
-+	 */
-+	return regs->orig_ax;
-+}
-+
-+static inline void syscall_rollback(struct task_struct *task,
-+				    struct pt_regs *regs)
-+{
-+	regs->ax = regs->orig_ax;
-+}
-+
-+static inline long syscall_get_error(struct task_struct *task,
-+				     struct pt_regs *regs)
-+{
-+	unsigned long error = regs->ax;
-+#ifdef CONFIG_IA32_EMULATION
-+	/*
-+	 * TS_COMPAT is set for 32-bit syscall entries and then
-+	 * remains set until we return to user mode.
-+	 */
-+	if (task_thread_info(task)->status & TS_COMPAT)
-+		/*
-+		 * Sign-extend the value so (int)-EFOO becomes (long)-EFOO
-+		 * and will match correctly in comparisons.
-+		 */
-+		error = (long) (int) error;
-+#endif
-+	return error >= -4095L ? error : 0;
-+}
-+
-+static inline long syscall_get_return_value(struct task_struct *task,
-+					    struct pt_regs *regs)
-+{
-+	return regs->ax;
-+}
-+
-+static inline void syscall_set_return_value(struct task_struct *task,
-+					    struct pt_regs *regs,
-+					    int error, long val)
-+{
-+	regs->ax = (long) error ?: val;
-+}
-+
-+#ifdef CONFIG_X86_32
-+
-+static inline void syscall_get_arguments(struct task_struct *task,
-+					 struct pt_regs *regs,
-+					 unsigned int i, unsigned int n,
-+					 unsigned long args[n])
-+{
-+	BUG_ON(i + n > 6);
-+	memcpy(args, &regs->bx + i, n * sizeof(args[0]));
-+}
-+
-+static inline void syscall_set_arguments(struct task_struct *task,
-+					 struct pt_regs *regs,
-+					 unsigned int i, unsigned int n,
-+					 const unsigned long args[n])
-+{
-+	BUG_ON(i + n > 6);
-+	memcpy(&regs->bx + i, args, n * sizeof(args[0]));
-+}
-+
-+#else	 /* CONFIG_X86_64 */
-+
-+static inline void syscall_get_arguments(struct task_struct *task,
-+					 struct pt_regs *regs,
-+					 unsigned int i, unsigned int n,
-+					 unsigned long *args)
-+{
-+# ifdef CONFIG_IA32_EMULATION
-+	if (task_thread_info(task)->status & TS_COMPAT)
-+		switch (i + n) {
-+		case 6:
-+			if (!n--) break;
-+			*args++ = regs->bp;
-+		case 5:
-+			if (!n--) break;
-+			*args++ = regs->di;
-+		case 4:
-+			if (!n--) break;
-+			*args++ = regs->si;
-+		case 3:
-+			if (!n--) break;
-+			*args++ = regs->dx;
-+		case 2:
-+			if (!n--) break;
-+			*args++ = regs->cx;
-+		case 1:
-+			if (!n--) break;
-+			*args++ = regs->bx;
-+		case 0:
-+			if (!n--) break;
-+		default:
-+			BUG();
-+			break;
-+		}
-+	else
-+# endif
-+		switch (i + n) {
-+		case 6:
-+			if (!n--) break;
-+			*args++ = regs->r9;
-+		case 5:
-+			if (!n--) break;
-+			*args++ = regs->r8;
-+		case 4:
-+			if (!n--) break;
-+			*args++ = regs->r10;
-+		case 3:
-+			if (!n--) break;
-+			*args++ = regs->dx;
-+		case 2:
-+			if (!n--) break;
-+			*args++ = regs->si;
-+		case 1:
-+			if (!n--) break;
-+			*args++ = regs->di;
-+		case 0:
-+			if (!n--) break;
-+		default:
-+			BUG();
-+			break;
-+		}
-+}
-+
-+static inline void syscall_set_arguments(struct task_struct *task,
-+					 struct pt_regs *regs,
-+					 unsigned int i, unsigned int n,
-+					 const unsigned long *args)
-+{
-+# ifdef CONFIG_IA32_EMULATION
-+	if (task_thread_info(task)->status & TS_COMPAT)
-+		switch (i + n) {
-+		case 6:
-+			if (!n--) break;
-+			regs->bp = *args++;
-+		case 5:
-+			if (!n--) break;
-+			regs->di = *args++;
-+		case 4:
-+			if (!n--) break;
-+			regs->si = *args++;
-+		case 3:
-+			if (!n--) break;
-+			regs->dx = *args++;
-+		case 2:
-+			if (!n--) break;
-+			regs->cx = *args++;
-+		case 1:
-+			if (!n--) break;
-+			regs->bx = *args++;
-+		case 0:
-+			if (!n--) break;
-+		default:
-+			BUG();
-+		}
-+	else
-+# endif
-+		switch (i + n) {
-+		case 6:
-+			if (!n--) break;
-+			regs->r9 = *args++;
-+		case 5:
-+			if (!n--) break;
-+			regs->r8 = *args++;
-+		case 4:
-+			if (!n--) break;
-+			regs->r10 = *args++;
-+		case 3:
-+			if (!n--) break;
-+			regs->dx = *args++;
-+		case 2:
-+			if (!n--) break;
-+			regs->si = *args++;
-+		case 1:
-+			if (!n--) break;
-+			regs->di = *args++;
-+		case 0:
-+			if (!n--) break;
-+		default:
-+			BUG();
-+		}
-+}
-+
-+#endif	/* CONFIG_X86_32 */
-+
-+#endif	/* _ASM_SYSCALL_H */
+ #define TIF_SYSCALL_TRACE	0	/* syscall trace active */
++#define TIF_NOTIFY_RESUME	1	/* callback before returning to user */
+ #define TIF_SIGPENDING		2	/* signal pending */
+ #define TIF_NEED_RESCHED	3	/* rescheduling necessary */
+ #define TIF_SINGLESTEP		4	/* reenable singlestep on user return*/
+@@ -94,6 +95,7 @@ struct thread_info {
+ #define TIF_BTS_TRACE_TS	27      /* record scheduling event timestamps */
+ 
+ #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
++#define _TIF_NOTIFY_RESUME	(1 << TIF_NOTIFY_RESUME)
+ #define _TIF_SIGPENDING		(1 << TIF_SIGPENDING)
+ #define _TIF_SINGLESTEP		(1 << TIF_SINGLESTEP)
+ #define _TIF_NEED_RESCHED	(1 << TIF_NEED_RESCHED)
+@@ -135,7 +137,7 @@ struct thread_info {
+ 
+ /* Only used for 64 bit */
+ #define _TIF_DO_NOTIFY_MASK						\
+-	(_TIF_SIGPENDING|_TIF_MCE_NOTIFY|_TIF_HRTICK_RESCHED)
++	(_TIF_SIGPENDING|_TIF_MCE_NOTIFY|_TIF_HRTICK_RESCHED|_TIF_NOTIFY_RESUME)
+ 
+ /* flags to check in __switch_to() */
+ #define _TIF_WORK_CTXSW							\
