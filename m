@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758877AbYGRQIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759972AbYGRQI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758877AbYGRQIr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 12:08:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754897AbYGRQIh
+	id S1759972AbYGRQI7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 12:08:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757617AbYGRQIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 12:08:37 -0400
-Received: from relay.2ka.mipt.ru ([194.85.80.65]:38881 "EHLO 2ka.mipt.ru"
+	Fri, 18 Jul 2008 12:08:42 -0400
+Received: from gw.goop.org ([64.81.55.164]:33669 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753795AbYGRQIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 12:08:36 -0400
-Date: Fri, 18 Jul 2008 20:07:47 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Vegard Nossum <vegard.nossum@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison overwritten
-Message-ID: <20080718160746.GC29740@2ka.mipt.ru>
-References: <20080717214222.GA29449@elte.hu> <20080718054626.GA3338@2ka.mipt.ru> <84144f020807180202l6c703234ic3a2b57e73a1d89a@mail.gmail.com> <20080718101624.GA7107@2ka.mipt.ru> <84144f020807180744w40677f6dm790d2caee3ca0d15@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f020807180744w40677f6dm790d2caee3ca0d15@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+	id S1756648AbYGRQIl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 12:08:41 -0400
+Message-ID: <4880BFFC.9060108@goop.org>
+Date: Fri, 18 Jul 2008 09:08:28 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Jan Beulich <jbeulich@novell.com>
+CC: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       hpa@zytor.com
+Subject: Re: [PATCH] x86: clean up pgd_{c,d}tor
+References: <4880AD11.76E4.0078.0@novell.com> <4880AE15.5060101@goop.org> <4880D1A0.76E4.0078.0@novell.com>
+In-Reply-To: <4880D1A0.76E4.0078.0@novell.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pekka.
+Jan Beulich wrote:
+>>>> Jeremy Fitzhardinge <jeremy@goop.org> 18.07.08 16:52 >>>
+>>>>         
+>> Jan Beulich wrote:
+>>     
+>>> Giving pgd_ctor() a properly typed parameter allows eliminating a local
+>>> variable. Adjust pgd_dtor() to match.
+>>>
+>>> Also, pgd_ctor()'s clearing of the memory is redundant with the
+>>> GFP_ZERO used for allocating it.
+>>>   
+>>>       
+>> Ack to the parameter type change.  But there's already a patch in git to 
+>> remove the redundant clear.
+>>     
+>
+> Again, I can't see this in my just refreshed tree - am I doing things wrong?
+> Or is this due to the myriads of topic branches (which of course I don't
+> check out all)?
+>   
 
-On Fri, Jul 18, 2008 at 05:44:44PM +0300, Pekka Enberg (penberg@cs.helsinki.fi) wrote:
-> Yeah. See the free_debug_processing() function in mm/slub.c for
-> details (the on_freelist() part). However, if you look at slab_free()
-> you can see that in the SLUB fast-path we don't do any of these
-> debugging checks. So you can end up with slab corruption without a
-> nice error message.
+No, the changes are in mainline linux-2.6.git, though you should be able 
+to find them in master in tip.git.
 
-Yup, I see.
+    J
 
-Actually with the network there will be no duuble free as long as uses
-use kfree_skb(), since first freeing (with skb->users being equal to 1,
-so user owns this skb) will fill skb with 0x6b, so any subsequent
-kfree_skb() will try to decrement particulary huge reference counter
-(0x6b6b6b6b) and actually will never reach 1 again, so things will look
-quite clear, but if the same slub area will be reused for the next skb
-before it is freed second time, very hard-to-debug data corruption will
-happen, so I belive this kind of checks should be done into kfree_skb()
-(of course under special debug compile option). I posted that patch just
-for the reference and that Ingo would be able to detect where skb is
-used after already being freed.
-
--- 
-	Evgeniy Polyakov
