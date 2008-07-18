@@ -1,42 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758045AbYGRMAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758572AbYGRMAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758045AbYGRMAU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 08:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755594AbYGRMAH
+	id S1758572AbYGRMAv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 08:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756308AbYGRMAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 08:00:07 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:33880 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753387AbYGRMAG (ORCPT
+	Fri, 18 Jul 2008 08:00:39 -0400
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:37405 "EHLO
+	e28esmtp03.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756166AbYGRMAh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 08:00:06 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4880856A.5050107@s5r6.in-berlin.de>
-Date: Fri, 18 Jul 2008 13:58:34 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080614 SeaMonkey/1.1.9
+	Fri, 18 Jul 2008 08:00:37 -0400
+Date: Fri, 18 Jul 2008 17:30:24 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Shehjar Tikoo <shehjart@cse.unsw.edu.au>, Mingming Cao <cmm@us.ibm.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: ext4 fallocate related crash on 2.6.26
+Message-ID: <20080718120024.GA23898@skywalker>
+References: <487C223D.6060704@cse.unsw.edu.au>
 MIME-Version: 1.0
-To: JiSheng Zhang <jszhang3@mail.ustc.edu.cn>
-CC: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
-       krh@redhat.com
-Subject: Re: PATCH] firewire: add padding to some struct
-References: <416379761.08031@ustc.edu.cn> <488080B1.8010207@s5r6.in-berlin.de>
-In-Reply-To: <488080B1.8010207@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <487C223D.6060704@cse.unsw.edu.au>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> I don't understand what the problem is.  As long as both kernel and
-> library use "response.data" or "&response + offsetof(typeof(response),
-> data)", they will write and read at the correct location.
+On Tue, Jul 15, 2008 at 02:06:21PM +1000, Shehjar Tikoo wrote:
+> Hi all
+>
+> I've observed the following kernel crash during tests against ext4  
+> fallocate'ion support on 2.6.26.
+>
+> Stack trace is at:
+> http://www.gelato.unsw.edu.au/~shehjart/docs/ext4_fallocate_test_trace_2.6.26.txt
+>
+> The test involved running the following program which fallocates a given 
+> length in bytes then writes to it. The above crash was seen when writing 
+> to an ext4 disk, 2G file, in blocks of 64k with fallocate requests of 
+> 1mb. After each 1mb of data is written to the fallocated space, another 
+> 1mb is requested. This write-fallocate cycle continues till the requested 
+> file size is reached. The trace is from one of the crashes from the 
+> various runs(all crashed). I must emphasise that after one of the runs, 
+> the test disk could not be mounted as the filesystem was unrecognized. 
+> ext4dev was mounted in data=ordered mode.
+>
+> See the test code at:
+> http://www.gelato.unsw.edu.au/~shehjart/docs/writefallocate.c
+>
+> The command line arguments are self-explanatory. Run without any  
+> arguments to see the usage message. Do change the _NR_fallocate define  
+> at the beginning of the file to your architecture's syscall number for  
+> sys_fallocate.
+>
+> I can run a few more tests if more info is needed.
 
-PS, of course the math of the latter should look more like
-	(char *)&response + offsetof(...)
--- 
-Stefan Richter
--=====-==--- -=== =--=-
-http://arcgraph.de/sr/
+
+Can you try this patch ?
+
+commit 1ebfca565bb06763e14dd468ce84aa55eecb1122
+Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Date:   Fri Jul 18 17:25:18 2008 +0530
+
+    falloc fix
+    
+    Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+
+diff --git a/fs/ext4/extents.c b/fs/ext4/extents.c
+index 7bdaeec..9c8541e 100644
+--- a/fs/ext4/extents.c
++++ b/fs/ext4/extents.c
+@@ -2462,7 +2462,10 @@ static int ext4_ext_convert_to_initialized(handle_t *handle,
+ 		unsigned int newdepth;
+ 		/* If extent has less than EXT4_EXT_ZERO_LEN zerout directly */
+ 		if (allocated <= EXT4_EXT_ZERO_LEN) {
+-			/* Mark first half uninitialized.
++			/*
++			 * iblock == ee_block is handled by the zerouout
++			 * at the beginning.
++			 * Mark first half uninitialized.
+ 			 * Mark second half initialized and zero out the
+ 			 * initialized extent
+ 			 */
+@@ -2485,7 +2488,7 @@ static int ext4_ext_convert_to_initialized(handle_t *handle,
+ 				ex->ee_len   = orig_ex.ee_len;
+ 				ext4_ext_store_pblock(ex, ext_pblock(&orig_ex));
+ 				ext4_ext_dirty(handle, inode, path + depth);
+-				/* zeroed the full extent */
++				/* blocks available from iblock */
+ 				return allocated;
+ 
+ 			} else if (err)
+@@ -2513,6 +2516,7 @@ static int ext4_ext_convert_to_initialized(handle_t *handle,
+ 					err = PTR_ERR(path);
+ 					return err;
+ 				}
++				/* get the second half extent details */
+ 				ex = path[depth].p_ext;
+ 				err = ext4_ext_get_access(handle, inode,
+ 								path + depth);
+@@ -2542,6 +2546,7 @@ static int ext4_ext_convert_to_initialized(handle_t *handle,
+ 			ext4_ext_store_pblock(ex, ext_pblock(&orig_ex));
+ 			ext4_ext_dirty(handle, inode, path + depth);
+ 			/* zeroed the full extent */
++			/* blocks available from iblock */
+ 			return allocated;
+ 
+ 		} else if (err)
+@@ -2557,23 +2562,22 @@ static int ext4_ext_convert_to_initialized(handle_t *handle,
+ 		 */
+ 		orig_ex.ee_len = cpu_to_le16(ee_len -
+ 						ext4_ext_get_actual_len(ex3));
+-		if (newdepth != depth) {
+-			depth = newdepth;
+-			ext4_ext_drop_refs(path);
+-			path = ext4_ext_find_extent(inode, iblock, path);
+-			if (IS_ERR(path)) {
+-				err = PTR_ERR(path);
+-				goto out;
+-			}
+-			eh = path[depth].p_hdr;
+-			ex = path[depth].p_ext;
+-			if (ex2 != &newex)
+-				ex2 = ex;
+-
+-			err = ext4_ext_get_access(handle, inode, path + depth);
+-			if (err)
+-				goto out;
++		depth = newdepth;
++		ext4_ext_drop_refs(path);
++		path = ext4_ext_find_extent(inode, iblock, path);
++		if (IS_ERR(path)) {
++			err = PTR_ERR(path);
++			goto out;
+ 		}
++		eh = path[depth].p_hdr;
++		ex = path[depth].p_ext;
++		if (ex2 != &newex)
++			ex2 = ex;
++
++		err = ext4_ext_get_access(handle, inode, path + depth);
++		if (err)
++			goto out;
++
+ 		allocated = max_blocks;
+ 
+ 		/* If extent has less than EXT4_EXT_ZERO_LEN and we are trying
+@@ -2591,6 +2595,7 @@ static int ext4_ext_convert_to_initialized(handle_t *handle,
+ 			ext4_ext_store_pblock(ex, ext_pblock(&orig_ex));
+ 			ext4_ext_dirty(handle, inode, path + depth);
+ 			/* zero out the first half */
++			/* blocks available from iblock */
+ 			return allocated;
+ 		}
+ 	}
+
+-aneesh
