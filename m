@@ -1,36 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755910AbYGRJ1v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756847AbYGRJ2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755910AbYGRJ1v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 05:27:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754062AbYGRJ1n
+	id S1756847AbYGRJ2f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 05:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbYGRJ21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 05:27:43 -0400
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:52895 "EHLO
-	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753768AbYGRJ1m (ORCPT
+	Fri, 18 Jul 2008 05:28:27 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:55812 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753369AbYGRJ20 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 05:27:42 -0400
-To: Marcin Obara <marcin_obara@users.sourceforge.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Intel Management Engine Interface
-From: Andi Kleen <andi@firstfloor.org>
-References: <alpine.DEB.1.00.0807172021450.26825@ip-195-3-221-75.vnet.pl>
-Date: Fri, 18 Jul 2008 11:27:18 +0200
-In-Reply-To: <alpine.DEB.1.00.0807172021450.26825@ip-195-3-221-75.vnet.pl> (Marcin Obara's message of "Thu, 17 Jul 2008 20:27:10 +0200 (CEST)")
-Message-ID: <874p6nsft5.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Fri, 18 Jul 2008 05:28:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=JjLuX6vVFlazDUzWfvsCoey8aFJ51f25Q6b/b+iLS+W1iTh5GNXcU4vfrOtSDKL6E4
+         JGdautZcz0HD/M3YvxPmKG0yUobl+zsTfFwU2BSEy76EGMDwtRq8j/Ewq/Kay/8eZkJx
+         1PW+1iiSiYx9B8o1KrkAmAWGcE3UtPzr6KsI8=
+Date: Fri, 18 Jul 2008 13:28:11 +0400
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@redhat.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH 0/3] Generic dma-coherent updates
+Message-ID: <20080718092810.GA2423@doriath.ww600.siemens.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 18 Jul 2008 09:27:37.0507 (UTC) FILETIME=[84862730:01C8E8B8]
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marcin Obara <marcin_obara@users.sourceforge.net> writes:
+Hi,
 
-> Fixed more issues raised on lkml after previous submission.
+Here are some patches for the tip core/generic-dma-coherent branch.
 
-How about the save oops data in HECI code? Will that be posted
-on top of this?
+The first one fixes dma allocation from DMA_MEMORY_EXCLUSIVE memory
+areas. Second adds per-device coherent mem to arm and third one
+replaces SH per-device coherent memory allocations with generic version.
 
--Andi
+I've tried updating Cris, but failed to even compile the kernel.
+
+
+-- 
+With best wishes
+Dmitry
+
