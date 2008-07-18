@@ -1,43 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761344AbYGRBQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932260AbYGRBSB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761344AbYGRBQA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 21:16:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754938AbYGRBPu
+	id S932260AbYGRBSB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 21:18:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753874AbYGRBRx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 21:15:50 -0400
-Received: from bromo.msbb.uc.edu ([129.137.3.146]:55017 "HELO
-	bromo.msbb.uc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755648AbYGRBPt (ORCPT
+	Thu, 17 Jul 2008 21:17:53 -0400
+Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:24552 "EHLO
+	pd7mo1no-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751582AbYGRBRw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 21:15:49 -0400
-Date: Thu, 17 Jul 2008 21:15:32 -0400
-From: Jack Howarth <howarth@bromo.msbb.uc.edu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
-Message-ID: <20080718011532.GA30920@bromo.msbb.uc.edu>
-References: <86802c440807161029n7e0dac98x1ec260879204b6f0@mail.gmail.com> <86802c440807161535n3a4d6891n6f7c16bd4e1f19c3@mail.gmail.com> <20080717004004.GA17792@bromo.msbb.uc.edu> <86802c440807161749u2f5c1eben618e05c6e254fedd@mail.gmail.com> <20080717023538.GA18329@bromo.msbb.uc.edu> <86802c440807161959s10666027k5297af1d657ff4fa@mail.gmail.com> <20080717034418.GA18951@bromo.msbb.uc.edu> <86802c440807162113g4cea3bd9ic71210330417032b@mail.gmail.com> <20080717061825.GA19582@bromo.msbb.uc.edu> <86802c440807162348m6d05b912x7b3f655d7f9efb93@mail.gmail.com>
+	Thu, 17 Jul 2008 21:17:52 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=XTumNCo9Hso2kLmFqZ8A:9 a=pZ3vLOD9iVBoOe8JrsiNGUxx7YoA:4 a=vqnd-49lz8MA:10 a=IEDKYtWOwmAA:10
+Message-ID: <487FEF3D.3060709@shaw.ca>
+Date: Thu, 17 Jul 2008 19:17:49 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440807162348m6d05b912x7b3f655d7f9efb93@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux-kernel@vger.kernel.org, trelane@digitasaru.net
+Subject: Re: ata error message exception Emask 0x0 SAct 0x0 SErr 0x0 action
+ 0x2
+References: <fa.nKgr6Ih9+hsUpOTCrIh8muNF7MY@ifi.uio.no>
+In-Reply-To: <fa.nKgr6Ih9+hsUpOTCrIh8muNF7MY@ifi.uio.no>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-YH,
-   Success. It turns out that if I unset CONFIG_PCIEASPM when
-I build 2.6.26 the hangs on boot are eliminated. I am currently
-booted under the current fedora development 2.6.27-0.156.rc0.git4
-with that change and everything is working fine.
-   I've not had any luck with pci_early_config_dump. If I just pass
-that kernel option, it doesn't complain but it doesn't seem to
-produce any additional output in dmesg. Do I need any other kernel
-options for pci_early_config_dump to work? I will apply your mmconfig
-patch next and test how well MMCONFIG works on my MacBook Pro.
-                        Jack
+Joseph Pingenot wrote:
+> Hi all.
+> 
+> Anyone know what is causing the following troubles:
+> Jul 16 16:16:27 cruftix kernel: [12538.998440] ata5.00: exception Emask
+> 0x0 SAct 0x0 SErr 0x0 action 0x2
+> Jul 16 16:16:27 cruftix kernel: [12538.998450] ata5.00: irq_stat
+> 0x00020002, device error via D2H FIS
+> Jul 16 16:16:27 cruftix kernel: [12538.998457] ata5.00: cmd
+> 35/00:08:87:17:58/00:00:59:00:00/e0 tag 0 dma 4096 out
+> Jul 16 16:16:27 cruftix kernel: [12538.998459]          res
+> 51/84:00:8e:17:58/00:00:59:00:00/e0 Emask 0x10 (ATA bus error)
+> Jul 16 16:16:27 cruftix kernel: [12538.998464] ata5.00: status: { DRDY
+> ERR }
+> Jul 16 16:16:27 cruftix kernel: [12538.998466] ata5.00: error: { ICRC
+> ABRT }
 
+..
+
+> (just a sampling)
+> I'm transferring data to an ext3 filesystem on a Seagate FreeAgent Pro
+>   1TB disk with an eSATA connector (Norco 4618 eSATA card with SiI 3124:
+
+Looks like you're getting errors on the SATA link. It sounds like a lot 
+of eSATA cables are crap and don't connect properly, etc. so that would 
+be the first thing to try swapping out.
