@@ -1,96 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933026AbYGRAFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933259AbYGRAIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933026AbYGRAFw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 20:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759570AbYGRAFk
+	id S933259AbYGRAIS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 20:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760578AbYGRAIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 20:05:40 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:8089 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759064AbYGRAFk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 20:05:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=dv14Rh4UDa+NoUfdbcELP77F3NqZJlawmcw9M6twqbv9TKmuzjtk62WwnXNwFYJyNp
-         WNLZmKeLE93040/5AC+YdRshLS0177+P0bdVRX2dux2DdCHdJrkxKIeAsbPQnaFKYHgl
-         zPx3QzODIlxetF4XzqWeDXOPgLp1K/kQjqWpM=
-Message-ID: <19f34abd0807171705h31595809y944792ce697bede7@mail.gmail.com>
-Date: Fri, 18 Jul 2008 02:05:39 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison overwritten
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <20080717235254.GA6833@elte.hu>
+	Thu, 17 Jul 2008 20:08:00 -0400
+Received: from www.tglx.de ([62.245.132.106]:37208 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759570AbYGRAH7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 20:07:59 -0400
+Date: Fri, 18 Jul 2008 02:07:02 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andi Kleen <andi@firstfloor.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Revert duplicate "ACPI: don't walk tables if ACPI was
+ disabled" commit (was: Please pull ACPI updates)
+In-Reply-To: <alpine.LFD.1.10.0807180013190.4316@apollo.tec.linutronix.de>
+Message-ID: <alpine.LFD.1.10.0807180159270.4316@apollo.tec.linutronix.de>
+References: <20080716214516.GA10777@basil.nowhere.org> <200807170011.12184.rjw@sisk.pl> <200807161633.01375.jbarnes@virtuousgeek.org> <alpine.LFD.1.10.0807161639090.2835@woody.linux-foundation.org> <487EE940.1050007@firstfloor.org>
+ <alpine.LFD.1.10.0807170752190.2959@woody.linux-foundation.org> <alpine.LFD.1.10.0807180013190.4316@apollo.tec.linutronix.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080717214222.GA29449@elte.hu>
-	 <19f34abd0807171615s5b477d4cr22d3e9444bcf65df@mail.gmail.com>
-	 <20080717235254.GA6833@elte.hu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 1:52 AM, Ingo Molnar <mingo@elte.hu> wrote:
->  If only we had some kernel technology that could track and validate
->  memory accesses, and point out the cases where we access uninitialized
->  memory, just like Valgrind?
->
-> ... something like kmemcheck? ;-)
+On Fri, 18 Jul 2008, Thomas Gleixner wrote:
+> 
+> Please revert the one I happened to notice. Patch below.
 
-Cool :)
+Another one.
 
-> So i booted that box with tip/master and kmemcheck enabled. (plus a few
-> fixlets to make networking allocations be properly tracked by
-> kmemcheck.)
->
-> It was a slow bootup and long wait, but it gave a few hits here:
+Thanks,
+ 
+ 	tglx
+ 
+----------->
+Subject: APCI: revert another duplicated patch
+From: Thomas Gleixner <tglx@linutronix.de>
 
-Hm, if you think it was that slow, I am suspecting you were also using
-SLUB debugging.
+commit d1857056904d5f313f11184fcfa624652ff9620a
 
-This can actually be negative, since now SLUB will access the objects
-(+redzone +padding) and possibly trick kmemcheck into thinking they
-were initialized in the first place.
+is another superfluous duplicate commit caused by
+git -> quilt -> git conversion.
 
-But what we are really looking for is "read from freed memory"
-messages. So I would actually recommend this: Disable kmemcheck's
-reporting of uninitialized memory, simply to make it easier to spot
-the "freed" messages more easily.
+Revert it.
 
-Maybe something like this (warning: whitespace-munged):
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de> 
 
-diff --git a/arch/x86/mm/kmemcheck/error.c b/arch/x86/mm/kmemcheck/error.c
-index 56410c6..6944cb7 100644
---- a/arch/x86/mm/kmemcheck/error.c
-+++ b/arch/x86/mm/kmemcheck/error.c
-@@ -98,6 +98,9 @@ void kmemcheck_error_save(enum kmemcheck_shadow state,
-                return;
-        prev_ip = regs->ip;
-
-+       if (state == KMEMCHECK_SHADOW_UNINITIALIZED)
-+               return;
-+
-        e = error_next_wr();
-        if (!e)
-                return;
-
-
-If this only happens during boot, it would also be a good idea to
-simply reboot the machine a lot...
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+---
+diff --git a/drivers/acpi/glue.c b/drivers/acpi/glue.c
+index 6d18ca3..9b227d4 100644
+--- a/drivers/acpi/glue.c
++++ b/drivers/acpi/glue.c
+@@ -336,9 +336,6 @@ static int __init acpi_rtc_init(void)
+ 	if (acpi_disabled)
+ 		return 0;
+ 
+-	if (acpi_disabled)
+-		return 0;
+-
+ 	if (dev) {
+ 		rtc_wake_setup();
+ 		rtc_info.wake_on = rtc_wake_on;
