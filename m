@@ -1,133 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760116AbYGRSiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757710AbYGRSph@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760116AbYGRSiS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 14:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbYGRSiG
+	id S1757710AbYGRSph (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 14:45:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754576AbYGRSpa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 14:38:06 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:53536 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753320AbYGRSiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 14:38:05 -0400
-Date: Fri, 18 Jul 2008 13:38:00 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] - Earlier detection of system type (UV or non-UV)
-Message-ID: <20080718183800.GA26109@sgi.com>
-References: <20080709163602.GA12543@sgi.com> <20080718171331.GK6875@elte.hu> <20080718174929.GA981@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 18 Jul 2008 14:45:30 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:10524 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753585AbYGRSp3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 14:45:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=pofc/6BAv0Jx+/9nGGCIazPEHZbmWEgAzS62oPfKAmMKb/8bJ6F/Px3+QQJiBdjE8Y
+         hZybPeUqtznhhIgn/eP14o5loj88yDcevXc6csYMSGM/Rm1pj402u6vMfT3F4F90xDEv
+         nYbJFoNLzd12guaxJ0WI3TVaECKQ29P4VY/fY=
+Message-ID: <86802c440807181145v7220e0cdr361b3c76231639d4@mail.gmail.com>
+Date: Fri, 18 Jul 2008 11:45:28 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Justin Mattock" <justinmattock@gmail.com>
+Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
+Cc: "Jack Howarth" <howarth@bromo.msbb.uc.edu>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <dd18b0c30807181120r4462e904t94d37dbd383995ba@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080718174929.GA981@elte.hu>
-User-Agent: Mutt/1.4.2.2i
+References: <20080717034418.GA18951@bromo.msbb.uc.edu>
+	 <20080718011532.GA30920@bromo.msbb.uc.edu>
+	 <86802c440807171825m24ffe140o81bb76286823568e@mail.gmail.com>
+	 <20080718060935.GA32345@bromo.msbb.uc.edu>
+	 <86802c440807172322s5dabbd1bx297742d782e373d6@mail.gmail.com>
+	 <20080718120930.GA2916@bromo.msbb.uc.edu>
+	 <86802c440807180919id6220ecqe0a25b2a94dc39c0@mail.gmail.com>
+	 <20080718162923.GA6100@bromo.msbb.uc.edu>
+	 <86802c440807180936h6eaad29fo1788e4e2d54b0df0@mail.gmail.com>
+	 <dd18b0c30807181120r4462e904t94d37dbd383995ba@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A patch is coming that requires earlier detection of system type (UV or non-UV)
-Move the logic that detects whether running on UV to acpi_boot_table_init().
+On Fri, Jul 18, 2008 at 11:20 AM, Justin Mattock
+<justinmattock@gmail.com> wrote:
+> On Fri, Jul 18, 2008 at 4:36 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>> On Fri, Jul 18, 2008 at 9:29 AM, Jack Howarth <howarth@bromo.msbb.uc.edu> wrote:
+>>> YH,
+>>>   I'll file a radar bug report on this with Apple but wouldn't
+>>> hold my breath for them to fix the firmware. Also, it would be
+>>> a good idea to encourage all of the folks using 2.6.26 on
+>>> Macintel to watch out for the "MMCONFIG not used" message in
+>>> their dmesg and report that to you. I strongly suspect that
+>>> the MacBook Pro v2 isn't the only model with broken firmware.
+>>>                   Jack
+>>>
+>>> On Fri, Jul 18, 2008 at 09:19:19AM -0700, Yinghai Lu wrote:
+>>>> On Fri, Jul 18, 2008 at 5:09 AM, Jack Howarth <howarth@bromo.msbb.uc.edu> wrote:
+>>>> > YH,
+>>>> >   Do you see anything in the pci earlydump and the associated lspci --vvxxxx
+>>>> > output that sheds any light on why we have to clean up the dmi with your
+>>>> > mmconfig patch on a MacBookPro2? I am wondering if the BIOS information is
+>>>> > being misused by the linux kernel or if the BIOS is just buggy.
+>>
+>> it only happened when 3G ram installed.
+>>
+>> when 2G installed, it will use [0xe0000000 - 0xf0000000), for bus [0,255]
+>> and that is ok
+>>
+>> YH
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+>
+> Where might us mac users locate a custom
+> dsdt to try?
 
-Signed-off-by: Jack Steiner <steiner@sgi.com>
+MCFG is outside of DSDT.
 
----
-
-V2 patch
-	- Added appropriate checks for CONFIG_ACPI to make it compile on
-	  configs w/o ACPI.
-
-	- Eliminated check for x86_64.
-
-
- arch/x86/kernel/acpi/boot.c  |    1 +
- arch/x86/kernel/genapic_64.c |   17 ++++++++++++-----
- arch/x86/mm/srat_64.c        |    2 +-
- include/asm-x86/genapic_32.h |    1 +
- include/asm-x86/genapic_64.h |    3 +++
- 5 files changed, 18 insertions(+), 6 deletions(-)
-
-Index: linux/arch/x86/kernel/acpi/boot.c
-===================================================================
---- linux.orig/arch/x86/kernel/acpi/boot.c	2008-07-18 13:15:03.000000000 -0500
-+++ linux/arch/x86/kernel/acpi/boot.c	2008-07-18 13:22:07.000000000 -0500
-@@ -1653,6 +1653,7 @@ int __init acpi_boot_table_init(void)
- 		return error;
- 	}
- 
-+	acpi_table_parse(ACPI_SIG_MADT, acpi_early_madt_oem_check);
- 	acpi_table_parse(ACPI_SIG_BOOT, acpi_parse_sbf);
- 
- 	/*
-Index: linux/arch/x86/kernel/genapic_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/genapic_64.c	2008-07-18 13:15:03.000000000 -0500
-+++ linux/arch/x86/kernel/genapic_64.c	2008-07-18 13:17:36.000000000 -0500
-@@ -66,16 +66,23 @@ void send_IPI_self(int vector)
- 	__send_IPI_shortcut(APIC_DEST_SELF, vector, APIC_DEST_PHYSICAL);
- }
- 
--int __init acpi_madt_oem_check(char *oem_id, char *oem_table_id)
-+int __init acpi_early_madt_oem_check(struct acpi_table_header *table)
- {
--	if (!strcmp(oem_id, "SGI")) {
--		if (!strcmp(oem_table_id, "UVL"))
-+#ifdef CONFIG_ACPI
-+	if (!strcmp(table->oem_id, "SGI")) {
-+		if (!strcmp(table->oem_table_id, "UVL"))
- 			uv_system_type = UV_LEGACY_APIC;
--		else if (!strcmp(oem_table_id, "UVX"))
-+		else if (!strcmp(table->oem_table_id, "UVX"))
- 			uv_system_type = UV_X2APIC;
--		else if (!strcmp(oem_table_id, "UVH"))
-+		else if (!strcmp(table->oem_table_id, "UVH"))
- 			uv_system_type = UV_NON_UNIQUE_APIC;
- 	}
-+#endif
-+	return 0;
-+}
-+
-+int __init acpi_madt_oem_check(char *oem_id, char *oem_table_id)
-+{
- 	return 0;
- }
- 
-Index: linux/arch/x86/mm/srat_64.c
-===================================================================
---- linux.orig/arch/x86/mm/srat_64.c	2008-07-18 13:15:03.000000000 -0500
-+++ linux/arch/x86/mm/srat_64.c	2008-07-18 13:15:07.000000000 -0500
-@@ -138,7 +138,7 @@ acpi_numa_processor_affinity_init(struct
- 		return;
- 	}
- 
--	if (is_uv_system())
-+	if (get_uv_system_type() >= UV_X2APIC)
- 		apic_id = (pa->apic_id << 8) | pa->local_sapic_eid;
- 	else
- 		apic_id = pa->apic_id;
-Index: linux/include/asm-x86/genapic_32.h
-===================================================================
---- linux.orig/include/asm-x86/genapic_32.h	2008-07-16 17:45:26.000000000 -0500
-+++ linux/include/asm-x86/genapic_32.h	2008-07-18 13:22:38.000000000 -0500
-@@ -118,6 +118,7 @@ enum uv_system_type {UV_NONE, UV_LEGACY_
- #define get_uv_system_type()		UV_NONE
- #define is_uv_system()			0
- #define uv_wakeup_secondary(a, b)	1
-+#define acpi_early_madt_oem_check(a)		0
- 
- 
- #endif
-Index: linux/include/asm-x86/genapic_64.h
-===================================================================
---- linux.orig/include/asm-x86/genapic_64.h	2008-07-18 13:15:03.000000000 -0500
-+++ linux/include/asm-x86/genapic_64.h	2008-07-18 13:15:07.000000000 -0500
-@@ -39,6 +39,9 @@ enum uv_system_type {UV_NONE, UV_LEGACY_
- extern enum uv_system_type get_uv_system_type(void);
- extern int is_uv_system(void);
- 
-+struct acpi_table_header;
-+extern int acpi_early_madt_oem_check(struct acpi_table_header *);
-+
- extern struct genapic apic_x2apic_uv_x;
- DECLARE_PER_CPU(int, x2apic_extra_bits);
- extern void uv_cpu_init(void);
+YH
