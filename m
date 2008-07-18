@@ -1,153 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbYGRJse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755765AbYGRJup@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755542AbYGRJse (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 05:48:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753796AbYGRJs0
+	id S1755765AbYGRJup (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 05:50:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbYGRJuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 05:48:26 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:23378 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753698AbYGRJsZ convert rfc822-to-8bit (ORCPT
+	Fri, 18 Jul 2008 05:50:35 -0400
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:48027 "EHLO
+	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752976AbYGRJud (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 05:48:25 -0400
-Message-Id: <48808313.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Fri, 18 Jul 2008 10:48:35 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Len Brown" <lenb@kernel.org>, "Andi Kleen" <ak@linux.intel.com>
-Cc: "Robert Moore" <robert.moore@intel.com>,
-       "Andrew Paprocki" <andrew@ishiboo.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "LKML" <linux-kernel@vger.kernel.org>
-Subject: RE: ACPI WARNING: at
-	drivers/acpi/tables/tbfadt.c:348acpi_tb_create_local_fadt+0x147/0x2f4()
-References: <76366b180807161929i4eb9462exc3d2255e0ec881e8@mail.gmail.com>
- <76366b180807162034y1e725b15t7658c331bb89b52@mail.gmail.com>
- <487F2629.76E4.0078.0@novell.com> <487F0B85.4030202@linux.intel.com>
- <487F29B2.76E4.0078.0@novell.com> <487F3AFA.7090908@linux.intel.com>
- <76366b180807170603qaf669a5q625fc166a2045756@mail.gmail.com>
- <487F6C32.76E4.0078.0@novell.com>
- <76366b180807170732i112d54bcl49f630a3064f87f@mail.gmail.com>
- <487F81A6.76E4.0078.0@novell.com>
- <9D39833986E69849A2A8E74C1078B6B3ADFA66@orsmsx415.amr.corp.intel.com>
-In-Reply-To: <9D39833986E69849A2A8E74C1078B6B3ADFA66@orsmsx415.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Fri, 18 Jul 2008 05:50:33 -0400
+Date: Fri, 18 Jul 2008 04:50:00 -0500
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Len Brown <lenb@kernel.org>
+Cc: Linux Power Management List <linux-pm@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: Re: [linux-pm] Linux Power Management Mini-Summit -- Ottawa --
+	July 22, 2008
+Message-ID: <20080718095000.GA5017@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <alpine.LFD.1.10.0807171724070.16742@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0807171724070.16742@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> "Moore, Robert" <robert.moore@intel.com> 17.07.08 19:20 >>>
->So far, in the number of the cases like this that I've seen, it's the v2
->fields that have problems. Perhaps the heuristic should be something
->like "if there is an inconsistency between the v1 and v2 fields, fall
->back to v1". 
+On Thu, Jul 17, 2008 at 05:27:32PM -0400, Len Brown wrote:
+> We'll be in The Rideau Suite in Les-Suites
+> Tuesday July 22nd 8:30-18:30.
+> 
+> Thanks to HP for sponsoring
+> lunch at 12:30 as well as snacks at 10:00 and 15:30.
+> We'll wing it for dinner.
+> 
+> On linux-pm (sorry, on sabbatical I've been
+> bad about keeping up on email) I've seen
+> intent to attend from:
+> 
+> Len Brown <len.brown@intel.com>
+> Alan Stern <stern@rowland.harvard.edu>
+> Dipankar Sarma <dipankar@in.ibm.com>
+> Rafael J. Wysocki <rjw@sisk.pl>
+> "Woodruff, Richard" <r-woodruff2@ti.com>
+> Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> Matt Domsch <Matt_Domsch@dell.com>
+> Jarod Wilson <jwilson@redhat.com>
+> Tim Bird <tim.bird@am.sony.com>
+> Paul Mundt <lethal@linux-sh.org>
+> Hiroyuki Machida <Hiroyuki.Mach@gmail.com>
+> 
+Hi Len,
+I would like to attend the pm-mini summit if there's a slot available. I
+am interested in discussing:
 
-Here's the updated (i.e. replacement) patch. Andrew P., any chance you
-could test this on your system?
+a) the improvements to idle load balancing
+algorithm on multi-node multi-core systems, for better power savings.
 
-The (1.0 inherited) separate length fields in the FADT are byte
-granular. Further, PM1a/b may have distinct lengths and live in
-distinct address spaces. acpi_tb_convert_fadt() should account for
-all of these conditions.
+b) Use of some kind of light-weight CPU-Hotplug for power-management
+on server systems.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+> Several send their regrets:
+> Dave Jones
+> Pavel Machek
+> Arjan van de Ven
+> 
+> If you plan to attend, please let me know,
+> because the folks at OLS want to know,
+> to simplify OLS registration.
+> 
+> thanks,
+> -Len
+> ---
+> 
+> We are again planning a Linux Power Management Mini-Summit preceding OLS.
+> This year we are looking at a single day, Tuesday July 22nd.
+> 
+> OLS is generously supporting mini-summits by providing the room
+> and projector: http://www.linuxsymposium.org/2008/minisummits.php
+> 
+> If you are interested in sponsoring the food or
+> other forum needs, please let me know.
+> 
+> Minutes from last year's meeting can be found here:
+> http://lwn.net/Articles/249019
+> 
+> If you have feedback on last year's meeting that
+> we can use to improve this year's, please speak up.
+> 
+> The feedback at the time was pretty positive, so I'm thinking
+> that unless there are new best-known-methods, that we'll stick
+> with the same open method of self-nominated attendees,
+> an agenda provoked by discussion on linux-pm ahead of time
+> and consensus of attendees, and a forum small enough to support
+> a single focused discussion.
+> 
+> (yes, one improvement I plan on this year is to publish minutes immediately.
+>  OLS was sort of hectic for me last year and that caused a delay)
+> 
+> thanks,
+> -Len
+> 
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
 
----
- drivers/acpi/tables/tbfadt.c |   39 ++++++++++++++++++++++++++++++++-------
- 1 file changed, 32 insertions(+), 7 deletions(-)
-
---- linux-2.6.26/drivers/acpi/tables/tbfadt.c	2008-07-13 23:51:29.000000000 +0200
-+++ 2.6.26-acpi-fadt-parse/drivers/acpi/tables/tbfadt.c	2008-07-18 10:43:55.000000000 +0200
-@@ -50,7 +50,7 @@ ACPI_MODULE_NAME("tbfadt")
- /* Local prototypes */
- static void inline
- acpi_tb_init_generic_address(struct acpi_generic_address *generic_address,
--			     u8 bit_width, u64 address);
-+			     u8 byte_width, u64 address);
- 
- static void acpi_tb_convert_fadt(void);
- 
-@@ -111,7 +111,7 @@ static struct acpi_fadt_info fadt_info_t
-  * FUNCTION:    acpi_tb_init_generic_address
-  *
-  * PARAMETERS:  generic_address     - GAS struct to be initialized
-- *              bit_width           - Width of this register
-+ *              byte_width          - Width of this register
-  *              Address             - Address of the register
-  *
-  * RETURN:      None
-@@ -124,7 +124,7 @@ static struct acpi_fadt_info fadt_info_t
- 
- static void inline
- acpi_tb_init_generic_address(struct acpi_generic_address *generic_address,
--			     u8 bit_width, u64 address)
-+			     u8 byte_width, u64 address)
- {
- 
- 	/*
-@@ -136,7 +136,7 @@ acpi_tb_init_generic_address(struct acpi
- 	/* All other fields are byte-wide */
- 
- 	generic_address->space_id = ACPI_ADR_SPACE_SYSTEM_IO;
--	generic_address->bit_width = bit_width;
-+	generic_address->bit_width = byte_width << 3;
- 	generic_address->bit_offset = 0;
- 	generic_address->access_width = 0;
- }
-@@ -343,9 +343,21 @@ static void acpi_tb_convert_fadt(void)
- 	 *
- 	 * The PM event blocks are split into two register blocks, first is the
- 	 * PM Status Register block, followed immediately by the PM Enable Register
--	 * block. Each is of length (pm1_event_length/2)
-+	 * block. Each is of length (xpm1x_event_block.bit_width/2)
- 	 */
--	pm1_register_length = (u8) ACPI_DIV_2(acpi_gbl_FADT.pm1_event_length);
-+	if (!ACPI_MOD_16(acpi_gbl_FADT.xpm1a_event_block.bit_width))
-+		pm1_register_length = (u8) ACPI_DIV_16(acpi_gbl_FADT
-+						       .xpm1a_event_block
-+						       .bit_width);
-+	else {
-+		printk(KERN_WARNING "FADT: "
-+		       "X_PM1a_EVT_BLK.bit_width=%u is invalid,"
-+		       " falling back to PM1_EVT_LEN=%u\n",
-+		       acpi_gbl_FADT.xpm1a_event_block.bit_width,
-+		       acpi_gbl_FADT.pm1_event_length);
-+		pm1_register_length = (u8) ACPI_DIV_2(acpi_gbl_FADT
-+						      .pm1_event_length);
-+	}
- 
- 	/* The PM1A register block is required */
- 
-@@ -360,13 +372,26 @@ static void acpi_tb_convert_fadt(void)
- 	/* The PM1B register block is optional, ignore if not present */
- 
- 	if (acpi_gbl_FADT.xpm1b_event_block.address) {
-+		if (!ACPI_MOD_16(acpi_gbl_FADT.xpm1b_event_block.bit_width))
-+			pm1_register_length = (u8) ACPI_DIV_16(acpi_gbl_FADT
-+							       .xpm1b_event_block
-+							       .bit_width);
-+		else {
-+			printk(KERN_WARNING "FADT: "
-+			       "X_PM1b_EVT_BLK.bit_width=%u is invalid,"
-+			       " falling back to PM1_EVT_LEN=%u\n",
-+			       acpi_gbl_FADT.xpm1b_event_block.bit_width,
-+			       acpi_gbl_FADT.pm1_event_length);
-+			pm1_register_length = (u8) ACPI_DIV_2(acpi_gbl_FADT
-+							       .pm1_event_length);
-+		}
- 		acpi_tb_init_generic_address(&acpi_gbl_xpm1b_enable,
- 					     pm1_register_length,
- 					     (acpi_gbl_FADT.xpm1b_event_block.
- 					      address + pm1_register_length));
- 		/* Don't forget to copy space_id of the GAS */
- 		acpi_gbl_xpm1b_enable.space_id =
--		    acpi_gbl_FADT.xpm1a_event_block.space_id;
-+		    acpi_gbl_FADT.xpm1b_event_block.space_id;
- 
- 	}
- }
-
-
+-- 
+Thanks and Regards
+gautham
