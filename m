@@ -1,50 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757370AbYGRL4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758010AbYGRL5J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757370AbYGRL4r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 07:56:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755464AbYGRL4j
+	id S1758010AbYGRL5J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 07:57:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755464AbYGRL4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 07:56:39 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48986 "EHLO mx3.mail.elte.hu"
+	Fri, 18 Jul 2008 07:56:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34564 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755098AbYGRL4j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 07:56:39 -0400
-Date: Fri, 18 Jul 2008 13:56:20 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Howells <dhowells@redhat.com>
-Cc: ghaskins@novell.com, akpm@linux-foundation.org, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix inc_rt_tasks() to not declare variable 'rq' if
-	it's not needed
-Message-ID: <20080718115620.GI6875@elte.hu>
-References: <20080711123454.10475.33099.stgit@warthog.procyon.org.uk>
+	id S1750736AbYGRL4x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 07:56:53 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Ian Kent <raven@themaw.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       autofs mailing list <autofs@linux.kernel.org>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 1/7] autofs4 - indirect dentry must almost always be positive
+References: <20080718023651.12802.59107.stgit@raven.themaw.net>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Fri, 18 Jul 2008 07:56:34 -0400
+In-Reply-To: <20080718023651.12802.59107.stgit@raven.themaw.net> (Ian Kent's
+	message of "Fri, 18 Jul 2008 10:36:53 +0800")
+Message-ID: <x49k5fje77x.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080711123454.10475.33099.stgit@warthog.procyon.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ian Kent <raven@themaw.net> writes:
 
-* David Howells <dhowells@redhat.com> wrote:
+> Signed-off-by: Ian Kent <raven@themaw.net>
 
-> Fix inc_rt_tasks() to not declare variable 'rq' if it's not needed.  It is
-> declared if CONFIG_SMP or CONFIG_RT_GROUP_SCHED, but only used if CONFIG_SMP.
-> 
-> This is a consequence of patch 
-> 1f11eb6a8bc92536d9e93ead48fa3ffbd1478571 plus patch 
-> 1100ac91b6af02d8639d518fad5b434b1bf44ed6.
+Reviewed-by: Jeff Moyer <jmoyer@redhat.com>
 
-applied, thanks David.
+Cheers,
 
-	Ingo
+Jeff
+
+>
+> ---
+>
+>  fs/autofs4/waitq.c |   17 ++++++++++++++---
+>  1 files changed, 14 insertions(+), 3 deletions(-)
+>
+>
+> diff --git a/fs/autofs4/waitq.c b/fs/autofs4/waitq.c
+> index bcb6c52..35216d1 100644
+> --- a/fs/autofs4/waitq.c
+> +++ b/fs/autofs4/waitq.c
+> @@ -328,9 +328,20 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
+>  	if (sbi->catatonic)
+>  		return -ENOENT;
+>  
+> -	if (!dentry->d_inode &&
+> -	    (sbi->type & (AUTOFS_TYPE_DIRECT | AUTOFS_TYPE_OFFSET)))
+> -		return -ENOENT;
+> +	if (!dentry->d_inode) {
+> +		/*
+> +		 * A wait for a negative dentry is invalid for certain
+> +		 * cases. A direct or offset mount "always" has its mount
+> +		 * point directory created and so the request dentry must
+> +		 * be positive or the map key doesn't exist. The situation
+> +		 * is very similar for indirect mounts except only dentrys
+> +		 * in the root of the autofs file system may be negative.
+> +		 */
+> +		if (sbi->type & (AUTOFS_TYPE_DIRECT|AUTOFS_TYPE_OFFSET))
+> +			return -ENOENT;
+> +		else if (!IS_ROOT(dentry->d_parent))
+> +			return -ENOENT;
+> +	}
+>  
+>  	name = kmalloc(NAME_MAX + 1, GFP_KERNEL);
+>  	if (!name)
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
