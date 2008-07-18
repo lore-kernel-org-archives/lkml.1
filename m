@@ -1,71 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760892AbYGRBZz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760424AbYGRB2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760892AbYGRBZz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 21:25:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbYGRBZq
+	id S1760424AbYGRB2R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 21:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbYGRB2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 21:25:46 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:31322 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752321AbYGRBZo (ORCPT
+	Thu, 17 Jul 2008 21:28:08 -0400
+Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:15503 "EHLO
+	pd5mo1no-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753903AbYGRB2F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 21:25:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=NPdPLIkH6zkF6GFXpg+sG2/HMg02yxy+bohOmfNZlUz5xK1PsdIPGtPRn/jfstmpuI
-         9ZdokVU6QHnfFJhVtbLU6Xhyiy+6K5RojwCfaQLLs1V9WE8KI799yApH0HXDzI0N7anT
-         0mi6HkmmLF+Vp5zE9pRqrgO4R0xvVLpB5xb2E=
-Message-ID: <86802c440807171825m24ffe140o81bb76286823568e@mail.gmail.com>
-Date: Thu, 17 Jul 2008 18:25:43 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Jack Howarth" <howarth@bromo.msbb.uc.edu>
-Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <20080718011532.GA30920@bromo.msbb.uc.edu>
+	Thu, 17 Jul 2008 21:28:05 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=uZvujYp8AAAA:8 a=Y9fjpQ4ByRy8a-dx-hIA:9 a=dx7Kl_h-E8p-9gCfC5MA:7 a=gYSbvqL4_bQO3UUwO8ed7sbu3BAA:4
+Message-ID: <487FF1A2.8000404@shaw.ca>
+Date: Thu, 17 Jul 2008 19:28:02 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: akineko <akineko@gmail.com>, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: EINTR under Linux
+References: <3f676a38-51a8-4fb6-bf02-c717b21bee06@e39g2000hsf.googlegroups.com>
+In-Reply-To: <3f676a38-51a8-4fb6-bf02-c717b21bee06@e39g2000hsf.googlegroups.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <86802c440807161029n7e0dac98x1ec260879204b6f0@mail.gmail.com>
-	 <20080717004004.GA17792@bromo.msbb.uc.edu>
-	 <86802c440807161749u2f5c1eben618e05c6e254fedd@mail.gmail.com>
-	 <20080717023538.GA18329@bromo.msbb.uc.edu>
-	 <86802c440807161959s10666027k5297af1d657ff4fa@mail.gmail.com>
-	 <20080717034418.GA18951@bromo.msbb.uc.edu>
-	 <86802c440807162113g4cea3bd9ic71210330417032b@mail.gmail.com>
-	 <20080717061825.GA19582@bromo.msbb.uc.edu>
-	 <86802c440807162348m6d05b912x7b3f655d7f9efb93@mail.gmail.com>
-	 <20080718011532.GA30920@bromo.msbb.uc.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 6:15 PM, Jack Howarth <howarth@bromo.msbb.uc.edu> wrote:
-> YH,
->   Success. It turns out that if I unset CONFIG_PCIEASPM when
-> I build 2.6.26 the hangs on boot are eliminated.
+akineko wrote:
+> Hello,
+> 
+> I have a socket program that is running flawlessly under Solaris.
+> When I re-compiled it under Linux (CentOS 5.1) and run it, I got the
+> following error:
+> 
+> recv() failed: Interrupted system call
+> 
+> This only occurs very infrequently (probably one out of a million
+> packets exchanged).
+> 
+> select() in my program is getting EINTR.
+> 
+> From the postings I found in the news group seem suggesting that it is
+> due to GC.
+> 
+>> The GC sends signals to each thread which causes them all to enter a stop-the-world state.  When the GC
+>> is finished,  all the threads are resumed.  When the threads are  resumed, any that were blocked in a
+>> blocking system call (like poll()) will return with EINTR.  Normally you would just retry the system call.
+> 
+> So, I added to check if the errno == EINTR and now my program seems
+> working fine.
+> 
+> //
+> 
+> My question I would like to ask in this group is:
+> Does this mean any system call under Linux could return empty-hand
+> with EINTR due to GC?
+> I usually assume fatal if system call returns -1.
+> It is quite painful to check all system-call return status.
+> 
+> My second question is:
+> Does this can occur in other OS's? (free-BSD, Solaris, ...)
+> Or, is this specific to Linux OS?
 
-good to know
+I'm not sure what the GC you're referring to is, but I assume it's using 
+a signal handler for that stop signal. If the signal handler is not 
+installed with the SA_RESTART flag, then if a system call is interrupted 
+by that signal it will get EINTR instead of being restarted 
+automatically. For some system calls, EINTR can still occur, for 
+example, see:
 
-> I am currently
-> booted under the current fedora development 2.6.27-0.156.rc0.git4
-> with that change and everything is working fine.
->   I've not had any luck with pci_early_config_dump. If I just pass
-> that kernel option, it doesn't complain but it doesn't seem to
-> produce any additional output in dmesg. Do I need any other kernel
-> options for pci_early_config_dump to work?
-shoud be pci=early_config_dump
+http://www.opengroup.org/onlinepubs/007908775/xsh/select.html
 
-> I will apply your mmconfig
-> patch next and test how well MMCONFIG works on my MacBook Pro.
-
-also please send out dmidecode printout, so i could update patch to
-apply dmi quirk to that model only.
-
-YH
+This is not Linux specific, but the specs allow for some different 
+behavior between UNIX variants.
