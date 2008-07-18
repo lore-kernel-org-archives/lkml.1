@@ -1,85 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759570AbYGRMhm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757540AbYGRMhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759570AbYGRMhm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 08:37:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbYGRMhc
+	id S1757540AbYGRMhy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 08:37:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759572AbYGRMhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 08:37:32 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:30517 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758582AbYGRMhb convert rfc822-to-8bit (ORCPT
+	Fri, 18 Jul 2008 08:37:43 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:6306 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757190AbYGRMhl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 08:37:31 -0400
-Message-Id: <4880AAC1.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Fri, 18 Jul 2008 13:37:53 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: fix two modpost warnings
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 18 Jul 2008 08:37:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=mpLhXzAWYCRuEoeeaMPNAhFPuiJTDrJmlzNM0pWPl68VkBxCBqgB7SeGiWSua5IeQr
+         +3dqlkImy6bvQDD5k/okhE4+H9YdC+Qz5lfhLG+pQbBBeLrhNTTva3fVe0ZFL1ppgjVx
+         29YxxJFqWF6jsIk1eHfmB3PMiuCyMteENy8gg=
+Message-ID: <d58509a80807180537h32fec20ci21aee613b4ab7175@mail.gmail.com>
+Date: Fri, 18 Jul 2008 13:37:38 +0100
+From: "Robert Lougher" <rob.lougher@gmail.com>
+To: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [Squashfs-devel] Squashfs mainlining status?
+Cc: "Peter Korsgaard" <jacmet@sunsite.dk>,
+       "Phillip Lougher" <phillip@lougher.demon.co.uk>,
+       squashfs-devel@lists.sourceforge.net,
+       "Linux Kernel Development" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0807180808400.6102@vixen.sonytel.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
+References: <Pine.LNX.4.64.0806021650190.28709@vixen.sonytel.be>
+	 <48460906.2080205@lougher.demon.co.uk>
+	 <87od6h7d7l.fsf@macbook.be.48ers.dk>
+	 <Pine.LNX.4.64.0807171729450.29859@vixen.sonytel.be>
+	 <d58509a80807170847p6ef05a8av96b6c8828a33821@mail.gmail.com>
+	 <Pine.LNX.4.64.0807180808400.6102@vixen.sonytel.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Even though it's only the difference of the two __initdata symbols
-that's being calculated, modpost still doesn't like this. So rather
-calculate the size once in an __init function and store it for later
-use.
+Hi,
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+On Fri, Jul 18, 2008 at 7:14 AM, Geert Uytterhoeven
+<Geert.Uytterhoeven@sonycom.com> wrote:
 
----
- arch/x86/vdso/vma.c |   11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+> If there are good reasons for breaking compatibility, we're more than happy to
+> accept that. Don't you think it would be a good idea to explain them to the
+> readers of the squashfs-devel mailing list?
+>
+> Phillip, can you please elaborate? Many thanks in advance!
+>
 
---- linux-2.6.26/arch/x86/vdso/vma.c	2008-04-17 04:49:44.000000000 +0200
-+++ 2.6.26-x86-modpost-warnings/arch/x86/vdso/vma.c	2008-07-15 14:51:28.000000000 +0200
-@@ -21,7 +21,8 @@ int vdso_enabled = 1;
- extern char vdso_start[], vdso_end[];
- extern unsigned short vdso_sync_cpuid;
- 
--struct page **vdso_pages;
-+static struct page **vdso_pages;
-+static unsigned vdso_size;
- 
- static inline void *var_ref(void *p, char *name)
- {
-@@ -38,6 +39,7 @@ static int __init init_vdso_vars(void)
- 	int i;
- 	char *vbase;
- 
-+	vdso_size = npages << PAGE_SHIFT;
- 	vdso_pages = kmalloc(sizeof(struct page *) * npages, GFP_KERNEL);
- 	if (!vdso_pages)
- 		goto oom;
-@@ -101,20 +103,19 @@ int arch_setup_additional_pages(struct l
- 	struct mm_struct *mm = current->mm;
- 	unsigned long addr;
- 	int ret;
--	unsigned len = round_up(vdso_end - vdso_start, PAGE_SIZE);
- 
- 	if (!vdso_enabled)
- 		return 0;
- 
- 	down_write(&mm->mmap_sem);
--	addr = vdso_addr(mm->start_stack, len);
--	addr = get_unmapped_area(NULL, addr, len, 0, 0);
-+	addr = vdso_addr(mm->start_stack, vdso_size);
-+	addr = get_unmapped_area(NULL, addr, vdso_size, 0, 0);
- 	if (IS_ERR_VALUE(addr)) {
- 		ret = addr;
- 		goto up_fail;
- 	}
- 
--	ret = install_special_mapping(mm, addr, len,
-+	ret = install_special_mapping(mm, addr, vdso_size,
- 				      VM_READ|VM_EXEC|
- 				      VM_MAYREAD|VM_MAYWRITE|VM_MAYEXEC|
- 				      VM_ALWAYSDUMP,
+We need to wait for Phillip to reply for the details.  But my
+understanding is that Phillip is using this as an opportunity to clean
+up the layout and to remove limitations.  This may give Squashfs an
+easier ride in mainlining reviews, and once Squashfs is mainlined
+layout changes may become much more difficult, so it's wise to do it
+now.
 
+Rob.
 
-
+> With kind regards,
+>
+> Geert Uytterhoeven
+> Software Architect
+>
+> Sony Techsoft Centre Europe
+> The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+>
+> Phone:    +32 (0)2 700 8453
+> Fax:      +32 (0)2 700 8622
+> E-mail:   Geert.Uytterhoeven@eu.sony.com
+> Internet: http://www.sony-europe.com/
+>
+> A division of Sony Europe (Belgium) N.V.
+> VAT BE 0413.825.160 · RPR Brussels
+> Fortis 293-0376800-10 GEBA-BE-BB
