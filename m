@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755610AbYGROot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758699AbYGROpB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755610AbYGROot (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 10:44:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYGROok
+	id S1758699AbYGROpB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 10:45:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757434AbYGROov
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 10:44:40 -0400
-Received: from anchor-post-37.mail.demon.net ([194.217.242.87]:55052 "EHLO
-	anchor-post-37.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750736AbYGROoj (ORCPT
+	Fri, 18 Jul 2008 10:44:51 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:28704 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757331AbYGROot (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 10:44:39 -0400
-Subject: Re: [PATCH][RFC] slub: increasing order reduces memory
-	usage	of	some key caches
-From: Richard Kennedy <richard@rsk.demon.co.uk>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: penberg@cs.helsinki.fi, mpm@selenic.com, linux-mm <linux-mm@kvack.org>,
-       lkml <linux-kernel@vger.kernel.org>, Mel Gorman <mel@csn.ul.ie>
-In-Reply-To: <4880A694.1000100@linux-foundation.org>
-References: <1216211371.3122.46.camel@castor.localdomain>
-	 <487DF5D4.9070101@linux-foundation.org>
-	 <1216216730.3122.60.camel@castor.localdomain>
-	 <487DFFBE.5050407@linux-foundation.org>
-	 <1216375025.3082.7.camel@castor.localdomain>
-	 <4880A694.1000100@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 18 Jul 2008 15:42:57 +0100
-Message-Id: <1216392177.3082.27.camel@castor.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+	Fri, 18 Jul 2008 10:44:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=rQZx3HTLyrG0haV4FD8ExQcWNLDZU21A0bNTcyvNQ0T5x5uSam3Wfn309Ob+6ufnMV
+         VAjbPzGrGfkD1GB/RxXhEngwt5nFCPzheWWUdLBl7MarxAc2ZdZ8NTZV9Xvk+uVEK5KC
+         IU7YcGanyP4KA3ihSE/6znVOEirASUM3rwSyQ=
+Message-ID: <84144f020807180744w40677f6dm790d2caee3ca0d15@mail.gmail.com>
+Date: Fri, 18 Jul 2008 17:44:44 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>
+Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison overwritten
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, "Vegard Nossum" <vegard.nossum@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Christoph Lameter" <cl@linux-foundation.org>
+In-Reply-To: <20080718101624.GA7107@2ka.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080717214222.GA29449@elte.hu>
+	 <20080718054626.GA3338@2ka.mipt.ru>
+	 <84144f020807180202l6c703234ic3a2b57e73a1d89a@mail.gmail.com>
+	 <20080718101624.GA7107@2ka.mipt.ru>
+X-Google-Sender-Auth: 0e3f028efea40421
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Evgeniy,
 
-On Fri, 2008-07-18 at 09:20 -0500, Christoph Lameter wrote:
-> Richard Kennedy wrote:
-> 
-> > Slabcache: radix_tree_node       Aliases:  0 Order :  1 Objects: 33564
-> 
-> Argh. Should this not be the dentry cache? Wrong numbers?
-> 
-> 
-sorry -- yes I cut & pasted the wrong set.
+On Fri, Jul 18, 2008 at 12:02:26PM +0300, Pekka Enberg
+(penberg@cs.helsinki.fi) wrote:
+>> > Out of curiosity, why does it scream at allocation time?
+>>
+>> Because it's checking for use-after-free errors. The object is
+>> poisoned with POISON_FREE when it's free'd and we verify the poison
+>> values at allocation time.
 
-**2.6.26
-Slabcache: dentry                Aliases:  0 Order :  0 Objects: 22553
-** Reclaim accounting active
+On Fri, Jul 18, 2008 at 1:16 PM, Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+> Does it also scream on double free event? Just to closer guilty
+> circles... 0x9c offset is somewhere at the very end of the skbuff
+> structure, likely skb->users.
 
-Sizes (bytes)     Slabs              Debug                Memory
-------------------------------------------------------------------------
-Object :     208  Total  :    1188   Sanity Checks : Off  Total: 4866048
-SlabObj:     208  Full   :    1186   Redzoning     : Off  Used : 4691024
-SlabSiz:    4096  Partial:       0   Poisoning     : Off  Loss :  175024
-Loss   :       0  CpuSlab:       2   Tracking      : Off  Lalig:       0
-Align  :       8  Objects:      19   Tracing       : Off  Lpadd:  171072
+Yeah. See the free_debug_processing() function in mm/slub.c for
+details (the on_freelist() part). However, if you look at slab_free()
+you can see that in the SLUB fast-path we don't do any of these
+debugging checks. So you can end up with slab corruption without a
+nice error message.
 
-**after make
-Slabcache: dentry                Aliases:  0 Order :  0 Objects: 80076
-** Reclaim accounting active
-
-Sizes (bytes)     Slabs              Debug                Memory
-------------------------------------------------------------------------
-Object :     208  Total  :    4215   Sanity Checks : Off  Total: 17264640
-SlabObj:     208  Full   :    4205   Redzoning     : Off  Used : 16655808
-SlabSiz:    4096  Partial:       8   Poisoning     : Off  Loss :  608832
-Loss   :       0  CpuSlab:       2   Tracking      : Off  Lalig:       0
-Align  :       8  Objects:      19   Tracing       : Off  Lpadd:  606960
-
-
+                                  Pekka
