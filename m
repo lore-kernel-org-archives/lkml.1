@@ -1,45 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760576AbYGRUJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760790AbYGRUKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760576AbYGRUJS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 16:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756429AbYGRUJD
+	id S1760790AbYGRUKI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 16:10:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755452AbYGRUJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 16:09:03 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56136 "EHLO mx3.mail.elte.hu"
+	Fri, 18 Jul 2008 16:09:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41386 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756713AbYGRUJA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 16:09:00 -0400
-Date: Fri, 18 Jul 2008 22:08:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH] x86_64: ia32_signal.c: remove signal number conversion
-Message-ID: <20080718200843.GB27176@elte.hu>
-References: <487EACAB.2070805@ct.jp.nec.com>
+	id S1751814AbYGRUJz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 16:09:55 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Ian Kent <raven@themaw.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       autofs mailing list <autofs@linux.kernel.org>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 7/7] autofs4 - remove unused ioctls
+References: <20080718023651.12802.59107.stgit@raven.themaw.net>
+	<20080718023751.12802.96268.stgit@raven.themaw.net>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Fri, 18 Jul 2008 16:09:48 -0400
+In-Reply-To: <20080718023751.12802.96268.stgit@raven.themaw.net> (Ian Kent's
+	message of "Fri, 18 Jul 2008 10:37:52 +0800")
+Message-ID: <x497ibjc5tf.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <487EACAB.2070805@ct.jp.nec.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0046]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ian Kent <raven@themaw.net> writes:
 
-* Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+> The ioctls AUTOFS_IOC_TOGGLEREGHOST and AUTOFS_IOC_ASKREGHOST were
+> added several years ago but what they were intended for has never
+> been implemented (as far as I'm aware noone uses them) so remove them.
 
-> This was old code that was needed for iBCS and x86-64 never supported 
-> that.
+Yeah, the only other consumer of the autofs interfaces (that I know) is
+autodir, and that doesn't use the reghost ioctls.
 
-applied to tip/x86/cleanups, thanks Hiroshi.
+> Signed-off-by: Ian Kent <raven@themaw.net>
 
-	Ingo
+Reviewed-by: Jeff Moyer <jmoyer@redhat.com>
