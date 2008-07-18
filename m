@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760981AbYGRRHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760709AbYGRRJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760981AbYGRRHt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 13:07:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760643AbYGRRHS
+	id S1760709AbYGRRJs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 13:09:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756031AbYGRRJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 13:07:18 -0400
-Received: from ixia01.ro.gtsce.net ([212.146.94.66]:3504 "EHLO
-	ixro-ex1.ixiacom.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760553AbYGRRHQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 13:07:16 -0400
-From: Octavian Purdila <opurdila@ixiacom.com>
-Organization: IXIA
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [PATCH] tcp: do not promote SPLICE_F_NONBLOCK to socket O_NONBLOCK
-Date: Fri, 18 Jul 2008 20:04:44 +0300
-User-Agent: KMail/1.9.9
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, axboe@kernel.dk
-References: <200807171633.49791.opurdila@ixiacom.com> <200807181850.07393.opurdila@ixiacom.com> <20080718160009.GA29740@2ka.mipt.ru>
-In-Reply-To: <20080718160009.GA29740@2ka.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807182004.44664.opurdila@ixiacom.com>
-X-OriginalArrivalTime: 18 Jul 2008 17:09:12.0843 (UTC) FILETIME=[003B0DB0:01C8E8F9]
+	Fri, 18 Jul 2008 13:09:41 -0400
+Received: from mail.windriver.com ([147.11.1.11]:36267 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755957AbYGRRJk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 13:09:40 -0400
+From: Jason Wessel <jason.wessel@windriver.com>
+To: linux-kernel@vger.kernel.org
+Cc: ralf@linux-mips.org, linux-mips@linux-mips.org,
+       Jason Wessel <jason.wessel@windriver.com>
+Subject: [PATCH 3/3] kgdb, mips: pad pt_regs on MIPS64 for function arguments in an exception
+Date: Fri, 18 Jul 2008 12:08:48 -0500
+Message-Id: <1216400928-29097-4-git-send-email-jason.wessel@windriver.com>
+X-Mailer: git-send-email 1.5.5.1
+In-Reply-To: <1216400928-29097-3-git-send-email-jason.wessel@windriver.com>
+References: <1216400928-29097-1-git-send-email-jason.wessel@windriver.com>
+ <1216400928-29097-2-git-send-email-jason.wessel@windriver.com>
+ <1216400928-29097-3-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 18 Jul 2008 17:08:48.0301 (UTC) FILETIME=[F19A3DD0:01C8E8F8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 18 July 2008, Evgeniy Polyakov wrote:
+When using KGDB the pt_regs structure has the function arguments saved
+to the stack.  48 bytes are required for MIPS 64 for this purpose.
 
-> > It will take 17 because this is what the user requested. And when trying
-> > to push the 17th on the pipe, it will block. I base this both on
-> > experiments and on my understanding of the tcp splice receive
-> > implementation.
->
-> Seems like we do not understand each other. How it can take 17 if there
-> are only 16 pages? By 'push' you mean splice-into-pipe or 
-> splice-out-of-pipe-into-other-fd? Where exactly will it block?
->
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+---
+ include/asm-mips/ptrace.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Suppose we have 20 packets in the socket queue and the pipe is empty and the 
-application calls splice(sock, pipe, 17, flags=0).
+diff --git a/include/asm-mips/ptrace.h b/include/asm-mips/ptrace.h
+index 786f7e3..c3f535f 100644
+--- a/include/asm-mips/ptrace.h
++++ b/include/asm-mips/ptrace.h
+@@ -28,7 +28,7 @@
+  * system call/exception. As usual the registers k0/k1 aren't being saved.
+  */
+ struct pt_regs {
+-#ifdef CONFIG_32BIT
++#if defined(CONFIG_32BIT) || defined(CONFIG_KGDB)
+ 	/* Pad bytes for argument save space on the stack. */
+ 	unsigned long pad0[6];
+ #endif
+-- 
+1.5.5.1
 
-Then, tcp_splice_read will be called, which in turn calls tcp_read_sock. 
-
-tcp_read_sock will loop until all the 17 bytes will be read from the socket. 
-tcp_read_sock calls skb_splice_bits which calls splice_to_pipe.
-
-Now while skb_splice_bits is carefull to only put a maximum of PIPE_BUFFERS 
-during its iteration, due to the looping in tcp_read_sock, we will end up 
-with 17 calls to splice_to_pipe. Thus on the 17th call, splice_to_pipe will 
-block.
-
-Does this make sense?
-
-Thanks,
-tavi
