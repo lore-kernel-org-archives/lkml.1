@@ -1,88 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbYGRJBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755366AbYGRJCh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754867AbYGRJBB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 05:01:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbYGRJAu
+	id S1755366AbYGRJCh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 05:02:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753799AbYGRJC2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 05:00:50 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:51471 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753296AbYGRJAt (ORCPT
+	Fri, 18 Jul 2008 05:02:28 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:35272 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753602AbYGRJC0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 05:00:49 -0400
-Date: Fri, 18 Jul 2008 12:00:33 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, cl@linux-foundation.org,
-       davem@davemloft.net, johnpol@2ka.mipt.ru
+	Fri, 18 Jul 2008 05:02:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=pUYmLi9IUIyqoiO3edndgXo0JcrIvLiHgTROJnuoFZSjD4DTu61EVG3kO/+0i+wPfO
+         +S94yK7Fy2sX/y1uMi5TADbfeoUo3c15NKwQzzRCa/PKaPLB+TX8EprIyXrRVDLrgJmQ
+         4nUaZ0H9c/G1cAmDTjMwdOu10x3hsW7ot2XMc=
+Message-ID: <84144f020807180202l6c703234ic3a2b57e73a1d89a@mail.gmail.com>
+Date: Fri, 18 Jul 2008 12:02:26 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>
 Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison overwritten
-In-Reply-To: <20080717214222.GA29449@elte.hu>
-Message-ID: <Pine.LNX.4.64.0807181149460.3852@sbz-30.cs.Helsinki.FI>
-References: <20080717214222.GA29449@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, "Vegard Nossum" <vegard.nossum@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <20080718054626.GA3338@2ka.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080717214222.GA29449@elte.hu>
+	 <20080718054626.GA3338@2ka.mipt.ru>
+X-Google-Sender-Auth: 39c287d2afecb3a0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+Hi Evgeniy,
 
-On Thu, 17 Jul 2008, Ingo Molnar wrote:
-> A regression to v2.6.26:
-> 
-> I started getting this skb-head corruption message today, on a T60 
-> laptop with e1000:
+On Fri, Jul 18, 2008 at 8:46 AM, Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+> Hi Ingo.
+>
+> On Thu, Jul 17, 2008 at 11:42:22PM +0200, Ingo Molnar (mingo@elte.hu) wrote:
+>> Pid: 5098, comm: gdm-binary Not tainted 2.6.26-tip #3094
+>>  [<c0186f99>] print_trailer+0xa9/0xf0
+>>  [<c018707b>] check_bytes_and_report+0x9b/0xc0
+>>  [<c01874ae>] check_object+0x19e/0x1e0
+>>  [<c0187ef1>] __slab_alloc+0x371/0x4e0
+>>  [<c0188552>] kmem_cache_alloc+0xb2/0xc0
+>>  [<c06732dc>] ? __alloc_skb+0x2c/0x110
+>
+> Out of curiosity, why does it scream at allocation time?
 
-[snip]
- 
-On Thu, 17 Jul 2008, Ingo Molnar wrote:
-> Perhaps SLUB debugging got smarter?
+Because it's checking for use-after-free errors. The object is
+poisoned with POISON_FREE when it's free'd and we verify the poison
+values at allocation time.
 
-Nope.
+On Fri, Jul 18, 2008 at 8:46 AM, Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+> Does SLUB have a debug check at freeing time? If so, how does it work
+> and why didn't it caught use after free there?
 
-On Thu, 17 Jul 2008, Ingo Molnar wrote:
-> PM: Removing info for No Bus:vcs11
-> device: 'vcs11': device_create_release
-> =============================================================================
-> BUG skbuff_head_cache: Poison overwritten
-> -----------------------------------------------------------------------------
-> 
-> INFO: 0xf658ae9c-0xf658ae9c. First byte 0x6a instead of 0x6b
+You can't detect use after free before the object is actually free'd ;-)
 
-0x6b is POISON_FREE so 0x6a is one bit corruption.
-
-> INFO: Allocated in __alloc_skb+0x2c/0x110 age=0 cpu=0 pid=5098
-> INFO: Freed in __kfree_skb+0x31/0x80 age=0 cpu=1 pid=4440
-> INFO: Slab 0xc16cc140 objects=16 used=1 fp=0xf658ae00 flags=0x400000c3
-> INFO: Object 0xf658ae00 @offset=3584 fp=0xf658af00
-> 
-> Bytes b4 0xf658adf0:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a ZZZZZZZZZZZZZZZZ
->   Object 0xf658ae00:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
->   Object 0xf658ae10:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
->   Object 0xf658ae20:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
->   Object 0xf658ae30:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
->   Object 0xf658ae40:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
->   Object 0xf658ae50:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
->   Object 0xf658ae60:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
->   Object 0xf658ae70:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-
-It's bit unfortunate that we don't see full dump of the corruption here 
-because SLUB limits the output to 128 bytes. Ingo, you might want to try 
-this patch so that we can see all of it:
-
-diff --git a/mm/slub.c b/mm/slub.c
-index 5f6e2c4..f69d181 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -492,7 +492,7 @@ static void print_trailer(struct kmem_cache *s, struct page *page, u8 *p)
- 	if (p > addr + 16)
- 		print_section("Bytes b4", p - 16, 16);
- 
--	print_section("Object", p, min(s->objsize, 128));
-+	print_section("Object", p, s->objsize);
- 
- 	if (s->flags & SLAB_RED_ZONE)
- 		print_section("Redzone", p + s->objsize,
+                                      Pekka
