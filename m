@@ -1,47 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754186AbYGRDGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754821AbYGRDS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754186AbYGRDGm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 23:06:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750809AbYGRDGf
+	id S1754821AbYGRDS7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 23:18:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbYGRDSu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 23:06:35 -0400
-Received: from bromo.msbb.uc.edu ([129.137.3.146]:44717 "HELO
-	bromo.msbb.uc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750763AbYGRDGe (ORCPT
+	Thu, 17 Jul 2008 23:18:50 -0400
+Received: from outbound.icp-qv1-irony-out2.iinet.net.au ([203.59.1.107]:43260
+	"EHLO outbound.icp-qv1-irony-out2.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750994AbYGRDSt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 23:06:34 -0400
-Date: Thu, 17 Jul 2008 23:06:32 -0400
-From: Jack Howarth <howarth@bromo.msbb.uc.edu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
-Message-ID: <20080718030632.GA31508@bromo.msbb.uc.edu>
-References: <20080717004004.GA17792@bromo.msbb.uc.edu> <86802c440807161749u2f5c1eben618e05c6e254fedd@mail.gmail.com> <20080717023538.GA18329@bromo.msbb.uc.edu> <86802c440807161959s10666027k5297af1d657ff4fa@mail.gmail.com> <20080717034418.GA18951@bromo.msbb.uc.edu> <86802c440807162113g4cea3bd9ic71210330417032b@mail.gmail.com> <20080717061825.GA19582@bromo.msbb.uc.edu> <86802c440807162348m6d05b912x7b3f655d7f9efb93@mail.gmail.com> <20080718011532.GA30920@bromo.msbb.uc.edu> <86802c440807171825m24ffe140o81bb76286823568e@mail.gmail.com>
+	Thu, 17 Jul 2008 23:18:49 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAAyof0jLO9AP/2dsb2JhbACvbA
+X-IronPort-AV: E=Sophos;i="4.31,207,1215360000"; 
+   d="scan'208";a="343565796"
+From: Ian Kent <raven@themaw.net>
+Subject: [PATCH] autofs4 - fix direct mount pending expire race - correction
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: autofs mailing list <autofs@linux.kernel.org>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Date: Fri, 18 Jul 2008 11:14:54 +0800
+Message-ID: <20080718031453.12148.79135.stgit@raven.themaw.net>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440807171825m24ffe140o81bb76286823568e@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-YH,
-   The line...
+Appologies, somehow I seem to have sent an out dated version of this
+patch. Here is an additional patch that brings the patch up to date.
 
-                        DMI_MATCH(DMI_PRODUCT_NAME, "MacBookPro2"), 
+Signed-off-by: Ian Kent <raven@themaw.net>
 
-works fine in your mmconfig patch. I'll post the dmesg output to my
-bugzilla report shortly. It will take me a little longer to the
-early_config_dump since the fedora kernel rpms are using the
-vanilla 2.6.26 source code which appears to lack your patch.
-Is...
+---
 
-http://linux.derkeiler.com/Mailing-Lists/Kernel/2008-05/msg11336.html
+ fs/autofs4/root.c |   10 ++--------
+ 1 files changed, 2 insertions(+), 8 deletions(-)
 
-the final one that went into the linus kernel tree? Hopefully I can
-just apply that to vanilla 2.6.26-git4.
-                       Jack
+
+diff --git a/fs/autofs4/root.c b/fs/autofs4/root.c
+index b1536c1..7a7ed94 100644
+--- a/fs/autofs4/root.c
++++ b/fs/autofs4/root.c
+@@ -190,13 +190,7 @@ static void *autofs4_follow_link(struct dentry *dentry, struct nameidata *nd)
+ 			/* Follow down to our covering mount. */
+ 			if (!follow_down(&nd->path.mnt, &nd->path.dentry))
+ 				goto done;
+-			/*
+-			 * We shouldn't need to do this but we have no way
+-			 * of knowing what may have been done so try a follow
+-			 * just in case.
+-			 */
+-			autofs4_follow_mount(&nd->path.mnt, &nd->path.dentry);
+-			goto done;
++			goto follow;
+ 		}
+ 		spin_unlock(&sbi->fs_lock);
+ 		goto done;
+@@ -208,7 +202,7 @@ static void *autofs4_follow_link(struct dentry *dentry, struct nameidata *nd)
+ 	/* We trigger a mount for almost all flags */
+ 	lookup_type = nd->flags & (TRIGGER_FLAGS | TRIGGER_INTENTS);
+ 	if (!(lookup_type || dentry->d_flags & DCACHE_AUTOFS_PENDING))
+-		goto done;
++		goto follow;
+ 
+ 	/*
+ 	 * If the dentry contains directories then it is an autofs
