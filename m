@@ -1,49 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754844AbYGRHGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754581AbYGRHLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754844AbYGRHGT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 03:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbYGRHGJ
+	id S1754581AbYGRHLn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 03:11:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbYGRHLg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 03:06:09 -0400
-Received: from mail.lang.hm ([64.81.33.126]:34111 "EHLO bifrost.lang.hm"
+	Fri, 18 Jul 2008 03:11:36 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49555 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752440AbYGRHGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 03:06:08 -0400
-Date: Fri, 18 Jul 2008 00:07:15 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard
-To: linux-kernel <linux-kernel@vger.kernel.org>
-cc: jesse.brandeburg@intel.com, jeffrey.t.kirsher@intel.com,
-       bruce.w.allan@intel.com, john.ronciak@intel.com,
-       auke-jan.h.kok@intel.com, davem@davemloft.net
-Subject: wierd networking problem on 2.6.26 with e1000
-Message-ID: <alpine.DEB.1.10.0807172357390.6370@asgard>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S1752567AbYGRHLf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 03:11:35 -0400
+Date: Fri, 18 Jul 2008 09:11:21 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Roman Mindalev <lists@r000n.net>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: [Bug #11035] System hangs on 2.6.26-rc8
+Message-ID: <20080718071121.GB6875@elte.hu>
+References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik> <uBi7uNfg81L.A.xt.SzLcIB@albercik> <4878D259.7050403@r000n.net> <487CA8E5.8020208@r000n.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <487CA8E5.8020208@r000n.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-apologies for the poor report, I'll learn more tomorrow.
 
-I've got a pair of boxes dual opteron dual-core with 16G ram LSI raid, and 
-several quad E1000 cards. I had an emergancy requiring me to setup the 
-boxes quickly for a new purpose, on one of them I left my old 2.6.22.1 32 
-bit build, but on the other I tried a 2.6.26 64 bit build. both boxes have 
-the same 32 bit userspace and are running heartbeat to move a VIP from one 
-to the other.
+* Roman Mindalev <lists@r000n.net> wrote:
 
-when I logged into the 2.6.22.1 box and ssh'd over to the 2.6.26 box I had 
-no communications problems at all, but if I moved the VIP (eth0:0) onto 
-the 2.6.26 box and connected in to that I would occasionally see delays of 
-a min or two where I lost all communications with the box. At the time 
-this breakdown happened I was still connected in from the 2.6.22 box to 
-the real IP of the second one with no problems, but attempts to connect to 
-that real IP from other systems failed (unable to get an ARP response)
+> I done bisection.
+> Result below:
+> 
+> 8f46924600e30b140445f5b84abe9b80d2fff5fb is first bad commit
+> commit 8f46924600e30b140445f5b84abe9b80d2fff5fb
+> Author: Ingo Molnar <mingo@elte.hu>
+> Date:   Wed Jan 30 13:34:09 2008 +0100
+> 
+>     x86: enable CONFIG_DEBUG_PAGEALLOC more widely
+> 
+>     make CONFIG_DEBUG_PAGEALLOC universally available.
+> 
+>     CONFIG_HIBERNATION and CONFIG_HUGETLBFS was disabling it, for no
+>     particular reason.
 
-I will be able to post my configs tomorrow, but the version difference 
-between the two kernels will limit the usability of that. any suggestions 
-on other things I should do when I setup a new test?
+as far as i can see you see a lockup under certain circumstances, right?
 
-David Lang
+this debug option catches use-after-free and other types of invalid 
+memory accesses. When it catches a bug the kernel most likely crashes 
+and produces a backlog. Because you are in graphical mode that is not 
+visible.
+
+This would possibly be debuggable if you set up netconsole logging to 
+another system on a local LAN - see 
+Documentation/networking/netconsole.txt.
+
+Vegard - would it be possible to make DEBUG_PAGEALLOC faults single-shot 
+and non-fatal, just like kmemcheck does it? That way people would see a 
+nice kernel message instead of an immediate crash. That means we'd have 
+to find a reliable filter for DEBUG_PAGEALLOC-provoked pagefaults though 
+...
+
+	Ingo
