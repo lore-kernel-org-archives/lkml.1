@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbYGRJvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbYGRJvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756257AbYGRJvK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 05:51:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbYGRJu4
+	id S1756576AbYGRJvq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 05:51:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754364AbYGRJvh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 05:50:56 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37256 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753832AbYGRJuy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 05:50:54 -0400
-Date: Fri, 18 Jul 2008 18:52:26 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Libcg Devel Mailing List <libcg-devel@lists.sourceforge.net>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Paul Menage <menage@google.com>, Peter Zijlstra <pzijlstr@redhat.com>,
-       Kazunaga Ikeno <k-ikeno@ak.jp.nec.com>,
-       Morton Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC] How to handle the rules engine for cgroups
-Message-Id: <20080718185226.f809281d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080701191126.GA17376@redhat.com>
-References: <20080701191126.GA17376@redhat.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Fri, 18 Jul 2008 05:51:37 -0400
+Received: from mx2.suse.de ([195.135.220.15]:37479 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753698AbYGRJvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 05:51:36 -0400
+Date: Fri, 18 Jul 2008 11:52:13 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: akpm@linux-foundation.org, x86@kernel.org, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org, vgoyal@redhat.com
+Subject: Re: [PATCH] x86: Move crashkernel reservation before
+ dma32_reserve_bootmem()
+Message-ID: <20080718115213.3c87f8f8@halley.suse.de>
+In-Reply-To: <86802c440807171550t360a2a76mddb9ae45c7e9f4fb@mail.gmail.com>
+References: <1216332945-17197-1-git-send-email-bwalle@suse.de>
+	<86802c440807171550t360a2a76mddb9ae45c7e9f4fb@mail.gmail.com>
+Organization: SUSE Linux Products GmbH
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
+ D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
+ vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
+ pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -33,129 +33,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Jul 2008 15:11:26 -0400
-Vivek Goyal <vgoyal@redhat.com> wrote:
-
-> Hi,
+* Yinghai Lu [2008-07-17 15:50]:
+>
+> > +       /*
+> > +        * dma32_reserve_bootmem() allocates bootmem which may conflict
+> > +        * with the crashkernel command line, so do that before
+> > +        */
+> > +       reserve_crashkernel();
+> > +
+> >  #ifdef CONFIG_X86_64
+> >        dma32_reserve_bootmem();
+> >  #endif
+> > @@ -808,7 +814,6 @@ void __init setup_arch(char **cmdline_p)
+> >         */
+> >        find_smp_config();
+> >  #endif
+> > -       reserve_crashkernel();
+> >
+> >        reserve_ibft_region();
 > 
-> While development is going on for cgroup and various controllers, we also
-> need a facility so that an admin/user can specify the group creation and
-> also specify the rules based on which tasks should be placed in respective
-> groups. Group creation part will be handled by libcg which is already
-> under development. We still need to tackle the issue of how to specify
-> the rules and how these rules are enforced (rules engine).
-> 
+> Joe Jin already had another one to move dma32_reserve_bootmem later
 
-A different topic.
- 
-Recently I'm interested in "How to write userland daemon program
-to control group subsystem." To implement that effectively, we need
-some notifier between user <-> kernel.
-
-Can we use "inotify" to catch changes in cgroup (by daemon program) ?
-
-For example, create a new file under memory cgroup
-==
-  /opt/memory_cgroup/group_A/notify_at_memory_reach_limit
-==
-And a user watches the file by inotify.
-The kernel modify modified-time of notify_at_memory_reach_limit file and call
-fs/notify_user.c::notify_change() against this inode. He can catchthe event
-by inotify.
-(I think he can also catch removal of this file, etc...)
-
-Is there some difficulty or problem ? (I'm sorry if we can do this now.)
-
-Thanks,
--Kame
+Commit id? Current status?
 
 
-
-> I have gathered few views, with regards to how rule engine can possibly be
-> implemented, I am listing these down.
-> 
-> Proposal 1
-> ==========
-> Let user space daemon hanle all that. Daemon will open a netlink socket
-> and receive the notifications for various kernel events. Daemon will
-> also parse appropriate admin specified rules config file and place the
-> processes in right cgroup based on rules as and when events happen.
-> 
-> I have written a prototype user space program which does that. Program 
-> can be found here. Currently it is in very crude shape.
-> 
-> http://people.redhat.com/vgoyal/misc/rules-engine-daemon/user-id-based-namespaces.patch
-> 
-> Various people have raised two main issues with this approach.
-> 
-> - netlink is not a reliable protocol.
-> 	- Messages can be dropped and one can loose message. That means a
-> 	  newly forked process might never go into right group as meant.
-> 
-> - How to handle delays in rule exectuion?
-> 	- For example, if an "exec" happens and by the time process is moved to
-> 	 right group, it might have forked off few more processes or might
-> 	 have done quite some amount of memory allocation which will be
->    	 charged to the wring group. Or, newly exec process might get
->  	 killed in existing cgroup because of lack of memory (despite the
-> 	 fact that destination cgroup has sufficient memory).
-> 
-> Proposal 2
-> ==========
-> Implement one or more kernel modules which will implement the rule engine.
-> User space program can parse the config files and pass it to module.
-> Kernel will be patched only on select points to look for the rules (as
-> provided by modules). Very minimal code running inside the kernel if there
-> are no rules loaded.
-> 
-> Concerns:
-> - Rules can become complex and we don't want to handle that complexity in
->   kernel.
-> 
-> Pros:
-> - Reliable and precise movement of tasks in right cgroup based on rules.
-> 
-> Proposal 3
-> ==========
-> How about if additional parameters can be passed to system calls and one
-> can pass destination cgroup as additional parameter. Probably something
-> like sys_indirect proposal. Maybe glibc can act as a wrapper to pass
-> additional parameter so that applications don't need any modifications.
-> 
-> Concerns:
-> ========
-> - Looks like sys_indirect interface for passing extra flags was rejected.
-> - Requires extra work in glibc which can also involve parsing of rule
->   files. :-(
-> 
-> Proposal 4
-> ==========
-> Some vauge thoughts are there regarding how about kind of freezing the
-> process or thread upon fork, exec and unfreeze it once the thread has been
-> placed in right cgroup. 
-> 
-> Concerns:
-> ========
-> - Requires reliable netlink protocol otherwise there is a possibility that
->   a task never gets unfrozen.
-> - On what basis does one freeze a thread. There might not be any rules to
->   process for that thread we will unnecessarily delay it.
-> 
-> 
-> Please provide your inputs regarding what's the best way to handle the
-> rules engine.
-> 
-> To me, letting the rules live in separate module/modules seems to be a
-> reasonable way to move forward which will provide reliable and timely
-> execution of rules and by making it modular, we can remove most of the
-> complexity from core kernel code.
-> 
-> Thanks
-> Vivek
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
+Bernhard
+-- 
+Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
