@@ -1,76 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758634AbYGRS3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760040AbYGRSbh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758634AbYGRS3R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 14:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755356AbYGRS3C
+	id S1760040AbYGRSbh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 14:31:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755680AbYGRSba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 14:29:02 -0400
-Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:58732 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754176AbYGRS3A (ORCPT
+	Fri, 18 Jul 2008 14:31:30 -0400
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:62949 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755565AbYGRSb3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 14:29:00 -0400
-Date: Fri, 18 Jul 2008 13:28:50 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: John Reiser <jreiser@BitWagon.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, benh@kernel.crashing.org,
-       torvalds@linux-foundation.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, roland@redhat.com
-Subject: Re: [PATCH v3] elf loader support for auxvec base platform string
-Message-ID: <20080718182850.GO9594@localdomain>
-References: <1216166331-14810-1-git-send-email-ntl@pobox.com>
- <1216166331-14810-2-git-send-email-ntl@pobox.com>
- <1216276539.7740.309.camel@pasglop>
- <20080717000951.5f8cab37.akpm@linux-foundation.org>
- <20080717221932.GL9594@localdomain>
- <20080717154218.8981035c.akpm@linux-foundation.org>
- <487FD74C.4080603@BitWagon.com>
-MIME-Version: 1.0
+	Fri, 18 Jul 2008 14:31:29 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArEEAPB3gEhMRKxB/2dsb2JhbACBWq4Q
+Date: Fri, 18 Jul 2008 14:31:25 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Ingo Molnar <mingo@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH ftrace.git] Immedate Values Optimized Jump Fix
+Message-ID: <20080718183124.GA31768@Krystal>
+References: <20080717031721.GA24504@Krystal> <20080718161523.GY6875@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <487FD74C.4080603@BitWagon.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Pobox-Relay-ID: 62A902BC-54F7-11DD-BBF0-CE28B26B55AE-04752483!a-sasl-fastnet.pobox.com
+In-Reply-To: <20080718161523.GY6875@elte.hu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:29:38 up 43 days, 23:10,  4 users,  load average: 0.95, 0.56,
+	0.59
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John Reiser wrote:
-> Andrew Morton wrote:
-> > On Thu, 17 Jul 2008 17:19:32 -0500
-> > Nathan Lynch <ntl@pobox.com> wrote:
-> > 
-> > 
-> >> [snip]
-> >> A new aux vector entry, AT_BASE_PLATFORM, will denote the actual hardware.
-> [snip]
+* Ingo Molnar (mingo@elte.hu) wrote:
 > 
-> > OK.
-> > 
-> > But it conflicts directly with the already-queued
-> > execve-filename-document-and-export-via-auxiliary-vector.patch
-
-Okay, I can rebase on -mm.
-
-
-> It seems to me that most of the patch conflicts are mechanical
-> and could be merged mechanically.
+> * Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
 > 
-> However I believe that the documentation change to this comment is important:
-> -----
-> >  #ifdef __KERNEL__
-> > -#define AT_VECTOR_SIZE_BASE (14 + 2) /* NEW_AUX_ENT entries in auxiliary table */
-> > +#define AT_VECTOR_SIZE_BASE 17 /* NEW_AUX_ENT entries in auxiliary table */
-> > +  /* number of "#define AT_.*" above, minus {AT_NULL, AT_IGNORE, AT_NOTELF} */
-> >  #endif
-> -----
-> I scratched my head for a while to figure out that AT_NOTELF also was
-> a subtraction as far as AT_VECTOR_SIZE_BASE was concerned.
+> > Hi Ingo,
+> > 
+> > This fix would apply to the ftrace tree which contains the jump-based 
+> > immediate values. I don't know if this tree is still under active 
+> > development, but I guess that it wouldn't hurt to fix it.
+> > 
+> > Caused a kernel OOPS when loading the tracepoint probes once in a 
+> > while on a 8-way x86_64.
+> 
+> We've still got tip/tracing/immediates, with these commits from you:
+> 
+>  $ git-log-line linus.. arch/x86/kernel/immediate.c
+>  ee563d6: immediate values: jump liveliness
+>  e26875a: Immediate Values - Jump
+>  3fc8d03: Immediate Values - x86 Optimization NMI and MCE support
+> 
+> ... but the topic is stalled right now, due to hpa having had 
+> objections. Have those concerns been resolved? (Peter Cc:-ed)
+> 
+> i'd have applied this fix, but it does not apply. The first chunk seems 
+> already be present (in a different form), the second chunk looks much 
+> different.
+> 
+> 	Ingo
+> 
 
-John, from your patch:
+Hrm, I've edited directly the immediate values: jump liveliness patches,
+which explains why it does not apply. I'll try to unapply/reapply/fold
+the patches and see what it gives.
 
-+#define AT_EXECFN  31	/* filename of program */
+Plus, I've noticed that the "Text Edit Lock" patches are not in the
+immediates branch, thus it fails to compile. Immediate values depends on
+the Text Edit Lock patches.
 
-How did you arrive at 31 for the value of AT_EXECFN?  I haven't been
-able to find out how AT_* values are "allocated", or what the reason
-is for the gap between AT_SECURE and AT_SYSINFO.
+Mathieu
+
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
