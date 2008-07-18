@@ -1,136 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756088AbYGRHko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbYGRHk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756088AbYGRHko (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 03:40:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755268AbYGRHkJ
+	id S1754123AbYGRHk7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 03:40:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbYGRHkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 03:40:09 -0400
+	Fri, 18 Jul 2008 03:40:18 -0400
 Received: from rv-out-0506.google.com ([209.85.198.224]:50116 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755145AbYGRHkH (ORCPT
+	with ESMTP id S1755448AbYGRHkQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 03:40:07 -0400
+	Fri, 18 Jul 2008 03:40:16 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=ZceBJYmc36vpPkGrQgPX3+M4a6ybnOGpVbye0dYgP+DVVgtn4oIVgTSJ+HHPpoyN0c
-         oOwfvBKPkn5S1rVxab6BBxgMFiHVfMT2NzRdptCd8KAu79IgOhvrCOGPhcpAZEOIqniI
-         RjWXmsRSSw/f46ZF5nZ8GYfPiOA9KPuzj7Lxo=
+        b=b9y6gpJ4jApu9dWUq+6z2poIw1FivMi6BNGTG3yf2riRdHssgOj87MT2zOjBD+w+ku
+         C9OR8ffxqUsQa8wr8C7d3x/ONP+khZygbYMGC2PlU56cnpIyYn6+BNkIReH6yMkBNNCh
+         6DHV/7t/4sR1LP5K96yg8eSnAizXa2ceQdIF0=
 From: Magnus Damm <magnus.damm@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-sh@vger.kernel.org, gregkh@suse.de, lethal@linux-sh.org,
        i2c@lm-sensors.org, Magnus Damm <magnus.damm@gmail.com>,
        akpm@linux-foundation.org
-Date: Fri, 18 Jul 2008 16:40:18 +0900
-Message-Id: <20080718074018.32713.11976.sendpatchset@rx1.opensource.se>
+Date: Fri, 18 Jul 2008 16:40:27 +0900
+Message-Id: <20080718074027.32713.15674.sendpatchset@rx1.opensource.se>
 In-Reply-To: <20080718074002.32713.73442.sendpatchset@rx1.opensource.se>
 References: <20080718074002.32713.73442.sendpatchset@rx1.opensource.se>
-Subject: [PATCH 02/05] resource: add resource_type() and IORESOURCE_TYPE_BITS
+Subject: [PATCH 03/05] resource: add new IORESOURCE_CLK type V2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Magnus Damm <damm@igel.co.jp>
 
-This patch adds resource_type() and IORESOURCE_TYPE_BITS. They make it
-easier to add more resource types without having to rewrite tons of code.
+So far struct resource has been used with the types IORESOURCE_MEM,
+IORESOURCE_IO and IORESOUCE_IRQ to pass I/O and interrupt parameters
+to platform drivers. This patch extends this with IORESOURCE_CLK which
+should be used to pass a clock string to the platform driver. This
+string points out which specific clock that should be used with clk_get()
+for a certain driver instance.
+
+Using a hard coded strings in the device driver won't do since we may
+have multiple instances of drivers that need to use different clocks.
 
 Signed-off-by: Magnus Damm <damm@igel.co.jp>
 ---
 
- drivers/base/platform.c |   31 +++++++++++++++++--------------
- include/linux/ioport.h  |    7 ++++++-
- 2 files changed, 23 insertions(+), 15 deletions(-)
+ Changes since V1:
+ - Use a new bit for IORESOURCE_CLK instead of switching to a counter
 
---- 0001/drivers/base/platform.c
-+++ work/drivers/base/platform.c	2008-07-09 20:19:16.000000000 +0900
-@@ -42,10 +42,8 @@ struct resource *platform_get_resource(s
- 	for (i = 0; i < dev->num_resources; i++) {
- 		struct resource *r = &dev->resource[i];
- 
--		if ((r->flags & (IORESOURCE_IO|IORESOURCE_MEM|
--				 IORESOURCE_IRQ|IORESOURCE_DMA)) == type)
--			if (num-- == 0)
--				return r;
-+		if (type == resource_type(r) && num-- == 0)
-+			return r;
- 	}
- 	return NULL;
- }
-@@ -78,10 +76,8 @@ struct resource *platform_get_resource_b
- 	for (i = 0; i < dev->num_resources; i++) {
- 		struct resource *r = &dev->resource[i];
- 
--		if ((r->flags & (IORESOURCE_IO|IORESOURCE_MEM|
--				 IORESOURCE_IRQ|IORESOURCE_DMA)) == type)
--			if (!strcmp(r->name, name))
--				return r;
-+		if (type == resource_type(r) && !strcmp(r->name, name))
-+			return r;
- 	}
- 	return NULL;
- }
-@@ -259,9 +255,9 @@ int platform_device_add(struct platform_
- 
- 		p = r->parent;
- 		if (!p) {
--			if (r->flags & IORESOURCE_MEM)
-+			if (resource_type(r) == IORESOURCE_MEM)
- 				p = &iomem_resource;
--			else if (r->flags & IORESOURCE_IO)
-+			else if (resource_type(r) == IORESOURCE_IO)
- 				p = &ioport_resource;
- 		}
- 
-@@ -282,9 +278,14 @@ int platform_device_add(struct platform_
- 		return ret;
- 
-  failed:
--	while (--i >= 0)
--		if (pdev->resource[i].flags & (IORESOURCE_MEM|IORESOURCE_IO))
--			release_resource(&pdev->resource[i]);
-+	while (--i >= 0) {
-+		struct resource *r = &pdev->resource[i];
-+		unsigned long type = resource_type(r);
-+
-+		if (type == IORESOURCE_MEM || type == IORESOURCE_IO)
-+			release_resource(r);
-+	}
-+
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(platform_device_add);
-@@ -306,7 +307,9 @@ void platform_device_del(struct platform
- 
- 		for (i = 0; i < pdev->num_resources; i++) {
- 			struct resource *r = &pdev->resource[i];
--			if (r->flags & (IORESOURCE_MEM|IORESOURCE_IO))
-+			unsigned long type = resource_type(r);
-+
-+			if (type == IORESOURCE_MEM || type == IORESOURCE_IO)
- 				release_resource(r);
- 		}
- 	}
---- 0002/include/linux/ioport.h
-+++ work/include/linux/ioport.h	2008-07-09 15:16:48.000000000 +0900
-@@ -34,7 +34,8 @@ struct resource_list {
+ include/linux/ioport.h |   17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
+
+--- 0003/include/linux/ioport.h
++++ work/include/linux/ioport.h	2008-07-18 14:29:48.000000000 +0900
+@@ -34,20 +34,21 @@ struct resource_list {
   */
  #define IORESOURCE_BITS		0x000000ff	/* Bus-specific bits */
  
--#define IORESOURCE_IO		0x00000100	/* Resource type */
-+#define IORESOURCE_TYPE_BITS	0x00000f00	/* Resource type */
-+#define IORESOURCE_IO		0x00000100
+-#define IORESOURCE_TYPE_BITS	0x00000f00	/* Resource type */
++#define IORESOURCE_TYPE_BITS	0x00001f00	/* Resource type */
+ #define IORESOURCE_IO		0x00000100
  #define IORESOURCE_MEM		0x00000200
  #define IORESOURCE_IRQ		0x00000400
  #define IORESOURCE_DMA		0x00000800
-@@ -117,6 +118,10 @@ static inline resource_size_t resource_s
- {
- 	return res->end - res->start + 1;
- }
-+static inline unsigned long resource_type(struct resource *res)
-+{
-+	return res->flags & IORESOURCE_TYPE_BITS;
-+}
++#define IORESOURCE_CLK		0x00001000
  
- /* Convenience shorthand with allocation */
- #define request_region(start,n,name)	__request_region(&ioport_resource, (start), (n), (name))
+-#define IORESOURCE_PREFETCH	0x00001000	/* No side effects */
+-#define IORESOURCE_READONLY	0x00002000
+-#define IORESOURCE_CACHEABLE	0x00004000
+-#define IORESOURCE_RANGELENGTH	0x00008000
+-#define IORESOURCE_SHADOWABLE	0x00010000
++#define IORESOURCE_PREFETCH	0x00002000	/* No side effects */
++#define IORESOURCE_READONLY	0x00004000
++#define IORESOURCE_CACHEABLE	0x00008000
++#define IORESOURCE_RANGELENGTH	0x00010000
++#define IORESOURCE_SHADOWABLE	0x00020000
+ 
+-#define IORESOURCE_SIZEALIGN	0x00020000	/* size indicates alignment */
+-#define IORESOURCE_STARTALIGN	0x00040000	/* start field is alignment */
++#define IORESOURCE_SIZEALIGN	0x00040000	/* size indicates alignment */
++#define IORESOURCE_STARTALIGN	0x00080000	/* start field is alignment */
+ 
+ #define IORESOURCE_DISABLED	0x10000000
+ #define IORESOURCE_UNSET	0x20000000
