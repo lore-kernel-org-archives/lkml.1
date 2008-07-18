@@ -1,81 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759137AbYGRPwh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759312AbYGRPxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759137AbYGRPwh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 11:52:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756395AbYGRPwQ
+	id S1759312AbYGRPxU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 11:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbYGRPxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 11:52:16 -0400
-Received: from ixia01.ro.gtsce.net ([212.146.94.66]:2658 "EHLO
-	ixro-ex1.ixiacom.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755810AbYGRPwO (ORCPT
+	Fri, 18 Jul 2008 11:53:12 -0400
+Received: from mga01.intel.com ([192.55.52.88]:58697 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752421AbYGRPxL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 11:52:14 -0400
-From: Octavian Purdila <opurdila@ixiacom.com>
-Organization: IXIA
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [PATCH] tcp: do not promote SPLICE_F_NONBLOCK to socket O_NONBLOCK
-Date: Fri, 18 Jul 2008 18:50:07 +0300
-User-Agent: KMail/1.9.9
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, axboe@kernel.dk
-References: <200807171633.49791.opurdila@ixiacom.com> <200807181704.17211.opurdila@ixiacom.com> <20080718143219.GA905@2ka.mipt.ru>
-In-Reply-To: <20080718143219.GA905@2ka.mipt.ru>
+	Fri, 18 Jul 2008 11:53:11 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,211,1215414000"; 
+   d="scan'208";a="598983935"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807181850.07393.opurdila@ixiacom.com>
-X-OriginalArrivalTime: 18 Jul 2008 15:54:09.0949 (UTC) FILETIME=[844BF4D0:01C8E8EE]
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/2] I/OAT: Add watchdog/reset functionality to ioatdma driver
+Date: Fri, 18 Jul 2008 16:53:03 +0100
+Message-ID: <7F38996F7185A24AB9071ED4950AD8C101D2C62A@swsmsx413.ger.corp.intel.com>
+In-Reply-To: <e9c3a7c20807111307q1b7c4ed0wb2864e2dae6abe90@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/2] I/OAT: Add watchdog/reset functionality to ioatdma driver
+thread-index: AcjjkcBnWkyuYWPXTaqNOApJAPQbwQFWwdHA
+From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+To: "Williams, Dan J" <dan.j.williams@intel.com>
+Cc: "Nelson, Shannon" <shannon.nelson@intel.com>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 18 Jul 2008 15:53:04.0805 (UTC) FILETIME=[5D77C550:01C8E8EE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dan Williams wrote:
+> On Fri, Jul 11, 2008 at 4:36 AM, Maciej Sosnowski
+> <maciej.sosnowski@intel.com> wrote:
+>> Due to occasional DMA channel hangs observed for I/OAT versions 1.2
+>> and 2.0 a watchdog has been introduced to check every 2 seconds
+>> if all channels progress normally.
+>> If stuck channel is detected, driver resets it.
+>> The reset is done in two parts. The second part is scheduled
+>> by the first one to reinitialize the channel after the restart.
+>> 
+> 
+> checkpatch had some valid suggestions, please give it a run.
 
-> Why? There is clearly documented behaviour of the call, it works exactly
-> like it is supposed to work - it tries to be non-blocking everywhere
-> where it can, but not always, that's why there is a sentence which
-> states that even with given flag call may block.
+Hi Dan,
+Thanks a lot for your review.
+I have just sent v2 of this patch series updated according to your
+suggestions.
+This includes resolving checkpatch issues.
 
-I think that it tries a bit too hard to be non-blocking in the TCP receive 
-implementation, and that is causing problems for some usecases. 
+> A general comment about this change it seems to add a bit of
+> complexity.  The driver now has two workqueue routines and a tasklet.
+> Might some of these be combined?  In other words, do we need a free
+> running watchdog when no descriptors are in flight?  It seems that
+> using a timer to kick the cleanup tasklet could be used in place of
+> the ioat_dma_chan_watchdog workqueue.
+ 
+The idea was to run watchdog not too frequently 
+in order to minimize its impact on the performance.
+That's why it is called every 2 secs.
+Cleanup is a differnt story and it is called more frequently,
+so it would be difficult to combine these two things.
+BTW - cleanup tasklet is not used at the moment
+(TCP does not use interrupts but polling for cleanups).
 
-And (sorry for saying this again - it will be the last time) to me it looks 
-like SPLICE_F_NONBLOCK is intended for the pipe only:
+>> Sleep time in self_test has been increased to 10ms
+>> since in some cases 1ms appeared not to be enough.
+> 
+> This should be broken out into a separate patch.  Perhaps with an
+> explanation of why it needs extra time for this particular
+> transaction.
 
-commit 29e350944fdc2dfca102500790d8ad6d6ff4f69d
-Author: Linus Torvalds <torvalds@g5.osdl.org>
-Date:   Sun Apr 2 12:46:35 2006 -0700
+It has been separated in v2.
 
-    splice: add SPLICE_F_NONBLOCK flag
-    
-    It doesn't make the splice itself necessarily nonblocking (because the
-    actual file descriptors that are spliced from/to may block unless they
-    have the O_NONBLOCK flag set), but it makes the splice pipe operations
-    nonblocking.
-
->
-> If there are 20 packets in the queue it will get 16 and put them into
-> another end (in the next call in your example). Where will it block?
->
-
-It will take 17 because this is what the user requested. And when trying to 
-push the 17th on the pipe, it will block. I base this both on experiments and 
-on my understanding of the tcp splice receive implementation. 
-
->
-> I really do not think that there is any kind of problem with current
-> behaviour, and thus there is no need to introduce additional flags
-> and/or change existing behaviour, but I can understand you that existing
-> approach does not met your expectation, so you are trying to change it.
-> I've added Jens Axboe to copy list, who is responsible for splice
-> design.
->
-> Btw, you are also trying to change existing userspace API, which may be
-> very much forbidden at this stage.
-
-If people here will be telling me that for splice you must always use 
-non-blocking I/O since you can't get the blocking case to work reliably, than 
-I will accept that. After all, they know better :) 
+> 
+> Regards,
+> Dan
 
 Thanks,
-tavi
+Maciej
