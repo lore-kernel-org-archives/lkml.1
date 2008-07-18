@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754513AbYGRGRg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391AbYGRGWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754513AbYGRGRg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 02:17:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbYGRGR2
+	id S1754391AbYGRGWY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 02:22:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbYGRGWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 02:17:28 -0400
-Received: from winston.telenet-ops.be ([195.130.137.75]:39059 "EHLO
-	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751709AbYGRGR1 (ORCPT
+	Fri, 18 Jul 2008 02:22:16 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:3474 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752617AbYGRGWP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 02:17:27 -0400
-Date: Fri, 18 Jul 2008 08:17:23 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu, x86@kernel.org,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Russell King <rmk@arm.linux.org.uk>,
-       David Howells <dhowells@redhat.com>, Ralf Baechle <ralf@linux-mips.org>,
-       Lennert Buytenhek <kernel@wantstofly.org>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       Paul Mackerras <paulus@samba.org>,
-       David Woodhouse <dwmw2@infradead.org>, Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Gortmaker <paul.gortmaker@windriver.com>,
-       linux-embedded@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Tim Bird <tim.bird@am.sony.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Dave Miller <davem@davemloft.net>
-Subject: Re: [PATCH] (updated, rolled up) make section names compatible with
- -ffunction-sections -fdata-sections
-In-Reply-To: <200807172213.37411.vda.linux@googlemail.com>
-Message-ID: <Pine.LNX.4.64.0807180816550.20605@anakin>
-References: <200807172213.37411.vda.linux@googlemail.com>
+	Fri, 18 Jul 2008 02:22:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=n52/F6TKPImYPM2MqKp77T+YwqTyoz30etMSoHLADzhiNMvtNEXpHq1PmA9BTjAnVc
+         Ppt0HJ9cGJ2z7hbscRYOo6uFJn1wxxXi8NCXvRmS1qFb1Rlayh1NJs/vN3fuFb+6PKpI
+         LCi96YFPkZCUiIBLZTnfjSyyUhQohY3E1qx0Y=
+Message-ID: <86802c440807172322s5dabbd1bx297742d782e373d6@mail.gmail.com>
+Date: Thu, 17 Jul 2008 23:22:15 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jack Howarth" <howarth@bromo.msbb.uc.edu>
+Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <20080718060935.GA32345@bromo.msbb.uc.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080717004004.GA17792@bromo.msbb.uc.edu>
+	 <20080717023538.GA18329@bromo.msbb.uc.edu>
+	 <86802c440807161959s10666027k5297af1d657ff4fa@mail.gmail.com>
+	 <20080717034418.GA18951@bromo.msbb.uc.edu>
+	 <86802c440807162113g4cea3bd9ic71210330417032b@mail.gmail.com>
+	 <20080717061825.GA19582@bromo.msbb.uc.edu>
+	 <86802c440807162348m6d05b912x7b3f655d7f9efb93@mail.gmail.com>
+	 <20080718011532.GA30920@bromo.msbb.uc.edu>
+	 <86802c440807171825m24ffe140o81bb76286823568e@mail.gmail.com>
+	 <20080718060935.GA32345@bromo.msbb.uc.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jul 2008, Denys Vlasenko wrote:
-> Here is the update against current Linus tree,
-> rolled up into one patch.
-> 
-> James Bottomley suggested a different naming scheme:
-> instead of swapping parts (.text.head -> .head.text),
-> prepend .kernel to our special section names.
-> This patch implements his idea.
+On Thu, Jul 17, 2008 at 11:09 PM, Jack Howarth
+<howarth@bromo.msbb.uc.edu> wrote:
+> YH,
+>   I built a fedora kernel rpm using the diff of the vanilla
+> 2.6.26 release vs the current git of the linus kernel tree.
+> The option for pci_early_config_dump appears to have been
+> renamed as earlydump. Using 'debug pci=earlydump', I get the
+> following PCI information from the bios. This kernel uses your
+> mmconfig patch with the dmicode of MacBookPro2.
 
-Why not '.linux'?
+how about
+lspci -vvxxxx
 
-> ppc and v850 are dropped per comments from arch people.
-> parisc and x86 had minor fixes. x86 fix added proper
-> executable bits to a section:
-> 
-> -.section ".text.head"
-> +.section ".kernel.text.head","ax",@progbits
-> 
-> Does arch/m68k/kernel/sun3-head.S need the same fix?
-
-Sure, why not?
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+YH
