@@ -1,114 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754003AbYGRGOj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754513AbYGRGRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754003AbYGRGOj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 02:14:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751614AbYGRGOb
+	id S1754513AbYGRGRg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 02:17:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbYGRGR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 02:14:31 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:55758 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751513AbYGRGOb (ORCPT
+	Fri, 18 Jul 2008 02:17:28 -0400
+Received: from winston.telenet-ops.be ([195.130.137.75]:39059 "EHLO
+	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751709AbYGRGR1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 02:14:31 -0400
-Date: Fri, 18 Jul 2008 08:14:29 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Robert Lougher <rob.lougher@gmail.com>
-cc: Peter Korsgaard <jacmet@sunsite.dk>,
-       Phillip Lougher <phillip@lougher.demon.co.uk>,
-       squashfs-devel@lists.sourceforge.net,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [Squashfs-devel] Squashfs mainlining status?
-In-Reply-To: <d58509a80807170847p6ef05a8av96b6c8828a33821@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0807180808400.6102@vixen.sonytel.be>
-References: <Pine.LNX.4.64.0806021650190.28709@vixen.sonytel.be>
- <48460906.2080205@lougher.demon.co.uk> <87od6h7d7l.fsf@macbook.be.48ers.dk>
- <Pine.LNX.4.64.0807171729450.29859@vixen.sonytel.be>
- <d58509a80807170847p6ef05a8av96b6c8828a33821@mail.gmail.com>
+	Fri, 18 Jul 2008 02:17:27 -0400
+Date: Fri, 18 Jul 2008 08:17:23 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu, x86@kernel.org,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Russell King <rmk@arm.linux.org.uk>,
+       David Howells <dhowells@redhat.com>, Ralf Baechle <ralf@linux-mips.org>,
+       Lennert Buytenhek <kernel@wantstofly.org>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       Paul Mackerras <paulus@samba.org>,
+       David Woodhouse <dwmw2@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Paul Gortmaker <paul.gortmaker@windriver.com>,
+       linux-embedded@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Tim Bird <tim.bird@am.sony.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Dave Miller <davem@davemloft.net>
+Subject: Re: [PATCH] (updated, rolled up) make section names compatible with
+ -ffunction-sections -fdata-sections
+In-Reply-To: <200807172213.37411.vda.linux@googlemail.com>
+Message-ID: <Pine.LNX.4.64.0807180816550.20605@anakin>
+References: <200807172213.37411.vda.linux@googlemail.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-553553839-1216361669=:6102"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----584349381-553553839-1216361669=:6102
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-	Hi Robert,
-
-On Thu, 17 Jul 2008, Robert Lougher wrote:
-> On Thu, Jul 17, 2008 at 4:35 PM, Geert Uytterhoeven
-> <Geert.Uytterhoeven@sonycom.com> wrote:
-> > On Wed, 4 Jun 2008, Peter Korsgaard wrote:
-> >> >>>>> "Phillip" == Phillip Lougher <phillip@lougher.demon.co.uk> writes:
-> >>  Phillip> The major work of course is the move to a little endian
-> >>  Phillip> layout without any bit fields in the structures to make it
-> >>  Phillip> easier to swap member fields on big-endian architectures.
-> >>  Phillip> I'm currently working on this on a non-CVS branch.
-> >>  Phillip> Most of the work till now has been without any attempt to
-> >>  Phillip> retain backwards compatibility with the current 3.3
-> >>  Phillip> little-endian filesystem layout.  After your private email
-> >>  Phillip> regarding retaining backwards compatibility I will look
-> >>  Phillip> again at this issue, it may well be that I will abandon my
-> >>  Phillip> current layout changes that I have so far made.
-> >>
-> >> What private mail? Anything of interest to the rest of the group? As I
-> >
-> > Oops, I've just returned from holidays, and realize I never actually responded
-> > to this question. So here is the gist of it:
-> >
-> > | I had a closer look at the structures and bitfields, and I still think it's
-> > | possible to stay compatible with the current little endian layout:
-> > |   1. About half of the bitfields are actually bytes or 16-bit words. Hence
-> > |      these can easily be converted to __u8 or __le16.
-> > |   2. Most of the remaining bitfields sit in an 8, 16, or 32 bit integer.
-> > |      Hence these can be converted to such an integer (or an array of bytes,
-> > |      cfr. 3 below), and accessed using get_unaligned_le{16,32}() and a
-> > |      shift/mask operation.
-> > |   3. There are a few bitfields that sit in an `odd' number of bytes. These
-> > |      can be converted to an array of bytes, and accessed using
-> > |      get_unaligned_le{16,32}() and a shift/mask operation.
-> > |   4. The integral fields in the structs should be accessed using
-> > |      get_unaligned_le{8,16,32}(), too.
-> >
-> > I noticed the squashfs CVS repository is getting a new (incompatible) 4.0
-> > layout now?
-> >
-> > What do people think?
+On Thu, 17 Jul 2008, Denys Vlasenko wrote:
+> Here is the update against current Linus tree,
+> rolled up into one patch.
 > 
-> Last time I looked you were not the maintainer of squashfs.  Phillip
+> James Bottomley suggested a different naming scheme:
+> instead of swapping parts (.text.head -> .head.text),
+> prepend .kernel to our special section names.
+> This patch implements his idea.
 
-Sorry, I don't want to offend anyone. Nor do I intent to become the maintainer.
-I just answered Peter's question, because I think people should know the
-answer.
+Why not '.linux'?
 
-> spent a long time examining the possibility of maintaining
-> compatibility but decided asthat there were sufficient advantages in a
-> new layout to warrant the change.
+> ppc and v850 are dropped per comments from arch people.
+> parisc and x86 had minor fixes. x86 fix added proper
+> executable bits to a section:
+> 
+> -.section ".text.head"
+> +.section ".kernel.text.head","ax",@progbits
+> 
+> Does arch/m68k/kernel/sun3-head.S need the same fix?
 
-If there are good reasons for breaking compatibility, we're more than happy to
-accept that. Don't you think it would be a good idea to explain them to the
-readers of the squashfs-devel mailing list?
+Sure, why not?
 
-Phillip, can you please elaborate? Many thanks in advance!
+Gr{oetje,eeting}s,
 
-With kind regards,
+						Geert
 
-Geert Uytterhoeven
-Software Architect
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@eu.sony.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis 293-0376800-10 GEBA-BE-BB
----584349381-553553839-1216361669=:6102--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
