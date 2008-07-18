@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760948AbYGRXW4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760236AbYGRXZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760948AbYGRXW4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 19:22:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755081AbYGRXWr
+	id S1760236AbYGRXZX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 19:25:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757265AbYGRXZJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 19:22:47 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:10136 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753648AbYGRXWq (ORCPT
+	Fri, 18 Jul 2008 19:25:09 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:50930 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757314AbYGRXZI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 19:22:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=BtOeeTxHkJrOfKh+RLYmijyFuPVfU+EGNKPaIkJ6QKsw5qIn5pCMagWhdzj+PUK3Zm
-         q/bkxNLcv0vkZ1bqViX93wN/KD9IF1nKHrH07AAvzc6I5rqNppPbFd935EEoTCw/Pccg
-         BjV02pkjBJInAQEYdw2zD2l+x6khCCpgeI8Jw=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       "lenb@kernel.org" <lenb@kernel.org>
-Subject: [PATCH] acpi: remove have_arch_parse_srat in acpi.h
-Date: Fri, 18 Jul 2008 16:22:15 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+	Fri, 18 Jul 2008 19:25:08 -0400
+Message-ID: <4881263B.7060700@zytor.com>
+Date: Fri, 18 Jul 2008 16:24:43 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Jan Beulich <jbeulich@novell.com>
+CC: mingo@elte.hu, tglx@linutronix.de, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] i386: improve double fault handling
+References: <4880A912.76E4.0078.0@novell.com>
+In-Reply-To: <4880A912.76E4.0078.0@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807181622.15595.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jan Beulich wrote:
+> Make the double fault handler use CPU-specific stacks. Add some
+> abstraction to simplify future change of other exception handlers to go
+> through task gates.
+> Add a new notification of the event through the die notifier chain,
+> also providing some environmental adjustments so that various
+> infrastructural things work independent of the fact that the fault and
+> the callbacks are running on other then the normal kernel stack.
+> 
+> Signed-Off-By: Jan Beulich <jbeulich@novell.com>
+> Cc: Andi Kleen <andi@firstfloor.org>
 
-32bit don't need that anymore
+This patch doesn't apply for me to the extent that I'm hesitant to fix 
+it up manually.  Could you please refresh it against current -linus?
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+	-hpa
 
----
- include/linux/acpi.h |    8 --------
- 1 file changed, 8 deletions(-)
-
-Index: linux-2.6/include/linux/acpi.h
-===================================================================
---- linux-2.6.orig/include/linux/acpi.h
-+++ linux-2.6/include/linux/acpi.h
-@@ -94,18 +94,10 @@ int acpi_parse_mcfg (struct acpi_table_h
- void acpi_table_print_madt_entry (struct acpi_subtable_header *madt);
- 
- /* the following four functions are architecture-dependent */
--#ifdef CONFIG_HAVE_ARCH_PARSE_SRAT
--#define NR_NODE_MEMBLKS MAX_NUMNODES
--#define acpi_numa_slit_init(slit) do {} while (0)
--#define acpi_numa_processor_affinity_init(pa) do {} while (0)
--#define acpi_numa_memory_affinity_init(ma) do {} while (0)
--#define acpi_numa_arch_fixup() do {} while (0)
--#else
- void acpi_numa_slit_init (struct acpi_table_slit *slit);
- void acpi_numa_processor_affinity_init (struct acpi_srat_cpu_affinity *pa);
- void acpi_numa_memory_affinity_init (struct acpi_srat_mem_affinity *ma);
- void acpi_numa_arch_fixup(void);
--#endif
- 
- #ifdef CONFIG_ACPI_HOTPLUG_CPU
- /* Arch dependent functions for cpu hotplug support */
+P.S. All your patches came through QP-damaged, which made them more 
+difficult to deal with manually.
