@@ -1,79 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758768AbYGRX7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760146AbYGSAAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758768AbYGRX7Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 19:59:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753624AbYGRX7R
+	id S1760146AbYGSAAd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 20:00:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756801AbYGSAAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 19:59:17 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:38526 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753493AbYGRX7Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 19:59:16 -0400
-Date: Sat, 19 Jul 2008 01:59:11 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] MMC updates for 2.6.27-rc1
-Message-ID: <20080719015911.02faddf6@mjolnir.drzeus.cx>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-24260-1216425555-0001-2"
+	Fri, 18 Jul 2008 20:00:22 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:3900 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753624AbYGSAAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 20:00:21 -0400
+Date: Fri, 18 Jul 2008 19:23:21 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: linux-wireless@vger.kernel.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: 3rd REVISED AGENDA -- Re: Linux Wireless Mini-Summit -- Ottawa --
+	July 22, 2008
+Message-ID: <20080718232321.GA12961@tuxdriver.com>
+References: <20080709190915.GA8238@tuxdriver.com> <20080715182654.GA5969@tuxdriver.com> <20080716184803.GB3232@tuxdriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080716184803.GB3232@tuxdriver.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+One more adjustment to account for change in the lunch schedule.
 
---=_freyr.drzeus.cx-24260-1216425555-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+John
 
-Linus, please pull from
-
-        git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-li=
-nus
-
-to receive the following updates:
-
- drivers/mmc/host/au1xmmc.c |   54 ++++++++++++++++++++++++++++++++++------=
 ---
- drivers/mmc/host/pxamci.c  |    2 +-
- drivers/mmc/host/s3cmci.c  |   50 +++++++++++++++++++++++++---------------
- 3 files changed, 74 insertions(+), 32 deletions(-)
 
-Ben Dooks (2):
-      s3cmci: fixes for section mismatch warnings
-      s3cmci: ensure host stopped on machine shutdown
+3rd Linux Wireless Summit
+Les Suites Hotel, Byward Suite
+Ottawa, Canada
+22 July 2008
 
-Karl Beldan (1):
-      pxamci: trivial fix of DMA alignment register bit clearing
+Proposed Agenda
 
-Manuel Lauss (1):
-      au1xmmc: suspend/resume implementation
+0830	Meet & Greet
 
---=20
-     -- Pierre Ossman
+	Introductions and opening remarks
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
+0900	Status Reports
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+	Overview of where things stand today
 
---=_freyr.drzeus.cx-24260-1216425555-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
+	- QoS/Multiqueue
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+	- 802.11n
 
-iEYEARECAAYFAkiBLlIACgkQ7b8eESbyJLhIcACgjzPeSfgtq3scU2hLdEPxJMgL
-NEwAoIi+RAR6LfK6gDM9Z3wBw9XYHDso
-=i8Ys
------END PGP SIGNATURE-----
+	- spectrum management
 
---=_freyr.drzeus.cx-24260-1216425555-0001-2--
+	- Mesh mode (802.11s)
+
+	- RF kill
+
+	- driver status reports
+
+1000	Break
+
+1030	Current Work
+
+	Short presentations/discussions about work in progress
+
+	- access point mode
+
+	- cfg80211/nl80211
+		- time to push to replace WEXT?
+		- tool enhancements and/or userland support?
+
+	- regulatory enforcement (802.11d, CRDA)
+
+	- encrypted management frames (802.11w)
+
+	- virtual hardware (mac80211_hwsim)
+
+	- WiMAX
+
+1200	Vendor/Distro Round Table
+
+	Representatives from hardware vendors and Linux distributions
+	discuss issues around cooperation between themselves and the
+	development community, what we are doing well, and what problems we
+	are causing for each other.
+
+1230	Lunch/Break (provided)
+
+1400	Future work
+
+	Short presentations/discussions about work that has previously
+	been suggested or requested
+
+	- power management 
+		- suspend/resume
+		- power savings
+
+	- lib80211 (code sharing w/ full MAC drivers)
+
+	- rate scaling algorithms
+		- minstrel
+		- others?
+
+	- userland MLME
+
+	- userland driver implementation
+
+	- organized testing (anyone have a proposal?)
+
+1530	BoF/Break-out/BarCamp Session Proposals
+
+1600	Break
+
+1630	BoF/Break-out/BarCamp Sessions
+
+	Impromptu and/or unscheduled discussions as desired by group
+	participants
+
+1800	BoF/Break-out/BarCamp Session Reports
+
+1830	Maintainence Issues
+
+	Round table discussion of issues related to maintenance of
+	the wireless trees
+
+	- trivial/cleanup patches
+		- testing or other requirements?
+		- should they have lower priority?
+		- should they require ACKs from primary author?
+
+	- submissions to -stable
+		- who should drive it?
+		- what policies?
+
+	- rate scaling algs
+		- driver-specific ok?  what limitations?
+		- build policies (part of mac80211.ko?)
+
+	- questions/suggestions/complaints
+
+1900	Adjourn
+-- 
+John W. Linville
+linville@tuxdriver.com
