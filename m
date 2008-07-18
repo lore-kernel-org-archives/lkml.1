@@ -1,56 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755478AbYGRDyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752619AbYGREPc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755478AbYGRDyT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 23:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYGRDyL
+	id S1752619AbYGREPc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 00:15:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750811AbYGREPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 23:54:11 -0400
-Received: from ag-out-0708.google.com ([72.14.246.251]:15303 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752343AbYGRDyK (ORCPT
+	Fri, 18 Jul 2008 00:15:24 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:43990 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750777AbYGREPY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 23:54:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent:sender;
-        b=UHWB53Fsd1Gy8YtJ03u500XIyqJU2kDHgB4Njv0jRuBOBGjYe18phWpXkiQTyJgxWs
-         M9nKBeOt+vp+9CxoiJX7syeLwrgwefxg3X4lVqPape87VKpPmET16PJBlGEEw75OV8t+
-         jik9cQjoZ5aSpbZkXtupxA1hxSO9wbOnuNoqc=
-Date: Fri, 18 Jul 2008 06:52:37 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: greg@kroah.com
-Cc: torvalds@linux-foundation.org, Randy Dunlap <rdunlap@xenotime.net>,
-       linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: debugfs_create_u*() not SMP-safe
-Message-ID: <20080718035237.GA7744@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 18 Jul 2008 00:15:24 -0400
+Subject: Re: [GIT *] Allow request_firmware() to be satisfied from
+	in-kernel, use it in more drivers.
+From: David Woodhouse <dwmw2@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
+       sam@ravnborg.org
+In-Reply-To: <200807172242.51251.rjw@sisk.pl>
+References: <1216077806.27455.85.camel@shinybook.infradead.org>
+	 <200807162328.37754.rjw@sisk.pl>
+	 <1216248152.1862.21.camel@shinybook.infradead.org>
+	 <200807172242.51251.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Thu, 17 Jul 2008 21:15:07 -0700
+Message-Id: <1216354507.6672.51.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 2008-07-17 at 22:42 +0200, Rafael J. Wysocki wrote:
+>   HOSTCC  firmware/ihex2fw - due to: FORCE
+> /home/rafael/src/linux-next/firmware/ihex2fw.c:268: fatal error:
+> opening dependency file firmware/.ihex2fw.d: Read-only file system
+> compilation terminated.
 
-I noticed debugfs_create_u*() functions don't allow for any precautions
-to be taken while doing r/w to the exported variables. Thus any export of a
-variable isn't SMP-safe.
+I believe you can't reproduce this with Linus' current HEAD?
+Please poke me if it happens again.
 
-As far as I can tell, this only works safely for constant data. Let me
-ask then, what is the purpose of these functions? Are they intended only
-for unreliable data?
-
-As I see it, they could be replaced by one of the following:
-- Have them only export atomic data, that is atomic_t variables.
-- Have them take a lock as a parameter, which the read() / write()
-  handler grabs. The kernel code that exported the variable should also
-  do r/w while holding that same lock.
-
-Or am I wrong?
-
-
-	Thanks,
-	Eduard
+-- 
+dwmw2
 
