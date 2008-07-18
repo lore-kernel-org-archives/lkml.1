@@ -1,82 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758721AbYGROGg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758298AbYGROKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758721AbYGROGg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 10:06:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753741AbYGROGZ
+	id S1758298AbYGROKH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 10:10:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756733AbYGROJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 10:06:25 -0400
-Received: from ixia01.ro.gtsce.net ([212.146.94.66]:4108 "EHLO
-	ixro-ex1.ixiacom.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755345AbYGROGY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 10:06:24 -0400
-From: Octavian Purdila <opurdila@ixiacom.com>
-Organization: IXIA
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [PATCH] tcp: do not promote SPLICE_F_NONBLOCK to socket O_NONBLOCK
-Date: Fri, 18 Jul 2008 17:04:17 +0300
-User-Agent: KMail/1.9.9
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200807171633.49791.opurdila@ixiacom.com> <200807181418.59493.opurdila@ixiacom.com> <20080718122414.GA10688@2ka.mipt.ru>
-In-Reply-To: <20080718122414.GA10688@2ka.mipt.ru>
+	Fri, 18 Jul 2008 10:09:57 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39930 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756096AbYGROJ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 10:09:56 -0400
+Date: Fri, 18 Jul 2008 16:09:30 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Gautham Shenoy <ego@in.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH 2/2] rcu classic: new algorithm for
+	callbacks-processing(v2)
+Message-ID: <20080718140930.GT6875@elte.hu>
+References: <48708F2F.2060406@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807181704.17211.opurdila@ixiacom.com>
-X-OriginalArrivalTime: 18 Jul 2008 14:08:19.0788 (UTC) FILETIME=[BB4E48C0:01C8E8DF]
+In-Reply-To: <48708F2F.2060406@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 18 July 2008, Evgeniy Polyakov wrote:
->
-> It will block in sending and/or other than network reading. With your
-> patch if receiving socket was opened in blocking mode, than there is no
-> way to finish splice-in until whole requested number of bytes are read.
-> SPLICE_F_NONBLOCK is an extension, consider it like recv() with temporal
-> non-blocking flag.
->
 
-The way is see it, and API and documentation is written, SPLICE_F_NONBLOCK was 
-added only for choosing to block or not block on the _pipe_, not on the other 
-fd. 
+* Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 
-And, IMHO, it should be kept that way. If we need to make certain splice 
-operations non-blocking for the other file descriptor, then maybe we should 
-add a separate flag for that. But, again IMHO, overloading SPLICE_F_NONBLOCK 
-with responsabilities for both the pipe and the other file descriptor is 
-wrong is at is taking the freedom from the application of controlling things. 
+> This is v2, it's a little deference from v1 that I
+> had send to lkml.
+> use ACCESS_ONCE
+> use rcu_batch_after/rcu_batch_before for batch # comparison.
+> 
+> rcutorture test result:
+> (hotplugs: do cpu-online/offline once per second)
+> 
+> No CONFIG_NO_HZ:           OK, 12hours
+> No CONFIG_NO_HZ, hotplugs: OK, 12hours
+> CONFIG_NO_HZ=y:            OK, 24hours
+> CONFIG_NO_HZ=y, hotplugs:  Failed.
+> (Failed also without my patch applied, exactly the same bug occurred,
+> http://lkml.org/lkml/2008/7/3/24)
 
-And when you do that, sooner or later you will run in a scenario which 
-requires workarounds in the applications to bypass the API assumptions. 
+thanks, i've applied this to tip/core/rcu - but it would be nice have an 
+ack/nak from Paul as well, before we can proceed further.
 
-> > Sorry, it was an unfortunate example :) This is not about not enough data
-> > being available. Lets change the number of packets in the example with 20
-> > instead of 16 (and keep the size to 17) - the splice call will still
-> > block because of the pipe being full. The pipe can only hold PIPE_BUFFERS
-> > packets (which is 16 currently).
->
-> Why? It will read its data from 16 packets, then send them into another end
-> of the pipe :)
->
-
-splice will consume one packet at a time and will try to feed them in the 
-pipe. Since the pipe can only hold 16 descriptors, on the 17th it will block. 
-
-> You propose to change a very useful splice feature (actually you would just
-> remove it at all with the same results for reading network path, since
-> it is essentially what you did :) - not to block when it is possible.
->
-> This kind of non-blocking mode was added for performance issues too:
-> consider application which reads from the network and writes into the
-> file, while there is no data in the socket it can write what was already
-> read into any object attached to the given end of the pipe.
-
-I have my doubts about the benefit of using the non-blocking operations only 
-for some splice calls :) But to solve both issues the solution would be to 
-add a separate non-blocking flag for the other file descriptor. Is that ok?
-
-Thanks,
-tavi
+	Ingo
