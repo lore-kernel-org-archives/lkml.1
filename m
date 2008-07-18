@@ -1,45 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758898AbYGRMWc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759126AbYGRMWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758898AbYGRMWc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 08:22:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758117AbYGRMWF
+	id S1759126AbYGRMWr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 08:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758813AbYGRMW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 08:22:05 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:29862 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756851AbYGRMWE convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 08:22:04 -0400
-Message-Id: <4880A721.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Fri, 18 Jul 2008 13:22:25 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: <ketuzsezr@darnok.org>, <pjones@redhat.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] iscsi_ibft_find: fix modpost warning
+	Fri, 18 Jul 2008 08:22:28 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:59641 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758815AbYGRMW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 08:22:27 -0400
+Date: Fri, 18 Jul 2008 16:25:53 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: David Howells <dhowells@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] coredump: make the coredumping process visible to oom kill
+Message-ID: <20080718122553.GA131@tv-sign.ru>
+References: <20080716135358.GA1213@tv-sign.ru> <16025.1216378932@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <16025.1216378932@redhat.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Exporting __init functions is wrong.
+On 07/18, David Howells wrote:
+>
+> Oleg Nesterov <oleg@tv-sign.ru> wrote:
+>
+> > I am worried the recent changes can break elf_fdpic_core_dump(), I can't
+> > test it. Hopefully, in that case the fixes should be trivial.
+>
+> I can't apply your patch 2/2.  Is there another patch missing?
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Yes, the full series is
 
----
- drivers/firmware/iscsi_ibft_find.c |    1 -
- 1 file changed, 1 deletion(-)
+	coredump-zap_threads-comments-use-while_each_thread.patch
+	introduce-pf_kthread-flag.patch
+	kill-pf_borrowed_mm-in-favour-of-pf_kthread.patch
+	coredump-zap_threads-must-skip-kernel-threads.patch
+	coredump-elf_core_dump-skip-kernel-threads.patch
+	coredump-turn-mm-core_startup_done-into-the-pointer-to-struct-core_state.patch
+	coredump-move-mm-core_waiters-into-struct-core_state.patch
+	coredump-simplify-core_state-nr_threads-calculation.patch
+	coredump-turn-core_state-nr_threads-into-atomic_t.patch
+	coredump-make-mm-core_state-visible-to-core_dump.patch
+	coredump-construct-the-list-of-coredumping-threads-at-startup-time.patch
+	coredump-elf_core_dump-use-core_state-dumper-list.patch
+	coredump-elf_fdpic_core_dump-use-core_state-dumper-list.patch
+	coredump-kill-mm-core_done.patch
+	coredump-binfmt_elf_fdpic-dont-use-sub-threads-mm.patch
+	coredump-exit_mm-clear-mm-first-then-play-with-core_state.patch
 
---- linux-2.6.26/drivers/firmware/iscsi_ibft_find.c	2008-07-13 23:51:29.000000000 +0200
-+++ 2.6.26-firmware-iscsi-modpost-warning/drivers/firmware/iscsi_ibft_find.c	2008-07-17 14:45:12.000000000 +0200
-@@ -81,4 +81,3 @@ void __init reserve_ibft_region(void)
- 	if (ibft_addr)
- 		reserve_bootmem(pos, PAGE_ALIGN(len), BOOTMEM_DEFAULT);
- }
--EXPORT_SYMBOL_GPL(reserve_ibft_region);
+The first 5 patches are only needed to avoid the conflicts.
 
+I'll send you this series off-list.
 
+Oleg.
 
