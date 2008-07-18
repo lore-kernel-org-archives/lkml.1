@@ -1,93 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932423AbYGRAlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761148AbYGRAsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932423AbYGRAlr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 20:41:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755286AbYGRAlj
+	id S1761148AbYGRAsz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 20:48:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758004AbYGRAsq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 20:41:39 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:61038 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751659AbYGRAli (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 20:41:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=smbA1aoOr6ffkQVm5QUgsVjKgmzLaysSdB96E+UBp9REJO5jkwibMKpF8ZNN6Fo3Fx
-         YtLc+c68Ms0rsepwws2+InzKSTwpY02nSdrybCQ9yJ5qznHTLhtVUmZUH/NcLth8yopx
-         uisU5m7BwN2oTaSTGRA2cVGjqK6I6ixyGkLMI=
-Subject: [PATCH] lockd: trivial sparse endian annotations
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Al Viro <viro@ZenIV.linux.org.uk>
-Content-Type: text/plain
-Date: Thu, 17 Jul 2008 17:41:35 -0700
-Message-Id: <1216341695.6029.133.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Jul 2008 20:48:46 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:61881 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757769AbYGRAsp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 20:48:45 -0400
+Date: Fri, 18 Jul 2008 01:47:44 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, Ingo Molnar <mingo@elte.hu>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>, venkatesh.pallipadi@intel.com,
+       Huang Ying <ying.huang@intel.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: v2.6.26-rc9: ACPI PCI irq routing on NUMA? + early_ioremap
+ trouble
+In-Reply-To: <19f34abd0807171358p3c5a44f9i91ab23d3f5e9671f@mail.gmail.com>
+Message-ID: <Pine.LNX.4.55.0807180117320.6536@cliff.in.clinika.pl>
+References: <19f34abd0807060647k54490088uf8859d8a1646fd41@mail.gmail.com> 
+ <200807171245.31641.bjorn.helgaas@hp.com> <19f34abd0807171358p3c5a44f9i91ab23d3f5e9671f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fs/lockd/svcproc.c:115:11: warning: incorrect type in initializer (different base types)
-fs/lockd/svcproc.c:115:11:    expected int [signed] rc
-fs/lockd/svcproc.c:115:11:    got restricted __be32 [usertype] <noident>
-... and so on...
+On Thu, 17 Jul 2008, Vegard Nossum wrote:
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- fs/lockd/svc4proc.c |    4 ++--
- fs/lockd/svcproc.c  |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+> Hah, I actually managed to get netconsole working. This is the log
+> that fails (v2.6.26):
+> 
+> http://folk.uio.no/vegardno/linux/numa-netconsole.txt
+> 
+> I think this looks really interesting:
+> 
+> [    0.093562] ExtINT not setup in hardware but reported by MP table
+> [    0.093854] ENABLING IO-APIC IRQs
+> [    0.094244] ..TIMER: vector=0x31 apic1=-1 pin1=2 apic2=-1 pin2=0
+> [    0.094985] ..MP-BIOS bug: 8254 timer not connected to IO-APIC
+> [    0.094985] ...trying to set up timer (IRQ0) through the 8259A ...
+> [    0.094985] ..... (found pin 0) ...<7>APIC error on CPU0: 00(80)
+> [    0.094985]  failed.
+> [    0.094985] ...trying to set up timer as Virtual Wire IRQ...<7>APIC
+> error on CPU0: 80(80)
+> [    0.105761]  works.
+> 
+> This error would be:
+>            7: Illegal register address
+> 
+> Looks like APIC was misconfigured, which might explain IRQ routing weirdness?
 
-diff --git a/fs/lockd/svc4proc.c b/fs/lockd/svc4proc.c
-index 3994446..4a714f6 100644
---- a/fs/lockd/svc4proc.c
-+++ b/fs/lockd/svc4proc.c
-@@ -83,7 +83,7 @@ nlm4svc_proc_test(struct svc_rqst *rqstp, struct nlm_args *argp,
- {
- 	struct nlm_host	*host;
- 	struct nlm_file	*file;
--	int rc = rpc_success;
-+	__be32 rc = rpc_success;
- 
- 	dprintk("lockd: TEST4        called\n");
- 	resp->cookie = argp->cookie;
-@@ -116,7 +116,7 @@ nlm4svc_proc_lock(struct svc_rqst *rqstp, struct nlm_args *argp,
- {
- 	struct nlm_host	*host;
- 	struct nlm_file	*file;
--	int rc = rpc_success;
-+	__be32 rc = rpc_success;
- 
- 	dprintk("lockd: LOCK          called\n");
- 
-diff --git a/fs/lockd/svcproc.c b/fs/lockd/svcproc.c
-index 76019d2..76262c1 100644
---- a/fs/lockd/svcproc.c
-+++ b/fs/lockd/svcproc.c
-@@ -112,7 +112,7 @@ nlmsvc_proc_test(struct svc_rqst *rqstp, struct nlm_args *argp,
- {
- 	struct nlm_host	*host;
- 	struct nlm_file	*file;
--	int rc = rpc_success;
-+	__be32 rc = rpc_success;
- 
- 	dprintk("lockd: TEST          called\n");
- 	resp->cookie = argp->cookie;
-@@ -146,7 +146,7 @@ nlmsvc_proc_lock(struct svc_rqst *rqstp, struct nlm_args *argp,
- {
- 	struct nlm_host	*host;
- 	struct nlm_file	*file;
--	int rc = rpc_success;
-+	__be32 rc = rpc_success;
- 
- 	dprintk("lockd: LOCK          called\n");
- 
--- 
-1.5.6.3.569.ga9185
+ Here pin1 and pin2 have been correctly initialised, but apic1 and apic2
+are both set to -1.  This is an "impossible scenario."  Because of that
+I/O APIC code actually pokes at random registers of the local APIC which
+immediately precedes I/O APIC #0 in the fixmap.  Results may be arbitrary.
 
+> Will try to provide the booting one later. Now zZz...
 
+ Your system uses an MP table and there were quite a lot of changes in its
+support code recently.  A bug must have crept in.  Please try the appended
+patch and the "apic=debug" option for both cases and the resulting logs
+may shed some light.
 
+  Maciej
+
+patch-next-2.6.26-rc9-20080711-apic-dprintk-0
+diff -up --recursive --new-file linux-next-2.6.26-rc9-20080711.macro/include/asm-x86/apic.h linux-next-2.6.26-rc9-20080711/include/asm-x86/apic.h
+--- linux-next-2.6.26-rc9-20080711.macro/include/asm-x86/apic.h	2008-07-16 14:50:07.000000000 +0000
++++ linux-next-2.6.26-rc9-20080711/include/asm-x86/apic.h	2008-07-18 00:33:19.000000000 +0000
+@@ -10,7 +10,7 @@
+ 
+ #define ARCH_APICTIMER_STOPS_ON_C3	1
+ 
+-#define Dprintk(x...)
++#define Dprintk printk
+ 
+ /*
+  * Debugging macros
