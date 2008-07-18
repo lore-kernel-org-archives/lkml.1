@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756622AbYGRLhI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757300AbYGRLjP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756622AbYGRLhI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 07:37:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755271AbYGRLgz
+	id S1757300AbYGRLjP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 07:39:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754971AbYGRLjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 07:36:55 -0400
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:12546 "EHLO
-	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752183AbYGRLgy (ORCPT
+	Fri, 18 Jul 2008 07:39:00 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:34888 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754888AbYGRLjA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 07:36:54 -0400
-To: Takashi Iwai <tiwai@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       robert.moore@intel.com
-Subject: Re: Endless ACPI errors on Linus tree (5b664cb235)
-From: Andi Kleen <andi@firstfloor.org>
-References: <s5hzlof1ll2.wl%tiwai@suse.de>
-Date: Fri, 18 Jul 2008 13:35:48 +0200
-In-Reply-To: <s5hzlof1ll2.wl%tiwai@suse.de> (Takashi Iwai's message of "Fri, 18 Jul 2008 13:24:41 +0200")
-Message-ID: <87od4vqvaj.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Fri, 18 Jul 2008 07:39:00 -0400
+Message-ID: <488080B1.8010207@s5r6.in-berlin.de>
+Date: Fri, 18 Jul 2008 13:38:25 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 18 Jul 2008 11:35:46.0595 (UTC) FILETIME=[6B93DF30:01C8E8CA]
+To: JiSheng Zhang <jszhang3@mail.ustc.edu.cn>
+CC: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
+       krh@redhat.com
+Subject: Re: PATCH] firewire: add padding to some struct
+References: <416379761.08031@ustc.edu.cn>
+In-Reply-To: <416379761.08031@ustc.edu.cn>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Takashi Iwai <tiwai@suse.de> writes:
+JiSheng Zhang wrote:
+> If p is a pointer to struct fw_cdev_event_response), p->data will point to the
+> padding data rather than the right place, it will cause problem under some
+> platforms. For example, in the function handle_device_event of libraw1394(ported
+> to juju stack):
+> .....
+> case FW_CDEV_EVENT_RESPONSE:
+>     rc = u64_to_ptr(u->response.closure);
+>     if (rc->data != NULL)
+> 	memcpy(rc->data, u->response.data, rc->length);//here it will lost the last four
+> bytes
+>     errcode = juju_to_raw1394_errcode(u->response.rcode);
+> .....
+> 
+> Although this problem can be solved by add the offset to the pointer, but the
+> member:__u32 data[0] lost its original meaning.
 
-> the boot with the latest Linus git tree fails on x86-64 due to the
-> endless kernel messages like below:
->
->     ACPI Error (evpge-0710): No handler or method for GPE[10],
->     disabling event[20080609]
->
-> It happens on today's tree and also on yesterday (33af79d12e).
-> The config is below.
+I don't understand what the problem is.  As long as both kernel and
+library use "response.data" or "&response + offsetof(typeof(response),
+data)", they will write and read at the correct location.
 
-That was after the ACPI merge I assume?  Do you have a full boot log?
-
-Revert candidates to test would be e38e8a0743b0e996a8a3fbea8908fe75a84f02c7
-and c91d924e3af08d4f98eab6ebf81f2b8ce132448f (Bob, that were both
-changes from you for evgpe.c). Can you see if reverting
-those helps? If yes which?
-
-Thanks.
-
--Andi
+There would be a problem if one of the two used "&response +
+sizeof(response)" instead.  Does this happen anywhere?  If so, then
+these places need to be fixed, not the struct definition.
+-- 
+Stefan Richter
+-=====-==--- -=== =--=-
+http://arcgraph.de/sr/
