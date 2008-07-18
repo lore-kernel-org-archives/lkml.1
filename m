@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933026AbYGQX5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761256AbYGRAAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933026AbYGQX5d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 19:57:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758024AbYGQX5W
+	id S1761256AbYGRAAy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 20:00:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757445AbYGRAAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 19:57:22 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59729 "EHLO mx3.mail.elte.hu"
+	Thu, 17 Jul 2008 20:00:46 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:32995 "EHLO crca.org.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754390AbYGQX5V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 19:57:21 -0400
-Date: Fri, 18 Jul 2008 01:56:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison
-	overwritten
-Message-ID: <20080717235657.GB6833@elte.hu>
-References: <20080717214222.GA29449@elte.hu> <19f34abd0807171627t1dd0ac5bx26535b5e19606835@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19f34abd0807171627t1dd0ac5bx26535b5e19606835@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1754390AbYGRAAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 20:00:45 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [linux-pm] Linux Power Management Mini-Summit -- Ottawa --
+	July 22, 2008
+From: Nigel Cunningham <ncunningham@crca.org.au>
+To: Len Brown <lenb@kernel.org>
+Cc: Linux Power Management List <linux-pm@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+In-Reply-To: <alpine.LFD.1.10.0807171724070.16742@localhost.localdomain>
+References: <alpine.LFD.1.10.0807171724070.16742@localhost.localdomain>
+Content-Type: text/plain
+Organization: Christian Reformed Churches of Australia
+Date: Fri, 18 Jul 2008 10:00:40 +1000
+Message-Id: <1216339240.8665.38.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi.
 
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
-
-> On Thu, Jul 17, 2008 at 11:42 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> > With this config:
-> >
-> >   http://redhat.com/~mingo/misc/config-Thu_Jul_17_20_24_45_CEST_2008.bad
-> >
+On Thu, 2008-07-17 at 17:27 -0400, Len Brown wrote:
+> We'll be in The Rideau Suite in Les-Suites
+> Tuesday July 22nd 8:30-18:30.
 > 
-> It doesn't actually work. The config says
+> Thanks to HP for sponsoring
+> lunch at 12:30 as well as snacks at 10:00 and 15:30.
+> We'll wing it for dinner.
 > 
->     # head: 088fcf34
+> On linux-pm (sorry, on sabbatical I've been
+> bad about keeping up on email) I've seen
+> intent to attend from:
 > 
-> and I checked out this from the tip tree. But kernel-config still
-> complains about unknown config options... What went wrong?
+> Len Brown <len.brown@intel.com>
+> Alan Stern <stern@rowland.harvard.edu>
+> Dipankar Sarma <dipankar@in.ibm.com>
+> Rafael J. Wysocki <rjw@sisk.pl>
+> "Woodruff, Richard" <r-woodruff2@ti.com>
+> Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> Matt Domsch <Matt_Domsch@dell.com>
+> Jarod Wilson <jwilson@redhat.com>
+> Tim Bird <tim.bird@am.sony.com>
+> Paul Mundt <lethal@linux-sh.org>
+> Hiroyuki Machida <Hiroyuki.Mach@gmail.com>
+> 
+> Several send their regrets:
+> Dave Jones
+> Pavel Machek
+> Arjan van de Ven
 
-that's ok - i've got some local qa helpers that have config options. 
+Nigel Cunningham
 
-Things like making SMP bootups more likely in randconfig, adding various 
-boot parameters to the bootup via .config methods (so that boot 
-parameters can be randomized via make randconfig), etc.
+> If you plan to attend, please let me know,
+> because the folks at OLS want to know,
+> to simplify OLS registration.
 
-these:
+Regards,
 
-  CONFIG_BOOTPARAM_SUPPORT=y
-  CONFIG_BOOTPARAM_NO_HZ_OFF=y
-  CONFIG_BOOTPARAM_NMI_WATCHDOG_BIT_0=y
-  CONFIG_BOOTPARAM_LAPIC=y
-  CONFIG_BOOTPARAM_IDLE_MWAIT=y
-  CONFIG_BOOTPARAM_NOPAT=y
-  CONFIG_BOOTPARAM_NOTSC=y
+Nigel
 
-are equivalent to adding this to the boot line:
-
-   nohz=off nmi_watchdog=1 lapic idle=mwait nopat notsc
-
-although i dont think they are normally material to netconsole workings.
-
-	Ingo
