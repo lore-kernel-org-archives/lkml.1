@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756594AbYGRJF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbYGRJGh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756594AbYGRJF4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 05:05:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756166AbYGRJFn
+	id S1756232AbYGRJGh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 05:06:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753572AbYGRJG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 05:05:43 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:10516 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756113AbYGRJFl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 05:05:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=u+lqef3cv6xg8l5549fnUy7DywXMzDTdakM5nJzu3xa1cVvO43YOsHoXlLbIQ+zO6a
-         HgGj0RKaFKaQksbs5JR0k6pq6SLv8YM7oDltpY8+VE6rOtRMLortI9hEJykookQDzZ9w
-         1y8BoCK8MUEADVotftaMnnAMdAtBxNu34KJDw=
-Message-ID: <aec7e5c30807180205k4aef2224ne4d0c2f7b0cd3dbb@mail.gmail.com>
-Date: Fri, 18 Jul 2008 18:05:35 +0900
-From: "Magnus Damm" <magnus.damm@gmail.com>
-To: "Ben Dooks" <ben-linux@fluff.org>
-Subject: Re: [PATCH 02/05] resource: add resource_type() and IORESOURCE_TYPE_BITS
-Cc: linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org, gregkh@suse.de,
-       lethal@linux-sh.org, i2c@lm-sensors.org, akpm@linux-foundation.org
-In-Reply-To: <20080718083317.GN24620@fluff.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080718074002.32713.73442.sendpatchset@rx1.opensource.se>
-	 <20080718074018.32713.11976.sendpatchset@rx1.opensource.se>
-	 <20080718075601.GL24620@fluff.org.uk>
-	 <aec7e5c30807180124j3623675fwaeedcaf23e4b0b05@mail.gmail.com>
-	 <20080718083317.GN24620@fluff.org.uk>
+	Fri, 18 Jul 2008 05:06:26 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:60166 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1754120AbYGRJGZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 05:06:25 -0400
+X-Greylist: delayed 485 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Jul 2008 05:06:24 EDT
+Message-ID: <416371533.19965@ustc.edu.cn>
+X-WebMAIL-MUA: [211.86.158.24]
+From: "JiSheng Zhang" <jszhang3@mail.ustc.edu.cn>
+To: stefanr@s5r6.in-berlin.de
+Cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
+       krh@redhat.com
+Date: Fri, 18 Jul 2008 16:58:53 +0800
+Reply-To: "JiSheng Zhang" <jszhang3@mail.ustc.edu.cn>
+X-Priority: 3
+Subject: PATCH] firewire: add padding to some struct
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 5:33 PM, Ben Dooks <ben-linux@fluff.org> wrote:
-> On Fri, Jul 18, 2008 at 05:24:59PM +0900, Magnus Damm wrote:
->> On Fri, Jul 18, 2008 at 4:56 PM, Ben Dooks <ben-linux@fluff.org> wrote:
->> > You are changing a simple test to a mask and compare, is anyone going
->> > to produce resources with an IORESOURCE_MEM and an IORESOURCE_IO
->> > together?
->>
->> Actually, I'd like to replace the one-bit-per-type strategy with a
->> N-bit counter. But that is not very compatible with the case you are
->> pointing out. I'm not sure if that's a combination we really want to
->> support though. Both IRQ and DMA doesn't make much sense to me. =)
->
-> I'm not saying it is a bad idea, I just do not know if anyone is
-> currently relying on this to work...
+>From JiSheng Zhang <jszhang3@mail.ustc.edu.cn>
 
-In V1 I posted both a mega patch that went through and converted arch/
-and also a patch that converted the type into a N-bit counter. In V2
-I've taken more of a step-by-step approach and not converted into a
-N-bit counter.
+struct fw_cdev_event_response and struct fw_cdev_event_iso_interrupt need padding.
+Otherwise, offset of the zero length array is not equal to the struct size. It may
+cause some strange problems under some platforms such as sparc32. This
+patch(against 2.6.26) should fix it.
 
-I'm thinking that this patch shouldn't break anything since the bits
-are left exactly like before. And the code in drivers/base/platform.c
-seems to treat the bits as only one should be set anyway. For instance
-platform_device_add() seems to prioritize IORESOURCE_MEM over
-IORESOURCE_IO.
 
-Or did I change the logic in drivers/base/platform without realizing it?
+--- old/include/linux/firewire-cdev.h	2008-07-18 16:34:01.181794046 +0800
++++ new/include/linux/firewire-cdev.h	2008-07-18 16:35:46.649294275 +0800
+@@ -92,6 +92,7 @@
+ 	__u32 type;
+ 	__u32 rcode;
+ 	__u32 length;
++	__u32 pad;
+ 	__u32 data[0];
+ };
+ 
+@@ -143,6 +144,7 @@
+ 	__u32 type;
+ 	__u32 cycle;
+ 	__u32 header_length;
++	__u32 pad;
+ 	__u32 header[0];
+ };
+ 
 
-Cheers,
 
-/ magnus
