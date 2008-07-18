@@ -1,88 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760043AbYGRPxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758538AbYGRP4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760043AbYGRPxy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 11:53:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbYGRPxq
+	id S1758538AbYGRP4R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 11:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbYGRP4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 11:53:46 -0400
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:55514 "EHLO
-	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755888AbYGRPxq (ORCPT
+	Fri, 18 Jul 2008 11:56:03 -0400
+Received: from mga01.intel.com ([192.55.52.88]:51950 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751398AbYGRP4B convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 11:53:46 -0400
-Date: Fri, 18 Jul 2008 17:52:44 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, robert.moore@intel.com,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: Endless ACPI errors on Linus tree (5b664cb235)
-Message-ID: <20080718155244.GE32051@basil.nowhere.org>
-References: <s5hzlof1ll2.wl%tiwai@suse.de> <87od4vqvaj.fsf@basil.nowhere.org> <s5htzencp02.wl%tiwai@suse.de> <s5hr69rz57u.wl%tiwai@suse.de> <s5hk5fjurag.wl%tiwai@suse.de>
+	Fri, 18 Jul 2008 11:56:01 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,211,1215414000"; 
+   d="scan'208";a="362743995"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <s5hk5fjurag.wl%tiwai@suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 18 Jul 2008 15:52:41.0858 (UTC) FILETIME=[4FCA5620:01C8E8EE]
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 2/2] I/OAT: tcp_dma_copybreak default value dependant on I/OAT version
+Date: Fri, 18 Jul 2008 16:55:52 +0100
+Message-ID: <7F38996F7185A24AB9071ED4950AD8C101D2C62E@swsmsx413.ger.corp.intel.com>
+In-Reply-To: <e9c3a7c20807111220q432e712q734e075e6d533e5c@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2/2] I/OAT: tcp_dma_copybreak default value dependant on I/OAT version
+thread-index: AcjjiyiO61GcNUnnTKOTOXmw5oZl+wFYzd3Q
+From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+To: "Williams, Dan J" <dan.j.williams@intel.com>
+Cc: "Nelson, Shannon" <shannon.nelson@intel.com>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 18 Jul 2008 15:55:54.0096 (UTC) FILETIME=[C25F8700:01C8E8EE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 05:48:39PM +0200, Takashi Iwai wrote:
-> At Fri, 18 Jul 2008 15:34:13 +0200,
-> I wrote:
-> > 
-> > At Fri, 18 Jul 2008 15:15:25 +0200,
-> > I wrote:
-> > > 
-> > > At Fri, 18 Jul 2008 13:35:48 +0200,
-> > > Andi Kleen wrote:
-> > > > 
-> > > > Takashi Iwai <tiwai@suse.de> writes:
-> > > > 
-> > > > > the boot with the latest Linus git tree fails on x86-64 due to the
-> > > > > endless kernel messages like below:
-> > > > >
-> > > > >     ACPI Error (evpge-0710): No handler or method for GPE[10],
-> > > > >     disabling event[20080609]
-> > > > >
-> > > > > It happens on today's tree and also on yesterday (33af79d12e).
-> > > > > The config is below.
-> > > > 
-> > > > That was after the ACPI merge I assume?
-> > > 
-> > > Yes.
-> > > 
-> > > >  Do you have a full boot log?
-> > > 
-> > > Sorry, no.  The kernel shows the error message (the number after GPE
-> > > constantly changing as 1x) endlessly, and couldn't boot up properly to
-> > > get a log. 
-> > > 
-> > > > Revert candidates to test would be e38e8a0743b0e996a8a3fbea8908fe75a84f02c7
-> > > > and c91d924e3af08d4f98eab6ebf81f2b8ce132448f (Bob, that were both
-> > > > changes from you for evgpe.c). Can you see if reverting
-> > > > those helps? If yes which?
-> > > 
-> > > Will give it a spin.
-> > 
-> > I reverting both, but it doesn't fix the problem.
-> > 
-> > Another finding is that the boot reaches to the exec of init, at
-> > least.  So I could get a sane state with init=/bin/sh.  The message
-> > appears after the init script running udevd.
-> > 
-> > Also, the machine could boot fine with the recent linux-next kernel,
-> > at least, 20080711-0714.  (It failed for last couple of days, but it
-> > can be irrelevant.)
-> > 
-> > I'll investigate a bit.  Any hints are appreciated.
+Dan Williams wrote:
+> When NET_DMA is not enabled this breaks the build.  Also, given that
+> NET_DMA is only beneficial on architectures with i/o coherent caches
+> this fix up should be done directly in the driver, not passed up to
+> the common core.
+
+I have modified it in patchset v2.
+
 > 
-> OK, found out the bad commit via bisect.
-> Reverting below fixes the boot problem.
+> Regards,
+> Dan
 
-Ah thanks. That one was on the revert list anyways becase
-it caused some other problems.
-
--Andi
+Thanks,
+Maciej
