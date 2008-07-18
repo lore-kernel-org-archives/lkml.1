@@ -1,38 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758195AbYGRQHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758877AbYGRQIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758195AbYGRQHt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 12:07:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754897AbYGRQHm
+	id S1758877AbYGRQIr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 12:08:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754897AbYGRQIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 12:07:42 -0400
-Received: from bromo.msbb.uc.edu ([129.137.3.146]:47005 "HELO
-	bromo.msbb.uc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752792AbYGRQHm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 12:07:42 -0400
-Date: Fri, 18 Jul 2008 12:07:39 -0400
-From: Jack Howarth <howarth@bromo.msbb.uc.edu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
-Message-ID: <20080718160739.GA5560@bromo.msbb.uc.edu>
-References: <20080717004004.GA17792@bromo.msbb.uc.edu> <86802c440807161749u2f5c1eben618e05c6e254fedd@mail.gmail.com> <20080717023538.GA18329@bromo.msbb.uc.edu> <86802c440807161959s10666027k5297af1d657ff4fa@mail.gmail.com> <20080717034418.GA18951@bromo.msbb.uc.edu> <86802c440807162113g4cea3bd9ic71210330417032b@mail.gmail.com> <20080717061825.GA19582@bromo.msbb.uc.edu> <86802c440807162348m6d05b912x7b3f655d7f9efb93@mail.gmail.com> <20080718011532.GA30920@bromo.msbb.uc.edu> <86802c440807171825m24ffe140o81bb76286823568e@mail.gmail.com>
-MIME-Version: 1.0
+	Fri, 18 Jul 2008 12:08:37 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:38881 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753795AbYGRQIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 12:08:36 -0400
+Date: Fri, 18 Jul 2008 20:07:47 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Vegard Nossum <vegard.nossum@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison overwritten
+Message-ID: <20080718160746.GC29740@2ka.mipt.ru>
+References: <20080717214222.GA29449@elte.hu> <20080718054626.GA3338@2ka.mipt.ru> <84144f020807180202l6c703234ic3a2b57e73a1d89a@mail.gmail.com> <20080718101624.GA7107@2ka.mipt.ru> <84144f020807180744w40677f6dm790d2caee3ca0d15@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <86802c440807171825m24ffe140o81bb76286823568e@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <84144f020807180744w40677f6dm790d2caee3ca0d15@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-YH,
-   Is there any relationship between the issue fixed in...
+Hi Pekka.
 
-http://marc.info/?l=linux-acpi&m=121615159014404&w=2
+On Fri, Jul 18, 2008 at 05:44:44PM +0300, Pekka Enberg (penberg@cs.helsinki.fi) wrote:
+> Yeah. See the free_debug_processing() function in mm/slub.c for
+> details (the on_freelist() part). However, if you look at slab_free()
+> you can see that in the SLUB fast-path we don't do any of these
+> debugging checks. So you can end up with slab corruption without a
+> nice error message.
 
-and the DMI issue you patched on my MacBookPro v2?
-                         Jack
+Yup, I see.
+
+Actually with the network there will be no duuble free as long as uses
+use kfree_skb(), since first freeing (with skb->users being equal to 1,
+so user owns this skb) will fill skb with 0x6b, so any subsequent
+kfree_skb() will try to decrement particulary huge reference counter
+(0x6b6b6b6b) and actually will never reach 1 again, so things will look
+quite clear, but if the same slub area will be reused for the next skb
+before it is freed second time, very hard-to-debug data corruption will
+happen, so I belive this kind of checks should be done into kfree_skb()
+(of course under special debug compile option). I posted that patch just
+for the reference and that Ingo would be able to detect where skb is
+used after already being freed.
+
+-- 
+	Evgeniy Polyakov
