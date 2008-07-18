@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760739AbYGRRux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758746AbYGRRx7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760739AbYGRRux (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 13:50:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760192AbYGRRuP
+	id S1758746AbYGRRx7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 13:53:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbYGRRxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 13:50:15 -0400
-Received: from mail.windriver.com ([147.11.1.11]:51743 "EHLO mail.wrs.com"
+	Fri, 18 Jul 2008 13:53:50 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:35620 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760164AbYGRRuN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 13:50:13 -0400
-Message-ID: <4880D7D0.9040200@windriver.com>
-Date: Fri, 18 Jul 2008 12:50:08 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
-MIME-Version: 1.0
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-CC: linux-kernel@vger.kernel.org, ralf@linux-mips.org,
-       linux-mips@linux-mips.org
-Subject: Re: [PATCH 2/3] kgdb, mips: add arch support for the kernel's kgdb
- core
-References: <1216400928-29097-1-git-send-email-jason.wessel@windriver.com><1216400928-29097-2-git-send-email-jason.wessel@windriver.com><1216400928-29097-3-git-send-email-jason.wessel@windriver.com> <20080719.023116.122828931.anemo@mba.ocn.ne.jp>
-In-Reply-To: <20080719.023116.122828931.anemo@mba.ocn.ne.jp>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Jul 2008 17:50:04.0010 (UTC) FILETIME=[B53D74A0:01C8E8FE]
+	id S1751314AbYGRRxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 13:53:49 -0400
+Date: Fri, 18 Jul 2008 21:53:41 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Octavian Purdila <opurdila@ixiacom.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, axboe@kernel.dk
+Subject: Re: [PATCH] tcp: do not promote SPLICE_F_NONBLOCK to socket O_NONBLOCK
+Message-ID: <20080718175341.GA21496@2ka.mipt.ru>
+References: <200807171633.49791.opurdila@ixiacom.com> <200807181850.07393.opurdila@ixiacom.com> <20080718160009.GA29740@2ka.mipt.ru> <200807182004.44664.opurdila@ixiacom.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200807182004.44664.opurdila@ixiacom.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Atsushi Nemoto wrote:
+Hi.
+
+On Fri, Jul 18, 2008 at 08:04:44PM +0300, Octavian Purdila (opurdila@ixiacom.com) wrote:
+> Suppose we have 20 packets in the socket queue and the pipe is empty and the 
+> application calls splice(sock, pipe, 17, flags=0).
 > 
-> The kgdb_ealy_setup check should be at beginning of init_IRQ (before
-> set_irq_noprobe loop)?
+> Then, tcp_splice_read will be called, which in turn calls tcp_read_sock. 
+> 
+> tcp_read_sock will loop until all the 17 bytes will be read from the socket. 
+> tcp_read_sock calls skb_splice_bits which calls splice_to_pipe.
 
+How come?
+spd_fill_page() should fail when it will be called for the 17'th skb and
+all reading from the socket will return, and thus can be sent to the
+file.
 
-I would agree, and it looks like the following now in the patch.
-I will revalidate with the HW to ensure there is no regression. :-)
+> Now while skb_splice_bits is carefull to only put a maximum of PIPE_BUFFERS 
+> during its iteration, due to the looping in tcp_read_sock, we will end up 
+> with 17 calls to splice_to_pipe. Thus on the 17th call, splice_to_pipe will 
+> block.
 
-Jason.
+Where exactly?
+Why 
+tcp_splice_data_recv()->skb_splice_bits()->__skb_splice_bits()->spd_fill_page()
+callchain does not return error and that pipe is full?
 
-@@ -130,8 +135,18 @@ void __init init_IRQ(void)
- {
- 	int i;
- 
-+#ifdef CONFIG_KGDB
-+	if (kgdb_early_setup)
-+		return;
-+#endif
-+
- 	for (i = 0; i < NR_IRQS; i++)
- 		set_irq_noprobe(i);
- 
- 	arch_init_irq();
-+
-+#ifdef CONFIG_KGDB
-+	if (!kgdb_early_setup)
-+		kgdb_early_setup = 1;
-+#endif
- }
+-- 
+	Evgeniy Polyakov
