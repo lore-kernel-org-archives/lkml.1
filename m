@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760670AbYGRWM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757006AbYGRWN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760670AbYGRWM6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 18:12:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756085AbYGRWLW
+	id S1757006AbYGRWN2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 18:13:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759650AbYGRWL1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 18:11:22 -0400
-Received: from styx.suse.cz ([82.119.242.94]:55526 "EHLO mail.suse.cz"
+	Fri, 18 Jul 2008 18:11:27 -0400
+Received: from styx.suse.cz ([82.119.242.94]:55532 "EHLO mail.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759430AbYGRWLV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 18:11:21 -0400
+	id S1759610AbYGRWL0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 18:11:26 -0400
 From: David Sterba <dsterba@suse.cz>
-Subject: [PATCH 05/12] ipwireless: Glue splitted printk strings back
+Subject: [PATCH 06/12] ipwireless: Remove endian-dependent bitfields
 To: torvalds@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, dsterba@suse.cz, jkosina@suse.cz
-Date: Sat, 19 Jul 2008 00:11:20 +0200
-Message-ID: <20080718221120.19195.77863.stgit@ds.suse.cz>
+Date: Sat, 19 Jul 2008 00:11:25 +0200
+Message-ID: <20080718221125.19195.15489.stgit@ds.suse.cz>
 In-Reply-To: <20080718220840.19195.4140.stgit@ds.suse.cz>
 References: <20080718220840.19195.4140.stgit@ds.suse.cz>
 User-Agent: StGIT/0.14.3.173.g2e37
@@ -25,92 +25,115 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Remove endian-dependent bitfields and use bitmasks to transform
+packet header bitfields from/to machine order.
+
 Signed-off-by: David Sterba <dsterba@suse.cz>
 Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 ---
 
- drivers/char/pcmcia/ipwireless/hardware.c |   15 +++++----------
- drivers/char/pcmcia/ipwireless/main.c     |   15 +++++++--------
- 2 files changed, 12 insertions(+), 18 deletions(-)
+ drivers/char/pcmcia/ipwireless/hardware.c |   51 ++++++++++++++++++++++-------
+ 1 files changed, 38 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/char/pcmcia/ipwireless/hardware.c b/drivers/char/pcmcia/ipwireless/hardware.c
-index 0ccbbc1..7428734 100644
+index 7428734..08423ba 100644
 --- a/drivers/char/pcmcia/ipwireless/hardware.c
 +++ b/drivers/char/pcmcia/ipwireless/hardware.c
-@@ -79,8 +79,7 @@ static void report_timing(void)
- 		timing_stats.last_report_time = jiffies;
- 		if (!first)
- 			printk(KERN_INFO IPWIRELESS_PCCARD_NAME
--			       ": %u us elapsed - read %lu bytes in %u us, "
--			       "wrote %lu bytes in %u us\n",
-+			       ": %u us elapsed - read %lu bytes in %u us, wrote %lu bytes in %u us\n",
- 			       jiffies_to_usecs(since),
- 			       timing_stats.read_bytes,
- 			       jiffies_to_usecs(timing_stats.read_time),
-@@ -846,8 +845,7 @@ static void do_receive_packet(struct ipw_hardware *hw)
- 		len = inw(hw->base_port + IODRR);
- 		if (len > hw->ll_mtu) {
- 			printk(KERN_INFO IPWIRELESS_PCCARD_NAME
--			       ": received a packet of %u bytes - "
--			       "longer than the MTU!\n", len);
-+			       ": received a packet of %u bytes - longer than the MTU!\n", len);
- 			outw(DCR_RXDONE | DCR_RXRESET, hw->base_port + IODCR);
- 			return;
- 		}
-@@ -863,8 +861,7 @@ static void do_receive_packet(struct ipw_hardware *hw)
- 		len = inw(hw->base_port);
- 		if (len > hw->ll_mtu) {
- 			printk(KERN_INFO IPWIRELESS_PCCARD_NAME
--			       ": received a packet of %u bytes - "
--			       "longer than the MTU!\n", len);
-+			       ": received a packet of %u bytes - longer than the MTU!\n", len);
- 			writew(MEMRX_PCINTACKK,
- 				&hw->memory_info_regs->memreg_pc_interrupt_ack);
- 			return;
-@@ -1180,8 +1177,7 @@ static irqreturn_t ipwireless_handle_v2_v3_interrupt(int irq,
- 					": spurious interrupt - new_tx mode\n");
- 			else {
- 				printk(KERN_WARNING IPWIRELESS_PCCARD_NAME
--					": no valid memreg_tx value - "
--					"switching to the old memreg_tx\n");
-+					": no valid memreg_tx value - switching to the old memreg_tx\n");
- 				hw->memreg_tx =
- 					&hw->memory_info_regs->memreg_tx_old;
- 				try_mem_tx_old = 1;
-@@ -1487,8 +1483,7 @@ static void handle_setup_get_version_rsp(struct ipw_hardware *hw,
- 	if (vers_no == TL_SETUP_VERSION)
- 		__handle_setup_get_version_rsp(hw);
- 	else
--		printk(KERN_ERR
--				IPWIRELESS_PCCARD_NAME
-+		printk(KERN_ERR IPWIRELESS_PCCARD_NAME
- 				": invalid hardware version no %u\n",
- 				(unsigned int) vers_no);
- }
-diff --git a/drivers/char/pcmcia/ipwireless/main.c b/drivers/char/pcmcia/ipwireless/main.c
-index cc7dcea..6bdd11d 100644
---- a/drivers/char/pcmcia/ipwireless/main.c
-+++ b/drivers/char/pcmcia/ipwireless/main.c
-@@ -311,14 +311,13 @@ static int config_ipwireless(struct ipw_dev *ipw)
- 			(unsigned int) link->irq.AssignedIRQ);
- 	if (ipw->attr_memory && ipw->common_memory)
- 		printk(KERN_INFO IPWIRELESS_PCCARD_NAME
--				": attr memory 0x%08lx-0x%08lx, "
--				"common memory 0x%08lx-0x%08lx\n",
--				request_attr_memory.Base,
--				request_attr_memory.Base
--				+ request_attr_memory.Size - 1,
--				request_common_memory.Base,
--				request_common_memory.Base
--				+ request_common_memory.Size - 1);
-+			": attr memory 0x%08lx-0x%08lx, common memory 0x%08lx-0x%08lx\n",
-+			request_attr_memory.Base,
-+			request_attr_memory.Base
-+			+ request_attr_memory.Size - 1,
-+			request_common_memory.Base,
-+			request_common_memory.Base
-+			+ request_common_memory.Size - 1);
+@@ -132,29 +132,17 @@ enum {
+ #define NL_FOLLOWING_PACKET_HEADER_SIZE    1
  
- 	ipw->network = ipwireless_network_create(ipw->hardware);
- 	if (!ipw->network)
+ struct nl_first_packet_header {
+-#if defined(__BIG_ENDIAN_BITFIELD)
+-	unsigned char packet_rank:2;
+-	unsigned char address:3;
+-	unsigned char protocol:3;
+-#else
+ 	unsigned char protocol:3;
+ 	unsigned char address:3;
+ 	unsigned char packet_rank:2;
+-#endif
+ 	unsigned char length_lsb;
+ 	unsigned char length_msb;
+ };
+ 
+ struct nl_packet_header {
+-#if defined(__BIG_ENDIAN_BITFIELD)
+-	unsigned char packet_rank:2;
+-	unsigned char address:3;
+-	unsigned char protocol:3;
+-#else
+ 	unsigned char protocol:3;
+ 	unsigned char address:3;
+ 	unsigned char packet_rank:2;
+-#endif
+ };
+ 
+ /* Value of 'packet_rank' above */
+@@ -382,7 +370,37 @@ static void dump_data_bytes(const char *type, const unsigned char *data,
+ 			length < DUMP_MAX_BYTES ? length : DUMP_MAX_BYTES);
+ }
+ 
+-static int do_send_fragment(struct ipw_hardware *hw, const unsigned char *data,
++static void swap_packet_bitfield_to_le(unsigned char *data)
++{
++#ifdef __BIG_ENDIAN_BITFIELD
++	unsigned char tmp = *data, ret = 0;
++
++	/*
++	 * transform bits from aa.bbb.ccc to ccc.bbb.aa
++	 */
++	ret |= tmp & 0xc0 >> 6;
++	ret |= tmp & 0x38 >> 1;
++	ret |= tmp & 0x07 << 5;
++	*data = ret & 0xff;
++#endif
++}
++
++static void swap_packet_bitfield_from_le(unsigned char *data)
++{
++#ifdef __BIG_ENDIAN_BITFIELD
++	unsigned char tmp = *data, ret = 0;
++
++	/*
++	 * transform bits from ccc.bbb.aa to aa.bbb.ccc
++	 */
++	ret |= tmp & 0xe0 >> 5;
++	ret |= tmp & 0x1c << 1;
++	ret |= tmp & 0x03 << 6;
++	*data = ret & 0xff;
++#endif
++}
++
++static int do_send_fragment(struct ipw_hardware *hw, unsigned char *data,
+ 			    unsigned length)
+ {
+ 	unsigned i;
+@@ -402,6 +420,7 @@ static int do_send_fragment(struct ipw_hardware *hw, const unsigned char *data,
+ 	spin_lock_irqsave(&hw->lock, flags);
+ 
+ 	hw->tx_ready = 0;
++	swap_packet_bitfield_to_le(data);
+ 
+ 	if (hw->hw_version == HW_VERSION_1) {
+ 		outw((unsigned short) length, hw->base_port + IODWR);
+@@ -458,6 +477,10 @@ static int do_send_packet(struct ipw_hardware *hw, struct ipw_tx_packet *packet)
+ 	if (data_left < fragment_data_len)
+ 		fragment_data_len = data_left;
+ 
++	/*
++	 * hdr_first is now in machine bitfield order, which will be swapped
++	 * to le just before it goes to hw
++	 */
+ 	pkt.hdr_first.protocol = packet->protocol;
+ 	pkt.hdr_first.address = packet->dest_addr;
+ 	pkt.hdr_first.packet_rank = 0;
+@@ -883,6 +906,8 @@ static void do_receive_packet(struct ipw_hardware *hw)
+ 
+ 	acknowledge_data_read(hw);
+ 
++	swap_packet_bitfield_from_le(pkt);
++
+ 	if (ipwireless_debug)
+ 		dump_data_bytes("recv", pkt, len);
+ 
 
