@@ -1,89 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750AbYGRFEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755464AbYGRFEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754750AbYGRFEe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 01:04:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787AbYGRFEI
+	id S1755464AbYGRFEu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 01:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbYGRFEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 01:04:08 -0400
+	Fri, 18 Jul 2008 01:04:16 -0400
 Received: from rv-out-0506.google.com ([209.85.198.225]:23129 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753552AbYGRFEG (ORCPT
+	with ESMTP id S1753905AbYGRFEO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 01:04:06 -0400
+	Fri, 18 Jul 2008 01:04:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=EW+3ktgjvIG768h9jFN7cyRlaRUvlWb1sZm9mpncRhkNfrP5nf+A7UwsnDG+Pp1DRx
-         uE0wsi7N/Z54PD24zimb8fwZmzD3Pb7uwi8fKM02dvmU4yEZsJcsNkqRIDvCsPz3SqYd
-         DBpF4sPtGLbJEf2f61z47nJ/xogjxsxp+AfTA=
+        b=u9zy6cOv2XNcgbL32d09r/cQ4dA4zZ7DqIS0jU/b0dTXNM7Uz6a9+judD5P9sid9nh
+         unJJq5HBNjH2KHDujUbUjl5WoEkqVgK57033iTLeUHfFYeQEIDpuA5Cd8s4nqP949hEN
+         jLttk3BfA6GvM0AQR88lYHHT8rJxjudGsOYvM=
 From: Magnus Damm <magnus.damm@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: Magnus Damm <magnus.damm@gmail.com>, hjk@linutronix.de, gregkh@suse.de,
        akpm@linux-foundation.org
-Date: Fri, 18 Jul 2008 14:04:18 +0900
-Message-Id: <20080718050418.16250.59161.sendpatchset@rx1.opensource.se>
+Date: Fri, 18 Jul 2008 14:04:27 +0900
+Message-Id: <20080718050427.16250.82197.sendpatchset@rx1.opensource.se>
 In-Reply-To: <20080718050402.16250.25213.sendpatchset@rx1.opensource.se>
 References: <20080718050402.16250.25213.sendpatchset@rx1.opensource.se>
-Subject: [PATCH 02/06] uio: Pass struct uio_mem to mmap functions
+Subject: [PATCH 03/06] uio: Remove vma->vm_private_data from uio_find_mem()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Magnus Damm <damm@igel.co.jp>
 
-This patch makes the UIO code pass a struct uio_mem pointer to the
-mmap functions. This change allows us to remove one uio_find_mem()
-call and an error check.
-
-The error check can be removed since the struct uio_mem pointer has
-already been verified in uio_mmap().
+Pass along a struct uio_device pointer to uio_find_mem() so we can
+remove the vma->vm_private_data usage. This allows us to store
+different data in vma->vm_private_data in the future.
 
 Signed-off-by: Magnus Damm <damm@igel.co.jp>
 ---
 
- drivers/uio/uio.c |   15 ++++-----------
- 1 file changed, 4 insertions(+), 11 deletions(-)
+ drivers/uio/uio.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
---- 0002/drivers/uio/uio.c
-+++ work/drivers/uio/uio.c	2008-07-18 12:40:42.000000000 +0900
-@@ -477,17 +477,10 @@ static struct vm_operations_struct uio_v
- 	.fault = uio_vma_fault,
- };
- 
--static int uio_mmap_physical(struct vm_area_struct *vma)
-+static int uio_mmap_physical(struct vm_area_struct *vma, struct uio_mem *imem)
- {
--	struct uio_mem *imem = uio_find_mem(vma);
--
--	if (!imem)
--		return -EINVAL;
--
- 	vma->vm_flags |= VM_IO | VM_RESERVED;
--
- 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
--
- 	return remap_pfn_range(vma,
- 			       vma->vm_start,
- 			       imem->addr >> PAGE_SHIFT,
-@@ -495,7 +488,7 @@ static int uio_mmap_physical(struct vm_a
- 			       vma->vm_page_prot);
+--- 0003/drivers/uio/uio.c
++++ work/drivers/uio/uio.c	2008-07-18 12:42:21.000000000 +0900
+@@ -427,10 +427,10 @@ static ssize_t uio_read(struct file *fil
+ 	return retval;
  }
  
--static int uio_mmap_logical(struct vm_area_struct *vma)
-+static int uio_mmap_logical(struct vm_area_struct *vma, struct uio_mem *imem)
+-static struct uio_mem *uio_find_mem(struct vm_area_struct *vma)
++static struct uio_mem *uio_find_mem(struct uio_device *idev,
++				    struct vm_area_struct *vma)
  {
- 	vma->vm_flags |= VM_RESERVED;
- 	vma->vm_ops = &uio_vm_ops;
-@@ -532,10 +525,10 @@ static int uio_mmap(struct file *filep, 
+ 	int mi;
+-	struct uio_device *idev = vma->vm_private_data;
  
+ 	for (mi = 0; mi < MAX_UIO_MAPS; mi++) {
+ 		if (idev->info->mem[mi].size == 0)
+@@ -456,7 +456,7 @@ static void uio_vma_close(struct vm_area
+ static int uio_vma_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+ {
+ 	struct uio_device *idev = vma->vm_private_data;
+-	struct uio_mem *imem = uio_find_mem(vma);
++	struct uio_mem *imem = uio_find_mem(idev, vma);
+ 	struct page *page;
+ 
+ 	if (!imem)
+@@ -507,9 +507,7 @@ static int uio_mmap(struct file *filep, 
+ 	if (vma->vm_end < vma->vm_start)
+ 		return -EINVAL;
+ 
+-	vma->vm_private_data = idev;
+-
+-	imem = uio_find_mem(vma);
++	imem = uio_find_mem(idev, vma);
+ 	if (!imem)
+ 		return -EINVAL;
+ 
+@@ -523,6 +521,8 @@ static int uio_mmap(struct file *filep, 
+ 		return ret;
+ 	}
+ 
++	vma->vm_private_data = idev;
++
  	switch (imem->memtype) {
  		case UIO_MEM_PHYS:
--			return uio_mmap_physical(vma);
-+			return uio_mmap_physical(vma, imem);
- 		case UIO_MEM_LOGICAL:
- 		case UIO_MEM_VIRTUAL:
--			return uio_mmap_logical(vma);
-+			return uio_mmap_logical(vma, imem);
- 		default:
- 			return -EINVAL;
- 	}
+ 			return uio_mmap_physical(vma, imem);
