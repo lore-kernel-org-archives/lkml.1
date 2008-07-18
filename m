@@ -1,81 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754247AbYGRH21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754658AbYGRHhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754247AbYGRH21 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 03:28:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512AbYGRH2T
+	id S1754658AbYGRHhv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 03:37:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbYGRHhk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 03:28:19 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:26751 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751329AbYGRH2S (ORCPT
+	Fri, 18 Jul 2008 03:37:40 -0400
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:58857 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752346AbYGRHhj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 03:28:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=FDZt9ExX0nEgjwcQPLOWUnzBlvgucPvxQJb2/+kPMFAnxdADo/hXPGAdXfY7Ui0CdM
-         bOiQ+Ge0z+cZDggtoQF715EKXGF66WjjKFjNUQN6mCIrIB+BI6JywCGYNe3WKnToYluJ
-         T3FmsPumjf4WUI/LTEix0KvLuphKh0Z1aLIIY=
-Message-ID: <19f34abd0807180028y2be61c06ueab5fcc305956f80@mail.gmail.com>
-Date: Fri, 18 Jul 2008 09:28:17 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [Bug #11035] System hangs on 2.6.26-rc8
-Cc: "Roman Mindalev" <lists@r000n.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <20080718071121.GB6875@elte.hu>
+	Fri, 18 Jul 2008 03:37:39 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoBAL/kf0h5LFxAiGdsb2JhbACSPQEBAQ8gnEI
+X-IronPort-AV: E=Sophos;i="4.31,208,1215354600"; 
+   d="scan'208";a="152233670"
+Date: Fri, 18 Jul 2008 17:37:24 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org
+Subject: [BUG, NET] deadlock tearing down a bridged interface
+Message-ID: <20080718073724.GA5802@disturbed>
+Mail-Followup-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik>
-	 <uBi7uNfg81L.A.xt.SzLcIB@albercik> <4878D259.7050403@r000n.net>
-	 <487CA8E5.8020208@r000n.net> <20080718071121.GB6875@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 9:11 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> Vegard - would it be possible to make DEBUG_PAGEALLOC faults single-shot
-> and non-fatal, just like kmemcheck does it? That way people would see a
-> nice kernel message instead of an immediate crash. That means we'd have
-> to find a reliable filter for DEBUG_PAGEALLOC-provoked pagefaults though
-> ...
+Folks,
 
-Hm.. Yes, we could do it in a similar fashion using single-stepping.
-It should take little effort; we already have most of the code to do
-it; mmiotrace does the same thing too, after all.
+I just deadlocked networking on a 2.6.24 kernel. Basically I
+was trying to restart the bridge interface I use for UML sessions
+because it wasn't passing packets. This happens occasionally
+when I leave a UML session too long in gdb, so I bounced the
+bridge to get it working again.
 
-These are some considerations:
+Unfortunately, a UML session (2.6.25-rc9) was halting at the same
+time, and instead of giving me a 'device busy' error, the
+UML session stopped at:
 
-1. If the page is kernel space but currently unmapped, does it point
-to a valid page of RAM even though it is non-present?
-2. Should we allow reading/writing of the underlying physical page (if
-it exists), or should we prevent writes (i.e. allow the instruction to
-proceed, but don't really write anything) and reads (i.e. allow the
-instruction to read 0 or another magic number).
+Asking all remaining processes to terminate...done.
+All processes ended within 1 seconds....done.
+Saving random seed...done.
+Deconfiguring network interfaces...
 
-For the filter you mentioned, we could perhaps use one more bit in the
-PTE. This is what we do for kmemcheck, and IIRC DEBUG_PAGEALLOC is
-incompatible with kmemcheck anyway (I don't remember why exactly), so
-we could reuse the same bit.
+It appears to be stuck closing the tunnel interface it was using:
 
-BTW, I didn't consider that argument (of continuing as far as
-possible) before, but it's a good one; if we don't crash completely,
-the user can still copy the log we have a better report of it. I guess
-kerneloops.org is currently missing out a great deal of reports which
-all shut down the machine immediately without a chance to go into the
-log.
+uml-linux     D ffffffff804297c0     0  7437   7428
+ ffff8100798efe70 0000000000000086 0000000000000000 ffff81005348b400
+ ffff81003d820800 ffff81007df9a800 ffff81003d820a50 0000000100000000
+ 00000000ffffffff ffff81003d820800 0000000000000000 0000000000000000
+Call Trace:
+ [<ffffffff8024a85d>] lock_hrtimer_base+0x1b/0x3c
+ [<ffffffff804145f2>] __mutex_lock_slowpath+0x68/0xa3
+ [<ffffffff80414458>] mutex_lock+0xa/0xb
+ [<ffffffff803adcfe>] netdev_run_todo+0x14/0x21a
+ [<ffffffff885901dd>] :tun:tun_chr_close+0x70/0x76
+ [<ffffffff802990c7>] __fput+0xa1/0x16c
+ [<ffffffff802968f3>] filp_close+0x5d/0x65
+ [<ffffffff80297aca>] sys_close+0x8d/0xca
+ [<ffffffff8020be2e>] system_call+0x7e/0x83
 
+At the same time that this command was running:
 
-Vegard
+brctl delbr br0
 
+dmesg showed:
+
+unregister_netdevice: waiting for br0 to become free. Usage count = 7
+unregister_netdevice: waiting for br0 to become free. Usage count = 7
+unregister_netdevice: waiting for br0 to become free. Usage count = 7
+unregister_netdevice: waiting for br0 to become free. Usage count = 7
+unregister_netdevice: waiting for br0 to become free. Usage count = 7
+unregister_netdevice: waiting for br0 to become free. Usage count = 7
+....
+
+brctl is stuck here:
+
+brctl         D ffffffff804297c0     0  8457   8448
+ ffff81004d8a3d98 0000000000000082 0000000000000286 ffffffff8023e0ea
+ ffff81000f941800 ffff81007d531000 ffff81000f941a50 000000014d8a3da8
+ 000000012f98b3a2 000000012f98bbea 0000000000000286 ffffffff8023e280
+Call Trace:
+ [<ffffffff8023e0ea>] lock_timer_base+0x26/0x4c
+ [<ffffffff8023e280>] __mod_timer+0xc3/0xd1
+ [<ffffffff8041423d>] schedule_timeout+0x8a/0xad
+ [<ffffffff8023ddde>] process_timeout+0x0/0x5
+ [<ffffffff80414238>] schedule_timeout+0x85/0xad
+ [<ffffffff8023e2a2>] msleep+0x14/0x1e
+ [<ffffffff803ade06>] netdev_run_todo+0x11c/0x21a
+ [<ffffffff88580599>] :bridge:br_del_bridge+0x4c/0x50
+ [<ffffffff88581281>] :bridge:br_ioctl_deviceless_stub+0x177/0x1e2
+ [<ffffffff80223598>] do_page_fault+0x352/0x6ca
+ [<ffffffff803a0ab6>] sock_ioctl+0x12c/0x200
+ [<ffffffff802a3849>] do_ioctl+0x21/0x6b
+ [<ffffffff802a3ad6>] vfs_ioctl+0x243/0x25c
+ [<ffffffff80296861>] fd_install+0x25/0x5a
+ [<ffffffff802a3b40>] sys_ioctl+0x51/0x71
+ [<ffffffff8020be2e>] system_call+0x7e/0x83
+
+This is as much as I could get before sufficient stuff locked
+up and I had to reboot.
+
+Cheers,
+
+Dave.
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Dave Chinner
+david@fromorbit.com
