@@ -1,84 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759363AbYGRMah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760063AbYGRMbK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759363AbYGRMah (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 08:30:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756866AbYGRMaN
+	id S1760063AbYGRMbK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 08:31:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759671AbYGRMap
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 08:30:13 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:54914 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756715AbYGRMaM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 08:30:12 -0400
-Message-ID: <48808E14.8050801@suse.de>
-Date: Fri, 18 Jul 2008 18:05:32 +0530
-From: Suresh Jayaraman <sjayaraman@suse.de>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: Jan Beulich <jbeulich@novell.com>
-CC: sfrench@samba.org, linux-cifs-client@lists.samba.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cifs: fix compiler warning on 64-bit arch-s
-References: <4880A5A9.76E4.0078.0@novell.com>
-In-Reply-To: <4880A5A9.76E4.0078.0@novell.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Jul 2008 08:30:45 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:34037 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1759610AbYGRMap (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 08:30:45 -0400
+Message-ID: <416384276.24780@ustc.edu.cn>
+X-WebMAIL-MUA: [211.86.158.24]
+From: "JiSheng Zhang" <jszhang3@mail.ustc.edu.cn>
+To: stefanr@s5r6.in-berlin.de
+Cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
+       krh@redhat.com
+Date: Fri, 18 Jul 2008 20:31:16 +0800
+Reply-To: "JiSheng Zhang" <jszhang3@mail.ustc.edu.cn>
+X-Priority: 3
+Subject: Re: PATCH] firewire: add padding to some struct
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Hi,
+>From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+>Reply-To: 
+>To: JiSheng Zhang <jszhang3@mail.ustc.edu.cn>
+>Subject: Re: PATCH] firewire: add padding to some struct
+>Date:Fri, 18 Jul 2008 13:38:25 +0200
+>
+>JiSheng Zhang wrote:
+> > If p is a pointer to struct fw_cdev_event_response), p->data will point to
+the
+> > padding data rather than the right place, it will cause problem under some
+> > platforms. For example, in the function handle_device_event of
+libraw1394(ported
+> > to juju stack):
+> > .....
+> > case FW_CDEV_EVENT_RESPONSE:
+> >     rc = u64_to_ptr(u->response.closure);
+> >     if (rc->data != NULL)
+> > 	memcpy(rc->data, u->response.data, rc->length);//here it will lost the last
+four
+> > bytes
+> >     errcode = juju_to_raw1394_errcode(u->response.rcode);
+> > .....
+> > 
+> > Although this problem can be solved by add the offset to the pointer, but the
+> > member:__u32 data[0] lost its original meaning.
 > 
-> ---
->  fs/cifs/asn1.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- linux-2.6.26/fs/cifs/asn1.c	2008-07-13 23:51:29.000000000 +0200
-> +++ 2.6.26-cifs-warning/fs/cifs/asn1.c	2008-07-17 15:23:11.000000000 +0200
-> @@ -400,7 +400,7 @@ asn1_oid_decode(struct asn1_ctx *ctx,
->  	size = eoc - ctx->pointer + 1;
->  
->  	/* first subid actually encodes first two subids */
-> -	if (size < 2 || size > ULONG_MAX/sizeof(unsigned long))
-> +	if (size < 2 || size > UINT_MAX/sizeof(unsigned long))
->  		return 0;
->  
->  	*oid = kmalloc(size * sizeof(unsigned long), GFP_ATOMIC);
-> 
-> 
-
-I did see the following patch from David Howells attempting to fix the 
-same warning posted a little earlier.
-
-Fix the CIFS range check to always use a big enough size variable that 
-the compiler won't moan about comparing it to ULONG_MAX/8 on a 64-bit 
-platform.
-
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
-  fs/cifs/asn1.c |    2 +-
-  1 files changed, 1 insertions(+), 1 deletions(-)
+> I don't understand what the problem is.  As long as both kernel and
+> library use "response.data" or "&response + offsetof(typeof(response),
+> data)", they will write and read at the correct location.
+>
+This patch can fix the problem while not changing the struct definition.
 
 
-diff --git a/fs/cifs/asn1.c b/fs/cifs/asn1.c
-index f58e41d..512587d 100644
---- a/fs/cifs/asn1.c
-+++ b/fs/cifs/asn1.c
-@@ -394,8 +394,8 @@ asn1_oid_decode(struct asn1_ctx *ctx,
-  		unsigned char *eoc, unsigned long **oid, unsigned int *len)
-  {
-  	unsigned long subid;
--	unsigned int size;
-  	unsigned long *optr;
-+	size_t size;
+Thanks in advance,
+JiSheng
 
-  	size = eoc - ctx->pointer + 1;
+--- old/drivers/firewire/fw-cdev.c	2008-07-14 05:51:29.000000000 +0800
++++ new/drivers/firewire/fw-cdev.c	2008-07-18 20:20:45.841328585 +0800
+@@ -382,9 +382,9 @@
+ 
+ 	response->response.type   = FW_CDEV_EVENT_RESPONSE;
+ 	response->response.rcode  = rcode;
+-	queue_event(client, &response->event,
+-		    &response->response, sizeof(response->response),
+-		    response->response.data, response->response.length);
++	queue_event(client, &response->event, &response->response, 
++		    sizeof(response->response) + response->response.length,
++		    NULL, 0);
+ }
+ 
+ static int ioctl_send_request(struct client *client, void *buffer)
 
 
-Thanks,
-
--- 
-Suresh Jayaraman
