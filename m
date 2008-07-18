@@ -1,146 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756343AbYGRKRa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755765AbYGRKVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756343AbYGRKRa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 06:17:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbYGRKRU
+	id S1755765AbYGRKVR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 06:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbYGRKVE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 06:17:20 -0400
-Received: from qb-out-0506.google.com ([72.14.204.239]:39595 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754404AbYGRKRT (ORCPT
+	Fri, 18 Jul 2008 06:21:04 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:18249 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753504AbYGRKVD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 06:17:19 -0400
+	Fri, 18 Jul 2008 06:21:03 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=A6kRt2XIRtETrlNdjhendmzwFe/d4GVRZjRe1M1NArSg9akDD2wPB3sS4rbI6jWTjA
-         xomOtsfMW0VQFd50fVXrYE3yB6PqhjjxiQVEu/Q4C+7G6aEA0itgr9w7e1s8FKx489DY
-         EE/VyzwiFvxa2li5cM0sj8rWeXcbUaLUrKjQY=
-Message-ID: <19f34abd0807180317g40a218a2p2bb2857c6f5aa659@mail.gmail.com>
-Date: Fri, 18 Jul 2008 12:17:17 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: linux-ext4@vger.kernel.org
-Subject: Re: latest -git: A peculiar case of a stuck process (ext3/sched-related?)
-Cc: sct@redhat.com, akpm@linux-foundation.org, adilger@sun.com,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <19f34abd0807180245l2a633644n1a8d91cb3587d9e4@mail.gmail.com>
+        h=message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=AP9WhCn182P8MNIubDb4FYKV//yANWkblPBeb26q45ah8uQDbR61y8HHaXvMk4fX1r
+         ILt0QFsIew/L3AA/clOBTT1VRc3pOwPFb3e3bRBY7FqiWKgObV6rUeR9KLXHNBHM5RMl
+         6XJL4GMybTz4X6gFHaeJy7RS44euFAhYeezag=
+Message-ID: <aecf5e530807180321v529c95e1k91fbcffe246a0a75@mail.gmail.com>
+Date: Fri, 18 Jul 2008 15:51:02 +0530
+From: "sasa sasa" <sasak.1983@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] IRQ : bug fix in setup_irq
+Cc: "Thomas Gleixner" <tglx@linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <19f34abd0807180245l2a633644n1a8d91cb3587d9e4@mail.gmail.com>
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_47759_14874118.1216376462261"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 11:45 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> Hi,
->
-> I was running a test which corrupts ext3 filesystem images on purpose.
-> After quite a long time, I have ended up with a grep that runs at 98%
-> CPU and is unkillable even though it is in state R:
->
-> root      6573 98.6  0.0   4008   820 pts/0    R    11:17  15:48 grep -r . mnt
->
-> It doesn't go away with kill -9 either. A sysrq-t shows this info:
->
-> grep          R running   5704  6573   6552
->       f4ff3c3c c0747b19 00000000 f4ff3bd4 c01507ba ffffffff 00000000 f4ff3bf0
->       f5992fd0 f4ff3c4c 01597000 00000000 c09cd080 f312afd0 f312b248 c1fb2f80
->       00000001 00000002 00000000 f312afd0 f312afd0 f4ff3c24 c015ab70 00000000
-> Call Trace:
->  [<c0747b19>] ? schedule+0x459/0x960
->  [<c01507ba>] ? atomic_notifier_call_chain+0x1a/0x20
->  [<c015ab70>] ? mark_held_locks+0x40/0x80
->  [<c015addb>] ? trace_hardirqs_on+0xb/0x10
->  [<c015ad76>] ? trace_hardirqs_on_caller+0x116/0x170
->  [<c074816e>] preempt_schedule_irq+0x3e/0x70
->  [<c0103ffc>] need_resched+0x1f/0x23
->  [<c022c041>] ? ext3_find_entry+0x401/0x6f0
->  [<c015b6e9>] ? __lock_acquire+0x2c9/0x1110
->  [<c019d63c>] ? slab_pad_check+0x3c/0x120
->  [<c015ad76>] ? trace_hardirqs_on_caller+0x116/0x170
->  [<c015906b>] ? trace_hardirqs_off+0xb/0x10
->  [<c022cb3a>] ext3_lookup+0x3a/0xd0
->  [<c01b7bb3>] ? d_alloc+0x133/0x190
->  [<c01ac110>] do_lookup+0x160/0x1b0
->  [<c01adc38>] __link_path_walk+0x208/0xdc0
->  [<c0159173>] ? lock_release_holdtime+0x83/0x120
->  [<c01bd97e>] ? mnt_want_write+0x4e/0xb0
->  [<c01ae327>] __link_path_walk+0x8f7/0xdc0
->  [<c015906b>] ? trace_hardirqs_off+0xb/0x10
->  [<c01ae844>] path_walk+0x54/0xb0
->  [<c01aea45>] do_path_lookup+0x85/0x230
->  [<c01af7a8>] __user_walk_fd+0x38/0x50
->  [<c01a7fb1>] vfs_stat_fd+0x21/0x50
->  [<c01590cd>] ? put_lock_stats+0xd/0x30
->  [<c01bc81d>] ? mntput_no_expire+0x1d/0x110
->  [<c01a8081>] vfs_stat+0x11/0x20
->  [<c01a80a4>] sys_stat64+0x14/0x30
->  [<c01a5a8f>] ? fput+0x1f/0x30
->  [<c0430948>] ? trace_hardirqs_on_thunk+0xc/0x10
->  [<c015ad76>] ? trace_hardirqs_on_caller+0x116/0x170
->  [<c0430948>] ? trace_hardirqs_on_thunk+0xc/0x10
->  [<c010407f>] sysenter_past_esp+0x78/0xc5
->  =======================
+------=_Part_47759_14874118.1216376462261
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Ah, I tried echo l > /proc/sysrq-trigger and it gives this useful information:
+>From ebb5cb875363822e7c2dc17dae36f14dd4a0e71e Mon Sep 17 00:00:00 2001
+From: Sandeep Kaushik <sandeep-mmc.kaushik@st.com>
+Date: Fri, 18 Jul 2008 14:58:19 +0530
+Subject: [PATCH] IRQ : bug fix in setup_irq
 
-SysRq : Show backtrace of all active CPUs
-CPU1:
-       f4ff3bd8 00000000 00000000 c1fadcc0 f4ff3c00 c0106a66 00000000 c083c0d8
-       00200096 00000002 f4ff3c14 c0498ccb c08937c4 00000001 e589b050 f4ff3c38
-       c0161f88 f4ff3c24 c1fadcc8 f4ff3c24 f4ff3c24 c0a1bd80 00010000 f3f81041
-Call Trace:
- [<c0106a66>] ? show_stack+0x36/0x40
- [<c0498ccb>] ? showacpu+0x4b/0x60
- [<c0161f88>] ? generic_smp_call_function_single_interrupt+0x78/0xc0
- [<c0118620>] ? smp_call_function_single_interrupt+0x20/0x40
- [<c0104bf5>] ? call_function_single_interrupt+0x2d/0x34
- [<c022c02b>] ? ext3_find_entry+0x3eb/0x6f0
- [<c015b6e9>] ? __lock_acquire+0x2c9/0x1110
- [<c019d63c>] ? slab_pad_check+0x3c/0x120
- [<c015ad76>] ? trace_hardirqs_on_caller+0x116/0x170
- [<c015906b>] ? trace_hardirqs_off+0xb/0x10
- [<c022cb3a>] ? ext3_lookup+0x3a/0xd0
+This patch is for bug fix in setup_irq function.
+Error handling is added in setup_irq function. This is required in case if some
+rchitecture dependent pins like gpio pins are requested as interrupt pin and
+they are already occupied by other devices in some other modes, then setup_irq
+must return error.
 
-And the ext3_find_entry() corresponds to this line:
+Signed-off-by: Sandeep Kaushik <sandeep-mmc.kaushik@st.com>
+---
+ kernel/irq/manage.c |   24 +++++++++++++++++++-----
+ 1 files changed, 19 insertions(+), 5 deletions(-)
 
-        for (; de < top; de = ext3_next_entry(de)) /* <--- HERE! */
-        if (ext3_match (namelen, name, de)) {
-                if (!ext3_check_dir_entry("ext3_find_entry",
-                                          dir, de, bh,
-                          (block<<EXT3_BLOCK_SIZE_BITS(sb))
-                                  +((char *)de - bh->b_data))) {
-                        brelse (bh);
-                        *err = ERR_BAD_DX_DIR;
-                        goto errout;
-                }
-                *res_dir = de;
-                dx_release (frames);
-                return bh;
-        }
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 1f31422..ca92f97 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -339,6 +339,7 @@ int setup_irq(unsigned int irq, struct irqaction *new)
+ 		desc->status |= IRQ_NO_BALANCING;
 
-Is it possible that this loop can get stuck with a corrupt filesystem image?
+ 	if (!shared) {
++		int trigger_type = 0;
+ 		irq_chip_set_defaults(desc->chip);
 
-A few more iterations of this gives that the task is ALWAYS
-interrupted somewhere on line 994:
+ #if defined(CONFIG_IRQ_PER_CPU)
+@@ -346,11 +347,22 @@ int setup_irq(unsigned int irq, struct irqaction *new)
+ 			desc->status |= IRQ_PER_CPU;
+ #endif
 
-        for (; de < top; de = ext3_next_entry(de))
++		trigger_type = new->flags & IRQF_TRIGGER_MASK;
++
+ 		/* Setup the type (level, edge polarity) if configured: */
+-		if (new->flags & IRQF_TRIGGER_MASK) {
+-			if (desc->chip && desc->chip->set_type)
+-				desc->chip->set_type(irq,
+-						new->flags & IRQF_TRIGGER_MASK);
++		if (trigger_type) {
++			if (desc->chip && desc->chip->set_type)	{
++				if ((desc->chip->set_type(irq, trigger_type))) {
++					/* Action handler gets freed but
++					 * desc->action also needs to be
++					 * set to NULL
++					 */
++					*p = NULL;
++					spin_unlock_irqrestore(&desc->lock,
++								flags);
++					return -EBUSY;
++				}
++			}
+ 			else
+ 				/*
+ 				 * IRQF_TRIGGER_* but the PIC does not support
+@@ -571,8 +583,10 @@ int request_irq(unsigned int irq, irq_handler_t handler,
+ #endif
 
-..but at slightly different EIPs. I find a bit odd as there are no
-loops in ext3_next_entry(), and the for-loop itself isn't that tight
-either. Any ideas?
+ 	retval = setup_irq(irq, action);
+-	if (retval)
++	if (retval) {
++		printk(KERN_WARNING"Failed to allocate interrupt %d\n", retval);
+ 		kfree(action);
++	}
 
-
-Vegard
-
+ 	return retval;
+ }
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+1.5.6.GIT
+
+------=_Part_47759_14874118.1216376462261
+Content-Type: application/octet-stream;
+ name=0001-IRQ-bug-fix-in-setup_irq.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fisn22io0
+Content-Disposition: attachment;
+ filename=0001-IRQ-bug-fix-in-setup_irq.patch
+
+RnJvbSBlYmI1Y2I4NzUzNjM4MjJlN2MyZGMxN2RhZTM2ZjE0ZGQ0YTBlNzFlIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBTYW5kZWVwIEthdXNoaWsgPHNhbmRlZXAtbW1jLmthdXNoaWtA
+c3QuY29tPgpEYXRlOiBGcmksIDE4IEp1bCAyMDA4IDE0OjU4OjE5ICswNTMwClN1YmplY3Q6IFtQ
+QVRDSF0gSVJRIDogYnVnIGZpeCBpbiBzZXR1cF9pcnEKClRoaXMgcGF0Y2ggaXMgZm9yIGJ1ZyBm
+aXggaW4gc2V0dXBfaXJxIGZ1bmN0aW9uLgpFcnJvciBoYW5kbGluZyBpcyBhZGRlZCBpbiBzZXR1
+cF9pcnEgZnVuY3Rpb24uIFRoaXMgaXMgcmVxdWlyZWQgaW4gY2FzZSBpZiBzb21lCnJjaGl0ZWN0
+dXJlIGRlcGVuZGVudCBwaW5zIGxpa2UgZ3BpbyBwaW5zIGFyZSByZXF1ZXN0ZWQgYXMgaW50ZXJy
+dXB0IHBpbiBhbmQgCnRoZXkgYXJlIGFscmVhZHkgb2NjdXBpZWQgYnkgb3RoZXIgZGV2aWNlcyBp
+biBzb21lIG90aGVyIG1vZGVzLCB0aGVuIHNldHVwX2lycQptdXN0IHJldHVybiBlcnJvci4KClNp
+Z25lZC1vZmYtYnk6IFNhbmRlZXAgS2F1c2hpayA8c2FuZGVlcC1tbWMua2F1c2hpa0BzdC5jb20+
+Ci0tLQoga2VybmVsL2lycS9tYW5hZ2UuYyB8ICAgMjQgKysrKysrKysrKysrKysrKysrKy0tLS0t
+CiAxIGZpbGVzIGNoYW5nZWQsIDE5IGluc2VydGlvbnMoKyksIDUgZGVsZXRpb25zKC0pCgpkaWZm
+IC0tZ2l0IGEva2VybmVsL2lycS9tYW5hZ2UuYyBiL2tlcm5lbC9pcnEvbWFuYWdlLmMKaW5kZXgg
+MWYzMTQyMi4uY2E5MmY5NyAxMDA2NDQKLS0tIGEva2VybmVsL2lycS9tYW5hZ2UuYworKysgYi9r
+ZXJuZWwvaXJxL21hbmFnZS5jCkBAIC0zMzksNiArMzM5LDcgQEAgaW50IHNldHVwX2lycSh1bnNp
+Z25lZCBpbnQgaXJxLCBzdHJ1Y3QgaXJxYWN0aW9uICpuZXcpCiAJCWRlc2MtPnN0YXR1cyB8PSBJ
+UlFfTk9fQkFMQU5DSU5HOwogCiAJaWYgKCFzaGFyZWQpIHsKKwkJaW50IHRyaWdnZXJfdHlwZSA9
+IDA7CiAJCWlycV9jaGlwX3NldF9kZWZhdWx0cyhkZXNjLT5jaGlwKTsKIAogI2lmIGRlZmluZWQo
+Q09ORklHX0lSUV9QRVJfQ1BVKQpAQCAtMzQ2LDExICszNDcsMjIgQEAgaW50IHNldHVwX2lycSh1
+bnNpZ25lZCBpbnQgaXJxLCBzdHJ1Y3QgaXJxYWN0aW9uICpuZXcpCiAJCQlkZXNjLT5zdGF0dXMg
+fD0gSVJRX1BFUl9DUFU7CiAjZW5kaWYKIAorCQl0cmlnZ2VyX3R5cGUgPSBuZXctPmZsYWdzICYg
+SVJRRl9UUklHR0VSX01BU0s7CisKIAkJLyogU2V0dXAgdGhlIHR5cGUgKGxldmVsLCBlZGdlIHBv
+bGFyaXR5KSBpZiBjb25maWd1cmVkOiAqLwotCQlpZiAobmV3LT5mbGFncyAmIElSUUZfVFJJR0dF
+Ul9NQVNLKSB7Ci0JCQlpZiAoZGVzYy0+Y2hpcCAmJiBkZXNjLT5jaGlwLT5zZXRfdHlwZSkKLQkJ
+CQlkZXNjLT5jaGlwLT5zZXRfdHlwZShpcnEsCi0JCQkJCQluZXctPmZsYWdzICYgSVJRRl9UUklH
+R0VSX01BU0spOworCQlpZiAodHJpZ2dlcl90eXBlKSB7CisJCQlpZiAoZGVzYy0+Y2hpcCAmJiBk
+ZXNjLT5jaGlwLT5zZXRfdHlwZSkJeworCQkJCWlmICgoZGVzYy0+Y2hpcC0+c2V0X3R5cGUoaXJx
+LCB0cmlnZ2VyX3R5cGUpKSkgeworCQkJCQkvKiBBY3Rpb24gaGFuZGxlciBnZXRzIGZyZWVkIGJ1
+dAorCQkJCQkgKiBkZXNjLT5hY3Rpb24gYWxzbyBuZWVkcyB0byBiZQorCQkJCQkgKiBzZXQgdG8g
+TlVMTAorCQkJCQkgKi8KKwkJCQkJKnAgPSBOVUxMOworCQkJCQlzcGluX3VubG9ja19pcnFyZXN0
+b3JlKCZkZXNjLT5sb2NrLAorCQkJCQkJCQlmbGFncyk7CisJCQkJCXJldHVybiAtRUJVU1k7CisJ
+CQkJfQorCQkJfQogCQkJZWxzZQogCQkJCS8qCiAJCQkJICogSVJRRl9UUklHR0VSXyogYnV0IHRo
+ZSBQSUMgZG9lcyBub3Qgc3VwcG9ydApAQCAtNTcxLDggKzU4MywxMCBAQCBpbnQgcmVxdWVzdF9p
+cnEodW5zaWduZWQgaW50IGlycSwgaXJxX2hhbmRsZXJfdCBoYW5kbGVyLAogI2VuZGlmCiAKIAly
+ZXR2YWwgPSBzZXR1cF9pcnEoaXJxLCBhY3Rpb24pOwotCWlmIChyZXR2YWwpCisJaWYgKHJldHZh
+bCkgeworCQlwcmludGsoS0VSTl9XQVJOSU5HIkZhaWxlZCB0byBhbGxvY2F0ZSBpbnRlcnJ1cHQg
+JWRcbiIsIHJldHZhbCk7CiAJCWtmcmVlKGFjdGlvbik7CisJfQogCiAJcmV0dXJuIHJldHZhbDsK
+IH0KLS0gCjEuNS42LkdJVAoK
+------=_Part_47759_14874118.1216376462261--
