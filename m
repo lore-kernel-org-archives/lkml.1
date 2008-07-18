@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761337AbYGRWSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761334AbYGRWTJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761337AbYGRWSt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 18:18:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760805AbYGRWRk
+	id S1761334AbYGRWTJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 18:19:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760846AbYGRWRm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 18:17:40 -0400
-Received: from casper.infradead.org ([85.118.1.10]:47967 "EHLO
+	Fri, 18 Jul 2008 18:17:42 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47970 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760705AbYGRWRj (ORCPT
+	with ESMTP id S1760830AbYGRWRl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 18:17:39 -0400
-Date: Fri, 18 Jul 2008 15:16:53 -0700
+	Fri, 18 Jul 2008 18:17:41 -0400
+Date: Fri, 18 Jul 2008 15:17:35 -0700
 From: Arjan van de Ven <arjan@infradead.org>
 To: linux-kernel@vger.kernel.org
 Cc: Arjan van de Ven <arjan@infradead.org>, mingo@elte.hu
-Subject: [patch 2/3] fastboot: turn the USB hostcontroller initcalls into
+Subject: [patch 3/3] fastboot: convert a few non-critical ACPI drivers to
  async initcalls
-Message-ID: <20080718151653.459dc37d@infradead.org>
+Message-ID: <20080718151735.148819df@infradead.org>
 In-Reply-To: <20080718151524.5ef9e29b@infradead.org>
 References: <20080718151524.5ef9e29b@infradead.org>
 Organization: Intel
@@ -31,62 +31,55 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: [PATCH] fastboot: turn the USB hostcontroller initcalls into async initcalls
+Subject: [PATCH] fastboot: convert a few non-critical ACPI drivers to async initcalls
 
-the USB host controller init calls take a long time, mostly due to a
-"minimally 100 msec" delay *per port* during initialization.
-These are prime candidates for going in parallel to everything else.
-
-The USB device ordering is not affected by this due to the
-serialized-within-eachother property of async initcalls.
+This patch converts a few non-critical ACPI drivers to async initcalls;
+these initcalls (battery, button and thermal) tend to take quite a bit of
+time (100's of milliseconds) due to the hardware they need to talk to,
+but are otherwise clearly non-essential for the boot process.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- drivers/usb/host/ehci-hcd.c |    2 +-
- drivers/usb/host/ohci-hcd.c |    2 +-
- drivers/usb/host/uhci-hcd.c |    2 +-
+ drivers/acpi/battery.c |    2 +-
+ drivers/acpi/button.c  |    2 +-
+ drivers/acpi/thermal.c |    2 +-
  3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/usb/host/ehci-hcd.c b/drivers/usb/host/ehci-hcd.c
-index 369a8a5..8f84b17 100644
---- a/drivers/usb/host/ehci-hcd.c
-+++ b/drivers/usb/host/ehci-hcd.c
-@@ -1101,7 +1101,7 @@ clean0:
+diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
+index b1c723f..d5d30ca 100644
+--- a/drivers/acpi/battery.c
++++ b/drivers/acpi/battery.c
+@@ -904,5 +904,5 @@ static void __exit acpi_battery_exit(void)
  #endif
- 	return retval;
- }
--module_init(ehci_hcd_init);
-+module_init_async(ehci_hcd_init);
- 
- static void __exit ehci_hcd_cleanup(void)
- {
-diff --git a/drivers/usb/host/ohci-hcd.c b/drivers/usb/host/ohci-hcd.c
-index a8160d6..e060ed1 100644
---- a/drivers/usb/host/ohci-hcd.c
-+++ b/drivers/usb/host/ohci-hcd.c
-@@ -1165,7 +1165,7 @@ static int __init ohci_hcd_mod_init(void)
- 
- 	return retval;
- }
--module_init(ohci_hcd_mod_init);
-+module_init_async(ohci_hcd_mod_init);
- 
- static void __exit ohci_hcd_mod_exit(void)
- {
-diff --git a/drivers/usb/host/uhci-hcd.c b/drivers/usb/host/uhci-hcd.c
-index 3a7bfe7..f2a05ac 100644
---- a/drivers/usb/host/uhci-hcd.c
-+++ b/drivers/usb/host/uhci-hcd.c
-@@ -999,7 +999,7 @@ static void __exit uhci_hcd_cleanup(void)
- 	kfree(errbuf);
  }
  
--module_init(uhci_hcd_init);
-+module_init_async(uhci_hcd_init);
- module_exit(uhci_hcd_cleanup);
+-module_init(acpi_battery_init);
++module_init_async(acpi_battery_init);
+ module_exit(acpi_battery_exit);
+diff --git a/drivers/acpi/button.c b/drivers/acpi/button.c
+index 1dfec41..46b3805 100644
+--- a/drivers/acpi/button.c
++++ b/drivers/acpi/button.c
+@@ -545,5 +545,5 @@ static void __exit acpi_button_exit(void)
+ 	remove_proc_entry(ACPI_BUTTON_CLASS, acpi_root_dir);
+ }
  
- MODULE_AUTHOR(DRIVER_AUTHOR);
+-module_init(acpi_button_init);
++module_init_async(acpi_button_init);
+ module_exit(acpi_button_exit);
+diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
+index 84c795f..1f529af 100644
+--- a/drivers/acpi/thermal.c
++++ b/drivers/acpi/thermal.c
+@@ -1833,5 +1833,5 @@ static void __exit acpi_thermal_exit(void)
+ 	return;
+ }
+ 
+-module_init(acpi_thermal_init);
++module_init_async(acpi_thermal_init);
+ module_exit(acpi_thermal_exit);
 -- 
 1.5.5.1
 
