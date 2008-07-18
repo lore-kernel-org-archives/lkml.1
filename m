@@ -1,130 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756747AbYGROmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758408AbYGROm3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756747AbYGROmR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 10:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbYGROmD
+	id S1758408AbYGROm3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 10:42:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755271AbYGROmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 10:42:03 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55863 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751995AbYGROmB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 10:42:01 -0400
-Date: Fri, 18 Jul 2008 10:39:54 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, joe@perches.com,
-       nick@nick-andrew.net, randy.dunlap@oracle.com
-Subject: Re: [PATCH 1/7] dynamic debug v2 - infrastructure
-Message-ID: <20080718143954.GA10141@redhat.com>
-References: <20080715213108.GB23331@redhat.com> <20080717070103.GA21961@kroah.com> <20080717212040.GB13252@redhat.com> <20080717223222.GA28016@kroah.com>
-Mime-Version: 1.0
+	Fri, 18 Jul 2008 10:42:13 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:48050 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754748AbYGROmM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 10:42:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=mcW2lHrnbWqKrPSrIi15skZZRevaEfaewYj7uCD/ESKppUr3V98IPGe28kNnplR5Vf
+         JHDoli2kFJmmhqzZfA2j+dOPEiUBMG6wj6HbMhApq0OIrq6d929l+3cPDV81fjOzy009
+         2VEdfdXqPwfw041eadHouGRUYEjQ6WnImvPRw=
+Date: Fri, 18 Jul 2008 15:40:35 +0100
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: mingo@redhat.com
+Subject: [Patch] vdso: check the value of vdso_enabled
+Message-ID: <20080718144035.GA26261@hack.voiplan.pt>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080717223222.GA28016@kroah.com>
-User-Agent: Mutt/1.4.1i
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 03:32:22PM -0700, Greg KH wrote:
-> On Thu, Jul 17, 2008 at 05:20:40PM -0400, Jason Baron wrote:
-> > On Thu, Jul 17, 2008 at 12:01:03AM -0700, Greg KH wrote:
-> > > Return-Path: <greg@kroah.com>
-> > > On Tue, Jul 15, 2008 at 05:31:08PM -0400, Jason Baron wrote:
-> > > > diff --git a/include/linux/device.h b/include/linux/device.h
-> > > > index 1a06026..fb03dbc 100644
-> > > > --- a/include/linux/device.h
-> > > > +++ b/include/linux/device.h
-> > > > @@ -592,7 +592,11 @@ extern const char *dev_driver_string(struct device *dev);
-> > > >  #define dev_info(dev, format, arg...)		\
-> > > >  	dev_printk(KERN_INFO , dev , format , ## arg)
-> > > >  
-> > > > -#ifdef DEBUG
-> > > > +#if defined(CONFIG_DYNAMIC_PRINTK_DEBUG)
-> > > > +#define dev_dbg(dev, format, ...) do { \
-> > > > +	dynamic_dev_dbg(dev, format, ##__VA_ARGS__); \
-> > > > +	} while (0)
-> > > > +#elif defined(DEBUG)
-> > > >  #define dev_dbg(dev, format, arg...)		\
-> > > >  	dev_printk(KERN_DEBUG , dev , format , ## arg)
-> > > >  #else
-> > > 
-> > > In looking at your follow-on patches, where you add this to subsystems,
-> > > it seems that you have to add a lot of #include <linux/dynamic_printk.h>
-> > > lines.
-> > > 
-> > > And in looking at this modification to device.h, I think lots of the
-> > > kernel should break, but you are getting it "for free" by including the
-> > > .h file within kernel.h.
-> > > 
-> > > Why not also include it here in device.h?
-> > > 
-> > 
-> > I don't believe the follow-on patches include "<linux/dynamic_printk.h>". 
-> > However, some of them do include a subsystem specific #include. For example,
-> > the cpufreq subsystem include, <linux/dynamic_debug_cpufreq.h>:
-> 
-> Ah, you are correct, sorry about that, I misread.
-> 
-> > +++ b/include/linux/dynamic_debug_cpufreq.h
-> > @@ -0,0 +1,8 @@
-> > +#define DYNAMIC_DEBUG_NUM_FLAGS "3"
-> > +#define DYNAMIC_DEBUG_FLAG_NAMES "CPUFREQ_DEBUG_CORE,CPUFREQ_DEBUG_DRIVER,CPUFREQ_DEBUG_GOVERNOR"
-> > +#define DYNAMIC_DEBUG_TYPE "2"
-> > +#define DYNAMIC_DEBUG_MODNAME "cpufreq_shared"
-> > +
-> > +#ifdef CONFIG_CPU_FREQ_DEBUG
-> > +#define DEBUG 1
-> > +#endif
-> > 
-> > This header file conveys that cpufreq subsystem, wants non-default options-it
-> > has 3 debugging flags that can be set, and all modules in the subsystem are
-> > tied together using the module name: "cpufreq_shared".  
-> > 
-> > I don't have an explicit #include of kernel.h in device.h b/c it already picked
-> > up.
-> > 
-> > > Also, with this change, code that is already using dev_dbg() today is
-> > > instantly converted over to this logic now, right?
-> > > 
-> > 
-> > that is correct. any callers of dev_dbg() don't have to do anything. its really
-> > only the more complex debugging, where there are flags or levels that need to
-> > make adjustments to work with the new infrastructure.
-> 
-> For this reason alone, I see no reason why your patch should not be
-> merged today.  You don't need the other subsystems at this point in time
-> in my opinion, it's benifit is huge already.
-> 
-> Not to say that you shouldn't also go after these subsystems in your
-> overall scheme here, but please, don't feel it should hold your code up
-> at this point in time :)
-> 
-> Because of that, do you want me to try to merge the basic infrastructure
-> and dev_dbg() support through the driver-core tree?  This code has been
-> in the past -mm and linux-next releases, right?
-> 
 
-On my system, with just the pr_debug, dev_dbg() hooks, i get about 80 modules
-loaded that i can enable/disable debugging for. So, this piece is useful by 
-itself as you point out.
+When the value of 'vdso_enabled' is out of range, make it default.
 
-However, there are a couple important issues that need to be resolved. One is
-the the infrastructure relies on 'KBUILD_MODNAME' to differentiate modules.
-However, these are not necessarily unique within the tree. For example,
-mm/mmap.c and arch/x86/mm/mmap.c both have the 'KBUILD_MODNAME' of 'mmap'.
-Thus, enabling debugging for one of these will enabled both. Perhaps, this
-is the desired affect, but there might be cases where we want to differentiate?
-We could use a combination of directory location in combination with 
-'KBUILD_MODNAME'. 
+Signed-off-by: WANG Cong <wangcong@zeuux.org>
+Cc: mingo@redhat.com
 
-The second issue, is the splitting up the control file from one monolithic one,
-to one per module...i did one monolithic one to make the implementation simpler
-but we could definitely split it up.
-
-So, yes it could go in now, or I can try and polish it a little more...it has
-not yet had a runtime in either -mm or linux-next yet.
-
-thanks,
-
--Jason
+---
+diff --git a/arch/x86/vdso/vdso32-setup.c b/arch/x86/vdso/vdso32-setup.c
+index 0bce542..3428448 100644
+--- a/arch/x86/vdso/vdso32-setup.c
++++ b/arch/x86/vdso/vdso32-setup.c
+@@ -59,6 +59,8 @@ unsigned int __read_mostly vdso_enabled = VDSO_DEFAULT;
+ static int __init vdso_setup(char *s)
+ {
+ 	vdso_enabled = simple_strtoul(s, NULL, 0);
++	if (vdso_enabled > VDSO_COMPAT)
++		vdso_enabled = VDSO_DEFAULT;
+ 
+ 	return 1;
+ }
