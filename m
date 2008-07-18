@@ -1,93 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755736AbYGROiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757566AbYGROjM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755736AbYGROiS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 10:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbYGROiI
+	id S1757566AbYGROjM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 10:39:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbYGROi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 10:38:08 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:15988 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751800AbYGROiF (ORCPT
+	Fri, 18 Jul 2008 10:38:57 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:63806 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753017AbYGROi5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 10:38:05 -0400
+	Fri, 18 Jul 2008 10:38:57 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=qXCPkCc3yNsCA5fm6e9a4ypSp6HFH4GZlp7ftauXXTubUtshWMgAUDi+eE38MYq7QO
-         NSTEjhTuaUsAARefmr4s8726vjep29TFWqG1uqSrEL+w3MR8ITS3ffdGg5YO/KbKg9M4
-         kcSgcbaiLbWICjIIaDLqUUaX+2Z9lGAkRYiVc=
-Message-ID: <84144f020807180738m768a3ebana5ebc10999f22f50@mail.gmail.com>
-Date: Fri, 18 Jul 2008 17:38:04 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Eduard - Gabriel Munteanu" <eduard.munteanu@linux360.ro>
-Subject: Re: [RFC PATCH 1/4] kmemtrace: Core implementation.
-Cc: cl@linux-foundation.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       "Randy Dunlap" <rdunlap@xenotime.net>, "Matt Mackall" <mpm@selenic.com>
-In-Reply-To: <20080718101326.GB5193@localhost>
+         :references;
+        b=j2uCvsOyGxjesiOzR8tB5JeWTRbQOSwhN3L0XRGkBaE5f8bnXjXE3vr5awaO3FSSKc
+         +UOEoNvk6ZEFuWPndJ1ONXnJuY6dzyog0JZjNNBXO89SmyFCiqTo8ZAuAN6QpXXnrQ04
+         WNPcG9T2og7lZldKM9ZkpeEU5VoYHdwnCpC1w=
+Message-ID: <f17812d70807180738r75696e0ak120a884328b68ed3@mail.gmail.com>
+Date: Fri, 18 Jul 2008 22:38:55 +0800
+From: "eric miao" <eric.y.miao@gmail.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: [PATCH] sched: do not stop ticks when cpu is not idle
+Cc: "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       "Jack Ren" <jack.ren@marvell.com>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+In-Reply-To: <alpine.LFD.1.10.0807181548290.4316@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <cover.1216255034.git.eduard.munteanu@linux360.ro>
-	 <4472a3f883b0d9026bb2d8c490233b3eadf9b55e.1216255035.git.eduard.munteanu@linux360.ro>
-	 <84144f020807170101x25c9be11qd6e1996460bb24fc@mail.gmail.com>
-	 <20080717183206.GC5360@localhost>
-	 <Pine.LNX.4.64.0807181140400.3739@sbz-30.cs.Helsinki.FI>
-	 <20080718101326.GB5193@localhost>
-X-Google-Sender-Auth: 05b53874ece357b7
+References: <f17812d70807172341u92270fdvc80e72cc5599c56f@mail.gmail.com>
+	 <20080718102446.GV6875@elte.hu>
+	 <alpine.LFD.1.10.0807181548290.4316@apollo.tec.linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Eduard-Gabriel,
+On Fri, Jul 18, 2008 at 9:52 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Fri, 18 Jul 2008, Ingo Molnar wrote:
+>>
+>> * eric miao <eric.y.miao@gmail.com> wrote:
+>>
+>> > Issue: the sched tick would be stopped in some race conditions.
+>>
+>> > --- a/kernel/sched.c
+>> > +++ b/kernel/sched.c
+>> > @@ -4027,7 +4027,8 @@ need_resched_nonpreemptible:
+>> >             rq->nr_switches++;
+>> >             rq->curr = next;
+>> >             ++*switch_count;
+>> > -
+>> > +           if (rq->curr != rq->idle)
+>> > +                   tick_nohz_restart_sched_tick();
+>> >             context_switch(rq, prev, next); /* unlocks the rq */
+>>
+>> applied to tip/sched/urgent, thanks Eric.
+>>
+>> Thomas, Peter, Dmitry, do you concur with the analysis? (commit below)
+>
+> Yes. I did not understand the issue when Jack pointed it out to me,
+> but with Erics explanation it's really clear. Thanks for tracking that
+> down.
 
-On Fri, Jul 18, 2008 at 11:48:03AM +0300, Pekka J Enberg wrote:
->> It's an ABI so you want to make it backwards compatible and extensible.
->> Yes, it's just for debugging, so the rules are bit more relaxed here but
->> that's not an excuse for not designing the ABI properly.
+Actually, Jack did most of the analysis and came up with this quick
+fix.
 
-On Fri, Jul 18, 2008 at 1:13 PM, Eduard - Gabriel Munteanu
-<eduard.munteanu@linux360.ro> wrote:
-> I do expect to keep things source-compatible, but even
-> binary-compatible? Developers debug and write patches on the latest kernel,
-> not on a 6-month-old kernel. Isn't it reasonable that they would
-> recompile kmemtrace along with the kernel?
+>
+>> It looks a bit ugly to me in the middle of schedule() - is there no wait
+>> to solve this within kernel/time/*.c ?
+>
+> Hmm, yes. I think the proper fix is to enable the tick stop mechanism
+> in the idle loop and disable it before we go to schedule. That takes
+> an additional parameter to tick_nohz_stop_sched_tick(), but we then
+> gain a very clear section where the nohz mimic can be active.
+>
+> I'll whip up a patch.
 
-Yes, I do think it's unreasonable. I, for one, am hoping distributions
-will pick up the kmemtrace userspace at some point after which I don't
-need to ever compile it myself.
+Sounds great, thanks.
 
-On Fri, Jul 18, 2008 at 1:13 PM, Eduard - Gabriel Munteanu
-<eduard.munteanu@linux360.ro> wrote:
-> I would deem one ABI or another stable, but then we have to worry about
-> not breaking it, which leads to either bloating the kernel, or keeping
-> improvements away from kmemtrace. Should we do it just because this is an ABI?
+>
+> Thanks,
+>
+>        tglx
+>
 
-Like I've said before, it's debugging/tracing infrastructure so the
-rules are bit more relaxed. That said, what we should do is (1) make
-the ABI as future-proof as we can, (2) explicitly mark it as unstable
-by documenting it in Documentation/ABI/testing and (3) at some point
-in time move it in Documentation/ABI/stable and hopefully never break
-it again. But sure, we probably don't need to keep any "bloat" around
-like we do with the syscall interface, for example.
 
-And hopefully, the ABI is good enough to allow adding *new* tracing
-events while retaining the old ones nicely in a backwards compatible
-way.
 
-On Fri, Jul 18, 2008 at 11:48:03AM +0300, Pekka J Enberg wrote:
->> I really wish we would follow the example set by blktrace here. It uses a
->> fixed-length header that knows the length of the rest of the packet.
-
-On Fri, Jul 18, 2008 at 1:13 PM, Eduard - Gabriel Munteanu
-<eduard.munteanu@linux360.ro> wrote:
-> I'd rather export the header length through a separate debugfs entry,
-> rather than add this to every packet. I don't think we need variable
-> length packets, unless we intend to export the whole stack trace, for
-> example.
-
-Sure, makes sense.
-
-                                      Pekka
+-- 
+Cheers
+- eric
