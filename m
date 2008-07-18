@@ -1,87 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759222AbYGRSU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758634AbYGRS3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759222AbYGRSU7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 14:20:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754513AbYGRSUw
+	id S1758634AbYGRS3R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 14:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755356AbYGRS3C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 14:20:52 -0400
-Received: from hu-out-0506.google.com ([72.14.214.233]:48698 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754441AbYGRSUv (ORCPT
+	Fri, 18 Jul 2008 14:29:02 -0400
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:58732 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754176AbYGRS3A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 14:20:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=WSoLoBtAHuIkJpKh73xbePCEMzAybGMudLU6BJoyEJiyjJgPmSRPpPloqsvBTssCSC
-         VfyDLzIa8Dg5AvbqeX0KyIX1t6vmm7rrV9HGziyTxX6E6Escy81f9TEJvlHE5BTtF1xg
-         ZSi5SxcdatLgTlcXYSmDbeERohWO8m9UwFS20=
-Message-ID: <dd18b0c30807181120r4462e904t94d37dbd383995ba@mail.gmail.com>
-Date: Fri, 18 Jul 2008 18:20:47 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
-Cc: "Jack Howarth" <howarth@bromo.msbb.uc.edu>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <86802c440807180936h6eaad29fo1788e4e2d54b0df0@mail.gmail.com>
+	Fri, 18 Jul 2008 14:29:00 -0400
+Date: Fri, 18 Jul 2008 13:28:50 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: John Reiser <jreiser@BitWagon.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, benh@kernel.crashing.org,
+       torvalds@linux-foundation.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, roland@redhat.com
+Subject: Re: [PATCH v3] elf loader support for auxvec base platform string
+Message-ID: <20080718182850.GO9594@localdomain>
+References: <1216166331-14810-1-git-send-email-ntl@pobox.com>
+ <1216166331-14810-2-git-send-email-ntl@pobox.com>
+ <1216276539.7740.309.camel@pasglop>
+ <20080717000951.5f8cab37.akpm@linux-foundation.org>
+ <20080717221932.GL9594@localdomain>
+ <20080717154218.8981035c.akpm@linux-foundation.org>
+ <487FD74C.4080603@BitWagon.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080717034418.GA18951@bromo.msbb.uc.edu>
-	 <86802c440807162348m6d05b912x7b3f655d7f9efb93@mail.gmail.com>
-	 <20080718011532.GA30920@bromo.msbb.uc.edu>
-	 <86802c440807171825m24ffe140o81bb76286823568e@mail.gmail.com>
-	 <20080718060935.GA32345@bromo.msbb.uc.edu>
-	 <86802c440807172322s5dabbd1bx297742d782e373d6@mail.gmail.com>
-	 <20080718120930.GA2916@bromo.msbb.uc.edu>
-	 <86802c440807180919id6220ecqe0a25b2a94dc39c0@mail.gmail.com>
-	 <20080718162923.GA6100@bromo.msbb.uc.edu>
-	 <86802c440807180936h6eaad29fo1788e4e2d54b0df0@mail.gmail.com>
+In-Reply-To: <487FD74C.4080603@BitWagon.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Pobox-Relay-ID: 62A902BC-54F7-11DD-BBF0-CE28B26B55AE-04752483!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 4:36 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> On Fri, Jul 18, 2008 at 9:29 AM, Jack Howarth <howarth@bromo.msbb.uc.edu> wrote:
->> YH,
->>   I'll file a radar bug report on this with Apple but wouldn't
->> hold my breath for them to fix the firmware. Also, it would be
->> a good idea to encourage all of the folks using 2.6.26 on
->> Macintel to watch out for the "MMCONFIG not used" message in
->> their dmesg and report that to you. I strongly suspect that
->> the MacBook Pro v2 isn't the only model with broken firmware.
->>                   Jack
->>
->> On Fri, Jul 18, 2008 at 09:19:19AM -0700, Yinghai Lu wrote:
->>> On Fri, Jul 18, 2008 at 5:09 AM, Jack Howarth <howarth@bromo.msbb.uc.edu> wrote:
->>> > YH,
->>> >   Do you see anything in the pci earlydump and the associated lspci --vvxxxx
->>> > output that sheds any light on why we have to clean up the dmi with your
->>> > mmconfig patch on a MacBookPro2? I am wondering if the BIOS information is
->>> > being misused by the linux kernel or if the BIOS is just buggy.
->
-> it only happened when 3G ram installed.
->
-> when 2G installed, it will use [0xe0000000 - 0xf0000000), for bus [0,255]
-> and that is ok
->
-> YH
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+John Reiser wrote:
+> Andrew Morton wrote:
+> > On Thu, 17 Jul 2008 17:19:32 -0500
+> > Nathan Lynch <ntl@pobox.com> wrote:
+> > 
+> > 
+> >> [snip]
+> >> A new aux vector entry, AT_BASE_PLATFORM, will denote the actual hardware.
+> [snip]
+> 
+> > OK.
+> > 
+> > But it conflicts directly with the already-queued
+> > execve-filename-document-and-export-via-auxiliary-vector.patch
 
-Where might us mac users locate a custom
-dsdt to try?
+Okay, I can rebase on -mm.
 
 
--- 
-Justin P. Mattock
+> It seems to me that most of the patch conflicts are mechanical
+> and could be merged mechanically.
+> 
+> However I believe that the documentation change to this comment is important:
+> -----
+> >  #ifdef __KERNEL__
+> > -#define AT_VECTOR_SIZE_BASE (14 + 2) /* NEW_AUX_ENT entries in auxiliary table */
+> > +#define AT_VECTOR_SIZE_BASE 17 /* NEW_AUX_ENT entries in auxiliary table */
+> > +  /* number of "#define AT_.*" above, minus {AT_NULL, AT_IGNORE, AT_NOTELF} */
+> >  #endif
+> -----
+> I scratched my head for a while to figure out that AT_NOTELF also was
+> a subtraction as far as AT_VECTOR_SIZE_BASE was concerned.
+
+John, from your patch:
+
++#define AT_EXECFN  31	/* filename of program */
+
+How did you arrive at 31 for the value of AT_EXECFN?  I haven't been
+able to find out how AT_* values are "allocated", or what the reason
+is for the gap between AT_SECURE and AT_SYSINFO.
