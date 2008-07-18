@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761159AbYGRRIF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760981AbYGRRHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761159AbYGRRIF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 13:08:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757559AbYGRRHV
+	id S1760981AbYGRRHt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 13:07:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760643AbYGRRHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 13:07:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46998 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760696AbYGRRHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 13:07:19 -0400
-Date: Fri, 18 Jul 2008 19:07:06 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: let 32bit use apic_ops too - fix
-Message-ID: <20080718170706.GJ6875@elte.hu>
-References: <200807080141.05436.yhlu.kernel@gmail.com> <200807102038.26591.yhlu.kernel@gmail.com> <200807111841.55403.yhlu.kernel@gmail.com> <200807132219.35814.yhlu.kernel@gmail.com> <20080715173318.GA18203@linux-os.sc.intel.com>
+	Fri, 18 Jul 2008 13:07:18 -0400
+Received: from ixia01.ro.gtsce.net ([212.146.94.66]:3504 "EHLO
+	ixro-ex1.ixiacom.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760553AbYGRRHQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 13:07:16 -0400
+From: Octavian Purdila <opurdila@ixiacom.com>
+Organization: IXIA
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [PATCH] tcp: do not promote SPLICE_F_NONBLOCK to socket O_NONBLOCK
+Date: Fri, 18 Jul 2008 20:04:44 +0300
+User-Agent: KMail/1.9.9
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, axboe@kernel.dk
+References: <200807171633.49791.opurdila@ixiacom.com> <200807181850.07393.opurdila@ixiacom.com> <20080718160009.GA29740@2ka.mipt.ru>
+In-Reply-To: <20080718160009.GA29740@2ka.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080715173318.GA18203@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200807182004.44664.opurdila@ixiacom.com>
+X-OriginalArrivalTime: 18 Jul 2008 17:09:12.0843 (UTC) FILETIME=[003B0DB0:01C8E8F9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 18 July 2008, Evgeniy Polyakov wrote:
 
-* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+> > It will take 17 because this is what the user requested. And when trying
+> > to push the 17th on the pipe, it will block. I base this both on
+> > experiments and on my understanding of the tcp splice receive
+> > implementation.
+>
+> Seems like we do not understand each other. How it can take 17 if there
+> are only 16 pages? By 'push' you mean splice-into-pipe or 
+> splice-out-of-pipe-into-other-fd? Where exactly will it block?
+>
 
-> Yinghai, Looking more closely at this, based on my understanding this 
-> might be wrong for VMI. Correct patch should be as follows. Any 
-> comments?
+Suppose we have 20 packets in the socket queue and the pipe is empty and the 
+application calls splice(sock, pipe, 17, flags=0).
 
-applied to tip/x86/x2apic (with some fixups), thanks Suresh.
+Then, tcp_splice_read will be called, which in turn calls tcp_read_sock. 
 
-	Ingo
+tcp_read_sock will loop until all the 17 bytes will be read from the socket. 
+tcp_read_sock calls skb_splice_bits which calls splice_to_pipe.
+
+Now while skb_splice_bits is carefull to only put a maximum of PIPE_BUFFERS 
+during its iteration, due to the looping in tcp_read_sock, we will end up 
+with 17 calls to splice_to_pipe. Thus on the 17th call, splice_to_pipe will 
+block.
+
+Does this make sense?
+
+Thanks,
+tavi
