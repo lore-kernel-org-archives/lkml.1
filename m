@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757767AbYGRTMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759856AbYGRTN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757767AbYGRTMi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 15:12:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754829AbYGRTMb
+	id S1759856AbYGRTN4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 15:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754928AbYGRTNs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 15:12:31 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:38261 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754299AbYGRTMb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 15:12:31 -0400
-Date: Fri, 18 Jul 2008 15:12:28 -0400
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] nfs: nfs4xdr use C99 array initializers
-Message-ID: <20080718191228.GD12007@fieldses.org>
-References: <1216355583.6029.137.camel@brick> <20080718180115.GJ8035@fieldses.org> <1216404127.6029.149.camel@brick>
+	Fri, 18 Jul 2008 15:13:48 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:15826 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750967AbYGRTNr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 15:13:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=M33YWbeDagpTvLKdtJel8rcvkJi+4LFHMzaCU74IEb+HAueQdC9spiY+onA9oOouYi
+         3be42JKGflFL3jVj//MeQ4yusF4z3XFbJwg4Ka9S52EoNz4UumQsmraWVlpaDmRBF2m7
+         aweye7iCb0hEhAFIOK/b79iCL8n5/pm2kdpiQ=
+Date: Fri, 18 Jul 2008 23:13:43 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: warn on apic error
+Message-ID: <20080718191343.GG6897@asus>
+References: <20080718172821.GA4149@localhost.localdomain> <20080718174413.GD6897@asus> <19f34abd0807181045k239c81e8i1520291922909e93@mail.gmail.com> <20080718174931.GE6897@asus> <Pine.LNX.4.55.0807182005330.12125@cliff.in.clinika.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1216404127.6029.149.camel@brick>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+In-Reply-To: <Pine.LNX.4.55.0807182005330.12125@cliff.in.clinika.pl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 11:02:07AM -0700, Harvey Harrison wrote:
-> On Fri, 2008-07-18 at 14:01 -0400, J. Bruce Fields wrote:
-> > On Thu, Jul 17, 2008 at 09:33:03PM -0700, Harvey Harrison wrote:
-> > > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> > 
-> > OK, thanks.  But I'd rather just skip the macro:
-> > 
-> > > +#define NFSD4_DEC_OP(idx, op)	[(idx)] = (nfsd4_dec)(op)
-> > > -	[OP_ACCESS]		(nfsd4_dec)nfsd4_decode_access,
-> > > -	[OP_CLOSE]		(nfsd4_dec)nfsd4_decode_close,
-> > > -	[OP_COMMIT]		(nfsd4_dec)nfsd4_decode_commit,
-> > > -	[OP_CREATE]		(nfsd4_dec)nfsd4_decode_create,
-> > > -	[OP_DELEGPURGE]		(nfsd4_dec)nfsd4_decode_notsupp,
-> > ...
-> > > +	NFSD4_DEC_OP(OP_ACCESS, nfsd4_decode_access),
-> > > +	NFSD4_DEC_OP(OP_CLOSE, nfsd4_decode_close),
-> > > +	NFSD4_DEC_OP(OP_COMMIT, nfsd4_decode_commit),
-> > > +	NFSD4_DEC_OP(OP_CREATE, nfsd4_decode_create),
-> > > +	NFSD4_DEC_OP(OP_DELEGPURGE, nfsd4_decode_notsupp),
-> > 
-> > and just add equals signs, if there's no substantial objection.
-> > 
-> 
-> None here.
+[Maciej W. Rozycki - Fri, Jul 18, 2008 at 08:09:20PM +0100]
+| On Fri, 18 Jul 2008, Cyrill Gorcunov wrote:
+| 
+| > iirc, they all were there (though some error codes are specific for
+| > particular processor classes like P4, pentium and other - don't remeber
+| > you could check intel dev manual for this).
+| 
+|  This is an error in some newer Intel documents -- the set of supported
+| bits is the same for all APICs implementing the ESR register and the error
+| interrupt (the 82489DX is the one to provide neither).
+| 
+|   Maciej
+| 
 
-Thanks, done.--b.
+thanks, Maciej
+
+		- Cyrill -
