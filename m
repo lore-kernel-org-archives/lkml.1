@@ -1,70 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757407AbYGRVLp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758649AbYGRVMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757407AbYGRVLp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 17:11:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbYGRVLi
+	id S1758649AbYGRVMT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 17:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbYGRVMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 17:11:38 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41096 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753738AbYGRVLh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 17:11:37 -0400
-Date: Fri, 18 Jul 2008 23:03:48 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>, x86@kernel.org,
-       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>
-Subject: Re: [PATCH] x86: APIC: Remove apic_write_around(); use alternatives
-Message-ID: <20080718210348.GB24373@elte.hu>
-References: <Pine.LNX.4.55.0807161837080.30858@cliff.in.clinika.pl> <20080718105259.GY6875@elte.hu> <86802c440807180925t6fadfa58r6bf7740f8145482e@mail.gmail.com> <86802c440807181001h4426c197vc474f81497a5b42@mail.gmail.com>
-MIME-Version: 1.0
+	Fri, 18 Jul 2008 17:12:09 -0400
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:41956 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753479AbYGRVMI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 17:12:08 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArEEAD+ggEhMRKxB/2dsb2JhbACBWq5k
+Date: Fri, 18 Jul 2008 17:12:05 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Ingo Molnar <mingo@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH ftrace.git] Immedate Values Optimized Jump Fix
+Message-ID: <20080718211205.GA5423@Krystal>
+References: <20080717031721.GA24504@Krystal> <20080718161523.GY6875@elte.hu> <20080718183124.GA31768@Krystal> <4880F410.3090804@zytor.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <86802c440807181001h4426c197vc474f81497a5b42@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <4880F410.3090804@zytor.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 17:03:48 up 44 days,  1:44,  4 users,  load average: 0.57, 0.63,
+	0.83
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* H. Peter Anvin (hpa@zytor.com) wrote:
+> Mathieu Desnoyers wrote:
+>>>
+>>>  $ git-log-line linus.. arch/x86/kernel/immediate.c
+>>>  ee563d6: immediate values: jump liveliness
+>>>  e26875a: Immediate Values - Jump
+>>>  3fc8d03: Immediate Values - x86 Optimization NMI and MCE support
+>>>
+>>> ... but the topic is stalled right now, due to hpa having had objections. 
+>>> Have those concerns been resolved? (Peter Cc:-ed)
+>>>
+>>> i'd have applied this fix, but it does not apply. The first chunk seems 
+>>> already be present (in a different form), the second chunk looks much 
+>>> different.
+>> Hrm, I've edited directly the immediate values: jump liveliness patches,
+>> which explains why it does not apply. I'll try to unapply/reapply/fold
+>> the patches and see what it gives.
+>> Plus, I've noticed that the "Text Edit Lock" patches are not in the
+>> immediates branch, thus it fails to compile. Immediate values depends on
+>> the Text Edit Lock patches.
+>
+> My previous objection was that flow of control really does need to be 
+> understood by the compiler, and I don't see how that could have been 
+> resolved without involving gcc.
+>
+> I'm not opposed to static jump optimization in general, far from it, but 
+> doing it behind the back of the compiler is fraught with peril, and even if 
+> it can be made correct is going to generate bad enough code that I have to 
+> question if it is worth the additional complexity.
+>
+> I definitely do not approve of the attempt to truncate liveliness by 
+> putting a clobber after the if branch; there is still intervening code 
+> generated by the C compiler which is going to cause some extremely hard to 
+> debug problems at some point.
+>
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+Hrm, I thought that by following the execution flow to both branches and
+by looking at the code pattern found (load immediate, test, branch) and
+by placing a constraint on the eax register to detect the liveliness
+region of that variable we would be guaranteed that the compiler could
+not re-use this variable outside of the pattern scope.
 
-> > git merge tip/x86/x2apic
-> CONFLICT (content): Merge conflict in arch/x86/kernel/Makefile
-> CONFLICT (content): Merge conflict in arch/x86/kernel/paravirt.c
-> CONFLICT (content): Merge conflict in arch/x86/kernel/smpboot.c
-> CONFLICT (content): Merge conflict in arch/x86/kernel/vmi_32.c
-> CONFLICT (content): Merge conflict in arch/x86/xen/enlighten.c
-> CONFLICT (content): Merge conflict in include/asm-x86/apic.h
-> CONFLICT (content): Merge conflict in include/asm-x86/paravirt.h
+The generated code you are talking about will generate a different code
+pattern, won't it (e.g. saving the registers on the stack before the
+branch) ? And in this case, we fall-back on the standard immediate
+values.
 
-that's due to the changes in tip/x86/apic and in tip/x86/uv.
+However, I agree that doing this without compiler support has been a
+pain. One thing we could do while we wait for gcc support is to merge
+conditional-branch based immediate values only, which are less complex,
+and later on add the static jump feature when supported by the compiler.
 
-ok, i've just merged x86/apic into x86/x2apic and x86/uv as well, and 
-pushed out the result.
+Mathieu
 
-Note: it's a first raw merge and completely untested. It will now merge 
-cleanly into tip/master. There are probably a few details missing.
+> 	-hpa
+>
 
-The smp-alternatives based trick that Maciej applied for write-around 
-can stay in the mem_apic_* methods - modern APICs do not need any 
-workaround in this area and can just use apic_ops.
 
-> also please apply
-> Fix VMI apic_ops.
-> from Suresh
-> 
-> to x2apic
 
-done.
-
-	Ingo
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
