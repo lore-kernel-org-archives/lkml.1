@@ -1,134 +1,344 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758156AbYGRV22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759211AbYGRV2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758156AbYGRV22 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 17:28:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753422AbYGRV2V
+	id S1759211AbYGRV2o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 17:28:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753422AbYGRV2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 17:28:21 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47053 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753003AbYGRV2V (ORCPT
+	Fri, 18 Jul 2008 17:28:32 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:24466 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758222AbYGRV23 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 17:28:21 -0400
-Date: Fri, 18 Jul 2008 16:28:18 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] - Earlier detection of system type (UV or non-UV)
-Message-ID: <20080718212818.GA13514@sgi.com>
-References: <20080709163602.GA12543@sgi.com> <20080718171331.GK6875@elte.hu> <20080718174929.GA981@elte.hu> <20080718183800.GA26109@sgi.com> <20080718201324.GA18198@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080718201324.GA18198@elte.hu>
-User-Agent: Mutt/1.4.2.2i
+	Fri, 18 Jul 2008 17:28:29 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:to:cc:subject:message-id:mime-version:content-type;
+	b=IoAibACmmJTDfQshjR5vq7udFbMkrlza5qX/KqrGL9wrgR0DivdD9IwAyZfaLSwL4
+	jw2eUVxNiuqOCIdx0zMIQ==
+Date: Fri, 18 Jul 2008 14:28:03 -0700 (PDT)
+From: Ranjit Manomohan <ranjitm@google.com>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+cc: menage@google.com
+Subject: [PATCH 1/2] Traffic control cgroups subsystem
+Message-ID: <Pine.LNX.4.64.0807181425270.18212@ranjit.corp.google.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A patch is coming that requires earlier detection of system type (UV or non-UV)
-Move the logic that detects whether running on UV to acpi_boot_table_init().
+This patch adds a traffic control cgroup subsystem that is used
+to tag all packets originating from tasks in this cgroup with a
+specific identifier (tc_classid).
 
-Signed-off-by: Jack Steiner <steiner@sgi.com>
+Signed-off-by: Ranjit Manomohan <ranjitm@google.com>
 
 ---
 
-Argggg. The previous was clearly wrong (but it does compile on the version of
-gcc that I'm using).
+diff --git a/include/linux/cgroup_subsys.h b/include/linux/cgroup_subsys.h
+index e287745..4b12372 100644
+--- a/include/linux/cgroup_subsys.h
++++ b/include/linux/cgroup_subsys.h
+@@ -48,3 +48,9 @@ SUBSYS(devices)
+  #endif
 
-This patch should be ok.
-
-
-
- arch/x86/kernel/acpi/boot.c  |    1 +
- arch/x86/kernel/genapic_64.c |   17 ++++++++++++-----
- arch/x86/mm/srat_64.c        |    2 +-
- include/asm-x86/genapic_32.h |    2 +-
- include/asm-x86/genapic_64.h |    3 +++
- 5 files changed, 18 insertions(+), 7 deletions(-)
-
-Index: linux/arch/x86/kernel/acpi/boot.c
-===================================================================
---- linux.orig/arch/x86/kernel/acpi/boot.c	2008-07-18 15:33:00.000000000 -0500
-+++ linux/arch/x86/kernel/acpi/boot.c	2008-07-18 15:33:04.000000000 -0500
-@@ -1653,6 +1653,7 @@ int __init acpi_boot_table_init(void)
- 		return error;
- 	}
- 
-+	acpi_table_parse(ACPI_SIG_MADT, acpi_early_madt_oem_check);
- 	acpi_table_parse(ACPI_SIG_BOOT, acpi_parse_sbf);
- 
- 	/*
-Index: linux/arch/x86/kernel/genapic_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/genapic_64.c	2008-07-18 15:33:00.000000000 -0500
-+++ linux/arch/x86/kernel/genapic_64.c	2008-07-18 15:33:04.000000000 -0500
-@@ -66,16 +66,23 @@ void send_IPI_self(int vector)
- 	__send_IPI_shortcut(APIC_DEST_SELF, vector, APIC_DEST_PHYSICAL);
- }
- 
--int __init acpi_madt_oem_check(char *oem_id, char *oem_table_id)
-+int __init acpi_early_madt_oem_check(struct acpi_table_header *table)
- {
--	if (!strcmp(oem_id, "SGI")) {
--		if (!strcmp(oem_table_id, "UVL"))
-+#ifdef CONFIG_ACPI
-+	if (!strcmp(table->oem_id, "SGI")) {
-+		if (!strcmp(table->oem_table_id, "UVL"))
- 			uv_system_type = UV_LEGACY_APIC;
--		else if (!strcmp(oem_table_id, "UVX"))
-+		else if (!strcmp(table->oem_table_id, "UVX"))
- 			uv_system_type = UV_X2APIC;
--		else if (!strcmp(oem_table_id, "UVH"))
-+		else if (!strcmp(table->oem_table_id, "UVH"))
- 			uv_system_type = UV_NON_UNIQUE_APIC;
- 	}
+  /* */
++
++#ifdef CONFIG_CGROUP_TC
++SUBSYS(tc)
 +#endif
++
++/* */
+diff --git a/include/linux/cgroup_tc.h b/include/linux/cgroup_tc.h
+new file mode 100644
+index 0000000..fa6603f
+--- /dev/null
++++ b/include/linux/cgroup_tc.h
+@@ -0,0 +1,14 @@
++#ifndef __LINUX_CGROUP_TC_H
++#define __LINUX_CGROUP_TC_H
++
++/* Interface to obtain tasks cgroup identifier. */
++
++#include <linux/cgroup.h>
++
++#ifdef CONFIG_CGROUP_TC
++int cgroup_tc_classid(struct task_struct *tsk);
++#else
++#define cgroup_tc_classid(tsk) 0
++#endif /* CONFIG_CGROUP_TC */
++
++#endif /* __LINUX_CGROUP_TC_H */
+diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
+index 299ec4b..e124294 100644
+--- a/include/linux/skbuff.h
++++ b/include/linux/skbuff.h
+@@ -326,6 +326,10 @@ struct sk_buff {
+  	__u32			secmark;
+  #endif
+
++#ifdef CONFIG_CGROUP_TC
++	__u32			cgroup_classid;
++#endif
++
+  	__u32			mark;
+
+  	sk_buff_data_t		transport_header;
+diff --git a/include/net/sock.h b/include/net/sock.h
+index dc42b44..7a4e09c 100644
+--- a/include/net/sock.h
++++ b/include/net/sock.h
+@@ -271,6 +271,9 @@ struct sock {
+  	int			sk_write_pending;
+  	void			*sk_security;
+  	__u32			sk_mark;
++#ifdef CONFIG_CGROUP_TC
++	__u32			sk_cgroup_classid;
++#endif
+  	/* XXX 4 bytes hole on 64 bit */
+  	void			(*sk_state_change)(struct sock *sk);
+  	void			(*sk_data_ready)(struct sock *sk, int bytes);
+diff --git a/init/Kconfig b/init/Kconfig
+index 6135d07..c28fde8 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -289,6 +289,17 @@ config CGROUP_DEBUG
+
+  	  Say N if unsure
+
++config CGROUP_TC
++	bool "Traffic control cgroup subsystem"
++	depends on CGROUPS
++	default n
++	help
++	  This option enables a simple cgroup subsystem that
++	  allows network traffic to be classified based on the
++	  cgroup of the task originating the traffic.
++
++	  Say N if unsure
++
+  config CGROUP_NS
+          bool "Namespace cgroup subsystem"
+          depends on CGROUPS
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 1c9938a..08b217b 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -42,6 +42,7 @@ obj-$(CONFIG_CGROUPS) += cgroup.o
+  obj-$(CONFIG_CGROUP_DEBUG) += cgroup_debug.o
+  obj-$(CONFIG_CPUSETS) += cpuset.o
+  obj-$(CONFIG_CGROUP_NS) += ns_cgroup.o
++obj-$(CONFIG_CGROUP_TC) += tc_cgroup.o
+  obj-$(CONFIG_UTS_NS) += utsname.o
+  obj-$(CONFIG_USER_NS) += user_namespace.o
+  obj-$(CONFIG_PID_NS) += pid_namespace.o
+diff --git a/kernel/tc_cgroup.c b/kernel/tc_cgroup.c
+new file mode 100644
+index 0000000..3013608
+--- /dev/null
++++ b/kernel/tc_cgroup.c
+@@ -0,0 +1,98 @@
++/*
++ * tc_cgroup.c - traffic control cgroup subsystem
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/cgroup.h>
++#include <linux/fs.h>
++#include <linux/slab.h>
++#include <linux/cgroup_tc.h>
++
++struct tc_cgroup {
++	struct cgroup_subsys_state css;
++	unsigned int classid;
++};
++
++struct cgroup_subsys tc_subsys;
++
++static inline struct tc_cgroup *cgroup_to_tc(
++		struct cgroup *cgroup)
++{
++	return container_of(cgroup_subsys_state(cgroup, tc_subsys_id),
++			    struct tc_cgroup, css);
++}
++
++int cgroup_tc_classid(struct task_struct *tsk)
++{
++	rcu_read_lock();
++	return container_of(task_subsys_state(tsk, tc_subsys_id),
++					 struct tc_cgroup, css)->classid;
++	rcu_read_unlock();
++}
++
++static struct cgroup_subsys_state *tc_create(struct cgroup_subsys *ss,
++						struct cgroup *cgroup)
++{
++	struct tc_cgroup *tc_cgroup;
++
++	tc_cgroup = kzalloc(sizeof(*tc_cgroup), GFP_KERNEL);
++
++	/* Copy parent's class id if present */
++	if (cgroup->parent)
++		tc_cgroup->classid = cgroup_to_tc(cgroup->parent)->classid;
++
++	if (!tc_cgroup)
++		return ERR_PTR(-ENOMEM);
++	return &tc_cgroup->css;
++}
++
++static void tc_destroy(struct cgroup_subsys *ss,
++			struct cgroup *cgroup)
++{
++	kfree(cgroup_to_tc(cgroup));
++}
++
++static int tc_write_u64(struct cgroup *cgrp, struct cftype *cft, u64 val)
++{
++	struct tc_cgroup *tc = cgroup_to_tc(cgrp);
++
++	cgroup_lock();
++	if (cgroup_is_removed(cgrp)) {
++		cgroup_unlock();
++		return -ENODEV;
++	}
++
++	tc->classid = (unsigned int) (val & 0xffffffff);
++	cgroup_unlock();
 +	return 0;
 +}
 +
-+int __init acpi_madt_oem_check(char *oem_id, char *oem_table_id)
++static u64 tc_read_u64(struct cgroup *cont, struct cftype *cft)
 +{
- 	return 0;
- }
- 
-Index: linux/arch/x86/mm/srat_64.c
-===================================================================
---- linux.orig/arch/x86/mm/srat_64.c	2008-07-18 15:33:00.000000000 -0500
-+++ linux/arch/x86/mm/srat_64.c	2008-07-18 15:33:04.000000000 -0500
-@@ -138,7 +138,7 @@ acpi_numa_processor_affinity_init(struct
- 		return;
- 	}
- 
--	if (is_uv_system())
-+	if (get_uv_system_type() >= UV_X2APIC)
- 		apic_id = (pa->apic_id << 8) | pa->local_sapic_eid;
- 	else
- 		apic_id = pa->apic_id;
-Index: linux/include/asm-x86/genapic_32.h
-===================================================================
---- linux.orig/include/asm-x86/genapic_32.h	2008-07-18 15:33:00.000000000 -0500
-+++ linux/include/asm-x86/genapic_32.h	2008-07-18 16:22:55.000000000 -0500
-@@ -118,6 +118,6 @@ enum uv_system_type {UV_NONE, UV_LEGACY_
- #define get_uv_system_type()		UV_NONE
- #define is_uv_system()			0
- #define uv_wakeup_secondary(a, b)	1
--
-+static inline int __init acpi_early_madt_oem_check(struct acpi_table_header *table) { return 0; }
- 
- #endif
-Index: linux/include/asm-x86/genapic_64.h
-===================================================================
---- linux.orig/include/asm-x86/genapic_64.h	2008-07-18 15:33:00.000000000 -0500
-+++ linux/include/asm-x86/genapic_64.h	2008-07-18 15:33:04.000000000 -0500
-@@ -39,6 +39,9 @@ enum uv_system_type {UV_NONE, UV_LEGACY_
- extern enum uv_system_type get_uv_system_type(void);
- extern int is_uv_system(void);
- 
-+struct acpi_table_header;
-+extern int acpi_early_madt_oem_check(struct acpi_table_header *);
++	struct tc_cgroup *tc = cgroup_to_tc(cont);
++	return tc->classid;
++}
 +
- extern struct genapic apic_x2apic_uv_x;
- DECLARE_PER_CPU(int, x2apic_extra_bits);
- extern void uv_cpu_init(void);
++static struct cftype tc_files[] = {
++	{
++		.name = "classid",
++		.read_u64 = tc_read_u64,
++		.write_u64 = tc_write_u64,
++	}
++};
++
++static int tc_populate(struct cgroup_subsys *ss, struct cgroup *cont)
++{
++	int err;
++	err = cgroup_add_files(cont, ss, tc_files, ARRAY_SIZE(tc_files));
++	return err;
++}
++
++struct cgroup_subsys tc_subsys = {
++	.name = "tc",
++	.create = tc_create,
++	.destroy  = tc_destroy,
++	.populate = tc_populate,
++	.subsys_id = tc_subsys_id,
++};
+diff --git a/net/ipv4/ip_output.c b/net/ipv4/ip_output.c
+index e527628..7f8ceab 100644
+--- a/net/ipv4/ip_output.c
++++ b/net/ipv4/ip_output.c
+@@ -168,6 +168,11 @@ int ip_build_and_send_pkt(struct sk_buff *skb, struct sock *sk,
+  	}
+
+  	skb->priority = sk->sk_priority;
++
++#ifdef CONFIG_CGROUP_TC
++	skb->cgroup_classid = sk->sk_cgroup_classid;
++#endif
++
+  	skb->mark = sk->sk_mark;
+
+  	/* Send it out. */
+@@ -386,6 +391,9 @@ packet_routed:
+  			     (skb_shinfo(skb)->gso_segs ?: 1) - 1);
+
+  	skb->priority = sk->sk_priority;
++#ifdef CONFIG_CGROUP_TC
++	skb->cgroup_classid = sk->sk_cgroup_classid;
++#endif
+  	skb->mark = sk->sk_mark;
+
+  	return ip_local_out(skb);
+@@ -1278,6 +1286,9 @@ int ip_push_pending_frames(struct sock *sk)
+  	iph->daddr = rt->rt_dst;
+
+  	skb->priority = sk->sk_priority;
++#ifdef CONFIG_CGROUP_TC
++	skb->cgroup_classid = sk->sk_cgroup_classid;
++#endif
+  	skb->mark = sk->sk_mark;
+  	skb->dst = dst_clone(&rt->u.dst);
+
+@@ -1387,6 +1398,9 @@ void ip_send_reply(struct sock *sk, struct sk_buff *skb, struct ip_reply_arg *ar
+  	bh_lock_sock(sk);
+  	inet->tos = ip_hdr(skb)->tos;
+  	sk->sk_priority = skb->priority;
++#ifdef CONFIG_CGROUP_TC
++	skb->cgroup_classid = sk->sk_cgroup_classid;
++#endif
+  	sk->sk_protocol = ip_hdr(skb)->protocol;
+  	sk->sk_bound_dev_if = arg->bound_dev_if;
+  	ip_append_data(sk, ip_reply_glue_bits, arg->iov->iov_base, len, 0,
+diff --git a/net/ipv6/ip6_output.c b/net/ipv6/ip6_output.c
+index 48cdce9..306bb37 100644
+--- a/net/ipv6/ip6_output.c
++++ b/net/ipv6/ip6_output.c
+@@ -257,6 +257,10 @@ int ip6_xmit(struct sock *sk, struct sk_buff *skb, struct flowi *fl,
+  	ipv6_addr_copy(&hdr->daddr, first_hop);
+
+  	skb->priority = sk->sk_priority;
++#ifdef CONFIG_CGROUP_TC
++	skb->cgroup_classid = sk->sk_cgroup_classid;
++#endif
++
+  	skb->mark = sk->sk_mark;
+
+  	mtu = dst_mtu(dst);
+@@ -1448,6 +1452,9 @@ int ip6_push_pending_frames(struct sock *sk)
+  	ipv6_addr_copy(&hdr->daddr, final_dst);
+
+  	skb->priority = sk->sk_priority;
++#ifdef CONFIG_CGROUP_TC
++	skb->cgroup_classid = sk->sk_cgroup_classid;
++#endif
+  	skb->mark = sk->sk_mark;
+
+  	skb->dst = dst_clone(&rt->u.dst);
+diff --git a/net/socket.c b/net/socket.c
+index 66c4a8c..7c5183c 100644
+--- a/net/socket.c
++++ b/net/socket.c
+@@ -93,6 +93,7 @@
+
+  #include <net/sock.h>
+  #include <linux/netfilter.h>
++#include <linux/cgroup_tc.h>
+
+  static int sock_no_open(struct inode *irrelevant, struct file *dontcare);
+  static ssize_t sock_aio_read(struct kiocb *iocb, const struct iovec *iov,
+@@ -1170,6 +1171,11 @@ static int __sock_create(struct net *net, int family, int type, int protocol,
+  	if (err < 0)
+  		goto out_module_put;
+
++#ifdef CONFIG_CGROUP_TC
++	if (sock->sk)
++		sock->sk->sk_cgroup_classid = cgroup_tc_classid(current);
++#endif
++
+  	/*
+  	 * Now to bump the refcnt of the [loadable] module that owns this
+  	 * socket at sock_release time we decrement its refcnt.
+@@ -1444,6 +1450,11 @@ asmlinkage long sys_accept(int fd, struct sockaddr __user *upeer_sockaddr,
+  	if (err < 0)
+  		goto out_fd;
+
++#ifdef CONFIG_CGROUP_TC
++	if (newsock->sk)
++		newsock->sk->sk_cgroup_classid = cgroup_tc_classid(current);
++#endif
++
+  	if (upeer_sockaddr) {
+  		if (newsock->ops->getname(newsock, (struct sockaddr *)address,
+  					  &len, 2) < 0) {
