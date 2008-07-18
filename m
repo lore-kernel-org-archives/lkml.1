@@ -1,165 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759723AbYGRWaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759356AbYGRWcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759723AbYGRWaj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 18:30:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbYGRWab
+	id S1759356AbYGRWcv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 18:32:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753888AbYGRWco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 18:30:31 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:59378 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751614AbYGRWaa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 18:30:30 -0400
-Date: Fri, 18 Jul 2008 15:23:58 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       David Brownell <david-b@pacbell.net>,
-       Piot Skamruk <piotr.skamruk@gmail.com>, openwrt-devel@lists.openwrt.org
-Subject: Re: [PATCH v2] Add SPI over GPIO driver
-Message-Id: <20080718152358.3d514b73.randy.dunlap@oracle.com>
-In-Reply-To: <200807182159.03571.mb@bu3sch.de>
-References: <200807182159.03571.mb@bu3sch.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Fri, 18 Jul 2008 18:32:44 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48216 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753422AbYGRWcn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 18:32:43 -0400
+Date: Sat, 19 Jul 2008 00:32:29 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: Ingo Molnar <mingo@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH ftrace.git] Immedate Values Optimized Jump Fix
+Message-ID: <20080718223229.GH31073@elte.hu>
+References: <20080717031721.GA24504@Krystal> <20080718161523.GY6875@elte.hu> <20080718183124.GA31768@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080718183124.GA31768@Krystal>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Jul 2008 21:59:03 +0200 Michael Buesch wrote:
 
-> This adds a driver that lets you drive an SPI bus over
-> generic GPIO pins.
+* Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
+
+> * Ingo Molnar (mingo@elte.hu) wrote:
+> > 
+> > * Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
+> > 
+> > > Hi Ingo,
+> > > 
+> > > This fix would apply to the ftrace tree which contains the jump-based 
+> > > immediate values. I don't know if this tree is still under active 
+> > > development, but I guess that it wouldn't hurt to fix it.
+> > > 
+> > > Caused a kernel OOPS when loading the tracepoint probes once in a 
+> > > while on a 8-way x86_64.
+> > 
+> > We've still got tip/tracing/immediates, with these commits from you:
+> > 
+> >  $ git-log-line linus.. arch/x86/kernel/immediate.c
+> >  ee563d6: immediate values: jump liveliness
+> >  e26875a: Immediate Values - Jump
+> >  3fc8d03: Immediate Values - x86 Optimization NMI and MCE support
+> > 
+> > ... but the topic is stalled right now, due to hpa having had 
+> > objections. Have those concerns been resolved? (Peter Cc:-ed)
+> > 
+> > i'd have applied this fix, but it does not apply. The first chunk seems 
+> > already be present (in a different form), the second chunk looks much 
+> > different.
+> > 
+> > 	Ingo
+> > 
 > 
-> Signed-off-by: Michael Buesch <mb@bu3sch.de>
+> Hrm, I've edited directly the immediate values: jump liveliness patches,
+> which explains why it does not apply. I'll try to unapply/reapply/fold
+> the patches and see what it gives.
 > 
-> ---
-> 
-> This driver is used in OpenWrt since quite some time, so please
-> consider for inclusion in mainline.
+> Plus, I've noticed that the "Text Edit Lock" patches are not in the 
+> immediates branch, thus it fails to compile. Immediate values depends 
+> on the Text Edit Lock patches.
 
-diffstat here, please.
+feel free to git-cherry-pick the commits together into a coherent unit 
+(preferrably all -git based), and we can give it a whirl in tip/master.
 
-> Index: linux-next/include/linux/spi/spi_gpio.h
-> ===================================================================
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ linux-next/include/linux/spi/spi_gpio.h	2008-07-15 20:44:30.000000000 +0200
-> @@ -0,0 +1,67 @@
-> +/*
-> + * spi_gpio interface to platform code
-> + *
-> + * Copyright (c) 2008 Piotr Skamruk
-> + * Copyright (c) 2008 Michael Buesch
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +#ifndef _LINUX_SPI_SPI_GPIO
-> +#define _LINUX_SPI_SPI_GPIO
-> +
-> +#include <linux/types.h>
-> +#include <linux/spi/spi.h>
-> +
-> +
-> +/** struct spi_gpio_platform_data - Data definitions for a SPI-GPIO device.
-> + * This structure holds information about a GPIO-based SPI device.
-
-kernel-doc blocks begin with /** on a line by itself.  E.g.:
-
-/**
- * struct spi_gpio_platform_data - blah
-
-
-> + *
-> + * @pin_clk: The GPIO pin number of the CLOCK pin.
-> + *
-> + * @pin_miso: The GPIO pin number of the MISO pin.
-> + *
-> + * @pin_mosi: The GPIO pin number of the MOSI pin.
-> + *
-> + * @pin_cs: The GPIO pin number of the CHIPSELECT pin.
-> + *
-> + * @cs_activelow: If true, the chip is selected when the CS line is low.
-> + *
-> + * @no_spi_delay: If true, no delay is done in the lowlevel bitbanging.
-> + *                Note that doing no delay is not standards compliant,
-> + *                but it might be needed to speed up transfers on some
-> + *                slow embedded machines.
-> + *
-> + * @boardinfo_setup: This callback is called after the
-> + *                   SPI master device was registered, but before the
-> + *                   device is registered.
-> + * @boardinfo_setup_data: Data argument passed to boardinfo_setup().
-> + */
-> +struct spi_gpio_platform_data {
-> +	unsigned int pin_clk;
-> +	unsigned int pin_miso;
-> +	unsigned int pin_mosi;
-> +	unsigned int pin_cs;
-> +	bool cs_activelow;
-> +	bool no_spi_delay;
-> +	int (*boardinfo_setup)(struct spi_board_info *bi,
-> +			       struct spi_master *master,
-> +			       void *data);
-> +	void *boardinfo_setup_data;
-> +};
-> +
-> +/** SPI_GPIO_PLATDEV_NAME - The platform device name string.
-> + * The name string that has to be used for platform_device_alloc
-> + * when allocating a spi-gpio device.
-> + */
-> +#define SPI_GPIO_PLATDEV_NAME	"spi-gpio"
-> +
-> +/** spi_gpio_next_id - Get another platform device ID number.
-> + * This returns the next platform device ID number that has to be used
-> + * for platform_device_alloc. The ID is opaque and should not be used for
-> + * anything else.
-> + */
-> +int spi_gpio_next_id(void);
-> +
-> +#endif /* _LINUX_SPI_SPI_GPIO */
-
-> Index: linux-next/drivers/spi/Kconfig
-> ===================================================================
-> --- linux-next.orig/drivers/spi/Kconfig	2008-07-14 20:52:44.000000000 +0200
-> +++ linux-next/drivers/spi/Kconfig	2008-07-14 20:52:48.000000000 +0200
-> @@ -100,6 +100,19 @@ config SPI_BUTTERFLY
->  	  inexpensive battery powered microcontroller evaluation board.
->  	  This same cable can be used to flash new firmware.
->  
-> +config SPI_GPIO
-> +	tristate "GPIO API based bitbanging SPI controller"
-> +	depends on SPI_MASTER && GENERIC_GPIO
-> +	select SPI_BITBANG
-> +	help
-> +	  This is a platform driver that can be used for bitbanging
-> +	  an SPI bus over GPIO pins.
-> +	  Select this, if you have any SPI device that is connected via
-
-No comma.
-
-> +	  GPIO pins.
-> +	  The module will be called spi_gpio.
-> +
-> +	  If unsure, say N.
-> +
->  config SPI_IMX
->  	tristate "Freescale iMX SPI controller"
->  	depends on SPI_MASTER && ARCH_IMX && EXPERIMENTAL
-
-
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+	Ingo
