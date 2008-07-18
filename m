@@ -1,200 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbYGRLVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbYGRLWL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756783AbYGRLVV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 07:21:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755024AbYGRLVO
+	id S1757218AbYGRLWL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 07:22:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755037AbYGRLVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 07:21:14 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:8102 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752424AbYGRLVN (ORCPT
+	Fri, 18 Jul 2008 07:21:53 -0400
+Received: from ixia01.ro.gtsce.net ([212.146.94.66]:1068 "EHLO
+	ixro-ex1.ixiacom.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755024AbYGRLVw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 07:21:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=pNhnctWmkjvxQ9+G8scqSLVAPdTswseloG76wknukQu2f/tHZTyjRkSe70PLZAA4IA
-         EIctoRTtUOF3HjstKFWYFGF39iBagQsxy+gPXHwSIv1i5B03+wnVK4WgsGYAe0zBof2J
-         1hWaKW8aDzVbQUOoMR1eIL1qKlhwOyXicpY94=
-Message-ID: <b647ffbd0807180421p5674ec0bga15bdebe364d889f@mail.gmail.com>
-Date: Fri, 18 Jul 2008 13:21:11 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] sched: do not stop ticks when cpu is not idle
-Cc: LKML <linux-kernel@vger.kernel.org>, "Jack Ren" <jack.ren@marvell.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "eric miao" <eric.y.miao@gmail.com>
-In-Reply-To: <f17812d70807172341u92270fdvc80e72cc5599c56f@mail.gmail.com>
+	Fri, 18 Jul 2008 07:21:52 -0400
+From: Octavian Purdila <opurdila@ixiacom.com>
+Organization: IXIA
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [PATCH] tcp: do not promote SPLICE_F_NONBLOCK to socket O_NONBLOCK
+Date: Fri, 18 Jul 2008 14:18:59 +0300
+User-Agent: KMail/1.9.9
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200807171633.49791.opurdila@ixiacom.com> <200807180052.33918.opurdila@ixiacom.com> <20080718105344.GA481@2ka.mipt.ru>
+In-Reply-To: <20080718105344.GA481@2ka.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <f17812d70807172341u92270fdvc80e72cc5599c56f@mail.gmail.com>
+Message-Id: <200807181418.59493.opurdila@ixiacom.com>
+X-OriginalArrivalTime: 18 Jul 2008 11:23:48.0409 (UTC) FILETIME=[BF816290:01C8E8C8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/7/18 eric miao <eric.y.miao@gmail.com>:
-> Issue: the sched tick would be stopped in some race conditions.
+On Friday 18 July 2008, Evgeniy Polyakov wrote:
+
+> tcp_splice_read:
 >
-> One of issues caused by that is:
+> timeo = sock_rcvtimeo(sk, flags & SPLICE_F_NONBLOCK);
 >
-> Since there is no timer ticks any more from then, the jiffies update will be
-> up to other interrupt to happen. The jiffies will not be updated for a long
-> time, until next interrupt happens.  That will cause APIs like
-> wait_for_completion_timeout(&complete, timeout) to return timeout by mistake,
-> since it is using a old jiffies as start time.
->
-> Please see comments (1)~(6) inline for how the ticks are stopped
-> by mistake when cpu is not idle:
->
-> void cpu_idle(void)
-> {
-> ...
->        while (1) {
->                void (*idle)(void) = pm_idle;
->                if (!idle)
->                        idle = default_idle;
->                leds_event(led_idle_start);
->                tick_nohz_stop_sched_tick();
->                while (!need_resched())
->                        idle();
->                leds_event(led_idle_end);
->                tick_nohz_restart_sched_tick();
->                        (1) ticks are retarted before switch to other tasks
->                preempt_enable_no_resched();
->                schedule();
->                preempt_disable();
->        }
-> }
->
-> asmlinkage void __sched schedule(void)
-> {
->        ...
->        ...
-> need_resched:
->        (6) the idle task will be scheduled out again and switch to next task,
->         with ticks stopped in (5). So the next task will be running with tick stopped.
->        preempt_disable();
->        cpu = smp_processor_id();
->        rq = cpu_rq(cpu);
->        rcu_qsctr_inc(cpu);
->        prev = rq->curr;
->        switch_count = &prev->nivcsw;
->
->        release_kernel_lock(prev);
-> need_resched_nonpreemptible:
->
->        schedule_debug(prev);
->
->        hrtick_clear(rq);
->
->        /*
->         * Do the rq-clock update outside the rq lock:
->         */
->        local_irq_disable();
->        __update_rq_clock(rq);
->        spin_lock(&rq->lock);
->        clear_tsk_need_resched(prev); (2) resched flag is clear from idle task
->
->        ....
->
->                context_switch(rq, prev, next); /* unlocks the rq */
->                (3) IRQ will be enabled at end of context_swtich( ).
->        ...
->        preempt_enable_no_resched();
->        if (unlikely(test_thread_flag(TIF_NEED_RESCHED)))
->                        (4) the idle task is scheduled back. If an interrupt happen here,
->                                 The irq_exit( ) will be called at end of the irq handler.
->                goto need_resched;
-
-(I've taken just a quick look so far, that's maybe why I'm a bit confused)
-
-So what did set TIF_NEED_RESCHED flag here in (4)?
-
-- at first, it was cleared in (2) - ok.
-- An interrupt happens somewhere after context_switch() [ btw., what's
-about archs that do ctx-switches with interrupts enabled... ]
-
-irq_exit() calls tick_nohz_stop_sched_tick() _only_ when
-!need_resched(), meaning TIF_NEED_RESCHED is _not_ set for rq->idle
-(no new tasks were activated)
-.
-
-So do we have 2 interruts in a raw?
-
-my (likely wrong) interpretation:
-
-(1) schedule() some task - (switch to) -> idle
-
-idle becomes active but is still running in schedule()
-
-(2) an interrupt happens at (3), then irq_exit() calls
-tick_nohz_stop_sched_tick()
-
-so far, idle should still run -> this interrupt didn't lead to new
-tasks having been activated
-
-(3) another interrupt happens which actually wakes up a task;
-
-TIF_NEED_RESCHED is set
-
-(4) this fact is detected at (4) and --> goto need_resched() to pick
-up a new task.
-
-(5) we kind of have idle -> new task reschedule but cpu_idle() never
-happened to be called _so_ sched-ticks were not resterted...
-
-is it like this or I'm missing something?
-
-
-> }
->
-> void irq_exit(void)
-> {
-> ...
->        /* Make sure that timer wheel updates are propagated */
->        if (!in_interrupt() && idle_cpu(smp_processor_id()) && !need_resched())
->                tick_nohz_stop_sched_tick();
->                (5) The ticks will be stopped again since current
->                        task is idle task and its resched flag is clear in (2).
->        rcu_irq_exit();
->        preempt_enable_no_resched();
-> }
->
-> Signed-off-by: Jack Ren <jack.ren@marvell.com>
-> ---
->  kernel/sched.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
->
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index ff0a7e2..fd17d74 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -4027,7 +4027,8 @@ need_resched_nonpreemptible:
->                rq->nr_switches++;
->                rq->curr = next;
->                ++*switch_count;
-> -
-> +               if (rq->curr != rq->idle)
-> +                       tick_nohz_restart_sched_tick();
->                context_switch(rq, prev, next); /* unlocks the rq */
->                /*
->                 * the context switch might have flipped the stack from under
-> --
-> 1.5.4
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> So, if you set SPLICE_F_NONBLOCK, then reading from the network will not
+> block. Splice can block in reading from other descriptors though. It can
+> also block during writing.
 >
 
+I know that. But I am arguing that splice API does not required not to block 
+even when the SPLICE_F_NONBLOCK is used. So changing this behavior the way I 
+suggested will still be conformant with the splice API requirements.
 
+> > > > But more importantly, how can we solve the deadlock issue described
+> > > > in the patch? Do we need all of the complications of async I/O for
+> > > > such a simple and common usecase?
+> > >
+> > > I'm not sure I understand how it can deadlock, please explain it in
+> > > more details.
+> >
+> > For this "program":
+> >
+> > x=splice(socket, pipe, size, flags=0);
+> > if (x > 0)
+> > 	splice(pipe, file, x, flags=0);
+> >
+> > it is hard to come up with a non tiny value for size that does not
+> > deadlock the program, because the pipe size is measured in packets and
+> > not bytes and we have no control over the packet sizes.
+> >
+> > For example, if we set size=17 and we are unlucky and get 16 packets of 1
+> > byte in a row, at the right time, the first splice call will block - and
+> > the program will deadlock since we can't reach the consumer.
+>
+> It is not a deadlock. recv() on blocking socket with the same parameters
+> will behave exactly the same. Application designer should think about 
+> how it is supposed to handle cases, when not enough data is available in
+> the receiving queue - either return or wait.
 
--- 
-Best regards,
-Dmitry Adamushko
+Sorry, it was an unfortunate example :) This is not about not enough data 
+being available. Lets change the number of packets in the example with 20 
+instead of 16 (and keep the size to 17) - the splice call will still block 
+because of the pipe being full. The pipe can only hold PIPE_BUFFERS packets 
+(which is 16 currently).
+
+Thanks,
+tavi
