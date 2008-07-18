@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933024AbYGRAJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760990AbYGRAKG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933024AbYGRAJo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 20:09:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759064AbYGRAJg
+	id S1760990AbYGRAKG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 20:10:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932421AbYGRAJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 20:09:36 -0400
+	Thu, 17 Jul 2008 20:09:42 -0400
 Received: from wf-out-1314.google.com ([209.85.200.174]:11137 "EHLO
 	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758787AbYGRAJf (ORCPT
+	with ESMTP id S932318AbYGRAJl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 20:09:35 -0400
+	Thu, 17 Jul 2008 20:09:41 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=pCaqqn4H9duzR+vNCUPsNNIoCnJKOHyRJQ54XTHHnqIqVcPRVK6dTs8iEqM2fssyYZ
-         lfLPNp36X/Ac5lXZNGjHXd/hVGYSHFdfzN8d0jX3+MhluDWDqsEsljYuRnn3/0/VxsdF
-         WpU+2uS+0dgOWp/beEBvkqyaxyHeKwGtJVuoo=
-Subject: [PATCH 01/20] alpha: use the new byteorder headers
+        b=TR2V1/QrptGhwQhK3jIED4TYCeC0FJwH3PfR9tRrO18ss+VS0dJLSD8BLvYxHjVF1D
+         pxQ/Zq8SKEBFejojdbUTu/CFr9ylCeD4ttf84IiTiZETDsDHd1+y3d25XtLdD5Mpy6QB
+         GTwig9LjTF7qK6TU4OK2Zds/bHj+BO8QLC1og=
+Subject: [PATCH 02/20] arm: use the new byteorder headers
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "rth@twiddle.net" <rth@twiddle.net>, LKML <linux-kernel@vger.kernel.org>
+Cc: Russell King <rmk@arm.linux.org.uk>, LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Thu, 17 Jul 2008 17:09:33 -0700
-Message-Id: <1216339774.6029.112.camel@brick>
+Date: Thu, 17 Jul 2008 17:09:34 -0700
+Message-Id: <1216339774.6029.113.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -33,41 +33,52 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- include/asm-alpha/byteorder.h |   13 ++++---------
- 1 files changed, 4 insertions(+), 9 deletions(-)
+ include/asm-arm/byteorder.h |   25 +++++++++++--------------
+ 1 files changed, 11 insertions(+), 14 deletions(-)
 
-diff --git a/include/asm-alpha/byteorder.h b/include/asm-alpha/byteorder.h
-index 58e958f..cc9d368 100644
---- a/include/asm-alpha/byteorder.h
-+++ b/include/asm-alpha/byteorder.h
-@@ -5,9 +5,9 @@
+diff --git a/include/asm-arm/byteorder.h b/include/asm-arm/byteorder.h
+index e6f7fcd..d88a5ce 100644
+--- a/include/asm-arm/byteorder.h
++++ b/include/asm-arm/byteorder.h
+@@ -18,7 +18,15 @@
  #include <linux/compiler.h>
- #include <asm/compiler.h>
+ #include <asm/types.h>
  
--#ifdef __GNUC__
-+#define __LITTLE_ENDIAN
- 
--static inline __attribute_const__ __u32 __arch__swab32(__u32 x)
+-static inline __attribute_const__ __u32 ___arch__swab32(__u32 x)
++#ifdef __ARMEB__
++# define __BIG_ENDIAN
++#else
++# define __LITTLE_ENDIAN
++#endif
++
++#define __SWAB_64_THRU_32__
++
 +static inline __attribute_const__ __u32 __arch_swab32(__u32 x)
  {
- 	/*
- 	 * Unfortunately, we can't use the 6 instruction sequence
-@@ -35,13 +35,8 @@ static inline __attribute_const__ __u32 __arch__swab32(__u32 x)
+ 	__u32 t;
  
- 	return t1;
+@@ -40,19 +48,8 @@ static inline __attribute_const__ __u32 ___arch__swab32(__u32 x)
+ 
+ 	return x;
  }
 +#define HAVE_ARCH_SWAB32
  
--#define __arch__swab32 __arch__swab32
+-#define __arch__swab32(x) ___arch__swab32(x)
 -
--#endif /* __GNUC__ */
+-#if !defined(__STRICT_ANSI__) || defined(__KERNEL__)
+-#  define __BYTEORDER_HAS_U64__
+-#  define __SWAB_64_THRU_32__
+-#endif
 -
--#define __BYTEORDER_HAS_U64__
--
+-#ifdef __ARMEB__
+-#include <linux/byteorder/big_endian.h>
+-#else
 -#include <linux/byteorder/little_endian.h>
+-#endif
 +#include <linux/byteorder.h>
  
- #endif /* _ALPHA_BYTEORDER_H */
+ #endif
+-
 -- 
 1.5.6.3.569.ga9185
 
