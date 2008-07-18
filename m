@@ -1,84 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759572AbYGRMXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758544AbYGRMYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759572AbYGRMXA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 08:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758987AbYGRMWn
+	id S1758544AbYGRMYa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 08:24:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755840AbYGRMYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 08:22:43 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47801 "EHLO mx2.mail.elte.hu"
+	Fri, 18 Jul 2008 08:24:20 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:38754 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758957AbYGRMWl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 08:22:41 -0400
-Date: Fri, 18 Jul 2008 14:22:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: I/O APIC: Always report how the timer has been
-	set up
-Message-ID: <20080718122227.GN6875@elte.hu>
-References: <Pine.LNX.4.55.0807141845120.17431@cliff.in.clinika.pl>
-MIME-Version: 1.0
+	id S1755347AbYGRMYT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 08:24:19 -0400
+Date: Fri, 18 Jul 2008 16:24:15 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Octavian Purdila <opurdila@ixiacom.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tcp: do not promote SPLICE_F_NONBLOCK to socket O_NONBLOCK
+Message-ID: <20080718122414.GA10688@2ka.mipt.ru>
+References: <200807171633.49791.opurdila@ixiacom.com> <200807180052.33918.opurdila@ixiacom.com> <20080718105344.GA481@2ka.mipt.ru> <200807181418.59493.opurdila@ixiacom.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.55.0807141845120.17431@cliff.in.clinika.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200807181418.59493.opurdila@ixiacom.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jul 18, 2008 at 02:18:59PM +0300, Octavian Purdila (opurdila@ixiacom.com) wrote:
+> I know that. But I am arguing that splice API does not required not to block 
+> even when the SPLICE_F_NONBLOCK is used. So changing this behavior the way I 
+> suggested will still be conformant with the splice API requirements.
 
-* Maciej W. Rozycki <macro@linux-mips.org> wrote:
+It will block in sending and/or other than network reading. With your
+patch if receiving socket was opened in blocking mode, than there is no
+way to finish splice-in until whole requested number of bytes are read.
+SPLICE_F_NONBLOCK is an extension, consider it like recv() with temporal
+non-blocking flag.
 
->  Following recent (and less so) issues with the 8254 timer when routed 
-> through the I/O or local APIC, always report which configurations have 
-> been tried and which one has been set up eventually.  This is so that 
-> logs posted by people for some other reason can be used as a 
-> cross-reference when investigating any possible future problems.
-> 
->  The change unifies messages printed on 32-bit and 64-bit platforms 
-> and adds trailing newlines (removes leading ones), so that proper log 
-> level annotation can be used and any possible interspersed output will 
-> not cause a mess.
-> 
->  I have chosen to use apic_printk(APIC_QUIET, ...) rather than 
-> printk(...) so that the distinction of these messages is maintained 
-> making possible future decisions about changes in this area easier.  A 
-> change posted separately making apic_verbosity unsigned removes any 
-> extra code that would otherwise be generated as a result of this 
-> design decision.
-> 
-> Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+> Sorry, it was an unfortunate example :) This is not about not enough data 
+> being available. Lets change the number of packets in the example with 20 
+> instead of 16 (and keep the size to 17) - the splice call will still block 
+> because of the pipe being full. The pipe can only hold PIPE_BUFFERS packets 
+> (which is 16 currently).
 
-applied to tip/x86/apic, thanks Maciej.
+Why? It will read its data from 16 packets, then send them into another end
+of the pipe :)
 
-ported this portion ontop of the write-around-removal patch:
+You propose to change a very useful splice feature (actually you would just
+remove it at all with the same results for reading network path, since
+it is essentially what you did :) - not to block when it is possible.
 
->  	apic_write_around(APIC_LVT0, APIC_DM_FIXED | vector);	/* Fixed mode */
->  	enable_8259A_irq(0);
->  
->  	if (timer_irq_works()) {
-> -		printk(" works.\n");
-> +		apic_printk(APIC_QUIET, KERN_INFO "..... works.\n");
->  		goto out;
->  	}
->  	disable_8259A_irq(0);
->  	apic_write_around(APIC_LVT0, APIC_LVT_MASKED | APIC_DM_FIXED | vector);
-> -	printk(" failed.\n");
-> +	apic_printk(APIC_QUIET, KERN_INFO "..... failed.\n");
->  
-> -	printk(KERN_INFO "...trying to set up timer as ExtINT IRQ...");
-> +	apic_printk(APIC_QUIET, KERN_INFO
-> +		    "...trying to set up timer as ExtINT IRQ...\n");
->  
->  	init_8259A(0);
->  	make_8259A_irq(0);
+This kind of non-blocking mode was added for performance issues too:
+consider application which reads from the network and writes into the
+file, while there is no data in the socket it can write what was already
+read into any object attached to the given end of the pipe.
 
-	Ingo
+-- 
+	Evgeniy Polyakov
