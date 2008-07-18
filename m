@@ -1,78 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757406AbYGRKyI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757542AbYGRKys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757406AbYGRKyI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 06:54:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754683AbYGRKxx
+	id S1757542AbYGRKys (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 06:54:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755254AbYGRKyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 06:53:53 -0400
-Received: from relay.2ka.mipt.ru ([194.85.80.65]:43322 "EHLO 2ka.mipt.ru"
+	Fri, 18 Jul 2008 06:54:40 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58582 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754675AbYGRKxw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 06:53:52 -0400
-Date: Fri, 18 Jul 2008 14:53:44 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Octavian Purdila <opurdila@ixiacom.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tcp: do not promote SPLICE_F_NONBLOCK to socket O_NONBLOCK
-Message-ID: <20080718105344.GA481@2ka.mipt.ru>
-References: <200807171633.49791.opurdila@ixiacom.com> <200807171747.27775.opurdila@ixiacom.com> <20080717174150.GA24002@2ka.mipt.ru> <200807180052.33918.opurdila@ixiacom.com>
-Mime-Version: 1.0
+	id S1755233AbYGRKyj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 06:54:39 -0400
+Date: Fri, 18 Jul 2008 12:54:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: eric miao <eric.y.miao@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jack Ren <jack.ren@marvell.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: [PATCH] sched: do not stop ticks when cpu is not idle
+Message-ID: <20080718105424.GA22268@elte.hu>
+References: <f17812d70807172341u92270fdvc80e72cc5599c56f@mail.gmail.com> <20080718102446.GV6875@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200807180052.33918.opurdila@ixiacom.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080718102446.GV6875@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0006]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
 
-On Fri, Jul 18, 2008 at 12:52:33AM +0300, Octavian Purdila (opurdila@ixiacom.com) wrote:
-> You lost me here :)
-> 
-> The way I interpret the man page text is that it is ok for splice to block, 
-> even if SPLICE_F_NONBLOCK is set. The comments near SPLICE_F_NONBLOCK says 
-> the same thing:
-> 
-> #define SPLICE_F_NONBLOCK (0x02) /* don't block on the pipe splicing (but */
->                                  /* we may still block on the fd we splice */
->                                  /* from/to, of course */
-> 
-> Am I missing something?
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-tcp_splice_read:
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -4446,7 +4446,8 @@ need_resched_nonpreemptible:
+>  		rq->nr_switches++;
+>  		rq->curr = next;
+>  		++*switch_count;
+> -
+> +		if (rq->curr != rq->idle)
+> +			tick_nohz_restart_sched_tick();
+>  		context_switch(rq, prev, next); /* unlocks the rq */
 
-timeo = sock_rcvtimeo(sk, flags & SPLICE_F_NONBLOCK);
+hm, one problem i can see is lock dependencies. This code is executed 
+with the rq lock while tick_nohz_restart_sched_tick() takes hr locks => 
+not good. So i havent applied this just yet - this needs to be solved 
+differently.
 
-So, if you set SPLICE_F_NONBLOCK, then reading from the network will not
-block. Splice can block in reading from other descriptors though. It can
-also block during writing.
-
-> > > But more importantly, how can we solve the deadlock issue described in
-> > > the patch? Do we need all of the complications of async I/O for such a
-> > > simple and common usecase?
-> >
-> > I'm not sure I understand how it can deadlock, please explain it in more
-> > details.
-> 
-> For this "program":
-> 
-> x=splice(socket, pipe, size, flags=0); 
-> if (x > 0)
-> 	splice(pipe, file, x, flags=0);
-> 
-> it is hard to come up with a non tiny value for size that does not deadlock 
-> the program, because the pipe size is measured in packets and not bytes and 
-> we have no control over the packet sizes.
-> 
-> For example, if we set size=17 and we are unlucky and get 16 packets of 1 byte 
-> in a row, at the right time, the first splice call will block - and the 
-> program will deadlock since we can't reach the consumer. 
-
-It is not a deadlock. recv() on blocking socket with the same parameters
-will behave exactly the same. Application designer should think about
-how it is supposed to handle cases, when not enough data is available in
-the receiving queue - either return or wait.
-
--- 
-	Evgeniy Polyakov
+	Ingo
