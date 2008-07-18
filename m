@@ -1,94 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760050AbYGRXIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756508AbYGRXJC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760050AbYGRXIr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 19:08:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754282AbYGRXIj
+	id S1756508AbYGRXJC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 19:09:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754282AbYGRXIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 19:08:39 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:45339 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754184AbYGRXIi (ORCPT
+	Fri, 18 Jul 2008 19:08:51 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:49509 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760674AbYGRXIt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 19:08:38 -0400
-Date: Fri, 18 Jul 2008 17:08:37 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 01/14] Introduce cpu_enabled_map and friends
-Message-ID: <20080718230837.GC20344@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-	linux-acpi@vger.kernel.org
-References: <20080715023344.2528.1836.stgit@blender.achiang> <20080715023349.2528.9423.stgit@blender.achiang> <20080715031512.GF14894@parisc-linux.org> <87wsjnxy4w.fsf@basil.nowhere.org> <20080715102130.GA22866@flint.arm.linux.org.uk> <20080715175740.GB10919@ldl.fc.hp.com> <20080715181632.GG14894@parisc-linux.org> <20080715184822.GB29991@flint.arm.linux.org.uk> <20080715191515.GE10919@ldl.fc.hp.com> <20080718214454.GD25816@flint.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080718214454.GD25816@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Fri, 18 Jul 2008 19:08:49 -0400
+From: kamezawa.hiroyu@jp.fujitsu.com
+Message-ID: <9406923.1216422307592.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Sat, 19 Jul 2008 08:05:07 +0900 (JST)
+To: Paul Menage <menage@google.com>
+Subject: Re: Re: [RFC] How to handle the rules engine for cgroups
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Vivek Goyal <vgoyal@redhat.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Libcg Devel Mailing List <libcg-devel@lists.sourceforge.net>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Peter Zijlstra <pzijlstr@redhat.com>,
+       Kazunaga Ikeno <k-ikeno@ak.jp.nec.com>,
+       Morton Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <6599ad830807180846n11260adft168bddf7c203469c@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="iso-2022-jp"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: @nifty Webmail 2.0
+References: <6599ad830807180846n11260adft168bddf7c203469c@mail.gmail.com>
+ <20080701191126.GA17376@redhat.com>
+	 <20080718185226.f809281d.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Russell King <rmk+lkml@arm.linux.org.uk>:
-> On Tue, Jul 15, 2008 at 01:15:15PM -0600, Alex Chiang wrote:
-> > * Russell King <rmk+lkml@arm.linux.org.uk>:
-> > > 
-> > > How about having smp_init() call into arch code to query whether
-> > > it should bring up a not-already-online CPU?  Architectures that
-> > > want to do something special can then make the decision there and
-> > > everyone else can define the test completely away.
-> > 
-> > So this is exactly what I'm doing. The ia64 patch has this hunk:
-> > 
-> > @@ -820,6 +824,9 @@ __cpu_up (unsigned int cpu)
-> >         if (cpu_isset(cpu, cpu_callin_map))
-> >                 return -EINVAL;
-> > 
-> > +       if (!cpu_isset(cpu, cpu_enabled_map))
-> > +               return -EINVAL;
-> > +
-> >         per_cpu(cpu_state, cpu) = CPU_UP_PREPARE;
-> >         /* Processor goes to start_secondary(), sets online flag */
-> >         ret = do_boot_cpu(sapicid, cpu);
-> > 
-> > That was the easiest, most-straightforward solution I could think
-> > of. If you have an idea for a version with lower taxes (doesn't
-> > touch all the archs or can be #define'd out), I'm happy to hear
-> > it.
-> 
-> I think I did make a suggestion in the bit you quote from me above.
-> 
-> Let me be more explicit:
+----- Original Message -----
+>On Fri, Jul 18, 2008 at 2:52 AM, KAMEZAWA Hiroyuki
+><kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>>
+>> For example, create a new file under memory cgroup
+>> ==
+>>  /opt/memory_cgroup/group_A/notify_at_memory_reach_limit
+>> ==
+>> And a user watches the file by inotify.
+>> The kernel modify modified-time of notify_at_memory_reach_limit file and ca
+ll
+>> fs/notify_user.c::notify_change() against this inode. He can catchthe event
+>> by inotify.
+>> (I think he can also catch removal of this file, etc...)
+>>
+>
+>We've been doing something like this to handle OOMs in userspace, with
+>pretty good success. The approach that we used so far was a custom
+>control file tied to a wait queue, that gets woken when a cgroup
+>triggers OOM, but it's a bit hacky. I've been considering some kind of
+>more generic approach that could be reused by different subsystems for
+>other notifications, maybe using eventfd or maybe netlink.
+>
+Hmm, eventfd is AIO's one ?
+Anyway I agree we need something generic. (hopefully, reuse existing one.)
 
-Thanks, sorry for being dense.
+>inotify would be an option too, but that seems like it might be
+>forcing ourselves into filesystem semantics too much.
+>
+At quick glance, Inotify's good points are
 
-> static void __init smp_init(void)
-> {
->         unsigned int cpu;
-> 
->         /* FIXME: This should be done in userspace --RR */
->         for_each_present_cpu(cpu) {
->                 if (num_online_cpus() >= setup_max_cpus)
->                         break;
-> -		if (!cpu_online(cpu))
-> +		if (smp_cpu_enabled(cpu) && !cpu_online(cpu))
->                         cpu_up(cpu);
->         }
-> 
->         /* Any cleanup work */
->         printk(KERN_INFO "Brought up %ld CPUs\n", (long)num_online_cpus());
->         smp_cpus_done(setup_max_cpus);
-> }
-> 
-> and have architectures provide 'smp_cpu_enabled(cpu)' which can either
-> be a function, inline function or a macro (and therefore possible to be
-> completely eliminated.)
+- can be used for any file. for example, even changes in "tasks" file can be
+  cathced if it modify modified-time.
+- It can be queued.
+- It supports ONESHOT, NONBLOCK, etc...
+- All memory allocation is done by the waiter (the user).
 
-Yup, this is nicer. I'll try this.
+But yes, we cannot notify other events than "there is some change".
 
-/ac
+Thanks,
+-Kame
+>Paul
 
