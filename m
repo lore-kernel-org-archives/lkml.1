@@ -1,69 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760223AbYGRTOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760549AbYGRTP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760223AbYGRTOl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 15:14:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755952AbYGRTOc
+	id S1760549AbYGRTP1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 15:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756640AbYGRTPQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 15:14:32 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59734 "EHLO mx1.redhat.com"
+	Fri, 18 Jul 2008 15:15:16 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42081 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750967AbYGRTOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 15:14:31 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Ian Kent <raven@themaw.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       autofs mailing list <autofs@linux.kernel.org>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 4/7] autofs4 - fix indirect mount pending expire race
-References: <20080718023651.12802.59107.stgit@raven.themaw.net>
-	<20080718023717.12802.80763.stgit@raven.themaw.net>
-	<x49r69rc9ea.fsf@segfault.boston.devel.redhat.com>
-	<1216407362.18371.10.camel@raven.themaw.net>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Fri, 18 Jul 2008 15:14:14 -0400
-In-Reply-To: <1216407362.18371.10.camel@raven.themaw.net> (Ian Kent's message
-	of "Sat, 19 Jul 2008 02:56:01 +0800")
-Message-ID: <x49ljzzc8e1.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	id S1754928AbYGRTPP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 15:15:15 -0400
+Date: Fri, 18 Jul 2008 21:15:01 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 3/3] Sh: use generic per-device coherent dma allocator
+Message-ID: <20080718191501.GA31108@elte.hu>
+References: <f19d3499bb927f743672952b035895441e6bcafd.1216373338.git.dbaryshkov@gmail.com> <488062c4.205c4e0a.118c.05a2@mx.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <488062c4.205c4e0a.118c.05a2@mx.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Kent <raven@themaw.net> writes:
 
-> On Fri, 2008-07-18 at 14:52 -0400, Jeff Moyer wrote:
->> Ian Kent <raven@themaw.net> writes:
->> >  		} else {
->> > +			/* Path walk currently on this dentry? */
->> > +			ino_count = atomic_read(&ino->count) + 1;
->> > +			if (atomic_read(&dentry->d_count) > ino_count)
->> > +				goto next;
->> > +
->> >  			expired = autofs4_check_leaves(mnt, dentry, timeout, do_now);
->> >  			if (expired) {
->> >  				dput(dentry);
->
-> The expired dentry may be a different dentry!
->
->> >  found:
->> >  	DPRINTK("returning %p %.*s",
->> >  		expired, (int)expired->d_name.len, expired->d_name.name);
->> > +	ino = autofs4_dentry_ino(expired);
->> 
->> If we get here, ino is already set to the autofs4_dentry_ino(expired),
->> so this statement is redundant.
->
-> Almost but see above.
+* Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
 
-Ah, you're right, I missed that.
+> Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+> Cc: Paul Mundt <lethal@linux-sh.org>
 
-Cheers,
+applied all 3 patches to core/generic-dma-coherent, which is at:
 
-Jeff
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core/generic-dma-coherent
+
+------------------>
+Dmitry Baryshkov (5):
+      generic: per-device coherent dma allocator
+      x86: use generic per-device dma coherent allocator
+      Generic dma-coherent: fix DMA_MEMORY_EXCLUSIVE
+      ARM: support generic per-device coherent dma mem
+      Sh: use generic per-device coherent dma allocator
+
+
+ arch/arm/Kconfig                   |    1 +
+ arch/arm/mm/consistent.c           |    8 ++
+ arch/sh/Kconfig                    |    1 +
+ arch/sh/mm/consistent.c            |   98 +---------------------------
+ arch/x86/Kconfig                   |    1 +
+ arch/x86/kernel/pci-dma.c          |  122 +----------------------------------
+ include/asm-arm/dma-mapping.h      |    2 +
+ include/asm-generic/dma-coherent.h |   32 +++++++++
+ include/asm-sh/dma-mapping.h       |    1 +
+ include/asm-x86/dma-mapping.h      |   22 +------
+ init/Kconfig                       |    4 +
+ kernel/Makefile                    |    1 +
+ kernel/dma-coherent.c              |  126 ++++++++++++++++++++++++++++++++++++
+ 13 files changed, 183 insertions(+), 236 deletions(-)
+ create mode 100644 include/asm-generic/dma-coherent.h
+ create mode 100644 kernel/dma-coherent.c
+
