@@ -1,78 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760525AbYGRW2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759723AbYGRWaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760525AbYGRW2T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 18:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753637AbYGRW2L
+	id S1759723AbYGRWaj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 18:30:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbYGRWab
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 18:28:11 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37274 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752884AbYGRW2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 18:28:10 -0400
-Date: Sat, 19 Jul 2008 00:27:54 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: eric miao <eric.y.miao@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Jack Ren <jack.ren@marvell.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [PATCH] sched: do not stop ticks when cpu is not idle
-Message-ID: <20080718222754.GE31073@elte.hu>
-References: <f17812d70807172341u92270fdvc80e72cc5599c56f@mail.gmail.com> <20080718102446.GV6875@elte.hu> <20080718105424.GA22268@elte.hu> <1216379283.28405.19.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1216379283.28405.19.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 18 Jul 2008 18:30:31 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:59378 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751614AbYGRWaa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 18:30:30 -0400
+Date: Fri, 18 Jul 2008 15:23:58 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       David Brownell <david-b@pacbell.net>,
+       Piot Skamruk <piotr.skamruk@gmail.com>, openwrt-devel@lists.openwrt.org
+Subject: Re: [PATCH v2] Add SPI over GPIO driver
+Message-Id: <20080718152358.3d514b73.randy.dunlap@oracle.com>
+In-Reply-To: <200807182159.03571.mb@bu3sch.de>
+References: <200807182159.03571.mb@bu3sch.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 18 Jul 2008 21:59:03 +0200 Michael Buesch wrote:
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-> On Fri, 2008-07-18 at 12:54 +0200, Ingo Molnar wrote:
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > --- a/kernel/sched.c
-> > > +++ b/kernel/sched.c
-> > > @@ -4446,7 +4446,8 @@ need_resched_nonpreemptible:
-> > >  		rq->nr_switches++;
-> > >  		rq->curr = next;
-> > >  		++*switch_count;
-> > > -
-> > > +		if (rq->curr != rq->idle)
-> > > +			tick_nohz_restart_sched_tick();
-> > >  		context_switch(rq, prev, next); /* unlocks the rq */
-> > 
-> > hm, one problem i can see is lock dependencies. This code is executed 
-> > with the rq lock while tick_nohz_restart_sched_tick() takes hr locks => 
-> > not good. So i havent applied this just yet - this needs to be solved 
-> > differently.
+> This adds a driver that lets you drive an SPI bus over
+> generic GPIO pins.
 > 
-> Actually, that should work these days...
+> Signed-off-by: Michael Buesch <mb@bu3sch.de>
 > 
-> Also, I assume Eric actually tested this with lockdep enabled (right, 
-> Eric?) and that'll shout - or rather, lockup hard in this case - if 
-> you got it wrong.
+> ---
+> 
+> This driver is used in OpenWrt since quite some time, so please
+> consider for inclusion in mainline.
 
-nope:
+diffstat here, please.
 
-[    0.188011] =================================
-[    0.188011] [ INFO: inconsistent lock state ]
-[    0.188011] 2.6.26-tip-03835-g9d964b9-dirty #20198
-[    0.188011] ---------------------------------
-[    0.188011] inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
-[    0.188011] swapper/0 [HC0[0]:SC0[0]:HE1:SE1] takes:
-[    0.188011]  (&rq->rq_lock_key){+...}, at: [<ffffffff816a4b35>] schedule+0x191/0x900
-[    0.188011] {in-hardirq-W} state was registered at:
-[    0.188011]   [<ffffffffffffffff>] 0xffffffffffffffff
+> Index: linux-next/include/linux/spi/spi_gpio.h
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-next/include/linux/spi/spi_gpio.h	2008-07-15 20:44:30.000000000 +0200
+> @@ -0,0 +1,67 @@
+> +/*
+> + * spi_gpio interface to platform code
+> + *
+> + * Copyright (c) 2008 Piotr Skamruk
+> + * Copyright (c) 2008 Michael Buesch
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + */
+> +#ifndef _LINUX_SPI_SPI_GPIO
+> +#define _LINUX_SPI_SPI_GPIO
+> +
+> +#include <linux/types.h>
+> +#include <linux/spi/spi.h>
+> +
+> +
+> +/** struct spi_gpio_platform_data - Data definitions for a SPI-GPIO device.
+> + * This structure holds information about a GPIO-based SPI device.
 
-	Ingo
+kernel-doc blocks begin with /** on a line by itself.  E.g.:
+
+/**
+ * struct spi_gpio_platform_data - blah
+
+
+> + *
+> + * @pin_clk: The GPIO pin number of the CLOCK pin.
+> + *
+> + * @pin_miso: The GPIO pin number of the MISO pin.
+> + *
+> + * @pin_mosi: The GPIO pin number of the MOSI pin.
+> + *
+> + * @pin_cs: The GPIO pin number of the CHIPSELECT pin.
+> + *
+> + * @cs_activelow: If true, the chip is selected when the CS line is low.
+> + *
+> + * @no_spi_delay: If true, no delay is done in the lowlevel bitbanging.
+> + *                Note that doing no delay is not standards compliant,
+> + *                but it might be needed to speed up transfers on some
+> + *                slow embedded machines.
+> + *
+> + * @boardinfo_setup: This callback is called after the
+> + *                   SPI master device was registered, but before the
+> + *                   device is registered.
+> + * @boardinfo_setup_data: Data argument passed to boardinfo_setup().
+> + */
+> +struct spi_gpio_platform_data {
+> +	unsigned int pin_clk;
+> +	unsigned int pin_miso;
+> +	unsigned int pin_mosi;
+> +	unsigned int pin_cs;
+> +	bool cs_activelow;
+> +	bool no_spi_delay;
+> +	int (*boardinfo_setup)(struct spi_board_info *bi,
+> +			       struct spi_master *master,
+> +			       void *data);
+> +	void *boardinfo_setup_data;
+> +};
+> +
+> +/** SPI_GPIO_PLATDEV_NAME - The platform device name string.
+> + * The name string that has to be used for platform_device_alloc
+> + * when allocating a spi-gpio device.
+> + */
+> +#define SPI_GPIO_PLATDEV_NAME	"spi-gpio"
+> +
+> +/** spi_gpio_next_id - Get another platform device ID number.
+> + * This returns the next platform device ID number that has to be used
+> + * for platform_device_alloc. The ID is opaque and should not be used for
+> + * anything else.
+> + */
+> +int spi_gpio_next_id(void);
+> +
+> +#endif /* _LINUX_SPI_SPI_GPIO */
+
+> Index: linux-next/drivers/spi/Kconfig
+> ===================================================================
+> --- linux-next.orig/drivers/spi/Kconfig	2008-07-14 20:52:44.000000000 +0200
+> +++ linux-next/drivers/spi/Kconfig	2008-07-14 20:52:48.000000000 +0200
+> @@ -100,6 +100,19 @@ config SPI_BUTTERFLY
+>  	  inexpensive battery powered microcontroller evaluation board.
+>  	  This same cable can be used to flash new firmware.
+>  
+> +config SPI_GPIO
+> +	tristate "GPIO API based bitbanging SPI controller"
+> +	depends on SPI_MASTER && GENERIC_GPIO
+> +	select SPI_BITBANG
+> +	help
+> +	  This is a platform driver that can be used for bitbanging
+> +	  an SPI bus over GPIO pins.
+> +	  Select this, if you have any SPI device that is connected via
+
+No comma.
+
+> +	  GPIO pins.
+> +	  The module will be called spi_gpio.
+> +
+> +	  If unsure, say N.
+> +
+>  config SPI_IMX
+>  	tristate "Freescale iMX SPI controller"
+>  	depends on SPI_MASTER && ARCH_IMX && EXPERIMENTAL
+
+
+
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
