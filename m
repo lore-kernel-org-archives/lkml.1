@@ -1,78 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760668AbYGRR3G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761369AbYGRR3s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760668AbYGRR3G (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 13:29:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756142AbYGRR2z
+	id S1761369AbYGRR3s (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 13:29:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761019AbYGRR3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 13:28:55 -0400
-Received: from qb-out-0506.google.com ([72.14.204.225]:2539 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752656AbYGRR2y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 13:28:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent:from;
-        b=W61ydiWjlyn3TJfgPa6OzozKBtJYvgq7aMjeCTww3ChB4hIY4rjEZ8KAF1Yttxxi55
-         HsetVxyiEkd5ctE2QE0e/zldvM5t+4tdQs/Qjzi4xZd9NiCZ31hBDiyAliA0ZJtks2PL
-         ZhmpxZNuszWUiTEMO8FAKWC8kbJGWcgxE2TGc=
-Date: Fri, 18 Jul 2008 19:28:21 +0200
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: warn on apic error
-Message-ID: <20080718172821.GA4149@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+	Fri, 18 Jul 2008 13:29:30 -0400
+Received: from mba.ocn.ne.jp ([122.1.235.107]:62582 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760987AbYGRR33 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 13:29:29 -0400
+Date: Sat, 19 Jul 2008 02:31:16 +0900 (JST)
+Message-Id: <20080719.023116.122828931.anemo@mba.ocn.ne.jp>
+To: jason.wessel@windriver.com
+Cc: linux-kernel@vger.kernel.org, ralf@linux-mips.org,
+       linux-mips@linux-mips.org
+Subject: Re: [PATCH 2/3] kgdb, mips: add arch support for the kernel's kgdb
+ core
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <1216400928-29097-3-git-send-email-jason.wessel@windriver.com>
+References: <1216400928-29097-1-git-send-email-jason.wessel@windriver.com>
+	<1216400928-29097-2-git-send-email-jason.wessel@windriver.com>
+	<1216400928-29097-3-git-send-email-jason.wessel@windriver.com>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From e89f2a9f33d01a2df7553b63cb1df525c6e75ad4 Mon Sep 17 00:00:00 2001
-From: Vegard Nossum <vegard.nossum@gmail.com>
-Date: Fri, 18 Jul 2008 19:14:06 +0200
-Subject: [PATCH] x86: warn on apic error
+On Fri, 18 Jul 2008 12:08:47 -0500, Jason Wessel <jason.wessel@windriver.com> wrote:
+> The new kgdb architecture specific handler registers and unregisters
+> dynamically for exceptions depending on when you configure a kgdb I/O
+> driver.  Asside from initializing the exceptions earlier in the boot
+> process, kgdb should have no impact on a device when it is compiled in
+> so long as an I/O module is not configured for use.
+...
+> @@ -133,5 +138,15 @@ void __init init_IRQ(void)
+>  	for (i = 0; i < NR_IRQS; i++)
+>  		set_irq_noprobe(i);
+>  
+> +#ifdef CONFIG_KGDB
+> +	if (kgdb_early_setup)
+> +		return;
+> +#endif
+> +
+>  	arch_init_irq();
+> +
+> +#ifdef CONFIG_KGDB
+> +	if (!kgdb_early_setup)
+> +		kgdb_early_setup = 1;
+> +#endif
+>  }
 
-There are certain APIC errors which are obviously programmer errors,
-e.g. writing to illegal APIC registers, or sending invalid interrupt
-vectors. Since the error interrupt happens spot on the erroneous code,
-we might as well make a bit of noise about it and display the stack-
-trace.
+The kgdb_ealy_setup check should be at beginning of init_IRQ (before
+set_irq_noprobe loop)?
 
-Cc: Maciej W. Rozycki <macro@linux-mips.org>
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
 ---
- arch/x86/kernel/apic_32.c |    1 +
- arch/x86/kernel/apic_64.c |    1 +
- 2 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/apic_32.c b/arch/x86/kernel/apic_32.c
-index a437d02..b9289cb 100644
---- a/arch/x86/kernel/apic_32.c
-+++ b/arch/x86/kernel/apic_32.c
-@@ -1317,6 +1317,7 @@ void smp_error_interrupt(struct pt_regs *regs)
- 	*/
- 	printk(KERN_DEBUG "APIC error on CPU%d: %02lx(%02lx)\n",
- 		smp_processor_id(), v , v1);
-+	WARN_ON(v1 & ((1 << 0) | (1 << 2) | (1 << 5) | (1 << 7)));
- 	irq_exit();
- }
- 
-diff --git a/arch/x86/kernel/apic_64.c b/arch/x86/kernel/apic_64.c
-index 1e3d32e..2d959f2 100644
---- a/arch/x86/kernel/apic_64.c
-+++ b/arch/x86/kernel/apic_64.c
-@@ -997,6 +997,7 @@ asmlinkage void smp_error_interrupt(void)
- 	*/
- 	printk(KERN_DEBUG "APIC error on CPU%d: %02x(%02x)\n",
- 		smp_processor_id(), v , v1);
-+	WARN_ON(v1 & ((1 << 0) | (1 << 2) | (1 << 5) | (1 << 7)));
- 	irq_exit();
- }
- 
--- 
-1.5.5.1
-
+Atsushi Nemoto
