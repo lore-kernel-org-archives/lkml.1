@@ -1,61 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbYGRPVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757420AbYGRPVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755952AbYGRPVV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 11:21:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbYGRPVN
+	id S1757420AbYGRPVh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 11:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755924AbYGRPV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 11:21:13 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:35659 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751277AbYGRPVN (ORCPT
+	Fri, 18 Jul 2008 11:21:27 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:38228 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756354AbYGRPV0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 11:21:13 -0400
-Date: Fri, 18 Jul 2008 11:21:07 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org
-Subject: Re: The request_firmware() changes causing problems with make-kpkg
-Message-ID: <20080718152107.GA18847@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-	sam@ravnborg.org
-References: <20080718115833.GC11221@mit.edu> <1216390475.31897.36.camel@shinybook.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 18 Jul 2008 11:21:26 -0400
+Message-Id: <4880D12B.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Fri, 18 Jul 2008 16:21:47 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Cc: <mingo@elte.hu>, <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>,
+       <hpa@zytor.com>
+Subject: Re: [PATCH] i386: reduce boot fixmap space
+References: <4880A8AC.76E4.0078.0@novell.com> <4880AD2D.3050407@goop.org>
+In-Reply-To: <4880AD2D.3050407@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <1216390475.31897.36.camel@shinybook.infradead.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 07:14:35AM -0700, David Woodhouse wrote:
-> > Given that Ubuntu's firmware loader already tries to find firmware at
-> > /lib/firmware/<kpkg> and only if that fails, to load it from
-> > /lib/firmware, it seems like the obvious thing to do is to add a
-> > quickie CONFIG option which changes the default setting of
-> > INSTALL_FW_PATH in the top-level makefile from /lib/firwmare to
-> > /lib/firmware/<kver>.
-> 
-> I assume those are actually the same -- <kpkg> vs. <kver>?
+>>> Jeremy Fitzhardinge <jeremy@goop.org> 18.07.08 16:48 >>>
+>Jan Beulich wrote:
+>> As 256 entries are needed, aligning to a 256-entry boundary is
+>> sufficient and still guarantees the single pte table requirement.
+>>   
+>
+>I unified 32 and 64-bit early_ioremap by making 64-bit use the 32-bit 
+>early_ioremap.  In the process I put a similar entry in fixmap_64.h.  
+>Would you mind looking to see if the same change is relevant there?
 
-Yes, sorry.  I was typing too fast.
+I'm sure it would be applicable there, too, but checking my just refreshed
+x86.git snapshot doesn't show anything like that in fixmap_64.h.
 
-> Hm. The way we normally override such paths is with make variables.
-> 
-> If you really can't just fix make-kpkg to set INSTALL_FW_PATH when
-> installing modules, you could export MAKEFLAGS=INSTALL_FW_PATH=/foo
-> before invoking make-kpkg.
-> 
-> Your logic is that it's easier for you to update your config than to
-> override $(INSTALL_FW_PATH) by either method above? 
+Jan
 
-Well, make-kpkg is a little easier to follow and modify than say, Red
-Hat's kernel-building rpm macros (a task which I wouldn't wish on my
-worst enemy, having done it once in the RHEL4 era), but that's not
-saying much.  But *yes*, much easier to modify my config.  :-)
-
-       	      	  	      	     	       - Ted
