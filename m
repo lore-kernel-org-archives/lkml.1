@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757555AbYGRL21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757972AbYGRL2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757555AbYGRL21 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 07:28:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755239AbYGRL2T
+	id S1757972AbYGRL2y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 07:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755532AbYGRL2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 07:28:19 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45405 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754412AbYGRL2S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 07:28:18 -0400
-Date: Fri, 18 Jul 2008 13:28:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Max Krasnyansky <maxk@qualcomm.com>
-Cc: pj@sgi.com, linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       menage@google.com, vegard.nossum@gmail.com
-Subject: Re: [PATCH] cpuset: Make rebuild_sched_domains() usable from any
-	context (take 2)
-Message-ID: <20080718112803.GB6875@elte.hu>
-References: <1216189268-30122-1-git-send-email-maxk@qualcomm.com>
+	Fri, 18 Jul 2008 07:28:46 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:58966 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755530AbYGRL2p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 07:28:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=rVeF51N3GlZKzxMM8eNrH/+skzPooC698P/IA8pRear9gdob3Mre/8frmQJQTwdV2p
+         QWv3Lld6RJd3HXlMlARHVlmAKGBPnCHaGLO73i5GKL2LcmlzBPzpYOJDQsQgqYoNf9BH
+         VPCNzybMzvO83x+kp+WZ1MSsnH+PFQmGDiq2A=
+Message-ID: <6dd519ae0807180428k30abd15eo60fd2856f7a43821@mail.gmail.com>
+Date: Fri, 18 Jul 2008 14:28:44 +0300
+From: "Brian Marete" <bgmarete@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] V4L: Link tuner before saa7134
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1216189268-30122-1-git-send-email-maxk@qualcomm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0008]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jul 14, 6:00 am, hermann pitton <hermann-pit...@arcor.de> wrote:
+>
+> #1 users can't set thetunertype anymore,
+>    but the few cases oftunerdetection from eeprom we have should
+>    work again for that price.
 
-* Max Krasnyansky <maxk@qualcomm.com> wrote:
+Hello,
 
-> From: Max Krasnyanskiy <maxk@qualcomm.com>
-> 
-> Basically as Paul J. pointed out rebuild_sched_domains() is the only 
-> way to rebuild sched domains correctly based on the current cpuset 
-> settings. What this means is that we need to be able to call it from 
-> different contexts, like cpuhotplug for example. Also if you look at 
-> the cpu_active_map patches, the scheduler now calls 
-> rebuild_sched_domains() directly from places like 
-> arch_init_sched_domains().
+Any patch yet for above issue? It seems to have made it into 2.6.26.
 
-please fix the whitespace problems and the misformatted multi-line 
-comment as well. (checkpatch will point out where they are)
+I use saa7134 with everything, including the tuner modules, compiled
+as a module. My card is detected as a flyvideo2000. The default tuner
+for that card (#37) allows me to tune into TV but not to FM Radio. I
+can access both functions (TV and FM Radio) if I override with
+tuner=69, which is what I usually do. That override does not work on
+2.6.26.
 
-	Ingo
+Any suggestions?
+
+Thanks,
+
+-- 
+B. Gitonga Marete
+Tel: +254-722-151-590
