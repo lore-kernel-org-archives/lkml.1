@@ -1,94 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758591AbYGRPuD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758245AbYGRPvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758591AbYGRPuD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 11:50:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754491AbYGRPty
+	id S1758245AbYGRPvg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 11:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbYGRPv2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 11:49:54 -0400
-Received: from pond.fysh.org ([166.84.7.109]:52248 "EHLO pond.fysh.org"
+	Fri, 18 Jul 2008 11:51:28 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57188 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754275AbYGRPtx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 11:49:53 -0400
-X-Greylist: delayed 1495 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Jul 2008 11:49:53 EDT
-Date: Fri, 18 Jul 2008 16:24:56 +0100
-From: Athanasius <link@miggy.org>
-To: david@lang.hm, linux-kernel <linux-kernel@vger.kernel.org>
-Cc: el es <el_es_cr@yahoo.co.uk>
-Subject: Re: Kernel version : what about YYYY.MM.[01].x ?
-Message-ID: <20080718152456.GA27729@miggy.org>
-Mail-Followup-To: david@lang.hm,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	el es <el_es_cr@yahoo.co.uk>
-References: <loom.20080717T083755-676@post.gmane.org> <alpine.DEB.1.10.0807171558450.17859@asgard.lang.hm>
+	id S1750770AbYGRPv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 11:51:27 -0400
+Date: Fri, 18 Jul 2008 17:51:12 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] intel_cacheinfo: fix use-after-free cache_kobject
+Message-ID: <20080718155112.GW6875@elte.hu>
+References: <20080715080903.GA22068@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0807171558450.17859@asgard.lang.hm>
-X-gpg-fingerprint: E218CE1D
-X-gpg-key: http://www.fysh.org/~athan/gpg-key
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080715080903.GA22068@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0006]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  In reading this thread I've seen folk come up with some good
-suggestions, and some bad ones.  I think I can sum things up as follows:
 
-1) Need to clearly designate
-        a) A fresh stable release
-        b) Also updates to that stable release, without getting confused
-           with any development releases.
-        c) A fresh development release/pre-release of next stable, without
-           getting confused with current stable releases.
+* Akinobu Mita <akinobu.mita@gmail.com> wrote:
 
-2) The only real objection to the status quo seems to be "the 3rd number
-is getting too big".  This is highly subjective and not a good enough
-reason by itself to change the scheme.
+> This avoids calling kobject_uevent() with cache_kobject that has 
+> already been deallocated in an error path.
 
-3) It would be nice for stable releases to encode when their initial
-version was made.  This gives extra information in the version number
-without having to do a lookup.  The problem with this is you don't know
-when the next stable release will actually be.  This means you can't
-base your development version numbering on that, i.e. no simply
-appending -rcX to something as you don't know what the something should
-be.
-  But -rcX is just one way of doing it, all we really need is for it to
-be clear if a version is part of development or part of a stable
-release.
+applied to tip/x86/urgent, thanks.
 
-I therefore propose the form YYYY.MM.[sd].x
-
-So, 2.6.26 would have been 2008.07.s.0
-
-The first update to it would be 2008.07.s.1
-
-The development code would continue now as 2008.07.d.0 and onwards
-incrementing the last number as development progresses.
-
-Some might object to the user of [sd] on grounds of easy sorting.  In
-which case just use 0 for stable and 1 for development.  Yes, this means
-going back to the odd/even designation we had pre-2.6, but as we also
-stick to the relatively short development cycle it really doesn't
-matter.  Also with the base being YYYY.MM we'll only ever use 0 and 1
-anyway.
-
-So, YYYY.MM.[0|1].x gives us:
-
-        1) Clear indication of when this stable series started.
-        2) Clear indication of updates to that stable version.
-        3) Clear designation of the development versions started after
-        that stable release.
-
-Note however what I said in my 2nd point.  The only *real* objection to
-the current scheme is 'big numbers', and that's subjective.  I only find
-it worth making a proposal due to the reasoning in my 3rd point, i.e. it
-IS a good idea to encode *when* a stable release was made in its version
-number.  This not only allows someone to see how long the current
-development cycle has been going (to within +/- 4 weeks), but also
-allows a glance at all prior versions to show how quickly development
-progresses on average between stable versions.
--- 
-- Athanasius = Athanasius(at)miggy.org / http://www.miggy.org/
-                  Finger athan(at)fysh.org for PGP key
-	   "And it's me who is my enemy. Me who beats me up.
-Me who makes the monsters. Me who strips my confidence." Paula Cole - ME
+	Ingo
