@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760733AbYGRBtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760379AbYGRCD1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760733AbYGRBtc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 21:49:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756092AbYGRBtZ
+	id S1760379AbYGRCD1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 22:03:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbYGRCDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 21:49:25 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:7262 "EHLO
-	pd4mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753619AbYGRBtY (ORCPT
+	Thu, 17 Jul 2008 22:03:17 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48452
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751672AbYGRCDQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 21:49:24 -0400
-Date: Thu, 17 Jul 2008 19:48:43 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Does 2.6.26 provide nanosecond time to the user?
-In-reply-to: <fa.cG/vRVVC+ZH1htzxsRnVF3NJVCc@ifi.uio.no>
-To: Reg Clemens <reg@dwf.com>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <487FF67B.2050801@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.cG/vRVVC+ZH1htzxsRnVF3NJVCc@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Thu, 17 Jul 2008 22:03:16 -0400
+Date: Thu, 17 Jul 2008 19:03:15 -0700 (PDT)
+Message-Id: <20080717.190315.186892939.davem@davemloft.net>
+To: vegard.nossum@gmail.com
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       penberg@cs.helsinki.fi, rjw@sisk.pl
+Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison
+ overwritten
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <19f34abd0807171615s5b477d4cr22d3e9444bcf65df@mail.gmail.com>
+References: <20080717214222.GA29449@elte.hu>
+	<19f34abd0807171615s5b477d4cr22d3e9444bcf65df@mail.gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reg Clemens wrote:
-> Im confused.
-> (sorry I havent been following the linux-kernel mailing list on this)
-> 
-> Does 2.6.26 use nanosecond time
->     (1) internally?
->     (2) provide it to the user?
-> 
-> I see no way to turn it on/off in xconfig.
-> Yet I do see STA_NANO defined in sys/timex.h which is a good start.
-> 
-> and IF it provides it to the user, what do I use to get nanosecond time.
-> My search with man -k for timespec turns up
->       sys_clock_getres
-> and sys_clock_gettime
-> 
-> or possibly clock_getres and clock_gettime, the man pages use both,
-> but NONE of these entry points seem to exist in my system.
-> 
-> Puzzled.
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+Date: Fri, 18 Jul 2008 01:15:47 +0200
 
-clock_gettime should exist. Old glibc version?
+> On Thu, Jul 17, 2008 at 11:42 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > A regression to v2.6.26:
+> >
+> > I started getting this skb-head corruption message today, on a T60
+> > laptop with e1000:
+> >
+> > PM: Removing info for No Bus:vcs11
+> > device: 'vcs11': device_create_release
+> > =============================================================================
+> > BUG skbuff_head_cache: Poison overwritten
+> > -----------------------------------------------------------------------------
+> >
+> > INFO: 0xf658ae9c-0xf658ae9c. First byte 0x6a instead of 0x6b
+> 
+> 1. Notice the range. It's just a single byte.
+> 2. Notice the value. It's just a ++.
+
+It's supposed to be 0x6b, this would be a "--"
+
+Also it (more likely IMHO) could be clearing a flag with the value 0x01.
+
