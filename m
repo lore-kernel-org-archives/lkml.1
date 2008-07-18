@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760098AbYGRUMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932090AbYGRUMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760098AbYGRUMZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 16:12:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755551AbYGRUMR
+	id S932090AbYGRUMi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 16:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755472AbYGRUM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 16:12:17 -0400
-Received: from waste.org ([66.93.16.53]:55001 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755275AbYGRUMQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 16:12:16 -0400
-Subject: Re: [RFC PATCH 1/4] kmemtrace: Core implementation.
-From: Matt Mackall <mpm@selenic.com>
-To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, cl@linux-foundation.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Randy Dunlap <rdunlap@xenotime.net>
-In-Reply-To: <20080718194059.GA5238@localhost>
-References: <cover.1216255034.git.eduard.munteanu@linux360.ro>
-	 <4472a3f883b0d9026bb2d8c490233b3eadf9b55e.1216255035.git.eduard.munteanu@linux360.ro>
-	 <84144f020807170101x25c9be11qd6e1996460bb24fc@mail.gmail.com>
-	 <20080717183206.GC5360@localhost>
-	 <Pine.LNX.4.64.0807181140400.3739@sbz-30.cs.Helsinki.FI>
-	 <20080718101326.GB5193@localhost>
-	 <84144f020807180738m768a3ebana5ebc10999f22f50@mail.gmail.com>
-	 <20080718194059.GA5238@localhost>
-Content-Type: text/plain
-Date: Fri, 18 Jul 2008 15:07:20 -0500
-Message-Id: <1216411640.3712.16.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Jul 2008 16:12:27 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:34070 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760180AbYGRUMZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 16:12:25 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, kexec@lists.infradead.org
+References: <20080718150410.GB26261@hack.voiplan.pt>
+Date: Fri, 18 Jul 2008 13:07:58 -0700
+In-Reply-To: <20080718150410.GB26261@hack.voiplan.pt> (WANG Cong's message of
+	"Fri, 18 Jul 2008 16:04:10 +0100")
+Message-ID: <m1sku7j6qp.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;WANG Cong <xiyou.wangcong@gmail.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0004]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [Patch] kexec: remove redundant if-else
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+WANG Cong <xiyou.wangcong@gmail.com> writes:
 
-On Fri, 2008-07-18 at 22:40 +0300, Eduard - Gabriel Munteanu wrote:
-> On Fri, Jul 18, 2008 at 05:38:04PM +0300, Pekka Enberg wrote:
-> > Hi Eduard-Gabriel,
-> > > I do expect to keep things source-compatible, but even
-> > > binary-compatible? Developers debug and write patches on the latest kernel,
-> > > not on a 6-month-old kernel. Isn't it reasonable that they would
-> > > recompile kmemtrace along with the kernel?
-> > 
-> > Yes, I do think it's unreasonable. I, for one, am hoping distributions
-> > will pick up the kmemtrace userspace at some point after which I don't
-> > need to ever compile it myself.
-> 
-> Ok, I agree it's nice to have it in distros. I wasn't planning for this,
-> but it's good to know others' expectations.
+> These if-else's can be removed.
 
-It's worth pointing out that this is one of the big downfalls of things
-like systemtap. If a tool can't just work out of the box for a distro,
-it's basically a non-starter for most users.
+Why?  That appears to be pointless code style thrashing.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Converting code with a single return into code with multiple returns.
+Which arguably makes it harder to prove properties about.
 
+Further if you want to use the style you suggest a label name like err
+is better than the name out.
+
+But in this case where we have multiple results I don't like the proposed
+change in style at all.  Especially with no rational.
+
+Eric
