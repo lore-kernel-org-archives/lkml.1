@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758187AbYGRVCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757407AbYGRVLp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758187AbYGRVCS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 17:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754581AbYGRVCK
+	id S1757407AbYGRVLp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 17:11:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbYGRVLi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 17:02:10 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:41211 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754333AbYGRVCJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 17:02:09 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <488104C9.6080108@s5r6.in-berlin.de>
-Date: Fri, 18 Jul 2008 23:02:01 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080614 SeaMonkey/1.1.9
+	Fri, 18 Jul 2008 17:11:38 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41096 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753738AbYGRVLh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 17:11:37 -0400
+Date: Fri, 18 Jul 2008 23:03:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>, x86@kernel.org,
+       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>
+Subject: Re: [PATCH] x86: APIC: Remove apic_write_around(); use alternatives
+Message-ID: <20080718210348.GB24373@elte.hu>
+References: <Pine.LNX.4.55.0807161837080.30858@cliff.in.clinika.pl> <20080718105259.GY6875@elte.hu> <86802c440807180925t6fadfa58r6bf7740f8145482e@mail.gmail.com> <86802c440807181001h4426c197vc474f81497a5b42@mail.gmail.com>
 MIME-Version: 1.0
-To: Soumyadip Das Mahapatra <soumya.linux@yahoo.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Surprising Code In sound/core/pcm_native.c In Recent Git Tree
-References: <416584.18514.qm@web59516.mail.ac4.yahoo.com>
-In-Reply-To: <416584.18514.qm@web59516.mail.ac4.yahoo.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440807181001h4426c197vc474f81497a5b42@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Soumyadip Das Mahapatra wrote:
-> When i was reading the code in sound/core/pcm_native.c in
-> recent git tree, i got stuck in  line no 3258. It is something
-> like this
-> snd_assert(substream != NULL, goto out);
+
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+
+> > git merge tip/x86/x2apic
+> CONFLICT (content): Merge conflict in arch/x86/kernel/Makefile
+> CONFLICT (content): Merge conflict in arch/x86/kernel/paravirt.c
+> CONFLICT (content): Merge conflict in arch/x86/kernel/smpboot.c
+> CONFLICT (content): Merge conflict in arch/x86/kernel/vmi_32.c
+> CONFLICT (content): Merge conflict in arch/x86/xen/enlighten.c
+> CONFLICT (content): Merge conflict in include/asm-x86/apic.h
+> CONFLICT (content): Merge conflict in include/asm-x86/paravirt.h
+
+that's due to the changes in tip/x86/apic and in tip/x86/uv.
+
+ok, i've just merged x86/apic into x86/x2apic and x86/uv as well, and 
+pushed out the result.
+
+Note: it's a first raw merge and completely untested. It will now merge 
+cleanly into tip/master. There are probably a few details missing.
+
+The smp-alternatives based trick that Maciej applied for write-around 
+can stay in the mem_apic_* methods - modern APICs do not need any 
+workaround in this area and can just use apic_ops.
+
+> also please apply
+> Fix VMI apic_ops.
+> from Suresh
 > 
-> That (goto statement) surprised me for a while unless i came to
-> know snd_assert() is a macro (as expected!). Previous version
-> too had a return statement in it.
-> 
-> The point is that can we have a nicer code? Because this type
-> of code is sometimes __CONFUSING__.
+> to x2apic
 
-Curious.  The "goto out", "return -EIO" and friends are not compiled in 
-if CONFIG_SND_DEBUG is not set.
+done.
 
-Why would anybody want a debug macro to exit from functions?
-
-BTW, grep tells me there are 829 occurrences of snd_assert in linux 2.6.26.
--- 
-Stefan Richter
--=====-==--- -=== =--=-
-http://arcgraph.de/sr/
+	Ingo
