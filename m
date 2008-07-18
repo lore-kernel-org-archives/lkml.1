@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756142AbYGRKai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756638AbYGRKbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756142AbYGRKai (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 06:30:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753437AbYGRKab
+	id S1756638AbYGRKbY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 06:31:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754764AbYGRKbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 06:30:31 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52257 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753272AbYGRKab (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 06:30:31 -0400
-Date: Fri, 18 Jul 2008 12:30:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Cc: Gregory Haskins <ghaskins@novell.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [sched-devel, patch-rfc] rework #2 of "prioritize
-	non-migratable tasks over migratable ones"
-Message-ID: <20080718103018.GW6875@elte.hu>
-References: <1214947935.5658.11.camel@earth>
+	Fri, 18 Jul 2008 06:31:17 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:34911 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754748AbYGRKbR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 06:31:17 -0400
+Message-ID: <488070F1.9030903@firstfloor.org>
+Date: Fri, 18 Jul 2008 12:31:13 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1214947935.5658.11.camel@earth>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0107]
+To: Peter Zijlstra <peterz@infradead.org>
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org,
+       jbeulich@novell.com
+Subject: Re: [RFC] systemtap: begin the process of using proper kernel APIs
+ (part1: use kprobe symbol_name/offset instead of address)
+References: <1216146802.3312.95.camel@localhost.localdomain>	 <87ej5rsgk4.fsf@basil.nowhere.org> <1216373009.5232.130.camel@twins>
+In-Reply-To: <1216373009.5232.130.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
-
-> Finally, this new version compiles and boots (applied a minor 
-> compilation fix). Functionality is not yet fully tested though.
+>  1) stap ought to use the kernel's infrastructure and not re-implement
+> its own.
 > 
-> It's on top of today's tip tree.
-> 
-> Any objections to this approach?
+>  2) if the kernel's infrastructure doesn't meet requirements, improve
+> it.
 
-applied to tip/sched/devel - thanks Dmitry.
+No argument on either of those. Right now the kernel infrastructure
+is only comparable to what systemtap overs at very high overhead
+costs (see below)
 
-	Ingo
+> But while the x86 might not be perfect, its fairly ok these days. Its
+> not the utter piece of shite x86_64 had for a long time 
+
+Not sure what you're referring to with this. AFAIK the x86-64 unwinder
+for a normal frame pointer less kernel was not any worse (or better)
+than a i386 kernel without frame pointers.
+
+- today's traces
+> mostly make sense.
+
+If you enable frame pointers? Making your complete kernel slower?
+Generating much worse code on i386 by wasting >20% of its available
+registers?  Getting pipeline stalls on each function call/exit on many CPUs?
+
+Right now unfortunately there are a few rogue CONFIGs who select that
+so more and more kernels have, but I found that always distateful because
+enabling frame pointers has such a large impact on all kernel code, especially
+on the register starved i386.
+
+I still think the right solution eventually is to have a dwarf2 unwinder
+by default for i386/x86-64 and get rid of all these nasty "select
+FRAME_POINTER"s which have unfortunately sneaked in.
+
+-Andi
+
