@@ -1,87 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759312AbYGRPxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760043AbYGRPxy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759312AbYGRPxU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 11:53:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbYGRPxM
+	id S1760043AbYGRPxy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 11:53:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbYGRPxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 11:53:12 -0400
-Received: from mga01.intel.com ([192.55.52.88]:58697 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752421AbYGRPxL convert rfc822-to-8bit (ORCPT
+	Fri, 18 Jul 2008 11:53:46 -0400
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:55514 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755888AbYGRPxq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 11:53:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,211,1215414000"; 
-   d="scan'208";a="598983935"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 18 Jul 2008 11:53:46 -0400
+Date: Fri, 18 Jul 2008 17:52:44 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, robert.moore@intel.com,
+       Jan Beulich <jbeulich@novell.com>
+Subject: Re: Endless ACPI errors on Linus tree (5b664cb235)
+Message-ID: <20080718155244.GE32051@basil.nowhere.org>
+References: <s5hzlof1ll2.wl%tiwai@suse.de> <87od4vqvaj.fsf@basil.nowhere.org> <s5htzencp02.wl%tiwai@suse.de> <s5hr69rz57u.wl%tiwai@suse.de> <s5hk5fjurag.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 1/2] I/OAT: Add watchdog/reset functionality to ioatdma driver
-Date: Fri, 18 Jul 2008 16:53:03 +0100
-Message-ID: <7F38996F7185A24AB9071ED4950AD8C101D2C62A@swsmsx413.ger.corp.intel.com>
-In-Reply-To: <e9c3a7c20807111307q1b7c4ed0wb2864e2dae6abe90@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 1/2] I/OAT: Add watchdog/reset functionality to ioatdma driver
-thread-index: AcjjkcBnWkyuYWPXTaqNOApJAPQbwQFWwdHA
-From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-To: "Williams, Dan J" <dan.j.williams@intel.com>
-Cc: "Nelson, Shannon" <shannon.nelson@intel.com>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 18 Jul 2008 15:53:04.0805 (UTC) FILETIME=[5D77C550:01C8E8EE]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <s5hk5fjurag.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 18 Jul 2008 15:52:41.0858 (UTC) FILETIME=[4FCA5620:01C8E8EE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Williams wrote:
-> On Fri, Jul 11, 2008 at 4:36 AM, Maciej Sosnowski
-> <maciej.sosnowski@intel.com> wrote:
->> Due to occasional DMA channel hangs observed for I/OAT versions 1.2
->> and 2.0 a watchdog has been introduced to check every 2 seconds
->> if all channels progress normally.
->> If stuck channel is detected, driver resets it.
->> The reset is done in two parts. The second part is scheduled
->> by the first one to reinitialize the channel after the restart.
->> 
+On Fri, Jul 18, 2008 at 05:48:39PM +0200, Takashi Iwai wrote:
+> At Fri, 18 Jul 2008 15:34:13 +0200,
+> I wrote:
+> > 
+> > At Fri, 18 Jul 2008 15:15:25 +0200,
+> > I wrote:
+> > > 
+> > > At Fri, 18 Jul 2008 13:35:48 +0200,
+> > > Andi Kleen wrote:
+> > > > 
+> > > > Takashi Iwai <tiwai@suse.de> writes:
+> > > > 
+> > > > > the boot with the latest Linus git tree fails on x86-64 due to the
+> > > > > endless kernel messages like below:
+> > > > >
+> > > > >     ACPI Error (evpge-0710): No handler or method for GPE[10],
+> > > > >     disabling event[20080609]
+> > > > >
+> > > > > It happens on today's tree and also on yesterday (33af79d12e).
+> > > > > The config is below.
+> > > > 
+> > > > That was after the ACPI merge I assume?
+> > > 
+> > > Yes.
+> > > 
+> > > >  Do you have a full boot log?
+> > > 
+> > > Sorry, no.  The kernel shows the error message (the number after GPE
+> > > constantly changing as 1x) endlessly, and couldn't boot up properly to
+> > > get a log. 
+> > > 
+> > > > Revert candidates to test would be e38e8a0743b0e996a8a3fbea8908fe75a84f02c7
+> > > > and c91d924e3af08d4f98eab6ebf81f2b8ce132448f (Bob, that were both
+> > > > changes from you for evgpe.c). Can you see if reverting
+> > > > those helps? If yes which?
+> > > 
+> > > Will give it a spin.
+> > 
+> > I reverting both, but it doesn't fix the problem.
+> > 
+> > Another finding is that the boot reaches to the exec of init, at
+> > least.  So I could get a sane state with init=/bin/sh.  The message
+> > appears after the init script running udevd.
+> > 
+> > Also, the machine could boot fine with the recent linux-next kernel,
+> > at least, 20080711-0714.  (It failed for last couple of days, but it
+> > can be irrelevant.)
+> > 
+> > I'll investigate a bit.  Any hints are appreciated.
 > 
-> checkpatch had some valid suggestions, please give it a run.
+> OK, found out the bad commit via bisect.
+> Reverting below fixes the boot problem.
 
-Hi Dan,
-Thanks a lot for your review.
-I have just sent v2 of this patch series updated according to your
-suggestions.
-This includes resolving checkpatch issues.
+Ah thanks. That one was on the revert list anyways becase
+it caused some other problems.
 
-> A general comment about this change it seems to add a bit of
-> complexity.  The driver now has two workqueue routines and a tasklet.
-> Might some of these be combined?  In other words, do we need a free
-> running watchdog when no descriptors are in flight?  It seems that
-> using a timer to kick the cleanup tasklet could be used in place of
-> the ioat_dma_chan_watchdog workqueue.
- 
-The idea was to run watchdog not too frequently 
-in order to minimize its impact on the performance.
-That's why it is called every 2 secs.
-Cleanup is a differnt story and it is called more frequently,
-so it would be difficult to combine these two things.
-BTW - cleanup tasklet is not used at the moment
-(TCP does not use interrupts but polling for cleanups).
-
->> Sleep time in self_test has been increased to 10ms
->> since in some cases 1ms appeared not to be enough.
-> 
-> This should be broken out into a separate patch.  Perhaps with an
-> explanation of why it needs extra time for this particular
-> transaction.
-
-It has been separated in v2.
-
-> 
-> Regards,
-> Dan
-
-Thanks,
-Maciej
+-Andi
