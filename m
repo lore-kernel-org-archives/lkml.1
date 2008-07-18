@@ -1,54 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755219AbYGRHw4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755889AbYGRHxV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755219AbYGRHw4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 03:52:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751599AbYGRHwt
+	id S1755889AbYGRHxV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 03:53:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbYGRHxI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 03:52:49 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:17954 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751468AbYGRHws convert rfc822-to-8bit (ORCPT
+	Fri, 18 Jul 2008 03:53:08 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:50670 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751599AbYGRHxG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 03:52:48 -0400
-Message-Id: <48806805.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Fri, 18 Jul 2008 08:53:09 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Robert Moore" <robert.moore@intel.com>, "Andi Kleen" <ak@linux.intel.com>
-Cc: "Andrew Paprocki" <andrew@ishiboo.com>, "Len Brown" <lenb@kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "LKML" <linux-kernel@vger.kernel.org>
-Subject: Re: ACPI WARNING: at
-	drivers/acpi/tables/tbfadt.c:348acpi_tb_create_local_fadt+0x147/0x2f4()
-References: <76366b180807161929i4eb9462exc3d2255e0ec881e8@mail.gmail.com>
- <76366b180807162034y1e725b15t7658c331bb89b52@mail.gmail.com>
- <487F2629.76E4.0078.0@novell.com> <487F0B85.4030202@linux.intel.com>
- <487F29B2.76E4.0078.0@novell.com> <487F3AFA.7090908@linux.intel.com>
- <76366b180807170603qaf669a5q625fc166a2045756@mail.gmail.com>
- <487F6C32.76E4.0078.0@novell.com>
- <76366b180807170732i112d54bcl49f630a3064f87f@mail.gmail.com>
- <487F81A6.76E4.0078.0@novell.com>
- <9D39833986E69849A2A8E74C1078B6B3ADFA66@orsmsx415.amr.corp.intel.com>
- <487F8426.4080607@linux.intel.com>
-In-Reply-To: <487F8426.4080607@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Fri, 18 Jul 2008 03:53:06 -0400
+Date: Fri, 18 Jul 2008 08:53:02 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org, gregkh@suse.de,
+       lethal@linux-sh.org, i2c@lm-sensors.org, akpm@linux-foundation.org
+Subject: Re: [i2c] [PATCH 03/05] resource: add new IORESOURCE_CLK type V2
+Message-ID: <20080718075302.GP30539@fluff.org.uk>
+References: <20080718074002.32713.73442.sendpatchset@rx1.opensource.se> <20080718074027.32713.15674.sendpatchset@rx1.opensource.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080718074027.32713.15674.sendpatchset@rx1.opensource.se>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Andi Kleen <ak@linux.intel.com> 17.07.08 19:40 >>>
->Moore, Robert wrote:
->> So far, in the number of the cases like this that I've seen, it's the v2
->> fields that have problems. Perhaps the heuristic should be something
->> like "if there is an inconsistency between the v1 and v2 fields, fall
->> back to v1". 
->
->Yes that makes sense. Jan could you revise the patch to do that please?
+On Fri, Jul 18, 2008 at 04:40:27PM +0900, Magnus Damm wrote:
+> From: Magnus Damm <damm@igel.co.jp>
+> 
+> So far struct resource has been used with the types IORESOURCE_MEM,
+> IORESOURCE_IO and IORESOUCE_IRQ to pass I/O and interrupt parameters
+> to platform drivers. This patch extends this with IORESOURCE_CLK which
+> should be used to pass a clock string to the platform driver. This
+> string points out which specific clock that should be used with clk_get()
+> for a certain driver instance.
+> 
+> Using a hard coded strings in the device driver won't do since we may
+> have multiple instances of drivers that need to use different clocks.
 
-Sure, soon.
+It works already. The S3C24XX has n-number of H and P clocks fed to
+each driver, differentiated by the device being supplied. This is
+why clk_get() has two arguments, a device pointer and a name.
 
-Jan
+This might be useful to allow optional clocks to be passed, but I'm
+not sure if it is necessary.
+ 
+> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> ---
+> 
+>  Changes since V1:
+>  - Use a new bit for IORESOURCE_CLK instead of switching to a counter
+> 
+>  include/linux/ioport.h |   17 +++++++++--------
+>  1 file changed, 9 insertions(+), 8 deletions(-)
+> 
+> --- 0003/include/linux/ioport.h
+> +++ work/include/linux/ioport.h	2008-07-18 14:29:48.000000000 +0900
+> @@ -34,20 +34,21 @@ struct resource_list {
+>   */
+>  #define IORESOURCE_BITS		0x000000ff	/* Bus-specific bits */
+>  
+> -#define IORESOURCE_TYPE_BITS	0x00000f00	/* Resource type */
+> +#define IORESOURCE_TYPE_BITS	0x00001f00	/* Resource type */
+>  #define IORESOURCE_IO		0x00000100
+>  #define IORESOURCE_MEM		0x00000200
+>  #define IORESOURCE_IRQ		0x00000400
+>  #define IORESOURCE_DMA		0x00000800
+> +#define IORESOURCE_CLK		0x00001000
+>  
+> -#define IORESOURCE_PREFETCH	0x00001000	/* No side effects */
+> -#define IORESOURCE_READONLY	0x00002000
+> -#define IORESOURCE_CACHEABLE	0x00004000
+> -#define IORESOURCE_RANGELENGTH	0x00008000
+> -#define IORESOURCE_SHADOWABLE	0x00010000
+> +#define IORESOURCE_PREFETCH	0x00002000	/* No side effects */
+> +#define IORESOURCE_READONLY	0x00004000
+> +#define IORESOURCE_CACHEABLE	0x00008000
+> +#define IORESOURCE_RANGELENGTH	0x00010000
+> +#define IORESOURCE_SHADOWABLE	0x00020000
+>  
+> -#define IORESOURCE_SIZEALIGN	0x00020000	/* size indicates alignment */
+> -#define IORESOURCE_STARTALIGN	0x00040000	/* start field is alignment */
+> +#define IORESOURCE_SIZEALIGN	0x00040000	/* size indicates alignment */
+> +#define IORESOURCE_STARTALIGN	0x00080000	/* start field is alignment */
+>  
+>  #define IORESOURCE_DISABLED	0x10000000
+>  #define IORESOURCE_UNSET	0x20000000
+> 
+> _______________________________________________
+> i2c mailing list
+> i2c@lm-sensors.org
+> http://lists.lm-sensors.org/mailman/listinfo/i2c
 
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
