@@ -1,237 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754331AbYGRKGD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755473AbYGRKPC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754331AbYGRKGD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 06:06:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbYGRKFx
+	id S1755473AbYGRKPC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 06:15:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754404AbYGRKOx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 06:05:53 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:11107 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752567AbYGRKFw (ORCPT
+	Fri, 18 Jul 2008 06:14:53 -0400
+Received: from ti-out-0910.google.com ([209.85.142.190]:29876 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754331AbYGRKOx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 06:05:52 -0400
-Date: Fri, 18 Jul 2008 14:05:49 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Trent Piepho <tpiepho@freescale.com>
-Cc: Grant Likely <grant.likely@secretlab.ca>,
-       Richard Purdie <rpurdie@rpsys.net>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Kumar Gala <galak@kernel.crashing.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v3] leds: implement OpenFirmare GPIO LED driver
-Message-ID: <20080718100549.GA28741@polina.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <Pine.LNX.4.64.0807161546010.12709@t2.domain.actdsltmp> <20080717041531.GA27243@secretlab.ca> <20080717140519.GA32617@polina.dev.rtsoft.ru> <20080717141335.GA2219@polina.dev.rtsoft.ru> <20080717150422.GC31932@secretlab.ca> <20080717152006.GA26120@polina.dev.rtsoft.ru> <fa686aa40807171105m22dda41dqb334dd5f7b2634d8@mail.gmail.com> <Pine.LNX.4.64.0807171302190.27902@t2.domain.actdsltmp> <20080717234201.GA15745@polina.dev.rtsoft.ru> <Pine.LNX.4.64.0807171807420.29856@t2.domain.actdsltmp>
+	Fri, 18 Jul 2008 06:14:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=ZsHq0+WZl0kmdLhOMVPGC+LRe8MujW+wCqDolpVWHbDBe9Hohv7cqUNRoF8pjC9+V1
+         wOB3UkLELMhFbeioVb7Mm6lgV4Cs7Pd7/hsI/0g7GsdW2c+AcIWptgysJILkzhfs+6Ib
+         AAip6f0oWhgs+fqNd2oIa2nqwABeoukVZsOXA=
+Date: Fri, 18 Jul 2008 13:13:26 +0300
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: cl@linux-foundation.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Randy Dunlap <rdunlap@xenotime.net>, Matt Mackall <mpm@selenic.com>
+Subject: Re: [RFC PATCH 1/4] kmemtrace: Core implementation.
+Message-ID: <20080718101326.GB5193@localhost>
+References: <cover.1216255034.git.eduard.munteanu@linux360.ro> <4472a3f883b0d9026bb2d8c490233b3eadf9b55e.1216255035.git.eduard.munteanu@linux360.ro> <84144f020807170101x25c9be11qd6e1996460bb24fc@mail.gmail.com> <20080717183206.GC5360@localhost> <Pine.LNX.4.64.0807181140400.3739@sbz-30.cs.Helsinki.FI>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0807171807420.29856@t2.domain.actdsltmp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <Pine.LNX.4.64.0807181140400.3739@sbz-30.cs.Helsinki.FI>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 02:20:42AM -0700, Trent Piepho wrote:
-> On Fri, 18 Jul 2008, Anton Vorontsov wrote:
-> > On Thu, Jul 17, 2008 at 01:18:18PM -0700, Trent Piepho wrote:
-> >> Basically what I did then in my patch then, refactor leds-gpio so most of
-> >> it is shared and there is a block of code that does platform binding and
-> >> another block that does of_platform binding.
-> >
-> > Ok. I must admit I'm quite burned out with OF gpio-leds. I was posting the
-> > bindings since April, probably four or five times. Last time a week ago,
-> > IIRC.
-> >
-> > During the months I received just a few replies, one from Grant ("Looks
-> > good to me."), few from Segher (with a lot of criticism, that I much
-> > appreciated and tried to fix all spotted issues), and one from Laurent
-> > (about active-low LEDs).
+On Fri, Jul 18, 2008 at 11:48:03AM +0300, Pekka J Enberg wrote:
+> Hi Eduard-Gabriel,
 > 
-> I'm sorry, I never saw those emails.  Were they all to linuxppc-dev?  I hate
-> reading that list, gmane, marc, and lkml.org don't archive it and
-> mail-archive.com isn't nearly as nice.
+> On Thu, 17 Jul 2008, Eduard - Gabriel Munteanu wrote:
+> > > > +struct kmemtrace_event {
+> > > 
+> > > So why don't we have the ABI version embedded here like blktrace has
+> > > so that user-space can check if the format matches its expectations?
+> > > That should be future-proof as well: as long as y ou keep the existing
+> > > fields where they're at now, you can always add new fields at the end
+> > > of the struct.
+> > 
+> > You can't add fields at the end, because the struct size will change and
+> > reads will be erroneous. Also, stamping every 'packet' with ABI version
+> > looks like a huge waste of space.
+> 
+> It's an ABI so you want to make it backwards compatible and extensible. 
+> Yes, it's just for debugging, so the rules are bit more relaxed here but 
+> that's not an excuse for not designing the ABI properly.
 
-Usually I use this archive: http://ozlabs.org/pipermail/linuxppc-dev/
+I do expect to keep things source-compatible, but even
+binary-compatible? Developers debug and write patches on the latest kernel,
+not on a 6-month-old kernel. Isn't it reasonable that they would
+recompile kmemtrace along with the kernel?
 
-> Is this the last version?
-> http://www.mail-archive.com/linuxppc-dev@ozlabs.org/msg18355.html
+I would deem one ABI or another stable, but then we have to worry about
+not breaking it, which leads to either bloating the kernel, or keeping
+improvements away from kmemtrace. Should we do it just because this is an ABI?
 
-No, this is v2 or something. The last version is the same as the current
-one:
+> I really wish we would follow the example set by blktrace here. It uses a 
+> fixed-length header that knows the length of the rest of the packet.
 
-http://ozlabs.org/pipermail/linuxppc-dev/2008-July/059156.html
+I'd rather export the header length through a separate debugfs entry,
+rather than add this to every packet. I don't think we need variable
+length packets, unless we intend to export the whole stack trace, for
+example.
 
-> Why did you get rid of "linux,default-trigger" 
+By the way, do you anticipate the need for such a stack trace? It would seem
+nice, but is it worth the trouble? (/me writes this down as a possible
+future improvement)
 
-Nobody liked it, even I myself. ;-)
+> 		Pekka
 
-http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056943.html
-
-Later I tried to use aliases for default-trigger.
-
-http://ozlabs.org/pipermail/linuxppc-dev/2008-June/057244.html
-
-But after "i2c vs. cell-index vs. aliases" discussion I decided to
-remove this stuff completely until I find something better (or
-somebody will purpose).
-
-As for linux,default-brightness... we don't need this since now we
-have default-on trigger.
-
-> and the active-low property?
-
-Active-low can be coded inside the gpios = <>, via flags cell. And GPIO
-controller can transparently support active-low GPIO states (i.e. just
-like IRQ controllers automatically setting up IRQ trigger types based
-on information from the device tree).
-
-I implemented active-low flags for pixis gpio controller, but it is easy
-to do this for any controller, when needed. Here is example:
-
-diff --git a/arch/powerpc/platforms/86xx/pixis_gpio.c b/arch/powerpc/platforms/86xx/pixis_gpio.c
-new file mode 100644
-index 0000000..85254f9
---- /dev/null
-+++ b/arch/powerpc/platforms/86xx/pixis_gpio.c
-@@ -0,0 +1,141 @@
-+/*
-+ * PIXIS GPIOs
-+ *
-+ * Copyright (c) MontaVista Software, Inc. 2008.
-+ *
-+ * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/spinlock.h>
-+#include <linux/io.h>
-+#include <linux/of.h>
-+#include <linux/of_gpio.h>
-+#include <linux/gpio.h>
-+
-+#define PIXIS_GPIO_PINS 8
-+
-+struct px_gpio_chip {
-+	struct of_mm_gpio_chip mm_gc;
-+	spinlock_t lock;
-+
-+	/* mask for active-low pins */
-+	u8 active_low;
-+};
-+
-+static inline struct px_gpio_chip *
-+to_px_gpio_chip(struct of_mm_gpio_chip *mm_gc)
-+{
-+	return container_of(mm_gc, struct px_gpio_chip, mm_gc);
-+}
-+
-+static inline u8 pin2mask(unsigned int pin)
-+{
-+	return 1 << (PIXIS_GPIO_PINS - 1 - pin);
-+}
-+
-+static int px_gpio_get(struct gpio_chip *gc, unsigned int gpio)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct px_gpio_chip *px_gc = to_px_gpio_chip(mm_gc);
-+	u8 __iomem *regs = mm_gc->regs;
-+
-+	return (in_8(regs) ^ px_gc->active_low) & pin2mask(gpio);
-+}
-+
-+static void px_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct px_gpio_chip *px_gc = to_px_gpio_chip(mm_gc);
-+	u8 __iomem *regs = mm_gc->regs;
-+	unsigned long flags;
-+	u8 val_mask = val ? pin2mask(gpio) : 0;
-+
-+	spin_lock_irqsave(&px_gc->lock, flags);
-+
-+	if ((val_mask ^ px_gc->active_low) & pin2mask(gpio))
-+		setbits8(regs, pin2mask(gpio));
-+	else
-+		clrbits8(regs, pin2mask(gpio));
-+
-+	spin_unlock_irqrestore(&px_gc->lock, flags);
-+}
-+
-+static int px_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
-+{
-+	return 0;
-+}
-+
-+static int px_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
-+{
-+	px_gpio_set(gc, gpio, val);
-+	return 0;
-+}
-+
-+#define PX_GPIO_FLAG_ACTIVE_LOW	(1 << 0)
-+
-+int px_gpio_xlate(struct of_gpio_chip *of_gc, struct device_node *np,
-+		  const void *gpio_spec)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(&of_gc->gc);
-+	struct px_gpio_chip *px_gc = to_px_gpio_chip(mm_gc);
-+	const u32 *gpio = gpio_spec;
-+
-+	if (*gpio > of_gc->gc.ngpio)
-+		return -EINVAL;
-+
-+	if (gpio[1] & PX_GPIO_FLAG_ACTIVE_LOW)
-+		px_gc->active_low |= pin2mask(*gpio);
-+
-+	return *gpio;
-+}
-+
-+static int __init pixis_gpio_init(void)
-+{
-+	struct device_node *np;
-+
-+	for_each_compatible_node(np, NULL, "fsl,fpga-pixis-gpio-bank") {
-+		int ret;
-+		struct px_gpio_chip *px_gc;
-+		struct of_mm_gpio_chip *mm_gc;
-+		struct of_gpio_chip *of_gc;
-+		struct gpio_chip *gc;
-+
-+		px_gc = kzalloc(sizeof(*px_gc), GFP_KERNEL);
-+		if (!px_gc) {
-+			ret = -ENOMEM;
-+			goto err;
-+		}
-+
-+		spin_lock_init(&px_gc->lock);
-+
-+		mm_gc = &px_gc->mm_gc;
-+		of_gc = &mm_gc->of_gc;
-+		gc = &of_gc->gc;
-+
-+		of_gc->gpio_cells = 2;
-+		of_gc->xlate = px_gpio_xlate;
-+		gc->ngpio = PIXIS_GPIO_PINS;
-+		gc->direction_input = px_gpio_dir_in;
-+		gc->direction_output = px_gpio_dir_out;
-+		gc->get = px_gpio_get;
-+		gc->set = px_gpio_set;
-+
-+		ret = of_mm_gpiochip_add(np, mm_gc);
-+		if (ret)
-+			goto err;
-+		continue;
-+err:
-+		pr_err("%s: registration failed with status %d\n",
-+		       np->full_name, ret);
-+		kfree(px_gc);
-+		/* try others anyway */
-+	}
-+	return 0;
-+}
-+arch_initcall(pixis_gpio_init);
