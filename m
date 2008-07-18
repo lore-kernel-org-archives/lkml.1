@@ -1,43 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755408AbYGRJit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755268AbYGRJp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755408AbYGRJit (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 05:38:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753984AbYGRJim
+	id S1755268AbYGRJp0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 05:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754262AbYGRJpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 05:38:42 -0400
-Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:36480 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753885AbYGRJil (ORCPT
+	Fri, 18 Jul 2008 05:45:11 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:31628 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754176AbYGRJpJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 05:38:41 -0400
-Date: Fri, 18 Jul 2008 10:06:07 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: Frantisek Hanzlik <franta@hanzlici.cz>, linux-kernel@vger.kernel.org
-Subject: Re: serverworks CSB5 IDE: DMA disabled on secondary channel
-Message-ID: <20080718100607.1589ed2f@the-village.bc.nu>
-In-Reply-To: <487FED33.2030207@shaw.ca>
-References: <fa.Fmf0CiaCc/J+JAWaZ5FS+ihhhzA@ifi.uio.no>
-	<487FED33.2030207@shaw.ca>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 18 Jul 2008 05:45:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=hvExBRZZ7MKwc+vd+4dNL2Xc/lkrpAU3TJlAZWbpQF/tTVDxUCP8QjlgJjzfiS+Fu6
+         iHnPw2VJqshm8r45wnk5EpmS8tz5M0KIgj2dpOAbVQLYSMu8xpAenuATQvkSWT5Bdqkm
+         aMdYuwsZ0qrtnQcuTyWphJLESCmRF7eEhSsSg=
+Message-ID: <19f34abd0807180245l2a633644n1a8d91cb3587d9e4@mail.gmail.com>
+Date: Fri, 18 Jul 2008 11:45:08 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: linux-ext4@vger.kernel.org
+Subject: latest -git: A peculiar case of a stuck process (ext3/sched-related?)
+Cc: sct@redhat.com, akpm@linux-foundation.org, adilger@sun.com,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > ata2.01: ATAPI: CD-W540E, 1.0D, max UDMA/33
-> > ata2.00: simplex DMA is claimed by other device, disabling DMA
-> > ata2.01: simplex DMA is claimed by other device, disabling DMA
-> > ata2.00: configured for PIO4
-> > ata2.01: configured for PIO4
+Hi,
+
+I was running a test which corrupts ext3 filesystem images on purpose.
+After quite a long time, I have ended up with a grep that runs at 98%
+CPU and is unkillable even though it is in state R:
+
+root      6573 98.6  0.0   4008   820 pts/0    R    11:17  15:48 grep -r . mnt
+
+It doesn't go away with kill -9 either. A sysrq-t shows this info:
+
+grep          R running   5704  6573   6552
+       f4ff3c3c c0747b19 00000000 f4ff3bd4 c01507ba ffffffff 00000000 f4ff3bf0
+       f5992fd0 f4ff3c4c 01597000 00000000 c09cd080 f312afd0 f312b248 c1fb2f80
+       00000001 00000002 00000000 f312afd0 f312afd0 f4ff3c24 c015ab70 00000000
+Call Trace:
+ [<c0747b19>] ? schedule+0x459/0x960
+ [<c01507ba>] ? atomic_notifier_call_chain+0x1a/0x20
+ [<c015ab70>] ? mark_held_locks+0x40/0x80
+ [<c015addb>] ? trace_hardirqs_on+0xb/0x10
+ [<c015ad76>] ? trace_hardirqs_on_caller+0x116/0x170
+ [<c074816e>] preempt_schedule_irq+0x3e/0x70
+ [<c0103ffc>] need_resched+0x1f/0x23
+ [<c022c041>] ? ext3_find_entry+0x401/0x6f0
+ [<c015b6e9>] ? __lock_acquire+0x2c9/0x1110
+ [<c019d63c>] ? slab_pad_check+0x3c/0x120
+ [<c015ad76>] ? trace_hardirqs_on_caller+0x116/0x170
+ [<c015906b>] ? trace_hardirqs_off+0xb/0x10
+ [<c022cb3a>] ext3_lookup+0x3a/0xd0
+ [<c01b7bb3>] ? d_alloc+0x133/0x190
+ [<c01ac110>] do_lookup+0x160/0x1b0
+ [<c01adc38>] __link_path_walk+0x208/0xdc0
+ [<c0159173>] ? lock_release_holdtime+0x83/0x120
+ [<c01bd97e>] ? mnt_want_write+0x4e/0xb0
+ [<c01ae327>] __link_path_walk+0x8f7/0xdc0
+ [<c015906b>] ? trace_hardirqs_off+0xb/0x10
+ [<c01ae844>] path_walk+0x54/0xb0
+ [<c01aea45>] do_path_lookup+0x85/0x230
+ [<c01af7a8>] __user_walk_fd+0x38/0x50
+ [<c01a7fb1>] vfs_stat_fd+0x21/0x50
+ [<c01590cd>] ? put_lock_stats+0xd/0x30
+ [<c01bc81d>] ? mntput_no_expire+0x1d/0x110
+ [<c01a8081>] vfs_stat+0x11/0x20
+ [<c01a80a4>] sys_stat64+0x14/0x30
+ [<c01a5a8f>] ? fput+0x1f/0x30
+ [<c0430948>] ? trace_hardirqs_on_thunk+0xc/0x10
+ [<c015ad76>] ? trace_hardirqs_on_caller+0x116/0x170
+ [<c0430948>] ? trace_hardirqs_on_thunk+0xc/0x10
+ [<c010407f>] sysenter_past_esp+0x78/0xc5
+ =======================
+
+..so it's clearly related to the corrupted ext3 filesystem. The
+strange thing, in my opinion, is this stack frame:
+
+ [<c022cb3a>] ext3_lookup+0x3a/0xd0
+
+..but this address corresponds to fs/ext3/namei.c:1039:
+
+        bh = ext3_find_entry(dentry, &de);
+        inode = NULL;
+        if (bh) { /* <--- here */
+                unsigned long ino = le32_to_cpu(de->inode);
+                brelse (bh);
+
+What happened? Did the scheduler get stuck? Softlockup detection and
+NMI watchdog are both enabled, but none of them are triggering.
+
+Trying to strace the problem doesn't really help either:
+
+    # strace -p 6573
+    Process 6573 attached - interrupt to quit
+    ^C^C^C^C
+
+(and hangs unkillably too.)
+
+See full log at:
+
+    http://folk.uio.no/vegardno/linux/log-1216370788.txt
+
+The machine is still running in the same state and CPU0 is still
+usable. What more info can I provide to help debug this?
 
 
-Disable the pata_acpi driver and let me know if it then behaves. We had a
-similar problem with the ATI hardware which lost and messed up its
-internal state if pata_acpi was loaded first.
+Vegard
 
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
