@@ -1,43 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756302AbYGRDqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755478AbYGRDyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756302AbYGRDqo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 23:46:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYGRDqg
+	id S1755478AbYGRDyT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 23:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYGRDyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 23:46:36 -0400
-Received: from zcars04f.nortel.com ([47.129.242.57]:39120 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752673AbYGRDqg (ORCPT
+	Thu, 17 Jul 2008 23:54:11 -0400
+Received: from ag-out-0708.google.com ([72.14.246.251]:15303 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752343AbYGRDyK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 23:46:36 -0400
-Message-ID: <488011FF.6010201@nortel.com>
-Date: Thu, 17 Jul 2008 21:46:07 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Thu, 17 Jul 2008 23:54:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent:sender;
+        b=UHWB53Fsd1Gy8YtJ03u500XIyqJU2kDHgB4Njv0jRuBOBGjYe18phWpXkiQTyJgxWs
+         M9nKBeOt+vp+9CxoiJX7syeLwrgwefxg3X4lVqPape87VKpPmET16PJBlGEEw75OV8t+
+         jik9cQjoZ5aSpbZkXtupxA1hxSO9wbOnuNoqc=
+Date: Fri, 18 Jul 2008 06:52:37 +0300
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: greg@kroah.com
+Cc: torvalds@linux-foundation.org, Randy Dunlap <rdunlap@xenotime.net>,
+       linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: debugfs_create_u*() not SMP-safe
+Message-ID: <20080718035237.GA7744@localhost>
 MIME-Version: 1.0
-To: Reg Clemens <reg@dwf.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Does 2.6.26 provide nanosecond time to the user?
-References: <200807180019.m6I0J2kG026240@deneb.dwf.com>
-In-Reply-To: <200807180019.m6I0J2kG026240@deneb.dwf.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Jul 2008 03:46:11.0115 (UTC) FILETIME=[D1AECFB0:01C8E888]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reg Clemens wrote:
-> Im confused.
-> (sorry I havent been following the linux-kernel mailing list on this)
-> 
-> Does 2.6.26 use nanosecond time
->     (1) internally?
->     (2) provide it to the user?
+Hi,
 
-It's available to userspace via clock_gettime(), but whether it really 
-is accurate to sub-microseconds will depend on the specific version of 
-the kernel and hardware architecture being used.
+I noticed debugfs_create_u*() functions don't allow for any precautions
+to be taken while doing r/w to the exported variables. Thus any export of a
+variable isn't SMP-safe.
 
-Chris
+As far as I can tell, this only works safely for constant data. Let me
+ask then, what is the purpose of these functions? Are they intended only
+for unreliable data?
+
+As I see it, they could be replaced by one of the following:
+- Have them only export atomic data, that is atomic_t variables.
+- Have them take a lock as a parameter, which the read() / write()
+  handler grabs. The kernel code that exported the variable should also
+  do r/w while holding that same lock.
+
+Or am I wrong?
+
+
+	Thanks,
+	Eduard
+
