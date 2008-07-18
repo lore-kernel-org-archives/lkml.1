@@ -1,83 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761148AbYGRAsz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760866AbYGRBCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761148AbYGRAsz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 20:48:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758004AbYGRAsq
+	id S1760866AbYGRBCR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 21:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756549AbYGRBCC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 20:48:46 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:61881 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757769AbYGRAsp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 20:48:45 -0400
-Date: Fri, 18 Jul 2008 01:47:44 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, Ingo Molnar <mingo@elte.hu>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>, venkatesh.pallipadi@intel.com,
-       Huang Ying <ying.huang@intel.com>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: v2.6.26-rc9: ACPI PCI irq routing on NUMA? + early_ioremap
- trouble
-In-Reply-To: <19f34abd0807171358p3c5a44f9i91ab23d3f5e9671f@mail.gmail.com>
-Message-ID: <Pine.LNX.4.55.0807180117320.6536@cliff.in.clinika.pl>
-References: <19f34abd0807060647k54490088uf8859d8a1646fd41@mail.gmail.com> 
- <200807171245.31641.bjorn.helgaas@hp.com> <19f34abd0807171358p3c5a44f9i91ab23d3f5e9671f@mail.gmail.com>
+	Thu, 17 Jul 2008 21:02:02 -0400
+Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:18841 "EHLO
+	pd5mo1no-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755578AbYGRBCB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 21:02:01 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=dJlek8v6tykI2SpLzkgA:9 a=piFrBNYU4owme_J1yRgA:7 a=2NkFVsG0R9bCYcy8sycMz8zpPnIA:4
+Message-ID: <487FEB85.8050809@shaw.ca>
+Date: Thu, 17 Jul 2008 19:01:57 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Thomas Lucaw <aj881@chebucto.ns.ca>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: ide-cd or ide-scsi dmesg contradiction
+References: <fa.gdHId1md+1HIxZ5QOtsPlKx7Ijo@ifi.uio.no>
+In-Reply-To: <fa.gdHId1md+1HIxZ5QOtsPlKx7Ijo@ifi.uio.no>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jul 2008, Vegard Nossum wrote:
-
-> Hah, I actually managed to get netconsole working. This is the log
-> that fails (v2.6.26):
+Thomas Lucaw wrote:
+> Hi, for some time I've noticed
 > 
-> http://folk.uio.no/vegardno/linux/numa-netconsole.txt
+> giving the cmdline (to kernel at boot) "hdd=ide-scsi ..." I get
 > 
-> I think this looks really interesting:
+> 	ide-scsi is deprecated for cd burning! Use ide-cd and give dev=/dev/hdX as device
 > 
-> [    0.093562] ExtINT not setup in hardware but reported by MP table
-> [    0.093854] ENABLING IO-APIC IRQs
-> [    0.094244] ..TIMER: vector=0x31 apic1=-1 pin1=2 apic2=-1 pin2=0
-> [    0.094985] ..MP-BIOS bug: 8254 timer not connected to IO-APIC
-> [    0.094985] ...trying to set up timer (IRQ0) through the 8259A ...
-> [    0.094985] ..... (found pin 0) ...<7>APIC error on CPU0: 00(80)
-> [    0.094985]  failed.
-> [    0.094985] ...trying to set up timer as Virtual Wire IRQ...<7>APIC
-> error on CPU0: 80(80)
-> [    0.105761]  works.
+> then changing to the suggested "hdd=ide-cd ..." I get
+
+That's not what it's suggesting (at least I don't think it is), if you 
+remove the option entirely then ide-cd will bind to the device.
+
 > 
-> This error would be:
->            7: Illegal register address
+> 	ide_setup: hdc=ide-cd -- OBSOLETE OPTION, WILL BE REMOVED SOON!
 > 
-> Looks like APIC was misconfigured, which might explain IRQ routing weirdness?
-
- Here pin1 and pin2 have been correctly initialised, but apic1 and apic2
-are both set to -1.  This is an "impossible scenario."  Because of that
-I/O APIC code actually pokes at random registers of the local APIC which
-immediately precedes I/O APIC #0 in the fixmap.  Results may be arbitrary.
-
-> Will try to provide the booting one later. Now zZz...
-
- Your system uses an MP table and there were quite a lot of changes in its
-support code recently.  A bug must have crept in.  Please try the appended
-patch and the "apic=debug" option for both cases and the resulting logs
-may shed some light.
-
-  Maciej
-
-patch-next-2.6.26-rc9-20080711-apic-dprintk-0
-diff -up --recursive --new-file linux-next-2.6.26-rc9-20080711.macro/include/asm-x86/apic.h linux-next-2.6.26-rc9-20080711/include/asm-x86/apic.h
---- linux-next-2.6.26-rc9-20080711.macro/include/asm-x86/apic.h	2008-07-16 14:50:07.000000000 +0000
-+++ linux-next-2.6.26-rc9-20080711/include/asm-x86/apic.h	2008-07-18 00:33:19.000000000 +0000
-@@ -10,7 +10,7 @@
- 
- #define ARCH_APICTIMER_STOPS_ON_C3	1
- 
--#define Dprintk(x...)
-+#define Dprintk printk
- 
- /*
-  * Debugging macros
+> Rather illogical to me :-)
+> 
+> I guess neither should be used, I can make my cdrom and dvd devices work 
+> without ok.
+> 
+> kernel 2.6.26
