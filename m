@@ -1,93 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758065AbYGRPnN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757440AbYGRPqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758065AbYGRPnN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 11:43:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbYGRPm6
+	id S1757440AbYGRPqm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 11:46:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbYGRPqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 11:42:58 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45280 "EHLO mx1.redhat.com"
+	Fri, 18 Jul 2008 11:46:35 -0400
+Received: from www.tglx.de ([62.245.132.106]:41997 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751042AbYGRPm6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 11:42:58 -0400
-Message-ID: <4880B994.4050803@redhat.com>
-Date: Fri, 18 Jul 2008 11:41:08 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1750770AbYGRPqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 11:46:34 -0400
+Date: Fri, 18 Jul 2008 17:46:24 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: linux-kernel@vger.kernel.org, hjk@linutronix.de, gregkh@suse.de,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 00/06] uio: Various minor changes
+Message-ID: <20080718154624.GE3284@local>
+References: <20080718050402.16250.25213.sendpatchset@rx1.opensource.se>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [patch 00/17] Tracepoints v4 for linux-next
-References: <20080715222604.331269462@polymtl.ca>
-In-Reply-To: <20080715222604.331269462@polymtl.ca>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080718050402.16250.25213.sendpatchset@rx1.opensource.se>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mathieu,
-
-As far as I can see, your patchset can be separated into
-several series of patches. Would you think this series of
-patches should be pushed at once, or could be pushed
-individually?
-
-I think it is hard to push all of them into kernel at once,
-because it needs ACKs from several developers who maintain
-traced subsystems.
-
-So, I'd like to suggest you to separate series of patches,
-and to push framework and instrumentation patches step by step.
-What would you think about it?
-
-Thank you,
-
-Mathieu Desnoyers wrote:
-> Hi,
+On Fri, Jul 18, 2008 at 02:04:02PM +0900, Magnus Damm wrote:
+> Hi everyone,
 > 
-> Here is the newest release of the Tracepoints, following the feedback from Peter
-> Zijlstra. The main change is the creation of include/trace/ as a placeholder
-> from tracepoint headers.
-> 
-> The patchset applies over linux-next patch-v2.6.26-next-20080715 in this order :
-> 
-> #This a separate RCU update upon which the tracepoints depend
-> rcu-read-sched.patch
-> 
-> tracepoints.patch
-> tracepoints-documentation.patch
-> tracepoints-samples.patch
-> 
-> lttng-instrumentation-irq.patch
-> lttng-instrumentation-scheduler.patch
-> lttng-instrumentation-timer.patch
-> lttng-instrumentation-kernel.patch
-> 
-> lttng-instrumentation-filemap.patch
-> lttng-instrumentation-swap.patch
-> lttng-instrumentation-memory.patch
-> lttng-instrumentation-page.patch
-> lttng-instrumentation-hugetlb.patch
-> 
-> lttng-instrumentation-net.patch
-> lttng-instrumentation-ipv4.patch
-> lttng-instrumentation-ipv6.patch
-> 
-> ftrace-port-to-tracepoints.patch
-> 
-> Mathieu
-> 
+> Here comes a few UIO changes that I've had in my queue for a while.
 
--- 
-Masami Hiramatsu
+Hi Magnus,
+thanks a lot for your patches. I'll have a look at them ASAP, but it'll
+take a few days. I'm busy moving to a new house ATM...
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+Greg, could you help reviewing these ?
 
-e-mail: mhiramat@redhat.com
+Thanks,
+Hans
 
-
-
+> 
+> [PATCH 01/06] uio: Use struct_uio_mem instead of index
+> [PATCH 02/06] uio: Pass struct uio_mem to mmap functions
+> [PATCH 03/06] uio: Remove vma->vm_private_data from uio_find_mem()
+> [PATCH 04/06] uio: Store struct uio_mem ptr in vma->vm_private_data
+> [PATCH 05/06] uio: Remove redundant vma->vm_flags setup code
+> [PATCH 06/06] uio: Support multiple UIO_MEM_LOGICAL/VIRTUAL pages
+> 
+> Mostly small cleanups or performance improvements, except the last one
+> which contains a fix for unsupported multi-page LOGICAL/VIRTUAL maps.
+> 
+> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> ---
+> 
+>  Documentation/DocBook/uio-howto.tmpl |    2 
+>  drivers/uio/uio.c                    |   91 +++++++++++++++-------------------
+>  include/linux/uio_driver.h           |    1 
+>  3 files changed, 44 insertions(+), 50 deletions(-)
