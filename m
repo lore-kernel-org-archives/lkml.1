@@ -1,69 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757152AbYGRQGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758195AbYGRQHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757152AbYGRQGX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 12:06:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbYGRQGN
+	id S1758195AbYGRQHt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 12:07:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754897AbYGRQHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 12:06:13 -0400
-Received: from mga14.intel.com ([143.182.124.37]:11371 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751808AbYGRQGM convert rfc822-to-8bit (ORCPT
+	Fri, 18 Jul 2008 12:07:42 -0400
+Received: from bromo.msbb.uc.edu ([129.137.3.146]:47005 "HELO
+	bromo.msbb.uc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752792AbYGRQHm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 12:06:12 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,211,1215414000"; 
-   d="scan'208";a="22034462"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 18 Jul 2008 12:07:42 -0400
+Date: Fri, 18 Jul 2008 12:07:39 -0400
+From: Jack Howarth <howarth@bromo.msbb.uc.edu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
+Message-ID: <20080718160739.GA5560@bromo.msbb.uc.edu>
+References: <20080717004004.GA17792@bromo.msbb.uc.edu> <86802c440807161749u2f5c1eben618e05c6e254fedd@mail.gmail.com> <20080717023538.GA18329@bromo.msbb.uc.edu> <86802c440807161959s10666027k5297af1d657ff4fa@mail.gmail.com> <20080717034418.GA18951@bromo.msbb.uc.edu> <86802c440807162113g4cea3bd9ic71210330417032b@mail.gmail.com> <20080717061825.GA19582@bromo.msbb.uc.edu> <86802c440807162348m6d05b912x7b3f655d7f9efb93@mail.gmail.com> <20080718011532.GA30920@bromo.msbb.uc.edu> <86802c440807171825m24ffe140o81bb76286823568e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 1/2] I/OAT: Add watchdog/reset functionality to ioatdma driver
-Date: Fri, 18 Jul 2008 17:06:06 +0100
-Message-ID: <7F38996F7185A24AB9071ED4950AD8C101D2C640@swsmsx413.ger.corp.intel.com>
-In-Reply-To: <487B6004.6090801@inria.fr>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 1/2] I/OAT: Add watchdog/reset functionality to ioatdma driver
-thread-index: AcjlvGq6y87vL+2/SkG7fnjRnSchLwDMlwBw
-From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-To: "Brice Goglin" <Brice.Goglin@inria.fr>
-Cc: "Williams, Dan J" <dan.j.williams@intel.com>,
-       "Nelson, Shannon" <shannon.nelson@intel.com>,
-       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
-X-OriginalArrivalTime: 18 Jul 2008 16:06:07.0758 (UTC) FILETIME=[3024EAE0:01C8E8F0]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440807171825m24ffe140o81bb76286823568e@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brice Goglin wrote:
-> Maciej Sosnowski wrote:
->> Due to occasional DMA channel hangs observed for I/OAT versions 1.2
->> and 2.0 a watchdog has been introduced to check every 2 seconds
->> if all channels progress normally.
->> If stuck channel is detected, driver resets it.
->> The reset is done in two parts. The second part is scheduled
->> by the first one to reinitialize the channel after the restart.
->> 
-> 
-> Is all this transparent to the caller? Are you reposting all copies to
-> the hardware after the reset? Or are we going to get some DMA_ERROR
-> return values ?
+YH,
+   Is there any relationship between the issue fixed in...
 
-Yes, it is transparent.
-The driver should take care of all the descriptors
-that have not been served before the reset.
+http://marc.info/?l=linux-acpi&m=121615159014404&w=2
 
->> Sleep time in self_test has been increased to 10ms
->> since in some cases 1ms appeared not to be enough
-> 
-> Thanks Maciej, this helps a lot here.
-
-Sure.
-
-> 
-> Brice
-
-Regards,
-Maciej
+and the DMI issue you patched on my MacBookPro v2?
+                         Jack
