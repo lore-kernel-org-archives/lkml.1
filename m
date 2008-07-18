@@ -1,106 +1,399 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758859AbYGRMix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758374AbYGRMj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758859AbYGRMix (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 08:38:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbYGRMip
+	id S1758374AbYGRMj3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 08:39:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759100AbYGRMjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 08:38:45 -0400
-Received: from casper.infradead.org ([85.118.1.10]:37676 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753653AbYGRMio (ORCPT
+	Fri, 18 Jul 2008 08:39:14 -0400
+Received: from ti-out-0910.google.com ([209.85.142.189]:44147 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757015AbYGRMjJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 08:38:44 -0400
-Subject: Re: [PATCH 1/2] sched: remove extraneous load manipulations
-From: Peter Zijlstra <peterz@infradead.org>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: stable@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       rostedt@goodmis.org, mingo@elte.hu, linux-kernel@vger.kernel.org
-In-Reply-To: <20080703213711.1275.56107.stgit@lsg.lsg.lab.novell.com>
-References: <20080703212939.1275.27072.stgit@lsg.lsg.lab.novell.com>
-	 <20080703213711.1275.56107.stgit@lsg.lsg.lab.novell.com>
-Content-Type: text/plain
-Date: Fri, 18 Jul 2008 14:39:14 +0200
-Message-Id: <1216384754.28405.31.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 18 Jul 2008 08:39:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=GWXPM5FN7roJqgWvKMtsyvBgqSW0lZxobwdG6EWGwTkUke5fdI7EZ0N5rCnh2uJfHS
+         8uHNiyyL+8OFMmc+6GcIjz/2dz9V+eEkKyBAHF5JMOu0T/JHVmEG0kVwduNDULUyVfmv
+         ylQ4NiGqnB/DGg3qYd7jQzKzMdXLrDZ2V/Z0A=
+Message-ID: <48808EE0.2060603@gmail.com>
+Date: Fri, 18 Jul 2008 21:38:56 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       scsi <linux-scsi@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       Takashi Iwai <tiwai@suse.de>, tino.keitel@gmx.de, drzeus@drzeus.cx
+Subject: Re: linux-next: Tree for July 16 (crash on quad core AMD)
+References: <20080716235011.ac9643aa.sfr@canb.auug.org.au> <200807170053.36661.rjw@sisk.pl> <1216249292.3358.66.camel@localhost.localdomain> <200807170109.30655.rjw@sisk.pl>
+In-Reply-To: <200807170109.30655.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-03 at 15:37 -0600, Gregory Haskins wrote:
-> commit 62fb185130e4d420f71a30ff59d8b16b74ef5d2b reverted some patches
-> in the scheduler, but it looks like it may have left a few redundant
-> calls to inc_load/dec_load remain in set_user_nice (since the
->  dequeue_task/enqueue_task take care of the load.  This could result
-> in the load values being off since the load may change while dequeued.
+Hello,
 
-I just checked out v2.6.25.10 but cannot see dequeue_task() do it.
-
-deactivate_task() otoh does do it.
-
-static void dequeue_task(struct rq *rq, struct task_struct *p, int sleep)
-{
-	p->sched_class->dequeue_task(rq, p, sleep);
-	p->se.on_rq = 0;
-}
-
-vs
-
-static void deactivate_task(struct rq *rq, struct task_struct *p, int sleep)
-{
-	if (task_contributes_to_load(p))
-		rq->nr_uninterruptible++;
-
-	dequeue_task(rq, p, sleep);
-	dec_nr_running(p, rq);
-}
-
-where
-
-static void dec_nr_running(struct task_struct *p, struct rq *rq)
-{
-	rq->nr_running--;
-	dec_load(rq, p);
-}
-
-And since set_user_nice() actually changes the load we'd better not
-forget to do this dec/inc load stuff.
-
-So I'm thinking this patch would actually break stuff.
-
-> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-> CC: Peter Zijlstra <peterz@infradead.org>
-> CC: Ingo Molnar <mingo@elte.hu>
-> ---
+Rafael J. Wysocki wrote:
+>>> Crashes during boot on a box with Phenom X4 and AMD 790-based mainboard.
+>>> AFAICS, the Linus' tree is unaffected and linux-next from yesterday was fine
+>>> on the same box with the same .config.
+>> OK, that means that all the current SCSI patches were merged and it was
+>> still OK (they're all in linus and I haven't put together the next slice
+>> yet).  I'd suspect something in drivers/ata (cc ide list added).
+>>
+>> James
 > 
->  kernel/sched.c |    6 ++----
->  1 files changed, 2 insertions(+), 4 deletions(-)
+> OK, let's ask Tejun and Jeff too.
 > 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 31f91d9..b046754 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -4679,10 +4679,8 @@ void set_user_nice(struct task_struct *p, long nice)
->  		goto out_unlock;
->  	}
->  	on_rq = p->se.on_rq;
-> -	if (on_rq) {
-> +	if (on_rq)
->  		dequeue_task(rq, p, 0);
-> -		dec_load(rq, p);
-> -	}
+> I suspect the AHCI driver, because the same kernel works on my other boxes
+> with different SATA controllers.
 >  
->  	p->static_prio = NICE_TO_PRIO(nice);
->  	set_load_weight(p);
-> @@ -4692,7 +4690,7 @@ void set_user_nice(struct task_struct *p, long nice)
->  
->  	if (on_rq) {
->  		enqueue_task(rq, p, 0);
-> -		inc_load(rq, p);
-> +
->  		/*
->  		 * If the task increased its priority or is running and
->  		 * lowered its priority, then reschedule its CPU:
-> 
+>>> Full dmesg: http://www.sisk.pl/kernel/debug/next/20080716/crash-M3A32-MVP.log
+>>> Kernel config: http://www.sisk.pl/kernel/debug/next/20080716/M3A32-MVP-config
+>>>
+>>> scsi scan: INQUIRY result too short (5), using 36
+>>> scsi 2:0:0:0: Direct-Access                                    PQ: 0 ANSI: 0
+>>> ------------[ cut here ]------------
+>>> kernel BUG at /home/rafael/src/linux-next/mm/slab.c:2822!
 
+The offending commit was 83e7d317cef3ee624886f128401a72e414c0a99d
+which implements sg iterator but it forgot to add offset to the
+kmapped address and copy goes out of bounds.  Takashi, this could also
+be the problem you were seeing if you don't have slab debugging turned
+on.
+
+The implemented iterator didn't look too pretty and the usage was
+quite awkward involving a callback and end condition check distributed
+between the callback and the outer user who runs the loop.  For
+copying, end of buffer condition was tested by testing whether the
+callback returned 0 copied bytes for the iteration but AFAIK there's
+no restriction against zero length sg entry in the middle and it will
+terminate the copying prematurely.
+
+So, I implemented slightly different version which follows below.
+
+Subject: [PATCH next-20080716] sg: reimplement sg mapping iterator
+
+sg mapping iterator implemented by 83e7d317... had a bug and was a bit
+awkard to use.  Reimplement it as more regular iterator with start,
+next and stop.  As there's already an sg iterator which iterates over
+sg entries themselves, name this sg_mapping_iterator.
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Pierre Ossman <drzeus@drzeus.cx>
+---
+ include/linux/scatterlist.h |   43 +++++++---
+ lib/scatterlist.c           |  186 ++++++++++++++++++++++----------------------
+ 2 files changed, 125 insertions(+), 104 deletions(-)
+
+diff --git a/include/linux/scatterlist.h b/include/linux/scatterlist.h
+index 93411a1..c9058b0 100644
+--- a/include/linux/scatterlist.h
++++ b/include/linux/scatterlist.h
+@@ -13,12 +13,6 @@ struct sg_table {
+ 	unsigned int orig_nents;	/* original size of list */
+ };
+ 
+-struct sg_iterator {
+-	struct scatterlist *sg;		/* current entry */
+-	unsigned int nents;		/* number of remaining entries */
+-	unsigned int offset;		/* offset within sg */
+-};
+-
+ /*
+  * Notes on SG table design.
+  *
+@@ -219,12 +213,6 @@ int __sg_alloc_table(struct sg_table *, unsigned int, unsigned int, gfp_t,
+ 		     sg_alloc_fn *);
+ int sg_alloc_table(struct sg_table *, unsigned int, gfp_t);
+ 
+-typedef size_t (sg_iter_fn)(void *, size_t, struct page *, void *);
+-
+-void sg_iter_init(struct sg_iterator *iter, struct scatterlist *sgl,
+-		  unsigned int nents);
+-size_t sg_iterate(struct sg_iterator *iter, sg_iter_fn *fn, void *priv);
+-
+ size_t sg_copy_from_buffer(struct scatterlist *sgl, unsigned int nents,
+ 			   void *buf, size_t buflen);
+ size_t sg_copy_to_buffer(struct scatterlist *sgl, unsigned int nents,
+@@ -236,4 +224,35 @@ size_t sg_copy_to_buffer(struct scatterlist *sgl, unsigned int nents,
+  */
+ #define SG_MAX_SINGLE_ALLOC		(PAGE_SIZE / sizeof(struct scatterlist))
+ 
++
++/*
++ * Mapping sg iterator
++ *
++ * Iterates over sg entries mapping page-by-page.  On each successful
++ * iteration, @miter->page points to the mapped page and
++ * @miter->length bytes of data can be accessed at @miter->addr.  As
++ * long as an interation is enclosed between start and stop, the user
++ * is free to choose control structure and when to stop.
++ */
++
++#define SG_MITER_ATOMIC		(1 << 0)	 /* use kmap_atomic */
++
++struct sg_mapping_iter {
++	/* the following three fields can be accessed directly */
++	struct page		*page;		/* currently mapped page */
++	void			*addr;		/* pointer to the mapped area */
++	size_t			length;		/* length of the mapped area */
++
++	/* these are internal states, keep away */
++	struct scatterlist	*__sg;		/* current entry */
++	unsigned int		__nents;	/* nr of remaining entries */
++	unsigned int		__offset;	/* offset within sg */
++	unsigned int		__flags;
++};
++
++void sg_miter_start(struct sg_mapping_iter *miter, struct scatterlist *sgl,
++		    unsigned int nents, unsigned int flags);
++bool sg_miter_next(struct sg_mapping_iter *miter);
++void sg_miter_stop(struct sg_mapping_iter *miter);
++
+ #endif /* _LINUX_SCATTERLIST_H */
+diff --git a/lib/scatterlist.c b/lib/scatterlist.c
+index ea8c3a1..6d51bd3 100644
+--- a/lib/scatterlist.c
++++ b/lib/scatterlist.c
+@@ -295,115 +295,107 @@ int sg_alloc_table(struct sg_table *table, unsigned int nents, gfp_t gfp_mask)
+ EXPORT_SYMBOL(sg_alloc_table);
+ 
+ /**
+- * sg_iter_init - Initialize/reset an sg iterator structure
+- * @iter:	The sg iterator structure
+- * @sgl:	The sg list to iterate over
+- * @nents:	Number of sg entries
++ * sg_miter_start - start mapping iteration over a sg list
++ * @miter: sg mapping iter to be started
++ * @sgl: sg list to iterate over
++ * @nents: number of sg entries
+  *
+- *  Description:
+- *    Sets up the internal state of the sg iterator structure
+- *    to the beginning of the given sg list.
++ * Description:
++ *   Starts mapping iterator @miter.
++ *
++ * Context:
++ *   Don't care.
+  */
+-void sg_iter_init(struct sg_iterator *iter, struct scatterlist *sgl,
+-		  unsigned int nents)
++void sg_miter_start(struct sg_mapping_iter *miter, struct scatterlist *sgl,
++		    unsigned int nents, unsigned int flags)
+ {
+-	memset(iter, 0, sizeof(struct sg_iterator));
++	memset(miter, 0, sizeof(struct sg_mapping_iter));
+ 
+-	iter->sg = sgl;
+-	iter->nents = nents;
+-	iter->offset = 0;
++	miter->__sg = sgl;
++	miter->__nents = nents;
++	miter->__offset = 0;
++	miter->__flags = flags;
+ }
+-EXPORT_SYMBOL(sg_iter_init);
++EXPORT_SYMBOL(sg_miter_start);
+ 
+ /**
+- * sg_iterate - Process the next chunk of the sg list
+- * @iter:	The sg iterator structure
+- * @fn:		Function that will process the data
+- * @priv:	Private data passed on to @fn@
++ * sg_miter_next - proceed mapping iterator to the next mapping
++ * @miter: sg mapping iter to proceed
+  *
+- *  Description:
+- *    The main worker of sg list iteration. Each invokation will
+- *    call @fn@ with a chunk of data that has been mapped into
+- *    kernel reachable virtual memory. The function must return
+- *    the number of bytes processed, which may be less than the
+- *    total size of the current chunk.
++ * Description:
++ *   Proceeds @miter@ to the next mapping.  @miter@ should have been
++ *   started using sg_miter_start().  On successful return,
++ *   @miter@->page, @miter@->addr and @miter@->length point to the
++ *   current mapping.
+  *
+- *    It is not required that @fn@ and @priv@ are identical between
+- *    each invokation, allowing separate processing of different
+- *    sections of the sg list.
++ * Context:
++ *   IRQ disabled if SG_MITER_ATOMIC.  IRQ must stay disabled till
++ *   @miter@ is stopped.  May sleep if !SG_MITER_ATOMIC.
+  *
+- *    The return value is that given by @fn@, or 0 if the end of
+- *    the sg list has been reached.
++ * Returns:
++ *   true if @miter contains the next mapping.  false if end of sg
++ *   list is reached.
+  */
+-size_t sg_iterate(struct sg_iterator *iter, sg_iter_fn *fn, void *priv)
++bool sg_miter_next(struct sg_mapping_iter *miter)
+ {
+-	struct page *page;
+-	int n;
+-	size_t buflen;
+-	unsigned int sg_offset, sg_remain;
+-
+-	void *buf;
+-	size_t result;
+-
+-	WARN_ON(!irqs_disabled());
++	unsigned int off, len;
+ 
+-	if (iter->nents == 0)
+-		return 0;
++	/* check for end and drop resources from the last iteration */
++	if (!miter->__nents)
++		return false;
+ 
+-	sg_offset = iter->sg->offset + iter->offset;
+-	sg_remain = iter->sg->length - iter->offset;
++	sg_miter_stop(miter);
+ 
+-	n = sg_offset / PAGE_SIZE;
+-	page = nth_page(sg_page(iter->sg), n);
++	/* map the next page */
++	off = miter->__sg->offset + miter->__offset;
++	len = miter->__sg->length - miter->__offset;
+ 
+-	buflen = PAGE_SIZE - (sg_offset % PAGE_SIZE);
+-	if (buflen > sg_remain)
+-		buflen = sg_remain;
++	miter->page = nth_page(sg_page(miter->__sg), off >> PAGE_SHIFT);
++	off &= ~PAGE_MASK;
++	miter->length = min_t(unsigned int, len, PAGE_SIZE - off);
+ 
+-	buf = kmap_atomic(page, KM_BIO_SRC_IRQ);
+-	result = fn(buf, buflen, page, priv);
+-	kunmap_atomic(buf, KM_BIO_SRC_IRQ);
+-
+-	WARN_ON(result > buflen);
+-
+-	iter->offset += result;
++	if (miter->__flags & SG_MITER_ATOMIC)
++		miter->addr = kmap_atomic(miter->page, KM_BIO_SRC_IRQ) + off;
++	else
++		miter->addr = kmap(miter->page) + off;
+ 
+-	if (iter->offset == iter->sg->length) {
+-		iter->nents--;
+-		if (iter->nents)
+-			iter->sg = sg_next(iter->sg);
+-		iter->offset = 0;
++	/* proceed the iterator */
++	miter->__offset += miter->length;
++	if (miter->__offset == miter->__sg->length && --miter->__nents) {
++		miter->__sg = sg_next(miter->__sg);
++		miter->__offset = 0;
+ 	}
+ 
+-	return result;
++	return true;
+ }
+-EXPORT_SYMBOL(sg_iterate);
++EXPORT_SYMBOL(sg_miter_next);
+ 
+-struct sg_copy_state {
+-	void *buf;
+-	size_t offset, buflen;
+-	int to_buffer;
+-};
+-
+-static size_t sg_copy_worker(void *buf, size_t buflen,
+-			     struct page *page, void *priv)
++/**
++ * sg_miter_stop - stop mapping iteration
++ * @miter: sg mapping iter to be stopped
++ *
++ * Description:
++ *   Stops mapping iterator @miter.
++ *
++ * Context:
++ *   IRQ disabled if the SG_MITER_ATOMIC is set.  Don't care otherwise.
++ */
++void sg_miter_stop(struct sg_mapping_iter *miter)
+ {
+-	struct sg_copy_state *st = priv;
+-
+-	if (buflen > (st->buflen - st->offset))
+-		buflen = st->buflen - st->offset;
++	/* drop resources from the last iteration */
++	if (miter->addr) {
++		if (miter->__flags & SG_MITER_ATOMIC) {
++			WARN_ON(!irqs_disabled());
++			kunmap_atomic(miter->addr, KM_BIO_SRC_IRQ);
++		} else
++			kunmap(miter->addr);
+ 
+-	if (st->to_buffer)
+-		memcpy(st->buf + st->offset, buf, buflen);
+-	else {
+-		memcpy(buf, st->buf + st->offset, buflen);
+-		flush_kernel_dcache_page(page);
++		miter->page = NULL;
++		miter->addr = NULL;
++		miter->length = 0;
+ 	}
+-
+-	st->offset += buflen;
+-
+-	return buflen;
+ }
++EXPORT_SYMBOL(sg_miter_stop);
+ 
+ /**
+  * sg_copy_buffer - Copy data between a linear buffer and an SG list
+@@ -420,19 +412,29 @@ static size_t sg_copy_worker(void *buf, size_t buflen,
+ static size_t sg_copy_buffer(struct scatterlist *sgl, unsigned int nents,
+ 			     void *buf, size_t buflen, int to_buffer)
+ {
+-	struct sg_iterator iter;
+-	struct sg_copy_state state;
++	unsigned int offset = 0;
++	struct sg_mapping_iter miter;
++
++	sg_miter_start(&miter, sgl, nents, SG_MITER_ATOMIC);
++
++	while (sg_miter_next(&miter) && offset < buflen) {
++		unsigned int len;
+ 
+-	sg_iter_init(&iter, sgl, nents);
++		len = min(miter.length, buflen - offset);
+ 
+-	state.buf = buf;
+-	state.offset = 0;
+-	state.buflen = buflen;
+-	state.to_buffer = to_buffer;
++		if (to_buffer)
++			memcpy(buf + offset, miter.addr, len);
++		else {
++			memcpy(miter.addr, buf + offset, len);
++			flush_kernel_dcache_page(miter.page);
++		}
++
++		offset += len;
++	}
+ 
+-	while (sg_iterate(&iter, sg_copy_worker, &state));
++	sg_miter_stop(&miter);
+ 
+-	return state.offset;
++	return offset;
+ }
+ 
+ /**
