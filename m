@@ -1,115 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755765AbYGRJup@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbYGRJvK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755765AbYGRJup (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 05:50:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbYGRJuf
+	id S1756257AbYGRJvK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 05:51:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbYGRJu4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 05:50:35 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:48027 "EHLO
-	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752976AbYGRJud (ORCPT
+	Fri, 18 Jul 2008 05:50:56 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37256 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753832AbYGRJuy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 05:50:33 -0400
-Date: Fri, 18 Jul 2008 04:50:00 -0500
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Len Brown <lenb@kernel.org>
-Cc: Linux Power Management List <linux-pm@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: Re: [linux-pm] Linux Power Management Mini-Summit -- Ottawa --
-	July 22, 2008
-Message-ID: <20080718095000.GA5017@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <alpine.LFD.1.10.0807171724070.16742@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807171724070.16742@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 18 Jul 2008 05:50:54 -0400
+Date: Fri, 18 Jul 2008 18:52:26 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Libcg Devel Mailing List <libcg-devel@lists.sourceforge.net>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Paul Menage <menage@google.com>, Peter Zijlstra <pzijlstr@redhat.com>,
+       Kazunaga Ikeno <k-ikeno@ak.jp.nec.com>,
+       Morton Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC] How to handle the rules engine for cgroups
+Message-Id: <20080718185226.f809281d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080701191126.GA17376@redhat.com>
+References: <20080701191126.GA17376@redhat.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 05:27:32PM -0400, Len Brown wrote:
-> We'll be in The Rideau Suite in Les-Suites
-> Tuesday July 22nd 8:30-18:30.
-> 
-> Thanks to HP for sponsoring
-> lunch at 12:30 as well as snacks at 10:00 and 15:30.
-> We'll wing it for dinner.
-> 
-> On linux-pm (sorry, on sabbatical I've been
-> bad about keeping up on email) I've seen
-> intent to attend from:
-> 
-> Len Brown <len.brown@intel.com>
-> Alan Stern <stern@rowland.harvard.edu>
-> Dipankar Sarma <dipankar@in.ibm.com>
-> Rafael J. Wysocki <rjw@sisk.pl>
-> "Woodruff, Richard" <r-woodruff2@ti.com>
-> Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> Matt Domsch <Matt_Domsch@dell.com>
-> Jarod Wilson <jwilson@redhat.com>
-> Tim Bird <tim.bird@am.sony.com>
-> Paul Mundt <lethal@linux-sh.org>
-> Hiroyuki Machida <Hiroyuki.Mach@gmail.com>
-> 
-Hi Len,
-I would like to attend the pm-mini summit if there's a slot available. I
-am interested in discussing:
+On Tue, 1 Jul 2008 15:11:26 -0400
+Vivek Goyal <vgoyal@redhat.com> wrote:
 
-a) the improvements to idle load balancing
-algorithm on multi-node multi-core systems, for better power savings.
+> Hi,
+> 
+> While development is going on for cgroup and various controllers, we also
+> need a facility so that an admin/user can specify the group creation and
+> also specify the rules based on which tasks should be placed in respective
+> groups. Group creation part will be handled by libcg which is already
+> under development. We still need to tackle the issue of how to specify
+> the rules and how these rules are enforced (rules engine).
+> 
 
-b) Use of some kind of light-weight CPU-Hotplug for power-management
-on server systems.
+A different topic.
+ 
+Recently I'm interested in "How to write userland daemon program
+to control group subsystem." To implement that effectively, we need
+some notifier between user <-> kernel.
 
-> Several send their regrets:
-> Dave Jones
-> Pavel Machek
-> Arjan van de Ven
-> 
-> If you plan to attend, please let me know,
-> because the folks at OLS want to know,
-> to simplify OLS registration.
-> 
-> thanks,
-> -Len
-> ---
-> 
-> We are again planning a Linux Power Management Mini-Summit preceding OLS.
-> This year we are looking at a single day, Tuesday July 22nd.
-> 
-> OLS is generously supporting mini-summits by providing the room
-> and projector: http://www.linuxsymposium.org/2008/minisummits.php
-> 
-> If you are interested in sponsoring the food or
-> other forum needs, please let me know.
-> 
-> Minutes from last year's meeting can be found here:
-> http://lwn.net/Articles/249019
-> 
-> If you have feedback on last year's meeting that
-> we can use to improve this year's, please speak up.
-> 
-> The feedback at the time was pretty positive, so I'm thinking
-> that unless there are new best-known-methods, that we'll stick
-> with the same open method of self-nominated attendees,
-> an agenda provoked by discussion on linux-pm ahead of time
-> and consensus of attendees, and a forum small enough to support
-> a single focused discussion.
-> 
-> (yes, one improvement I plan on this year is to publish minutes immediately.
->  OLS was sort of hectic for me last year and that caused a delay)
-> 
-> thanks,
-> -Len
-> 
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+Can we use "inotify" to catch changes in cgroup (by daemon program) ?
 
--- 
-Thanks and Regards
-gautham
+For example, create a new file under memory cgroup
+==
+  /opt/memory_cgroup/group_A/notify_at_memory_reach_limit
+==
+And a user watches the file by inotify.
+The kernel modify modified-time of notify_at_memory_reach_limit file and call
+fs/notify_user.c::notify_change() against this inode. He can catchthe event
+by inotify.
+(I think he can also catch removal of this file, etc...)
+
+Is there some difficulty or problem ? (I'm sorry if we can do this now.)
+
+Thanks,
+-Kame
+
+
+
+> I have gathered few views, with regards to how rule engine can possibly be
+> implemented, I am listing these down.
+> 
+> Proposal 1
+> ==========
+> Let user space daemon hanle all that. Daemon will open a netlink socket
+> and receive the notifications for various kernel events. Daemon will
+> also parse appropriate admin specified rules config file and place the
+> processes in right cgroup based on rules as and when events happen.
+> 
+> I have written a prototype user space program which does that. Program 
+> can be found here. Currently it is in very crude shape.
+> 
+> http://people.redhat.com/vgoyal/misc/rules-engine-daemon/user-id-based-namespaces.patch
+> 
+> Various people have raised two main issues with this approach.
+> 
+> - netlink is not a reliable protocol.
+> 	- Messages can be dropped and one can loose message. That means a
+> 	  newly forked process might never go into right group as meant.
+> 
+> - How to handle delays in rule exectuion?
+> 	- For example, if an "exec" happens and by the time process is moved to
+> 	 right group, it might have forked off few more processes or might
+> 	 have done quite some amount of memory allocation which will be
+>    	 charged to the wring group. Or, newly exec process might get
+>  	 killed in existing cgroup because of lack of memory (despite the
+> 	 fact that destination cgroup has sufficient memory).
+> 
+> Proposal 2
+> ==========
+> Implement one or more kernel modules which will implement the rule engine.
+> User space program can parse the config files and pass it to module.
+> Kernel will be patched only on select points to look for the rules (as
+> provided by modules). Very minimal code running inside the kernel if there
+> are no rules loaded.
+> 
+> Concerns:
+> - Rules can become complex and we don't want to handle that complexity in
+>   kernel.
+> 
+> Pros:
+> - Reliable and precise movement of tasks in right cgroup based on rules.
+> 
+> Proposal 3
+> ==========
+> How about if additional parameters can be passed to system calls and one
+> can pass destination cgroup as additional parameter. Probably something
+> like sys_indirect proposal. Maybe glibc can act as a wrapper to pass
+> additional parameter so that applications don't need any modifications.
+> 
+> Concerns:
+> ========
+> - Looks like sys_indirect interface for passing extra flags was rejected.
+> - Requires extra work in glibc which can also involve parsing of rule
+>   files. :-(
+> 
+> Proposal 4
+> ==========
+> Some vauge thoughts are there regarding how about kind of freezing the
+> process or thread upon fork, exec and unfreeze it once the thread has been
+> placed in right cgroup. 
+> 
+> Concerns:
+> ========
+> - Requires reliable netlink protocol otherwise there is a possibility that
+>   a task never gets unfrozen.
+> - On what basis does one freeze a thread. There might not be any rules to
+>   process for that thread we will unnecessarily delay it.
+> 
+> 
+> Please provide your inputs regarding what's the best way to handle the
+> rules engine.
+> 
+> To me, letting the rules live in separate module/modules seems to be a
+> reasonable way to move forward which will provide reliable and timely
+> execution of rules and by making it modular, we can remove most of the
+> complexity from core kernel code.
+> 
+> Thanks
+> Vivek
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
