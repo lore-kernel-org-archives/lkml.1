@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760705AbYGRXhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760236AbYGRXi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760705AbYGRXhl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 19:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756122AbYGRXhb
+	id S1760236AbYGRXi6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 19:38:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756974AbYGRXiw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 19:37:31 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:36371 "EHLO
+	Fri, 18 Jul 2008 19:38:52 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:36399 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756735AbYGRXha (ORCPT
+	with ESMTP id S1756150AbYGRXiu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 19:37:30 -0400
-Message-ID: <48812902.5070003@zytor.com>
-Date: Fri, 18 Jul 2008 16:36:34 -0700
+	Fri, 18 Jul 2008 19:38:50 -0400
+Message-ID: <48812962.1010809@zytor.com>
+Date: Fri, 18 Jul 2008 16:38:10 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
@@ -29,15 +29,13 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Mathieu Desnoyers wrote:
 > 
-> Hrm, I thought that by following the execution flow to both branches and
-> by looking at the code pattern found (load immediate, test, branch) and
-> by placing a constraint on the eax register to detect the liveliness
-> region of that variable we would be guaranteed that the compiler could
-> not re-use this variable outside of the pattern scope.
+> The generated code you are talking about will generate a different code
+> pattern, won't it (e.g. saving the registers on the stack before the
+> branch) ? And in this case, we fall-back on the standard immediate
+> values.
 > 
 
-Nope, and you *cannot* allow such registers to be live *anywhere* the C 
-compiler is generating code, even between two asm() statements with 
-nothing in between.
+Not necessarily, and you *certainly* can't rely on pattern analysis to 
+determine when it's unsafe.
 
 	-hpa
