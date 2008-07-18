@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759775AbYGRR0F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758045AbYGRR0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759775AbYGRR0F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 13:26:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbYGRRZy
+	id S1758045AbYGRR0b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 13:26:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759295AbYGRR0B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 13:25:54 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:50682 "EHLO e2.ny.us.ibm.com"
+	Fri, 18 Jul 2008 13:26:01 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47549 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755680AbYGRRZw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 13:25:52 -0400
-Subject: Re: [Jfs-discussion] latest -git: BUG at fs/jfs/namei.c:512
-	assert(ip->i_nlink)
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: jfs-discussion@lists.sourceforge.net,
-       Johannes Weiner <hannes@saeurebad.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <19f34abd0807181017i2fac8291n439c23843c55afd6@mail.gmail.com>
-References: <19f34abd0807171135m4a3b39e6v4065ed676720ae46@mail.gmail.com>
-	 <1216336164.32175.3.camel@norville.austin.ibm.com>
-	 <19f34abd0807180110k5a19e525y463b59208f0587b2@mail.gmail.com>
-	 <1216401356.11215.15.camel@norville.austin.ibm.com>
-	 <19f34abd0807181017i2fac8291n439c23843c55afd6@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 18 Jul 2008 12:25:47 -0500
-Message-Id: <1216401947.11215.17.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+	id S1758871AbYGRRZ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 13:25:59 -0400
+Date: Fri, 18 Jul 2008 19:25:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: yhlu.kernel@gmail.com, tglx@linutronix.de, hpa@zytor.com,
+       kernel-janitors@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -next] arch/x86/kernel/cpu/common_64.c: remove double
+	inclusions
+Message-ID: <20080718172546.GN6875@elte.hu>
+References: <a4423d670807091128t3a03b739y66fcffcfcf961f8@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a4423d670807091128t3a03b739y66fcffcfcf961f8@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0119]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-07-18 at 19:17 +0200, Vegard Nossum wrote:
-> On Fri, Jul 18, 2008 at 7:15 PM, Dave Kleikamp
-> <shaggy@linux.vnet.ibm.com> wrote:
 
-> > Here's another patch
-> >
-> > JFS: validate di_fileset when reading inode from disk.
+* Alexander Beregalov <a.beregalov@gmail.com> wrote:
+
+> From: Alexander Beregalov <a.beregalov@gmail.com>
 > 
-> Thanks. On top of the previous one, I presume?
+> x86: remove double inclusions in arch/x86/kernel/cpu/common_64.c
 
-Yes.  I'm still looking at the others.
+applied to tip/x86/cleanups, thanks.
 
--- 
-David Kleikamp
-IBM Linux Technology Center
-
+	Ingo
