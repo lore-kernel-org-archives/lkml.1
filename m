@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759271AbYGRNwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757430AbYGRNxI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759271AbYGRNwt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 09:52:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757563AbYGRNwd
+	id S1757430AbYGRNxI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 09:53:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757815AbYGRNwe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 18 Jul 2008 09:52:34 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:43367 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757531AbYGRNwd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 18 Jul 2008 09:52:33 -0400
-Received: from www.tglx.de ([62.245.132.106]:51352 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757331AbYGRNwc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 09:52:32 -0400
-Date: Fri, 18 Jul 2008 15:52:09 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Ingo Molnar <mingo@elte.hu>
-cc: eric miao <eric.y.miao@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Jack Ren <jack.ren@marvell.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [PATCH] sched: do not stop ticks when cpu is not idle
-In-Reply-To: <20080718102446.GV6875@elte.hu>
-Message-ID: <alpine.LFD.1.10.0807181548290.4316@apollo.tec.linutronix.de>
-References: <f17812d70807172341u92270fdvc80e72cc5599c56f@mail.gmail.com> <20080718102446.GV6875@elte.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: [PATCH 10/15] regulator: documentation - consumer interface
+From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <20080717183931.GB15178@flint.arm.linux.org.uk>
+References: <1215703618.13431.66.camel@odin> <487777D5.7050807@teltonika.lt>
+	 <20080711191824.GA28821@sirena.org.uk>
+	 <20080717183931.GB15178@flint.arm.linux.org.uk>
+Content-Type: text/plain
+Date: Fri, 18 Jul 2008 14:52:26 +0100
+Message-Id: <1216389146.31838.90.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Jul 2008, Ingo Molnar wrote:
+On Thu, 2008-07-17 at 19:39 +0100, Russell King - ARM Linux wrote:
+> On Fri, Jul 11, 2008 at 08:18:25PM +0100, Mark Brown wrote:
+> > On Fri, Jul 11, 2008 at 06:10:13PM +0300, Paulius Zaleckas wrote:
+> > > Liam Girdwood wrote:
+> > 
+> > > >+previously enabled by bootloader or kernel board initialisation code.
+> > 
+> > > initialization
+> > >         ^
+> > 
+> > Not in the UK :)
 > 
-> * eric miao <eric.y.miao@gmail.com> wrote:
+> Actually, wrong.  "Initialize" is correct spelling in the UK too - I've
+> checked several UK dictionaries printed in the 1960s, 1970s and 1980s
+> sourced from different printers, and they all agree on that.
 > 
-> > Issue: the sched tick would be stopped in some race conditions.
+> At the same time I checked other words which I thought ended in -ise.
+> The dictionaries all said -ize and didn't list the -ise version.
 > 
-> > --- a/kernel/sched.c
-> > +++ b/kernel/sched.c
-> > @@ -4027,7 +4027,8 @@ need_resched_nonpreemptible:
-> >  		rq->nr_switches++;
-> >  		rq->curr = next;
-> >  		++*switch_count;
-> > -
-> > +		if (rq->curr != rq->idle)
-> > +			tick_nohz_restart_sched_tick();
-> >  		context_switch(rq, prev, next); /* unlocks the rq */
+> Therefore, I suspect -ise came into use in the late 1980s in the UK.
 > 
-> applied to tip/sched/urgent, thanks Eric.
-> 
-> Thomas, Peter, Dmitry, do you concur with the analysis? (commit below) 
+> Given my research, I'm intending to use the -ize version myself from
+> now on, to support the English ideals. 8)
 
-Yes. I did not understand the issue when Jack pointed it out to me,
-but with Erics explanation it's really clear. Thanks for tracking that
-down.
+ok, I concede.  -ize it is ;)
 
-> It looks a bit ugly to me in the middle of schedule() - is there no wait 
-> to solve this within kernel/time/*.c ?
+Liam 
 
-Hmm, yes. I think the proper fix is to enable the tick stop mechanism
-in the idle loop and disable it before we go to schedule. That takes
-an additional parameter to tick_nohz_stop_sched_tick(), but we then
-gain a very clear section where the nohz mimic can be active.
-
-I'll whip up a patch.
-
-Thanks,
-
-	tglx
