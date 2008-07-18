@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755926AbYGRKty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756286AbYGRKv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755926AbYGRKty (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 06:49:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbYGRKtq
+	id S1756286AbYGRKv6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 06:51:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbYGRKvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 06:49:46 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:34761 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751571AbYGRKtq (ORCPT
+	Fri, 18 Jul 2008 06:51:51 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:28231 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751998AbYGRKvu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 06:49:46 -0400
-Message-ID: <48807527.9060806@s5r6.in-berlin.de>
-Date: Fri, 18 Jul 2008 12:49:11 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
+	Fri, 18 Jul 2008 06:51:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=Dyj74hoUcscclygbVg3XDAp7mqXoN0f57C+G9TgmPld/5mpqZDxEkgTBcEcjAQQbE5
+         ZM9874hxnnzogiB3JXhCwbYRXhXyic5KAJYnSfqs8moMKIoePbUpnz8asHFxXcoL5dkT
+         bnHp8QzYv9I2i8ULbbOXnfNTvt6jTTU0SpRi0=
+Message-ID: <ea8d860a0807180351q490deea1rdf61469057e79ac3@mail.gmail.com>
+Date: Fri, 18 Jul 2008 12:51:48 +0200
+From: "Marcin Obara" <marcin_obara@users.sourceforge.net>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [PATCH] Intel Management Engine Interface
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <874p6nsft5.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-To: JiSheng Zhang <jszhang3@mail.ustc.edu.cn>
-CC: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
-       krh@redhat.com
-Subject: Re: PATCH] firewire: add padding to some struct
-References: <416371533.19965@ustc.edu.cn>
-In-Reply-To: <416371533.19965@ustc.edu.cn>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.DEB.1.00.0807172021450.26825@ip-195-3-221-75.vnet.pl>
+	 <874p6nsft5.fsf@basil.nowhere.org>
+X-Google-Sender-Auth: d792d7b8674d4df9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-JiSheng Zhang wrote:
-> struct fw_cdev_event_response and struct fw_cdev_event_iso_interrupt need padding.
-> Otherwise, offset of the zero length array is not equal to the struct size. It may
-> cause some strange problems under some platforms such as sparc32. This
-> patch(against 2.6.26) should fix it.
+2008/7/18 Andi Kleen <andi@firstfloor.org>:
+> How about the save oops data in HECI code? Will that be posted
+> on top of this?
 
-The best solution to this problem would be to use
+This question was mostly already answered in
+http://lkml.org/lkml/2007/12/11/166
+In addition current MEI driver is for current platforms (AMT 3, 4, 5)
+and have no AMT 1.0 legacy support.
 
-	offsetof(struct fw_cdev_event_XYZ, data)
-
-instead of sizeof(struct fw_cdev_event_XYZ) in all the places where the
-offset is required.
-
-Your proposed solution to add padding...
-
-> --- old/include/linux/firewire-cdev.h	2008-07-18 16:34:01.181794046 +0800
-> +++ new/include/linux/firewire-cdev.h	2008-07-18 16:35:46.649294275 +0800
-> @@ -92,6 +92,7 @@
->  	__u32 type;
->  	__u32 rcode;
->  	__u32 length;
-> +	__u32 pad;
->  	__u32 data[0];
->  };
->  
-> @@ -143,6 +144,7 @@
->  	__u32 type;
->  	__u32 cycle;
->  	__u32 header_length;
-> +	__u32 pad;
->  	__u32 header[0];
->  };
->  
-
-...can alas not be applied because it would break ABI compatibility.
-
-Thanks for looking into it,
--- 
-Stefan Richter
--=====-==--- -=== =--=-
-http://arcgraph.de/sr/
+Marcin
