@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761183AbYGRWOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760283AbYGRWOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761183AbYGRWOW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 18:14:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757922AbYGRWLj
+	id S1760283AbYGRWOj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 18:14:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760111AbYGRWLn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 18:11:39 -0400
-Received: from styx.suse.cz ([82.119.242.94]:55542 "EHLO mail.suse.cz"
+	Fri, 18 Jul 2008 18:11:43 -0400
+Received: from styx.suse.cz ([82.119.242.94]:55547 "EHLO mail.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759970AbYGRWLg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 18:11:36 -0400
+	id S1760090AbYGRWLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 18:11:41 -0400
 From: David Sterba <dsterba@suse.cz>
-Subject: [PATCH 08/12] ipwireless: Constify buffer variables
+Subject: [PATCH 09/12] ipwireless: Explicitly request io and mem regions
 To: torvalds@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, dsterba@suse.cz, jkosina@suse.cz
-Date: Sat, 19 Jul 2008 00:11:35 +0200
-Message-ID: <20080718221135.19195.76732.stgit@ds.suse.cz>
+Date: Sat, 19 Jul 2008 00:11:40 +0200
+Message-ID: <20080718221140.19195.62126.stgit@ds.suse.cz>
 In-Reply-To: <20080718220840.19195.4140.stgit@ds.suse.cz>
 References: <20080718220840.19195.4140.stgit@ds.suse.cz>
 User-Agent: StGIT/0.14.3.173.g2e37
@@ -25,122 +25,200 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Documentation/pcmcia/driver-changes.txt says, that driver should call request_region
+for used memory/io regions since PCMCIA does not do this (since 2.6.8).
+
 Signed-off-by: David Sterba <dsterba@suse.cz>
 Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 ---
 
- drivers/char/pcmcia/ipwireless/hardware.c |   26 ++++++++++++++------------
- drivers/char/pcmcia/ipwireless/hardware.h |    2 +-
- drivers/char/pcmcia/ipwireless/tty.c      |    2 +-
- 3 files changed, 16 insertions(+), 14 deletions(-)
+ drivers/char/pcmcia/ipwireless/main.c |   79 +++++++++++++++++++--------------
+ drivers/char/pcmcia/ipwireless/main.h |    5 ++
+ 2 files changed, 50 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/char/pcmcia/ipwireless/hardware.c b/drivers/char/pcmcia/ipwireless/hardware.c
-index ff2093d..814ea32 100644
---- a/drivers/char/pcmcia/ipwireless/hardware.c
-+++ b/drivers/char/pcmcia/ipwireless/hardware.c
-@@ -30,11 +30,11 @@
- static void ipw_send_setup_packet(struct ipw_hardware *hw);
- static void handle_received_SETUP_packet(struct ipw_hardware *ipw,
- 					 unsigned int address,
--					 unsigned char *data, int len,
-+					 const unsigned char *data, int len,
- 					 int is_last);
- static void ipwireless_setup_timer(unsigned long data);
- static void handle_received_CTRL_packet(struct ipw_hardware *hw,
--		unsigned int channel_idx, unsigned char *data, int len);
-+		unsigned int channel_idx, const unsigned char *data, int len);
+diff --git a/drivers/char/pcmcia/ipwireless/main.c b/drivers/char/pcmcia/ipwireless/main.c
+index 6bdd11d..7169a0d 100644
+--- a/drivers/char/pcmcia/ipwireless/main.c
++++ b/drivers/char/pcmcia/ipwireless/main.c
+@@ -88,8 +88,6 @@ static int config_ipwireless(struct ipw_dev *ipw)
+ 	unsigned short buf[64];
+ 	cisparse_t parse;
+ 	unsigned short cor_value;
+-	win_req_t request_attr_memory;
+-	win_req_t request_common_memory;
+ 	memreq_t memreq_attr_memory;
+ 	memreq_t memreq_common_memory;
  
- /*#define TIMING_DIAGNOSTICS*/
- 
-@@ -615,8 +615,10 @@ static void pool_free(struct ipw_hardware *hw, struct ipw_rx_packet *packet)
- }
- 
- static void queue_received_packet(struct ipw_hardware *hw,
--				  unsigned int protocol, unsigned int address,
--				  unsigned char *data, int length, int is_last)
-+				  unsigned int protocol,
-+				  unsigned int address,
-+				  const unsigned char *data, int length,
-+				  int is_last)
- {
- 	unsigned int channel_idx = address - 1;
- 	struct ipw_rx_packet *packet = NULL;
-@@ -760,10 +762,10 @@ static void ipw_receive_data_work(struct work_struct *work_rx)
- 
- static void handle_received_CTRL_packet(struct ipw_hardware *hw,
- 					unsigned int channel_idx,
--					unsigned char *data, int len)
-+					const unsigned char *data, int len)
- {
--	struct ipw_control_packet_body *body =
--		(struct ipw_control_packet_body *) data;
-+	const struct ipw_control_packet_body *body =
-+		(const struct ipw_control_packet_body *) data;
- 	unsigned int changed_mask;
- 
- 	if (len != sizeof(struct ipw_control_packet_body)) {
-@@ -805,13 +807,13 @@ static void handle_received_CTRL_packet(struct ipw_hardware *hw,
- }
- 
- static void handle_received_packet(struct ipw_hardware *hw,
--				   union nl_packet *packet,
-+				   const union nl_packet *packet,
- 				   unsigned short len)
- {
- 	unsigned int protocol = packet->hdr.protocol;
- 	unsigned int address = packet->hdr.address;
- 	unsigned int header_length;
--	unsigned char *data;
-+	const unsigned char *data;
- 	unsigned int data_len;
- 	int is_last = packet->hdr.packet_rank & NL_LAST_PACKET;
- 
-@@ -1288,7 +1290,7 @@ static void *alloc_ctrl_packet(int header_size,
- }
- 
- int ipwireless_send_packet(struct ipw_hardware *hw, unsigned int channel_idx,
--			    unsigned char *data, unsigned int length,
-+			    const unsigned char *data, unsigned int length,
- 			    void (*callback) (void *cb, unsigned int length),
- 			    void *callback_data)
- {
-@@ -1522,10 +1524,10 @@ static void ipw_send_setup_packet(struct ipw_hardware *hw)
- 
- static void handle_received_SETUP_packet(struct ipw_hardware *hw,
- 					 unsigned int address,
--					 unsigned char *data, int len,
-+					 const unsigned char *data, int len,
- 					 int is_last)
- {
--	union ipw_setup_rx_msg *rx_msg = (union ipw_setup_rx_msg *) data;
-+	const union ipw_setup_rx_msg *rx_msg = (const union ipw_setup_rx_msg *) data;
- 
- 	if (address != ADDR_SETUP_PROT) {
- 		printk(KERN_INFO IPWIRELESS_PCCARD_NAME
-diff --git a/drivers/char/pcmcia/ipwireless/hardware.h b/drivers/char/pcmcia/ipwireless/hardware.h
-index e21d23a..90a8590 100644
---- a/drivers/char/pcmcia/ipwireless/hardware.h
-+++ b/drivers/char/pcmcia/ipwireless/hardware.h
-@@ -41,7 +41,7 @@ int ipwireless_set_RTS(struct ipw_hardware *hw, unsigned int channel_idx,
- 		int state);
- int ipwireless_send_packet(struct ipw_hardware *hw,
- 			    unsigned int channel_idx,
--			    unsigned char *data,
-+			    const unsigned char *data,
- 			    unsigned int length,
- 			    void (*packet_sent_callback) (void *cb,
- 							  unsigned int length),
-diff --git a/drivers/char/pcmcia/ipwireless/tty.c b/drivers/char/pcmcia/ipwireless/tty.c
-index 42f3815..b141450 100644
---- a/drivers/char/pcmcia/ipwireless/tty.c
-+++ b/drivers/char/pcmcia/ipwireless/tty.c
-@@ -259,7 +259,7 @@ static int ipw_write(struct tty_struct *linux_tty,
+@@ -188,6 +186,9 @@ static int config_ipwireless(struct ipw_dev *ipw)
+ 		goto exit0;
  	}
  
- 	ret = ipwireless_send_packet(tty->hardware, IPW_CHANNEL_RAS,
--			       (unsigned char *) buf, count,
-+			       buf, count,
- 			       ipw_write_packet_sent_callback, tty);
- 	if (ret == -1) {
- 		mutex_unlock(&tty->ipw_tty_mutex);
++	request_region(link->io.BasePort1, link->io.NumPorts1,
++			IPWIRELESS_PCCARD_NAME);
++
+ 	/* memory settings */
+ 
+ 	tuple.DesiredTuple = CISTPL_CFTABLE_ENTRY;
+@@ -214,16 +215,16 @@ static int config_ipwireless(struct ipw_dev *ipw)
+ 	}
+ 
+ 	if (parse.cftable_entry.mem.nwin > 0) {
+-		request_common_memory.Attributes =
++		ipw->request_common_memory.Attributes =
+ 			WIN_DATA_WIDTH_16 | WIN_MEMORY_TYPE_CM | WIN_ENABLE;
+-		request_common_memory.Base =
++		ipw->request_common_memory.Base =
+ 			parse.cftable_entry.mem.win[0].host_addr;
+-		request_common_memory.Size = parse.cftable_entry.mem.win[0].len;
+-		if (request_common_memory.Size < 0x1000)
+-			request_common_memory.Size = 0x1000;
+-		request_common_memory.AccessSpeed = 0;
++		ipw->request_common_memory.Size = parse.cftable_entry.mem.win[0].len;
++		if (ipw->request_common_memory.Size < 0x1000)
++			ipw->request_common_memory.Size = 0x1000;
++		ipw->request_common_memory.AccessSpeed = 0;
+ 
+-		ret = pcmcia_request_window(&link, &request_common_memory,
++		ret = pcmcia_request_window(&link, &ipw->request_common_memory,
+ 				&ipw->handle_common_memory);
+ 
+ 		if (ret != CS_SUCCESS) {
+@@ -246,16 +247,18 @@ static int config_ipwireless(struct ipw_dev *ipw)
+ 		ipw->is_v2_card =
+ 			parse.cftable_entry.mem.win[0].len == 0x100;
+ 
+-		ipw->common_memory = ioremap(request_common_memory.Base,
+-				request_common_memory.Size);
++		ipw->common_memory = ioremap(ipw->request_common_memory.Base,
++				ipw->request_common_memory.Size);
++		request_mem_region(ipw->request_common_memory.Base,
++				ipw->request_common_memory.Size, IPWIRELESS_PCCARD_NAME);
+ 
+-		request_attr_memory.Attributes =
++		ipw->request_attr_memory.Attributes =
+ 			WIN_DATA_WIDTH_16 | WIN_MEMORY_TYPE_AM | WIN_ENABLE;
+-		request_attr_memory.Base = 0;
+-		request_attr_memory.Size = 0;	/* this used to be 0x1000 */
+-		request_attr_memory.AccessSpeed = 0;
++		ipw->request_attr_memory.Base = 0;
++		ipw->request_attr_memory.Size = 0;	/* this used to be 0x1000 */
++		ipw->request_attr_memory.AccessSpeed = 0;
+ 
+-		ret = pcmcia_request_window(&link, &request_attr_memory,
++		ret = pcmcia_request_window(&link, &ipw->request_attr_memory,
+ 				&ipw->handle_attr_memory);
+ 
+ 		if (ret != CS_SUCCESS) {
+@@ -274,8 +277,10 @@ static int config_ipwireless(struct ipw_dev *ipw)
+ 			goto exit2;
+ 		}
+ 
+-		ipw->attr_memory = ioremap(request_attr_memory.Base,
+-				request_attr_memory.Size);
++		ipw->attr_memory = ioremap(ipw->request_attr_memory.Base,
++				ipw->request_attr_memory.Size);
++		request_mem_region(ipw->request_attr_memory.Base, ipw->request_attr_memory.Size,
++				IPWIRELESS_PCCARD_NAME);
+ 	}
+ 
+ 	INIT_WORK(&ipw->work_reboot, signalled_reboot_work);
+@@ -312,12 +317,12 @@ static int config_ipwireless(struct ipw_dev *ipw)
+ 	if (ipw->attr_memory && ipw->common_memory)
+ 		printk(KERN_INFO IPWIRELESS_PCCARD_NAME
+ 			": attr memory 0x%08lx-0x%08lx, common memory 0x%08lx-0x%08lx\n",
+-			request_attr_memory.Base,
+-			request_attr_memory.Base
+-			+ request_attr_memory.Size - 1,
+-			request_common_memory.Base,
+-			request_common_memory.Base
+-			+ request_common_memory.Size - 1);
++			ipw->request_attr_memory.Base,
++			ipw->request_attr_memory.Base
++			+ ipw->request_attr_memory.Size - 1,
++			ipw->request_common_memory.Base,
++			ipw->request_common_memory.Base
++			+ ipw->request_common_memory.Size - 1);
+ 
+ 	ipw->network = ipwireless_network_create(ipw->hardware);
+ 	if (!ipw->network)
+@@ -349,12 +354,16 @@ exit4:
+ 	pcmcia_disable_device(link);
+ exit3:
+ 	if (ipw->attr_memory) {
++		release_mem_region(ipw->request_attr_memory.Base,
++				ipw->request_attr_memory.Size);
+ 		iounmap(ipw->attr_memory);
+ 		pcmcia_release_window(ipw->handle_attr_memory);
+ 		pcmcia_disable_device(link);
+ 	}
+ exit2:
+ 	if (ipw->common_memory) {
++		release_mem_region(ipw->request_common_memory.Base,
++				ipw->request_common_memory.Size);
+ 		iounmap(ipw->common_memory);
+ 		pcmcia_release_window(ipw->handle_common_memory);
+ 	}
+@@ -366,19 +375,25 @@ exit0:
+ 
+ static void release_ipwireless(struct ipw_dev *ipw)
+ {
+-	struct pcmcia_device *link = ipw->link;
+-
+-	pcmcia_disable_device(link);
++	pcmcia_disable_device(ipw->link);
+ 
+-	if (ipw->common_memory)
++	if (ipw->common_memory) {
++		release_mem_region(ipw->request_common_memory.Base,
++				ipw->request_common_memory.Size);
+ 		iounmap(ipw->common_memory);
+-	if (ipw->attr_memory)
++	}
++	if (ipw->attr_memory) {
++		release_mem_region(ipw->request_attr_memory.Base,
++				ipw->request_attr_memory.Size);
+ 		iounmap(ipw->attr_memory);
++	}
+ 	if (ipw->common_memory)
+ 		pcmcia_release_window(ipw->handle_common_memory);
+ 	if (ipw->attr_memory)
+ 		pcmcia_release_window(ipw->handle_attr_memory);
+-	pcmcia_disable_device(link);
++
++	/* Break the link with Card Services */
++	pcmcia_disable_device(ipw->link);
+ }
+ 
+ /*
+@@ -436,10 +451,6 @@ static void ipwireless_detach(struct pcmcia_device *link)
+ 
+ 	release_ipwireless(ipw);
+ 
+-	/* Break the link with Card Services */
+-	if (link)
+-		pcmcia_disable_device(link);
+-
+ 	if (ipw->tty != NULL)
+ 		ipwireless_tty_free(ipw->tty);
+ 	if (ipw->network != NULL)
+diff --git a/drivers/char/pcmcia/ipwireless/main.h b/drivers/char/pcmcia/ipwireless/main.h
+index 1bfdcc8..0e0363a 100644
+--- a/drivers/char/pcmcia/ipwireless/main.h
++++ b/drivers/char/pcmcia/ipwireless/main.h
+@@ -45,10 +45,15 @@ struct ipw_tty;
+ struct ipw_dev {
+ 	struct pcmcia_device *link;
+ 	int is_v2_card;
++
+ 	window_handle_t handle_attr_memory;
+ 	void __iomem *attr_memory;
++	win_req_t request_attr_memory;
++
+ 	window_handle_t handle_common_memory;
+ 	void __iomem *common_memory;
++	win_req_t request_common_memory;
++
+ 	dev_node_t nodes[2];
+ 	/* Reference to attribute memory, containing CIS data */
+ 	void *attribute_memory;
 
