@@ -1,112 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754658AbYGRHhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754947AbYGRHkD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754658AbYGRHhv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 03:37:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbYGRHhk
+	id S1754947AbYGRHkD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 03:40:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbYGRHjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 03:37:40 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:58857 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752346AbYGRHhj (ORCPT
+	Fri, 18 Jul 2008 03:39:53 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:50088 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751927AbYGRHjw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 03:37:39 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoBAL/kf0h5LFxAiGdsb2JhbACSPQEBAQ8gnEI
-X-IronPort-AV: E=Sophos;i="4.31,208,1215354600"; 
-   d="scan'208";a="152233670"
-Date: Fri, 18 Jul 2008 17:37:24 +1000
-From: Dave Chinner <david@fromorbit.com>
+	Fri, 18 Jul 2008 03:39:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=KYFfNxr+uPtFsG0WUItgMuzXtFO2xN7jvso5XH6egMhrAC5qsGabB14fbHo9vxS17c
+         dICdiiVLsKrJomNhPs6TKTQB6jmZt0UMbqZgFbtuCoGDCKYFuKG/RCQ1DWP/9/ESA7uo
+         NrdE3fL84vA0qXb8v49UpbWLsddKK5HQ+Z7OY=
+From: Magnus Damm <magnus.damm@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org
-Subject: [BUG, NET] deadlock tearing down a bridged interface
-Message-ID: <20080718073724.GA5802@disturbed>
-Mail-Followup-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Cc: linux-sh@vger.kernel.org, gregkh@suse.de, lethal@linux-sh.org,
+       i2c@lm-sensors.org, Magnus Damm <magnus.damm@gmail.com>,
+       akpm@linux-foundation.org
+Date: Fri, 18 Jul 2008 16:40:02 +0900
+Message-Id: <20080718074002.32713.73442.sendpatchset@rx1.opensource.se>
+Subject: [PATCH 00/05] resource: type, size and IORESOURCE_CLK patches V2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Folks,
+This is V2 of the resource type, size and IORESOURCE_CLK patches.
 
-I just deadlocked networking on a 2.6.24 kernel. Basically I
-was trying to restart the bridge interface I use for UML sessions
-because it wasn't passing packets. This happens occasionally
-when I leave a UML session too long in gdb, so I bounced the
-bridge to get it working again.
+[PATCH 01/05] resource: add resource_size()
+[PATCH 02/05] resource: add resource_type() and IORESOURCE_TYPE_BITS
+[PATCH 03/05] resource: add new IORESOURCE_CLK type V2
+[PATCH 04/05] i2c-sh_mobile: IORESOURCE_CLK support
+[PATCH 05/05] sh: add IORESOURCE_CLK to SuperH Mobile I2C platform data
 
-Unfortunately, a UML session (2.6.25-rc9) was halting at the same
-time, and instead of giving me a 'device busy' error, the
-UML session stopped at:
+Changes since V1
+ - Just add a single bit for IORESOURCE_CLK
+ - Dropped "[PATCH 03/04] resource: use new resource type changes" for now
+ - Added IORESOURCE_CLK driver patch for i2c-sh_mobile
+ - Added IORESOURCE_CLK platform data patch
 
-Asking all remaining processes to terminate...done.
-All processes ended within 1 seconds....done.
-Saving random seed...done.
-Deconfiguring network interfaces...
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
+---
 
-It appears to be stuck closing the tunnel interface it was using:
-
-uml-linux     D ffffffff804297c0     0  7437   7428
- ffff8100798efe70 0000000000000086 0000000000000000 ffff81005348b400
- ffff81003d820800 ffff81007df9a800 ffff81003d820a50 0000000100000000
- 00000000ffffffff ffff81003d820800 0000000000000000 0000000000000000
-Call Trace:
- [<ffffffff8024a85d>] lock_hrtimer_base+0x1b/0x3c
- [<ffffffff804145f2>] __mutex_lock_slowpath+0x68/0xa3
- [<ffffffff80414458>] mutex_lock+0xa/0xb
- [<ffffffff803adcfe>] netdev_run_todo+0x14/0x21a
- [<ffffffff885901dd>] :tun:tun_chr_close+0x70/0x76
- [<ffffffff802990c7>] __fput+0xa1/0x16c
- [<ffffffff802968f3>] filp_close+0x5d/0x65
- [<ffffffff80297aca>] sys_close+0x8d/0xca
- [<ffffffff8020be2e>] system_call+0x7e/0x83
-
-At the same time that this command was running:
-
-brctl delbr br0
-
-dmesg showed:
-
-unregister_netdevice: waiting for br0 to become free. Usage count = 7
-unregister_netdevice: waiting for br0 to become free. Usage count = 7
-unregister_netdevice: waiting for br0 to become free. Usage count = 7
-unregister_netdevice: waiting for br0 to become free. Usage count = 7
-unregister_netdevice: waiting for br0 to become free. Usage count = 7
-unregister_netdevice: waiting for br0 to become free. Usage count = 7
-....
-
-brctl is stuck here:
-
-brctl         D ffffffff804297c0     0  8457   8448
- ffff81004d8a3d98 0000000000000082 0000000000000286 ffffffff8023e0ea
- ffff81000f941800 ffff81007d531000 ffff81000f941a50 000000014d8a3da8
- 000000012f98b3a2 000000012f98bbea 0000000000000286 ffffffff8023e280
-Call Trace:
- [<ffffffff8023e0ea>] lock_timer_base+0x26/0x4c
- [<ffffffff8023e280>] __mod_timer+0xc3/0xd1
- [<ffffffff8041423d>] schedule_timeout+0x8a/0xad
- [<ffffffff8023ddde>] process_timeout+0x0/0x5
- [<ffffffff80414238>] schedule_timeout+0x85/0xad
- [<ffffffff8023e2a2>] msleep+0x14/0x1e
- [<ffffffff803ade06>] netdev_run_todo+0x11c/0x21a
- [<ffffffff88580599>] :bridge:br_del_bridge+0x4c/0x50
- [<ffffffff88581281>] :bridge:br_ioctl_deviceless_stub+0x177/0x1e2
- [<ffffffff80223598>] do_page_fault+0x352/0x6ca
- [<ffffffff803a0ab6>] sock_ioctl+0x12c/0x200
- [<ffffffff802a3849>] do_ioctl+0x21/0x6b
- [<ffffffff802a3ad6>] vfs_ioctl+0x243/0x25c
- [<ffffffff80296861>] fd_install+0x25/0x5a
- [<ffffffff802a3b40>] sys_ioctl+0x51/0x71
- [<ffffffff8020be2e>] system_call+0x7e/0x83
-
-This is as much as I could get before sufficient stuff locked
-up and I had to reboot.
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+ arch/sh/kernel/cpu/sh4a/setup-sh7343.c |   14 ++++++++++----
+ arch/sh/kernel/cpu/sh4a/setup-sh7366.c |    7 +++++--
+ arch/sh/kernel/cpu/sh4a/setup-sh7722.c |    7 +++++--
+ arch/sh/kernel/cpu/sh4a/setup-sh7723.c |    7 +++++--
+ drivers/base/platform.c                |   31 +++++++++++++++++--------------
+ drivers/i2c/busses/i2c-sh_mobile.c     |    8 +++++++-
+ include/linux/ioport.h                 |   28 +++++++++++++++++++---------
+ kernel/resource.c                      |    2 +-
+ 8 files changed, 69 insertions(+), 35 deletions(-)
