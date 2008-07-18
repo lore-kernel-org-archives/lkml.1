@@ -1,37 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbYGRLDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbYGRLHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756511AbYGRLDT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 07:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbYGRLDM
+	id S1756186AbYGRLHl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 07:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbYGRLHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 07:03:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59658 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752074AbYGRLDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 07:03:11 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20080716135358.GA1213@tv-sign.ru>
-References: <20080716135358.GA1213@tv-sign.ru>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] coredump: make the coredumping process visible to oom kill
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
-Date: Fri, 18 Jul 2008 12:02:12 +0100
-Message-ID: <16025.1216378932@redhat.com>
+	Fri, 18 Jul 2008 07:07:33 -0400
+Received: from viefep11-int.chello.at ([62.179.121.31]:59324 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751776AbYGRLHd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 07:07:33 -0400
+Subject: Re: [PATCH] sched: do not stop ticks when cpu is not idle
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: eric miao <eric.y.miao@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       Jack Ren <jack.ren@marvell.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+In-Reply-To: <20080718105424.GA22268@elte.hu>
+References: <f17812d70807172341u92270fdvc80e72cc5599c56f@mail.gmail.com>
+	 <20080718102446.GV6875@elte.hu>  <20080718105424.GA22268@elte.hu>
+Content-Type: text/plain
+Date: Fri, 18 Jul 2008 13:08:03 +0200
+Message-Id: <1216379283.28405.19.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> wrote:
+On Fri, 2008-07-18 at 12:54 +0200, Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > --- a/kernel/sched.c
+> > +++ b/kernel/sched.c
+> > @@ -4446,7 +4446,8 @@ need_resched_nonpreemptible:
+> >  		rq->nr_switches++;
+> >  		rq->curr = next;
+> >  		++*switch_count;
+> > -
+> > +		if (rq->curr != rq->idle)
+> > +			tick_nohz_restart_sched_tick();
+> >  		context_switch(rq, prev, next); /* unlocks the rq */
+> 
+> hm, one problem i can see is lock dependencies. This code is executed 
+> with the rq lock while tick_nohz_restart_sched_tick() takes hr locks => 
+> not good. So i havent applied this just yet - this needs to be solved 
+> differently.
 
-> I am worried the recent changes can break elf_fdpic_core_dump(), I can't
-> test it. Hopefully, in that case the fixes should be trivial.
+Actually, that should work these days...
 
-I can't apply your patch 2/2.  Is there another patch missing?
+Also, I assume Eric actually tested this with lockdep enabled (right,
+Eric?) and that'll shout - or rather, lockup hard in this case - if you
+got it wrong.
 
-David
