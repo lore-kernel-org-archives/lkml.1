@@ -1,45 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758660AbYGRMWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758898AbYGRMWc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758660AbYGRMWT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 08:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757392AbYGRMWD
+	id S1758898AbYGRMWc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 08:22:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758117AbYGRMWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 08:22:03 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44496 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751465AbYGRMWC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 08:22:02 -0400
-Date: Fri, 18 Jul 2008 14:21:43 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: APIC: Make apic_verbosity unsigned
-Message-ID: <20080718122143.GM6875@elte.hu>
-References: <Pine.LNX.4.55.0807141839210.17431@cliff.in.clinika.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 18 Jul 2008 08:22:05 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:29862 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756851AbYGRMWE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 08:22:04 -0400
+Message-Id: <4880A721.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Fri, 18 Jul 2008 13:22:25 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <ketuzsezr@darnok.org>, <pjones@redhat.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] iscsi_ibft_find: fix modpost warning
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.55.0807141839210.17431@cliff.in.clinika.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.1132]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Exporting __init functions is wrong.
 
-* Maciej W. Rozycki <macro@linux-mips.org> wrote:
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
->  As a microoptimisation, make apic_verbosity unsigned.  This will make
-> apic_printk(APIC_QUIET, ...) expand into just printk(...) with the
-> surrounding condition and a reference to apic_verbosity removed.
+---
+ drivers/firmware/iscsi_ibft_find.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-applied to tip/x86/apic, thanks Maciej.
+--- linux-2.6.26/drivers/firmware/iscsi_ibft_find.c	2008-07-13 23:51:29.000000000 +0200
++++ 2.6.26-firmware-iscsi-modpost-warning/drivers/firmware/iscsi_ibft_find.c	2008-07-17 14:45:12.000000000 +0200
+@@ -81,4 +81,3 @@ void __init reserve_ibft_region(void)
+ 	if (ibft_addr)
+ 		reserve_bootmem(pos, PAGE_ALIGN(len), BOOTMEM_DEFAULT);
+ }
+-EXPORT_SYMBOL_GPL(reserve_ibft_region);
 
-	Ingo
+
+
