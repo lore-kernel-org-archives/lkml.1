@@ -1,60 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757875AbYGRNA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758622AbYGRNAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757875AbYGRNA3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 09:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753773AbYGRNAP
+	id S1758622AbYGRNAm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 09:00:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755976AbYGRNAR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 09:00:15 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:61333 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752948AbYGRNAN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 09:00:13 -0400
-Date: Fri, 18 Jul 2008 13:59:12 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, Ingo Molnar <mingo@elte.hu>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>, venkatesh.pallipadi@intel.com,
-       Huang Ying <ying.huang@intel.com>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: v2.6.26-rc9: ACPI PCI irq routing on NUMA? + early_ioremap
- trouble
-In-Reply-To: <19f34abd0807180051i544367b7s64f32d601af31296@mail.gmail.com>
-Message-ID: <Pine.LNX.4.55.0807181302020.12125@cliff.in.clinika.pl>
-References: <19f34abd0807060647k54490088uf8859d8a1646fd41@mail.gmail.com> 
- <200807171245.31641.bjorn.helgaas@hp.com>  <19f34abd0807171358p3c5a44f9i91ab23d3f5e9671f@mail.gmail.com>
-  <Pine.LNX.4.55.0807180117320.6536@cliff.in.clinika.pl>
- <19f34abd0807180051i544367b7s64f32d601af31296@mail.gmail.com>
+	Fri, 18 Jul 2008 09:00:17 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:18512 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755568AbYGRNAQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 09:00:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=pH0qEQ+XQ5Y4B7GZqmyZq2UKpeNsngF27Vr73ciF6+MB5aiLnTRWMGcfe0VZ2CimnA
+         jTeC+TvPYKqi0reaMPfn/v5IQZGum1RInKCmH67VYup+1UqnitSN0XHOnrmOUTLu3Egr
+         e0kkh6LUAlXHpTxBCHLf+ZaCUHnklV9ngMrUU=
+Message-ID: <e9e943910807180600t1e65a9b8o7f85e2751368275d@mail.gmail.com>
+Date: Fri, 18 Jul 2008 14:00:13 +0100
+From: "Duane Griffin" <duaneg@dghda.com>
+To: "Vegard Nossum" <vegard.nossum@gmail.com>
+Subject: Re: latest -git: A peculiar case of a stuck process (ext3/sched-related?)
+Cc: linux-ext4@vger.kernel.org, sct@redhat.com, akpm@linux-foundation.org,
+       adilger@sun.com, "Ingo Molnar" <mingo@elte.hu>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <19f34abd0807180317g40a218a2p2bb2857c6f5aa659@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <19f34abd0807180245l2a633644n1a8d91cb3587d9e4@mail.gmail.com>
+	 <19f34abd0807180317g40a218a2p2bb2857c6f5aa659@mail.gmail.com>
+X-Google-Sender-Auth: 1734652ddb14c4b7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Jul 2008, Vegard Nossum wrote:
+2008/7/18 Vegard Nossum <vegard.nossum@gmail.com>:
+> And the ext3_find_entry() corresponds to this line:
+>
+>        for (; de < top; de = ext3_next_entry(de)) /* <--- HERE! */
+>        if (ext3_match (namelen, name, de)) {
+>                if (!ext3_check_dir_entry("ext3_find_entry",
+>                                          dir, de, bh,
+>                          (block<<EXT3_BLOCK_SIZE_BITS(sb))
+>                                  +((char *)de - bh->b_data))) {
+>                        brelse (bh);
+>                        *err = ERR_BAD_DX_DIR;
+>                        goto errout;
+>                }
+>                *res_dir = de;
+>                dx_release (frames);
+>                return bh;
+>        }
+>
+> Is it possible that this loop can get stuck with a corrupt filesystem image?
 
-> I have done this for the bad case:
-> http://folk.uio.no/vegardno/linux/netconsole2.txt
+It certainly is. This is the same problem as the first case reported
+at http://bugzilla.kernel.org/show_bug.cgi?id=10882. There is a patch
+in -mm for it already (2fde9f7a0faabe821b31ccd982d482c21f7c503f),
+posted here: http://marc.info/?l=linux-kernel&m=121486328013470.
 
- Thanks.  The MP table looks broken:
+Hopefully that should fix the problem for you.
 
-Bus #4 is ISA
-I/O APIC #32 Version 32 at 0xFEC00000.
-Int: type 3, pol 1, trig 1, bus 4, IRQ 00, APIC ID 2, APIC INT 00
+Cheers,
+Duane.
 
-etc. (notice the different I/O APIC IDs reported), so any changes to our
-code are not at fault.  I suggest you ask your vendor to fix it up (did
-they test it at all? -- it has no chance to work) or stick to ACPI (I can
-see it has been automatically disabled for some reason).
-
- Anyway, the piece of I/O APIC code in question should not poke at the
-local APIC, so I'll prepare a fix to make it check for the APIC ID being
--1.
-
-> (I added a warning for certain APIC errors as well. Not that it adds
-> much in this particular case, but I think it would be good to have in
-> mainline anyway, to highlight these error cases in the future...)
-
- It might be useful indeed.
-
-  Maciej
+-- 
+"I never could learn to drink that blood and call it wine" - Bob Dylan
