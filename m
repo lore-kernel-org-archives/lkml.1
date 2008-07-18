@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758417AbYGRMT0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757999AbYGRMV6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758417AbYGRMT0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 08:19:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756109AbYGRMTT
+	id S1757999AbYGRMV6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 08:21:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755312AbYGRMVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 08:19:19 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:29757 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755911AbYGRMTS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 08:19:18 -0400
-Message-Id: <4880A67B.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Fri, 18 Jul 2008 13:19:39 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] fbcon: remove stray semicolons
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Fri, 18 Jul 2008 08:21:51 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44461 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755154AbYGRMVu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 08:21:50 -0400
+Date: Fri, 18 Jul 2008 14:21:28 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: I/O APIC: Include <asm/i8259.h> required by some
+	code
+Message-ID: <20080718122128.GL6875@elte.hu>
+References: <Pine.LNX.4.55.0807141709300.16334@cliff.in.clinika.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.55.0807141709300.16334@cliff.in.clinika.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0020]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
----
- drivers/video/console/fbcon.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+* Maciej W. Rozycki <macro@linux-mips.org> wrote:
 
---- linux-2.6.26/drivers/video/console/fbcon.h	2008-07-13 23:51:29.000000000 +0200
-+++ 2.6.26-fbcon-stray-semicolon/drivers/video/console/fbcon.h	2008-07-15 14:51:28.000000000 +0200
-@@ -147,9 +147,9 @@ static inline int attr_col_ec(int shift,
- }
- 
- #define attr_bgcol_ec(bgshift,vc,info)		\
--	attr_col_ec(bgshift,vc,info,0);
-+	attr_col_ec(bgshift,vc,info,0)
- #define attr_fgcol_ec(fgshift,vc,info)		\
--	attr_col_ec(fgshift,vc,info,1);
-+	attr_col_ec(fgshift,vc,info,1)
- 
- /* Font */
- #define REFCOUNT(fd)	(((int *)(fd))[-1])
+>  Include <asm/i8259.h> for i8259A_lock used in print_PIC() -- #if-0-ed out
+> by default.  The 32-bit version gets it right already.
+> 
+> Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+> ---
+>  The plan is to enable this code with "apic=debug" eventually.  This will
+> aid with debugging strange problems without the need to ask people to
+> apply patches.
 
+applied to tip/x86/apic, thanks Maciej.
 
-
+	Ingo
