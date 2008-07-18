@@ -1,83 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759991AbYGRWvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758703AbYGRWyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759991AbYGRWvS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 18:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbYGRWvK
+	id S1758703AbYGRWyR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 18:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754245AbYGRWyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 18:51:10 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:34094 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752809AbYGRWvI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 18:51:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=GiLOWsESfrFmyDRekVImq2YDcFyL4P341ApsWkSgu5oA4aremF8vhF/Pqbqiy7nmqS
-         UYtxNE5T7HlaoB2rD87VD/md0wC7UZFaSujKn42ZMTny0Z/tZaSedXRsCCjtjMZCp05o
-         5S8KQ6s/Zb+xuNiu21RCjKwjwmfRTkMJ3+/B8=
-Message-ID: <86802c440807181551l7e6e143dy7cea8ab59f1830ed@mail.gmail.com>
-Date: Fri, 18 Jul 2008 15:51:07 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Suresh Siddha" <suresh.b.siddha@intel.com>
-Subject: Re: [PATCH] x86: APIC: Remove apic_write_around(); use alternatives
-Cc: "Zachary Amsden" <zach@vmware.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>
-In-Reply-To: <20080718224922.GB4507@linux-os.sc.intel.com>
+	Fri, 18 Jul 2008 18:54:09 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:52449 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752884AbYGRWyI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 18:54:08 -0400
+Message-ID: <48811F0C.6090103@sgi.com>
+Date: Fri, 18 Jul 2008 15:54:04 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>
+Subject: Re: [git pull] core/percpu for v2.6.27
+References: <20080714143413.GA19134@elte.hu> <alpine.LFD.1.10.0807141525000.2944@woody.linux-foundation.org> <487CC671.3000501@goop.org> <20080715210002.GA7072@elte.hu> <487D15FC.1060300@sgi.com> <20080718221730.GB31073@elte.hu>
+In-Reply-To: <20080718221730.GB31073@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.55.0807161837080.30858@cliff.in.clinika.pl>
-	 <20080718105259.GY6875@elte.hu>
-	 <86802c440807180925t6fadfa58r6bf7740f8145482e@mail.gmail.com>
-	 <86802c440807181001h4426c197vc474f81497a5b42@mail.gmail.com>
-	 <20080718210348.GB24373@elte.hu>
-	 <86802c440807181413n7e79e821l90afaae86b322de9@mail.gmail.com>
-	 <Pine.LNX.4.55.0807182254270.12125@cliff.in.clinika.pl>
-	 <1216420937.30348.30.camel@bodhitayantram.eng.vmware.com>
-	 <20080718224922.GB4507@linux-os.sc.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 3:49 PM, Suresh Siddha
-<suresh.b.siddha@intel.com> wrote:
-> On Fri, Jul 18, 2008 at 03:42:17PM -0700, Zachary Amsden wrote:
->> On Fri, 2008-07-18 at 15:02 -0700, Maciej W. Rozycki wrote:
->> > On Fri, 18 Jul 2008, Yinghai Lu wrote:
->> >
->> > >   CC      arch/x86/kernel/apic_64.o
->> > > arch/x86/kernel/apic_64.c:170: error: unknown field 'write_atomic'
->> > > specified in initializer
->> > > arch/x86/kernel/apic_64.c:170: error: 'native_apic_mem_write_atomic'
->> > > undeclared here (not in a function)
->> > > arch/x86/kernel/apic_64.c:209: error: unknown field 'write_atomic'
->> > > specified in initializer
->> > > arch/x86/kernel/apic_64.c:209: warning: initialization from
->> > > incompatible pointer type
->> > > make[1]: *** [arch/x86/kernel/apic_64.o] Error 1
->> > > make: *** [arch/x86/kernel] Error 2
->> >
->> >  Just remove the offending initialisers.  They are not needed anymore as
->> > the .write method is now used universally including places where
->> > .write_atomic was.  I just could not stand watching the thing
->> > proliferate...
+Ingo Molnar wrote:
+> * Mike Travis <travis@sgi.com> wrote:
+> 
+>> Ingo Molnar wrote:
 >>
->> Thank you for cleaning this up Yinghai, but this really begs the
->> question - is having write_atomic REALLY worthwhile?
->
-> And this thread is about,  Maciej's cleanup patch which removed
-> write_atomic completely :)
->
-> Thanks to Maciej who posted this fix. It was on my todo list for
-> sometime now!
+>> ...
+>>> in hindsight core/percpu indeed looks unfinished and direction-less 
+>>> without core/percpu-zerobased - but the latter is not stable yet.
+>>>
+>>> 	Ingo
+>> Well it's very stable using gcc-4.2.4.  The earlier problems came 
+>> about using gcc-4.2.0 and has yet to be determined what exactly went 
+>> wrong. (And I need to install gcc-3.2 to complete the build/test QA.)
+> 
+> well, the crash report i gave you was with gcc-4.2.3. Or is that one 
+> resolved?
+> 
+> 	Ingo
 
-do we rebase tip/x86/x2apic or rework this patch?
+I will test with gcc-4.2.3 as soon as I'm able, and will let you know.
+(There have been changes from when you hit the panic.)
 
-YH
+I will resubmit against tip/master.
+
+Thanks,
+Mike
