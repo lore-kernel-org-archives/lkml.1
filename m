@@ -1,110 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757940AbYGRV4O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758778AbYGRV6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757940AbYGRV4O (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 17:56:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbYGRVz5
+	id S1758778AbYGRV6e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 17:58:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbYGRV61
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 17:55:57 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:42874 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753775AbYGRVz4 (ORCPT
+	Fri, 18 Jul 2008 17:58:27 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:57418 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752539AbYGRV60 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 17:55:56 -0400
-Date: Fri, 18 Jul 2008 22:44:55 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Alex Chiang <achiang@hp.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 01/14] Introduce cpu_enabled_map and friends
-Message-ID: <20080718214454.GD25816@flint.arm.linux.org.uk>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-	linux-acpi@vger.kernel.org
-References: <20080715023344.2528.1836.stgit@blender.achiang> <20080715023349.2528.9423.stgit@blender.achiang> <20080715031512.GF14894@parisc-linux.org> <87wsjnxy4w.fsf@basil.nowhere.org> <20080715102130.GA22866@flint.arm.linux.org.uk> <20080715175740.GB10919@ldl.fc.hp.com> <20080715181632.GG14894@parisc-linux.org> <20080715184822.GB29991@flint.arm.linux.org.uk> <20080715191515.GE10919@ldl.fc.hp.com>
+	Fri, 18 Jul 2008 17:58:26 -0400
+Subject: Re: latest -git: BUG at fs/jfs/namei.c:512 assert(ip->i_nlink)
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: jfs-discussion@lists.sourceforge.net,
+       Johannes Weiner <hannes@saeurebad.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <19f34abd0807181108r53ea74adsd471e49f87d77024@mail.gmail.com>
+References: <19f34abd0807171135m4a3b39e6v4065ed676720ae46@mail.gmail.com>
+	 <1216336164.32175.3.camel@norville.austin.ibm.com>
+	 <19f34abd0807180110k5a19e525y463b59208f0587b2@mail.gmail.com>
+	 <19f34abd0807180129k5d7e64a0nd86bbd6333df72d2@mail.gmail.com>
+	 <1216402157.11215.21.camel@norville.austin.ibm.com>
+	 <19f34abd0807181108r53ea74adsd471e49f87d77024@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 18 Jul 2008 16:58:22 -0500
+Message-Id: <1216418302.30152.6.camel@norville.austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080715191515.GE10919@ldl.fc.hp.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 01:15:15PM -0600, Alex Chiang wrote:
-> * Russell King <rmk+lkml@arm.linux.org.uk>:
-> > On Tue, Jul 15, 2008 at 12:16:32PM -0600, Matthew Wilcox wrote:
-> > > On Tue, Jul 15, 2008 at 11:57:40AM -0600, Alex Chiang wrote:
-> > > > My thought was that big SMP systems like ia64, possibly sparc and
-> > > > ppc, and increasingly, x86, might find something like this
-> > > > useful, as systems get larger and larger, and vendors are going
-> > > > to want to do RAS-ish features, like the ability to keep CPUs in
-> > > > firmware across reboots until told otherwise by the sysadmin.
-> > > > 
-> > > > Right now, a 'present' CPU strongly implies 'online' as well,
-> > > > since we're calling cpu_up() for all 'present' CPUs in
-> > > > smp_init(). But this hurts if:
-> > > > 
-> > > > 	- you don't actually want to bring up all 'present' CPUs
-> > > > 	- you still want to interact with these weirdo zombie
-> > > > 	  CPUs that are 'present' but not 'online'
-> > > 
-> > > Have you considered simply failing __cpu_up() for CPUs that are
-> > > deconfigured by firmware?
-> > 
-> > But what if you want to have a system boot with, say, 4 CPUs and
-> > then decide at run time to bring up another 4 CPUs when required?
-> > 
-> > How about having smp_init() call into arch code to query whether
-> > it should bring up a not-already-online CPU?  Architectures that
-> > want to do something special can then make the decision there and
-> > everyone else can define the test completely away.
+On Fri, 2008-07-18 at 20:08 +0200, Vegard Nossum wrote:
+> On Fri, Jul 18, 2008 at 7:29 PM, Dave Kleikamp
+> <shaggy@linux.vnet.ibm.com> wrote:
+> >
+> > xtTruncate can call release_metapage() in several places.  If you still
+> > have this kernel, could you please run addr2line against c02e4202?  If
+> > you've rebuilt your kernel since then, I understand.
 > 
-> So this is exactly what I'm doing. The ia64 patch has this hunk:
+> Sorry, it's gone. However, I just recompiled it and the size of the
+> function is now 0x105f, and the offset 0xd42 matches with a call to
+> release_metapage. So with this new address, it's this call:
 > 
-> @@ -820,6 +824,9 @@ __cpu_up (unsigned int cpu)
->         if (cpu_isset(cpu, cpu_callin_map))
->                 return -EINVAL;
+> $ addr2line -e vmlinux -i c02e428d
+> fs/jfs/jfs_metapage.h:101
+> fs/jfs/jfs_xtree.c:3723
 > 
-> +       if (!cpu_isset(cpu, cpu_enabled_map))
-> +               return -EINVAL;
-> +
->         per_cpu(cpu_state, cpu) = CPU_UP_PREPARE;
->         /* Processor goes to start_secondary(), sets online flag */
->         ret = do_boot_cpu(sapicid, cpu);
+> ...which is this one:
 > 
-> That was the easiest, most-straightforward solution I could think
-> of. If you have an idea for a version with lower taxes (doesn't
-> touch all the archs or can be #define'd out), I'm happy to hear
-> it.
+>     /* invalidate empty leaf page */
+>     discard_metapage(mp);
 
-I think I did make a suggestion in the bit you quote from me above.
+Thanks.  This helps some, but I'm not sure why it should fail there.
+Possibly a memory corruption problem caused by a bug in an earlier error
+path.
 
-Let me be more explicit:
+> With your two patches applied, I now got this:
+> 
+> ERROR: (device loop0): remounting filesystem as read-only
+> blkno = 200000687, nblocks = f
+> ERROR: (device loop0): dbFree: block to be freed is outside the map
+> BUG: unable to handle kernel paging request at 338f8038
 
-static void __init smp_init(void)
-{
-        unsigned int cpu;
+I see I've got a few of these to track down.  I'm sure there are more
+than a couple more bugs you will uncover.
 
-        /* FIXME: This should be done in userspace --RR */
-        for_each_present_cpu(cpu) {
-                if (num_online_cpus() >= setup_max_cpus)
-                        break;
--		if (!cpu_online(cpu))
-+		if (smp_cpu_enabled(cpu) && !cpu_online(cpu))
-                        cpu_up(cpu);
-        }
+> $ addr2line -e vmlinux -i c02ee352
+> fs/jfs/jfs_dmap.c:2188
+> 
+> You can also have a copy of my scripts if you want to try to reproduce
+> it locally. But I don't mind testing either :-)
 
-        /* Any cleanup work */
-        printk(KERN_INFO "Brought up %ld CPUs\n", (long)num_online_cpus());
-        smp_cpus_done(setup_max_cpus);
-}
+Can you please send me a copy.  For some of these, I'd like to get a
+repeatable test case, so I'm not debugging several problems at once.
 
-and have architectures provide 'smp_cpu_enabled(cpu)' which can either
-be a function, inline function or a macro (and therefore possible to be
-completely eliminated.)
-
+Thanks,
+Shaggy
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+David Kleikamp
+IBM Linux Technology Center
+
