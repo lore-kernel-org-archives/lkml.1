@@ -1,125 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755268AbYGRJp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbYGRJse@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755268AbYGRJp0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 05:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754262AbYGRJpL
+	id S1755542AbYGRJse (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 05:48:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753796AbYGRJs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 05:45:11 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:31628 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754176AbYGRJpJ (ORCPT
+	Fri, 18 Jul 2008 05:48:26 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:23378 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753698AbYGRJsZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 05:45:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=hvExBRZZ7MKwc+vd+4dNL2Xc/lkrpAU3TJlAZWbpQF/tTVDxUCP8QjlgJjzfiS+Fu6
-         iHnPw2VJqshm8r45wnk5EpmS8tz5M0KIgj2dpOAbVQLYSMu8xpAenuATQvkSWT5Bdqkm
-         aMdYuwsZ0qrtnQcuTyWphJLESCmRF7eEhSsSg=
-Message-ID: <19f34abd0807180245l2a633644n1a8d91cb3587d9e4@mail.gmail.com>
-Date: Fri, 18 Jul 2008 11:45:08 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: linux-ext4@vger.kernel.org
-Subject: latest -git: A peculiar case of a stuck process (ext3/sched-related?)
-Cc: sct@redhat.com, akpm@linux-foundation.org, adilger@sun.com,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Jul 2008 05:48:25 -0400
+Message-Id: <48808313.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Fri, 18 Jul 2008 10:48:35 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Len Brown" <lenb@kernel.org>, "Andi Kleen" <ak@linux.intel.com>
+Cc: "Robert Moore" <robert.moore@intel.com>,
+       "Andrew Paprocki" <andrew@ishiboo.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "LKML" <linux-kernel@vger.kernel.org>
+Subject: RE: ACPI WARNING: at
+	drivers/acpi/tables/tbfadt.c:348acpi_tb_create_local_fadt+0x147/0x2f4()
+References: <76366b180807161929i4eb9462exc3d2255e0ec881e8@mail.gmail.com>
+ <76366b180807162034y1e725b15t7658c331bb89b52@mail.gmail.com>
+ <487F2629.76E4.0078.0@novell.com> <487F0B85.4030202@linux.intel.com>
+ <487F29B2.76E4.0078.0@novell.com> <487F3AFA.7090908@linux.intel.com>
+ <76366b180807170603qaf669a5q625fc166a2045756@mail.gmail.com>
+ <487F6C32.76E4.0078.0@novell.com>
+ <76366b180807170732i112d54bcl49f630a3064f87f@mail.gmail.com>
+ <487F81A6.76E4.0078.0@novell.com>
+ <9D39833986E69849A2A8E74C1078B6B3ADFA66@orsmsx415.amr.corp.intel.com>
+In-Reply-To: <9D39833986E69849A2A8E74C1078B6B3ADFA66@orsmsx415.amr.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+>>> "Moore, Robert" <robert.moore@intel.com> 17.07.08 19:20 >>>
+>So far, in the number of the cases like this that I've seen, it's the v2
+>fields that have problems. Perhaps the heuristic should be something
+>like "if there is an inconsistency between the v1 and v2 fields, fall
+>back to v1". 
 
-I was running a test which corrupts ext3 filesystem images on purpose.
-After quite a long time, I have ended up with a grep that runs at 98%
-CPU and is unkillable even though it is in state R:
+Here's the updated (i.e. replacement) patch. Andrew P., any chance you
+could test this on your system?
 
-root      6573 98.6  0.0   4008   820 pts/0    R    11:17  15:48 grep -r . mnt
+The (1.0 inherited) separate length fields in the FADT are byte
+granular. Further, PM1a/b may have distinct lengths and live in
+distinct address spaces. acpi_tb_convert_fadt() should account for
+all of these conditions.
 
-It doesn't go away with kill -9 either. A sysrq-t shows this info:
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-grep          R running   5704  6573   6552
-       f4ff3c3c c0747b19 00000000 f4ff3bd4 c01507ba ffffffff 00000000 f4ff3bf0
-       f5992fd0 f4ff3c4c 01597000 00000000 c09cd080 f312afd0 f312b248 c1fb2f80
-       00000001 00000002 00000000 f312afd0 f312afd0 f4ff3c24 c015ab70 00000000
-Call Trace:
- [<c0747b19>] ? schedule+0x459/0x960
- [<c01507ba>] ? atomic_notifier_call_chain+0x1a/0x20
- [<c015ab70>] ? mark_held_locks+0x40/0x80
- [<c015addb>] ? trace_hardirqs_on+0xb/0x10
- [<c015ad76>] ? trace_hardirqs_on_caller+0x116/0x170
- [<c074816e>] preempt_schedule_irq+0x3e/0x70
- [<c0103ffc>] need_resched+0x1f/0x23
- [<c022c041>] ? ext3_find_entry+0x401/0x6f0
- [<c015b6e9>] ? __lock_acquire+0x2c9/0x1110
- [<c019d63c>] ? slab_pad_check+0x3c/0x120
- [<c015ad76>] ? trace_hardirqs_on_caller+0x116/0x170
- [<c015906b>] ? trace_hardirqs_off+0xb/0x10
- [<c022cb3a>] ext3_lookup+0x3a/0xd0
- [<c01b7bb3>] ? d_alloc+0x133/0x190
- [<c01ac110>] do_lookup+0x160/0x1b0
- [<c01adc38>] __link_path_walk+0x208/0xdc0
- [<c0159173>] ? lock_release_holdtime+0x83/0x120
- [<c01bd97e>] ? mnt_want_write+0x4e/0xb0
- [<c01ae327>] __link_path_walk+0x8f7/0xdc0
- [<c015906b>] ? trace_hardirqs_off+0xb/0x10
- [<c01ae844>] path_walk+0x54/0xb0
- [<c01aea45>] do_path_lookup+0x85/0x230
- [<c01af7a8>] __user_walk_fd+0x38/0x50
- [<c01a7fb1>] vfs_stat_fd+0x21/0x50
- [<c01590cd>] ? put_lock_stats+0xd/0x30
- [<c01bc81d>] ? mntput_no_expire+0x1d/0x110
- [<c01a8081>] vfs_stat+0x11/0x20
- [<c01a80a4>] sys_stat64+0x14/0x30
- [<c01a5a8f>] ? fput+0x1f/0x30
- [<c0430948>] ? trace_hardirqs_on_thunk+0xc/0x10
- [<c015ad76>] ? trace_hardirqs_on_caller+0x116/0x170
- [<c0430948>] ? trace_hardirqs_on_thunk+0xc/0x10
- [<c010407f>] sysenter_past_esp+0x78/0xc5
- =======================
+---
+ drivers/acpi/tables/tbfadt.c |   39 ++++++++++++++++++++++++++++++++-------
+ 1 file changed, 32 insertions(+), 7 deletions(-)
 
-..so it's clearly related to the corrupted ext3 filesystem. The
-strange thing, in my opinion, is this stack frame:
+--- linux-2.6.26/drivers/acpi/tables/tbfadt.c	2008-07-13 23:51:29.000000000 +0200
++++ 2.6.26-acpi-fadt-parse/drivers/acpi/tables/tbfadt.c	2008-07-18 10:43:55.000000000 +0200
+@@ -50,7 +50,7 @@ ACPI_MODULE_NAME("tbfadt")
+ /* Local prototypes */
+ static void inline
+ acpi_tb_init_generic_address(struct acpi_generic_address *generic_address,
+-			     u8 bit_width, u64 address);
++			     u8 byte_width, u64 address);
+ 
+ static void acpi_tb_convert_fadt(void);
+ 
+@@ -111,7 +111,7 @@ static struct acpi_fadt_info fadt_info_t
+  * FUNCTION:    acpi_tb_init_generic_address
+  *
+  * PARAMETERS:  generic_address     - GAS struct to be initialized
+- *              bit_width           - Width of this register
++ *              byte_width          - Width of this register
+  *              Address             - Address of the register
+  *
+  * RETURN:      None
+@@ -124,7 +124,7 @@ static struct acpi_fadt_info fadt_info_t
+ 
+ static void inline
+ acpi_tb_init_generic_address(struct acpi_generic_address *generic_address,
+-			     u8 bit_width, u64 address)
++			     u8 byte_width, u64 address)
+ {
+ 
+ 	/*
+@@ -136,7 +136,7 @@ acpi_tb_init_generic_address(struct acpi
+ 	/* All other fields are byte-wide */
+ 
+ 	generic_address->space_id = ACPI_ADR_SPACE_SYSTEM_IO;
+-	generic_address->bit_width = bit_width;
++	generic_address->bit_width = byte_width << 3;
+ 	generic_address->bit_offset = 0;
+ 	generic_address->access_width = 0;
+ }
+@@ -343,9 +343,21 @@ static void acpi_tb_convert_fadt(void)
+ 	 *
+ 	 * The PM event blocks are split into two register blocks, first is the
+ 	 * PM Status Register block, followed immediately by the PM Enable Register
+-	 * block. Each is of length (pm1_event_length/2)
++	 * block. Each is of length (xpm1x_event_block.bit_width/2)
+ 	 */
+-	pm1_register_length = (u8) ACPI_DIV_2(acpi_gbl_FADT.pm1_event_length);
++	if (!ACPI_MOD_16(acpi_gbl_FADT.xpm1a_event_block.bit_width))
++		pm1_register_length = (u8) ACPI_DIV_16(acpi_gbl_FADT
++						       .xpm1a_event_block
++						       .bit_width);
++	else {
++		printk(KERN_WARNING "FADT: "
++		       "X_PM1a_EVT_BLK.bit_width=%u is invalid,"
++		       " falling back to PM1_EVT_LEN=%u\n",
++		       acpi_gbl_FADT.xpm1a_event_block.bit_width,
++		       acpi_gbl_FADT.pm1_event_length);
++		pm1_register_length = (u8) ACPI_DIV_2(acpi_gbl_FADT
++						      .pm1_event_length);
++	}
+ 
+ 	/* The PM1A register block is required */
+ 
+@@ -360,13 +372,26 @@ static void acpi_tb_convert_fadt(void)
+ 	/* The PM1B register block is optional, ignore if not present */
+ 
+ 	if (acpi_gbl_FADT.xpm1b_event_block.address) {
++		if (!ACPI_MOD_16(acpi_gbl_FADT.xpm1b_event_block.bit_width))
++			pm1_register_length = (u8) ACPI_DIV_16(acpi_gbl_FADT
++							       .xpm1b_event_block
++							       .bit_width);
++		else {
++			printk(KERN_WARNING "FADT: "
++			       "X_PM1b_EVT_BLK.bit_width=%u is invalid,"
++			       " falling back to PM1_EVT_LEN=%u\n",
++			       acpi_gbl_FADT.xpm1b_event_block.bit_width,
++			       acpi_gbl_FADT.pm1_event_length);
++			pm1_register_length = (u8) ACPI_DIV_2(acpi_gbl_FADT
++							       .pm1_event_length);
++		}
+ 		acpi_tb_init_generic_address(&acpi_gbl_xpm1b_enable,
+ 					     pm1_register_length,
+ 					     (acpi_gbl_FADT.xpm1b_event_block.
+ 					      address + pm1_register_length));
+ 		/* Don't forget to copy space_id of the GAS */
+ 		acpi_gbl_xpm1b_enable.space_id =
+-		    acpi_gbl_FADT.xpm1a_event_block.space_id;
++		    acpi_gbl_FADT.xpm1b_event_block.space_id;
+ 
+ 	}
+ }
 
- [<c022cb3a>] ext3_lookup+0x3a/0xd0
 
-..but this address corresponds to fs/ext3/namei.c:1039:
-
-        bh = ext3_find_entry(dentry, &de);
-        inode = NULL;
-        if (bh) { /* <--- here */
-                unsigned long ino = le32_to_cpu(de->inode);
-                brelse (bh);
-
-What happened? Did the scheduler get stuck? Softlockup detection and
-NMI watchdog are both enabled, but none of them are triggering.
-
-Trying to strace the problem doesn't really help either:
-
-    # strace -p 6573
-    Process 6573 attached - interrupt to quit
-    ^C^C^C^C
-
-(and hangs unkillably too.)
-
-See full log at:
-
-    http://folk.uio.no/vegardno/linux/log-1216370788.txt
-
-The machine is still running in the same state and CPU0 is still
-usable. What more info can I provide to help debug this?
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
