@@ -1,30 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760790AbYGRUQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760192AbYGRUUV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760790AbYGRUQY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 16:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755275AbYGRUQR
+	id S1760192AbYGRUUV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 16:20:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbYGRUUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 16:16:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38587 "EHLO mx3.mail.elte.hu"
+	Fri, 18 Jul 2008 16:20:09 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33711 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755472AbYGRUQQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 16:16:16 -0400
-Date: Fri, 18 Jul 2008 22:15:58 +0200
+	id S1751289AbYGRUUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 16:20:07 -0400
+Date: Fri, 18 Jul 2008 22:19:53 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Cc: Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ALSA development <alsa-devel@alsa-project.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Rene Herman <rene.herman@gmail.com>,
-       Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: Re: [boot crash, bisected] in 9f240a55 "ALSA: opti93x: use cs4231
-	lib"
-Message-ID: <20080718201558.GA24122@elte.hu>
-References: <Pine.LNX.4.61.0807141105150.7676@tm8103-a.perex-int.cz> <20080717170657.GA14593@elte.hu> <s5h3am8jqvy.wl%tiwai@suse.de> <487F9B9B.2010905@keyaccess.nl> <487F9FA1.7020101@keyaccess.nl> <48806017.1040307@keyaccess.nl>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       jbarnes@virtuousgeek.org, Jack Howarth <howarth@bromo.msbb.uc.edu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86,pci: dmi check for mackpro 2.2 mmconf
+Message-ID: <20080718201953.GB24122@elte.hu>
+References: <200807180941.09779.yhlu.kernel@gmail.com> <4880D684.7020406@zytor.com> <86802c440807181047y4ef2f227me72e6474e726596@mail.gmail.com> <4880D7B9.8000007@zytor.com> <86802c440807181054p422a77bdv901ebdc44a8d1b43@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48806017.1040307@keyaccess.nl>
+In-Reply-To: <86802c440807181054p422a77bdv901ebdc44a8d1b43@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,26 +36,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rene Herman <rene.herman@keyaccess.nl> wrote:
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-> On 17-07-08 21:38, Rene Herman wrote:
->
->> On 17-07-08 21:20, Rene Herman wrote:
->>
->>> On 17-07-08 20:40, Takashi Iwai wrote:
->>>
->>>> Could you try the patch below?
->>>
->>> No, please hang on, it's much simpler. Above commit isn't actually  
->>> itself guilty. Have a patch ready, but am testing a bit.
->>
->> I retract that. Your patch should fix things.
->
-> It does. Acked/Tested-by: Rene Herman <rene.herman@gmail.com>
+> > That would make sense, since you're truncating the mmconf range 
+> > based on some arbitrary limit.  Even better would be to query the 
+> > hardware register which is responsible for the truncation.
+> 
+> OK
+> 
+> will rework pci_mmcfg_reject_broken to reduce size and check with 
+> is_acpi_reserved/e820_mapped to update end_bus_number
 
-box survived dozens of reboots so the fix from yesterday indeed did the 
-trick.
-
-thanks,
+should we apply your current patch (because that is what got tested by 
+Jack), with a followup patch - or would you like to send a new patch 
+from scratch?
 
 	Ingo
