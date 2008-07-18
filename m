@@ -1,50 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758194AbYGRSp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758623AbYGRSvh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758194AbYGRSp4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 14:45:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757724AbYGRSpq
+	id S1758623AbYGRSvh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 14:51:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755766AbYGRSva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 14:45:46 -0400
-Received: from ixia01.ro.gtsce.net ([212.146.94.66]:1565 "EHLO
-	ixro-ex1.ixiacom.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754576AbYGRSpp (ORCPT
+	Fri, 18 Jul 2008 14:51:30 -0400
+Received: from merle.it.northwestern.edu ([129.105.16.57]:33092 "EHLO
+	merle.it.northwestern.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755644AbYGRSv3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 14:45:45 -0400
-From: Octavian Purdila <opurdila@ixiacom.com>
-Organization: IXIA
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [PATCH] tcp: do not promote SPLICE_F_NONBLOCK to socket O_NONBLOCK
-Date: Fri, 18 Jul 2008 21:43:38 +0300
-User-Agent: KMail/1.9.9
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, axboe@kernel.dk
-References: <200807171633.49791.opurdila@ixiacom.com> <200807182116.43451.opurdila@ixiacom.com> <20080718183549.GA23263@2ka.mipt.ru>
-In-Reply-To: <20080718183549.GA23263@2ka.mipt.ru>
+	Fri, 18 Jul 2008 14:51:29 -0400
+X-Greylist: delayed 1525 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Jul 2008 14:51:29 EDT
+From: "d gitelman" <d-gitelman@northwestern.edu>
+To: <linux-kernel@vger.kernel.org>
+Subject: kernel 2.6.18-92.1.6 produces errors when using nfs and nis
+Date: Fri, 18 Jul 2008 13:25:59 -0500
+Message-ID: <6B207F14C1A94D46B5903DB7623657B5@nmff.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807182143.38624.opurdila@ixiacom.com>
-X-OriginalArrivalTime: 18 Jul 2008 18:47:41.0548 (UTC) FILETIME=[C217E2C0:01C8E906]
+X-Mailer: Microsoft Office Outlook 11
+thread-index: AcjpA7nEkK5b+t4ASf+Ug5FhWT6mUA==
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5512
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 18 July 2008, Evgeniy Polyakov wrote:
+Hi
 
-> >
-> > and so on until pipe->nrbufs is 16. At than point, we will block in
-> > pipe_wait, inside splice_to_pipe.
->
-> Seems that SPLICE_F_NONBLOCK check should be propagated from
-> tcp_splice_read() into skb_splice_bits(), and this flag is actually
-> there already in tss.flags.
+The following errors occur when I use kernel 2.6.18-92.1.6.el5  but not with
+kernel 2.6.18-53.1.21.el5, with no change to any conf files when I switch
+kernels.  I am running RHEL 5.
 
-I'm not sure I understand you... 
+I am a newbie and apologize in advance if this is the wrong place to ask
+this question or if this message contains inadequate information. Please
+advise.
 
-The flag gets propagated to splice_to_pipe (so there is no need to propagate 
-the check in skb_splice_bits) but we don't have SPLICE_F_NONBLOCK set, we are 
-on the blocking usecase.
+The problem is that when the nfs service starts I get the following error
+message on my nis clients (again this is only with kernel 2.6.18-92.1.6 and
+not 2.6.18-53.1.21)
+ 
+[root@chinook init.d]# service nfs start
+Starting NFS services:                                     [  OK  ]
+Starting NFS quotas: yp_all: clnt_call: RPC: Timed out
+yp_all: clnt_call: RPC: Timed out
+yp_all: clnt_call: RPC: Timed out
+yp_all: clnt_call: RPC: Timed out
+yp_all: clnt_call: RPC: Timed out
+yp_all: clnt_call: RPC: Timed out
+yp_all: clnt_call: RPC: Timed out
+yp_all: clnt_call: RPC: Timed out
+                                                           [  OK  ]
+Starting NFS daemon:                                       [  OK  ]
+Starting NFS mountd: yp_all: clnt_call: RPC: Timed out
+yp_all: clnt_call: RPC: Timed out
+yp_all: clnt_call: RPC: Timed out
+yp_all: clnt_call: RPC: Timed out
+yp_all: clnt_call: RPC: Timed out
+yp_all: clnt_call: RPC: Timed out
+                                                           [  OK  ]
 
-Thanks,
-tavi
+ 
+This occurs when the system is booting or if I stop and then start the
+service. 
+ 
+No messages relevant to this error appear in /var/log/messages 
+ 
+No matter which kernel starts yp is appropriately bound to the NIS server
+ypwhich returns the name of the server and ypcat passwd returns the
+passwords.
+ 
+RPC appears to be running correctly
+ 
+[root@chinook ~]# rpcinfo -p localhost
+   program vers proto   port
+    100000    2   tcp    111  portmapper
+    100000    2   udp    111  portmapper
+    100007    2   udp    966  ypbind
+    100007    1   udp    966  ypbind
+    100007    2   tcp    969  ypbind
+    100007    1   tcp    969  ypbind
+    100024    1   udp    644  status
+    100024    1   tcp    652  status
+    100021    1   udp  32784  nlockmgr
+    100021    3   udp  32784  nlockmgr
+    100021    4   udp  32784  nlockmgr
+    100021    1   tcp  43375  nlockmgr
+    100021    3   tcp  43375  nlockmgr
+    100021    4   tcp  43375  nlockmgr
+    100011    1   udp    766  rquotad
+    100011    2   udp    766  rquotad
+    100011    1   tcp    790  rquotad
+    100011    2   tcp    790  rquotad
+    100003    2   udp   2049  nfs
+    100003    3   udp   2049  nfs
+    100003    4   udp   2049  nfs
+    100003    2   tcp   2049  nfs
+    100003    3   tcp   2049  nfs
+    100003    4   tcp   2049  nfs
+    100005    1   udp    804  mountd
+ 
+[root@chinook ~]# rpcinfo -u localhost ypbind
+program 100007 version 1 ready and waiting
+program 100007 version 2 ready and waiting
+
+ypdomainname, nisdomainname, hostname all return appropriate values, which
+are not different between kernels.
+ 
+Searching google returned a suggestion to change the file limits > ulimit -n
+256, but this does not resolve the error.
+ 
+I am running the following versions of programs (of course these do not
+change when switching kernels)
+ypbind-1.19-8.el5
+yp-tools-2.9-0.1
+nfs-utils-1.0.9-33.el5
+nfs-utils-lib-1.0.8-7.2.z2
+nfs4-acl-tools-0.3.1-1.el5.1
+
+
+Please CC me on any replies.
+Any help would be greatly appreciated. This is driving me crazy.
+ 
+Darren
+
+
