@@ -1,83 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758368AbYGRNRG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757995AbYGRNVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758368AbYGRNRG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 09:17:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755532AbYGRNQz
+	id S1757995AbYGRNVj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 09:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756398AbYGRNVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 09:16:55 -0400
-Received: from miranda.se.axis.com ([193.13.178.8]:40840 "EHLO
-	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754866AbYGRNQz (ORCPT
+	Fri, 18 Jul 2008 09:21:30 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:38333 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756392AbYGRNV3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 09:16:55 -0400
-Date: Fri, 18 Jul 2008 15:16:40 +0200
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mikael Starvik <mikael.starvik@axis.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [git pull] CRIS update for 2.6.27
-Message-ID: <20080718131640.GF9127@axis.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 18 Jul 2008 09:21:29 -0400
+Subject: Re: [RFC] systemtap: begin the process of using proper kernel APIs
+	(part1: use kprobe symbol_name/offset instead of address)
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org,
+       jbeulich@novell.com
+In-Reply-To: <y0m7ibjjqg4.fsf@ton.toronto.redhat.com>
+References: <1216146802.3312.95.camel@localhost.localdomain>
+	 <87ej5rsgk4.fsf@basil.nowhere.org> <1216373009.5232.130.camel@twins>
+	 <y0m7ibjjqg4.fsf@ton.toronto.redhat.com>
+Content-Type: text/plain
+Date: Fri, 18 Jul 2008 08:21:24 -0500
+Message-Id: <1216387284.3811.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Fri, 2008-07-18 at 09:02 -0400, Frank Ch. Eigler wrote:
+> Peter Zijlstra <peterz@infradead.org> writes:
+> 
+> > [...]
+> >> Right now x86 doesn't really have a good reliable unwinder that
+> >> works without frame pointer. I think systemtap
+> >> recently switched to Jan Beulich's dwarf2 unwinder. Before
+> >> switching to the in kernel unwinder that one would need to be 
+> >> re-merged again.
+> >
+> > Those are two separate issues.
+> >
+> > 1) stap ought to use the kernel's infrastructure and not re-implement
+> > its own.
+> > 2) if the kernel's infrastructure doesn't meet requirements, improve
+> > it.
+> 
+> They are related to the extent that readers may not realize some
+> implications of systemtap being/becoming a *kernel-resident* but not
+> *kernel-focused* tool.
+> 
+> For example, we're about to do unwinding/stack-traces of userspace
+> programs.  To what extent do you think the kernel unwinder (should one
+> reappear in git) would welcome patches that provide zero benefit to
+> the kernel, but only enable a peculiar (nonintrusive) sort of
+> unwinding we would need for complex userspace stacks?
 
-The following changes since commit 543cf4cb3fe6f6cae3651ba918b9c56200b257d0:
-  Linus Torvalds (1):
-        Linux 2.6.26-rc8
+I'm not entirely convinced systemtap wants full stack unwinding in the
+kernel.  What the kernel wants is the call trace, which it can do with
+kallsyms.  However, systemtap in userspace sees all the relevant dwarf
+information as well ... it could do a much better job of unwinding: give
+file and line and arguments for function calls, for instance.  All it
+really needs is to have the relevant pieces of the stack relayed back.
 
-are available in the git repository at:
-
-  git://www.jni.nu/cris.git for-linus
-
-Hinko Kocevar (1):
-      cris: compile fixes for 2.6.26-rc5
-
-Jesper Nilsson (10):
-      [CRIS] Build fixes for compressed and rescue images for v10 and v32:
-      Merge branch 'cris_debug_port_fix' into cris
-      Merge branch 'pcf8563_mutex_spinlock' into cris
-      [CRIS] Correct image makefiles to allow using a separate OBJ-directory.
-      [CRIS] Correct definition of subdirs for install_headers.
-      [CRISv10] Correct whitespace damage.
-      [CRISv10] Clean up compressed/misc.c
-      Merge branch 'build_fix' into cris
-      Merge branch 'asm_cris_kbuild' into cris
-      Merge branch 'cris_debug_port_fix' into cris
-
-Julia Lawall (1):
-      It looks at least odd to apply spin_unlock to a mutex.
-
- arch/cris/arch-v10/boot/Makefile                 |    1 -
- arch/cris/arch-v10/boot/compressed/Makefile      |   14 +--
- arch/cris/arch-v10/boot/compressed/decompress.ld |    3 +-
- arch/cris/arch-v10/boot/compressed/head.S        |   98 ++++++++--------
- arch/cris/arch-v10/boot/compressed/misc.c        |  144 ++++++++++++----------
- arch/cris/arch-v10/boot/rescue/Makefile          |    9 +-
- arch/cris/arch-v10/drivers/pcf8563.c             |    2 +-
- arch/cris/arch-v10/kernel/debugport.c            |   20 ++-
- arch/cris/arch-v32/boot/Makefile                 |    1 -
- arch/cris/arch-v32/boot/compressed/Makefile      |    6 +-
- arch/cris/arch-v32/boot/rescue/Makefile          |    3 +-
- arch/cris/arch-v32/drivers/pcf8563.c             |    2 +-
- include/asm-cris/Kbuild                          |    5 +-
- 13 files changed, 154 insertions(+), 154 deletions(-)
+James
 
 
-This update makes the CRIS port compile using only the
-cris-axis-linux-gnu toolchain, removing the need for cris-axis-elf.
-It also makes it possible to compile using make O= flag and fixes
-some other obvious bugs.
-
-
-Sorry about the "Merge branch" noise, I'll try to avoid them in the future.
-
-/^JN - Jesper Nilsson
--- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
