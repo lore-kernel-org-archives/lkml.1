@@ -1,51 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760479AbYGRMoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760176AbYGRMpM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760479AbYGRMoY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 08:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbYGRMoM
+	id S1760176AbYGRMpM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 08:45:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755793AbYGRMpA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 08:44:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43231 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752577AbYGRMoL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 08:44:11 -0400
-Date: Fri, 18 Jul 2008 14:42:55 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [git pull] core/stacktrace changes for v2.6.27
-Message-ID: <20080718124255.GS6875@elte.hu>
-References: <20080714144420.GA21632@elte.hu> <20080715013543.398c83d9.sfr@canb.auug.org.au> <20080714155617.GA3320@elte.hu> <20080714213232.GB6705@osiris.boeblingen.de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 18 Jul 2008 08:45:00 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:30856 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755222AbYGRMo7 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 08:44:59 -0400
+Message-Id: <4880AC80.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Fri, 18 Jul 2008 13:45:20 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: reduce force_mwait visibility
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20080714213232.GB6705@osiris.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+It's not used anywhere outside its single referencing file.
 
-* Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-> 
-> s390 and probably other architectures will suffer from the same 
-> compile bug. I sent you the patch below against linux-next to fix this 
-> problem a couple of days ago: 
-> http://marc.info/?l=linux-next&m=121577286607960&w=2
-> 
-> Subject: [PATCH] Add module.h include to stacktrace.c.
+---
+ arch/x86/kernel/cpu/amd.c   |    2 --
+ arch/x86/kernel/process.c   |    2 ++
+ include/asm-x86/processor.h |    2 --
+ 3 files changed, 2 insertions(+), 4 deletions(-)
 
-applied to tip/core/urgent, thanks Heiko.
+--- linux-2.6.26/arch/x86/kernel/cpu/amd.c	2008-07-13 23:51:29.000000000 +0200
++++ 2.6.26-x86-force-mwait-cleanup/arch/x86/kernel/cpu/amd.c	2008-07-15 14:54:53.000000000 +0200
+@@ -61,8 +61,6 @@ static __cpuinit int amd_apic_timer_brok
+ }
+ #endif
+ 
+-int force_mwait __cpuinitdata;
+-
+ static void __cpuinit early_init_amd(struct cpuinfo_x86 *c)
+ {
+ 	if (cpuid_eax(0x80000000) >= 0x80000007) {
+--- linux-2.6.26/arch/x86/kernel/process.c	2008-07-13 23:51:29.000000000 +0200
++++ 2.6.26-x86-force-mwait-cleanup/arch/x86/kernel/process.c	2008-07-15 14:54:53.000000000 +0200
+@@ -122,6 +122,8 @@ static void poll_idle(void)
+  *
+  * idle=mwait overrides this decision and forces the usage of mwait.
+  */
++static int __cpuinitdata force_mwait;
++
+ static int __cpuinit mwait_usable(const struct cpuinfo_x86 *c)
+ {
+ 	if (force_mwait)
+--- linux-2.6.26/include/asm-x86/processor.h	2008-07-13 23:51:29.000000000 +0200
++++ 2.6.26-x86-force-mwait-cleanup/include/asm-x86/processor.h	2008-07-15 14:54:53.000000000 +0200
+@@ -727,8 +727,6 @@ static inline void __sti_mwait(unsigned 
+ 
+ extern void mwait_idle_with_hints(unsigned long eax, unsigned long ecx);
+ 
+-extern int			force_mwait;
+-
+ extern void select_idle_routine(const struct cpuinfo_x86 *c);
+ 
+ extern unsigned long		boot_option_idle_override;
 
-	Ingo
+
+
