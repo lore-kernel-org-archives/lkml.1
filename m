@@ -1,60 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756556AbYGRJQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757136AbYGRJR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756556AbYGRJQi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 05:16:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754002AbYGRJQ2
+	id S1757136AbYGRJR3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 05:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753761AbYGRJRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 05:16:28 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:43916 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753558AbYGRJQ0 (ORCPT
+	Fri, 18 Jul 2008 05:17:21 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:54219 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753573AbYGRJRU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 05:16:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=mm3nB7GmwG2mvuSME3eLfGdXy5PZF/WKt19GzEQToGPxWoe1m3ukOmvYaCjM/9nedx
-         pmAd1NxIu9JJ2W356igNlL7PRCzqcuriPOhTGXFwWlcBJ17Cd8MluGW3XCRgTmKw8q2s
-         WnyqD7hGIq+OoLAXWggfRNHoGg5O5kxM7IKHs=
-Message-ID: <84144f020807180216mfd5e803o8f3f1a94b2db1a74@mail.gmail.com>
-Date: Fri, 18 Jul 2008 12:16:26 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison overwritten
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "Vegard Nossum" <vegard.nossum@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, cl@linux-foundation.org,
-       davem@davemloft.net, johnpol@2ka.mipt.ru
-In-Reply-To: <20080718091146.GQ6875@elte.hu>
+	Fri, 18 Jul 2008 05:17:20 -0400
+Message-ID: <48806017.1040307@keyaccess.nl>
+Date: Fri, 18 Jul 2008 11:19:19 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080717214222.GA29449@elte.hu>
-	 <Pine.LNX.4.64.0807181149460.3852@sbz-30.cs.Helsinki.FI>
-	 <20080718091146.GQ6875@elte.hu>
-X-Google-Sender-Auth: d7cb49523a65b0d6
+To: Takashi Iwai <tiwai@suse.de>
+CC: Ingo Molnar <mingo@elte.hu>, Jaroslav Kysela <perex@perex.cz>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ALSA development <alsa-devel@alsa-project.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Rene Herman <rene.herman@gmail.com>,
+       Krzysztof Helt <krzysztof.h1@wp.pl>
+Subject: Re: [boot crash, bisected] in 9f240a55 "ALSA: opti93x: use cs4231
+ lib"
+References: <Pine.LNX.4.61.0807141105150.7676@tm8103-a.perex-int.cz>	<20080717170657.GA14593@elte.hu> <s5h3am8jqvy.wl%tiwai@suse.de> <487F9B9B.2010905@keyaccess.nl> <487F9FA1.7020101@keyaccess.nl>
+In-Reply-To: <487F9FA1.7020101@keyaccess.nl>
+Content-Type: multipart/mixed;
+ boundary="------------070007060903020506000905"
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 12:11 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
->
->> >   Object 0xf658ae70:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
->>
->> It's bit unfortunate that we don't see full dump of the corruption
->> here because SLUB limits the output to 128 bytes. Ingo, you might want
->> to try this patch so that we can see all of it:
->
-> ok, applied this as a debug special to tip/out-of-tree - future
-> incidents should have the full object dump.
->
-> would makes sense for upstream too i think, or increase the limit to 4K
-> or so. (which is still fair to be dumped into a syslog)
+This is a multi-part message in MIME format.
+--------------070007060903020506000905
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-SLUB already limits object sizes to less than PAGE_SIZE so the patch
-should be fine. Christoph, are you okay with this going upstream?
+On 17-07-08 21:38, Rene Herman wrote:
+
+> On 17-07-08 21:20, Rene Herman wrote:
+> 
+>> On 17-07-08 20:40, Takashi Iwai wrote:
+>>
+>>> Could you try the patch below?
+>>
+>> No, please hang on, it's much simpler. Above commit isn't actually 
+>> itself guilty. Have a patch ready, but am testing a bit.
+> 
+> I retract that. Your patch should fix things.
+
+It does. Acked/Tested-by: Rene Herman <rene.herman@gmail.com>
+
+> I would like to place something on top to make the init isa/pnp choice 
+> look more generic but I'll submit that tomorrow.
+
+This bug was uncovered by !CONFIG_PNP and we had trouble in this driver 
+due to that before so was rewriting the init to be a generic multi-card 
+ALSA init but, actually, not much point.
+
+The hardware fundamentally doesn't support more than one card per system 
+due to the fixed chip->mc_base and the bug was in this case not _caused_ 
+but only uncovered by !CONFIG_PNP (it triggers for CONFIG_PNP after 
+supplying "isapnp=0" as a module param) so I'll just wait for the next 
+time this ifdeffed together mess breaks on !CONFIG_PNP to make the init 
+look generic ;-)
+
+In fact, in the meantime I'll look at splitting 92x and 93x again. It's 
+much better now that Krzysztof made it use the generic library code but 
+I still hate this driver. It's also poking at ports without being told 
+something is there by either system or user.
+
+Trivial remainder of init rewrite that's still applicable:
+
+Rene.
+
+
+--------------070007060903020506000905
+Content-Type: text/plain;
+ name="0001-ALSA-opti9xx-no-isapnp-param-for-CONFIG_PNP.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="0001-ALSA-opti9xx-no-isapnp-param-for-CONFIG_PNP.patch"
+
+>From fc64af262b44d41cd45fbe96be301e4662ba1c1a Mon Sep 17 00:00:00 2001
+From: Rene Herman <rene.herman@gmail.com>
+Date: Fri, 18 Jul 2008 11:15:12 +0200
+Subject: [PATCH] ALSA: opti9xx: no isapnp param for !CONFIG_PNP
+
+"isapnp" needs CONFIG_PNP to be useful.
+
+Signed-off-by: Rene Herman <rene.herman@gmail.com>
+---
+ sound/isa/opti9xx/opti92x-ad1848.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/sound/isa/opti9xx/opti92x-ad1848.c b/sound/isa/opti9xx/opti92x-ad1848.c
+index e5d9028..5dfead9 100644
+--- a/sound/isa/opti9xx/opti92x-ad1848.c
++++ b/sound/isa/opti9xx/opti92x-ad1848.c
+@@ -68,7 +68,9 @@ MODULE_SUPPORTED_DEVICE("{{OPTi,82C924 (AD1848)},"
+ static int index = SNDRV_DEFAULT_IDX1;	/* Index 0-MAX */
+ static char *id = SNDRV_DEFAULT_STR1;		/* ID for this card */
+ //static int enable = SNDRV_DEFAULT_ENABLE1;	/* Enable this card */
++#ifdef CONFIG_PNP
+ static int isapnp = 1;			/* Enable ISA PnP detection */
++#endif
+ static long port = SNDRV_DEFAULT_PORT1; 	/* 0x530,0xe80,0xf40,0x604 */
+ static long mpu_port = SNDRV_DEFAULT_PORT1;	/* 0x300,0x310,0x320,0x330 */
+ static long fm_port = SNDRV_DEFAULT_PORT1;	/* 0x388 */
+@@ -85,8 +87,10 @@ module_param(id, charp, 0444);
+ MODULE_PARM_DESC(id, "ID string for opti9xx based soundcard.");
+ //module_param(enable, bool, 0444);
+ //MODULE_PARM_DESC(enable, "Enable opti9xx soundcard.");
++#ifdef CONFIG_PNP
+ module_param(isapnp, bool, 0444);
+ MODULE_PARM_DESC(isapnp, "Enable ISA PnP detection for specified soundcard.");
++#endif
+ module_param(port, long, 0444);
+ MODULE_PARM_DESC(port, "WSS port # for opti9xx driver.");
+ module_param(mpu_port, long, 0444);
+-- 
+1.5.5
+
+
+--------------070007060903020506000905--
