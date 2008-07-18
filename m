@@ -1,150 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754074AbYGRFEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750AbYGRFEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754074AbYGRFEV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 01:04:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753412AbYGRFEA
+	id S1754750AbYGRFEe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 01:04:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787AbYGRFEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 01:04:00 -0400
+	Fri, 18 Jul 2008 01:04:08 -0400
 Received: from rv-out-0506.google.com ([209.85.198.225]:23129 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752969AbYGRFD6 (ORCPT
+	with ESMTP id S1753552AbYGRFEG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 01:03:58 -0400
+	Fri, 18 Jul 2008 01:04:06 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=rkBob9JH1w0WXMCOj0GcR3EcJpsckJxa4YoQucBk9+AUeWMYiKlhMeW+nf1RIl+iak
-         03znGYtRoRLoADRfh/INP60oaNNwEmpO8f7lU+/g2pXq7xlu3Qxz9ROmN2RbSmCcSkuB
-         nncKd8Ad3qj5M9jIPiSEa4t+Nz/y3yoB0AGjY=
+        b=EW+3ktgjvIG768h9jFN7cyRlaRUvlWb1sZm9mpncRhkNfrP5nf+A7UwsnDG+Pp1DRx
+         uE0wsi7N/Z54PD24zimb8fwZmzD3Pb7uwi8fKM02dvmU4yEZsJcsNkqRIDvCsPz3SqYd
+         DBpF4sPtGLbJEf2f61z47nJ/xogjxsxp+AfTA=
 From: Magnus Damm <magnus.damm@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: Magnus Damm <magnus.damm@gmail.com>, hjk@linutronix.de, gregkh@suse.de,
        akpm@linux-foundation.org
-Date: Fri, 18 Jul 2008 14:04:10 +0900
-Message-Id: <20080718050410.16250.20327.sendpatchset@rx1.opensource.se>
+Date: Fri, 18 Jul 2008 14:04:18 +0900
+Message-Id: <20080718050418.16250.59161.sendpatchset@rx1.opensource.se>
 In-Reply-To: <20080718050402.16250.25213.sendpatchset@rx1.opensource.se>
 References: <20080718050402.16250.25213.sendpatchset@rx1.opensource.se>
-Subject: [PATCH 01/06] uio: Use struct_uio_mem instead of index
+Subject: [PATCH 02/06] uio: Pass struct uio_mem to mmap functions
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Magnus Damm <damm@igel.co.jp>
 
-This patch teaches the UIO code to make use of struct uio_mem pointers.
-The code is converted from:
-   index = uio_find_mem_index()
-   do_something(idev->info->mem[index].member)
-to
-   mem = uio_find_mem()
-   do_something(mem->member)
+This patch makes the UIO code pass a struct uio_mem pointer to the
+mmap functions. This change allows us to remove one uio_find_mem()
+call and an error check.
+
+The error check can be removed since the struct uio_mem pointer has
+already been verified in uio_mmap().
 
 Signed-off-by: Magnus Damm <damm@igel.co.jp>
 ---
 
- drivers/uio/uio.c |   36 ++++++++++++++++++------------------
- 1 file changed, 18 insertions(+), 18 deletions(-)
+ drivers/uio/uio.c |   15 ++++-----------
+ 1 file changed, 4 insertions(+), 11 deletions(-)
 
---- 0001/drivers/uio/uio.c
-+++ work/drivers/uio/uio.c	2008-07-18 12:39:49.000000000 +0900
-@@ -427,18 +427,18 @@ static ssize_t uio_read(struct file *fil
- 	return retval;
- }
+--- 0002/drivers/uio/uio.c
++++ work/drivers/uio/uio.c	2008-07-18 12:40:42.000000000 +0900
+@@ -477,17 +477,10 @@ static struct vm_operations_struct uio_v
+ 	.fault = uio_vma_fault,
+ };
  
--static int uio_find_mem_index(struct vm_area_struct *vma)
-+static struct uio_mem *uio_find_mem(struct vm_area_struct *vma)
+-static int uio_mmap_physical(struct vm_area_struct *vma)
++static int uio_mmap_physical(struct vm_area_struct *vma, struct uio_mem *imem)
  {
- 	int mi;
- 	struct uio_device *idev = vma->vm_private_data;
- 
- 	for (mi = 0; mi < MAX_UIO_MAPS; mi++) {
- 		if (idev->info->mem[mi].size == 0)
--			return -1;
-+			break;
- 		if (vma->vm_pgoff == mi)
--			return mi;
-+			return &idev->info->mem[mi];
- 	}
--	return -1;
-+	return NULL;
- }
- 
- static void uio_vma_open(struct vm_area_struct *vma)
-@@ -456,16 +456,16 @@ static void uio_vma_close(struct vm_area
- static int uio_vma_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
- {
- 	struct uio_device *idev = vma->vm_private_data;
-+	struct uio_mem *imem = uio_find_mem(vma);
- 	struct page *page;
- 
--	int mi = uio_find_mem_index(vma);
--	if (mi < 0)
-+	if (!imem)
- 		return VM_FAULT_SIGBUS;
- 
--	if (idev->info->mem[mi].memtype == UIO_MEM_LOGICAL)
--		page = virt_to_page(idev->info->mem[mi].addr);
-+	if (imem->memtype == UIO_MEM_LOGICAL)
-+		page = virt_to_page(imem->addr);
- 	else
--		page = vmalloc_to_page((void*)idev->info->mem[mi].addr);
-+		page = vmalloc_to_page((void *)imem->addr);
- 	get_page(page);
- 	vmf->page = page;
- 	return 0;
-@@ -479,9 +479,9 @@ static struct vm_operations_struct uio_v
- 
- static int uio_mmap_physical(struct vm_area_struct *vma)
- {
--	struct uio_device *idev = vma->vm_private_data;
--	int mi = uio_find_mem_index(vma);
--	if (mi < 0)
-+	struct uio_mem *imem = uio_find_mem(vma);
-+
-+	if (!imem)
- 		return -EINVAL;
- 
+-	struct uio_mem *imem = uio_find_mem(vma);
+-
+-	if (!imem)
+-		return -EINVAL;
+-
  	vma->vm_flags |= VM_IO | VM_RESERVED;
-@@ -490,7 +490,7 @@ static int uio_mmap_physical(struct vm_a
- 
+-
+ 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+-
  	return remap_pfn_range(vma,
  			       vma->vm_start,
--			       idev->info->mem[mi].addr >> PAGE_SHIFT,
-+			       imem->addr >> PAGE_SHIFT,
- 			       vma->vm_end - vma->vm_start,
+ 			       imem->addr >> PAGE_SHIFT,
+@@ -495,7 +488,7 @@ static int uio_mmap_physical(struct vm_a
  			       vma->vm_page_prot);
  }
-@@ -507,7 +507,7 @@ static int uio_mmap(struct file *filep, 
+ 
+-static int uio_mmap_logical(struct vm_area_struct *vma)
++static int uio_mmap_logical(struct vm_area_struct *vma, struct uio_mem *imem)
  {
- 	struct uio_listener *listener = filep->private_data;
- 	struct uio_device *idev = listener->dev;
--	int mi;
-+	struct uio_mem *imem;
- 	unsigned long requested_pages, actual_pages;
- 	int ret = 0;
+ 	vma->vm_flags |= VM_RESERVED;
+ 	vma->vm_ops = &uio_vm_ops;
+@@ -532,10 +525,10 @@ static int uio_mmap(struct file *filep, 
  
-@@ -516,12 +516,12 @@ static int uio_mmap(struct file *filep, 
- 
- 	vma->vm_private_data = idev;
- 
--	mi = uio_find_mem_index(vma);
--	if (mi < 0)
-+	imem = uio_find_mem(vma);
-+	if (!imem)
- 		return -EINVAL;
- 
- 	requested_pages = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
--	actual_pages = (idev->info->mem[mi].size + PAGE_SIZE -1) >> PAGE_SHIFT;
-+	actual_pages = (imem->size + PAGE_SIZE - 1) >> PAGE_SHIFT;
- 	if (requested_pages > actual_pages)
- 		return -EINVAL;
- 
-@@ -530,7 +530,7 @@ static int uio_mmap(struct file *filep, 
- 		return ret;
- 	}
- 
--	switch (idev->info->mem[mi].memtype) {
-+	switch (imem->memtype) {
+ 	switch (imem->memtype) {
  		case UIO_MEM_PHYS:
- 			return uio_mmap_physical(vma);
+-			return uio_mmap_physical(vma);
++			return uio_mmap_physical(vma, imem);
  		case UIO_MEM_LOGICAL:
+ 		case UIO_MEM_VIRTUAL:
+-			return uio_mmap_logical(vma);
++			return uio_mmap_logical(vma, imem);
+ 		default:
+ 			return -EINVAL;
+ 	}
