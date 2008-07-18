@@ -1,83 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757411AbYGRM5t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757875AbYGRNA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757411AbYGRM5t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 08:57:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbYGRM5l
+	id S1757875AbYGRNA3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 09:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753773AbYGRNAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 08:57:41 -0400
-Received: from sinclair.provo.novell.com ([137.65.248.137]:13608 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750997AbYGRM5k convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 08:57:40 -0400
-X-Greylist: delayed 525 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Jul 2008 08:57:40 EDT
-Message-Id: <48805C06.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Fri, 18 Jul 2008 07:01:58 -0600
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Peter Zijlstra" <peterz@infradead.org>
-Cc: <mingo@elte.hu>, <rostedt@goodmis.org>, <linux-kernel@vger.kernel.org>,
-       <linux-rt-users@vger.kernel.org>, <stable@vger.kernel.org>
-Subject: Re: [PATCH 2/2] sched: readjust the load whenever
-	task_setprio()is invoked
-References: <20080703212939.1275.27072.stgit@lsg.lsg.lab.novell.com>
- <20080703213716.1275.33324.stgit@lsg.lsg.lab.novell.com>
- <1216384984.28405.36.camel@twins>
-In-Reply-To: <1216384984.28405.36.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Fri, 18 Jul 2008 09:00:15 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:61333 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752948AbYGRNAN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 09:00:13 -0400
+Date: Fri, 18 Jul 2008 13:59:12 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, Ingo Molnar <mingo@elte.hu>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>, venkatesh.pallipadi@intel.com,
+       Huang Ying <ying.huang@intel.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: v2.6.26-rc9: ACPI PCI irq routing on NUMA? + early_ioremap
+ trouble
+In-Reply-To: <19f34abd0807180051i544367b7s64f32d601af31296@mail.gmail.com>
+Message-ID: <Pine.LNX.4.55.0807181302020.12125@cliff.in.clinika.pl>
+References: <19f34abd0807060647k54490088uf8859d8a1646fd41@mail.gmail.com> 
+ <200807171245.31641.bjorn.helgaas@hp.com>  <19f34abd0807171358p3c5a44f9i91ab23d3f5e9671f@mail.gmail.com>
+  <Pine.LNX.4.55.0807180117320.6536@cliff.in.clinika.pl>
+ <19f34abd0807180051i544367b7s64f32d601af31296@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Fri, Jul 18, 2008 at  8:43 AM, in message <1216384984.28405.36.camel@twins>,
-Peter Zijlstra <peterz@infradead.org> wrote: 
-> On Thu, 2008-07-03 at 15:37 -0600, Gregory Haskins wrote:
->> The load may change with the priority, so be sure to recompute its value.
->> 
->> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
->> CC: Peter Zijlstra <peterz@infradead.org>
->> CC: Ingo Molnar <mingo@elte.hu>
-> 
-> Right, but in this case we'd need to do the dec/inc load game again
-> because otherwise we'll skew stuff - see the previuos mail on how
-> dequeue_task() doesn't actually do that.
-> 
-> Also, it looks like current mainline still has this issue.
-> 
-> OTOH - since prio boosting is a temporal feature, not changing the load
-> isn't too bad, we ought to get back to where we came from pretty
-> quickly.
+On Fri, 18 Jul 2008, Vegard Nossum wrote:
 
-Yeah, I agree.  This issue probably didn't actually matter much in practice.
+> I have done this for the bad case:
+> http://folk.uio.no/vegardno/linux/netconsole2.txt
 
-It just "looked" wrong, so I figured I'd fix it ;)
+ Thanks.  The MP table looks broken:
 
--Greg
+Bus #4 is ISA
+I/O APIC #32 Version 32 at 0xFEC00000.
+Int: type 3, pol 1, trig 1, bus 4, IRQ 00, APIC ID 2, APIC INT 00
 
-> 
-> 
-> 
->> ---
->> 
->>  kernel/sched.c |    1 +
->>  1 files changed, 1 insertions(+), 0 deletions(-)
->> 
->> diff --git a/kernel/sched.c b/kernel/sched.c
->> index b046754..c3f41b9 100644
->> --- a/kernel/sched.c
->> +++ b/kernel/sched.c
->> @@ -4637,6 +4637,7 @@ void task_setprio(struct task_struct *p, int prio)
->>  		p->sched_class = &fair_sched_class;
->>  
->>  	p->prio = prio;
->> +	set_load_weight(p);
->>  
->>  //	trace_special_pid(p->pid, __PRIO(oldprio), PRIO(p));
->>  	prev_resched = _need_resched();
->> 
+etc. (notice the different I/O APIC IDs reported), so any changes to our
+code are not at fault.  I suggest you ask your vendor to fix it up (did
+they test it at all? -- it has no chance to work) or stick to ACPI (I can
+see it has been automatically disabled for some reason).
 
+ Anyway, the piece of I/O APIC code in question should not poke at the
+local APIC, so I'll prepare a fix to make it check for the APIC ID being
+-1.
 
+> (I added a warning for certain APIC errors as well. Not that it adds
+> much in this particular case, but I think it would be good to have in
+> mainline anyway, to highlight these error cases in the future...)
 
+ It might be useful indeed.
+
+  Maciej
