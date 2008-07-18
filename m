@@ -1,60 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761242AbYGRROL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761318AbYGRROr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761242AbYGRROL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 13:14:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758703AbYGRRNo
+	id S1761318AbYGRROr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 13:14:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756234AbYGRROi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 13:13:44 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39318 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758177AbYGRRNn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 13:13:43 -0400
-Date: Fri, 18 Jul 2008 19:13:31 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jack Steiner <steiner@sgi.com>
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] - Earlier detection of system type (UV or non-UV)
-Message-ID: <20080718171331.GK6875@elte.hu>
-References: <20080709163602.GA12543@sgi.com>
+	Fri, 18 Jul 2008 13:14:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34723 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756198AbYGRROi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 13:14:38 -0400
+Message-ID: <4880CF52.5020406@linux-foundation.org>
+Date: Fri, 18 Jul 2008 12:13:54 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080709163602.GA12543@sgi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Richard Kennedy <richard@rsk.demon.co.uk>
+CC: penberg@cs.helsinki.fi, mpm@selenic.com, linux-mm <linux-mm@kvack.org>,
+       lkml <linux-kernel@vger.kernel.org>, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH][RFC] slub: increasing order reduces memory usage of	some
+ key caches
+References: <1216211371.3122.46.camel@castor.localdomain>	 <487DF5D4.9070101@linux-foundation.org>	 <1216216730.3122.60.camel@castor.localdomain>	 <487DFFBE.5050407@linux-foundation.org>	 <1216375025.3082.7.camel@castor.localdomain>	 <4880A694.1000100@linux-foundation.org>	 <1216392177.3082.27.camel@castor.localdomain>	 <4880AEFE.3060909@linux-foundation.org> <1216394560.3082.32.camel@castor.localdomain>
+In-Reply-To: <1216394560.3082.32.camel@castor.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Richard Kennedy wrote:
+> On Fri, 2008-07-18 at 09:55 -0500, Christoph Lameter wrote:
+>> OK that is now 4215 pages before and 4112 after the patch? Yawn.... So barely any effect?
+> 
+> Well it's not huge but there's another 100+ pages out of radix_tree,
+> too. & I've not inspected the rest of the cache usage.
 
-* Jack Steiner <steiner@sgi.com> wrote:
+Can you post these numbers with the slabinfo for the radix tree as well? It may be that there are a lot of sparsely populated slab pages that waste memory.
 
-> A patch is coming that requires earlier detection of system type (UV 
-> or non-UV) Move the logic that detects whether running on UV to 
-> acpi_boot_table_init().
 
-> ===================================================================
-> --- linux.orig/arch/x86/kernel/acpi/boot.c	2008-07-09 11:14:03.000000000 -0500
-> +++ linux/arch/x86/kernel/acpi/boot.c	2008-07-09 11:14:33.000000000 -0500
-> @@ -1712,6 +1712,10 @@ int __init acpi_boot_table_init(void)
->  		return error;
->  	}
->  
-> +#ifdef CONFIG_X86_64
-> +	acpi_table_parse(ACPI_SIG_MADT, acpi_early_madt_oem_check);
-> +#endif
-> +
->  	acpi_table_parse(ACPI_SIG_BOOT, acpi_parse_sbf);
 
-why the assymetry? We should parse it regardless of 32-bit or 64-bit. 
-(even if UV is 64-bit only, obviously)
 
-	Ingo
+
