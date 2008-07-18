@@ -1,56 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbYGRLHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756097AbYGRLMH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756186AbYGRLHl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 07:07:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbYGRLHd
+	id S1756097AbYGRLMH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 07:12:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754333AbYGRLLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 07:07:33 -0400
-Received: from viefep11-int.chello.at ([62.179.121.31]:59324 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751776AbYGRLHd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 07:07:33 -0400
-Subject: Re: [PATCH] sched: do not stop ticks when cpu is not idle
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: eric miao <eric.y.miao@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Jack Ren <jack.ren@marvell.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-In-Reply-To: <20080718105424.GA22268@elte.hu>
-References: <f17812d70807172341u92270fdvc80e72cc5599c56f@mail.gmail.com>
-	 <20080718102446.GV6875@elte.hu>  <20080718105424.GA22268@elte.hu>
-Content-Type: text/plain
-Date: Fri, 18 Jul 2008 13:08:03 +0200
-Message-Id: <1216379283.28405.19.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Jul 2008 07:11:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45327 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751700AbYGRLLy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 07:11:54 -0400
+Date: Fri, 18 Jul 2008 06:51:52 -0400
+From: Josef Bacik <jbacik@redhat.com>
+To: Andreas Dilger <adilger@sun.com>
+Cc: Josef Bacik <jbacik@redhat.com>, Vegard Nossum <vegard.nossum@gmail.com>,
+       Josef Bacik <josef@toxicpanda.com>, linux-ext4@vger.kernel.org,
+       sct@redhat.com, akpm@linux-foundation.org,
+       Johannes Weiner <hannes@saeurebad.de>, linux-kernel@vger.kernel.org
+Subject: Re: ext3 on latest -git: BUG: unable to handle kernel NULL pointer
+	dereference at 0000000c
+Message-ID: <20080718105152.GB15844@unused.rdu.redhat.com>
+References: <20080717135746.GB14133@unused.rdu.redhat.com> <19f34abd0807170725p13e81e3dq4daad32ad2a83931@mail.gmail.com> <20080717141333.GC14133@unused.rdu.redhat.com> <19f34abd0807170735p5d2cba31kec3fb65c5b8c7b3f@mail.gmail.com> <20080717141655.GD14133@unused.rdu.redhat.com> <19f34abd0807170744r79e46a78odfcfbd67687d2ceb@mail.gmail.com> <20080717143332.GE14133@unused.rdu.redhat.com> <19f34abd0807170800q13cc021dyed27c665c25ac520@mail.gmail.com> <20080717144342.GA15844@unused.rdu.redhat.com> <20080717230905.GI6239@webber.adilger.int>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080717230905.GI6239@webber.adilger.int>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-07-18 at 12:54 +0200, Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
+On Thu, Jul 17, 2008 at 05:09:05PM -0600, Andreas Dilger wrote:
+> On Jul 17, 2008  10:43 -0400, Josef Bacik wrote:
+> > Yeah thats a hard to answer question, one that I will leave up to others
+> > who have been doing this much longer than I.  My thought is remount-ro
+> > is there to keep you from crashing, so if you have errors=continue then
+> > you expect to live with the consequences.  Course if that bit gets flipped
+> > via corruption thats not good either.
 > 
-> > --- a/kernel/sched.c
-> > +++ b/kernel/sched.c
-> > @@ -4446,7 +4446,8 @@ need_resched_nonpreemptible:
-> >  		rq->nr_switches++;
-> >  		rq->curr = next;
-> >  		++*switch_count;
-> > -
-> > +		if (rq->curr != rq->idle)
-> > +			tick_nohz_restart_sched_tick();
-> >  		context_switch(rq, prev, next); /* unlocks the rq */
-> 
-> hm, one problem i can see is lock dependencies. This code is executed 
-> with the rq lock while tick_nohz_restart_sched_tick() takes hr locks => 
-> not good. So i havent applied this just yet - this needs to be solved 
-> differently.
+> It shouldn't cause the kernel to crash, but it should definitely return
+> an error to the application.  This is probably one of the code paths
+> that the Coverity folks were reporting on in FAST this year where on-disk
+> errors are not propagated to the application.
 
-Actually, that should work these days...
+Ok, please revert the previous patch and apply this one.  On errors=continue we
+will just abort the handle which should keep the NULL pointer dereference from
+happening and return an error back to the application.  Please let me know how
+this works Vegard, and thanks alot for testing all this.
 
-Also, I assume Eric actually tested this with lockdep enabled (right,
-Eric?) and that'll shout - or rather, lockup hard in this case - if you
-got it wrong.
+Signed-off-by: Josef Bacik <jbacik@redhat.com>
 
+Index: linux-2.6/fs/ext3/inode.c
+===================================================================
+--- linux-2.6.orig/fs/ext3/inode.c
++++ linux-2.6/fs/ext3/inode.c
+@@ -2023,13 +2023,27 @@ static void ext3_clear_blocks(handle_t *
+ 		unsigned long count, __le32 *first, __le32 *last)
+ {
+ 	__le32 *p;
++	int ret;
++
+ 	if (try_to_extend_transaction(handle, inode)) {
+ 		if (bh) {
+ 			BUFFER_TRACE(bh, "call ext3_journal_dirty_metadata");
+-			ext3_journal_dirty_metadata(handle, bh);
++			ret = ext3_journal_dirty_metadata(handle, bh);
++			if (ret) {
++				ext3_std_error(inode->i_sb, ret);
++				return;
++			}
+ 		}
+-		ext3_mark_inode_dirty(handle, inode);
+-		ext3_journal_test_restart(handle, inode);
++		ret = ext3_mark_inode_dirty(handle, inode);
++		if (ret)
++			return;
++
++		ret = ext3_journal_test_restart(handle, inode);
++		if (ret) {
++			ext3_std_error(inode->i_sb, ret);
++			return;
++		}
++
+ 		if (bh) {
+ 			BUFFER_TRACE(bh, "retaking write access");
+ 			ext3_journal_get_write_access(handle, bh);
+Index: linux-2.6/fs/ext3/balloc.c
+===================================================================
+--- linux-2.6.orig/fs/ext3/balloc.c
++++ linux-2.6/fs/ext3/balloc.c
+@@ -498,6 +498,7 @@ void ext3_free_blocks_sb(handle_t *handl
+ 		ext3_error (sb, "ext3_free_blocks",
+ 			    "Freeing blocks not in datazone - "
+ 			    "block = "E3FSBLK", count = %lu", block, count);
++		err = -EIO;
+ 		goto error_return;
+ 	}
+ 
+@@ -535,6 +536,7 @@ do_more:
+ 			    "Freeing blocks in system zones - "
+ 			    "Block = "E3FSBLK", count = %lu",
+ 			    block, count);
++		err = -EIO;
+ 		goto error_return;
+ 	}
+ 
+Index: linux-2.6/fs/ext3/super.c
+===================================================================
+--- linux-2.6.orig/fs/ext3/super.c
++++ linux-2.6/fs/ext3/super.c
+@@ -167,7 +167,15 @@ static void ext3_handle_error(struct sup
+ 		EXT3_SB(sb)->s_mount_opt |= EXT3_MOUNT_ABORT;
+ 		if (journal)
+ 			journal_abort(journal, -EIO);
++	} else {
++		handle_t *handle = current->journal_info;
++		if (handle && !is_handle_aborted(handle)) {
++			if (!handle->h_err)
++				handle->h_err = -EIO;
++			journal_abort_handle(handle);
++		}
+ 	}
++
+ 	if (test_opt (sb, ERRORS_RO)) {
+ 		printk (KERN_CRIT "Remounting filesystem read-only\n");
+ 		sb->s_flags |= MS_RDONLY;
