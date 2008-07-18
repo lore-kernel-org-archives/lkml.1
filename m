@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758746AbYGRRx7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760241AbYGRRyi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758746AbYGRRx7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 13:53:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbYGRRxu
+	id S1760241AbYGRRyi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 13:54:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbYGRRy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 13:53:50 -0400
-Received: from relay.2ka.mipt.ru ([194.85.80.65]:35620 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751314AbYGRRxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 13:53:49 -0400
-Date: Fri, 18 Jul 2008 21:53:41 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Octavian Purdila <opurdila@ixiacom.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, axboe@kernel.dk
-Subject: Re: [PATCH] tcp: do not promote SPLICE_F_NONBLOCK to socket O_NONBLOCK
-Message-ID: <20080718175341.GA21496@2ka.mipt.ru>
-References: <200807171633.49791.opurdila@ixiacom.com> <200807181850.07393.opurdila@ixiacom.com> <20080718160009.GA29740@2ka.mipt.ru> <200807182004.44664.opurdila@ixiacom.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 18 Jul 2008 13:54:29 -0400
+Received: from rv-out-0506.google.com ([209.85.198.225]:43930 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754063AbYGRRy3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 13:54:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ZiWVfJuPpfetXGXCAqpYUIaroHwSGgK+vyzkRmz5Kevsa9dBdrdRg9JNClcQSDNEHY
+         sKWhQLJVa4f69EuBiWonkn3YBioPp/kbBMs9116O8EQVp4ubO9pJvHF4ZhY1U4qKY7ia
+         36FYLnPK1ApsQZRVOW3v8MnIk5RxeTz3rYRF8=
+Message-ID: <86802c440807181054p422a77bdv901ebdc44a8d1b43@mail.gmail.com>
+Date: Fri, 18 Jul 2008 10:54:28 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86,pci: dmi check for mackpro 2.2 mmconf
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       jbarnes@virtuousgeek.org, "Jack Howarth" <howarth@bromo.msbb.uc.edu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <4880D7B9.8000007@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200807182004.44664.opurdila@ixiacom.com>
-User-Agent: Mutt/1.5.9i
+References: <200807180941.09779.yhlu.kernel@gmail.com>
+	 <4880D684.7020406@zytor.com>
+	 <86802c440807181047y4ef2f227me72e6474e726596@mail.gmail.com>
+	 <4880D7B9.8000007@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Fri, Jul 18, 2008 at 10:49 AM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Yinghai Lu wrote:
+>>
+>> On Fri, Jul 18, 2008 at 10:44 AM, H. Peter Anvin <hpa@zytor.com> wrote:
+>>>
+>>> Yinghai Lu wrote:
+>>>>
+>>>> change the mconf bus range from [0,0xff] to to [0, 0x3f]
+>>>> to match range [0xf0000000, 0xf4000000) in e820 tables.
+>>>>
+>>>> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+>>>> Tested-by: Jack Howarth <howarth@bromo.msbb.uc.edu>
+>>>
+>>> Why is this hard-coded instead of discovered dynamically?
+>>
+>> you mean according to the range reserved in e820 to find out bus range
+>> that should be used for mmconf?
+>
+> That would make sense, since you're truncating the mmconf range based on
+> some arbitrary limit.  Even better would be to query the hardware register
+> which is responsible for the truncation.
 
-On Fri, Jul 18, 2008 at 08:04:44PM +0300, Octavian Purdila (opurdila@ixiacom.com) wrote:
-> Suppose we have 20 packets in the socket queue and the pipe is empty and the 
-> application calls splice(sock, pipe, 17, flags=0).
-> 
-> Then, tcp_splice_read will be called, which in turn calls tcp_read_sock. 
-> 
-> tcp_read_sock will loop until all the 17 bytes will be read from the socket. 
-> tcp_read_sock calls skb_splice_bits which calls splice_to_pipe.
+OK
 
-How come?
-spd_fill_page() should fail when it will be called for the 17'th skb and
-all reading from the socket will return, and thus can be sent to the
-file.
+will rework pci_mmcfg_reject_broken to
+reduce size and check with is_acpi_reserved/e820_mapped to update end_bus_number
 
-> Now while skb_splice_bits is carefull to only put a maximum of PIPE_BUFFERS 
-> during its iteration, due to the looping in tcp_read_sock, we will end up 
-> with 17 calls to splice_to_pipe. Thus on the 17th call, splice_to_pipe will 
-> block.
-
-Where exactly?
-Why 
-tcp_splice_data_recv()->skb_splice_bits()->__skb_splice_bits()->spd_fill_page()
-callchain does not return error and that pipe is full?
-
--- 
-	Evgeniy Polyakov
+YH
