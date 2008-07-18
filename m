@@ -1,49 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759515AbYGRXA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760437AbYGRXB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759515AbYGRXA1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 19:00:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753711AbYGRXAO
+	id S1760437AbYGRXB5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 19:01:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbYGRXBt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 19:00:14 -0400
-Received: from mga01.intel.com ([192.55.52.88]:14555 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752884AbYGRXAN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 19:00:13 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,212,1215414000"; 
-   d="scan'208";a="599097153"
-Date: Fri, 18 Jul 2008 16:00:12 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Zachary Amsden <zach@vmware.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>, Ingo Molnar <mingo@elte.hu>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH] x86: APIC: Remove apic_write_around(); use alternatives
-Message-ID: <20080718230012.GD4507@linux-os.sc.intel.com>
-References: <Pine.LNX.4.55.0807161837080.30858@cliff.in.clinika.pl> <20080718105259.GY6875@elte.hu> <86802c440807180925t6fadfa58r6bf7740f8145482e@mail.gmail.com> <86802c440807181001h4426c197vc474f81497a5b42@mail.gmail.com> <20080718210348.GB24373@elte.hu> <86802c440807181413n7e79e821l90afaae86b322de9@mail.gmail.com> <Pine.LNX.4.55.0807182254270.12125@cliff.in.clinika.pl> <1216420937.30348.30.camel@bodhitayantram.eng.vmware.com> <20080718224922.GB4507@linux-os.sc.intel.com> <86802c440807181551l7e6e143dy7cea8ab59f1830ed@mail.gmail.com>
+	Fri, 18 Jul 2008 19:01:49 -0400
+Received: from mail-in-13.arcor-online.net ([151.189.21.53]:40841 "EHLO
+	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753648AbYGRXBs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 19:01:48 -0400
+Subject: Re: [linux-dvb] [PATCH] V4L: Link tuner before saa7134
+From: hermann pitton <hermann-pitton@arcor.de>
+To: Simon Arlott <simon@fire.lp0.eu>, video4linux-list@redhat.com,
+       v4l-dvb list <v4l-dvb-maintainer@linuxtv.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Brian Marete <bgmarete@gmail.com>, linux-dvb@linuxtv.org,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <38354.simon.1216381906@5ec7c279.invalid>
+References: <6dd519ae0807180428k30abd15eo60fd2856f7a43821@mail.gmail.com>
+	 <38354.simon.1216381906@5ec7c279.invalid>
+Content-Type: text/plain
+Date: Sat, 19 Jul 2008 00:56:39 +0200
+Message-Id: <1216421799.2666.23.camel@pc10.localdom.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440807181551l7e6e143dy7cea8ab59f1830ed@mail.gmail.com>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 03:51:07PM -0700, Yinghai Lu wrote:
-> On Fri, Jul 18, 2008 at 3:49 PM, Suresh Siddha
-> <suresh.b.siddha@intel.com> wrote:
-> > Thanks to Maciej who posted this fix. It was on my todo list for
-> > sometime now!
+Hi,
+
+Am Freitag, den 18.07.2008, 12:51 +0100 schrieb Simon Arlott:
+> On Fri, July 18, 2008 12:28, Brian Marete wrote:
+> > On Jul 14, 6:00 am, hermann pitton <hermann-pit...@arcor.de> wrote:
+> >>
+> >> #1 users can't set thetunertype anymore,
+> >>    but the few cases oftunerdetection from eeprom we have should
+> >>    work again for that price.
+> >
+> > Hello,
+> >
+> > Any patch yet for above issue? It seems to have made it into 2.6.26.
+> >
+> > I use saa7134 with everything, including the tuner modules, compiled
+> > as a module. My card is detected as a flyvideo2000. The default tuner
+> > for that card (#37) allows me to tune into TV but not to FM Radio. I
+> > can access both functions (TV and FM Radio) if I override with
+> > tuner=69, which is what I usually do. That override does not work on
+> > 2.6.26.
+> >
+> > Any suggestions?
 > 
-> do we rebase tip/x86/x2apic or rework this patch?
+> Modify saa7134_board_init2 so that the manual tuner type setting isn't
+> ignored. The first thing it does is to overwrite the current value
+> (set earlier from module parameter) with the static values... even
+> before trying to autodetect it.
+> 
+> In saa7134-core.c saa7134_initdev:
+>  dev->tuner_type   = saa7134_boards[dev->board].tuner_type;
+> +dev->tuner_addr   = saa7134_boards[dev->board].tuner_addr;
+> 
+> In saa7134-cards.c saa7134_board_init2:
+> -dev->tuner_type   = saa7134_boards[dev->board].tuner_type;
+> -dev->tuner_addr   = saa7134_boards[dev->board].tuner_addr;
+> 
+> I think that will fix it.
+> 
 
-Ingo just did the merge. And I posted a missing piece. So is this enough?
+this restores tuner behavior on the saa7134 driver.
 
-I will do more testing of the merge.
+I can't test XCeive tuners, which load different firmware dynamically.
+Mauro was on them.
 
-thanks,
-suresh
+Please send the patch to Mauro and/or provide your signed-off-by.
+
+This must go to the stable team ASAP as well.
+
+Reviewed-by: Hermann Pitton <hermann-pitton@arcor.de>
+
+Many thanks!
+
+Cheers,
+Hermann
+
