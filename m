@@ -1,156 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758863AbYGROpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758063AbYGROrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758863AbYGROpx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 10:45:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753795AbYGROpp
+	id S1758063AbYGROrt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 10:47:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbYGROrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 10:45:45 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52673 "EHLO mx1.redhat.com"
+	Fri, 18 Jul 2008 10:47:41 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52788 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753693AbYGROpo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 10:45:44 -0400
-Message-ID: <4880AC7D.5060708@redhat.com>
-Date: Fri, 18 Jul 2008 09:45:17 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
+	id S1750736AbYGROrj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 10:47:39 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Ian Kent <raven@themaw.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       autofs mailing list <autofs@linux.kernel.org>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 2/7] autofs4 - cleanup redundant readir code
+References: <20080718023651.12802.59107.stgit@raven.themaw.net>
+	<20080718023700.12802.52927.stgit@raven.themaw.net>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Fri, 18 Jul 2008 10:47:18 -0400
+In-Reply-To: <20080718023700.12802.52927.stgit@raven.themaw.net> (Ian Kent's
+	message of "Fri, 18 Jul 2008 10:37:02 +0800")
+Message-ID: <x4963r3dzbd.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: tglx@linutronix.de, linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH] i386: Execute stack overflow warning on interrupt stack
- v2
-References: <20080505103637.GA16419@basil.nowhere.org>
-In-Reply-To: <20080505103637.GA16419@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> i386: Execute stack overflow warning on interrupt stack v2
-> 
-> [Found the problem that caused the warnings on some configs now]
-> 
-> Previously the reporting printk would run on the process stack, which risks 
-> overflow an already low stack. Instead execute it on the interrupt stack.
-> This makes it more likely for the printk to make it actually out.
-> 
-> It adds one not taken test/branch more to the interrupt path when
-> stack overflow checking is enabled. We could avoid that by duplicating
-> more code, but that seemed not worth it.
-> 
-> Based on an observation by Eric Sandeen.
-> 
-> v2: Fix warnings in some configs
+Ian Kent <raven@themaw.net> writes:
 
-Did this patch get lost?  I'd sure like to see it go in, the stack
-overflow warning + heavy dump_stack on the original stack makes the
-warning do much more harm than good.
+> The mount triggering functionality of readdir and related functions
+> is no longer used (and is quite broken as well). The unused portions
+> have been removed.
 
-Thanks,
--Eric
+I agree that this should be safe (and I also agree that the code was
+broken!), but I'm not sure why you say that the code was no longer used.
+It was still wired up until this patch, right?
 
-> Signed-off-by: Andi Kleen <andi@firstfloor.org>
-> 
+Anyway:
+
+Acked-by: Jeff Moyer <jmoyer@redhat.com>
+
+>
+> Signed-off-by: Ian Kent <raven@themaw.net>
+>
 > ---
->  arch/x86/kernel/irq_32.c |   51 +++++++++++++++++++++++++++++++----------------
->  1 file changed, 34 insertions(+), 17 deletions(-)
-> 
-> Index: linux/arch/x86/kernel/irq_32.c
-> ===================================================================
-> --- linux.orig/arch/x86/kernel/irq_32.c
-> +++ linux/arch/x86/kernel/irq_32.c
-> @@ -61,6 +61,26 @@ static union irq_ctx *hardirq_ctx[NR_CPU
->  static union irq_ctx *softirq_ctx[NR_CPUS] __read_mostly;
->  #endif
+>
+>  fs/autofs4/root.c |  149 ++++++-----------------------------------------------
+>  1 files changed, 16 insertions(+), 133 deletions(-)
+>
+>
+> diff --git a/fs/autofs4/root.c b/fs/autofs4/root.c
+> index 2a1a631..e842b0a 100644
+> --- a/fs/autofs4/root.c
+> +++ b/fs/autofs4/root.c
+> @@ -25,8 +25,6 @@ static int autofs4_dir_rmdir(struct inode *,struct dentry *);
+>  static int autofs4_dir_mkdir(struct inode *,struct dentry *,int);
+>  static int autofs4_root_ioctl(struct inode *, struct file *,unsigned int,unsigned long);
+>  static int autofs4_dir_open(struct inode *inode, struct file *file);
+> -static int autofs4_dir_close(struct inode *inode, struct file *file);
+> -static int autofs4_dir_readdir(struct file * filp, void * dirent, filldir_t filldir);
+>  static int autofs4_root_readdir(struct file * filp, void * dirent, filldir_t filldir);
+>  static struct dentry *autofs4_lookup(struct inode *,struct dentry *, struct nameidata *);
+>  static void *autofs4_follow_link(struct dentry *, struct nameidata *);
+> @@ -44,9 +42,9 @@ const struct file_operations autofs4_root_operations = {
 >  
-> +static void stack_overflow(void)
-> +{
-> +	printk("low stack detected by irq handler\n");
-> +	dump_stack();
-> +}
-> +
-> +static inline void call_on_stack2(void *func, void *stack,
-> +			   unsigned long arg1, unsigned long arg2)
-> +{
-> +	unsigned long bx;
-> +	asm volatile(
-> +			"	xchgl  %%ebx,%%esp    \n"
-> +			"	call   *%%edi	      \n"
-> +			"	movl   %%ebx,%%esp    \n"
-> +			: "=a" (arg1), "=d" (arg2), "=b" (bx)
-> +			:  "0" (arg1),	 "1" (arg2),  "2" (stack),
-> +			   "D" (func)
-> +			: "memory", "cc", "ecx");
-> +}
-> +
->  /*
->   * do_IRQ handles all normal device IRQ's (the special
->   * SMP cross-CPU interrupts have their own specific
-> @@ -76,6 +96,7 @@ unsigned int do_IRQ(struct pt_regs *regs
->  	union irq_ctx *curctx, *irqctx;
->  	u32 *isp;
->  #endif
-> +	int overflow = 0;
+>  const struct file_operations autofs4_dir_operations = {
+>  	.open		= autofs4_dir_open,
+> -	.release	= autofs4_dir_close,
+> +	.release	= dcache_dir_close,
+>  	.read		= generic_read_dir,
+> -	.readdir	= autofs4_dir_readdir,
+> +	.readdir	= dcache_readdir,
+>  };
 >  
->  	if (unlikely((unsigned)irq >= NR_IRQS)) {
->  		printk(KERN_EMERG "%s: cannot handle IRQ %d\n",
-> @@ -92,11 +113,8 @@ unsigned int do_IRQ(struct pt_regs *regs
->  
->  		__asm__ __volatile__("andl %%esp,%0" :
->  					"=r" (sp) : "0" (THREAD_SIZE - 1));
-> -		if (unlikely(sp < (sizeof(struct thread_info) + STACK_WARN))) {
-> -			printk("do_IRQ: stack overflow: %ld\n",
-> -				sp - sizeof(struct thread_info));
-> -			dump_stack();
-> -		}
-> +		if (unlikely(sp < (sizeof(struct thread_info) + STACK_WARN)))
-> +			overflow = 1;
->  	}
->  #endif
->  
-> @@ -112,8 +130,6 @@ unsigned int do_IRQ(struct pt_regs *regs
->  	 * current stack (which is the irq stack already after all)
->  	 */
->  	if (curctx != irqctx) {
-> -		int arg1, arg2, bx;
+>  const struct inode_operations autofs4_indirect_root_inode_operations = {
+> @@ -98,17 +96,7 @@ static int autofs4_root_readdir(struct file *file, void *dirent,
+>  static int autofs4_dir_open(struct inode *inode, struct file *file)
+>  {
+>  	struct dentry *dentry = file->f_path.dentry;
+> -	struct vfsmount *mnt = file->f_path.mnt;
+>  	struct autofs_sb_info *sbi = autofs4_sbi(dentry->d_sb);
+> -	struct dentry *cursor;
+> -	int status;
 > -
->  		/* build the stack frame on the IRQ stack */
->  		isp = (u32*) ((char*)irqctx + sizeof(*irqctx));
->  		irqctx->tinfo.task = curctx->tinfo.task;
-> @@ -127,18 +143,19 @@ unsigned int do_IRQ(struct pt_regs *regs
->  			(irqctx->tinfo.preempt_count & ~SOFTIRQ_MASK) |
->  			(curctx->tinfo.preempt_count & SOFTIRQ_MASK);
+> -	status = dcache_dir_open(inode, file);
+> -	if (status)
+> -		goto out;
+> -
+> -	cursor = file->private_data;
+> -	cursor->d_fsdata = NULL;
 >  
-> -		asm volatile(
-> -			"       xchgl  %%ebx,%%esp    \n"
-> -			"       call   *%%edi         \n"
-> -			"       movl   %%ebx,%%esp    \n"
-> -			: "=a" (arg1), "=d" (arg2), "=b" (bx)
-> -			:  "0" (irq),   "1" (desc),  "2" (isp),
-> -			   "D" (desc->handle_irq)
-> -			: "memory", "cc", "ecx"
-> -		);
-> +		/* Execute warning on interrupt stack */
-> +		if (unlikely(overflow))
-> +			call_on_stack2(stack_overflow, isp, 0, 0);
-> +
-> +		call_on_stack2(desc->handle_irq, isp, irq, (unsigned long)desc);
->  	} else
->  #endif
-> +	{
-> +		/* AK: Slightly bogus here */
-> +		if (overflow)
-> +			stack_overflow();
->  		desc->handle_irq(irq, desc);
-> +	}
+>  	DPRINTK("file=%p dentry=%p %.*s",
+>  		file, dentry, dentry->d_name.len, dentry->d_name.name);
+> @@ -116,129 +104,24 @@ static int autofs4_dir_open(struct inode *inode, struct file *file)
+>  	if (autofs4_oz_mode(sbi))
+>  		goto out;
 >  
->  	irq_exit();
->  	set_irq_regs(old_regs);
+> -	if (autofs4_ispending(dentry)) {
+> -		DPRINTK("dentry busy");
+> -		dcache_dir_close(inode, file);
+> -		status = -EBUSY;
+> -		goto out;
+> -	}
+> -
+> -	status = -ENOENT;
+> -	if (!d_mountpoint(dentry) && dentry->d_op && dentry->d_op->d_revalidate) {
+> -		struct nameidata nd;
+> -		int empty, ret;
+> -
+> -		/* In case there are stale directory dentrys from a failed mount */
+> -		spin_lock(&dcache_lock);
+> -		empty = list_empty(&dentry->d_subdirs);
+> +	/*
+> +	 * An empty directory in an autofs file system is always a
+> +	 * mount point. The daemon must have failed to mount this
+> +	 * during lookup so it doesn't exist. This can happen, for
+> +	 * example, if user space returns an incorrect status for a
+> +	 * mount request. Otherwise we're doing a readdir on the
+> +	 * autofs file system so just let the libfs routines handle
+> +	 * it.
+> +	 */
+> +	spin_lock(&dcache_lock);
+> +	if (!d_mountpoint(dentry) && __simple_empty(dentry)) {
+>  		spin_unlock(&dcache_lock);
+> -
+> -		if (!empty)
+> -			d_invalidate(dentry);
+> -
+> -		nd.flags = LOOKUP_DIRECTORY;
+> -		ret = (dentry->d_op->d_revalidate)(dentry, &nd);
+> -
+> -		if (ret <= 0) {
+> -			if (ret < 0)
+> -				status = ret;
+> -			dcache_dir_close(inode, file);
+> -			goto out;
+> -		}
+> +		return -ENOENT;
+>  	}
+> +	spin_unlock(&dcache_lock);
+>  
+> -	if (d_mountpoint(dentry)) {
+> -		struct file *fp = NULL;
+> -		struct path fp_path = { .dentry = dentry, .mnt = mnt };
+> -
+> -		path_get(&fp_path);
+> -
+> -		if (!autofs4_follow_mount(&fp_path.mnt, &fp_path.dentry)) {
+> -			path_put(&fp_path);
+> -			dcache_dir_close(inode, file);
+> -			goto out;
+> -		}
+> -
+> -		fp = dentry_open(fp_path.dentry, fp_path.mnt, file->f_flags);
+> -		status = PTR_ERR(fp);
+> -		if (IS_ERR(fp)) {
+> -			dcache_dir_close(inode, file);
+> -			goto out;
+> -		}
+> -		cursor->d_fsdata = fp;
+> -	}
+> -	return 0;
+> -out:
+> -	return status;
+> -}
+> -
+> -static int autofs4_dir_close(struct inode *inode, struct file *file)
+> -{
+> -	struct dentry *dentry = file->f_path.dentry;
+> -	struct autofs_sb_info *sbi = autofs4_sbi(dentry->d_sb);
+> -	struct dentry *cursor = file->private_data;
+> -	int status = 0;
+> -
+> -	DPRINTK("file=%p dentry=%p %.*s",
+> -		file, dentry, dentry->d_name.len, dentry->d_name.name);
+> -
+> -	if (autofs4_oz_mode(sbi))
+> -		goto out;
+> -
+> -	if (autofs4_ispending(dentry)) {
+> -		DPRINTK("dentry busy");
+> -		status = -EBUSY;
+> -		goto out;
+> -	}
+> -
+> -	if (d_mountpoint(dentry)) {
+> -		struct file *fp = cursor->d_fsdata;
+> -		if (!fp) {
+> -			status = -ENOENT;
+> -			goto out;
+> -		}
+> -		filp_close(fp, current->files);
+> -	}
+> -out:
+> -	dcache_dir_close(inode, file);
+> -	return status;
+> -}
+> -
+> -static int autofs4_dir_readdir(struct file *file, void *dirent, filldir_t filldir)
+> -{
+> -	struct dentry *dentry = file->f_path.dentry;
+> -	struct autofs_sb_info *sbi = autofs4_sbi(dentry->d_sb);
+> -	struct dentry *cursor = file->private_data;
+> -	int status;
+> -
+> -	DPRINTK("file=%p dentry=%p %.*s",
+> -		file, dentry, dentry->d_name.len, dentry->d_name.name);
+> -
+> -	if (autofs4_oz_mode(sbi))
+> -		goto out;
+> -
+> -	if (autofs4_ispending(dentry)) {
+> -		DPRINTK("dentry busy");
+> -		return -EBUSY;
+> -	}
+> -
+> -	if (d_mountpoint(dentry)) {
+> -		struct file *fp = cursor->d_fsdata;
+> -
+> -		if (!fp)
+> -			return -ENOENT;
+> -
+> -		if (!fp->f_op || !fp->f_op->readdir)
+> -			goto out;
+> -
+> -		status = vfs_readdir(fp, filldir, dirent);
+> -		file->f_pos = fp->f_pos;
+> -		if (status)
+> -			autofs4_copy_atime(file, fp);
+> -		return status;
+> -	}
+>  out:
+> -	return dcache_readdir(file, dirent, filldir);
+> +	return dcache_dir_open(inode, file);
+>  }
+>  
+>  static int try_to_fill_dentry(struct dentry *dentry, int flags)
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
