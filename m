@@ -1,52 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758623AbYGRMd3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759251AbYGRMeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758623AbYGRMd3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 08:33:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbYGRMdV
+	id S1759251AbYGRMeT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 08:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756715AbYGRMeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 08:33:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51449 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751899AbYGRMdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 08:33:20 -0400
-Date: Fri, 18 Jul 2008 14:33:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexander van Heukelum <heukelum@mailshack.com>
-Cc: "Ricardo M. Correia" <Ricardo.M.Correia@Sun.COM>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-arch <linux-arch@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       heukelum@fastmail.fm
-Subject: Re: [PATCH] x86: fix description of __fls(): __fls(0) is undefined
-Message-ID: <20080718123300.GP6875@elte.hu>
-References: <20080315172913.GA21648@mailshack.com> <20080315173236.GC21659@mailshack.com> <1215276997.7167.12.camel@localhost> <20080705175345.GA7698@mailshack.com>
+	Fri, 18 Jul 2008 08:34:10 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:58777 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756482AbYGRMeK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 08:34:10 -0400
+Message-ID: <48808E39.4060404@keyaccess.nl>
+Date: Fri, 18 Jul 2008 14:36:09 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080705175345.GA7698@mailshack.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0001]
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+CC: Takashi Iwai <tiwai@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Jaroslav Kysela <perex@perex.cz>, LKML <linux-kernel@vger.kernel.org>,
+       ALSA development <alsa-devel@alsa-project.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Rene Herman <rene.herman@gmail.com>,
+       Krzysztof Helt <krzysztof.h1@wp.pl>
+Subject: Re: [boot crash, bisected] in 9f240a55 "ALSA: opti93x: use cs4231
+ lib"
+References: <Pine.LNX.4.61.0807141105150.7676@tm8103-a.perex-int.cz>	<20080717170657.GA14593@elte.hu>	<s5h3am8jqvy.wl%tiwai@suse.de>	<487F9B9B.2010905@keyaccess.nl>	<487F9FA1.7020101@keyaccess.nl>	<48806017.1040307@keyaccess.nl> <20080718142849.f11ce4c8.krzysztof.h1@poczta.fm>
+In-Reply-To: <20080718142849.f11ce4c8.krzysztof.h1@poczta.fm>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 18-07-08 14:28, Krzysztof Helt wrote:
 
-* Alexander van Heukelum <heukelum@mailshack.com> wrote:
-
-> Ricardo M. Correia spotted that the use of __fls() in fls64() did not 
-> seem to make sense. In fact fls64()'s implementation is fine, but the 
-> description of __fls() was wrong. Fix that.
+> On Fri, 18 Jul 2008 11:19:19 +0200
+> Rene Herman <rene.herman@keyaccess.nl> wrote:
 > 
-> Reported-by: "Ricardo M. Correia" <Ricardo.M.Correia@Sun.COM>
-> Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+>> On 17-07-08 21:38, Rene Herman wrote:
+>>
+>>> On 17-07-08 21:20, Rene Herman wrote:
+>>>
+>>>> On 17-07-08 20:40, Takashi Iwai wrote:
+>>>>
+>>>>> Could you try the patch below?
+>> This bug was uncovered by !CONFIG_PNP and we had trouble in this driver 
+>> due to that before so was rewriting the init to be a generic multi-card 
+>> ALSA init but, actually, not much point.
+>>
+> 
+> The bug was introduced by the patch as it used (tried to free) the codec pointer
+> before it was assigned any value. It happened only if the card was missing and
+> I didn't test the driver on such a configuration. My mistake. The CONFIG_PNP
+> setting makes no difference.
 
-applied to tip/x86/cleanups, thanks!
+Yes it does. Note how the ISA match method fails due to "if (isapnp)" 
+with CONFIG_PNP and isapnp being initialized to 1. I did test without 
+the hardware but didn't see it fail due to that.
 
-	Ingo
+>> In fact, in the meantime I'll look at splitting 92x and 93x again. It's 
+>> much better now that Krzysztof made it use the generic library code but 
+>> I still hate this driver. It's also poking at ports without being told 
+>> something is there by either system or user.
+>>
+> 
+> Please hold your axe until Monday. The last patch (not posted yet) from the 
+> unification of the WSS library series removes some ifdefs in this driver.
+> This may (or may not) change your view on splitting the driver.
+
+Will do.
+
+Rene.
+
