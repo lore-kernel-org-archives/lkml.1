@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760379AbYGRCD1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761039AbYGRCDq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760379AbYGRCD1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 22:03:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbYGRCDR
+	id S1761039AbYGRCDq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 22:03:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756405AbYGRCDh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 22:03:17 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48452
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751672AbYGRCDQ (ORCPT
+	Thu, 17 Jul 2008 22:03:37 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:45892 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753616AbYGRCDg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 22:03:16 -0400
-Date: Thu, 17 Jul 2008 19:03:15 -0700 (PDT)
-Message-Id: <20080717.190315.186892939.davem@davemloft.net>
-To: vegard.nossum@gmail.com
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       penberg@cs.helsinki.fi, rjw@sisk.pl
-Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison
- overwritten
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <19f34abd0807171615s5b477d4cr22d3e9444bcf65df@mail.gmail.com>
-References: <20080717214222.GA29449@elte.hu>
-	<19f34abd0807171615s5b477d4cr22d3e9444bcf65df@mail.gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Jul 2008 22:03:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Qhnn2csIGf0PYlUlHNBn3dWJljallkW3hzfObkC/krVy+8PMx77KVeSXmG2qAG6vh9
+         l81gUV5tYIhXcV8AkDYINc/iTlGICS9BeM46/bXt1ng8ixZS4uyxcL4Qb/cw+5bEgr0m
+         ZVfBM7+0X8VHxrfMHZJKwTz15szp6ZZNRDrVE=
+Message-ID: <487FF9F2.5000906@gmail.com>
+Date: Thu, 17 Jul 2008 23:03:30 -0300
+From: "Rafael C. de Almeida" <almeidaraf@gmail.com>
+User-Agent: Icedove 1.5.0.14eol (X11/20080509)
+MIME-Version: 1.0
+To: =?UTF-8?B?TWloYWkgRG9uyJt1?= <mihai.dontu@gmail.com>
+CC: "H. Peter Anvin" <hpa@zytor.com>, "Fred ." <eldmannen@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Please add ZFS support (from GPL sources)
+References: <f188924b0807171213q43f10b09j47b34674fc8aaa38@mail.gmail.com> <487F9D6D.7090808@zytor.com> <200807180133.19191.mihai.dontu@gmail.com>
+In-Reply-To: <200807180133.19191.mihai.dontu@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-Date: Fri, 18 Jul 2008 01:15:47 +0200
-
-> On Thu, Jul 17, 2008 at 11:42 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > A regression to v2.6.26:
-> >
-> > I started getting this skb-head corruption message today, on a T60
-> > laptop with e1000:
-> >
-> > PM: Removing info for No Bus:vcs11
-> > device: 'vcs11': device_create_release
-> > =============================================================================
-> > BUG skbuff_head_cache: Poison overwritten
-> > -----------------------------------------------------------------------------
-> >
-> > INFO: 0xf658ae9c-0xf658ae9c. First byte 0x6a instead of 0x6b
+Mihai Donțu wrote:
+> On Thursday 17 July 2008, H. Peter Anvin wrote:
+>> Fred . wrote:
+>>> Previously we have not been able to have ZFS support due to it being
+>>> licensed under the CDDL and the kernel under the GPL.
+>>>
+>>> Sun have contributed ZFS support to GRUB under the GPL license. We
+>>> could now use that code to implement support for ZFS in the Linux
+>>> kernel.
+>>>
+>>> http://blogs.sun.com/darren/entry/zfs_under_gplv2_already_exists
+>>  From what I can see, it is an absolutely-minimal readonly implementation.
 > 
-> 1. Notice the range. It's just a single byte.
-> 2. Notice the value. It's just a ++.
+> There are a number of fs drivers in the kernel which provide read-only 
+> support. The GPL-ed code might not be much (I haven't looked at it), but if 
+> someone would spend some time to write a nice, clean patch which can be 
+> easily improved, I think there would be at least one user out there who would 
+> find it useful.
+> 
+> Of course, this could open a door for all kinds of incomplete drivers, but 
+> these days people seem nuts about ZFS.
+> 
+> In second thoughts, maybe a fuse based driver would be better. :)
+> 
 
-It's supposed to be 0x6b, this would be a "--"
-
-Also it (more likely IMHO) could be clearing a flag with the value 0x01.
-
+I think there's already work being done for zfs on fuse
+(http://www.wizy.org/wiki/ZFS_on_FUSE). Not sure how it's going, though.
