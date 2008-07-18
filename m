@@ -1,76 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756894AbYGRJUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755976AbYGRJXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756894AbYGRJUo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 05:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753770AbYGRJUg
+	id S1755976AbYGRJXR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 05:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbYGRJXD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 05:20:36 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37253
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753698AbYGRJUg (ORCPT
+	Fri, 18 Jul 2008 05:23:03 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37727 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753543AbYGRJXC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 05:20:36 -0400
-Date: Fri, 18 Jul 2008 02:20:35 -0700 (PDT)
-Message-Id: <20080718.022035.208722773.davem@davemloft.net>
-To: roland@redhat.com
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/23] tracehook
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080717072541.F390E15411D@magilla.localdomain>
-References: <20080717072541.F390E15411D@magilla.localdomain>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 18 Jul 2008 05:23:02 -0400
+Subject: Re: [RFC] systemtap: begin the process of using proper kernel APIs
+	(part1: use kprobe symbol_name/offset instead of address)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org,
+       jbeulich@novell.com
+In-Reply-To: <87ej5rsgk4.fsf@basil.nowhere.org>
+References: <1216146802.3312.95.camel@localhost.localdomain>
+	 <87ej5rsgk4.fsf@basil.nowhere.org>
+Content-Type: text/plain
+Date: Fri, 18 Jul 2008 11:23:29 +0200
+Message-Id: <1216373009.5232.130.camel@twins>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roland McGrath <roland@redhat.com>
-Date: Thu, 17 Jul 2008 00:25:41 -0700 (PDT)
+On Fri, 2008-07-18 at 11:11 +0200, Andi Kleen wrote:
+> James Bottomley <James.Bottomley@HansenPartnership.com> writes:
+> 
+> > One of the big nasties of systemtap is the way it tries to embed
+> > virtually the entirety of the kernel symbol table in the probe modules
+> > it constructs.  This is highly undesirable because it represents a
+> > subversion of the kernel API to gain access to unexported symbols.  At
+> > least for kprobes, the correct way to do this is to specify the probe
+> > point by symbol and offset.
+> >
+> > This patch converts systemtap to use the correct kprobe
+> > symbol_name/offset pair to identify the probe location.
+> >
+> > This only represents a baby step:  after this is done, there are at
+> > least three other consumers of the systemtap module relocation
+> > machinery:
+> >
+> >      1. unwind information.  I think the consumers of this can be
+> >         converted to use the arch specific unwinders that already exist
+> >         within the kernel
+> 
+> 
+> Right now x86 doesn't really have a good reliable unwinder that
+> works without frame pointer. I think systemtap
+> recently switched to Jan Beulich's dwarf2 unwinder. Before
+> switching to the in kernel unwinder that one would need to be 
+> re-merged again.
 
-> I have done some arch work and will submit this to the arch maintainers
-> after the generic tracehook series settles in.  For now, that work is
-> available in my GIT repositories, and in patch and mbox-of-patches form
-> at http://people.redhat.com/roland/utrace/2.6-current/
+Those are two separate issues.
 
-Thanks for doing this work.
+ 1) stap ought to use the kernel's infrastructure and not re-implement
+its own.
 
-I took a quick look at the sparc64 tracehook support and only spotted
-one issue.
+ 2) if the kernel's infrastructure doesn't meet requirements, improve
+it.
 
-You'll need special handling for 32-bit compat tasks when copying the
-arguments in.  You can't just use the full 64-bit values because they
-get 32-bit zero extended by the 32-bit syscall entry code, and this
-doesn't propagate into the pt_regs copies.
+But while the x86 might not be perfect, its fairly ok these days. Its
+not the utter piece of shite x86_64 had for a long time - today's traces
+mostly make sense.
 
-See arch/sparc64/kernel/syscalls.S:linux_sparc_syscall32
 
-So at a minimum, when _TIF_32BIT is set, you'll need to "u32" cast
-the regs->u_regs[] values before assigning them into the unsigned long
-array slots.
-
-Actually, it's more complicated than that.  We have to sign extend
-arguments in some cases, and this is performed by a class of stubs
-in arch/sparc64/kernel/sys32.S which then revector to the real
-system call handler.
-
-I don't know how you want to handle those cases.  Should the tracehook
-user know that it's a 32-bit task, what system call it is, and therefore
-do the appropriate sign extensions?  That doesn't sound right.
-
-So likely we have to properly sign extend those things here in the
-asm/syscall.h handlers.
-
-If you look at arch/sparc64/kernel/sys32.S it uses macros and then a
-list of cases that could be slightly modified such that they could be
-used to build argument sign extension tables.  Simply change the
-explicit register name arguments to pure numbers (ie. %o0 becomes
-plain 0) and adjust the assembler macros accordingly.
-
-Then, in a C file somewhere, you set these macro defines differently
-then feed the list of instantiations through them and build the table.
-
-The other arch's with compat support will have this same exact issue.
 
