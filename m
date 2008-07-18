@@ -1,65 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750AbYGRGwx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754525AbYGRHEH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754750AbYGRGwx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 02:52:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbYGRGwq
+	id S1754525AbYGRHEH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 03:04:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752912AbYGRHDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 02:52:46 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37581 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752831AbYGRGwp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 02:52:45 -0400
-Date: Fri, 18 Jul 2008 08:52:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Travis <travis@sgi.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC 0/5] percpu: Optimize percpu accesses
-Message-ID: <20080718065224.GA6875@elte.hu>
-References: <20080701121634.865966000@polaris-admin.engr.sgi.com> <20080701145417.GB18522@elte.hu> <20080701150313.GA30476@elte.hu> <486A483B.2090804@sgi.com> <486B8AD3.70007@sgi.com>
+	Fri, 18 Jul 2008 03:03:55 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:2851 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752794AbYGRHDx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 03:03:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=cY5dtcFQ3vB/7kEy4ZmM9SCith+JXXpq/3WFj2iYJP1IB/XrJjZo7S8Kyp2dvwqKl4
+         Qts9+ltszRm5qcctnZm2hJNA9ZHq6C0wW6t+/eHq6GqecgIhImzw2iTdhtUpq33/tVEY
+         NoeB6PQmjGQrGL8j0nGqk6MBzN/ckq5umY7ME=
+Message-ID: <19f34abd0807180003m7bdf832g141777751d7ea563@mail.gmail.com>
+Date: Fri, 18 Jul 2008 09:03:50 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison overwritten
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       penberg@cs.helsinki.fi, rjw@sisk.pl
+In-Reply-To: <20080717.190315.186892939.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <486B8AD3.70007@sgi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20080717214222.GA29449@elte.hu>
+	 <19f34abd0807171615s5b477d4cr22d3e9444bcf65df@mail.gmail.com>
+	 <20080717.190315.186892939.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jul 18, 2008 at 4:03 AM, David Miller <davem@davemloft.net> wrote:
+>> On Thu, Jul 17, 2008 at 11:42 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>> >
+>> > A regression to v2.6.26:
+>> >
+>> > I started getting this skb-head corruption message today, on a T60
+>> > laptop with e1000:
+>> >
+>> > PM: Removing info for No Bus:vcs11
+>> > device: 'vcs11': device_create_release
+>> > =============================================================================
+>> > BUG skbuff_head_cache: Poison overwritten
+>> > -----------------------------------------------------------------------------
+>> >
+>> > INFO: 0xf658ae9c-0xf658ae9c. First byte 0x6a instead of 0x6b
+>>
+>> 1. Notice the range. It's just a single byte.
+>> 2. Notice the value. It's just a ++.
+>
+> It's supposed to be 0x6b, this would be a "--"
 
-* Mike Travis <travis@sgi.com> wrote:
+You're right! Oops. In my defence, I wrote that at 2 AM last night ;-)
 
-> Mike Travis wrote:
-> > Ingo Molnar wrote:
-> >> * Ingo Molnar <mingo@elte.hu> wrote:
-> >>
-> >>>> This patchset provides the following:
-> >>>>
-> >>>>   * Cleanup: Fix early references to cpumask_of_cpu(0)
-> >>>>   * Generic: Percpu infrastructure to rebase the per cpu area to zero
-> >>>>   * x86_64: Fold pda into per cpu area
-> >>>>   * x86_64: Rebase per cpu variables to zero
-> >>> thanks Mike - i've started testing it in -tip. One small merge fallout 
-> >>> fix is below. (it's for the new generic-ipi topic that was not in 
-> >>> tip/master yet when you merged percpu-zerobased to it)
-> >> ok, -tip testing found an early boot crash caused by your patchset, on 
-> >> 64-bit x86:
-> 
-> Hi Ingo,
-> 
-> Which gcc version are you using?
+> Also it (more likely IMHO) could be clearing a flag with the value 0x01.
 
-vanilla gcc-4.2.3 (unpatched).
+It could be. But like I said in a later e-mail, the thing is likely
+sk_buff->truesize. Which is not a flags variable. It _is_ however, a
+counter, which is frequently -= and atomic_sub()ed.
 
-	Ingo
+That field is also an int, not a byte like I suggested above. This is
+fine, though. "--" on an int can of course legitimately update/change
+just the lower byte of an int.
+
+But.. it could also be some random corruption coming from elsewhere.
+Maybe even bad RAM (it's just a single bit anyway). But that's less
+likely.
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
