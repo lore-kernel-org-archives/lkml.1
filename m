@@ -1,45 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755476AbYGSKXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755785AbYGSKXd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755476AbYGSKXR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 06:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbYGSKWW
+	id S1755785AbYGSKXd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 06:23:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754644AbYGSKWY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 06:22:22 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51434 "EHLO hera.kernel.org"
+	Sat, 19 Jul 2008 06:22:24 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51435 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754519AbYGSKWV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 06:22:21 -0400
-Message-ID: <487B5230.8040903@kernel.org>
-Date: Mon, 14 Jul 2008 22:18:40 +0900
+	id S1754599AbYGSKWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jul 2008 06:22:23 -0400
+Message-ID: <48809BA0.8060500@kernel.org>
+Date: Fri, 18 Jul 2008 22:33:20 +0900
 From: Tejun Heo <tj@kernel.org>
 User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-To: Piter PUNK <piterpunk@slackware.com>
-CC: linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: Regression: kernel 2.6.24{,.1} ahci problem, does not boot
-References: <Pine.LNX.4.63.0806141945270.2761@bob.slackware.com> <487B403F.5040704@gmail.com>
-In-Reply-To: <487B403F.5040704@gmail.com>
+To: chunbo.luo@windriver.com
+CC: linux-kernel@vger.kernel.org, jeff@garzik.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH]: libata-scsi: Don't start hotplug work queue if hotplug
+ is	disabled
+References: <1214533246.6284.10.camel@pek-cluo>
+In-Reply-To: <1214533246.6284.10.camel@pek-cluo>
 X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 19 Jul 2008 10:21:46 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 19 Jul 2008 10:21:45 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> And the AHCI controller 1039:1185 @ 00:05.0 works just fine with
-> regular devices and PMPs.  Can you please post lspci -nn output on
-> your machine?  It seems the blacklisting was too wide.
+Chunbo Luo wrote:
+> Hi
+> 
+> When ata_scsi_scan_host() scan device failed, it will start a work queue
+> unconditionally. This may cause some noisy messages. This patch fix this
+> problem.
 
-Tested a bit more and the problem doesn't seem to be PMP support itself.
- Command issue doesn't work properly if follow up SRST is issued without
-clearing SError after issuing hardreset.  2.6.26 always clears SError
-after hardreset so it should work.  Piter, can you please remove SIS
-blacklist and test 2.6.26?
+ATA_PFLAG_SCSI_HOTPLUG doesn't mean that hotplug is enabled.  It
+indicates that EH needs to schedule a kick at SCSI's ass and make it
+scan for discovered devices && work running on ata_aux_wq testing it
+doesn't mean anything.  There's no synchronization.
 
-Thanks.
+>     Previously, queue_delayed_work() was started unconditionally, but if
+>     ATA_PFLAG_SCSI_HOTPLUG is not set and we do this, the work queue may
+>     cause multiple messages like this:
+>     
+>     ata3.00: WARNING: ATAPI is not supported with this driver, device ignored.
+
+And this message has nothing to do with SCSI.  It's printed by libata
+proper for several drivers which don't support ATAPI.  Did the patch
+really kill the warning messages?  Can you please post full boot log
+from 2.6.26 w/o the patch?
+
+Andrew, please drop the patch from -mm.  Thanks.
 
 -- 
 tejun
