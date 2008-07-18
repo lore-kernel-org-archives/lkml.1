@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758212AbYGRN2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758335AbYGRNay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758212AbYGRN2R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 09:28:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035AbYGRN2G
+	id S1758335AbYGRNay (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 09:30:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035AbYGRNar
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 09:28:06 -0400
-Received: from casper.infradead.org ([85.118.1.10]:56943 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751326AbYGRN2E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 09:28:04 -0400
-Subject: Re: Problem: Load average of 6, no I/O, 25% idle time. Why?
-From: Peter Zijlstra <peterz@infradead.org>
-To: Timothy Normand Miller <theosib@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <9871ee5f0807180549l58e849d9ge6e7deee3d0c37fa@mail.gmail.com>
-References: <9871ee5f0807180549l58e849d9ge6e7deee3d0c37fa@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 18 Jul 2008 15:28:36 +0200
-Message-Id: <1216387716.28405.45.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 18 Jul 2008 09:30:47 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:52630 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754473AbYGRNaq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 09:30:46 -0400
+Message-ID: <48809B00.1070405@atmel.com>
+Date: Fri, 18 Jul 2008 15:30:40 +0200
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Pierre Ossman <drzeus@drzeus.cx>
+CC: ARM Linux Mailing List <linux-arm-kernel@lists.arm.linux.org.uk>,
+       Andrew Victor <linux@maxim.org.za>, Ville Syrjala <syrjala@sci.fi>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] at91_mci: Enable MMC_CAP_SDIO_IRQ only when it actually
+ works
+References: <487F120F.2050305@atmel.com> <20080717125544.36f41947@mjolnir.drzeus.cx>
+In-Reply-To: <20080717125544.36f41947@mjolnir.drzeus.cx>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-07-18 at 08:49 -0400, Timothy Normand Miller wrote:
-> I have a four processor box, running three compute loads.  The kernel
-> I'm running is 2.6.25-gentoo-r5.
+Pierre Ossman :
+> On Thu, 17 Jul 2008 11:34:07 +0200
+> Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
 > 
-> One process has four threads, and it's niced to 19.
-> Another process has one thread and is niced to -10
-> The last process has one thread and is niced to 0
+>> According to the datasheets AT91SAM9261 does not support
+>> SDIO interrupts, and AT91SAM9260/9263 have an erratum
+>> requiring 4bit mode while using slot B for the interrupt
+>> to work.
+>>
+>> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+>> ---
 > 
-> One processor is always idle.
-> 
-> If I change either the 0 to a -10 or the -10 to a zero, then all four
-> cores are properly utilized.
-> 
-> Does this make sense to anyone?  Besides messing with the nice levels,
-> is there another way to fix this?
+> Not all SDIO cards use 4-bit mode, so it looks to me like you have to
+> disable it completely (unless there's a third revision where it works
+> without any fine print?).
 
-Please share at least your .config when reporting such issues.
+Well, I understand.
 
-Furthermore, could you try .26 and or Linus' latest -git to see if the
-issue is still present?
+In your opinion, a printed warning that says to be sure to use only 
+4-bit mode SDIO cards on slot B... is not acceptable ?
 
+It kind of disappoints me to remove this feature as the 
+at91sam9260ek/9xe/9g20 board uses only slot B, and I really like to 
+connect SDIO with IRQ on it.
+
+Regards,
+-- 
+Nicolas Ferre
 
