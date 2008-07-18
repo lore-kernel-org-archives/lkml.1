@@ -1,113 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756210AbYGRLT7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbYGRLVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756210AbYGRLT7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 07:19:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754885AbYGRLTv
+	id S1756783AbYGRLVV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 07:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755024AbYGRLVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 07:19:51 -0400
-Received: from qb-out-0506.google.com ([72.14.204.239]:43364 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754412AbYGRLTu (ORCPT
+	Fri, 18 Jul 2008 07:21:14 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:8102 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752424AbYGRLVN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 07:19:50 -0400
+	Fri, 18 Jul 2008 07:21:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=YSB0TBUwcA6CiKf8NF0MMZKcYqNFntoL8e11iBD4gsYcO9nywdSLP6ZF86iVbwK5/r
-         IA106PU4+Mv06okvStkHqTzlE9Q/1iSkExEuge6VG/K5hlGbIuuk/ndQK9/7ZcTd9hXW
-         dEQ0RJCSK8EkQD3RO5itTDgSBFsU6xNAd2KnA=
-Message-ID: <19f34abd0807180419x37d4eb79y5fcecfc1066e0f9c@mail.gmail.com>
-Date: Fri, 18 Jul 2008 13:19:48 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: linux-ext4@vger.kernel.org
-Subject: ext2 on latest -git: BUG: unable to handle kernel paging request at f0f0fffc
-Cc: "Josef Bacik" <jbacik@redhat.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=pNhnctWmkjvxQ9+G8scqSLVAPdTswseloG76wknukQu2f/tHZTyjRkSe70PLZAA4IA
+         EIctoRTtUOF3HjstKFWYFGF39iBagQsxy+gPXHwSIv1i5B03+wnVK4WgsGYAe0zBof2J
+         1hWaKW8aDzVbQUOoMR1eIL1qKlhwOyXicpY94=
+Message-ID: <b647ffbd0807180421p5674ec0bga15bdebe364d889f@mail.gmail.com>
+Date: Fri, 18 Jul 2008 13:21:11 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] sched: do not stop ticks when cpu is not idle
+Cc: LKML <linux-kernel@vger.kernel.org>, "Jack Ren" <jack.ren@marvell.com>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "eric miao" <eric.y.miao@gmail.com>
+In-Reply-To: <f17812d70807172341u92270fdvc80e72cc5599c56f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <f17812d70807172341u92270fdvc80e72cc5599c56f@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+2008/7/18 eric miao <eric.y.miao@gmail.com>:
+> Issue: the sched tick would be stopped in some race conditions.
+>
+> One of issues caused by that is:
+>
+> Since there is no timer ticks any more from then, the jiffies update will be
+> up to other interrupt to happen. The jiffies will not be updated for a long
+> time, until next interrupt happens.  That will cause APIs like
+> wait_for_completion_timeout(&complete, timeout) to return timeout by mistake,
+> since it is using a old jiffies as start time.
+>
+> Please see comments (1)~(6) inline for how the ticks are stopped
+> by mistake when cpu is not idle:
+>
+> void cpu_idle(void)
+> {
+> ...
+>        while (1) {
+>                void (*idle)(void) = pm_idle;
+>                if (!idle)
+>                        idle = default_idle;
+>                leds_event(led_idle_start);
+>                tick_nohz_stop_sched_tick();
+>                while (!need_resched())
+>                        idle();
+>                leds_event(led_idle_end);
+>                tick_nohz_restart_sched_tick();
+>                        (1) ticks are retarted before switch to other tasks
+>                preempt_enable_no_resched();
+>                schedule();
+>                preempt_disable();
+>        }
+> }
+>
+> asmlinkage void __sched schedule(void)
+> {
+>        ...
+>        ...
+> need_resched:
+>        (6) the idle task will be scheduled out again and switch to next task,
+>         with ticks stopped in (5). So the next task will be running with tick stopped.
+>        preempt_disable();
+>        cpu = smp_processor_id();
+>        rq = cpu_rq(cpu);
+>        rcu_qsctr_inc(cpu);
+>        prev = rq->curr;
+>        switch_count = &prev->nivcsw;
+>
+>        release_kernel_lock(prev);
+> need_resched_nonpreemptible:
+>
+>        schedule_debug(prev);
+>
+>        hrtick_clear(rq);
+>
+>        /*
+>         * Do the rq-clock update outside the rq lock:
+>         */
+>        local_irq_disable();
+>        __update_rq_clock(rq);
+>        spin_lock(&rq->lock);
+>        clear_tsk_need_resched(prev); (2) resched flag is clear from idle task
+>
+>        ....
+>
+>                context_switch(rq, prev, next); /* unlocks the rq */
+>                (3) IRQ will be enabled at end of context_swtich( ).
+>        ...
+>        preempt_enable_no_resched();
+>        if (unlikely(test_thread_flag(TIF_NEED_RESCHED)))
+>                        (4) the idle task is scheduled back. If an interrupt happen here,
+>                                 The irq_exit( ) will be called at end of the irq handler.
+>                goto need_resched;
 
-I got this with an intentionally corrupted filesystem image. Before
-mounting, I explicitly disabled continue-on-error, like this:
+(I've taken just a quick look so far, that's maybe why I'm a bit confused)
 
-        tune2fs -f disk -e remount-ro
-        mount -o loop disk mnt
+So what did set TIF_NEED_RESCHED flag here in (4)?
 
-loop0: rw=0, want=4201400, limit=24576
-Buffer I/O error on device loop0, logical block 2100699
-attempt to access beyond end of device
-loop0: rw=0, want=4201400, limit=24576
-Buffer I/O error on device loop0, logical block 2100699
-EXT2-fs error (device loop0): ext2_free_blocks: Freeing blocks not in
-datazone - block = 131072, count = 1
-Remounting filesystem read-only
-BUG: unable to handle kernel paging request at f0f0fffc
-IP: [<c026ee46>] read_block_bitmap+0xc6/0x180
-*pde = 343bf163 *pte = 30f0f160
-Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
-Pid: 11241, comm: rm Not tainted (2.6.26-03415-gdf3030b #45)
-EIP: 0060:[<c026ee46>] EFLAGS: 00210297 CPU: 1
-EIP is at read_block_bitmap+0xc6/0x180
-EAX: ffffffff EBX: f0f10000 ECX: f4349030 EDX: 00000001
-ESI: f3facbc8 EDI: f0f10800 EBP: f20a3d40 ESP: f20a3d10
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process rm (pid: 11241, ti=f20a2000 task=f207cfb0 task.ti=f20a2000)
-Stack: 00000400 c1fb0520 f20a3d24 c01831f5 00000008 00000000 f424ee10 00000000
-       f0f10000 f0f10400 05c711f5 00000003 f20a3da8 c026f01c f3f35478 f3f35d00
-       f3f351a0 f3f9ee38 00200246 f3f35000 f3eea208 00000031 00000000 00000032
-Call Trace:
- [<c01831f5>] ? mark_page_accessed+0x45/0x60
- [<c026f01c>] ? ext2_free_blocks+0x11c/0x320
- [<c026efad>] ? ext2_free_blocks+0xad/0x320
- [<c0272f52>] ? ext2_free_branches+0xc2/0x1a0
- [<c0272fd3>] ? ext2_free_branches+0x143/0x1a0
- [<c014b360>] ? wake_bit_function+0x0/0x60
- [<c01c90d6>] ? __wait_on_buffer+0x26/0x30
- [<c0272fd3>] ? ext2_free_branches+0x143/0x1a0
- [<c0273552>] ? ext2_truncate+0x522/0x5b0
- [<c01c89a4>] ? mark_buffer_dirty+0x44/0x80
- [<c02726db>] ? ext2_update_inode+0x1ab/0x350
- [<c0273f07>] ? ext2_delete_inode+0x87/0x90
- [<c0273e80>] ? ext2_delete_inode+0x0/0x90
- [<c01b9ba1>] ? generic_delete_inode+0x81/0x120
- [<c01b9d67>] ? generic_drop_inode+0x127/0x180
- [<c01b8be7>] ? iput+0x47/0x50
- [<c01af1bc>] ? do_unlinkat+0xec/0x170
- [<c01b185b>] ? vfs_readdir+0x6b/0xa0
- [<c01b1540>] ? filldir64+0x0/0xf0
- [<c0430948>] ? trace_hardirqs_on_thunk+0xc/0x10
- [<c015ad76>] ? trace_hardirqs_on_caller+0x116/0x170
- [<c01af383>] ? sys_unlinkat+0x23/0x50
- [<c010407f>] ? sysenter_past_esp+0x78/0xc5
- =======================
-Code: 00 00 00 8b 45 e8 8b 1f 8b 55 e4 8b 88 ac 02 00 00 8b 41 34 0f
-af 51 10 03 50 14 89 5d ec 8b 46 18 89 45 f0 89 d8 8b 5d f0 29 d0 <0f>
-a3 03 19 c0 85 c0 74 11 8b 47 04 89 45 ec 29 d0 0f a3 03 19
-EIP: [<c026ee46>] read_block_bitmap+0xc6/0x180 SS:ESP 0068:f20a3d10
-Kernel panic - not syncing: Fatal exception
+- at first, it was cleared in (2) - ok.
+- An interrupt happens somewhere after context_switch() [ btw., what's
+about archs that do ctx-switches with interrupts enabled... ]
 
-$ addr2line -e vmlinux -i c026ee46
-include/asm/bitops.h:305
-fs/ext2/balloc.c:87
-fs/ext2/balloc.c:153
+irq_exit() calls tick_nohz_stop_sched_tick() _only_ when
+!need_resched(), meaning TIF_NEED_RESCHED is _not_ set for rq->idle
+(no new tasks were activated)
+.
 
-Is this one:
+So do we have 2 interruts in a raw?
 
-        if (!ext2_test_bit(offset, bh->b_data))
+my (likely wrong) interpretation:
+
+(1) schedule() some task - (switch to) -> idle
+
+idle becomes active but is still running in schedule()
+
+(2) an interrupt happens at (3), then irq_exit() calls
+tick_nohz_stop_sched_tick()
+
+so far, idle should still run -> this interrupt didn't lead to new
+tasks having been activated
+
+(3) another interrupt happens which actually wakes up a task;
+
+TIF_NEED_RESCHED is set
+
+(4) this fact is detected at (4) and --> goto need_resched() to pick
+up a new task.
+
+(5) we kind of have idle -> new task reschedule but cpu_idle() never
+happened to be called _so_ sched-ticks were not resterted...
+
+is it like this or I'm missing something?
 
 
-Vegard
+> }
+>
+> void irq_exit(void)
+> {
+> ...
+>        /* Make sure that timer wheel updates are propagated */
+>        if (!in_interrupt() && idle_cpu(smp_processor_id()) && !need_resched())
+>                tick_nohz_stop_sched_tick();
+>                (5) The ticks will be stopped again since current
+>                        task is idle task and its resched flag is clear in (2).
+>        rcu_irq_exit();
+>        preempt_enable_no_resched();
+> }
+>
+> Signed-off-by: Jack Ren <jack.ren@marvell.com>
+> ---
+>  kernel/sched.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+>
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index ff0a7e2..fd17d74 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -4027,7 +4027,8 @@ need_resched_nonpreemptible:
+>                rq->nr_switches++;
+>                rq->curr = next;
+>                ++*switch_count;
+> -
+> +               if (rq->curr != rq->idle)
+> +                       tick_nohz_restart_sched_tick();
+>                context_switch(rq, prev, next); /* unlocks the rq */
+>                /*
+>                 * the context switch might have flipped the stack from under
+> --
+> 1.5.4
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+
+
 
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Best regards,
+Dmitry Adamushko
