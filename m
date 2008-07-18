@@ -1,69 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760206AbYGRMmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760548AbYGRMnA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760206AbYGRMmp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 08:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756944AbYGRMmg
+	id S1760548AbYGRMnA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 08:43:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760321AbYGRMmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 08:42:36 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39744 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756284AbYGRMmg (ORCPT
+	Fri, 18 Jul 2008 08:42:49 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:30737 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760296AbYGRMms convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 08:42:36 -0400
-Subject: Re: [PATCH 2/2] sched: readjust the load whenever task_setprio()
-	is invoked
-From: Peter Zijlstra <peterz@infradead.org>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: stable@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       rostedt@goodmis.org, mingo@elte.hu, linux-kernel@vger.kernel.org
-In-Reply-To: <20080703213716.1275.33324.stgit@lsg.lsg.lab.novell.com>
-References: <20080703212939.1275.27072.stgit@lsg.lsg.lab.novell.com>
-	 <20080703213716.1275.33324.stgit@lsg.lsg.lab.novell.com>
-Content-Type: text/plain
-Date: Fri, 18 Jul 2008 14:43:03 +0200
-Message-Id: <1216384984.28405.36.camel@twins>
+	Fri, 18 Jul 2008 08:42:48 -0400
+Message-Id: <4880AC00.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Fri, 18 Jul 2008 13:43:12 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: x86_{phys,virt}_bits field also for i386
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-03 at 15:37 -0600, Gregory Haskins wrote:
-> The load may change with the priority, so be sure to recompute its value.
-> 
-> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-> CC: Peter Zijlstra <peterz@infradead.org>
-> CC: Ingo Molnar <mingo@elte.hu>
+Make the x86_{phys,virt}_bits common for 32- and 64-bits, and use the
+former in ioremap's phys_addr_valid() check also on 32bit/PAE.
 
-Right, but in this case we'd need to do the dec/inc load game again
-because otherwise we'll skew stuff - see the previuos mail on how
-dequeue_task() doesn't actually do that.
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-Also, it looks like current mainline still has this issue.
+---
+ arch/x86/kernel/cpu/common.c |   18 ++++++++++++++++++
+ arch/x86/mm/ioremap.c        |   15 ++++++---------
+ include/asm-x86/processor.h  |    4 ++--
+ 3 files changed, 26 insertions(+), 11 deletions(-)
 
-OTOH - since prio boosting is a temporal feature, not changing the load
-isn't too bad, we ought to get back to where we came from pretty
-quickly.
+--- linux-2.6.26/arch/x86/kernel/cpu/common.c	2008-07-13 23:51:29.000000000 +0200
++++ 2.6.26-x86-phys-bits/arch/x86/kernel/cpu/common.c	2008-07-15 14:51:28.000000000 +0200
+@@ -305,6 +305,18 @@ static void __cpuinit early_get_cap(stru
+ 				c->x86_capability[1] = cpuid_edx(0x80000001);
+ 				c->x86_capability[6] = cpuid_ecx(0x80000001);
+ 			}
++			if (xlvl >= 0x80000008) {
++				u32 eax = cpuid_eax(0x80000008);
++
++				c->x86_phys_bits = eax & 0xff;
++				c->x86_virt_bits = (eax >> 8) & 0xff;
++				/* CPUID workaround for Intel 0F33/0F34 CPU */
++				if (c->x86_vendor == X86_VENDOR_INTEL
++				    && c->x86 == 0xF && c->x86_model == 0x3
++				    && (c->x86_mask == 0x3
++					|| c->x86_mask == 0x4))
++					c->x86_phys_bits = 36;
++			}
+ 		}
+ 
+ 	}
+@@ -326,6 +338,12 @@ static void __init early_cpu_detect(void
+ 
+ 	c->x86_cache_alignment = 32;
+ 	c->x86_clflush_size = 32;
++#ifdef CONFIG_X86_PAE
++	c->x86_phys_bits = 36;
++#else
++	c->x86_phys_bits = 32;
++#endif
++	c->x86_virt_bits = 32;
+ 
+ 	if (!have_cpuid_p())
+ 		return;
+--- linux-2.6.26/arch/x86/mm/ioremap.c	2008-07-13 23:51:29.000000000 +0200
++++ 2.6.26-x86-phys-bits/arch/x86/mm/ioremap.c	2008-07-15 14:51:28.000000000 +0200
+@@ -31,19 +31,16 @@ unsigned long __phys_addr(unsigned long 
+ }
+ EXPORT_SYMBOL(__phys_addr);
+ 
+-static inline int phys_addr_valid(unsigned long addr)
+-{
+-	return addr < (1UL << boot_cpu_data.x86_phys_bits);
+-}
+-
+-#else
++#endif
+ 
+-static inline int phys_addr_valid(unsigned long addr)
++static inline int phys_addr_valid(resource_size_t addr)
+ {
++#ifdef CONFIG_RESOURCES_64BIT
++	return !(addr >> boot_cpu_data.x86_phys_bits);
++#else
+ 	return 1;
+-}
+-
+ #endif
++}
+ 
+ int page_is_ram(unsigned long pagenr)
+ {
+--- linux-2.6.26/include/asm-x86/processor.h	2008-07-13 23:51:29.000000000 +0200
++++ 2.6.26-x86-phys-bits/include/asm-x86/processor.h	2008-07-15 14:51:28.000000000 +0200
+@@ -73,8 +73,6 @@ struct cpuinfo_x86 {
+ #else
+ 	/* Number of 4K pages in DTLB/ITLB combined(in pages): */
+ 	int			 x86_tlbsize;
+-	__u8			x86_virt_bits;
+-	__u8			x86_phys_bits;
+ 	/* CPUID returned core id bits: */
+ 	__u8			x86_coreid_bits;
+ 	/* Max extended CPUID function supported: */
+@@ -99,6 +97,8 @@ struct cpuinfo_x86 {
+ 	u16			apicid;
+ 	u16			initial_apicid;
+ 	u16			x86_clflush_size;
++	u8			x86_virt_bits;
++	u8			x86_phys_bits;
+ #ifdef CONFIG_SMP
+ 	/* number of cores as seen by the OS: */
+ 	u16			booted_cores;
 
 
-
-> ---
-> 
->  kernel/sched.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index b046754..c3f41b9 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -4637,6 +4637,7 @@ void task_setprio(struct task_struct *p, int prio)
->  		p->sched_class = &fair_sched_class;
->  
->  	p->prio = prio;
-> +	set_load_weight(p);
->  
->  //	trace_special_pid(p->pid, __PRIO(oldprio), PRIO(p));
->  	prev_resched = _need_resched();
-> 
 
