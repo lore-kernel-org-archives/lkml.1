@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756638AbYGRKbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbYGRKdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756638AbYGRKbY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 06:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754764AbYGRKbR
+	id S1756383AbYGRKdi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 06:33:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754735AbYGRKda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 06:31:17 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34911 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754748AbYGRKbR (ORCPT
+	Fri, 18 Jul 2008 06:33:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37474 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752567AbYGRKd3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 06:31:17 -0400
-Message-ID: <488070F1.9030903@firstfloor.org>
-Date: Fri, 18 Jul 2008 12:31:13 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org,
-       jbeulich@novell.com
-Subject: Re: [RFC] systemtap: begin the process of using proper kernel APIs
- (part1: use kprobe symbol_name/offset instead of address)
-References: <1216146802.3312.95.camel@localhost.localdomain>	 <87ej5rsgk4.fsf@basil.nowhere.org> <1216373009.5232.130.camel@twins>
-In-Reply-To: <1216373009.5232.130.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 18 Jul 2008 06:33:29 -0400
+Date: Fri, 18 Jul 2008 03:32:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Vegard Nossum" <vegard.nossum@gmail.com>
+Cc: linux-ext4@vger.kernel.org, sct@redhat.com, adilger@sun.com,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: latest -git: A peculiar case of a stuck process
+ (ext3/sched-related?)
+Message-Id: <20080718033225.c141978c.akpm@linux-foundation.org>
+In-Reply-To: <19f34abd0807180317g40a218a2p2bb2857c6f5aa659@mail.gmail.com>
+References: <19f34abd0807180245l2a633644n1a8d91cb3587d9e4@mail.gmail.com>
+	<19f34abd0807180317g40a218a2p2bb2857c6f5aa659@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 18 Jul 2008 12:17:17 +0200 "Vegard Nossum" <vegard.nossum@gmail.com> wrote:
 
->  1) stap ought to use the kernel's infrastructure and not re-implement
-> its own.
+> And the ext3_find_entry() corresponds to this line:
 > 
->  2) if the kernel's infrastructure doesn't meet requirements, improve
-> it.
+>         for (; de < top; de = ext3_next_entry(de)) /* <--- HERE! */
+>         if (ext3_match (namelen, name, de)) {
+>                 if (!ext3_check_dir_entry("ext3_find_entry",
+>                                           dir, de, bh,
+>                           (block<<EXT3_BLOCK_SIZE_BITS(sb))
+>                                   +((char *)de - bh->b_data))) {
+>                         brelse (bh);
+>                         *err = ERR_BAD_DX_DIR;
+>                         goto errout;
+>                 }
+>                 *res_dir = de;
+>                 dx_release (frames);
+>                 return bh;
+>         }
+> 
+> Is it possible that this loop can get stuck with a corrupt filesystem image?
 
-No argument on either of those. Right now the kernel infrastructure
-is only comparable to what systemtap overs at very high overhead
-costs (see below)
+yup.  ext2 did that a couple of times.  See the explicit check for
+de->rec_len == 0 in ext2_find_entry().
 
-> But while the x86 might not be perfect, its fairly ok these days. Its
-> not the utter piece of shite x86_64 had for a long time 
-
-Not sure what you're referring to with this. AFAIK the x86-64 unwinder
-for a normal frame pointer less kernel was not any worse (or better)
-than a i386 kernel without frame pointers.
-
-- today's traces
-> mostly make sense.
-
-If you enable frame pointers? Making your complete kernel slower?
-Generating much worse code on i386 by wasting >20% of its available
-registers?  Getting pipeline stalls on each function call/exit on many CPUs?
-
-Right now unfortunately there are a few rogue CONFIGs who select that
-so more and more kernels have, but I found that always distateful because
-enabling frame pointers has such a large impact on all kernel code, especially
-on the register starved i386.
-
-I still think the right solution eventually is to have a dwarf2 unwinder
-by default for i386/x86-64 and get rid of all these nasty "select
-FRAME_POINTER"s which have unfortunately sneaked in.
-
--Andi
-
+We fixed one filesystem and forgot the others.  Again.
