@@ -1,66 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758070AbYGROEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758721AbYGROGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758070AbYGROEs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 10:04:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756096AbYGROEk
+	id S1758721AbYGROGg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 10:06:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753741AbYGROGZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 10:04:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39271 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754790AbYGROEk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 10:04:40 -0400
-Date: Fri, 18 Jul 2008 10:04:31 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Bernhard Walle <bwalle@suse.de>
-Cc: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>,
-       linux-kernel@vger.kernel.org, kexec@lists.infradead.org
-Subject: Re: kdump: Report actual value of VMCOREINFO_OSRELEASE in
-	VMCOREINFO
-Message-ID: <20080718140431.GE11492@redhat.com>
-References: <20080718000745.51d32607@kopernikus.site>
+	Fri, 18 Jul 2008 10:06:25 -0400
+Received: from ixia01.ro.gtsce.net ([212.146.94.66]:4108 "EHLO
+	ixro-ex1.ixiacom.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755345AbYGROGY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 10:06:24 -0400
+From: Octavian Purdila <opurdila@ixiacom.com>
+Organization: IXIA
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [PATCH] tcp: do not promote SPLICE_F_NONBLOCK to socket O_NONBLOCK
+Date: Fri, 18 Jul 2008 17:04:17 +0300
+User-Agent: KMail/1.9.9
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200807171633.49791.opurdila@ixiacom.com> <200807181418.59493.opurdila@ixiacom.com> <20080718122414.GA10688@2ka.mipt.ru>
+In-Reply-To: <20080718122414.GA10688@2ka.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080718000745.51d32607@kopernikus.site>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200807181704.17211.opurdila@ixiacom.com>
+X-OriginalArrivalTime: 18 Jul 2008 14:08:19.0788 (UTC) FILETIME=[BB4E48C0:01C8E8DF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 12:07:45AM +0200, Bernhard Walle wrote:
-> The current implementation reports the structure name as
-> VMCOREINFO_OSRELEASE in VMCOREINFO, e.g.
-> 
->         VMCOREINFO_OSRELEASE=init_uts_ns.name.release
-> 
-> That doesn't make sense because it's always the same. Instead, use the
-> value, e.g.
-> 
->         VMCOREINFO_OSRELEASE=2.6.26-rc3
-> 
-> That's also what the 'makedumpfile -g' does.
-> 
-> Signed-off-by: Bernhard Walle <bwalle@suse.de>
-> 
-> diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-> index 3265968..3c7784d 100644
-> --- a/include/linux/kexec.h
-> +++ b/include/linux/kexec.h
-> @@ -127,8 +127,8 @@ void vmcoreinfo_append_str(const char *fmt, ...)
->  	__attribute__ ((format (printf, 1, 2)));
->  unsigned long paddr_vmcoreinfo_note(void);
->  
-> -#define VMCOREINFO_OSRELEASE(name) \
-> -	vmcoreinfo_append_str("OSRELEASE=%s\n", #name)
-> +#define VMCOREINFO_OSRELEASE(value) \
-> +	vmcoreinfo_append_str("OSRELEASE=%s\n", value)
->  #define VMCOREINFO_PAGESIZE(value) \
->  	vmcoreinfo_append_str("PAGESIZE=%ld\n", value)
->  #define VMCOREINFO_SYMBOL(name) \
+On Friday 18 July 2008, Evgeniy Polyakov wrote:
+>
+> It will block in sending and/or other than network reading. With your
+> patch if receiving socket was opened in blocking mode, than there is no
+> way to finish splice-in until whole requested number of bytes are read.
+> SPLICE_F_NONBLOCK is an extension, consider it like recv() with temporal
+> non-blocking flag.
+>
 
-Makes sense.
+The way is see it, and API and documentation is written, SPLICE_F_NONBLOCK was 
+added only for choosing to block or not block on the _pipe_, not on the other 
+fd. 
 
-Acked-by: Vivek Goyal <vgoyal@redhat.com>
+And, IMHO, it should be kept that way. If we need to make certain splice 
+operations non-blocking for the other file descriptor, then maybe we should 
+add a separate flag for that. But, again IMHO, overloading SPLICE_F_NONBLOCK 
+with responsabilities for both the pipe and the other file descriptor is 
+wrong is at is taking the freedom from the application of controlling things. 
 
-Thanks
-Vivek
+And when you do that, sooner or later you will run in a scenario which 
+requires workarounds in the applications to bypass the API assumptions. 
+
+> > Sorry, it was an unfortunate example :) This is not about not enough data
+> > being available. Lets change the number of packets in the example with 20
+> > instead of 16 (and keep the size to 17) - the splice call will still
+> > block because of the pipe being full. The pipe can only hold PIPE_BUFFERS
+> > packets (which is 16 currently).
+>
+> Why? It will read its data from 16 packets, then send them into another end
+> of the pipe :)
+>
+
+splice will consume one packet at a time and will try to feed them in the 
+pipe. Since the pipe can only hold 16 descriptors, on the 17th it will block. 
+
+> You propose to change a very useful splice feature (actually you would just
+> remove it at all with the same results for reading network path, since
+> it is essentially what you did :) - not to block when it is possible.
+>
+> This kind of non-blocking mode was added for performance issues too:
+> consider application which reads from the network and writes into the
+> file, while there is no data in the socket it can write what was already
+> read into any object attached to the given end of the pipe.
+
+I have my doubts about the benefit of using the non-blocking operations only 
+for some splice calls :) But to solve both issues the solution would be to 
+add a separate non-blocking flag for the other file descriptor. Is that ok?
+
+Thanks,
+tavi
