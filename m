@@ -1,83 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933656AbYGRASR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932312AbYGRA1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933656AbYGRASR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 20:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933930AbYGRARF
+	id S932312AbYGRA1Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 20:27:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbYGRA07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 20:17:05 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40147 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934132AbYGRARB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 20:17:01 -0400
-Date: Fri, 18 Jul 2008 02:16:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison
-	overwritten
-Message-ID: <20080718001640.GA1544@elte.hu>
-References: <20080717214222.GA29449@elte.hu> <19f34abd0807171615s5b477d4cr22d3e9444bcf65df@mail.gmail.com> <20080717235254.GA6833@elte.hu> <19f34abd0807171705h31595809y944792ce697bede7@mail.gmail.com>
+	Thu, 17 Jul 2008 20:26:59 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41594 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751659AbYGRA07 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jul 2008 20:26:59 -0400
+Message-ID: <487FE334.6070807@jp.fujitsu.com>
+Date: Fri, 18 Jul 2008 09:26:28 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19f34abd0807171705h31595809y944792ce697bede7@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Paul Jackson <pj@sgi.com>
+CC: Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
+       menage@google.com, peterz@infradead.org, akpm@linux-foundation.org,
+       laijs@cn.fujitsu.com
+Subject: Re: [RFC] [PATCH] cpuset: fix wrong calculation of relax domain level
+References: <487EFDD0.2060101@cn.fujitsu.com> <20080717152833.1e14a1c4.pj@sgi.com>
+In-Reply-To: <20080717152833.1e14a1c4.pj@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
-
-> On Fri, Jul 18, 2008 at 1:52 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> >  If only we had some kernel technology that could track and validate
-> >  memory accesses, and point out the cases where we access uninitialized
-> >  memory, just like Valgrind?
-> >
-> > ... something like kmemcheck? ;-)
+Paul Jackson wrote:
+> Question:
 > 
-> Cool :)
+>     In the case that the top_cpuset's sched_load_balance is -not- set,
+>     is there code already present that sets the sched_relax_domain_level
+>     in overlapping cpusets to the largest value in any of the overlapping
+>     cpusets?
 > 
-> > So i booted that box with tip/master and kmemcheck enabled. (plus a few
-> > fixlets to make networking allocations be properly tracked by
-> > kmemcheck.)
-> >
-> > It was a slow bootup and long wait, but it gave a few hits here:
+>     If so, where is that code?
 > 
-> Hm, if you think it was that slow, I am suspecting you were also using 
-> SLUB debugging.
 
-nope:
+My humble answer:
 
- # CONFIG_SLUB_DEBUG is not set
- CONFIG_SLUB=y
+static void rebuild_sched_domains(void)
+{
+ :
+	while (__kfifo_get(q, (void *)&cp, sizeof(cp))) {
+	//  pick up cpusets with sched_load_balance = 1
+	}
+ :
+restart:
+	/* Find the best partition (set of sched domains) */
+	for (i = 0; i < csn; i++) {
+	// check overlap and set proper partition number
+	}
+ :
+	for (nslot = 0, i = 0; i < csn; i++) {
+ :
+				if (apn == b->pn) {
+					// make map and attr from all cpusets
+					// having same partition number
+					cpus_or(*dp, *dp, b->cpus_allowed);
+					b->pn = -1;
+					if (dattr)
+						update_domain_attr(dattr
+								   + nslot, b);
+                                }
+ :
+        }
+ :
+rebuild:
+ :
+done:
+ :
+}
 
-> This can actually be negative, since now SLUB will access the objects 
-> (+redzone +padding) and possibly trick kmemcheck into thinking they 
-> were initialized in the first place.
-> 
-> But what we are really looking for is "read from freed memory" 
-> messages. So I would actually recommend this: Disable kmemcheck's 
-> reporting of uninitialized memory, simply to make it easier to spot 
-> the "freed" messages more easily.
-> 
-> Maybe something like this (warning: whitespace-munged):
+So the codes you searching is near by 'update_domain_attr' above, I guess.
 
-ok, applied this too.
-
-> If this only happens during boot, it would also be a good idea to 
-> simply reboot the machine a lot...
-
-yeah, i've got a script for that. Will try it overnight.
-
-	Ingo
+Thanks,
+H.Seto
