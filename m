@@ -1,88 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755335AbYGRIuh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbYGRIxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755335AbYGRIuh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 04:50:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbYGRIu2
+	id S1754897AbYGRIxx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 04:53:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753398AbYGRIxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 04:50:28 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:32924 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753374AbYGRIu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 04:50:27 -0400
-Date: Fri, 18 Jul 2008 10:48:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Russell King <rmk@arm.linux.org.uk>,
-       David Howells <dhowells@redhat.com>, Ralf Baechle <ralf@linux-mips.org>,
-       Lennert Buytenhek <kernel@wantstofly.org>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       Paul Mackerras <paulus@samba.org>,
-       David Woodhouse <dwmw2@infradead.org>, Andi Kleen <andi@firstfloor.org>,
-       torvalds@linux-foundation.org,
-       Paul Gortmaker <paul.gortmaker@windriver.com>,
-       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tim Bird <tim.bird@am.sony.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Dave Miller <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] (updated, rolled up) make section names compatible
-	with -ffunction-sections -fdata-sections
-Message-ID: <20080718084844.GM6875@elte.hu>
-References: <200807172213.37411.vda.linux@googlemail.com>
+	Fri, 18 Jul 2008 04:53:45 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:11485 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753304AbYGRIxo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 04:53:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=jk+EApBQcHXbyy/ZLmq1YOJo4DpkeavLRyW5ly+1boEZCbvZXpRK3UD5n3z8Y8xlzZ
+         f1fUvExF3sPT3Z4y2gkWBA3fZ9hNAOpzeel8JYzyHcGkKPCE4aXJCjLd61ScrVvyFSHf
+         Ta7ndlYDelNUAP0bz9ufKM3g4czHUjrpKgAWE=
+Message-ID: <aec7e5c30807180153s4aac361fwdbc5064e575acf02@mail.gmail.com>
+Date: Fri, 18 Jul 2008 17:53:43 +0900
+From: "Magnus Damm" <magnus.damm@gmail.com>
+To: "Ben Dooks" <ben-linux@fluff.org>
+Subject: Re: [i2c] [PATCH 03/05] resource: add new IORESOURCE_CLK type V2
+Cc: linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org, gregkh@suse.de,
+       lethal@linux-sh.org, i2c@lm-sensors.org, akpm@linux-foundation.org
+In-Reply-To: <20080718075302.GP30539@fluff.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200807172213.37411.vda.linux@googlemail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20080718074002.32713.73442.sendpatchset@rx1.opensource.se>
+	 <20080718074027.32713.15674.sendpatchset@rx1.opensource.se>
+	 <20080718075302.GP30539@fluff.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jul 18, 2008 at 4:53 PM, Ben Dooks <ben-linux@fluff.org> wrote:
+> On Fri, Jul 18, 2008 at 04:40:27PM +0900, Magnus Damm wrote:
+>> From: Magnus Damm <damm@igel.co.jp>
+>>
+>> So far struct resource has been used with the types IORESOURCE_MEM,
+>> IORESOURCE_IO and IORESOUCE_IRQ to pass I/O and interrupt parameters
+>> to platform drivers. This patch extends this with IORESOURCE_CLK which
+>> should be used to pass a clock string to the platform driver. This
+>> string points out which specific clock that should be used with clk_get()
+>> for a certain driver instance.
+>>
+>> Using a hard coded strings in the device driver won't do since we may
+>> have multiple instances of drivers that need to use different clocks.
+>
+> It works already. The S3C24XX has n-number of H and P clocks fed to
+> each driver, differentiated by the device being supplied. This is
+> why clk_get() has two arguments, a device pointer and a name.
 
-* Denys Vlasenko <vda.linux@googlemail.com> wrote:
+Oh, I see. Both the platform device id and the string seems to be used
+in the comparison.
 
-> Hi Andrew,
-> 
-> Here is the update against current Linus tree,
-> rolled up into one patch.
-> 
-> James Bottomley suggested a different naming scheme:
-> instead of swapping parts (.text.head -> .head.text),
-> prepend .kernel to our special section names.
-> This patch implements his idea.
-> 
-> ppc and v850 are dropped per comments from arch people.
-> parisc and x86 had minor fixes. x86 fix added proper
-> executable bits to a section:
-> 
-> -.section ".text.head"
-> +.section ".kernel.text.head","ax",@progbits
-> 
-> Does arch/m68k/kernel/sun3-head.S need the same fix?
-> 
-> The patch is run-tested on x86_64.
-> 
-> I would like to ask arch maintainers to ACK/NAK this patch,
-> and Andrew to act accordingly.
+> This might be useful to allow optional clocks to be passed, but I'm
+> not sure if it is necessary.
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+No, you are right. It is possible to use platform device id to
+differentiate between devices. I'm not sure if it maps well to our
+SuperH Mobile clock stop bits though...
 
-could you please put the ax/progbits fix in front of the queue so that 
-it becomes bisectable and so that the later patches keep their "it 
-should not change anything" property?
+Thanks for your comments!
 
-I.e. do not mix small fixlets into a large set of "no change" patches - 
-split them out in front. This is really important for the x86 bits as 
-linker script changes tend to be quite fragile.
-
-	Ingo
+/ magnus
