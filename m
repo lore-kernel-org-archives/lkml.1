@@ -1,38 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758929AbYGRWEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbYGRWLI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758929AbYGRWEk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 18:04:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbYGRWEd
+	id S1754184AbYGRWLI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 18:11:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbYGRWK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 18:04:33 -0400
-Received: from miranda.se.axis.com ([193.13.178.8]:60598 "EHLO
-	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754006AbYGRWEd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 18:04:33 -0400
-Date: Sat, 19 Jul 2008 00:03:20 +0200
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mikael Starvik <mikael.starvik@axis.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 05/20] cris: use the new byteorder headers
-Message-ID: <20080718220320.GG9127@axis.com>
-References: <1216339776.6029.116.camel@brick>
+	Fri, 18 Jul 2008 18:10:56 -0400
+Received: from styx.suse.cz ([82.119.242.94]:55468 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752774AbYGRWKz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 18:10:55 -0400
+From: David Sterba <dsterba@suse.cz>
+Subject: [PATCH 00/12] ipwireless: driver updates
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, dsterba@suse.cz, jkosina@suse.cz
+Date: Sat, 19 Jul 2008 00:10:54 +0200
+Message-ID: <20080718220840.19195.4140.stgit@ds.suse.cz>
+User-Agent: StGIT/0.14.3.173.g2e37
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1216339776.6029.116.camel@brick>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 02:09:36AM +0200, Harvey Harrison wrote:
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+Hi,
 
-Acked-by: Jesper Nilsson <jesper.nilsson@axis.com>
+series contains code cleanups and a few improvements.
+Please apply for 2.6.27.
 
-/^JN - Jesper Nilsson
--- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
+Thanks,
+David Sterba
+
+---
+
+David Sterba (12):
+      ipwireless: Preallocate received packet buffers with MRU size
+      ipwireless: Put packets to pool start
+      ipwireless: Increase PPP outgoing queue size
+      ipwireless: Explicitly request io and mem regions
+      ipwireless: Constify buffer variables
+      ipwireless: Do not return value from sending funcs
+      ipwireless: Remove endian-dependent bitfields
+      ipwireless: Glue splitted printk strings back
+      ipwireless: Remove pt_regs from interrupt handler
+      ipwireless: Rename spinlock variables to lock
+      ipwireless: Remove unused defines
+      ipwireless: Misc cleanups
+
+
+ drivers/char/pcmcia/ipwireless/hardware.c |  275 ++++++++++++++---------------
+ drivers/char/pcmcia/ipwireless/hardware.h |    4
+ drivers/char/pcmcia/ipwireless/main.c     |   86 +++++----
+ drivers/char/pcmcia/ipwireless/main.h     |    5 +
+ drivers/char/pcmcia/ipwireless/network.c  |   58 +++---
+ drivers/char/pcmcia/ipwireless/network.h  |    1
+ drivers/char/pcmcia/ipwireless/tty.c      |    2
+ 7 files changed, 225 insertions(+), 206 deletions(-)
+
+--
+
