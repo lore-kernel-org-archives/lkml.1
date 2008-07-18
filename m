@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758114AbYGRL61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756652AbYGRL6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758114AbYGRL61 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 07:58:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755409AbYGRL6S
+	id S1756652AbYGRL6t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 07:58:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756308AbYGRL6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 07:58:18 -0400
-Received: from qb-out-0506.google.com ([72.14.204.238]:2070 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750736AbYGRL6R (ORCPT
+	Fri, 18 Jul 2008 07:58:40 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:37177 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755409AbYGRL6j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 07:58:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=YdhXFxH4H18mMkT84x7zMDjB12xsFescn0LtHR3ml3ncqQh2w2z2RzZa1th7QcVbAF
-         HBbm98OxYmv8IqGEHwbhNbh21X/2GucNl2sjXvvn9CgGkmze6JnaiyKF9oLsBBOrWcoV
-         nBF9MZVuNSauDZyBwGZN8Ioz5hrLJmTykLr2o=
-Message-ID: <19f34abd0807180458i2749f5d0jc5c07f691931954e@mail.gmail.com>
-Date: Fri, 18 Jul 2008 13:58:15 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Josef Bacik" <jbacik@redhat.com>
-Subject: Re: ext3 on latest -git: BUG: unable to handle kernel NULL pointer dereference at 0000000c
-Cc: "Andreas Dilger" <adilger@sun.com>, "Josef Bacik" <josef@toxicpanda.com>,
-       linux-ext4@vger.kernel.org, sct@redhat.com, akpm@linux-foundation.org,
-       "Johannes Weiner" <hannes@saeurebad.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080718112003.GC15844@unused.rdu.redhat.com>
+	Fri, 18 Jul 2008 07:58:39 -0400
+Date: Fri, 18 Jul 2008 07:58:33 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org
+Subject: The request_firmware() changes causing problems with make-kpkg
+Message-ID: <20080718115833.GC11221@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
+	sam@ravnborg.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080717141333.GC14133@unused.rdu.redhat.com>
-	 <20080717141655.GD14133@unused.rdu.redhat.com>
-	 <19f34abd0807170744r79e46a78odfcfbd67687d2ceb@mail.gmail.com>
-	 <20080717143332.GE14133@unused.rdu.redhat.com>
-	 <19f34abd0807170800q13cc021dyed27c665c25ac520@mail.gmail.com>
-	 <20080717144342.GA15844@unused.rdu.redhat.com>
-	 <20080717230905.GI6239@webber.adilger.int>
-	 <20080718105152.GB15844@unused.rdu.redhat.com>
-	 <19f34abd0807180432i19567dfal5d7d29bb1916b562@mail.gmail.com>
-	 <20080718112003.GC15844@unused.rdu.redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 1:20 PM, Josef Bacik <jbacik@redhat.com> wrote:
->> You can see the full log at
->> http://folk.uio.no/vegardno/linux/log-1216380709.txt which shows that
->> it already survived a lot of failures, so I'm guessing your patch was
->> correct and we just hit a different case. What do you think?
->>
->
-> Yeah you are right, its like a shitty game of wack-a-mole.  Heres another patch,
-> same thing as last time, pull the other one out put this one on.  Thanks,
+Using 2.6.26-git4 and -git6, and with CONFIG_FIRMWARE_IN_KERNEL=y,
+make modules_install is calling firmware_install, which is dropping
+files in /lib/firmware --- which make-kpkg is happily picking up and
+including in the debian kernel package.  Which was fine --- until I
+tried to build and install kernel package for -git6, at which point I
+got an error at install time because the second package was tying to
+overwrite files installed by the first linux-image file.  Doh!
 
-It seems to hold up -- no stacktraces, but lots of IO failures.
+Given that Ubuntu's firmware loader already tries to find firmware at
+/lib/firmware/<kpkg> and only if that fails, to load it from
+/lib/firmware, it seems like the obvious thing to do is to add a
+quickie CONFIG option which changes the default setting of
+INSTALL_FW_PATH in the top-level makefile from /lib/firwmare to
+/lib/firmware/<kver>.
 
-I would leave it in testing for a bit more, but I've got to run; I'll
-give it another go when I get home.
+Maybe the userspace for other distributions won't support this, but
+they can simply not use this CONFIG option for now; but it will solve
+the problem for all Ubuntu, and possibly Debian, users who want to
+build their own kernel using make-kpkg.  If I cons a patch like this,
+is there likely going to be any objections with it getting merged?
 
-You may see the log so far: http://folk.uio.no/vegardno/linux/log-1216382128.txt
+Regards,
 
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+						- Ted
