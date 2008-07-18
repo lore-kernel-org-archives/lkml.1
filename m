@@ -1,68 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756840AbYGRKxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757406AbYGRKyI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756840AbYGRKxZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 06:53:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754844AbYGRKxR
+	id S1757406AbYGRKyI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 06:54:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754683AbYGRKxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 06:53:17 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37804 "EHLO mx2.mail.elte.hu"
+	Fri, 18 Jul 2008 06:53:53 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:43322 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754412AbYGRKxR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 06:53:17 -0400
-Date: Fri, 18 Jul 2008 12:52:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH] x86: APIC: Remove apic_write_around(); use alternatives
-Message-ID: <20080718105259.GY6875@elte.hu>
-References: <Pine.LNX.4.55.0807161837080.30858@cliff.in.clinika.pl>
-MIME-Version: 1.0
+	id S1754675AbYGRKxw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 06:53:52 -0400
+Date: Fri, 18 Jul 2008 14:53:44 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Octavian Purdila <opurdila@ixiacom.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tcp: do not promote SPLICE_F_NONBLOCK to socket O_NONBLOCK
+Message-ID: <20080718105344.GA481@2ka.mipt.ru>
+References: <200807171633.49791.opurdila@ixiacom.com> <200807171747.27775.opurdila@ixiacom.com> <20080717174150.GA24002@2ka.mipt.ru> <200807180052.33918.opurdila@ixiacom.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.55.0807161837080.30858@cliff.in.clinika.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200807180052.33918.opurdila@ixiacom.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi.
 
-* Maciej W. Rozycki <macro@linux-mips.org> wrote:
+On Fri, Jul 18, 2008 at 12:52:33AM +0300, Octavian Purdila (opurdila@ixiacom.com) wrote:
+> You lost me here :)
+> 
+> The way I interpret the man page text is that it is ok for splice to block, 
+> even if SPLICE_F_NONBLOCK is set. The comments near SPLICE_F_NONBLOCK says 
+> the same thing:
+> 
+> #define SPLICE_F_NONBLOCK (0x02) /* don't block on the pipe splicing (but */
+>                                  /* we may still block on the fd we splice */
+>                                  /* from/to, of course */
+> 
+> Am I missing something?
 
->  Use alternatives to select the workaround for the 11AP Pentium 
-> erratum for the affected steppings on the fly rather than build time.  
-> Remove the X86_GOOD_APIC configuration option and replace all the 
-> calls to apic_write_around() with plain apic_write(), protecting 
-> accesses to the ESR as appropriate due to the 3AP Pentium erratum.  
-> Remove apic_read_around() and all its invocations altogether as not 
-> needed.  Remove apic_write_atomic() and all its implementing backends.  
-> The use of ASM_OUTPUT2() is not strictly needed for input constraints, 
-> but I have used it for readability's sake.
+tcp_splice_read:
 
-wow, impressive patch!
+timeo = sock_rcvtimeo(sk, flags & SPLICE_F_NONBLOCK);
 
->  I had the feeling no one else was brave enough to do it, so I went 
-> ahead and here it is.  Verified by checking the generated assembly and 
-> tested with both a 32-bit and a 64-bit configuration, also with the 
-> 11AP "feature" forced on and verified with gdb on /proc/kcore to work 
-> as expected (as an 11AP machines are quite hard to get hands on these 
-> days).  Some script complained about the use of "volatile", but 
-> apic_write() needs it for the same reason and is effectively a 
-> replacement for writel(), so I have disregarded it.
+So, if you set SPLICE_F_NONBLOCK, then reading from the network will not
+block. Splice can block in reading from other descriptors though. It can
+also block during writing.
 
-kudos for pulling this off :-)
+> > > But more importantly, how can we solve the deadlock issue described in
+> > > the patch? Do we need all of the complications of async I/O for such a
+> > > simple and common usecase?
+> >
+> > I'm not sure I understand how it can deadlock, please explain it in more
+> > details.
+> 
+> For this "program":
+> 
+> x=splice(socket, pipe, size, flags=0); 
+> if (x > 0)
+> 	splice(pipe, file, x, flags=0);
+> 
+> it is hard to come up with a non tiny value for size that does not deadlock 
+> the program, because the pipe size is measured in packets and not bytes and 
+> we have no control over the packet sizes.
+> 
+> For example, if we set size=17 and we are unlucky and get 16 packets of 1 byte 
+> in a row, at the right time, the first splice call will block - and the 
+> program will deadlock since we can't reach the consumer. 
 
-applied to tip/x86/apic. This will interact with tip/x86/x2apic but that 
-topic is being worked on anyway. The interaction should be trivial.
+It is not a deadlock. recv() on blocking socket with the same parameters
+will behave exactly the same. Application designer should think about
+how it is supposed to handle cases, when not enough data is available in
+the receiving queue - either return or wait.
 
-	Ingo
+-- 
+	Evgeniy Polyakov
