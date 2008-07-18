@@ -1,48 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758094AbYGROeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755736AbYGROiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758094AbYGROeS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 10:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbYGROeH
+	id S1755736AbYGROiS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 10:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbYGROiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 10:34:07 -0400
-Received: from gw.goop.org ([64.81.55.164]:55885 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752976AbYGROeG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 10:34:06 -0400
-Message-ID: <4880A9D0.3060300@goop.org>
-Date: Fri, 18 Jul 2008 07:33:52 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 18 Jul 2008 10:38:08 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:15988 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751800AbYGROiF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 10:38:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=qXCPkCc3yNsCA5fm6e9a4ypSp6HFH4GZlp7ftauXXTubUtshWMgAUDi+eE38MYq7QO
+         NSTEjhTuaUsAARefmr4s8726vjep29TFWqG1uqSrEL+w3MR8ITS3ffdGg5YO/KbKg9M4
+         kcSgcbaiLbWICjIIaDLqUUaX+2Z9lGAkRYiVc=
+Message-ID: <84144f020807180738m768a3ebana5ebc10999f22f50@mail.gmail.com>
+Date: Fri, 18 Jul 2008 17:38:04 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Eduard - Gabriel Munteanu" <eduard.munteanu@linux360.ro>
+Subject: Re: [RFC PATCH 1/4] kmemtrace: Core implementation.
+Cc: cl@linux-foundation.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       "Randy Dunlap" <rdunlap@xenotime.net>, "Matt Mackall" <mpm@selenic.com>
+In-Reply-To: <20080718101326.GB5193@localhost>
 MIME-Version: 1.0
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       lkml <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Current git fails to compile
-References: <20080718075340.GC16453@linux.vnet.ibm.com> <20080718091441.GR6875@elte.hu> <20080718134126.GA30416@linux.vnet.ibm.com>
-In-Reply-To: <20080718134126.GA30416@linux.vnet.ibm.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <cover.1216255034.git.eduard.munteanu@linux360.ro>
+	 <4472a3f883b0d9026bb2d8c490233b3eadf9b55e.1216255035.git.eduard.munteanu@linux360.ro>
+	 <84144f020807170101x25c9be11qd6e1996460bb24fc@mail.gmail.com>
+	 <20080717183206.GC5360@localhost>
+	 <Pine.LNX.4.64.0807181140400.3739@sbz-30.cs.Helsinki.FI>
+	 <20080718101326.GB5193@localhost>
+X-Google-Sender-Auth: 05b53874ece357b7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dhaval Giani wrote:
->     This patch also pulls the pmd preallocation and mop-up functions out
->     to be common, assuming that the compiler will generate no code for
->     them when PREALLOCTED_PMDS is 0.
+Hi Eduard-Gabriel,
 
-Well, there's nothing particularly special in that code.  The only 
-slightly complex requirement on the compiler is that it notice that a 
-0-iteration for loop is a do-nothing, and that it eliminate the code.  
-And that's not really a requirement, it's just nice to have.
+On Fri, Jul 18, 2008 at 11:48:03AM +0300, Pekka J Enberg wrote:
+>> It's an ABI so you want to make it backwards compatible and extensible.
+>> Yes, it's just for debugging, so the rules are bit more relaxed here but
+>> that's not an excuse for not designing the ABI properly.
 
-The fact that your compiler is warning about an unused variable in an 
-unused function suggests that it isn't doing this (I'm assuming your 
-config has CONFIG_X86_PAE=n).  But there are no inline asms or other 
-things which traditionally cause compilers to fall over.
+On Fri, Jul 18, 2008 at 1:13 PM, Eduard - Gabriel Munteanu
+<eduard.munteanu@linux360.ro> wrote:
+> I do expect to keep things source-compatible, but even
+> binary-compatible? Developers debug and write patches on the latest kernel,
+> not on a 6-month-old kernel. Isn't it reasonable that they would
+> recompile kmemtrace along with the kernel?
 
-So, I'm not really sure what to do about this.  Any chance of using a 
-newer compiler?
+Yes, I do think it's unreasonable. I, for one, am hoping distributions
+will pick up the kmemtrace userspace at some point after which I don't
+need to ever compile it myself.
 
-    J
+On Fri, Jul 18, 2008 at 1:13 PM, Eduard - Gabriel Munteanu
+<eduard.munteanu@linux360.ro> wrote:
+> I would deem one ABI or another stable, but then we have to worry about
+> not breaking it, which leads to either bloating the kernel, or keeping
+> improvements away from kmemtrace. Should we do it just because this is an ABI?
+
+Like I've said before, it's debugging/tracing infrastructure so the
+rules are bit more relaxed. That said, what we should do is (1) make
+the ABI as future-proof as we can, (2) explicitly mark it as unstable
+by documenting it in Documentation/ABI/testing and (3) at some point
+in time move it in Documentation/ABI/stable and hopefully never break
+it again. But sure, we probably don't need to keep any "bloat" around
+like we do with the syscall interface, for example.
+
+And hopefully, the ABI is good enough to allow adding *new* tracing
+events while retaining the old ones nicely in a backwards compatible
+way.
+
+On Fri, Jul 18, 2008 at 11:48:03AM +0300, Pekka J Enberg wrote:
+>> I really wish we would follow the example set by blktrace here. It uses a
+>> fixed-length header that knows the length of the rest of the packet.
+
+On Fri, Jul 18, 2008 at 1:13 PM, Eduard - Gabriel Munteanu
+<eduard.munteanu@linux360.ro> wrote:
+> I'd rather export the header length through a separate debugfs entry,
+> rather than add this to every packet. I don't think we need variable
+> length packets, unless we intend to export the whole stack trace, for
+> example.
+
+Sure, makes sense.
+
+                                      Pekka
