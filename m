@@ -1,58 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758544AbYGRMYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758962AbYGRMYo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758544AbYGRMYa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 08:24:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755840AbYGRMYU
+	id S1758962AbYGRMYo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 08:24:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757229AbYGRMYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 08:24:20 -0400
-Received: from relay.2ka.mipt.ru ([194.85.80.65]:38754 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755347AbYGRMYT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 08:24:19 -0400
-Date: Fri, 18 Jul 2008 16:24:15 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Octavian Purdila <opurdila@ixiacom.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tcp: do not promote SPLICE_F_NONBLOCK to socket O_NONBLOCK
-Message-ID: <20080718122414.GA10688@2ka.mipt.ru>
-References: <200807171633.49791.opurdila@ixiacom.com> <200807180052.33918.opurdila@ixiacom.com> <20080718105344.GA481@2ka.mipt.ru> <200807181418.59493.opurdila@ixiacom.com>
+	Fri, 18 Jul 2008 08:24:25 -0400
+Received: from smtp239.poczta.interia.pl ([217.74.64.239]:9826 "EHLO
+	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756416AbYGRMYW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 08:24:22 -0400
+Date: Fri, 18 Jul 2008 14:28:49 +0200
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Takashi Iwai <tiwai@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Jaroslav Kysela <perex@perex.cz>, LKML <linux-kernel@vger.kernel.org>,
+       ALSA development <alsa-devel@alsa-project.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Rene Herman <rene.herman@gmail.com>,
+       Krzysztof Helt <krzysztof.h1@wp.pl>
+Subject: Re: [boot crash, bisected] in 9f240a55
+ "ALSA: opti93x: use cs4231 lib"
+Message-Id: <20080718142849.f11ce4c8.krzysztof.h1@poczta.fm>
+In-Reply-To: <48806017.1040307@keyaccess.nl>
+References: <Pine.LNX.4.61.0807141105150.7676@tm8103-a.perex-int.cz>
+	<20080717170657.GA14593@elte.hu>
+	<s5h3am8jqvy.wl%tiwai@suse.de>
+	<487F9B9B.2010905@keyaccess.nl>
+	<487F9FA1.7020101@keyaccess.nl>
+	<48806017.1040307@keyaccess.nl>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200807181418.59493.opurdila@ixiacom.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-EMID: b8e2b138
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 02:18:59PM +0300, Octavian Purdila (opurdila@ixiacom.com) wrote:
-> I know that. But I am arguing that splice API does not required not to block 
-> even when the SPLICE_F_NONBLOCK is used. So changing this behavior the way I 
-> suggested will still be conformant with the splice API requirements.
+On Fri, 18 Jul 2008 11:19:19 +0200
+Rene Herman <rene.herman@keyaccess.nl> wrote:
 
-It will block in sending and/or other than network reading. With your
-patch if receiving socket was opened in blocking mode, than there is no
-way to finish splice-in until whole requested number of bytes are read.
-SPLICE_F_NONBLOCK is an extension, consider it like recv() with temporal
-non-blocking flag.
+> On 17-07-08 21:38, Rene Herman wrote:
+> 
+> > On 17-07-08 21:20, Rene Herman wrote:
+> > 
+> >> On 17-07-08 20:40, Takashi Iwai wrote:
+> >>
+> >>> Could you try the patch below?
+> >>
+>
+> This bug was uncovered by !CONFIG_PNP and we had trouble in this driver 
+> due to that before so was rewriting the init to be a generic multi-card 
+> ALSA init but, actually, not much point.
+>
 
-> Sorry, it was an unfortunate example :) This is not about not enough data 
-> being available. Lets change the number of packets in the example with 20 
-> instead of 16 (and keep the size to 17) - the splice call will still block 
-> because of the pipe being full. The pipe can only hold PIPE_BUFFERS packets 
-> (which is 16 currently).
+The bug was introduced by the patch as it used (tried to free) the codec pointer
+before it was assigned any value. It happened only if the card was missing and
+I didn't test the driver on such a configuration. My mistake. The CONFIG_PNP
+setting makes no difference.
+ 
+> 
+> In fact, in the meantime I'll look at splitting 92x and 93x again. It's 
+> much better now that Krzysztof made it use the generic library code but 
+> I still hate this driver. It's also poking at ports without being told 
+> something is there by either system or user.
+> 
 
-Why? It will read its data from 16 packets, then send them into another end
-of the pipe :)
+Please hold your axe until Monday. The last patch (not posted yet) from the 
+unification of the WSS library series removes some ifdefs in this driver.
+This may (or may not) change your view on splitting the driver.
 
-You propose to change a very useful splice feature (actually you would just
-remove it at all with the same results for reading network path, since
-it is essentially what you did :) - not to block when it is possible.
+Regards,
+Krzysztof
 
-This kind of non-blocking mode was added for performance issues too:
-consider application which reads from the network and writes into the
-file, while there is no data in the socket it can write what was already
-read into any object attached to the given end of the pipe.
+----------------------------------------------------------------------
+Zobacz cala prawde o Lukaszu Podolskim!
+kliknij >>> http://link.interia.pl/f1e57
 
--- 
-	Evgeniy Polyakov
