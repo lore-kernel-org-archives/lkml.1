@@ -1,46 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758970AbYGRSgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760116AbYGRSiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758970AbYGRSgT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 14:36:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754581AbYGRSgG
+	id S1760116AbYGRSiS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 14:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbYGRSiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 14:36:06 -0400
-Received: from relay.2ka.mipt.ru ([194.85.80.65]:44292 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754176AbYGRSgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 14:36:05 -0400
-Date: Fri, 18 Jul 2008 22:35:50 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Octavian Purdila <opurdila@ixiacom.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, axboe@kernel.dk
-Subject: Re: [PATCH] tcp: do not promote SPLICE_F_NONBLOCK to socket O_NONBLOCK
-Message-ID: <20080718183549.GA23263@2ka.mipt.ru>
-References: <200807171633.49791.opurdila@ixiacom.com> <200807182004.44664.opurdila@ixiacom.com> <20080718175341.GA21496@2ka.mipt.ru> <200807182116.43451.opurdila@ixiacom.com>
+	Fri, 18 Jul 2008 14:38:06 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:53536 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753320AbYGRSiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 14:38:05 -0400
+Date: Fri, 18 Jul 2008 13:38:00 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] - Earlier detection of system type (UV or non-UV)
+Message-ID: <20080718183800.GA26109@sgi.com>
+References: <20080709163602.GA12543@sgi.com> <20080718171331.GK6875@elte.hu> <20080718174929.GA981@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200807182116.43451.opurdila@ixiacom.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080718174929.GA981@elte.hu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 09:16:43PM +0300, Octavian Purdila (opurdila@ixiacom.com) wrote:
-> tcp_read_sock
->  ... -> skb_splice_bits -> spd_fill_page; 
->   on return (spd->nr_page is 1 and pipe->nrbufs is 1)
->  ... -> skb_splice_bits -> spd_fill_page; 
->   on return (spd->nr_page is 1 and pipe->nrbufs is 2)
->  ... -> skb_splice_bits -> spd_fill_page; 
->   on return (spd->nr_page is 1 and pipe->nrbufs is 3)
-> ...
-> 
-> and so on until pipe->nrbufs is 16. At than point, we will block in pipe_wait, 
-> inside splice_to_pipe.
+A patch is coming that requires earlier detection of system type (UV or non-UV)
+Move the logic that detects whether running on UV to acpi_boot_table_init().
 
-Seems that SPLICE_F_NONBLOCK check should be propagated from
-tcp_splice_read() into skb_splice_bits(), and this flag is actually
-there already in tss.flags.
+Signed-off-by: Jack Steiner <steiner@sgi.com>
 
--- 
-	Evgeniy Polyakov
+---
+
+V2 patch
+	- Added appropriate checks for CONFIG_ACPI to make it compile on
+	  configs w/o ACPI.
+
+	- Eliminated check for x86_64.
+
+
+ arch/x86/kernel/acpi/boot.c  |    1 +
+ arch/x86/kernel/genapic_64.c |   17 ++++++++++++-----
+ arch/x86/mm/srat_64.c        |    2 +-
+ include/asm-x86/genapic_32.h |    1 +
+ include/asm-x86/genapic_64.h |    3 +++
+ 5 files changed, 18 insertions(+), 6 deletions(-)
+
+Index: linux/arch/x86/kernel/acpi/boot.c
+===================================================================
+--- linux.orig/arch/x86/kernel/acpi/boot.c	2008-07-18 13:15:03.000000000 -0500
++++ linux/arch/x86/kernel/acpi/boot.c	2008-07-18 13:22:07.000000000 -0500
+@@ -1653,6 +1653,7 @@ int __init acpi_boot_table_init(void)
+ 		return error;
+ 	}
+ 
++	acpi_table_parse(ACPI_SIG_MADT, acpi_early_madt_oem_check);
+ 	acpi_table_parse(ACPI_SIG_BOOT, acpi_parse_sbf);
+ 
+ 	/*
+Index: linux/arch/x86/kernel/genapic_64.c
+===================================================================
+--- linux.orig/arch/x86/kernel/genapic_64.c	2008-07-18 13:15:03.000000000 -0500
++++ linux/arch/x86/kernel/genapic_64.c	2008-07-18 13:17:36.000000000 -0500
+@@ -66,16 +66,23 @@ void send_IPI_self(int vector)
+ 	__send_IPI_shortcut(APIC_DEST_SELF, vector, APIC_DEST_PHYSICAL);
+ }
+ 
+-int __init acpi_madt_oem_check(char *oem_id, char *oem_table_id)
++int __init acpi_early_madt_oem_check(struct acpi_table_header *table)
+ {
+-	if (!strcmp(oem_id, "SGI")) {
+-		if (!strcmp(oem_table_id, "UVL"))
++#ifdef CONFIG_ACPI
++	if (!strcmp(table->oem_id, "SGI")) {
++		if (!strcmp(table->oem_table_id, "UVL"))
+ 			uv_system_type = UV_LEGACY_APIC;
+-		else if (!strcmp(oem_table_id, "UVX"))
++		else if (!strcmp(table->oem_table_id, "UVX"))
+ 			uv_system_type = UV_X2APIC;
+-		else if (!strcmp(oem_table_id, "UVH"))
++		else if (!strcmp(table->oem_table_id, "UVH"))
+ 			uv_system_type = UV_NON_UNIQUE_APIC;
+ 	}
++#endif
++	return 0;
++}
++
++int __init acpi_madt_oem_check(char *oem_id, char *oem_table_id)
++{
+ 	return 0;
+ }
+ 
+Index: linux/arch/x86/mm/srat_64.c
+===================================================================
+--- linux.orig/arch/x86/mm/srat_64.c	2008-07-18 13:15:03.000000000 -0500
++++ linux/arch/x86/mm/srat_64.c	2008-07-18 13:15:07.000000000 -0500
+@@ -138,7 +138,7 @@ acpi_numa_processor_affinity_init(struct
+ 		return;
+ 	}
+ 
+-	if (is_uv_system())
++	if (get_uv_system_type() >= UV_X2APIC)
+ 		apic_id = (pa->apic_id << 8) | pa->local_sapic_eid;
+ 	else
+ 		apic_id = pa->apic_id;
+Index: linux/include/asm-x86/genapic_32.h
+===================================================================
+--- linux.orig/include/asm-x86/genapic_32.h	2008-07-16 17:45:26.000000000 -0500
++++ linux/include/asm-x86/genapic_32.h	2008-07-18 13:22:38.000000000 -0500
+@@ -118,6 +118,7 @@ enum uv_system_type {UV_NONE, UV_LEGACY_
+ #define get_uv_system_type()		UV_NONE
+ #define is_uv_system()			0
+ #define uv_wakeup_secondary(a, b)	1
++#define acpi_early_madt_oem_check(a)		0
+ 
+ 
+ #endif
+Index: linux/include/asm-x86/genapic_64.h
+===================================================================
+--- linux.orig/include/asm-x86/genapic_64.h	2008-07-18 13:15:03.000000000 -0500
++++ linux/include/asm-x86/genapic_64.h	2008-07-18 13:15:07.000000000 -0500
+@@ -39,6 +39,9 @@ enum uv_system_type {UV_NONE, UV_LEGACY_
+ extern enum uv_system_type get_uv_system_type(void);
+ extern int is_uv_system(void);
+ 
++struct acpi_table_header;
++extern int acpi_early_madt_oem_check(struct acpi_table_header *);
++
+ extern struct genapic apic_x2apic_uv_x;
+ DECLARE_PER_CPU(int, x2apic_extra_bits);
+ extern void uv_cpu_init(void);
