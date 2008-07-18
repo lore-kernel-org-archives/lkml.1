@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758778AbYGRWZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759289AbYGRW1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758778AbYGRWZu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 18:25:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbYGRWZm
+	id S1759289AbYGRW1q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 18:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754246AbYGRW1i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 18:25:42 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36971 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751277AbYGRWZl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 18:25:41 -0400
-Date: Sat, 19 Jul 2008 00:25:12 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Roman Mindalev <lists@r000n.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Bug #11035] System hangs on 2.6.26-rc8
-Message-ID: <20080718222512.GD31073@elte.hu>
-References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik> <uBi7uNfg81L.A.xt.SzLcIB@albercik> <4878D259.7050403@r000n.net> <487CA8E5.8020208@r000n.net> <20080718071121.GB6875@elte.hu> <19f34abd0807180028y2be61c06ueab5fcc305956f80@mail.gmail.com>
+	Fri, 18 Jul 2008 18:27:38 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:19757 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754184AbYGRW1h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 18:27:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=qNHpLluNzN41Mi4EnGut2T0Hx8+zngw+jPHKLzBshncxsPF2LDDpbTIfAljDwEHabc
+         RkRo4Wquo00jsX14VGssB4rUxnods1LmFxEe3rKvIsKBB1J0rGBHConkZzBn6FUjystv
+         uQT8Gqbr/vJVMf6DhY3pjrF0BA+fOu4RgPQ3Y=
+Message-ID: <86802c440807181527u1e373b2drc72456b33a4bcd76@mail.gmail.com>
+Date: Fri, 18 Jul 2008 15:27:37 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jack Howarth" <howarth@bromo.msbb.uc.edu>
+Subject: Re: [PATCH] x86,pci: detect end_bus_number according to acpi/e820 reserved
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, jbarnes@virtuousgeek.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080718214825.GA8132@bromo.msbb.uc.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <19f34abd0807180028y2be61c06ueab5fcc305956f80@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <200807180941.09779.yhlu.kernel@gmail.com>
+	 <200807181322.37500.yhlu.kernel@gmail.com>
+	 <20080718214825.GA8132@bromo.msbb.uc.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jul 18, 2008 at 2:48 PM, Jack Howarth <howarth@bromo.msbb.uc.edu> wrote:
+> YH,
+>  I'll test the new patch shortly. When I do, I'll put back in
+> your debug patches to try to get a complete log with pci=verbose
+> and initcall_debug with PCIEASPM disabled.
+tip tree has the two debug patches.
 
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> Hopefully the probing
+> is done in the same general fashion with and without PCIEASPM so
+> we can deduce what exactly is being probed when my MacBook Pro
+> freezes during boot with PCIEASPM enabled. I consider the fact
+> that booting 2.6.26 always freezes the kernel when PCIEASPM
+> is enabled to be the more serious bug (since once Fedora ships
+> 2.6.26 kernels I'll be stuck always building my own).
 
-> BTW, I didn't consider that argument (of continuing as far as 
-> possible) before, but it's a good one; if we don't crash completely, 
-> the user can still copy the log we have a better report of it. I guess 
-> kerneloops.org is currently missing out a great deal of reports which 
-> all shut down the machine immediately without a chance to go into the 
-> log.
+another laptop : Acer ... suffer this problem too with ASPM...
 
-yes. There are two techniques to improve the 'yield' of kerneloops.org: 
-1) make a better job of getting the logs off the box 2) make a better 
-job of not crashing the box when we can do better.
-
-For example lockdep tries very hard to never crash the box. It is a 
-feature that warns about a chance of a lockup, not about a lockup itself 
-- so crashing the box at the point of the bug detection is 
-counter-productive.
-
-The same applies to DEBUG_PAGEALLOC as well: technically nobody (but the 
-buggy code itself) is hurt by accessing already freed data. So we could 
-try and let it run.
-
-(Btw., this might be a way to share a mechanism between kmemcheck and 
-DEBUG_PAGEALLOC, and make kmemcheck more useful to the general kernel as 
-a whole.)
-
-	Ingo
+YH
