@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757430AbYGRNxI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758509AbYGRN4j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757430AbYGRNxI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 09:53:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757815AbYGRNwe
+	id S1758509AbYGRN4j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 09:56:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756630AbYGRN43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 09:52:34 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:43367 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757531AbYGRNwd (ORCPT
+	Fri, 18 Jul 2008 09:56:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59450 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756161AbYGRN43 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 09:52:33 -0400
-Subject: Re: [PATCH 10/15] regulator: documentation - consumer interface
-From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <20080717183931.GB15178@flint.arm.linux.org.uk>
-References: <1215703618.13431.66.camel@odin> <487777D5.7050807@teltonika.lt>
-	 <20080711191824.GA28821@sirena.org.uk>
-	 <20080717183931.GB15178@flint.arm.linux.org.uk>
-Content-Type: text/plain
-Date: Fri, 18 Jul 2008 14:52:26 +0100
-Message-Id: <1216389146.31838.90.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Fri, 18 Jul 2008 09:56:29 -0400
+Message-ID: <4880A0B0.9060007@linux-foundation.org>
+Date: Fri, 18 Jul 2008 08:54:56 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Vegard Nossum <vegard.nossum@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, davem@davemloft.net,
+       johnpol@2ka.mipt.ru
+Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison overwritten
+References: <20080717214222.GA29449@elte.hu>	 <Pine.LNX.4.64.0807181149460.3852@sbz-30.cs.Helsinki.FI>	 <20080718091146.GQ6875@elte.hu> <84144f020807180216mfd5e803o8f3f1a94b2db1a74@mail.gmail.com>
+In-Reply-To: <84144f020807180216mfd5e803o8f3f1a94b2db1a74@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-17 at 19:39 +0100, Russell King - ARM Linux wrote:
-> On Fri, Jul 11, 2008 at 08:18:25PM +0100, Mark Brown wrote:
-> > On Fri, Jul 11, 2008 at 06:10:13PM +0300, Paulius Zaleckas wrote:
-> > > Liam Girdwood wrote:
-> > 
-> > > >+previously enabled by bootloader or kernel board initialisation code.
-> > 
-> > > initialization
-> > >         ^
-> > 
-> > Not in the UK :)
+Pekka Enberg wrote:
+> On Fri, Jul 18, 2008 at 12:11 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>> * Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
+>>
+>>>>   Object 0xf658ae70:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+>>> It's bit unfortunate that we don't see full dump of the corruption
+>>> here because SLUB limits the output to 128 bytes. Ingo, you might want
+>>> to try this patch so that we can see all of it:
+>> ok, applied this as a debug special to tip/out-of-tree - future
+>> incidents should have the full object dump.
+>>
+>> would makes sense for upstream too i think, or increase the limit to 4K
+>> or so. (which is still fair to be dumped into a syslog)
 > 
-> Actually, wrong.  "Initialize" is correct spelling in the UK too - I've
-> checked several UK dictionaries printed in the 1960s, 1970s and 1980s
-> sourced from different printers, and they all agree on that.
-> 
-> At the same time I checked other words which I thought ended in -ise.
-> The dictionaries all said -ize and didn't list the -ise version.
-> 
-> Therefore, I suspect -ise came into use in the late 1980s in the UK.
-> 
-> Given my research, I'm intending to use the -ize version myself from
-> now on, to support the English ideals. 8)
+> SLUB already limits object sizes to less than PAGE_SIZE so the patch
+> should be fine. Christoph, are you okay with this going upstream?
 
-ok, I concede.  -ize it is ;)
+I am fine with the patch. Just be aware that we are going to be shoveling a lot of stuff into the log. The object size can be greater than 4k for non kmalloc slab caches. True in general object sizes are <4k.
 
-Liam 
 
