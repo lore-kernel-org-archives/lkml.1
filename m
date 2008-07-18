@@ -1,79 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755473AbYGRKPC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755753AbYGRKRK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755473AbYGRKPC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 06:15:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754404AbYGRKOx
+	id S1755753AbYGRKRK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 06:17:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYGRKQz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 06:14:53 -0400
-Received: from ti-out-0910.google.com ([209.85.142.190]:29876 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754331AbYGRKOx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 06:14:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=ZsHq0+WZl0kmdLhOMVPGC+LRe8MujW+wCqDolpVWHbDBe9Hohv7cqUNRoF8pjC9+V1
-         wOB3UkLELMhFbeioVb7Mm6lgV4Cs7Pd7/hsI/0g7GsdW2c+AcIWptgysJILkzhfs+6Ib
-         AAip6f0oWhgs+fqNd2oIa2nqwABeoukVZsOXA=
-Date: Fri, 18 Jul 2008 13:13:26 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: cl@linux-foundation.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Randy Dunlap <rdunlap@xenotime.net>, Matt Mackall <mpm@selenic.com>
-Subject: Re: [RFC PATCH 1/4] kmemtrace: Core implementation.
-Message-ID: <20080718101326.GB5193@localhost>
-References: <cover.1216255034.git.eduard.munteanu@linux360.ro> <4472a3f883b0d9026bb2d8c490233b3eadf9b55e.1216255035.git.eduard.munteanu@linux360.ro> <84144f020807170101x25c9be11qd6e1996460bb24fc@mail.gmail.com> <20080717183206.GC5360@localhost> <Pine.LNX.4.64.0807181140400.3739@sbz-30.cs.Helsinki.FI>
-MIME-Version: 1.0
+	Fri, 18 Jul 2008 06:16:55 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:53662 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751217AbYGRKQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 06:16:54 -0400
+Date: Fri, 18 Jul 2008 14:16:24 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Vegard Nossum <vegard.nossum@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison overwritten
+Message-ID: <20080718101624.GA7107@2ka.mipt.ru>
+References: <20080717214222.GA29449@elte.hu> <20080718054626.GA3338@2ka.mipt.ru> <84144f020807180202l6c703234ic3a2b57e73a1d89a@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0807181140400.3739@sbz-30.cs.Helsinki.FI>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <84144f020807180202l6c703234ic3a2b57e73a1d89a@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 11:48:03AM +0300, Pekka J Enberg wrote:
-> Hi Eduard-Gabriel,
+Hi Pekka.
+
+On Fri, Jul 18, 2008 at 12:02:26PM +0300, Pekka Enberg (penberg@cs.helsinki.fi) wrote:
+> > Out of curiosity, why does it scream at allocation time?
 > 
-> On Thu, 17 Jul 2008, Eduard - Gabriel Munteanu wrote:
-> > > > +struct kmemtrace_event {
-> > > 
-> > > So why don't we have the ABI version embedded here like blktrace has
-> > > so that user-space can check if the format matches its expectations?
-> > > That should be future-proof as well: as long as y ou keep the existing
-> > > fields where they're at now, you can always add new fields at the end
-> > > of the struct.
-> > 
-> > You can't add fields at the end, because the struct size will change and
-> > reads will be erroneous. Also, stamping every 'packet' with ABI version
-> > looks like a huge waste of space.
-> 
-> It's an ABI so you want to make it backwards compatible and extensible. 
-> Yes, it's just for debugging, so the rules are bit more relaxed here but 
-> that's not an excuse for not designing the ABI properly.
+> Because it's checking for use-after-free errors. The object is
+> poisoned with POISON_FREE when it's free'd and we verify the poison
+> values at allocation time.
 
-I do expect to keep things source-compatible, but even
-binary-compatible? Developers debug and write patches on the latest kernel,
-not on a 6-month-old kernel. Isn't it reasonable that they would
-recompile kmemtrace along with the kernel?
+Does it also scream on double free event? Just to closer guilty
+circles... 0x9c offset is somewhere at the very end of the skbuff
+structure, likely skb->users.
 
-I would deem one ABI or another stable, but then we have to worry about
-not breaking it, which leads to either bloating the kernel, or keeping
-improvements away from kmemtrace. Should we do it just because this is an ABI?
+Can you also check in some kind of this patch to catch freed skb freeing
+for testing?
 
-> I really wish we would follow the example set by blktrace here. It uses a 
-> fixed-length header that knows the length of the rest of the packet.
+diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+index 3666216..dda96bf 100644
+--- a/net/core/skbuff.c
++++ b/net/core/skbuff.c
+@@ -419,6 +419,14 @@ void kfree_skb(struct sk_buff *skb)
+ {
+ 	if (unlikely(!skb))
+ 		return;
++
++	{
++		u8 *ptr = (u8 *)(&skb->users);
++
++		if (*ptr == POISON_FREE || *ptr == POISON_INUSE || *ptr == POISON_END)
++			BUG();
++	}
++
+ 	if (likely(atomic_read(&skb->users) == 1))
+ 		smp_rmb();
+ 	else if (likely(!atomic_dec_and_test(&skb->users)))
 
-I'd rather export the header length through a separate debugfs entry,
-rather than add this to every packet. I don't think we need variable
-length packets, unless we intend to export the whole stack trace, for
-example.
-
-By the way, do you anticipate the need for such a stack trace? It would seem
-nice, but is it worth the trouble? (/me writes this down as a possible
-future improvement)
-
-> 		Pekka
-
+-- 
+	Evgeniy Polyakov
