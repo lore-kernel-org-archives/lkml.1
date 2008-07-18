@@ -1,58 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757542AbYGRKys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbYGRLCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757542AbYGRKys (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 06:54:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755254AbYGRKyk
+	id S1755958AbYGRLCS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 07:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbYGRLCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 06:54:40 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58582 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755233AbYGRKyj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 06:54:39 -0400
-Date: Fri, 18 Jul 2008 12:54:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: eric miao <eric.y.miao@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jack Ren <jack.ren@marvell.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [PATCH] sched: do not stop ticks when cpu is not idle
-Message-ID: <20080718105424.GA22268@elte.hu>
-References: <f17812d70807172341u92270fdvc80e72cc5599c56f@mail.gmail.com> <20080718102446.GV6875@elte.hu>
+	Fri, 18 Jul 2008 07:02:11 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:38598 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751571AbYGRLCJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 07:02:09 -0400
+Message-ID: <4880782F.7030405@firstfloor.org>
+Date: Fri, 18 Jul 2008 13:02:07 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080718102446.GV6875@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0006]
+To: Marcin Obara <marcin_obara@users.sourceforge.net>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Intel Management Engine Interface
+References: <alpine.DEB.1.00.0807172021450.26825@ip-195-3-221-75.vnet.pl>	 <874p6nsft5.fsf@basil.nowhere.org> <ea8d860a0807180351q490deea1rdf61469057e79ac3@mail.gmail.com>
+In-Reply-To: <ea8d860a0807180351q490deea1rdf61469057e79ac3@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Marcin Obara wrote:
+> 2008/7/18 Andi Kleen <andi@firstfloor.org>:
+>> How about the save oops data in HECI code? Will that be posted
+>> on top of this?
+> 
+> This question was mostly already answered in
+> http://lkml.org/lkml/2007/12/11/166
+> In addition current MEI driver is for current platforms (AMT 3, 4, 5)
+> and have no AMT 1.0 legacy support.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Well it didn't answer the question. Are you planning to submit
+code to store the oopses/kernel log based on this code or not?
 
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -4446,7 +4446,8 @@ need_resched_nonpreemptible:
->  		rq->nr_switches++;
->  		rq->curr = next;
->  		++*switch_count;
-> -
-> +		if (rq->curr != rq->idle)
-> +			tick_nohz_restart_sched_tick();
->  		context_switch(rq, prev, next); /* unlocks the rq */
+-Andi
 
-hm, one problem i can see is lock dependencies. This code is executed 
-with the rq lock while tick_nohz_restart_sched_tick() takes hr locks => 
-not good. So i havent applied this just yet - this needs to be solved 
-differently.
 
-	Ingo
