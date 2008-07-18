@@ -1,115 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754049AbYGRImS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754876AbYGRImv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754049AbYGRImS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 04:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751284AbYGRImJ
+	id S1754876AbYGRImv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 04:42:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYGRImn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 04:42:09 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53886 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751001AbYGRImH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 04:42:07 -0400
-Date: Fri, 18 Jul 2008 10:41:52 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [git pull] tracing fixes
-Message-ID: <20080718084152.GJ6875@elte.hu>
-References: <20080717173210.GA12828@elte.hu> <Pine.LNX.4.58.0807172249230.22792@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 18 Jul 2008 04:42:43 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:20338 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751284AbYGRImm convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 04:42:42 -0400
+Message-Id: <488073B8.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Fri, 18 Jul 2008 09:43:04 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Robert Moore" <robert.moore@intel.com>, "Andi Kleen" <ak@linux.intel.com>
+Cc: "Andrew Paprocki" <andrew@ishiboo.com>, "Len Brown" <lenb@kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "LKML" <linux-kernel@vger.kernel.org>
+Subject: RE: ACPI WARNING: at
+	drivers/acpi/tables/tbfadt.c:348acpi_tb_create_local_fadt+0x147/0x2f4()
+References: <76366b180807161929i4eb9462exc3d2255e0ec881e8@mail.gmail.com>
+ <76366b180807162034y1e725b15t7658c331bb89b52@mail.gmail.com>
+ <487F2629.76E4.0078.0@novell.com> <487F0B85.4030202@linux.intel.com>
+ <487F29B2.76E4.0078.0@novell.com> <487F3AFA.7090908@linux.intel.com>
+ <76366b180807170603qaf669a5q625fc166a2045756@mail.gmail.com>
+ <487F6C32.76E4.0078.0@novell.com>
+ <76366b180807170732i112d54bcl49f630a3064f87f@mail.gmail.com>
+ <487F81A6.76E4.0078.0@novell.com>
+ <9D39833986E69849A2A8E74C1078B6B3ADFA66@orsmsx415.amr.corp.intel.com>
+In-Reply-To: <9D39833986E69849A2A8E74C1078B6B3ADFA66@orsmsx415.amr.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0807172249230.22792@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>> "Moore, Robert" <robert.moore@intel.com> 17.07.08 19:20 >>>
+>So far, in the number of the cases like this that I've seen, it's the v2
+>fields that have problems. Perhaps the heuristic should be something
+>like "if there is an inconsistency between the v1 and v2 fields, fall
+>back to v1". 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+While extending the patch to do so, I realize that other v2 fields are
+used as-is, no matter whether their bit_width (or other fields) are
+wrong. Is that perhaps why hardware/hwregs.c uses hard-coded
+constants rather than the specified widths? If so (and if the v1 fields
+are considered reliable), shouldn't the v2 ones be sanity-checked
+against the v1 ones and then the specified widths be used as intended
+by the spec?
 
-> On Thu, 17 Jul 2008, Ingo Molnar wrote:
-> >
-> > Ingo Molnar (4):
-> >       ftrace: fix merge buglet
-> >       ftrace: fix lockup with MAXSMP
-> >       ftrace: do not trace scheduler functions
-> >       ftrace: do not trace library functions
-> >
-> 
-> [...]
-> > --- a/kernel/Makefile
-> > +++ b/kernel/Makefile
-> > @@ -11,8 +11,6 @@ obj-y     = sched.o fork.o exec_domain.o panic.o printk.o profile.o \
-> >  	    hrtimer.o rwsem.o nsproxy.o srcu.o semaphore.o \
-> >  	    notifier.o ksysfs.o pm_qos_params.o sched_clock.o
-> >
-> > -CFLAGS_REMOVE_sched.o = -mno-spe
-> > -
-> >  ifdef CONFIG_FTRACE
-> >  # Do not trace debug files and internal ftrace files
-> >  CFLAGS_REMOVE_lockdep.o = -pg
-> > @@ -21,6 +19,7 @@ CFLAGS_REMOVE_mutex-debug.o = -pg
-> >  CFLAGS_REMOVE_rtmutex-debug.o = -pg
-> >  CFLAGS_REMOVE_cgroup-debug.o = -pg
-> >  CFLAGS_REMOVE_sched_clock.o = -pg
-> > +CFLAGS_REMOVE_sched.o = -mno-spe -pg
-> >  endif
-> >
-> 
-> Ingo,
-> 
-> Why not trace the scheduler functions? I found a lot of useful 
-> information from seeing what functions are being called (namely the 
-> latencies caused by the fair scheduler balancing). Not being able to 
-> trace sched.c seems to keep a lot of useful data from being accessed.
+Jan
 
-i agree in general, but it was causing lockups with:
-
-      http://redhat.com/~mingo/misc/config-Thu_Jul_17_13_34_52_CEST_2008
-
-note the MAXSMP in the config which sets NR_CPUS to 4096:
-
-      CONFIG_NR_CPUS=4096
-
-our randconfig testing stumbled on it. That is a debug helper to "tune 
-up the kernel for as large systems as possible" and can bring in 
-regressions not normally seen.
-
-after i spent a good 4 hours on figuring out the lib/*.o details i didnt 
-have the stamina to find the exact reason within sched.o :-)
-
-One thing that needs looking at is that ftrace's self-recursion checks 
-are not as robust as they used to be, and this is a recent regression 
-(as in: last 1-2 weeks). Why do we have to exclude tsc.o from tracing 
-for example? Why isnt cpu_clock() called inside a recursion-protected 
-section? Why are all the trace function callbacks called outside of 
-recursion checks? Why arent ftrace lockups debuggable via the NMI 
-watchdog + early printk? I think it would be more robust to do a 
-recursion check ASAP.
-
-> also, is the '-mno-spe' safe when ftrace is not configured?
-
-Why was the -mno-spe added exactly? I havent seen it explained in the 
-commit that added its removal:
-
-| commit 6ec562328fda585be2d7f472cfac99d3b44d362a
-| Author: Steven Rostedt <rostedt@goodmis.org>
-| Date:   Wed May 14 21:30:30 2008 -0400
-|
-|    ftrace: use the new kbuild CFLAGS_REMOVE for kernel directory
-
-it talks about a cleanup but also adds -mno-spe removal that wasnt there 
-before. This seems to be a powerpc special and the exact context is not 
-clear to me.
-
-	Ingo
