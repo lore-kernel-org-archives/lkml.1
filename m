@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754374AbYGRJDK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbYGRJFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754374AbYGRJDK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 05:03:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753799AbYGRJC4
+	id S1755575AbYGRJFR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 05:05:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753572AbYGRJFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 05:02:56 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:31388 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753447AbYGRJCz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 05:02:55 -0400
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Parag Warudkar <parag.warudkar@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: From 2.4 to 2.6 to 2.7?
-From: Andi Kleen <andi@firstfloor.org>
-References: <6d291e080807141910m573b29b2t753ea7c4db09902d@mail.gmail.com>
-	<alpine.LFD.1.10.0807141914280.3017@woody.linux-foundation.org>
-	<87skubxxtq.fsf@basil.nowhere.org>
-	<loom.20080715T151953-255@post.gmane.org>
-	<20080715163205.5eddba46@the-village.bc.nu>
-Date: Fri, 18 Jul 2008 11:02:22 +0200
-In-Reply-To: <20080715163205.5eddba46@the-village.bc.nu> (Alan Cox's message of "Tue, 15 Jul 2008 16:32:05 +0100")
-Message-ID: <87iqv3sgyp.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 18 Jul 2008 09:02:20.0513 (UTC) FILETIME=[FC533D10:01C8E8B4]
+	Fri, 18 Jul 2008 05:05:04 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:38829 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753479AbYGRJFD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 05:05:03 -0400
+Date: Fri, 18 Jul 2008 11:04:19 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Ben Nizette <bn@niasdigital.com>
+Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       kernel <kernel@avr32linux.org>
+Subject: Re: [PATCH] avr32: clean up mci platform code
+Message-ID: <20080718110419.33581cd0@siona.local>
+In-Reply-To: <1216363689.4004.80.camel@moss.renham>
+References: <1216363689.4004.80.camel@moss.renham>
+Organization: Atmel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 18 Jul 2008 09:04:22.0302 (UTC) FILETIME=[44EAC3E0:01C8E8B5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+On Fri, 18 Jul 2008 16:48:09 +1000
+Ben Nizette <bn@niasdigital.com> wrote:
 
-> On Tue, 15 Jul 2008 15:27:56 +0000 (UTC)
-> Parag Warudkar <parag.warudkar@gmail.com> wrote:
->
->> Andi Kleen <andi <at> firstfloor.org> writes:
->> 
->> 
->> > Or you could just do it like emacs or Solaris and simply use a single number.
->> 
->> No - because then those handful of Solaris supporters will get one more 'proof'
->> in support of their claims of Linux copying Solaris - first SystemTap copying
->> DTrace and now version numbers. See how we stand a risk of ending up convinced
->> we do not innovate?
->
-> "Support" - dtrace is based on the IBM work it seems, and the IBM work
-> predates Solaris dtrace by a long time, so actually you could argue
-> Solaris copied Linux but shipped first ;)
+> This patch does a few small cleanups around the atmel mci platform code
+> and in the atmel-mci driver.  The platform changes simply removes an
+> unused variable, uses the fact that by the end we always have some form
+> of platform data and notes that GPIO_PIN_NONE != 0.  This last point
+> could cause the incorrect attempt to twice reserve pin PA0.
 
-Actually SLES9 shipped with IBM dprobes[1] long before Solaris dtrace even
-existed (and OS/2 did long before that). Back then the interest in it
-was about zero though, which made SLES10 drop it again. 
-I think I was one of the very few users.  Admittedly the early RPN
-probes were also not particularly user friendly, but they worked.
+Indeed. The if (data) check is useless too since we make sure data
+always points to something.
 
-I use this always as an example that even sophisticated users 
-like system administrators and kernel hackers are somewhat marketing driven.
+We should probably set the invalid pins to something like -EINVAL
+eventually, but for now GPIO_PIN_NONE is consistent with everything
+else around there.
 
--Andi
+> While we've got the hood up, add linux/err.h to the atmel-mci.c include
+> list.  It needs it and generally pulls it by voodoo but I did once
+> stumble across a config which don't build.
 
-[1] which BTW already supported user space probes
+Yes, including linux/err.h is definitely the right thing to do.
+
+> This is against Linus' latest git.
+> 
+> Signed-off-by: Ben Nizette <bn@niasdigital.com>
+
+I've applied it to the avr32 tree since it touches mostly avr32 arch
+code. Thanks a lot, Ben!
+
+Haavard
