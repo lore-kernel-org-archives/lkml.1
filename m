@@ -1,84 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758778AbYGRV6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758328AbYGRWDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758778AbYGRV6e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 17:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbYGRV61
+	id S1758328AbYGRWDS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 18:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093AbYGRWDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 17:58:27 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:57418 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752539AbYGRV60 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 17:58:26 -0400
-Subject: Re: latest -git: BUG at fs/jfs/namei.c:512 assert(ip->i_nlink)
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: jfs-discussion@lists.sourceforge.net,
-       Johannes Weiner <hannes@saeurebad.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <19f34abd0807181108r53ea74adsd471e49f87d77024@mail.gmail.com>
-References: <19f34abd0807171135m4a3b39e6v4065ed676720ae46@mail.gmail.com>
-	 <1216336164.32175.3.camel@norville.austin.ibm.com>
-	 <19f34abd0807180110k5a19e525y463b59208f0587b2@mail.gmail.com>
-	 <19f34abd0807180129k5d7e64a0nd86bbd6333df72d2@mail.gmail.com>
-	 <1216402157.11215.21.camel@norville.austin.ibm.com>
-	 <19f34abd0807181108r53ea74adsd471e49f87d77024@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 18 Jul 2008 16:58:22 -0500
-Message-Id: <1216418302.30152.6.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Jul 2008 18:03:09 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:65034 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752774AbYGRWDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 18:03:08 -0400
+Date: Fri, 18 Jul 2008 23:02:12 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, x86@kernel.org, linux-kernel@vger.kernel.org,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>
+Subject: Re: [PATCH] x86: APIC: Remove apic_write_around(); use alternatives
+In-Reply-To: <86802c440807181413n7e79e821l90afaae86b322de9@mail.gmail.com>
+Message-ID: <Pine.LNX.4.55.0807182254270.12125@cliff.in.clinika.pl>
+References: <Pine.LNX.4.55.0807161837080.30858@cliff.in.clinika.pl> 
+ <20080718105259.GY6875@elte.hu>  <86802c440807180925t6fadfa58r6bf7740f8145482e@mail.gmail.com>
+  <86802c440807181001h4426c197vc474f81497a5b42@mail.gmail.com> 
+ <20080718210348.GB24373@elte.hu> <86802c440807181413n7e79e821l90afaae86b322de9@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-07-18 at 20:08 +0200, Vegard Nossum wrote:
-> On Fri, Jul 18, 2008 at 7:29 PM, Dave Kleikamp
-> <shaggy@linux.vnet.ibm.com> wrote:
-> >
-> > xtTruncate can call release_metapage() in several places.  If you still
-> > have this kernel, could you please run addr2line against c02e4202?  If
-> > you've rebuilt your kernel since then, I understand.
-> 
-> Sorry, it's gone. However, I just recompiled it and the size of the
-> function is now 0x105f, and the offset 0xd42 matches with a call to
-> release_metapage. So with this new address, it's this call:
-> 
-> $ addr2line -e vmlinux -i c02e428d
-> fs/jfs/jfs_metapage.h:101
-> fs/jfs/jfs_xtree.c:3723
-> 
-> ...which is this one:
-> 
->     /* invalidate empty leaf page */
->     discard_metapage(mp);
+On Fri, 18 Jul 2008, Yinghai Lu wrote:
 
-Thanks.  This helps some, but I'm not sure why it should fail there.
-Possibly a memory corruption problem caused by a bug in an earlier error
-path.
+>   CC      arch/x86/kernel/apic_64.o
+> arch/x86/kernel/apic_64.c:170: error: unknown field 'write_atomic'
+> specified in initializer
+> arch/x86/kernel/apic_64.c:170: error: 'native_apic_mem_write_atomic'
+> undeclared here (not in a function)
+> arch/x86/kernel/apic_64.c:209: error: unknown field 'write_atomic'
+> specified in initializer
+> arch/x86/kernel/apic_64.c:209: warning: initialization from
+> incompatible pointer type
+> make[1]: *** [arch/x86/kernel/apic_64.o] Error 1
+> make: *** [arch/x86/kernel] Error 2
 
-> With your two patches applied, I now got this:
-> 
-> ERROR: (device loop0): remounting filesystem as read-only
-> blkno = 200000687, nblocks = f
-> ERROR: (device loop0): dbFree: block to be freed is outside the map
-> BUG: unable to handle kernel paging request at 338f8038
+ Just remove the offending initialisers.  They are not needed anymore as
+the .write method is now used universally including places where
+.write_atomic was.  I just could not stand watching the thing
+proliferate...
 
-I see I've got a few of these to track down.  I'm sure there are more
-than a couple more bugs you will uncover.
-
-> $ addr2line -e vmlinux -i c02ee352
-> fs/jfs/jfs_dmap.c:2188
-> 
-> You can also have a copy of my scripts if you want to try to reproduce
-> it locally. But I don't mind testing either :-)
-
-Can you please send me a copy.  For some of these, I'd like to get a
-repeatable test case, so I'm not debugging several problems at once.
-
-Thanks,
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
-
+  Maciej
