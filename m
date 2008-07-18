@@ -1,106 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757676AbYGROv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758572AbYGROw2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757676AbYGROv0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 10:51:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbYGROvP
+	id S1758572AbYGROw2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 10:52:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753795AbYGROwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 10:51:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60735 "EHLO mx1.redhat.com"
+	Fri, 18 Jul 2008 10:52:18 -0400
+Received: from gw.goop.org ([64.81.55.164]:50745 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752577AbYGROvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 10:51:14 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Ian Kent <raven@themaw.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       autofs mailing list <autofs@linux.kernel.org>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 3/7] autofs4 - fix pending checks
-References: <20080718023651.12802.59107.stgit@raven.themaw.net>
-	<20080718023708.12802.82980.stgit@raven.themaw.net>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Fri, 18 Jul 2008 10:51:04 -0400
-In-Reply-To: <20080718023708.12802.82980.stgit@raven.themaw.net> (Ian Kent's
-	message of "Fri, 18 Jul 2008 10:37:10 +0800")
-Message-ID: <x491w1rdz53.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	id S1752976AbYGROwS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 10:52:18 -0400
+Message-ID: <4880AE15.5060101@goop.org>
+Date: Fri, 18 Jul 2008 07:52:05 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Jan Beulich <jbeulich@novell.com>
+CC: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: clean up pgd_{c,d}tor
+References: <4880AD11.76E4.0078.0@novell.com>
+In-Reply-To: <4880AD11.76E4.0078.0@novell.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Kent <raven@themaw.net> writes:
-
-> There are two cases for which a dentry that has a pending mount request
-> does not wait for completion. One is via autofs4_revalidate() and the
-> other via autofs4_follow_link().
+Jan Beulich wrote:
+> Giving pgd_ctor() a properly typed parameter allows eliminating a local
+> variable. Adjust pgd_dtor() to match.
 >
-> In revalidate, after the mount point directory is created, but before
-> the mount is done, the check in try_to_fill_dentry() can can fail to
-> send the dentry to the wait queue since the dentry is positive and the
-> lookup flags may contain only LOOKUP_FOLLOW. Although we don't trigger
-> a mount for the LOOKUP_FOLLOW flag, if ther's one pending we might as
-> well wait and use the mounted dentry for the lookup.
->
-> In autofs4_follow_link() the dentry is not checked to see if it is
-> pending so it may fail to call try_to_fill_dentry() and not wait
-> for mount completion.
->
-> A dentry that is pending must always be sent to the wait queue.
->
-> Signed-off-by: Ian Kent <raven@themaw.net>
+> Also, pgd_ctor()'s clearing of the memory is redundant with the
+> GFP_ZERO used for allocating it.
+>   
 
-Reviewed-by: Jeff Moyer <jmoyer@redhat.com>
+Ack to the parameter type change.  But there's already a patch in git to 
+remove the redundant clear.
 
+    J
 
+> Signed-off-by: Jan Beulich <jbeulich@novell.com>
 >
 > ---
+>  arch/x86/mm/pgtable.c |    8 ++------
+>  1 file changed, 2 insertions(+), 6 deletions(-)
 >
->  fs/autofs4/root.c |    9 ++++++---
->  1 files changed, 6 insertions(+), 3 deletions(-)
+> --- linux-2.6.26/arch/x86/mm/pgtable.c	2008-07-13 23:51:29.000000000 +0200
+> +++ 2.6.26-x86-pgd-alloc-cleanup/arch/x86/mm/pgtable.c	2008-06-25 14:35:40.000000000 +0200
+> @@ -62,14 +62,10 @@ static inline void pgd_list_del(pgd_t *p
+>  #define UNSHARED_PTRS_PER_PGD				\
+>  	(SHARED_KERNEL_PMD ? KERNEL_PGD_BOUNDARY : PTRS_PER_PGD)
+>  
+> -static void pgd_ctor(void *p)
+> +static void pgd_ctor(pgd_t *pgd)
+>  {
+> -	pgd_t *pgd = p;
+>  	unsigned long flags;
+>  
+> -	/* Clear usermode parts of PGD */
+> -	memset(pgd, 0, KERNEL_PGD_BOUNDARY*sizeof(pgd_t));
+> -
+>  	spin_lock_irqsave(&pgd_lock, flags);
+>  
+>  	/* If the pgd points to a shared pagetable level (either the
+> @@ -94,7 +90,7 @@ static void pgd_ctor(void *p)
+>  	spin_unlock_irqrestore(&pgd_lock, flags);
+>  }
+>  
+> -static void pgd_dtor(void *pgd)
+> +static void pgd_dtor(pgd_t *pgd)
+>  {
+>  	unsigned long flags; /* can be called from interrupt context */
+>  
 >
 >
-> diff --git a/fs/autofs4/root.c b/fs/autofs4/root.c
-> index e842b0a..2944b28 100644
-> --- a/fs/autofs4/root.c
-> +++ b/fs/autofs4/root.c
-> @@ -177,7 +177,8 @@ static int try_to_fill_dentry(struct dentry *dentry, int flags)
->  			return status;
->  		}
->  	/* Trigger mount for path component or follow link */
-> -	} else if (flags & (TRIGGER_FLAGS | TRIGGER_INTENTS) ||
-> +	} else if (dentry->d_flags & DCACHE_AUTOFS_PENDING ||
-> +			flags & (TRIGGER_FLAGS | TRIGGER_INTENTS) ||
->  			current->link_count) {
->  		DPRINTK("waiting for mount name=%.*s",
->  			dentry->d_name.len, dentry->d_name.name);
-> @@ -223,7 +224,8 @@ static void *autofs4_follow_link(struct dentry *dentry, struct nameidata *nd)
->  
->  	/* If it's our master or we shouldn't trigger a mount we're done */
->  	lookup_type = nd->flags & (TRIGGER_FLAGS | TRIGGER_INTENTS);
-> -	if (oz_mode || !lookup_type)
-> +	if (oz_mode ||
-> +	    !(lookup_type || dentry->d_flags & DCACHE_AUTOFS_PENDING))
->  		goto done;
->  
->  	/* If an expire request is pending wait for it. */
-> @@ -242,7 +244,8 @@ static void *autofs4_follow_link(struct dentry *dentry, struct nameidata *nd)
->  	 * don't try to mount it again.
->  	 */
->  	spin_lock(&dcache_lock);
-> -	if (!d_mountpoint(dentry) && __simple_empty(dentry)) {
-> +	if (dentry->d_flags & DCACHE_AUTOFS_PENDING ||
-> +	    (!d_mountpoint(dentry) && __simple_empty(dentry))) {
->  		spin_unlock(&dcache_lock);
->  
->  		status = try_to_fill_dentry(dentry, 0);
+>
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > Please read the FAQ at  http://www.tux.org/lkml/
+>   
+
