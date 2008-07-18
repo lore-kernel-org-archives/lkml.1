@@ -1,84 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761090AbYGRBPf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761344AbYGRBQA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761090AbYGRBPf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jul 2008 21:15:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755095AbYGRBPY
+	id S1761344AbYGRBQA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jul 2008 21:16:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754938AbYGRBPu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jul 2008 21:15:24 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:5730 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754661AbYGRBPW (ORCPT
+	Thu, 17 Jul 2008 21:15:50 -0400
+Received: from bromo.msbb.uc.edu ([129.137.3.146]:55017 "HELO
+	bromo.msbb.uc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755648AbYGRBPt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jul 2008 21:15:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=OBaaEOl38Xyd7wpnApM0wFWHbNDEmACWamsuYWT1bEwI7uLvLjF8gKq0SNMpFaVguR
-         pKuEnnoBrLp3sCGqiINA2SQDe+6PX1kbw5NKUPT92Gra+7vCcBVgtdbyw/WjCJkpHUtR
-         QJKeaEO4JKkcNS6Y5pcEjtsEvMrzhUNoG0R6c=
-Message-ID: <8bd0f97a0807171815x69185d2bnca3b410caf0a8afe@mail.gmail.com>
-Date: Thu, 17 Jul 2008 21:15:21 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Denys Vlasenko" <vda.linux@googlemail.com>
-Subject: Re: [PATCH] (updated, rolled up) make section names compatible with -ffunction-sections -fdata-sections
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, mingo@elte.hu, x86@kernel.org,
-       "James Bottomley" <James.Bottomley@hansenpartnership.com>,
-       "Russell King" <rmk@arm.linux.org.uk>,
-       "David Howells" <dhowells@redhat.com>,
-       "Ralf Baechle" <ralf@linux-mips.org>,
-       "Lennert Buytenhek" <kernel@wantstofly.org>,
-       "Josh Boyer" <jwboyer@linux.vnet.ibm.com>,
-       "Paul Mackerras" <paulus@samba.org>,
-       "David Woodhouse" <dwmw2@infradead.org>,
-       "Andi Kleen" <andi@firstfloor.org>, torvalds@linux-foundation.org,
-       "Paul Gortmaker" <paul.gortmaker@windriver.com>,
-       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Tim Bird" <tim.bird@am.sony.com>,
-       "Martin Schwidefsky" <schwidefsky@de.ibm.com>,
-       "Dave Miller" <davem@davemloft.net>,
-       "Linux Arch Maintainers" <linux-arch@vger.kernel.org>,
-       "Bryan Wu" <cooloney@kernel.org>
-In-Reply-To: <200807172213.37411.vda.linux@googlemail.com>
+	Thu, 17 Jul 2008 21:15:49 -0400
+Date: Thu, 17 Jul 2008 21:15:32 -0400
+From: Jack Howarth <howarth@bromo.msbb.uc.edu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.26-rc9-git9 doesn't boot on Macintel
+Message-ID: <20080718011532.GA30920@bromo.msbb.uc.edu>
+References: <86802c440807161029n7e0dac98x1ec260879204b6f0@mail.gmail.com> <86802c440807161535n3a4d6891n6f7c16bd4e1f19c3@mail.gmail.com> <20080717004004.GA17792@bromo.msbb.uc.edu> <86802c440807161749u2f5c1eben618e05c6e254fedd@mail.gmail.com> <20080717023538.GA18329@bromo.msbb.uc.edu> <86802c440807161959s10666027k5297af1d657ff4fa@mail.gmail.com> <20080717034418.GA18951@bromo.msbb.uc.edu> <86802c440807162113g4cea3bd9ic71210330417032b@mail.gmail.com> <20080717061825.GA19582@bromo.msbb.uc.edu> <86802c440807162348m6d05b912x7b3f655d7f9efb93@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200807172213.37411.vda.linux@googlemail.com>
+In-Reply-To: <86802c440807162348m6d05b912x7b3f655d7f9efb93@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 4:13 PM, Denys Vlasenko
-<vda.linux@googlemail.com> wrote:
-> Hi Andrew,
->
-> Here is the update against current Linus tree,
-> rolled up into one patch.
->
-> James Bottomley suggested a different naming scheme:
-> instead of swapping parts (.text.head -> .head.text),
-> prepend .kernel to our special section names.
-> This patch implements his idea.
->
-> ppc and v850 are dropped per comments from arch people.
-> parisc and x86 had minor fixes. x86 fix added proper
-> executable bits to a section:
->
-> -.section ".text.head"
-> +.section ".kernel.text.head","ax",@progbits
->
-> Does arch/m68k/kernel/sun3-head.S need the same fix?
->
-> The patch is run-tested on x86_64.
->
-> I would like to ask arch maintainers to ACK/NAK this patch,
-> and Andrew to act accordingly.
+YH,
+   Success. It turns out that if I unset CONFIG_PCIEASPM when
+I build 2.6.26 the hangs on boot are eliminated. I am currently
+booted under the current fedora development 2.6.27-0.156.rc0.git4
+with that change and everything is working fine.
+   I've not had any luck with pci_early_config_dump. If I just pass
+that kernel option, it doesn't complain but it doesn't seem to
+produce any additional output in dmesg. Do I need any other kernel
+options for pci_early_config_dump to work? I will apply your mmconfig
+patch next and test how well MMCONFIG works on my MacBook Pro.
+                        Jack
 
-the Blackfin piece is just one line and shouldnt be a problem from our
-side.  thanks.
-
-btw, arch maintainers have an alias "linux-arch@vger.kernel.org" ...
-but it doesnt appear to be in MAINTAINERS ?
--mike
