@@ -1,140 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757461AbYGSCNj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbYGSCQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757461AbYGSCNj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 22:13:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbYGSCN3
+	id S1757279AbYGSCQp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 22:16:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbYGSCQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 22:13:29 -0400
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:59942 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751670AbYGSCN2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 22:13:28 -0400
-X-Sasl-enc: vG5NjSJ312H3CQvqyFs5FsQgxTr+6x0wGrVK/u8tUtcp 1216433606
-Subject: Re: [PATCH 5/7] autofs4 - fix direct mount pending expire race
-From: Ian Kent <raven@themaw.net>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       autofs mailing list <autofs@linux.kernel.org>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <x49bq0vc5wb.fsf@segfault.boston.devel.redhat.com>
-References: <20080718023651.12802.59107.stgit@raven.themaw.net>
-	 <20080718023725.12802.74137.stgit@raven.themaw.net>
-	 <x49bq0vc5wb.fsf@segfault.boston.devel.redhat.com>
-Content-Type: text/plain
-Date: Sat, 19 Jul 2008 10:09:45 +0800
-Message-Id: <1216433386.3210.16.camel@raven.themaw.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+	Fri, 18 Jul 2008 22:16:36 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:44773 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752485AbYGSCQg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 22:16:36 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	b=XjI4skjO53yqmglUjiySawZV6DNXi/SGZuuTMmvly1XPoTca4qe42l/t9EgUC9BcY0vJEz01oPYW8f7C3cJxWfYmL/nCWY4REFBuEu53ff1zCTN0MYTncjZxZESzPSUb;
+Message-ID: <48814E67.80708@simon.arlott.org.uk>
+Date: Sat, 19 Jul 2008 03:16:07 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080706)
+MIME-Version: 1.0
+To: linux-dvb@linuxtv.org
+CC: hermann pitton <hermann-pitton@arcor.de>, video4linux-list@redhat.com,
+       v4l-dvb list <v4l-dvb-maintainer@linuxtv.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Brian Marete <bgmarete@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] saa7134: Copy tuner data earlier in init to avoid overwriting
+ manual tuner type
+References: <6dd519ae0807180428k30abd15eo60fd2856f7a43821@mail.gmail.com>	 <38354.simon.1216381906@5ec7c279.invalid> <1216421799.2666.23.camel@pc10.localdom.local>
+In-Reply-To: <1216421799.2666.23.camel@pc10.localdom.local>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+When saa7134_board_init2 runs, it immediately overwrites the current value
+(set earlier from module parameter) of tuner_type with the static values,
+and then does autodetection. This patch moves the tuner_addr copy to earlier
+in saa7134_initdev and removes the tuner_type copy from saa7134_board_init2.
 
-On Fri, 2008-07-18 at 16:08 -0400, Jeff Moyer wrote:
-> Ian Kent <raven@themaw.net> writes:
+Autodetection could still potentially change to the wrong tuner type, but it
+is now possible to override the default type for the card again.
+
+My card's tuner is configured with autodetection from eeprom, so I don't 
+need to manually set the tuner. I've checked that the autodetection still 
+works for my card.
+
+Reviewed-by: Hermann Pitton <hermann-pitton@arcor.de>
+Cc: Brian Marete <bgmarete@gmail.com>
+Tested-by: Simon Arlott <simon@fire.lp0.eu>
+Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+---
+> this restores tuner behavior on the saa7134 driver.
 > 
-> > For direct and offset type mounts that are covered by another mount
-> > we cannot check the AUTOFS_INF_EXPIRING flag during a path walk
-> > which leads to lookups walking into an expiring mount while it is
-> > being expired.
-> >
-> > For example, for the direct multi-mount map entry with a couple of
-> > offsets:
-> >
-> > /race/mm1  /      <server1>:/<path1>
-> >            /om1   <server2>:/<path2>
-> >            /om2   <server1>:/<path3>
-> >
-> > an autofs trigger mount is mounted on /race/mm1 and when accessed
-> > it is over mounted and trigger mounts made for /race/mm1/om1 and
-> > /race/mm1/om2. So it isn't possible for path walks to see the
-> > expiring flag at all and they happily walk into the file system
-> > while it is expiring.
-> >
-> > When expiring these mounts follow_down() must stop at the autofs
-> > mount and all processes must block in the ->follow_link() method
-> > (except the daemon) until the expire is complete. This is done by
-> > decrementing the d_mounted field of the autofs trigger mount root
-> > dentry until the expire is completed. In ->follow_link() all
-> > processes wait on the expire and the mount following is completed
-> > for the daemon until the expire is complete.
-> >
-> > Signed-off-by: Ian Kent <raven@themaw.net>
-> >
-> > ---
-> >
-> >  fs/autofs4/autofs_i.h |    3 ++
-> >  fs/autofs4/expire.c   |   16 +++++++++--
-> >  fs/autofs4/root.c     |   72 +++++++++++++++++++++++++++++++++----------------
-> >  3 files changed, 65 insertions(+), 26 deletions(-)
-> >
-> >
-> > diff --git a/fs/autofs4/autofs_i.h b/fs/autofs4/autofs_i.h
-> > index 5d90ed3..4b40cbc 100644
-> > --- a/fs/autofs4/autofs_i.h
-> > +++ b/fs/autofs4/autofs_i.h
-> > @@ -52,6 +52,8 @@ struct autofs_info {
-> >  
-> >  	int		flags;
-> >  
-> > +	struct completion expire_complete;
-> > +
-> >  	struct list_head active;
-> >  	struct list_head expiring;
-> >  
-> > @@ -69,6 +71,7 @@ struct autofs_info {
-> >  };
-> >  
-> >  #define AUTOFS_INF_EXPIRING	(1<<0) /* dentry is in the process of expiring */
-> > +#define AUTOFS_INF_MOUNTPOINT	(1<<1) /* mountpoint status for direct expire */
-> >  
-> >  struct autofs_wait_queue {
-> >  	wait_queue_head_t queue;
-> > diff --git a/fs/autofs4/expire.c b/fs/autofs4/expire.c
-> > index 19f5bea..705b9f0 100644
-> > --- a/fs/autofs4/expire.c
-> > +++ b/fs/autofs4/expire.c
-> > @@ -259,13 +259,15 @@ static struct dentry *autofs4_expire_direct(struct super_block *sb,
-> >  	now = jiffies;
-> >  	timeout = sbi->exp_timeout;
-> >  
-> > -	/* Lock the tree as we must expire as a whole */
-> >  	spin_lock(&sbi->fs_lock);
-> >  	if (!autofs4_direct_busy(mnt, root, timeout, do_now)) {
-> >  		struct autofs_info *ino = autofs4_dentry_ino(root);
-> > -
-> > -		/* Set this flag early to catch sys_chdir and the like */
-> > +		if (d_mountpoint(root)) {
-> > +			ino->flags |= AUTOFS_INF_MOUNTPOINT;
-> > +			root->d_mounted--;
-> > +		}
+> I can't test XCeive tuners, which load different firmware dynamically.
+> Mauro was on them.
 > 
-> This makes me uneasy.  This should take d_mounted to zero.  Then, when
-> the daemon actually does the unmount, won't the d_mounted drop below
-> zero?  Following calls to d_mountpoint will return a negative value, but
-> everyone treats it as a boolean, so it will evaluate to true for a brief
-> time.  Or did I miss something?
+> Please send the patch to Mauro and/or provide your signed-off-by.
+> 
+> This must go to the stable team ASAP as well.
+> 
+> Reviewed-by: Hermann Pitton <hermann-pitton@arcor.de>
 
-Yes, I thought about doing exactly that.
+drivers/media/video/saa7134/saa7134-cards.c |    3 ---
+drivers/media/video/saa7134/saa7134-core.c  |    5 +++--
+2 files changed, 3 insertions(+), 5 deletions(-)
 
-But the thing that effects d_mounted is mounted on the dentry and so
-d_mounted may be decremented during the expire. So if we set it
-explicitly it would be incorrect at the end. While the
-decrement/increment isn't always correct throughout the expire we need
-to handle the mount following in ->follow_link() anyway and then the
-decrement/increment ends up with the correct value once the expire is
-complete.
+diff --git a/drivers/media/video/saa7134/saa7134-cards.c b/drivers/media/video/saa7134/saa7134-cards.c
+index 2618cfa..0227cf9 100644
+--- a/drivers/media/video/saa7134/saa7134-cards.c
++++ b/drivers/media/video/saa7134/saa7134-cards.c
+@@ -5703,9 +5703,6 @@ int saa7134_board_init2(struct saa7134_dev *dev)
+	unsigned char buf;
+	int board;
 
-One problem that has occurred to me is that user space could could
-manually umount it just when we change it. So a follow up patch to add a
-lock around the increment/decrement in fs/namespace.c and
-fs/autofs4/expire.c is in order. I'm having a look at that now.
+-	dev->tuner_type = saa7134_boards[dev->board].tuner_type;
+-	dev->tuner_addr = saa7134_boards[dev->board].tuner_addr;
+-
+	switch (dev->board) {
+	case SAA7134_BOARD_BMK_MPEX_NOTUNER:
+	case SAA7134_BOARD_BMK_MPEX_TUNER:
+diff --git a/drivers/media/video/saa7134/saa7134-core.c b/drivers/media/video/saa7134/saa7134-core.c
+index 2c19cd0..69f340d 100644
+--- a/drivers/media/video/saa7134/saa7134-core.c
++++ b/drivers/media/video/saa7134/saa7134-core.c
+@@ -946,11 +946,12 @@ static int __devinit saa7134_initdev(struct pci_dev *pci_dev,
+		dev->board = SAA7134_BOARD_UNKNOWN;
+	}
+	dev->autodetected = card[dev->nr] != dev->board;
+-	dev->tuner_type   = saa7134_boards[dev->board].tuner_type;
++	dev->tuner_type = saa7134_boards[dev->board].tuner_type;
++	dev->tuner_addr = saa7134_boards[dev->board].tuner_addr;
+	dev->tda9887_conf = saa7134_boards[dev->board].tda9887_conf;
+	if (UNSET != tuner[dev->nr])
+		dev->tuner_type = tuner[dev->nr];
+-		printk(KERN_INFO "%s: subsystem: %04x:%04x, board: %s [card=%d,%s]\n",
++	printk(KERN_INFO "%s: subsystem: %04x:%04x, board: %s [card=%d,%s]\n",
+		dev->name,pci_dev->subsystem_vendor,
+		pci_dev->subsystem_device,saa7134_boards[dev->board].name,
+		dev->board, dev->autodetected ?
+-- 
+1.5.6.2
 
-Ian
-
+-- 
+Simon Arlott
 
