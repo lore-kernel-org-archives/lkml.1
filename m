@@ -1,98 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756286AbYGSWox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753775AbYGSWrh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756286AbYGSWox (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 18:44:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755783AbYGSWom
+	id S1753775AbYGSWrh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 18:47:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbYGSWr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 18:44:42 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:9007 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755709AbYGSWok (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 18:44:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=siDPzWiFn2mYbC4fqdAQ6tV6LNOGI5agMNzVCJMvnmcopWvrkZnzd9ktnpiyFQLUTQ
-         mRPtD+XBtZ6xGmfX0MVWtpocSbSmtlIHCcxNJPtUz1RkJhjrctE+VTdfY5vnrp/Q4SZH
-         AWvkY3/zz9D40Ds5T8znd8PdeZuGIJkEZR878=
-Message-ID: <19f34abd0807191544nfd73be5nf7dde4b61992a7e8@mail.gmail.com>
-Date: Sun, 20 Jul 2008 00:44:38 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Greg KH" <gregkh@suse.de>
-Subject: Re: linux-next: Tree for July 18: warning at kernel/lockdep.c:2068 trace_hardirqs_on_caller
-Cc: "Mariusz Kozlowski" <m.kozlowski@tuxland.pl>,
-       "Dave Hansen" <haveblue@us.ibm.com>,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>,
-       kernel-testers@vger.kernel.org, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       "Bernhard Walle" <bwalle@suse.de>
-In-Reply-To: <19f34abd0807191527u61c5ed61kffe2279c8d46915d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Sat, 19 Jul 2008 18:47:29 -0400
+Received: from casper.infradead.org ([85.118.1.10]:52375 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753046AbYGSWr3 (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Sat, 19 Jul 2008 18:47:29 -0400
+Date: Sat, 19 Jul 2008 15:47:17 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "V.Radhakrishnan" <rk@atr-labs.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <Linux-kernel@vger.kernel.org>
+Subject: Re: Patch [1/1] minor bugfix in 2.6.26/arch/x86/mm/pat.c - caused
+ problems in mmap() of /dev/mem character file
+Message-ID: <20080719154717.41068888@infradead.org>
+In-Reply-To: <alpine.LFD.1.10.0807171025110.2959@woody.linux-foundation.org>
+References: <1216315516.2324.10.camel@atlas>
+	<alpine.LFD.1.10.0807171025110.2959@woody.linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080718195352.e562a00f.sfr@canb.auug.org.au>
-	 <200807190928.33978.m.kozlowski@tuxland.pl>
-	 <19f34abd0807190255x304173d4wf2bfabb2d5bce511@mail.gmail.com>
-	 <19f34abd0807190559y2fe5ebf9h7095793e82de3122@mail.gmail.com>
-	 <20080719221723.GB5578@suse.de>
-	 <19f34abd0807191527u61c5ed61kffe2279c8d46915d@mail.gmail.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 20, 2008 at 12:27 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
->>> commit 0e3638d1e04040121af00195f7e4628078246489
->>> Author: Dave Hansen <haveblue@us.ibm.com>
->>> Date:   Thu Mar 16 17:30:16 2006 -0800
->>>
->>>     warn when statically-allocated kobjects are used
->>>
->>> ..which only exists in -next. Is that just a truly ancient patch, or
->>> did somebody forget to adjust their clock?
->>
->> It is truely a very old patch, that only lives in my tree, and currently
->> isn't planned to go to Linus any year soon.
->>
->> But it has a very long history of living in the -mm tree, and finding
->> real bugs, it's just not "safe" enough to go to Linus's tree.  Unless
->> you think it is?
->
-> Hm. In this case, the patch is not even reporting a problem, it is in
-> fact in error itself.
->
-> The problem is that it calls kzalloc() before the slab caches have
-> been set up. (Yes, it's a wonder that nothing crashed.) I can only
-> suggest the addendum
->
->    if (!slab_is_available())
->        return;
+On Thu, 17 Jul 2008 10:27:03 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Well, of course, it's also possible that the e820 code shouldn't be
-initializing kobjects this early in the first place.
+> 
+> 
+> On Thu, 17 Jul 2008, V.Radhakrishnan wrote:
+> > 
+> > The above #ifdef must be actually #ifndef and not #ifdef
+> > The bug does not allow a valid user (root) from accessing /dev/mem
+> > even though the CONFIG_PROMISC_DEVMEM is NOT selected.
+> 
+> The real bug is that we shouldn't have "double negatives", and
+> certainly not negative config options. Making that
+> "promiscuous /dev/mem" option a negated thing as a config option was
+> bad.
+> 
+> Ingo, over to you..
+> 
 
-firmware_map_add_early() is using bootmem for the allocation. So yes,
-I guess it should possible to use kobjects here. That said, this code
-is in fact fairly recent:
-
-commit 69ac9cd629ca96e59f34eb4ccd12d00b2c8276a7
-Author: Bernhard Walle <bwalle@suse.de>
-Date:   Fri Jun 27 13:12:54 2008 +0200
-
-    sysfs: add /sys/firmware/memmap
-
-I'll add the Cc. I still have a feeling that the kobject patch should
-expect to run even when slab is not available.
+patch below clears the double-negative and adds the "PAT also causes
+this" explenation
 
 
-Vegard
+
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: [PATCH] x86: rename CONFIG_NONPROMISC_DEVMEM to not be a double negative
+
+CONFIG_NONPROMISC_DEVMEM is a rather confusing name; this patch
+renames it to CONFIG_STRICT_DEVMEM.
+
+(the polarity of the option is still the same; it needs to be for now
+to not break architectures that don't have the infastructure yet to support
+this feature)
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ arch/x86/Kconfig.debug            |    6 ++++--
+ arch/x86/configs/i386_defconfig   |    2 +-
+ arch/x86/configs/x86_64_defconfig |    2 +-
+ arch/x86/mm/pat.c                 |    6 +++---
+ drivers/char/mem.c                |    2 +-
+ 5 files changed, 10 insertions(+), 8 deletions(-)
+
+diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+index ae36bfa..8d6b649 100644
+--- a/arch/x86/Kconfig.debug
++++ b/arch/x86/Kconfig.debug
+@@ -5,13 +5,15 @@ config TRACE_IRQFLAGS_SUPPORT
+ 
+ source "lib/Kconfig.debug"
+ 
+-config NONPROMISC_DEVMEM
++config STRICT_DEVMEM
+ 	bool "Filter access to /dev/mem"
+ 	help
+ 	  If this option is left off, you allow userspace access to all
+ 	  of memory, including kernel and userspace memory. Accidental
+ 	  access to this is obviously disastrous, but specific access can
+-	  be used by people debugging the kernel.
++	  be used by people debugging the kernel. Note that with PAT support
++	  enabled, even in this case there are restrictions on /dev/mem
++	  use due to the cache aliasing requirements.
+ 
+ 	  If this option is switched on, the /dev/mem file only allows
+ 	  userspace access to PCI space and the BIOS code and data regions.
+diff --git a/arch/x86/configs/i386_defconfig b/arch/x86/configs/i386_defconfig
+index 9bc34e2..4d73f53 100644
+--- a/arch/x86/configs/i386_defconfig
++++ b/arch/x86/configs/i386_defconfig
+@@ -2047,7 +2047,7 @@ CONFIG_PROVIDE_OHCI1394_DMA_INIT=y
+ # CONFIG_SAMPLES is not set
+ # CONFIG_KGDB is not set
+ CONFIG_HAVE_ARCH_KGDB=y
+-# CONFIG_NONPROMISC_DEVMEM is not set
++# CONFIG_STRICT_DEVMEM is not set
+ CONFIG_EARLY_PRINTK=y
+ CONFIG_DEBUG_STACKOVERFLOW=y
+ CONFIG_DEBUG_STACK_USAGE=y
+diff --git a/arch/x86/configs/x86_64_defconfig b/arch/x86/configs/x86_64_defconfig
+index ae5124e..a404524 100644
+--- a/arch/x86/configs/x86_64_defconfig
++++ b/arch/x86/configs/x86_64_defconfig
+@@ -2012,7 +2012,7 @@ CONFIG_PROVIDE_OHCI1394_DMA_INIT=y
+ # CONFIG_SAMPLES is not set
+ # CONFIG_KGDB is not set
+ CONFIG_HAVE_ARCH_KGDB=y
+-# CONFIG_NONPROMISC_DEVMEM is not set
++# CONFIG_STRICT_DEVMEM is not set
+ CONFIG_EARLY_PRINTK=y
+ CONFIG_DEBUG_STACKOVERFLOW=y
+ CONFIG_DEBUG_STACK_USAGE=y
+diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+index d458507..6bb597f 100644
+--- a/arch/x86/mm/pat.c
++++ b/arch/x86/mm/pat.c
+@@ -373,8 +373,8 @@ pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+ 	return vma_prot;
+ }
+ 
+-#ifdef CONFIG_NONPROMISC_DEVMEM
+-/* This check is done in drivers/char/mem.c in case of NONPROMISC_DEVMEM*/
++#ifdef CONFIG_STRICT_DEVMEM
++/* This check is done in drivers/char/mem.c in case of STRICT_DEVMEM*/
+ static inline int range_is_allowed(unsigned long pfn, unsigned long size)
+ {
+ 	return 1;
+@@ -398,7 +398,7 @@ static inline int range_is_allowed(unsigned long pfn, unsigned long size)
+ 	}
+ 	return 1;
+ }
+-#endif /* CONFIG_NONPROMISC_DEVMEM */
++#endif /* CONFIG_STRICT_DEVMEM */
+ 
+ int phys_mem_access_prot_allowed(struct file *file, unsigned long pfn,
+ 				unsigned long size, pgprot_t *vma_prot)
+diff --git a/drivers/char/mem.c b/drivers/char/mem.c
+index 070e22e..b6772d6 100644
+--- a/drivers/char/mem.c
++++ b/drivers/char/mem.c
+@@ -80,7 +80,7 @@ static inline int valid_mmap_phys_addr_range(unsigned long pfn, size_t size)
+ }
+ #endif
+ 
+-#ifdef CONFIG_NONPROMISC_DEVMEM
++#ifdef CONFIG_STRICT_DEVMEM
+ static inline int range_is_allowed(unsigned long pfn, unsigned long size)
+ {
+ 	u64 from = ((u64)pfn) << PAGE_SHIFT;
+-- 
+1.5.5.1
+
+
 
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
