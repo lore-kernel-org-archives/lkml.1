@@ -1,120 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753064AbYGSLU6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754165AbYGSLa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753064AbYGSLU6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 07:20:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754199AbYGSLUq
+	id S1754165AbYGSLa0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 07:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbYGSLaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 07:20:46 -0400
-Received: from ixia01.ro.gtsce.net ([212.146.94.66]:3560 "EHLO
-	ixro-ex1.ixiacom.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752539AbYGSLUp (ORCPT
+	Sat, 19 Jul 2008 07:30:14 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:17430 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751988AbYGSLaM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 07:20:45 -0400
-From: Octavian Purdila <opurdila@ixiacom.com>
-Organization: IXIA
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [PATCH] tcp: do not promote SPLICE_F_NONBLOCK to socket O_NONBLOCK
-Date: Sat, 19 Jul 2008 14:18:36 +0300
-User-Agent: KMail/1.9.9
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, axboe@kernel.dk
-References: <200807171633.49791.opurdila@ixiacom.com> <200807182143.38624.opurdila@ixiacom.com> <20080719085110.GA25052@2ka.mipt.ru>
-In-Reply-To: <20080719085110.GA25052@2ka.mipt.ru>
+	Sat, 19 Jul 2008 07:30:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=pZrpGq3u8UbJSOxjnTqSEdwvmDJvj45RfzyvDlXFkIBgIycOFmJAOZJ4YpceEIVcPj
+         1/tsZqgoOviW9CktELDg/OzFP25NOKmYLesPGM8U0y6dVLM5XD4RlOk7oMFxxd2gwQ2l
+         DNcZsOmOpbyKjcBiEIM5+OcvelbwzRz63n71g=
+Message-ID: <84144f020807190430r680b2fc4kf8be4d3ebc3c019c@mail.gmail.com>
+Date: Sat, 19 Jul 2008 14:30:11 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Li Zefan" <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH] vfs: use kstrdup()
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Al Viro" <viro@zeniv.linux.org.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4881BEF4.2020201@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807191418.37053.opurdila@ixiacom.com>
-X-OriginalArrivalTime: 19 Jul 2008 11:22:42.0432 (UTC) FILETIME=[C297D800:01C8E991]
+References: <4881BEF4.2020201@cn.fujitsu.com>
+X-Google-Sender-Auth: 47e691e06c15a4d8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 19 July 2008, Evgeniy Polyakov wrote:
-
+On Sat, Jul 19, 2008 at 1:16 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
+> This piece of code can be replaced by a kstrdup().
 >
-> Hmm, than how does it concerns SPLICE_F_NONBLOCK feature change? Your
-> patch does not touch this behaviour.
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+
+Looks good to me.
+
+Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
+
+> ---
+>  fs/namespace.c |    9 +--------
+>  1 files changed, 1 insertions(+), 8 deletions(-)
 >
-
-My patch makes SPLICE_F_NONBLOCK work only on the pipe, it stops 
-SPLICE_F_NONBLOCK giving non-blocking semantics to the socket. It thus allows 
-the application to control the "blockiness" of pipe and socket operations 
-_independently_:
-- you want blocking operations on the socket: you use O_NONBLOCK.
-- you want blocking operations on the pipe: you use SPLICE_F_NONBLOCK
-
-It has a limitation though: you are not able to control the "blockiness" of 
-the socket operation during the splice call. Thats why I propose using two 
-flags: one for the pipe and one for the socket.
-
-> Anyway, in case of not having SPLICE_F_NONBLOCK it does not deadlock,
-> but waits until someone reads from the other side of the pipe. It blocks
-> and expects reader to unblock it.
+> diff --git a/fs/namespace.c b/fs/namespace.c
+> index 4f6f763..08c3b2d 100644
+> --- a/fs/namespace.c
+> +++ b/fs/namespace.c
+> @@ -127,14 +127,7 @@ struct vfsmount *alloc_vfsmnt(const char *name)
+>                INIT_LIST_HEAD(&mnt->mnt_slave_list);
+>                INIT_LIST_HEAD(&mnt->mnt_slave);
+>                atomic_set(&mnt->__mnt_writers, 0);
+> -               if (name) {
+> -                       int size = strlen(name) + 1;
+> -                       char *newname = kmalloc(size, GFP_KERNEL);
+> -                       if (newname) {
+> -                               memcpy(newname, name, size);
+> -                               mnt->mnt_devname = newname;
+> -                       }
+> -               }
+> +               mnt->mnt_devname = kstrdup(name, GFP_KERNEL);
+>        }
+>        return mnt;
+>  }
+> --
+> 1.5.4.rc3
 >
-
-Correct. 
-
-> It looks like you have two unexpected independent issues with splice:
-> ability to perform non-blocking reading from the socket into the pipe
-> when SPLICE_F_NONBLOCK is set,
-> and blocking waiting for reader to get data from the pipe when
-> SPLICE_F_NONBLOCK is not set. Is it correct?
 >
-
-What I would like is to have the ability to do blocking operations on the 
-socket and non-blocking operations on the pipe.
-
-> If so, the former is a feature, which allows to have some progress when
-> receiving queue is empty: one can start getting data from the pipe,
-> i.e. splice data out of the pipe to the different file descriptor.
-
-> So, this flag means both non-blocking pipe operations _and_ non-blocking
-> receiving from the socket.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 >
-
-Correct. 
-
-> For the blocking in pipe_wait() when pipe is full and SPLICE_F_NONBLOCK
-> is not set, then it is just a pipe behaviour, which is used as a
-> temporal storage for the requested data. It is not some buffer, which is
-> returned to the userspace when it is full (or indication of it), but a
-> pipe, where you put page pointers, so when pipe is full and opened in
-> blocking mode, writer sleeps waiting or reader to get some data out of it
-> and thus awake writer. 
-
-Correct.
-
-
-> It is not a deadlock, but very expected behaviour 
-> of the pipe: to block when pipe is full waiting for reader to get data.
->
-
-But in the larger picture it means that: 
-
-(a) a simple single threaded program that copies data from a socket to a file 
-with splice, using  blocking operations on the socket and file, will not work 
-as it can block in the 1st splice if we specify a non tiny buffer. So, we 
-will either:
-
-(b) need to use threads to read from the pipe and unblock it, or 
-
-(c) need to use full non-blocking operations with the whole poll/epoll/select 
-bits implemented
-
-If you agree with the above statement, and you think that it is ok to be 
-forced to use (b) or (c) instead of (a), than I'll be happy to stop the 
-discussion here since its getting into a matter of personal interpretation of 
-what a good API is :)
-
-> Hope this will clarify this discussion a bit, so it would not look like
-> talk of blind and deaf :)
-
-Indeed :) 
-
-My bad, I probably should have explained this in more details from the 
-beginning. Thanks for taking the time to debate this, despite of my poor 
-explanations.
-
-Thanks,
-tavi
