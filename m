@@ -1,62 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754346AbYGSKiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754113AbYGSKxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754346AbYGSKiX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 06:38:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbYGSKiO
+	id S1754113AbYGSKxt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 06:53:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbYGSKxk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 06:38:14 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:25148 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751053AbYGSKiN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 06:38:13 -0400
-To: Russ Anderson <rja@sgi.com>
-Cc: mingo@elte.hu, tglx@linutronix.de, Tony Luck <tony.luck@intel.com>,
-       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
-Subject: Re: [PATCH 0/2] Migrate data off physical pages with corrected memory errors (Version 7)
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080718203514.GD29621@sgi.com>
-Date: Sat, 19 Jul 2008 12:37:11 +0200
-In-Reply-To: <20080718203514.GD29621@sgi.com> (Russ Anderson's message of "Fri, 18 Jul 2008 15:35:14 -0500")
-Message-ID: <87prpa88iw.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 19 Jul 2008 10:37:08.0470 (UTC) FILETIME=[65065960:01C8E98B]
+	Sat, 19 Jul 2008 06:53:40 -0400
+Received: from sh.osrg.net ([192.16.179.4]:53164 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751988AbYGSKxj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jul 2008 06:53:39 -0400
+Date: Sat, 19 Jul 2008 19:52:26 +0900
+To: mike.miller@hp.com
+Cc: James.Bottomley@HansenPartnership.com, Jens.Axboe@oracle.com
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [RFC PATCH] HP (Compaq) Smart Array 5xxx controller SCSI driver
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080719195150Y.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russ Anderson <rja@sgi.com> writes:
+This is a SCSI driver for HP (Compaq) Smart Array 5xxx controllers.
 
-> [PATCH 0/2] Migrate data off physical pages with corrected memory errors (Version 7)
+SCSI people can skip the following two paragraphs.
 
-FWIW I discussed this with some hardware people and the general
-opinion was that it was way too aggressive to disable a page on the
-first corrected error like this patchkit currently does.  
+Currently, a driver for HP (Compaq) Smart Array 5xxx controllers is
+implemented as a block device driver, block/cciss.c (aka, cciss). But
+the controller interface is SCSI-3 compatible. The specification says,
+"A controller that supports CISS is considered to be a SCSI storage
+array controller". A scsi driver for the controllers was discussed
+several times.
 
-The corrected bit error could be caused by a temporary condition
-e.g. in the DIMM link, and does not necessarily mean that part of the
-DIMM is really going bad. Permanently disabling would only be
-justified if you saw repeated corrected errors over a long time from
-the same DIMM.
+I think that a SCSI cciss driver can be much simpler (and
+maintainable) than the block cciss driver (the majority of the code
+forging SCSI command can go away, we have the proper sysfs entries for
+free, we can handle scsi tape drives easily etc). It would be helpful
+for distributions too since they don't need stuff specific to cciss
+(such as udev rules).
 
-There are also some potential scenarios where being so aggressive
-could hurt, e.g. if you have a low rate of random corrected events
-spread randomly all over your memory (e.g. with a flakey DIMM
-connection) after a long enough uptime you could lose significant parts
-of your memory even though the DIMM is actually still ok.
 
-Also the other issue that if the DIMM is going bad then it's likely
-larger areas than just the lines making up this page. So you
-would still risk uncorrected errors anyways because disabling
-the page would only cover a small subset of the affected area.
+There isn't any easy migration path for users. So I think that we need
+to keep the block and scsi drivers for cciss for some time (say two
+years).
 
-If you really wanted to do this you probably should hook it up
-to mcelog's (or the IA64 equivalent) DIMM database and then
-control it from user space with suitable large thresholds
-and DIMM specific knowledge. But it's unlikely it can be really
-done nicely in a way that is isolated from very specific 
-knowledge about the underlying memory configuration.
+My scsi driver is still in an early stage (I tried to keep the changes
+minimum). I can detect logical units, mount a file system, do lots of
+I/Os, however, there are lots of TODOs in the management features.
 
--Andi
+If I can get an ACK from HP about the long-term migration of cciss to
+SCSI, I'm happy to keep working on the SCSI cciss driver and maintain
+it until HP takes over the driver.
+
+
+The patch is available at:
+
+http://www.kernel.org/pub/linux/kernel/people/tomo/ciss/0001-add-HP-Compaq-Smart-Array-5xxx-controller-SCSI-dri.patch
+
+clover:/home/fujita# insmod ciss.ko
+clover:/home/fujita# lsscsi
+(snip)
+[1:0:0:0]    disk    HP       LOGICAL VOLUME   1.66  /dev/sde
+[1:0:0:1]    disk    HP       LOGICAL VOLUME   1.66  /dev/sdf
+[1:0:0:2]    disk    HP       LOGICAL VOLUME   1.66  /dev/sdg
+[1:0:0:3]    disk    HP       LOGICAL VOLUME   1.66  /dev/sdh
+
+Yeah, it just works as SCSI disk, the dmesg says:
+
+sd 1:0:0:0: [sde] Attached SCSI disk
+sd 1:0:0:1: [sdf] 143305920 512-byte hardware sectors (73373 MB)
+sd 1:0:0:1: [sdf] Write Protect is off
+sd 1:0:0:1: [sdf] Mode Sense: 5b 00 00 08
+sd 1:0:0:1: [sdf] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+
+I needed a different name and just stole 'ciss' from *BSD. But any
+names (like hpciss) works for me.
+
+
+Thanks,
