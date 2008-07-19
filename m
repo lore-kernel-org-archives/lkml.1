@@ -1,77 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754477AbYGSM7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755402AbYGSNFF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754477AbYGSM7d (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 08:59:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754810AbYGSM7P
+	id S1755402AbYGSNFF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 09:05:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbYGSNEw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 08:59:15 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:6178 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754581AbYGSM7N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 08:59:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Y/EiYuhv8kP8ABJEFdIFsZDtvwY1VNHRDmTemYmpWY8LtPCwfCmNoydPp9DhrM9RGa
-         4i3P5L5iyu53TvfzgoTdnLePpRyL+Zs/dZfCgOcKzBN7hwGSN6vjddOvTbfypcdC/XOm
-         /er0RF7Tsar2EQXhyEekqjq38D7S5nArEb/ww=
-Message-ID: <19f34abd0807190559y2fe5ebf9h7095793e82de3122@mail.gmail.com>
-Date: Sat, 19 Jul 2008 14:59:12 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Mariusz Kozlowski" <m.kozlowski@tuxland.pl>,
-       "Dave Hansen" <haveblue@us.ibm.com>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>
-Subject: Re: linux-next: Tree for July 18: warning at kernel/lockdep.c:2068 trace_hardirqs_on_caller
-Cc: "Stephen Rothwell" <sfr@canb.auug.org.au>, kernel-testers@vger.kernel.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>
-In-Reply-To: <19f34abd0807190255x304173d4wf2bfabb2d5bce511@mail.gmail.com>
+	Sat, 19 Jul 2008 09:04:52 -0400
+Received: from khc.piap.pl ([195.187.100.11]:55032 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753229AbYGSNEv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jul 2008 09:04:51 -0400
+To: Jeff Garzik <jeff@garzik.org>
+Cc: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCHes] pull request: WAN
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Sat, 19 Jul 2008 15:04:48 +0200
+Message-ID: <m3ljzyc9e7.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080718195352.e562a00f.sfr@canb.auug.org.au>
-	 <200807190928.33978.m.kozlowski@tuxland.pl>
-	 <19f34abd0807190255x304173d4wf2bfabb2d5bce511@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 19, 2008 at 11:55 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> What I don't get here is how SLUB can be used this early in the boot
-> process. Notice that this is still miles away from the
->
->    SLUB: Genslabs=12, HWalign=128, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
->
-> line, which comes much later. And that kobject_init() _is_ calling
-> kzalloc() via verify_dynamic_kobject_allocation(). Isn't this an
-> error?
->
-> (Unfortunately, my "git log" doesn't turn up any recent changes for
-> any of the affected code paths here.)
+Hi Jeff,
 
-Ehe... and this is the reason why: The code was added by this patch:
+Please pull from:
+git://git.kernel.org/pub/scm/linux/kernel/git/chris/linux-2.6.git hdlc
 
-commit 0e3638d1e04040121af00195f7e4628078246489
-Author: Dave Hansen <haveblue@us.ibm.com>
-Date:   Thu Mar 16 17:30:16 2006 -0800
+This is based on pure v2.6.26 and includes various WAN cleanups as
+well as LMC, Zilog (hostess_sv11 + sealevel = z85230) and Cosa drivers
+ported from syncppp to generic HDLC. I have no hardware for that so -
+untested.
 
-    warn when statically-allocated kobjects are used
+This makes hdlc-ppp the only user of syncppp.
 
-..which only exists in -next. Is that just a truly ancient patch, or
-did somebody forget to adjust their clock?
+My plan is to replace hdlc-ppp and syncppp with the new hdlc-ppp, hope
+that's now ok with syncppp going.
 
-(Stephen: Maybe this has been answered before, but what's the best way
-to figure out where it came from?)
+The long-term plan is to also add generic PPP interface so users can
+do PPP auth, compression and what not. 2.6.30+ maybe.
 
+I have tried to test-merge your upstream-next branch and it causes
+conflicts in drivers/net/wan/pc300_drv.c (a trivial one) and
+net/netfilter/nf_conntrack_proto_tcp.c (some pre-2.6.26 thing I
+guess).
 
-Vegard
+The first commits in my tree (after v2.6.26) are already in your tree,
+you've got them by mail. It seems that git knows that.
+
+Thanks.
+
+ Documentation/DocBook/z8530book.tmpl |   38 ++-
+ drivers/char/pcmcia/synclink_cs.c    |   32 +-
+ drivers/char/synclink.c              |   37 ++-
+ drivers/char/synclink_gt.c           |   33 +-
+ drivers/char/synclinkmp.c            |   35 +-
+ drivers/net/wan/Kconfig              |   13 +-
+ drivers/net/wan/Makefile             |   11 +-
+ drivers/net/wan/c101.c               |    6 +-
+ drivers/net/wan/cosa.c               |  293 +++++++++-------
+ drivers/net/wan/dscc4.c              |   23 +-
+ drivers/net/wan/farsync.c            |   75 +++--
+ drivers/net/wan/farsync.h            |    6 +
+ drivers/net/wan/hd6457x.c            |   33 +-
+ drivers/net/wan/hdlc.c               |   27 +-
+ drivers/net/wan/hdlc_cisco.c         |   33 +-
+ drivers/net/wan/hdlc_fr.c            |   73 +++--
+ drivers/net/wan/hdlc_ppp.c           |   15 +-
+ drivers/net/wan/hdlc_raw.c           |   15 +-
+ drivers/net/wan/hdlc_raw_eth.c       |   19 +-
+ drivers/net/wan/hdlc_x25.c           |   23 +-
+ drivers/net/wan/hostess_sv11.c       |  382 ++++++++++++--------
+ drivers/net/wan/lmc/lmc.h            |   11 +-
+ drivers/net/wan/lmc/lmc_debug.c      |    7 +-
+ drivers/net/wan/lmc/lmc_debug.h      |    6 +-
+ drivers/net/wan/lmc/lmc_ioctl.h      |    2 +-
+ drivers/net/wan/lmc/lmc_main.c       |  672 +++++++++++++++++++---------------
+ drivers/net/wan/lmc/lmc_media.c      |   66 ++--
+ drivers/net/wan/lmc/lmc_proto.c      |  146 ++++++--
+ drivers/net/wan/lmc/lmc_proto.h      |   14 +-
+ drivers/net/wan/lmc/lmc_var.h        |  360 ++++++++++++-------
+ drivers/net/wan/pc300.h              |  228 +++++++-----
+ drivers/net/wan/pc300_drv.c          |  217 +++++++-----
+ drivers/net/wan/pc300_tty.c          |    6 +-
+ drivers/net/wan/sealevel.c           |  361 +++++++++++-------
+ drivers/net/wan/syncppp.c            |    9 +
+ drivers/net/wan/wanxl.c              |   26 +-
+ drivers/net/wan/z85230.c             |  193 ++++++----
+ drivers/net/wan/z85230.h             |   10 +-
+ include/linux/hdlc.h                 |    7 +
+ include/net/syncppp.h                |    2 +
+ net/wanrouter/wanmain.c              |   27 ++
 
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Krzysztof Halasa
