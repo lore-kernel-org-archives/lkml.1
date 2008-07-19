@@ -1,138 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755380AbYGSMiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755724AbYGSMk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755380AbYGSMiT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 08:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753229AbYGSMiG
+	id S1755724AbYGSMk2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 08:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753768AbYGSMkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 08:38:06 -0400
-Received: from edna.telenet-ops.be ([195.130.132.58]:51125 "EHLO
-	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753113AbYGSMiF (ORCPT
+	Sat, 19 Jul 2008 08:40:21 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:52090 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753630AbYGSMkU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 08:38:05 -0400
-Date: Sat, 19 Jul 2008 14:38:01 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-cc: linux-ide@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [PATCH] gayle: reserve memory resources at once
-In-Reply-To: <200806221916.59751.bzolnier@gmail.com>
-Message-ID: <Pine.LNX.4.64.0807191436330.2017@anakin>
-References: <200806221916.59751.bzolnier@gmail.com>
+	Sat, 19 Jul 2008 08:40:20 -0400
+Message-ID: <4881E130.5000408@keyaccess.nl>
+Date: Sat, 19 Jul 2008 14:42:24 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: David Airlie <airlied@linux.ie>
+CC: dri-users@lists.sourceforge.net,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Long delay depending on xorg.conf "AGPSize" option
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Jun 2008, Bartlomiej Zolnierkiewicz wrote:
-> * Reserve memory resources for all IDE ports at once by moving
->   request_mem_region() out of 'for ()' loop and always defining
->   GAYLE_IDEREG_SIZE to 0x2000.
-> 
-> * Keep memory resources even if no free IDE slots can be found
->   (this driver is unloadable currently).
+Good day.
 
-I don't like this part. You're changing the driver to no longer
-correctly handle initialization failures.
+Not sure I'm on the right list(s) -- if not, a suggestion for another 
+one would be welcome.
 
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
->  drivers/ide/legacy/gayle.c |   25 +++++++++++--------------
->  1 file changed, 11 insertions(+), 14 deletions(-)
-> 
-> Index: b/drivers/ide/legacy/gayle.c
-> ===================================================================
-> --- a/drivers/ide/legacy/gayle.c
-> +++ b/drivers/ide/legacy/gayle.c
-> @@ -31,6 +31,8 @@
->  #define GAYLE_BASE_4000	0xdd2020	/* A4000/A4000T */
->  #define GAYLE_BASE_1200	0xda0000	/* A1200/A600 and E-Matrix 530 */
->  
-> +#define GAYLE_IDEREG_SIZE	0x2000
-> +
->      /*
->       *  Offsets from one of the above bases
->       */
-> @@ -56,13 +58,11 @@
->  #define GAYLE_NUM_HWIFS		1
->  #define GAYLE_NUM_PROBE_HWIFS	GAYLE_NUM_HWIFS
->  #define GAYLE_HAS_CONTROL_REG	1
-> -#define GAYLE_IDEREG_SIZE	0x2000
->  #else /* CONFIG_BLK_DEV_IDEDOUBLER */
->  #define GAYLE_NUM_HWIFS		2
->  #define GAYLE_NUM_PROBE_HWIFS	(ide_doubler ? GAYLE_NUM_HWIFS : \
->  					       GAYLE_NUM_HWIFS-1)
->  #define GAYLE_HAS_CONTROL_REG	(!ide_doubler)
-> -#define GAYLE_IDEREG_SIZE	(ide_doubler ? 0x1000 : 0x2000)
->  
->  static int ide_doubler;
->  module_param_named(doubler, ide_doubler, bool, 0);
-> @@ -124,6 +124,9 @@ static void __init gayle_setup_ports(hw_
->  
->  static int __init gayle_init(void)
->  {
-> +    unsigned long phys_base, res_start, res_n;
-> +    unsigned long base, ctrlport, irqport;
-> +    ide_ack_intr_t *ack_intr;
->      int a4000, i;
->      hw_regs_t hw[GAYLE_NUM_HWIFS], *hws[] = { NULL, NULL, NULL, NULL };
->      u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
-> @@ -149,12 +152,6 @@ found:
->  #endif
->  			 "");
->  
-> -    for (i = 0; i < GAYLE_NUM_PROBE_HWIFS; i++) {
-> -	unsigned long base, ctrlport, irqport;
-> -	ide_ack_intr_t *ack_intr;
-> -	ide_hwif_t *hwif;
-> -	unsigned long phys_base, res_start, res_n;
-> -
->  	if (a4000) {
->  	    phys_base = GAYLE_BASE_4000;
->  	    irqport = (unsigned long)ZTWO_VADDR(GAYLE_IRQ_4000);
-> @@ -168,15 +165,16 @@ found:
->   * FIXME: we now have selectable modes between mmio v/s iomio
->   */
->  
-> -	phys_base += i*GAYLE_NEXT_PORT;
-> -
->  	res_start = ((unsigned long)phys_base) & ~(GAYLE_NEXT_PORT-1);
->  	res_n = GAYLE_IDEREG_SIZE;
->  
->  	if (!request_mem_region(res_start, res_n, "IDE"))
-> -	    continue;
-> +		return -EBUSY;
->  
-> -	base = (unsigned long)ZTWO_VADDR(phys_base);
-> +    for (i = 0; i < GAYLE_NUM_PROBE_HWIFS; i++) {
-> +	ide_hwif_t *hwif;
-> +
-> +	base = (unsigned long)ZTWO_VADDR(phys_base + i * GAYLE_NEXT_PORT);
->  	ctrlport = GAYLE_HAS_CONTROL_REG ? (base + GAYLE_CONTROL) : 0;
->  
->  	gayle_setup_ports(&hw[i], base, ctrlport, irqport, ack_intr);
-> @@ -187,8 +185,7 @@ found:
->  
->  	    hws[i] = &hw[i];
->  	    idx[i] = hwif->index;
-> -	} else
-> -	    release_mem_region(res_start, res_n);
-> +	}
->      }
->  
->      ide_device_add(idx, NULL, hws);
-> 
+I normally don't run 3D apps and haven't set the X.org "AGPSize" option 
+which (I believe) means or meant it uses a default 8MB. Today I was 
+playing around a bit with 3D and saw rather long delays upon starting 
+and exiting X depending on the size set.
 
-Gr{oetje,eeting}s,
+X is "X.org X Server 1.4.2", kernel is 2.6.26. Hardware is an AGP Matrox 
+Millenium G550 32MB (X driver "mga", kernel CONFIG_DRM_MGA) and the AGP 
+GART is AMD 751, CONFIG_AGP_AMD. CPU is a Duron 1300. During testing, 
+the AGP aperture was set to 256M in the BIOS, normally it's 64M.
 
-						Geert
+AGP mode is 2x (Option "AGPMode" "2"). Without an AGPSize option or with 
+Option "AGPSize "8", the delay between my monitor switching to graphics 
+mode and my desktop appearing is about 2 seconds:
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+No/8	: 2 seconds
+16	: 3 seconds
+32	: 4 seconds
+64	: 6 seconds
+128	: 12 seconds
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Similar (somewhat shorter, but related in the same way) delays are 
+present upon exiting X again as well, from the point where my monitor 
+switches to text mode to me getting back a prompt.
+
+I have played around with 3D before and am sure that back then the 64M 
+setting did not produce any delays over not having the option set. That 
+6 seconds now is rather long, and especially the one while exiting X 
+feels odd.
+
+Are these delays expected? And/or not a DRM/AGP but X issue? Mesa seems 
+to be 7.0.2 if it matters:
+
+# glxinfo | head -29
+name of display: :0.0
+display: :0  screen: 0
+direct rendering: Yes
+server glx vendor string: SGI
+server glx version string: 1.2
+server glx extensions:
+     GLX_ARB_multisample, GLX_EXT_visual_info, GLX_EXT_visual_rating,
+     GLX_EXT_import_context, GLX_EXT_texture_from_pixmap, 
+GLX_OML_swap_method,
+     GLX_SGI_make_current_read, GLX_SGIS_multisample, GLX_SGIX_hyperpipe,
+     GLX_SGIX_swap_barrier, GLX_SGIX_fbconfig, GLX_MESA_copy_sub_buffer
+client glx vendor string: SGI
+client glx version string: 1.4
+client glx extensions:
+     GLX_ARB_get_proc_address, GLX_ARB_multisample, GLX_EXT_import_context,
+     GLX_EXT_visual_info, GLX_EXT_visual_rating, GLX_MESA_allocate_memory,
+     GLX_MESA_copy_sub_buffer, GLX_MESA_swap_control,
+     GLX_MESA_swap_frame_usage, GLX_OML_swap_method, GLX_OML_sync_control,
+     GLX_SGI_make_current_read, GLX_SGI_swap_control, GLX_SGI_video_sync,
+     GLX_SGIS_multisample, GLX_SGIX_fbconfig, GLX_SGIX_pbuffer,
+     GLX_SGIX_visual_select_group, GLX_EXT_texture_from_pixmap
+GLX version: 1.2
+GLX extensions:
+     GLX_ARB_get_proc_address, GLX_ARB_multisample, GLX_EXT_import_context,
+     GLX_EXT_visual_info, GLX_EXT_visual_rating, GLX_MESA_swap_control,
+     GLX_MESA_swap_frame_usage, GLX_OML_swap_method, 
+GLX_SGI_make_current_read,
+     GLX_SGI_video_sync, GLX_SGIS_multisample, GLX_SGIX_fbconfig
+OpenGL vendor string: VA Linux Systems Inc.
+OpenGL renderer string: Mesa DRI G400 20061030 AGP 2x x86/MMX+/3DNow!+/SSE
+OpenGL version string: 1.2 Mesa 7.0.2
+
+Thanks in advance for insights/advice...
+
+Rene.
