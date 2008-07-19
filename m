@@ -1,76 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758267AbYGSBQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758404AbYGSBR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758267AbYGSBQY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 21:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbYGSBQQ
+	id S1758404AbYGSBR1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 21:17:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbYGSBRR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 21:16:16 -0400
-Received: from kirsty.vergenet.net ([202.4.237.240]:51420 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750704AbYGSBQQ (ORCPT
+	Fri, 18 Jul 2008 21:17:17 -0400
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:35286 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750756AbYGSBRP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 21:16:16 -0400
-Date: Sat, 19 Jul 2008 11:16:14 +1000
-From: Simon Horman <horms@verge.net.au>
-To: kexec@lists.infradead.org, linux-kernel@vger.kernel.org
-Cc: Vivek Goyal <vgoyal@redhat.com>, Haren Myneni <hbabu@us.ibm.com>
-Subject: Re: [PATCH] kdump: Update kdump documentation as
-	kexec-tools-resting has been renamed kexec-tools
-Message-ID: <20080719011612.GA20745@verge.net.au>
-References: <20080719005835.GA19032@verge.net.au>
+	Fri, 18 Jul 2008 21:17:15 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AiMCANfagEh5LFxAiGdsb2JhbACSPwEBAQ8gnRM
+X-IronPort-AV: E=Sophos;i="4.31,213,1215354600"; 
+   d="scan'208";a="152729184"
+Date: Sat, 19 Jul 2008 11:17:09 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: Ben Greear <greearb@candelatech.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [BUG, NET] deadlock tearing down a bridged interface
+Message-ID: <20080719011709.GA5947@disturbed>
+Mail-Followup-To: Ben Greear <greearb@candelatech.com>,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <20080718073724.GA5802@disturbed> <4880BA7A.3020909@candelatech.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080719005835.GA19032@verge.net.au>
+In-Reply-To: <4880BA7A.3020909@candelatech.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Simon Horman <horms@verge.net.au>
+On Fri, Jul 18, 2008 at 08:44:58AM -0700, Ben Greear wrote:
+> Dave Chinner wrote:
+>> Folks,
+>>
+>> I just deadlocked networking on a 2.6.24 kernel. Basically I
+>> was trying to restart the bridge interface I use for UML sessions
+>> because it wasn't passing packets. This happens occasionally
+>> when I leave a UML session too long in gdb, so I bounced the
+>> bridge to get it working again.
+>>   
+> We have been chasing a refcount bug in 2.6.25 that only happens when
+> IPv6 module is loaded.
 
---- 
-Reposting to Vivek's new email address
+Which causes what problem? The deadlock I reported or the bridge occasionally
+hanging? Is that a problem in 2.6.24?
 
-Index: linux-2.6/Documentation/kdump/kdump.txt
-===================================================================
---- linux-2.6.orig/Documentation/kdump/kdump.txt	2008-07-19 10:27:50.000000000 +1000
-+++ linux-2.6/Documentation/kdump/kdump.txt	2008-07-19 10:51:57.000000000 +1000
-@@ -65,26 +65,26 @@ Install kexec-tools
- 
- 2) Download the kexec-tools user-space package from the following URL:
- 
--http://www.kernel.org/pub/linux/kernel/people/horms/kexec-tools/kexec-tools-testing.tar.gz
-+http://www.kernel.org/pub/linux/kernel/people/horms/kexec-tools/kexec-tools.tar.gz
- 
--This is a symlink to the latest version, which at the time of writing is
--20061214, the only release of kexec-tools-testing so far. As other versions
--are released, the older ones will remain available at
--http://www.kernel.org/pub/linux/kernel/people/horms/kexec-tools/
-+This is a symlink to the latest version.
- 
--Note: Latest kexec-tools-testing git tree is available at
-+The latest kexec-tools git tree is available at:
- 
--git://git.kernel.org/pub/scm/linux/kernel/git/horms/kexec-tools-testing.git
-+git://git.kernel.org/pub/scm/linux/kernel/git/horms/kexec-tools.git
- or
--http://www.kernel.org/git/?p=linux/kernel/git/horms/kexec-tools-testing.git;a=summary
-+http://www.kernel.org/git/?p=linux/kernel/git/horms/kexec-tools.git
-+
-+More information about kexec-tools can be found at
-+http://www.kernel.org/pub/linux/kernel/people/horms/kexec-tools/README.html
- 
- 3) Unpack the tarball with the tar command, as follows:
- 
--   tar xvpzf kexec-tools-testing.tar.gz
-+   tar xvpzf kexec-tools.tar.gz
- 
- 4) Change to the kexec-tools directory, as follows:
- 
--   cd kexec-tools-testing-VERSION
-+   cd kexec-tools-VERSION
- 
- 5) Configure the package, as follows:
- 
+The deadlock is the one I'm concerned about - it appears that
+netdev_run_todo() can only wait on a single interface at a time,
+so if we are tearing down two interfaces concurrently where one
+has a reference on the other a deadlock is just waiting to happen...
 
+> If you are not actually using ipv6, try removing it's
+> module from your /lib/modules/* directory and see if that fixes your  
+> problem.
+
+I'll try it, but a) it's not 2.6.25 and b) I don't tend to triage problems
+on my main workstation so I'm not likely to try to reproduce this
+deadlock unless absolutely necessary.
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
