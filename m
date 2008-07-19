@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755221AbYGSQC1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbYGSQIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755221AbYGSQC1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 12:02:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbYGSQCS
+	id S1755521AbYGSQIS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 12:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbYGSQIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 12:02:18 -0400
-Received: from smtp239.poczta.interia.pl ([217.74.64.239]:18168 "EHLO
-	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752590AbYGSQCS (ORCPT
+	Sat, 19 Jul 2008 12:08:09 -0400
+Received: from homer.mvista.com ([63.81.120.158]:18366 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1753157AbYGSQIH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 12:02:18 -0400
-Date: Sat, 19 Jul 2008 18:06:59 +0200
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Quel Qun <kelk1@comcast.net>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Linux-fbdev-devel] No console on Riva TNT since 2.6.26-0.rc4
-Message-Id: <20080719180659.da7efbcd.krzysztof.h1@poczta.fm>
-In-Reply-To: <20080710025149.GA4817@martell.zuzino.mipt.ru>
-References: <062620082004.6012.4863F668000CEA0D0000177C2200751090CE05040A05@comcast.net>
-	<20080709194108.f18226e8.akpm@linux-foundation.org>
-	<20080710025149.GA4817@martell.zuzino.mipt.ru>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+	Sat, 19 Jul 2008 12:08:07 -0400
+Subject: Re: [patch 1/3] fastboot: Create a "asynchronous" initlevel
+From: Daniel Walker <dwalker@mvista.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
+In-Reply-To: <20080719083532.21c9a43e@infradead.org>
+References: <20080718151524.5ef9e29b@infradead.org>
+	 <20080718151608.46dc17c0@infradead.org>
+	 <1216430540.3978.137.camel@localhost.localdomain>
+	 <20080718204406.7426e8fe@infradead.org>
+	 <1216440697.3978.142.camel@localhost.localdomain>
+	 <20080718222014.34754e7b@infradead.org>
+	 <1216481066.3978.159.camel@localhost.localdomain>
+	 <20080719083532.21c9a43e@infradead.org>
+Content-Type: text/plain
+Date: Sat, 19 Jul 2008 09:08:05 -0700
+Message-Id: <1216483685.3978.161.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-X-EMID: c0e2b138
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Jul 2008 06:51:49 +0400
-Alexey Dobriyan <adobriyan@gmail.com> wrote:
+On Sat, 2008-07-19 at 08:35 -0700, Arjan van de Ven wrote:
 
-> On Wed, Jul 09, 2008 at 07:41:08PM -0700, Andrew Morton wrote:
-> > On Thu, 26 Jun 2008 20:04:56 +0000 kelk1@comcast.net (Quel Qun) wrote:
-> > 
-> > > Hi,
-> > > 
-> > > The system boots fine with 2.6.26-0.rc3.1mnb (Mandriva Cooker), but since rc4, I see a few squares of color, then a black screen and the console never comes back. This is independent of the resolution chosen when using vga=ask. The machine does boot and I can start X if I log in blindly. Only the F1 to F6 consoles are gone.
-> > > 
+> > Ok .. I'm not trying to rush you .. With that said, the increased
+> > number of threads seems like a natural direction to take.. I would
+> > assume the returns would diminish depending on the number of threads
+> > per the hardware.. For instance , your addition of one thread might
+> > even harm the boot time on some single core embedded systems ..
+> 
+> well it still improves the cases where msleep() happens... even on
+> single core. (fwiw the test  machine I reported numbers from is single
+> core, albeit with hyperthreading)
+> 
 
-Please try the patch below if it helps:
+How did you measure the boot time? I didn't notice any infrastructure
+for that in the patches..
 
---- linux-2.6.26/drivers/video/vesafb.c	2008-07-13 23:51:29.000000000 +0200
-+++ linux-mm/drivers/video/vesafb.c	2008-07-19 17:56:51.774318414 +0200
-@@ -247,7 +247,8 @@ static int __init vesafb_probe(struct pl
- 	/*   size_total -- all video memory we have. Used for mtrr
- 	 *                 entries, ressource allocation and bounds
- 	 *                 checking. */
--	size_total = screen_info.lfb_size * 65536;
-+	size_total = screen_info.lfb_linelength * screen_info.lfb_height *
-+		     screen_info.pages;
- 	if (vram_total)
- 		size_total = vram_total * 1024 * 1024;
- 	if (size_total < size_vmode)
-
-Regards,
-Krzysztof
-
-----------------------------------------------------------------------
-Zobacz cala prawde o Lukaszu Podolskim!
-kliknij >>> http://link.interia.pl/f1e57
+Daniel
 
