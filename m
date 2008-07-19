@@ -1,76 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755928AbYGSPce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbYGSPfn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755928AbYGSPce (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 11:32:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754824AbYGSPc0
+	id S1756106AbYGSPfn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 11:35:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877AbYGSPfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 11:32:26 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:44899 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754797AbYGSPc0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 11:32:26 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	b=YN6DqclJxPAcsDWi3PESTomrP9lbS5T+17eSxfzavMikFvHI87SVCaM7fAU/9w+WszxL6w99Jokq7Mga+yQ907JXNm/ZCrdjC4fLd4n6TaLGSuFbMmrOMvlL1LSmZUqN;
-Message-ID: <48820904.2090707@simon.arlott.org.uk>
-Date: Sat, 19 Jul 2008 16:32:20 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080706)
-MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Arjan van de Ven <arjan@infradead.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: Re  [patch 2/3] fastboot: turn the USB hostcontroller initcalls
- into async initcalls
-References: <Pine.LNX.4.44L0.0807191116370.3491-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0807191116370.3491-100000@netrider.rowland.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sat, 19 Jul 2008 11:35:36 -0400
+Received: from casper.infradead.org ([85.118.1.10]:54072 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754824AbYGSPff (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jul 2008 11:35:35 -0400
+Date: Sat, 19 Jul 2008 08:35:32 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [patch 1/3] fastboot: Create a "asynchronous" initlevel
+Message-ID: <20080719083532.21c9a43e@infradead.org>
+In-Reply-To: <1216481066.3978.159.camel@localhost.localdomain>
+References: <20080718151524.5ef9e29b@infradead.org>
+	<20080718151608.46dc17c0@infradead.org>
+	<1216430540.3978.137.camel@localhost.localdomain>
+	<20080718204406.7426e8fe@infradead.org>
+	<1216440697.3978.142.camel@localhost.localdomain>
+	<20080718222014.34754e7b@infradead.org>
+	<1216481066.3978.159.camel@localhost.localdomain>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 19/07/08 16:25, Alan Stern wrote:
-> On 18 July, 2008, Arjan van de Ven wrote:
-> 
->> From: Arjan van de Ven <arjan@linux.intel.com>
->> Subject: [PATCH] fastboot: turn the USB hostcontroller initcalls into 
->> async initcalls
->> 
->> the USB host controller init calls take a long time, mostly due to a
->> "minimally 100 msec" delay *per port* during initialization.
->> These are prime candidates for going in parallel to everything else.
->> 
->> The USB device ordering is not affected by this due to the
->> serialized-within-eachother property of async initcalls.
-> 
-> Is there some reason this patch wasn't posted to the linux-usb mailing
-> list as well as to LKML?
-> 
-> Where is this "minimally 100 msec" per-port delay you refer to?  
-> Offhand I can't recall any such delays in the init routines.
-> 
+On Sat, 19 Jul 2008 08:24:26 -0700
+Daniel Walker <dwalker@mvista.com> wrote:
 
-usb/core/hub.c:
+> On Fri, 2008-07-18 at 22:20 -0700, Arjan van de Ven wrote:
+> 
+> > 
+> > btw it's also about learning to crawl before learning to walk,
+> > before learning to run. THis stuff is tricky and there are many
+> > hidden problems; I rather start SIMPLE and understandably right, I
+> > don't want to go "full parallel" now (or maybe ever, no idea, we
+> > need to learn from this step first). Btw: I suspect the biggest
+> > gain comes from the first step or two.. after that you soon get
+> > diminishing returns...
+> > 
+> 
+> Ok .. I'm not trying to rush you .. With that said, the increased
+> number of threads seems like a natural direction to take.. I would
+> assume the returns would diminish depending on the number of threads
+> per the hardware.. For instance , your addition of one thread might
+> even harm the boot time on some single core embedded systems ..
 
-/* USB 2.0 spec, 7.1.7.3 / fig 7-29:
- *
- * Between connect detection and reset signaling there must be a delay
- * of 100ms at least for debounce and power-settling.  The corresponding
- * timer shall restart whenever the downstream port detects a disconnect.
- *
- * Apparently there are some bluetooth and irda-dongles and a number of
- * low-speed devices for which this debounce period may last over a second.
- * Not covered by the spec - but easy to deal with.
- *
- * This implementation uses a 1500ms total debounce timeout; if the
- * connection isn't stable by then it returns -ETIMEDOUT.  It checks
- * every 25ms for transient disconnects.  When the port status has been
- * unchanged for 100ms it returns the port status.
- */
+well it still improves the cases where msleep() happens... even on
+single core. (fwiw the test  machine I reported numbers from is single
+core, albeit with hyperthreading)
 
-Could it do that for all ports on the hub in parallel instead?
+
 
 -- 
-Simon Arlott
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
