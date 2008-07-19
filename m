@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755823AbYGSPYh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbYGSPZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755823AbYGSPYh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 11:24:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754739AbYGSPY3
+	id S1756032AbYGSPZj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 11:25:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754837AbYGSPZc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 11:24:29 -0400
-Received: from homer.mvista.com ([63.81.120.158]:14749 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1754727AbYGSPY3 (ORCPT
+	Sat, 19 Jul 2008 11:25:32 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:1796 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754825AbYGSPZb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 11:24:29 -0400
-Subject: Re: [patch 1/3] fastboot: Create a "asynchronous" initlevel
-From: Daniel Walker <dwalker@mvista.com>
+	Sat, 19 Jul 2008 11:25:31 -0400
+Date: Sat, 19 Jul 2008 11:25:29 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
 To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-In-Reply-To: <20080718222014.34754e7b@infradead.org>
-References: <20080718151524.5ef9e29b@infradead.org>
-	 <20080718151608.46dc17c0@infradead.org>
-	 <1216430540.3978.137.camel@localhost.localdomain>
-	 <20080718204406.7426e8fe@infradead.org>
-	 <1216440697.3978.142.camel@localhost.localdomain>
-	 <20080718222014.34754e7b@infradead.org>
-Content-Type: text/plain
-Date: Sat, 19 Jul 2008 08:24:26 -0700
-Message-Id: <1216481066.3978.159.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+cc: Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re  [patch 2/3] fastboot: turn the USB hostcontroller initcalls into
+ async initcalls
+Message-ID: <Pine.LNX.4.44L0.0807191116370.3491-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-07-18 at 22:20 -0700, Arjan van de Ven wrote:
+On 18 July, 2008, Arjan van de Ven wrote:
 
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Subject: [PATCH] fastboot: turn the USB hostcontroller initcalls into 
+> async initcalls
 > 
-> btw it's also about learning to crawl before learning to walk, before
-> learning to run. THis stuff is tricky and there are many hidden
-> problems; I rather start SIMPLE and understandably right, I don't want
-> to go "full parallel" now (or maybe ever, no idea, we need to learn
-> from this step first). Btw: I suspect the biggest gain comes from the
-> first step or two.. after that you soon get diminishing returns...
+> the USB host controller init calls take a long time, mostly due to a
+> "minimally 100 msec" delay *per port* during initialization.
+> These are prime candidates for going in parallel to everything else.
 > 
+> The USB device ordering is not affected by this due to the
+> serialized-within-eachother property of async initcalls.
 
-Ok .. I'm not trying to rush you .. With that said, the increased number
-of threads seems like a natural direction to take.. I would assume the
-returns would diminish depending on the number of threads per the
-hardware.. For instance , your addition of one thread might even harm
-the boot time on some single core embedded systems ..
+Is there some reason this patch wasn't posted to the linux-usb mailing
+list as well as to LKML?
 
-Daniel
+Where is this "minimally 100 msec" per-port delay you refer to?  
+Offhand I can't recall any such delays in the init routines.
+
+Alan Stern
 
