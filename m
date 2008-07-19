@@ -1,63 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755007AbYGSTal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755250AbYGSTfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755007AbYGSTal (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 15:30:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbYGSTad
+	id S1755250AbYGSTfi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 15:35:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbYGSTfb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 15:30:33 -0400
-Received: from smtp02.uc3m.es ([163.117.176.132]:48724 "EHLO smtp02.uc3m.es"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751941AbYGSTac (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 15:30:32 -0400
-Date: Sat, 19 Jul 2008 21:30:27 +0200
-Message-Id: <200807191930.m6JJURC12038@inv.it.uc3m.es>
-From: "Peter T. Breuer" <ptb@inv.it.uc3m.es>
-To: linux-kernel@vger.kernel.org
-Subject: Re: From 2.4 to 2.6 to 2.7?
-X-Newsgroups: gmane.linux.kernel
-In-Reply-To: <20080719080002.GA11272@isi.edu>
-User-Agent: tin/1.4.4-20000803 ("Vet for the Insane") (UNIX) (Linux/2.2.15 
-	(i686))
-X-imss-version: 2.051
-X-imss-result: Passed
-X-imss-scanInfo: M:B L:E SM:2
-X-imss-tmaseResult: TT:1 TS:-11.4750 TC:1F TRN:29 TV:5.5.1026(16042.001)
-X-imss-scores: Clean:100.00000 C:0 M:0 S:0 R:0
-X-imss-settings: Baseline:1 C:1 M:1 S:1 R:1 (0.0000 0.0000)
+	Sat, 19 Jul 2008 15:35:31 -0400
+Received: from ag-out-0708.google.com ([72.14.246.248]:32573 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751424AbYGSTfa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jul 2008 15:35:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=IxJf8Kb0y6bSScgbX+dXvUpbwznUhbeQXOYCfvtX4s577ygrRfhH150W4qQl5QSA+3
+         rhiCvcY9kVFfnjK2tFiIM0YcpE2mSyL9YiKPI0GSh8ba1xDRVHoicM6Vm/V4VprlSuvF
+         /M49bIcGZGvKet6R4is140CrahIlO6Q83uq9M=
+Message-ID: <dd18b0c30807191235w43843c57oa6c7ee94c0c96dd@mail.gmail.com>
+Date: Sat, 19 Jul 2008 12:35:28 -0700
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Jack Howarth" <howarth@bromo.msbb.uc.edu>
+Subject: Re: macbook2,2 latest git mmconfig issues
+Cc: "Yinghai Lu" <yhlu.kernel@gmail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080719175818.GA19250@bromo.msbb.uc.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <dd18b0c30807182039u3e590e50p5d76624dd9e5b1d8@mail.gmail.com>
+	 <dd18b0c30807182254i49de078bhe5e48ab13e7b01ac@mail.gmail.com>
+	 <dd18b0c30807182354h429ea664gb90b7de55608d0bd@mail.gmail.com>
+	 <20080719131038.GA13168@bromo.msbb.uc.edu>
+	 <dd18b0c30807190753q22259690jcae780de13c8560d@mail.gmail.com>
+	 <20080719151453.GA13792@bromo.msbb.uc.edu>
+	 <dd18b0c30807190854w17059d63g10e1e199f855988b@mail.gmail.com>
+	 <20080719162856.GA14334@bromo.msbb.uc.edu>
+	 <dd18b0c30807191015i378c0f4euec76757ee285ed70@mail.gmail.com>
+	 <20080719175818.GA19250@bromo.msbb.uc.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In article <20080719080002.GA11272@isi.edu> you wrote:
-> In <200807180823.m6I8NIo27365@inv.it.uc3m.es>, Peter T. Breuer
-> proposed switching to a three-level numbering scheme and resetting the
-> middle number when useful [which I suppose might mean a major feature
-> change or just a desire to avoid largish meaningless numbers].  I
-> assume this sould give a sequence like:
+On Sat, Jul 19, 2008 at 10:58 AM, Jack Howarth
+<howarth@bromo.msbb.uc.edu> wrote:
+> On Sat, Jul 19, 2008 at 10:15:52AM -0700, Justin Mattock wrote:
+>>
+>> when using the boot options
+>> debug initctl_debug vga=790
+>> I'm able to see the hardisk is being mounted alsa
+>> is activated netfiler is being activated, but then
+>> just stops giving me the:
+>> VFS cannot mount on root filesystem error
+>> keep in mind this is when using "any" option
+>> in PCI, when using MMCONFIG
+>> im getting what you where getting
+>> I'm just confused on how the system was working
+>> without any errors with "Direct" in pci
+>> and now none of the options are working.
+>> The posotive side is better work this issue now,
+>> rather than later. what I'll try is loading a fresh install
+>> of nubuntu, and then compile the kernel with there .config
+>> to see if I'm able to start. Also they added apparmor so I'm not sure if
+>> this is causing problems as well.
+>> --
+>> Justin P. Mattock
+>
+> Justin,
+>   Just to be clear, you do have CONFIG_PCIEASPM unset in your .config,
+> right? All 2.6.26 kernels I have tried (including tip) hang during the
+> boot when built with that option.
+>                Jack
+>
 
-> 2.6.26.s, 2.8.s, 2.9.s, 2.10.s,
+yep; didn't choose this option.
+I'll check again to make sure.
+just loaded a fresh 2.6.26 without any patches
+just to be sure and still unable to mount  VFS error
+where can I find the patches you used that worked
+to see if this works over here. Is there some place I should look in userspace
+as well to see if I'm missing something?
 
-Actually he said
-
-   rename 2.6.28 to 2.8.0
-or 
-   rename 2.6.29 to 2.9.0
-or
-   rename 2.6.30 to 3.0.0
-
-i.e. .. whatever you are doing now, just drop the first two numbers (the
-"2.6" bit) since they seem to be constant.
-
-I don't know where the idea you propose above came from, and I don't
-quite understand it either!
-
-Remember that Linus' only objective is to have smaller numbers, which
-may therefore
-
- 1) be memorable
- 2) be good advertising copy
- 3) be meaningful
-
-and that was the only intention of my scheme: "drop the constant bit".
-
-Peter
+-- 
+Justin P. Mattock
