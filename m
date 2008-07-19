@@ -1,24 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752521AbYGSFQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623AbYGSFU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752521AbYGSFQi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 01:16:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750958AbYGSFQb
+	id S1752623AbYGSFU1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 01:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750719AbYGSFUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 01:16:31 -0400
-Received: from casper.infradead.org ([85.118.1.10]:44402 "EHLO
+	Sat, 19 Jul 2008 01:20:19 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37745 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750842AbYGSFQa (ORCPT
+	with ESMTP id S1750704AbYGSFUS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 01:16:30 -0400
-Date: Fri, 18 Jul 2008 22:16:30 -0700
+	Sat, 19 Jul 2008 01:20:18 -0400
+Date: Fri, 18 Jul 2008 22:20:14 -0700
 From: Arjan van de Ven <arjan@infradead.org>
-To: Simon Arlott <simon@fire.lp0.eu>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, dwalker@mvista.com
-Subject: Re: [patch 0/3] fastboot patches series 1
-Message-ID: <20080718221630.2809abbd@infradead.org>
-In-Reply-To: <488172E0.6050502@simon.arlott.org.uk>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [patch 1/3] fastboot: Create a "asynchronous" initlevel
+Message-ID: <20080718222014.34754e7b@infradead.org>
+In-Reply-To: <1216440697.3978.142.camel@localhost.localdomain>
 References: <20080718151524.5ef9e29b@infradead.org>
-	<488172E0.6050502@simon.arlott.org.uk>
+	<20080718151608.46dc17c0@infradead.org>
+	<1216430540.3978.137.camel@localhost.localdomain>
+	<20080718204406.7426e8fe@infradead.org>
+	<1216440697.3978.142.camel@localhost.localdomain>
 Organization: Intel
 X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -30,48 +33,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 19 Jul 2008 05:51:44 +0100
-Simon Arlott <simon@fire.lp0.eu> wrote:
-
+On Fri, 18 Jul 2008 21:11:37 -0700
+Daniel Walker <dwalker@mvista.com> wrote: levels 0 - 6, 1 = level 6a, 2 =
+> > > > after level 6a */
+> > > > +
+> > > > +       async_init_wq =
+> > > > create_singlethread_workqueue("kasyncinit"); +
+> > > 
+> > > Could you spawning one thread per cpu, and queuing the work
+> > > evenly?
+> > 
+> > not without loosing the ordering.....
+> > 
 > 
-> This is a great idea... I was thinking about trying to run usb 
-> initialisation in parallel because it takes so long. It would be more 
-> useful to run usb init in parallel with ide/sata on my system, since
-> they both take a while to run (I realise /dev/sd* will be in a
-> unstable order).
+> I don't think there is any expectation for any given initcall to have
+> a special ordering .. There is an ordering expectation for say
+> initcall 6 runs before 6a , but not within the initcall ..
 > 
-> Unfortunately this patch set has the opposite effect on my system...
-> something appears to be going badly wrong (logs attached). The mouse 
-> pointer was really erratic so I reconnected it (by turning the hub in 
-> my display off/on)... that took a while:
 
-is this repeatable? and was it repeatedly stable before?
-
-
-> 
-> Strangely, when this output appeared:
-> [    1.370693] ehci_hcd 0000:00:02.1: USB 2.0 started, EHCI 1.00,
-> driver 10 Dec 2004
-> 
-> I didn't see anything else until the next screenful of output, but
-> the log shows this output before that:
-> [    4.683674] usb usb1: default language 0x0409
-> [    7.548621] usb usb1: uevent
-> 
-> There was another long pause with no output but I can't see where
-> from reading back the log. The timestamps are a bit confused too,
-> jumping +/-10s.
-
-looks like you have a timing problem.. can you try booting with "notsc"
-and see if that fixes it?
+btw it's also about learning to crawl before learning to walk, before
+learning to run. THis stuff is tricky and there are many hidden
+problems; I rather start SIMPLE and understandably right, I don't want
+to go "full parallel" now (or maybe ever, no idea, we need to learn
+from this step first). Btw: I suspect the biggest gain comes from the
+first step or two.. after that you soon get diminishing returns...
 
 
-One possible theory is that we now run on both cpus and if they're out
-of sync timewise, things like delays suddenly are shorter than expected
-if time jumps around....
-
-can you also post a dmesg of a successful boot?
-
-(and I'm supposed to give you a hard time for using a proprietary
-module, but something is clearly going wrong before it's even loaded so
-for now I'll just ignore that ;-)
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
