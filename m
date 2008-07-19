@@ -1,47 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757780AbYGSBSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758091AbYGSBWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757780AbYGSBSz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 21:18:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554AbYGSBSs
+	id S1758091AbYGSBWS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 21:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754659AbYGSBWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 21:18:48 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:56908 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753514AbYGSBSr (ORCPT
+	Fri, 18 Jul 2008 21:22:11 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:60603 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754325AbYGSBWJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 21:18:47 -0400
-Date: Fri, 18 Jul 2008 21:18:45 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [git pull] tracing fixes
-In-Reply-To: <20080718103559.GA4368@elte.hu>
-Message-ID: <Pine.LNX.4.58.0807182118260.4932@gandalf.stny.rr.com>
-References: <20080717173210.GA12828@elte.hu> <Pine.LNX.4.58.0807172249230.22792@gandalf.stny.rr.com>
- <20080718084152.GJ6875@elte.hu> <20080718103559.GA4368@elte.hu>
+	Fri, 18 Jul 2008 21:22:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:references;
+        b=tvvU+kWTDbEV51hbFlljsD7HzCpnOPLa5yudRSc5F1xItvIQp3fS2M1cWgyTu1XBws
+         J8XMZ10eoNDtUP7rHH/jme9PueFsBt0i5sFk0AnPT0hfkN5EJIz4ASKZGJpuWm0ox6lM
+         uMHiaJcbIp93Wqsdwbd6l0E3LzwAwWPneploA=
+Message-ID: <86802c440807181822l5138ff85k7d8c2e2702a11025@mail.gmail.com>
+Date: Fri, 18 Jul 2008 18:22:08 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jack Howarth" <howarth@bromo.msbb.uc.edu>
+Subject: Re: [PATCH] x86,pci: dmi check for mackpro 2.2 mmconf
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, jbarnes@virtuousgeek.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080719005849.GA9055@bromo.msbb.uc.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_45644_23436750.1216430529014"
+References: <200807180941.09779.yhlu.kernel@gmail.com>
+	 <20080718202118.GC24122@elte.hu>
+	 <86802c440807181326l489b7763sdb040f5b6e575d8c@mail.gmail.com>
+	 <20080719005849.GA9055@bromo.msbb.uc.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+------=_Part_45644_23436750.1216430529014
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
+On Fri, Jul 18, 2008 at 5:58 PM, Jack Howarth <howarth@bromo.msbb.uc.edu> wrote:
+> YH,
+>   The patch you posted did not apply cleanly to tonight's or last night's linus kernel git.
+> I had to correct it by hand and this is what I applied...
 
-On Fri, 18 Jul 2008, Ingo Molnar wrote:
-> ok, figured it out today: the lockups were due to the NMI watchdog and a
-> missing NMI protection in cpu_clock(). I've reactivated the topic that
-> solves this problem area and it all works fine now.
->
-> the sched.o change probably made a difference just because it reduced
-> the cross section between the NMI watchdog and the scheduler, making
-> lockups less likely during the ftrace self-test. I'll revert it once the
-> tracing/nmisafe is upstream.
+it should apply cleanly to linus tree too.
 
-Ingo,
+please check the patch i sent out before and addon fix patch
 
-Thanks a lot for looking into this.
+YH
 
--- Steve
+------=_Part_45644_23436750.1216430529014
+Content-Type: text/x-patch; name=mmconf_end_bus_num_detect.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fitj93090
+Content-Disposition: attachment; filename=mmconf_end_bus_num_detect.patch
 
+W1BBVENIXSB4ODYscGNpOiBkZXRlY3QgZW5kX2J1c19udW1iZXIgYWNjb3JkaW5nIHRvIGFjcGkv
+ZTgyMCByZXNlcnZlZAoKZm9yIE1hY0Jvb2tQcm8yCgpjaGFuZ2UgdGhlIG1jb25mIGJ1cyByYW5n
+ZSBmcm9tIFswLDB4ZmZdIHRvIHRvIFswLCAweDNmXQp0byBtYXRjaCByYW5nZSBbMHhmMDAwMDAw
+MCwgMHhmNDAwMDAwMCkgaW4gZTgyMCB0YWJsZXMuCgpTaWduZWQtb2ZmLWJ5OiBZaW5naGFpIEx1
+IDx5aGx1Lmtlcm5lbEBnbWFpbC5jb20+CgotLS0KIGFyY2gveDg2L3BjaS9tbWNvbmZpZy1zaGFy
+ZWQuYyB8ICAgNjQgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrLS0tLS0tLS0tLS0KIDEg
+ZmlsZSBjaGFuZ2VkLCA0NyBpbnNlcnRpb25zKCspLCAxNyBkZWxldGlvbnMoLSkKCkluZGV4OiBs
+aW51eC0yLjYvYXJjaC94ODYvcGNpL21tY29uZmlnLXNoYXJlZC5jCj09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxp
+bnV4LTIuNi5vcmlnL2FyY2gveDg2L3BjaS9tbWNvbmZpZy1zaGFyZWQuYworKysgbGludXgtMi42
+L2FyY2gveDg2L3BjaS9tbWNvbmZpZy1zaGFyZWQuYwpAQCAtMjkzLDcgKzI5Myw3IEBAIHN0YXRp
+YyBhY3BpX3N0YXR1cyBfX2luaXQgZmluZF9tYm9hcmRfcmUKIAlyZXR1cm4gQUVfT0s7CiB9CiAK
+LXN0YXRpYyBpbnQgX19pbml0IGlzX2FjcGlfcmVzZXJ2ZWQodW5zaWduZWQgbG9uZyBzdGFydCwg
+dW5zaWduZWQgbG9uZyBlbmQpCitzdGF0aWMgaW50IF9faW5pdCBpc19hY3BpX3Jlc2VydmVkKHU2
+NCBzdGFydCwgdTY0IGVuZCwgdW5zaWduZWQgbm90X3VzZWQpCiB7CiAJc3RydWN0IHJlc291cmNl
+IG1jZmdfcmVzOwogCkBAIC0zMTAsNiArMzEwLDQxIEBAIHN0YXRpYyBpbnQgX19pbml0IGlzX2Fj
+cGlfcmVzZXJ2ZWQodW5zaWcKIAlyZXR1cm4gbWNmZ19yZXMuZmxhZ3M7CiB9CiAKK3R5cGVkZWYg
+aW50ICgqY2hlY2tfcmVzZXJ2ZWRfdCkodTY0IHN0YXJ0LCB1NjQgZW5kLCB1bnNpZ25lZCB0eXBl
+KTsKKworc3RhdGljIGludCBfX2luaXQgaXNfbW1jb25mX3Jlc2VydmVkKGNoZWNrX3Jlc2VydmVk
+X3QgaXNfcmVzZXJ2ZWQsCisJCXU2NCBhZGRyLCB1NjQgc2l6ZSwgaW50IGksCisJICAgICAgICB0
+eXBlb2YocGNpX21tY2ZnX2NvbmZpZ1swXSkgKmNmZywgaW50IHdpdGhfZTgyMCkKK3sKKwl1NjQg
+b2xkX3NpemUgPSBzaXplOworCWludCB2YWxpZCA9IDA7CisKKwl3aGlsZSAoIWlzX3Jlc2VydmVk
+KGFkZHIsIGFkZHIgKyBzaXplIC0gMSwgRTgyMF9SRVNFUlZFRCkpIHsKKwkJc2l6ZSA+Pj0gMTsK
+KwkJaWYgKHNpemUgPCAoMTZVTDw8MjApKQorCQkJYnJlYWs7CisJfQorCisJaWYgKHNpemUgPj0g
+KDE2VUw8PDIwKSB8fCBzaXplID09IG9sZF9zaXplKSB7CisJCXByaW50ayhLRVJOX05PVElDRQor
+CQkgICAgICAgIlBDSTogTUNGRyBhcmVhIGF0ICVMeCByZXNlcnZlZCBpbiAlc1xuIiwKKwkJCWFk
+ZHIsIHdpdGhfZTgyMD8iRTgyMCI6IkFDUEkgbW90aGVyYm9hcmQgcmVzb3VyY2VzIik7CisJCXZh
+bGlkID0gMTsKKworCQlpZiAob2xkX3NpemUgIT0gc2l6ZSkgeworCQkJLyogdXBkYXRlIGVuZF9i
+dXNfbnVtYmVyICovCisJCQljZmctPmVuZF9idXNfbnVtYmVyID0gY2ZnLT5zdGFydF9idXNfbnVt
+YmVyICsgKChzaXplPj4yMCkgLSAxKTsKKwkJCXByaW50ayhLRVJOX05PVElDRSAiUENJOiB1cGRh
+dGVkIE1DRkcgY29uZmlndXJhdGlvbiAlZDogYmFzZSAlbHggIgorCQkJICAgICAgICJzZWdtZW50
+ICVodSBidXNlcyAldSAtICV1XG4iLAorCQkJICAgICAgIGksICh1bnNpZ25lZCBsb25nKWNmZy0+
+YWRkcmVzcywgY2ZnLT5wY2lfc2VnbWVudCwKKwkJCSAgICAgICAodW5zaWduZWQgaW50KWNmZy0+
+c3RhcnRfYnVzX251bWJlciwKKwkJCSAgICAgICAodW5zaWduZWQgaW50KWNmZy0+ZW5kX2J1c19u
+dW1iZXIpOworCQl9CisJfQorCisJcmV0dXJuIHZhbGlkOworfQorCiBzdGF0aWMgdm9pZCBfX2lu
+aXQgcGNpX21tY2ZnX3JlamVjdF9icm9rZW4oaW50IGVhcmx5KQogewogCXR5cGVvZihwY2lfbW1j
+ZmdfY29uZmlnWzBdKSAqY2ZnOwpAQCAtMzI0LDIxICszNTksMjEgQEAgc3RhdGljIHZvaWQgX19p
+bml0IHBjaV9tbWNmZ19yZWplY3RfYnJvawogCiAJZm9yIChpID0gMDsgaSA8IHBjaV9tbWNmZ19j
+b25maWdfbnVtOyBpKyspIHsKIAkJaW50IHZhbGlkID0gMDsKLQkJdTMyIHNpemUgPSAoY2ZnLT5l
+bmRfYnVzX251bWJlciArIDEpIDw8IDIwOworCQl1NjQgYWRkciwgc2l6ZTsKKwogCQljZmcgPSAm
+cGNpX21tY2ZnX2NvbmZpZ1tpXTsKKwkJYWRkciA9IGNmZy0+c3RhcnRfYnVzX251bWJlcjsKKwkJ
+YWRkciA8PD0gMjA7CisJCXNpemUgPSBjZmctPmVuZF9idXNfbnVtYmVyICsgMSAtIGNmZy0+c3Rh
+cnRfYnVzX251bWJlcjsKKwkJc2l6ZSA8PD0gMjA7CiAJCXByaW50ayhLRVJOX05PVElDRSAiUENJ
+OiBNQ0ZHIGNvbmZpZ3VyYXRpb24gJWQ6IGJhc2UgJWx4ICIKIAkJICAgICAgICJzZWdtZW50ICVo
+dSBidXNlcyAldSAtICV1XG4iLAogCQkgICAgICAgaSwgKHVuc2lnbmVkIGxvbmcpY2ZnLT5hZGRy
+ZXNzLCBjZmctPnBjaV9zZWdtZW50LAogCQkgICAgICAgKHVuc2lnbmVkIGludCljZmctPnN0YXJ0
+X2J1c19udW1iZXIsCiAJCSAgICAgICAodW5zaWduZWQgaW50KWNmZy0+ZW5kX2J1c19udW1iZXIp
+OwogCi0JCWlmICghZWFybHkgJiYKLQkJICAgIGlzX2FjcGlfcmVzZXJ2ZWQoY2ZnLT5hZGRyZXNz
+LCBjZmctPmFkZHJlc3MgKyBzaXplIC0gMSkpIHsKLQkJCXByaW50ayhLRVJOX05PVElDRSAiUENJ
+OiBNQ0ZHIGFyZWEgYXQgJUx4IHJlc2VydmVkICIKLQkJCSAgICAgICAiaW4gQUNQSSBtb3RoZXJi
+b2FyZCByZXNvdXJjZXNcbiIsCi0JCQkgICAgICAgY2ZnLT5hZGRyZXNzKTsKLQkJCXZhbGlkID0g
+MTsKLQkJfQorCQlpZiAoIWVhcmx5KQorCQkJdmFsaWQgPSBpc19tbWNvbmZfcmVzZXJ2ZWQoaXNf
+YWNwaV9yZXNlcnZlZCwgYWRkciwgc2l6ZSwgaSwgY2ZnLCAwKTsKIAogCQlpZiAodmFsaWQpCiAJ
+CQljb250aW51ZTsKQEAgLTM0NywxNiArMzgyLDExIEBAIHN0YXRpYyB2b2lkIF9faW5pdCBwY2lf
+bW1jZmdfcmVqZWN0X2Jyb2sKIAkJCXByaW50ayhLRVJOX0VSUiAiUENJOiBCSU9TIEJ1ZzogTUNG
+RyBhcmVhIGF0ICVMeCBpcyBub3QiCiAJCQkgICAgICAgIiByZXNlcnZlZCBpbiBBQ1BJIG1vdGhl
+cmJvYXJkIHJlc291cmNlc1xuIiwKIAkJCSAgICAgICBjZmctPmFkZHJlc3MpOworCiAJCS8qIERv
+bid0IHRyeSB0byBkbyB0aGlzIGNoZWNrIHVubGVzcyBjb25maWd1cmF0aW9uCiAJCSAgIHR5cGUg
+MSBpcyBhdmFpbGFibGUuIGhvdyBhYm91dCB0eXBlIDIgPyovCi0JCWlmIChyYXdfcGNpX29wcyAm
+JiBlODIwX2FsbF9tYXBwZWQoY2ZnLT5hZGRyZXNzLAotCQkJCQkJICBjZmctPmFkZHJlc3MgKyBz
+aXplIC0gMSwKLQkJCQkJCSAgRTgyMF9SRVNFUlZFRCkpIHsKLQkJCXByaW50ayhLRVJOX05PVElD
+RQotCQkJICAgICAgICJQQ0k6IE1DRkcgYXJlYSBhdCAlTHggcmVzZXJ2ZWQgaW4gRTgyMFxuIiwK
+LQkJCSAgICAgICBjZmctPmFkZHJlc3MpOwotCQkJdmFsaWQgPSAxOwotCQl9CisJCWlmIChyYXdf
+cGNpX29wcykKKwkJCXZhbGlkID0gaXNfbW1jb25mX3Jlc2VydmVkKGU4MjBfYWxsX21hcHBlZCwg
+YWRkciwgc2l6ZSwgaSwgY2ZnLCAxKTsKIAogCQlpZiAoIXZhbGlkKQogCQkJZ290byByZWplY3Q7
+Cg==
+------=_Part_45644_23436750.1216430529014
+Content-Type: text/x-patch; name=mmconf_end_bus_num_detect_fix.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fitj9wv61
+Content-Disposition: attachment;
+ filename=mmconf_end_bus_num_detect_fix.patch
+
+W1BBVENIXSB4ODYscGNpOiBkZXRlY3QgZW5kX2J1c19udW1iZXIgYWNjb3JkaW5nIHRvIGFjcGkv
+ZTgyMCByZXNlcnZlZAoKU2lnbmVkLW9mZi1ieTogWWluZ2hhaSBMdSA8eWhsdS5rZXJuZWxAZ21h
+aWwuY29tPgoKZGlmZiAtLWdpdCBhL2FyY2gveDg2L3BjaS9tbWNvbmZpZy1zaGFyZWQuYyBiL2Fy
+Y2gveDg2L3BjaS9tbWNvbmZpZy1zaGFyZWQuYwppbmRleCA5Mjk3ODgyLi40MjljNzAxIDEwMDY0
+NAotLS0gYS9hcmNoL3g4Ni9wY2kvbW1jb25maWctc2hhcmVkLmMKKysrIGIvYXJjaC94ODYvcGNp
+L21tY29uZmlnLXNoYXJlZC5jCkBAIC0zNjQsNiArMzY0LDcgQEAgc3RhdGljIHZvaWQgX19pbml0
+IHBjaV9tbWNmZ19yZWplY3RfYnJva2VuKGludCBlYXJseSkKIAkJY2ZnID0gJnBjaV9tbWNmZ19j
+b25maWdbaV07CiAJCWFkZHIgPSBjZmctPnN0YXJ0X2J1c19udW1iZXI7CiAJCWFkZHIgPDw9IDIw
+OworCQlhZGRyICs9IGNmZy0+YWRkcmVzczsKIAkJc2l6ZSA9IGNmZy0+ZW5kX2J1c19udW1iZXIg
+KyAxIC0gY2ZnLT5zdGFydF9idXNfbnVtYmVyOwogCQlzaXplIDw8PSAyMDsKIAkJcHJpbnRrKEtF
+Uk5fTk9USUNFICJQQ0k6IE1DRkcgY29uZmlndXJhdGlvbiAlZDogYmFzZSAlbHggIgo=
+------=_Part_45644_23436750.1216430529014--
