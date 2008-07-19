@@ -1,69 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758404AbYGSBR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757780AbYGSBSz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758404AbYGSBR1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 21:17:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbYGSBRR
+	id S1757780AbYGSBSz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 21:18:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554AbYGSBSs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 21:17:17 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:35286 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750756AbYGSBRP (ORCPT
+	Fri, 18 Jul 2008 21:18:48 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:56908 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753514AbYGSBSr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 21:17:15 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AiMCANfagEh5LFxAiGdsb2JhbACSPwEBAQ8gnRM
-X-IronPort-AV: E=Sophos;i="4.31,213,1215354600"; 
-   d="scan'208";a="152729184"
-Date: Sat, 19 Jul 2008 11:17:09 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Ben Greear <greearb@candelatech.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [BUG, NET] deadlock tearing down a bridged interface
-Message-ID: <20080719011709.GA5947@disturbed>
-Mail-Followup-To: Ben Greear <greearb@candelatech.com>,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-References: <20080718073724.GA5802@disturbed> <4880BA7A.3020909@candelatech.com>
+	Fri, 18 Jul 2008 21:18:47 -0400
+Date: Fri, 18 Jul 2008 21:18:45 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [git pull] tracing fixes
+In-Reply-To: <20080718103559.GA4368@elte.hu>
+Message-ID: <Pine.LNX.4.58.0807182118260.4932@gandalf.stny.rr.com>
+References: <20080717173210.GA12828@elte.hu> <Pine.LNX.4.58.0807172249230.22792@gandalf.stny.rr.com>
+ <20080718084152.GJ6875@elte.hu> <20080718103559.GA4368@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4880BA7A.3020909@candelatech.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 08:44:58AM -0700, Ben Greear wrote:
-> Dave Chinner wrote:
->> Folks,
->>
->> I just deadlocked networking on a 2.6.24 kernel. Basically I
->> was trying to restart the bridge interface I use for UML sessions
->> because it wasn't passing packets. This happens occasionally
->> when I leave a UML session too long in gdb, so I bounced the
->> bridge to get it working again.
->>   
-> We have been chasing a refcount bug in 2.6.25 that only happens when
-> IPv6 module is loaded.
 
-Which causes what problem? The deadlock I reported or the bridge occasionally
-hanging? Is that a problem in 2.6.24?
 
-The deadlock is the one I'm concerned about - it appears that
-netdev_run_todo() can only wait on a single interface at a time,
-so if we are tearing down two interfaces concurrently where one
-has a reference on the other a deadlock is just waiting to happen...
+On Fri, 18 Jul 2008, Ingo Molnar wrote:
+> ok, figured it out today: the lockups were due to the NMI watchdog and a
+> missing NMI protection in cpu_clock(). I've reactivated the topic that
+> solves this problem area and it all works fine now.
+>
+> the sched.o change probably made a difference just because it reduced
+> the cross section between the NMI watchdog and the scheduler, making
+> lockups less likely during the ftrace self-test. I'll revert it once the
+> tracing/nmisafe is upstream.
 
-> If you are not actually using ipv6, try removing it's
-> module from your /lib/modules/* directory and see if that fixes your  
-> problem.
+Ingo,
 
-I'll try it, but a) it's not 2.6.25 and b) I don't tend to triage problems
-on my main workstation so I'm not likely to try to reproduce this
-deadlock unless absolutely necessary.
+Thanks a lot for looking into this.
 
-Cheers,
+-- Steve
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
