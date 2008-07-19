@@ -1,74 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754903AbYGSMW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755141AbYGSMXt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754903AbYGSMW3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 08:22:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbYGSMWU
+	id S1755141AbYGSMXt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 08:23:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753080AbYGSMXl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 08:22:20 -0400
-Received: from yw-out-2122.google.com ([74.125.46.27]:7991 "EHLO
-	yw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753375AbYGSMWT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 08:22:19 -0400
-MIME-Version: 1.0
-Date: Sat, 19 Jul 2008 05:22:18 -0700 (PDT)
-In-Reply-To: <aReqy-5vm-1@gated-at.bofh.it>
-X-IP: 86.53.68.233
-References: <aPfh5-7kW-5@gated-at.bofh.it> <aPfhe-7kW-31@gated-at.bofh.it> 
-	<aQUio-2qG-25@gated-at.bofh.it> <aR0nM-6kd-15@gated-at.bofh.it> 
-	<aR3vi-3MV-15@gated-at.bofh.it> <aR4Ur-6c7-27@gated-at.bofh.it> 
-	<aReqy-5vm-1@gated-at.bofh.it>
-User-Agent: G2/1.0
-X-HTTP-UserAgent: Mozilla/5.0 (compatible; Konqueror/3.5; Linux) KHTML/3.5.9 
-	(like Gecko) (Kubuntu),gzip(gfe),gzip(gfe)
-Message-ID: <50b515e4-6cd1-4b18-93e3-ecfab5925f02@34g2000hsf.googlegroups.com>
-Subject: Re: [Bug #10724] ACPI: EC: GPE storm detected, disabling EC GPE
-From: Alan Jenkins <aj504@cs.york.ac.uk>
-To: Fabio Comolli <fabio.comolli@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 19 Jul 2008 08:23:41 -0400
+Received: from atlantis.8hz.com ([212.129.237.78]:58623 "EHLO atlantis.8hz.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751980AbYGSMXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jul 2008 08:23:41 -0400
+Date: Sat, 19 Jul 2008 12:23:39 +0000
+From: Sean Young <sean@mess.org>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Led driver for technologic systems 5500
+Message-ID: <20080719122339.GA28813@atlantis.8hz.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fabio Comolli wrote:
-> Hi Alex.
-> Well, I read the bug report but still can't understand why in any
-> kernels < 2.6.26 I don't have any problems with battery reports and in
-> 2.6.26 as soon as the message appears g-p-m starts to behave
-> incorrectly.
->
-> Anyway, I got back to 25.11 for now, if you have any other workarounds
-> for me to test please let me know.
+Here is a patch for the led on the Technologic Systems 5500 board. Detection
+is a bit flimsy; Is there anything that can be done about that?
 
-Hi Fabio.
-
-I wrote some GPE fixes for my Asus laptop and they need some wider
-testing :-).  I think I found why we get GPE storms and how to deal
-with them.
-
-I posted them on the lists a series of three patches, but I neglected
-to CC any potential testers.  For convenience I squished them into a
-single patch and posted them in Bugzilla.
-
-My bug: <http://bugzilla.kernel.org/show_bug.cgi?id=11089>
-Patch: <http://bugzilla.kernel.org/attachment.cgi?
-id=16886&action=view>
-
-The risky part of the fixes removes the GPE interrupt storm check and
-the GPE polling mode. So you won't see the "disabling EC GPE" message,
-and I'm hoping this will stop g-p-m  misbehaving for you.
-
-I'm not sure what could happen if it's broken somehow :-).  If you
-have ACPI hotkeys (i.e. running acpi_listen shows events when you
-press hotkeys), please check they still work.  If not, you should have
-at least one button that generates an ACPI event - the power button.
-So it would be great if you could check the power button still works
-as normal.  (On my computer, g-p-m handles the power button and pops
-up a logout/shutdown prompt).
-
-Thanks
-Alan
+Signed-off-by: Sean Young <sean@mess.org>
+---
+diff -urpN linux-2.6.26/drivers/leds/Kconfig /home/sean/tiger/linux-2.6.26/drivers/leds/Kconfig
+--- linux-2.6.26/drivers/leds/Kconfig	2008-07-13 22:51:29.000000000 +0100
++++ /home/sean/tiger/linux-2.6.26/drivers/leds/Kconfig	2008-07-17 15:14:55.000000000 +0100
+@@ -147,6 +147,16 @@ config LEDS_CLEVO_MAIL
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called leds-clevo-mail.
+ 
++config LEDS_TS5500
++	tristate "LED Support for the TS-5500"
++	depends on LEDS_CLASS && X86
++	help
++	  This driver makes the led on the Technology Systems 5500 
++	  (and possibly other models) accessible for userspace. 
++
++	  Note that this led is hardwired to be xor'ed with Compact Flash
++	  activity.
++
+ comment "LED Triggers"
+ 
+ config LEDS_TRIGGERS
+diff -urpN linux-2.6.26/drivers/leds/leds-ts5500.c /home/sean/tiger/linux-2.6.26/drivers/leds/leds-ts5500.c
+--- linux-2.6.26/drivers/leds/leds-ts5500.c	1970-01-01 01:00:00.000000000 +0100
++++ /home/sean/tiger/linux-2.6.26/drivers/leds/leds-ts5500.c	2008-07-19 13:08:19.000000000 +0100
+@@ -0,0 +1,99 @@
++/*
++ * Copyright (C) 2008 Sean Young <sean@mess.org>
++ */
++
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/delay.h>
++#include <linux/string.h>
++#include <linux/io.h>
++#include <linux/leds.h>
++
++static struct platform_device *ts5500_platform_device;
++
++static void ts5500_led_set(struct led_classdev *led_dev, enum led_brightness value)
++{
++	outb(value ? 1 : 0, 0x77);
++}
++
++static struct led_classdev ts5500_led = {
++	.name = "ts5500:green",
++	.brightness_set = ts5500_led_set,
++};
++
++static int __devinit ts5500leds_probe(struct platform_device *pdev)
++{
++	return led_classdev_register(&pdev->dev, &ts5500_led);
++}
++
++static int __devexit ts5500leds_remove(struct platform_device *pdev)
++{
++	led_classdev_unregister(&ts5500_led);
++	return 0;
++}
++
++static struct platform_driver ts5500leds_driver = {
++	.driver		= {
++		.name	= "ts5500-leds",
++		.owner	= THIS_MODULE,
++	},
++	.probe		= ts5500leds_probe,
++	.remove		= __devexit_p(ts5500leds_remove),
++};
++
++
++static int __init ts5500leds_init(void)
++{
++	int rc;
++	uint8_t product_code;
++
++	if (!request_region(0x74, 1, "ts5500-leds"))
++		return -ENODEV;
++
++	product_code = inb(0x74);
++
++	release_region(0x74, 1);
++
++	if (product_code != 0x60)
++		return -ENODEV;
++
++	if (!request_region(0x77, 1, "ts5500-leds"))
++		return -ENODEV;
++
++	rc = platform_driver_register(&ts5500leds_driver);
++	if (rc)
++		goto free_port;
++
++	ts5500_platform_device = platform_device_alloc("ts5500-leds", -1);
++	if (!ts5500_platform_device)
++		goto driver_unreg;
++
++	rc = platform_device_add(ts5500_platform_device);
++	if (rc)
++		goto free_device;
++
++	return 0;
++
++free_port:
++	release_region(0x77, 1);
++free_device:
++	platform_device_put(ts5500_platform_device);
++driver_unreg:
++	platform_driver_unregister(&ts5500leds_driver);
++
++	return rc;
++}
++
++static void __exit ts5500leds_exit(void)
++{
++	platform_device_unregister(ts5500_platform_device);
++	platform_driver_unregister(&ts5500leds_driver);
++	release_region(0x77, 1);
++}
++
++module_init(ts5500leds_init);
++module_exit(ts5500leds_exit);
++
++MODULE_AUTHOR("Sean Young <sean@mess.org>");
++MODULE_DESCRIPTION("LED driver for the Technology Systems 5500");
++MODULE_LICENSE("GPL");
+diff -urpN linux-2.6.26/drivers/leds/Makefile /home/sean/tiger/linux-2.6.26/drivers/leds/Makefile
+--- linux-2.6.26/drivers/leds/Makefile	2008-07-13 22:51:29.000000000 +0100
++++ /home/sean/tiger/linux-2.6.26/drivers/leds/Makefile	2008-07-17 15:14:55.000000000 +0100
+@@ -21,6 +21,7 @@ obj-$(CONFIG_LEDS_CM_X270)              
+ obj-$(CONFIG_LEDS_CLEVO_MAIL)		+= leds-clevo-mail.o
+ obj-$(CONFIG_LEDS_HP6XX)		+= leds-hp6xx.o
+ obj-$(CONFIG_LEDS_FSG)			+= leds-fsg.o
++obj-$(CONFIG_LEDS_TS5500)		+= leds-ts5500.o
+ 
+ # LED Triggers
+ obj-$(CONFIG_LEDS_TRIGGER_TIMER)	+= ledtrig-timer.o
