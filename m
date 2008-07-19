@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755508AbYGSQO2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755458AbYGSQ3N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755508AbYGSQO2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 12:14:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbYGSQOU
+	id S1755458AbYGSQ3N (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 12:29:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbYGSQ26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 12:14:20 -0400
-Received: from casper.infradead.org ([85.118.1.10]:58383 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752919AbYGSQOU (ORCPT
+	Sat, 19 Jul 2008 12:28:58 -0400
+Received: from bromo.msbb.uc.edu ([129.137.3.146]:46627 "HELO
+	bromo.msbb.uc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753137AbYGSQ26 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 12:14:20 -0400
-Date: Sat, 19 Jul 2008 09:14:20 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [patch 1/3] fastboot: Create a "asynchronous" initlevel
-Message-ID: <20080719091420.14127633@infradead.org>
-In-Reply-To: <1216483685.3978.161.camel@localhost.localdomain>
-References: <20080718151524.5ef9e29b@infradead.org>
-	<20080718151608.46dc17c0@infradead.org>
-	<1216430540.3978.137.camel@localhost.localdomain>
-	<20080718204406.7426e8fe@infradead.org>
-	<1216440697.3978.142.camel@localhost.localdomain>
-	<20080718222014.34754e7b@infradead.org>
-	<1216481066.3978.159.camel@localhost.localdomain>
-	<20080719083532.21c9a43e@infradead.org>
-	<1216483685.3978.161.camel@localhost.localdomain>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 19 Jul 2008 12:28:58 -0400
+Date: Sat, 19 Jul 2008 12:28:56 -0400
+From: Jack Howarth <howarth@bromo.msbb.uc.edu>
+To: Justin Mattock <justinmattock@gmail.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: macbook2,2 latest git mmconfig issues
+Message-ID: <20080719162856.GA14334@bromo.msbb.uc.edu>
+References: <dd18b0c30807182039u3e590e50p5d76624dd9e5b1d8@mail.gmail.com> <86802c440807182145qa3d17e9k210c498109d86b58@mail.gmail.com> <dd18b0c30807182254i49de078bhe5e48ab13e7b01ac@mail.gmail.com> <dd18b0c30807182354h429ea664gb90b7de55608d0bd@mail.gmail.com> <20080719131038.GA13168@bromo.msbb.uc.edu> <dd18b0c30807190753q22259690jcae780de13c8560d@mail.gmail.com> <20080719151453.GA13792@bromo.msbb.uc.edu> <dd18b0c30807190854w17059d63g10e1e199f855988b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <dd18b0c30807190854w17059d63g10e1e199f855988b@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 19 Jul 2008 09:08:05 -0700
-Daniel Walker <dwalker@mvista.com> wrote:
-
-> On Sat, 2008-07-19 at 08:35 -0700, Arjan van de Ven wrote:
+On Sat, Jul 19, 2008 at 08:54:58AM -0700, Justin Mattock wrote:
 > 
-> > > Ok .. I'm not trying to rush you .. With that said, the increased
-> > > number of threads seems like a natural direction to take.. I would
-> > > assume the returns would diminish depending on the number of
-> > > threads per the hardware.. For instance , your addition of one
-> > > thread might even harm the boot time on some single core embedded
-> > > systems ..
-> > 
-> > well it still improves the cases where msleep() happens... even on
-> > single core. (fwiw the test  machine I reported numbers from is
-> > single core, albeit with hyperthreading)
-> > 
-> 
-> How did you measure the boot time? I didn't notice any infrastructure
-> for that in the patches..
-> 
+> >From over here; do you think grub
+> has something to do with this error?
+> why: when installing the intaller was broken
+> thus having to download the latest grub and manually
+> plug in the partitions and so forth.
+>  when using the latest git(a day ago) I was using
+> an older version it seems of grub. But this wouldn't explain
+> why I received the PCI: not using MMCONFIG error
+> I need right now to make sure the name is correct
+> "MacBook2" and "Apple", and make sure 0x3f
+> is right also. You never know maybe these get changed with
+> each version of the mac's. Overall this is a pretty nasty bug
+> leaving completely out of business.
+> -- 
+> Justin P. Mattock
 
-well.. we already have the printk-timestamps and the initcall_debug
-also timestamps individual initcalls...
+Justin,
+   The current tip from earlier this morning is booting fine under
+Fedora 9 here on my MacBook Pro v2 (build with CONFIG_PCIEASPM unset).
+I am rebuilding tip with CONFIG_PCIEASPM=y in case the issue is fixed
+or has gone latent on tip. If not, I'll update my bugzilla and try
+to get Jesse to take a look at it.
+                     Jack
 
-the way I measured it was based on the printk timestamp of the last
-thing the kernel did before giving control to init. (which was a printk
-I added just for this purpose)
-(and the bootchart tool also confirmed the same data, based on system
-uptime)
-
-fwiw I have more patches coming to help boottime once these are done,
-but these 3 were self contained and ready for posting, the others need
-some more cleanup first.
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
