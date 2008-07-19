@@ -1,164 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755141AbYGSMXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbYGSMaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755141AbYGSMXt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 08:23:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753080AbYGSMXl
+	id S1754707AbYGSMaf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 08:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753229AbYGSMa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 08:23:41 -0400
-Received: from atlantis.8hz.com ([212.129.237.78]:58623 "EHLO atlantis.8hz.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751980AbYGSMXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 08:23:41 -0400
-Date: Sat, 19 Jul 2008 12:23:39 +0000
-From: Sean Young <sean@mess.org>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Led driver for technologic systems 5500
-Message-ID: <20080719122339.GA28813@atlantis.8hz.com>
+	Sat, 19 Jul 2008 08:30:28 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:35483 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753113AbYGSMa1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jul 2008 08:30:27 -0400
+Date: Sat, 19 Jul 2008 15:30:09 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: linux-kernel@vger.kernel.org, cl@linux-foundation.org,
+       akpm@linux-foundation.org, riel@redhat.com
+Subject: [PATCH 1/8] slub: Add defrag_ratio field and sysfs support.
+Message-ID: <Pine.LNX.4.64.0807191529450.13345@sbz-30.cs.Helsinki.FI>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is a patch for the led on the Technologic Systems 5500 board. Detection
-is a bit flimsy; Is there anything that can be done about that?
+From: Christoph Lameter <clameter@sgi.com>
 
-Signed-off-by: Sean Young <sean@mess.org>
+The defrag_ratio is used to set the threshold at which defragmentation
+should be attempted on a slab page.
+
+The allocation ratio is measured by the percentage of the available slots
+allocated.
+
+Add a defrag ratio field and set it to 30% by default. A limit of 30% specified
+that less than 3 out of 10 available slots for objects are in use before
+slab defragmeentation runs.
+
+Reviewed-by: Rik van Riel <riel@redhat.com>
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
-diff -urpN linux-2.6.26/drivers/leds/Kconfig /home/sean/tiger/linux-2.6.26/drivers/leds/Kconfig
---- linux-2.6.26/drivers/leds/Kconfig	2008-07-13 22:51:29.000000000 +0100
-+++ /home/sean/tiger/linux-2.6.26/drivers/leds/Kconfig	2008-07-17 15:14:55.000000000 +0100
-@@ -147,6 +147,16 @@ config LEDS_CLEVO_MAIL
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called leds-clevo-mail.
+ include/linux/slub_def.h |    7 +++++++
+ mm/slub.c                |   23 +++++++++++++++++++++++
+ 2 files changed, 30 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
+index d117ea2..6f8d25f 100644
+--- a/include/linux/slub_def.h
++++ b/include/linux/slub_def.h
+@@ -88,6 +88,13 @@ struct kmem_cache {
+ 	void (*ctor)(struct kmem_cache *, void *);
+ 	int inuse;		/* Offset to metadata */
+ 	int align;		/* Alignment */
++	int defrag_ratio;	/*
++				 * Ratio used to check the percentage of
++				 * objects allocate in a slab page.
++				 * If less than this ratio is allocated
++				 * then reclaim attempts are made.
++				 */
++
+ 	const char *name;	/* Name (only for display!) */
+ 	struct list_head list;	/* List of slab caches */
+ #ifdef CONFIG_SLUB_DEBUG
+diff --git a/mm/slub.c b/mm/slub.c
+index 35ab38a..1b910ab 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -2338,6 +2338,7 @@ static int kmem_cache_open(struct kmem_cache *s, gfp_t gfpflags,
+ 		goto error;
  
-+config LEDS_TS5500
-+	tristate "LED Support for the TS-5500"
-+	depends on LEDS_CLASS && X86
-+	help
-+	  This driver makes the led on the Technology Systems 5500 
-+	  (and possibly other models) accessible for userspace. 
-+
-+	  Note that this led is hardwired to be xor'ed with Compact Flash
-+	  activity.
-+
- comment "LED Triggers"
+ 	s->refcount = 1;
++	s->defrag_ratio = 30;
+ #ifdef CONFIG_NUMA
+ 	s->remote_node_defrag_ratio = 100;
+ #endif
+@@ -4071,6 +4072,27 @@ static ssize_t free_calls_show(struct kmem_cache *s, char *buf)
+ }
+ SLAB_ATTR_RO(free_calls);
  
- config LEDS_TRIGGERS
-diff -urpN linux-2.6.26/drivers/leds/leds-ts5500.c /home/sean/tiger/linux-2.6.26/drivers/leds/leds-ts5500.c
---- linux-2.6.26/drivers/leds/leds-ts5500.c	1970-01-01 01:00:00.000000000 +0100
-+++ /home/sean/tiger/linux-2.6.26/drivers/leds/leds-ts5500.c	2008-07-19 13:08:19.000000000 +0100
-@@ -0,0 +1,99 @@
-+/*
-+ * Copyright (C) 2008 Sean Young <sean@mess.org>
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/delay.h>
-+#include <linux/string.h>
-+#include <linux/io.h>
-+#include <linux/leds.h>
-+
-+static struct platform_device *ts5500_platform_device;
-+
-+static void ts5500_led_set(struct led_classdev *led_dev, enum led_brightness value)
++static ssize_t defrag_ratio_show(struct kmem_cache *s, char *buf)
 +{
-+	outb(value ? 1 : 0, 0x77);
++	return sprintf(buf, "%d\n", s->defrag_ratio);
 +}
 +
-+static struct led_classdev ts5500_led = {
-+	.name = "ts5500:green",
-+	.brightness_set = ts5500_led_set,
-+};
-+
-+static int __devinit ts5500leds_probe(struct platform_device *pdev)
++static ssize_t defrag_ratio_store(struct kmem_cache *s,
++				const char *buf, size_t length)
 +{
-+	return led_classdev_register(&pdev->dev, &ts5500_led);
++	unsigned long ratio;
++	int err;
++
++	err = strict_strtoul(buf, 10, &ratio);
++	if (err)
++		return err;
++
++	if (ratio < 100)
++		s->defrag_ratio = ratio;
++	return length;
 +}
++SLAB_ATTR(defrag_ratio);
 +
-+static int __devexit ts5500leds_remove(struct platform_device *pdev)
-+{
-+	led_classdev_unregister(&ts5500_led);
-+	return 0;
-+}
-+
-+static struct platform_driver ts5500leds_driver = {
-+	.driver		= {
-+		.name	= "ts5500-leds",
-+		.owner	= THIS_MODULE,
-+	},
-+	.probe		= ts5500leds_probe,
-+	.remove		= __devexit_p(ts5500leds_remove),
-+};
-+
-+
-+static int __init ts5500leds_init(void)
-+{
-+	int rc;
-+	uint8_t product_code;
-+
-+	if (!request_region(0x74, 1, "ts5500-leds"))
-+		return -ENODEV;
-+
-+	product_code = inb(0x74);
-+
-+	release_region(0x74, 1);
-+
-+	if (product_code != 0x60)
-+		return -ENODEV;
-+
-+	if (!request_region(0x77, 1, "ts5500-leds"))
-+		return -ENODEV;
-+
-+	rc = platform_driver_register(&ts5500leds_driver);
-+	if (rc)
-+		goto free_port;
-+
-+	ts5500_platform_device = platform_device_alloc("ts5500-leds", -1);
-+	if (!ts5500_platform_device)
-+		goto driver_unreg;
-+
-+	rc = platform_device_add(ts5500_platform_device);
-+	if (rc)
-+		goto free_device;
-+
-+	return 0;
-+
-+free_port:
-+	release_region(0x77, 1);
-+free_device:
-+	platform_device_put(ts5500_platform_device);
-+driver_unreg:
-+	platform_driver_unregister(&ts5500leds_driver);
-+
-+	return rc;
-+}
-+
-+static void __exit ts5500leds_exit(void)
-+{
-+	platform_device_unregister(ts5500_platform_device);
-+	platform_driver_unregister(&ts5500leds_driver);
-+	release_region(0x77, 1);
-+}
-+
-+module_init(ts5500leds_init);
-+module_exit(ts5500leds_exit);
-+
-+MODULE_AUTHOR("Sean Young <sean@mess.org>");
-+MODULE_DESCRIPTION("LED driver for the Technology Systems 5500");
-+MODULE_LICENSE("GPL");
-diff -urpN linux-2.6.26/drivers/leds/Makefile /home/sean/tiger/linux-2.6.26/drivers/leds/Makefile
---- linux-2.6.26/drivers/leds/Makefile	2008-07-13 22:51:29.000000000 +0100
-+++ /home/sean/tiger/linux-2.6.26/drivers/leds/Makefile	2008-07-17 15:14:55.000000000 +0100
-@@ -21,6 +21,7 @@ obj-$(CONFIG_LEDS_CM_X270)              
- obj-$(CONFIG_LEDS_CLEVO_MAIL)		+= leds-clevo-mail.o
- obj-$(CONFIG_LEDS_HP6XX)		+= leds-hp6xx.o
- obj-$(CONFIG_LEDS_FSG)			+= leds-fsg.o
-+obj-$(CONFIG_LEDS_TS5500)		+= leds-ts5500.o
- 
- # LED Triggers
- obj-$(CONFIG_LEDS_TRIGGER_TIMER)	+= ledtrig-timer.o
+ #ifdef CONFIG_NUMA
+ static ssize_t remote_node_defrag_ratio_show(struct kmem_cache *s, char *buf)
+ {
+@@ -4178,6 +4200,7 @@ static struct attribute *slab_attrs[] = {
+ 	&shrink_attr.attr,
+ 	&alloc_calls_attr.attr,
+ 	&free_calls_attr.attr,
++	&defrag_ratio_attr.attr,
+ #ifdef CONFIG_ZONE_DMA
+ 	&cache_dma_attr.attr,
+ #endif
+-- 
+1.5.4.3
+
