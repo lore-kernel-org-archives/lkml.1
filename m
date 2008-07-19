@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753380AbYGSIuR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbYGSIva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753380AbYGSIuR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 04:50:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbYGSIuE
+	id S1753933AbYGSIva (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 04:51:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbYGSIvU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 04:50:04 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:44165 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751837AbYGSIuD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 04:50:03 -0400
-Message-ID: <4881AB31.7010400@keyaccess.nl>
-Date: Sat, 19 Jul 2008 10:52:01 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: Craig Milo Rogers <rogers@ISI.EDU>
-CC: Jan Engelhardt <jengelh@medozas.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Stoyan Gaydarov <stoyboyker@gmail.com>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, gorcunov@gmail.com,
-       akpm@linux-foundation.org, mingo@elte.hu
-Subject: Re: From 2.4 to 2.6 to 2.7?
-References: <6d291e080807141910m573b29b2t753ea7c4db09902d@mail.gmail.com> <alpine.LFD.1.10.0807141914280.3017@woody.linux-foundation.org> <6d291e080807141931g3080c94cic94f503c1a18523b@mail.gmail.com> <alpine.LFD.1.10.0807141939410.3017@woody.linux-foundation.org> <alpine.LNX.1.10.0807150851040.13215@fbirervta.pbzchgretzou.qr> <alpine.LNX.1.10.0807171920010.12734@fbirervta.pbzchgretzou.qr> <20080717195625.GC6777@isi.edu> <alpine.LNX.1.10.0807172221130.12734@fbirervta.pbzchgretzou.qr> <20080719080002.GA11272@isi.edu>
-In-Reply-To: <20080719080002.GA11272@isi.edu>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+	Sat, 19 Jul 2008 04:51:20 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:35617 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751642AbYGSIvT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jul 2008 04:51:19 -0400
+Date: Sat, 19 Jul 2008 12:51:10 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Octavian Purdila <opurdila@ixiacom.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, axboe@kernel.dk
+Subject: Re: [PATCH] tcp: do not promote SPLICE_F_NONBLOCK to socket O_NONBLOCK
+Message-ID: <20080719085110.GA25052@2ka.mipt.ru>
+References: <200807171633.49791.opurdila@ixiacom.com> <200807182116.43451.opurdila@ixiacom.com> <20080718183549.GA23263@2ka.mipt.ru> <200807182143.38624.opurdila@ixiacom.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200807182143.38624.opurdila@ixiacom.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 19-07-08 10:00, Craig Milo Rogers wrote:
+Hi Octavian.
 
-> In <487D7781.6000407@keyaccess.nl>, Rene Herman proposed [somewhat 
-> arbitrary] transition to 2.8 and 2.9, and specified that 3.0 should
-> be until when world domination by Linux is near.
+On Fri, Jul 18, 2008 at 09:43:38PM +0300, Octavian Purdila (opurdila@ixiacom.com) wrote:
+> The flag gets propagated to splice_to_pipe (so there is no need to propagate 
+> the check in skb_splice_bits) but we don't have SPLICE_F_NONBLOCK set, we are 
+> on the blocking usecase.
 
-Nonono, that's all backwards! This is about having a 3.0 release BRING 
-ABOUT world domination!
+Hmm, than how does it concerns SPLICE_F_NONBLOCK feature change? Your
+patch does not touch this behaviour.
 
-</tongue in cheek> and all but that was my point -- with a not at least 
-ostensibly feature driven scheme you loose out on all the hype, press, 
-marketing and, frankly, on the fun.
+Anyway, in case of not having SPLICE_F_NONBLOCK it does not deadlock,
+but waits until someone reads from the other side of the pipe. It blocks
+and expects reader to unblock it.
 
-Really, find me a single Linux developer who wouldn't try just a little 
-bit harder for a big 3.0 release. This is still a community, not yet a 
-boring office schedule...
+It looks like you have two unexpected independent issues with splice:
+ability to perform non-blocking reading from the socket into the pipe
+when SPLICE_F_NONBLOCK is set,
+and blocking waiting for reader to get data from the pipe when
+SPLICE_F_NONBLOCK is not set. Is it correct?
 
-Rene.
+If so, the former is a feature, which allows to have some progress when
+receiving queue is empty: one can start getting data from the pipe,
+i.e. splice data out of the pipe to the different file descriptor.
+So, this flag means both non-blocking pipe operations _and_ non-blocking
+receiving from the socket.
+
+For the blocking in pipe_wait() when pipe is full and SPLICE_F_NONBLOCK
+is not set, then it is just a pipe behaviour, which is used as a
+temporal storage for the requested data. It is not some buffer, which is
+returned to the userspace when it is full (or indication of it), but a
+pipe, where you put page pointers, so when pipe is full and opened in
+blocking mode, writer sleeps waiting or reader to get some data out of it
+and thus awake writer. It is not a deadlock, but very expected behaviour
+of the pipe: to block when pipe is full waiting for reader to get data.
+
+Hope this will clarify this discussion a bit, so it would not look like
+talk of blind and deaf :)
+
+-- 
+	Evgeniy Polyakov
