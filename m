@@ -1,56 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756049AbYGSR0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756094AbYGSRc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756049AbYGSR0Y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 13:26:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754360AbYGSR0Q
+	id S1756094AbYGSRc3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 13:32:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754679AbYGSRcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 13:26:16 -0400
-Received: from outbound-mail-126.bluehost.com ([67.222.38.26]:49618 "HELO
-	outbound-mail-126.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754200AbYGSR0Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 13:26:16 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=UO153zczmfmkAohSjIJJTd4sSRfv/KEBwVtpM5EBJVVYBrlKCBd/vVY8ysb0ut04pVtWSvNd4NyVpwVuPTrXykYhhmw5y0NP3NZ7kuWR+Rk0C43t+Qy7R94i4VwAcP6V;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] x86,pci: dmi check for mackpro 2.2 mmconf
-Date: Sat, 19 Jul 2008 10:26:02 -0700
-User-Agent: KMail/1.9.9
-Cc: Jack Howarth <howarth@bromo.msbb.uc.edu>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Shaohua Li <shaohua.li@intel.com>
-References: <200807180941.09779.yhlu.kernel@gmail.com> <20080719051227.GA10044@bromo.msbb.uc.edu> <86802c440807182228u5259eba1x238ec3af5fc4324c@mail.gmail.com>
-In-Reply-To: <86802c440807182228u5259eba1x238ec3af5fc4324c@mail.gmail.com>
+	Sat, 19 Jul 2008 13:32:20 -0400
+Received: from saeurebad.de ([85.214.36.134]:49855 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754360AbYGSRcU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jul 2008 13:32:20 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH -mm] mm: more likely reclaim MADV_SEQUENTIAL mappings
+CC: Rik van Riel <riel@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+       Nossum <vegard.nossum@gmail.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Date: Sat, 19 Jul 2008 19:31:49 +0200
+Message-ID: <87y73x4w6y.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807191026.03172.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, July 18, 2008 10:28 pm Yinghai Lu wrote:
-> On Fri, Jul 18, 2008 at 10:12 PM, Jack Howarth
->
-> <howarth@bromo.msbb.uc.edu> wrote:
-> >   Would that imply that this might be more fallout of the BIOS bug in the
-> > MacBook Pro where insufficient address space is reserved for the number
-> > of buses claimed?
->
-> that is good enough with 64 buses like laptop.
->
-> > Is there some point in the PCIEASPM based code where you
-> > could duplicate the same sort of fix? I would be happy to test any debug
-> > patches that might help pinpoint where such a fix is needed.
->
-> Jesse, who is maintainer for ASPM code?
+File pages accessed only once through sequential-read mappings between
+fault and scan time are perfect candidates for reclaim.
 
-I've been looking to Shaohua (cc'd) for ASPM stuff.
+This patch makes page_referenced() ignore these singular references and
+the pages stay on the inactive list where they likely fall victim to the
+next reclaim phase.
 
-Jesse
+Already activated pages are still treated normally.  If they were
+accessed multiple times and therefor promoted to the active list, we
+probably want to keep them.
+
+Benchmarks show that big (relative to the system's memory)
+MADV_SEQUENTIAL mappings read sequentially cause much less kernel
+activity.  Especially less LRU moving-around because we never activate
+read-once pages in the first place just to demote them again.
+
+And leaving these perfect reclaim candidates on the inactive list makes
+it more likely for the real working set to survive the next reclaim
+scan.
+
+Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+Signed-off-by: Rik van Riel <riel@redhat.com>
+---
+ mm/rmap.c |   20 +++++++++++++++-----
+ 1 file changed, 15 insertions(+), 5 deletions(-)
+
+Benchmark graphs and the test-application can be found here:
+
+	http://hannes.saeurebad.de/madvseq/
+
+Patch is against -mm, although only tested on good ol' linus-tree as
+-mmotm wouldn't compile at the moment.
+
+--- a/mm/rmap.c
++++ b/mm/rmap.c
+@@ -333,8 +333,18 @@ static int page_referenced_one(struct pa
+ 		goto out_unmap;
+ 	}
+ 
+-	if (ptep_clear_flush_young_notify(vma, address, pte))
+-		referenced++;
++	if (ptep_clear_flush_young_notify(vma, address, pte)) {
++		/*
++		 * If there was just one sequential access to the
++		 * page, ignore it.  Otherwise, mark_page_accessed()
++		 * will have promoted the page to the active list and
++		 * it should be kept.
++		 */
++		if (VM_SequentialReadHint(vma) && !PageActive(page))
++			ClearPageReferenced(page);
++		else
++			referenced++;
++	}
+ 
+ 	/* Pretend the page is referenced if the task has the
+ 	   swap token and is in the middle of a page fault. */
+@@ -455,9 +465,6 @@ int page_referenced(struct page *page, i
+ {
+ 	int referenced = 0;
+ 
+-	if (TestClearPageReferenced(page))
+-		referenced++;
+-
+ 	if (page_mapped(page) && page->mapping) {
+ 		if (PageAnon(page))
+ 			referenced += page_referenced_anon(page, mem_cont);
+@@ -473,6 +480,9 @@ int page_referenced(struct page *page, i
+ 		}
+ 	}
+ 
++	if (TestClearPageReferenced(page))
++		referenced++;
++
+ 	if (page_test_and_clear_young(page))
+ 		referenced++;
+ 
