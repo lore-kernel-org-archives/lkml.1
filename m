@@ -1,108 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbYGSKWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbYGSKWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754013AbYGSKWA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 06:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbYGSKVu
+	id S1753252AbYGSKWY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 06:22:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753070AbYGSKVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 06:21:50 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51382 "EHLO hera.kernel.org"
+	Sat, 19 Jul 2008 06:21:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47907 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752103AbYGSKVt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 06:21:49 -0400
-Message-ID: <4880237A.7070002@kernel.org>
-Date: Fri, 18 Jul 2008 14:00:42 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Jeroen Beerstra <jb@scorpion77.cjb.net>
-CC: linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: non functional pata dvd drive under 2.6.25.6
-References: <vi85j5-uig.ln1@scorpion77.cjb.net>
-In-Reply-To: <vi85j5-uig.ln1@scorpion77.cjb.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 19 Jul 2008 10:21:43 +0000 (UTC)
+	id S1752833AbYGSKVx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jul 2008 06:21:53 -0400
+Date: Sat, 19 Jul 2008 06:11:40 -0400
+From: Alan Cox <alan@redhat.com>
+To: "Rodrigo Rubira Branco (BSDaemon)" <rbranco@LA.CHECKPOINT.COM>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
+       greg@kroah.com, "'Justin Forbes'" <jmforbes@linuxtx.org>,
+       "'Zwane Mwaikambo'" <zwane@arm.linux.org.uk>,
+       "'Theodore Ts'o'" <tytso@mit.edu>,
+       "'Randy Dunlap'" <rdunlap@xenotime.net>,
+       "'Dave Jones'" <davej@redhat.com>,
+       "'Chuck Wolber'" <chuckw@quantumlinux.com>,
+       "'Chris Wedgwood'" <reviews@ml.cw.f00f.org>,
+       "'Michael Krufky'" <mkrufky@linuxtv.org>,
+       "'Chuck Ebbert'" <cebbert@redhat.com>,
+       "'Domenico Andreoli'" <cavokz@gmail.com>, "'Willy Tarreau'" <w@1wt.eu>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "'Alan Cox'" <alan@redhat.com>,
+       caglar@pardus.org.tr, casey@schaufler-ca.com, spender@grsecurity.net,
+       pageexec@freemail.hu, rodrigo@kernelhacking.com
+Subject: Re: [stable] Linux 2.6.25.10 (resume)
+Message-ID: <20080719101140.GB20802@devserv.devel.redhat.com>
+References: <20080701151057.930340322@mini.kroah.org> <200807021257.47593.caglar@pardus.org.tr> <20080702144149.GA16850@suse.de> <200807021809.07679.caglar@pardus.org.tr> <005001c8e6f8$ac0955f0$a6181fac@ad.checkpoint.com> <20080716044905.GA9033@suse.de> <4880A3B1.3050103@la.checkpoint.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4880A3B1.3050103@la.checkpoint.com>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a Lloegr o'r rhif cofrestru 3798903
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Jeroen.
+> @@ -1,7 +1,7 @@
+> -Linux kernel developers take security very seriously.  As such, we'd
+> -like to know when a security bug is found so that it can be fixed and
+> -disclosed as quickly as possible.  Please report security bugs to the
+> -Linux kernel security team.
+> +Linux kernel developers take security very seriously, in exactly the 
+> +same way we do with any other bugs.  As such, we'd like to know when 
+> +a security bug is found so that it can be fixed as soon as possible.
+> +Please report security bugs to the Linux kernel security team.
 
-[cc'ing linux-ide]
+NAK this. If the fix is not clear and the bug not too serious it is better
+to disclose it than fail to fix it. The security team does not usually fix the
+bugs, the experts in the various bits of code do.
 
-Jeroen Beerstra wrote:
-> hi there,
-> 
-> I've filed this as a bug with redhat bugzilla (12-6), https://
-> bugzilla.redhat.com/show_bug.cgi?id=451081, but so far I've had no 
-> response at all ... so here we go ;)
-> 
-> Basicly my ide dvd writer is non functional with Fedora 9 (kernel 
-> 2.6.25.6). So far I've seen it functional only once when I booted with 
-> media already inserted, but for the rest it's pretty much like this:
-> 
-> excerpt from dmesg
-> 
-> ata10.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-> ata10.00: cmd a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
->          cdb 1e 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
->          res 40/00:02:00:08:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-> ata10.00: status: { DRDY }
-> ata10: soft resetting link
-> ata10: nv_mode_filter: 0x1&0x1f01f->0x1, BIOS=0x1f000 (0xc5000000) 
-> ACPI=0x1f01f (30:600:0x13)
-> ata10.00: configured for PIO0
-> ata10: EH complete
-> ata10.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-> ata10.00: cmd a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
->          cdb 1e 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
->          res 40/00:02:00:08:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-> ata10.00: status: { DRDY }
-> ata10: soft resetting link
-> ata10: nv_mode_filter: 0x1&0x1f01f->0x1, BIOS=0x1f000 (0xc5000000) 
-> ACPI=0x1f01f (30:600:0x13)
-> ata10.00: configured for PIO0
-> ata10: EH complete
-> sr 10:0:0:0: ioctl_internal_command return code = 8000002
->    : Sense Key : Aborted Command [current] [descriptor]
->    : Add. Sense: No additional sense information
-> ata10.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-> ata10.00: cmd a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
->          cdb 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
->          res 40/00:02:00:08:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-> ata10.00: status: { DRDY }
-> ata10: soft resetting link
-> ata10: nv_mode_filter: 0x1&0x1f01f->0x1, BIOS=0x1f000 (0xc5000000) 
-> ACPI=0x1f01f (30:600:0x13)
-> ata10.00: configured for PIO0
-> ata10: EH complete
-> 
-> cat /sys/bus/scsi/devices/10:0:0:0/model 
-> PATA 20X20X12X 
-> 
-> The drive is completely non functional.
-> 
-> System is a Nforce 780i SLI MB (Asus P5N-T Deluxe) with an Q9450 INtel 
-> Core2 Quad CPU and 4 GB of ram.
-> 
-> With Windows XP/Vista there are no problems with this drive and also I 
-> had no problems installing Fedora from this drive in the first place, so 
-> I doubt if it is a hardware problem. 
-> 
-> I can live with the fact that I only have one writer available but not 
-> with the fact that everything that tries to access the drive hangs with 
-> status D for a very long time, hald-addon-storage for one....
+> -Any exploit code is very helpful and will not be released without
+> -consent from the reporter unless it has already been made public.
+> +Any exploit code is very helpful and will not be released.
 
-Hmmm... the problem could be caused by hald polling for media presence.
- Does "hal-disable-polling /dev/srX" make any difference?
-hal-disable-polling setting is persistent so if your drive goes bonkers
-quickly after boot, you can disable polling, reboot and see whether
-anything is different.  Also, please post the result of "lspci -nn" and
-"hdparm -I /dev/srX" && please try 2.6.26.
+NAK this too. If someone releases an exploit publically or it leaks we
+want to be able to freely share it too. Your proposal would mean any but
+those dumb enough to agree to this could share it. That is why the unless made
+public is part of every generic NDA document on the planet.
 
-Thanks.
 
--- 
-tejun
+The rest needs Linus to return from holiday for discussion and that'll
+be a week or two. In the meantime you might want to define "disclose" as
+I don't think we all agree on what it means as you've not defined who is and
+isn't the linux security team and/or its helpers.
+
