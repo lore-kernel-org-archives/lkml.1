@@ -1,114 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755599AbYGSMbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755673AbYGSMcQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755599AbYGSMbq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 08:31:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755201AbYGSMbO
+	id S1755673AbYGSMcQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 08:32:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755615AbYGSMbz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 08:31:14 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:35483 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755778AbYGSMbN (ORCPT
+	Sat, 19 Jul 2008 08:31:55 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:48092 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755201AbYGSMby (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 08:31:13 -0400
-Date: Sat, 19 Jul 2008 15:31:01 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: linux-kernel@vger.kernel.org, cl@linux-foundation.org,
-       akpm@linux-foundation.org, riel@redhat.com
-Subject: [PATCH 4/8] slub: Sort slab cache list and establish maximum objects
- for defrag slabs
-Message-ID: <Pine.LNX.4.64.0807191530410.13345@sbz-30.cs.Helsinki.FI>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 19 Jul 2008 08:31:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=xD72O44WXM+Wn5gMNq/OIOpBUEzz2y3u+gsX2M4pSNemp/hpjyrOYU4KNDpQaSvVuK
+         9HJCKPDpJ0Txhh7NcGHO3S917txovOswp8owe5bO2xfYtc2ty31IhWvWSig2VS/WHsXS
+         SVc1CeytlstTp7NhSQqEv+pbKSF5P82f40cJw=
+Message-ID: <4881DEB2.8030508@bellsouth.net>
+Date: Sat, 19 Jul 2008 07:31:46 -0500
+Reply-To: jacliburn@bellsouth.net
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Ian Jeffray <ian@jeffray.co.uk>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: sendfile() broken with 2.6.26 + Apache 2 ?
+References: <487CD7A7.2080800@jeffray.co.uk>
+In-Reply-To: <487CD7A7.2080800@jeffray.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+From: "J. K. Cliburn" <jcliburn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christoph Lameter <clameter@sgi.com>
+Ian Jeffray wrote:
+> All,
+> 
+> I moved from kernel 2.6.25.4 to 2.6.26 yesterday and observed that
+> large files sent via Apache2 are partially corrupt.
+> 
+> This appears to be linked to sendfile() -- disabling the use of
+> sendfile in the apache config (EnableSendfile Off) allows it to
+> function as normal.
+> 
+> My system is a simple Core2Duo running Debian lenny/sid; nothing
+> special, and I have never observed problems like this before.
+> 
+> The problem feels certainly related to sendfile() since the data
+> reads correctly from disc in other programs, and via CIFS etc.
+> 
+> The corruption happens part-way in to the file... I've no exact
+> figure but it would seem like maybe 32KB -- I'm seeing broken
+> PNGs served from Apache, where the top few dozen lines decode
+> correctly, and the rest is garbage.
+> 
+> I've made basically no configuration changes between 2.6.25.4 and
+> 2.6.26 and have explicitly tried both enabling and disabling the
+> new PAT support to no effect.
+> 
+> This is completely repeatable and reproducible.
+> 
+> Is anyone else seeing this broken behaviour?
 
-When defragmenting slabs then it is advantageous to have all
-defragmentable slabs together at the beginning of the list so that there is
-no need to scan the complete list. Put defragmentable caches first when adding
-a slab cache and others last.
+Can you please enable verbose logging
 
-Determine the maximum number of objects in defragmentable slabs. This allows
-to size the allocation of arrays holding refs to these objects later.
+echo 8 > /proc/sys/kernel/printk
+ethtool -s eth0 msglvl 0xffff
 
-Reviewed-by: Rik van Riel <riel@redhat.com>
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- mm/slub.c |   26 ++++++++++++++++++++++++--
- 1 files changed, 24 insertions(+), 2 deletions(-)
-
-diff --git a/mm/slub.c b/mm/slub.c
-index 1c256e2..f455765 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -205,6 +205,9 @@ static enum {
- static DECLARE_RWSEM(slub_lock);
- static LIST_HEAD(slab_caches);
- 
-+/* Maximum objects in defragmentable slabs */
-+static unsigned int max_defrag_slab_objects;
-+
- /*
-  * Tracking user of a slab.
-  */
-@@ -2545,7 +2548,7 @@ static struct kmem_cache *create_kmalloc_cache(struct kmem_cache *s,
- 								flags, NULL))
- 		goto panic;
- 
--	list_add(&s->list, &slab_caches);
-+	list_add_tail(&s->list, &slab_caches);
- 	up_write(&slub_lock);
- 	if (sysfs_slab_add(s))
- 		goto panic;
-@@ -2775,9 +2778,23 @@ void kfree(const void *x)
- }
- EXPORT_SYMBOL(kfree);
- 
-+/*
-+ * Allocate a slab scratch space that is sufficient to keep at least
-+ * max_defrag_slab_objects pointers to individual objects and also a bitmap
-+ * for max_defrag_slab_objects.
-+ */
-+static inline void *alloc_scratch(void)
-+{
-+	return kmalloc(max_defrag_slab_objects * sizeof(void *) +
-+		BITS_TO_LONGS(max_defrag_slab_objects) * sizeof(unsigned long),
-+		GFP_KERNEL);
-+}
-+
- void kmem_cache_setup_defrag(struct kmem_cache *s,
- 	kmem_defrag_get_func get, kmem_defrag_kick_func kick)
- {
-+	int max_objects = oo_objects(s->max);
-+
- 	/*
- 	 * Defragmentable slabs must have a ctor otherwise objects may be
- 	 * in an undetermined state after they are allocated.
-@@ -2785,6 +2802,11 @@ void kmem_cache_setup_defrag(struct kmem_cache *s,
- 	BUG_ON(!s->ctor);
- 	s->get = get;
- 	s->kick = kick;
-+	down_write(&slub_lock);
-+	list_move(&s->list, &slab_caches);
-+	if (max_objects > max_defrag_slab_objects)
-+		max_defrag_slab_objects = max_objects;
-+	up_write(&slub_lock);
- }
- EXPORT_SYMBOL(kmem_cache_setup_defrag);
- 
-@@ -3171,7 +3193,7 @@ struct kmem_cache *kmem_cache_create(const char *name, size_t size,
- 	if (s) {
- 		if (kmem_cache_open(s, GFP_KERNEL, name,
- 				size, align, flags, ctor)) {
--			list_add(&s->list, &slab_caches);
-+			list_add_tail(&s->list, &slab_caches);
- 			up_write(&slub_lock);
- 			if (sysfs_slab_add(s))
- 				goto err;
--- 
-1.5.4.3
-
+and see if the driver issues any error messages as the file is transferred?
