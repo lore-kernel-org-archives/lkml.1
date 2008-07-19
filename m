@@ -1,100 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757904AbYGSBbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbYGSBwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757904AbYGSBbS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 21:31:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554AbYGSBa7
+	id S1756034AbYGSBwW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 21:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbYGSBwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 21:30:59 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:37287 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751670AbYGSBa5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 21:30:57 -0400
-Date: Sat, 19 Jul 2008 03:30:50 +0200
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Tejun Heo <htejun@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       scsi <linux-scsi@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       Takashi Iwai <tiwai@suse.de>, tino.keitel@gmx.de
-Subject: Re: linux-next: Tree for July 16 (crash on quad core AMD)
-Message-ID: <20080719033050.552f9b49@mjolnir.drzeus.cx>
-In-Reply-To: <48813C5F.70007@gmail.com>
-References: <20080716235011.ac9643aa.sfr@canb.auug.org.au>
-	<200807170053.36661.rjw@sisk.pl>
-	<1216249292.3358.66.camel@localhost.localdomain>
-	<200807170109.30655.rjw@sisk.pl>
-	<48808EE0.2060603@gmail.com>
-	<20080719004736.626ef169@mjolnir.drzeus.cx>
-	<48813C5F.70007@gmail.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.4; i386-redhat-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
-X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-25412-1216431055-0001-2"
+	Fri, 18 Jul 2008 21:52:14 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:1540 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751583AbYGSBwO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 21:52:14 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "David@Lang. Hm" <david@lang.hm>
+Cc: "Greg KH" <greg@kroah.com>, <linux-kernel@vger.kernel.org>,
+       <stable@kernel.org>
+Subject: RE: [stable] Linux 2.6.25.10
+Date: Fri, 18 Jul 2008 18:51:42 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKEEJIOEAC.davids@webmaster.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <alpine.DEB.1.10.0807181755590.30465@asgard.lang.hm>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Fri, 18 Jul 2008 18:53:53 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Fri, 18 Jul 2008 18:53:55 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
 
---=_freyr.drzeus.cx-25412-1216431055-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+David Lang wrote:
 
-On Sat, 19 Jul 2008 09:59:11 +0900
-Tejun Heo <htejun@gmail.com> wrote:
+> > That means only people with the time, energy, and expertise to create an
+> > exploit will have an exploit. This includes probably 90% of the
+> > people who
+> > would use the exploit maliciously
 
-> Pierre Ossman wrote:
-> > I just have one objection to your version, and that is that it cannot
-> > be used to nibble away at the sg list. The _next() call jumps an entire
-> > page, whereas you sometimes need to consume that page in two different
-> > sweeps. This could be handled by some external buffer that keeps the
-> > remainder of the page, but the point of these functions was to keep
-> > things simple for the callers.
->=20
-> Well, I don't know how often such usages would be necessary.  If it's a
-> very common ops, you can add a param to the next function but frankly I
-> think it's better to build a inside control structure for that.  There's
-> no need for external buffer, just an inner loop is sufficient.
->=20
+> haven't you ever heard of script-kiddies? they are by far the majority of
+> attacks on systems but do not have the expertise to create exploits. it
+> takes someone else writing the exploit for them and packaging it to make
+> them a threat.
 
-I'm not sure how this can be solved by an inner loop. My primary use
-case is:
+Nobody is saying you should package the exploit. If they need someone else
+to package it, they'll still need that. So the question is not if this will
+deter script kiddies but whether it will deter the people who package
+exploits for them. And from experience, I can tell you that answer is no.
+Manys attacks that were believed too difficult for the script kiddies to do
+were packaged by people who had the expertise and then used by script
+kiddies.
 
-1. Wait for interrupt
-2. Write n bytes
-3. goto 1
+> in the meantime there's a chance for the fix to get propogated out to a
+> released version and for people to upgrade their systems. providing
+> exploit code along with the bugfix means that the script kiddies have the
+> exploit immediatly, but the fix isn't in any released version (not even a
+> -rc or daily -git snapshot)
 
-n has no guarantee of being aligned to any page boundaries, so state
-needs to be kept between each invokation of writing a chunk of data. I
-doubt I'm alone in this use pattern (in fact, most device drivers using
-PIO should do something similar).
+The alternative is that the fix gets released but not implemented.
 
---=20
-     -- Pierre Ossman
+> > It does, however, ensure that the majority of
+> > ordinary users won't be able to test their systems to see if they're
+> > vulnerable or if the vulnerability is fixed. So at least it
+> > will have some
+> > effect.
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+> how many people run exploits against their production systems to 'see if
+> they are fixed', very few, and those only on strict schedules
+> with lots of
+> adnvance notice and other safeguards.
 
---=_freyr.drzeus.cx-25412-1216431055-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
+I can tell you how many run exploits against their production systems when
+they don't know the exploits exist -- zero. It takes, at a minimum, the
+knowledge that an exploit is possible. In the cases being discussed, even
+this was withheld.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+Fixes will not be widely deployed on a timely basis unless, at an absolute
+minimum, it is known that there is an exploitable bug that has been fixed.
 
-iEYEARECAAYFAkiBQ84ACgkQ7b8eESbyJLh53QCg7qnc+iwa36yyuiN8TlQ4A9Yj
-0WQAoLHgjuev75S9ngB8lO9/0neIaAvZ
-=Oe++
------END PGP SIGNATURE-----
+DS
 
---=_freyr.drzeus.cx-25412-1216431055-0001-2--
+
