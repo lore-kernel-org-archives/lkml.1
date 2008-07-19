@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755887AbYGSXE2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755615AbYGSXIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755887AbYGSXE2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 19:04:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbYGSXEU
+	id S1755615AbYGSXIp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 19:08:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbYGSXIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 19:04:20 -0400
-Received: from 206-248-169-182.dsl.ncf.ca ([206.248.169.182]:47316 "EHLO
-	phobos.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753751AbYGSXET (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 19:04:19 -0400
-Date: Sat, 19 Jul 2008 19:04:18 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Guy Martin <gmsoft@tuxicoman.be>
-Cc: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: 64bit kernel not booting with CONFIG_PRINTK_TIME=y
-Message-ID: <20080719230418.GA4263@phobos.i.cabal.ca>
-References: <20080717190502.74c238d5@bleh.bxl.tuxicoman.be> <20080719215459.GA2550@phobos.i.cabal.ca>
+	Sat, 19 Jul 2008 19:08:38 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:63722 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753046AbYGSXIi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jul 2008 19:08:38 -0400
+Date: Sun, 20 Jul 2008 00:08:23 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+cc: Vegard Nossum <vegard.nossum@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: warn on apic error
+In-Reply-To: <20080719125907.GA30979@asus>
+Message-ID: <Pine.LNX.4.55.0807192352030.19091@cliff.in.clinika.pl>
+References: <20080718172821.GA4149@localhost.localdomain> <20080718174413.GD6897@asus>
+ <19f34abd0807181045k239c81e8i1520291922909e93@mail.gmail.com>
+ <20080718174931.GE6897@asus> <Pine.LNX.4.55.0807182005330.12125@cliff.in.clinika.pl>
+ <20080719125907.GA30979@asus>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080719215459.GA2550@phobos.i.cabal.ca>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 19, 2008 at 05:54:59PM -0400, Kyle McMartin wrote:
-> I'm *guessing* that umoddi3 or udivdi3 is doing an xmpyu or something,
-> which since this is probably before fpu init, is trapping, which is
-> trying to printk, which is recursively exploding.
+On Sat, 19 Jul 2008, Cyrill Gorcunov wrote:
+
+> [Maciej W. Rozycki - Fri, Jul 18, 2008 at 08:09:20PM +0100]
+> | On Fri, 18 Jul 2008, Cyrill Gorcunov wrote:
+> | 
+> | > iirc, they all were there (though some error codes are specific for
+> | > particular processor classes like P4, pentium and other - don't remeber
+> | > you could check intel dev manual for this).
+> | 
+> |  This is an error in some newer Intel documents -- the set of supported
+> | bits is the same for all APICs implementing the ESR register and the error
+> | interrupt (the 82489DX is the one to provide neither).
+> | 
+> |   Maciej
+> |
 > 
+> But Maciej, Intel doesn't claim about absence of bit but
+> rather about their 'reserved' state so checking the reserved
+> bit could be false alarm if it was being set by some reason.
 
-If my guess is right, this quick fix might work. Can you please test it,
-as my a500 decided to have its scsi controller die in the middle of
-this...
+ As I say -- all later manuals have an error here (not the first and
+presumably not the last one), where they state the invalid register error
+has been only implemented since the P6.  This is not true -- go find the
+Pentium manual or experiment with actual hardware to see otherwise.  No
+new bits have been added since the introduction of the ESR, so there is no
+issue with bits to mask out on older silicon.
 
-(Proper fix is probably to bring fpu bringup into head.S, since it will
- be necessary for any printk with CONFIG_PRINTK_TIME on. (Or bring back
- my use embedded libgcc patch, which was buggy on 32-bit. :\ ))
+ Obviously the checksum and accept error bits are valid for APICs using
+the dedicated inter-APIC bus only as for the FSB they are irrelevant.  
+They have to be hardwired to zero for backward compatibility though.
 
-diff --git a/init/main.c b/init/main.c
-index edeace0..729b150 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -560,9 +560,9 @@ asmlinkage void __init start_kernel(void)
- 	tick_init();
- 	boot_cpu_init();
- 	page_address_init();
-+	setup_arch(&command_line);
- 	printk(KERN_NOTICE);
- 	printk(linux_banner);
--	setup_arch(&command_line);
- 	mm_init_owner(&init_mm, &init_task);
- 	setup_command_line(command_line);
- 	unwind_setup();
+  Maciej
