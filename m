@@ -1,112 +1,386 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756735AbYGSVRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756024AbYGSVgH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756735AbYGSVRS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 17:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753984AbYGSVRK
+	id S1756024AbYGSVgH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 17:36:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbYGSVfz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 17:17:10 -0400
-Received: from vapor.isi.edu ([128.9.64.64]:43648 "EHLO vapor.isi.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753725AbYGSVRJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 17:17:09 -0400
-Date: Sat, 19 Jul 2008 14:16:53 -0700
-From: Craig Milo Rogers <rogers@ISI.EDU>
-To: "Peter T. Breuer" <ptb@inv.it.uc3m.es>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: From 2.4 to 2.6 to 2.7?
-Message-ID: <20080719211653.GF18350@isi.edu>
-References: <20080719080002.GA11272@isi.edu> <200807191930.m6JJURC12038@inv.it.uc3m.es>
+	Sat, 19 Jul 2008 17:35:55 -0400
+Received: from usul.saidi.cx ([204.11.33.34]:34169 "EHLO usul.overt.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752960AbYGSVfy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jul 2008 17:35:54 -0400
+X-Greylist: delayed 1901 seconds by postgrey-1.27 at vger.kernel.org; Sat, 19 Jul 2008 17:35:54 EDT
+Message-ID: <488256C1.6040802@overt.org>
+Date: Sat, 19 Jul 2008 14:04:01 -0700
+From: Philip Langdale <philipl@overt.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200807191930.m6JJURC12038@inv.it.uc3m.es>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-ISI-4-43-8-MailScanner: Found to be clean
-X-MailScanner-From: rogers@jib.isi.edu
+To: LKML <linux-kernel@vger.kernel.org>
+CC: Matthew Garrett <mjg59@srcf.ucam.org>, toshiba_acpi@memebeam.org,
+       randy.dunlap@oracle.com
+Subject: [PATCH] toshiba_acpi: Add support for bluetooth toggling through
+ rfkill
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-RunX1: Yes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08.07.19, Peter T. Breuer wrote:
-> In article <20080719080002.GA11272@isi.edu> you wrote:
-> > In <200807180823.m6I8NIo27365@inv.it.uc3m.es>, Peter T. Breuer
-> > proposed switching to a three-level numbering scheme and resetting the
-> > middle number when useful [which I suppose might mean a major feature
-> > change or just a desire to avoid largish meaningless numbers].  I
-> > assume this sould give a sequence like:
-> 
-> > 2.6.26.s, 2.8.s, 2.9.s, 2.10.s,
-> 
-> Actually he said
-> 
->    rename 2.6.28 to 2.8.0
-> or 
->    rename 2.6.29 to 2.9.0
-> or
->    rename 2.6.30 to 3.0.0
-> 
-> i.e. .. whatever you are doing now, just drop the first two numbers (the
-> "2.6" bit) since they seem to be constant.
+There's been a patch floating around for toshiba_acpi that exports an ad-hoc
+/proc interface to toggle the bluetooth adapter in a large number of Toshiba
+laptops. I'm not sure if it's still relevant for the latest models, but when I
+was actively using my Tecra M3 (terrible machine), I had to keep reworking the
+patch everytime I upgraded my kernel, and today I see that mainline still lacks
+a way to turn on bluetooth on these machines. So I pulled the M3 out of storage
+and reworked the patch to work through rfkill as Matthew has previously suggested.
 
-	So you're saying that the formula is to drop the "2.6" and place
-a period between the first and sedond digits of what's currently the
-release number? OK, I hadn't interpreted it that way.  Does the sequence
-continue like this?
+This change pulls in the low level Toshiba-specific code from the old patch and
+sets up an rfkill device and a polled input device to track the state of the
+hardware kill-switch. One entertaining fact about these Toshibas is that the
+hardware kill-switch will turn off the bluetooth adapter but never turn it on.
+Conveniently, this code will turn it back on when rfkill resynchronises the
+software state.
 
-... 9.9.0, 10.0.0, ...
+At some point, someone (possibly me) should replace the remaining /proc entries
+with standardised interfaces. Particuarly, this applies to the handling of the
+special Fn-key combinations. Right now you need the fnfx userspace daemon to
+handle those. As a point of style, should these key combinations eventually appear
+on the same input device as the kill switch or a separate one? They both need to
+be polled, so it seems somewhat redundant to have two but maybe there are stylistic
+reasons to keep kill switches separate.
 
-> Remember that Linus' only objective is to have smaller numbers, which
-> may therefore
-> 
->  1) be memorable
->  2) be good advertising copy
->  3) be meaningful
-> 
-> and that was the only intention of my scheme: "drop the constant bit".
+I've only been able to test on my Tecra M3. Particuarly helpful testing would be
+on machines without wireless, without bluetooth and without booth.
 
-	And the underlying problem is that there are only so many
-small numbers.  Eventually, inevitably, constant bits accumulate in
-front of the changing bits.
+Signed-off-by: Philip Langdale <philipl@overt.org>
+---
+  Kconfig        |    1
+  toshiba_acpi.c |  214 +++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+  2 files changed, 211 insertions(+), 4 deletions(-)
 
-	Given the three criteria shown above, Linus' proposed scheme:
+--- linux-2.6.26/drivers/acpi/Kconfig	2008-07-13 14:51:29.000000000 -0700
++++ toshiba-2.6.26/drivers/acpi/Kconfig	2008-07-16 20:24:35.000000000 -0700
+@@ -262,6 +262,7 @@
+  config ACPI_TOSHIBA
+  	tristate "Toshiba Laptop Extras"
+  	depends on X86
++	select INPUT_POLLDEV
+  	select BACKLIGHT_CLASS_DEVICE
+  	---help---
+  	  This driver adds support for access to certain system settings
+diff -ur linux-2.6.26/drivers/acpi/toshiba_acpi.c toshiba-2.6.26/drivers/acpi/toshiba_acpi.c
+--- linux-2.6.26/drivers/acpi/toshiba_acpi.c	2008-07-13 14:51:29.000000000 -0700
++++ toshiba-2.6.26/drivers/acpi/toshiba_acpi.c	2008-07-19 13:49:33.000000000 -0700
+@@ -3,6 +3,7 @@
+   *
+   *
+   *  Copyright (C) 2002-2004 John Belmonte
++ *  Copyright (C) 2008 Philip Langdale
+   *
+   *  This program is free software; you can redistribute it and/or modify
+   *  it under the terms of the GNU General Public License as published by
+@@ -33,7 +34,7 @@
+   *
+   */
 
-yyyy.r.s
+-#define TOSHIBA_ACPI_VERSION	"0.18"
++#define TOSHIBA_ACPI_VERSION	"0.19"
+  #define PROC_INTERFACE_VERSION	1
 
-seems best to me.  We know the year, it relates directly to common
-experience and effectively is a small number (this year, last year,
-two years ago... 0, 1, 2 years ago).
+  #include <linux/kernel.h>
+@@ -42,6 +43,9 @@
+  #include <linux/types.h>
+  #include <linux/proc_fs.h>
+  #include <linux/backlight.h>
++#include <linux/platform_device.h>
++#include <linux/rfkill.h>
++#include <linux/input-polldev.h>
 
-	There's the potential for cognitive dissonance if the linux
-kernel takes a yyy.x format and the distrbutions also use yyyy.x, but
-the two aren't the same?  e.g., what will people think if, say,
-openSUSE 2009.2 contains linux kernel 2009.1?  Perhaps the
-distibutions would synchronize to kernel releases as a consequence of
-a revised kernel naming convention?
+  #include <asm/uaccess.h>
 
-	There's the question of what to do if you plan on a end-of year
-release, and it just doesn't happen.  I see three strategies, some of
-which have been mentioned already in this thread:
+@@ -90,6 +94,7 @@
+  #define HCI_VIDEO_OUT			0x001c
+  #define HCI_HOTKEY_EVENT		0x001e
+  #define HCI_LCD_BRIGHTNESS		0x002a
++#define HCI_WIRELESS			0x0056
 
-1)	Retain the "yyyy.r" part, even though it's year yyyy+1 before the
-	stable relese is issued.
+  /* field definitions */
+  #define HCI_LCD_BRIGHTNESS_BITS		3
+@@ -98,9 +103,14 @@
+  #define HCI_VIDEO_OUT_LCD		0x1
+  #define HCI_VIDEO_OUT_CRT		0x2
+  #define HCI_VIDEO_OUT_TV		0x4
++#define HCI_WIRELESS_KILL_SWITCH	0x01
++#define HCI_WIRELESS_BT_PRESENT		0x0f
++#define HCI_WIRELESS_BT_ATTACH		0x40
++#define HCI_WIRELESS_BT_POWER		0x80
 
-	2008.3.rc5, 2008.3.rc6, [year 2009 arrives], 2008.3.rc7, 2008.3.0
+  static const struct acpi_device_id toshiba_device_ids[] = {
+  	{"TOS6200", 0},
++	{"TOS6208", 0},
+  	{"TOS1900", 0},
+  	{"", 0},
+  };
+@@ -193,7 +203,7 @@
+  	return status;
+  }
 
-2)	Drop  the "yyyy.r" and start over with rc1 for "yyyy+1.1".
+-/* common hci tasks (get or set one value)
++/* common hci tasks (get or set one or two value)
+   *
+   * In addition to the ACPI status, the HCI system returns a result which
+   * may be useful (such as "not supported").
+@@ -218,6 +228,120 @@
+  	return status;
+  }
 
-	2008.3.rc5, 2008.3.rc6, [year 2009 arrives], 2009.1.rc1, 2009.1.0
++static acpi_status hci_write2(u32 reg, u32 in1, u32 in2, u32* result)
++{
++        u32 in[HCI_WORDS] = { HCI_SET, reg, in1, in2, 0, 0 };
++        u32 out[HCI_WORDS];
++        acpi_status status = hci_raw(in, out);
++        *result = (status == AE_OK) ? out[0] : HCI_FAILURE;
++        return status;
++}
++
++static acpi_status hci_read2(u32 reg, u32* out1, u32* out2, u32* result)
++{
++        u32 in[HCI_WORDS] = { HCI_GET, reg, *out1, *out2, 0, 0 };
++        u32 out[HCI_WORDS];
++        acpi_status status = hci_raw(in, out);
++        *out1 = out[2];
++        *out2 = out[3];
++        *result = (status == AE_OK) ? out[0] : HCI_FAILURE;
++        return status;
++}
++
++struct toshiba_acpi_dev {
++	struct platform_device *p_dev;
++	struct rfkill *rfk_dev;
++	struct input_polled_dev *poll_dev;
++
++	const char *bt_name;
++	bool last_rfk_state;
++
++	struct mutex mutex;
++};
++
++static struct toshiba_acpi_dev toshiba_acpi = {
++	.bt_name = "Toshiba Bluetooth",
++	.last_rfk_state = 0,
++};
++
++/* Bluetooth rfkill handlers */
++
++static u32 bt_get_present(bool *present)
++{
++	u32 hci_result;
++	u32 value, value2;
++	value = 0;
++	value2 = 0;
++	hci_read2(HCI_WIRELESS, &value, &value2, &hci_result);
++	if (hci_result == HCI_SUCCESS) {
++		*present = (value & HCI_WIRELESS_BT_PRESENT) ? 1 : 0;
++	}
++	return hci_result;
++}
++
++static u32 bt_get_on(bool *on)
++{
++	u32 hci_result;
++	u32 value, value2;
++	value = 0;
++	value2 = 0x0001;
++	hci_read2(HCI_WIRELESS, &value, &value2, &hci_result);
++	if (hci_result == HCI_SUCCESS) {
++		*on = (value & HCI_WIRELESS_BT_POWER) &&
++		      (value & HCI_WIRELESS_BT_ATTACH);
++	}
++	return hci_result;
++}
++
++static int bt_toggle_radio(void *data, enum rfkill_state state)
++{
++	u32 result1, result2;
++	u32 value;
++
++	struct toshiba_acpi_dev *dev = data;
++
++	value = state == RFKILL_STATE_ON;
++
++	mutex_lock(&dev->mutex);
++	hci_write2(HCI_WIRELESS, value, HCI_WIRELESS_BT_POWER, &result1);
++	hci_write2(HCI_WIRELESS, value, HCI_WIRELESS_BT_ATTACH, &result2);
++	mutex_unlock(&dev->mutex);
++
++	if (result1 != HCI_SUCCESS || result2 != HCI_SUCCESS) {
++		return -EFAULT;
++	}
++
++	return 0;
++}
++
++static void bt_poll_rfkill(struct input_polled_dev *poll_dev)
++{
++	bool state_changed;
++	bool new_rfk_state;
++	u32 hci_result;
++	u32 value, value2;
++
++	struct toshiba_acpi_dev *dev = poll_dev->private;
++
++	value = 0;
++	value2 = 0x0001;
++	hci_read2(HCI_WIRELESS, &value, &value2, &hci_result);
++	if (hci_result != HCI_SUCCESS) {
++		return; /* Can't do anything useful */
++	}
++	new_rfk_state = !(value & HCI_WIRELESS_KILL_SWITCH);
++
++	mutex_lock(&dev->mutex);
++	state_changed = new_rfk_state != dev->last_rfk_state;
++	dev->last_rfk_state = new_rfk_state;
++	mutex_unlock(&dev->mutex);
++
++	if (unlikely(state_changed)) {
++		input_report_key(poll_dev->input, KEY_BLUETOOTH, 1);
++		input_report_key(poll_dev->input, KEY_BLUETOOTH, 0);
++	}
++}
++
+  static struct proc_dir_entry *toshiba_proc_dir /*= 0*/ ;
+  static struct backlight_device *toshiba_backlight_device;
+  static int force_fan;
+@@ -547,6 +671,16 @@
 
-3)	Drop  the "yyyy.r" in favor of "yyyy+1.1", but don't break the
-	rc# numbering:
+  static void toshiba_acpi_exit(void)
+  {
++	if (toshiba_acpi.poll_dev) {
++		input_unregister_polled_device(toshiba_acpi.poll_dev);
++		input_free_polled_device(toshiba_acpi.poll_dev);
++	}
++
++	if (toshiba_acpi.rfk_dev) {
++		rfkill_unregister(toshiba_acpi.rfk_dev);
++		rfkill_free(toshiba_acpi.rfk_dev);
++	}
++
+  	if (toshiba_backlight_device)
+  		backlight_device_unregister(toshiba_backlight_device);
 
-	2008.3.rc5, 2008.3.rc6, [year 2009 arrives], 2009.1.rc7, 2009.1.0
+@@ -555,6 +689,8 @@
+  	if (toshiba_proc_dir)
+  		remove_proc_entry(PROC_TOSHIBA, acpi_root_dir);
 
++	platform_device_unregister(toshiba_acpi.p_dev);
++
+  	return;
+  }
 
-	The last varient seems strange on the surface, but I think it
-would be easier in practice, because developers could refer to "rc5",
-"rc6", "rc7", dropping the locally-constant bits will less potential
-ambiguity than if the "rc#" sequence was interrupted.
+@@ -562,6 +698,9 @@
+  {
+  	acpi_status status = AE_OK;
+  	u32 hci_result;
++	bool bt_present;
++	bool bt_on;
++	int ret = 0;
 
-					Craig Milo Rogers
+  	if (acpi_disabled)
+  		return -ENODEV;
+@@ -578,6 +717,18 @@
+  	       TOSHIBA_ACPI_VERSION);
+  	printk(MY_INFO "    HCI method: %s\n", method_hci);
 
++	mutex_init(&toshiba_acpi.mutex);
++
++	toshiba_acpi.p_dev = platform_device_register_simple("toshiba_acpi",
++							      -1, NULL, 0);
++	if (IS_ERR(toshiba_acpi.p_dev)) {
++		ret = PTR_ERR(toshiba_acpi.p_dev);
++		printk(MY_ERR "unable to register platform device\n");
++		toshiba_acpi.p_dev= NULL;
++		toshiba_acpi_exit();
++		return ret;
++	}
++
+  	force_fan = 0;
+  	key_event_valid = 0;
+
+@@ -594,11 +745,12 @@
+  			remove_proc_entry(PROC_TOSHIBA, acpi_root_dir);
+  	}
+
+-	toshiba_backlight_device = backlight_device_register("toshiba",NULL,
++	toshiba_backlight_device = backlight_device_register("toshiba",
++						&toshiba_acpi.p_dev->dev,
+  						NULL,
+  						&toshiba_backlight_data);
+          if (IS_ERR(toshiba_backlight_device)) {
+-		int ret = PTR_ERR(toshiba_backlight_device);
++		ret = PTR_ERR(toshiba_backlight_device);
+
+  		printk(KERN_ERR "Could not register toshiba backlight device\n");
+  		toshiba_backlight_device = NULL;
+@@ -607,6 +759,60 @@
+  	}
+          toshiba_backlight_device->props.max_brightness = HCI_LCD_BRIGHTNESS_LEVELS - 1;
+
++	/* Register rfkill switch for Bluetooth */
++	if (bt_get_present(&bt_present) == HCI_SUCCESS && bt_present) {
++		toshiba_acpi.rfk_dev = rfkill_allocate(&toshiba_acpi.p_dev->dev,
++							RFKILL_TYPE_BLUETOOTH);
++		if (!toshiba_acpi.rfk_dev) {
++			printk(MY_ERR "unable to allocate rfkill device\n");
++			toshiba_acpi_exit();
++			return -ENOMEM;
++		}
++
++		toshiba_acpi.rfk_dev->name = toshiba_acpi.bt_name;
++		toshiba_acpi.rfk_dev->state = RFKILL_STATE_OFF;
++		toshiba_acpi.rfk_dev->toggle_radio = bt_toggle_radio;
++		toshiba_acpi.rfk_dev->user_claim_unsupported = 1;
++		toshiba_acpi.rfk_dev->data = &toshiba_acpi;
++		toshiba_acpi.rfk_dev->dev.class->suspend = NULL;
++		toshiba_acpi.rfk_dev->dev.class->resume = NULL;
++
++		ret = rfkill_register(toshiba_acpi.rfk_dev);
++		if (ret) {
++			printk(MY_ERR "unable to register rfkill device\n");
++			toshiba_acpi_exit();
++			return -ENOMEM;
++		}
++
++		if (bt_get_on(&bt_on) == HCI_SUCCESS && bt_on) {
++			toshiba_acpi.rfk_dev->state = RFKILL_STATE_ON;
++		}
++
++		/* Register input device for kill switch */
++		toshiba_acpi.poll_dev = input_allocate_polled_device();
++		if (!toshiba_acpi.poll_dev) {
++			printk(MY_ERR "unable to allocate input device\n");
++			toshiba_acpi_exit();
++			return -ENOMEM;
++		}
++		toshiba_acpi.poll_dev->private = &toshiba_acpi;
++		toshiba_acpi.poll_dev->poll = bt_poll_rfkill;
++		toshiba_acpi.poll_dev->poll_interval = 1000; /* msecs */
++
++		toshiba_acpi.poll_dev->input->name = toshiba_acpi.bt_name;
++		toshiba_acpi.poll_dev->input->id.bustype = BUS_HOST;
++		toshiba_acpi.poll_dev->input->id.vendor = 0x0930; /* Toshiba USB Vendor ID */
++		toshiba_acpi.poll_dev->input->evbit[0] = BIT(EV_KEY);
++		set_bit(KEY_BLUETOOTH, toshiba_acpi.poll_dev->input->keybit);
++
++		ret = input_register_polled_device(toshiba_acpi.poll_dev);
++		if (ret) {
++			printk(MY_ERR "unable to register input device\n");
++			toshiba_acpi_exit();
++			return ret;
++		}
++	}
++
+  	return (ACPI_SUCCESS(status)) ? 0 : -ENODEV;
+  }
 
