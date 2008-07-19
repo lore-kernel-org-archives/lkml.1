@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756275AbYGSViO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756548AbYGSVkF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756275AbYGSViO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 17:38:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754118AbYGSVh6
+	id S1756548AbYGSVkF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 17:40:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754473AbYGSVj4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 17:37:58 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:60627 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753912AbYGSVh5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 17:37:57 -0400
-Subject: Re: [PATCH] Bluetooth: fix oops in rfcomm tty code (v2)
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Maxim Krasnyansky <maxk@qualcomm.com>,
-       Dave Young <hidave.darkstar@gmail.com>,
-       Soeren Sonnenburg <kernel@nn7.de>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080719211227.GA14173@localhost.localdomain>
-References: <20080719211227.GA14173@localhost.localdomain>
-Content-Type: text/plain
-Date: Sat, 19 Jul 2008 23:38:20 +0200
-Message-Id: <1216503500.8411.110.camel@violet.holtmann.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sat, 19 Jul 2008 17:39:56 -0400
+Received: from hel.is.scarlet.be ([193.74.71.26]:34491 "EHLO hel.is.scarlet.be"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754425AbYGSVjz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jul 2008 17:39:55 -0400
+X-Greylist: delayed 334 seconds by postgrey-1.27 at vger.kernel.org; Sat, 19 Jul 2008 17:39:54 EDT
+Message-ID: <48825DD0.5000308@scarlet.be>
+Date: Sat, 19 Jul 2008 21:34:08 +0000
+From: Joel Soete <soete.joel@scarlet.be>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
+MIME-Version: 1.0
+To: Kyle McMartin <kyle@mcmartin.ca>, linux-parisc@vger.kernel.org
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] ccio_clear_io_tlb() don't need to compute io page number
+ a second time.
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-DCC--Metrics: hel 0; Body=4 Fuz1=4 Fuz2=4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vegard,
+Hello Kyle,
 
-> This is a resend of a patch I sent earlier. It fixes a reproducible
-> oops (see http://lkml.org/lkml/2008/7/13/89 for test case), and I'd
-> be very happy for some feedback from Bluetooth people. Can this be
-> included for testing somewhere? I don't have any bluetooth devices
-> myself, so all my testing is limited to creating/releasing devices
-> with ioctl (I'm not sure that's good enough).
-> 
-> Dave: I have extended the rfcomm_dev_lock to include all the setup and
-> teardown of a single device. On second thought, it doesn't really make
-> sense to use a separate lock for that. May I have your opinion on this
-> second version? (I've fixed the comments/BUG_ON that you pointed out.)
+In ccio-dma.c, I noticed that eventhought the prototype of the function ccio_clear_io_tlb() is:
+static CCIO_INLINE void
+ccio_clear_io_tlb(struct ioc *ioc, dma_addr_t iovp, size_t byte_cnt)
 
-it seems it is the actually the first time, I see this one. Anyway, so
-holding that lock is a bad idea. Fixing this the right way might be
-tricky since the TTY layer is involved here and own the kobject. So I
-would say we have to make sure that the RFCOMM TTY will hangup when
-calling RELEASEDEV or otherwise fail.
+i.e. the second arg being iovp (afaik the io virtual page number) deduced from the iova (io virtual address)
 
-Regards
+it's so useless to:
+         iovp &= IOVP_MASK;      /* clear offset bits, just want pagenum */
 
-Marcel
+and the only place where it's called is:
+         ccio_clear_io_tlb(ioc, CCIO_IOVP(iova), saved_byte_cnt);
 
+it's well an iovp given the macro definition:
+#define CCIO_IOVP(iova) ((iova) & IOVP_MASK)
 
+May I so suggest following patch:
+--- a/drivers/parisc/ccio-dma.c	2008-07-19 21:17:37.000000000 +0000
++++ b/drivers/parisc/ccio-dma.c	2008-07-19 21:32:54.000000000 +0000
+@@ -643,7 +643,6 @@
+  {
+  	u32 chain_size = 1 << ioc->chainid_shift;
+
+-	iovp &= IOVP_MASK;	/* clear offset bits, just want pagenum */
+  	byte_cnt += chain_size;
+
+  	while(byte_cnt > chain_size) {
+=== <> ===
+
+Tia,
+	J.
