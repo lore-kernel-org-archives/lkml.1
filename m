@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755715AbYGSPPE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755823AbYGSPYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755715AbYGSPPE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 11:15:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754749AbYGSPOz
+	id S1755823AbYGSPYh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 11:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754739AbYGSPY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 11:14:55 -0400
-Received: from bromo.msbb.uc.edu ([129.137.3.146]:46214 "HELO
-	bromo.msbb.uc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754748AbYGSPOy (ORCPT
+	Sat, 19 Jul 2008 11:24:29 -0400
+Received: from homer.mvista.com ([63.81.120.158]:14749 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1754727AbYGSPY3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 11:14:54 -0400
-Date: Sat, 19 Jul 2008 11:14:53 -0400
-From: Jack Howarth <howarth@bromo.msbb.uc.edu>
-To: Justin Mattock <justinmattock@gmail.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: macbook2,2 latest git mmconfig issues
-Message-ID: <20080719151453.GA13792@bromo.msbb.uc.edu>
-References: <dd18b0c30807182039u3e590e50p5d76624dd9e5b1d8@mail.gmail.com> <86802c440807182145qa3d17e9k210c498109d86b58@mail.gmail.com> <dd18b0c30807182254i49de078bhe5e48ab13e7b01ac@mail.gmail.com> <dd18b0c30807182354h429ea664gb90b7de55608d0bd@mail.gmail.com> <20080719131038.GA13168@bromo.msbb.uc.edu> <dd18b0c30807190753q22259690jcae780de13c8560d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <dd18b0c30807190753q22259690jcae780de13c8560d@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 19 Jul 2008 11:24:29 -0400
+Subject: Re: [patch 1/3] fastboot: Create a "asynchronous" initlevel
+From: Daniel Walker <dwalker@mvista.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
+In-Reply-To: <20080718222014.34754e7b@infradead.org>
+References: <20080718151524.5ef9e29b@infradead.org>
+	 <20080718151608.46dc17c0@infradead.org>
+	 <1216430540.3978.137.camel@localhost.localdomain>
+	 <20080718204406.7426e8fe@infradead.org>
+	 <1216440697.3978.142.camel@localhost.localdomain>
+	 <20080718222014.34754e7b@infradead.org>
+Content-Type: text/plain
+Date: Sat, 19 Jul 2008 08:24:26 -0700
+Message-Id: <1216481066.3978.159.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 19, 2008 at 07:53:34AM -0700, Justin Mattock wrote:
-> >
-> 
-> could be; but  loading an iso works i.g.
-> after installing it and starting up.
-> these two messages came from after applying
-> the two patches(keep in mind I was tired so maybe
-> plugged them in wrong) before the two patches
-> the MMCONFIG disable message with f0000000
-> that you where receiving. maybe the manufacture
-> on mine needs to be MacBookPro2,2 and the 0x3f
-> needs to be 0x1f. Where do I find these numbers
-> and names on the system? I've done dmidecode
-> but can't seem to make out any of the info
-> 
-> -- 
-> Justin P. Mattock
+On Fri, 2008-07-18 at 22:20 -0700, Arjan van de Ven wrote:
 
-Justin,
-   I am attempting to build kernel rpms with tip right now.
-My first effort would boot because somehow the modules weren't
-being found (paths were being used with -tip in them). I've removed
-the localversion file from the top level of tip and hope that fixes
-the packaging issues. This issue didn't occur when I used a git
-from the linus kernel branch.
-                            Jack
+> 
+> btw it's also about learning to crawl before learning to walk, before
+> learning to run. THis stuff is tricky and there are many hidden
+> problems; I rather start SIMPLE and understandably right, I don't want
+> to go "full parallel" now (or maybe ever, no idea, we need to learn
+> from this step first). Btw: I suspect the biggest gain comes from the
+> first step or two.. after that you soon get diminishing returns...
+> 
+
+Ok .. I'm not trying to rush you .. With that said, the increased number
+of threads seems like a natural direction to take.. I would assume the
+returns would diminish depending on the number of threads per the
+hardware.. For instance , your addition of one thread might even harm
+the boot time on some single core embedded systems ..
+
+Daniel
+
