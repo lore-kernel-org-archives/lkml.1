@@ -1,32 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754927AbYGSLi5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbYGSLjX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754927AbYGSLi5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 07:38:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYGSLit
+	id S1755240AbYGSLjX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 07:39:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbYGSLjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 07:38:49 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:5170 "EHLO
+	Sat, 19 Jul 2008 07:39:13 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:7234 "EHLO
 	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753029AbYGSLis (ORCPT
+	with ESMTP id S1753229AbYGSLjM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 07:38:48 -0400
+	Sat, 19 Jul 2008 07:39:12 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
          :references:in-reply-to:content-type:content-transfer-encoding
          :sender;
-        b=LYvKevfGjUR+405tnajUa5yOcK1S+OdPe5a9lWvoBewaY62p8pSt5Sjq4cAwUPOvgm
-         IUoi06/VgXwfQmfrdAkJbPmN+eo7O9YyATnOEoA1JT9LkdeD3FfIQ/rUxNxtql3reSRA
-         8O8WC31si0OHcP1yc8CBbyvDAKEzqmZYEOlNI=
-Message-ID: <4881D259.3040202@tuffmail.co.uk>
-Date: Sat, 19 Jul 2008 12:39:05 +0100
+        b=D8rdxbrOu8D9e4hdR7fVqGswfUfGz35hZsPDgAVVGRfydx7UNmPv70XzR42RTy39sx
+         HvP7CfeaIiUMsrwPZ+/GRaP9ZjwLvpMRw6A7z/FOvLdeljdGp3d4shOSZrbW1L//wy00
+         wJTtcls3BmvGvzKkz166qtdcjRbPcbAsVR6Ho=
+Message-ID: <4881D273.9010004@tuffmail.co.uk>
+Date: Sat, 19 Jul 2008 12:39:31 +0100
 From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
 To: Alexey Starikovskiy <astarikovskiy@suse.de>
 CC: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, linux-acpi@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] acpi: Avoid dropping rapid GPEs on Asus EeePC and others
+Subject: [PATCH 3/3] acpi: remove GPE polling
 References: <487D23C3.5070301@student.cs.york.ac.uk> <487F31D7.30803@suse.de> <20080717121309.GF31732@khazad-dum.debian.net> <487F3B6D.3090507@suse.de> <20080717162628.GB18457@khazad-dum.debian.net> <487F7724.5080905@tuffmail.co.uk> <20080717185032.GD18457@khazad-dum.debian.net> <487F986A.3070504@tuffmail.co.uk> <4881CE72.1090401@tuffmail.co.uk>
 In-Reply-To: <4881CE72.1090401@tuffmail.co.uk>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -37,61 +37,134 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
 
-Fix regression "Asus Eee PC hotkeys stop working if pressed quickly",
-<http://bugzilla.kernel.org/show_bug.cgi?id=11089>.  More important 
-notifications e.g. battery level may also be affected.
+This should fix "[regression] display dimming is slow and laggy",
+<http://bugzilla.kernel.org/show_bug.cgi?id=10919>.  It has a similar effect
+on my Asus EeePC.
 
-It looks like this EC clears the SCI_EVT bit after every query, but there may
-be more events buffered.  Therefore we should repeatedly query the EC until it
-reports that no events remain.
-
-The regression was caused by a recently added check for GPE interrupt storms.
-The Eee PC triggers this check and switches to polling GPEs.  When multiple 
-events arrive between polling intervals, only one was fetched from the EC.
-This caused erroneous behaviour; ultimately events stop being delivered 
-altogether when the EC buffer overflows.
+Much of this is stolen from Alexey Starikovskiy's fix (see Bugzilla).  But
+the previous two GPE fixes should have avoided the need to disable GPE
+interrupts.
 
 Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
 Tested-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
 
 diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
-index 9ca71df..e764011 100644
+index e764011..1088903 100644
 --- a/drivers/acpi/ec.c
 +++ b/drivers/acpi/ec.c
-@@ -457,14 +457,10 @@ void acpi_ec_remove_query_handler(struct acpi_ec *ec, u8 query_bit)
+@@ -79,7 +79,6 @@ enum {
+ 	EC_FLAGS_WAIT_GPE = 0,		/* Don't check status until GPE arrives */
+ 	EC_FLAGS_GPE_MODE,		/* Expect GPE to be sent for status change */
+ 	EC_FLAGS_NO_GPE,		/* Don't use GPE mode */
+-	EC_FLAGS_RESCHEDULE_POLL	/* Re-schedule poll */
+ };
  
- EXPORT_SYMBOL_GPL(acpi_ec_remove_query_handler);
+ /* If we find an EC via the ECDT, we need to keep a ptr to its context */
+@@ -105,7 +104,6 @@ static struct acpi_ec {
+ 	wait_queue_head_t wait;
+ 	struct list_head list;
+ 	struct delayed_work work;
+-	atomic_t irq_count;
+ 	u8 handlers_installed;
+ } *boot_ec, *first_ec;
  
--static void acpi_ec_gpe_query(void *ec_cxt)
-+static void acpi_ec_gpe_run_handler(struct acpi_ec *ec, u8 value)
- {
--	struct acpi_ec *ec = ec_cxt;
--	u8 value = 0;
- 	struct acpi_ec_query_handler *handler, copy;
- 
--	if (!ec || acpi_ec_query(ec, &value))
--		return;
- 	mutex_lock(&ec->lock);
- 	list_for_each_entry(handler, &ec->list, node) {
- 		if (value == handler->query_bit) {
-@@ -482,6 +478,18 @@ static void acpi_ec_gpe_query(void *ec_cxt)
- 	mutex_unlock(&ec->lock);
+@@ -154,24 +152,14 @@ static inline int acpi_ec_check_status(struct acpi_ec *ec, enum ec_event event)
+ 	return 0;
  }
  
-+static void acpi_ec_gpe_query(void *ec_cxt)
-+{
-+	struct acpi_ec *ec = ec_cxt;
-+	u8 value = 0;
-+
-+	if (!ec)
-+		return;
-+
-+	while (acpi_ec_query(ec, &value) == 0)
-+		acpi_ec_gpe_run_handler(ec, value);
-+}
-+
- static u32 acpi_ec_gpe_handler(void *data)
+-static void ec_schedule_ec_poll(struct acpi_ec *ec)
+-{
+-	if (test_bit(EC_FLAGS_RESCHEDULE_POLL, &ec->flags))
+-		schedule_delayed_work(&ec->work,
+-				      msecs_to_jiffies(ACPI_EC_DELAY));
+-}
+-
+ static void ec_switch_to_poll_mode(struct acpi_ec *ec)
  {
- 	acpi_status status = AE_OK;
+ 	set_bit(EC_FLAGS_NO_GPE, &ec->flags);
+ 	clear_bit(EC_FLAGS_GPE_MODE, &ec->flags);
+-	acpi_disable_gpe(NULL, ec->gpe, ACPI_NOT_ISR);
+-	set_bit(EC_FLAGS_RESCHEDULE_POLL, &ec->flags);
+ }
+ 
+ static int acpi_ec_wait(struct acpi_ec *ec, enum ec_event event, int force_poll)
+ {
+-	atomic_set(&ec->irq_count, 0);
+ 	if (likely(test_bit(EC_FLAGS_GPE_MODE, &ec->flags)) &&
+ 	    likely(!force_poll)) {
+ 		if (wait_event_timeout(ec->wait, acpi_ec_check_status(ec, event),
+@@ -184,7 +172,6 @@ static int acpi_ec_wait(struct acpi_ec *ec, enum ec_event event, int force_poll)
+ 				pr_info(PREFIX "missing confirmations, "
+ 						"switch off interrupt mode.\n");
+ 			ec_switch_to_poll_mode(ec);
+-			ec_schedule_ec_poll(ec);
+ 			return 0;
+ 		}
+ 	} else {
+@@ -497,12 +484,6 @@ static u32 acpi_ec_gpe_handler(void *data)
+ 	u8 state = acpi_ec_read_status(ec);
+ 
+ 	pr_debug(PREFIX "~~~> interrupt\n");
+-	atomic_inc(&ec->irq_count);
+-	if (atomic_read(&ec->irq_count) > 5) {
+-		pr_err(PREFIX "GPE storm detected, disabling EC GPE\n");
+-		ec_switch_to_poll_mode(ec);
+-		goto end;
+-	}
+ 	clear_bit(EC_FLAGS_WAIT_GPE, &ec->flags);
+ 	if (test_bit(EC_FLAGS_GPE_MODE, &ec->flags))
+ 		wake_up(&ec->wait);
+@@ -519,10 +500,8 @@ static u32 acpi_ec_gpe_handler(void *data)
+ 			pr_info(PREFIX "non-query interrupt received,"
+ 				" switching to interrupt mode\n");
+ 		set_bit(EC_FLAGS_GPE_MODE, &ec->flags);
+-		clear_bit(EC_FLAGS_RESCHEDULE_POLL, &ec->flags);
+ 	}
+-end:
+-	ec_schedule_ec_poll(ec);
++
+ 	return ACPI_SUCCESS(status) ?
+ 	    ACPI_INTERRUPT_HANDLED : ACPI_INTERRUPT_NOT_HANDLED;
+ }
+@@ -530,7 +509,6 @@ end:
+ static void do_ec_poll(struct work_struct *work)
+ {
+ 	struct acpi_ec *ec = container_of(work, struct acpi_ec, work.work);
+-	atomic_set(&ec->irq_count, 0);
+ 	(void)acpi_ec_gpe_handler(ec);
+ }
+ 
+@@ -675,7 +653,6 @@ static struct acpi_ec *make_acpi_ec(void)
+ 	init_waitqueue_head(&ec->wait);
+ 	INIT_LIST_HEAD(&ec->list);
+ 	INIT_DELAYED_WORK_DEFERRABLE(&ec->work, do_ec_poll);
+-	atomic_set(&ec->irq_count, 0);
+ 	return ec;
+ }
+ 
+@@ -714,15 +691,8 @@ ec_parse_device(acpi_handle handle, u32 Level, void *context, void **retval)
+ 	return AE_CTRL_TERMINATE;
+ }
+ 
+-static void ec_poll_stop(struct acpi_ec *ec)
+-{
+-	clear_bit(EC_FLAGS_RESCHEDULE_POLL, &ec->flags);
+-	cancel_delayed_work(&ec->work);
+-}
+-
+ static void ec_remove_handlers(struct acpi_ec *ec)
+ {
+-	ec_poll_stop(ec);
+ 	if (ACPI_FAILURE(acpi_remove_address_space_handler(ec->handle,
+ 				ACPI_ADR_SPACE_EC, &acpi_ec_space_handler)))
+ 		pr_err(PREFIX "failed to remove space handler\n");
+@@ -863,7 +833,6 @@ static int acpi_ec_start(struct acpi_device *device)
+ 
+ 	ret = ec_install_handlers(ec);
+ 
+-	ec_schedule_ec_poll(ec);
+ 	return ret;
+ }
+ 
 
 
