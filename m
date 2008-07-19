@@ -1,96 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755402AbYGSNFF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbYGSNKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755402AbYGSNFF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 09:05:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbYGSNEw
+	id S1755512AbYGSNKr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 09:10:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbYGSNKk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 09:04:52 -0400
-Received: from khc.piap.pl ([195.187.100.11]:55032 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753229AbYGSNEv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 09:04:51 -0400
-To: Jeff Garzik <jeff@garzik.org>
-Cc: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCHes] pull request: WAN
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Sat, 19 Jul 2008 15:04:48 +0200
-Message-ID: <m3ljzyc9e7.fsf@maximus.localdomain>
+	Sat, 19 Jul 2008 09:10:40 -0400
+Received: from bromo.msbb.uc.edu ([129.137.3.146]:55892 "HELO
+	bromo.msbb.uc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753229AbYGSNKj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jul 2008 09:10:39 -0400
+Date: Sat, 19 Jul 2008 09:10:38 -0400
+From: Jack Howarth <howarth@bromo.msbb.uc.edu>
+To: Justin Mattock <justinmattock@gmail.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: macbook2,2 latest git mmconfig issues
+Message-ID: <20080719131038.GA13168@bromo.msbb.uc.edu>
+References: <dd18b0c30807182039u3e590e50p5d76624dd9e5b1d8@mail.gmail.com> <86802c440807182145qa3d17e9k210c498109d86b58@mail.gmail.com> <dd18b0c30807182254i49de078bhe5e48ab13e7b01ac@mail.gmail.com> <dd18b0c30807182354h429ea664gb90b7de55608d0bd@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <dd18b0c30807182354h429ea664gb90b7de55608d0bd@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jeff,
+Justin,
+   I never saw any error messages like that. If you are seeing the
+same problem under 2.6.25 suddenly it might suggest a hardware
+failure, no? That or something else has corrupted on your linux
+volume. What happens if you boot from a linux rescue DVD? Does that
+give the same error?
+                      Jack
 
-Please pull from:
-git://git.kernel.org/pub/scm/linux/kernel/git/chris/linux-2.6.git hdlc
-
-This is based on pure v2.6.26 and includes various WAN cleanups as
-well as LMC, Zilog (hostess_sv11 + sealevel = z85230) and Cosa drivers
-ported from syncppp to generic HDLC. I have no hardware for that so -
-untested.
-
-This makes hdlc-ppp the only user of syncppp.
-
-My plan is to replace hdlc-ppp and syncppp with the new hdlc-ppp, hope
-that's now ok with syncppp going.
-
-The long-term plan is to also add generic PPP interface so users can
-do PPP auth, compression and what not. 2.6.30+ maybe.
-
-I have tried to test-merge your upstream-next branch and it causes
-conflicts in drivers/net/wan/pc300_drv.c (a trivial one) and
-net/netfilter/nf_conntrack_proto_tcp.c (some pre-2.6.26 thing I
-guess).
-
-The first commits in my tree (after v2.6.26) are already in your tree,
-you've got them by mail. It seems that git knows that.
-
-Thanks.
-
- Documentation/DocBook/z8530book.tmpl |   38 ++-
- drivers/char/pcmcia/synclink_cs.c    |   32 +-
- drivers/char/synclink.c              |   37 ++-
- drivers/char/synclink_gt.c           |   33 +-
- drivers/char/synclinkmp.c            |   35 +-
- drivers/net/wan/Kconfig              |   13 +-
- drivers/net/wan/Makefile             |   11 +-
- drivers/net/wan/c101.c               |    6 +-
- drivers/net/wan/cosa.c               |  293 +++++++++-------
- drivers/net/wan/dscc4.c              |   23 +-
- drivers/net/wan/farsync.c            |   75 +++--
- drivers/net/wan/farsync.h            |    6 +
- drivers/net/wan/hd6457x.c            |   33 +-
- drivers/net/wan/hdlc.c               |   27 +-
- drivers/net/wan/hdlc_cisco.c         |   33 +-
- drivers/net/wan/hdlc_fr.c            |   73 +++--
- drivers/net/wan/hdlc_ppp.c           |   15 +-
- drivers/net/wan/hdlc_raw.c           |   15 +-
- drivers/net/wan/hdlc_raw_eth.c       |   19 +-
- drivers/net/wan/hdlc_x25.c           |   23 +-
- drivers/net/wan/hostess_sv11.c       |  382 ++++++++++++--------
- drivers/net/wan/lmc/lmc.h            |   11 +-
- drivers/net/wan/lmc/lmc_debug.c      |    7 +-
- drivers/net/wan/lmc/lmc_debug.h      |    6 +-
- drivers/net/wan/lmc/lmc_ioctl.h      |    2 +-
- drivers/net/wan/lmc/lmc_main.c       |  672 +++++++++++++++++++---------------
- drivers/net/wan/lmc/lmc_media.c      |   66 ++--
- drivers/net/wan/lmc/lmc_proto.c      |  146 ++++++--
- drivers/net/wan/lmc/lmc_proto.h      |   14 +-
- drivers/net/wan/lmc/lmc_var.h        |  360 ++++++++++++-------
- drivers/net/wan/pc300.h              |  228 +++++++-----
- drivers/net/wan/pc300_drv.c          |  217 +++++++-----
- drivers/net/wan/pc300_tty.c          |    6 +-
- drivers/net/wan/sealevel.c           |  361 +++++++++++-------
- drivers/net/wan/syncppp.c            |    9 +
- drivers/net/wan/wanxl.c              |   26 +-
- drivers/net/wan/z85230.c             |  193 ++++++----
- drivers/net/wan/z85230.h             |   10 +-
- include/linux/hdlc.h                 |    7 +
- include/net/syncppp.h                |    2 +
- net/wanrouter/wanmain.c              |   27 ++
-
--- 
-Krzysztof Halasa
+On Fri, Jul 18, 2008 at 11:54:38PM -0700, Justin Mattock wrote:
+> applied both patches and messed with boot options
+> but no go:
+> this is what I'm seeing
+> PCI: Fatal no config space access function found
+> ata-piix 0000:00:1f11 device not available
+> because of BAR0 [0xf0-0x1f7] collisions
+> 
+> 
+> interesting how this kernel was running fine, and then
+> BAM all of a sudden f*&^ed up, This tells me that this was something
+> happening a while ago, or always happening just not
+> noticed i.g. I plugged in 2.6.25-rc9(my favorite)
+> and it too was giving the same response.
+> after tracing back my steps the only application that might be causing
+> this or hiding this is grub but could be wrong.
+> 
+> any ideas or patches would be appreciated, until further
+> notice I'll be using osx until there is a
+> regards;   : (
+> 
+> -- 
+> Justin P. Mattock
