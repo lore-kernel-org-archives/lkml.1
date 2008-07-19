@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756351AbYGSMmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756811AbYGSMn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756351AbYGSMmn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 08:42:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754519AbYGSMmK
+	id S1756811AbYGSMn0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 08:43:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755136AbYGSMmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 08:42:10 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44354 "EHLO ogre.sisk.pl"
+	Sat, 19 Jul 2008 08:42:20 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44366 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753968AbYGSMmH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 08:42:07 -0400
+	id S1754252AbYGSMmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jul 2008 08:42:09 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/4] skge: Adapt skge to use reworked PCI PM
-Date: Sat, 19 Jul 2008 14:38:18 +0200
+Subject: [PATCH 2/4] PCI PM: Make more PCI PM core functionality available to drivers
+Date: Sat, 19 Jul 2008 14:39:24 +0200
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Cc: Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jeff@garzik.org>,
        Jesse Barnes <jbarnes@virtuousgeek.org>,
@@ -25,112 +25,119 @@ Content-Type: text/plain;
   charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807191438.19832.rjw@sisk.pl>
+Message-Id: <200807191439.25371.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Adapt the skge driver to use the reworked PCI PM.
+Make more PCI PM core functionality available to drivers
+
+* Export pci_pme_capable() so that it can be called directly by
+  drivers (for example, tg3 needs that).
+
+* Move the state choosing part of pci_prepare_to_sleep() to a
+  separate function, pci_target_state(), that can be called directly
+  by drivers (for example, tg3 needs that).
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/net/skge.c |   38 +++++++++++---------------------------
- 1 file changed, 11 insertions(+), 27 deletions(-)
+ drivers/pci/pci.c   |   35 +++++++++++++++++++++++++----------
+ include/linux/pci.h |    2 ++
+ 2 files changed, 27 insertions(+), 10 deletions(-)
 
-Index: linux-next/drivers/net/skge.c
+Index: linux-next/drivers/pci/pci.c
 ===================================================================
---- linux-next.orig/drivers/net/skge.c
-+++ linux-next/drivers/net/skge.c
-@@ -149,24 +149,6 @@ static u32 wol_supported(const struct sk
- 	return WAKE_MAGIC | WAKE_PHY;
- }
- 
--static u32 pci_wake_enabled(struct pci_dev *dev)
--{
--	int pm = pci_find_capability(dev, PCI_CAP_ID_PM);
--	u16 value;
--
--	/* If device doesn't support PM Capabilities, but request is to disable
--	 * wake events, it's a nop; otherwise fail */
--	if (!pm)
--		return 0;
--
--	pci_read_config_word(dev, pm + PCI_PM_PMC, &value);
--
--	value &= PCI_PM_CAP_PME_MASK;
--	value >>= ffs(PCI_PM_CAP_PME_MASK) - 1;   /* First bit of mask */
--
--	return value != 0;
--}
--
- static void skge_wol_init(struct skge_port *skge)
+--- linux-next.orig/drivers/pci/pci.c
++++ linux-next/drivers/pci/pci.c
+@@ -1040,7 +1040,7 @@ int pci_set_pcie_reset_state(struct pci_
+  * @dev: PCI device to handle.
+  * @state: PCI state from which device will issue PME#.
+  */
+-static bool pci_pme_capable(struct pci_dev *dev, pci_power_t state)
++bool pci_pme_capable(struct pci_dev *dev, pci_power_t state)
  {
- 	struct skge_hw *hw = skge->hw;
-@@ -254,10 +236,14 @@ static int skge_set_wol(struct net_devic
- 	struct skge_port *skge = netdev_priv(dev);
- 	struct skge_hw *hw = skge->hw;
- 
--	if (wol->wolopts & ~wol_supported(hw))
-+	if ((wol->wolopts & ~wol_supported(hw))
-+	    || !device_can_wakeup(&hw->pdev->dev))
- 		return -EOPNOTSUPP;
- 
- 	skge->wol = wol->wolopts;
-+
-+	device_set_wakeup_enable(&hw->pdev->dev, skge->wol);
-+
- 	return 0;
+ 	if (!dev->pm_cap)
+ 		return false;
+@@ -1123,18 +1123,11 @@ int pci_enable_wake(struct pci_dev *dev,
  }
  
-@@ -3842,7 +3828,7 @@ static struct net_device *skge_devinit(s
- 	skge->speed = -1;
- 	skge->advertising = skge_supported_modes(hw);
+ /**
+- * pci_prepare_to_sleep - prepare PCI device for system-wide transition into
+- *                        a sleep state
+- * @dev: Device to handle.
+  *
+- * Choose the power state appropriate for the device depending on whether
+- * it can wake up the system and/or is power manageable by the platform
+- * (PCI_D3hot is the default) and put the device into that state.
+  */
+-int pci_prepare_to_sleep(struct pci_dev *dev)
++pci_power_t pci_target_state(struct pci_dev *dev)
+ {
+ 	pci_power_t target_state = PCI_D3hot;
+-	int error;
  
--	if (pci_wake_enabled(hw->pdev))
-+	if (device_may_wakeup(&hw->pdev->dev))
- 		skge->wol = wol_supported(hw) & WAKE_MAGIC;
+ 	if (platform_pci_power_manageable(dev)) {
+ 		/*
+@@ -1161,7 +1154,7 @@ int pci_prepare_to_sleep(struct pci_dev 
+ 		 * to generate PME#.
+ 		 */
+ 		if (!dev->pm_cap)
+-			return -EIO;
++			return PCI_POWER_ERROR;
  
- 	hw->dev[port] = dev;
-@@ -4068,8 +4054,8 @@ static int skge_suspend(struct pci_dev *
+ 		if (dev->pme_support) {
+ 			while (target_state
+@@ -1170,6 +1163,26 @@ int pci_prepare_to_sleep(struct pci_dev 
+ 		}
  	}
  
- 	skge_write32(hw, B0_IMSK, 0);
--	pci_enable_wake(pdev, pci_choose_state(pdev, state), wol);
--	pci_set_power_state(pdev, pci_choose_state(pdev, state));
++	return target_state;
++}
 +
-+	pci_prepare_to_sleep(pdev);
++/**
++ * pci_prepare_to_sleep - prepare PCI device for system-wide transition into
++ *                        a sleep state
++ * @dev: Device to handle.
++ *
++ * Choose the power state appropriate for the device depending on whether
++ * it can wake up the system and/or is power manageable by the platform
++ * (PCI_D3hot is the default) and put the device into that state.
++ */
++int pci_prepare_to_sleep(struct pci_dev *dev)
++{
++	pci_power_t target_state = pci_target_state(dev);
++	int error;
++
++	if (target_state == PCI_POWER_ERROR)
++		return -EIO;
++
+ 	pci_enable_wake(dev, target_state, true);
  
- 	return 0;
- }
-@@ -4082,7 +4068,7 @@ static int skge_resume(struct pci_dev *p
- 	if (!hw)
- 		return 0;
+ 	error = pci_set_power_state(dev, target_state);
+@@ -1920,7 +1933,9 @@ EXPORT_SYMBOL(pci_select_bars);
+ EXPORT_SYMBOL(pci_set_power_state);
+ EXPORT_SYMBOL(pci_save_state);
+ EXPORT_SYMBOL(pci_restore_state);
++EXPORT_SYMBOL(pci_pme_capable);
+ EXPORT_SYMBOL(pci_enable_wake);
++EXPORT_SYMBOL(pci_target_state);
+ EXPORT_SYMBOL(pci_prepare_to_sleep);
+ EXPORT_SYMBOL(pci_back_from_sleep);
+ EXPORT_SYMBOL_GPL(pci_set_pcie_reset_state);
+Index: linux-next/include/linux/pci.h
+===================================================================
+--- linux-next.orig/include/linux/pci.h
++++ linux-next/include/linux/pci.h
+@@ -638,7 +638,9 @@ int pci_save_state(struct pci_dev *dev);
+ int pci_restore_state(struct pci_dev *dev);
+ int pci_set_power_state(struct pci_dev *dev, pci_power_t state);
+ pci_power_t pci_choose_state(struct pci_dev *dev, pm_message_t state);
++bool pci_pme_capable(struct pci_dev *dev, pci_power_t state);
+ int pci_enable_wake(struct pci_dev *dev, pci_power_t state, int enable);
++pci_power_t pci_target_state(struct pci_dev *dev);
+ int pci_prepare_to_sleep(struct pci_dev *dev);
+ int pci_back_from_sleep(struct pci_dev *dev);
  
--	err = pci_set_power_state(pdev, PCI_D0);
-+	err = pci_back_from_sleep(pdev);
- 	if (err)
- 		goto out;
- 
-@@ -4090,8 +4076,6 @@ static int skge_resume(struct pci_dev *p
- 	if (err)
- 		goto out;
- 
--	pci_enable_wake(pdev, PCI_D0, 0);
--
- 	err = skge_reset(hw);
- 	if (err)
- 		goto out;
-@@ -4132,8 +4116,8 @@ static void skge_shutdown(struct pci_dev
- 		wol |= skge->wol;
- 	}
- 
--	pci_enable_wake(pdev, PCI_D3hot, wol);
--	pci_enable_wake(pdev, PCI_D3cold, wol);
-+	if (pci_enable_wake(pdev, PCI_D3cold, wol))
-+		pci_enable_wake(pdev, PCI_D3hot, wol);
- 
- 	pci_disable_device(pdev);
- 	pci_set_power_state(pdev, PCI_D3hot);
 
