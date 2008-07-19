@@ -1,42 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757907AbYGSBBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757152AbYGSBHH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757907AbYGSBBU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 21:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbYGSBBJ
+	id S1757152AbYGSBHH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 21:07:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbYGSBG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 21:01:09 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41538
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752570AbYGSBBH (ORCPT
+	Fri, 18 Jul 2008 21:06:56 -0400
+Received: from queueout02-winn.ispmail.ntl.com ([81.103.221.56]:46686 "EHLO
+	queueout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752930AbYGSBG4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 21:01:07 -0400
-Date: Fri, 18 Jul 2008 18:01:07 -0700 (PDT)
-Message-Id: <20080718.180107.126477208.davem@davemloft.net>
-To: randy.dunlap@oracle.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH -next] net namespace: build when SYSCTL=n
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080718171812.8dfc9767.randy.dunlap@oracle.com>
-References: <20080718171812.8dfc9767.randy.dunlap@oracle.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Jul 2008 21:06:56 -0400
+X-Greylist: delayed 947 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Jul 2008 21:06:55 EDT
+Date: Sat, 19 Jul 2008 01:50:15 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH,TRIVIAL] Fix typo in Hurd part of include/linux/ext2_fs.h
+Message-ID: <20080719005015.GA400@implementation>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Date: Fri, 18 Jul 2008 17:18:12 -0700
+Fix typo in Hurd part of include/linux/ext2_fs.h
 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> When CONFIG_SYSCTL=n, build fails with:
-> 
-> linux-next-20080718/include/net/net_namespace.h:40: error: field 'sysctls' has incomplete type
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+The ';' here is redundant or can even pose problem.
+This is actually not used by the Linux kernel, but it is exposed in
+GNU/Hurd.
 
-This 'sysctls' member isn't present in my networking tree, it must be
-coming from some other tree and thus the patch needs to be applied
-there.
+Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+
+diff --git a/include/linux/ext2_fs.h b/include/linux/ext2_fs.h
+index 84cec2a..2efe7b8 100644
+--- a/include/linux/ext2_fs.h
++++ b/include/linux/ext2_fs.h
+@@ -284,8 +284,8 @@ struct ext2_inode {
+ 
+ #ifdef	__hurd__
+ #define i_translator	osd1.hurd1.h_i_translator
+-#define i_frag		osd2.hurd2.h_i_frag;
+-#define i_fsize		osd2.hurd2.h_i_fsize;
++#define i_frag		osd2.hurd2.h_i_frag
++#define i_fsize		osd2.hurd2.h_i_fsize
+ #define i_uid_high	osd2.hurd2.h_i_uid_high
+ #define i_gid_high	osd2.hurd2.h_i_gid_high
+ #define i_author	osd2.hurd2.h_i_author
