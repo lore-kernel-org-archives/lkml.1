@@ -1,161 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752455AbYGSGmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752547AbYGSGys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752455AbYGSGmV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 02:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbYGSGmN
+	id S1752547AbYGSGys (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 02:54:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbYGSGyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 02:42:13 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:15234 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750842AbYGSGmM (ORCPT
+	Sat, 19 Jul 2008 02:54:41 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:58114 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751045AbYGSGyk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 02:42:12 -0400
+	Sat, 19 Jul 2008 02:54:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=mXvmPy70+mkTbtsoDN5kyBTpEOuLTbGWh1UYibmrEMTauR3MHONLZjK1R41O4mT0Ge
-         wsADeXINbCnII3RCcUmKRrHeD/R7IxiZcvXbOtktc6CkYdAUzRoaIN45G99nxjk3wjUG
-         oxO5sQE8SO96Hdr5J8J8xiXuaPaPSBOGPIQUY=
-Message-ID: <b637ec0b0807182342m3282f13cp43ad1111ab55bf4c@mail.gmail.com>
-Date: Sat, 19 Jul 2008 08:42:11 +0200
-From: "Fabio Comolli" <fabio.comolli@gmail.com>
-To: "Alexey Starikovskiy" <astarikovskiy@suse.de>
-Subject: Re: [Bug #10724] ACPI: EC: GPE storm detected, disabling EC GPE
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
-       "Justin Mattock" <justinmattock@gmail.com>
-In-Reply-To: <4880FF24.4000303@suse.de>
+        b=CPypxQH6zmuJe7VvaungU8JUP//Pek0PULc3WL30y4auj+5nmc8OrYJN8yR1uwS3y3
+         e8HyuLHmSqJPH2GYpiNGpbGRQ4DEgtyql7wGDSu5mbRQNNnjy55cHszkXaqD11vm+BsR
+         02zsfAiowgu1j7LavyEgDNYakkI+pN2GKOoGc=
+Message-ID: <dd18b0c30807182354h429ea664gb90b7de55608d0bd@mail.gmail.com>
+Date: Fri, 18 Jul 2008 23:54:38 -0700
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Subject: Re: macbook2,2 latest git mmconfig issues
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Jack Howarth" <howarth@bromo.msbb.uc.edu>
+In-Reply-To: <dd18b0c30807182254i49de078bhe5e48ab13e7b01ac@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Y1jK9GMA8kJ.A.qOH.7GleIB@albercik>
-	 <c6ZRbn0adb.A.LgB.aKleIB@albercik>
-	 <b637ec0b0807180217n3b16bcb9wce81161c2c539d7f@mail.gmail.com>
-	 <4880B959.1030403@suse.de>
-	 <b637ec0b0807181205s509c655cp31a1819e389e2a10@mail.gmail.com>
-	 <4880FF24.4000303@suse.de>
+References: <dd18b0c30807182039u3e590e50p5d76624dd9e5b1d8@mail.gmail.com>
+	 <86802c440807182145qa3d17e9k210c498109d86b58@mail.gmail.com>
+	 <dd18b0c30807182254i49de078bhe5e48ab13e7b01ac@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alex.
-Well, I read the bug report but still can't understand why in any
-kernels < 2.6.26 I don't have any problems with battery reports and in
-2.6.26 as soon as the message appears g-p-m starts to behave
-incorrectly.
-
-Anyway, I got back to 25.11 for now, if you have any other workarounds
-for me to test please let me know.
-
-Cheers,
-Fabio
-
-
-
-On Fri, Jul 18, 2008 at 10:37 PM, Alexey Starikovskiy
-<astarikovskiy@suse.de> wrote:
-> Hi Fabio,
+On Fri, Jul 18, 2008 at 10:54 PM, Justin Mattock
+<justinmattock@gmail.com> wrote:
+> On Fri, Jul 18, 2008 at 9:45 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>> On Fri, Jul 18, 2008 at 8:39 PM, Justin Mattock <justinmattock@gmail.com> wrote:
+>>> Hello;
+>>> Well I couldn't really see what was happening
+>>> until I could experience this myself;
+>>> It seems the macbook pro ati chipset
+>>> is having the same problem as jack was with mmconfig yesterday.
+>>> I'm confused as to why my system was able to run this kernel(2.6.26.git1)
+>>> without a problem, now after doing a reinstall of the operating system
+>>> I am confronted with this same issue. How do I find the 0x3f number on
+>>> my system,
+>>> so I could plug that into the patch? to see if I can boot up
+>>> Now keep in mind the only difference with this install is the
+>>> installer took a dump
+>>> therefore you have to manually install grub(could this be the source
+>>> of the issue?)
+>>> regards;
+>>
+>> can you disable ASPM in your config.?
+>>
+>> YH
+>>
 >
-> There are no bad news in seeing the message, as I tried to say several
-> times in bug report already. We can't fix the hardware.
-> We only could detect hardware flaw, report it (the message), and try to
-> workaround it.
-> So the bad news would be that our workaround causes some unwanted behavior
-> to
-> other features of notebook -- keyboard, special keys, battery & AC status
-> reports, etc.
-> If no such problems were noticed -- there is no bug, and there is no
-> problem.
+> I enabled and disabled in the pci section
+> PCIEASPM still the same results.
+> applied the patch as well i.g.
+> mmconf_dmi_table
+> going to try detect end_bus_number patch to
+> see if it works
+> --
+> Justin P. Mattock
 >
-> Regards,
-> Alex.
->
-> Fabio Comolli wrote:
->>
->> Hi Alex. No good news, I'm afraid.
->>
->> Actually my previous report wasn't correct because with the patch I
->> mentioned the message appeared yesterday night during the hibernate
->> process, so I couldn't notice it.
->>
->>  The interesting thing is that it showed up the day after I booted my
->> laptop: usually it took a period between 1 and 13 minutes after boot
->> to trigger and in this case it took more than 2 hours of uptime with 2
->> suspend and 2 hibernate cycles.
->>
->> With the patch you told me to apply and the previous reverted the
->> message triggered in 12 minutes.
->>
->> Regards,
->> Fabio
->>
->>
->>
->>
->> On Fri, Jul 18, 2008 at 5:40 PM, Alexey Starikovskiy
->> <astarikovskiy@suse.de> wrote:
->>>
->>> Fabio,
->>> Please try http://bugzilla.kernel.org/attachment.cgi?id=16862 instead.
->>> Same bug entry, last patch.
->>> Regards,
->>> Alex.
->>> Fabio Comolli wrote:
->>>>
->>>> Hi.
->>>> I also have this problem with 2.6.26 and when it happens I can notice
->>>> that sometimes gnome-power-manager is slow to respond when I switch to
->>>> AC from battery and viceversa. Also, sometimes the g-p-m icon
->>>> disappears and I have to restart the process.
->>>>
->>>> I tried two days ago the patch
->>>>
->>>>  http://bugzilla.kernel.org/attachment.cgi?id=16365&action=view
->>>>
->>>> and everything seems to work ok since then. Before that, the message
->>>> showed up sometimes at boot time, sometimes minutes later, very
->>>> reliably.
->>>>
->>>> This is with a two years old fairly standard HP laptop.
->>>>
->>>> Regards,
->>>> Fabio
->>>>
->>>>
->>>> On Sun, Jul 13, 2008 at 8:00 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->>>>>
->>>>> This message has been generated automatically as a part of a report
->>>>> of recent regressions.
->>>>>
->>>>> The following bug entry is on the current list of known regressions
->>>>> from 2.6.25.  Please verify if it still should be listed.
->>>>>
->>>>>
->>>>> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10724
->>>>> Subject         : ACPI: EC: GPE storm detected, disabling EC GPE
->>>>> Submitter       : Justin Mattock <justinmattock@gmail.com>
->>>>> Date            : 2008-05-16 6:17 (59 days old)
->>>>> References      :
->>>>> http://marc.info/?l=linux-kernel&m=121091875711824&w=4
->>>>>                http://lkml.org/lkml/2008/5/18/168
->>>>>                http://lkml.org/lkml/2008/5/25/195
->>>>> Patch           :
->>>>> http://bugzilla.kernel.org/attachment.cgi?id=16364&action=view
->>>>>
->>>>> http://bugzilla.kernel.org/attachment.cgi?id=16365&action=view
->>>>>
->>>>>
->>>>> --
->>>>> To unsubscribe from this list: send the line "unsubscribe linux-kernel"
->>>>> in
->>>>> the body of a message to majordomo@vger.kernel.org
->>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>>>> Please read the FAQ at  http://www.tux.org/lkml/
->>>>>
->>>
->
->
+
+applied both patches and messed with boot options
+but no go:
+this is what I'm seeing
+PCI: Fatal no config space access function found
+ata-piix 0000:00:1f11 device not available
+because of BAR0 [0xf0-0x1f7] collisions
+
+
+interesting how this kernel was running fine, and then
+BAM all of a sudden f*&^ed up, This tells me that this was something
+happening a while ago, or always happening just not
+noticed i.g. I plugged in 2.6.25-rc9(my favorite)
+and it too was giving the same response.
+after tracing back my steps the only application that might be causing
+this or hiding this is grub but could be wrong.
+
+any ideas or patches would be appreciated, until further
+notice I'll be using osx until there is a
+regards;   : (
+
+-- 
+Justin P. Mattock
