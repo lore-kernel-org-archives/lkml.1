@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752376AbYGSE2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752119AbYGSEpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752376AbYGSE2S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 00:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750813AbYGSE2L
+	id S1752119AbYGSEpX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 00:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750719AbYGSEpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 00:28:11 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:29541 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750802AbYGSE2K (ORCPT
+	Sat, 19 Jul 2008 00:45:10 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:49143 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750704AbYGSEpJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 00:28:10 -0400
-Subject: Re: [patch 1/3] fastboot: Create a "asynchronous" initlevel
-From: Daniel Walker <dwalker@mvista.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-In-Reply-To: <20080718204406.7426e8fe@infradead.org>
-References: <20080718151524.5ef9e29b@infradead.org>
-	 <20080718151608.46dc17c0@infradead.org>
-	 <1216430540.3978.137.camel@localhost.localdomain>
-	 <20080718204406.7426e8fe@infradead.org>
-Content-Type: text/plain
-Date: Fri, 18 Jul 2008 21:28:08 -0700
-Message-Id: <1216441688.3978.149.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Sat, 19 Jul 2008 00:45:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=WCNIRV7cQUBC6+mQg6qSQAIwdItloXW0Q30qfbtp8zMfOi4JRYYBU+hbSP1HWYCUqQ
+         e7EJ0m4CrSVIlapkjWeHC/FjSTL8qdv2UftoQaMu0nHf/h6i7/zFM/+XlMnZ0YlFtA+6
+         a3VJiuikzPd6dB4U80KZKVVlJ5TClqPd2wDo4=
+Message-ID: <86802c440807182145s58ce6cb2xfc85a6fc849a2a73@mail.gmail.com>
+Date: Fri, 18 Jul 2008 21:45:08 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jack Howarth" <howarth@bromo.msbb.uc.edu>
+Subject: Re: [PATCH] x86,pci: dmi check for mackpro 2.2 mmconf
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, jbarnes@virtuousgeek.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080719032845.GA9662@bromo.msbb.uc.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200807180941.09779.yhlu.kernel@gmail.com>
+	 <20080718202118.GC24122@elte.hu>
+	 <86802c440807181326l489b7763sdb040f5b6e575d8c@mail.gmail.com>
+	 <20080719005849.GA9055@bromo.msbb.uc.edu>
+	 <86802c440807181822l5138ff85k7d8c2e2702a11025@mail.gmail.com>
+	 <20080719032845.GA9662@bromo.msbb.uc.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-07-18 at 20:44 -0700, Arjan van de Ven wrote:
-> On Fri, 18 Jul 2008 18:22:20 -0700
-> Daniel Walker <dwalker@mvista.com> wrote:
-> 
-> > On Fri, 2008-07-18 at 15:16 -0700, Arjan van de Ven wrote:
-> > > +static void __init do_initcalls(void)
-> > > +{
-> > > +       initcall_t *call;
-> > > +       static DECLARE_WORK(async_work, do_async_initcalls);
-> > > +       int phase = 0; /* 0 = levels 0 - 6, 1 = level 6a, 2 = after
-> > > level 6a */
-> > > +
-> > > +       async_init_wq = create_singlethread_workqueue("kasyncinit");
-> > > +
-> > 
-> > Could you spawning one thread per cpu, and queuing the work evenly?
-> 
-> not without loosing the ordering.....
-> 
+On Fri, Jul 18, 2008 at 8:28 PM, Jack Howarth <howarth@bromo.msbb.uc.edu> wrote:
+> YH,
+>   The mmconf_end_bus_num_detect.patch and mmconf_end_bus_num_detect_fix.patch both applied
+> cleanly to the current linus kernel git and solve my problems with MMCONFIG not starting.
+> I am attaching a dmesg log below of a boot with 'debug apic=verbose initcall_debug pci=routeirq'.
+> If you look at the section immediately before the line...
+>
+> pci 0000:00:1e.0: transparent bridge
+>
+> you will see that it is radically different from what I posted for the freeze under PCIEASPM
+> with MMCONFIG (using your original mmconfig patch)...
 
-Your right .. You would think there wouldn't be expectations on the
-ordering, but certain sub-systems do have dependencies .. I think it's
-really a problem in our initcall system where I've seen lots of initcall
-problems popup when drivers select "module_init()" but when the driver
-is built in they loose the mandatory module load ordering (shows up in
-allyesconfig). Then if the ordering gets mixed in the initcall you end
-up with failures.
+calling  pci_arch_init+0x0/0x53
+PCI: MCFG configuration 0: base f0000000 segment 0 buses 0 - 255
+PCI: MCFG area at f0000000 reserved in E820
+PCI: updated MCFG configuration 0: base f0000000 segment 0 buses 0 - 63
+PCI: Using MMCONFIG at f0000000 - f3ffffff
+PCI: Using configuration type 1 for base access
+initcall pci_arch_init+0x0/0x53 returned 0 after 14 msecs
 
-Daniel
+that mean it reduce the bus number according to e820 reserved area.
 
+YH
