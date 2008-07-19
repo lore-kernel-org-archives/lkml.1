@@ -1,105 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbYGSCQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754438AbYGSCeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757279AbYGSCQp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 22:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbYGSCQg
+	id S1754438AbYGSCeK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 22:34:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbYGSCdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 22:16:36 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:44773 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752485AbYGSCQg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 22:16:36 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	b=XjI4skjO53yqmglUjiySawZV6DNXi/SGZuuTMmvly1XPoTca4qe42l/t9EgUC9BcY0vJEz01oPYW8f7C3cJxWfYmL/nCWY4REFBuEu53ff1zCTN0MYTncjZxZESzPSUb;
-Message-ID: <48814E67.80708@simon.arlott.org.uk>
-Date: Sat, 19 Jul 2008 03:16:07 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080706)
+	Fri, 18 Jul 2008 22:33:55 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:38107 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750772AbYGSCdy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jul 2008 22:33:54 -0400
+Date: Sat, 19 Jul 2008 03:33:51 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: David Miller <davem@davemloft.net>
+Cc: randy.dunlap@oracle.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH -next] net namespace: build when SYSCTL=n
+Message-ID: <20080719023351.GT28946@ZenIV.linux.org.uk>
+References: <20080718171812.8dfc9767.randy.dunlap@oracle.com> <20080718.180107.126477208.davem@davemloft.net>
 MIME-Version: 1.0
-To: linux-dvb@linuxtv.org
-CC: hermann pitton <hermann-pitton@arcor.de>, video4linux-list@redhat.com,
-       v4l-dvb list <v4l-dvb-maintainer@linuxtv.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Brian Marete <bgmarete@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] saa7134: Copy tuner data earlier in init to avoid overwriting
- manual tuner type
-References: <6dd519ae0807180428k30abd15eo60fd2856f7a43821@mail.gmail.com>	 <38354.simon.1216381906@5ec7c279.invalid> <1216421799.2666.23.camel@pc10.localdom.local>
-In-Reply-To: <1216421799.2666.23.camel@pc10.localdom.local>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080718.180107.126477208.davem@davemloft.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When saa7134_board_init2 runs, it immediately overwrites the current value
-(set earlier from module parameter) of tuner_type with the static values,
-and then does autodetection. This patch moves the tuner_addr copy to earlier
-in saa7134_initdev and removes the tuner_type copy from saa7134_board_init2.
-
-Autodetection could still potentially change to the wrong tuner type, but it
-is now possible to override the default type for the card again.
-
-My card's tuner is configured with autodetection from eeprom, so I don't 
-need to manually set the tuner. I've checked that the autodetection still 
-works for my card.
-
-Reviewed-by: Hermann Pitton <hermann-pitton@arcor.de>
-Cc: Brian Marete <bgmarete@gmail.com>
-Tested-by: Simon Arlott <simon@fire.lp0.eu>
-Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
----
-> this restores tuner behavior on the saa7134 driver.
+On Fri, Jul 18, 2008 at 06:01:07PM -0700, David Miller wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> Date: Fri, 18 Jul 2008 17:18:12 -0700
 > 
-> I can't test XCeive tuners, which load different firmware dynamically.
-> Mauro was on them.
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > 
+> > When CONFIG_SYSCTL=n, build fails with:
+> > 
+> > linux-next-20080718/include/net/net_namespace.h:40: error: field 'sysctls' has incomplete type
+> > 
+> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> Please send the patch to Mauro and/or provide your signed-off-by.
-> 
-> This must go to the stable team ASAP as well.
-> 
-> Reviewed-by: Hermann Pitton <hermann-pitton@arcor.de>
+> This 'sysctls' member isn't present in my networking tree, it must be
+> coming from some other tree and thus the patch needs to be applied
+> there.
 
-drivers/media/video/saa7134/saa7134-cards.c |    3 ---
-drivers/media/video/saa7134/saa7134-core.c  |    5 +++--
-2 files changed, 3 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/media/video/saa7134/saa7134-cards.c b/drivers/media/video/saa7134/saa7134-cards.c
-index 2618cfa..0227cf9 100644
---- a/drivers/media/video/saa7134/saa7134-cards.c
-+++ b/drivers/media/video/saa7134/saa7134-cards.c
-@@ -5703,9 +5703,6 @@ int saa7134_board_init2(struct saa7134_dev *dev)
-	unsigned char buf;
-	int board;
-
--	dev->tuner_type = saa7134_boards[dev->board].tuner_type;
--	dev->tuner_addr = saa7134_boards[dev->board].tuner_addr;
--
-	switch (dev->board) {
-	case SAA7134_BOARD_BMK_MPEX_NOTUNER:
-	case SAA7134_BOARD_BMK_MPEX_TUNER:
-diff --git a/drivers/media/video/saa7134/saa7134-core.c b/drivers/media/video/saa7134/saa7134-core.c
-index 2c19cd0..69f340d 100644
---- a/drivers/media/video/saa7134/saa7134-core.c
-+++ b/drivers/media/video/saa7134/saa7134-core.c
-@@ -946,11 +946,12 @@ static int __devinit saa7134_initdev(struct pci_dev *pci_dev,
-		dev->board = SAA7134_BOARD_UNKNOWN;
-	}
-	dev->autodetected = card[dev->nr] != dev->board;
--	dev->tuner_type   = saa7134_boards[dev->board].tuner_type;
-+	dev->tuner_type = saa7134_boards[dev->board].tuner_type;
-+	dev->tuner_addr = saa7134_boards[dev->board].tuner_addr;
-	dev->tda9887_conf = saa7134_boards[dev->board].tda9887_conf;
-	if (UNSET != tuner[dev->nr])
-		dev->tuner_type = tuner[dev->nr];
--		printk(KERN_INFO "%s: subsystem: %04x:%04x, board: %s [card=%d,%s]\n",
-+	printk(KERN_INFO "%s: subsystem: %04x:%04x, board: %s [card=%d,%s]\n",
-		dev->name,pci_dev->subsystem_vendor,
-		pci_dev->subsystem_device,saa7134_boards[dev->board].name,
-		dev->board, dev->autodetected ?
--- 
-1.5.6.2
-
--- 
-Simon Arlott
-
+Yup.  Applied.
