@@ -1,108 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbYGSHmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753503AbYGSHv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753958AbYGSHmj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 03:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbYGSHmc
+	id S1753503AbYGSHv6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 03:51:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbYGSHvu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 03:42:32 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:48283 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751308AbYGSHmc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 03:42:32 -0400
-Message-ID: <416453387.04151@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: jszhang3@mail.ustc.edu.cn
-Date: Sat, 19 Jul 2008 15:41:15 +0800
-From: JiSheng Zhang <jszhang3@mail.ustc.edu.cn>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: stefanr@s5r6.in-berlin.de, linux-kernel@vger.kernel.org,
-       linux1394-devel@lists.sourceforge.net, krh@redhat.com
-Subject: Re: PATCH] firewire: add padding to some struct
-Message-Id: <20080719154115.21334197.jszhang3@mail.ustc.edu.cn>
-In-Reply-To: <416443505.10974@ustc.edu.cn>
-References: <416384276.24780@ustc.edu.cn>
-	<416443505.10974@ustc.edu.cn>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 19 Jul 2008 03:51:50 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:56610 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751667AbYGSHvu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jul 2008 03:51:50 -0400
+Message-ID: <48819D92.8050904@keyaccess.nl>
+Date: Sat, 19 Jul 2008 09:53:54 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [patch 1/3] fastboot: Create a "asynchronous" initlevel
+References: <20080718151524.5ef9e29b@infradead.org> <20080718151608.46dc17c0@infradead.org>
+In-Reply-To: <20080718151608.46dc17c0@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Jul 2008 17:27:44 +0200
-Mikael Pettersson <mikpe@it.uu.se> wrote:
+On 19-07-08 00:16, Arjan van de Ven wrote:
 
-> JiSheng Zhang writes:
->  > Hi,
->  > >From: Stefan Richter <stefanr@s5r6.in-berlin.de>
->  > >Reply-To: 
->  > >To: JiSheng Zhang <jszhang3@mail.ustc.edu.cn>
->  > >Subject: Re: PATCH] firewire: add padding to some struct
->  > >Date:Fri, 18 Jul 2008 13:38:25 +0200
->  > >
->  > >JiSheng Zhang wrote:
->  > > > If p is a pointer to struct fw_cdev_event_response), p->data will point to
->  > the
->  > > > padding data rather than the right place, it will cause problem under some
-> 
-> Define "the right place". If p->data[] isn't the place for the data,
-> then something's seriously wrong with either the producer or the
-> consumer of that data -- or the data type definition if either is HW.
-> 
->  > > > platforms. For example, in the function handle_device_event of
->  > libraw1394(ported
->  > > > to juju stack):
->  > > > .....
->  > > > case FW_CDEV_EVENT_RESPONSE:
->  > > >     rc = u64_to_ptr(u->response.closure);
->  > > >     if (rc->data != NULL)
->  > > > 	memcpy(rc->data, u->response.data, rc->length);//here it will lost the last
->  > four
->  > > > bytes
->  > > >     errcode = juju_to_raw1394_errcode(u->response.rcode);
->  > > > .....
->  > > > 
->  > > > Although this problem can be solved by add the offset to the pointer, but the
->  > > > member:__u32 data[0] lost its original meaning.
->  > > 
->  > > I don't understand what the problem is.  As long as both kernel and
->  > > library use "response.data" or "&response + offsetof(typeof(response),
->  > > data)", they will write and read at the correct location.
->  > >
->  > This patch can fix the problem while not changing the struct definition.
->  > 
->  > 
->  > Thanks in advance,
->  > JiSheng
->  > 
->  > --- old/drivers/firewire/fw-cdev.c	2008-07-14 05:51:29.000000000 +0800
->  > +++ new/drivers/firewire/fw-cdev.c	2008-07-18 20:20:45.841328585 +0800
->  > @@ -382,9 +382,9 @@
->  >  
->  >  	response->response.type   = FW_CDEV_EVENT_RESPONSE;
->  >  	response->response.rcode  = rcode;
->  > -	queue_event(client, &response->event,
->  > -		    &response->response, sizeof(response->response),
->  > -		    response->response.data, response->response.length);
->  > +	queue_event(client, &response->event, &response->response, 
->  > +		    sizeof(response->response) + response->response.length,
->  > +		    NULL, 0);
->  >  }
-> 
-> Neither of these look correct.
-> If sizeof(struct ...) != offsetof(struct ..., data) as you claim is possible,
-> then the old code will copy too much to/from ->response but the correct amount
-> to/from ->response.data, and the new code will copy too much to/from ->response.data.
-The old code will copy 4 extra bytes totally on some platforms, the new code
-is correct. The old one queue like this:
-struct ...(excluding the padding bytes)|4 padding bytes|4 padding bytes|data
-> 
-> That's why C has offsetof():
-> 
-> 	queue_event(client, &response->event,
-> 		   &response->response,
-> 		   offsetof(typeof(*response->responce), data), // I don't know the struct name
-> 		   response->response.data, response->response.length);
+> +static void __init do_initcalls(void)
+> +{
+> +	initcall_t *call;
+> +	static DECLARE_WORK(async_work, do_async_initcalls);
+> +	int phase = 0; /* 0 = levels 0 - 6, 1 = level 6a, 2 = after level 6a */
+> +
+> +	async_init_wq = create_singlethread_workqueue("kasyncinit");
+> +
+> +	for (call = __initcall_start; call < __initcall_end; call++) {
+> +		if (phase == 0 && call >= __async_initcall_start) {
+> +			phase = 1;
+> +			queue_work(async_init_wq, &async_work);
+> +		}
+> +		if (phase == 1 && call >= __async_initcall_end)
+> +			phase = 2;
+> +		if (phase != 1)
+> +			do_one_initcall(*call);
+> +	}
 
-Bye,
-JiSheng
+I'm not sure about this comment, being not very sure about the semantics 
+of late_initcall but shouldn't late_initcall (level 7) wait for 6s to 
+have completed?
+
+Rene.
