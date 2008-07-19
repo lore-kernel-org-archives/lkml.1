@@ -1,64 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754534AbYGSMLg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbYGSMN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754534AbYGSMLg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 08:11:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbYGSML3
+	id S1754761AbYGSMN1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 08:13:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbYGSMNU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 08:11:29 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:61941 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751980AbYGSML2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 08:11:28 -0400
-Date: Sat, 19 Jul 2008 08:11:26 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Theodore Ts'o" <tytso@MIT.EDU>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: Ftraced always polls once a minute even when no tracer is active
-In-Reply-To: <E1KJzHJ-0003Yj-68@closure.thunk.org>
-Message-ID: <Pine.LNX.4.58.0807190801530.11122@gandalf.stny.rr.com>
-References: <E1KJzHJ-0003Yj-68@closure.thunk.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 19 Jul 2008 08:13:20 -0400
+Received: from mo11.iij4u.or.jp ([210.138.174.79]:49781 "EHLO mo11.iij4u.or.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752440AbYGSMNT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jul 2008 08:13:19 -0400
+Date: Sat, 19 Jul 2008 21:12:56 +0900
+To: joro@8bytes.org
+Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] replace CONFIG_IOMMU with CONFIG_GART_IOMMU in iommu.h
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080718113105.GA13662@8bytes.org>
+References: <20080709162913H.tomof@acm.org>
+	<20080718113105.GA13662@8bytes.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080719211303J.tomof@acm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 18 Jul 2008 13:31:05 +0200
+Joerg Roedel <joro@8bytes.org> wrote:
 
-On Fri, 18 Jul 2008, Theodore Ts'o wrote:
+> On Wed, Jul 09, 2008 at 04:29:41PM +0900, FUJITA Tomonori wrote:
+> > Should be CONFIG_GART_IOMMU instead of CONFIG_IOMMU here?
+> > 
+> > Hmm, looks like it would be nice to have more cleanups of iommu.h and
+> > gart.h.
+> > 
+> > This is against tip/master.
+> > 
+> > =
+> > From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > Subject: [PATCH] replace CONFIG_IOMMU with CONFIG_GART_IOMMU in iommu.h
+> > 
+> > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > ---
+> >  include/asm-x86/iommu.h |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/include/asm-x86/iommu.h b/include/asm-x86/iommu.h
+> > index 07862fd..cb7e989 100644
+> > --- a/include/asm-x86/iommu.h
+> > +++ b/include/asm-x86/iommu.h
+> > @@ -5,7 +5,7 @@ extern void pci_iommu_shutdown(void);
+> >  extern void no_iommu_init(void);
+> >  extern int force_iommu, no_iommu;
+> >  extern int iommu_detected;
+> > -#ifdef CONFIG_IOMMU
+> > +#ifdef CONFIG_GART_IOMMU
+> >  extern void gart_iommu_init(void);
+> >  extern void gart_iommu_shutdown(void);
+> >  extern void __init gart_parse_options(char *);
+> 
+> The asm-x86/iommu.h file is a leftover from some patches I submitted
+> last year.  I renamed iommu.h to gart.h but somehow iommu.h still exists
+> in mainline. I think we should check again if somebody is using that
+> file and remove it if not.
 
->
-> I noticed with powertop that ftraced waks up once a second, even if no
-> tracer is active.  Is there a reason why the kernel thread can't be
-> suspended in that case?
+I think that we need a common header file (iommu.h or whatever) for
+what everyone needs, pci_iommu_shutdown(), no_iommu_init(), etc.
 
-That's for the dynamic tracer. It is actually stopped when a tracer is
-active ;-)
+Anyway, I did more cleanups:
 
-CONFIG_FTRACE enables the "-pg" option in the kernel compile that enables
-the mcount profiler. This adds a call to a function called "mcount" at the
-start of every function. With a simple "ret" from mcount, this still adds
-up to a 18% overhead.
+http://lkml.org/lkml/2008/7/10/510
 
-What the dynamic ftrace does is to have the mcount function call a
-"register_ip" function, that adds the caller into a hash table if it is
-not already there.
+or
 
-Once a second the "ftraced" kernel thread wakes up and checks to see if
-there are any new functions that have been called and recorded. If there
-has been, it calls kstop_machine and changes the call to mcount into a
-nop. This keeps the system to a 0% overhead (well, probably not 0% but it
-is not measurable ;-).
+tip/x86/gart
 
-I should add code to stop the kthread when the system is low. I notice
-that the thread still wakes up but goes to sleep even when ftraced_enabled
-is zero.
-
-I'm currently traveling and I'm trying to finish up the ftrace tutorial
-for OLS. I'll have to look more into this when I get back.
+Let me know if you think we still need cleanups.
 
 Thanks,
-
--- Steve
-
