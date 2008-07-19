@@ -1,56 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754516AbYGSJTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752954AbYGSJUL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754516AbYGSJTS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 05:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbYGSJTI
+	id S1752954AbYGSJUL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 05:20:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751980AbYGSJT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 05:19:08 -0400
-Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:46506 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752436AbYGSJTH (ORCPT
+	Sat, 19 Jul 2008 05:19:58 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:7705 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752071AbYGSJT5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 05:19:07 -0400
-Date: Sat, 19 Jul 2008 09:46:31 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Frantisek Hanzlik <franta@hanzlici.cz>
-Cc: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
-Subject: Re: serverworks CSB5 IDE: DMA disabled on secondary channel
-Message-ID: <20080719094631.4f4e6a5e@the-village.bc.nu>
-In-Reply-To: <48815567.2080001@hanzlici.cz>
-References: <fa.Fmf0CiaCc/J+JAWaZ5FS+ihhhzA@ifi.uio.no>
-	<487FED33.2030207@shaw.ca>
-	<20080718100607.1589ed2f@the-village.bc.nu>
-	<48815567.2080001@hanzlici.cz>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 19 Jul 2008 05:19:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=uVYVT8/8MPVqvuhsPZlD0ncrMR7GDlPMih34fLOcvD3kkyPy9JchbBpKGijQR0I8rU
+         IiWw79vV7VyBT3iPctF2BoXZyPmGdjCyyeGo6ETFrJWa7UBC4YvB9q29+4I9hhPyxkfk
+         8H3owXvV7TFgyRiwTpC+fZerniwo34ASBV2ek=
+Message-ID: <86802c440807190219m4cd71274qaea4975a9add15d4@mail.gmail.com>
+Date: Sat, 19 Jul 2008 02:19:57 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Joerg Roedel" <joro@8bytes.org>
+Subject: Re: [PATCH] x86: introduce x86_ops
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080719091612.GB13662@8bytes.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200807190207.26077.yhlu.kernel@gmail.com>
+	 <20080719091612.GB13662@8bytes.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 19 Jul 2008 04:45:59 +0200
-Frantisek Hanzlik <franta@hanzlici.cz> wrote:
+On Sat, Jul 19, 2008 at 2:16 AM, Joerg Roedel <joro@8bytes.org> wrote:
+> Hi Yinghai,
+>
+> can you please write a short commit message explaining the benefit? Also
+> x86_ops sounds a bit too generic for some architecture specific
+> initialization function pointers imho.
 
-> Alan Cox wrote:
-> >>> ata2.01: ATAPI: CD-W540E, 1.0D, max UDMA/33
-> >>> ata2.00: simplex DMA is claimed by other device, disabling DMA
-> >>> ata2.01: simplex DMA is claimed by other device, disabling DMA
-> >>> ata2.00: configured for PIO4
-> >>> ata2.01: configured for PIO4
-> >
-> >
-> > Disable the pata_acpi driver and let me know if it then behaves. We had a
-> > similar problem with the ATI hardware which lost and messed up its
-> > internal state if pata_acpi was loaded first.
-> >
-> Before I post to lkml I tried disable ata_generic driver, (which was loaded
-> before pata_serverworks too
+put all over visws_quirks in one structs, and may extend that to othat subarch
 
-
-Thanks - please complain to your distribution vendor if they are not
-following the docs and loading pata_acpi then ata_generic then ata_legacy
-*AFTER* other drivers.
+YH
