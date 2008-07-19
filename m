@@ -1,73 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753370AbYGSDwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752042AbYGSELr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753370AbYGSDwt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 23:52:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750770AbYGSDwk
+	id S1752042AbYGSELr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 00:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750733AbYGSELk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 23:52:40 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:51573 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750704AbYGSDwj (ORCPT
+	Sat, 19 Jul 2008 00:11:40 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:27888 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750719AbYGSELj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 23:52:39 -0400
-Date: Sat, 19 Jul 2008 04:52:31 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: linux-next: Tree for July 17: early crash on x86-64
-Message-ID: <20080719035231.GU28946@ZenIV.linux.org.uk>
-References: <20080718012842.690b8346.sfr@canb.auug.org.au> <200807180106.08328.rjw@sisk.pl> <a4423d670807180652y352e66lfe04d2b33d2ed176@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a4423d670807180652y352e66lfe04d2b33d2ed176@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sat, 19 Jul 2008 00:11:39 -0400
+Subject: Re: [patch 1/3] fastboot: Create a "asynchronous" initlevel
+From: Daniel Walker <dwalker@mvista.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
+In-Reply-To: <20080718204406.7426e8fe@infradead.org>
+References: <20080718151524.5ef9e29b@infradead.org>
+	 <20080718151608.46dc17c0@infradead.org>
+	 <1216430540.3978.137.camel@localhost.localdomain>
+	 <20080718204406.7426e8fe@infradead.org>
+Content-Type: text/plain
+Date: Fri, 18 Jul 2008 21:11:37 -0700
+Message-Id: <1216440697.3978.142.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 05:52:23PM +0400, Alexander Beregalov wrote:
-> 2008/7/18 Rafael J. Wysocki <rjw@sisk.pl>:
-> > This one crashes all of my x86-64 test boxes early during boot.
-> The same problem with next-20080718.
-> Unfortunatelly I do not have serial console on that host.
+On Fri, 2008-07-18 at 20:44 -0700, Arjan van de Ven wrote:
+> On Fri, 18 Jul 2008 18:22:20 -0700
+> Daniel Walker <dwalker@mvista.com> wrote:
+> 
+> > On Fri, 2008-07-18 at 15:16 -0700, Arjan van de Ven wrote:
+> > > +static void __init do_initcalls(void)
+> > > +{
+> > > +       initcall_t *call;
+> > > +       static DECLARE_WORK(async_work, do_async_initcalls);
+> > > +       int phase = 0; /* 0 = levels 0 - 6, 1 = level 6a, 2 = after
+> > > level 6a */
+> > > +
+> > > +       async_init_wq = create_singlethread_workqueue("kasyncinit");
+> > > +
+> > 
+> > Could you spawning one thread per cpu, and queuing the work evenly?
+> 
+> not without loosing the ordering.....
+> 
 
-vfs-next/net-next conflict; apply the patch below on top of the merge.
+I don't think there is any expectation for any given initcall to have a
+special ordering .. There is an ordering expectation for say initcall 6
+runs before 6a , but not within the initcall ..
 
-diff --git a/net/sysctl_net.c b/net/sysctl_net.c
-index b91a5de..2240a9e 100644
---- a/net/sysctl_net.c
-+++ b/net/sysctl_net.c
-@@ -44,13 +44,6 @@ static struct ctl_table_root net_sysctl_root = {
- 	.lookup = net_ctl_header_lookup,
- };
- 
--static LIST_HEAD(net_sysctl_ro_tables);
--static struct list_head *net_ctl_ro_header_lookup(struct ctl_table_root *root,
--		struct nsproxy *namespaces)
--{
--	return &net_sysctl_ro_tables;
--}
--
- static int net_ctl_ro_header_perms(struct ctl_table_root *root,
- 		struct nsproxy *namespaces, struct ctl_table *table)
- {
-@@ -61,7 +54,6 @@ static int net_ctl_ro_header_perms(struct ctl_table_root *root,
- }
- 
- static struct ctl_table_root net_sysctl_ro_root = {
--	.lookup = net_ctl_ro_header_lookup,
- 	.permissions = net_ctl_ro_header_perms,
- };
- 
-@@ -89,6 +81,7 @@ static __init int sysctl_init(void)
- 	if (ret)
- 		goto out;
- 	register_sysctl_root(&net_sysctl_root);
-+	setup_sysctl_set(&net_sysctl_ro_root.default_set, NULL, NULL);
- 	register_sysctl_root(&net_sysctl_ro_root);
- out:
- 	return ret;
+Daniel
+
