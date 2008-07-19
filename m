@@ -1,81 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756537AbYGSVQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756735AbYGSVRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756537AbYGSVQY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 17:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754151AbYGSVQR
+	id S1756735AbYGSVRS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 17:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753984AbYGSVRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 17:16:17 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:45732 "EHLO smtp4.pp.htv.fi"
+	Sat, 19 Jul 2008 17:17:10 -0400
+Received: from vapor.isi.edu ([128.9.64.64]:43648 "EHLO vapor.isi.edu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754118AbYGSVQQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 17:16:16 -0400
-Date: Sun, 20 Jul 2008 00:15:47 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.6.16.62-rc1
-Message-ID: <20080719211547.GO18326@cs181140183.pp.htv.fi>
+	id S1753725AbYGSVRJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jul 2008 17:17:09 -0400
+Date: Sat, 19 Jul 2008 14:16:53 -0700
+From: Craig Milo Rogers <rogers@ISI.EDU>
+To: "Peter T. Breuer" <ptb@inv.it.uc3m.es>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: From 2.4 to 2.6 to 2.7?
+Message-ID: <20080719211653.GF18350@isi.edu>
+References: <20080719080002.GA11272@isi.edu> <200807191930.m6JJURC12038@inv.it.uc3m.es>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200807191930.m6JJURC12038@inv.it.uc3m.es>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-ISI-4-43-8-MailScanner: Found to be clean
+X-MailScanner-From: rogers@jib.isi.edu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Security fixes since 2.6.16.61:
-- CVE-2008-0598: mm: trim more holes
-- CVE-2008-2826: sctp: Make sure N * sizeof(union sctp_addr) does not overflow.
+On 08.07.19, Peter T. Breuer wrote:
+> In article <20080719080002.GA11272@isi.edu> you wrote:
+> > In <200807180823.m6I8NIo27365@inv.it.uc3m.es>, Peter T. Breuer
+> > proposed switching to a three-level numbering scheme and resetting the
+> > middle number when useful [which I suppose might mean a major feature
+> > change or just a desire to avoid largish meaningless numbers].  I
+> > assume this sould give a sequence like:
+> 
+> > 2.6.26.s, 2.8.s, 2.9.s, 2.10.s,
+> 
+> Actually he said
+> 
+>    rename 2.6.28 to 2.8.0
+> or 
+>    rename 2.6.29 to 2.9.0
+> or
+>    rename 2.6.30 to 3.0.0
+> 
+> i.e. .. whatever you are doing now, just drop the first two numbers (the
+> "2.6" bit) since they seem to be constant.
+
+	So you're saying that the formula is to drop the "2.6" and place
+a period between the first and sedond digits of what's currently the
+release number? OK, I hadn't interpreted it that way.  Does the sequence
+continue like this?
+
+... 9.9.0, 10.0.0, ...
+
+> Remember that Linus' only objective is to have smaller numbers, which
+> may therefore
+> 
+>  1) be memorable
+>  2) be good advertising copy
+>  3) be meaningful
+> 
+> and that was the only intention of my scheme: "drop the constant bit".
+
+	And the underlying problem is that there are only so many
+small numbers.  Eventually, inevitably, constant bits accumulate in
+front of the changing bits.
+
+	Given the three criteria shown above, Linus' proposed scheme:
+
+yyyy.r.s
+
+seems best to me.  We know the year, it relates directly to common
+experience and effectively is a small number (this year, last year,
+two years ago... 0, 1, 2 years ago).
+
+	There's the potential for cognitive dissonance if the linux
+kernel takes a yyy.x format and the distrbutions also use yyyy.x, but
+the two aren't the same?  e.g., what will people think if, say,
+openSUSE 2009.2 contains linux kernel 2009.1?  Perhaps the
+distibutions would synchronize to kernel releases as a consequence of
+a revised kernel naming convention?
+
+	There's the question of what to do if you plan on a end-of year
+release, and it just doesn't happen.  I see three strategies, some of
+which have been mentioned already in this thread:
+
+1)	Retain the "yyyy.r" part, even though it's year yyyy+1 before the
+	stable relese is issued.
+
+	2008.3.rc5, 2008.3.rc6, [year 2009 arrives], 2008.3.rc7, 2008.3.0
+
+2)	Drop  the "yyyy.r" and start over with rc1 for "yyyy+1.1".
+
+	2008.3.rc5, 2008.3.rc6, [year 2009 arrives], 2009.1.rc1, 2009.1.0
+
+3)	Drop  the "yyyy.r" in favor of "yyyy+1.1", but don't break the
+	rc# numbering:
+
+	2008.3.rc5, 2008.3.rc6, [year 2009 arrives], 2009.1.rc7, 2009.1.0
 
 
-Location:
-ftp://ftp.kernel.org/pub/linux/kernel/people/bunk/linux-2.6.16.y/testing/
+	The last varient seems strange on the surface, but I think it
+would be easier in practice, because developers could refer to "rc5",
+"rc6", "rc7", dropping the locally-constant bits will less potential
+ambiguity than if the "rc#" sequence was interrupted.
 
-git tree:
-git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
+					Craig Milo Rogers
 
-RSS feed of the git tree:
-http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
-
-
-Changes since 2.6.16.61:
-
-Adrian Bunk (4):
-      unexport swap_page
-      unexport gameport_{cooked_read,set_name}
-      kconfig: move the option SCSI_HPTIOP to a better place
-      Linux 2.6.16.62-rc1
-
-Alan Stern (1):
-      USB: remove short initial timeout for device descriptor fetch
-
-David S. Miller (1):
-      sctp: Make sure N * sizeof(union sctp_addr) does not overflow. (CVE-2008-2826)
-
-Ian Pickworth (1):
-      V4L/DVB (3393): Cx88: reduce excessive logging
-
-Ivan Kokshaysky (2):
-      moduleparam: fix alpha, ia64 and ppc64 compile failures
-      alpha: build fixes - force architecture
-
-Nick Piggin (1):
-      mm: trim more holes (CVE-2008-0598)
-
-Tony Luck (1):
-      [IA64] Fix unaligned handler for floating point instructions with base update
-
-
- Makefile                              |    2 
- arch/alpha/kernel/sys_titan.c         |    3 
- arch/ia64/kernel/unaligned.c          |   11 ++-
- drivers/input/gameport/gameport.c     |    2 
- drivers/media/video/cx88/cx88-video.c |   14 ++--
- drivers/scsi/Kconfig                  |   20 +++---
- drivers/usb/core/hub.c                |   11 +--
- include/asm-alpha/compiler.h          |   47 +++++++++++----
- include/linux/moduleparam.h           |   12 +++
- mm/filemap.c                          |   80 +++++++++++++-------------
- mm/vmscan.c                           |    1 
- net/sctp/socket.c                     |    4 -
- 12 files changed, 119 insertions(+), 88 deletions(-)
 
