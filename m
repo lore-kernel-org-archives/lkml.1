@@ -1,61 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755615AbYGSXIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756058AbYGSXLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755615AbYGSXIp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 19:08:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbYGSXIi
+	id S1756058AbYGSXLA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 19:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753959AbYGSXKw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 19:08:38 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:63722 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753046AbYGSXIi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 19:08:38 -0400
-Date: Sun, 20 Jul 2008 00:08:23 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: Vegard Nossum <vegard.nossum@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: warn on apic error
-In-Reply-To: <20080719125907.GA30979@asus>
-Message-ID: <Pine.LNX.4.55.0807192352030.19091@cliff.in.clinika.pl>
-References: <20080718172821.GA4149@localhost.localdomain> <20080718174413.GD6897@asus>
- <19f34abd0807181045k239c81e8i1520291922909e93@mail.gmail.com>
- <20080718174931.GE6897@asus> <Pine.LNX.4.55.0807182005330.12125@cliff.in.clinika.pl>
- <20080719125907.GA30979@asus>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 19 Jul 2008 19:10:52 -0400
+Received: from smtp01.uc3m.es ([163.117.176.131]:42362 "EHLO smtp01.uc3m.es"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753722AbYGSXKw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jul 2008 19:10:52 -0400
+Date: Sun, 20 Jul 2008 01:10:48 +0200
+Message-Id: <200807192310.m6JNAmN03740@inv.it.uc3m.es>
+From: "Peter T. Breuer" <ptb@inv.it.uc3m.es>
+To: Craig Milo Rogers <rogers@ISI.EDU>, linux-kernel@vger.kernel.org
+Subject: Re: From 2.4 to 2.6 to 2.7?
+X-Newsgroups: gmane.linux.kernel
+In-Reply-To: <20080719211653.GF18350@isi.edu>
+User-Agent: tin/1.4.4-20000803 ("Vet for the Insane") (UNIX) (Linux/2.2.15 
+	(i686))
+X-imss-version: 2.051
+X-imss-result: Passed
+X-imss-scanInfo: M:B L:E SM:2
+X-imss-tmaseResult: TT:1 TS:-9.6870 TC:1F TRN:30 TV:5.5.1026(16042.002)
+X-imss-scores: Clean:100.00000 C:0 M:0 S:0 R:0
+X-imss-settings: Baseline:1 C:1 M:1 S:1 R:1 (0.0000 0.0000)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 19 Jul 2008, Cyrill Gorcunov wrote:
+Craig Milo Rogers <rogers@isi.edu> wrote:
+>>    rename 2.6.28 to 2.8.0
+>> or 
+>>    rename 2.6.29 to 2.9.0
+>> or
+>>    rename 2.6.30 to 3.0.0
+>> 
+>> i.e. .. whatever you are doing now, just drop the first two numbers (the
+>> "2.6" bit) since they seem to be constant.
 
-> [Maciej W. Rozycki - Fri, Jul 18, 2008 at 08:09:20PM +0100]
-> | On Fri, 18 Jul 2008, Cyrill Gorcunov wrote:
-> | 
-> | > iirc, they all were there (though some error codes are specific for
-> | > particular processor classes like P4, pentium and other - don't remeber
-> | > you could check intel dev manual for this).
-> | 
-> |  This is an error in some newer Intel documents -- the set of supported
-> | bits is the same for all APICs implementing the ESR register and the error
-> | interrupt (the 82489DX is the one to provide neither).
-> | 
-> |   Maciej
-> |
-> 
-> But Maciej, Intel doesn't claim about absence of bit but
-> rather about their 'reserved' state so checking the reserved
-> bit could be false alarm if it was being set by some reason.
+> 	So you're saying that the formula is to drop the "2.6" and place
+> a period between the first and sedond digits of what's currently the
+> release number? OK, I hadn't interpreted it that way.  Does the sequence
+> continue like this?
 
- As I say -- all later manuals have an error here (not the first and
-presumably not the last one), where they state the invalid register error
-has been only implemented since the P6.  This is not true -- go find the
-Pentium manual or experiment with actual hardware to see otherwise.  No
-new bits have been added since the introduction of the ESR, so there is no
-issue with bits to mask out on older silicon.
+The point is to rebase to a new system at a point coming up which is
+convenient.  There is an opportunity at 2.6.28, which can be renamed
+2.8.0, dropping the constant 2.6.
 
- Obviously the checksum and accept error bits are valid for APICs using
-the dedicated inter-APIC bus only as for the FSB they are irrelevant.  
-They have to be hardwired to zero for backward compatibility though.
+I suppose one counts 2.8.1, 2.8.2 from then on, or does whatever else
+one wants to do.  I don't know - Linus' only objective is to get smaller
+more meaningful numbers and the details of how one counts afterwards
+don't matter.
 
-  Maciej
+Or if one misses the 2.6.28 point, one gets another good opportunity for
+rebasing at 2.6.30, which could become 3.0.0, dropping the constant 2.6
+again.
+
+>> Remember that Linus' only objective is to have smaller numbers, which
+>> may therefore
+>> 
+>>  1) be memorable
+>>  2) be good advertising copy
+>>  3) be meaningful
+>> 
+>> and that was the only intention of my scheme: "drop the constant bit".
+
+> 	And the underlying problem is that there are only so many
+> small numbers. 
+
+We need smaller numbers now.
+
+I.e.  We're happy with the system we've got, except for the high
+numbers we're at, so just rebase.
+
+
+Peter
