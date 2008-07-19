@@ -1,78 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbYGSA1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756289AbYGSA30@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756774AbYGSA1e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 20:27:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbYGSA11
+	id S1756289AbYGSA30 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 20:29:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750772AbYGSA3S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 20:27:27 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:22362 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751045AbYGSA10 (ORCPT
+	Fri, 18 Jul 2008 20:29:18 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:50821 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750750AbYGSA3R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 20:27:26 -0400
-Date: Fri, 18 Jul 2008 17:26:30 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>
-Subject: [PATCH -next] sysctl: fix build when SYSCTL=y, SYSCTL_SYSCALL=n
-Message-Id: <20080718172630.a0b385e9.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 18 Jul 2008 20:29:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=cwSJoj/MUtIwz8bUlpuFTjQRj5o33yS9CZprjfjAzKm1ca2vy+K2+5sDK5CbdV0Gh+
+         S3M+HEr5lA16A9cre2PEoaHd7c5MMCuHI8UsgOAiqkff+bCLNhOgzRX9vAzTdaSJbBQe
+         T9zI7a+fRSfYxfWCHPjHzbJz4X5p+9aulkSe8=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] x86: remove arch_get_ram_range
+Date: Fri, 18 Jul 2008 17:28:40 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200807181728.40588.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-The stub needs to be provided when CONFIG_SYSCTL=n, not when
-CONFIG_SYSCTL_SYSCALL=n.
+no user now
 
-linux-next-20080718/kernel/sysctl.c:2970: error: redefinition of 'setup_sysctl_set'
-linux-next-20080718/kernel/sysctl.c:1963: error: previous definition of 'setup_sysctl_set' was here
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- kernel/sysctl.c |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ arch/x86/kernel/e820.c |   21 ---------------------
+ 1 file changed, 21 deletions(-)
 
---- linux-next-20080718.orig/kernel/sysctl.c
-+++ linux-next-20080718/kernel/sysctl.c
-@@ -1982,6 +1982,12 @@ void unregister_sysctl_table(struct ctl_
- {
+Index: linux-2.6/arch/x86/kernel/e820.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/e820.c
++++ linux-2.6/arch/x86/kernel/e820.c
+@@ -1368,24 +1368,3 @@ void __init setup_memory_map(void)
+ 	printk(KERN_INFO "BIOS-provided physical RAM map:\n");
+ 	e820_print_map(who);
  }
- 
-+void setup_sysctl_set(struct ctl_table_set *p,
-+	struct ctl_table_set *parent,
-+	int (*is_seen)(struct ctl_table_set *))
-+{
-+}
-+
- #endif /* CONFIG_SYSCTL */
- 
- /*
-@@ -2964,12 +2970,6 @@ int sysctl_ms_jiffies(struct ctl_table *
- 	return -ENOSYS;
- }
- 
--void setup_sysctl_set(struct ctl_table_set *p,
--	struct ctl_table_set *parent,
--	int (*is_seen)(struct ctl_table_set *))
--{
--}
 -
- #endif /* CONFIG_SYSCTL_SYSCALL */
- 
- static int deprecated_sysctl_warning(struct __sysctl_args *args)
-
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+-#ifdef CONFIG_X86_64
+-int __init arch_get_ram_range(int slot, u64 *addr, u64 *size)
+-{
+-	int i;
+-
+-	if (slot < 0 || slot >= e820.nr_map)
+-		return -1;
+-	for (i = slot; i < e820.nr_map; i++) {
+-		if (e820.map[i].type != E820_RAM)
+-			continue;
+-		break;
+-	}
+-	if (i == e820.nr_map || e820.map[i].addr > (max_pfn << PAGE_SHIFT))
+-		return -1;
+-	*addr = e820.map[i].addr;
+-	*size = min_t(u64, e820.map[i].size + e820.map[i].addr,
+-		max_pfn << PAGE_SHIFT) - *addr;
+-	return i + 1;
+-}
+-#endif
