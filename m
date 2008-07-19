@@ -1,60 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758702AbYGSASs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758027AbYGSAX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758702AbYGSASs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jul 2008 20:18:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbYGSASj
+	id S1758027AbYGSAX7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jul 2008 20:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbYGSAXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jul 2008 20:18:39 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:34982 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752034AbYGSASi (ORCPT
+	Fri, 18 Jul 2008 20:23:51 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:33450 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751045AbYGSAXv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jul 2008 20:18:38 -0400
-Date: Fri, 18 Jul 2008 17:18:12 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: netdev@vger.kernel.org, davem@davemloft.net
-Subject: [PATCH -next] net namespace: build when SYSCTL=n
-Message-Id: <20080718171812.8dfc9767.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 18 Jul 2008 20:23:51 -0400
+Message-ID: <48813400.20704@zytor.com>
+Date: Fri, 18 Jul 2008 17:23:28 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: venkatesh.pallipadi@intel.com
+CC: mingo@elte.hu, tglx@linutronix.de, gregkh@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC patch 0/2] x86: Add debugfs entry for PAT memtype list
+References: <20080718230812.826863000@intel.com>
+In-Reply-To: <20080718230812.826863000@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+venkatesh.pallipadi@intel.com wrote:
+> Patchset adds a new entry for dumping PAT memtype list under debugfs.
+> I am adding a high level arch directory in debugfs to combine any other
+> such debug info. Not sure whether this is the 'right' approach or there
+> is anything else being planned for this. Hence the tag RFC.
 
-When CONFIG_SYSCTL=n, build fails with:
+Look good to me; I have added this to x86/pat.
 
-linux-next-20080718/include/net/net_namespace.h:40: error: field 'sysctls' has incomplete type
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- include/net/net_namespace.h |    2 ++
- 1 file changed, 2 insertions(+)
-
---- linux-next-20080718.orig/include/net/net_namespace.h
-+++ linux-next-20080718/include/net/net_namespace.h
-@@ -37,7 +37,9 @@ struct net {
- 	struct proc_dir_entry 	*proc_net;
- 	struct proc_dir_entry 	*proc_net_stat;
- 
-+#ifdef CONFIG_SYSCTL
- 	struct ctl_table_set	sysctls;
-+#endif
- 
- 	struct net_device       *loopback_dev;          /* The loopback */
- 
-
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+	-hpa
