@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754218AbYGSJS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754516AbYGSJTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754218AbYGSJS3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 05:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbYGSJSW
+	id S1754516AbYGSJTS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 05:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbYGSJTI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 05:18:22 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54872 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751814AbYGSJSV (ORCPT
+	Sat, 19 Jul 2008 05:19:08 -0400
+Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:46506 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752436AbYGSJTH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 05:18:21 -0400
-Subject: Re: Problem: Load average of 6, no I/O, 25% idle time. Why?
-From: Peter Zijlstra <peterz@infradead.org>
-To: Timothy Normand Miller <theosib@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <9871ee5f0807181512u231e1aaraee5622d0a814f97@mail.gmail.com>
-References: <9871ee5f0807180549l58e849d9ge6e7deee3d0c37fa@mail.gmail.com>
-	 <1216387716.28405.45.camel@twins>
-	 <9871ee5f0807181512u231e1aaraee5622d0a814f97@mail.gmail.com>
-Content-Type: text/plain
-Date: Sat, 19 Jul 2008 11:18:16 +0200
-Message-Id: <1216459096.7257.2.camel@twins>
+	Sat, 19 Jul 2008 05:19:07 -0400
+Date: Sat, 19 Jul 2008 09:46:31 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Frantisek Hanzlik <franta@hanzlici.cz>
+Cc: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
+Subject: Re: serverworks CSB5 IDE: DMA disabled on secondary channel
+Message-ID: <20080719094631.4f4e6a5e@the-village.bc.nu>
+In-Reply-To: <48815567.2080001@hanzlici.cz>
+References: <fa.Fmf0CiaCc/J+JAWaZ5FS+ihhhzA@ifi.uio.no>
+	<487FED33.2030207@shaw.ca>
+	<20080718100607.1589ed2f@the-village.bc.nu>
+	<48815567.2080001@hanzlici.cz>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-07-18 at 18:12 -0400, Timothy Normand Miller wrote:
-> On Fri, Jul 18, 2008 at 9:28 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> > On Fri, 2008-07-18 at 08:49 -0400, Timothy Normand Miller wrote:
-> >> I have a four processor box, running three compute loads.  The kernel
-> >> I'm running is 2.6.25-gentoo-r5.
-> >>
-> >> One process has four threads, and it's niced to 19.
-> >> Another process has one thread and is niced to -10
-> >> The last process has one thread and is niced to 0
-> >>
-> >> One processor is always idle.
-> >>
-> >> If I change either the 0 to a -10 or the -10 to a zero, then all four
-> >> cores are properly utilized.
-> 
-> Interesting corollary:  If the only thing running is the one nice=19,
-> four-thread process, then there's about 4% idle time.  I have to raise
-> the priority to get the idle time to go away.  Since when do active
-> processes yield to idle time?
+On Sat, 19 Jul 2008 04:45:59 +0200
+Frantisek Hanzlik <franta@hanzlici.cz> wrote:
 
-They shouldn't... I'm suspecting it might be due to some form of
-priority inversion or some such thing.
-
-> Two of my three loads are finished, so when this last one is done,
-> I'll try 2.6.26.  Was something like this actively discussed and fixed
-> between 2.6.25 and 2.6.26?
-
-Not much, but it has seen drastic change post .26. So if you could also
-try Linus' latest -git that would be good.
+> Alan Cox wrote:
+> >>> ata2.01: ATAPI: CD-W540E, 1.0D, max UDMA/33
+> >>> ata2.00: simplex DMA is claimed by other device, disabling DMA
+> >>> ata2.01: simplex DMA is claimed by other device, disabling DMA
+> >>> ata2.00: configured for PIO4
+> >>> ata2.01: configured for PIO4
+> >
+> >
+> > Disable the pata_acpi driver and let me know if it then behaves. We had a
+> > similar problem with the ATI hardware which lost and messed up its
+> > internal state if pata_acpi was loaded first.
+> >
+> Before I post to lkml I tried disable ata_generic driver, (which was loaded
+> before pata_serverworks too
 
 
+Thanks - please complain to your distribution vendor if they are not
+following the docs and loading pata_acpi then ata_generic then ata_legacy
+*AFTER* other drivers.
