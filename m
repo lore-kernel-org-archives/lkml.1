@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118AbYGSJRW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754218AbYGSJS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754118AbYGSJRW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 05:17:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbYGSJRO
+	id S1754218AbYGSJS3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 05:18:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbYGSJSW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 05:17:14 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:7078 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751592AbYGSJRO (ORCPT
+	Sat, 19 Jul 2008 05:18:22 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:54872 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751814AbYGSJSV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 05:17:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=XwtrU9sOZGbXqLvsauFRIwczwCSMFuA0tfLL7l+WHNbbI5/4iV/gW+0qXLfnKyCpnq
-         jw3dZcXbn3NtF9qtBT6xj5k8U1sfto3KCYmOERVrOqZL0PPwrZ4t5d5bzFRKEtRB2axq
-         zLKDSB1XAEAgEqn54XPM4fo9VTeP6GTvFtrg0=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, jbarnes@virtuousgeek.org,
-       Jack Howarth <howarth@bromo.msbb.uc.edu>
-Subject: [PATCH] x86,pci: detect end_bus_number according to acpi/e820 reserved - fix
-Date: Sat, 19 Jul 2008 02:16:32 -0700
-User-Agent: KMail/1.9.9
+	Sat, 19 Jul 2008 05:18:21 -0400
+Subject: Re: Problem: Load average of 6, no I/O, 25% idle time. Why?
+From: Peter Zijlstra <peterz@infradead.org>
+To: Timothy Normand Miller <theosib@gmail.com>
 Cc: linux-kernel@vger.kernel.org
-References: <200807180941.09779.yhlu.kernel@gmail.com> <200807181322.37500.yhlu.kernel@gmail.com>
-In-Reply-To: <200807181322.37500.yhlu.kernel@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+In-Reply-To: <9871ee5f0807181512u231e1aaraee5622d0a814f97@mail.gmail.com>
+References: <9871ee5f0807180549l58e849d9ge6e7deee3d0c37fa@mail.gmail.com>
+	 <1216387716.28405.45.camel@twins>
+	 <9871ee5f0807181512u231e1aaraee5622d0a814f97@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 19 Jul 2008 11:18:16 +0200
+Message-Id: <1216459096.7257.2.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807190216.32479.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2008-07-18 at 18:12 -0400, Timothy Normand Miller wrote:
+> On Fri, Jul 18, 2008 at 9:28 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> > On Fri, 2008-07-18 at 08:49 -0400, Timothy Normand Miller wrote:
+> >> I have a four processor box, running three compute loads.  The kernel
+> >> I'm running is 2.6.25-gentoo-r5.
+> >>
+> >> One process has four threads, and it's niced to 19.
+> >> Another process has one thread and is niced to -10
+> >> The last process has one thread and is niced to 0
+> >>
+> >> One processor is always idle.
+> >>
+> >> If I change either the 0 to a -10 or the -10 to a zero, then all four
+> >> cores are properly utilized.
+> 
+> Interesting corollary:  If the only thing running is the one nice=19,
+> four-thread process, then there's about 4% idle time.  I have to raise
+> the priority to get the idle time to go away.  Since when do active
+> processes yield to idle time?
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+They shouldn't... I'm suspecting it might be due to some form of
+priority inversion or some such thing.
 
-diff --git a/arch/x86/pci/mmconfig-shared.c b/arch/x86/pci/mmconfig-shared.c
-index 9297882..429c701 100644
---- a/arch/x86/pci/mmconfig-shared.c
-+++ b/arch/x86/pci/mmconfig-shared.c
-@@ -364,6 +364,7 @@ static void __init pci_mmcfg_reject_broken(int early)
- 		cfg = &pci_mmcfg_config[i];
- 		addr = cfg->start_bus_number;
- 		addr <<= 20;
-+		addr += cfg->address;
- 		size = cfg->end_bus_number + 1 - cfg->start_bus_number;
- 		size <<= 20;
- 		printk(KERN_NOTICE "PCI: MCFG configuration %d: base %lx "
+> Two of my three loads are finished, so when this last one is done,
+> I'll try 2.6.26.  Was something like this actively discussed and fixed
+> between 2.6.25 and 2.6.26?
+
+Not much, but it has seen drastic change post .26. So if you could also
+try Linus' latest -git that would be good.
+
+
