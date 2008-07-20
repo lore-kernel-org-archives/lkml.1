@@ -1,77 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758057AbYGTQMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758228AbYGTQO2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758057AbYGTQMa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 12:12:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754912AbYGTQMX
+	id S1758228AbYGTQO2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 12:14:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757409AbYGTQOU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 12:12:23 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:54285 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753149AbYGTQMX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 12:12:23 -0400
-Date: Sun, 20 Jul 2008 20:15:48 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] coredump: format_corename: fix the "core_uses_pid" logic
-Message-ID: <20080720161548.GA10730@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Sun, 20 Jul 2008 12:14:20 -0400
+Received: from smtp-vbr6.xs4all.nl ([194.109.24.26]:4173 "EHLO
+	smtp-vbr6.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752960AbYGTQOT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 12:14:19 -0400
+Message-ID: <48836457.2050302@xs4all.nl>
+Date: Sun, 20 Jul 2008 18:14:15 +0200
+From: Udo van den Heuvel <udovdh@xs4all.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Francois Romieu <romieu@fr.zoreil.com>
+CC: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: Re: kernel: TD structure error TDindex=e
+References: <48835302.1090708@xs4all.nl> <20080720160812.GA23652@electric-eye.fr.zoreil.com>
+In-Reply-To: <20080720160812.GA23652@electric-eye.fr.zoreil.com>
+X-Enigmail-Version: 0.95.2
+OpenPGP: id=8300CC02
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I don't understand why the multi-thread coredump implies the core_uses_pid
-behaviour, but we shouldn't use mm->mm_users for that. This counter can be
-incremented by get_task_mm(). Use the valued returned by coredump_wait()
-instead.
+Francois Romieu wrote:
+> Udo van den Heuvel <udovdh@xs4all.nl> :
+> [...]
+>> 16:41:09 recorder kernel: TD structure error TDindex=e
+(...)
+>> How can I avoid/fix/etc this situation ?
+> 
+> Can you apply the patch below to get some more information ?
 
-Also, remove the "const char *pattern" argument, format_corename() can use
-core_pattern directly.
+Will do, will look for an earliest opportinuty to boot the machine with
+the patched kernel.
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> May I assume that it does not count as a regression ?
 
---- 26-rc2/fs/exec.c~FORMAT_CORENAME	2008-07-20 17:06:07.000000000 +0400
-+++ 26-rc2/fs/exec.c	2008-07-20 17:31:40.000000000 +0400
-@@ -1373,17 +1373,14 @@ EXPORT_SYMBOL(set_binfmt);
-  * name into corename, which must have space for at least
-  * CORENAME_MAX_SIZE bytes plus one byte for the zero terminator.
-  */
--static int format_corename(char *corename, const char *pattern, long signr)
-+static int format_corename(char *corename, int nr_threads, long signr)
- {
--	const char *pat_ptr = pattern;
-+	const char *pat_ptr = core_pattern;
-+	int ispipe = (*pat_ptr == '|');
- 	char *out_ptr = corename;
- 	char *const out_end = corename + CORENAME_MAX_SIZE;
- 	int rc;
- 	int pid_in_pattern = 0;
--	int ispipe = 0;
--
--	if (*pattern == '|')
--		ispipe = 1;
- 
- 	/* Repeat as long as we have more pattern to process and more output
- 	   space */
-@@ -1484,7 +1481,7 @@ static int format_corename(char *corenam
- 	 * and core_uses_pid is set, then .%pid will be appended to
- 	 * the filename. Do not do this for piped commands. */
- 	if (!ispipe && !pid_in_pattern
--            && (core_uses_pid || atomic_read(&current->mm->mm_users) != 1)) {
-+            && (core_uses_pid || nr_threads)) {
- 		rc = snprintf(out_ptr, out_end - out_ptr,
- 			      ".%d", task_tgid_vnr(current));
- 		if (rc > out_end - out_ptr)
-@@ -1748,7 +1745,7 @@ int do_coredump(long signr, int exit_cod
- 	 * uses lock_kernel()
- 	 */
-  	lock_kernel();
--	ispipe = format_corename(corename, core_pattern, signr);
-+	ispipe = format_corename(corename, retval, signr);
- 	unlock_kernel();
- 	/*
- 	 * Don't bother to check the RLIMIT_CORE value if core_pattern points
-
+Can't confirm/deny.
+It has 'hung' before.
