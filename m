@@ -1,88 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752791AbYGTHVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756768AbYGTH03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752791AbYGTHVk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 03:21:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756016AbYGTHVZ
+	id S1756768AbYGTH03 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 03:26:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbYGTH0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 03:21:25 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:48341 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755452AbYGTHVY (ORCPT
+	Sun, 20 Jul 2008 03:26:20 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:39594 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752125AbYGTH0T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 03:21:24 -0400
-Message-ID: <4882E7F3.8060605@keyaccess.nl>
-Date: Sun, 20 Jul 2008 09:23:31 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Sun, 20 Jul 2008 03:26:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=xAX4z0RVea/3MJqYMT1yY1MTXfioNxz5Chk3i0AvJkOtDjsahRY4f497UU2wFgxNsb
+         aDrz2PlguO1CBQF6xnh5Ie/Akt4R5Kd28WN65AP9PgGsuVg8Xb8GehkDmEvmyAgq2my0
+         Gv1+WDddB6rfZbBkfgsBh5NaBMy0zZGJVkXgI=
+Message-ID: <b637ec0b0807200026j3a2694acw7c964e1c23a7b57c@mail.gmail.com>
+Date: Sun, 20 Jul 2008 09:26:18 +0200
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+To: "Alan Jenkins" <aj504@cs.york.ac.uk>
+Subject: Re: [Bug #10724] ACPI: EC: GPE storm detected, disabling EC GPE
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Alexey Starikovskiy" <astarikovskiy@suse.de>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <50b515e4-6cd1-4b18-93e3-ecfab5925f02@34g2000hsf.googlegroups.com>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu, Pavel Machek <pavel@ucw.cz>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch 1/3] fastboot: Create a "asynchronous" initlevel
-References: <20080718151524.5ef9e29b@infradead.org>	<20080718151608.46dc17c0@infradead.org>	<48819D92.8050904@keyaccess.nl>	<4881A161.7050902@keyaccess.nl> <20080719084448.7859afd0@infradead.org>
-In-Reply-To: <20080719084448.7859afd0@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Disposition: inline
+References: <aPfh5-7kW-5@gated-at.bofh.it> <aPfhe-7kW-31@gated-at.bofh.it>
+	 <aQUio-2qG-25@gated-at.bofh.it> <aR0nM-6kd-15@gated-at.bofh.it>
+	 <aR3vi-3MV-15@gated-at.bofh.it> <aR4Ur-6c7-27@gated-at.bofh.it>
+	 <aReqy-5vm-1@gated-at.bofh.it>
+	 <50b515e4-6cd1-4b18-93e3-ecfab5925f02@34g2000hsf.googlegroups.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 19-07-08 17:44, Arjan van de Ven wrote:
+Well, I read in another thread that there are some issues with this
+patches. Anyway, I'm now running .26 with your patch since yesterday,
+tried 3 suspend/resume cycles and 2 hibernate/resume cycles and
+everything seems to be fine.
 
-> On Sat, 19 Jul 2008 10:10:09 +0200
-> Rene Herman <rene.herman@keyaccess.nl> wrote:
+It looks that it's really solving the problem for me.
 
->>> I'm not sure about this comment, being not very sure about the
->>> semantics of late_initcall but shouldn't late_initcall (level 7)
->>> wait for 6s to have completed?
->> 
->> Following up on this myself -- see for example kernel/power/disk.c:
->> power_suspend(). It's a late intitcall so that, as it comments,
->> "all devices are discovered and initialized". However, your first
->> followup patch makes the USB HCI init async meaning that any USB
->> storage device might not be ready yet when it runs, no?
-> 
-> good spotting/comment.
-> 
-> you would have a valid point... if it weren't for the case where much
-> of this actual "end device" probing is in various cases already
-> asynchronous... what you do have found is a bug in the suspend code.
-> Unless code does:
->         /* wait for the known devices to complete their probing */
->         while (driver_probe_done() != 0)
->                 msleep(100);
-> (taken from init/do_mounts.c)
-> 
-> ... the assertion in the comment that probing is done is absolutely
-> false, with or without my patches.
+Thanks for your work. Cheers,
+Fabio
 
-Yes, I see. Unfortunately, WITH your patches, driver_probe_done() would 
-also no longer be safe when run from a late_initcall() it would appear.
 
-driver_probe_done() tests a variable that's incremented just before the 
-driver model calls into the driver .probe method and decremented on 
-return from it (really_probe).
 
-However, if the entire module_init() is async the probing may not even 
-have _started_ yet let alone finished. Let's take ehci_hcd_init() as an 
-example both since you changed that one and since it'll fairly often be 
-en route to mass storage devices.
 
-Only after ehci_init() calls foo_register_driver() is the driver model 
-aware of it and will it start calling the probe methods meaning the 
-driver_probe_done() would be racing.
-
-I have the sneaking suspicion that this is a bit of a fundamental issue. 
-Turning some of the driver level (6) async basicaly removes the ordering 
-between drivers and late_initcall (level 7).
-
-I trust it will completely and utterly destroy the point of this patch 
-to flush level 6a before starting level 7?
-
-> (Not that I want the suspend/resume code to call this, because that
-> would make the boot even longer ;( )
-
-Well, yes, but bugs are bugs. CCing Pavel and Rafael as well :-)
-
-Rene.
+On Sat, Jul 19, 2008 at 2:22 PM, Alan Jenkins <aj504@cs.york.ac.uk> wrote:
+> Fabio Comolli wrote:
+>> Hi Alex.
+>> Well, I read the bug report but still can't understand why in any
+>> kernels < 2.6.26 I don't have any problems with battery reports and in
+>> 2.6.26 as soon as the message appears g-p-m starts to behave
+>> incorrectly.
+>>
+>> Anyway, I got back to 25.11 for now, if you have any other workarounds
+>> for me to test please let me know.
+>
+> Hi Fabio.
+>
+> I wrote some GPE fixes for my Asus laptop and they need some wider
+> testing :-).  I think I found why we get GPE storms and how to deal
+> with them.
+>
+> I posted them on the lists a series of three patches, but I neglected
+> to CC any potential testers.  For convenience I squished them into a
+> single patch and posted them in Bugzilla.
+>
+> My bug: <http://bugzilla.kernel.org/show_bug.cgi?id=11089>
+> Patch: <http://bugzilla.kernel.org/attachment.cgi?
+> id=16886&action=view>
+>
+> The risky part of the fixes removes the GPE interrupt storm check and
+> the GPE polling mode. So you won't see the "disabling EC GPE" message,
+> and I'm hoping this will stop g-p-m  misbehaving for you.
+>
+> I'm not sure what could happen if it's broken somehow :-).  If you
+> have ACPI hotkeys (i.e. running acpi_listen shows events when you
+> press hotkeys), please check they still work.  If not, you should have
+> at least one button that generates an ACPI event - the power button.
+> So it would be great if you could check the power button still works
+> as normal.  (On my computer, g-p-m handles the power button and pops
+> up a logout/shutdown prompt).
+>
+> Thanks
+> Alan
+>
