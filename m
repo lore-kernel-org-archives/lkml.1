@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757386AbYGTJnj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757228AbYGTJqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757386AbYGTJnj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 05:43:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755515AbYGTJnR
+	id S1757228AbYGTJqb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 05:46:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754996AbYGTJqX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 05:43:17 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:7987 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754556AbYGTJnP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 05:43:15 -0400
-Date: Sun, 20 Jul 2008 12:42:39 +0300
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Chandru <chandru@in.ibm.com>, linux-kernel@vger.kernel.org,
-       alexisb@us.ibm.com, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [RFC] [Patch] calgary iommu: Use the first kernel's tce tables
-	in kdump
-Message-ID: <20080720094239.GE7173@il.ibm.com>
-References: <1191962414.24134.68.camel@chandru> <200806211741.43703.chandru@in.ibm.com> <20080623192918.GB6989@il.ibm.com> <200807151415.27845.chandru@in.ibm.com> <20080717161414.c5a267f7.akpm@linux-foundation.org>
+	Sun, 20 Jul 2008 05:46:23 -0400
+Received: from ozlabs.org ([203.10.76.45]:45796 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753979AbYGTJqX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 05:46:23 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Subject: Re: [PATCH] stopmachine: add stopmachine_timeout
+Date: Sun, 20 Jul 2008 19:45:58 +1000
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <487B05CE.1050508@jp.fujitsu.com> <200807151750.12131.rusty@rustcorp.com.au> <487D738B.4070104@jp.fujitsu.com>
+In-Reply-To: <487D738B.4070104@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080717161414.c5a267f7.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: text/plain;
+  charset="iso-2022-jp"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200807201945.58836.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 04:14:14PM -0700, Andrew Morton wrote:
-> On Tue, 15 Jul 2008 14:15:27 +0530
-> Chandru <chandru@in.ibm.com> wrote:
-> 
-> > kdump kernel fails to boot with calgary iommu and aacraid driver on a x366 
-> > box. The ongoing dma's of aacraid from the first kernel continue to exist 
-> > until the driver is loaded in the kdump kernel. Calgary is initialized prior 
-> > to aacraid and creation of new tce tables causes wrong dma's to occur. Here 
-> > we try to get the tce tables of the first kernel in kdump kernel and use 
-> > them. While in the kdump kernel we do not allocate new tce tables but instead 
-> > read the base addres register contents of calgary iommu and use the tables 
-> > that the registers point to. With these changes the kdump kernel and hence 
-> > aacraid now boots normally.
-> > 
-> > Signed-off-by: Chandru Siddalingappa <chandru@in.ibm.com>
-> > ---
-> > 
-> > patch taken on top of linux-2.6.26 stable. Comments from Muli Ben-Yehuda taken 
-> > into consideration. Pls apply it as a stop-gap patch until we can come up 
-> > with a more stable patch for this issue. Thanks,
-> 
-> Is this needed in 2.6.26?
+On Wednesday 16 July 2008 14:05:31 Hidetoshi Seto wrote:
+> Hi Rusty,
+>
+> Rusty Russell wrote:
+> > On Tuesday 15 July 2008 11:11:34 Hidetoshi Seto wrote:
+> >> However we need to be careful that the stuck CPU can restart
+> >> unexpectedly.
+> >
+> > OK, if you are worried about that race, I think we can still fix it...
+>
+> After having a relaxing day, once I said:
+>  "I like your idea that if we did not want to do something on the stuck CPU
+>   then treat the CPU as stopped."
+> but now I noticed that the stuck CPU can harm what we want to do if it is
+> not real stuck... ex. busy loop in a subsystem, and we want to touch the
+> core of the subsystem exclusively.
 
-No, it's 2.6.27 material.
+No.  You aim for perfection, but there is no "right" answer other than "don't 
+get your system into this mess".  Whatever we do is going to be an educated 
+guess.  And guessing that there'll be no race is a very good guess indeed.
 
-Cheers,
-Muli
+The scenario we are addressing is a stuck CPU and module load.  If we fail 
+stop machine, module load fails.
+
+That is why we should continue if we can.  It is also why the default timeout 
+cannot be 0.  You can't turn this on once you notice there's a problem: it's 
+too late.
+
+If we don't want to handle this case, let's not apply any patch at all.
+Rusty.
+
