@@ -1,58 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754464AbYGTWAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754753AbYGTWCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754464AbYGTWAv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 18:00:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYGTWAn
+	id S1754753AbYGTWCT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 18:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142AbYGTWCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 18:00:43 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:37418 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750981AbYGTWAm (ORCPT
+	Sun, 20 Jul 2008 18:02:09 -0400
+Received: from mail.rz.uni-duesseldorf.de ([134.99.128.30]:64768 "EHLO
+	mail.rz.uni-duesseldorf.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752125AbYGTWCI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 18:00:42 -0400
-Date: Mon, 21 Jul 2008 00:01:40 +0200
-From: Tino Keitel <tino.keitel@gmx.de>
-To: linux-kernel@vger.kernel.org, airlied@linux.ie
-Subject: no direct rendering with 2.6.26 due to AGP after DRM
-Message-ID: <20080720220140.GA14818@dose.home.local>
-Mail-Followup-To: linux-kernel@vger.kernel.org, airlied@linux.ie
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 20 Jul 2008 18:02:08 -0400
+X-Greylist: delayed 6888 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Jul 2008 18:02:07 EDT
+Date: Sun, 20 Jul 2008 22:06:40 +0200 (CEST)
+From: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
+Subject: Re: [patch 17/29] m68k/atari/debug.c: possible cleanups
+In-reply-to: <20080717191754.149215226@mail.of.borg>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Adrian Bunk <bunk@kernel.org>
+Message-id: <alpine.DEB.1.00.0807202204550.3442@zirkon.biophys.uni-duesseldorf.de>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+References: <20080717191607.955742542@mail.of.borg>
+ <20080717191754.149215226@mail.of.borg>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-with 2.6.26, I got no direct OpenGL rendering in Xorg. A look into the
-dmesg lock revealed this:
+> - remove the following unused variables:
+>  - atari_SCC_init_done
 
-2.6.26:
+That one I'll need to reintroduce for the SCC driver rewrite (which is 
+still stuck in Geert's queue pending cleanups by me).
 
-[drm] Initialized drm 1.1.0 20060810
-ACPI: PCI Interrupt 0000:00:02.0[A] -> GSI 16 (level, low) -> IRQ 16
-PCI: Setting latency timer of device 0000:00:02.0 to 64
-[drm:drm_fill_in_dev] *ERROR* Cannot initialize the agpgart module.
-DRM: Fill_in_dev failed.
-...
-agpgart: Detected an Intel 965GM Chipset.
-agpgart: Detected 7676K stolen memory.
-agpgart: AGP aperture is 256M @ 0xe0000000
-
-2.6.25.9:
-
-Linux agpgart interface v0.103
-agpgart: Detected an Intel 965GM Chipset.
-agpgart: Detected 7676K stolen memory.
-agpgart: AGP aperture is 256M @ 0xe0000000
-[drm] Initialized drm 1.1.0 20060810
-ACPI: PCI Interrupt 0000:00:02.0[A] -> GSI 16 (level, low) -> IRQ 16
-PCI: Setting latency timer of device 0000:00:02.0 to 64
-[drm] Initialized i915 1.6.0 20060119 on minor 0
-
-Any hints what I could try to solve this?
-
-Regards,
-Tino
+ 	Michael
