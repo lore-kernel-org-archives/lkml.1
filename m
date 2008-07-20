@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbYGTX4K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbYGTX70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755950AbYGTX4K (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 19:56:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753862AbYGTXz4
+	id S1756108AbYGTX70 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 19:59:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754139AbYGTX7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 19:55:56 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:22876 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753797AbYGTXzz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 19:55:55 -0400
-Date: Mon, 21 Jul 2008 08:55:30 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-input <linux-input@vger.kernel.org>,
-       linux-sh <linux-sh@vger.kernel.org>
-Subject: Re: [PATCH] input: Clean up maple keyboard driver
-Message-ID: <20080720235530.GA19854@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Adrian McMenamin <adrian@newgolddream.dyndns.info>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	lkml <linux-kernel@vger.kernel.org>,
-	linux-input <linux-input@vger.kernel.org>,
-	linux-sh <linux-sh@vger.kernel.org>
-References: <1213559019.22707.12.camel@localhost.localdomain> <20080718224323.GA19263@linux-sh.org> <1216469879.8959.0.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1216469879.8959.0.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 20 Jul 2008 19:59:13 -0400
+Received: from casper.infradead.org ([85.118.1.10]:56685 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753958AbYGTX7L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 19:59:11 -0400
+Subject: Re: Btrfs hosting moving to kernel.org
+From: David Woodhouse <dwmw2@infradead.org>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-btrfs@vger.kernel.org, btrfs-devel@oss.oracle.com
+In-Reply-To: <200804011416.43563.chris.mason@oracle.com>
+References: <200804011416.43563.chris.mason@oracle.com>
+Content-Type: text/plain
+Organization: Intel Corporation
+Date: Sun, 20 Jul 2008 16:59:10 -0700
+Message-Id: <1216598351.2475.222.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 19, 2008 at 01:17:59PM +0100, Adrian McMenamin wrote:
-> On Sat, 2008-07-19 at 07:43 +0900, Paul Mundt wrote:
-> > On Sun, Jun 15, 2008 at 08:43:39PM +0100, Adrian McMenamin wrote:
-> > > Have a single probe function instead of a probe and a connect function.
-> > > Also tidy a comment.
-> > > 1 files changed, 33 insertions(+), 48 deletions(-)
-> > > 
-> > > 
-> > > Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
-> > 
-> > Ok, so I was going to take this through my tree, but it doesn't apply any
-> > more. Please send an updated version that can be merged.
+On Tue, 2008-04-01 at 14:16 -0400, Chris Mason wrote:
+> Sources:
 > 
-> What is the problem? Is it just a badly formed patch or has something
-> changed elsewhere?
-> 
-> I'll have a look but as I have no issues I'm not sure what is wrong.
-> 
-The problem is it doesnt apply, and the code it is against has also
-changed. If you have no issues, you obviously havent tried to apply it.
+> http://www.kernel.org/hg/btrfs/
+
+Since it turns out that using something other than git for kernel
+development _wasn't_ just an April Fools joke, I've started mirroring
+into git. I hope that's OK:
+
+http://git.kernel.org/?p=linux/kernel/git/dwmw2/btrfs-kernel-unstable.git
+http://git.kernel.org/?p=linux/kernel/git/dwmw2/btrfs-progs-unstable.git
+http://git.kernel.org/?p=linux/kernel/git/dwmw2/btrfs-kernel.git
+http://git.kernel.org/?p=linux/kernel/git/dwmw2/btrfs-progs.git
+
+It should be updated hourly.
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
+
