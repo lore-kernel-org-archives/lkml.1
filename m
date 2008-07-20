@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758007AbYGTPQQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757923AbYGTPWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758007AbYGTPQQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 11:16:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754250AbYGTPP6
+	id S1757923AbYGTPWR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 11:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757190AbYGTPWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 11:15:58 -0400
-Received: from mx-out.forthnet.gr ([193.92.150.104]:53378 "EHLO
-	mx-out.forthnet.gr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753364AbYGTPP5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 11:15:57 -0400
-X-Greylist: delayed 1308 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Jul 2008 11:15:56 EDT
-Authentication-Results: MX-IN-02.forthnet.gr smtp.mail=v13@v13.gr; spf=neutral
-Authentication-Results: MX-IN-02.forthnet.gr header.from=v13@v13.gr; sender-id=neutral
-From: Stefanos Harhalakis <v13@v13.gr>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: From 2.4 to 2.6 to 2.7?
-Date: Sun, 20 Jul 2008 17:53:47 +0300
-User-Agent: KMail/1.9.9
-Cc: Craig Milo Rogers <rogers@isi.edu>, Jan Engelhardt <jengelh@medozas.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Stoyan Gaydarov <stoyboyker@gmail.com>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, gorcunov@gmail.com,
-       akpm@linux-foundation.org, mingo@elte.hu
-References: <6d291e080807141910m573b29b2t753ea7c4db09902d@mail.gmail.com> <20080719204933.GE18350@isi.edu> <4882F886.7060507@keyaccess.nl>
-In-Reply-To: <4882F886.7060507@keyaccess.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-7"
+	Sun, 20 Jul 2008 11:22:05 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:51595 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754705AbYGTPWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 11:22:04 -0400
+Subject: Re: GPL version 4
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: Aleksej Saushev <asau@inbox.ru>
+Cc: linux-kernel@vger.kernel.org, netbsd-users@netbsd.org,
+       ubuntu-users@lists.ubuntu.com, fedora-list@redhat.com,
+       freebsd-questions@freebsd.org, Richard Stallman <rms@gnu.org>
+In-Reply-To: <87fxq59com.fsf@inbox.ru>
+References: <MDEHLPKNGKAHNMBLJOLKAEJDOEAC.davids@webmaster.com>
+	 <E1KKQd9-000114-IV@fencepost.gnu.org>   <87fxq59com.fsf@inbox.ru>
+Content-Type: text/plain
+Date: Sun, 20 Jul 2008 17:15:10 +0200
+Message-Id: <1216566910.28410.4.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807201753.48252.v13@v13.gr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 20 July 2008, Rene Herman wrote:
-> On 19-07-08 22:49, Craig Milo Rogers wrote:
-> > On 08.07.19, Rene Herman wrote:
-> >> Really, find me a single Linux developer who wouldn't try just a little
-> >> bit harder for a big 3.0 release. This is still a community, not yet a
-> >> boring office schedule...
-> >
-> > 	I'm afraid that the allure of 3.0 would mean that everyone
-> > would want to get their shiny new subsystem/scheduler
-> > rewrite/bootstrap file format change/whatever incorporated into it,
-> > resulting in a protracted integration period and an unstable system.
-> > According to this line of thought, Linus should simply announce
-> > version 3.0 with no forewarning...
->
-> Or better yet, we'd have 342 -rc's and a REALLY big party when 3.0
-> finally hits the streets.
+On Sun, 2008-07-20 at 12:34 +0400, Aleksej Saushev wrote:
+<snip>
+> > Just think how much better off we would be
+> > if Microsoft Windows had never been developed.
+> 
+> How?  How exactly?  I don't believe you, show me facts.
+You have got to be kidding..
 
-I suggest that major and minor versions follow some milestones (as suggested 
-to a message that I cannot reply directly). For example:
+> 
+> > But suppose he does it anyway, without using our code.  That could be
+> > just the handicap that enables a competing free program to be superior
+> > in convenience, just as it always is in ethics.
+> 
+> Put ethics aside, it is subjective and differs from place to place.
+> 
+> In which way your "free" "replacement" is more convenient than Adobe Photoshop?
+> How do you explain simple fact, that photographers prefer the latter,
+> even when they tried your so-called "free" so-called "replacement".
 
-Starting from 'today', mark all open bugs and change version to 2.7 when all 
-those bugs are closed. Then mark the open bugs of that time and change to 2.8 
-when those bugs are fixed. Repeat as needed.
+I find it horrifying that you believe that simply because lots of
+people(maybe even the majority) does/use something, and even prefer it,
+means its the right thing. I suggest you look around the world, reflect
+on it, and then read your own post.
 
-Set a 'target'/goal and change version to 3.0 whenever worldwide linux 
-server/desktop percentage reaches XX%. (Of course this may happen before 
-changing to 2.7 but this is not a bad thing (tm)). Then set another target 
-(that may not be related to linux adoption) etc, etc...
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-This will keep the current versioning scheme, set some common goals for all 
-developers, add more meaning into trying to fix bugs and prevent the world
-from experiencing large linux version numbers.
-
-As a side-effect, setting targets like those may make the whole community 
-cooperate even more/better by having common long-term goals.
-
-...
-
-p.s You could also keep the X.Y.Z notation and change the major version
-number whenever the way of versioning changes (and the current one is
-actually version 2) :P
