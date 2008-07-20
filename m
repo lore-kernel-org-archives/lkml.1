@@ -1,78 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755673AbYGSXc0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755673AbYGTAS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755673AbYGSXc0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 19:32:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbYGSXcT
+	id S1755673AbYGTAS0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 20:18:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbYGTAST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 19:32:19 -0400
-Received: from saeurebad.de ([85.214.36.134]:52368 "EHLO saeurebad.de"
+	Sat, 19 Jul 2008 20:18:19 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:46051 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753967AbYGSXcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 19:32:18 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] coredump: kill mm->core_done
-References: <20080715140715.GA25824@tv-sign.ru>
-Date: Sun, 20 Jul 2008 01:31:49 +0200
-In-Reply-To: <20080715140715.GA25824@tv-sign.ru> (Oleg Nesterov's message of
-	"Tue, 15 Jul 2008 18:07:15 +0400")
-Message-ID: <87d4l9jvru.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	id S1754501AbYGTASS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jul 2008 20:18:18 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Subject: Re: linux-next: Tree for July 18: sky2 WOL broken
+Date: Sun, 20 Jul 2008 02:20:10 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       netdev@vger.kernel.org
+References: <20080718195352.e562a00f.sfr@canb.auug.org.au>
+In-Reply-To: <20080718195352.e562a00f.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807200220.11701.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Friday, 18 of July 2008, Stephen Rothwell wrote:
+> Hi all,
+> 
+> Changes since next-20080717:
+> 
+> Restored tree: ttydev.
+> 
+> Temporarily dropped tree: acpi (confusion about its source).
+> 
+> Most of the differences were conflicts moving from tree to tree as some
+> of the trees are now merged into Linus' tree.  Most have been inflicted
+> on the driver-core and usb trees.  I have not notified these separately.
+> 
+> Because of the moving of conflicts around it is difficult to tell when
+> they are going away (though I assume some are).
+> 
+> The driver-core tree gained a conflict against Linus' tree.
+> 
+> The usb tree inherited a build fix patch from the pci tree.
+> 
+> The x86 tree gained a trivial conflict against Linus' tree but it was in
+> a commit that is still being reverted.
+> 
+> The ocsf2 tree gained several conflicts against Linus' tree because what
+> was sent to Linus was not the same as what is in linuxt-next.
+> 
+> The vfs tree gained conflicts against Linus' tree, the sparc tree and the
+> mips tree.
+> 
+> The semaphore-removal tree gained conflicts against Linus' tree that
+> required the reversion of two commits.
+> 
+> The ttydev tree had two patches that didn't apply and gained conflicts
+> against the wireless tree and the usb tree (4).  It also required a build
+> fix patch.
+> 
+> Lots of conflicts have gone from the x86 and ubifs trees.
+> 
+> I have also applied the following patches for known problems:
+> 
+> 	sparc64: sysdev API change fallout
+> 	sparc32: smp_call_function API change fallout (this has already
+> been fixed in the upstream sparc tree and comes from an incomplete merge
+> on my part).
+> 
+> This tree fails to build for ARCH=sparc (i.e. 32bit) with a 64bit gcc
+> v3.4.5 - it tries to use the 64bit header files.  This may be an artifact
+> of one of my merge fixups, but I don't actually think so.
+> 
+> ----------------------------------------------------------------------------
 
-Oleg Nesterov <oleg@tv-sign.ru> writes:
+commit db99b98885e717454feef1c6868b27d3f23c2e7c
+Author: Stephen Hemminger <shemminger@vyatta.com>
+Date:   Wed May 14 17:04:16 2008 -0700
 
-> Now that we have core_state->dumper list we can use it to wake up the
-> sub-threads waiting for the coredump completion.
->
-> This uglifies the code and .text grows by 47 bytes, but otoh mm_struct
-> lessens by sizeof(struct completion). Also, with this change we can
-> decouple exit_mm() from the coredumping code.
->
-> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
->
->  include/linux/mm_types.h |    4 +---
->  kernel/exit.c            |    8 +++++++-
->  fs/exec.c                |   25 ++++++++++++++++++++++---
->  3 files changed, 30 insertions(+), 7 deletions(-)
->
-> --- 26-rc2/include/linux/mm_types.h~5_KILL_CORE_DONE	2008-07-13 18:28:36.000000000 +0400
-> +++ 26-rc2/include/linux/mm_types.h	2008-07-15 17:06:58.000000000 +0400
-> @@ -229,9 +229,7 @@ struct mm_struct {
->  
->  	unsigned long flags; /* Must use atomic bitops to access the bits */
->  
-> -	/* coredumping support */
-> -	struct core_state *core_state;
-> -	struct completion core_done;
-> +	struct core_state *core_state; /* coredumping support */
->  
->  	/* aio bits */
->  	rwlock_t		ioctx_list_lock;	/* aio lock */
-> --- 26-rc2/kernel/exit.c~5_KILL_CORE_DONE	2008-07-13 19:58:19.000000000 +0400
-> +++ 26-rc2/kernel/exit.c	2008-07-15 17:06:58.000000000 +0400
-> @@ -680,7 +680,13 @@ static void exit_mm(struct task_struct *
->  		if (atomic_dec_and_test(&core_state->nr_threads))
->  			complete(&core_state->startup);
->  
-> -		wait_for_completion(&mm->core_done);
-> +		for (;;) {
-> +			set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-> +			if (!self.task) /* see coredump_finish() */
+    sky2: put PHY in sleep when down
 
-kernel/exit.c: In function `exit_mm':
-kernel/exit.c:686: error: `self' undeclared (first use in this function)
-kernel/exit.c:686: error: (Each undeclared identifier is reported only once
-kernel/exit.c:686: error: for each function it appears in.)
-make[1]: *** [kernel/exit.o] Error 1
+and
 
-	Hannes
+commit a068c0adf2fe28b324bca87f85d27af7f993cdaf
+Author: Stephen Hemminger <shemminger@vyatta.com>
+Date:   Wed May 14 17:04:17 2008 -0700
+
+    sky2: pci power savings
+
+break Wake-on-LAN on my test box using sky2.  More specifically, with these
+two commits applied the box hangs solid during hibernation/power off
+while executing the sky2 callbacks.
+
+The adapter is reported as 88E8056 (Asus M3A32-MVP Deluxe mainboard).
+
+Thanks,
+Rafael
