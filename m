@@ -1,192 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752799AbYGTFKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753642AbYGTFYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752799AbYGTFKo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 01:10:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbYGTFK2
+	id S1753642AbYGTFYh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 01:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbYGTFYa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 01:10:28 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:16531 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751185AbYGTFK0 (ORCPT
+	Sun, 20 Jul 2008 01:24:30 -0400
+Received: from li26-190.members.linode.com ([67.18.89.190]:47101 "EHLO
+	notebook.homenet.local" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751401AbYGTFY3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 01:10:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Xfwe4xa0BsCPjKAQfjGk2/grEJLtrU9ur2qn6Ky1rvaJqCNIrcLeFWWhBLWg6WlcfQ
-         Yx2o4vwS09Y0PFLstjuSZr6fix/IwwwdUXZWM2MhkawOV5alzVoYsdIecWxV5FuGGMq5
-         p6+a4+joo1hgY5IDm+OFJh3BcGuS1ZXsAGc0E=
-Date: Sun, 20 Jul 2008 01:10:16 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Henrik Rydberg <rydberg@euromail.se>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       robfitz@273k.net, akpm@osdl.org, jikos@jikos.cz, vojtech@suse.cz,
-       dmonakhov@openvz.org, johannes@sipsolutions.net
-Subject: Re: [PATCH] linux-input: bcm5974-0.57: mode-switch to atp_open,
-	cleanup bug fixed
-Message-ID: <20080720051016.GA7853@anvil.corenet.prv>
-References: <1216466049.6238.0.camel@alnilam>
+	Sun, 20 Jul 2008 01:24:29 -0400
+X-Greylist: delayed 659 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Jul 2008 01:24:28 EDT
+Date: Sun, 20 Jul 2008 07:13:27 +0200
+From: Tomas Styblo <tripie@cpan.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] JMicron JM20337 USB-SATA data corruption bugfix - device
+	152d:2338
+Message-ID: <20080720051326.GA5478@notebook.homenet.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="zx4FCpZtqtKETZ7O"
 Content-Disposition: inline
-In-Reply-To: <1216466049.6238.0.camel@alnilam>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Henrik,
 
-On Sat, Jul 19, 2008 at 01:03:28PM +0200, Henrik Rydberg wrote:
-> From: Henrik Rydberg <rydberg@euromail.se>
-> 
-> BCM5974: This driver adds support for the multitouch trackpad on the new
-> Apple Macbook Air and Macbook Pro Penryn laptops. It replaces the
-> appletouch driver on those computers, and integrates well with the
-> synaptics driver of the Xorg system. 
-> 
+--zx4FCpZtqtKETZ7O
+Content-Type: multipart/mixed; boundary="ew6BAiZeqk4r7MaW"
+Content-Disposition: inline
 
-The driver looks pretty good by now, just a few comments from me...
 
-> +
-> +	if (report_tp_state(dev, dev->tp_urb->actual_length)) {
-> +		dprintk(1, "bcm5974: bad trackpad package, length: %d\n",
-> +			dev->tp_urb->actual_length);
-> +		goto exit;
-> +	}
-> +
-> +	input_sync(dev->input);
+--ew6BAiZeqk4r7MaW
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I'd rather had input_sync right in the report_tp_state, where the event
-set is generated.
 
-> +
-> +exit:
-> +	error = usb_submit_urb(dev->tp_urb, GFP_ATOMIC);
-> +	if (error)
-> +		err("bcm5974: trackpad urb failed: %d", error);
-> +}
-> +
-> +/*
-> + * The Wellspring trackpad, like many recent Apple trackpads, share
-> + * the usb device with the keyboard. Since keyboards are usually
-> + * handled by the HID system, the device ends up being handled by two
-> + * modules. Setting up the device therefore becomes slightly
-> + * complicated. To enable multitouch features, a mode switch is
-> + * required, which is usually applied via the control interface of the
-> + * device.  It can be argued where this switch should take place. In
-> + * some drivers, like appletouch, the switch is made during
-> + * probe. However, the hid module may also alter the state of the
-> + * device, resulting in trackpad malfunction under certain
-> + * circumstances. To get around this problem, there is at least one
-> + * example that utilizes the USB_QUIRK_RESET_RESUME quirk in order to
-> + * recieve a reset_resume request rather than the normal resume. Since
-> + * the implementation of reset_resume is equal to mode switch plus
-> + * open, it seems easier to always do the switch while opening the
-> + * device.
-> + */
 
-What will happen if bcm driver is attached first, before HID had a
-chance to do its part?
+Hello,
 
-> +static int atp_open(struct input_dev *input)
-> +{
-> +	struct atp *dev = input_get_drvdata(input);
-> +
-> +	if (!dev->open) {
-> +		if (atp_wellspring_mode(dev)) {
-> +			dprintk(1, "bcm5974: mode switch failed\n");
-> +			goto error;
-> +		}
-> +		if (usb_submit_urb(dev->bt_urb, GFP_KERNEL))
-> +			goto error;
-> +		if (usb_submit_urb(dev->tp_urb, GFP_KERNEL))
-> +			goto err_kill_bt;
-> +	}
-> +
-> +	dev->open = 1;
-> +	dev->suspended = 0;
-> +	return 0;
-> +
-> +err_kill_bt:
-> +	usb_kill_urb(dev->bt_urb);
-> +error:
-> +	return -EIO;
-> +}
-> +
-> +static void atp_close(struct input_dev *input)
-> +{
-> +	struct atp *dev = input_get_drvdata(input);
-> +
-> +	usb_kill_urb(dev->tp_urb);
-> +	usb_kill_urb(dev->bt_urb);
-> +
-> +	dev->open = 0;
-> +	dev->suspended = 0;
-> +}
-> +
+this message includes a patch that provides a workaround for
+a silent data corruption bug caused by incorrect error handling in
+the JMicron JM20337 Hi-Speed USB to SATA & PATA Combo Bridge chipset,
+USB device id 152d:2338.
 
-[...skipped...]
 
-> +
-> +static void atp_disconnect(struct usb_interface *iface)
-> +{
-> +	struct atp *dev = usb_get_intfdata(iface);
-> +
-> +	usb_set_intfdata(iface, NULL);
-> +
-> +	if (dev) {
+- the problem occurs quite rarely, approx. once for=20
+  every 20 GB of transfered data during heavy load
 
-Is this check needed? How can intfdata be NULL and we still get into
-this function?
+- it seems that only read operations are affected
 
-> +		input_unregister_device(dev->input);
-> +		usb_buffer_free(dev->udev, dev->cfg.tp_datalen,
-> +			dev->tp_data, dev->tp_urb->transfer_dma);
-> +		usb_buffer_free(dev->udev, dev->cfg.bt_datalen,
-> +			dev->bt_data, dev->bt_urb->transfer_dma);
-> +		usb_free_urb(dev->tp_urb);
-> +		usb_free_urb(dev->bt_urb);
-> +		kfree(dev);
-> +	}
-> +
-> +	printk(KERN_INFO "bcm5974: disconnected\n");
-> +}
-> +
-> +static int atp_suspend(struct usb_interface *iface, pm_message_t message)
-> +{
-> +	struct atp *dev = usb_get_intfdata(iface);
-> +
-> +	if (dev) {
-> +		if (!dev->suspended)
-> +			atp_close(dev->input);
-> +		dev->suspended++;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int atp_resume(struct usb_interface *iface)
-> +{
-> +	struct atp *dev = usb_get_intfdata(iface);
-> +	int error = 0;
-> +
-> +	if (dev && dev->suspended) {
-> +		if (!--dev->suspended)
-> +			error = atp_open(dev->input);
+- the problem is accompanied by these messages in syslog each
+  time it occurs:
 
-This will cause us to sumit URBs and start reporting events even though
-there may be no users of the device (if it was not opened by anyone)
-which defeats the purpose of implementing open and close methods of the
-input device. You may want to implent start/pause_traffic function and
-use them in open/close and suspend/resume.
+May 17 15:06:56 kernel: sd 6:0:0:0: [sdb] Sense Key : 0x0 [current]=20
+May 17 15:06:56 kernel: sd 6:0:0:0: [sdb] ASC=3D0x0 ASCQ=3D0x0
 
-Also, you need to have a locking that would serialize suspend/resume
-with regard to open/close.
+- the bug is not detected as an error and incorrect data is returned,=20
+  causing insidious data corruption
 
-And the last request - could we do s/atp_/bcm5974/g so we don't get
-confused with the original atp driver?
+- tested with 3 external disk enclosures (Akasa Integral AK-ENP2SATA-BL)=20
+  with different disks on different computers, with kernel 2.6.24 and 2.6.25
 
--- 
-Dmitry
+- the patch provides a crude workaround by detecting the error condition
+  and retrying the faulty transfer
+
+
+The fix needs a review as I don't know much about USB and SCSI. =20
+It's possible that this approach is wrong and that the problem should
+be fixed somewhere else.
+
+There are other problems with this chipset that make it necessary=20
+to disconnect and power off the enclosure from time to time, but at least
+there's no data corruption anymore.
+
+
+--=20
+Tomas Styblo <tripie@cpan.org>
+PGP: C97EA4B6 / 817E B8A8 1AFD 3256 3181  A730 85CF 7BEB C97E A4B6
+
+--ew6BAiZeqk4r7MaW
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="linux-kernel-2.6.25.9-usb-storage-jmicron-JM20337-no-sense-bugfix.patch"
+Content-Transfer-Encoding: quoted-printable
+
+--- linux-2.6.25.9/drivers/usb/storage/transport.c.orig	2008-06-24 23:09:06=
+=2E000000000 +0200
++++ linux-2.6.25.9/drivers/usb/storage/transport.c	2008-07-20 05:14:32.0000=
+00000 +0200
+@@ -661,6 +661,21 @@ void usb_stor_invoke_transport(struct sc
+ 			srb->result =3D SAM_STAT_GOOD;
+ 			srb->sense_buffer[0] =3D 0x0;
+ 		}
++
++        /* JMicron JM20337 chipset bug workaround - BEGIN */
++		if (us->pusb_dev->descriptor.idVendor =3D=3D 0x152d &&=20
++            us->pusb_dev->descriptor.idProduct =3D=3D 0x2338 &&=20
++            result =3D=3D USB_STOR_TRANSPORT_FAILED &&
++			/* Filemark 0, ignore EOM, ILI 0, no sense */
++				(srb->sense_buffer[2] & 0xaf) =3D=3D 0 &&
++			/* No ASC or ASCQ */
++				srb->sense_buffer[12] =3D=3D 0 &&
++				srb->sense_buffer[13] =3D=3D 0) {
++            printk(KERN_WARNING "USB Storage - Working around the JMicron =
+JM20337 chipset bug (idVendor=3D%04x, idProduct=3D%04x, NO_SENSE, ASC=3D0, =
+ASCQ=3D0) - retrying the read operation\n", us->pusb_dev->descriptor.idVend=
+or, us->pusb_dev->descriptor.idProduct);
++		    srb->result =3D (DID_ERROR << 16) | (SUGGEST_RETRY << 24);
++            return;
++        }
++        /* JMicron JM20337 chipset bug workaround - END */
+ 	}
+=20
+ 	/* Did we transfer less than the minimum amount required? */
+
+--ew6BAiZeqk4r7MaW--
+
+--zx4FCpZtqtKETZ7O
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iD8DBQFIgsl2hc9768l+pLYRAoXeAJ95WUENQN3NbzCCJc40fEuGu6UDaACgmsMd
+7rlyoWW3g8VgNkTXRYVhvUc=
+=EkmQ
+-----END PGP SIGNATURE-----
+
+--zx4FCpZtqtKETZ7O--
