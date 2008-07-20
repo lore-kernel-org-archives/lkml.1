@@ -1,118 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757857AbYGTNE6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757786AbYGTNH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757857AbYGTNE6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 09:04:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756945AbYGTNEv
+	id S1757786AbYGTNH1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 09:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756945AbYGTNHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 09:04:51 -0400
-Received: from paul.a1webserver.com ([69.16.226.60]:42219 "EHLO
-	paul.a1webserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756928AbYGTNEu (ORCPT
+	Sun, 20 Jul 2008 09:07:17 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:40763 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754250AbYGTNHQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 09:04:50 -0400
-X-Greylist: delayed 2572 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Jul 2008 09:04:50 EDT
-Reply-To: <charles@embsyspro.com>
-From: "Charles L. Nelson" <charles@embsyspro.com>
-To: "Aleksej Saushev" <asau@inbox.ru>
-Cc: <linux-kernel@vger.kernel.org>, <ubuntu-users@lists.ubuntu.com>,
-       <fedora-list@redhat.com>, <freebsd-questions@freebsd.org>,
-       <rms@gnu.org>, <netbsd-users@netbsd.org>
-Subject: RE: GPL version 4
-Date: Sun, 20 Jul 2008 05:21:58 -0700
-Message-ID: <DPEJKBIMHGLHACKBHHEJOEMJDKAA.charles@embsyspro.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-reply-to: <87fxq59com.fsf@inbox.ru>
-Importance: Normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5512
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - paul.a1webserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - embsyspro.com
+	Sun, 20 Jul 2008 09:07:16 -0400
+Subject: Re: [PATCH] Introducing asm/syscalls.h
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       David Woodhouse <dwmw2@infradead.org>, rth@twiddle.net,
+       rmk@arm.linux.org.uk, hskinnemoen@atmel.com, cooloney@kernel.org,
+       starvik@axis.com, dhowells@redhat.com, ysato@users.sourceforge.jp,
+       tony.luck@intel.com, takata@linux-m32r.org, geert@linux-m68k.org,
+       matthew@wil.cx, schwidefsky@de.ibm.com, lethal@linux-sh.org,
+       chris@zankel.net
+In-Reply-To: <1216556263.2707.2.camel@jaswinder.satnam>
+References: <1216544940.12650.13.camel@jaswinder.satnam>
+	 <20080720100039.GA12514@linux-mips.org>
+	 <1216556263.2707.2.camel@jaswinder.satnam>
+Content-Type: text/plain; charset=utf8
+Date: Sun, 20 Jul 2008 18:36:08 +0530
+Message-Id: <1216559168.2707.9.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Haven't these arguments been made before?  Yet the FSF, Open Source and
-proprietary developers still exist.  There are obvious advantages in each
-approach.
+Hello Ralf,
 
-As a developer involved in many types of software I can appreciate what each
-solution has to offer.
+On Sun, 2008-07-20 at 17:48 +0530, Jaswinder Singh wrote:
+> > 
+> > You write beneficial for userspace - but don't add <asm/syscall.h> to
+> > include/asm-generic/Kbuild.asm.  
+> 
+> diff --git a/include/asm-generic/Kbuild.asm
+> b/include/asm-generic/Kbuild.asm
+> index 7cd25b8..af24926 100644
+> --- a/include/asm-generic/Kbuild.asm
+> +++ b/include/asm-generic/Kbuild.asm
+> @@ -27,6 +27,7 @@ unifdef-y += socket.h
+>  unifdef-y += sockios.h
+>  unifdef-y += stat.h
+>  unifdef-y += statfs.h
+> +unifdef-y += syscalls.h
+>  unifdef-y += termbits.h
+>  unifdef-y += termios.h
+>  unifdef-y += types.h
+> 
 
-Isn't it fruitless to debate this ideology, again and again and again...  We
-will choose the approach that best suits our particular situation and
-interests.
+I think, adding syscalls.h is not required in ﻿include/asm-generic/Kbuild.asm.
+Beneficial to userspace, I mean for reference purpose only.
 
-Let's not instigate another war over ground that has already been "carpet
-bombed".
+Thank you,
 
-------------
-
-> -----Original Message-----
-> From: netbsd-users-owner@NetBSD.org
-> [mailto:netbsd-users-owner@NetBSD.org]On Behalf Of Aleksej Saushev
-> Sent: Sunday, July 20, 2008 1:34 AM
-> To: netbsd-users@netbsd.org
-> Cc: linux-kernel@vger.kernel.org; ubuntu-users@lists.ubuntu.com;
-> fedora-list@redhat.com; freebsd-questions@freebsd.org
-> Subject: Re: GPL version 4
->
->
-> Richard M Stallman <rms@gnu.org> writes:
->
-> > Freedom means having control of your own life.  Using a proprietary
-> > program means giving the developer power over you.  "More choice" in
-> > surrendering your freedom is not more freedom, and it does not make a
-> > better world.
->
-> "Breathing the air means giving anyone else power over you."
->
-> Even with proprietary programs you still have the control of
-> your life: noone forces you to use this or that program.
->
-> >     It will just result in him producing a poorer, more expensive, less
-> >     compatible product -- or none at all.
-> >
-> > Ideally, it will be none at all.  A proprietary program is a negative
-> > contribution to society.
->
-> Oh, really.  Programs are dearer to your heart than people.
->
-> What you say sounds luddist: it is better to force everyone to
-> perform routine tasks manually instead of saving time by minor
-> investment in development of tools.
->
-> > One less proprietary program means one less
-> > job of replacement on our list, and it could leave the field open for
-> > a free program to succeed.
->
-> You speculate on what it could or could not, yet many people
-> prefer to look at what is and what is not.
->
-> > Just think how much better off we would be
-> > if Microsoft Windows had never been developed.
->
-> How?  How exactly?  I don't believe you, show me facts.
->
-> > But suppose he does it anyway, without using our code.  That could be
-> > just the handicap that enables a competing free program to be superior
-> > in convenience, just as it always is in ethics.
->
-> Put ethics aside, it is subjective and differs from place to place.
->
-> In which way your "free" "replacement" is more convenient than
-> Adobe Photoshop?
-> How do you explain simple fact, that photographers prefer the latter,
-> even when they tried your so-called "free" so-called "replacement".
->
->
->
->
+Jaswinder Singh.
 
