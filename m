@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758342AbYGTSNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758520AbYGTSOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758342AbYGTSNU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 14:13:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757815AbYGTSNL
+	id S1758520AbYGTSOi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 14:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757815AbYGTSOb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 14:13:11 -0400
-Received: from casper.infradead.org ([85.118.1.10]:60757 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757780AbYGTSNK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 14:13:10 -0400
-Subject: Re: [PATCH] x86-kernel: declare some functions before they get used
-From: Jaswinder Singh <jaswinder@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, torvalds@linux-foundation.org,
-       kernelnewbies <kernelnewbies@nl.linux.org>,
-       kernel-janitors <kernel-janitors@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <20080720174018.GA16827@elte.hu>
-References: <1216050964.2719.4.camel@jaswinder.satnam>
-	 <20080720174018.GA16827@elte.hu>
-Content-Type: text/plain; charset=utf8
-Date: Sun, 20 Jul 2008 23:42:07 +0530
-Message-Id: <1216577527.2706.13.camel@jaswinder.satnam>
+	Sun, 20 Jul 2008 14:14:31 -0400
+Received: from 1wt.eu ([62.212.114.60]:1864 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757621AbYGTSOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 14:14:30 -0400
+Date: Sun, 20 Jul 2008 20:14:26 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: el es <el_es_cr@yahoo.co.uk>, linux-kernel@vger.kernel.org
+Subject: Re: Kernel version : what about s.yy.ww.tt scheme ?
+Message-ID: <20080720181426.GA29189@1wt.eu>
+References: <loom.20080717T083755-676@post.gmane.org> <alpine.LNX.1.10.0807171140030.18697@fbirervta.pbzchgretzou.qr>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.1.10.0807171140030.18697@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Ingo,
-
-On Sun, 2008-07-20 at 19:40 +0200, Ingo Molnar wrote:
-> * Jaswinder Singh <jaswinder@infradead.org> wrote:
+On Thu, Jul 17, 2008 at 11:48:37AM +0200, Jan Engelhardt wrote:
 > 
-> > x86-kernel: declare some functions before they get used
+> On Thursday 2008-07-17 10:51, el es wrote:
 > 
-> i like this cleanup - would you mind to do a version of this patch that 
-> applies to Linus's latest -git tree?
+> >Hello,
+> >inspired by the bikeshed painting contest, I got the following idea :
+> >
+> >The scheme to be s.yy.ww.tt, that is :
+> >
+> >s - series, as it is now (freedom to Linus to bump it to 3 when BKL is removed
+> >for example ;) )
+> >yy - two (in a hundred years, three) digits of the year
+> >Now the interesting part begins which is
+> >ww - the number of the week of the release. This will be between 1 and 52 (53)
+> >tt - the number of the week of stable release. As above.
 > 
+> Interesting idea.
+> 
+> >Take a hypotetical new-scheme 2.8.30 release (roughly the current
+> >2.6.26, didn't count these weeks). Linus starts to accumulate
+> >patches for 2.8.30-rcX as usual, and when he is ready to release,
+> >puts the release week number instead of 30 - let's assume it is a
+> >2.8.40 then, more or less. By the time, the stable team produces
+> >2.8.30.[32,34,36,38,40 and so on]. If the weeks leap into the next
+> >year, stable team puts e.g. 2.8.30.9.01 (yy.ww).
+> 
+> -stable usually overlaps with master. But I don't like version
+> numbers long as binutils and "2.8.30.9.01" have.
 
-I divided this patch into many parts.
+also, causes trouble when stable releases cross a year boundary, or
+when there are several ones in a week. The stable release should
+only be a counter, not a date.
 
-You already applied ﻿'[PATCH] x86: Introducing asm-x86/traps.h' to ﻿tip/x86/core.
-
-and ﻿'[PATCH] Introducing asm/syscalls.h' is on the floor, I
-received ﻿Acked-by: Ralf Baechle <ralf@linux-mips.org> and waiting for
-other Acks.
-
-If you merge ﻿﻿'[PATCH] Introducing asm/syscalls.h' to
-your ﻿tip/x86/core then I will send you updated patch of '[PATCH]
-x86-kernel: declare some functions before they get used' based upon on
-your latest tip/x86/core git tree.
-
-If Linus add this ﻿'[PATCH] Introducing asm/syscalls.h' in his tree
-then ﻿I will send you updated patch of '[PATCH] x86-kernel: declare some
-functions before they get used' based upon on latest Linus git tree.
-
-Please let me know which option is better.
-
-Thank you,
-
-Jaswinder Singh.
+Willy
 
