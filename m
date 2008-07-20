@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758904AbYGUAIx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758702AbYGUAJQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758904AbYGUAIx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 20:08:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757948AbYGUAEi
+	id S1758702AbYGUAJQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 20:09:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757332AbYGUAEr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 20:04:38 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58627 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757956AbYGUAEh (ORCPT
+	Sun, 20 Jul 2008 20:04:47 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37665 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758029AbYGUAEp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 20:04:37 -0400
-Subject: [PATCH 18/22] sparc: Introducing asm/syscalls.h
+	Sun, 20 Jul 2008 20:04:45 -0400
+Subject: [PATCH 19/22] um: Introducing asm/syscalls.h
 From: Jaswinder Singh <jaswinder@infradead.org>
 To: LKML <linux-kernel@vger.kernel.org>,
        kernelnewbies <kernelnewbies@nl.linux.org>,
-       David Woodhouse <dwmw2@infradead.org>, davem@davemloft.net,
-       sparclinux@vger.kernel.org
-In-Reply-To: <1216597923.3679.141.camel@jaswinder.satnam>
+       David Woodhouse <dwmw2@infradead.org>, jdike@addtoit.com,
+       user-mode-linux-devel@lists.sourceforge.net,
+       user-mode-linux-user@lists.sourceforge.net
+In-Reply-To: <1216597993.3679.144.camel@jaswinder.satnam>
 References: <1216592500.3679.14.camel@jaswinder.satnam>
 	 <1216592798.3679.22.camel@jaswinder.satnam>
 	 <1216592879.3679.24.camel@jaswinder.satnam>
@@ -35,9 +36,10 @@ References: <1216592500.3679.14.camel@jaswinder.satnam>
 	 <1216597566.3679.135.camel@jaswinder.satnam>
 	 <1216597856.3679.139.camel@jaswinder.satnam>
 	 <1216597923.3679.141.camel@jaswinder.satnam>
+	 <1216597993.3679.144.camel@jaswinder.satnam>
 Content-Type: text/plain
-Date: Mon, 21 Jul 2008 05:23:13 +0530
-Message-Id: <1216597993.3679.144.camel@jaswinder.satnam>
+Date: Mon, 21 Jul 2008 05:24:27 +0530
+Message-Id: <1216598067.3679.146.camel@jaswinder.satnam>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
@@ -46,31 +48,59 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Declaring arch-dependent syscalls for sparc architecture
+Declaring arch-dependent syscalls for um architecture
 
 Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
 ---
- arch/sparc/kernel/signal.c   |    1 +
- include/asm-sparc/syscalls.h |   30 ++++++++++++++++++++++++++++++
- 2 files changed, 31 insertions(+), 0 deletions(-)
+ arch/um/kernel/exec.c     |    1 +
+ arch/um/kernel/signal.c   |    3 +--
+ arch/um/kernel/syscall.c  |    1 +
+ include/asm-um/syscalls.h |   32 ++++++++++++++++++++++++++++++++
+ 4 files changed, 35 insertions(+), 2 deletions(-)
 
-diff --git a/arch/sparc/kernel/signal.c b/arch/sparc/kernel/signal.c
-index 3fd1df9..6fe2da5 100644
---- a/arch/sparc/kernel/signal.c
-+++ b/arch/sparc/kernel/signal.c
-@@ -18,6 +18,7 @@
- #include <linux/smp.h>
- #include <linux/binfmts.h>	/* do_coredum */
- #include <linux/bitops.h>
+diff --git a/arch/um/kernel/exec.c b/arch/um/kernel/exec.c
+index f5d7f45..cd9fa46 100644
+--- a/arch/um/kernel/exec.c
++++ b/arch/um/kernel/exec.c
+@@ -8,6 +8,7 @@
+ #include "linux/smp_lock.h"
+ #include "linux/ptrace.h"
+ #include "linux/sched.h"
++#include "linux/syscalls.h"
+ #include "asm/current.h"
+ #include "asm/processor.h"
+ #include "asm/uaccess.h"
+diff --git a/arch/um/kernel/signal.c b/arch/um/kernel/signal.c
+index b0fce72..9a72afc 100644
+--- a/arch/um/kernel/signal.c
++++ b/arch/um/kernel/signal.c
+@@ -6,8 +6,7 @@
+ #include <linux/module.h>
+ #include <linux/ptrace.h>
+ #include <linux/sched.h>
+-#include <asm/siginfo.h>
+-#include <asm/signal.h>
 +#include <linux/syscalls.h>
- 
- #include <asm/uaccess.h>
- #include <asm/ptrace.h>
-diff --git a/include/asm-sparc/syscalls.h b/include/asm-sparc/syscalls.h
-index e69de29..65c25cd 100644
---- a/include/asm-sparc/syscalls.h
-+++ b/include/asm-sparc/syscalls.h
-@@ -0,0 +1,30 @@
+ #include <asm/unistd.h>
+ #include "frame_kern.h"
+ #include "kern_util.h"
+diff --git a/arch/um/kernel/syscall.c b/arch/um/kernel/syscall.c
+index 128ee85..0c35194 100644
+--- a/arch/um/kernel/syscall.c
++++ b/arch/um/kernel/syscall.c
+@@ -8,6 +8,7 @@
+ #include "linux/mm.h"
+ #include "linux/sched.h"
+ #include "linux/utsname.h"
++#include "linux/syscalls.h"
+ #include "asm/current.h"
+ #include "asm/mman.h"
+ #include "asm/uaccess.h"
+diff --git a/include/asm-um/syscalls.h b/include/asm-um/syscalls.h
+index e69de29..2124282 100644
+--- a/include/asm-um/syscalls.h
++++ b/include/asm-um/syscalls.h
+@@ -0,0 +1,32 @@
 +/*
 + * syscalls.h - Linux syscall interfaces (arch-specific)
 + *
@@ -82,25 +112,27 @@ index e69de29..65c25cd 100644
 + * Please do not call me directly, include linux/syscalls.h
 + */
 +
-+#ifndef _ASM_SPARC_SYSCALLS_H
-+#define _ASM_SPARC_SYSCALLS_H
++#ifndef _ASM_UM_SYSCALLS_H
++#define _ASM_UM_SYSCALLS_H
++
++/* kernel/exec.c */
++long sys_execve(char __user *, char __user *__user *,
++		char __user * __user *);
 +
 +/* kernel/signal.c */
-+asmlinkage int sys_sigsuspend(old_sigset_t);
++long sys_sigsuspend(int, int, old_sigset_t);
++long sys_sigaltstack(const stack_t __user *, stack_t __user *);
 +
-+/* kernel/sys_sparc.c */
-+asmlinkage unsigned long sys_getpagesize(void);
-+asmlinkage int sys_ipc(uint, int, int, int, void __user *, long);
-+asmlinkage long sys_mmap2(unsigned long, unsigned long, unsigned long,
-+			  unsigned long, unsigned long, unsigned long);
-+asmlinkage long sys_mmap(unsigned long, unsigned long, unsigned long,
-+			 unsigned long, unsigned long, unsigned long);
-+asmlinkage long sys_rt_sigaction(int, const struct sigaction __user *,
-+				 struct sigaction __user *,
-+				 void __user *, size_t);
-+asmlinkage int sys_getdomainname(char __user *, int);
++/* kernel/syscall.c */
++long sys_fork(void);
++long sys_vfork(void);
++long sys_mmap2(unsigned long, unsigned long, unsigned long,
++	       unsigned long, unsigned long, unsigned long);
++long old_mmap(unsigned long, unsigned long, unsigned long,
++	      unsigned long, unsigned long, unsigned long);
++long sys_uname(struct old_utsname __user *);
 +
-+#endif /* _ASM_SPARC_SYSCALLS_H */
++#endif /* _ASM_UM_SYSCALLS_H */
 -- 
 1.5.5.1
 
