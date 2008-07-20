@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758513AbYGUAHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754470AbYGUAIM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758513AbYGUAHt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 20:07:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757781AbYGUAEV
+	id S1754470AbYGUAIM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 20:08:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756768AbYGUAEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 20:04:21 -0400
-Received: from casper.infradead.org ([85.118.1.10]:37654 "EHLO
+	Sun, 20 Jul 2008 20:04:25 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37657 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756995AbYGUAET (ORCPT
+	with ESMTP id S1757815AbYGUAEY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 20:04:19 -0400
-Subject: [PATCH 15/22] parisc: Introducing asm/syscalls.h
+	Sun, 20 Jul 2008 20:04:24 -0400
+Subject: [PATCH 16/22] s390: Introducing asm/syscalls.h
 From: Jaswinder Singh <jaswinder@infradead.org>
 To: LKML <linux-kernel@vger.kernel.org>,
        kernelnewbies <kernelnewbies@nl.linux.org>,
-       David Woodhouse <dwmw2@infradead.org>, matthew@wil.cx, kyle@mcmartin.ca,
-       grundler@parisc-linux.org, linux-parisc@vger.kernel.org
-In-Reply-To: <1216597352.3679.131.camel@jaswinder.satnam>
+       David Woodhouse <dwmw2@infradead.org>, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, linux390@de.ibm.com,
+       linux-s390@vger.kernel.org
+In-Reply-To: <1216597566.3679.135.camel@jaswinder.satnam>
 References: <1216592500.3679.14.camel@jaswinder.satnam>
 	 <1216592798.3679.22.camel@jaswinder.satnam>
 	 <1216592879.3679.24.camel@jaswinder.satnam>
@@ -32,9 +33,10 @@ References: <1216592500.3679.14.camel@jaswinder.satnam>
 	 <1216597151.3679.125.camel@jaswinder.satnam>
 	 <1216597237.3679.128.camel@jaswinder.satnam>
 	 <1216597352.3679.131.camel@jaswinder.satnam>
+	 <1216597566.3679.135.camel@jaswinder.satnam>
 Content-Type: text/plain
-Date: Mon, 21 Jul 2008 05:16:06 +0530
-Message-Id: <1216597566.3679.135.camel@jaswinder.satnam>
+Date: Mon, 21 Jul 2008 05:20:55 +0530
+Message-Id: <1216597856.3679.139.camel@jaswinder.satnam>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
@@ -43,44 +45,99 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Declaring arch-dependent syscalls for parisc architecture
+Declaring arch-dependent syscalls for s390 architecture
 
 Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
 ---
- arch/parisc/kernel/process.c  |    1 +
- arch/parisc/kernel/signal.c   |    1 +
- include/asm-parisc/syscalls.h |   36 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 38 insertions(+), 0 deletions(-)
+ arch/s390/kernel/entry.h    |   18 ------------------
+ arch/s390/kernel/process.c  |    1 +
+ arch/s390/kernel/signal.c   |    1 +
+ arch/s390/mm/fault.c        |    1 +
+ include/asm-s390/syscalls.h |   38 ++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 41 insertions(+), 18 deletions(-)
 
-diff --git a/arch/parisc/kernel/process.c b/arch/parisc/kernel/process.c
-index b80e02a..9a73fcd 100644
---- a/arch/parisc/kernel/process.c
-+++ b/arch/parisc/kernel/process.c
-@@ -46,6 +46,7 @@
- #include <linux/stddef.h>
- #include <linux/unistd.h>
- #include <linux/kallsyms.h>
-+#include <linux/syscalls.h>
+diff --git a/arch/s390/kernel/entry.h b/arch/s390/kernel/entry.h
+index 6b18963..c8b5dfd 100644
+--- a/arch/s390/kernel/entry.h
++++ b/arch/s390/kernel/entry.h
+@@ -25,36 +25,18 @@ void __init startup_init(void);
+ void die(const char * str, struct pt_regs * regs, long err);
  
- #include <asm/io.h>
- #include <asm/asm-offsets.h>
-diff --git a/arch/parisc/kernel/signal.c b/arch/parisc/kernel/signal.c
-index 06213d1..b10cade 100644
---- a/arch/parisc/kernel/signal.c
-+++ b/arch/parisc/kernel/signal.c
-@@ -25,6 +25,7 @@
- #include <linux/stddef.h>
- #include <linux/compat.h>
- #include <linux/elf.h>
+ struct new_utsname;
+-struct mmap_arg_struct;
+ struct fadvise64_64_args;
+-struct old_sigaction;
+-struct sel_arg_struct;
+ 
+ long sys_pipe(unsigned long __user *fildes);
+-long sys_mmap2(struct mmap_arg_struct __user  *arg);
+-long old_mmap(struct mmap_arg_struct __user *arg);
+-long sys_ipc(uint call, int first, unsigned long second,
+-	     unsigned long third, void __user *ptr);
+ long s390x_newuname(struct new_utsname __user *name);
+ long s390x_personality(unsigned long personality);
+ long s390_fadvise64(int fd, u32 offset_high, u32 offset_low,
+ 		    size_t len, int advice);
+ long s390_fadvise64_64(struct fadvise64_64_args __user *args);
+ long s390_fallocate(int fd, int mode, loff_t offset, u32 len_high, u32 len_low);
+-long sys_fork(void);
+-long sys_clone(void);
+-long sys_vfork(void);
+ void execve_tail(void);
+-long sys_execve(void);
+-int sys_sigsuspend(int history0, int history1, old_sigset_t mask);
+-long sys_sigaction(int sig, const struct old_sigaction __user *act,
+-		   struct old_sigaction __user *oact);
+-long sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss);
+-long sys_sigreturn(void);
+-long sys_rt_sigreturn(void);
+ long sys32_sigreturn(void);
+ long sys32_rt_sigreturn(void);
+-long old_select(struct sel_arg_struct __user *arg);
+ long sys_ptrace(long request, long pid, long addr, long data);
+ 
+ #endif /* _ENTRY_H */
+diff --git a/arch/s390/kernel/process.c b/arch/s390/kernel/process.c
+index 85defd0..5f6d7a8 100644
+--- a/arch/s390/kernel/process.c
++++ b/arch/s390/kernel/process.c
+@@ -38,6 +38,7 @@
+ #include <linux/utsname.h>
+ #include <linux/tick.h>
+ #include <linux/elfcore.h>
++#include <linux/syscalls.h>
+ #include <asm/uaccess.h>
+ #include <asm/pgtable.h>
+ #include <asm/system.h>
+diff --git a/arch/s390/kernel/signal.c b/arch/s390/kernel/signal.c
+index b976820..c73b369 100644
+--- a/arch/s390/kernel/signal.c
++++ b/arch/s390/kernel/signal.c
+@@ -24,6 +24,7 @@
+ #include <linux/tty.h>
+ #include <linux/personality.h>
+ #include <linux/binfmts.h>
 +#include <linux/syscalls.h>
  #include <asm/ucontext.h>
- #include <asm/rt_sigframe.h>
  #include <asm/uaccess.h>
-diff --git a/include/asm-parisc/syscalls.h b/include/asm-parisc/syscalls.h
-index e69de29..0de8837 100644
---- a/include/asm-parisc/syscalls.h
-+++ b/include/asm-parisc/syscalls.h
-@@ -0,0 +1,36 @@
+ #include <asm/lowcore.h>
+diff --git a/arch/s390/mm/fault.c b/arch/s390/mm/fault.c
+index 4d53720..a5c5f66 100644
+--- a/arch/s390/mm/fault.c
++++ b/arch/s390/mm/fault.c
+@@ -29,6 +29,7 @@
+ #include <linux/kprobes.h>
+ #include <linux/uaccess.h>
+ #include <linux/hugetlb.h>
++#include <linux/syscalls.h>
+ #include <asm/system.h>
+ #include <asm/pgtable.h>
+ #include <asm/s390_ext.h>
+diff --git a/include/asm-s390/syscalls.h b/include/asm-s390/syscalls.h
+index e69de29..439d6f8 100644
+--- a/include/asm-s390/syscalls.h
++++ b/include/asm-s390/syscalls.h
+@@ -0,0 +1,38 @@
 +/*
 + * syscalls.h - Linux syscall interfaces (arch-specific)
 + *
@@ -92,31 +149,33 @@ index e69de29..0de8837 100644
 + * Please do not call me directly, include linux/syscalls.h
 + */
 +
-+#ifndef _ASM_PARISC_SYSCALLS_H
-+#define _ASM_PARISC_SYSCALLS_H
++#ifndef _ASM_S390_SYSCALLS_H
++#define _ASM_S390_SYSCALLS_H
 +
 +/* kernel/process.c */
-+int sys_clone(unsigned long, unsigned long, struct pt_regs *);
-+int sys_vfork(struct pt_regs *);
-+asmlinkage int sys_execve(struct pt_regs *);
++asmlinkage long sys_fork(void);
++asmlinkage long sys_clone(void);
++asmlinkage long sys_vfork(void);
++asmlinkage long sys_execve(void);
 +
 +/* kernel/signal.c */
-+void sys_rt_sigreturn(struct pt_regs *, int);
++asmlinkage int sys_sigsuspend(int, int, old_sigset_t);
++asmlinkage long sys_sigaction(int,
++			      const struct old_sigaction __user *,
++			      struct old_sigaction __user *);
++asmlinkage long sys_sigaltstack(const stack_t __user *,
++				stack_t __user *);
++asmlinkage long sys_sigreturn(void);
++asmlinkage long sys_rt_sigreturn(void);
 +
-+/* kernel/sys_parisc.c */
-+asmlinkage unsigned long sys_mmap2(unsigned long, unsigned long,
-+				   unsigned long, unsigned long,
-+				   unsigned long, unsigned long);
-+asmlinkage unsigned long sys_mmap(unsigned long, unsigned long,
-+				  unsigned long, unsigned long,
-+				  unsigned long, unsigned long);
-+#ifdef CONFIG_64BIT
-+asmlinkage long sys_truncate64(const char __user *, unsigned long);
-+asmlinkage long sys_ftruncate64(unsigned int, unsigned long);
-+asmlinkage long sys_fcntl64(unsigned int, unsigned int, unsigned long);
-+#endif
++/* kernel/sys_s390.c */
++struct mmap_arg_struct;
++asmlinkage long sys_mmap2(struct mmap_arg_struct __user  *);
++asmlinkage long old_mmap(struct mmap_arg_struct __user *);
++asmlinkage long sys_ipc(uint, int, unsigned long,
++			unsigned long, void __user *);
 +
-+#endif /* _ASM_PARISC_SYSCALLS_H */
++#endif /* _ASM_S390_SYSCALLS_H */
 -- 
 1.5.5.1
 
