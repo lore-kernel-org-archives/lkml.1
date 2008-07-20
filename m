@@ -1,65 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757786AbYGTNH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757535AbYGTNTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757786AbYGTNH1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 09:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756945AbYGTNHR
+	id S1757535AbYGTNTi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 09:19:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754250AbYGTNTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 09:07:17 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:40763 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754250AbYGTNHQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 09:07:16 -0400
-Subject: Re: [PATCH] Introducing asm/syscalls.h
-From: Jaswinder Singh <jaswinder@infradead.org>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       David Woodhouse <dwmw2@infradead.org>, rth@twiddle.net,
-       rmk@arm.linux.org.uk, hskinnemoen@atmel.com, cooloney@kernel.org,
-       starvik@axis.com, dhowells@redhat.com, ysato@users.sourceforge.jp,
-       tony.luck@intel.com, takata@linux-m32r.org, geert@linux-m68k.org,
-       matthew@wil.cx, schwidefsky@de.ibm.com, lethal@linux-sh.org,
-       chris@zankel.net
-In-Reply-To: <1216556263.2707.2.camel@jaswinder.satnam>
-References: <1216544940.12650.13.camel@jaswinder.satnam>
-	 <20080720100039.GA12514@linux-mips.org>
-	 <1216556263.2707.2.camel@jaswinder.satnam>
-Content-Type: text/plain; charset=utf8
-Date: Sun, 20 Jul 2008 18:36:08 +0530
-Message-Id: <1216559168.2707.9.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Sun, 20 Jul 2008 09:19:30 -0400
+Received: from saeurebad.de ([85.214.36.134]:57596 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754166AbYGTNT3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 09:19:29 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] coredump: kill mm->core_done
+References: <20080715140715.GA25824@tv-sign.ru> <87d4l9jvru.fsf@saeurebad.de>
+	<20080720084758.GA143@tv-sign.ru> <87tzekrdnm.fsf@saeurebad.de>
+	<20080720123724.GA264@tv-sign.ru>
+Date: Sun, 20 Jul 2008 15:19:00 +0200
+In-Reply-To: <20080720123724.GA264@tv-sign.ru> (Oleg Nesterov's message of
+	"Sun, 20 Jul 2008 16:37:24 +0400")
+Message-ID: <87ljzwr8vv.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Ralf,
+Hi,
 
-On Sun, 2008-07-20 at 17:48 +0530, Jaswinder Singh wrote:
-> > 
-> > You write beneficial for userspace - but don't add <asm/syscall.h> to
-> > include/asm-generic/Kbuild.asm.  
-> 
-> diff --git a/include/asm-generic/Kbuild.asm
-> b/include/asm-generic/Kbuild.asm
-> index 7cd25b8..af24926 100644
-> --- a/include/asm-generic/Kbuild.asm
-> +++ b/include/asm-generic/Kbuild.asm
-> @@ -27,6 +27,7 @@ unifdef-y += socket.h
->  unifdef-y += sockios.h
->  unifdef-y += stat.h
->  unifdef-y += statfs.h
-> +unifdef-y += syscalls.h
->  unifdef-y += termbits.h
->  unifdef-y += termios.h
->  unifdef-y += types.h
-> 
+Oleg Nesterov <oleg@tv-sign.ru> writes:
 
-I think, adding syscalls.h is not required in ﻿include/asm-generic/Kbuild.asm.
-Beneficial to userspace, I mean for reference purpose only.
+> On 07/20, Johannes Weiner wrote:
+>> 
+>> Oleg Nesterov <oleg@tv-sign.ru> writes:
+>> 
+>> > On 07/20, Johannes Weiner wrote:
+>> >> 
+>> >> Oleg Nesterov <oleg@tv-sign.ru> writes:
+>> >> 
+>> >> > --- 26-rc2/kernel/exit.c~5_KILL_CORE_DONE	2008-07-13 19:58:19.000000000 +0400
+>> >> > +++ 26-rc2/kernel/exit.c	2008-07-15 17:06:58.000000000 +0400
+>> >> > @@ -680,7 +680,13 @@ static void exit_mm(struct task_struct *
+>> >> >  		if (atomic_dec_and_test(&core_state->nr_threads))
+>> >> >  			complete(&core_state->startup);
+>> >> >  
+>> >> > -		wait_for_completion(&mm->core_done);
+>> >> > +		for (;;) {
+>> >> > +			set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+>> >> > +			if (!self.task) /* see coredump_finish() */
+>> >> 
+>> >> kernel/exit.c: In function `exit_mm':
+>> >> kernel/exit.c:686: error: `self' undeclared (first use in this function)
+>> >> kernel/exit.c:686: error: (Each undeclared identifier is reported only once
+>> >> kernel/exit.c:686: error: for each function it appears in.)
+>> >> make[1]: *** [kernel/exit.o] Error 1
+>> >
+>> > This is on top of other patches in -mm tree,
+>> >
+>> >          coredump-zap_threads-comments-use-while_each_thread.patch
+>> >          introduce-pf_kthread-flag.patch
+>> >          kill-pf_borrowed_mm-in-favour-of-pf_kthread.patch
+>> >          coredump-zap_threads-must-skip-kernel-threads.patch
+>> >          coredump-elf_core_dump-skip-kernel-threads.patch
+>> >          coredump-turn-mm-core_startup_done-into-the-pointer-to-struct-core_state.patch
+>> >          coredump-move-mm-core_waiters-into-struct-core_state.patch
+>> >          coredump-simplify-core_state-nr_threads-calculation.patch
+>> >          coredump-turn-core_state-nr_threads-into-atomic_t.patch
+>> >          coredump-make-mm-core_state-visible-to-core_dump.patch
+>> >          coredump-construct-the-list-of-coredumping-threads-at-startup-time.patch
+>> >          coredump-elf_core_dump-use-core_state-dumper-list.patch
+>> >          coredump-elf_fdpic_core_dump-use-core_state-dumper-list.patch
+>> >          coredump-kill-mm-core_done.patch
+>>
+>> Sorry, I should have given more information.
+>>
+>> I was building -mm directly with all these patches applied.  I did not
+>> cherry-pick this exact patch into some other tree.
+>>
+>> But I still can not find anything defining `self' in these patches:
+>
+> Because it was merged into -mm before the previous 4 patches by mistake,
+> sorry.
+>
+> Just drop this one:
+>
+> 	http://userweb.kernel.org/~akpm/mmotm/broken-out/coredump-kill-mm-core_done.patch
 
-Thank you,
+Alright, thanks!
 
-Jaswinder Singh.
-
+	Hannes
