@@ -1,76 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756781AbYGTWQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754468AbYGTWiE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756781AbYGTWQU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 18:16:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754753AbYGTWO5
+	id S1754468AbYGTWiE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 18:38:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbYGTWhy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 18:14:57 -0400
-Received: from casper.infradead.org ([85.118.1.10]:38190 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754320AbYGTWOz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 18:14:55 -0400
-Date: Sun, 20 Jul 2008 15:13:39 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
-       Simon Arlott <simon@fire.lp0.eu>, Daniel Walker <dwalker@mvista.com>,
-       Rene Herman <rene.herman@keyaccess.nl>
-Subject: [patch 3/4] fastboot: make the raid autodetect code wait for all
- devices to init
-Message-ID: <20080720151339.6f4a83d8@infradead.org>
-In-Reply-To: <20080720151140.4aa7c682@infradead.org>
-References: <20080720151140.4aa7c682@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 20 Jul 2008 18:37:54 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:53806 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752183AbYGTWhx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 18:37:53 -0400
+Date: Sun, 20 Jul 2008 23:37:51 +0100 (IST)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: Tino Keitel <tino.keitel@gmx.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: no direct rendering with 2.6.26 due to AGP after DRM
+In-Reply-To: <20080720220140.GA14818@dose.home.local>
+Message-ID: <alpine.DEB.0.82.0807202337270.22311@skynet.skynet.ie>
+References: <20080720220140.GA14818@dose.home.local>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sun, 20 Jul 2008 13:07:09 -0700
-Subject: [PATCH] fastboot: make the raid autodetect code wait for all devices to init
+> 
+> [drm] Initialized drm 1.1.0 20060810
+> ACPI: PCI Interrupt 0000:00:02.0[A] -> GSI 16 (level, low) -> IRQ 16
+> PCI: Setting latency timer of device 0000:00:02.0 to 64
+> [drm:drm_fill_in_dev] *ERROR* Cannot initialize the agpgart module.
+> DRM: Fill_in_dev failed.
+> ...
+> agpgart: Detected an Intel 965GM Chipset.
+> agpgart: Detected 7676K stolen memory.
+> agpgart: AGP aperture is 256M @ 0xe0000000
+> 
 
-The raid autodetect code really needs to have all devices probed before
-it can detect raid arrays; not doing so would give rather messy situations
-where arrays would get detected as degraded while they shouldn't be etc.
+For now don't built it all into the kernel :)
 
-This is in preparation of removing the "wait for everything to init"
-code that makes everyone pay, not just raid users.
+I'll see what I can dig up on init ordering.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- init/do_mounts_md.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
-
-diff --git a/init/do_mounts_md.c b/init/do_mounts_md.c
-index 693d246..c0412a9 100644
---- a/init/do_mounts_md.c
-+++ b/init/do_mounts_md.c
-@@ -267,9 +267,16 @@ __setup("md=", md_setup);
- void __init md_run_setup(void)
- {
- 	create_dev("/dev/md0", MKDEV(MD_MAJOR, 0));
-+
- 	if (raid_noautodetect)
- 		printk(KERN_INFO "md: Skipping autodetection of RAID arrays. (raid=noautodetect)\n");
- 	else {
-+		/*
-+		 * Since we don't want to detect and use half a raid array, we
-+		 * need to wait for the known devices to complete their probing
-+		 */
-+		while (driver_probe_done() != 0)
-+			msleep(100);
- 		int fd = sys_open("/dev/md0", 0, 0);
- 		if (fd >= 0) {
- 			sys_ioctl(fd, RAID_AUTORUN, raid_autopart);
--- 
-1.5.5.1
-
+Dave.
