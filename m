@@ -1,73 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758043AbYGTPpV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758094AbYGTPrJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758043AbYGTPpV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 11:45:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757238AbYGTPpI
+	id S1758094AbYGTPrJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 11:47:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757288AbYGTPq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 11:45:08 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:55090 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757138AbYGTPpG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 11:45:06 -0400
-Date: Sun, 20 Jul 2008 17:44:56 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Bernhard Walle <bwalle@suse.de>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Greg KH <gregkh@suse.de>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, kernel-testers@vger.kernel.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       Vivek Goyal <vgoyal@redhat.com>, kexec <kexec@lists.infradead.org>
-Subject: Re: linux-next: Tree for July 18: warning at kernel/lockdep.c:2068
- trace_hardirqs_on_caller
-Message-ID: <20080720174456.55e41e8b@kopernikus.site>
-In-Reply-To: <20080720150341.7cd381c2@kopernikus.site>
-References: <20080718195352.e562a00f.sfr@canb.auug.org.au>
-	<200807190928.33978.m.kozlowski@tuxland.pl>
-	<19f34abd0807190255x304173d4wf2bfabb2d5bce511@mail.gmail.com>
-	<19f34abd0807190559y2fe5ebf9h7095793e82de3122@mail.gmail.com>
-	<20080719221723.GB5578@suse.de>
-	<19f34abd0807191527u61c5ed61kffe2279c8d46915d@mail.gmail.com>
-	<19f34abd0807191544nfd73be5nf7dde4b61992a7e8@mail.gmail.com>
-	<20080719225817.GA6264@suse.de>
-	<19f34abd0807191611y7cabf405iad307ba79591e04f@mail.gmail.com>
-	<1216544462.9311.20.camel@nimitz>
-	<20080720150341.7cd381c2@kopernikus.site>
-Organization: SUSE LINUX Products GmbH
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i686-pc-linux-gnu)
-X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
- D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
- vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
- pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
+	Sun, 20 Jul 2008 11:46:59 -0400
+Received: from smtp.net4india.com ([202.71.129.68]:36826 "EHLO
+	smtp.net4india.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757138AbYGTPq6 (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 11:46:58 -0400
+Subject: Re: Patch [1/1] minor bugfix in 2.6.26/arch/x86/mm/pat.c - caused
+	problems in mmap() of /dev/mem character file
+From: "V.Radhakrishnan" <rk@atr-labs.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <Linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>
+In-Reply-To: <20080719150546.15a0e773@infradead.org>
+References: <1216315516.2324.10.camel@atlas>
+	 <alpine.LFD.1.10.0807171025110.2959@woody.linux-foundation.org>
+	 <20080717223940.GA8206@elte.hu> <1216346657.2170.11.camel@atlas>
+	 <20080719150546.15a0e773@infradead.org>
+Content-Type: text/plain
+Date: Sun, 20 Jul 2008 21:20:46 +0530
+Message-Id: <1216569046.2268.14.camel@atlas>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Bernhard Walle <bwalle@suse.de> [2008-07-20 15:03]:
+Hi,
+
+Thanks !
+
+I was teaching a class of 17 students from HP, basics of kernel
+debugging. I had already burnt CDs for them with 2.6.25, and I thought I
+would try out the latest 2.6.26 ( announced just a day before the start
+of the training program ) last week.
+
+I wanted to cover basic concepts of memory management, and used
+the /dev/mem purely as a means to show them what the physical memory
+contains, how you can use this mechanism to view the contents of RAM
+after a DMA to verify data patterns etc.
+
+It so happened that all my 17 students had working code with 2.6.25 and
+I, the instructor, had the kernel 2.6.26 crash in front of them !
+
+So I started tracing the call and found the 'bug' and 'fixed it'.
+
+I agree with you 100% that my patch does not solve the problem, but is a
+quick fix approach to the next release. The PAT related access issue is
+valid. However, I humbly submit that memory access is a policy issue and
+perhaps should not be tinkered with thru code. 
+
+If you provide the root, access to /dev/mem, I don't think it should be
+a problem, since in any case, all others are denied access. Also,
+theoretically, if you access RAM for Read Only, why should there be a
+triple fault ? Again, if you access RAM, modify content, and mark those
+pages as dirty ( as described in LDD ), isnt that supposed to take care
+of cache issue ? Again, I re-iterate, I am NOT suggesting writing
+directly to RAM !, But what about Read Access which which is what
+several simple debuggers do ? The crash utility from RedHat also reads
+memory (both user as well as kernel virtual addresses as input ). Is
+reading RAM directly using a physical address deemed 'bad' ?
+
+Thanks, anyway, and really happy that you have taken the time to answer
+these issues.
+
+regards
+
+V. Radhakrishnan (alias 'RK')
+
+
+
+On Sat, 2008-07-19 at 15:05 -0700, Arjan van de Ven wrote:
+> On Fri, 18 Jul 2008 07:34:17 +0530
+> "V.Radhakrishnan" <rk@atr-labs.com> wrote:
+> > > But this duplication is ugly and confusing - we should have just a 
+> > > single check function, defined once and unconditionally, and
+> > > utilized by both places (with the devmem check being optional).
+> > > 
+> > > Venki, Arjan, agreed?
+> > 
+> > In fact, I spent some time thinking that the bug was actually at the
+> > higher level API instead of in the arch specific layer, and I was
+> > amazed that in spite of the config level option being turned off, it
+> > was NOT being reflected in the code !!
 > 
-> Because I didn't know that interface. And because I don't see that
-> interface on my two systems that I just checked. i386 and x86-64. What
-> do I have to do to enable that interface?
+> Hi,
+> 
+> it's great to see new people contribute to the kernel, however your
+> patch is not correct. In the PAT case, we really cannot allow /dev/mem
+> mmap access of kernel-used memory. It would create an incorrect cache
+> alias... which can have really bad effects, including tripple faulting
+> the cpu (which is an instant reboot) or data corruption, depending on
+> which model/vendor CPU you have.
+> 
+> What your patch does is to remove the code that prevents this situation
+> from happening... and that makes it not a very good idea.
+> 
+> Now, /dev/mem mmap access of address space that is not used by the
+> kernel is still allowed by the code (for example the PCI mmio region)...
+> 
+> Can you describe what you were trying to achieve by mmaping
+> of /dev/mem ? It sounds like you have a bug, since it's certainly
+> curious that you would want to deal with kernel memory this way.
+> (for example until recently, you wouldn't be able to do this at all)
+> 
+> Greetings,
+>    Arjan van de Ven
+> 
+> 
 
-That interface depends on CONFIG_MEMORY_HOTPLUG. But given to that
-dependency list,
-
-128 config MEMORY_HOTPLUG
-129         bool "Allow for memory hot-add"
-130         depends on SPARSEMEM || X86_64_ACPI_NUMA
-131         depends on HOTPLUG && !HIBERNATION && ARCH_ENABLE_MEMORY_HOTPLUG
-132         depends on (IA64 || X86 || PPC64 || SUPERH || S390)
-
-that interface is off on *many* systems (i386, x86_64), so we can't rely
-on that interface in kexec. I think on POWER it's much more common than
-on PC architectures.
-
-
-
-Bernhard
--- 
-Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
