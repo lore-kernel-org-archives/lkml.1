@@ -1,155 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756709AbYGTBDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbYGTBOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756709AbYGTBDk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 21:03:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754870AbYGTBDS
+	id S1756232AbYGTBOR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 21:14:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754814AbYGTBOE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 21:03:18 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:5980 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754576AbYGTBDQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 21:03:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=q8yPtAaXTcr19WKdpBmKlz4CnMB9Y42pw7U4OeLASE5m2TR13/0wz6VIpE19bRaf2t
-         hmzX84kT3ZNVuqjRwREUON5YBn5ctD87xzI7xvtVpkldSYVkNL7TUE3wsBkA2PRBDA7i
-         iPh2qIEOaPNu8rRXnu1lBQBJfThxvemY3VDZ0=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86: add pre_time_init in x86_ops
-Date: Sat, 19 Jul 2008 18:02:26 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <200807190207.26077.yhlu.kernel@gmail.com>
-In-Reply-To: <200807190207.26077.yhlu.kernel@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807191802.26193.yhlu.kernel@gmail.com>
+	Sat, 19 Jul 2008 21:14:04 -0400
+Received: from quechua.inka.de ([193.197.184.2]:36382 "EHLO mail.inka.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754788AbYGTBOE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jul 2008 21:14:04 -0400
+From: Bernd Eckenfels <ecki@lina.inka.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [stable] Linux 2.6.25.10
+Organization: Private Site running Debian GNU/Linux
+In-Reply-To: <487D0564.7070606@assumpcao.org>
+X-Newsgroups: ka.lists.linux.kernel
+User-Agent: tin/1.7.8-20050315 ("Scalpay") (UNIX) (Linux/2.6.13.4 (i686))
+Message-Id: <E1KKNUt-0005Y4-00@calista.eckenfels.net>
+Date: Sun, 20 Jul 2008 03:13:59 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+In article <487D0564.7070606@assumpcao.org> you wrote:
+> Opinions apart, what really matters: we have an ultimate declaration 
+> about Linus' tree -- we may forget the pre-official (?) announcement 
+> [Documentation/SecurityBugs] and know that someone else must, 
+> eventually, classify and inform the world about security bugs existent 
+> in their software.
 
+The Security Comunity as a whole (especially the commercial service offices
+who gat paied to make up new security leaks) is very good in finding,
+tracking and classifying bugs. This together with the distributors works
+very well for Linux users. What are you missing?
 
-so numaq could use that to call numaq_pre_time_init
+> From our consumer side, every time an issue of this nature is found, 
+> let's pray for some intermediate, gray, angel to send us an "warning" 
+> message.
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Well, since most often the developers rely on the same source to be notified
+about it, its not really a problem.
 
----
- arch/x86/kernel/numaq_32.c    |    7 +++++++
- arch/x86/kernel/setup.c       |    8 --------
- arch/x86/kernel/time_32.c     |    1 +
- arch/x86/mach-default/setup.c |   10 ++++++++++
- include/asm-x86/arch_hooks.h  |    1 +
- include/asm-x86/setup.h       |    1 +
- 6 files changed, 20 insertions(+), 8 deletions(-)
-
-Index: linux-2.6/arch/x86/kernel/numaq_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/numaq_32.c
-+++ linux-2.6/arch/x86/kernel/numaq_32.c
-@@ -84,6 +84,12 @@ void __init numaq_tsc_disable(void)
- 	}
- }
- 
-+static int __init numaq_pre_time_init(void)
-+{
-+	numaq_tsc_disable();
-+	return 0;
-+}
-+
- int found_numaq;
- /*
-  * Have to match translation table entries to main table entries by counter
-@@ -224,6 +230,7 @@ static void __init smp_read_mpc_oem(stru
- }
- 
- static struct x86_ops numaq_x86_ops __initdata = {
-+	.arch_pre_time_init	= numaq_pre_time_init,
- 	.arch_time_init		= NULL,
- 	.arch_pre_intr_init	= NULL,
- 	.arch_memory_setup	= NULL,
-Index: linux-2.6/arch/x86/kernel/setup.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup.c
-+++ linux-2.6/arch/x86/kernel/setup.c
-@@ -858,14 +858,6 @@ void __init setup_arch(char **cmdline_p)
- 	init_cpu_to_node();
- #endif
- 
--#ifdef CONFIG_X86_NUMAQ
--	/*
--	 * need to check online nodes num, call it
--	 * here before time_init/tsc_init
--	 */
--	numaq_tsc_disable();
--#endif
--
- 	init_apic_mappings();
- 	ioapic_init_mappings();
- 
-Index: linux-2.6/arch/x86/kernel/time_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/time_32.c
-+++ linux-2.6/arch/x86/kernel/time_32.c
-@@ -129,6 +129,7 @@ void __init hpet_time_init(void)
-  */
- void __init time_init(void)
- {
-+	pre_time_init_hook();
- 	tsc_init();
- 	late_time_init = choose_time_init();
- }
-Index: linux-2.6/arch/x86/mach-default/setup.c
-===================================================================
---- linux-2.6.orig/arch/x86/mach-default/setup.c
-+++ linux-2.6/arch/x86/mach-default/setup.c
-@@ -103,6 +103,16 @@ static struct irqaction irq0  = {
- };
- 
- /**
-+ * pre_time_init_hook - do any specific initialisations before.
-+ *
-+ **/
-+void __init pre_time_init_hook(void)
-+{
-+	if (x86_ops->arch_pre_time_init)
-+		x86_ops->arch_pre_time_init();
-+}
-+
-+/**
-  * time_init_hook - do any specific initialisations for the system timer.
-  *
-  * Description:
-Index: linux-2.6/include/asm-x86/arch_hooks.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/arch_hooks.h
-+++ linux-2.6/include/asm-x86/arch_hooks.h
-@@ -21,6 +21,7 @@ extern void intr_init_hook(void);
- extern void pre_intr_init_hook(void);
- extern void pre_setup_arch_hook(void);
- extern void trap_init_hook(void);
-+extern void pre_time_init_hook(void);
- extern void time_init_hook(void);
- extern void mca_nmi_hook(void);
- 
-Index: linux-2.6/include/asm-x86/setup.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/setup.h
-+++ linux-2.6/include/asm-x86/setup.h
-@@ -23,6 +23,7 @@ struct mpc_config_processor;
- struct mpc_config_bus;
- struct mp_config_oemtable;
- struct x86_ops {
-+	int (*arch_pre_time_init)(void);
- 	int (*arch_time_init)(void);
- 	int (*arch_pre_intr_init)(void);
- 	int (*arch_intr_init)(void);
+Gruss
+Bernd
