@@ -1,121 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758094AbYGTPrJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758024AbYGTPul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758094AbYGTPrJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 11:47:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757288AbYGTPq7
+	id S1758024AbYGTPul (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 11:50:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757395AbYGTPue
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 11:46:59 -0400
-Received: from smtp.net4india.com ([202.71.129.68]:36826 "EHLO
-	smtp.net4india.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757138AbYGTPq6 (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 11:46:58 -0400
-Subject: Re: Patch [1/1] minor bugfix in 2.6.26/arch/x86/mm/pat.c - caused
-	problems in mmap() of /dev/mem character file
-From: "V.Radhakrishnan" <rk@atr-labs.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <Linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>
-In-Reply-To: <20080719150546.15a0e773@infradead.org>
-References: <1216315516.2324.10.camel@atlas>
-	 <alpine.LFD.1.10.0807171025110.2959@woody.linux-foundation.org>
-	 <20080717223940.GA8206@elte.hu> <1216346657.2170.11.camel@atlas>
-	 <20080719150546.15a0e773@infradead.org>
-Content-Type: text/plain
-Date: Sun, 20 Jul 2008 21:20:46 +0530
-Message-Id: <1216569046.2268.14.camel@atlas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Sun, 20 Jul 2008 11:50:34 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:58782 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757367AbYGTPud (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 11:50:33 -0400
+Subject: RTC: rtc-s3c: update IRQ handling
+Message-Id: <20080720155031.013012457@fluff.org.uk>
+User-Agent: quilt/0.46-1
+From: Ben Dooks <ben-linux@fluff.org>
+To: a.zummo@towertech.it, linux-kernel@vger.kernel.org
+Cc: Ben Dooks <ben-linux@fluff.org>
+Content-Disposition: inline; filename=simtec/simtec-s3c24xx-rtc-update-irq.patch
+Date: Sun, 20 Jul 2008 16:50:31 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+The rtc-s3c.c driver has been using it's own ioctl() handling
+to deal with alarm and periodic interrupts to handle what
+should now be done with the rtc core code.
 
-Thanks !
+Change to using the .irq_set_freq and .irq_set_state driver
+entries and remove the .ioctl handling.
 
-I was teaching a class of 17 students from HP, basics of kernel
-debugging. I had already burnt CDs for them with 2.6.25, and I thought I
-would try out the latest 2.6.26 ( announced just a day before the start
-of the training program ) last week.
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
-I wanted to cover basic concepts of memory management, and used
-the /dev/mem purely as a means to show them what the physical memory
-contains, how you can use this mechanism to view the contents of RAM
-after a DMA to verify data patterns etc.
+Index: linux-2.6.26-quilt3/drivers/rtc/rtc-s3c.c
+===================================================================
+--- linux-2.6.26-quilt3.orig/drivers/rtc/rtc-s3c.c	2008-07-18 14:54:40.000000000 +0100
++++ linux-2.6.26-quilt3/drivers/rtc/rtc-s3c.c	2008-07-18 15:44:45.000000000 +0100
+@@ -40,10 +40,8 @@ static struct resource *s3c_rtc_mem;
+ static void __iomem *s3c_rtc_base;
+ static int s3c_rtc_alarmno = NO_IRQ;
+ static int s3c_rtc_tickno  = NO_IRQ;
+-static int s3c_rtc_freq    = 1;
+ 
+ static DEFINE_SPINLOCK(s3c_rtc_pie_lock);
+-static unsigned int tick_count;
+ 
+ /* IRQ Handlers */
+ 
+@@ -59,7 +57,7 @@ static irqreturn_t s3c_rtc_tickirq(int i
+ {
+ 	struct rtc_device *rdev = id;
+ 
+-	rtc_update_irq(rdev, tick_count++, RTC_PF | RTC_IRQF);
++	rtc_update_irq(rdev, 1, RTC_PF | RTC_IRQF);
+ 	return IRQ_HANDLED;
+ }
+ 
+@@ -78,35 +76,37 @@ static void s3c_rtc_setaie(int to)
+ 	writeb(tmp, s3c_rtc_base + S3C2410_RTCALM);
+ }
+ 
+-static void s3c_rtc_setpie(int to)
++static int s3c_rtc_setpie(struct device *dev, int enabled)
+ {
+ 	unsigned int tmp;
+ 
+-	pr_debug("%s: pie=%d\n", __func__, to);
++	pr_debug("%s: pie=%d\n", __func__, enabled);
+ 
+ 	spin_lock_irq(&s3c_rtc_pie_lock);
+ 	tmp = readb(s3c_rtc_base + S3C2410_TICNT) & ~S3C2410_TICNT_ENABLE;
+ 
+-	if (to)
++	if (enabled)
+ 		tmp |= S3C2410_TICNT_ENABLE;
+ 
+ 	writeb(tmp, s3c_rtc_base + S3C2410_TICNT);
+ 	spin_unlock_irq(&s3c_rtc_pie_lock);
++
++	return 0;
+ }
+ 
+-static void s3c_rtc_setfreq(int freq)
++static int s3c_rtc_setfreq(struct device *dev, int freq)
+ {
+ 	unsigned int tmp;
+ 
+ 	spin_lock_irq(&s3c_rtc_pie_lock);
+-	tmp = readb(s3c_rtc_base + S3C2410_TICNT) & S3C2410_TICNT_ENABLE;
+-
+-	s3c_rtc_freq = freq;
+ 
++	tmp = readb(s3c_rtc_base + S3C2410_TICNT) & S3C2410_TICNT_ENABLE;
+ 	tmp |= (128 / freq)-1;
+ 
+ 	writeb(tmp, s3c_rtc_base + S3C2410_TICNT);
+ 	spin_unlock_irq(&s3c_rtc_pie_lock);
++
++	return 0;
+ }
+ 
+ /* Time read/write */
+@@ -271,12 +271,7 @@ static int s3c_rtc_setalarm(struct devic
+ 
+ 	writeb(alrm_en, base + S3C2410_RTCALM);
+ 
+-	if (0) {
+-		alrm_en = readb(base + S3C2410_RTCALM);
+-		alrm_en &= ~S3C2410_RTCALM_ALMEN;
+-		writeb(alrm_en, base + S3C2410_RTCALM);
+-		disable_irq_wake(s3c_rtc_alarmno);
+-	}
++	s3c_rtc_setaie(alrm->enabled);
+ 
+ 	if (alrm->enabled)
+ 		enable_irq_wake(s3c_rtc_alarmno);
+@@ -286,59 +281,12 @@ static int s3c_rtc_setalarm(struct devic
+ 	return 0;
+ }
+ 
+-static int s3c_rtc_ioctl(struct device *dev,
+-			 unsigned int cmd, unsigned long arg)
+-{
+-	unsigned int ret = -ENOIOCTLCMD;
+-
+-	switch (cmd) {
+-	case RTC_AIE_OFF:
+-	case RTC_AIE_ON:
+-		s3c_rtc_setaie((cmd == RTC_AIE_ON) ? 1 : 0);
+-		ret = 0;
+-		break;
+-
+-	case RTC_PIE_OFF:
+-	case RTC_PIE_ON:
+-		tick_count = 0;
+-		s3c_rtc_setpie((cmd == RTC_PIE_ON) ? 1 : 0);
+-		ret = 0;
+-		break;
+-
+-	case RTC_IRQP_READ:
+-		ret = put_user(s3c_rtc_freq, (unsigned long __user *)arg);
+-		break;
+-
+-	case RTC_IRQP_SET:
+-		if (!is_power_of_2(arg)) {
+-			ret = -EINVAL;
+-			goto exit;
+-		}
+-
+-		pr_debug("s3c2410_rtc: setting frequency %ld\n", arg);
+-
+-		s3c_rtc_setfreq(arg);
+-		ret = 0;
+-		break;
+-
+-	case RTC_UIE_ON:
+-	case RTC_UIE_OFF:
+-		ret = -EINVAL;
+-	}
+-
+- exit:
+-	return ret;
+-}
+-
+ static int s3c_rtc_proc(struct device *dev, struct seq_file *seq)
+ {
+ 	unsigned int ticnt = readb(s3c_rtc_base + S3C2410_TICNT);
+ 
+ 	seq_printf(seq, "periodic_IRQ\t: %s\n",
+ 		     (ticnt & S3C2410_TICNT_ENABLE) ? "yes" : "no" );
+-
+-	seq_printf(seq, "periodic_freq\t: %d\n", s3c_rtc_freq);
+-
+ 	return 0;
+ }
+ 
+@@ -378,7 +326,7 @@ static void s3c_rtc_release(struct devic
+ 
+ 	/* do not clear AIE here, it may be needed for wake */
+ 
+-	s3c_rtc_setpie(0);
++	s3c_rtc_setpie(dev, 0);
+ 	free_irq(s3c_rtc_alarmno, rtc_dev);
+ 	free_irq(s3c_rtc_tickno, rtc_dev);
+ }
+@@ -386,11 +334,12 @@ static void s3c_rtc_release(struct devic
+ static const struct rtc_class_ops s3c_rtcops = {
+ 	.open		= s3c_rtc_open,
+ 	.release	= s3c_rtc_release,
+-	.ioctl		= s3c_rtc_ioctl,
+ 	.read_time	= s3c_rtc_gettime,
+ 	.set_time	= s3c_rtc_settime,
+ 	.read_alarm	= s3c_rtc_getalarm,
+ 	.set_alarm	= s3c_rtc_setalarm,
++	.irq_set_freq	= s3c_rtc_setfreq,
++	.irq_set_state	= s3c_rtc_setpie,
+ 	.proc	        = s3c_rtc_proc,
+ };
+ 
+@@ -441,7 +390,7 @@ static int s3c_rtc_remove(struct platfor
+ 	platform_set_drvdata(dev, NULL);
+ 	rtc_device_unregister(rtc);
+ 
+-	s3c_rtc_setpie(0);
++	s3c_rtc_setpie(&dev->dev, 0);
+ 	s3c_rtc_setaie(0);
+ 
+ 	iounmap(s3c_rtc_base);
+@@ -508,7 +457,7 @@ static int s3c_rtc_probe(struct platform
+  	pr_debug("s3c2410_rtc: RTCCON=%02x\n",
+ 		 readb(s3c_rtc_base + S3C2410_RTCCON));
+ 
+-	s3c_rtc_setfreq(s3c_rtc_freq);
++	s3c_rtc_setfreq(&pdev->dev, 1);
+ 
+ 	/* register RTC and exit */
+ 
 
-It so happened that all my 17 students had working code with 2.6.25 and
-I, the instructor, had the kernel 2.6.26 crash in front of them !
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
 
-So I started tracing the call and found the 'bug' and 'fixed it'.
-
-I agree with you 100% that my patch does not solve the problem, but is a
-quick fix approach to the next release. The PAT related access issue is
-valid. However, I humbly submit that memory access is a policy issue and
-perhaps should not be tinkered with thru code. 
-
-If you provide the root, access to /dev/mem, I don't think it should be
-a problem, since in any case, all others are denied access. Also,
-theoretically, if you access RAM for Read Only, why should there be a
-triple fault ? Again, if you access RAM, modify content, and mark those
-pages as dirty ( as described in LDD ), isnt that supposed to take care
-of cache issue ? Again, I re-iterate, I am NOT suggesting writing
-directly to RAM !, But what about Read Access which which is what
-several simple debuggers do ? The crash utility from RedHat also reads
-memory (both user as well as kernel virtual addresses as input ). Is
-reading RAM directly using a physical address deemed 'bad' ?
-
-Thanks, anyway, and really happy that you have taken the time to answer
-these issues.
-
-regards
-
-V. Radhakrishnan (alias 'RK')
-
-
-
-On Sat, 2008-07-19 at 15:05 -0700, Arjan van de Ven wrote:
-> On Fri, 18 Jul 2008 07:34:17 +0530
-> "V.Radhakrishnan" <rk@atr-labs.com> wrote:
-> > > But this duplication is ugly and confusing - we should have just a 
-> > > single check function, defined once and unconditionally, and
-> > > utilized by both places (with the devmem check being optional).
-> > > 
-> > > Venki, Arjan, agreed?
-> > 
-> > In fact, I spent some time thinking that the bug was actually at the
-> > higher level API instead of in the arch specific layer, and I was
-> > amazed that in spite of the config level option being turned off, it
-> > was NOT being reflected in the code !!
-> 
-> Hi,
-> 
-> it's great to see new people contribute to the kernel, however your
-> patch is not correct. In the PAT case, we really cannot allow /dev/mem
-> mmap access of kernel-used memory. It would create an incorrect cache
-> alias... which can have really bad effects, including tripple faulting
-> the cpu (which is an instant reboot) or data corruption, depending on
-> which model/vendor CPU you have.
-> 
-> What your patch does is to remove the code that prevents this situation
-> from happening... and that makes it not a very good idea.
-> 
-> Now, /dev/mem mmap access of address space that is not used by the
-> kernel is still allowed by the code (for example the PCI mmio region)...
-> 
-> Can you describe what you were trying to achieve by mmaping
-> of /dev/mem ? It sounds like you have a bug, since it's certainly
-> curious that you would want to deal with kernel memory this way.
-> (for example until recently, you wouldn't be able to do this at all)
-> 
-> Greetings,
->    Arjan van de Ven
-> 
-> 
-
+  'a smiley only costs 4 bytes'
