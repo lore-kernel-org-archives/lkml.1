@@ -1,68 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756479AbYGTIoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756778AbYGTIsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756479AbYGTIoj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 04:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbYGTIob
+	id S1756778AbYGTIsS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 04:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbYGTIsI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 04:44:31 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:35198 "EHLO mail.screens.ru"
+	Sun, 20 Jul 2008 04:48:08 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:36001 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751876AbYGTIoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 04:44:30 -0400
-Date: Sun, 20 Jul 2008 12:47:58 +0400
+	id S1753364AbYGTIsG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 04:48:06 -0400
+Date: Sun, 20 Jul 2008 12:51:39 +0400
 From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Johannes Weiner <hannes@saeurebad.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] coredump: kill mm->core_done
-Message-ID: <20080720084758.GA143@tv-sign.ru>
-References: <20080715140715.GA25824@tv-sign.ru> <87d4l9jvru.fsf@saeurebad.de>
+Message-ID: <20080720085139.GB143@tv-sign.ru>
+References: <20080715140715.GA25824@tv-sign.ru> <20080720032001.E707315421D@magilla.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87d4l9jvru.fsf@saeurebad.de>
+In-Reply-To: <20080720032001.E707315421D@magilla.localdomain>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/20, Johannes Weiner wrote:
-> 
-> Oleg Nesterov <oleg@tv-sign.ru> writes:
-> 
-> > --- 26-rc2/kernel/exit.c~5_KILL_CORE_DONE	2008-07-13 19:58:19.000000000 +0400
-> > +++ 26-rc2/kernel/exit.c	2008-07-15 17:06:58.000000000 +0400
-> > @@ -680,7 +680,13 @@ static void exit_mm(struct task_struct *
-> >  		if (atomic_dec_and_test(&core_state->nr_threads))
-> >  			complete(&core_state->startup);
-> >  
-> > -		wait_for_completion(&mm->core_done);
-> > +		for (;;) {
-> > +			set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-> > +			if (!self.task) /* see coredump_finish() */
-> 
-> kernel/exit.c: In function `exit_mm':
-> kernel/exit.c:686: error: `self' undeclared (first use in this function)
-> kernel/exit.c:686: error: (Each undeclared identifier is reported only once
-> kernel/exit.c:686: error: for each function it appears in.)
-> make[1]: *** [kernel/exit.o] Error 1
+On 07/19, Roland McGrath wrote:
+>
+> It is indeed ugly.  I think the place to start is with moving all the
+> coredump code out of exit_mm() into a new subfunction that is just passed
+> the mm pointer, and doing the same with coredump_finish() as you've done,
+> but leaving the completion logic inside those functions the same.
 
-This is on top of other patches in -mm tree,
+The next patch does this.
 
-         coredump-zap_threads-comments-use-while_each_thread.patch
-         introduce-pf_kthread-flag.patch
-         kill-pf_borrowed_mm-in-favour-of-pf_kthread.patch
-         coredump-zap_threads-must-skip-kernel-threads.patch
-         coredump-elf_core_dump-skip-kernel-threads.patch
-         coredump-turn-mm-core_startup_done-into-the-pointer-to-struct-core_state.patch
-         coredump-move-mm-core_waiters-into-struct-core_state.patch
-         coredump-simplify-core_state-nr_threads-calculation.patch
-         coredump-turn-core_state-nr_threads-into-atomic_t.patch
-         coredump-make-mm-core_state-visible-to-core_dump.patch
-         coredump-construct-the-list-of-coredumping-threads-at-startup-time.patch
-         coredump-elf_core_dump-use-core_state-dumper-list.patch
-         coredump-elf_fdpic_core_dump-use-core_state-dumper-list.patch
-         coredump-kill-mm-core_done.patch
+This patch goes first because it kills the last field in mm_struct which
+is needed for the coredump code, so new new function (exit_coredump) doesn't
+need the mm pointer at all.
 
 Oleg.
 
