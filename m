@@ -1,251 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbYGTGcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbYGTGiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755593AbYGTGcA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 02:32:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbYGTGbw
+	id S1755935AbYGTGiS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 02:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbYGTGiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 02:31:52 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:37060 "EHLO mx2.suse.de"
+	Sun, 20 Jul 2008 02:38:10 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37456 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751360AbYGTGbv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 02:31:51 -0400
-From: Neil Brown <neilb@suse.de>
-To: Tejun Heo <teheo@suse.de>
-Date: Sun, 20 Jul 2008 16:31:42 +1000
+	id S1751295AbYGTGiI (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 02:38:08 -0400
+Date: Sun, 20 Jul 2008 08:37:12 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "V.Radhakrishnan" <rk@atr-labs.com>,
+       Linux Kernel Mailing List <Linux-kernel@vger.kernel.org>
+Subject: Re: Patch [1/1] minor bugfix in 2.6.26/arch/x86/mm/pat.c - caused
+	problems in mmap() of /dev/mem character file
+Message-ID: <20080720063711.GA27105@elte.hu>
+References: <1216315516.2324.10.camel@atlas> <alpine.LFD.1.10.0807171025110.2959@woody.linux-foundation.org> <20080719154717.41068888@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18562.56270.855607.668110@notabene.brown>
-Cc: Greg K-H <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH/RFC] sysfs: Support sysfs_notify from atomic context with
- new sysfs_notify_dirent
-In-Reply-To: message from Tejun Heo on Wednesday July 16
-References: <18557.11132.728439.827572@notabene.brown>
-	<487D2F01.5000404@suse.de>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Disposition: inline
+In-Reply-To: <20080719154717.41068888@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi Tejun,
+* Arjan van de Ven <arjan@infradead.org> wrote:
 
-On Wednesday July 16, teheo@suse.de wrote:
+> > > The above #ifdef must be actually #ifndef and not #ifdef The bug 
+> > > does not allow a valid user (root) from accessing /dev/mem even 
+> > > though the CONFIG_PROMISC_DEVMEM is NOT selected.
+> > 
+> > The real bug is that we shouldn't have "double negatives", and 
+> > certainly not negative config options. Making that "promiscuous 
+> > /dev/mem" option a negated thing as a config option was bad.
+> > 
+> > Ingo, over to you..
 > 
-> I don't think this inline technique is really necessary.  Please just
-> drop the inline versions.  Other than that,
+> patch below clears the double-negative and adds the "PAT also causes 
+> this" explenation
 
-Yep, they don't really need to be inline.  I've fixed that.
+applied to tip/x86/urgent - i made this a delta commit (see below) 
+because some other patches were picked up into x86/urgent meanwhile. 
+Thanks Arjan,
 
-> 
-> Acked-by: Tejun Heo <tj@kernel.org>
+	Ingo
 
-Thanks.
+--------------------->
+commit d092633bff3b19faffc480fe9810805e7792a029
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Fri Jul 18 00:26:59 2008 +0200
 
-> 
-> BTW, things like this strongly suggest that we really should switch to
-> sd-based interface instead of combination of kobj and optional name string.
-
-Yes.  Once this is in I'll change md over to use it and then see if
-anything else could benefit from the change.
-
-Greg:  Can you take this one now?  Thanks.
-
-NeilBrown
-
-
->From 39c1ca9fcdfdf7b9f582d0dfb5e80d8ce0d66f7c Mon Sep 17 00:00:00 2001
-From: NeilBrown <neilb@suse.de>
-Date: Sun, 20 Jul 2008 16:29:05 +1000
-Subject: [PATCH] Support sysfs_notify from atomic context with new sysfs_notify_dirent
-
-sysfs_notify currently takes sysfs_mutex.
-This means that it cannot be called in atomic context.
-sysfs_mutex  is sometimes held over a malloc (sysfs_rename_dir)
-so it can block on low memory.
-
-In md I want to be able to notify on a sysfs attribute from
-atomic context, and I don't want to block on low memory because I
-could be in the writeout path for freeing memory.
-
-So:
- - export the "sysfs_dirent" structure along with sysfs_get, sysfs_put
-   and sysfs_get_dirent so I can get the sysfs_dirent that I want to
-   notify on and hold it in an md structure.
- - split sysfs_notify_dirent out of sysfs_notify so the sysfs_dirent
-   can be notified on with no blocking (just a spinlock).
-
-Signed-off-by: NeilBrown <neilb@suse.de>
-Acked-by: Tejun Heo <tj@kernel.org>
+    Subject: devmem, x86: fix rename of CONFIG_NONPROMISC_DEVMEM
+    From: Arjan van de Ven <arjan@infradead.org>
+    Date: Sat, 19 Jul 2008 15:47:17 -0700
+    
+    CONFIG_NONPROMISC_DEVMEM was a rather confusing name - but renaming it
+    to CONFIG_PROMISC_DEVMEM causes problems on architectures that do not
+    support this feature; this patch renames it to CONFIG_STRICT_DEVMEM,
+    so that architectures can opt-in into it.
+    
+    ( the polarity of the option is still the same as it was originally; it
+      needs to be for now to not break architectures that don't have the
+      infastructure yet to support this feature)
+    
+    Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+    Cc: "V.Radhakrishnan" <rk@atr-labs.com>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+    ---
 ---
- fs/sysfs/dir.c        |   18 ++++++++++++++++++
- fs/sysfs/file.c       |   31 ++++++++++++++++++-------------
- fs/sysfs/sysfs.h      |   15 ---------------
- include/linux/sysfs.h |   23 +++++++++++++++++++++++
- 4 files changed, 59 insertions(+), 28 deletions(-)
+ arch/x86/Kconfig.debug            |    9 +++++----
+ arch/x86/configs/i386_defconfig   |    2 +-
+ arch/x86/configs/x86_64_defconfig |    2 +-
+ arch/x86/mm/pat.c                 |    6 +++---
+ drivers/char/mem.c                |    2 +-
+ 5 files changed, 11 insertions(+), 10 deletions(-)
 
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 8c0e4b9..09e40a1 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -30,6 +30,23 @@ DEFINE_SPINLOCK(sysfs_assoc_lock);
- static DEFINE_SPINLOCK(sysfs_ino_lock);
- static DEFINE_IDA(sysfs_ino_ida);
+diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+index f0cf5d9..51c8214 100644
+--- a/arch/x86/Kconfig.debug
++++ b/arch/x86/Kconfig.debug
+@@ -5,14 +5,15 @@ config TRACE_IRQFLAGS_SUPPORT
  
-+struct sysfs_dirent *sysfs_get(struct sysfs_dirent *sd)
-+{
-+	if (sd) {
-+		WARN_ON(!atomic_read(&sd->s_count));
-+		atomic_inc(&sd->s_count);
-+	}
-+	return sd;
-+}
-+EXPORT_SYMBOL_GPL(sysfs_get);
-+
-+void sysfs_put(struct sysfs_dirent *sd)
-+{
-+	if (sd && atomic_dec_and_test(&sd->s_count))
-+		release_sysfs_dirent(sd);
-+}
-+EXPORT_SYMBOL_GPL(sysfs_put);
-+
- /**
-  *	sysfs_link_sibling - link sysfs_dirent into sibling list
-  *	@sd: sysfs_dirent of interest
-@@ -606,6 +623,7 @@ struct sysfs_dirent *sysfs_get_dirent(struct sysfs_dirent *parent_sd,
+ source "lib/Kconfig.debug"
  
- 	return sd;
+-config PROMISC_DEVMEM
+-	bool "Allow unlimited access to /dev/mem"
+-	default y
++config STRICT_DEVMEM
++	bool "Filter access to /dev/mem"
+ 	help
+ 	  If this option is left on, you allow userspace (root) access to all
+ 	  of memory, including kernel and userspace memory. Accidental
+ 	  access to this is obviously disastrous, but specific access can
+-	  be used by people debugging the kernel.
++	  be used by people debugging the kernel. Note that with PAT support
++	  enabled, even in this case there are restrictions on /dev/mem
++	  use due to the cache aliasing requirements.
+ 
+ 	  If this option is switched on, the /dev/mem file only allows
+ 	  userspace access to PCI space and the BIOS code and data regions.
+diff --git a/arch/x86/configs/i386_defconfig b/arch/x86/configs/i386_defconfig
+index 9bc34e2..4d73f53 100644
+--- a/arch/x86/configs/i386_defconfig
++++ b/arch/x86/configs/i386_defconfig
+@@ -2047,7 +2047,7 @@ CONFIG_PROVIDE_OHCI1394_DMA_INIT=y
+ # CONFIG_SAMPLES is not set
+ # CONFIG_KGDB is not set
+ CONFIG_HAVE_ARCH_KGDB=y
+-# CONFIG_NONPROMISC_DEVMEM is not set
++# CONFIG_STRICT_DEVMEM is not set
+ CONFIG_EARLY_PRINTK=y
+ CONFIG_DEBUG_STACKOVERFLOW=y
+ CONFIG_DEBUG_STACK_USAGE=y
+diff --git a/arch/x86/configs/x86_64_defconfig b/arch/x86/configs/x86_64_defconfig
+index ae5124e..a404524 100644
+--- a/arch/x86/configs/x86_64_defconfig
++++ b/arch/x86/configs/x86_64_defconfig
+@@ -2012,7 +2012,7 @@ CONFIG_PROVIDE_OHCI1394_DMA_INIT=y
+ # CONFIG_SAMPLES is not set
+ # CONFIG_KGDB is not set
+ CONFIG_HAVE_ARCH_KGDB=y
+-# CONFIG_NONPROMISC_DEVMEM is not set
++# CONFIG_STRICT_DEVMEM is not set
+ CONFIG_EARLY_PRINTK=y
+ CONFIG_DEBUG_STACKOVERFLOW=y
+ CONFIG_DEBUG_STACK_USAGE=y
+diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+index c34dc48..6bb597f 100644
+--- a/arch/x86/mm/pat.c
++++ b/arch/x86/mm/pat.c
+@@ -373,8 +373,8 @@ pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+ 	return vma_prot;
  }
-+EXPORT_SYMBOL_GPL(sysfs_get_dirent);
  
- static int create_dir(struct kobject *kobj, struct sysfs_dirent *parent_sd,
- 		      const char *name, struct sysfs_dirent **p_sd)
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index e7735f6..c6060e8 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -440,6 +440,22 @@ static unsigned int sysfs_poll(struct file *filp, poll_table *wait)
- 	return POLLERR|POLLPRI;
- }
- 
-+void sysfs_notify_dirent(struct sysfs_dirent *sd)
-+{
-+	struct sysfs_open_dirent *od;
-+
-+	spin_lock(&sysfs_open_dirent_lock);
-+
-+	od = sd->s_attr.open;
-+	if (od) {
-+		atomic_inc(&od->event);
-+		wake_up_interruptible(&od->poll);
-+	}
-+
-+	spin_unlock(&sysfs_open_dirent_lock);
-+}
-+EXPORT_SYMBOL_GPL(sysfs_notify_dirent);
-+
- void sysfs_notify(struct kobject *k, char *dir, char *attr)
+-#ifndef CONFIG_PROMISC_DEVMEM
+-/* This check is done in drivers/char/mem.c in case of !PROMISC_DEVMEM*/
++#ifdef CONFIG_STRICT_DEVMEM
++/* This check is done in drivers/char/mem.c in case of STRICT_DEVMEM*/
+ static inline int range_is_allowed(unsigned long pfn, unsigned long size)
  {
- 	struct sysfs_dirent *sd = k->sd;
-@@ -450,19 +466,8 @@ void sysfs_notify(struct kobject *k, char *dir, char *attr)
- 		sd = sysfs_find_dirent(sd, dir);
- 	if (sd && attr)
- 		sd = sysfs_find_dirent(sd, attr);
--	if (sd) {
--		struct sysfs_open_dirent *od;
--
--		spin_lock(&sysfs_open_dirent_lock);
--
--		od = sd->s_attr.open;
--		if (od) {
--			atomic_inc(&od->event);
--			wake_up_interruptible(&od->poll);
--		}
--
--		spin_unlock(&sysfs_open_dirent_lock);
--	}
-+	if (sd)
-+		sysfs_notify_dirent(sd);
- 
- 	mutex_unlock(&sysfs_mutex);
+ 	return 1;
+@@ -398,7 +398,7 @@ static inline int range_is_allowed(unsigned long pfn, unsigned long size)
+ 	}
+ 	return 1;
  }
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index ce4e15f..ef5ecc1 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -123,21 +123,6 @@ int sysfs_create_subdir(struct kobject *kobj, const char *name,
- 			struct sysfs_dirent **p_sd);
- void sysfs_remove_subdir(struct sysfs_dirent *sd);
+-#endif /* CONFIG_PROMISC_DEVMEM */
++#endif /* CONFIG_STRICT_DEVMEM */
  
--static inline struct sysfs_dirent *sysfs_get(struct sysfs_dirent *sd)
--{
--	if (sd) {
--		WARN_ON(!atomic_read(&sd->s_count));
--		atomic_inc(&sd->s_count);
--	}
--	return sd;
--}
--
--static inline void sysfs_put(struct sysfs_dirent *sd)
--{
--	if (sd && atomic_dec_and_test(&sd->s_count))
--		release_sysfs_dirent(sd);
--}
--
- /*
-  * inode.c
-  */
-diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index 7858eac..3ab58db 100644
---- a/include/linux/sysfs.h
-+++ b/include/linux/sysfs.h
-@@ -78,6 +78,8 @@ struct sysfs_ops {
- 	ssize_t	(*store)(struct kobject *,struct attribute *,const char *, size_t);
- };
- 
-+struct sysfs_dirent;
-+
- #ifdef CONFIG_SYSFS
- 
- int sysfs_schedule_callback(struct kobject *kobj, void (*func)(void *),
-@@ -115,6 +117,11 @@ void sysfs_remove_file_from_group(struct kobject *kobj,
- 			const struct attribute *attr, const char *group);
- 
- void sysfs_notify(struct kobject *kobj, char *dir, char *attr);
-+void sysfs_notify_dirent(struct sysfs_dirent *sd);
-+struct sysfs_dirent *sysfs_get_dirent(struct sysfs_dirent *parent_sd,
-+				      const unsigned char *name);
-+struct sysfs_dirent *sysfs_get(struct sysfs_dirent *sd);
-+void sysfs_put(struct sysfs_dirent *sd);
- 
- extern int __must_check sysfs_init(void);
- 
-@@ -215,6 +222,22 @@ static inline void sysfs_remove_file_from_group(struct kobject *kobj,
- static inline void sysfs_notify(struct kobject *kobj, char *dir, char *attr)
- {
+ int phys_mem_access_prot_allowed(struct file *file, unsigned long pfn,
+ 				unsigned long size, pgprot_t *vma_prot)
+diff --git a/drivers/char/mem.c b/drivers/char/mem.c
+index de05775..b6772d6 100644
+--- a/drivers/char/mem.c
++++ b/drivers/char/mem.c
+@@ -80,7 +80,7 @@ static inline int valid_mmap_phys_addr_range(unsigned long pfn, size_t size)
  }
-+static inline void sysfs_notify_dirent(struct sysfs_dirent *sd)
-+{
-+}
-+static inline
-+struct sysfs_dirent *sysfs_get_dirent(struct sysfs_dirent *parent_sd,
-+				      const unsigned char *name)
-+{
-+	return NULL;
-+}
-+static inline struct sysfs_dirent sysfs_get(struct sysfs_dirent *sd)
-+{
-+	return NULL;
-+}
-+static inline void sysfs_put(struct sysfs_dirent *sd)
-+{
-+}
+ #endif
  
- static inline int __must_check sysfs_init(void)
+-#ifndef CONFIG_PROMISC_DEVMEM
++#ifdef CONFIG_STRICT_DEVMEM
+ static inline int range_is_allowed(unsigned long pfn, unsigned long size)
  {
--- 
-1.5.6.3
-
+ 	u64 from = ((u64)pfn) << PAGE_SHIFT;
