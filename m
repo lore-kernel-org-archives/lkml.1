@@ -1,102 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756172AbYGTCRZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756338AbYGTC1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756172AbYGTCRZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jul 2008 22:17:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755079AbYGTCRQ
+	id S1756338AbYGTC1w (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jul 2008 22:27:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbYGTC1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jul 2008 22:17:16 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:55172 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754947AbYGTCRO (ORCPT
+	Sat, 19 Jul 2008 22:27:43 -0400
+Received: from 206-248-169-182.dsl.ncf.ca ([206.248.169.182]:60785 "EHLO
+	phobos.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755201AbYGTC1m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jul 2008 22:17:14 -0400
-Subject: Re: [PATCH] block: fix q->max_segment_size checking in
-	blk_recalc_rq_segments about VMERGE
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: David Miller <davem@davemloft.net>, fujita.tomonori@lab.ntt.co.jp,
-       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-parisc@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0807192141500.13523@devserv.devel.redhat.com>
-References: <20080717131444K.fujita.tomonori@lab.ntt.co.jp>
-	 <Pine.LNX.4.64.0807170746001.31185@devserv.devel.redhat.com>
-	 <20080717221908D.fujita.tomonori@lab.ntt.co.jp>
-	 <20080719.002826.73806419.davem@davemloft.net>
-	 <Pine.LNX.4.64.0807192141500.13523@devserv.devel.redhat.com>
-Content-Type: text/plain
-Date: Sat, 19 Jul 2008 21:17:08 -0500
-Message-Id: <1216520228.3376.33.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Sat, 19 Jul 2008 22:27:42 -0400
+Date: Sat, 19 Jul 2008 22:27:40 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Joel Soete <soete.joel@scarlet.be>
+Cc: Kyle McMartin <kyle@mcmartin.ca>, linux-parisc@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ccio_clear_io_tlb() don't need to compute io page
+	number a second time.
+Message-ID: <20080720022740.GA6427@phobos.i.cabal.ca>
+References: <48825DD0.5000308@scarlet.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48825DD0.5000308@scarlet.be>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-07-19 at 21:45 -0400, Mikulas Patocka wrote:
-> On Sat, 19 Jul 2008, David Miller wrote:
-> 
-> > From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > Date: Thu, 17 Jul 2008 22:18:44 +0900
-> > 
-> > > BTW, as I've already said, I'm not against removing the vmerge
-> > > accounting from the block layer.
-> > 
-> > I am also, as stated, not against this.
-> > 
-> > Fujita-san, please proposage a patch so that we can put this
-> > issue behind us :-)
-> 
-> Few days ago I created this.
-> 
-> Another task would be to remove nr_hw_segments from request, bio and queue 
-> parameters (if this patch is accepted).
+On Sat, Jul 19, 2008 at 09:34:08PM +0000, Joel Soete wrote:
+> --- a/drivers/parisc/ccio-dma.c	2008-07-19 21:17:37.000000000 +0000
+> +++ b/drivers/parisc/ccio-dma.c	2008-07-19 21:32:54.000000000 +0000
+> @@ -643,7 +643,6 @@
+>  {
+>  	u32 chain_size = 1 << ioc->chainid_shift;
+>
+> -	iovp &= IOVP_MASK;	/* clear offset bits, just want pagenum */
+>  	byte_cnt += chain_size;
+>
+>  	while(byte_cnt > chain_size) {
 
-I think we've already established that the code in question is correct
-and functional, 
-
-As far as I can tell, virtual merging has always been broken on ppc, so
-it shouldn't enable it.  It looks like at some point in history sparc
-went from a working vmerge to a non working one (by copying the broken
-ppc code), so the correct fix for both of these arches is simply to turn
-off virtual merging.
-
-ppc claims to turn off virtual merging, but in fact the define is
-broken.  Sparc should now follow ppc.
-
-Try this patch
-
-James
-
----
-
-diff --git a/include/asm-powerpc/io.h b/include/asm-powerpc/io.h
-index 8b62782..0f3212c 100644
---- a/include/asm-powerpc/io.h
-+++ b/include/asm-powerpc/io.h
-@@ -715,7 +715,7 @@ static inline void * phys_to_virt(unsigned long address)
-  * to coalesce sglists that happen to have been mapped in a contiguous
-  * way by the iommu
-  */
--#define BIO_VMERGE_BOUNDARY	0
-+#undef BIO_VMERGE_BOUNDARY
- 
- /*
-  * 32 bits still uses virt_to_bus() for it's implementation of DMA
-diff --git a/include/asm-sparc64/io.h b/include/asm-sparc64/io.h
-index 3158960..1da5642 100644
---- a/include/asm-sparc64/io.h
-+++ b/include/asm-sparc64/io.h
-@@ -16,7 +16,9 @@
- /* BIO layer definitions. */
- extern unsigned long kern_base, kern_size;
- #define page_to_phys(page)	(page_to_pfn(page) << PAGE_SHIFT)
--#define BIO_VMERGE_BOUNDARY	8192
-+
-+/* virtual merging doesn't work on sparc now */
-+#undef BIO_VMERGE_BOUNDARY
- 
- static inline u8 _inb(unsigned long addr)
- {
-
-
+applied.
