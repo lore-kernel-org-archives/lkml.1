@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758220AbYGTQvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758190AbYGTQ5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758220AbYGTQvl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 12:51:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757623AbYGTQvd
+	id S1758190AbYGTQ5T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 12:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757579AbYGTQ5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 12:51:33 -0400
-Received: from smtp.extricom.com ([192.114.46.18]:45987 "HELO
-	smtp.extricom.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757610AbYGTQvc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 12:51:32 -0400
-X-Greylist: delayed 22581 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Jul 2008 12:51:31 EDT
-Message-ID: <48836C52.5000309@extricom.com>
-Date: Sun, 20 Jul 2008 19:48:18 +0300
-From: Eran Liberty <liberty@extricom.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
-MIME-Version: 1.0
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.24-rc4] PCI: refuse to re-add a device to a bus upon
- pci_scan_child_bus()
-References: <48591941.4070408@extricom.com> <4883141A.4080209@extricom.com>
-In-Reply-To: <4883141A.4080209@extricom.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 20 Jul 2008 12:57:04 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:53209 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757503AbYGTQ5B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 12:57:01 -0400
+Subject: Re: Please add ZFS support (from GPL sources)
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Kevin Winchester <kjwinchester@gmail.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
+       "Fred ." <eldmannen@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <d1af83620807200535s6516e3b7wd16233391e5e8533@mail.gmail.com>
+References: <f188924b0807171213q43f10b09j47b34674fc8aaa38@mail.gmail.com>
+	 <487FA143.9010109@garzik.org> <20080720105724.GA8921@infradead.org>
+	 <d1af83620807200535s6516e3b7wd16233391e5e8533@mail.gmail.com>
+Content-Type: text/plain
+Date: Sun, 20 Jul 2008 11:56:51 -0500
+Message-Id: <1216573011.8940.21.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The subject is wrong! it is 2.6.26-rc4.
+On Sun, 2008-07-20 at 09:35 -0300, Kevin Winchester wrote:
+> As a bonus, being highly inexperienced, I have no
+> expectations of doing anything correctly, and thus would not react
+> badly to lots of criticism.
 
-I will re-email with a corrected subject for automated scripts sake.
+That's definitely the right attitude to take.  When I ported jfs to
+linux, I was completely new to Linux and open source, so tried to defer
+to the experienced developers whenever possible.  Christoph was a
+terrific help, offering a lot of suggestions and patches.  JFS is a much
+better file system because of his help.
 
-Liberty
+There have been others contributing code that have not taken criticism
+so well, and what started out as an offer of help turned into emotional
+arguments and personal attacks.  This really hampers getting your code
+accepted into the kernel and your ability to work within the community.
 
-Eran Liberty wrote:
-> Dear Penguins,
->
-> As  a follow up on my own post ( http://lkml.org/lkml/2008/6/18/195 ), 
-> I have  solved a small bug/misbehavior within the 
-> pci_scan_single_device().
->
-> The misbehavior manifest itself upon calling pci_scan_child_bus() with 
-> a bus which already contain some devices. After scanning is done 
-> devices that already existed will be present twice in the PCI bus 
-> devise list. Once with is_added indication and once without. Trying to 
-> add this bus will cause a resource conflict as the same device is 
-> already present and initialized.
->
-> This patch will simply prevent a device to be added to a bus list if 
-> it is already there.
->
-> Points to consider:
-> 1. I am not a PCI Guru and might have over looked the bigger picture. 
-> Is it OK to prevent a device of being re-added?
-> 2. I have decided that two devices are, in fact, the same instance if 
-> it has the same: vendor, device, and devfn. Is there a finer test for 
-> a device identity?
->
-> p.s. As per http://www.kernel.org/pub/linux/docs/lkml/#s1-10 it is 
-> preferred for Mozilla Firefox clients to attach the patch, hence my 
-> patch is attached.
->
-> Liberty
->
-> Signed-off-by: Eran Liberty <liberty@extrictom.org>
-> ---
+> So to summarize - if anyone else would like to undertake this work,
+> they probably should.  But if no one has the time/will, then I would
+> be happy to give it a try.
+
+Thanks for offering.  I don't know who else may be interested in this,
+but good luck and thanks to you or whoever takes this up.
+
+Thanks,
+Shaggy
+-- 
+David Kleikamp
+IBM Linux Technology Center
 
