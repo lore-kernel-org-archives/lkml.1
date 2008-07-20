@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756316AbYGTWP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756781AbYGTWQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756316AbYGTWP6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 18:15:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbYGTWOx
+	id S1756781AbYGTWQU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 18:16:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754753AbYGTWO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 18:14:53 -0400
-Received: from casper.infradead.org ([85.118.1.10]:38184 "EHLO
+	Sun, 20 Jul 2008 18:14:57 -0400
+Received: from casper.infradead.org ([85.118.1.10]:38190 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753328AbYGTWOw (ORCPT
+	with ESMTP id S1754320AbYGTWOz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 18:14:52 -0400
-Date: Sun, 20 Jul 2008 15:13:04 -0700
+	Sun, 20 Jul 2008 18:14:55 -0400
+Date: Sun, 20 Jul 2008 15:13:39 -0700
 From: Arjan van de Ven <arjan@infradead.org>
 To: Arjan van de Ven <arjan@infradead.org>
 Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
        Simon Arlott <simon@fire.lp0.eu>, Daniel Walker <dwalker@mvista.com>,
        Rene Herman <rene.herman@keyaccess.nl>
-Subject: [patch 2/4] fastboot: retry mounting the root fs if we can't find
- init
-Message-ID: <20080720151304.59b06786@infradead.org>
+Subject: [patch 3/4] fastboot: make the raid autodetect code wait for all
+ devices to init
+Message-ID: <20080720151339.6f4a83d8@infradead.org>
 In-Reply-To: <20080720151140.4aa7c682@infradead.org>
 References: <20080720151140.4aa7c682@infradead.org>
 Organization: Intel
@@ -33,69 +33,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sun, 20 Jul 2008 13:01:28 -0700
-Subject: [PATCH] fastboot: retry mounting the root fs if we can't find init
+Date: Sun, 20 Jul 2008 13:07:09 -0700
+Subject: [PATCH] fastboot: make the raid autodetect code wait for all devices to init
 
-currently we wait until all device init is done before trying to mount
-the root fs, and to consequently execute init.
+The raid autodetect code really needs to have all devices probed before
+it can detect raid arrays; not doing so would give rather messy situations
+where arrays would get detected as degraded while they shouldn't be etc.
 
-In preparation for relaxing the first delay, this patch adds a retry
-attempt in case /sbin/init is not found. Before retrying, the code
-will wait for all device init to complete.
-
-While this patch by itself doesn't gain boot time yet (it needs follow on
-patches), the alternative already is to panic()...
+This is in preparation of removing the "wait for everything to init"
+code that makes everyone pay, not just raid users.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- init/main.c |   19 +++++++++++++++++++
- 1 files changed, 19 insertions(+), 0 deletions(-)
+ init/do_mounts_md.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-diff --git a/init/main.c b/init/main.c
-index 3575b84..73785a4 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -853,6 +853,7 @@ static void run_init_process(char *init_filename)
-  */
- static int noinline init_post(void)
+diff --git a/init/do_mounts_md.c b/init/do_mounts_md.c
+index 693d246..c0412a9 100644
+--- a/init/do_mounts_md.c
++++ b/init/do_mounts_md.c
+@@ -267,9 +267,16 @@ __setup("md=", md_setup);
+ void __init md_run_setup(void)
  {
-+	int retry_count = 1;
- 	free_initmem();
- 	unlock_kernel();
- 	mark_rodata_ro();
-@@ -873,6 +874,7 @@ static int noinline init_post(void)
- 				ramdisk_execute_command);
- 	}
- 
-+retry:
- 	/*
- 	 * We try each of these until one succeeds.
- 	 *
-@@ -885,6 +887,23 @@ static int noinline init_post(void)
- 					"defaults...\n", execute_command);
- 	}
- 	run_init_process("/sbin/init");
+ 	create_dev("/dev/md0", MKDEV(MD_MAJOR, 0));
 +
-+	if (retry_count > 0) {
-+		retry_count--;
+ 	if (raid_noautodetect)
+ 		printk(KERN_INFO "md: Skipping autodetection of RAID arrays. (raid=noautodetect)\n");
+ 	else {
 +		/*
-+		 * We haven't found init yet... potentially because the device
-+		 * is still being probed. We need to
-+		 * - flush keventd and friends
-+		 * - wait for the known devices to complete their probing
-+		 * - try to mount the root fs again
++		 * Since we don't want to detect and use half a raid array, we
++		 * need to wait for the known devices to complete their probing
 +		 */
-+		flush_scheduled_work();
 +		while (driver_probe_done() != 0)
 +			msleep(100);
-+		prepare_namespace();
-+		goto retry;
-+	}
-+
- 	run_init_process("/etc/init");
- 	run_init_process("/bin/init");
- 	run_init_process("/bin/sh");
+ 		int fd = sys_open("/dev/md0", 0, 0);
+ 		if (fd >= 0) {
+ 			sys_ioctl(fd, RAID_AUTORUN, raid_autopart);
 -- 
 1.5.5.1
 
