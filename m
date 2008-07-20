@@ -1,74 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbYGTMf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757659AbYGTMhK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757409AbYGTMf4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 08:35:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756808AbYGTMfr
+	id S1757659AbYGTMhK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 08:37:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756840AbYGTMg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 08:35:47 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:65164 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756764AbYGTMfq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 08:35:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=gtklY6dEVQX6b7KNpNXF++VBBR7pfevdS3o8G7Sowj2dSht004MEsVKQY1rU4MmyJY
-         IPsBSTqRJk3rW13l2PsHNjN1csBJrvzTQFAymfY7aQJEi9HvCZM2xWwPpgQOG8zyXNzQ
-         Qel2JR2AHP2O+IaB02YfM2fJ85SkyebpiZV/w=
-Message-ID: <d1af83620807200535s6516e3b7wd16233391e5e8533@mail.gmail.com>
-Date: Sun, 20 Jul 2008 09:35:45 -0300
-From: "Kevin Winchester" <kjwinchester@gmail.com>
-To: "Christoph Hellwig" <hch@infradead.org>
-Subject: Re: Please add ZFS support (from GPL sources)
-Cc: "Jeff Garzik" <jeff@garzik.org>, "Fred ." <eldmannen@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <20080720105724.GA8921@infradead.org>
+	Sun, 20 Jul 2008 08:36:59 -0400
+Received: from fallback.mail.ru ([194.67.57.14]:24367 "EHLO mx4.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756808AbYGTMg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 08:36:58 -0400
+Date: Sun, 20 Jul 2008 11:37:35 +0400
+From: Evgeniy Dushistov <dushistov@mail.ru>
+To: Steven Whitehouse <swhiteho@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Alexander Viro <aviro@redhat.com>
+Subject: Re: [RFC] parser: add const to parser token table
+Message-ID: <20080720073735.GA12331@rain>
+Mail-Followup-To: Steven Whitehouse <swhiteho@redhat.com>,
+	linux-kernel@vger.kernel.org, Alexander Viro <aviro@redhat.com>
+References: <1216300972.4011.291.camel@quoit>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <f188924b0807171213q43f10b09j47b34674fc8aaa38@mail.gmail.com>
-	 <487FA143.9010109@garzik.org> <20080720105724.GA8921@infradead.org>
+In-Reply-To: <1216300972.4011.291.camel@quoit>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Spam: Not detected
+X-Mras: OK
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 20, 2008 at 7:57 AM, Christoph Hellwig <hch@infradead.org> wrote:
-> On Thu, Jul 17, 2008 at 03:45:07PM -0400, Jeff Garzik wrote:
->> Fred . wrote:
->>> Previously we have not been able to have ZFS support due to it being
->>> licensed under the CDDL and the kernel under the GPL.
->>>
->>> Sun have contributed ZFS support to GRUB under the GPL license. We
->>> could now use that code to implement support for ZFS in the Linux
->>> kernel.
->>>
->>> http://blogs.sun.com/darren/entry/zfs_under_gplv2_already_exists
->>
->> Linux needs btrfs upstream more than it needs ZFS...
->
-> Don't be so harsh.  Adding a read-only for the start zfs driver for
-> Linux would be useful for various purposes.  And adding read-only
-> filesystems to Linux is really easy.  So if Fred really cares about it
-> I'd be very happy to mentor him implementing it.  IT should be a very
-> good learning exercise for him.
+On Thu, Jul 17, 2008 at 02:22:52PM +0100, Steven Whitehouse wrote:
+> Hi,
+> 
+> Any objections to the following patch? If not I'll send it on to Linus.
+> 
+> This patch adds a "const" to the parser token table. I've done an
+> allmodconfig build to see if this produces any warnings/failures and the
+> patch includes a fix for the only warning that was produced.
+> 
+> Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+> Cc: Alexander Viro <aviro@redhat.com>
+> Cc: Evgeniy Dushistov <dushistov@mail.ru>
+> 
+> 
+> diff --git a/fs/ufs/super.c b/fs/ufs/super.c
+> index 85b22b5..506f724 100644
+> --- a/fs/ufs/super.c
+> +++ b/fs/ufs/super.c
+> @@ -1232,7 +1232,7 @@ static int ufs_show_options(struct seq_file *seq, struct vfsmount *vfs)
+>  {
+>  	struct ufs_sb_info *sbi = UFS_SB(vfs->mnt_sb);
+>  	unsigned mval = sbi->s_mount_opt & UFS_MOUNT_UFSTYPE;
+> -	struct match_token *tp = tokens;
+> +	const struct match_token *tp = tokens;
+>  
+>  	while (tp->token != Opt_onerror_panic && tp->token != mval)
+>  		++tp;
+> diff --git a/include/linux/parser.h b/include/linux/parser.h
+> index 7dcd050..cc554ca 100644
+> --- a/include/linux/parser.h
+> +++ b/include/linux/parser.h
+> @@ -14,7 +14,7 @@ struct match_token {
+>  	const char *pattern;
+>  };
+>  
+> -typedef struct match_token match_table_t[];
+> +typedef const struct match_token match_table_t[];
+>  
+>  /* Maximum number of arguments that match_token will find in a pattern */
+>  enum {MAX_OPT_ARGS = 3};
+> 
+Acked-by: Evgeniy Dushistov <dushistov@mail.ru>
 
-If Fred declines, is anyone free to take you up on the offer?  I have
-no filesystem experience and almost no experience with kernel code in
-general, so I would not be anyone's first choice for a task like this.
- However, since it mainly appears to be an integration exercise (using
-the code from GRUB and making it work in linux), it might well be
-doable for me.  As a bonus, being highly inexperienced, I have no
-expectations of doing anything correctly, and thus would not react
-badly to lots of criticism.
-
-So to summarize - if anyone else would like to undertake this work,
-they probably should.  But if no one has the time/will, then I would
-be happy to give it a try.
-
-Thanks,
 -- 
-Kevin Winchester
+/Evgeniy
+
