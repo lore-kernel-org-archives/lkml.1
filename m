@@ -1,95 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757555AbYGTLN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757466AbYGTLQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757555AbYGTLN1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 07:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756141AbYGTLNT
+	id S1757466AbYGTLQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 07:16:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754556AbYGTLQT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 07:13:19 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:36770 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755863AbYGTLNS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 07:13:18 -0400
-Date: Sun, 20 Jul 2008 13:13:10 +0200
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: ian <spyro@f2s.com>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Andrew Victor <linux@maxim.org.za>,
-       David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 1/3] at91_mci: Enable MMC_CAP_SDIO_IRQ only when it
- actually works
-Message-ID: <20080720131310.74d83d54@mjolnir.drzeus.cx>
-In-Reply-To: <1216547739.3200.5.camel@wirenth>
-References: <487F120F.2050305@atmel.com>
-	<20080717125544.36f41947@mjolnir.drzeus.cx>
-	<48809B00.1070405@atmel.com>
-	<20080719010143.142d59a0@mjolnir.drzeus.cx>
-	<1216547739.3200.5.camel@wirenth>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.4; i386-redhat-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
-X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-23563-1216552396-0001-2"
+	Sun, 20 Jul 2008 07:16:19 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:38115 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756141AbYGTLQS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 07:16:18 -0400
+Date: Sun, 20 Jul 2008 07:16:01 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Florian Weimer <fw@deneb.enyo.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Elias Oltmanns <eo@nebensachen.de>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Clark Williams <clark.williams@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jon Masters <jonathan@jonmasters.org>
+Subject: Re: [PATCH -v2] ftrace: Documentation
+Message-ID: <20080720111601.GA11143@infradead.org>
+References: <Pine.LNX.4.58.0807101242070.3740@gandalf.stny.rr.com> <87zlop7bp6.fsf@denkblock.local> <20080710132832.38cc5048.randy.dunlap@oracle.com> <Pine.LNX.4.58.0807101956120.7719@gandalf.stny.rr.com> <Pine.LNX.4.58.0807102035550.7719@gandalf.stny.rr.com> <871w1u5edg.fsf@mid.deneb.enyo.de> <Pine.LNX.4.58.0807160737250.31086@gandalf.stny.rr.com> <20080717141918.GA13741@infradead.org> <Pine.LNX.4.58.0807172244100.22792@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0807172244100.22792@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Thu, Jul 17, 2008 at 10:47:18PM -0400, Steven Rostedt wrote:
+> this work, as long as they give me credit (keep the copyright). I don't
+> remember exactly how the thread went, I first put the document under the
+> GPL, but I someone told me that isn't appropriate for documentation. So I
+> used this instead. I know the documentation and the code are distributed
+> together, but the "binary" of Linux does not contain the Documentation
+> directory as source, so I would think that the GPL is not quite
+> appropriate for the Documentation directory.
+> 
+> I'll need to ask a lawyer about this, but how about a "dual" license?
+> The GFDL and what ever you feel is appropriate?
 
---=_freyr.drzeus.cx-23563-1216552396-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
-
-On Sun, 20 Jul 2008 10:55:39 +0100
-ian <spyro@f2s.com> wrote:
-
-> On Sat, 2008-07-19 at 01:01 +0200, Pierre Ossman wrote:
-> > > In your opinion, a printed warning that says to be sure to use only=20
-> > > 4-bit mode SDIO cards on slot B... is not acceptable ?
-> >=20
-> > It's not really up to the user. The SDIO spec does not mandate 4-bit
-> > support, so some cards will not have it.
->=20
-> That seems overly rigid.
->=20
-> its not linux violating the spec, its the SDIO controller in this case.
->=20
-> I see no harm in supporting what the hardware is actually capable of.
->=20
-> It wouldnt be the first bit of broken hardware supported by linux.
->=20
-
-It does tend to make a mess of things when you start adding up all the
-gotchas of each and every broken controller out there (it seems like
-every controller decides to violate the spec in their own creative
-way).
-
-What about David's idea? Reconfiguring the PIN to be a GPIO pin with an
-interrupt shouldn't be that difficult?
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-23563-1216552396-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkiDHcoACgkQ7b8eESbyJLid7wCg+Ia9YZSshVm9vRWdfs6JFIeP
-CxgAoIxJ7BoFiutFWrn5Ahn9uJbtERgS
-=KNwY
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-23563-1216552396-0001-2--
+The GPL is what covers the whole kernel tree and thuis also te
+Documentation/ directory.  I don't think we've ever denied anyone to do
+any kind of dual licensing as as strange as it might be, so a GPLv2/GFDL
+dual license  sounds perfectly fine.
