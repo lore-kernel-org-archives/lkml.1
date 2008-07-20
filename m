@@ -1,84 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757673AbYGTOBK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757722AbYGTOSP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757673AbYGTOBK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 10:01:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757030AbYGTOA4
+	id S1757722AbYGTOSP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 10:18:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757097AbYGTOSA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 10:00:56 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:58959 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756923AbYGTOA4 (ORCPT
+	Sun, 20 Jul 2008 10:18:00 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:49045 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754464AbYGTOR7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 10:00:56 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <48834500.2050507@s5r6.in-berlin.de>
-Date: Sun, 20 Jul 2008 16:00:32 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.15) Gecko/20080719 SeaMonkey/1.1.10
+	Sun, 20 Jul 2008 10:17:59 -0400
+Message-ID: <48834996.9060804@keyaccess.nl>
+Date: Sun, 20 Jul 2008 16:20:06 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-To: JiSheng Zhang <jszhang3@mail.ustc.edu.cn>
-CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Mikael Pettersson <mikpe@it.uu.se>,
-       =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@bitplanet.net>
-Subject: Re: [PATCH] firewire:queue the right number of data
-References: <416453059.30160@ustc.edu.cn>
-In-Reply-To: <416453059.30160@ustc.edu.cn>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Arjan van de Ven <arjan@infradead.org>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu, Pavel Machek <pavel@ucw.cz>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Paul Diefenbaugh <paul.s.diefenbaugh@intel.com>,
+       Andy Grover <andrew.grover@intel.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [patch 1/3] fastboot: Create a "asynchronous" initlevel
+References: <20080718151524.5ef9e29b@infradead.org>	<20080718151608.46dc17c0@infradead.org>	<48819D92.8050904@keyaccess.nl>	<4881A161.7050902@keyaccess.nl>	<20080719084448.7859afd0@infradead.org>	<4882E7F3.8060605@keyaccess.nl> <20080720041039.275c57f9@infradead.org>
+In-Reply-To: <20080720041039.275c57f9@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-JiSheng Zhang wrote at LKML:
-> Hi,
+On 20-07-08 13:10, Arjan van de Ven wrote:
+
+> On Sun, 20 Jul 2008 09:23:31 +0200
+> Rene Herman <rene.herman@keyaccess.nl> wrote:
 > 
-> There will be 4 padding bytes in struct fw_cdev_event_response on some platforms
-> The member:__u32 data will point to these padding bytes. While queue the
-> response and data in complete_transaction in fw-cdev.c, it will queue like this:
-> |response(excluding padding bytes)|4 padding bytes|4 padding bytes|data. 
-> It queue 4 extra bytes. That is to say it use "&response + sizeof(response)"
-> while other place of kernel and userspace library use "&response + offsetof
-> (typeof(response), data)". So it will lost the last 4 bytes of data.This patch 
-> can fix it while not changing the struct definition.
+>> Yes, I see. Unfortunately, WITH your patches, driver_probe_done()
+>> would also no longer be safe when run from a late_initcall() it would
+>> appear.
 > 
-> Sorry for open a new ticket.
+> true for now (but see below)
 > 
-> Signed-off-by: JiSheng Zhang <jszhang3@mail.ustc.edu.cn>
+>> I have the sneaking suspicion that this is a bit of a fundamental
+>> issue. Turning some of the driver level (6) async basicaly removes
+>> the ordering between drivers and late_initcall (level 7).
 > 
-> --- old/drivers/firewire/fw-cdev.c
-> +++ new/drivers/firewire/fw-cdev.c
-> @@ -382,9 +382,9 @@
->  
->  	response->response.type   = FW_CDEV_EVENT_RESPONSE;
->  	response->response.rcode  = rcode;
-> -	queue_event(client, &response->event,
-> -		    &response->response, sizeof(response->response),
-> -		    response->response.data, response->response.length);
-> +	queue_event(client, &response->event, &response->response, 
-> +		    sizeof(response->response) + response->response.length,
-> +		    NULL, 0);
->  }
->  
->  static int ioctl_send_request(struct client *client, void *buffer)
+> I was hoping to not need this ordering. 
 
-I tested it now on i686, x86-64, and x86-64 with i686 userland, using 
-firecontrol and gscanbus.  As discussed, they got corrupted block read 
-responses on x86-64 and on x86-64 with i686 userland.  The patch fixes this.
+May have found an issue with 3/3 for this same reason. You make the ACPI 
+button driver async but acpi_wakeup_device_init() is a late_initcall and 
+comments that it interacts with the button driver.
 
-I committed it to linux1394-2.6.git#fixes and intend to send it upstream 
-at the end of the week or so.  Thanks for spotting this bug.
+The button driver could be a module so a complete reversal of ordering 
+between acpi_wakeup_device() and acpi_button_init() might in itself not 
+be a problem (undeterministic order even with the button driver builtin 
+might be undesireable I guess) but ...
 
-One point about which I am not sure about yet is what happens if there 
-are multiple events queued up before the client can read() them.  The 
-tests which I did so far involved only a single event queued and 
-dequeued at a time.
+Correct me if I'm wrong but I believe your patch implies that we could 
+be racing between acpi_wakeup_device() and acpi_button_init()? If yes, 
+do bad things happen when we race checking dev->wakeup.state.enabled?
+
+As far as I can see, the acpi_device_lock isn't serialising here so if 
+we have just done the acpi_enable_gpe() in acpi_button_add() but haven't 
+set the enabled flag yet we could do it again here it seems.
+
+The ACPI button driver doesn't appear to have a specific maintainer and 
+Len Brown was on vacation I believe but this would ideally like a 
+comment from that side...
+
+>> I trust it will completely and utterly destroy the point of this
+>> patch to flush level 6a before starting level 7?
+> 
+> Thankfully it doesn't destroy it, the reason for this is that level 6
+> itself tends to take long enough to get benefits. It's just that if we
+> can get both 6 and 7 it's nicer. But if we end up needing to sync, so
+> be it.
+
+I worry...
+
+> Note: syncing on a driver_probe_done() from level 7 is not going to be
+> pretty (think "multi-second extra boot time). 
+> Part of me wants to only sync level 6a from the first
+> driver_probe_done() so that only people who already pay these extra
+> seconds suffer this one as well ;-)
+
+Makes sense in this specific case. Generally, utility of late_initcall() 
+does seem to be impacted by this. Unless you can be sure that every 
+device you depend on is and always will be sync you might as well be 
+device_initcall() yourself after all.
+
+Yes, I did note the bit about the endpoint probing already being async 
+for example for USB but now you can't even be sure that it _started_ 
+meaning you also couldn't really devise some private synchronization 
+mechanism either.
+
+Rene.
 
 
-PS:
-I removed a rule from linux1394-devel's header filters which matched 
-your previous posts.  (Message has priority, but no X-Mailer/User-Agent)
--- 
-Stefan Richter
--=====-==--- -=== =-=--
-http://arcgraph.de/sr/
+
