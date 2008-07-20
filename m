@@ -1,54 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757466AbYGTLQ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757299AbYGTLgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757466AbYGTLQ0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 07:16:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754556AbYGTLQT
+	id S1757299AbYGTLgf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 07:36:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754556AbYGTLg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 07:16:19 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38115 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756141AbYGTLQS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 07:16:18 -0400
-Date: Sun, 20 Jul 2008 07:16:01 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Florian Weimer <fw@deneb.enyo.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Elias Oltmanns <eo@nebensachen.de>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Clark Williams <clark.williams@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jon Masters <jonathan@jonmasters.org>
-Subject: Re: [PATCH -v2] ftrace: Documentation
-Message-ID: <20080720111601.GA11143@infradead.org>
-References: <Pine.LNX.4.58.0807101242070.3740@gandalf.stny.rr.com> <87zlop7bp6.fsf@denkblock.local> <20080710132832.38cc5048.randy.dunlap@oracle.com> <Pine.LNX.4.58.0807101956120.7719@gandalf.stny.rr.com> <Pine.LNX.4.58.0807102035550.7719@gandalf.stny.rr.com> <871w1u5edg.fsf@mid.deneb.enyo.de> <Pine.LNX.4.58.0807160737250.31086@gandalf.stny.rr.com> <20080717141918.GA13741@infradead.org> <Pine.LNX.4.58.0807172244100.22792@gandalf.stny.rr.com>
+	Sun, 20 Jul 2008 07:36:27 -0400
+Received: from saeurebad.de ([85.214.36.134]:56757 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755863AbYGTLg1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 07:36:27 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] coredump: kill mm->core_done
+References: <20080715140715.GA25824@tv-sign.ru> <87d4l9jvru.fsf@saeurebad.de>
+	<20080720084758.GA143@tv-sign.ru>
+Date: Sun, 20 Jul 2008 13:35:57 +0200
+In-Reply-To: <20080720084758.GA143@tv-sign.ru> (Oleg Nesterov's message of
+	"Sun, 20 Jul 2008 12:47:58 +0400")
+Message-ID: <87tzekrdnm.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0807172244100.22792@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 10:47:18PM -0400, Steven Rostedt wrote:
-> this work, as long as they give me credit (keep the copyright). I don't
-> remember exactly how the thread went, I first put the document under the
-> GPL, but I someone told me that isn't appropriate for documentation. So I
-> used this instead. I know the documentation and the code are distributed
-> together, but the "binary" of Linux does not contain the Documentation
-> directory as source, so I would think that the GPL is not quite
-> appropriate for the Documentation directory.
-> 
-> I'll need to ask a lawyer about this, but how about a "dual" license?
-> The GFDL and what ever you feel is appropriate?
+Hi,
 
-The GPL is what covers the whole kernel tree and thuis also te
-Documentation/ directory.  I don't think we've ever denied anyone to do
-any kind of dual licensing as as strange as it might be, so a GPLv2/GFDL
-dual license  sounds perfectly fine.
+Oleg Nesterov <oleg@tv-sign.ru> writes:
+
+> On 07/20, Johannes Weiner wrote:
+>> 
+>> Oleg Nesterov <oleg@tv-sign.ru> writes:
+>> 
+>> > --- 26-rc2/kernel/exit.c~5_KILL_CORE_DONE	2008-07-13 19:58:19.000000000 +0400
+>> > +++ 26-rc2/kernel/exit.c	2008-07-15 17:06:58.000000000 +0400
+>> > @@ -680,7 +680,13 @@ static void exit_mm(struct task_struct *
+>> >  		if (atomic_dec_and_test(&core_state->nr_threads))
+>> >  			complete(&core_state->startup);
+>> >  
+>> > -		wait_for_completion(&mm->core_done);
+>> > +		for (;;) {
+>> > +			set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+>> > +			if (!self.task) /* see coredump_finish() */
+>> 
+>> kernel/exit.c: In function `exit_mm':
+>> kernel/exit.c:686: error: `self' undeclared (first use in this function)
+>> kernel/exit.c:686: error: (Each undeclared identifier is reported only once
+>> kernel/exit.c:686: error: for each function it appears in.)
+>> make[1]: *** [kernel/exit.o] Error 1
+>
+> This is on top of other patches in -mm tree,
+>
+>          coredump-zap_threads-comments-use-while_each_thread.patch
+>          introduce-pf_kthread-flag.patch
+>          kill-pf_borrowed_mm-in-favour-of-pf_kthread.patch
+>          coredump-zap_threads-must-skip-kernel-threads.patch
+>          coredump-elf_core_dump-skip-kernel-threads.patch
+>          coredump-turn-mm-core_startup_done-into-the-pointer-to-struct-core_state.patch
+>          coredump-move-mm-core_waiters-into-struct-core_state.patch
+>          coredump-simplify-core_state-nr_threads-calculation.patch
+>          coredump-turn-core_state-nr_threads-into-atomic_t.patch
+>          coredump-make-mm-core_state-visible-to-core_dump.patch
+>          coredump-construct-the-list-of-coredumping-threads-at-startup-time.patch
+>          coredump-elf_core_dump-use-core_state-dumper-list.patch
+>          coredump-elf_fdpic_core_dump-use-core_state-dumper-list.patch
+>          coredump-kill-mm-core_done.patch
+
+Sorry, I should have given more information.
+
+I was building -mm directly with all these patches applied.  I did not
+cherry-pick this exact patch into some other tree.
+
+But I still can not find anything defining `self' in these patches:
+
+$ grep self coredump-*.patch \
+	introduce-pf_kthread-flag.patch \
+	kill-pf_borrowed_mm-in-favour-of-pf_kthread.patch
+coredump-kill-mm-core_done.patch:+                      if (!self.task) /* see coredump_finish() */
+
+cscope finds some other definitions of self in the tree, but nothing
+relevant.
+
+	Hannes
