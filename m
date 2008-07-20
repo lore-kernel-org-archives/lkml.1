@@ -1,118 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757820AbYGTOzQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757755AbYGTPFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757820AbYGTOzQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 10:55:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754749AbYGTOzA
+	id S1757755AbYGTPFZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 11:05:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754464AbYGTPFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 10:55:00 -0400
-Received: from ik-out-1112.google.com ([66.249.90.181]:27954 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754536AbYGTOy7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 10:54:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=U3XGtI4NFlgeikzFxqWt+hXg+yLKOTJIafvgV2ffPUsdlBSc51nWeCWYgcE7VzoSdX
-         AD/8u48lbb4h8REa0A3G8B6J8e7r3gTEsSMGtt7jqgGEjFrrIO3Dor+Mrp08MQDCupio
-         +AVR15dwi9XaXo0lxRrgjJ7TkxZwXZFEAmK0U=
-Message-ID: <488351D6.9020602@tuffmail.co.uk>
-Date: Sun, 20 Jul 2008 15:55:18 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Sun, 20 Jul 2008 11:05:14 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35132 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753553AbYGTPFM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 11:05:12 -0400
+Date: Sun, 20 Jul 2008 17:04:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Zachary Amsden <zach@vmware.com>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH] x86: APIC: Remove apic_write_around(); use alternatives
+Message-ID: <20080720150444.GA4225@elte.hu>
+References: <Pine.LNX.4.55.0807182254270.12125@cliff.in.clinika.pl> <1216420937.30348.30.camel@bodhitayantram.eng.vmware.com> <20080718224922.GB4507@linux-os.sc.intel.com> <86802c440807181551l7e6e143dy7cea8ab59f1830ed@mail.gmail.com> <20080718230012.GD4507@linux-os.sc.intel.com> <86802c440807181604y502e7deal98abfeb1ceee769d@mail.gmail.com> <20080718231828.GE4507@linux-os.sc.intel.com> <20080719214944.GC836@elte.hu> <20080719215325.GA12737@elte.hu> <20080720120811.GA16138@elte.hu>
 MIME-Version: 1.0
-To: Alexey Starikovskiy <astarikovskiy@suse.de>
-CC: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] acpi: Rip out EC_FLAGS_QUERY_PENDING (prevent race
- condition)
-References: <487D23C3.5070301@student.cs.york.ac.uk> <487F31D7.30803@suse.de> <20080717121309.GF31732@khazad-dum.debian.net> <487F3B6D.3090507@suse.de> <20080717162628.GB18457@khazad-dum.debian.net> <487F7724.5080905@tuffmail.co.uk> <20080717185032.GD18457@khazad-dum.debian.net> <487F986A.3070504@tuffmail.co.uk> <4881CE72.1090401@tuffmail.co.uk> <4881D239.4010402@tuffmail.co.uk> <48821D7B.1080209@suse.de> <4882517F.6080407@tuffmail.co.uk> <488258D1.4030506@suse.de>
-In-Reply-To: <488258D1.4030506@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080720120811.GA16138@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Starikovskiy wrote:
-> Alan Jenkins wrote:
->>     /* moved here from acpi_ec_transaction_unlocked() */
->>     clear_bit(EC_FLAGS_QUERY_PENDING, &ec->flags);
->>
->>     while (acpi_ec_query(ec, &value) == 0)
->>         acpi_ec_gpe_run_handler(ec, value);
->> }
->>
->> The PENDING flag then reflects whether or not there's an item on the
->> workqueue.  Does that make sense?
-> Yes, this is what the flag was made for -- to guard workqueue from
-> being filled up.
->>
->>> Your second patch is redundant if you add queue entry for each
->>> interrupt, and as it does not
->>> require any investments into memory, I like it more.
->>>
->> It's not quite redundant with the first patch.  We still have GPE
->> polling mode - patch #1 doesn't affect that.  In polling mode, it's
->> essential to query all the pending events - otherwise, if they arrive
->> more frequently than the polling interval then you will inevitably drop
->> events.
-> I meant that if we have patch #3, which drops poll mode, we only need
-> one of the first two, not both. And in this case I like #2 more than #1.
->>
->> Patch #2 is also required to fix my buggy hardware.  My laptop's EC
->> buffers multiple events, but clears SCI_EVT after every query.  This
->> caused problems in polling mode; with multiple events between polling
->> intervals only one gets queried - and after a while the buffer overflows
->> and it breaks completely.
-> I fully agree here, it would be great to make sure that EC buffers are
-> empty.
->>> Also, it is very cool to rip of things you don't care for, but that
->>> essentially reverts a fix done for 9998,
->>> so at least, you should ask these people if you broke their setups.
->>>
->> I assume you're referring to the "would benefit from wider testing"
->> patch #3. Thanks for identifying the bugzilla entry - I had difficulty
->> separating the different entries on GPEs.  I'm optimistic that we can
->> fix all these crazy buffering EC's without having to disable GPE
->> interrupts.
-> I would say, we should test pair of #2 and #3, or your original patch
-> + my patch.
-> I still like the option to not have any new interrupts until I'm done
-> with current one --
-> much like the PENDING bit.
->>
->> The reason I like my proposed fix is that it makes the code simple
->> enough that I can understand it, without making any assumptions about
->> how many interrupts arrive per GPE.  The EC can be broken in lots of
->> ways, so long as:
->>
->> 1. We receive interrupts when one or more GPE's are pending.
->> 2. We don't get a constant interrupt storm.
->>
->> I don't think I missed anything.  Is there anything else I should check
->> before I try to get testing?
-> Well, there is Keith Packard with concern that either high number of
-> interrupts or long
-> spins on polling status register could push battery life down the
-> drain...
-> One more argument to disable GPE until we service previous.
-> Regards,
-> Alex.
 
-Ah, the powertop argument.  Disabling interrupts is a nice safety
-blanket, but it means you end up polling the status register during
-queries.  I think the interrupts are better for battery life.  The
-excess interrupts happen all at once, so they don't wake the CPU up more
-frequently, they just keep it awake slightly longer.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-I'm convinced that emptying the EC buffer will reduce the number of
-interrupts, even for the reporter of #9998.  I'll ask them to test this
-patchset, then respin it to fix the mess I made of
-EC_FLAGS_QUERY_PENDING.  As I mentioned earlier I've worked out how to
-avoid my theoretical race without causing increased memory usage.
+> i've merged tip/x86/x2apic into tip/master, and it seems to be working 
+> fine. One UP build fix was needed for Xen, see below.
 
-Thanks
-Alan
+and a similar one for UP lguest.
+
+	Ingo
+
+---------------->
+commit 7be42004065ce4df193aeef5befd26805267d0d9
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Sun Jul 20 17:04:57 2008 +0200
+
+    x86, lguest: fix apic_ops build on UP
+    
+    fix:
+    
+      arch/x86/lguest/boot.c:816: error: variable ‘lguest_basic_apic_ops’ has initializer but incomplete type
+      arch/x86/lguest/boot.c:817: error: unknown field ‘read’ specified in initializer
+     [...]
+    
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/lguest/boot.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/lguest/boot.c b/arch/x86/lguest/boot.c
+index 35c4349..756fc48 100644
+--- a/arch/x86/lguest/boot.c
++++ b/arch/x86/lguest/boot.c
+@@ -55,6 +55,7 @@
+ #include <linux/lguest_launcher.h>
+ #include <linux/virtio_console.h>
+ #include <linux/pm.h>
++#include <asm/apic.h>
+ #include <asm/lguest.h>
+ #include <asm/paravirt.h>
+ #include <asm/param.h>
