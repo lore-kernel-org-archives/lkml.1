@@ -1,88 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757299AbYGTLgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757372AbYGTLoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757299AbYGTLgf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 07:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754556AbYGTLg1
+	id S1757372AbYGTLoU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 07:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754858AbYGTLoG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 07:36:27 -0400
-Received: from saeurebad.de ([85.214.36.134]:56757 "EHLO saeurebad.de"
+	Sun, 20 Jul 2008 07:44:06 -0400
+Received: from il.qumranet.com ([212.179.150.194]:16948 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755863AbYGTLg1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 07:36:27 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] coredump: kill mm->core_done
-References: <20080715140715.GA25824@tv-sign.ru> <87d4l9jvru.fsf@saeurebad.de>
-	<20080720084758.GA143@tv-sign.ru>
-Date: Sun, 20 Jul 2008 13:35:57 +0200
-In-Reply-To: <20080720084758.GA143@tv-sign.ru> (Oleg Nesterov's message of
-	"Sun, 20 Jul 2008 12:47:58 +0400")
-Message-ID: <87tzekrdnm.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	id S1754305AbYGTLoE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 07:44:04 -0400
+From: Avi Kivity <avi@qumranet.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] KVM Updates for the 2.6.27 merge window
+Date: Sun, 20 Jul 2008 14:44:01 +0300
+Message-Id: <1216554241-9966-1-git-send-email-avi@qumranet.com>
+X-Mailer: git-send-email 1.5.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Linus, please pull from the repo and branch:
 
-Oleg Nesterov <oleg@tv-sign.ru> writes:
+  git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git kvm-updates-2.6.27
 
-> On 07/20, Johannes Weiner wrote:
->> 
->> Oleg Nesterov <oleg@tv-sign.ru> writes:
->> 
->> > --- 26-rc2/kernel/exit.c~5_KILL_CORE_DONE	2008-07-13 19:58:19.000000000 +0400
->> > +++ 26-rc2/kernel/exit.c	2008-07-15 17:06:58.000000000 +0400
->> > @@ -680,7 +680,13 @@ static void exit_mm(struct task_struct *
->> >  		if (atomic_dec_and_test(&core_state->nr_threads))
->> >  			complete(&core_state->startup);
->> >  
->> > -		wait_for_completion(&mm->core_done);
->> > +		for (;;) {
->> > +			set_task_state(tsk, TASK_UNINTERRUPTIBLE);
->> > +			if (!self.task) /* see coredump_finish() */
->> 
->> kernel/exit.c: In function `exit_mm':
->> kernel/exit.c:686: error: `self' undeclared (first use in this function)
->> kernel/exit.c:686: error: (Each undeclared identifier is reported only once
->> kernel/exit.c:686: error: for each function it appears in.)
->> make[1]: *** [kernel/exit.o] Error 1
->
-> This is on top of other patches in -mm tree,
->
->          coredump-zap_threads-comments-use-while_each_thread.patch
->          introduce-pf_kthread-flag.patch
->          kill-pf_borrowed_mm-in-favour-of-pf_kthread.patch
->          coredump-zap_threads-must-skip-kernel-threads.patch
->          coredump-elf_core_dump-skip-kernel-threads.patch
->          coredump-turn-mm-core_startup_done-into-the-pointer-to-struct-core_state.patch
->          coredump-move-mm-core_waiters-into-struct-core_state.patch
->          coredump-simplify-core_state-nr_threads-calculation.patch
->          coredump-turn-core_state-nr_threads-into-atomic_t.patch
->          coredump-make-mm-core_state-visible-to-core_dump.patch
->          coredump-construct-the-list-of-coredumping-threads-at-startup-time.patch
->          coredump-elf_core_dump-use-core_state-dumper-list.patch
->          coredump-elf_fdpic_core_dump-use-core_state-dumper-list.patch
->          coredump-kill-mm-core_done.patch
+to receive the 2.6.27 merge window kvm updates.  Changes include mmio
+coalescing, x86 emulator updates, nmi support, mtrr emualtion, and
+some kvmtrace work.
 
-Sorry, I should have given more information.
+Shortlog, diffstat:
 
-I was building -mm directly with all these patches applied.  I did not
-cherry-pick this exact patch into some other tree.
+Adrian Bunk (1):
+      x86: KVM guest: make kvm_smp_prepare_boot_cpu() static
 
-But I still can not find anything defining `self' in these patches:
+Anthony Liguori (1):
+      KVM: Handle vma regions with no backing page
 
-$ grep self coredump-*.patch \
-	introduce-pf_kthread-flag.patch \
-	kill-pf_borrowed_mm-in-favour-of-pf_kthread.patch
-coredump-kill-mm-core_done.patch:+                      if (!self.task) /* see coredump_finish() */
+Aurelien Jarno (1):
+      KVM: PIT: support mode 3
 
-cscope finds some other definitions of self in the tree, but nothing
-relevant.
+Avi Kivity (26):
+      KVM: VMX: Trivial vmcs_write64() code simplification
+      KVM: MMU: Fix false flooding when a pte points to page table
+      KVM: Handle virtualization instruction #UD faults during reboot
+      KVM: VMX: Add list of potentially locally cached vcpus
+      KVM: Remove decache_vcpus_on_cpu() and related callbacks
+      KVM: Remove unnecessary ->decache_regs() call
+      KVM: Order segment register constants in the same way as cpu operand encoding
+      KVM: MTRR support
+      KVM: MMU: Optimize prefetch_page()
+      KVM: x86 emulator: simplify push imm8 emulation
+      KVM: x86 emulator: implement 'push imm' (opcode 0x68)
+      KVM: MMU: Move nonpaging_prefetch_page()
+      KVM: MMU: Avoid page prefetch on SVM
+      KVM: Use printk_rlimit() instead of reporting emulation failures just once
+      KVM: x86 emulator: handle undecoded rex.b with r/m = 5 in certain cases
+      KVM: x86 emulator: simplify sib decoding
+      KVM: x86 emulator: simplify r/m decoding
+      KVM: x86 emulator: simplify rip relative decoding
+      KVM: x86 emulator: avoid segment base adjust for lea
+      KVM: x86 emulator: lazily evaluate segment registers
+      KVM: MMU: When debug is enabled, make it a run-time parameter
+      KVM: MMU: Fix printk format
+      KVM: Apply the kernel sigmask to vcpus blocked due to being uninitialized
+      KVM: Prefix some x86 low level function with kvm_, to avoid namespace issues
+      KVM: MMU: Fix potential race setting upper shadow ptes on nonpae hosts
+      KVM: Adjust smp_call_function_mask() callers to new requirements
 
-	Hannes
+Ben-Ami Yassour (1):
+      KVM: check injected pic irq within valid pic irqs
+
+Carsten Otte (2):
+      KVM: s390: dont allocate dirty bitmap
+      KVM: Fix memory leak on guest exit
+
+Chris Lalancette (2):
+      KVM: SVM: Fake MSR_K7 performance counters
+      KVM: VMX: Fake emulate Intel perfctr MSRs
+
+Christian Borntraeger (3):
+      KVM: remove long -> void *user -> long cast
+      KVM: s390: Set guest storage limit and offset to sane values
+      KVM: s390: rename private structures
+
+Glauber Costa (2):
+      KVM: Do not calculate linear rip in emulation failure report
+      KVM: x86 emulator: emulate clflush
+
+Guillaume Thouvenin (6):
+      KVM: Prefixes segment functions that will be exported with "kvm_"
+      KVM: x86 emulator: Update c->dst.bytes in decode instruction
+      KVM: x86 emulator: add support for jmp far 0xea
+      KVM: x86 emulator: adds support to mov r,imm (opcode 0xb8) instruction
+      KVM: x86 emulator: Add support for mov seg, r (0x8e) instruction
+      KVM: x86 emulator: Add support for mov r, sreg (0x8c) instruction
+
+Harvey Harrison (1):
+      KVM: add statics were possible, function definition in lapic.h
+
+Joerg Roedel (7):
+      KVM: VMX: move APIC_ACCESS trace entry to generic code
+      KVM: SVM: implement dedicated NMI exit handler
+      KVM: SVM: implement dedicated INTR exit handler
+      KVM: add missing kvmtrace bits
+      KVM: SVM: add missing kvmtrace markers
+      KVM: SVM: add tracing support for TDP page faults
+      KVM: SVM: fix suspend/resume support
+
+Laurent Vivier (5):
+      KVM: kvm_io_device: extend in_range() to manage len and write attribute
+      KVM: Add coalesced MMIO support (common part)
+      KVM: Add coalesced MMIO support (x86 part)
+      KVM: Add coalesced MMIO support (powerpc part)
+      KVM: Add coalesced MMIO support (ia64 part)
+
+Marcelo Tosatti (5):
+      KVM: only abort guest entry if timer count goes from 0->1
+      KVM: move slots_lock acquision down to vapic_exit
+      KVM: mmu_shrink: kvm_mmu_zap_page requires slots_lock to be held
+      KVM: MMU: nuke shadowed pgtable pages and ptes on memslot destruction
+      KVM: MMU: improve invalid shadow root page handling
+
+Mohammed Gamal (2):
+      KVM: x86 emulator: emulate nop and xchg reg, acc (opcodes 0x90 - 0x97)
+      KVM: x86 emulator: Fix HLT instruction
+
+Sheng Yang (4):
+      KVM: IOAPIC/LAPIC: Enable NMI support
+      KVM: VMX: Enable NMI with in-kernel irqchip
+      KVM: VMX: Fix a wrong usage of vmcs_config
+      KVM: VMX: Add ept_sync_context in flush_tlb
+
+Tan, Li (1):
+      KVM: Support mixed endian machines
+
+ arch/ia64/kvm/Makefile            |    3 +-
+ arch/ia64/kvm/kvm-ia64.c          |   20 +--
+ arch/powerpc/kvm/Makefile         |    2 +-
+ arch/powerpc/kvm/powerpc.c        |   11 +-
+ arch/s390/kvm/interrupt.c         |   32 ++--
+ arch/s390/kvm/kvm-s390.c          |   21 ++-
+ arch/s390/kvm/priv.c              |    2 +-
+ arch/s390/kvm/sigp.c              |   20 ++--
+ arch/x86/kernel/kvmclock.c        |    2 +-
+ arch/x86/kvm/Makefile             |    3 +-
+ arch/x86/kvm/i8254.c              |   24 ++--
+ arch/x86/kvm/i8259.c              |    9 +-
+ arch/x86/kvm/irq.h                |    2 +
+ arch/x86/kvm/lapic.c              |   14 ++-
+ arch/x86/kvm/lapic.h              |    1 +
+ arch/x86/kvm/mmu.c                |   62 ++++++---
+ arch/x86/kvm/mmu.h                |    3 +-
+ arch/x86/kvm/paging_tmpl.h        |   28 ++--
+ arch/x86/kvm/svm.c                |  131 +++++++++++-----
+ arch/x86/kvm/vmx.c                |  230 +++++++++++++++++++++-------
+ arch/x86/kvm/vmx.h                |   12 ++-
+ arch/x86/kvm/x86.c                |  299 ++++++++++++++++++++-----------------
+ arch/x86/kvm/x86_emulate.c        |  257 ++++++++++++++++++++------------
+ include/asm-ia64/kvm_host.h       |    3 +
+ include/asm-powerpc/kvm_host.h    |    2 +
+ include/asm-s390/kvm_host.h       |   36 +++---
+ include/asm-x86/kvm.h             |    1 +
+ include/asm-x86/kvm_host.h        |   69 +++++++--
+ include/asm-x86/kvm_x86_emulate.h |   11 +-
+ include/linux/kvm.h               |   33 ++++-
+ include/linux/kvm_host.h          |   11 +-
+ virt/kvm/coalesced_mmio.c         |  156 +++++++++++++++++++
+ virt/kvm/coalesced_mmio.h         |   23 +++
+ virt/kvm/ioapic.c                 |   23 +++-
+ virt/kvm/iodev.h                  |    8 +-
+ virt/kvm/kvm_main.c               |  153 ++++++++++++++++---
+ virt/kvm/kvm_trace.c              |   18 ++-
+ 37 files changed, 1215 insertions(+), 520 deletions(-)
+ create mode 100644 virt/kvm/coalesced_mmio.c
+ create mode 100644 virt/kvm/coalesced_mmio.h
