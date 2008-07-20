@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757700AbYGTN0B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757536AbYGTNwz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757700AbYGTN0B (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 09:26:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754250AbYGTNZx
+	id S1757536AbYGTNwz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 09:52:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208AbYGTNwr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 09:25:53 -0400
-Received: from casper.infradead.org ([85.118.1.10]:59133 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754166AbYGTNZw (ORCPT
+	Sun, 20 Jul 2008 09:52:47 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:47663 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752259AbYGTNwq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 09:25:52 -0400
-Subject: Re: [PATCH] Introducing asm/syscalls.h
-From: Jaswinder Singh <jaswinder@infradead.org>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       David Woodhouse <dwmw2@infradead.org>, rth@twiddle.net,
-       rmk@arm.linux.org.uk, hskinnemoen@atmel.com, cooloney@kernel.org,
-       starvik@axis.com, dhowells@redhat.com, ysato@users.sourceforge.jp,
-       tony.luck@intel.com, takata@linux-m32r.org, geert@linux-m68k.org,
-       matthew@wil.cx, schwidefsky@de.ibm.com, lethal@linux-sh.org,
-       chris@zankel.net
-In-Reply-To: <20080720131727.GA22822@linux-mips.org>
-References: <1216544940.12650.13.camel@jaswinder.satnam>
-	 <20080720100039.GA12514@linux-mips.org>
-	 <1216556263.2707.2.camel@jaswinder.satnam>
-	 <20080720131727.GA22822@linux-mips.org>
-Content-Type: text/plain
-Date: Sun, 20 Jul 2008 18:54:45 +0530
-Message-Id: <1216560285.2707.12.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Sun, 20 Jul 2008 09:52:46 -0400
+X-Sasl-enc: 4XEGvTNIFoElEpnw1ObHDwAXY4ybjlAFgkGr2iq1S9ap 1216561964
+Date: Sun, 20 Jul 2008 10:52:39 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Philip Langdale <philipl@overt.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       toshiba_acpi@memebeam.org, randy.dunlap@oracle.com
+Subject: Re: [PATCH] toshiba_acpi: Add support for bluetooth toggling
+	through rfkill
+Message-ID: <20080720135239.GA14801@khazad-dum.debian.net>
+References: <488256C1.6040802@overt.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <488256C1.6040802@overt.org>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Ralf,
+On Sat, 19 Jul 2008, Philip Langdale wrote:
+> sets up an rfkill device and a polled input device to track the state of the
+> hardware kill-switch. One entertaining fact about these Toshibas is that the
+[...]
 
-On Sun, 2008-07-20 at 14:17 +0100, Ralf Baechle wrote:
-> On Sun, Jul 20, 2008 at 05:47:43PM +0530, Jaswinder Singh wrote:
-> 
-> > index 7cd25b8..af24926 100644
-> > --- a/include/asm-generic/Kbuild.asm
-> > +++ b/include/asm-generic/Kbuild.asm
-> > @@ -27,6 +27,7 @@ unifdef-y += socket.h
-> >  unifdef-y += sockios.h
-> >  unifdef-y += stat.h
-> >  unifdef-y += statfs.h
-> > +unifdef-y += syscalls.h
-> >  unifdef-y += termbits.h
-> >  unifdef-y += termios.h
-> >  unifdef-y += types.h
-> > 
-> > Thank you,
-> 
-> No.  Why would userspace want to know about these entry points?
-> 
+Soft NAK.
 
-Yes, I am totally agree with you, I also point this in my previous email.
+Please have a look at rfkill in wireless-testing (it is going in with the
+merge of the net tree, so it will be in mainline really soon).  rfkill has
+seen some changes, and no little ammount of that work was to make platform
+drivers like thinkpad-acpi and toshiba-acpi work better with rfkill.  The
+documentation in Documentation/rfkill.txt was expanded and improved as well,
+and will help you get a better picture of how it should work.  The rfkill
+changes should also be available in wireless-compat, and they are
+backport-friendly.
 
-Thank you,
+Please consider updating your patch to the new style rfkill class.  A quick
+look at your patch shows that it would benefit from the new
+RFKILL_STATE_HARD_BLOCKED, and maybe to some rework to separate the
+bluetooth rfkill controller and the input device switch better.  Depending
+on the existence of ACPI GPE events when the switch changes state on
+Toshibas, you may even be able to get rid of some of the polling...
 
-Jaswinder Singh.
+If you rework/repost your patch, please CC Ivo (the rfkill maintainer) and
+the linux-wireless mailing list.  If you want me to try to help review the
+patch as well, please also add me to the CC.
 
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
