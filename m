@@ -1,99 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757476AbYGTK5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757330AbYGTLAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757476AbYGTK5w (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 06:57:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757259AbYGTK5k
+	id S1757330AbYGTLAr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 07:00:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754942AbYGTLAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 06:57:40 -0400
-Received: from orion.ambsoft.pl ([212.109.144.130]:36285 "EHLO
-	orion.ambsoft.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757015AbYGTK5h (ORCPT
+	Sun, 20 Jul 2008 07:00:39 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:14489 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754556AbYGTLAi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 06:57:37 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: LKML <linux-kernel@vger.kernel.org>, davem@davemloft.net
-Subject: [bug] sparc64: kmalloc-64 padding and redzone overwritten
-Date: Sun, 20 Jul 2008 12:57:30 +0200
-User-Agent: KMail/1.9.9
-Cc: kernel-testers@vger.kernel.org, sparclinux@vger.kernel.org
+	Sun, 20 Jul 2008 07:00:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:references:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent:message-id;
+        b=gqEMTlFprc2ot4aFOvKEVAQYAWvpCWhIwyhOWC5YbHIirwGQ3T/IKGEzJNZ/3OXQVn
+         KdLuXosTf3MSOIaVrdhYMOuZeoQvMUQQZ8BPLjgebxI5HN9VGEQAYBfSxD6Nr4iIvHMX
+         Z+4IaAuWIe7JdvQ4b6Rdz0wm2TUaI6kBLiZhQ=
+Date: Sun, 20 Jul 2008 15:00:32 +0400
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@redhat.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jesper Nilsson <jesper.nilsson@axis.com>
+Subject: [PATCH 1/2] Cris: convert to using generic dma-coherent mem
+	allocator
+References: <20080720105822.GA4075@doriath.ww600.siemens.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807201257.30954.m.kozlowski@tuxland.pl>
+In-Reply-To: <20080720105822.GA4075@doriath.ww600.siemens.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-ID: <48831ad3.1e35440a.3d9f.ffffbd98@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-	I'm getting these on sparc64 while running LTP on latest
-Linus 2.6.26-03465-g5b664cb-dirty. It's dirty because of one-line pagemap
-fix but that should't matter. The box is ultra 60 (sparc64).
+Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Cc: Jesper Nilsson <jesper.nilsson@axis.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+---
+ arch/cris/arch-v32/drivers/Kconfig   |    1 +
+ arch/cris/arch-v32/drivers/pci/dma.c |  106 +---------------------------------
+ include/asm-cris/dma-mapping.h       |    2 +
+ 3 files changed, 6 insertions(+), 103 deletions(-)
 
-=============================================================================
-BUG kmalloc-64: Padding overwritten. 0xfffff800b601dfe0-0xfffff800b601dfff
------------------------------------------------------------------------------
+diff --git a/arch/cris/arch-v32/drivers/Kconfig b/arch/cris/arch-v32/drivers/Kconfig
+index 2a92cb1..7a64fce 100644
+--- a/arch/cris/arch-v32/drivers/Kconfig
++++ b/arch/cris/arch-v32/drivers/Kconfig
+@@ -641,6 +641,7 @@ config PCI
+        bool
+        depends on ETRAX_CARDBUS
+        default y
++       select HAVE_GENERIC_DMA_COHERENT
+ 
+ config ETRAX_IOP_FW_LOAD
+ 	tristate "IO-processor hotplug firmware loading support"
+diff --git a/arch/cris/arch-v32/drivers/pci/dma.c b/arch/cris/arch-v32/drivers/pci/dma.c
+index e036465..fbe6595 100644
+--- a/arch/cris/arch-v32/drivers/pci/dma.c
++++ b/arch/cris/arch-v32/drivers/pci/dma.c
+@@ -15,35 +15,16 @@
+ #include <linux/pci.h>
+ #include <asm/io.h>
+ 
+-struct dma_coherent_mem {
+-	void		*virt_base;
+-	u32		device_base;
+-	int		size;
+-	int		flags;
+-	unsigned long	*bitmap;
+-};
+-
+ void *dma_alloc_coherent(struct device *dev, size_t size,
+ 			   dma_addr_t *dma_handle, gfp_t gfp)
+ {
+ 	void *ret;
+-	struct dma_coherent_mem *mem = dev ? dev->dma_mem : NULL;
+ 	int order = get_order(size);
+ 	/* ignore region specifiers */
+ 	gfp &= ~(__GFP_DMA | __GFP_HIGHMEM);
+ 
+-	if (mem) {
+-		int page = bitmap_find_free_region(mem->bitmap, mem->size,
+-						     order);
+-		if (page >= 0) {
+-			*dma_handle = mem->device_base + (page << PAGE_SHIFT);
+-			ret = mem->virt_base + (page << PAGE_SHIFT);
+-			memset(ret, 0, size);
+-			return ret;
+-		}
+-		if (mem->flags & DMA_MEMORY_EXCLUSIVE)
+-			return NULL;
+-	}
++	if (dma_alloc_from_coherent(dev, size, dma_handle, &ret))
++		return ret;
+ 
+ 	if (dev == NULL || (dev->coherent_dma_mask < 0xffffffff))
+ 		gfp |= GFP_DMA;
+@@ -60,90 +41,9 @@ void *dma_alloc_coherent(struct device *dev, size_t size,
+ void dma_free_coherent(struct device *dev, size_t size,
+ 			 void *vaddr, dma_addr_t dma_handle)
+ {
+-	struct dma_coherent_mem *mem = dev ? dev->dma_mem : NULL;
+ 	int order = get_order(size);
+ 
+-	if (mem && vaddr >= mem->virt_base && vaddr < (mem->virt_base + (mem->size << PAGE_SHIFT))) {
+-		int page = (vaddr - mem->virt_base) >> PAGE_SHIFT;
+-
+-		bitmap_release_region(mem->bitmap, page, order);
+-	} else
++	if (!dma_release_from_coherent(dev, order, vaddr))
+ 		free_pages((unsigned long)vaddr, order);
+ }
+ 
+-int dma_declare_coherent_memory(struct device *dev, dma_addr_t bus_addr,
+-				dma_addr_t device_addr, size_t size, int flags)
+-{
+-	void __iomem *mem_base;
+-	int pages = size >> PAGE_SHIFT;
+-	int bitmap_size = BITS_TO_LONGS(pages) * sizeof(long);
+-
+-	if ((flags & (DMA_MEMORY_MAP | DMA_MEMORY_IO)) == 0)
+-		goto out;
+-	if (!size)
+-		goto out;
+-	if (dev->dma_mem)
+-		goto out;
+-
+-	/* FIXME: this routine just ignores DMA_MEMORY_INCLUDES_CHILDREN */
+-
+-	mem_base = ioremap(bus_addr, size);
+-	if (!mem_base)
+-		goto out;
+-
+-	dev->dma_mem = kzalloc(sizeof(struct dma_coherent_mem), GFP_KERNEL);
+-	if (!dev->dma_mem)
+-		goto iounmap_out;
+-	dev->dma_mem->bitmap = kzalloc(bitmap_size, GFP_KERNEL);
+-	if (!dev->dma_mem->bitmap)
+-		goto free1_out;
+-
+-	dev->dma_mem->virt_base = mem_base;
+-	dev->dma_mem->device_base = device_addr;
+-	dev->dma_mem->size = pages;
+-	dev->dma_mem->flags = flags;
+-
+-	if (flags & DMA_MEMORY_MAP)
+-		return DMA_MEMORY_MAP;
+-
+-	return DMA_MEMORY_IO;
+-
+- free1_out:
+-	kfree(dev->dma_mem);
+- iounmap_out:
+-	iounmap(mem_base);
+- out:
+-	return 0;
+-}
+-EXPORT_SYMBOL(dma_declare_coherent_memory);
+-
+-void dma_release_declared_memory(struct device *dev)
+-{
+-	struct dma_coherent_mem *mem = dev->dma_mem;
+-
+-	if(!mem)
+-		return;
+-	dev->dma_mem = NULL;
+-	iounmap(mem->virt_base);
+-	kfree(mem->bitmap);
+-	kfree(mem);
+-}
+-EXPORT_SYMBOL(dma_release_declared_memory);
+-
+-void *dma_mark_declared_memory_occupied(struct device *dev,
+-					dma_addr_t device_addr, size_t size)
+-{
+-	struct dma_coherent_mem *mem = dev->dma_mem;
+-	int pages = (size + (device_addr & ~PAGE_MASK) + PAGE_SIZE - 1) >> PAGE_SHIFT;
+-	int pos, err;
+-
+-	if (!mem)
+-		return ERR_PTR(-EINVAL);
+-
+-	pos = (device_addr - mem->device_base) >> PAGE_SHIFT;
+-	err = bitmap_allocate_region(mem->bitmap, pos, get_order(pages));
+-	if (err != 0)
+-		return ERR_PTR(err);
+-	return mem->virt_base + (pos << PAGE_SHIFT);
+-}
+-EXPORT_SYMBOL(dma_mark_declared_memory_occupied);
+diff --git a/include/asm-cris/dma-mapping.h b/include/asm-cris/dma-mapping.h
+index edc8d1b..4f58670 100644
+--- a/include/asm-cris/dma-mapping.h
++++ b/include/asm-cris/dma-mapping.h
+@@ -14,6 +14,8 @@
+ #define dma_free_noncoherent(d, s, v, h) dma_free_coherent(d, s, v, h)
+ 
+ #ifdef CONFIG_PCI
++#include <asm-generic/dma-coherent.h>
++
+ void *dma_alloc_coherent(struct device *dev, size_t size,
+ 			   dma_addr_t *dma_handle, gfp_t flag);
+ 
+-- 
+1.5.6.2
 
-INFO: Slab 0x0000000201f484d0 objects=60 used=0 fp=0xfffff800b601d3a8 flags=0x00c3
-Call Trace:
- [00000000004bd6ac] slab_err+0x54/0x60
- [00000000004bdc94] slab_pad_check+0x11c/0x160
- [00000000004bdd98] check_slab+0xc0/0xe0
- [00000000004bf080] __slab_alloc+0xc8/0x7a0
- [00000000004bfb38] kmem_cache_alloc+0xc0/0xe0
- [0000000000518210] ext3_init_block_alloc_info+0x18/0x60
- [000000000051c2e8] ext3_get_blocks_handle+0xa30/0xd20
- [000000000051c878] ext3_get_block+0x80/0xe0
- [00000000004ed384] __block_prepare_write+0x26c/0x520
- [00000000004ed6c0] block_write_begin+0x48/0xe0
- [000000000051e22c] ext3_write_begin+0xb4/0x1e0
- [00000000004988a8] generic_file_buffered_write+0xf0/0x6c0
- [0000000000499088] __generic_file_aio_write_nolock+0x210/0x3a0
- [0000000000499258] generic_file_aio_write+0x40/0xe0
- [0000000000518efc] ext3_file_write+0x24/0xe0
- [00000000004c40f0] do_sync_write+0x98/0xe0
- Padding 0xfffff800b601dfe0:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................
- Padding 0xfffff800b601dff0:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................
-FIX kmalloc-64: Restoring 0xfffff800b601c000-0xfffff800b601dfff=0x5a
 
-=============================================================================
-BUG kmalloc-64: Redzone overwritten
------------------------------------------------------------------------------
+-- 
+With best wishes
+Dmitry
 
-INFO: 0xfffff800b601d3e8-0xfffff800b601d3ef. First byte 0x5a instead of 0xbb
-INFO: Allocated in 0x5a5a5a5a5a5a5a5a age=11936128522578455317 cpu=1515870810 pid=1515870810
-INFO: Freed in 0x5a5a5a5a5a5a5a5a age=11936128522578455317 cpu=1515870810 pid=1515870810
-INFO: Slab 0x0000000201f484d0 objects=60 used=0 fp=0xfffff800b601d3a8 flags=0x00c3
-INFO: Object 0xfffff800b601d3a8 @offset=5032 fp=0x5a5a5a5a5a5a5a5a
-
-Bytes b4 0xfffff800b601d398:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a ZZZZZZZZZZZZZZZZ
-  Object 0xfffff800b601d3a8:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a ZZZZZZZZZZZZZZZZ
-  Object 0xfffff800b601d3b8:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a ZZZZZZZZZZZZZZZZ
-  Object 0xfffff800b601d3c8:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a ZZZZZZZZZZZZZZZZ
-  Object 0xfffff800b601d3d8:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a ZZZZZZZZZZZZZZZZ
- Redzone 0xfffff800b601d3e8:  5a 5a 5a 5a 5a 5a 5a 5a                         ZZZZZZZZ        
- Padding 0xfffff800b601d428:  5a 5a 5a 5a 5a 5a 5a 5a                         ZZZZZZZZ        
-Call Trace:
- [00000000004bd7b4] print_trailer+0xfc/0x180
- [00000000004bde68] check_bytes_and_report+0xb0/0xe0
- [00000000004bdee8] check_object+0x50/0x2a0
- [00000000004bf5d0] __slab_alloc+0x618/0x7a0
- [00000000004bfb38] kmem_cache_alloc+0xc0/0xe0
- [0000000000518210] ext3_init_block_alloc_info+0x18/0x60
- [000000000051c2e8] ext3_get_blocks_handle+0xa30/0xd20
- [000000000051c878] ext3_get_block+0x80/0xe0
- [00000000004ed384] __block_prepare_write+0x26c/0x520
- [00000000004ed6c0] block_write_begin+0x48/0xe0
- [000000000051e22c] ext3_write_begin+0xb4/0x1e0
- [00000000004988a8] generic_file_buffered_write+0xf0/0x6c0
- [0000000000499088] __generic_file_aio_write_nolock+0x210/0x3a0
- [0000000000499258] generic_file_aio_write+0x40/0xe0
- [0000000000518efc] ext3_file_write+0x24/0xe0
- [00000000004c40f0] do_sync_write+0x98/0xe0
-FIX kmalloc-64: Restoring 0xfffff800b601d3e8-0xfffff800b601d3ef=0xbb
-
-FIX kmalloc-64: Marking all objects used
-
-	Mariusz
