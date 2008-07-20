@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758190AbYGTQ5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758078AbYGTRXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758190AbYGTQ5T (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 12:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757579AbYGTQ5E
+	id S1758078AbYGTRXU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 13:23:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757610AbYGTRXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 12:57:04 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:53209 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757503AbYGTQ5B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 12:57:01 -0400
-Subject: Re: Please add ZFS support (from GPL sources)
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Kevin Winchester <kjwinchester@gmail.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
-       "Fred ." <eldmannen@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <d1af83620807200535s6516e3b7wd16233391e5e8533@mail.gmail.com>
-References: <f188924b0807171213q43f10b09j47b34674fc8aaa38@mail.gmail.com>
-	 <487FA143.9010109@garzik.org> <20080720105724.GA8921@infradead.org>
-	 <d1af83620807200535s6516e3b7wd16233391e5e8533@mail.gmail.com>
-Content-Type: text/plain
-Date: Sun, 20 Jul 2008 11:56:51 -0500
-Message-Id: <1216573011.8940.21.camel@norville.austin.ibm.com>
+	Sun, 20 Jul 2008 13:23:05 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56508
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757572AbYGTRXD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 13:23:03 -0400
+Date: Sun, 20 Jul 2008 10:23:02 -0700 (PDT)
+Message-Id: <20080720.102302.137955996.davem@davemloft.net>
+To: James.Bottomley@HansenPartnership.com
+Cc: mpatocka@redhat.com, fujita.tomonori@lab.ntt.co.jp, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-parisc@vger.kernel.org
+Subject: Re: [PATCH] block: fix q->max_segment_size checking in
+ blk_recalc_rq_segments about VMERGE
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1216565545.4199.10.camel@localhost.localdomain>
+References: <1216520228.3376.33.camel@localhost.localdomain>
+	<20080719.210737.197246608.davem@davemloft.net>
+	<1216565545.4199.10.camel@localhost.localdomain>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-07-20 at 09:35 -0300, Kevin Winchester wrote:
-> As a bonus, being highly inexperienced, I have no
-> expectations of doing anything correctly, and thus would not react
-> badly to lots of criticism.
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+Date: Sun, 20 Jul 2008 09:52:25 -0500
 
-That's definitely the right attitude to take.  When I ported jfs to
-linux, I was completely new to Linux and open source, so tried to defer
-to the experienced developers whenever possible.  Christoph was a
-terrific help, offering a lot of suggestions and patches.  JFS is a much
-better file system because of his help.
+> Since we're using it successfully in parisc, I don't want the block code
+> removed, but I don't see a reason to force other architectures to use
+> it.
+> 
+> However, it has two use cases.  One is the legacy one of making rather
+> dumb I/O cards perform better (which is the primary on on parisc), but
+> there is a current one making huge transfers go through SCSI using using
+> the sg_table code.  That latter is pretty vital to me since I have to
+> keep the code working, but I don't really have any SCSI cards that can
+> take advantage of it without virtual merging.  As a slight irony, IBM is
+> trying to persuade me that a ppc would be better than a parisc for big
+> endian I/O testing ... so I might just be seeing if I can make virtual
+> merging work on power too.
 
-There have been others contributing code that have not taken criticism
-so well, and what started out as an offer of help turned into emotional
-arguments and personal attacks.  This really hampers getting your code
-accepted into the kernel and your ability to work within the community.
+All of this is gibberish, we've been over this a few times already
+in this thread.
 
-> So to summarize - if anyone else would like to undertake this work,
-> they probably should.  But if no one has the time/will, then I would
-> be happy to give it a try.
+For a dumb I/O card, you advertise SG_ALL capabilities, the IOMMU
+is going to merge things as it would have anyways, and you have
+code in the driver to advance SG entries after each "dumb I/O".
 
-Thanks for offering.  I don't know who else may be interested in this,
-but good luck and thanks to you or whoever takes this up.
-
-Thanks,
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
-
+There is zero value to the vmerge code, the real gains are being
+realized already.
