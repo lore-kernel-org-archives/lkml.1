@@ -1,144 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754481AbYGUTH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754677AbYGUTJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754481AbYGUTH1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 15:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753870AbYGUTHG
+	id S1754677AbYGUTJt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 15:09:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754314AbYGUTJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 15:07:06 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58892 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752712AbYGUTHE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 15:07:04 -0400
-Date: Mon, 21 Jul 2008 21:06:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Ian Schram <ischram@telenet.be>
-Cc: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, wireless <linux-wireless@vger.kernel.org>,
-       j@w1.fi
-Subject: Re: [crash] BUG: unable to handle kernel NULL pointer dereference
-	at 0000000000000370
-Message-ID: <20080721190646.GA19044@elte.hu>
-References: <20080721134506.GA27598@elte.hu> <20080721143023.GA32451@elte.hu> <20080721150446.GA17746@elte.hu> <20080721.082419.70392960.davem@davemloft.net> <4884D2F1.2030704@telenet.be>
+	Mon, 21 Jul 2008 15:09:32 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:32910 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754292AbYGUTJb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 15:09:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=Op2SNrWjGAW/ZddvslXjak4tT7Dq28wUXch3l4Ix0n5nDo9Sv2yqzaprMYo4B2p+xe
+         6hX9t4tmnItwxCUZFsrEdLgyis39jP1+nLkQCo9HTc9oCJV20GFIjs8ffvzXkaIf7BvO
+         p/H8Sai8/3t4tPLxwHVgY2TLEExbucSDH5i50=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] gayle: reserve memory resources at once
+Date: Mon, 21 Jul 2008 20:38:23 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-ide@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+References: <200806221916.59751.bzolnier@gmail.com> <Pine.LNX.4.64.0807191436330.2017@anakin>
+In-Reply-To: <Pine.LNX.4.64.0807191436330.2017@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4884D2F1.2030704@telenet.be>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200807212038.24068.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday 19 July 2008, Geert Uytterhoeven wrote:
+> On Sun, 22 Jun 2008, Bartlomiej Zolnierkiewicz wrote:
+> > * Reserve memory resources for all IDE ports at once by moving
+> >   request_mem_region() out of 'for ()' loop and always defining
+> >   GAYLE_IDEREG_SIZE to 0x2000.
+> > 
+> > * Keep memory resources even if no free IDE slots can be found
+> >   (this driver is unloadable currently).
+> 
+> I don't like this part. You're changing the driver to no longer
+> correctly handle initialization failures.
 
-* Ian Schram <ischram@telenet.be> wrote:
+Yeah, I don't like it either.  Unfortunately I don't have a better
+idea of how to convert this driver to ide_host_add() without this step.
 
-> I was looking at this out of interest, but I'm in no way familiar with 
-> the code.
+Anyway, this was meant to be temporary and I planned to fix it later
+after ide_host_add() is in place but actually I forgot about it...
 
-thanks Ian for the patch, i'll test it.
+Fix below.
 
-Note that it was whitespace damaged, find below a tidied up version of 
-the patch that i've applied to tip/out-of-tree.
+BTW core code was fixed to allow module removal so it would be great
+if you (or somebody else fluent in zorro drivers) could take a look
+into converting gayle.c and buddha.c to use new-style zorro probing
+(struct zorro_driver & friends) so we can fix these drivers to use
+->remove method + zorro_unregister_driver() for module_exit().
 
-	Ingo
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] gayle: release resources on ide_host_add() failure
 
------------------------>
-commit 2f77dd3a3b5c3a27298fa0a09d8703c09c633fc6
-Author: Ian Schram <ischram@telenet.be>
-Date:   Mon Jul 21 20:18:25 2008 +0200
+"gayle: reserve memory resources at once" patch temporary removed
+freeing of resources on failure (to ease convertion to ide_host_add()
+interface).  This patch fixes it.
 
-    mac80211_hwsim.c: fix: BUG: unable to handle kernel NULL pointer dereference at 0000000000000370
-    
-    I was looking at this out of interest, but I'm in no way familiar with
-    the code.
-    
-    Looks to me that the error handling code in mac80211_hwsim is awkward.
-    Which leads to it calling ieee80211_unregister_hw even when
-    ieee80211_register_hw failed.
-    
-    The function has a for loop where it generates all simulated radios.
-    when something fails, the error handling will call mac80211_hwsim_free
-    which frees all simulated radios who's pointer isn't zero. However the
-    information stored is insufficient to determine whether or not the call
-    to ieee80211_register_hw succeeded or not for a specific radio. The
-    included patch makes init_mac80211_hwsim clean up the current simulated
-    radio, and then calls into mac80211_hwsim_free to clean up all the
-    radios that did succeed.
-    
-    This however doesn't explain why the rate control registration failed..
-    build tested this, but had some problems reproducing the original
-    problem.
-    
-    Signed-off-by: Ian Schram <ischram@telenet.be>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Thanks to Geert for noticing the issue.
+
+Noticed-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/net/wireless/mac80211_hwsim.c |   18 ++++++++++++------
- 1 files changed, 12 insertions(+), 6 deletions(-)
+goes on top of pata tree
 
-diff --git a/drivers/net/wireless/mac80211_hwsim.c b/drivers/net/wireless/mac80211_hwsim.c
-index 913dc9f..5816230 100644
---- a/drivers/net/wireless/mac80211_hwsim.c
-+++ b/drivers/net/wireless/mac80211_hwsim.c
-@@ -364,8 +364,7 @@ static void mac80211_hwsim_free(void)
- 			struct mac80211_hwsim_data *data;
- 			data = hwsim_radios[i]->priv;
- 			ieee80211_unregister_hw(hwsim_radios[i]);
--			if (!IS_ERR(data->dev))
--				device_unregister(data->dev);
-+			device_unregister(data->dev);
- 			ieee80211_free_hw(hwsim_radios[i]);
- 		}
- 	}
-@@ -437,7 +436,7 @@ static int __init init_mac80211_hwsim(void)
- 			       "mac80211_hwsim: device_create_drvdata "
- 			       "failed (%ld)\n", PTR_ERR(data->dev));
- 			err = -ENOMEM;
--			goto failed;
-+			goto failed_drvdata;
- 		}
- 		data->dev->driver = &mac80211_hwsim_driver;
+ drivers/ide/legacy/gayle.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+Index: b/drivers/ide/legacy/gayle.c
+===================================================================
+--- a/drivers/ide/legacy/gayle.c
++++ b/drivers/ide/legacy/gayle.c
+@@ -127,7 +127,7 @@ static int __init gayle_init(void)
+     unsigned long phys_base, res_start, res_n;
+     unsigned long base, ctrlport, irqport;
+     ide_ack_intr_t *ack_intr;
+-    int a4000, i;
++    int a4000, i, rc;
+     hw_regs_t hw[GAYLE_NUM_HWIFS], *hws[] = { NULL, NULL, NULL, NULL };
  
-@@ -461,7 +460,7 @@ static int __init init_mac80211_hwsim(void)
- 		if (err < 0) {
- 			printk(KERN_DEBUG "mac80211_hwsim: "
- 			       "ieee80211_register_hw failed (%d)\n", err);
--			goto failed;
-+			goto failed_hw;
- 		}
+     if (!MACH_IS_AMIGA)
+@@ -179,7 +179,11 @@ found:
+ 	hws[i] = &hw[i];
+     }
  
- 		printk(KERN_DEBUG "%s: hwaddr %s registered\n",
-@@ -479,9 +478,9 @@ static int __init init_mac80211_hwsim(void)
- 	rtnl_lock();
- 
- 	err = dev_alloc_name(hwsim_mon, hwsim_mon->name);
--	if (err < 0) {
-+	if (err < 0)
- 		goto failed_mon;
--	}
+-    return ide_host_add(NULL, hws, NULL);
++    rc = ide_host_add(NULL, hws, NULL);
++    if (rc)
++	release_mem_region(res_start, res_n);
 +
++    return rc;
+ }
  
- 	err = register_netdevice(hwsim_mon);
- 	if (err < 0)
-@@ -494,7 +493,14 @@ static int __init init_mac80211_hwsim(void)
- failed_mon:
- 	rtnl_unlock();
- 	free_netdev(hwsim_mon);
-+	mac80211_hwsim_free();
-+	return err;
- 
-+failed_hw:
-+	device_unregister(data->dev);
-+failed_drvdata:
-+	ieee80211_free_hw(hw);
-+	hwsim_radios[i] = 0;
- failed:
- 	mac80211_hwsim_free();
- 	return err;
+ module_init(gayle_init);
