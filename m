@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbYGUVXm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755105AbYGUV0O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755383AbYGUVXm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 17:23:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbYGUVXd
+	id S1755105AbYGUV0O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 17:26:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027AbYGUVZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 17:23:33 -0400
-Received: from casper.infradead.org ([85.118.1.10]:46306 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751610AbYGUVXc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 17:23:32 -0400
-Date: Mon, 21 Jul 2008 14:23:15 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ben Collins <bcollins@swissdisk.com>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] VT: Restore VT fonts on switch
-Message-ID: <20080721142315.4076c292@infradead.org>
-In-Reply-To: <1216673584.7585.189.camel@cunning>
-References: <E1KL0tq-0001Wk-Ny@critter.phunnypharm.org>
-	<20080721134327.3ffab96f@infradead.org>
-	<1216673584.7585.189.camel@cunning>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+	Mon, 21 Jul 2008 17:25:57 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:36414 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750836AbYGUVZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 17:25:56 -0400
+Date: Tue, 22 Jul 2008 01:24:48 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Vegard Nossum <vegard.nossum@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, cl@linux-foundation.org,
+       davem@davemloft.net, Auke Kok <auke-jan.h.kok@intel.com>
+Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison overwritten
+Message-ID: <20080721212447.GA10107@2ka.mipt.ru>
+References: <20080717214222.GA29449@elte.hu> <Pine.LNX.4.64.0807181149460.3852@sbz-30.cs.Helsinki.FI> <20080718091146.GQ6875@elte.hu> <20080721094110.GA16029@elte.hu> <84144f020807210252k68d5cf65i8c7ae3c11cecc046@mail.gmail.com> <20080721100627.GA5953@2ka.mipt.ru> <20080721105051.GA5830@elte.hu> <20080721112515.GA4777@2ka.mipt.ru> <20080721115555.GA24176@elte.hu> <20080721192138.GA27672@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080721192138.GA27672@elte.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Jul 2008 16:53:04 -0400
-Ben Collins <bcollins@swissdisk.com> wrote:
+On Mon, Jul 21, 2008 at 09:21:38PM +0200, Ingo Molnar (mingo@elte.hu) wrote:
+> So it's now a strong likelyhood that this crash is a combination of 
+> e1000e+netconsole.
 
-> On Mon, 2008-07-21 at 13:43 -0700, Arjan van de Ven wrote:
-> > On Mon, 21 Jul 2008 15:39:44 -0400
-> > Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> > 
-> > > Not all X drivers save and restore fonts on text VTs. Add code to
-> > > the kernel to explicitly save and restore them on VT switches.
-> > 
-> > 
-> > do you have a list of which ones don't ?
-> 
-> I don't, but perhaps Matthew does.
-> 
-I was assuming Matthew would respond since he sent this patch to lkml
-after all...
+e1000_clean_tx_irq() call looks particulary suspicious: it is called
+without adapter->tx_queue_lock in poll controller (netconsole callback)
+and with that lock in NAPI handler.
+
+Can you check kind of this patch:
+
+diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
+index 869544b..5f180d8 100644
+--- a/drivers/net/e1000e/netdev.c
++++ b/drivers/net/e1000e/netdev.c
+@@ -4067,7 +4067,9 @@ static void e1000_netpoll(struct net_device *netdev)
+ 	disable_irq(adapter->pdev->irq);
+ 	e1000_intr(adapter->pdev->irq, netdev);
+ 
++	spin_lock(&adapter->tx_queue_lock);
+ 	e1000_clean_tx_irq(adapter);
++	spin_unlock(&adapter->tx_queue_lock);
+ 
+ 	enable_irq(adapter->pdev->irq);
+ }
+
+
+-- 
+	Evgeniy Polyakov
