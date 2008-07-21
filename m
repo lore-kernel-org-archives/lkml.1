@@ -1,71 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640AbYGUSqu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbYGUStP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753640AbYGUSqu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 14:46:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752067AbYGUSqk
+	id S1753905AbYGUStP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 14:49:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbYGUSs7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 14:46:40 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58398 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752049AbYGUSqj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 14:46:39 -0400
-Date: Mon, 21 Jul 2008 20:46:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [crash] kernel BUG at net/core/dev.c:1328!
-Message-ID: <20080721184616.GA8442@elte.hu>
-References: <20080720.104411.81744468.davem@davemloft.net> <20080721133059.GA30637@elte.hu> <20080721134506.GA27598@elte.hu> <20080721182318.GA20940@elte.hu> <alpine.LFD.1.10.0807211131390.31863@woody.linux-foundation.org>
+	Mon, 21 Jul 2008 14:48:59 -0400
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:52004 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751899AbYGUSs6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 14:48:58 -0400
+Date: Mon, 21 Jul 2008 13:48:46 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: benh@kernel.crashing.org, torvalds@linux-foundation.org,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       roland@redhat.com, John Reiser <jreiser@BitWagon.com>
+Subject: [PATCH v4] elf loader support for auxvec base platform string
+Message-ID: <20080721184846.GU9594@localdomain>
+References: <1216166331-14810-1-git-send-email-ntl@pobox.com>
+ <1216166331-14810-2-git-send-email-ntl@pobox.com>
+ <1216276539.7740.309.camel@pasglop>
+ <20080717000951.5f8cab37.akpm@linux-foundation.org>
+ <20080717221932.GL9594@localdomain>
+ <20080717154218.8981035c.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807211131390.31863@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080717154218.8981035c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Pobox-Relay-ID: AC4FF4F6-5755-11DD-9C9C-CE28B26B55AE-04752483!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Some IBM POWER-based platforms have the ability to run in a
+mode which mostly appears to the OS as a different processor from the
+actual hardware.  For example, a Power6 system may appear to be a
+Power5+, which makes the AT_PLATFORM value "power5+".  This means that
+programs are restricted to the ISA supported by Power5+;
+Power6-specific instructions are treated as illegal.
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+However, some applications (virtual machines, optimized libraries) can
+benefit from knowledge of the underlying CPU model.  A new aux vector
+entry, AT_BASE_PLATFORM, will denote the actual hardware.  For
+example, on a Power6 system in Power5+ compatibility mode, AT_PLATFORM
+will be "power5+" and AT_BASE_PLATFORM will be "power6".  The idea is
+that AT_PLATFORM indicates the instruction set supported, while
+AT_BASE_PLATFORM indicates the underlying microarchitecture.
 
-> On Mon, 21 Jul 2008, Ingo Molnar wrote:
-> >
-> > [   24.434799] kernel BUG at net/core/dev.c:1328!
-> 
-> Ok, it is now a WARN_ON_ONCE() in my tree (which I _just_ pushed out). 
-> 
-> So it's going to cause irritating messages (once), but the machine should 
-> hopefully work.
-> 
-> > Should i spend time on bisecting this, or is this known already?
-> 
-> It's going to bisect down to the same commit you already bisected 
-> once, it's the networking code that changed some of the rules, so 
-> various network drivers that didn't follow the expected rules are now 
-> unhappy.
-> 
-> Maybe the network drivers are few enough that it will get fixed, or 
-> maybe the WARN_ON_ONCE() will just be removed and the rule not 
-> reinforced.
+If the architecture has defined ELF_BASE_PLATFORM, copy that value to
+the user stack in the same manner as ELF_PLATFORM.
 
-ok, have updated the testboxes to your latest push.
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
 
-Btw., otherwise the big networking pull held up pretty well on a healthy 
-range of testboxes i have, it looked a lot scarier to me in the morning 
-than it turned out to be during the day. A couple of hundred tests 
-passed already and no indication of any runtime fragility so far. Boot 
-crashes/warnings can be annoying and hard to get a proper log of but 
-once the log is available they are normally quite easy for developers to 
-act upon.
+---
 
-	Ingo
+Andrew Morton wrote:
+> OK.
+> 
+> But it conflicts directly with the already-queued
+> execve-filename-document-and-export-via-auxiliary-vector.patch (which
+> various potential reviewers blithely deleted - don't come complaining
+> to me!):
+> 
+
+Rebased to -mm to resolve conflicts with
+execve-filename-document-and-export-via-auxiliary-vector.patch, and
+changed AT_BASE_PLATFORM to lowest unclaimed value (24).
+
+
+ fs/binfmt_elf.c        |   28 ++++++++++++++++++++++++++++
+ include/linux/auxvec.h |    6 +++++-
+ 2 files changed, 33 insertions(+), 1 deletions(-)
+
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index bad7d87..180f92b 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -131,6 +131,15 @@ static int padzero(unsigned long elf_bss)
+ #define STACK_ALLOC(sp, len) ({ sp -= len ; sp; })
+ #endif
+ 
++#ifndef ELF_BASE_PLATFORM
++/*
++ * AT_BASE_PLATFORM indicates the "real" hardware/microarchitecture.
++ * If the arch defines ELF_BASE_PLATFORM (in asm/elf.h), the value
++ * will be copied to the user stack in the same manner as AT_PLATFORM.
++ */
++#define ELF_BASE_PLATFORM NULL
++#endif
++
+ static int
+ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
+ 		unsigned long load_addr, unsigned long interp_load_addr)
+@@ -142,7 +151,9 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
+ 	elf_addr_t __user *envp;
+ 	elf_addr_t __user *sp;
+ 	elf_addr_t __user *u_platform;
++	elf_addr_t __user *u_base_platform;
+ 	const char *k_platform = ELF_PLATFORM;
++	const char *k_base_platform = ELF_BASE_PLATFORM;
+ 	int items;
+ 	elf_addr_t *elf_info;
+ 	int ei_index = 0;
+@@ -172,6 +183,19 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
+ 			return -EFAULT;
+ 	}
+ 
++	/*
++	 * If this architecture has a "base" platform capability
++	 * string, copy it to userspace.
++	 */
++	u_base_platform = NULL;
++	if (k_base_platform) {
++		size_t len = strlen(k_base_platform) + 1;
++
++		u_base_platform = (elf_addr_t __user *)STACK_ALLOC(p, len);
++		if (__copy_to_user(u_base_platform, k_base_platform, len))
++			return -EFAULT;
++	}
++
+ 	/* Create the ELF interpreter info */
+ 	elf_info = (elf_addr_t *)current->mm->saved_auxv;
+ 	/* update AT_VECTOR_SIZE_BASE if the number of NEW_AUX_ENT() changes */
+@@ -209,6 +233,10 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
+ 		NEW_AUX_ENT(AT_PLATFORM,
+ 			    (elf_addr_t)(unsigned long)u_platform);
+ 	}
++	if (k_base_platform) {
++		NEW_AUX_ENT(AT_BASE_PLATFORM,
++			    (elf_addr_t)(unsigned long)u_base_platform);
++	}
+ 	if (bprm->interp_flags & BINPRM_FLAGS_EXECFD) {
+ 		NEW_AUX_ENT(AT_EXECFD, bprm->interp_data);
+ 	}
+diff --git a/include/linux/auxvec.h b/include/linux/auxvec.h
+index 0da17d1..d7afa9d 100644
+--- a/include/linux/auxvec.h
++++ b/include/linux/auxvec.h
+@@ -26,9 +26,13 @@
+ 
+ #define AT_SECURE 23   /* secure mode boolean */
+ 
++#define AT_BASE_PLATFORM 24	/* string identifying real platform, may
++				 * differ from AT_PLATFORM. */
++
+ #define AT_EXECFN  31	/* filename of program */
++
+ #ifdef __KERNEL__
+-#define AT_VECTOR_SIZE_BASE 17 /* NEW_AUX_ENT entries in auxiliary table */
++#define AT_VECTOR_SIZE_BASE 18 /* NEW_AUX_ENT entries in auxiliary table */
+   /* number of "#define AT_.*" above, minus {AT_NULL, AT_IGNORE, AT_NOTELF} */
+ #endif
+ 
+-- 
+1.5.6.2
+
