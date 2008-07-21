@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757504AbYGUJRL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757831AbYGUJ0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757504AbYGUJRL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 05:17:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbYGUJQ6
+	id S1757831AbYGUJ0s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 05:26:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755463AbYGUJ0k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 05:16:58 -0400
-Received: from mail.lang.hm ([64.81.33.126]:44664 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754500AbYGUJQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 05:16:57 -0400
-Date: Mon, 21 Jul 2008 02:18:03 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: el es <el_es_cr@yahoo.co.uk>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Kernel version : what about s.yy.ww.tt scheme ?
-In-Reply-To: <loom.20080721T074322-56@post.gmane.org>
-Message-ID: <alpine.DEB.1.10.0807210216260.1125@asgard.lang.hm>
-References: <loom.20080717T083755-676@post.gmane.org> <alpine.LNX.1.10.0807171140030.18697@fbirervta.pbzchgretzou.qr> <20080720181426.GA29189@1wt.eu> <loom.20080721T074322-56@post.gmane.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 21 Jul 2008 05:26:40 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:49451 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754703AbYGUJ0j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 05:26:39 -0400
+Message-ID: <48845504.20102@cn.fujitsu.com>
+Date: Mon, 21 Jul 2008 17:21:08 +0800
+From: Wang Chen <wangchen@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Alan Cox <alan@redhat.com>, Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: [build error] istallion build failure
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Jul 2008, el es wrote:
+Alan, commit "istallion: use tty_port"(b02f5ad6a3ff5a1ee2a7b8ec6eee338de553b060)
+is guilty.
 
->>
->> also, causes trouble when stable releases cross a year boundary, or
->> when there are several ones in a week. The stable release should
->> only be a counter, not a date.
->>
->> Willy
->>
->>
->
-> If there are more stable releases in a week, you could put a release counter
-> after a dash, say : 2.08.30.40-[2...X]
->
-> If stable continues to be used and leaps over to next year, put another .yy.ww
-> section : 2.08.30.09.02
->
-> OK I know that's long, but easy to expand if needed, just be sure to separate
-> date pieces with dots and counters with dashes. Or...
->
-> maybe use them the other way round - the current scheme uses counters separated
-> by dots, so maybe the new could do ss.yy-ww-tt[[-yy]-ww][.X]] ? Like
-> 2.08-30-40.2 ? 2.08-30-09-02.2 ? But this seems odd, even to me ;)
+drivers/char/istallion.c: In function ‘stli_open’:
+drivers/char/istallion.c:829: error: ‘struct stliport’ has no member named ‘refcount’
+drivers/char/istallion.c: In function ‘stli_close’:
+drivers/char/istallion.c:891: error: ‘struct stliport’ has no member named ‘refcount’
+drivers/char/istallion.c:892: error: ‘struct stliport’ has no member named ‘refcount’
+drivers/char/istallion.c:893: error: ‘struct stliport’ has no member named ‘refcount’
+drivers/char/istallion.c:928: error: ‘struct tty_ldisc’ has no member named ‘flush_buffer’
+drivers/char/istallion.c:929: error: ‘struct tty_ldisc’ has no member named ‘flush_buffer’
+drivers/char/istallion.c: In function ‘stli_waitcarrier’:
+drivers/char/istallion.c:1205: error: ‘struct stliport’ has no member named ‘refcount’
+drivers/char/istallion.c:1234: error: ‘struct stliport’ has no member named ‘refcount’
+drivers/char/istallion.c: In function ‘stli_ioctl’:
+drivers/char/istallion.c:1663: warning: unused variable ‘ival’
+drivers/char/istallion.c: In function ‘stli_hangup’:
+drivers/char/istallion.c:1860: error: ‘struct stliport’ has no member named ‘refcount’
+drivers/char/istallion.c: In function ‘stli_portcmdstats’:
+drivers/char/istallion.c:4249: error: ‘struct tty_port’ has no member named ‘flag’
+drivers/char/istallion.c: At top level:
+drivers/char/istallion.c:4500: warning: initialization from incompatible pointer type
+make[2]: *** [drivers/char/istallion.o] Error 1
+make[1]: *** [drivers/char] Error 2
+make: *** [drivers] Error 2
 
-you are well past the point where the complexity overwelmes the 
-information you are providing.
 
-does it really matter _exactly_ when a release was made?
-
-David Lang
