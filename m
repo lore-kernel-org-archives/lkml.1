@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758177AbYGUJqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758464AbYGUJsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758177AbYGUJqU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 05:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755629AbYGUJqL
+	id S1758464AbYGUJsb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 05:48:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754647AbYGUJsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 05:46:11 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:43894 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755246AbYGUJqK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 05:46:10 -0400
-Date: Mon, 21 Jul 2008 12:46:05 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, Sam Ravnborg <sam@ravnborg.org>,
-       David Miller <davem@davemloft.net>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for July 21
-Message-ID: <20080721094605.GA22914@cs181140183.pp.htv.fi>
-References: <20080721181725.9269fac4.sfr@canb.auug.org.au>
+	Mon, 21 Jul 2008 05:48:21 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:17829 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753921AbYGUJsT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 05:48:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=WmsWg0fA29K3rqVSquxWEEJwjlkxVDY7GWRxANPDfXLq9EvlDhkekusBV9IzuGuz9d
+         fLJA8aR8a5XCyqqO01SbssDBZBJyBnsqIESXPIIq/17ValNhyOK/OVvSWKyaia4+Ch4C
+         Cfq0nsP2n8C1n8f9uen3aWkdYFgnrPXGMvtv8=
+Message-ID: <a4423d670807210248l1e2e6999ha462edc99002f964@mail.gmail.com>
+Date: Mon, 21 Jul 2008 13:48:18 +0400
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: [GIT]: Networking
+Cc: adobriyan@gmail.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jeffrey.t.kirsher@intel.com
+In-Reply-To: <20080720.221106.201055562.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080721181725.9269fac4.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <20080720.181440.122144107.davem@davemloft.net>
+	 <20080721024056.GA4800@martell.zuzino.mipt.ru>
+	 <20080720.194856.92564555.davem@davemloft.net>
+	 <20080720.221106.201055562.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 21, 2008 at 06:17:25PM +1000, Stephen Rothwell wrote:
->...
-> This tree fails to build for ARCH=sparc (i.e. 32bit) with a 64bit gcc
-> v3.4.5 - it tries to use the 64bit header files.  This may be an artifact
-> of one of my merge fixups, but I don't actually think so.
->...
+Hi David!
 
-I can reproduce it, and it's not related to anything you did.
+There is another problem on sparc64 and happymeal ethernet card.
 
-The failing command is:
+when tring to up interface:
 
-<--  snip  -->
+kernel BUG at net/core/dev.c:1328
 
-...
-  sparc64-linux-gcc -E -Wp,-MD,arch/sparc/kernel/.vmlinux.lds.d  -nostdinc -isystem /usr/local/DIR/gcc-sparc64-4.3.1/lib/gcc/sparc64-linux/4.3.1/include -D__KERNEL__ -I/TMP/git/sparc-2.6/include -Iinclude -I/TMP/git/sparc-2.6/include2 -Iinclude2  -I/TMP/git/sparc-2.6/include -include include/linux/autoconf.h -P -C -Usparc -D__ASSEMBLY__ -o arch/sparc/kernel/vmlinux.lds /TMP/git/sparc-2.6/arch/sparc/kernel/vmlinux.lds.S
-In file included from include2/asm/page.h:4,
-                 from /TMP/git/sparc-2.6/arch/sparc/kernel/vmlinux.lds.S:4:
-/TMP/git/sparc-2.6/include/asm-sparc/page_64.h:11:2: error: #error No page size specified in kernel configuration
-make[2]: *** [arch/sparc/kernel/vmlinux.lds] Error 1
+ip(1090): Kernel bad sw trap 5
 
-<--  snip  -->
-
-David, Sam, can you look at this?
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+__netif_schedule
+happy_meal_set_multicast
+__dev_set_rx_mode
+dev_set_rx_mode
+dev_open
+dev_change_flags
+do_setlink
+rtnl_newlink
+rtnetlink_rcv_msg
+netlink_rcv_skb
