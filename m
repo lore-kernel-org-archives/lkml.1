@@ -1,42 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758369AbYGUJbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758218AbYGUJff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758369AbYGUJbz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 05:31:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbYGUJbp
+	id S1758218AbYGUJff (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 05:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754500AbYGUJf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 05:31:45 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57719 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755629AbYGUJbp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 05:31:45 -0400
-Message-ID: <48845721.8090007@cn.fujitsu.com>
-Date: Mon, 21 Jul 2008 17:30:09 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ranjit Manomohan <ranjitm@google.com>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, menage@google.com
-Subject: Re: [PATCH 2/2] Traffic control cgroups subsystem
-References: <Pine.LNX.4.64.0807181428180.18212@ranjit.corp.google.com>
-In-Reply-To: <Pine.LNX.4.64.0807181428180.18212@ranjit.corp.google.com>
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 21 Jul 2008 05:35:26 -0400
+Received: from gate.crashing.org ([63.228.1.57]:58097 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754169AbYGUJf0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 05:35:26 -0400
+Subject: Re: [PATCH v3] elf loader support for auxvec base platform string
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: John Reiser <jreiser@BitWagon.com>, torvalds@linux-foundation.org,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       roland@redhat.com, Nathan Lynch <ntl@pobox.com>
+In-Reply-To: <20080720204008.8927460c.akpm@linux-foundation.org>
+References: <1216166331-14810-1-git-send-email-ntl@pobox.com>
+	 <1216166331-14810-2-git-send-email-ntl@pobox.com>
+	 <1216276539.7740.309.camel@pasglop>
+	 <20080717000951.5f8cab37.akpm@linux-foundation.org>
+	 <20080717221932.GL9594@localdomain>
+	 <20080717154218.8981035c.akpm@linux-foundation.org>
+	 <487FD74C.4080603@BitWagon.com> <20080718182850.GO9594@localdomain>
+	 <1216610655.11027.80.camel@pasglop>
+	 <20080720204008.8927460c.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 21 Jul 2008 19:33:57 +1000
+Message-Id: <1216632837.11027.82.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +config NET_CLS_CGROUP
-> +    tristate "Cgroups tc classifier"
-> +    select NET_CLS
-> +    ---help---
-> +      If you say Y here, you will be able to classify packets based on
-> +      cgroup membership of the task originating the packet.
-> +
-> +      To compile this code as a module, choose M here: the
-> +      module will be called cls_cgroup.
-> +
 
-If I enable NET_CLS_CGROUP but disable CGROUP_TC, won't I get compile error?
-And if I enable CGRUOP_TC but disable NET_CLS_CGROUP, won't cgroup_tc be
-just useless?
+> > Andrew, we have one other patch (the powerpc bits) on top of that one.
+> > Do you want to carry both in -mm on top of John's patch ? We would like
+> > that in .27 though, I don't know what your merge plans are for John's
+> > patch.
+> > 
+> 
+> How about I send John's patch Linuswards right now?
+
+No objection.
+
+Cheers,
+Ben.
+
 
