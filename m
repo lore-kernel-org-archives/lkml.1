@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757291AbYGUATf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbYGUA3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757291AbYGUATf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 20:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754470AbYGUAT0
+	id S1757283AbYGUA3W (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 20:29:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbYGUA3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 20:19:26 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:36996 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754464AbYGUATZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 20:19:25 -0400
-Date: Sun, 20 Jul 2008 18:19:09 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Jaswinder Singh <jaswinder@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       kernelnewbies <kernelnewbies@nl.linux.org>,
-       David Woodhouse <dwmw2@infradead.org>, tony.luck@intel.com,
-       linux-ia64@vger.kernel.org
-Subject: Re: [PATCH 9/22] ia64: Introducing asm/syscalls.h
-Message-ID: <20080721001909.GA24246@parisc-linux.org>
-References: <1216592500.3679.14.camel@jaswinder.satnam> <1216592798.3679.22.camel@jaswinder.satnam> <1216592879.3679.24.camel@jaswinder.satnam> <1216593035.3679.27.camel@jaswinder.satnam> <1216596035.3679.95.camel@jaswinder.satnam> <1216596106.3679.98.camel@jaswinder.satnam> <1216596325.3679.104.camel@jaswinder.satnam> <1216596669.3679.112.camel@jaswinder.satnam> <1216596749.3679.115.camel@jaswinder.satnam> <1216596835.3679.117.camel@jaswinder.satnam>
+	Sun, 20 Jul 2008 20:29:14 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:62731 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755446AbYGUA3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 20:29:13 -0400
+Date: Mon, 21 Jul 2008 01:28:43 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: Fix up a comment in ack_APIC_irq()
+Message-ID: <Pine.LNX.4.55.0807210125341.24038@cliff.in.clinika.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1216596835.3679.117.camel@jaswinder.satnam>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 21, 2008 at 05:03:55AM +0530, Jaswinder Singh wrote:
-> Declaring arch-dependent syscalls for ia64 architecture
-> +#ifndef CONFIG_PCI
-> +asmlinkage long sys_pciconfig_read(unsigned long, unsigned long,
-> +				   unsigned long, unsigned long, void *);
-> +asmlinkage long sys_pciconfig_write(unsigned long, unsigned long,
-> +				    unsigned long, unsigned long, void *);
-> +#endif /* CONFIG_PCI */
+ Adjust a comment in ack_APIC_irq() according to the recent removal of 
+CONFIG_X86_GOOD_APIC.
 
-These are already declared in linux/syscalls.h
-
-And frankly, we should just make these return -ENOSYS always.  Any
-software that uses them is stuffed on machines with multiple domains.
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+---
+patch-next-2.6.26-rc9-20080711-apic-write-ack-0
+diff -up --recursive --new-file linux-next-2.6.26-rc9-20080711.macro/include/asm-x86/apic.h linux-next-2.6.26-rc9-20080711/include/asm-x86/apic.h
+--- linux-next-2.6.26-rc9-20080711.macro/include/asm-x86/apic.h	2008-07-16 17:07:56.000000000 +0000
++++ linux-next-2.6.26-rc9-20080711/include/asm-x86/apic.h	2008-07-16 23:59:10.000000000 +0000
+@@ -78,9 +78,7 @@ extern int get_physical_broadcast(void);
+ static inline void ack_APIC_irq(void)
+ {
+ 	/*
+-	 * ack_APIC_irq() actually gets compiled as a single instruction:
+-	 * - a single rmw on Pentium/82489DX
+-	 * - a single write on P6+ cores (CONFIG_X86_GOOD_APIC)
++	 * ack_APIC_irq() actually gets compiled as a single instruction
+ 	 * ... yummie.
+ 	 */
+ 
