@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758825AbYGUGWM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757878AbYGUG2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758825AbYGUGWM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 02:22:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754969AbYGUGV5
+	id S1757878AbYGUG2R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 02:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbYGUG2C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 02:21:57 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:57816 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754273AbYGUGV4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 02:21:56 -0400
-Date: Mon, 21 Jul 2008 16:21:41 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: linux-next: please hold off 2.6.28 stuff
-Message-Id: <20080721162141.22ea4331.sfr@canb.auug.org.au>
-In-Reply-To: <1216620821.13328.14.camel@brick>
-References: <20080721135108.d4ca4be5.sfr@canb.auug.org.au>
-	<1216620821.13328.14.camel@brick>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__21_Jul_2008_16_21_41_+1000_p46M=g+RQyRJU+1g"
+	Mon, 21 Jul 2008 02:28:02 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:59965 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751796AbYGUG2A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 02:28:00 -0400
+Date: Mon, 21 Jul 2008 07:27:48 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: pjones@redhat.com, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] breakage in bsg
+Message-ID: <20080721062748.GA5744@ZenIV.linux.org.uk>
+References: <20080720163406.GW28946@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080720163406.GW28946@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__21_Jul_2008_16_21_41_+1000_p46M=g+RQyRJU+1g
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sun, Jul 20, 2008 at 05:34:06PM +0100, Al Viro wrote:
 
-Hi Harvey,
+> 	* cmd_filter thing is broken as well (we have no access to
+> gendisk in question and there's a lot of obvious issues when you have
+> several openers).
+> 
+> #2 and part of #3 are fixable, but I really don't see what to do with #1.
+> If nothing else, it's absolutely incompatible with cmd_filter, even if you
+> leave aside the issue with non-IDE/non-SCSI drivers.
 
-On Sun, 20 Jul 2008 23:13:41 -0700 Harvey Harrison <harvey.harrison@gmail.c=
-om> wrote:
->
-> I would say let -rc2 be the flag for putting things for the next (2.6.28)=
- release
-> into -next.  That would give akpm time to get his load in as well.
-> Between -rc1 and -rc2, he could look at -next to see what patches were
-> picked up by maintainers and what he'll still have to send in himself.
+Actually, cmd_filter changeset breaks all users of blk_verify_command().
+It expects that struct file passed to will be that of a block device:
+        inode = file->f_dentry->d_inode;
+        if (!inode)
+                return -EINVAL;
 
-Fine by me - I get another week off :-)
+        disk = inode->i_bdev->bd_disk;
 
-Andrew?
+        return blk_cmd_filter_verify_command(&disk->cmd_filter,
+                                                 cmd, &file->f_mode);
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Unfortunately, all of those can get struct file of *character* device, with
+obvious results.
 
---Signature=_Mon__21_Jul_2008_16_21_41_+1000_p46M=g+RQyRJU+1g
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkiEKvUACgkQjjKRsyhoI8wWpACguendDw9Hre2nKbh1l9zlGmxl
-GPoAn2Ti1mkZVssRCkvPdikOSEDxunpF
-=NMXN
------END PGP SIGNATURE-----
-
---Signature=_Mon__21_Jul_2008_16_21_41_+1000_p46M=g+RQyRJU+1g--
+The minimal fix is to pass disk / mode explicitly.  I'll post the patch,
+but that still leaves bsg broken.
