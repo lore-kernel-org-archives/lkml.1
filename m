@@ -1,77 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755544AbYGUVNK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755860AbYGUVOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755544AbYGUVNK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 17:13:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbYGUVM5
+	id S1755860AbYGUVOS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 17:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbYGUVOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 17:12:57 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:63334 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751426AbYGUVM4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 17:12:56 -0400
-Date: Mon, 21 Jul 2008 14:12:20 -0700 (PDT)
-From: Trent Piepho <tpiepho@freescale.com>
-X-X-Sender: xyzzy@t2.domain.actdsltmp
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-cc: Grant Likely <grant.likely@secretlab.ca>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: PIXIS gpio controller and gpio flags
-In-Reply-To: <20080721175357.GA1773@polina.dev.rtsoft.ru>
-Message-ID: <Pine.LNX.4.64.0807211340460.26456@t2.domain.actdsltmp>
-References: <20080717140519.GA32617@polina.dev.rtsoft.ru>
- <20080717141335.GA2219@polina.dev.rtsoft.ru> <20080717150422.GC31932@secretlab.ca>
- <20080717152006.GA26120@polina.dev.rtsoft.ru>
- <fa686aa40807171105m22dda41dqb334dd5f7b2634d8@mail.gmail.com>
- <Pine.LNX.4.64.0807171302190.27902@t2.domain.actdsltmp>
- <20080717234201.GA15745@polina.dev.rtsoft.ru> <Pine.LNX.4.64.0807171807420.29856@t2.domain.actdsltmp>
- <20080718100549.GA28741@polina.dev.rtsoft.ru> <Pine.LNX.4.64.0807191352040.27586@t2.domain.actdsltmp>
- <20080721175357.GA1773@polina.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 21 Jul 2008 17:14:07 -0400
+Received: from atlantis.8hz.com ([212.129.237.78]:62753 "EHLO atlantis.8hz.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752282AbYGUVOG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 17:14:06 -0400
+Date: Mon, 21 Jul 2008 21:14:04 +0000
+From: Sean Young <sean@mess.org>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH v2] Led driver for technologic systems 5500
+Message-ID: <20080721211403.GB72268@atlantis.8hz.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Jul 2008, Anton Vorontsov wrote:
-> On Sat, Jul 19, 2008 at 02:08:01PM -0700, Trent Piepho wrote:
->> It doesn't look like you have any way to unset the active low flag.  What if
->> I unload the leds-gpio driver (or another gpio user) and then try to use the
->> gpio with something else?  The active low flag is stuck on!
->
-> Why would you want to unset the flags? It is specified in the device
-> tree, and can't be changed. Specifying different flags for the same GPIO
-> would be an error (plus, Linux forbids shared gpios, so you simply can't
-> specify one gpio for several devices).
-
-You can't use the same gpio for two different things at the same time, but you
-can load a driver, unload it, and then load another.
-
->> Most gpio users, including leds-gpio, can handle gpios being busy.  If
->> leds-gpio can't get one of the gpios, it rolls back all the leds it did
->> create, doesn't drive the device and returns EBUSY.  Except with
->> of_get_gpio() setting the flags, it will change the flags out from under
->> whatever had the gpio already allocated!
->
-> You're still assuming that something was allocated. It wasn't. The flag
-> was set, and it should not change. It is irrelevant if request() failed
-> or not.
-
-Another driver has requested the gpio with active low NOT set.  Then the led
-driver looks up the property with active low set, which changes the flags. 
-When it tries to request the gpio it fails since the gpio is already in use. 
-The led driver handles this failure.  Except the active low flag is now set
-and the driver that was using the gpio before will now mysteriously stop
-working.  Perhaps by erasing flash instead of reading it or something nasty
-like that.
-
-Is this the proper way to handle a dts mistake that has two drivers trying to
-use the same gpio?  Without the gpio flags getting set when looking up the
-gpio, this situation is handled without any difficulty.
-
-And is having a gpio used twice in the device tree really a mistake?  What if
-there are two different devices that can be attached to the gpios?  For
-example, an LED bank that can be unplugged and a serial console attached in
-its place, sharing the same connector and gpios.  Other than gpio flags
-getting set when looking up a gpio, it works fine to list both devices in the
-device tree as long as userspace has the correct driver loaded first.
+Here is a patch for the led on the Technologic Systems 5500 board. The
+first patch had a bug in an error path. Detection is still a bit flimsy; Is 
+there anything that can be done about that?
+ 
+Signed-off-by: Sean Young <sean@mess.org>
+---
+diff -urpN linux-2.6.26/drivers/leds/Kconfig /home/sean/tiger/linux-2.6.26/drivers/leds/Kconfig
+--- linux-2.6.26/drivers/leds/Kconfig	2008-07-13 22:51:29.000000000 +0100
++++ /home/sean/tiger/linux-2.6.26/drivers/leds/Kconfig	2008-07-21 12:19:51.000000000 +0100
+@@ -147,6 +147,16 @@ config LEDS_CLEVO_MAIL
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called leds-clevo-mail.
+ 
++config LEDS_TS5500
++	tristate "LED Support for the TS-5500"
++	depends on LEDS_CLASS && X86
++	help
++	  This driver makes the led on the Technologic Systems 5500 
++	  (and possibly other models) accessible for userspace. 
++
++	  Note that this led is hardwired to be xor'ed with Compact Flash
++	  activity.
++
+ comment "LED Triggers"
+ 
+ config LEDS_TRIGGERS
+Binary files linux-2.6.26/drivers/leds/.leds-net48xx.c.swp and /home/sean/tiger/linux-2.6.26/drivers/leds/.leds-net48xx.c.swp differ
+diff -urpN linux-2.6.26/drivers/leds/leds-ts5500.c /home/sean/tiger/linux-2.6.26/drivers/leds/leds-ts5500.c
+--- linux-2.6.26/drivers/leds/leds-ts5500.c	1970-01-01 01:00:00.000000000 +0100
++++ /home/sean/tiger/linux-2.6.26/drivers/leds/leds-ts5500.c	2008-07-21 21:15:41.000000000 +0100
+@@ -0,0 +1,115 @@
++/*
++ * Copyright (C) 2008 Sean Young <sean@mess.org>
++ */
++
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/delay.h>
++#include <linux/err.h>
++#include <linux/io.h>
++#include <linux/leds.h>
++
++#define DRVNAME "ts5500-leds"
++
++static struct platform_device *ts5500_pdev;
++
++static void ts5500_led_set(struct led_classdev *led_dev, enum led_brightness value)
++{
++	outb(value ? 1 : 0, 0x77);
++}
++
++static struct led_classdev ts5500_led = {
++	.name = "ts5500:green",
++	.brightness_set = ts5500_led_set,
++};
++
++static int __devinit ts5500leds_probe(struct platform_device *pdev)
++{
++	return led_classdev_register(&pdev->dev, &ts5500_led);
++}
++
++static int __devexit ts5500leds_remove(struct platform_device *pdev)
++{
++	led_classdev_unregister(&ts5500_led);
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int ts5500leds_suspend(struct platform_device *pdev, pm_message_t state)
++{
++	led_classdev_suspend(&ts5500_led);
++	return 0;
++}
++
++static int ts5500leds_resume(struct platform_device *pdev)
++{
++	led_classdev_resume(&ts5500_led);
++	return 0;
++}
++#endif
++
++static struct platform_driver ts5500leds_driver = {
++	.driver		= {
++		.name	= DRVNAME,
++		.owner	= THIS_MODULE,
++	},
++	.probe		= ts5500leds_probe,
++	.remove		= __devexit_p(ts5500leds_remove),
++#ifdef CONFIG_PM
++	.suspend	= ts5500leds_suspend,
++	.resume		= ts5500leds_resume,
++#endif
++};
++
++
++static int __init ts5500leds_init(void)
++{
++	int rc;
++	uint8_t product_code;
++
++	if (!request_region(0x74, 1, DRVNAME))
++		return -ENODEV;
++
++	product_code = inb(0x74);
++
++	release_region(0x74, 1);
++
++	if (product_code != 0x60)
++		return -ENODEV;
++
++	if (!request_region(0x77, 1, DRVNAME))
++		return -ENODEV;
++
++	rc = platform_driver_register(&ts5500leds_driver);
++	if (rc)
++		goto free_port;
++
++	ts5500_pdev = platform_device_register_simple(DRVNAME, -1, NULL, 0);
++	if (IS_ERR(ts5500_pdev)) {
++		rc = PTR_ERR(ts5500_pdev);
++		goto driver_unreg;
++	}
++
++	return 0;
++
++driver_unreg:
++	platform_driver_unregister(&ts5500leds_driver);
++free_port:
++	release_region(0x77, 1);
++
++	return rc;
++}
++
++static void __exit ts5500leds_exit(void)
++{
++	platform_device_unregister(ts5500_pdev);
++	platform_driver_unregister(&ts5500leds_driver);
++	release_region(0x77, 1);
++}
++
++module_init(ts5500leds_init);
++module_exit(ts5500leds_exit);
++
++MODULE_AUTHOR("Sean Young <sean@mess.org>");
++MODULE_DESCRIPTION("LED driver for the Technology Systems 5500");
++MODULE_LICENSE("GPL");
+diff -urpN linux-2.6.26/drivers/leds/Makefile /home/sean/tiger/linux-2.6.26/drivers/leds/Makefile
+--- linux-2.6.26/drivers/leds/Makefile	2008-07-13 22:51:29.000000000 +0100
++++ /home/sean/tiger/linux-2.6.26/drivers/leds/Makefile	2008-07-17 15:14:55.000000000 +0100
+@@ -21,6 +21,7 @@ obj-$(CONFIG_LEDS_CM_X270)              
+ obj-$(CONFIG_LEDS_CLEVO_MAIL)		+= leds-clevo-mail.o
+ obj-$(CONFIG_LEDS_HP6XX)		+= leds-hp6xx.o
+ obj-$(CONFIG_LEDS_FSG)			+= leds-fsg.o
++obj-$(CONFIG_LEDS_TS5500)		+= leds-ts5500.o
+ 
+ # LED Triggers
+ obj-$(CONFIG_LEDS_TRIGGER_TIMER)	+= ledtrig-timer.o
