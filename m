@@ -1,70 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932339AbYGUDxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754285AbYGUEDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932339AbYGUDxd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 23:53:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932090AbYGUDxZ
+	id S1754285AbYGUEDR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 00:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750771AbYGUEDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 23:53:25 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:60532 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932089AbYGUDxY (ORCPT
+	Mon, 21 Jul 2008 00:03:04 -0400
+Received: from casper.infradead.org ([85.118.1.10]:33849 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750724AbYGUEDD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 23:53:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=kNu8it2Kt8KxtTrdbEgfBXcXr119qRRvg8UBZSvAKKZ0VHf080zy90ItyOaIQrcXCu
-         /NxDDxAkDebZE21riuYd18GloIQX1vhlpUfG28eABbsOlTo39emyqm53ajYr+326HxOd
-         M2dfvUwaPDFjkGzCGo6g3czZ3TAL9/Mhomcco=
-Message-ID: <2f11576a0807202053m858ef54r68e9ba637801e9e0@mail.gmail.com>
-Date: Mon, 21 Jul 2008 12:53:23 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH -mm] mm: more likely reclaim MADV_SEQUENTIAL mappings
-Cc: "Johannes Weiner" <hannes@saeurebad.de>, "Rik van Riel" <riel@redhat.com>,
-       "Peter Zijlstra" <peterz@infradead.org>,
-       Nossum <vegard.nossum@gmail.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080720184843.9f7b48e9.akpm@linux-foundation.org>
+	Mon, 21 Jul 2008 00:03:03 -0400
+Date: Sun, 20 Jul 2008 20:47:12 -0700
+From: Greg KH <greg@kroah.com>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       David Brownell <david-b@pacbell.net>,
+       Piot Skamruk <piotr.skamruk@gmail.com>,
+       Pierre Ossman <drzeus-mmc@drzeus.cx>, openwrt-devel@lists.openwrt.org,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH v3] Add GPIO-based MMC/SD driver
+Message-ID: <20080721034712.GA25422@kroah.com>
+References: <200807202148.59851.mb@bu3sch.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <87y73x4w6y.fsf@saeurebad.de>
-	 <2f11576a0807201709q45aeec3cvb99b0049421245ae@mail.gmail.com>
-	 <20080720184843.9f7b48e9.akpm@linux-foundation.org>
-X-Google-Sender-Auth: c57ec327508c7432
+In-Reply-To: <200807202148.59851.mb@bu3sch.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+On Sun, Jul 20, 2008 at 09:48:58PM +0200, Michael Buesch wrote:
+> This driver hooks up the mmc_spi and spi_gpio modules so that
+> MMC/SD cards can be used on a GPIO based bus by bitbanging
+> the SPI protocol in software.
+> 
+> This driver provides a configfs interface to dynamically create
+> and destroy GPIO-based MMC/SD card interfaces. It also provides
+> a platform device interface API.
+> See Documentation/gpiommc.txt for details.
 
->> in my experience,
->>   - page_referenced_one is performance critical point.
->>     you should test some benchmark.
->>   - its patch improved mmaped-copy performance about 5%.
->>     (Of cource, you should test in current -mm. MM code was changed widely)
->>
->> So, I'm looking for your test result :)
->
-> The change seems logical and I queued it for 2.6.28.
+configfs stuff should still go in Documentation/ABI as it is a
+userspace/kernelspace interface.
 
-Great.
+thanks,
 
-> But yes, testing for what-does-this-improve is good and useful, but so
-> is testing for what-does-this-worsen.  How do we do that in this case?
-
-In general, page_referenced_one is important for reclaim throuput.
-if crap page_referenced_one changing happend,
-system reclaim throuput become slow down.
-
-Of cource, I don't think this patch cause performance regression :-)
-
-So, any benchmark with memcgroup memory restriction is good choice.
-
-btw:
-maybe, I will able to post mamped-copy improve mesurement of Johannes's patch
-after OLS.
+greg k-h
