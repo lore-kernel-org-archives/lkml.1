@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755564AbYGUMGs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbYGUMMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755564AbYGUMGs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 08:06:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbYGUMGj
+	id S1754559AbYGUMMy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 08:12:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750771AbYGUMMi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 08:06:39 -0400
-Received: from stinky.trash.net ([213.144.137.162]:35651 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750760AbYGUMGi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 08:06:38 -0400
-Message-ID: <48847BA5.2020600@trash.net>
-Date: Mon, 21 Jul 2008 14:05:57 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
-MIME-Version: 1.0
-To: James Morris <jmorris@namei.org>
-CC: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking
-References: <20080720.104411.81744468.davem@davemloft.net> <alpine.LFD.1.10.0807201751440.31863@woody.linux-foundation.org> <20080720.180304.51601407.davem@davemloft.net> <4883E465.4050405@trash.net> <Xine.LNX.4.64.0807212143540.17349@us.intercode.com.au>
-In-Reply-To: <Xine.LNX.4.64.0807212143540.17349@us.intercode.com.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 21 Jul 2008 08:12:38 -0400
+Received: from mga02.intel.com ([134.134.136.20]:14728 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750760AbYGUMMh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 08:12:37 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,223,1215414000"; 
+   d="scan'208";a="419942149"
+From: Tomas Winkler <tomas.winkler@intel.com>
+To: mingo@elte.hu
+Cc: davem@davemloft.net, linville@tuxdriver.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, "Denis V. Lunev" <den@openvz.org>
+Subject: [PATCH] iwlwifi: RS small compile warnings without CONFIG_IWLWIFI_DEBUG
+Date: Mon, 21 Jul 2008 15:12:26 +0300
+Message-Id: <1216642348-26826-1-git-send-email-tomas.winkler@intel.com>
+X-Mailer: git-send-email 1.5.4.1
+In-Reply-To: <20080721083654.GA19849@elte.hu>
+References: <20080721083654.GA19849@elte.hu>
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Morris wrote:
-> On Mon, 21 Jul 2008, Patrick McHardy wrote:
->
->   
->> This is only the NETFILTER_ADVANCED=n default (for SECURITY=y).
->> The netfilter defaults for NETFILTER_ADVANCED=n should be m/y for
->> things that are needed by mainstream distributions for normal
->> usage.
->>
->> I'm not sure how this is going to be used, James?
->>     
->
-> I think the idea now is that everything new is N by default, but the 
-> intention is to have this enabled in Fedora/RHEL.
+From: Denis V. Lunev <den@openvz.org>
 
-Well, this option (NETFILTER_ADVANCED) was introduced specifically
-so Linus doesn't have to go through and enable all the netfilter
-options manually :)
+iwl-agn-rs.c: In function 'rs_clear':
+iwl-agn-rs.c:2405: warning: unused variable 'priv
 
-The idea was that NETFILTER_ADVANCED=n enables everything needed
-by mainstream distributions and hides the rest. We can certainly
-change the default for this option, but that makes NETFILTER_ADVANCED
-pretty much useless.
+Signed-off-by: Denis V. Lunev <den@openvz.org>
+Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
+---
+ drivers/net/wireless/iwlwifi/iwl-agn-rs.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-> Patrick, would you please fix this up?  The only dev box I have access to 
-> at the moment doesn't boot with recent git (I think it's the macbook2 
-> issue).
+diff --git a/drivers/net/wireless/iwlwifi/iwl-agn-rs.c b/drivers/net/wireless/iwlwifi/iwl-agn-rs.c
+index 6a4b229..7ddd07d 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-agn-rs.c
++++ b/drivers/net/wireless/iwlwifi/iwl-agn-rs.c
+@@ -2396,6 +2396,7 @@ static void rs_free(void *priv_rate)
+ 
+ static void rs_clear(void *priv_rate)
+ {
++#ifdef CONFIG_IWLWIFI_DEBUG
+ 	struct iwl_priv *priv = (struct iwl_priv *) priv_rate;
+ 
+ 	IWL_DEBUG_RATE("enter\n");
+@@ -2403,6 +2404,7 @@ static void rs_clear(void *priv_rate)
+ 	/* TODO - add rate scale state reset */
+ 
+ 	IWL_DEBUG_RATE("leave\n");
++#endif /* CONFIG_IWLWIFI_DEBUG */
+ }
+ 
+ static void rs_free_sta(void *priv_rate, void *priv_sta)
+-- 
+1.5.4.1
 
-Sure. I'd like to hear whether Linus still wants this changed though.
+---------------------------------------------------------------------
+Intel Israel (74) Limited
 
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
