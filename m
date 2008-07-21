@@ -1,23 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758102AbYGUH6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760411AbYGUH7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758102AbYGUH6g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 03:58:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757906AbYGUH6P
+	id S1760411AbYGUH7i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 03:59:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757282AbYGUH7T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 03:58:15 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:60144 "EHLO mgw2.diku.dk"
+	Mon, 21 Jul 2008 03:59:19 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:35444 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757897AbYGUH6N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 03:58:13 -0400
-Date: Mon, 21 Jul 2008 09:58:11 +0200 (CEST)
+	id S1758323AbYGUH7R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 03:59:17 -0400
+Date: Mon, 21 Jul 2008 09:59:15 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: yi.zhu@intel.com, jketreno@linux.intel.com, reinette.chatre@intel.com,
-       linux-wireless@vger.kernel.org, ipw2100-devel@lists.sourceforge.net,
-       jgarzik@pobox.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 4/7] drivers/net/wireless/ipw2100.c: Release mutex in error
- handling code
-Message-ID: <Pine.LNX.4.64.0807210957490.24625@ask.diku.dk>
+To: mfasheh@suse.com, joel.becker@oracle.com, ocfs2-devel@oss.oracle.com,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 7/7] fs/ocfs2/file.c: Release mutex in error handling code
+Message-ID: <Pine.LNX.4.64.0807210958570.24625@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -54,23 +51,16 @@ mutex_unlock(l);
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
-diff -u -p a/drivers/net/wireless/ipw2100.c b/drivers/net/wireless/ipw2100.c
---- a/drivers/net/wireless/ipw2100.c
-+++ b/drivers/net/wireless/ipw2100.c
-@@ -6442,6 +6442,7 @@ static int ipw2100_resume(struct pci_dev
- 	if (err) {
- 		printk(KERN_ERR "%s: pci_enable_device failed on resume\n",
- 		       dev->name);
-+		mutex_unlock(&priv->action_mutex);
- 		return err;
- 	}
- 	pci_restore_state(pci_dev);
-@@ -7146,7 +7147,7 @@ static int ipw2100_wx_get_rate(struct ne
- 	err = ipw2100_get_ordinal(priv, IPW_ORD_CURRENT_TX_RATE, &val, &len);
- 	if (err) {
- 		IPW_DEBUG_WX("failed querying ordinals.\n");
--		return err;
-+		goto done;
- 	}
+diff -u -p a/fs/ocfs2/file.c b/fs/ocfs2/file.c
+--- a/fs/ocfs2/file.c
++++ b/fs/ocfs2/file.c
+@@ -1766,8 +1766,8 @@ out_inode_unlock:
+ out_rw_unlock:
+ 	ocfs2_rw_unlock(inode, 1);
  
- 	switch (val & TX_RATE_MASK) {
+-	mutex_unlock(&inode->i_mutex);
+ out:
++	mutex_unlock(&inode->i_mutex);
+ 	return ret;
+ }
+ 
