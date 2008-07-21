@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752308AbYGUPuq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752712AbYGUPxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752308AbYGUPuq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 11:50:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751207AbYGUPuh
+	id S1752712AbYGUPxT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 11:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750736AbYGUPxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 11:50:37 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:34551 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751121AbYGUPuf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 11:50:35 -0400
-Subject: Re: [RFC] breakage in bsg
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 21 Jul 2008 10:50:31 -0500
-Message-Id: <1216655432.3433.30.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Jul 2008 11:53:10 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42399 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750733AbYGUPxJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 11:53:09 -0400
+Date: Mon, 21 Jul 2008 17:52:49 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Simon Arlott <simon@fire.lp0.eu>,
+       Daniel Walker <dwalker@mvista.com>,
+       Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: [patch 0/4] Second batch of fastboot patches: get rid of the 2
+	second rootfs delay
+Message-ID: <20080721155249.GA9607@elte.hu>
+References: <20080720151436.26bdc717@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080720151436.26bdc717@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Sorry for breaking threading ... this is a cut and paste from mark
-since you didn't post to any list I'm subscribed to]
 
-> 	* with "bsg: bind bsg to request_queue instead of gendisk" we
-> get all requests with NULL ->rq_disk.  SCSI can cope with that, anything
-> else is not promised to be able to surive that.  Indeed, quite a few
-> drivers do not.
+* Arjan van de Ven <arjan@infradead.org> wrote:
 
-That's pretty much by design since we need to allow bsg to be used on
-request queues that don't have a gendisk attached (classic example are
-the transient queues belonging to SAS expanders).  Since drivers have to
-actively allow bsg, we can do the local conversions as necessary.
-
-> 	* WTF are these per-bd flags doing, seeing that you set them
-> on every ->read() and ->write()?  Just what will happen if you have
-> two openers?
-
-This isn't really my area, but there's only one flag: BSG_F_BLOCK which
-is used to signal a temporary blockage of the device ... by definition
-that applies to all openers.
-
-> 	* cmd_filter thing is broken as well (we have no access to
-> gendisk in question and there's a lot of obvious issues when you have
-> several openers).
-
-Well, this is philosophical.  I've always maintained the command filter
-to be broken by design.  BSG reinforces that because now we have actual
-uses that aren't SCSI (the main use I have is to transmit Management
-frames to SAS).  You can't filter something if you don't understand the
-protocols and protocol independence was a requirement for the next
-generation of SG.
-
-> #2 and part of #3 are fixable, but I really don't see what to do with #1.
-> If nothing else, it's absolutely incompatible with cmd_filter, even if you
-> leave aside the issue with non-IDE/non-SCSI drivers.
+> Hi,
 > 
-> Comments?
+> this second batch of fastboot patches gets rid of the delay you can 
+> get when you're not using an initrd; on my system this delay is a full 
+> 2 seconds (which is longer than the whole kernel boot combined).
+> 
+> I've also stuck the patch series into a git tree
+> 
+> clone git://git.kernel.org/pub/scm/linux/git/arjan/linux-2.6-fastboot
 
-James
+thanks, pulled into tip/fastboot - works great here!
 
-
+	Ingo
