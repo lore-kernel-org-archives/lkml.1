@@ -1,67 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757431AbYGUAj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757301AbYGUAsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757431AbYGUAj1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 20:39:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755445AbYGUAjQ
+	id S1757301AbYGUAsN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 20:48:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754955AbYGUAr6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 20:39:16 -0400
-Received: from ti-out-0910.google.com ([209.85.142.186]:52511 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754372AbYGUAjO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 20:39:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=VT2PaINxeXfOJTQSrVkLtEsNtpPEYUpg55j+sI0Fe/ovY9lgioj7PI9+scblSwG2+I
-         Y0o1gC8nuKn2rVm+RiGArvABBu4qxjfwsPibVGdLybjOwghapP8oPEMmP1NAMcCI+HQT
-         2Hyt0/ZZxhkhMPDoLac5qjfVl9y8z/ekn7wao=
-Message-ID: <4883DA8C.5030306@gmail.com>
-Date: Mon, 21 Jul 2008 09:38:36 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Sun, 20 Jul 2008 20:47:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48229 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753577AbYGUAr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 20:47:57 -0400
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus@drzeus.cx>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       scsi <linux-scsi@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       Takashi Iwai <tiwai@suse.de>, tino.keitel@gmx.de
-Subject: Re: linux-next: Tree for July 16 (crash on quad core AMD)
-References: <20080716235011.ac9643aa.sfr@canb.auug.org.au>	<200807170053.36661.rjw@sisk.pl>	<1216249292.3358.66.camel@localhost.localdomain>	<200807170109.30655.rjw@sisk.pl>	<48808EE0.2060603@gmail.com>	<20080719004736.626ef169@mjolnir.drzeus.cx>	<48813C5F.70007@gmail.com>	<20080719033050.552f9b49@mjolnir.drzeus.cx>	<48814D81.8060001@gmail.com>	<20080719140717.7b296eae@mjolnir.drzeus.cx>	<4881F437.7000503@gmail.com> <20080721004033.1fc66aa3@mjolnir.drzeus.cx>
-In-Reply-To: <20080721004033.1fc66aa3@mjolnir.drzeus.cx>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+X-Fcc: ~/Mail/linus
+Cc: Mark McLoughlin <markmc@redhat.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] posix-timers: Do not modify an already queued timer signal
+In-Reply-To: Oleg Nesterov's message of  Sunday, 20 July 2008 15:08:56 +0400 <20080720110856.GC143@tv-sign.ru>
+References: <1216219846-663-1-git-send-email-markmc@redhat.com>
+	<20080716162131.GA1785@tv-sign.ru>
+	<1216292911.28332.12.camel@muff>
+	<20080717135556.GA770@tv-sign.ru>
+	<1216377558.12300.13.camel@muff>
+	<20080719163734.GA389@tv-sign.ru>
+	<20080720065240.B3D3715421D@magilla.localdomain>
+	<20080720110856.GC143@tv-sign.ru>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20080721004722.5869515421D@magilla.localdomain>
+Date: Sun, 20 Jul 2008 17:47:22 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Pierre.
+> Yes, thanks, I see. But does it have any meaning for the user-space?
+[si_sys_private]
 
-Pierre Ossman wrote:
-> I've converted my code to use your implementation instead, and it seems
-> to be working perfectly.
+No, it's not part of the user ABI.  It's not even copied out (see
+copy_siginfo_to_user).  (A spare siginfo_t field was just used as a handy
+bit of storage in the signal queue element.  It's a kludge.)
 
-Cool.
+> Let me repeat. Can't we make a simple fix for now for this nasty and
+> ancient bug, before we do the more clever changes,
 
-> How comfortable to you feel about your patch? :)
+Probably.  I don't find it easy to be sure there aren't more bad
+problems caused by trying to re-send the same sigqueue entry.
 
-I think it should be okay (well, of course :-) and tested a few corner
-cases by modifying the copy function.
+You do need to clear si_overrun there to be correct in the usual case
+(not already queued).  The fields set explicitly in posix_timer_event,
+plus si_overrun, are the only meaningful fields for SI_TIMER (again see
+copy_siginfo_to_user).  The memset is already superfluous.
 
-> This fixes a big problem in the sdhci driver where falling back on PIO
-> (because of hw DMA bugs) would create lots of potential issues as the
-> driver couldn't access highmem pages. I'd like to get this fix in for
-> 2.6.27, which means that your patch also needs to go in now.
+It would be a perfectly fine and worthwhile optimization/cleanup on its
+own just to move all the initialization of sigq->info (everything but
+si_sys_private) to alloc_posix_timer.  That would also happen to mask
+the symptom of this double-queuing problem that's been observed.
 
-I think it needs an ACK from Jens.  Jens?
+Even if it's a fine stopgap, I'm not comfortable calling this a real "fix".
+It seems likely this is the good choice for the stable branch.
 
--- 
-tejun
+> Suppose that the signal was already dequeued but sigq->info wasn't copied
+> to the user-space. The thread which does dequeue_signal() unlocked siglock
+> and waits for ->it_lock.
+
+This is fine.  sigq->info is copied into a local (kernel stack) copy in
+collect_signal(), i.e. inside dequeue_signal() long before the unlock.
+In short, once __dequeue_signal() returns, the signal goes from "queued"
+to "delivered".  The delivery is on its way to happening, and from the
+instant that thread released the siglock it's no different from if it
+had completed handler setup, returned to user, and had a long scheduling
+delay before actually executing the first user instruction.  At this
+point, any other event is not "racing", it's just "after".
+
+> posix_timer_event() sees list_empty(), proceeds and calls send_sigqueue().
+> Now we requeue this ->sigq instead of incrementing si_overrun.
+
+It's not "requeue".  It's "queue" after it was no longer queued, with
+semantics no different from the first time you queue it.
+
+> The thread which does dequeue_signal() continues and re-schedules the
+> timer while ->sigq is queued. Then it copies sigq->info to the user space.
+
+The thread that dequeued the first timer signal had ceased all reference
+to sigq by the time it unlocked siglock.  When its do_schedule_next_timer
+call gets it_lock, it can do bookkeeping in struct k_itimer to figure out
+what posix_timer_event or timer_settime has done lately.  (Like I said,
+the ->fired flag alone might not really cover all the angles.  I was
+expecting you to figure out the exactly details for me. ;-)
+
+> While we are here, off-topics question. 
+
+You know I hate those.  We aren't here.  We're in chairs reading email.
+We'll be in the same places if you send a separate message for a separate
+topic.
+
+> Is it really useful to convert the SIGEV_THREAD_ID timer to the group-wide
+> timer when the thread dies?
+
+Not really.  I think the main intent there is just to be sure we never
+hold on to an old task_struct pointer (which might have been the bug in
+the past).
+
+
+Thanks,
+Roland
