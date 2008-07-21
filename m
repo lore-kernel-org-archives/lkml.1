@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755157AbYGUT6D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755307AbYGUUAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755157AbYGUT6D (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 15:58:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753694AbYGUT5x
+	id S1755307AbYGUUAQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 16:00:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754196AbYGUT77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 15:57:53 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:38939 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753484AbYGUT5x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 15:57:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=UiWyOcJzbboT4KR42/R+L+m8TRk/tvC4rsGa/v/zMdrzL3APFg8rdttAChtdQQKqFB
-         Y4yB1BKmnuNhoTPPYSw2BO4pzAv6LXVUMlrW8G1EO7RazIPO47x4jKiqcs65KVTgyZ/P
-         41nVUnrwG/HCylhyUVKwD8pzJBEeJayvkaUh0=
-Message-ID: <5f6f8c5f0807211257j668535eam873275afc2040f73@mail.gmail.com>
-Date: Mon, 21 Jul 2008 21:57:51 +0200
-From: "Joshua C." <joshuacov@googlemail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: ACPI: ACPI_CUSTOM_DSDT_INITRD option
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Jul 2008 15:59:59 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:52049 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753694AbYGUT76 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 15:59:58 -0400
+Date: Mon, 21 Jul 2008 23:57:49 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, davem@davemloft.net
+Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison overwritten
+Message-ID: <20080721195748.GA3191@2ka.mipt.ru>
+References: <20080717214222.GA29449@elte.hu> <Pine.LNX.4.64.0807181149460.3852@sbz-30.cs.Helsinki.FI> <20080718091146.GQ6875@elte.hu> <20080721094110.GA16029@elte.hu> <84144f020807210252k68d5cf65i8c7ae3c11cecc046@mail.gmail.com> <20080721100627.GA5953@2ka.mipt.ru> <4884B7C3.9040801@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <4884B7C3.9040801@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/7/21 Ben Collins <ben.collins@canonical.com>:
->
-> Could you rebase it on latest git (lots of fuzz)? Other than that, it
-> looks good to me. We've been carrying this patch forever, so would be
-> nice to have it applied upstream finally.
->
->
+Hi Christoph.
 
-I tried the current patch (acpi-dsdt-initrd-v0.9a-2.6.25.patch) with
-fedora kernel-2.6.27-0.161.rc0.git6.fc10 which is git6 and it compiled
-without any problems. I didn't modify anything on the patch. so it
-should be "production" ready in its current state, shouldn't it? Maybe
-this time it can make its way upstream.
+On Mon, Jul 21, 2008 at 11:22:27AM -0500, Christoph Lameter (cl@linux-foundation.org) wrote:
+> >Not that obvious...
+> >skb->next is cleared in lots of places, in xmit network helper
+> >for example, but since rest of the packet was not modified, it
+> >means given skb was not freed, so it will not help.
+> 
+> The skb was definitely freed. 6b is written over an object when it is 
+> freed. Something else retained a pointer to the skb and was confident 
+> that the skb still exists.
+
+I meant it was not tried to be freed second time, since skb->users area
+(the very end of the skb) was not changed from 6b to 6a, but its
+skb->next pointer (first field in the skb) was set to NULL, so after
+that skb was not used at all.
+
+It could be an interesting kmemcheck extension to catch not only
+non-initialized memory, but also writes into just freed one, but not yet
+returned by allocator to the next user.
+
+-- 
+	Evgeniy Polyakov
