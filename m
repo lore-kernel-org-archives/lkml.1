@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758638AbYGUKFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758684AbYGUKHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758638AbYGUKFd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 06:05:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756813AbYGUKFZ
+	id S1758684AbYGUKHb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 06:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756408AbYGUKHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 06:05:25 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:40860 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751660AbYGUKFZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 06:05:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=gzrw2Kd8G6nHuTgLQosK520FrhLQB1yVXrjdcqyz8k8y5yh4Ffrg4Jf1OCQx9fHS/5
-         HLWF81nC2RBK7XbqrQtdEqsktGTVvRYUgIGHT7F2Du/HySZUqZ0TegeUSpO5ykUmZ1pv
-         T6fCYRDw8XU0cvE3YUIkftOkELuF0HTZz+B+0=
-Date: Mon, 21 Jul 2008 14:05:20 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
+	Mon, 21 Jul 2008 06:07:18 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:60798 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752372AbYGUKHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 06:07:17 -0400
+Date: Mon, 21 Jul 2008 14:06:27 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Al Viro <viro@zeniv.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] vfs: use kstrdup()
-Message-ID: <20080721100520.GA7694@lenovo>
-References: <20080719131317.GA7027@asus> <20080719131909.GB7027@asus> <20080721052713.GY28946@ZenIV.linux.org.uk> <48842CDB.1090009@cn.fujitsu.com> <20080721070346.GA28946@ZenIV.linux.org.uk> <20080721080427.GC6662@lenovo> <488448A1.3030608@cn.fujitsu.com> <20080721084443.GD20011@lenovo> <48844FE4.1040708@cn.fujitsu.com> <84144f020807210206r12b121c6o8ce88a752493b0cf@mail.gmail.com>
-MIME-Version: 1.0
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Vegard Nossum <vegard.nossum@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, cl@linux-foundation.org,
+       davem@davemloft.net
+Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison overwritten
+Message-ID: <20080721100627.GA5953@2ka.mipt.ru>
+References: <20080717214222.GA29449@elte.hu> <Pine.LNX.4.64.0807181149460.3852@sbz-30.cs.Helsinki.FI> <20080718091146.GQ6875@elte.hu> <20080721094110.GA16029@elte.hu> <84144f020807210252k68d5cf65i8c7ae3c11cecc046@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <84144f020807210206r12b121c6o8ce88a752493b0cf@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <84144f020807210252k68d5cf65i8c7ae3c11cecc046@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Pekka Enberg - Mon, Jul 21, 2008 at 12:06:55PM +0300]
-| Hi,
-| 
-| On Mon, Jul 21, 2008 at 11:59 AM, Li Zefan <lizf@cn.fujitsu.com> wrote:
-| >> well, as only Al find new version more or less correct we could
-| >> update yours.
-| >
-| > Sorry, I don't quite catch what you mean for my poor English. :(
-| >
-| > Do you expect me to update and resend my version? or do you mean don't
-| > drop the patch in -mm but you will resend a patch based against it?
-| 
-| Andrew already merged your patch so I think Cyrill should just send a
-| new patch against -mm.
-| 
-|                           Pekka
-|
+Hi.
 
-Thanks guys, will send patch against -mm soon (a bit busy now)
- 
-		- Cyrill -
+On Mon, Jul 21, 2008 at 12:52:45PM +0300, Pekka Enberg (penberg@cs.helsinki.fi) wrote:
+> On Mon, Jul 21, 2008 at 12:41 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> > update about this problem: just triggered another colorful crash, see
+> > below. This was with the 4K object dump patch already, maybe the dump
+> > gives a clue?
+> 
+> ...to point out the obvious:
+> 
+> > =============================================================================
+> > BUG skbuff_head_cache: Poison overwritten
+> > -----------------------------------------------------------------------------
+> >
+> > INFO: 0xf7ccc100-0xf7ccc103. First byte 0x0 instead of 0x6b
+> > INFO: Allocated in __alloc_skb+0x30/0x10e age=1 cpu=1 pid=1
+> > INFO: Freed in __kfree_skb+0x63/0x66 age=1 cpu=0 pid=0
+> > INFO: Slab 0xc1c34ca0 objects=16 used=1 fp=0xf7ccc100 flags=0x400000c3
+> > INFO: Object 0xf7ccc100 @offset=256 fp=0xf7ccc200
+> >
+> > Bytes b4 0xf7ccc0f0:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a ZZZZZZZZZZZZZZZZ
+> >  Object 0xf7ccc100:  00 00 00 00 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b ....kkkkkkkkkkkk
+> 
+> Use after free where first four bytes are zeroed.
+
+Not that obvious...
+skb->next is cleared in lots of places, in xmit network helper
+for example, but since rest of the packet was not modified, it
+means given skb was not freed, so it will not help.
+
+Ingo do you see other similar dumps with last byte modified?
+That's the one which can help to determine the reason.
+
+-- 
+	Evgeniy Polyakov
