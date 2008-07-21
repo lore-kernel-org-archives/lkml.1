@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756010AbYGUUwP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbYGUUxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756010AbYGUUwP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 16:52:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbYGUUv5
+	id S1756156AbYGUUxT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 16:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbYGUUxI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 16:51:57 -0400
-Received: from stinky.trash.net ([213.144.137.162]:47681 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752720AbYGUUv4 (ORCPT
+	Mon, 21 Jul 2008 16:53:08 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42729 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752307AbYGUUxH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 16:51:56 -0400
-Message-ID: <4884F6E9.6090809@trash.net>
-Date: Mon, 21 Jul 2008 22:51:53 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: Larry.Finger@lwfinger.net, mingo@elte.hu, ischram@telenet.be,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, j@w1.fi
-Subject: Re: [crash] BUG: unable to handle kernel NULL pointer dereference
- at 0000000000000370
-References: <4884E6E6.7010800@lwfinger.net>	<20080721.132100.128525904.davem@davemloft.net>	<4884F3D7.4070604@lwfinger.net> <20080721.134608.75595942.davem@davemloft.net>
-In-Reply-To: <20080721.134608.75595942.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Jul 2008 16:53:07 -0400
+Date: Mon, 21 Jul 2008 17:32:26 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       user-mode-linux-devel@lists.sourceforge.net, jdike@addtoit.com
+Subject: Re: [Patch] um: fix a build error
+Message-ID: <20080721173226.0c0462f7@the-village.bc.nu>
+In-Reply-To: <20080721165409.GA9023@hack.voiplan.pt>
+References: <20080721165409.GA9023@hack.voiplan.pt>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Larry Finger <Larry.Finger@lwfinger.net>
-> Date: Mon, 21 Jul 2008 15:38:47 -0500
-> 
->> David Miller wrote:
->>> No further backtrace?  That will tell us what driver is causing
->>> this.
->> Yes, I have a full backtrace.
->>
->> It starts with possible recursive locking in NetworkManager, and goes directly 
->> into the Warning - this came from a later pull of Linus's tree.
-> 
-> That helps a lot, I'm looking at this now.
+On Mon, 21 Jul 2008 17:54:09 +0100
+WANG Cong <xiyou.wangcong@gmail.com> wrote:
 
-I'm guessing this needs similar lockdep class initializations
-to _xmit_lock since it essentially has the same nesting rules.
+> 
+> Fixed this build error:
+> 
+> /home/wangcong/Projects/linux-2.6/arch/um/drivers/line.c: In function
+> ‘line_write_interrupt’:
+> /home/wangcong/Projects/linux-2.6/arch/um/drivers/line.c:366: error:
+> ‘struct tty_ldisc’ has no member named ‘write_wakeup’
+> /home/wangcong/Projects/linux-2.6/arch/um/drivers/line.c:367: error:
+> ‘struct tty_ldisc’ has no member named ‘write_wakeup’
+> make[2]: *** [arch/um/drivers/line.o] Error 1
+> make[1]: *** [arch/um/drivers] Error 2
+> make: *** [sub-make] Error 2
+> 
+> Sigend-off-by: WANG Cong <wangcong@zeuux.org>
 
+NAK - drivers shouldn't be poking around in tty innards in the first
+place then this wouldn't break. Use tty_wakeup(tty); insteaad
+
+Alan
