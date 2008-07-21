@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757983AbYGUGNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758264AbYGUGRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757983AbYGUGNu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 02:13:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbYGUGNm
+	id S1758264AbYGUGRW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 02:17:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbYGUGRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 02:13:42 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:18629 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752493AbYGUGNl (ORCPT
+	Mon, 21 Jul 2008 02:17:13 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:54852 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750954AbYGUGRN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 02:13:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=lQQyKs1hhEVTErVkXq85jcgp1nCqCzd1xoeZKpk8J853/vHrQ9CHqbTkS8mWWKOgiw
-         wuNF6J931MBwy6LHgfAIjRo3nPIueA5n+3qexp2RfV+4WsXIyFRn79YmbMFkvi+0H8oX
-         /wCKcS92eLRb+2YqrdJKKR2THuqDNgWplNQsE=
-Subject: Re: linux-next: please hold off 2.6.28 stuff
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080721135108.d4ca4be5.sfr@canb.auug.org.au>
-References: <20080721135108.d4ca4be5.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Sun, 20 Jul 2008 23:13:41 -0700
-Message-Id: <1216620821.13328.14.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Jul 2008 02:17:13 -0400
+Date: Mon, 21 Jul 2008 00:16:55 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Jaswinder Singh <jaswinder@infradead.org>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, kernelnewbies <kernelnewbies@nl.linux.org>,
+       David Woodhouse <dwmw2@infradead.org>, rth@twiddle.net,
+       rmk@arm.linux.org.uk, hskinnemoen@atmel.com, cooloney@kernel.org,
+       starvik@axis.com, dhowells@redhat.com, ysato@users.sourceforge.jp,
+       tony.luck@intel.com, takata@linux-m32r.org, geert@linux-m68k.org,
+       ralf@linux-mips.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
+       chris@zankel.net
+Subject: Re: [PATCH 0/22] Introducing asm/syscalls.h
+Message-ID: <20080721061655.GE24246@parisc-linux.org>
+References: <1216592500.3679.14.camel@jaswinder.satnam> <20080721002837.GA3851@martell.zuzino.mipt.ru> <1216619100.2705.27.camel@jaswinder.satnam> <20080721055459.GD24246@parisc-linux.org> <1216620434.2705.38.camel@jaswinder.satnam>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1216620434.2705.38.camel@jaswinder.satnam>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-07-21 at 13:51 +1000, Stephen Rothwell wrote:
-> Hi all,
+On Mon, Jul 21, 2008 at 11:37:14AM +0530, Jaswinder Singh wrote:
+> ???linux/syscalls.h is Linux syscall interfaces (non-arch-specific)
 > 
-> Andrew mentioned this and I just thought I would reinforce the message:
-> 
-> Please do not put 2.6.28 code into linux-next until at least after -rc1.
-> This will help Andrew's sanity :-)
+> So asm/syscalls.h is ???Linux syscall interfaces (arch-specific)
 
-I would say let -rc2 be the flag for putting things for the next (2.6.28) release
-into -next.  That would give akpm time to get his load in as well.
-Between -rc1 and -rc2, he could look at -next to see what patches were
-picked up by maintainers and what he'll still have to send in himself.
+That's how you see it.
 
-But it's not me doing the work :-)
+> And if we add all arch dependent syscalls.h in linux/syscalls then it
+> will be very complex and do not look nice, for example sys_fork is keep
+> on changing for many architecture.
 
-Keep up the good work Stephen/AKPM.
+sys_fork() does seem to be the worst case scenario.  I suspect there's
+similar ones (clone?).  I still think it's worth adding them all to
+linux/syscalls.h.
 
-Harvey
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
