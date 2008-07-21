@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755883AbYGUH5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbYGUH5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755883AbYGUH5U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 03:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbYGUH5J
+	id S1757567AbYGUH5x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 03:57:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756833AbYGUH5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 03:57:09 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:60056 "EHLO mgw2.diku.dk"
+	Mon, 21 Jul 2008 03:57:30 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:39758 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752397AbYGUH5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 03:57:08 -0400
-Date: Mon, 21 Jul 2008 09:57:04 +0200 (CEST)
+	id S1756663AbYGUH52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 03:57:28 -0400
+Date: Mon, 21 Jul 2008 09:57:26 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: rolandd@cisco.com, sean.hefty@intel.com, hal.rosenstock@gmail.com,
-       general@lists.openfabrics.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/7] drivers/infiniband: Release mutex in error handling code
-Message-ID: <Pine.LNX.4.64.0807210956040.24625@ask.diku.dk>
+To: jgarzik@pobox.com, raisch@de.ibm.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 2/7] drivers/net/ehea/ehea_main.c: Release mutex in error
+ handling code
+Message-ID: <Pine.LNX.4.64.0807210957060.24625@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,7 +27,7 @@ From: Julia Lawall <julia@diku.dk>
 The mutex is released on a successful return, so it would seem that it
 should be released on an error return as well.
 
-The semantic patch that makes this change is as follows:
+The semantic patch finds this problem is as follows:
 (http://www.emn.fr/x-info/coccinelle/)
 
 // <smpl>
@@ -52,14 +52,18 @@ mutex_unlock(l);
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
-diff -u -p a/drivers/infiniband/hw/ehca/ipz_pt_fn.c b/drivers/infiniband/hw/ehca/ipz_pt_fn.c
---- a/drivers/infiniband/hw/ehca/ipz_pt_fn.c
-+++ b/drivers/infiniband/hw/ehca/ipz_pt_fn.c
-@@ -163,6 +163,7 @@ static int alloc_small_queue_page(struct
- 
+diff -u -p a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -2937,9 +2937,9 @@ static void ehea_rereg_mrs(struct work_s
+ 				}
+ 			}
+ 		}
+-       mutex_unlock(&dlpar_mem_lock);
+-       ehea_info("re-initializing driver complete");
++	ehea_info("re-initializing driver complete");
  out:
- 	ehca_err(pd->ib_pd.device, "failed to allocate small queue page");
-+	mutex_unlock(&pd->lock);
- 	return 0;
++	mutex_unlock(&dlpar_mem_lock);
+ 	return;
  }
  
