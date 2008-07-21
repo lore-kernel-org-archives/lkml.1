@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487AbYGUQxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbYGUQ4M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753487AbYGUQxl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 12:53:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751610AbYGUQxa
+	id S1754002AbYGUQ4M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 12:56:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752632AbYGUQzz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 12:53:30 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51804
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750784AbYGUQxa (ORCPT
+	Mon, 21 Jul 2008 12:55:55 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:18054 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752548AbYGUQzx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 12:53:30 -0400
-Date: Mon, 21 Jul 2008 09:53:30 -0700 (PDT)
-Message-Id: <20080721.095330.213354230.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: adobriyan@gmail.com, akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jeffrey.t.kirsher@intel.com
-Subject: Re: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.1.10.0807210942310.31863@woody.linux-foundation.org>
-References: <20080720.194856.92564555.davem@davemloft.net>
-	<20080720.221106.201055562.davem@davemloft.net>
-	<alpine.LFD.1.10.0807210942310.31863@woody.linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Jul 2008 12:55:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:content-transfer-encoding:user-agent;
+        b=FHoXYZQQ6nFmsbhbrd1gfKLl4xza8sAS00Pv1FSMMvuBBebYKdd6cWebxM7boD4BCR
+         nMckoLtUiGaFOuj3woKPLJtQ6uoH1I2VyMKtlAuOksGd3+9CqMttjTP/iCcvk/bq55Ho
+         seRBMKNUlKRx8zWn8Xym6mDv0Rvkidez0/cQc=
+Date: Mon, 21 Jul 2008 17:54:09 +0100
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: user-mode-linux-devel@lists.sourceforge.net, jdike@addtoit.com
+Subject: [Patch] um: fix a build error
+Message-ID: <20080721165409.GA9023@hack.voiplan.pt>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 21 Jul 2008 09:49:49 -0700 (PDT)
 
-> Why is it so unnecessarily fragile to begin with? Especially for stuff 
-> that happens at bootup or suspend, doing a BUG_ON() is _particularly_ 
-> painful, because a dead machine means that you cannot get any logs or 
-> anything else.
+Fixed this build error:
 
-I agree, the BUG_ON() was the wrong way to go.
+/home/wangcong/Projects/linux-2.6/arch/um/drivers/line.c: In function
+‘line_write_interrupt’:
+/home/wangcong/Projects/linux-2.6/arch/um/drivers/line.c:366: error:
+‘struct tty_ldisc’ has no member named ‘write_wakeup’
+/home/wangcong/Projects/linux-2.6/arch/um/drivers/line.c:367: error:
+‘struct tty_ldisc’ has no member named ‘write_wakeup’
+make[2]: *** [arch/um/drivers/line.o] Error 1
+make[1]: *** [arch/um/drivers] Error 2
+make: *** [sub-make] Error 2
 
-> So wouldn't it be *much* better to do something like the appended, and at 
-> least try to limp on, and maybe have a system that people can get logs 
-> out of?
+Sigend-off-by: WANG Cong <wangcong@zeuux.org>
+Cc: jdike@addtoit.com
 
-Agreed, I'll apply this.  Thanks.
-
-> diff --git a/net/core/dev.c b/net/core/dev.c
-> index 2eed17b..43ab4f5 100644
-> --- a/net/core/dev.c
-> +++ b/net/core/dev.c
-> @@ -1325,7 +1325,8 @@ static void dev_queue_xmit_nit(struct sk_buff *skb, struct net_device *dev)
->  
->  void __netif_schedule(struct Qdisc *q)
->  {
-> -	BUG_ON(q == &noop_qdisc);
-> +	if (WARN_ON_ONCE(q == &noop_qdisc))
-> +		return;
->  
->  	if (!test_and_set_bit(__QDISC_STATE_SCHED, &q->state)) {
->  		struct softnet_data *sd;
-> ---
+---
+diff --git a/arch/um/drivers/line.c b/arch/um/drivers/line.c
+index 5047490..c872dad 100644
+--- a/arch/um/drivers/line.c
++++ b/arch/um/drivers/line.c
+@@ -363,8 +363,8 @@ static irqreturn_t line_write_interrupt(int irq, void *data)
+ 		return IRQ_NONE;
+ 
+ 	if (test_bit(TTY_DO_WRITE_WAKEUP, &tty->flags) &&
+-	   (tty->ldisc.write_wakeup != NULL))
+-		(tty->ldisc.write_wakeup)(tty);
++	   (tty->ldisc.ops->write_wakeup != NULL))
++		(tty->ldisc.ops->write_wakeup)(tty);
+ 
+ 	/*
+ 	 * BLOCKING mode
