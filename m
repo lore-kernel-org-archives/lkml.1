@@ -1,46 +1,534 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755942AbYGUP2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbYGUP2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755942AbYGUP2Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 11:28:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbYGUP16
+	id S1754669AbYGUP2i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 11:28:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbYGUP21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 11:27:58 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57084
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750760AbYGUP15 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 11:27:57 -0400
-Date: Mon, 21 Jul 2008 08:27:57 -0700 (PDT)
-Message-Id: <20080721.082757.103904123.davem@davemloft.net>
-To: adobriyan@gmail.com
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jeffrey.t.kirsher@intel.com
-Subject: Re: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080721115742.GA4871@martell.zuzino.mipt.ru>
-References: <20080720.194856.92564555.davem@davemloft.net>
-	<20080720.221106.201055562.davem@davemloft.net>
-	<20080721115742.GA4871@martell.zuzino.mipt.ru>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Jul 2008 11:28:27 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33061 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752282AbYGUP2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 11:28:25 -0400
+Date: Mon, 21 Jul 2008 17:28:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [git pull] stackprotector updates to v2.6.27
+Message-ID: <20080721152800.GA22834@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexey Dobriyan <adobriyan@gmail.com>
-Date: Mon, 21 Jul 2008 15:57:42 +0400
+Linus,
 
-> On Sun, Jul 20, 2008 at 10:11:06PM -0700, David Miller wrote:
-> > Alexey, please try this patch:
-> > 
-> > atl1: Do not wake queue before queue has been started.
-> 
-> Patch helps and networking is back with and without using netconsole,
-> thank you!
-> 
-> Also wan to say, 8139too driver survived multiqueue TX changes fine.
+Please pull the latest stackprotector git tree from:
 
-Thank you very much for testing, I'll push this fix.
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git stackprotector-for-linus
+
+[ this has the "default y" bug fixed that you noticed in the previous
+  pull request. ]
+
+Thanks,
+
+	Ingo
+
+------------------>
+Arjan van de Ven (5):
+      x86: setup stack canary for the idle threads
+      x86: add CONFIG_CC_STACKPROTECTOR self-test
+      stackprotector: turn not having the right gcc into a #warning
+      stackprotector: better self-test
+      x86: simplify stackprotector self-check
+
+Daniel Walker (1):
+      panic.c: fix whitespace additions
+
+Eric Sandeen (1):
+      stackprotector: use canary at end of stack to indicate overruns at oops time
+
+Ingo Molnar (12):
+      x86: stackprotector & PARAVIRT fix
+      x86: fix stackprotector canary updates during context switches
+      x86: fix canary of the boot CPU's idle task
+      panic: print more informative messages on stackprotect failure
+      panic: print out stacktrace if DEBUG_BUGVERBOSE
+      x86: if stackprotector is enabled, thn use stack-protector-all by default
+      stackprotector: include files
+      stackprotector: add boot_init_stack_canary()
+      x86: fix the stackprotector canary of the boot CPU
+      x86: stackprotector: mix TSC to the boot canary
+      x86: unify stackprotector features
+      stackprotector: remove self-test
+
+
+ arch/x86/Kconfig                 |   23 ++++++++++-------------
+ arch/x86/Kconfig.debug           |    1 +
+ arch/x86/Makefile                |    2 +-
+ arch/x86/kernel/Makefile         |    1 +
+ arch/x86/kernel/process_64.c     |   13 ++++++++++++-
+ arch/x86/mm/fault.c              |    7 +++++++
+ include/asm-x86/pda.h            |    3 +--
+ include/asm-x86/stackprotector.h |   38 ++++++++++++++++++++++++++++++++++++++
+ include/asm-x86/system.h         |    6 +++++-
+ include/linux/magic.h            |    1 +
+ include/linux/sched.h            |   16 ++++++++++++++--
+ include/linux/stackprotector.h   |   16 ++++++++++++++++
+ init/main.c                      |    7 +++++++
+ kernel/exit.c                    |    5 +----
+ kernel/fork.c                    |    5 +++++
+ kernel/panic.c                   |   12 +++++++++++-
+ kernel/sched.c                   |    7 +------
+ 17 files changed, 132 insertions(+), 31 deletions(-)
+ create mode 100644 include/asm-x86/stackprotector.h
+ create mode 100644 include/linux/stackprotector.h
+
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 96e0c2e..6c23787 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -1220,13 +1220,17 @@ config SECCOMP
+ 
+ 	  If unsure, say Y. Only embedded should say N here.
+ 
++config CC_STACKPROTECTOR_ALL
++	bool
++
+ config CC_STACKPROTECTOR
+ 	bool "Enable -fstack-protector buffer overflow detection (EXPERIMENTAL)"
+-	depends on X86_64 && EXPERIMENTAL && BROKEN
++	depends on X86_64
++	select CC_STACKPROTECTOR_ALL
+ 	help
+-         This option turns on the -fstack-protector GCC feature. This
+-	  feature puts, at the beginning of critical functions, a canary
+-	  value on the stack just before the return address, and validates
++          This option turns on the -fstack-protector GCC feature. This
++	  feature puts, at the beginning of functions, a canary value on
++	  the stack just before the return address, and validates
+ 	  the value just before actually returning.  Stack based buffer
+ 	  overflows (that need to overwrite this return address) now also
+ 	  overwrite the canary, which gets detected and the attack is then
+@@ -1234,15 +1238,8 @@ config CC_STACKPROTECTOR
+ 
+ 	  This feature requires gcc version 4.2 or above, or a distribution
+ 	  gcc with the feature backported. Older versions are automatically
+-	  detected and for those versions, this configuration option is ignored.
+-
+-config CC_STACKPROTECTOR_ALL
+-	bool "Use stack-protector for all functions"
+-	depends on CC_STACKPROTECTOR
+-	help
+-	  Normally, GCC only inserts the canary value protection for
+-	  functions that use large-ish on-stack buffers. By enabling
+-	  this option, GCC will be asked to do this for ALL functions.
++	  detected and for those versions, this configuration option is
++	  ignored. (and a warning is printed during bootup)
+ 
+ source kernel/Kconfig.hz
+ 
+diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+index ae36bfa..4b361d3 100644
+--- a/arch/x86/Kconfig.debug
++++ b/arch/x86/Kconfig.debug
+@@ -114,6 +114,7 @@ config DIRECT_GBPAGES
+ config DEBUG_RODATA_TEST
+ 	bool "Testcase for the DEBUG_RODATA feature"
+ 	depends on DEBUG_RODATA
++	default y
+ 	help
+ 	  This option enables a testcase for the DEBUG_RODATA
+ 	  feature as well as for the change_page_attr() infrastructure.
+diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+index 919ce21..fc4c43d 100644
+--- a/arch/x86/Makefile
++++ b/arch/x86/Makefile
+@@ -73,7 +73,7 @@ else
+ 
+         stackp := $(CONFIG_SHELL) $(srctree)/scripts/gcc-x86_64-has-stack-protector.sh
+         stackp-$(CONFIG_CC_STACKPROTECTOR) := $(shell $(stackp) \
+-                "$(CC)" -fstack-protector )
++                "$(CC)" "-fstack-protector -DGCC_HAS_SP" )
+         stackp-$(CONFIG_CC_STACKPROTECTOR_ALL) += $(shell $(stackp) \
+                 "$(CC)" -fstack-protector-all )
+ 
+diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+index da14061..c989d15 100644
+--- a/arch/x86/kernel/Makefile
++++ b/arch/x86/kernel/Makefile
+@@ -20,6 +20,7 @@ nostackp := $(call cc-option, -fno-stack-protector)
+ CFLAGS_vsyscall_64.o	:= $(PROFILING) -g0 $(nostackp)
+ CFLAGS_hpet.o		:= $(nostackp)
+ CFLAGS_tsc.o		:= $(nostackp)
++CFLAGS_paravirt.o	:= $(nostackp)
+ 
+ obj-y			:= process_$(BITS).o signal_$(BITS).o entry_$(BITS).o
+ obj-y			+= traps_$(BITS).o irq_$(BITS).o
+diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
+index a8e5362..1495bb2 100644
+--- a/arch/x86/kernel/process_64.c
++++ b/arch/x86/kernel/process_64.c
+@@ -16,6 +16,7 @@
+ 
+ #include <stdarg.h>
+ 
++#include <linux/stackprotector.h>
+ #include <linux/cpu.h>
+ #include <linux/errno.h>
+ #include <linux/sched.h>
+@@ -118,6 +119,17 @@ static inline void play_dead(void)
+ void cpu_idle(void)
+ {
+ 	current_thread_info()->status |= TS_POLLING;
++
++	/*
++	 * If we're the non-boot CPU, nothing set the PDA stack
++	 * canary up for us - and if we are the boot CPU we have
++	 * a 0 stack canary. This is a good place for updating
++	 * it, as we wont ever return from this function (so the
++	 * invalid canaries already on the stack wont ever
++	 * trigger):
++	 */
++	boot_init_stack_canary();
++
+ 	/* endless idle loop with no priority at all */
+ 	while (1) {
+ 		tick_nohz_stop_sched_tick();
+@@ -629,7 +641,6 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
+ 	write_pda(kernelstack,
+ 	(unsigned long)task_stack_page(next_p) + THREAD_SIZE - PDA_STACKOFFSET);
+ #ifdef CONFIG_CC_STACKPROTECTOR
+-	write_pda(stack_canary, next_p->stack_canary);
+ 	/*
+ 	 * Build time only check to make sure the stack_canary is at
+ 	 * offset 40 in the pda; this is a gcc ABI requirement
+diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+index 455f3fe..302e5fe 100644
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -26,6 +26,7 @@
+ #include <linux/kprobes.h>
+ #include <linux/uaccess.h>
+ #include <linux/kdebug.h>
++#include <linux/magic.h>
+ 
+ #include <asm/system.h>
+ #include <asm/desc.h>
+@@ -589,6 +590,8 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
+ 	unsigned long address;
+ 	int write, si_code;
+ 	int fault;
++	unsigned long *stackend;
++
+ #ifdef CONFIG_X86_64
+ 	unsigned long flags;
+ #endif
+@@ -856,6 +859,10 @@ no_context:
+ 
+ 	show_fault_oops(regs, error_code, address);
+ 
++ 	stackend = end_of_stack(tsk);
++	if (*stackend != STACK_END_MAGIC)
++		printk(KERN_ALERT "Thread overran stack, or stack corrupted\n");
++
+ 	tsk->thread.cr2 = address;
+ 	tsk->thread.trap_no = 14;
+ 	tsk->thread.error_code = error_code;
+diff --git a/include/asm-x86/pda.h b/include/asm-x86/pda.h
+index b34e9a7..072e6d0 100644
+--- a/include/asm-x86/pda.h
++++ b/include/asm-x86/pda.h
+@@ -16,11 +16,9 @@ struct x8664_pda {
+ 	unsigned long oldrsp;		/* 24 user rsp for system call */
+ 	int irqcount;			/* 32 Irq nesting counter. Starts -1 */
+ 	unsigned int cpunumber;		/* 36 Logical CPU number */
+-#ifdef CONFIG_CC_STACKPROTECTOR
+ 	unsigned long stack_canary;	/* 40 stack canary value */
+ 					/* gcc-ABI: this canary MUST be at
+ 					   offset 40!!! */
+-#endif
+ 	char *irqstackptr;
+ 	short nodenumber;		/* number of current node (32k max) */
+ 	short in_bootmem;		/* pda lives in bootmem */
+@@ -134,4 +132,5 @@ do {									\
+ 
+ #define PDA_STACKOFFSET (5*8)
+ 
++#define refresh_stack_canary() write_pda(stack_canary, current->stack_canary)
+ #endif
+diff --git a/include/asm-x86/stackprotector.h b/include/asm-x86/stackprotector.h
+new file mode 100644
+index 0000000..3baf7ad
+--- /dev/null
++++ b/include/asm-x86/stackprotector.h
+@@ -0,0 +1,38 @@
++#ifndef _ASM_STACKPROTECTOR_H
++#define _ASM_STACKPROTECTOR_H 1
++
++#include <asm/tsc.h>
++
++/*
++ * Initialize the stackprotector canary value.
++ *
++ * NOTE: this must only be called from functions that never return,
++ * and it must always be inlined.
++ */
++static __always_inline void boot_init_stack_canary(void)
++{
++	u64 canary;
++	u64 tsc;
++
++	/*
++	 * If we're the non-boot CPU, nothing set the PDA stack
++	 * canary up for us - and if we are the boot CPU we have
++	 * a 0 stack canary. This is a good place for updating
++	 * it, as we wont ever return from this function (so the
++	 * invalid canaries already on the stack wont ever
++	 * trigger).
++	 *
++	 * We both use the random pool and the current TSC as a source
++	 * of randomness. The TSC only matters for very early init,
++	 * there it already has some randomness on most systems. Later
++	 * on during the bootup the random pool has true entropy too.
++	 */
++	get_random_bytes(&canary, sizeof(canary));
++	tsc = __native_read_tsc();
++	canary += tsc + (tsc << 32UL);
++
++	current->stack_canary = canary;
++	write_pda(stack_canary, canary);
++}
++
++#endif
+diff --git a/include/asm-x86/system.h b/include/asm-x86/system.h
+index 983ce37..929345a 100644
+--- a/include/asm-x86/system.h
++++ b/include/asm-x86/system.h
+@@ -92,6 +92,8 @@ do {									\
+ 	     ".globl thread_return\n"					  \
+ 	     "thread_return:\n\t"					  \
+ 	     "movq %%gs:%P[pda_pcurrent],%%rsi\n\t"			  \
++	     "movq %P[task_canary](%%rsi),%%r8\n\t"			  \
++	     "movq %%r8,%%gs:%P[pda_canary]\n\t"			  \
+ 	     "movq %P[thread_info](%%rsi),%%r8\n\t"			  \
+ 	     LOCK_PREFIX "btr  %[tif_fork],%P[ti_flags](%%r8)\n\t"	  \
+ 	     "movq %%rax,%%rdi\n\t" 					  \
+@@ -103,7 +105,9 @@ do {									\
+ 	       [ti_flags] "i" (offsetof(struct thread_info, flags)),	  \
+ 	       [tif_fork] "i" (TIF_FORK),			  	  \
+ 	       [thread_info] "i" (offsetof(struct task_struct, stack)),   \
+-	       [pda_pcurrent] "i" (offsetof(struct x8664_pda, pcurrent))  \
++	       [task_canary] "i" (offsetof(struct task_struct, stack_canary)),\
++	       [pda_pcurrent] "i" (offsetof(struct x8664_pda, pcurrent)), \
++	       [pda_canary] "i" (offsetof(struct x8664_pda, stack_canary))\
+ 	     : "memory", "cc" __EXTRA_CLOBBER)
+ #endif
+ 
+diff --git a/include/linux/magic.h b/include/linux/magic.h
+index 1fa0c2c..74e68e2 100644
+--- a/include/linux/magic.h
++++ b/include/linux/magic.h
+@@ -42,4 +42,5 @@
+ #define FUTEXFS_SUPER_MAGIC	0xBAD1DEA
+ #define INOTIFYFS_SUPER_MAGIC	0x2BAD1DEA
+ 
++#define STACK_END_MAGIC		0x57AC6E9D
+ #endif /* __LINUX_MAGIC_H__ */
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 1941d8b..cb8e890 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1076,10 +1076,9 @@ struct task_struct {
+ 	pid_t pid;
+ 	pid_t tgid;
+ 
+-#ifdef CONFIG_CC_STACKPROTECTOR
+ 	/* Canary value for the -fstack-protector gcc feature */
+ 	unsigned long stack_canary;
+-#endif
++
+ 	/* 
+ 	 * pointers to (original) parent process, youngest child, younger sibling,
+ 	 * older sibling, respectively.  (p->father can be replaced with 
+@@ -1975,6 +1974,19 @@ static inline unsigned long *end_of_stack(struct task_struct *p)
+ 
+ extern void thread_info_cache_init(void);
+ 
++#ifdef CONFIG_DEBUG_STACK_USAGE
++static inline unsigned long stack_not_used(struct task_struct *p)
++{
++	unsigned long *n = end_of_stack(p);
++
++	do { 	/* Skip over canary */
++		n++;
++	} while (!*n);
++
++	return (unsigned long)n - (unsigned long)end_of_stack(p);
++}
++#endif
++
+ /* set thread flags in other task's structures
+  * - see asm/thread_info.h for TIF_xxxx flags available
+  */
+diff --git a/include/linux/stackprotector.h b/include/linux/stackprotector.h
+new file mode 100644
+index 0000000..6f3e54c
+--- /dev/null
++++ b/include/linux/stackprotector.h
+@@ -0,0 +1,16 @@
++#ifndef _LINUX_STACKPROTECTOR_H
++#define _LINUX_STACKPROTECTOR_H 1
++
++#include <linux/compiler.h>
++#include <linux/sched.h>
++#include <linux/random.h>
++
++#ifdef CONFIG_CC_STACKPROTECTOR
++# include <asm/stackprotector.h>
++#else
++static inline void boot_init_stack_canary(void)
++{
++}
++#endif
++
++#endif
+diff --git a/init/main.c b/init/main.c
+index 756eca4..e4faab7 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -14,6 +14,7 @@
+ #include <linux/proc_fs.h>
+ #include <linux/kernel.h>
+ #include <linux/syscalls.h>
++#include <linux/stackprotector.h>
+ #include <linux/string.h>
+ #include <linux/ctype.h>
+ #include <linux/delay.h>
+@@ -546,6 +547,12 @@ asmlinkage void __init start_kernel(void)
+ 	unwind_init();
+ 	lockdep_init();
+ 	debug_objects_early_init();
++
++	/*
++	 * Set up the the initial canary ASAP:
++	 */
++	boot_init_stack_canary();
++
+ 	cgroup_init_early();
+ 
+ 	local_irq_disable();
+diff --git a/kernel/exit.c b/kernel/exit.c
+index 93d2711..1535460 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -935,12 +935,9 @@ static void check_stack_usage(void)
+ {
+ 	static DEFINE_SPINLOCK(low_water_lock);
+ 	static int lowest_to_date = THREAD_SIZE;
+-	unsigned long *n = end_of_stack(current);
+ 	unsigned long free;
+ 
+-	while (*n == 0)
+-		n++;
+-	free = (unsigned long)n - (unsigned long)end_of_stack(current);
++	free = stack_not_used(current);
+ 
+ 	if (free >= lowest_to_date)
+ 		return;
+diff --git a/kernel/fork.c b/kernel/fork.c
+index adefc11..32ae152 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -55,6 +55,7 @@
+ #include <linux/tty.h>
+ #include <linux/proc_fs.h>
+ #include <linux/blkdev.h>
++#include <linux/magic.h>
+ 
+ #include <asm/pgtable.h>
+ #include <asm/pgalloc.h>
+@@ -187,6 +188,8 @@ static struct task_struct *dup_task_struct(struct task_struct *orig)
+ {
+ 	struct task_struct *tsk;
+ 	struct thread_info *ti;
++	unsigned long *stackend;
++
+ 	int err;
+ 
+ 	prepare_to_copy(orig);
+@@ -212,6 +215,8 @@ static struct task_struct *dup_task_struct(struct task_struct *orig)
+ 		goto out;
+ 
+ 	setup_thread_stack(tsk, orig);
++	stackend = end_of_stack(tsk);
++	*stackend = STACK_END_MAGIC;	/* for overflow detection */
+ 
+ #ifdef CONFIG_CC_STACKPROTECTOR
+ 	tsk->stack_canary = get_random_int();
+diff --git a/kernel/panic.c b/kernel/panic.c
+index 425567f..c35c9ec 100644
+--- a/kernel/panic.c
++++ b/kernel/panic.c
+@@ -80,6 +80,9 @@ NORET_TYPE void panic(const char * fmt, ...)
+ 	vsnprintf(buf, sizeof(buf), fmt, args);
+ 	va_end(args);
+ 	printk(KERN_EMERG "Kernel panic - not syncing: %s\n",buf);
++#ifdef CONFIG_DEBUG_BUGVERBOSE
++	dump_stack();
++#endif
+ 	bust_spinlocks(0);
+ 
+ 	/*
+@@ -321,13 +324,20 @@ EXPORT_SYMBOL(warn_on_slowpath);
+ #endif
+ 
+ #ifdef CONFIG_CC_STACKPROTECTOR
++
++#ifndef GCC_HAS_SP
++#warning You have selected the CONFIG_CC_STACKPROTECTOR option, but the gcc used does not support this.
++#endif
++
+ /*
+  * Called when gcc's -fstack-protector feature is used, and
+  * gcc detects corruption of the on-stack canary value
+  */
+ void __stack_chk_fail(void)
+ {
+-	panic("stack-protector: Kernel stack is corrupted");
++	panic("stack-protector: Kernel stack is corrupted in: %p\n",
++		__builtin_return_address(0));
+ }
+ EXPORT_SYMBOL(__stack_chk_fail);
++
+ #endif
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 99e6d85..ac75237 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -5663,12 +5663,7 @@ void sched_show_task(struct task_struct *p)
+ 		printk(KERN_CONT " %016lx ", thread_saved_pc(p));
+ #endif
+ #ifdef CONFIG_DEBUG_STACK_USAGE
+-	{
+-		unsigned long *n = end_of_stack(p);
+-		while (!*n)
+-			n++;
+-		free = (unsigned long)n - (unsigned long)end_of_stack(p);
+-	}
++	free = stack_not_used(p);
+ #endif
+ 	printk(KERN_CONT "%5lu %5d %6d\n", free,
+ 		task_pid_nr(p), task_pid_nr(p->real_parent));
