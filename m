@@ -1,44 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753719AbYGUQXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbYGUQZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753719AbYGUQXT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 12:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbYGUQXB
+	id S1753978AbYGUQZY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 12:25:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbYGUQZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 12:23:01 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46216 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751899AbYGUQXA (ORCPT
+	Mon, 21 Jul 2008 12:25:11 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:25206 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751967AbYGUQZJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 12:23:00 -0400
-Message-ID: <4884B7C3.9040801@linux-foundation.org>
-Date: Mon, 21 Jul 2008 11:22:27 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Mon, 21 Jul 2008 12:25:09 -0400
+X-IronPort-AV: E=Sophos;i="4.31,224,1215388800"; 
+   d="scan'208";a="37948307"
+From: Roland Dreier <rdreier@cisco.com>
+To: Julia Lawall <julia@diku.dk>
+Cc: rolandd@cisco.com, sean.hefty@intel.com, hal.rosenstock@gmail.com,
+       general@lists.openfabrics.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, hnguyen@de.ibm.com, raisch@de.ibm.com
+Subject: Re: [PATCH 1/7] drivers/infiniband: Release mutex in error handling code
+References: <Pine.LNX.4.64.0807210956040.24625@ask.diku.dk>
+X-Message-Flag: Warning: May contain useful information
+Date: Mon, 21 Jul 2008 09:25:07 -0700
+In-Reply-To: <Pine.LNX.4.64.0807210956040.24625@ask.diku.dk> (Julia Lawall's
+	message of "Mon, 21 Jul 2008 09:57:04 +0200 (CEST)")
+Message-ID: <ada4p6j6w7w.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, davem@davemloft.net
-Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison overwritten
-References: <20080717214222.GA29449@elte.hu> <Pine.LNX.4.64.0807181149460.3852@sbz-30.cs.Helsinki.FI> <20080718091146.GQ6875@elte.hu> <20080721094110.GA16029@elte.hu> <84144f020807210252k68d5cf65i8c7ae3c11cecc046@mail.gmail.com> <20080721100627.GA5953@2ka.mipt.ru>
-In-Reply-To: <20080721100627.GA5953@2ka.mipt.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 21 Jul 2008 16:25:08.0213 (UTC) FILETIME=[5725CA50:01C8EB4E]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Evgeniy Polyakov wrote:
-> Not that obvious...
-> skb->next is cleared in lots of places, in xmit network helper
-> for example, but since rest of the packet was not modified, it
-> means given skb was not freed, so it will not help.
->
->   
+ > --- a/drivers/infiniband/hw/ehca/ipz_pt_fn.c
+ > +++ b/drivers/infiniband/hw/ehca/ipz_pt_fn.c
+ > @@ -163,6 +163,7 @@ static int alloc_small_queue_page(struct
+ >  
+ >  out:
+ >  	ehca_err(pd->ib_pd.device, "failed to allocate small queue page");
+ > +	mutex_unlock(&pd->lock);
+ >  	return 0;
+ >  }
 
-The skb was definitely freed. 6b is written over an object when it is 
-freed. Something else retained a pointer to the skb and was confident 
-that the skb still exists.
+Thanks, looks obviously correct.  ehca guys, I will queue this for my
+next pull request to Linus; please let me know if you see a problem and
+want me to drop it.
 
-
+ - R.
