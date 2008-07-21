@@ -1,78 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbYGUUts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbYGUUv2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755401AbYGUUts (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 16:49:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbYGUUtk
+	id S1756061AbYGUUv2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 16:51:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbYGUUvU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 16:49:40 -0400
-Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:47226 "HELO
-	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750881AbYGUUtj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 16:49:39 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=VAEBFNBUurWSE9ljAeJThEIa0aO3T0cswlJp1H0CA5awBWXv88HglFxxNrDMcCxGr8hfYeHe/iVZyOA3xRlsJSKrcsjrUZeI5J6JUMGYB8odWiCCeKb/AvMrb9HrOGu+K4BzaiUqBNnszabz6F/DjUJ5UEfORtzFcq8Sc6h1FlY=  ;
-X-YMail-OSG: thpFeoUVM1nFAabQ1fXL8.fTWWbgVDHFOTR8wDuoap1cJQtIhhrUZaKO7lyZKhEJ5a3Q8BOOpgB9axfe2Zx.f.4TVI7V_tuZu27DczhPxlCMuKpp05TKllcrI6aNMa0Jero-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Ben Nizette <bn@niasdigital.com>, Michael Buesch <mb@bu3sch.de>
-Subject: Re: [PATCH] Add dynamic MMC-over-SPI-GPIO driver
-Date: Mon, 21 Jul 2008 13:49:36 -0700
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Piot Skamruk <piotr.skamruk@gmail.com>,
-       Pierre Ossman <drzeus-mmc@drzeus.cx>, openwrt-devel@lists.openwrt.org
-References: <200807142109.19360.mb@bu3sch.de> <1216098409.4265.144.camel@moss.renham>
-In-Reply-To: <1216098409.4265.144.camel@moss.renham>
+	Mon, 21 Jul 2008 16:51:20 -0400
+Received: from www.tglx.de ([62.245.132.106]:41786 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750784AbYGUUvT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 16:51:19 -0400
+Date: Mon, 21 Jul 2008 22:50:32 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, mdomsch@dell.com
+Subject: [PATCH] fs/partitions/efi: convert to pr_debug
+Message-ID: <alpine.LFD.1.10.0807212242010.4316@apollo.tec.linutronix.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807211349.37227.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 July 2008, Ben Nizette wrote:
-> 
-> On Mon, 2008-07-14 at 21:09 +0200, Michael Buesch wrote:
-> > This driver provides a sysfs interface to dynamically create
-> > and destroy GPIO-based MMC/SD card interfaces.
-> > So an MMC or SD card can be connected to generic GPIO pins
-> > and be configured dynamically from userspace.
-> 
-> Can you use mmc-spi attached to spi-gpio and be done with it? 
+convert the local Dprintk() compile time debug printk wrappers to the
+generic pr_debug() wrapper.
 
-Yes, that's how some of the early mmc-spi work was done.  ;)
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+diff --git a/fs/partitions/efi.c b/fs/partitions/efi.c
+index e7b0700..038a602 100644
+--- a/fs/partitions/efi.c
++++ b/fs/partitions/efi.c
+@@ -95,13 +95,6 @@
+ #include "check.h"
+ #include "efi.h"
+ 
+-#undef EFI_DEBUG
+-#ifdef EFI_DEBUG
+-#define Dprintk(x...) printk(KERN_DEBUG x)
+-#else
+-#define Dprintk(x...)
+-#endif
+-
+ /* This allows a kernel command line option 'gpt' to override
+  * the test for invalid PMBR.  Not __initdata because reloading
+  * the partition tables happens after init too.
+@@ -305,10 +298,10 @@ is_gpt_valid(struct block_device *bdev, u64 lba,
+ 
+ 	/* Check the GUID Partition Table signature */
+ 	if (le64_to_cpu((*gpt)->signature) != GPT_HEADER_SIGNATURE) {
+-		Dprintk("GUID Partition Table Header signature is wrong:"
+-			"%lld != %lld\n",
+-			(unsigned long long)le64_to_cpu((*gpt)->signature),
+-			(unsigned long long)GPT_HEADER_SIGNATURE);
++		pr_debug("GUID Partition Table Header signature is wrong:"
++			 "%lld != %lld\n",
++			 (unsigned long long)le64_to_cpu((*gpt)->signature),
++			 (unsigned long long)GPT_HEADER_SIGNATURE);
+ 		goto fail;
+ 	}
+ 
+@@ -318,9 +311,8 @@ is_gpt_valid(struct block_device *bdev, u64 lba,
+ 	crc = efi_crc32((const unsigned char *) (*gpt), le32_to_cpu((*gpt)->header_size));
+ 
+ 	if (crc != origcrc) {
+-		Dprintk
+-		    ("GUID Partition Table Header CRC is wrong: %x != %x\n",
+-		     crc, origcrc);
++		pr_debug("GUID Partition Table Header CRC is wrong: %x != %x\n",
++			 crc, origcrc);
+ 		goto fail;
+ 	}
+ 	(*gpt)->header_crc32 = cpu_to_le32(origcrc);
+@@ -328,9 +320,9 @@ is_gpt_valid(struct block_device *bdev, u64 lba,
+ 	/* Check that the my_lba entry points to the LBA that contains
+ 	 * the GUID Partition Table */
+ 	if (le64_to_cpu((*gpt)->my_lba) != lba) {
+-		Dprintk("GPT my_lba incorrect: %lld != %lld\n",
+-			(unsigned long long)le64_to_cpu((*gpt)->my_lba),
+-			(unsigned long long)lba);
++		pr_debug("GPT my_lba incorrect: %lld != %lld\n",
++			 (unsigned long long)le64_to_cpu((*gpt)->my_lba),
++			 (unsigned long long)lba);
+ 		goto fail;
+ 	}
+ 
+@@ -339,15 +331,15 @@ is_gpt_valid(struct block_device *bdev, u64 lba,
+ 	 */
+ 	lastlba = last_lba(bdev);
+ 	if (le64_to_cpu((*gpt)->first_usable_lba) > lastlba) {
+-		Dprintk("GPT: first_usable_lba incorrect: %lld > %lld\n",
+-			(unsigned long long)le64_to_cpu((*gpt)->first_usable_lba),
+-			(unsigned long long)lastlba);
++		pr_debug("GPT: first_usable_lba incorrect: %lld > %lld\n",
++			 (unsigned long long)le64_to_cpu((*gpt)->first_usable_lba),
++			 (unsigned long long)lastlba);
+ 		goto fail;
+ 	}
+ 	if (le64_to_cpu((*gpt)->last_usable_lba) > lastlba) {
+-		Dprintk("GPT: last_usable_lba incorrect: %lld > %lld\n",
+-			(unsigned long long)le64_to_cpu((*gpt)->last_usable_lba),
+-			(unsigned long long)lastlba);
++		pr_debug("GPT: last_usable_lba incorrect: %lld > %lld\n",
++			 (unsigned long long)le64_to_cpu((*gpt)->last_usable_lba),
++			 (unsigned long long)lastlba);
+ 		goto fail;
+ 	}
+ 
+@@ -360,7 +352,7 @@ is_gpt_valid(struct block_device *bdev, u64 lba,
+ 			le32_to_cpu((*gpt)->sizeof_partition_entry));
+ 
+ 	if (crc != le32_to_cpu((*gpt)->partition_entry_array_crc32)) {
+-		Dprintk("GUID Partitition Entry Array CRC check failed.\n");
++		pr_debug("GUID Partitition Entry Array CRC check failed.\n");
+ 		goto fail_ptes;
+ 	}
+ 
+@@ -616,7 +608,7 @@ efi_partition(struct parsed_partitions *state, struct block_device *bdev)
+ 		return 0;
+ 	}
+ 
+-	Dprintk("GUID Partition Table is valid!  Yea!\n");
++	pr_debug("GUID Partition Table is valid!  Yea!\n");
+ 
+ 	for (i = 0; i < le32_to_cpu(gpt->num_partition_entries) && i < state->limit-1; i++) {
+ 		if (!is_pte_valid(&ptes[i], last_lba(bdev)))
 
-
-> Sure you 
-> won't have the dynamic alloc capability but you won't be reinventing the
-> wheel either.  You don't have dynamic creation for any other platform
-> device and if you need it then, IMO, it'd be better solved in a more
-> generic way.
-> 
-> btw, what's this spi-gpio thing?  I can't see it in mainline except in a
-> s3c24xx specific way.  My domestic blindness??
-
-ISTR a patch for that, sitting somewhere in my mailbox waiting
-for review cycles.  I've sent examples of such stuff around
-before too.
-
-I've held back submitting a spi-gpio driver until I could come
-up with a way to configure it which would let the GPIO calls
-get inlined ... because otherwise, there's a nasty speed penalty.
-
-It's the difference between a function call per GPIO operation
-and an instruction per GPIO operation.  Consider that each SPI
-clock cycle requires four such operations, and GPIO function
-calls often take 30 instructions ... there's a big penalty to
-the non-inlined bitbangers, which is only partly addressed by
-having those function calls sitting in I-cache.
-
-- Dave
