@@ -1,89 +1,233 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759242AbYGULci@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758220AbYGULhi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759242AbYGULci (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 07:32:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758392AbYGULcT
+	id S1758220AbYGULhi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 07:37:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbYGULh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 07:32:19 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:38312 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756814AbYGULcQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 07:32:16 -0400
-Date: Mon, 21 Jul 2008 13:32:09 +0200
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Tejun Heo <htejun@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       scsi <linux-scsi@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       Takashi Iwai <tiwai@suse.de>, tino.keitel@gmx.de
-Subject: Re: linux-next: Tree for July 16 (crash on quad core AMD)
-Message-ID: <20080721133209.62e31bc8@mjolnir.drzeus.cx>
-In-Reply-To: <4883DA8C.5030306@gmail.com>
-References: <20080716235011.ac9643aa.sfr@canb.auug.org.au>
-	<200807170053.36661.rjw@sisk.pl>
-	<1216249292.3358.66.camel@localhost.localdomain>
-	<200807170109.30655.rjw@sisk.pl>
-	<48808EE0.2060603@gmail.com>
-	<20080719004736.626ef169@mjolnir.drzeus.cx>
-	<48813C5F.70007@gmail.com>
-	<20080719033050.552f9b49@mjolnir.drzeus.cx>
-	<48814D81.8060001@gmail.com>
-	<20080719140717.7b296eae@mjolnir.drzeus.cx>
-	<4881F437.7000503@gmail.com>
-	<20080721004033.1fc66aa3@mjolnir.drzeus.cx>
-	<4883DA8C.5030306@gmail.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.4; i386-redhat-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
-X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-2472-1216639933-0001-2"
+	Mon, 21 Jul 2008 07:37:29 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42809 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750719AbYGULh0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 07:37:26 -0400
+Date: Mon, 21 Jul 2008 13:37:06 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mark Langsdorf <mark.langsdorf@amd.com>
+Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/01] x86: L3 cache index disable for 2.6.26
+Message-ID: <20080721113706.GC23095@elte.hu>
+References: <200807181603.52332.mark.langsdorf@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200807181603.52332.mark.langsdorf@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
 
---=_freyr.drzeus.cx-2472-1216639933-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+* Mark Langsdorf <mark.langsdorf@amd.com> wrote:
 
-On Mon, 21 Jul 2008 09:38:36 +0900
-Tejun Heo <htejun@gmail.com> wrote:
+> New versions of AMD processors have support to disable parts of their 
+> L3 caches if too many MCEs are generated by the L3 cache.
+> 
+> This patch provides a /sysfs interface under the cache hierarchy to 
+> display which caches indices are disabled (if any) and to monitoring 
+> applications to disable a cache index.
+> 
+> This patch does not set an automatic policy to disable the L3 cache.  
+> Policy decisions would need to be made by a RAS handler.  This patch 
+> merely makes it easier to see what indices are currently disabled.
+> 
+> Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
 
->=20
-> I think it needs an ACK from Jens.  Jens?
->=20
+applied to tip/x86/cpu, thanks Mark.
 
-He seems to be on vacation. I sent him a review request for my original
-code a couple of weeks ago, and I haven't heard anything. marc.info
-also doesn't show anything since the 3rd. Odds are he won't be back
-during the merge window. :/
+I've done some coding style fixes for the new functions you've 
+introduced, see that commit below.
 
---=20
-     -- Pierre Ossman
+	Ingo
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+------------------->
+commit 6cec0203a915739140c0a7fdf3498aa417123501
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Mon Jul 21 13:34:21 2008 +0200
 
---=_freyr.drzeus.cx-2472-1216639933-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
+    x86: L3 cache index disable for 2.6.26, cleanups
+    
+    No change in functionality.
+    
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/cpu/intel_cacheinfo.c |  115 +++++++++++++++++---------------
+ 1 files changed, 61 insertions(+), 54 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkiEc7sACgkQ7b8eESbyJLiuuQCcD7NCbqFggYtniBwAHBa8rL98
-gdQAoJ3NzNvWyflLOF4NoK6OkVCsSsUG
-=t/bj
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-2472-1216639933-0001-2--
+diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
+index 503c847..491892c 100644
+--- a/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -253,14 +253,16 @@ static void __cpuinit amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
+ 		(ebx->split.ways_of_associativity + 1) - 1;
+ }
+ 
+-static void __cpuinit amd_check_l3_disable(int index, struct _cpuid4_info *this_leaf)
++static void __cpuinit
++amd_check_l3_disable(int index, struct _cpuid4_info *this_leaf)
+ {
+ 	if (index < 3)
+ 		return;
+ 	this_leaf->can_disable = 1;	
+ }
+ 
+-static int __cpuinit cpuid4_cache_lookup(int index, struct _cpuid4_info *this_leaf)
++static int
++__cpuinit cpuid4_cache_lookup(int index, struct _cpuid4_info *this_leaf)
+ {
+ 	union _cpuid4_leaf_eax 	eax;
+ 	union _cpuid4_leaf_ebx 	ebx;
+@@ -271,19 +273,20 @@ static int __cpuinit cpuid4_cache_lookup(int index, struct _cpuid4_info *this_le
+ 		amd_cpuid4(index, &eax, &ebx, &ecx);
+ 		if (boot_cpu_data.x86 >= 0x10)
+ 			amd_check_l3_disable(index, this_leaf);
+-			
+-	} else
+-		cpuid_count(4, index, &eax.full, &ebx.full, &ecx.full,  &edx);
++	} else {
++		cpuid_count(4, index, &eax.full, &ebx.full, &ecx.full, &edx);
++	}
++
+ 	if (eax.split.type == CACHE_TYPE_NULL)
+ 		return -EIO; /* better error ? */
+ 
+ 	this_leaf->eax = eax;
+ 	this_leaf->ebx = ebx;
+ 	this_leaf->ecx = ecx;
+-	this_leaf->size = (ecx.split.number_of_sets + 1) *
+-		(ebx.split.coherency_line_size + 1) *
+-		(ebx.split.physical_line_partition + 1) *
+-		(ebx.split.ways_of_associativity + 1);
++	this_leaf->size = (ecx.split.number_of_sets          + 1) *
++			  (ebx.split.coherency_line_size     + 1) *
++			  (ebx.split.physical_line_partition + 1) *
++			  (ebx.split.ways_of_associativity   + 1);
+ 	return 0;
+ }
+ 
+@@ -649,59 +652,63 @@ static ssize_t show_type(struct _cpuid4_info *this_leaf, char *buf) {
+ 	}
+ }
+ 
+-#define to_object(k) container_of(k, struct _index_kobject, kobj)
+-#define to_attr(a) container_of(a, struct _cache_attr, attr)
++#define to_object(k)	container_of(k, struct _index_kobject, kobj)
++#define to_attr(a)	container_of(a, struct _cache_attr, attr)
+ 
+ static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf)
+ {
+-	struct pci_dev *dev;
+-	if (this_leaf->can_disable) {
+-		int i;
+-		ssize_t ret = 0;
+-		int node = cpu_to_node(first_cpu(this_leaf->shared_cpu_map));
+-		dev = k8_northbridges[node];
+-
+-		for (i = 0; i < 2; i++) {
+-			unsigned int reg;
+-			pci_read_config_dword(dev, 0x1BC + i * 4, &reg);
+-			ret += sprintf(buf, "%sEntry: %d\n", buf, i);
+-			ret += sprintf(buf, "%sReads:  %s\tNew Entries: %s\n",  
+-				buf,
+-				reg & 0x80000000 ? "Disabled" : "Allowed",
+-				reg & 0x40000000 ? "Disabled" : "Allowed");
+-			ret += sprintf(buf, "%sSubCache: %x\tIndex: %x\n", buf,
+-				(reg & 0x30000) >> 16, reg & 0xfff);
++	int node = cpu_to_node(first_cpu(this_leaf->shared_cpu_map));
++	struct pci_dev *dev = k8_northbridges[node];
++	ssize_t ret = 0;
++	int i;
+ 
+-		}
+-		return ret;
++	if (!this_leaf->can_disable)
++		return sprintf(buf, "Feature not enabled\n");
++
++	for (i = 0; i < 2; i++) {
++		unsigned int reg;
++
++		pci_read_config_dword(dev, 0x1BC + i * 4, &reg);
++
++		ret += sprintf(buf, "%sEntry: %d\n", buf, i);
++		ret += sprintf(buf, "%sReads:  %s\tNew Entries: %s\n",  
++			buf,
++			reg & 0x80000000 ? "Disabled" : "Allowed",
++			reg & 0x40000000 ? "Disabled" : "Allowed");
++		ret += sprintf(buf, "%sSubCache: %x\tIndex: %x\n",
++			buf, (reg & 0x30000) >> 16, reg & 0xfff);
+ 	}
+-	return sprintf(buf, "Feature not enabled\n");
++	return ret;
+ }
+ 
+-static ssize_t store_cache_disable(struct _cpuid4_info *this_leaf, const char *buf, size_t count)
++static ssize_t
++store_cache_disable(struct _cpuid4_info *this_leaf, const char *buf,
++		    size_t count)
+ {
+-	struct pci_dev *dev;
+-	if (this_leaf->can_disable) {
+-		/* write the MSR value */
+-		unsigned int ret;
+-		unsigned int index, val;
+-		int node = cpu_to_node(first_cpu(this_leaf->shared_cpu_map));
+-		dev = k8_northbridges[node];
+-
+-		if (strlen(buf) > 15)
+-			return -EINVAL;
+-		ret = sscanf(buf, "%x %x", &index, &val);
+-		if (ret != 2)
+-			return -EINVAL;
+-		if (index > 1)
+-			return -EINVAL;
+-		val |= 0xc0000000;
+-		pci_write_config_dword(dev, 0x1BC + index * 4, val & ~0x40000000);
+-		wbinvd();
+-		pci_write_config_dword(dev, 0x1BC + index * 4, val);
+-		return 1;
+-	}
+-	return 0;
++	int node = cpu_to_node(first_cpu(this_leaf->shared_cpu_map));
++	struct pci_dev *dev = k8_northbridges[node];
++	unsigned int ret, index, val;
++
++	if (!this_leaf->can_disable)
++		return 0;
++
++	/* write the MSR value */
++
++	if (strlen(buf) > 15)
++		return -EINVAL;
++
++	ret = sscanf(buf, "%x %x", &index, &val);
++	if (ret != 2)
++		return -EINVAL;
++	if (index > 1)
++		return -EINVAL;
++
++	val |= 0xc0000000;
++	pci_write_config_dword(dev, 0x1BC + index * 4, val & ~0x40000000);
++	wbinvd();
++	pci_write_config_dword(dev, 0x1BC + index * 4, val);
++
++	return 1;
+ }
+ 
+ struct _cache_attr {
